@@ -1,0 +1,55 @@
+"use strict";
+/* =====================================================================
+ * nvb.manifest.js
+ * The ONLY file that knows about plugin file paths.
+ * ===================================================================== */
+window.NVB_MANIFEST = {
+    name: 'narrative-visual-board',
+    version: '2.8.0',
+    plugins: [
+        'plugins/01-core-utils.js',
+        'plugins/02-storage.js',
+        'plugins/02a-project-format.js',
+        'plugins/02b-storage-fs.js',
+        'plugins/02c-storage-facade.js',
+        'plugins/02d-storage-fs-dir.js',
+        'plugins/02e-storage-localstorage.js',
+        'plugins/03-state.js',
+        'plugins/03b-document-snapshot.js',
+        'plugins/04-history.js',
+        'plugins/05-camera.js',
+        'plugins/06-assets.js',
+        'plugins/06a-svg-geometry.js',
+        'plugins/06b-panel-sets.js',
+        'plugins/06c-panel-templates.js',
+        'plugins/07-packages.js',
+        'plugins/08-boards.js',
+        'plugins/09-instances.js',
+        'plugins/09a-panel-migration.js',
+        'plugins/09b-manga-page.js',
+        'plugins/09c-manga-edit.js',
+        'plugins/10-renderer.js',
+        'plugins/10b-minimap.js',
+        'plugins/10c-renderer-manga.js',
+        'plugins/11-interaction.js',
+        'plugins/12-export-import.js',
+        'plugins/12a-manga-export-preflight.js',
+        'plugins/12b-manga-export.js',
+        'plugins/13-image-processors.js',
+        'plugins/13a-image-canvas-processor.js',
+        'plugins/13b-image-commands.js',
+        'plugins/20-ui-dialogs.js',
+        'plugins/21-ui-shell.js',
+        'plugins/22-ui-library.js',
+        'plugins/22b-ui-page-formats.js', // ← NOVO
+        'plugins/23-ui-packages.js',
+        'plugins/24-ui-canvas.js',
+        'plugins/25-context-menu.js',
+        'plugins/25b-panel-inspector.js',
+        'plugins/26-ui-storage.js',
+        'plugins/27-ui-accessibility.js',
+        'plugins/28-ui-image-operations.js',
+        'plugins/30-debug.js',
+        'plugins/99-app.js'
+    ]
+};

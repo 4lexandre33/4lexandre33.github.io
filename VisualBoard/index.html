@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Narrative Visual Board</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+<a class="skip-link" href="#viewport">Skip to canvas</a>
+<div id="a11y-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div id="app">
+  <header id="topbar" aria-label="Project toolbar">
+    <div class="brand">
+      <div class="logo">◧</div>
+      <div class="brand-text">
+        <div class="brand-title">Narrative Visual Board</div>
+        <div class="brand-sub" id="project-name">Untitled Project</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" data-cmd="toggle-left">▤ Library</button>
+      <button class="btn" data-cmd="toggle-right">▥ Panels</button>
+      <span class="sep"></span>
+      <button class="btn primary" data-cmd="import-images">Import Images</button>
+      <button class="btn" data-cmd="new-board">New Board</button>
+      <button class="btn" data-cmd="new-manga-page">New Manga Page</button>
+      <button class="btn" data-cmd="new-template">Templates</button>
+      <span class="sep"></span>
+      <button class="btn icon" data-cmd="undo" disabled title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+      <button class="btn icon" data-cmd="redo" disabled title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
+      <span class="sep"></span>
+      <button class="btn icon" data-cmd="fit" title="Fit all (F)" aria-label="Fit canvas">⤢</button>
+      <button class="btn icon" data-cmd="reset" title="Reset view (0)" aria-label="Reset view">⌂</button>
+      <span class="sep"></span>
+      <button class="btn" data-cmd="export">Export</button>
+      <button class="btn" data-cmd="load">Load</button>
+      <button class="btn icon" data-cmd="debug" aria-label="Debug tools">⚙</button>
+    </div>
+  </header>
+
+  <div id="main">
+    <aside id="left" class="sidebar" aria-label="Asset library and page formats">
+      <div class="side-head">
+        <h2>Asset Library</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" data-cmd="collapse-left" title="Collapse">«</button>
+      </div>
+      <div class="side-body lib-body">
+        <input type="search" id="search" placeholder="Search images…" aria-label="Search images">
+        <select id="package-filter" aria-label="Filter images by package"></select>
+        <div class="row between">
+          <span class="muted" id="asset-count">0 images</span>
+          <select id="sort" class="mini" aria-label="Sort images">
+            <option value="name">Name</option>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
+        </div>
+        <div id="asset-grid" class="asset-grid"></div>
+        <div id="library-empty" class="empty-hint">
+          Import images into your library,<br>then drag them onto the canvas.
+        </div>
+      </div>
+
+      <div class="side-head">
+        <h2>Page Formats</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="pf-add-btn" title="Import SVG format">+</button>
+      </div>
+      <div class="side-body pf-body">
+        <div id="page-formats" class="pf-grid"></div>
+        <div id="pf-empty" class="empty-hint">
+          No formats yet.<br>Click <b>+</b> to import an SVG.
+        </div>
+      </div>
+    </aside>
+
+    <section id="center">
+      <nav id="top-breadcrumb" hidden aria-label="Board hierarchy">
+        <button class="tb-back" id="tb-back" type="button" title="Go to parent board (Esc / Backspace)">← Back</button>
+        <span class="tb-sep">|</span>
+        <div class="tb-trail" id="tb-trail"></div>
+        <span class="tb-sep">|</span>
+        <button class="tb-back" id="tb-rename" type="button" title="Rename this board">Rename</button>
+      </nav>
+
+      <div id="viewport" role="region" aria-label="Visual board canvas" aria-describedby="canvas-keyboard-help" tabindex="0">
+        <div id="world"></div>
+        <div id="marquee" hidden></div>
+        <div id="canvas-empty" class="canvas-empty">
+          <div class="ce-title">Empty canvas</div>
+          <div class="ce-sub">Drag images from the library, or use New Board / New Manga Page / Templates.</div>
+        </div>
+      </div>
+
+      <p id="canvas-keyboard-help" class="sr-only">Use Tab to access tools, arrow keys to move selected items, Enter to open a selected board, Delete to remove a selection, F to fit all and Escape to leave editing modes.</p>
+      <div id="hud">
+        <span id="hud-zoom">100%</span><span class="hud-sep"></span>
+        <span id="hud-info">0 items on canvas</span><span class="hud-sep"></span>
+        <span class="hud-hint">Space+Drag pan · Wheel zoom · F fit · Right-click for options</span>
+      </div>
+
+      <div id="zoom-controls">
+        <button data-cmd="zoom-out" title="Zoom out (-)">−</button>
+        <input type="range" aria-label="Canvas zoom" id="zoom-slider" min="5" max="800" value="100" step="1" title="Zoom">
+        <button data-cmd="zoom-in" title="Zoom in (+)">+</button>
+        <span class="zc-sep"></span>
+        <button data-cmd="zoom-100" title="Actual size">100%</button>
+        <button data-cmd="zoom-fit" title="Fit all (F)">Fit</button>
+        <button data-cmd="zoom-focus" title="Focus selection (Shift+F)">Focus</button>
+        <span class="zc-sep"></span>
+        <span id="zoom-label">100%</span>
+      </div>
+
+      <div id="selection-toolbar" hidden>
+        <button data-act="front" title="Bring to front">⤒</button>
+        <button data-act="forward" title="Bring forward">↑</button>
+        <button data-act="backward" title="Send backward">↓</button>
+        <button data-act="back" title="Send to back">⤓</button>
+        <span class="tb-sep"></span>
+        <button data-act="rotate" title="Rotate 90°">⟳</button>
+        <button data-act="ratio" title="Restore aspect ratio">⇔</button>
+        <span class="tb-sep"></span>
+        <button data-act="duplicate" title="Duplicate (Ctrl+D)">⧉</button>
+        <button data-act="delete" class="danger" title="Delete (Del)">🗑</button>
+      </div>
+
+      <div id="debug-panel" hidden></div>
+    </section>
+
+    <aside id="right" class="sidebar" aria-label="Navigator and packages">
+      <div class="side-head">
+        <h2>Navigator</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost" data-cmd="collapse-right" title="Collapse">»</button>
+      </div>
+      <div class="side-body nav-body">
+        <div id="nav-trail" class="nav-trail"></div>
+        <div class="nav-actions">
+          <button class="btn" id="nav-back" title="Go to parent board (Esc / Backspace)">← Back</button>
+          <button class="btn" id="nav-rename" title="Rename this board">Rename</button>
+        </div>
+      </div>
+
+      <div class="side-head">
+        <h2>Package Manager</h2>
+      </div>
+      <div class="side-body pkg-body">
+        <button class="btn wide" data-cmd="new-package">+ New Package</button>
+        <div class="muted" style="line-height:1.5;padding:0 2px;">
+          Packages are library collections, not canvas areas.
+        </div>
+        <div id="package-list" class="package-list"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div id="dialog" class="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-message" hidden>
+  <div class="modal-backdrop" data-cmd="dialog-cancel"></div>
+  <div class="dialog">
+    <h3 id="dialog-title"></h3>
+    <p id="dialog-message"></p>
+    <input type="text" id="dialog-input" aria-label="Dialog response" hidden>
+    <div class="dialog-actions">
+      <button class="btn" data-cmd="dialog-cancel">Cancel</button>
+      <button class="btn primary" data-cmd="dialog-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="preview" class="modal" role="dialog" aria-modal="true" aria-label="Image preview" hidden>
+  <div class="modal-backdrop" data-cmd="preview-close"></div>
+  <div class="preview-wrap">
+    <img id="preview-img" alt="">
+    <div class="preview-bar">
+      <span class="pname" id="preview-name"></span>
+      <button class="btn primary" data-cmd="preview-add">Add to canvas</button>
+      <button class="btn" data-cmd="preview-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-host" aria-live="polite" aria-relevant="additions"></div>
+<input type="file" id="file-input-images" accept="image/*" multiple hidden>
+<input type="file" id="file-input-project" accept=".json,application/json" hidden>
+
+<script src="kernel/kernel.js"></script>
+<script src="kernel/capability-contracts.js"></script>
+<script src="kernel/contract-runtime.js"></script>
+<script src="kernel/nvb.manifest.js"></script>
+<script src="kernel/bootstrap.js"></script>
+</body>
+</html>
