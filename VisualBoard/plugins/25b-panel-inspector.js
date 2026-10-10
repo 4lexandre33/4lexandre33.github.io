@@ -67,7 +67,10 @@ definePlugin({
         content.className = 'insp-content';
         content.id = 'insp-content';
         body.appendChild(content);
-        rightBody.parentNode.insertBefore(head, rightBody.nextSibling);
+        // Mount the dynamic inspector between the fixed Navigator and Package Manager
+        // splitters. This preserves the DOM ABI and keeps all three sections resizable.
+        const inspectorDivider = document.getElementById('resize-inspector');
+        rightBody.parentNode.insertBefore(head, inspectorDivider || rightBody.nextSibling);
         rightBody.parentNode.insertBefore(body, head.nextSibling);
         /* ---------------- Drag state (interno) ---------------- */
         let drag = null; // { layerId, panelId, containerKey, instanceId }

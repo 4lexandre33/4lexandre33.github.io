@@ -355,6 +355,7 @@ definePlugin({
             left.classList.toggle('collapsed', mobile ? mode !== 'library' : mode === 'focus');
             right.classList.toggle('collapsed', mobile ? mode !== 'manga' : mode === 'focus' || mode === 'library');
             setSidebarWidths();
+            restoreSectionHeights();
             document.querySelectorAll('[data-workspace-mode]').forEach(btn => {
                 const selected = btn.dataset.workspaceMode === mode;
                 btn.setAttribute('aria-pressed', String(selected));
@@ -428,6 +429,111 @@ definePlugin({
         }
         installResizer(leftGrip, 'left');
         installResizer(rightGrip, 'right');
+        const sectionDefaults = {
+            formats: 220, navigator: 160, inspector: 230
+        };
+        const sectionProps = {
+            formats: '--vb-formats-height',
+            navigator: '--vb-nav-height',
+            inspector: '--vb-inspector-height'
+        };
+        const sectionSide = {
+            formats: left, navigator: right, inspector: right
+        };
+        const sections = ['formats', 'navigator', 'inspector'];
+        const sectionGrip = (kind) => document.getElementById('resize-' + kind) ||
+            (kind === 'formats' ? document.getElementById('resize-formats') : null);
+        const sectionPanel = (kind) => {
+            if (kind === 'formats')
+                return left.querySelector('.pf-body');
+            if (kind === 'navigator')
+                return right.querySelector('.nav-body');
+            return document.getElementById('inspector-body');
+        };
+        function sectionBounds(kind) {
+            const container = sectionSide[kind];
+            const height = container.getBoundingClientRect().height || container.clientHeight;
+            const navHeight = right.querySelector('.nav-body')?.getBoundingClientRect().height || 160;
+            const inspector = document.getElementById('inspector-body');
+            const inspectorVisible = !!inspector && !inspector.hidden;
+            const inspectorHeight = inspectorVisible ? (inspector.getBoundingClientRect().height || 230) : 0;
+            const reserve = kind === 'formats' ? 235 :
+                kind === 'navigator' ? (inspectorVisible ? 260 + inspectorHeight : 175) :
+                    255 + navHeight;
+            const min = kind === 'formats' ? 96 : 100;
+            return [min, Math.max(min, Math.min(460, height - reserve))];
+        }
+        function setSectionHeight(kind, size, persist = true) {
+            if (!Number.isFinite(size))
+                return;
+            const [min, max] = sectionBounds(kind);
+            const safe = Math.round(Math.min(max, Math.max(min, size)));
+            workspace.style.setProperty(sectionProps[kind], safe + 'px');
+            const grip = sectionGrip(kind);
+            if (grip) {
+                grip.setAttribute('aria-valuemin', String(min));
+                grip.setAttribute('aria-valuemax', String(max));
+                grip.setAttribute('aria-valuenow', String(safe));
+            }
+            if (persist)
+                storageSet('nvb.ui.section.' + currentMode + '.' + kind, String(safe));
+        }
+        function restoreSectionHeights() {
+            for (const kind of sections) {
+                const raw = storageGet('nvb.ui.section.' + currentMode + '.' + kind);
+                const stored = raw !== null ? Number(raw) : NaN;
+                setSectionHeight(kind, Number.isFinite(stored) ? stored : sectionDefaults[kind], false);
+            }
+        }
+        function installSectionResizer(kind) {
+            const grip = sectionGrip(kind);
+            if (!grip)
+                return;
+            const valueFromPointer = (y) => {
+                const bounds = sectionSide[kind].getBoundingClientRect();
+                if (kind === 'navigator')
+                    return y - bounds.top - 41;
+                if (kind === 'formats')
+                    return bounds.bottom - y - 41;
+                const inspector = sectionPanel('inspector');
+                return inspector ? y - inspector.getBoundingClientRect().top : sectionDefaults.inspector;
+            };
+            kernel.listen(grip, 'pointerdown', event => {
+                const e = event;
+                if (e.button !== 0)
+                    return;
+                e.preventDefault();
+                grip.setPointerCapture(e.pointerId);
+                grip.classList.add('is-dragging');
+            });
+            kernel.listen(grip, 'pointermove', event => {
+                const e = event;
+                if (!grip.hasPointerCapture(e.pointerId))
+                    return;
+                setSectionHeight(kind, valueFromPointer(e.clientY));
+            });
+            const finish = (event) => {
+                const e = event;
+                if (grip.hasPointerCapture(e.pointerId))
+                    grip.releasePointerCapture(e.pointerId);
+                grip.classList.remove('is-dragging');
+            };
+            kernel.listen(grip, 'pointerup', finish);
+            kernel.listen(grip, 'pointercancel', finish);
+            kernel.listen(grip, 'keydown', event => {
+                const e = event;
+                if (!['ArrowUp', 'ArrowDown', 'Home'].includes(e.key))
+                    return;
+                e.preventDefault();
+                if (e.key === 'Home')
+                    return setSectionHeight(kind, sectionDefaults[kind]);
+                const current = Number(grip.getAttribute('aria-valuenow')) || sectionDefaults[kind];
+                // The lower format section grows upward; Navigator/Inspector grow downward.
+                const sign = (e.key === 'ArrowDown' ? 1 : -1) * (kind === 'formats' ? -1 : 1);
+                setSectionHeight(kind, current + sign * (e.shiftKey ? 32 : 16));
+            });
+        }
+        sections.forEach(installSectionResizer);
         const mobileBreakpoint = window.matchMedia('(max-width:820px)');
         kernel.listen(mobileBreakpoint, 'change', () => setWorkspaceMode(currentMode, false));
         /* Progressive disclosure: help appears for a genuinely empty new project. */
