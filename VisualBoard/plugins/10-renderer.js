@@ -254,8 +254,47 @@ definePlugin({
                 el.classList.toggle('single', sel && S.data.selection.size === 1);
             });
             const tb = document.getElementById('selection-toolbar');
-            if (tb)
-                tb.hidden = S.data.selection.size === 0;
+            if (!tb)
+                return;
+            tb.hidden = S.data.selection.size === 0;
+            if (tb.hidden)
+                return;
+            const context = document.getElementById('selection-context');
+            if (context) {
+                const onlyId = S.data.selection.size === 1
+                    ? Array.from(S.data.selection)[0] : undefined;
+                const inst = onlyId ? S.getInstance(onlyId) : null;
+                context.textContent = S.data.selection.size > 1
+                    ? S.data.selection.size + ' itens selecionados'
+                    : inst?.type === 'manga-page' ? 'Página de mangá'
+                        : inst?.type === 'board' ? 'Board selecionado'
+                            : 'Imagem selecionada';
+            }
+            // Keep the existing action toolbar close to the selected object.
+            // Multiple selection remains in a stable bottom dock.
+            const center = document.getElementById('center');
+            const selectedId = S.data.selection.size === 1
+                ? Array.from(S.data.selection)[0] : undefined;
+            const selected = selectedId ? els.get(selectedId) : null;
+            if (center && selected) {
+                const item = selected.getBoundingClientRect();
+                const bounds = center.getBoundingClientRect();
+                const width = tb.offsetWidth || 310;
+                const height = tb.offsetHeight || 45;
+                const x = Math.min(Math.max((item.left + item.right) / 2 - bounds.left, width / 2 + 10), Math.max(width / 2 + 10, bounds.width - width / 2 - 10));
+                const below = item.bottom - bounds.top + 10;
+                const above = item.top - bounds.top - height - 10;
+                const y = below + height < bounds.height - 54 ? below :
+                    above >= 52 ? above : 58;
+                tb.style.left = x + 'px';
+                tb.style.top = Math.max(58, Math.min(bounds.height - height - 14, y)) + 'px';
+                tb.style.bottom = 'auto';
+            }
+            else {
+                tb.style.left = '50%';
+                tb.style.top = '';
+                tb.style.bottom = '64px';
+            }
         }
         function updateHud() {
             const b = S.getCurrentBoard();
@@ -298,6 +337,7 @@ definePlugin({
         kernel.on('board:navigated', render);
         kernel.on('assets:changed', render);
         kernel.on('selection:changed', updateSelection);
+        kernel.on('camera:changed', updateSelection);
         kernel.on('boards:changed', render);
         kernel.on('manga-page:changed', function (payload) {
             if (!payload || !payload.instanceId)

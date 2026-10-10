@@ -19,26 +19,40 @@
         <div class="brand-sub" id="project-name">Untitled Project</div>
       </div>
     </div>
+    <nav id="workspace-modes" aria-label="Modo de trabalho" role="group">
+      <button type="button" class="workspace-mode" data-workspace-mode="studio" aria-pressed="true" title="Estúdio: biblioteca, canvas e propriedades">◫ <span>Estúdio</span></button>
+      <button type="button" class="workspace-mode" data-workspace-mode="focus" aria-pressed="false" title="Foco: priorizar canvas">▣ <span>Foco</span></button>
+      <button type="button" class="workspace-mode" data-workspace-mode="library" aria-pressed="false" title="Biblioteca: localizar e organizar imagens">▤ <span>Biblioteca</span></button>
+      <button type="button" class="workspace-mode" data-workspace-mode="manga" aria-pressed="false" title="Mangá: páginas, painéis e camadas">▧ <span>Mangá</span></button>
+    </nav>
     <div class="toolbar">
-      <button class="btn" data-cmd="toggle-left">▤ Library</button>
-      <button class="btn" data-cmd="toggle-right">▥ Panels</button>
-      <span class="sep"></span>
-      <button class="btn primary" data-cmd="import-images">Import Images</button>
-      <button class="btn" data-cmd="new-board">New Board</button>
-      <button class="btn" data-cmd="new-manga-page">New Manga Page</button>
-      <button class="btn" data-cmd="new-template">Templates</button>
-      <span class="sep"></span>
-      <button class="btn icon" data-cmd="undo" disabled title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
-      <button class="btn icon" data-cmd="redo" disabled title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
-      <span class="sep"></span>
-      <button class="btn icon" data-cmd="fit" title="Fit all (F)" aria-label="Fit canvas">⤢</button>
-      <button class="btn icon" data-cmd="reset" title="Reset view (0)" aria-label="Reset view">⌂</button>
-      <span class="sep"></span>
-      <button class="btn" data-cmd="export">Export</button>
-      <button class="btn" data-cmd="load">Load</button>
-      <button class="btn icon" data-cmd="debug" aria-label="Debug tools">⚙</button>
+      <button type="button" class="btn primary action-import" data-cmd="import-images">＋ <span>Importar imagens</span></button>
+      <button type="button" class="btn action-new-board" data-cmd="new-board">▦ <span>Novo board</span></button>
+      <button type="button" class="btn icon action-history" data-cmd="undo" disabled title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
+      <button type="button" class="btn icon action-history" data-cmd="redo" disabled title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
+      <button type="button" class="btn icon action-fit" data-cmd="fit" title="Ajustar tudo (F)" aria-label="Ajustar tudo">⤢</button>
+      <button type="button" class="btn icon action-fit" data-cmd="reset" title="Centralizar vista (0)" aria-label="Centralizar vista">⌂</button>
+      <details id="workspace-more" class="workspace-more">
+        <summary aria-label="Mais ferramentas">Mais <span aria-hidden="true">⌄</span></summary>
+        <div class="workspace-more-content">
+          <button type="button" class="btn" data-cmd="new-manga-page">Nova página mangá</button>
+          <button type="button" class="btn" data-cmd="new-template">Modelos de página</button>
+          <button type="button" class="btn" data-cmd="export">Exportar projeto</button>
+          <button type="button" class="btn" data-cmd="load">Abrir projeto</button>
+          <button type="button" class="btn" data-cmd="debug">Depuração</button>
+        </div>
+      </details>
+      <button type="button" class="btn icon workspace-panel-toggle" data-cmd="toggle-left" aria-controls="left" aria-expanded="true" title="Mostrar ou ocultar biblioteca" aria-label="Mostrar ou ocultar biblioteca">▤</button>
+      <button type="button" class="btn icon workspace-panel-toggle" data-cmd="toggle-right" aria-controls="right" aria-expanded="true" title="Mostrar ou ocultar propriedades" aria-label="Mostrar ou ocultar propriedades">▥</button>
+      <button type="button" class="btn icon" id="workspace-help" title="Mostrar orientação inicial" aria-label="Mostrar orientação inicial">?</button>
     </div>
   </header>
+
+  <div id="workspace-strip" role="status">
+    <span class="workspace-strip-label" id="workspace-label">Estúdio</span>
+    <span id="workspace-hint">Arraste imagens para o canvas. Selecione um item para ver ações contextuais.</span>
+    <span class="workspace-shortcut">Espaço + arrastar: mover · Roda: zoom</span>
+  </div>
 
   <div id="main">
     <aside id="left" class="sidebar" aria-label="Asset library and page formats">
@@ -77,6 +91,7 @@
       </div>
     </aside>
 
+    <div id="resize-left" class="workspace-resizer" role="separator" tabindex="0" aria-label="Redimensionar biblioteca" aria-controls="left" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="520" aria-valuenow="272"></div>
     <section id="center">
       <nav id="top-breadcrumb" hidden aria-label="Board hierarchy">
         <button class="tb-back" id="tb-back" type="button" title="Go to parent board (Esc / Backspace)">← Back</button>
@@ -86,6 +101,17 @@
         <button class="tb-back" id="tb-rename" type="button" title="Rename this board">Rename</button>
       </nav>
 
+      <section id="workspace-guide" aria-labelledby="workspace-guide-title" hidden>
+        <div class="workspace-guide-eyebrow">COMECE POR AQUI · 3 PASSOS</div>
+        <h2 id="workspace-guide-title">Sua próxima ideia começa aqui.</h2>
+        <p>Adicione imagens, organize-as em boards e transforme composições em páginas de mangá.</p>
+        <div class="workspace-guide-actions">
+          <button type="button" class="btn primary" data-guide-action="import-images">＋ Importar imagens</button>
+          <button type="button" class="btn" data-guide-action="new-board">Criar board</button>
+          <button type="button" class="btn" data-guide-action="new-template">Usar modelo de mangá</button>
+        </div>
+        <button type="button" id="workspace-guide-dismiss" class="workspace-guide-dismiss">Não mostrar novamente</button>
+      </section>
       <div id="viewport" role="region" aria-label="Visual board canvas" aria-describedby="canvas-keyboard-help" tabindex="0">
         <div id="world"></div>
         <div id="marquee" hidden></div>
@@ -114,7 +140,7 @@
         <span id="zoom-label">100%</span>
       </div>
 
-      <div id="selection-toolbar" hidden>
+      <div id="selection-toolbar" role="toolbar" aria-label="Ações do item selecionado" hidden><span id="selection-context">Item selecionado</span>
         <button data-act="front" title="Bring to front">⤒</button>
         <button data-act="forward" title="Bring forward">↑</button>
         <button data-act="backward" title="Send backward">↓</button>
@@ -130,6 +156,7 @@
       <div id="debug-panel" hidden></div>
     </section>
 
+    <div id="resize-right" class="workspace-resizer" role="separator" tabindex="0" aria-label="Redimensionar painel direito" aria-controls="right" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="520" aria-valuenow="286"></div>
     <aside id="right" class="sidebar" aria-label="Navigator and packages">
       <div class="side-head">
         <h2>Navigator</h2>

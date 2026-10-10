@@ -21,7 +21,11 @@ definePlugin({
         badge.className = 'storage-badge';
         badge.type = 'button';
         badge.title = 'Storage status — click for options';
-        toolbar.insertBefore(badge, debugBtn);
+        // The debug command can be nested inside the compact More menu.
+        // insertBefore requires an immediate child of the toolbar.
+        const anchor = debugBtn && debugBtn.parentElement === toolbar
+            ? debugBtn : toolbar.querySelector('#workspace-help');
+        toolbar.insertBefore(badge, anchor);
         let app = null;
         let saving = false;
         function renderBadge(dotClass, labelText) {

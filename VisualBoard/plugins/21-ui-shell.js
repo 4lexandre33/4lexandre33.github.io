@@ -290,6 +290,226 @@ definePlugin({
         kernel.on('manga-edit:exit', function () {
             renderTopCrumb();
         });
+        const workspace = document.getElementById('app');
+        const workspaceMore = document.getElementById('workspace-more');
+        const leftGrip = document.getElementById('resize-left');
+        const rightGrip = document.getElementById('resize-right');
+        const workspaceLabel = document.getElementById('workspace-label');
+        const workspaceHint = document.getElementById('workspace-hint');
+        const guide = document.getElementById('workspace-guide');
+        const guideDismiss = document.getElementById('workspace-guide-dismiss');
+        const help = document.getElementById('workspace-help');
+        const modes = ['studio', 'focus', 'library', 'manga'];
+        const modeHints = {
+            studio: 'Arraste imagens para o canvas. Selecione um item para acessar ações contextuais.',
+            focus: 'Canvas em foco. Use os botões de painéis para abrir ferramentas sob demanda.',
+            library: 'Busque imagens, organize pacotes e arraste assets para seu board.',
+            manga: 'Crie páginas com modelos e edite painéis e camadas no inspetor à direita.'
+        };
+        const labels = {
+            studio: 'Estúdio', focus: 'Foco', library: 'Biblioteca', manga: 'Mangá'
+        };
+        const widths = {
+            studio: [272, 286], focus: [272, 286], library: [364, 274], manga: [230, 370]
+        };
+        const storageGet = (key) => {
+            try {
+                return localStorage.getItem(key);
+            }
+            catch {
+                return null;
+            }
+        };
+        const storageSet = (key, value) => {
+            try {
+                localStorage.setItem(key, value);
+            }
+            catch { /* private contexts can reject storage */ }
+        };
+        const modeValue = storageGet('nvb.ui.workspaceMode');
+        let currentMode = modes.includes(modeValue)
+            ? modeValue : 'studio';
+        let modeBeforeEdit = null;
+        function syncPanelControls() {
+            updateSidebarAria();
+            if (leftGrip)
+                leftGrip.hidden = left.classList.contains('collapsed');
+            if (rightGrip)
+                rightGrip.hidden = right.classList.contains('collapsed');
+        }
+        function setSidebarWidths() {
+            for (const side of ['left', 'right']) {
+                const fallback = widths[currentMode][side === 'left' ? 0 : 1];
+                const stored = Number(storageGet('nvb.ui.width.' + currentMode + '.' + side));
+                const size = Number.isFinite(stored) && stored >= 190 && stored <= 520 ? stored : fallback;
+                workspace.style.setProperty(side === 'left' ? '--vb-left' : '--vb-right', size + 'px');
+                const grip = side === 'left' ? leftGrip : rightGrip;
+                if (grip)
+                    grip.setAttribute('aria-valuenow', String(size));
+            }
+        }
+        function setWorkspaceMode(mode, persist = true) {
+            currentMode = mode;
+            workspace.dataset.workspaceMode = mode;
+            const mobile = window.matchMedia('(max-width:820px)').matches;
+            left.classList.toggle('collapsed', mobile ? mode !== 'library' : mode === 'focus');
+            right.classList.toggle('collapsed', mobile ? mode !== 'manga' : mode === 'focus' || mode === 'library');
+            setSidebarWidths();
+            document.querySelectorAll('[data-workspace-mode]').forEach(btn => {
+                const selected = btn.dataset.workspaceMode === mode;
+                btn.setAttribute('aria-pressed', String(selected));
+            });
+            if (workspaceLabel)
+                workspaceLabel.textContent = labels[mode];
+            if (workspaceHint)
+                workspaceHint.textContent = modeHints[mode];
+            syncPanelControls();
+            if (persist)
+                storageSet('nvb.ui.workspaceMode', mode);
+        }
+        document.querySelectorAll('[data-workspace-mode]').forEach(btn => {
+            kernel.listen(btn, 'click', () => {
+                const mode = btn.dataset.workspaceMode;
+                if (modes.includes(mode))
+                    setWorkspaceMode(mode);
+            });
+        });
+        function installResizer(grip, side) {
+            if (!grip)
+                return;
+            const property = side === 'left' ? '--vb-left' : '--vb-right';
+            const limit = (value) => {
+                const main = document.getElementById('main');
+                const other = side === 'left' ? right : left;
+                const otherWidth = other.classList.contains('collapsed') ? 0 : other.getBoundingClientRect().width;
+                return Math.max(190, Math.min(520, main.clientWidth - otherWidth - 340, value));
+            };
+            const apply = (size) => {
+                const safe = Math.round(limit(size));
+                workspace.style.setProperty(property, safe + 'px');
+                grip.setAttribute('aria-valuenow', String(safe));
+                storageSet('nvb.ui.width.' + currentMode + '.' + side, String(safe));
+            };
+            kernel.listen(grip, 'pointerdown', event => {
+                const e = event;
+                if (e.button !== 0)
+                    return;
+                e.preventDefault();
+                grip.setPointerCapture(e.pointerId);
+                grip.classList.add('is-dragging');
+            });
+            kernel.listen(grip, 'pointermove', event => {
+                const e = event;
+                if (!grip.hasPointerCapture(e.pointerId))
+                    return;
+                const rect = document.getElementById('main').getBoundingClientRect();
+                apply(side === 'left' ? e.clientX - rect.left : rect.right - e.clientX);
+            });
+            const finish = (event) => {
+                const e = event;
+                if (grip.hasPointerCapture(e.pointerId))
+                    grip.releasePointerCapture(e.pointerId);
+                grip.classList.remove('is-dragging');
+            };
+            kernel.listen(grip, 'pointerup', finish);
+            kernel.listen(grip, 'pointercancel', finish);
+            kernel.listen(grip, 'keydown', event => {
+                const e = event;
+                if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home')
+                    return;
+                e.preventDefault();
+                const current = Number(grip.getAttribute('aria-valuenow')) || widths[currentMode][side === 'left' ? 0 : 1];
+                if (e.key === 'Home')
+                    apply(widths[currentMode][side === 'left' ? 0 : 1]);
+                else
+                    apply(current + (e.key === 'ArrowRight' ? (side === 'left' ? 1 : -1) : (side === 'left' ? -1 : 1)) *
+                        (e.shiftKey ? 32 : 16));
+            });
+        }
+        installResizer(leftGrip, 'left');
+        installResizer(rightGrip, 'right');
+        const mobileBreakpoint = window.matchMedia('(max-width:820px)');
+        kernel.listen(mobileBreakpoint, 'change', () => setWorkspaceMode(currentMode, false));
+        /* Progressive disclosure: help appears for a genuinely empty new project. */
+        let guideDismissed = storageGet('nvb.ui.guide.dismissed') === '1';
+        let forceGuide = false;
+        function updateGuide() {
+            if (!guide)
+                return;
+            const empty = S.data.boards.length > 0 &&
+                S.data.assets.length === 0 &&
+                S.data.boards.every(board => board.instances.length === 0);
+            guide.hidden = !(forceGuide || (!guideDismissed && empty));
+        }
+        kernel.on('state:changed', updateGuide);
+        kernel.on('instances:changed', updateGuide);
+        kernel.on('assets:changed', updateGuide);
+        kernel.on('boards:changed', updateGuide);
+        kernel.listen(guideDismiss || document, 'click', () => {
+            guideDismissed = true;
+            forceGuide = false;
+            storageSet('nvb.ui.guide.dismissed', '1');
+            updateGuide();
+        });
+        if (help)
+            kernel.listen(help, 'click', () => {
+                forceGuide = true;
+                updateGuide();
+                guide?.querySelector('[data-guide-action]')?.focus();
+            });
+        guide?.querySelectorAll('[data-guide-action]').forEach(btn => {
+            kernel.listen(btn, 'click', () => {
+                const cmd = btn.dataset.guideAction;
+                if (!cmd)
+                    return;
+                forceGuide = false;
+                guide.hidden = true;
+                document.querySelector('#topbar [data-cmd="' + cmd + '"]')?.click();
+            });
+        });
+        if (workspaceMore) {
+            kernel.listen(document, 'pointerdown', event => {
+                if (workspaceMore.open && !workspaceMore.contains(event.target))
+                    workspaceMore.open = false;
+            });
+            kernel.listen(document, 'keydown', event => {
+                if (event.key === 'Escape' && workspaceMore.open) {
+                    workspaceMore.open = false;
+                    workspaceMore.querySelector('summary')?.focus();
+                }
+            });
+        }
+        document.querySelectorAll('#topbar [data-cmd]').forEach(btn => {
+            kernel.listen(btn, 'click', () => {
+                if (workspaceMore?.contains(btn))
+                    workspaceMore.open = false;
+                // Existing topbar command handler owns the action. This only updates shell UI.
+                syncPanelControls();
+            });
+        });
+        document.querySelectorAll('[data-cmd="collapse-left"],[data-cmd="collapse-right"]')
+            .forEach(btn => {
+            kernel.listen(btn, 'click', () => {
+                if (btn.dataset.cmd === 'collapse-left')
+                    left.classList.add('collapsed');
+                else
+                    right.classList.add('collapsed');
+                syncPanelControls();
+            });
+        });
+        kernel.on('manga-edit:enter', () => {
+            if (modeBeforeEdit === null)
+                modeBeforeEdit = currentMode;
+            setWorkspaceMode('manga', false);
+        });
+        kernel.on('manga-edit:exit', () => {
+            if (modeBeforeEdit !== null) {
+                setWorkspaceMode(modeBeforeEdit, false);
+                modeBeforeEdit = null;
+            }
+        });
+        setWorkspaceMode(currentMode, false);
+        updateGuide();
         updateSidebarAria();
         renderNav();
         renderTopCrumb();
