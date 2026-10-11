@@ -50,6 +50,8 @@ window.NVB_MANIFEST = {
         'plugins/27-ui-accessibility.js',
         'plugins/28-ui-image-operations.js',
         'plugins/30-debug.js',
+        'plugins/90-automation-contract.js',
+        'plugins/91-automation.js',
         'plugins/99-app.js'
     ]
 };

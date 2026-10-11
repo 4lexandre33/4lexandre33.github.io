@@ -49,11 +49,11 @@ definePlugin({
         }
         function draw() {
             ctx.clearRect(0, 0, W, H);
-            // Fundo (branco do canvas)
-            ctx.fillStyle = '#ffffff';
+            // Fundo (tema escuro do canvas)
+            ctx.fillStyle = '#1b1e22';
             ctx.fillRect(0, 0, W, H);
             // Borda do mundo
-            ctx.strokeStyle = '#d8dae0';
+            ctx.strokeStyle = '#3b4149';
             ctx.lineWidth = 1;
             ctx.strokeRect(0.5, 0.5, W - 1, H - 1);
             // Instâncias do board atual
@@ -64,11 +64,11 @@ definePlugin({
                 const rw = Math.max(2, br.x - tl.x);
                 const rh = Math.max(2, br.y - tl.y);
                 if (i.type === 'board') {
-                    ctx.fillStyle = '#4da3ff';
+                    ctx.fillStyle = '#d8f36a';
                 }
                 else {
                     const hasImg = assetsRef && i.type === 'image' && assetsRef.urls.has(i.assetId);
-                    ctx.fillStyle = hasImg ? '#7a8291' : '#c8ccd2';
+                    ctx.fillStyle = hasImg ? '#9298a1' : '#4a5058';
                 }
                 ctx.fillRect(tl.x, tl.y, rw, rh);
             }
@@ -79,9 +79,9 @@ definePlugin({
             const halfH = vh / 2 / cam.data.zoom;
             const vTL = w2m(cam.data.x - halfW, cam.data.y - halfH);
             const vBR = w2m(cam.data.x + halfW, cam.data.y + halfH);
-            ctx.fillStyle = 'rgba(77,163,255,0.10)';
+            ctx.fillStyle = 'rgba(216,243,106,0.10)';
             ctx.fillRect(vTL.x, vTL.y, vBR.x - vTL.x, vBR.y - vTL.y);
-            ctx.strokeStyle = '#4da3ff';
+            ctx.strokeStyle = '#d8f36a';
             ctx.lineWidth = 1.5;
             ctx.strokeRect(vTL.x, vTL.y, vBR.x - vTL.x, vBR.y - vTL.y);
         }

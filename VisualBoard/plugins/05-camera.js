@@ -7,12 +7,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'camera',
-    version: '1.2.0',
+    version: '1.3.0',
     needs: ['state'],
     provides: ['camera'],
     uses: [],
     accepts: { 'state': '^1.0.0' },
-    contractVersions: { 'camera': '1.0.0' },
+    contractVersions: { 'camera': '1.1.0' },
     setup: async function (kernel) {
         const stateApi = await kernel.require('state');
         const MIN_ZOOM = 0.05;
@@ -95,6 +95,14 @@ definePlugin({
             zoomAt(viewport.clientWidth / 2, viewport.clientHeight / 2, camera.zoom * f);
         }
         function setCentered(z) { zoomByFactor(z / camera.zoom); }
+        /** Centers the viewport on a world point without touching zoom (additive, v1.1). */
+        function panTo(x, y) {
+            if (!Number.isFinite(x) || !Number.isFinite(y))
+                throw Error('panTo expects finite world coordinates');
+            camera.x = x;
+            camera.y = y;
+            apply();
+        }
         function reset() { camera.x = 0; camera.y = 0; camera.zoom = 1; apply(); }
         function bounds(list) {
             if (!list.length)
@@ -144,7 +152,7 @@ definePlugin({
         }
         kernel.provide('camera', {
             data: camera,
-            apply, zoomAt, zoomByFactor, setCentered, reset,
+            apply, panTo, zoomAt, zoomByFactor, setCentered, reset,
             screenToWorld, worldToScreen, offset, clampCamera,
             fitAll, fitSelection, fitBounds, bounds,
             WORLD_MIN, WORLD_MAX, WORLD_SIZE, MIN_ZOOM, MAX_ZOOM

@@ -12,12 +12,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'ui.shell',
-    version: '1.7.0',
+    version: '1.8.0',
     needs: ['state', 'camera', 'boards', 'history', 'exportImport', 'ui.dialogs'],
     provides: ['ui.shell'],
     uses: ['assets', 'panelSets', 'mangaPage', 'panelTemplates', 'instances'],
     accepts: { 'state': '^1.0.0', 'camera': '^1.0.0', 'boards': '^1.0.0', 'history': '^1.0.0', 'exportImport': '^1.0.0', 'ui.dialogs': '^1.0.0', 'assets': '^1.0.0', 'panelSets': '^1.0.0', 'mangaPage': '^1.0.0', 'panelTemplates': '^1.0.0', 'instances': '^1.0.0' },
-    contractVersions: { 'ui.shell': '1.0.0' },
+    contractVersions: { 'ui.shell': '1.1.0' },
     setup: async function (kernel) {
         const S = await kernel.require('state');
         const cam = await kernel.require('camera');
@@ -271,7 +271,10 @@ definePlugin({
             renderNav: renderNav,
             renderTopCrumb: renderTopCrumb,
             renderProjectName: renderProjectName,
-            updateHistoryButtons: updateHistoryButtons
+            updateHistoryButtons: updateHistoryButtons,
+            getLayout: getLayout,
+            setPanel: setPanel,
+            setWorkspaceMode: setMode
         });
         kernel.on('board:navigated', function () { renderNav(); renderTopCrumb(); });
         kernel.on('boards:changed', function () { renderNav(); renderTopCrumb(); });
@@ -616,6 +619,25 @@ definePlugin({
         });
         setWorkspaceMode(currentMode, false);
         updateGuide();
+        /** Fase 5: programmatic view of the panel layout (same state the toolbar buttons change). */
+        const workspaceModes = modes;
+        function getLayout() {
+            return { workspaceMode: currentMode, leftOpen: !left.classList.contains('collapsed'),
+                rightOpen: !right.classList.contains('collapsed'), modes: workspaceModes.slice() };
+        }
+        function setPanel(side, open) {
+            if (side !== 'left' && side !== 'right')
+                throw Error('Unknown panel: ' + String(side));
+            (side === 'left' ? left : right).classList.toggle('collapsed', !open);
+            syncPanelControls();
+            return getLayout();
+        }
+        function setMode(mode) {
+            if (!workspaceModes.includes(mode))
+                throw Error('Unknown workspace mode: ' + String(mode));
+            setWorkspaceMode(mode);
+            return getLayout();
+        }
         updateSidebarAria();
         renderNav();
         renderTopCrumb();

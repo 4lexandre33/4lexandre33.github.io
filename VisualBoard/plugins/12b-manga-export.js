@@ -10,12 +10,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'manga-export',
-    version: '1.1.0',
+    version: '1.2.0',
     needs: ['utils', 'state', 'mangaPage', 'panelSets', 'assets', 'ui.dialogs', 'mangaExportPreflight'],
     provides: ['mangaExport'],
     uses: [],
     accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'mangaPage': '^1.0.0', 'panelSets': '^1.0.0', 'assets': '^1.0.0', 'ui.dialogs': '^1.0.0', 'mangaExportPreflight': '^1.0.0' },
-    contractVersions: { 'mangaExport': '2.0.0' },
+    contractVersions: { 'mangaExport': '2.1.0' },
     setup: async function (kernel) {
         const utils = await kernel.require('utils');
         const S = (await kernel.require('state')).data;
@@ -871,7 +871,44 @@ definePlugin({
                 }, [], []);
             return await exportChapterPdf(pages, { quality: 2 });
         }
+        /**
+         * Renders one page to an image Blob WITHOUT downloading (additive, v2.1). Runs the same preflight
+         * and renderer as exportPng; never opens a dialog. `format:'jpeg'` is meant for previews.
+         */
+        async function renderPageToBlob(inst, opts) {
+            const options = opts || {};
+            const format = options.format === 'jpeg' ? 'jpeg' : 'png';
+            const settings = options.dpi === undefined ?
+                { ...options, quality: options.quality == null ? 3 : options.quality } : { ...options };
+            delete settings.format;
+            let warnings = [];
+            try {
+                const inspection = await validateExport([inst], settings);
+                warnings = inspection.warnings;
+                if (!inspection.valid)
+                    return { success: false, errors: inspection.errors, warnings };
+                const result = await renderPageToCanvas(inst, settings);
+                let blob;
+                try {
+                    blob = format === 'jpeg'
+                        ? await canvasToBlob(result.canvas, 'image/jpeg', options.jpegQuality == null ? 0.8 : options.jpegQuality)
+                        : await canvasToBlob(result.canvas, 'image/png', 1);
+                }
+                finally {
+                    result.canvas.width = 0;
+                    result.canvas.height = 0;
+                }
+                if (format === 'png' && options.dpi !== undefined)
+                    blob = await embedPngDpi(blob, result.resolution.dpiEffective);
+                return { success: true, blob, mimeType: blob.type || ('image/' + format), width: result.width, height: result.height,
+                    dpiEffective: result.resolution.dpiEffective, warnings, errors: [] };
+            }
+            catch (err) {
+                return { success: false, errors: [asIssue('EXPORT_FAILED', err.message, inst && inst.id)], warnings };
+            }
+        }
         kernel.provide('mangaExport', {
+            renderPageToBlob: renderPageToBlob,
             validateExport: validateExport,
             renderPageToCanvas: renderPageToCanvas,
             exportPng: exportPng,

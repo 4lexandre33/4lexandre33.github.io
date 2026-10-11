@@ -16,7 +16,7 @@
  * ===================================================================== */
 definePlugin({
     id: 'manga-page',
-    version: '1.3.0',
+    version: '1.4.0',
     needs: ['utils', 'state', 'panelSets', 'history', 'panelMigration', 'svgGeometry'],
     provides: ['mangaPage'],
     uses: [],
@@ -2461,6 +2461,222 @@ definePlugin({
                 return true;
             });
         }
+        /* ======= Fase 5: add / remove panels and move objects between containers ======= */
+        const MAX_PANELS = 64;
+        function previewAddPanel(inst, points) {
+            const fail = (reason) => ({ valid: false, reason, points: [] });
+            const ps = PS.get(inst.panelSetId);
+            if (!ps || inst.locked)
+                return fail('Page missing or locked.');
+            if (!Array.isArray(points) || points.length < 3 || points.length > 256)
+                return fail('A panel needs 3 to 256 points.');
+            let poly = cleanPolygon(points.map(p => ({ x: Number(p?.x), y: Number(p?.y) })));
+            if (poly.length < 3)
+                return fail('Points are degenerate or not finite.');
+            if (poly.some(p => p.x < 0 || p.y < 0 || p.x > ps.width || p.y > ps.height))
+                return fail('Panel must stay inside the page bounds (0..' + ps.width + ', 0..' + ps.height + ').');
+            if (!simplePolygon(poly) || Math.abs(polygonArea(poly)) < 400)
+                return fail('Polygon is self-intersecting or too small (minimum area 400).');
+            const base = editableBase(ps);
+            if (base.length >= MAX_PANELS)
+                return fail('A page can have at most ' + MAX_PANELS + ' panels.');
+            const sign = Math.sign(polygonArea(base[0]?.points || poly));
+            if (sign !== 0 && Math.sign(polygonArea(poly)) !== sign)
+                poly = poly.slice().reverse();
+            let after;
+            try {
+                const previewBase = base.map(cloneGeometry);
+                previewBase.push({ id: '__new_panel__', points: poly });
+                after = changedGeometry(ps, previewBase, ps.vp1KnifeGutter || 0);
+            }
+            catch (error) {
+                return fail(error.message);
+            }
+            const candidate = after.find(p => p.id === '__new_panel__');
+            if (!simplePolygon(candidate.points))
+                return fail('Gutter leaves no room for this panel.');
+            for (const other of after) {
+                if (other.id !== '__new_panel__' && polygonsOverlap(candidate.points, other.points))
+                    return fail('Panel may not overlap another panel.');
+            }
+            return { valid: true, reason: null, points: poly };
+        }
+        async function addPanel(inst, points) {
+            const draft = previewAddPanel(inst, points);
+            if (!draft.valid)
+                throw Error(draft.reason || 'Invalid panel');
+            const result = await kernel.call('history', 'transaction', 'manga.panel.add', async () => {
+                const ps = ensureOwnedSet(inst);
+                const base = editableBase(ps).map(cloneGeometry);
+                const fresh = utils.uid('panel');
+                base.push({ id: fresh, points: draft.points.map(p => ({ ...p })) });
+                const output = changedGeometry(ps, base, ps.vp1KnifeGutter || 0);
+                ps.vp1KnifeBasePanels = base;
+                ps.panels = output;
+                ps.svgSource = svgOfPanels(ps, output);
+                ps.updatedAt = Date.now();
+                inst.panels.push({ id: fresh, layers: [] });
+                const validation = migration.validatePage(inst, ps, S.assets);
+                if (!validation.valid)
+                    throw Error(validation.errors.join('; '));
+                emitKnifeChange(inst);
+                return { panelSetId: ps.id, panelId: fresh };
+            });
+            await PS.syncAll();
+            return result;
+        }
+        async function removePanel(inst, panelId, options) {
+            if (!inst || inst.type !== 'manga-page' || inst.locked)
+                throw Error('Page missing or locked.');
+            const current = PS.get(inst.panelSetId);
+            if (!current)
+                throw Error('Missing page layout.');
+            const baseNow = editableBase(current);
+            if (!baseNow.some(p => p.id === panelId) || !inst.panels.some(p => p.id === panelId))
+                throw Error('Panel not found.');
+            if (baseNow.length <= 1)
+                throw Error('The last panel of a page cannot be removed.');
+            const mergeInto = options?.mergeInto;
+            if (mergeInto !== undefined && (mergeInto === panelId || !inst.panels.some(p => p.id === mergeInto)))
+                throw Error('mergeInto must be another existing panel.');
+            if (getLayerNodeState(inst, 'panel', panelId)?.locked)
+                throw Error('Panel locked.');
+            if (mergeInto && getLayerNodeState(inst, 'panel', mergeInto)?.locked)
+                throw Error('Destination panel locked.');
+            // Validate geometry before touching state (compound SVG panels cannot be re-guttered).
+            changedGeometry(current, baseNow.filter(p => p.id !== panelId).map(cloneGeometry), current.vp1KnifeGutter || 0);
+            const outcome = await kernel.call('history', 'transaction', 'manga.panel.remove', async () => {
+                const oldSetId = inst.panelSetId;
+                const ps = ensureOwnedSet(inst);
+                const base = editableBase(ps).filter(p => p.id !== panelId).map(cloneGeometry);
+                const output = changedGeometry(ps, base, ps.vp1KnifeGutter || 0);
+                ps.vp1KnifeBasePanels = base;
+                ps.panels = output;
+                ps.svgSource = svgOfPanels(ps, output);
+                ps.updatedAt = Date.now();
+                const removed = inst.panels.find(p => p.id === panelId);
+                inst.panels.splice(inst.panels.indexOf(removed), 1);
+                let archivedId = null;
+                if (mergeInto) {
+                    const target = inst.panels.find(p => p.id === mergeInto);
+                    for (const layer of removed.layers)
+                        target.layers.push(layer);
+                    target.layers.forEach((l, i) => { l.zIndex = i + 1; });
+                }
+                else if (removed.layers.length) {
+                    archivedId = utils.uid('unassigned');
+                    inst.unassignedPanels = [...(inst.unassignedPanels || []),
+                        { id: archivedId, layers: removed.layers, sourcePanelId: panelId, sourcePanelSetId: oldSetId }];
+                }
+                let removedEffects = 0;
+                const effects = inst.vp1MangaEffects || [];
+                if (effects.some(e => e.scope === 'panel' && e.panelId === panelId)) {
+                    if (mergeInto) {
+                        for (const e of effects)
+                            if (e.scope === 'panel' && e.panelId === panelId)
+                                e.panelId = mergeInto;
+                    }
+                    else {
+                        const kept = effects.filter(e => !(e.scope === 'panel' && e.panelId === panelId));
+                        removedEffects = effects.length - kept.length;
+                        inst.vp1MangaEffects = kept;
+                    }
+                }
+                if (inst.vp1LayerTreeMeta) {
+                    const meta = { ...inst.vp1LayerTreeMeta };
+                    delete meta[treeKey('panel', panelId)];
+                    inst.vp1LayerTreeMeta = meta;
+                }
+                if (knifeMode?.panelId === panelId)
+                    knifeMode = null;
+                if (vertexMode?.panelId === panelId)
+                    vertexMode = null;
+                if (cropMode?.panelId === panelId)
+                    cropMode = null;
+                if (mangaToolMode?.panelId === panelId)
+                    mangaToolMode = null;
+                if (focus.instanceId === inst.id && focus.panelId === panelId)
+                    focus.panelId = inst.panels[0]?.id ?? null;
+                const validation = migration.validatePage(inst, ps, S.assets);
+                if (!validation.valid)
+                    throw Error(validation.errors.join('; '));
+                emitKnifeChange(inst);
+                return { panelSetId: ps.id, removedPanelId: panelId, archivedId, mergedInto: mergeInto ?? null,
+                    movedLayers: removed.layers.length, removedEffects };
+            });
+            await PS.syncAll();
+            return outcome;
+        }
+        /** Moves an image layer or a drawing between panels and the page overlay. Balloons and texts live only on the page overlay. */
+        async function moveLayerNode(page, kind, id, targetPanelId, options) {
+            if (!page || page.type !== 'manga-page' || page.locked)
+                throw Error('Page missing or locked');
+            if (kind !== 'image' && kind !== 'drawing')
+                throw Error('Only images and drawings can be moved between panels; balloons and texts always belong to the page overlay.');
+            const fit = options?.fit ?? 'keep';
+            if (!['keep', 'cover', 'contain'].includes(fit))
+                throw Error('Invalid fit mode');
+            const ps = PS.get(page.panelSetId);
+            if (!ps)
+                throw Error('Panel set missing');
+            if (targetPanelId !== '__overlay__' && !ps.panels.some(p => p.id === targetPanelId) ||
+                targetPanelId !== '__overlay__' && !page.panels.some(p => p.id === targetPanelId))
+                throw Error('Destination panel not found');
+            const found = findTreeNode(page, kind, id);
+            if (!found)
+                throw Error('Object not found');
+            if (found.panelId === targetPanelId)
+                return false;
+            if (getLayerNodeState(page, kind, id)?.locked)
+                throw Error('Object locked');
+            if (getLayerNodeState(page, 'panel', targetPanelId)?.locked)
+                throw Error('Destination locked');
+            if (kind === 'drawing') {
+                const effect = found.object;
+                const draft = { ...JSON.parse(JSON.stringify(effect)),
+                    scope: targetPanelId === '__overlay__' ? 'page' : 'panel',
+                    panelId: targetPanelId === '__overlay__' ? null : targetPanelId };
+                delete draft.id;
+                validateEffect(draft, page);
+                return kernel.call('history', 'transaction', 'manga.layer.move', async () => {
+                    effect.scope = draft.scope;
+                    effect.panelId = draft.panelId;
+                    kernel.emit('manga-page:changed', { instanceId: page.id });
+                    kernel.emit('state:changed');
+                    return true;
+                });
+            }
+            const layer = found.object;
+            let fitted = null;
+            if (fit !== 'keep') {
+                const original = getLayerFraming(page, found.panelId, id);
+                if (!original)
+                    throw Error('Layer not found');
+                fitted = mergedFraming(original, autoFitPatch(page, targetPanelId, layer, fit));
+            }
+            return kernel.call('history', 'transaction', 'manga.layer.move', async () => {
+                const from = targetArray(page, found.panelId);
+                if (!from)
+                    throw Error('Source container missing');
+                let to = targetArray(page, targetPanelId);
+                if (!to && targetPanelId === '__overlay__') {
+                    page.overlays = [];
+                    to = page.overlays;
+                }
+                if (!to)
+                    throw Error('Destination container missing');
+                from.splice(from.findIndex(l => l.id === id), 1);
+                from.forEach((l, i) => { l.zIndex = i + 1; });
+                to.push(layer);
+                to.forEach((l, i) => { l.zIndex = i + 1; });
+                if (fitted)
+                    Object.assign(layer, { x: fitted.x, y: fitted.y, width: fitted.width, height: fitted.height,
+                        rotation: fitted.rotation, opacity: fitted.opacity, vp1Crop: { ...fitted.crop }, vp1ViewLimits: { ...fitted.viewLimits } });
+                kernel.emit('manga-page:changed', { instanceId: page.id });
+                kernel.emit('state:changed');
+                return true;
+            });
+        }
         kernel.provide('mangaPage', {
             addToBoard: addToBoard,
             duplicate: duplicate,
@@ -2487,6 +2703,7 @@ definePlugin({
             hitTestPanel: hitTestPanel,
             tryDrop: tryDrop,
             getKnifeMode, setKnifeMode, previewKnife, splitPanel, setPanelGutter,
+            previewAddPanel, addPanel, removePanel, moveLayerNode,
             getVertexMode, setVertexMode, previewVertex, moveVertex, getPanelStyle, updatePanelStyle,
             getLayerFraming, updateLayerFraming, autoFitLayer, zoomLayer, replaceLayerAsset, resetLayerFraming,
             getCropMode, setCropMode,

@@ -35,6 +35,9 @@ definePlugin({
             text.className = 'storage-label';
             text.textContent = labelText;
             badge.replaceChildren(dot, text);
+            // Em telas estreitas só o indicador aparece: o estado continua disponível a leitores de tela e ao passar o mouse.
+            badge.title = labelText + ' — Storage status, click for options';
+            badge.setAttribute('aria-label', 'Storage status: ' + labelText);
         }
         function render() {
             if (!app) {

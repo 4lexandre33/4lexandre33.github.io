@@ -5,7 +5,7 @@
  * ===================================================================== */
 definePlugin({
     id: 'export-import',
-    version: '2.0.0',
+    version: '2.1.0',
     needs: ['utils', 'backend', 'state', 'assets', 'boards', 'projectFormat', 'documentSnapshot'],
     provides: ['exportImport'],
     uses: ['camera', 'ui.dialogs', 'history', 'app'],
@@ -13,7 +13,7 @@ definePlugin({
         'assets': '^1.0.0', 'boards': '^1.0.0', 'projectFormat': '^1.0.0',
         'documentSnapshot': '^1.0.0', 'camera': '^1.0.0', 'ui.dialogs': '^1.0.0',
         'history': '^1.0.0', 'app': '^1.0.0' },
-    contractVersions: { exportImport: '1.0.0' },
+    contractVersions: { exportImport: '1.1.0' },
     setup: async function (kernel) {
         const utils = await kernel.require('utils');
         const backend = await kernel.require('backend');
@@ -192,6 +192,39 @@ definePlugin({
             return { success: true, version: prepared.version, assets: doc.assets.length,
                 boards: doc.boards.length, panelSets: doc.panelSets.length };
         }
-        kernel.provide('exportImport', { exportProject, importProjectFile });
+        /**
+         * Starts an empty project through the SAME staged path as an import: the current project is backed up
+         * (downloaded) and only replaced after the empty one is persisted (additive, v1.1).
+         */
+        async function newProject(name) {
+            const title = (typeof name === 'string' && name.trim() ? name.trim() : 'Untitled Project').slice(0, 120);
+            const rootId = utils.uid('board'), now = Date.now();
+            const doc = {
+                meta: { id: utils.uid('proj'), name: title, createdAt: now, updatedAt: now, version: 2 },
+                packages: [], assets: [], panelSets: [], settings: {}, rootBoardId: rootId,
+                boards: [{ id: rootId, name: 'Root Board', parentBoardId: null, instances: [],
+                        camera: { x: 0, y: 0, zoom: 1 }, createdAt: now, updatedAt: now }]
+            };
+            const envelope = codec.envelope(doc, []);
+            const result = await importProjectFile(new Blob([JSON.stringify(envelope)], { type: 'application/json' }));
+            if (result.success)
+                A.ensureDefaultPackage();
+            return result;
+        }
+        /** Renames the project (undoable). Returns false when nothing changed. */
+        async function updateProjectMeta(patch) {
+            if (!patch || typeof patch !== 'object')
+                return false;
+            const name = typeof patch.name === 'string' ? patch.name.trim().slice(0, 120) : '';
+            if (!name || name === S.meta.name)
+                return false;
+            const before = await kernel.call('history', 'snapshot');
+            S.meta.name = name;
+            S.meta.updatedAt = Date.now();
+            await kernel.call('history', 'push', before);
+            kernel.emit('state:changed');
+            return true;
+        }
+        kernel.provide('exportImport', { exportProject, importProjectFile, newProject, updateProjectMeta });
     }
 });

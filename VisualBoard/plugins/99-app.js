@@ -7,12 +7,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'app',
-    version: '3.5.0',
+    version: '3.6.0',
     needs: ['utils', 'backend', 'state', 'documentSnapshot', 'projectFormat'],
     provides: ['app'],
     uses: ['storage', 'storage-fs', 'storage-fs-dir', 'storage-ls', 'assets', 'camera', 'ui.dialogs', 'exportImport', 'history'],
     accepts: { 'utils': '^1.0.0', 'backend': '^1.0.0', 'state': '^1.0.0', 'documentSnapshot': '^1.0.0', 'projectFormat': '^1.0.0', 'exportImport': '^1.0.0', 'history': '^1.0.0', 'storage': '^1.0.0', 'storage-fs': '^1.0.0', 'storage-fs-dir': '^1.0.0', 'storage-ls': '^1.0.0', 'assets': '^1.0.0', 'camera': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'app': '1.0.0' },
+    contractVersions: { 'app': '1.1.0' },
     setup: async function (kernel) {
         console.log('=============================================');
         console.log('[nvb] APP BOOT — diagnostics');
@@ -220,7 +220,7 @@ definePlugin({
                 clearTimeout(recoveryTimer);
             recoveryTimer = setTimeout(recoveryWrite, 100);
         }
-        async function restoreCrashCheckpoint() {
+        async function restoreCrashCheckpoint(promptUser = true) {
             const item = recoveryRead();
             if (!item || !H)
                 return false;
@@ -242,7 +242,7 @@ definePlugin({
                         ' missing image(s); saved project preserved.', kind: 'error' });
                 return false;
             }
-            const restore = await D.confirm({
+            const restore = !promptUser || await D.confirm({
                 title: 'Recover unsaved VisualBoard work?',
                 message: 'A local checkpoint from ' + new Date(item.createdAt).toLocaleString() +
                     ' differs from the saved project. Recover it now? The saved project ' +
@@ -275,6 +275,28 @@ definePlugin({
                 }
                 return false;
             }
+        }
+        /** Fase 5: read-only description of the crash checkpoint (no side effect other than dropping a corrupt one). */
+        function recoveryInfo() {
+            const item = recoveryRead();
+            if (!item)
+                return { available: false, createdAt: null, projectId: null, matchesProject: false, differsFromSaved: false, missingAssets: 0, bytes: 0 };
+            let missing = 0;
+            try {
+                const parsed = JSON.parse(item.document);
+                missing = parsed.assets.filter(asset => !A.blobs.has(asset.id)).length;
+            }
+            catch {
+                missing = -1;
+            }
+            return { available: true, createdAt: item.createdAt, projectId: item.projectId,
+                matchesProject: item.projectId === (S.data.meta?.id || ''),
+                differsFromSaved: item.fingerprint !== docApi.capture().fingerprint,
+                missingAssets: missing, bytes: item.document.length };
+        }
+        /** Fase 5: restores the checkpoint. `confirm:false` skips the editor dialog when the caller already asked the user. */
+        function restoreRecovery(options) {
+            return restoreCrashCheckpoint(options?.confirm !== false);
         }
         let saving = null;
         async function saveNow() {
@@ -839,7 +861,7 @@ definePlugin({
             }
         });
         kernel.provide('app', {
-            saveNow: saveNow, backupNow: backupNow, scheduleSave: scheduleSave, boot: boot, switchBackend: switchBackend,
+            saveNow: saveNow, backupNow: backupNow, recoveryInfo, restoreRecovery, scheduleSave: scheduleSave, boot: boot, switchBackend: switchBackend,
             isDirty: () => H?.isDirty() || false,
             get mode() { return mode; },
             get folderName() { return fsDir && fsDir.getFolderName ? fsDir.getFolderName() : null; },

@@ -16,14 +16,14 @@
         "state": "getCurrentBoard getBoard getAsset getInstance getPackage currentInstances nextZIndex uniqueAssetName uniquePackageName uniqueBoardName sortedPackages",
         "documentSnapshot": "serialize capture restore equal",
         "history": "snapshot push transaction undo redo clear canUndo canRedo isRestoring",
-        "camera": "apply zoomAt zoomByFactor setCentered reset screenToWorld worldToScreen offset clampCamera fitAll fitSelection fitBounds bounds",
+        "camera": "apply panTo zoomAt zoomByFactor setCentered reset screenToWorld worldToScreen offset clampCamera fitAll fitSelection fitBounds bounds",
         "assets": "getUrl hasUrl importFiles createFromFile deleteAsset ensureDefaultPackage restoreFromStorage restoreHistoryBlobs",
         "svgGeometry": "parseSvg parsePathToPoints flattenPath transform elementMatrix contains serializeVector",
         "panelSets": "parseSvg parsePathToPoints getOriginalSvg downloadSvg thumbSvg create get list rename remove promptImport promptPick syncAll",
         "panelTemplates": "list createFromTemplate promptPick pickAndCreate",
         "packages": "create rename remove move assetsOf",
-        "boards": "create getBoard current navigate navigateUp rename remove pathOf depthOf",
-        "instances": "addImage addBoard removeSelection duplicateSelection reorder rotateSelection restoreAspect nudge copySelection pasteClipboard",
+        "boards": "create getBoard current navigate navigateUp rename remove pathOf depthOf list duplicate move update",
+        "instances": "addImage addBoard removeSelection duplicateSelection reorder rotateSelection restoreAspect nudge copySelection pasteClipboard selectByIds clearSelection updateById removeById duplicateById reorderById align distribute",
         "panelMigration": "plan migrate recover validatePage",
         "mangaPage": "addToBoard duplicate changePanelSet planPanelSetChange recoverUnassignedPanel getUnassignedPanels validatePage promptChangePanelSet getPanelSet getPanel addLayer insertLayerAt addOverlayLayer removeLayer updateLayer reorderLayer reorderLayerTo getFocus setFocus clearFocus getActivePanelId hitTestMangaPage hitTestPanel tryDrop",
         "mangaEdit": "isActive isEditingPanel getMode getSelectedLayerId enter exit setSelectedLayer hitTestLayer getPanelBounds instanceById",
@@ -31,14 +31,14 @@
         "minimap": "draw",
         "rendererManga": "createEl updateEl",
         "interaction": "",
-        "exportImport": "exportProject importProjectFile",
+        "exportImport": "exportProject importProjectFile newProject updateProjectMeta",
         "mangaExportPreflight": "validate",
-        "mangaExport": "validateExport renderPageToCanvas exportPng exportChapterPdf exportSelectionAsPdf exportWholeBoardAsPdf collectMangaPagesOnCurrentBoard",
+        "mangaExport": "validateExport renderPageToBlob renderPageToCanvas exportPng exportChapterPdf exportSelectionAsPdf exportWholeBoardAsPdf collectMangaPagesOnCurrentBoard",
         "imageProcessors": "register list resolve plan",
         "imageCanvasProcessor": "",
         "imageCommands": "plan execute apply process",
         "ui.dialogs": "toast confirm prompt openPreview closePreview",
-        "ui.shell": "renderNav renderTopCrumb renderProjectName updateHistoryButtons",
+        "ui.shell": "renderNav renderTopCrumb renderProjectName updateHistoryButtons getLayout setPanel setWorkspaceMode",
         "ui.library": "renderFilter renderGrid",
         "ui.pageFormats": "render",
         "ui.packages": "render",
@@ -49,7 +49,9 @@
         "ui.accessibility": "announce sync",
         "ui.imageOperations": "open close",
         "debug": "render",
-        "app": "saveNow backupNow scheduleSave boot switchBackend isPersistent"
+        "automationContract": "describe listTools getTool",
+        "automation": "getStatus isEnabled enable disable setGrants setConfirmHandler validate execute readResource getAuditLog pollEvents subscribe cancel isLocked bridgeState bridgeConnect bridgeAuthorize bridgeRefuse bridgeRevoke bridgeDisconnect openPanel closePanel",
+        "app": "saveNow backupNow scheduleSave boot switchBackend isPersistent recoveryInfo restoreRecovery"
     };
     const properties = {
         "state": {
@@ -615,6 +617,39 @@
         'app.backupNow': { params: [], returns: 'promise<object>' },
         'exportImport.exportProject': { params: ['options?:object'], returns: 'promise<object>' },
         'exportImport.importProjectFile': { params: ['file:object'], returns: 'promise<object>' },
+        'exportImport.newProject': { params: ['name?:string'], returns: 'promise<object>' },
+        'exportImport.updateProjectMeta': { params: ['patch:object'], returns: 'promise<boolean>' },
+        'automation.pollEvents': { params: ['options?:object'], returns: 'object' },
+        'automation.subscribe': { params: ['listener:function'], returns: 'function' },
+        'automation.cancel': { params: ['requestId:string'], returns: 'object' },
+        'automation.isLocked': { params: [], returns: 'boolean' },
+        'app.recoveryInfo': { params: [], returns: 'object' },
+        'app.restoreRecovery': { params: ['options?:object'], returns: 'promise<boolean>' },
+        'ui.shell.getLayout': { params: [], returns: 'object' },
+        'ui.shell.setPanel': { params: ['side:string', 'open:boolean'], returns: 'object' },
+        'ui.shell.setWorkspaceMode': { params: ['mode:string'], returns: 'object' },
+        'automation.bridgeState': { params: [], returns: 'object' },
+        'automation.bridgeConnect': { params: ['options:object'], returns: 'void' },
+        'automation.bridgeAuthorize': { params: ['scopes:array'], returns: 'void' },
+        'automation.bridgeRefuse': { params: [], returns: 'void' },
+        'automation.bridgeRevoke': { params: [], returns: 'void' },
+        'automation.bridgeDisconnect': { params: [], returns: 'void' },
+        'automation.openPanel': { params: [], returns: 'void' },
+        'automation.closePanel': { params: [], returns: 'void' },
+        'camera.panTo': { params: ['x:number', 'y:number'], returns: 'void' },
+        'boards.list': { params: [], returns: 'array' },
+        'boards.duplicate': { params: ['boardId:string'], returns: 'promise<string|null>' },
+        'boards.move': { params: ['boardId:string', 'delta:number'], returns: 'promise<boolean>' },
+        'boards.update': { params: ['boardId:string', 'patch:object'], returns: 'promise<boolean>' },
+        'instances.selectByIds': { params: ['ids:array'], returns: 'array' },
+        'instances.clearSelection': { params: [], returns: 'void' },
+        'instances.updateById': { params: ['id:string', 'patch:object'], returns: 'promise<boolean>' },
+        'instances.removeById': { params: ['id:string'], returns: 'promise<boolean>' },
+        'instances.duplicateById': { params: ['id:string'], returns: 'promise<string|null>' },
+        'instances.reorderById': { params: ['id:string', 'mode:string'], returns: 'promise<boolean>' },
+        'instances.align': { params: ['ids:array', 'mode:string'], returns: 'promise<number>' },
+        'instances.distribute': { params: ['ids:array', 'axis:string'], returns: 'promise<number>' },
+        'mangaExport.renderPageToBlob': { params: ['page:object', 'options?:object'], returns: 'promise<object>' },
         'app.saveNow': { params: [], returns: 'promise<any>' }
     });
     Object.assign(detail, {
@@ -649,7 +684,11 @@
                 errors: ['CapabilityError', 'OperationError']
             };
         }
-        const version = name === 'mangaExport' ? '2.0.0' : '1.0.0';
+        // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
+        const MINOR_BUMPS = {
+            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.3.0', app: '1.1.0', 'ui.shell': '1.1.0'
+        };
+        const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {
             version: version,
             methods: methods,

@@ -1,12 +1,12 @@
 "use strict";
 definePlugin({
     id: 'instances',
-    version: '1.1.0',
+    version: '1.2.0',
     needs: ['utils', 'state', 'boards', 'camera'],
     provides: ['instances'],
     uses: ['history', 'ui.dialogs'],
     accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'boards': '^1.0.0', 'camera': '^1.0.0', 'history': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'instances': '1.0.0' },
+    contractVersions: { 'instances': '1.1.0' },
     setup: async function (kernel) {
         const utils = await kernel.require('utils');
         const stateApi = await kernel.require('state');
@@ -291,10 +291,202 @@ definePlugin({
             kernel.emit('instances:changed');
             kernel.emit('state:changed');
         }
+        // ---- Additive v1.1: operations addressed by instance id (no dependency on the UI selection).
+        function findOnCurrent(id) {
+            const b = stateApi.getCurrentBoard();
+            return b ? (b.instances.find(i => i.id === id) || null) : null;
+        }
+        /** Replaces the selection with the given ids (unknown ids are ignored). Returns the ids actually selected. */
+        function selectByIds(ids) {
+            const b = stateApi.getCurrentBoard();
+            const present = new Set((b ? b.instances : []).map(i => i.id));
+            const next = Array.from(new Set(ids)).filter(id => present.has(id));
+            S.selection.clear();
+            next.forEach(id => S.selection.add(id));
+            kernel.emit('selection:changed');
+            return next;
+        }
+        function clearSelection() {
+            S.selection.clear();
+            kernel.emit('selection:changed');
+        }
+        /** Moves/resizes/rotates one instance. Locked instances are rejected. Undoable. */
+        async function updateById(id, patch) {
+            const inst = findOnCurrent(id);
+            if (!inst || !patch || typeof patch !== 'object')
+                return false;
+            const geometry = ['x', 'y', 'width', 'height', 'rotation'];
+            const touchesGeometry = geometry.some(k => patch[k] !== undefined);
+            if (inst.locked && touchesGeometry && patch.locked !== false)
+                throw Error('Instance is locked');
+            for (const k of geometry) {
+                const v = patch[k];
+                if (v !== undefined && !Number.isFinite(v))
+                    throw Error(k + ' must be a finite number');
+            }
+            if (patch.width !== undefined && patch.width < 8)
+                throw Error('width must be at least 8');
+            if (patch.height !== undefined && patch.height < 8)
+                throw Error('height must be at least 8');
+            const before = await kernel.call('history', 'snapshot');
+            let changed = false;
+            const set = (k, v) => { if (v !== undefined && inst[k] !== v) {
+                inst[k] = v;
+                changed = true;
+            } };
+            set('x', patch.x);
+            set('y', patch.y);
+            set('width', patch.width);
+            set('height', patch.height);
+            if (patch.rotation !== undefined) {
+                const r = ((patch.rotation % 360) + 360) % 360;
+                if ((inst.rotation || 0) !== r) {
+                    inst.rotation = r;
+                    changed = true;
+                }
+            }
+            if (typeof patch.visible === 'boolean' && inst.visible !== patch.visible) {
+                inst.visible = patch.visible;
+                changed = true;
+            }
+            if (typeof patch.locked === 'boolean' && inst.locked !== patch.locked) {
+                inst.locked = patch.locked;
+                changed = true;
+            }
+            if (!changed)
+                return false;
+            await kernel.call('history', 'push', before);
+            kernel.emit('instances:changed');
+            kernel.emit('state:changed');
+            return true;
+        }
+        /** Removes one instance. A board link is removed without deleting its target board. Undoable. */
+        async function removeById(id) {
+            const b = stateApi.getCurrentBoard();
+            const inst = findOnCurrent(id);
+            if (!b || !inst)
+                return false;
+            if (inst.locked)
+                throw Error('Instance is locked');
+            const before = await kernel.call('history', 'snapshot');
+            b.instances = b.instances.filter(i => i.id !== id);
+            S.selection.delete(id);
+            await kernel.call('history', 'push', before);
+            kernel.emit('instances:changed');
+            kernel.emit('state:changed');
+            kernel.emit('selection:changed');
+            return true;
+        }
+        /** Duplicates one instance (offset by 24) and returns the copy's id. Undoable. */
+        async function duplicateById(id) {
+            const b = stateApi.getCurrentBoard();
+            const src = findOnCurrent(id);
+            if (!b || !src)
+                return null;
+            const before = await kernel.call('history', 'snapshot');
+            const copy = Object.assign(JSON.parse(JSON.stringify(src)), {
+                id: utils.uid('inst'), x: src.x + 24, y: src.y + 24, zIndex: nextZ()
+            });
+            b.instances.push(copy);
+            S.selection.clear();
+            S.selection.add(copy.id);
+            await kernel.call('history', 'push', before);
+            kernel.emit('instances:changed');
+            kernel.emit('state:changed');
+            kernel.emit('selection:changed');
+            return copy.id;
+        }
+        /** Reorders one instance in z-order. Reuses the selection-based algorithm so both paths stay identical. */
+        async function reorderById(id, mode) {
+            if (!findOnCurrent(id))
+                return false;
+            const keep = Array.from(S.selection);
+            S.selection.clear();
+            S.selection.add(id);
+            try {
+                await reorder(mode);
+            }
+            finally {
+                S.selection.clear();
+                keep.forEach(k => S.selection.add(k));
+            }
+            return true;
+        }
+        /** Aligns the given instances to their common bounds. Locked instances are skipped. Undoable. */
+        async function align(ids, mode) {
+            const list = ids.map(findOnCurrent).filter((i) => !!i);
+            if (list.length < 2)
+                return 0;
+            const bb = camera.bounds(list);
+            if (!bb)
+                return 0;
+            const before = await kernel.call('history', 'snapshot');
+            let moved = 0;
+            for (const i of list) {
+                if (i.locked)
+                    continue;
+                const ox = i.x, oy = i.y;
+                if (mode === 'left')
+                    i.x = bb.minX;
+                else if (mode === 'right')
+                    i.x = bb.maxX - i.width;
+                else if (mode === 'center')
+                    i.x = Math.round((bb.minX + bb.maxX) / 2 - i.width / 2);
+                else if (mode === 'top')
+                    i.y = bb.minY;
+                else if (mode === 'bottom')
+                    i.y = bb.maxY - i.height;
+                else if (mode === 'middle')
+                    i.y = Math.round((bb.minY + bb.maxY) / 2 - i.height / 2);
+                else
+                    throw Error('Unknown alignment: ' + String(mode));
+                if (i.x !== ox || i.y !== oy)
+                    moved++;
+            }
+            if (!moved)
+                return 0;
+            await kernel.call('history', 'push', before);
+            kernel.emit('instances:changed');
+            kernel.emit('state:changed');
+            return moved;
+        }
+        /** Distributes 3+ instances with equal gaps along an axis. Locked instances are skipped. Undoable. */
+        async function distribute(ids, axis) {
+            const list = ids.map(findOnCurrent).filter((i) => !!i);
+            if (list.length < 3)
+                return 0;
+            const h = axis === 'horizontal';
+            const sorted = list.slice().sort((a, b) => h ? a.x - b.x : a.y - b.y);
+            const first = sorted[0], last = sorted[sorted.length - 1];
+            const total = h ? (last.x + last.width) - first.x : (last.y + last.height) - first.y;
+            const sizes = sorted.reduce((n, i) => n + (h ? i.width : i.height), 0);
+            const gap = (total - sizes) / (sorted.length - 1);
+            const before = await kernel.call('history', 'snapshot');
+            let cursor = h ? first.x : first.y, moved = 0;
+            for (const i of sorted) {
+                const target = Math.round(cursor);
+                if (!i.locked && (h ? i.x : i.y) !== target) {
+                    if (h)
+                        i.x = target;
+                    else
+                        i.y = target;
+                    moved++;
+                }
+                cursor += (h ? i.width : i.height) + gap;
+            }
+            if (!moved)
+                return 0;
+            await kernel.call('history', 'push', before);
+            kernel.emit('instances:changed');
+            kernel.emit('state:changed');
+            return moved;
+        }
         kernel.provide('instances', {
             addImage, addBoard, removeSelection, duplicateSelection,
             reorder, rotateSelection, restoreAspect, nudge,
-            copySelection, pasteClipboard
+            copySelection, pasteClipboard,
+            selectByIds, clearSelection, updateById, removeById, duplicateById,
+            reorderById, align, distribute
         });
     }
 });

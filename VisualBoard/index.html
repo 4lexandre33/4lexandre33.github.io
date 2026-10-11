@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Fase 0: política de segurança de conteúdo. Ver docs/architecture/csp.md.
+       Rede só em loopback para a bridge MCP opcional (connect-src ws://127.0.0.1:*), sem script inline, sem plugins ou frames.
+       'file:' é necessário porque 'self' não é confiável sob file:// em todos os navegadores. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: blob: data:; connect-src ws://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'; font-src 'none'; manifest-src 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Narrative Visual Board</title>
   <link rel="stylesheet" href="styles/main.css">
