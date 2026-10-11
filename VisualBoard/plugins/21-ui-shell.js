@@ -72,9 +72,11 @@ definePlugin({
             await T.pickAndCreate();
         }
         /* ---------------- Topbar commands ---------------- */
+        /* Comandos vivem na barra superior, no trilho de ferramentas, na faixa de modo e na tira de páginas. */
+        const CMD_SELECTOR = '#topbar [data-cmd], #rail [data-cmd], #workspace-strip [data-cmd], #page-strip [data-cmd]';
         const sideButtons = {
-            left: document.querySelector('[data-cmd="toggle-left"]'),
-            right: document.querySelector('[data-cmd="toggle-right"]')
+            left: document.querySelector('#rail [data-cmd="toggle-left"]'),
+            right: document.querySelector('#workspace-strip [data-cmd="toggle-right"]')
         };
         function updateSidebarAria() {
             for (const key of ['left', 'right']) {
@@ -85,7 +87,7 @@ definePlugin({
                 }
             }
         }
-        document.querySelectorAll('#topbar [data-cmd]').forEach(function (btn) {
+        document.querySelectorAll(CMD_SELECTOR).forEach(function (btn) {
             btn.addEventListener('click', async function () {
                 const cmd = btn.dataset.cmd;
                 if (cmd === 'toggle-left')
@@ -98,6 +100,8 @@ definePlugin({
                     right.classList.add('collapsed');
                 if (['toggle-left', 'toggle-right', 'collapse-left', 'collapse-right'].includes(cmd || ''))
                     updateSidebarAria();
+                else if (cmd === 'toggle-pages')
+                    setPagesOpen(!pagesOpen);
                 else if (cmd === 'import-images')
                     doImportImages();
                 else if (cmd === 'new-manga-page')
@@ -339,6 +343,8 @@ definePlugin({
                 leftGrip.hidden = left.classList.contains('collapsed');
             if (rightGrip)
                 rightGrip.hidden = right.classList.contains('collapsed');
+            /* Painéis recém-abertos têm altura medível: recalcula os limites dos divisores verticais. */
+            restoreSectionHeights();
         }
         function setSidebarWidths() {
             for (const side of ['left', 'right']) {
@@ -355,7 +361,8 @@ definePlugin({
             currentMode = mode;
             workspace.dataset.workspaceMode = mode;
             const mobile = window.matchMedia('(max-width:820px)').matches;
-            left.classList.toggle('collapsed', mobile ? mode !== 'library' : mode === 'focus');
+            /* Layout Quadrid: a biblioteca abre pelo trilho ou no modo Biblioteca; o inspetor fica à direita. */
+            left.classList.toggle('collapsed', mode !== 'library');
             right.classList.toggle('collapsed', mobile ? mode !== 'manga' : mode === 'focus' || mode === 'library');
             setSidebarWidths();
             restoreSectionHeights();
@@ -537,6 +544,85 @@ definePlugin({
             });
         }
         sections.forEach(installSectionResizer);
+        /* ---------------- Tira de páginas (layout Quadrid) ---------------- */
+        const pageStrip = document.getElementById('page-strip');
+        const pageList = document.getElementById('page-list');
+        const pageCount = document.getElementById('page-count');
+        const pagesToggle = document.querySelector('#workspace-strip [data-cmd="toggle-pages"]');
+        let pagesOpen = storageGet('nvb.ui.pages') !== '0';
+        function setPagesOpen(open) {
+            pagesOpen = open;
+            workspace.classList.toggle('pages-collapsed', !open);
+            pagesToggle?.setAttribute('aria-expanded', String(open));
+            storageSet('nvb.ui.pages', open ? '1' : '0');
+        }
+        let pageRenderQueued = false;
+        function renderPageStrip() {
+            if (!pageStrip || !pageList || pageRenderQueued)
+                return;
+            pageRenderQueued = true;
+            requestAnimationFrame(async () => {
+                pageRenderQueued = false;
+                const pages = S.currentInstances().filter(i => i.type === 'manga-page');
+                const sets = kernel.has('panelSets') ? await kernel.require('panelSets') : null;
+                if (pageCount)
+                    pageCount.textContent = String(pages.length);
+                pageList.textContent = '';
+                pages.forEach((inst, index) => {
+                    const set = sets ? sets.get(inst.panelSetId) : null;
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'page-card' + (S.data.selection.has(inst.id) ? ' active' : '');
+                    card.dataset.instanceId = inst.id;
+                    card.setAttribute('role', 'listitem');
+                    const number = String(index + 1).padStart(2, '0');
+                    const name = (set && set.name) || 'Página ' + number;
+                    card.setAttribute('aria-label', 'Página ' + number + ': ' + name + ', ' + inst.panels.length + ' painéis');
+                    if (S.data.selection.has(inst.id))
+                        card.setAttribute('aria-current', 'true');
+                    const thumb = document.createElement('span');
+                    thumb.className = 'page-thumb';
+                    if (set) {
+                        const svg = sets.thumbSvg(set, null, 70);
+                        if (svg) {
+                            const img = document.createElement('img');
+                            img.alt = '';
+                            img.draggable = false;
+                            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+                            thumb.appendChild(img);
+                        }
+                    }
+                    const badge = document.createElement('span');
+                    badge.className = 'page-num';
+                    badge.textContent = number;
+                    thumb.appendChild(badge);
+                    const meta = document.createElement('span');
+                    meta.className = 'page-meta';
+                    const title = document.createElement('strong');
+                    title.textContent = name;
+                    const sub = document.createElement('small');
+                    sub.textContent = inst.panels.length + ' painéis';
+                    meta.append(title, sub);
+                    card.append(thumb, meta);
+                    card.addEventListener('click', () => {
+                        S.data.selection.clear();
+                        S.data.selection.add(inst.id);
+                        kernel.emit('selection:changed');
+                        cam.fitBounds(cam.bounds([inst]), 120);
+                    });
+                    pageList.appendChild(card);
+                });
+            });
+        }
+        kernel.on('instances:changed', renderPageStrip);
+        kernel.on('state:changed', renderPageStrip);
+        kernel.on('selection:changed', renderPageStrip);
+        kernel.on('manga-page:changed', renderPageStrip);
+        kernel.on('board:navigated', renderPageStrip);
+        kernel.on('boards:changed', renderPageStrip);
+        kernel.on('history:changed', renderPageStrip);
+        setPagesOpen(pagesOpen);
+        renderPageStrip();
         const mobileBreakpoint = window.matchMedia('(max-width:820px)');
         kernel.listen(mobileBreakpoint, 'change', () => setWorkspaceMode(currentMode, false));
         /* Progressive disclosure: help appears for a genuinely empty new project. */
@@ -573,7 +659,7 @@ definePlugin({
                     return;
                 forceGuide = false;
                 guide.hidden = true;
-                document.querySelector('#topbar [data-cmd="' + cmd + '"]')?.click();
+                document.querySelector('#topbar [data-cmd="' + cmd + '"],#rail [data-cmd="' + cmd + '"]')?.click();
             });
         });
         if (workspaceMore) {
@@ -588,7 +674,7 @@ definePlugin({
                 }
             });
         }
-        document.querySelectorAll('#topbar [data-cmd]').forEach(btn => {
+        document.querySelectorAll(CMD_SELECTOR).forEach(btn => {
             kernel.listen(btn, 'click', () => {
                 if (workspaceMore?.contains(btn))
                     workspaceMore.open = false;

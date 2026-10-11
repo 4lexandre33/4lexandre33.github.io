@@ -17,25 +17,17 @@
 <div id="app">
   <header id="topbar" aria-label="Project toolbar">
     <div class="brand">
-      <div class="logo">◧</div>
+      <div class="logo" aria-hidden="true"></div>
       <div class="brand-text">
-        <div class="brand-title">Narrative Visual Board</div>
-        <div class="brand-sub" id="project-name">Untitled Project</div>
+        <div class="brand-title">Visual<span>Board</span></div>
       </div>
     </div>
-    <nav id="workspace-modes" aria-label="Modo de trabalho" role="group">
-      <button type="button" class="workspace-mode" data-workspace-mode="studio" aria-pressed="true" title="Estúdio: biblioteca, canvas e propriedades">◫ <span>Estúdio</span></button>
-      <button type="button" class="workspace-mode" data-workspace-mode="focus" aria-pressed="false" title="Foco: priorizar canvas">▣ <span>Foco</span></button>
-      <button type="button" class="workspace-mode" data-workspace-mode="library" aria-pressed="false" title="Biblioteca: localizar e organizar imagens">▤ <span>Biblioteca</span></button>
-      <button type="button" class="workspace-mode" data-workspace-mode="manga" aria-pressed="false" title="Mangá: páginas, painéis e camadas">▧ <span>Mangá</span></button>
-    </nav>
+    <div class="project-context">
+      <span class="crumb-muted">Projetos</span><span class="crumb-sep" aria-hidden="true">›</span><strong class="brand-sub" id="project-name">Untitled Project</strong>
+    </div>
     <div class="toolbar">
-      <button type="button" class="btn primary action-import" data-cmd="import-images">＋ <span>Importar imagens</span></button>
-      <button type="button" class="btn action-new-board" data-cmd="new-board">▦ <span>Novo board</span></button>
-      <button type="button" class="btn icon action-history" data-cmd="undo" disabled title="Desfazer (Ctrl+Z)" aria-label="Desfazer">↶</button>
-      <button type="button" class="btn icon action-history" data-cmd="redo" disabled title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
-      <button type="button" class="btn icon action-fit" data-cmd="fit" title="Ajustar tudo (F)" aria-label="Ajustar tudo">⤢</button>
-      <button type="button" class="btn icon action-fit" data-cmd="reset" title="Centralizar vista (0)" aria-label="Centralizar vista">⌂</button>
+      <button type="button" class="btn icon action-history" data-cmd="undo" disabled title="Desfazer (Ctrl+Z)" aria-label="Desfazer"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button type="button" class="btn icon action-history" data-cmd="redo" disabled title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
       <details id="workspace-more" class="workspace-more">
         <summary aria-label="Mais ferramentas">Mais <span aria-hidden="true">⌄</span></summary>
         <div class="workspace-more-content">
@@ -46,19 +38,24 @@
           <button type="button" class="btn" data-cmd="debug">Depuração</button>
         </div>
       </details>
-      <button type="button" class="btn icon workspace-panel-toggle" data-cmd="toggle-left" aria-controls="left" aria-expanded="true" title="Mostrar ou ocultar biblioteca" aria-label="Mostrar ou ocultar biblioteca">▤</button>
-      <button type="button" class="btn icon workspace-panel-toggle" data-cmd="toggle-right" aria-controls="right" aria-expanded="true" title="Mostrar ou ocultar propriedades" aria-label="Mostrar ou ocultar propriedades">▥</button>
-      <button type="button" class="btn icon" id="workspace-help" title="Mostrar orientação inicial" aria-label="Mostrar orientação inicial">?</button>
+      <button type="button" class="btn action-import" data-cmd="import-images"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> <span>Importar imagens</span></button>
+      <button type="button" class="btn primary action-export" data-cmd="export" title="Exportar projeto" aria-label="Exportar projeto"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v3h16v-3"/></svg> <span>Exportar</span></button>
     </div>
   </header>
 
-  <div id="workspace-strip" role="status">
-    <span class="workspace-strip-label" id="workspace-label">Estúdio</span>
-    <span id="workspace-hint">Arraste imagens para o canvas. Selecione um item para ver ações contextuais.</span>
-    <span class="workspace-shortcut">Espaço + arrastar: mover · Roda: zoom</span>
-  </div>
-
   <div id="main">
+    <nav id="rail" aria-label="Ferramentas">
+      <div class="rail-tools">
+        <button type="button" class="rail-btn" data-cmd="toggle-left" aria-controls="left" aria-expanded="false" title="Biblioteca e formatos de página" aria-label="Mostrar ou ocultar biblioteca"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+        <button type="button" class="rail-btn" data-cmd="import-images" title="Importar imagens" aria-label="Importar imagens"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></button>
+        <button type="button" class="rail-btn" data-cmd="new-board" title="Novo board" aria-label="Novo board"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></button>
+        <button type="button" class="rail-btn" data-cmd="new-manga-page" title="Nova página a partir de formato" aria-label="Nova página a partir de formato"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg></button>
+        <button type="button" class="rail-btn" data-cmd="new-template" title="Modelos de página" aria-label="Modelos de página"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="7" rx="1"/><rect x="3" y="14" width="9" height="7" rx="1"/><rect x="16" y="14" width="5" height="7" rx="1"/></svg></button>
+      </div>
+      <div class="rail-bottom">
+        <button type="button" class="rail-btn" id="workspace-help" title="Mostrar orientação inicial" aria-label="Mostrar orientação inicial"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg></button>
+      </div>
+    </nav>
     <aside id="left" class="sidebar" aria-label="Asset library and page formats">
       <div class="side-head">
         <h2>Asset Library</h2>
@@ -97,6 +94,24 @@
     </aside>
 
     <div id="resize-left" class="workspace-resizer" role="separator" tabindex="0" aria-label="Redimensionar biblioteca" aria-controls="left" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="520" aria-valuenow="272"></div>
+    <section id="stage">
+      <div id="workspace-strip" role="group" aria-label="Modo e visualização">
+        <nav id="workspace-modes" aria-label="Modo de trabalho" role="group">
+          <button type="button" class="workspace-mode" data-workspace-mode="studio" aria-pressed="true" title="Estúdio: canvas, páginas e propriedades"><span>Estúdio</span></button>
+          <button type="button" class="workspace-mode" data-workspace-mode="focus" aria-pressed="false" title="Foco: priorizar canvas"><span>Foco</span></button>
+          <button type="button" class="workspace-mode" data-workspace-mode="library" aria-pressed="false" title="Biblioteca: localizar e organizar imagens"><span>Biblioteca</span></button>
+          <button type="button" class="workspace-mode" data-workspace-mode="manga" aria-pressed="false" title="Mangá: páginas, painéis e camadas"><span>Mangá</span></button>
+        </nav>
+        <span class="workspace-strip-label" id="workspace-label">Estúdio</span>
+        <span id="workspace-hint">Arraste imagens para o canvas. Selecione um item para acessar ações contextuais.</span>
+        <span class="workspace-shortcut">Espaço + arrastar: mover · Roda: zoom</span>
+        <div class="view-actions">
+          <button type="button" class="icon-btn action-fit" data-cmd="fit" title="Ajustar tudo (F)" aria-label="Ajustar tudo"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          <button type="button" class="icon-btn action-fit" data-cmd="reset" title="Centralizar vista (0)" aria-label="Centralizar vista"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+          <button type="button" class="icon-btn" data-cmd="toggle-pages" aria-controls="page-strip" aria-expanded="true" title="Mostrar ou ocultar páginas" aria-label="Mostrar ou ocultar páginas"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></svg></button>
+          <button type="button" class="icon-btn workspace-panel-toggle" data-cmd="toggle-right" aria-controls="right" aria-expanded="true" title="Mostrar ou ocultar propriedades" aria-label="Mostrar ou ocultar propriedades"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v18"/></svg></button>
+        </div>
+      </div>
     <section id="center">
       <nav id="top-breadcrumb" hidden aria-label="Board hierarchy">
         <button class="tb-back" id="tb-back" type="button" title="Go to parent board (Esc / Backspace)">← Back</button>
@@ -159,6 +174,15 @@
       </div>
 
       <div id="debug-panel" hidden></div>
+    </section>
+      <aside id="page-strip" aria-label="Páginas do board">
+        <div class="strip-header">
+          <div><span class="eyebrow">NAVEGAÇÃO</span><h2>Páginas <span id="page-count">0</span></h2></div>
+          <button type="button" class="icon-btn" data-cmd="new-template" title="Nova página a partir de um modelo" aria-label="Adicionar página"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+        <div id="page-list" class="page-list" role="list"></div>
+        <button type="button" class="new-page" data-cmd="new-template"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg> <span>Nova página</span></button>
+      </aside>
     </section>
 
     <div id="resize-right" class="workspace-resizer" role="separator" tabindex="0" aria-label="Redimensionar painel direito" aria-controls="right" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="520" aria-valuenow="286"></div>

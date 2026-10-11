@@ -15,7 +15,6 @@ definePlugin({
     setup: async function (kernel) {
         const D = await kernel.require('ui.dialogs');
         const toolbar = document.querySelector('#topbar .toolbar');
-        const debugBtn = toolbar.querySelector('[data-cmd="debug"]');
         const badge = document.createElement('button');
         badge.id = 'storage-badge';
         badge.className = 'storage-badge';
@@ -23,8 +22,8 @@ definePlugin({
         badge.title = 'Storage status — click for options';
         // The debug command can be nested inside the compact More menu.
         // insertBefore requires an immediate child of the toolbar.
-        const anchor = debugBtn && debugBtn.parentElement === toolbar
-            ? debugBtn : toolbar.querySelector('#workspace-help');
+        // Layout Quadrid: o indicador de salvamento abre a barra de ferramentas (à esquerda de desfazer).
+        const anchor = toolbar.firstElementChild;
         toolbar.insertBefore(badge, anchor);
         let app = null;
         let saving = false;
