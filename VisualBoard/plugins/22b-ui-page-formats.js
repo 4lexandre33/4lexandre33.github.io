@@ -15,10 +15,10 @@
 definePlugin({
     id: 'ui.pageFormats',
     version: '1.0.0',
-    needs: ['utils', 'state', 'panelSets', 'mangaPage', 'camera', 'ui.dialogs'],
+    needs: ['utils', 'state', 'panelSets', 'mangaPage', 'camera', 'ui.dialogs', 'panelTemplates'],
     provides: ['ui.pageFormats'],
     uses: ['contextMenu'],
-    accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'panelSets': '^1.0.0', 'mangaPage': '^1.0.0', 'camera': '^1.0.0', 'ui.dialogs': '^1.0.0', 'contextMenu': '^1.0.0' },
+    accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'panelSets': '^1.0.0', 'mangaPage': '^1.0.0', 'camera': '^1.0.0', 'ui.dialogs': '^1.0.0', 'panelTemplates': '^1.0.0', 'contextMenu': '^1.0.0' },
     contractVersions: { 'ui.pageFormats': '1.0.0' },
     setup: async function (kernel) {
         const S = (await kernel.require('state')).data;
@@ -26,6 +26,7 @@ definePlugin({
         const MP = await kernel.require('mangaPage');
         const cam = await kernel.require('camera');
         const D = await kernel.require('ui.dialogs');
+        const PT = await kernel.require('panelTemplates');
         const grid = document.getElementById('page-formats');
         const empty = document.getElementById('pf-empty');
         const addBtn = document.getElementById('pf-add-btn');
@@ -33,6 +34,113 @@ definePlugin({
             kernel.log.warn('[ui.pageFormats] DOM ausente — verifique #page-formats / #pf-add-btn');
             return;
         }
+        let tab = 'saved';
+        let activeLayoutId = null;
+        const browser = document.createElement('div');
+        browser.className = 'pf-browser';
+        const tabs = document.createElement('div');
+        tabs.className = 'pf-tabs';
+        tabs.setAttribute('role', 'group');
+        tabs.setAttribute('aria-label', 'Page format categories');
+        browser.appendChild(tabs);
+        const tools = document.createElement('div');
+        tools.className = 'pf-layout-tools';
+        const search = document.createElement('input');
+        search.type = 'search';
+        search.placeholder = 'Search layouts';
+        search.setAttribute('aria-label', 'Search page layouts');
+        search.className = 'pf-layout-search';
+        tools.appendChild(search);
+        const sizes = document.createElement('div');
+        sizes.className = 'pf-layout-sizes';
+        function dimensionInput(label, id, value) {
+            const wrap = document.createElement('label');
+            wrap.textContent = label + ' ';
+            const input = document.createElement('input');
+            input.id = id;
+            input.type = 'number';
+            input.min = '128';
+            input.max = '4096';
+            input.step = '1';
+            input.value = String(value);
+            input.setAttribute('aria-label', label + ' in page units');
+            wrap.appendChild(input);
+            sizes.appendChild(wrap);
+            return input;
+        }
+        const widthInput = dimensionInput('W', 'pf-layout-width', 600);
+        const heightInput = dimensionInput('H', 'pf-layout-height', 850);
+        tools.appendChild(sizes);
+        browser.appendChild(tools);
+        const preview = document.createElement('div');
+        preview.className = 'pf-layout-preview';
+        preview.setAttribute('aria-live', 'polite');
+        grid.parentNode.insertBefore(browser, grid);
+        grid.parentNode.insertBefore(preview, grid);
+        const categories = [
+            { id: 'saved', label: 'Saved' },
+            { id: 'vertical', label: 'Vertical (41)' },
+            { id: 'horizontal', label: 'Horizontal (28)' }
+        ];
+        for (const entry of categories) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'pf-tab';
+            button.textContent = entry.label;
+            button.dataset.tab = entry.id;
+            button.addEventListener('click', () => {
+                tab = entry.id;
+                activeLayoutId = null;
+                search.value = '';
+                if (tab === 'vertical') {
+                    widthInput.value = '600';
+                    heightInput.value = '850';
+                }
+                if (tab === 'horizontal') {
+                    widthInput.value = '850';
+                    heightInput.value = '600';
+                }
+                render();
+            });
+            tabs.appendChild(button);
+        }
+        function dimensions() {
+            const width = Number(widthInput.value), height = Number(heightInput.value);
+            if (!Number.isInteger(width) || !Number.isInteger(height) ||
+                width < 128 || height < 128 || width > 4096 || height > 4096)
+                return null;
+            return { width, height };
+        }
+        function previewFor(tpl, dim) {
+            const dw = tpl.width ?? 600, dh = tpl.height ?? 850;
+            return PS.thumbSvg({
+                width: dim.width, height: dim.height,
+                panels: tpl.panels.map((points, i) => ({
+                    id: 'p' + (i + 1),
+                    points: points.map(p => ({ x: p[0] * dim.width / dw, y: p[1] * dim.height / dh }))
+                }))
+            }, null, 155);
+        }
+        function selectedTemplate(list) {
+            return list.find(t => t.id === activeLayoutId) || list[0] || null;
+        }
+        async function placeTemplate(tpl) {
+            const dim = dimensions();
+            if (!dim) {
+                D.toast('Width and height must be 128–4096.', 'error');
+                return;
+            }
+            try {
+                await PT.createFromTemplate(tpl, dim);
+            }
+            catch (error) {
+                kernel.log.error('[ui.pageFormats] layout creation failed', error);
+                D.toast('Could not create page from layout.', 'error');
+            }
+        }
+        search.addEventListener('input', () => render());
+        widthInput.addEventListener('input', () => renderPreview());
+        heightInput.addEventListener('input', () => renderPreview());
         /* ---------------- Place instance ---------------- */
         async function placeInstance(ps) {
             try {
@@ -80,20 +188,97 @@ definePlugin({
             return item;
         }
         /* ---------------- Render ---------------- */
-        function render() {
-            const list = PS.list() || [];
-            grid.innerHTML = '';
-            if (!list.length) {
-                empty.hidden = false;
+        function filteredLayouts() {
+            const q = search.value.trim().toLowerCase();
+            return PT.list().filter(t => t.orientation === tab &&
+                (!q || (t.name + ' ' + t.desc + ' ' + t.id).toLowerCase().includes(q)));
+        }
+        function renderPreview() {
+            preview.replaceChildren();
+            if (tab === 'saved')
+                return;
+            const list = filteredLayouts(), selected = selectedTemplate(list);
+            if (!selected)
+                return;
+            activeLayoutId = selected.id;
+            const dims = dimensions();
+            if (!dims) {
+                const problem = document.createElement('p');
+                problem.className = 'pf-dimension-error';
+                problem.textContent = 'Dimensions must be whole numbers between 128 and 4096.';
+                preview.appendChild(problem);
                 return;
             }
+            const picture = document.createElement('div');
+            picture.className = 'pf-preview-image';
+            picture.appendChild(document.importNode(new DOMParser().parseFromString(previewFor(selected, dims), 'image/svg+xml').documentElement, true));
+            preview.appendChild(picture);
+            const info = document.createElement('div');
+            info.className = 'pf-preview-meta';
+            const name = document.createElement('strong');
+            name.textContent = selected.name;
+            const sub = document.createElement('span');
+            sub.textContent = selected.panels.length + ' panels · ' + dims.width + '×' + dims.height;
+            info.appendChild(name);
+            info.appendChild(sub);
+            const place = document.createElement('button');
+            place.type = 'button';
+            place.className = 'btn pf-preview-place';
+            place.textContent = 'Place page';
+            place.addEventListener('click', () => { void placeTemplate(selected); });
+            info.appendChild(place);
+            preview.appendChild(info);
+        }
+        function render() {
+            grid.classList.toggle('pf-template-grid', tab !== 'saved');
+            for (const el of tabs.querySelectorAll('button')) {
+                const selected = el.dataset.tab === tab;
+                el.classList.toggle('active', selected);
+                el.setAttribute('aria-pressed', String(selected));
+            }
+            grid.replaceChildren();
+            if (tab === 'saved') {
+                tools.hidden = true;
+                preview.hidden = true;
+                const list = PS.list() || [];
+                empty.hidden = list.length > 0;
+                if (!list.length)
+                    return;
+                list.slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true })).forEach(ps => grid.appendChild(buildItem(ps)));
+                return;
+            }
+            tools.hidden = false;
+            preview.hidden = false;
+            const list = filteredLayouts();
             empty.hidden = true;
-            // Ordena alfabeticamente para consistência visual
-            list.slice().sort(function (a, b) {
-                return (a.name || '').localeCompare(b.name || '', undefined, { numeric: true });
-            }).forEach(function (ps) {
-                grid.appendChild(buildItem(ps));
-            });
+            const choice = selectedTemplate(list);
+            activeLayoutId = choice?.id ?? null;
+            if (!list.length) {
+                const none = document.createElement('p');
+                none.className = 'pf-dimension-error';
+                none.textContent = 'No layouts match your search.';
+                grid.appendChild(none);
+            }
+            for (const tpl of list) {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'pf-item pf-layout-item';
+                item.setAttribute('aria-label', tpl.name + ' · ' + tpl.panels.length + ' panels');
+                item.setAttribute('aria-pressed', String(tpl.id === activeLayoutId));
+                if (tpl.id === activeLayoutId)
+                    item.classList.add('selected');
+                const picture = document.createElement('div');
+                picture.className = 'pf-thumb';
+                picture.appendChild(document.importNode(new DOMParser().parseFromString(previewFor(tpl, { width: tpl.width ?? 600, height: tpl.height ?? 850 }), 'image/svg+xml').documentElement, true));
+                const caption = document.createElement('div');
+                caption.className = 'pf-label';
+                caption.textContent = tpl.name;
+                item.appendChild(picture);
+                item.appendChild(caption);
+                item.addEventListener('click', () => { activeLayoutId = tpl.id; render(); });
+                grid.appendChild(item);
+            }
+            renderPreview();
         }
         /* ---------------- [+] Import ---------------- */
         addBtn.addEventListener('click', async function () {

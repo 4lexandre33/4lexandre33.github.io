@@ -42,10 +42,16 @@ definePlugin({
         }
         function outputSize(ps, opts, defaultQuality) {
             opts = opts || {};
-            const requested = opts.quality == null ? defaultQuality : Number(opts.quality);
+            if (opts.dpi !== undefined && opts.quality !== undefined)
+                throw Error('Specify PNG DPI or quality, not both');
+            const dpi = opts.dpi === undefined ? null : Number(opts.dpi);
+            if (dpi !== null && (!Number.isFinite(dpi) || dpi < 36 || dpi > 600))
+                throw Error('PNG DPI must be between 36 and 600');
+            const requested = dpi !== null ? dpi / 96 :
+                opts.quality == null ? defaultQuality : Number(opts.quality);
             const maxPixels = opts.maxPixels == null ? 16000000 : Number(opts.maxPixels);
             const maxSide = opts.maxSide == null ? 8192 : Number(opts.maxSide);
-            if (!Number.isFinite(requested) || requested <= 0 || requested > 4 ||
+            if (!Number.isFinite(requested) || requested <= 0 || requested > (dpi !== null ? 6.25 : 4) ||
                 !Number.isFinite(maxPixels) || maxPixels < 1000000 || maxPixels > 32000000 ||
                 !Number.isFinite(maxSide) || maxSide < 512 || maxSide > 16384) {
                 throw new Error('Invalid export quality or canvas limit');
@@ -60,10 +66,12 @@ definePlugin({
                 warnings.push({
                     code: 'RESOLUTION_LIMIT',
                     message: 'Resolution reduced from ' + requested.toFixed(2) + 'x to ' + quality.toFixed(2) +
-                        'x to respect canvas memory limits'
+                        'x to respect canvas memory limits' + (dpi !== null ?
+                        ' (effective ' + Math.round(quality * 96) + ' DPI instead of ' + dpi + ' DPI)' : '')
                 });
             return { width, height, quality, qualityRequested: requested,
-                pixels: width * height, maxPixels, maxSide, warnings };
+                pixels: width * height, maxPixels, maxSide,
+                dpiRequested: dpi, dpiEffective: dpi === null ? null : quality * 96, warnings };
         }
         const asIssue = (code, message, pageId, assetId) => ({
             code, message, pageId: pageId || null, assetId: assetId || null
@@ -141,6 +149,63 @@ definePlugin({
                 }, mime, quality);
             });
         }
+        /* VP1-083: write a valid PNG pHYs chunk, so other programs see the actual
+         * effective DPI rather than the browser's default 96 DPI metadata. */
+        async function embedPngDpi(input, dpi) {
+            const bytes = new Uint8Array(await input.arrayBuffer());
+            const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+            if (bytes.length < 33 || signature.some((n, i) => bytes[i] !== n))
+                throw Error('Invalid PNG byte signature');
+            const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            if (view.getUint32(8) !== 13 || String.fromCharCode(...bytes.subarray(12, 16)) !== 'IHDR')
+                throw Error('PNG missing IHDR');
+            const crc32 = (data) => {
+                let crc = 0xffffffff;
+                for (const b of data) {
+                    crc ^= b;
+                    for (let j = 0; j < 8; j++)
+                        crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+                }
+                return (crc ^ 0xffffffff) >>> 0;
+            };
+            const pxPerMeter = Math.round(dpi * 1000 / 25.4);
+            const phy = new Uint8Array(21), v = new DataView(phy.buffer);
+            v.setUint32(0, 9);
+            phy.set([112, 72, 89, 115], 4);
+            v.setUint32(8, pxPerMeter);
+            v.setUint32(12, pxPerMeter);
+            phy[16] = 1;
+            v.setUint32(17, crc32(phy.subarray(4, 17)));
+            const chunks = [bytes.subarray(0, 33), phy];
+            let offset = 33, seenEnd = false, removed = 0;
+            while (offset < bytes.length) {
+                if (offset + 12 > bytes.length)
+                    throw Error('Truncated PNG chunk');
+                const size = view.getUint32(offset);
+                if (size > bytes.length - offset - 12)
+                    throw Error('Invalid PNG chunk length');
+                const end = offset + size + 12;
+                const name = String.fromCharCode(...bytes.subarray(offset + 4, offset + 8));
+                if (name !== 'pHYs')
+                    chunks.push(bytes.subarray(offset, end));
+                else
+                    removed += end - offset;
+                offset = end;
+                if (name === 'IEND') {
+                    seenEnd = true;
+                    break;
+                }
+            }
+            if (!seenEnd)
+                throw Error('PNG missing IEND');
+            const output = new Uint8Array(bytes.length + 21 - removed);
+            let written = 0;
+            for (const chunk of chunks) {
+                output.set(chunk, written);
+                written += chunk.length;
+            }
+            return new Blob([output], { type: 'image/png' });
+        }
         function downloadBlob(filename, blob) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -200,6 +265,8 @@ definePlugin({
             ctx.fillRect(0, 0, W, H);
             // 3) Helper: draw a single layer
             function drawLayer(layer) {
+                if (MP.getLayerNodeState(inst, 'image', layer.id)?.visible === false)
+                    return;
                 const img = images.get(layer.assetId);
                 if (!img)
                     return;
@@ -209,6 +276,11 @@ definePlugin({
                 const ly = layer.y * quality;
                 const lw = layer.width * quality;
                 const lh = layer.height * quality;
+                const limits = { left: 0, top: 0, right: 0, bottom: 0, ...(layer.vp1ViewLimits || {}) };
+                // Keep View Limits fixed in page coordinates even when the image rotates.
+                ctx.beginPath();
+                ctx.rect(ps.width * limits.left * quality, ps.height * limits.top * quality, ps.width * (1 - limits.left - limits.right) * quality, ps.height * (1 - limits.top - limits.bottom) * quality);
+                ctx.clip();
                 if (layer.rotation) {
                     const cx = lx + lw / 2;
                     const cy = ly + lh / 2;
@@ -216,6 +288,10 @@ definePlugin({
                     ctx.rotate((layer.rotation || 0) * Math.PI / 180);
                     ctx.translate(-cx, -cy);
                 }
+                const crop = { left: 0, top: 0, right: 0, bottom: 0, ...(layer.vp1Crop || {}) };
+                ctx.beginPath();
+                ctx.rect(lx + lw * crop.left, ly + lh * crop.top, lw * (1 - crop.left - crop.right), lh * (1 - crop.top - crop.bottom));
+                ctx.clip();
                 ctx.drawImage(img, lx, ly, lw, lh);
                 ctx.restore();
             }
@@ -243,7 +319,40 @@ definePlugin({
                 }
                 return { path: null, fillRule: panel.fillRule || 'nonzero', exact: false };
             }
+            /* VP1-043–051: one vector recipe for SVG preview and PNG/PDF output.
+             * Path2D receives the same absolute page-space path as the renderer. */
+            function drawMangaEffects(scope, panelId) {
+                const effects = MP.listMangaEffects(inst).filter(e => e.scope === scope &&
+                    (scope === 'page' || e.panelId === panelId) &&
+                    MP.getLayerNodeState(inst, 'drawing', e.id)?.visible !== false);
+                if (!effects.length)
+                    return;
+                ctx.save();
+                ctx.setTransform(quality, 0, 0, quality, 0, 0);
+                for (const fx of effects) {
+                    for (const item of MP.mangaEffectPrimitives(fx)) {
+                        const path = new Path2D(item.d);
+                        ctx.save();
+                        ctx.globalAlpha = item.opacity;
+                        if (item.fill !== 'none') {
+                            ctx.fillStyle = item.fill;
+                            ctx.fill(path);
+                        }
+                        if (item.stroke !== 'none' && item.strokeWidth > 0) {
+                            ctx.strokeStyle = item.stroke;
+                            ctx.lineWidth = item.strokeWidth;
+                            ctx.lineJoin = 'round';
+                            ctx.lineCap = 'round';
+                            ctx.stroke(path);
+                        }
+                        ctx.restore();
+                    }
+                }
+                ctx.restore();
+            }
             ps.panels.forEach(function (panel) {
+                if (MP.getLayerNodeState(inst, 'panel', panel.id)?.visible === false)
+                    return;
                 ctx.save();
                 const shape = tracePanel(panel);
                 if (shape.path) {
@@ -252,22 +361,41 @@ definePlugin({
                 }
                 else
                     ctx.clip(shape.fillRule);
+                const panelStyle = { fill: 'none', stroke: '#1a1a1a', strokeWidth: 5,
+                    fillOpacity: 1, strokeOpacity: 1, ...(panel.vp1Style || {}) };
+                if (panelStyle.fill !== 'none' && panelStyle.fillOpacity > 0) {
+                    ctx.save();
+                    ctx.fillStyle = panelStyle.fill;
+                    ctx.globalAlpha = panelStyle.fillOpacity;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                }
                 const instPanel = (inst.panels || []).find(p => p.id === panel.id);
                 if (instPanel) {
                     const sorted = (instPanel.layers || []).slice().sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
                     for (const layer of sorted)
                         drawLayer(layer);
                 }
+                drawMangaEffects('panel', panel.id);
                 ctx.restore();
             });
             ctx.save();
-            ctx.strokeStyle = '#1a1a1a';
             ctx.lineJoin = 'miter';
             ctx.lineCap = 'butt';
             for (const panel of ps.panels) {
+                if (MP.getLayerNodeState(inst, 'panel', panel.id)?.visible === false)
+                    continue;
                 ctx.save();
+                const st = { fill: 'none', stroke: '#1a1a1a', strokeWidth: 5,
+                    fillOpacity: 1, strokeOpacity: 1, ...(panel.vp1Style || {}) };
+                if (st.stroke === 'none' || st.strokeWidth === 0 || st.strokeOpacity === 0) {
+                    ctx.restore();
+                    continue;
+                }
                 const shape = tracePanel(panel);
-                ctx.lineWidth = shape.exact ? 5 : 5 * quality;
+                ctx.strokeStyle = st.stroke;
+                ctx.globalAlpha = st.strokeOpacity;
+                ctx.lineWidth = shape.exact ? st.strokeWidth : st.strokeWidth * quality;
                 if (shape.path)
                     ctx.stroke(shape.path);
                 else
@@ -275,13 +403,186 @@ definePlugin({
                 ctx.restore();
             }
             ctx.restore();
+            // Page-wide manga effects are below overlay image layers and above panel borders.
+            const showOverlay = MP.getLayerNodeState(inst, 'panel', '__overlay__')?.visible !== false;
+            if (showOverlay)
+                drawMangaEffects('page');
             // 6) Draw overlay layers (no clip, on top of everything)
             const overlays = (inst.overlays || []).slice().sort(function (a, b) {
                 return (a.zIndex || 0) - (b.zIndex || 0);
             });
-            for (let i = 0; i < overlays.length; i++)
-                drawLayer(overlays[i]);
+            if (showOverlay)
+                for (let i = 0; i < overlays.length; i++)
+                    drawLayer(overlays[i]);
+            /* VP1-061: same vector paths and text layout for PNG and PDF;
+             * balloons are above overlay images and clipped to the page canvas. */
+            ctx.save();
+            ctx.setTransform(quality, 0, 0, quality, 0, 0);
+            for (const b of MP.listBalloons(inst)) {
+                if (!showOverlay || MP.getLayerNodeState(inst, 'balloon', b.id)?.visible === false)
+                    continue;
+                ctx.save();
+                if (b.rotation) {
+                    const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+                    ctx.translate(cx, cy);
+                    ctx.rotate(b.rotation * Math.PI / 180);
+                    ctx.translate(-cx, -cy);
+                }
+                for (const primitive of MP.balloonPaths(b)) {
+                    const p = new Path2D(primitive.d);
+                    ctx.save();
+                    ctx.globalAlpha = primitive.opacity;
+                    if (primitive.fill !== 'none') {
+                        ctx.fillStyle = primitive.fill;
+                        ctx.fill(p);
+                    }
+                    if (primitive.stroke !== 'none' && primitive.strokeWidth > 0) {
+                        ctx.strokeStyle = primitive.stroke;
+                        ctx.lineWidth = primitive.strokeWidth;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.stroke(p);
+                    }
+                    ctx.restore();
+                }
+                if (b.text) {
+                    const layout = MP.balloonTextLayout(b);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = b.textColor;
+                    ctx.font = layout.fontSize + 'px sans-serif';
+                    for (let i = 0; i < layout.lines.length; i++)
+                        ctx.fillText(layout.lines[i], layout.x, layout.y + i * layout.lineHeight, b.width * .8);
+                }
+                ctx.restore();
+            }
+            ctx.restore();
+            /* VP1-068: same horizontalTextLayout() as SVG, painted above dialogue
+             * balloons and overlays; PDF reuses this exact page Canvas output. */
+            ctx.save();
+            ctx.setTransform(quality, 0, 0, quality, 0, 0);
+            for (const item of MP.listHorizontalTexts(inst)) {
+                if (!showOverlay || MP.getLayerNodeState(inst, 'text', item.id)?.visible === false)
+                    continue;
+                ctx.save();
+                if (item.rotation) {
+                    const cx = item.x + item.width / 2, cy = item.y + item.height / 2;
+                    ctx.translate(cx, cy);
+                    ctx.rotate(item.rotation * Math.PI / 180);
+                    ctx.translate(-cx, -cy);
+                }
+                const layout = MP.horizontalTextLayout(item);
+                ctx.textAlign = item.align;
+                ctx.textBaseline = 'middle';
+                ctx.font = (item.bold ? 'bold ' : '') + item.fontSize + 'px "' +
+                    item.fontFamily + '"';
+                ctx.globalAlpha = item.opacity;
+                ctx.lineJoin = 'round';
+                ctx.fillStyle = item.color;
+                ctx.strokeStyle = item.outlineColor;
+                ctx.lineWidth = item.outlineWidth;
+                for (let i = 0; i < layout.lines.length; i++) {
+                    const text = layout.lines[i];
+                    const y = layout.y + i * layout.lineHeight;
+                    if (item.outlineWidth > 0)
+                        ctx.strokeText(text, layout.x, y, layout.maxWidth);
+                    ctx.fillText(text, layout.x, y, layout.maxWidth);
+                }
+                ctx.restore();
+            }
+            ctx.restore();
             return { canvas: canvas, width: W, height: H, resolution: resolution, warnings: resolution.warnings };
+        }
+        /* VP1-038/040/042 — isolated transparent crop export.
+         * The mask is SVG-exact (even-odd holes), intersected with page limits
+         * and the non-destructive image source crop before rotation.
+         * No other panels, layers, overlays or assets are rasterized.
+         */
+        async function exportCroppedLayer(inst, panelId, layerId, opts) {
+            const started = performance.now();
+            try {
+                const ps = PS.get(inst.panelSetId);
+                if (!ps)
+                    throw Error('Missing panel set');
+                const panel = ps.panels.find(p => p.id === panelId);
+                const layer = inst.panels.find(p => p.id === panelId)?.layers.find(l => l.id === layerId);
+                if (!panel || !layer)
+                    throw Error('Layer or panel not found');
+                const url = A.urls.get(layer.assetId);
+                if (!url)
+                    throw Error('Image data is not available');
+                const image = await loadImage(url);
+                if (image.naturalWidth * image.naturalHeight > 40000000)
+                    throw Error('Image exceeds source safety budget');
+                const points = panel.points;
+                if (!points.length)
+                    throw Error('Empty panel');
+                const minX = Math.max(0, Math.floor(Math.min(...points.map(p => p.x)))), minY = Math.max(0, Math.floor(Math.min(...points.map(p => p.y)))), maxX = Math.min(ps.width, Math.ceil(Math.max(...points.map(p => p.x)))), maxY = Math.min(ps.height, Math.ceil(Math.max(...points.map(p => p.y))));
+                const quality = opts?.quality ?? 1;
+                if (!Number.isFinite(quality) || quality <= 0 || quality > 4)
+                    throw Error('Unsupported crop export quality');
+                const width = Math.max(1, Math.ceil((maxX - minX) * quality)), height = Math.max(1, Math.ceil((maxY - minY) * quality));
+                if (width * height > 16000000 || width > 8192 || height > 8192)
+                    throw Error('Crop export exceeds safe canvas limits');
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx)
+                    throw Error('Cannot allocate canvas');
+                ctx.setTransform(quality, 0, 0, quality, -minX * quality, -minY * quality);
+                const vector = panel.vector;
+                const rule = (vector?.fillRule || panel.fillRule || 'nonzero');
+                if (vector && typeof Path2D === 'function') {
+                    const path = new Path2D(vector.d);
+                    const m = vector.matrix || [1, 0, 0, 1, 0, 0];
+                    ctx.save();
+                    ctx.transform(...m);
+                    ctx.clip(path, rule);
+                    ctx.restore();
+                    // Restore above also removes clip. Apply clip with transformed Path2D.
+                    const transformed = new Path2D();
+                    transformed.addPath(path, new DOMMatrix(m));
+                    ctx.clip(transformed, rule);
+                }
+                else {
+                    ctx.beginPath();
+                    for (const contour of panel.contours || [panel.points]) {
+                        contour.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+                        ctx.closePath();
+                    }
+                    ctx.clip(rule);
+                }
+                const limits = { left: 0, top: 0, right: 0, bottom: 0, ...(layer.vp1ViewLimits || {}) };
+                ctx.beginPath();
+                ctx.rect(ps.width * limits.left, ps.height * limits.top, ps.width * (1 - limits.left - limits.right), ps.height * (1 - limits.top - limits.bottom));
+                ctx.clip();
+                const crop = { left: 0, top: 0, right: 0, bottom: 0, ...(layer.vp1Crop || {}) };
+                ctx.save();
+                const cx = layer.x + layer.width / 2, cy = layer.y + layer.height / 2;
+                ctx.translate(cx, cy);
+                ctx.rotate((layer.rotation || 0) * Math.PI / 180);
+                ctx.translate(-cx, -cy);
+                ctx.beginPath();
+                ctx.rect(layer.x + layer.width * crop.left, layer.y + layer.height * crop.top, layer.width * (1 - crop.left - crop.right), layer.height * (1 - crop.top - crop.bottom));
+                ctx.clip();
+                ctx.globalAlpha = layer.opacity ?? 1;
+                ctx.drawImage(image, layer.x, layer.y, layer.width, layer.height);
+                ctx.restore();
+                const blob = await canvasToBlob(canvas, 'image/png', 1);
+                canvas.width = 0;
+                canvas.height = 0;
+                const name = safeFileName(getProjectName()) + '-panel-' +
+                    safeFileName(panelId) + '-crop.png';
+                downloadBlob(name, blob);
+                kernel.emit('toast', { message: 'Visible crop exported as transparent PNG', kind: 'ok' });
+                return report(true, 'png', started, { width, height, bytes: blob.size, panelId, layerId }, [], [], [{ name, mimeType: 'image/png', size: blob.size, width, height, pages: 1 }]);
+            }
+            catch (error) {
+                const errors = [asIssue('CROPPED_EXPORT_FAILED', error.message, inst?.id)];
+                await showFailure(errors, opts);
+                return report(false, 'png', started, { panelId, layerId }, errors, []);
+            }
         }
         /* ============================================================
          * PNG export
@@ -290,8 +591,11 @@ definePlugin({
             opts = opts || {};
             const started = performance.now();
             const quality = opts.quality == null ? 3 : opts.quality;
-            const settings = Object.assign({}, opts, { quality });
-            const meta = { pagesRequested: 1, pagesExported: 0, qualityRequested: quality };
+            const settings = opts.dpi === undefined ?
+                { ...opts, quality } : { ...opts };
+            const meta = { pagesRequested: 1, pagesExported: 0,
+                qualityRequested: opts.dpi === undefined ? quality : opts.dpi / 96,
+                dpiRequested: opts.dpi ?? null };
             let warnings = [];
             try {
                 const inspection = await validateExport([inst], settings);
@@ -302,9 +606,16 @@ definePlugin({
                 }
                 kernel.emit('manga-export:progress', { stage: 'render', current: 1, total: 1 });
                 const result = await renderPageToCanvas(inst, settings);
-                const blob = await canvasToBlob(result.canvas, 'image/png', 1);
-                result.canvas.width = 0;
-                result.canvas.height = 0; // release raster buffer
+                let blob;
+                try {
+                    blob = await canvasToBlob(result.canvas, 'image/png', 1);
+                }
+                finally {
+                    result.canvas.width = 0;
+                    result.canvas.height = 0;
+                }
+                if (opts.dpi !== undefined)
+                    blob = await embedPngDpi(blob, result.resolution.dpiEffective);
                 const boardPages = collectMangaPagesOnCurrentBoard();
                 const index = boardPages.findIndex(page => page.id === inst.id);
                 const name = safeFileName(getProjectName()) + ' - ' +
@@ -314,6 +625,7 @@ definePlugin({
                 kernel.emit('manga-export:progress', { stage: 'complete', current: 1, total: 1 });
                 return report(true, 'png', started, Object.assign(meta, {
                     pagesExported: 1, qualityEffective: result.resolution.quality,
+                    dpiEffective: result.resolution.dpiEffective,
                     width: result.width, height: result.height, bytes: blob.size
                 }), [], warnings, [{ name, mimeType: 'image/png', size: blob.size,
                         width: result.width, height: result.height, pages: 1 }]);
@@ -563,6 +875,7 @@ definePlugin({
             validateExport: validateExport,
             renderPageToCanvas: renderPageToCanvas,
             exportPng: exportPng,
+            exportCroppedLayer: exportCroppedLayer,
             exportChapterPdf: exportChapterPdf,
             exportSelectionAsPdf: exportSelectionAsPdf,
             exportWholeBoardAsPdf: exportWholeBoardAsPdf,
