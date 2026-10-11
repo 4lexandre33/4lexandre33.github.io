@@ -125,14 +125,20 @@ definePlugin({
                 .replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const paths = ps.panels.map(function (p) {
                 const vector = geometry.serializeVector(p);
-                const fill = p.id === highlightPanelId ? 'rgba(77,163,255,0.32)' : '#f0f2f6';
-                const stroke = p.id === highlightPanelId ? '#4da3ff' : '#c8ccd2';
-                const sw = p.id === highlightPanelId ? 1.6 : 1;
+                const appearance = p.vp1Style;
+                const fill = p.id === highlightPanelId ? 'rgba(77,163,255,0.32)' :
+                    appearance?.fill && appearance.fill !== 'none' ? appearance.fill : '#f0f2f6';
+                const stroke = p.id === highlightPanelId ? '#4da3ff' :
+                    appearance?.stroke || '#c8ccd2';
+                const sw = p.id === highlightPanelId ? 1.6 : (appearance?.strokeWidth ?? 1) * scale;
+                const fillOpacity = p.id === highlightPanelId ? 1 : appearance?.fillOpacity ?? 1;
+                const strokeOpacity = p.id === highlightPanelId ? 1 : appearance?.strokeOpacity ?? 1;
                 return '<path d="' + escapeAttr(vector.d) + '" ' +
                     (vector.transform ? 'transform="' + escapeAttr(vector.transform) + '" ' : '') +
                     'fill-rule="' + escapeAttr(vector.fillRule) + '" ' +
-                    'fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + (sw / scale) +
-                    '" stroke-linejoin="miter"/>';
+                    'fill="' + escapeAttr(fill) + '" fill-opacity="' + fillOpacity + '" ' +
+                    'stroke="' + escapeAttr(stroke) + '" stroke-opacity="' + strokeOpacity +
+                    '" stroke-width="' + (sw / scale) + '" stroke-linejoin="miter"/>';
             }).join('');
             return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' +
                 ps.width + ' ' + ps.height + '" width="' + w.toFixed(0) + '" height="' +

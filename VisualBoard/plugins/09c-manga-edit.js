@@ -139,7 +139,19 @@ definePlugin({
                 const y0 = Math.min(layer.y, layer.y + layer.height);
                 const x1 = Math.max(layer.x, layer.x + layer.width);
                 const y1 = Math.max(layer.y, layer.y + layer.height);
-                if (localX >= x0 && localX <= x1 && localY >= y0 && localY <= y1)
+                const ps = MP.getPanelSet(inst);
+                if (!ps)
+                    continue;
+                const limits = { left: 0, top: 0, right: 0, bottom: 0, ...(layer.vp1ViewLimits || {}) };
+                if (localX < ps.width * limits.left || localX > ps.width * (1 - limits.right) ||
+                    localY < ps.height * limits.top || localY > ps.height * (1 - limits.bottom))
+                    continue;
+                const cx = layer.x + layer.width / 2, cy = layer.y + layer.height / 2;
+                const a = -(layer.rotation || 0) * Math.PI / 180, dx = localX - cx, dy = localY - cy;
+                const lx = cx + dx * Math.cos(a) - dy * Math.sin(a), ly = cy + dx * Math.sin(a) + dy * Math.cos(a);
+                const crop = { left: 0, top: 0, right: 0, bottom: 0, ...(layer.vp1Crop || {}) };
+                if (lx >= x0 + layer.width * crop.left && lx <= x1 - layer.width * crop.right &&
+                    ly >= y0 + layer.height * crop.top && ly <= y1 - layer.height * crop.bottom)
                     return layer;
             }
             return null;
