@@ -82,7 +82,9 @@ definePlugin({
                 }
             }
         }
-        async function restore(snapshot) {
+        async function restore(snapshot, options) {
+            const currentIdBefore = S.currentBoardId;
+            const currentSelectionBefore = Array.from(S.selection);
             if (!snapshot || typeof snapshot.document !== 'string' || !(snapshot.blobs instanceof Map)) {
                 throw new Error('Invalid document snapshot');
             }
@@ -101,8 +103,9 @@ definePlugin({
             S.rootBoardId = doc.rootBoardId || (S.boards[0] && S.boards[0].id) || null;
             S.settings = doc.settings || {};
             S.panelSets = doc.panelSets || [];
-            S.currentBoardId = S.boards.some(b => b.id === snapshot.currentBoardId)
-                ? snapshot.currentBoardId : S.rootBoardId;
+            const wanted = options?.preserveActiveBoard ? currentIdBefore : snapshot.currentBoardId;
+            S.currentBoardId = S.boards.some(b => b.id === wanted)
+                ? wanted : S.rootBoardId;
             const board = stateApi.getCurrentBoard();
             if (board && board.camera) {
                 camera.data.x = Number(board.camera.x) || 0;
@@ -111,7 +114,8 @@ definePlugin({
             }
             const present = new Set((board ? board.instances : []).map(i => i.id));
             S.selection.clear();
-            for (const id of snapshot.selection || []) {
+            for (const id of (options?.preserveActiveBoard ?
+                currentSelectionBefore : snapshot.selection || [])) {
                 if (present.has(id))
                     S.selection.add(id);
             }

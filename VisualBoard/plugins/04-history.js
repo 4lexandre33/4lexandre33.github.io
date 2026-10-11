@@ -17,6 +17,14 @@ definePlugin({
         const LIMIT = 120;
         let transactionDepth = 0;
         let restoring = false;
+        let savedBaseline = null;
+        function markSaved(at) {
+            savedBaseline = at || snapshot();
+            kernel.emit('history:changed');
+        }
+        function isDirty() {
+            return savedBaseline ? !documentState.equal(savedBaseline, snapshot()) : false;
+        }
         function snapshot() { return documentState.capture(); }
         function push(before) {
             if (transactionDepth)
@@ -48,7 +56,10 @@ definePlugin({
                     return await action();
                 }
                 finally {
-                    transactionDepth--;
+                    // A fire-and-forget nested action may settle after its parent has
+                    // completed and reset the depth. Never allow negative depth to
+                    // disable Undo/Redo permanently (VP1-020).
+                    transactionDepth = Math.max(0, transactionDepth - 1);
                 }
             }
             const before = snapshot();
@@ -76,7 +87,7 @@ definePlugin({
             restoring = true;
             try {
                 const current = snapshot();
-                await documentState.restore(past[past.length - 1]);
+                await documentState.restore(past[past.length - 1], { preserveActiveBoard: true });
                 past.pop();
                 future.push(current);
                 kernel.emit('history:changed');
@@ -97,7 +108,7 @@ definePlugin({
             restoring = true;
             try {
                 const current = snapshot();
-                await documentState.restore(future[future.length - 1]);
+                await documentState.restore(future[future.length - 1], { preserveActiveBoard: true });
                 future.pop();
                 past.push(current);
                 if (past.length > LIMIT)
@@ -114,13 +125,24 @@ definePlugin({
                 restoring = false;
             }
         }
+        async function cancelGesture(before) {
+            if (restoring || transactionDepth)
+                return false;
+            restoring = true;
+            try {
+                return await documentState.restore(before);
+            }
+            finally {
+                restoring = false;
+            }
+        }
         function clear() {
             past.length = 0;
             future.length = 0;
             kernel.emit('history:changed');
         }
         kernel.provide('history', {
-            snapshot, push, transaction, undo, redo, clear,
+            snapshot, push, transaction, undo, redo, clear, markSaved, isDirty, cancelGesture,
             canUndo: () => past.length > 0,
             canRedo: () => future.length > 0,
             isRestoring: () => restoring,
