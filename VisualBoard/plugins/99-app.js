@@ -50,10 +50,11 @@ definePlugin({
         const A = (await safeRequire('assets'));
         const cam = (await safeRequire('camera'));
         const D = (await safeRequire('ui.dialogs'));
+        const H = (await safeRequire('history'));
         if (!utils || !fac || !S || !docApi) {
             console.error('[nvb] app.setup cannot continue');
             kernel.provide('app', {
-                saveNow: async function () { }, scheduleSave: function () { },
+                saveNow: async function () { }, isDirty: () => false, scheduleSave: function () { },
                 boot: async function () { }, switchBackend: async function () { },
                 mode: 'volatile', folderName: null, fileName: null,
                 isPersistent: function () { return false; }
@@ -134,12 +135,154 @@ definePlugin({
             if (A && A.ensureDefaultPackage)
                 A.ensureDefaultPackage();
         }
+        /* VP1-079–082: bounded local crash checkpoint, distinct from a saved
+         * project; never replaces a persisted document without user consent.
+         * Assets are read from the canonical backend, never copied into JSON. */
+        const RECOVERY_KEY = 'nvb:vp1:crash-checkpoint';
+        const MAX_RECOVERY_JSON = 3000000;
+        const recoveryDigest = (input) => {
+            const copy = JSON.parse(JSON.stringify(input));
+            if (copy.meta)
+                delete copy.meta.updatedAt;
+            return JSON.stringify(copy);
+        };
+        let recoveryTimer = null;
+        let recoveryFailed = false;
+        function recoveryRead() {
+            try {
+                const raw = localStorage.getItem(RECOVERY_KEY);
+                if (!raw)
+                    return null;
+                if (raw.length > MAX_RECOVERY_JSON)
+                    throw Error('Recovery checkpoint oversized');
+                const item = JSON.parse(raw);
+                if (!item || item.version !== 1 || typeof item.document !== 'string' ||
+                    typeof item.fingerprint !== 'string' || typeof item.projectId !== 'string' ||
+                    typeof item.createdAt !== 'number' || !Number.isFinite(item.createdAt) ||
+                    !Array.isArray(item.assetIds) || item.document.length > MAX_RECOVERY_JSON)
+                    throw Error('Malformed recovery checkpoint');
+                const parsed = JSON.parse(item.document);
+                if (!parsed || !Array.isArray(parsed.boards) || !Array.isArray(parsed.assets) ||
+                    !Array.isArray(parsed.panelSets) || !parsed.meta ||
+                    parsed.meta.id !== item.projectId || parsed.boards.length > 10000 ||
+                    parsed.assets.length > 20000 || parsed.boards.some(b => !b || !b.id ||
+                    !Array.isArray(b.instances)) ||
+                    parsed.assets.some(a => !a || typeof a.id !== 'string') ||
+                    item.assetIds.length !== parsed.assets.length ||
+                    item.assetIds.some((id, i) => id !== parsed.assets[i]?.id) ||
+                    item.fingerprint !== recoveryDigest(parsed))
+                    throw Error('Corrupt or incompatible recovery checkpoint');
+                format.normalize(JSON.parse(item.document));
+                return item;
+            }
+            catch (error) {
+                kernel.log.warn('Recovery validation rejected checkpoint', error);
+                kernel.emit('toast', { message: 'Invalid recovery checkpoint ignored; saved project retained.', kind: 'error' });
+                try {
+                    localStorage.removeItem(RECOVERY_KEY);
+                }
+                catch (_) { }
+                return null;
+            }
+        }
+        function recoveryWrite() {
+            recoveryTimer = null;
+            if (!H || !H.isDirty() || mode === 'volatile')
+                return;
+            try {
+                const saved = docApi.capture(), parsed = JSON.parse(saved.document);
+                const checkpoint = {
+                    version: 1, projectId: parsed.meta.id, fingerprint: saved.fingerprint,
+                    createdAt: Date.now(), document: saved.document,
+                    assetIds: parsed.assets.map(a => a.id)
+                };
+                const json = JSON.stringify(checkpoint);
+                if (json.length > MAX_RECOVERY_JSON)
+                    throw Error('Recovery snapshot exceeds safe limit');
+                localStorage.setItem(RECOVERY_KEY, json);
+                recoveryFailed = false;
+                kernel.emit('recovery:snapshot');
+            }
+            catch (error) {
+                if (!recoveryFailed)
+                    kernel.emit('toast', {
+                        message: 'Automatic crash checkpoint unavailable. Save or export a backup.',
+                        kind: 'error'
+                    });
+                recoveryFailed = true;
+                kernel.log.warn('Recovery checkpoint storage failed', error);
+            }
+        }
+        function scheduleRecovery() {
+            if (!H || !H.isDirty() || mode === 'volatile')
+                return;
+            if (recoveryTimer)
+                clearTimeout(recoveryTimer);
+            recoveryTimer = setTimeout(recoveryWrite, 100);
+        }
+        async function restoreCrashCheckpoint() {
+            const item = recoveryRead();
+            if (!item || !H)
+                return false;
+            const original = docApi.capture();
+            if (item.projectId !== (S.data.meta?.id || '') ||
+                item.fingerprint === original.fingerprint) {
+                try {
+                    localStorage.removeItem(RECOVERY_KEY);
+                }
+                catch (_) { }
+                return false;
+            }
+            const parsed = JSON.parse(item.document);
+            // Recover only when all referenced binaries are already in the backend.
+            // Missing image data must never replace a sound saved document.
+            const absent = parsed.assets.filter(asset => !A.blobs.has(asset.id));
+            if (absent.length) {
+                kernel.emit('toast', { message: 'Recovery cannot restore ' + absent.length +
+                        ' missing image(s); saved project preserved.', kind: 'error' });
+                return false;
+            }
+            const restore = await D.confirm({
+                title: 'Recover unsaved VisualBoard work?',
+                message: 'A local checkpoint from ' + new Date(item.createdAt).toLocaleString() +
+                    ' differs from the saved project. Recover it now? The saved project ' +
+                    'will stay unchanged until the next explicit/autosave operation.',
+                confirmText: 'Restore unsaved work', cancelText: 'Keep saved project'
+            });
+            if (!restore) {
+                try {
+                    localStorage.removeItem(RECOVERY_KEY);
+                }
+                catch (_) { }
+                return false;
+            }
+            try {
+                await docApi.restore({ document: item.document, fingerprint: item.fingerprint,
+                    blobs: new Map(A.blobs), currentBoardId: S.data.currentBoardId,
+                    selection: [] });
+                await H.clear();
+                kernel.emit('recovery:restored');
+                return true;
+            }
+            catch (error) {
+                kernel.log.error('Recovery restore failed', error);
+                kernel.emit('toast', { message: 'Recovery failed; saved project preserved.', kind: 'error' });
+                try {
+                    await docApi.restore(original);
+                }
+                catch (rollbackError) {
+                    kernel.log.error('Recovery rollback failed', rollbackError);
+                }
+                return false;
+            }
+        }
         let saving = null;
         async function saveNow() {
             if (mode === 'volatile' || !activeBackend)
                 return false;
             if (saving)
                 return saving.then(() => saveNow());
+            const savedCheckpoint = docApi.capture();
             S.data.meta.updatedAt = Date.now();
             const doc = buildDoc();
             const destination = activeBackend;
@@ -150,6 +293,21 @@ definePlugin({
                     await destination.flushNow();
                 else if (typeof destination.saveAll === 'function')
                     await destination.saveAll();
+                if (H) {
+                    H.markSaved(savedCheckpoint);
+                }
+                if (!H?.isDirty()) {
+                    if (recoveryTimer) {
+                        clearTimeout(recoveryTimer);
+                        recoveryTimer = null;
+                    }
+                    try {
+                        localStorage.removeItem(RECOVERY_KEY);
+                    }
+                    catch (_) { }
+                }
+                else
+                    scheduleRecovery();
                 kernel.emit('storage:saved');
                 return true;
             })();
@@ -638,6 +796,11 @@ definePlugin({
                     }
                 }
             }
+            // Baseline is the disk version. Restore is optional and never silent.
+            if (H) {
+                H.markSaved();
+                await restoreCrashCheckpoint();
+            }
             console.log('[boot] redrawing — mode =', mode);
             kernel.emit('state:changed');
             kernel.emit('assets:changed');
@@ -651,27 +814,33 @@ definePlugin({
             console.log('[nvb] boot complete. mode =', mode);
             scheduleSave();
         }
-        kernel.on('state:changed', scheduleSave);
-        kernel.on('assets:changed', scheduleSave);
-        kernel.on('packages:changed', scheduleSave);
-        kernel.on('boards:changed', scheduleSave);
-        kernel.on('camera:changed', scheduleSave);
-        kernel.on('panelSets:changed', scheduleSave);
+        kernel.on('state:changed', () => { scheduleRecovery(); scheduleSave(); });
+        kernel.on('assets:changed', () => { scheduleRecovery(); scheduleSave(); });
+        kernel.on('packages:changed', () => { scheduleRecovery(); scheduleSave(); });
+        kernel.on('boards:changed', () => { scheduleRecovery(); scheduleSave(); });
+        kernel.on('camera:changed', () => { scheduleRecovery(); scheduleSave(); });
+        kernel.on('panelSets:changed', () => { scheduleRecovery(); scheduleSave(); });
+        kernel.on('history:changed', scheduleRecovery);
         // Browsers do not await async storage inside beforeunload.
         // Flush on visibility changes; warn on exit if a save remains pending.
         kernel.listen(window, 'beforeunload', function (event) {
-            if (saving) {
+            if (saving || H?.isDirty()) {
+                if (H?.isDirty())
+                    recoveryWrite();
                 event.preventDefault();
                 event.returnValue = '';
             }
         });
         kernel.listen(document, 'visibilitychange', function () {
             if (document.visibilityState === 'hidden') {
+                if (H?.isDirty())
+                    recoveryWrite();
                 void saveNow().catch(() => { });
             }
         });
         kernel.provide('app', {
             saveNow: saveNow, backupNow: backupNow, scheduleSave: scheduleSave, boot: boot, switchBackend: switchBackend,
+            isDirty: () => H?.isDirty() || false,
             get mode() { return mode; },
             get folderName() { return fsDir && fsDir.getFolderName ? fsDir.getFolderName() : null; },
             get fileName() { return fs && fs.getHandleName ? fs.getHandleName() : null; },

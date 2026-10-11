@@ -66,6 +66,10 @@ definePlugin({
                 dotCls += ' off';
                 label = '⚠ Not saving';
             }
+            if (app.isDirty() && !saving) {
+                dotCls += ' warn';
+                label = '● Unsaved changes · ' + label;
+            }
             renderBadge(dotCls, label);
         }
         async function actionSaveNow() {
@@ -185,6 +189,7 @@ definePlugin({
         kernel.on('storage:failed', function () { saving = false; badge.title = 'Last save FAILED. Download a backup.'; render(); });
         kernel.on('backend:changed', render);
         kernel.on('state:changed', render);
+        kernel.on('history:changed', render);
         kernel.provide('ui.storage', { render });
         render();
         poll();

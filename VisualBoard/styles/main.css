@@ -2600,3 +2600,229 @@ body {
   .workspace-section-resizer {border-block:2px solid ButtonText;}
   .workspace-section-resizer::after {background:ButtonText;}
 }
+
+
+/* VP1-010 — Original manga layout catalog in the existing Page Formats area. */
+.pf-browser { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.pf-tabs { display:flex; flex-wrap:wrap; gap:4px; }
+.pf-tab { flex:1 0 auto; min-width:65px; padding:5px 4px;
+  background:var(--panel-2); border:1px solid var(--line-soft); border-radius:5px;
+  color:var(--text); font:inherit; font-size:10px; cursor:pointer; }
+.pf-tab.active { border-color:var(--accent); background:var(--panel-3); font-weight:700; }
+.pf-tab:focus-visible,.pf-layout-item:focus-visible,.pf-preview-place:focus-visible {
+  outline:2px solid var(--accent); outline-offset:2px; }
+.pf-layout-tools {display:flex;flex-direction:column;gap:5px;}
+.pf-layout-tools[hidden],.pf-layout-preview[hidden] {display:none;}
+.pf-layout-search {width:100%; box-sizing:border-box; padding:5px 7px;
+  background:var(--panel-2); border:1px solid var(--line-soft);border-radius:5px;
+  color:var(--text);font:inherit;font-size:11px;}
+.pf-layout-sizes {display:flex;gap:8px;align-items:center;}
+.pf-layout-sizes label {display:flex; flex:1 1 0; align-items:center; gap:4px;
+  min-width:0;font-size:11px;color:var(--muted);}
+.pf-layout-sizes input {width:100%; min-width:0; box-sizing:border-box; padding:3px;
+  color:var(--text);background:var(--panel-2);
+  border:1px solid var(--line-soft);border-radius:4px;}
+.pf-layout-preview {display:flex;gap:9px;align-items:center;min-width:0;padding:6px;
+  border:1px solid var(--line-soft);border-radius:7px;background:var(--panel-2);}
+.pf-preview-image {width:76px;min-width:76px;height:90px;display:flex;
+  align-items:center;justify-content:center;background:#ffffff;border-radius:4px;overflow:hidden;}
+.pf-preview-image svg {max-width:100%;max-height:100%;width:auto;height:auto;}
+.pf-preview-meta {flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.pf-preview-meta strong {font-size:11px;overflow-wrap:anywhere;}
+.pf-preview-meta span {font-size:10px;color:var(--muted);}
+.pf-preview-place {font-size:11px;padding:5px 7px;align-self:flex-start;}
+.pf-grid.pf-template-grid {max-height:240px;overflow-y:auto;overscroll-behavior:contain;}
+.pf-layout-item {min-width:0;color:var(--text);font:inherit;}
+.pf-layout-item.selected {border-color:var(--accent);background:var(--panel-3);}
+.pf-layout-item[aria-pressed="true"] .pf-thumb {border-color:var(--accent);}
+.pf-dimension-error {font-size:11px;color:var(--danger,#df7777);margin:4px 0;}
+.tpl-filter-controls {display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+.tpl-filter-controls select,.tpl-filter-controls input {flex:1;min-width:110px;
+  background:var(--panel-2);color:var(--text);padding:6px 7px;
+  border:1px solid var(--line-soft);border-radius:5px;}
+
+
+/* VP1-012–018 — contextual non-destructive Knife + page gutter. */
+#viewport.vp1-knife-active,.vp1-knife-active .manga-page,
+.vp1-knife-active .manga-panel{cursor:crosshair!important;}
+.vp1-knife-overlay{
+  position:absolute;inset:0;width:100%;height:100%;z-index:99999;
+  pointer-events:none;overflow:hidden;
+}
+.vp1-knife-controls{display:flex;flex-direction:column;gap:7px;}
+.vp1-knife-controls .muted{font-size:11px;line-height:1.45;margin:0;}
+.vp1-knife-toggle[aria-pressed="true"]{border-color:#25c78e;color:#b9ffdf;}
+.vp1-gutter-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;}
+.vp1-gutter-input{width:78px;min-width:0;box-sizing:border-box;padding:6px;
+  border:1px solid var(--line-soft);border-radius:5px;color:var(--text);background:var(--panel-2);}
+.vp1-gutter-input:focus-visible,.vp1-knife-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+
+/* VP1-021–028: direct handles/appearance on existing manga inspector and canvas. */
+.vp1-vertex-overlay{position:absolute;inset:0;width:100%;height:100%;
+  z-index:99998;overflow:visible;pointer-events:none;}
+.vp1-vertex-overlay circle{pointer-events:all;cursor:grab;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.36));}
+.vp1-vertex-overlay circle:active{cursor:grabbing;}
+#viewport.vp1-vertex-active .manga-panel{cursor:crosshair;}
+.vp1-panel-properties{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.vp1-panel-properties p{font-size:11px;line-height:1.5;margin:0;}
+.vp1-vertices-toggle[aria-pressed="true"]{border-color:var(--accent);font-weight:700;}
+.vp1-property-row{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;font-size:11px;min-width:0;}
+.vp1-property-row input[type="number"]{width:80px;min-width:0;padding:5px;
+  background:var(--panel-2);border:1px solid var(--line-soft);
+  border-radius:4px;color:var(--text);}
+.vp1-property-row input[type="color"]{width:64px;height:28px;padding:2px;
+  background:var(--panel-2);border:1px solid var(--line-soft);border-radius:4px;}
+.vp1-property-row input:focus-visible,.vp1-vertices-toggle:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;}
+
+
+/* VP1-029–042: page-local view masks, non-destructive image crop and framing */
+.manga-layer-viewport{position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;overflow:visible;}
+.manga-layer-viewport>.manga-layer{pointer-events:auto;}
+.manga-layer>img{width:100%;height:100%;object-fit:fill;}
+.vp1-crop-handle{display:none;position:absolute;z-index:1000;width:12px;height:12px;
+  box-sizing:border-box;transform:translate(-50%,-50%);
+  border:2px solid #227ad9;border-radius:3px;background:white;
+  pointer-events:auto;cursor:crosshair;box-shadow:0 0 0 1px rgba(0,0,0,.25);}
+.manga-layer.vp1-crop-editing>.vp1-crop-handle{display:block;}
+.vp1-crop-handle-left,.vp1-crop-handle-right{cursor:ew-resize;}
+.vp1-crop-handle-top,.vp1-crop-handle-bottom{cursor:ns-resize;}
+.vp1-framing{width:100%;padding:8px 6px;display:flex;flex-direction:column;
+  gap:7px;box-sizing:border-box;border:1px solid var(--line-soft);
+  border-radius:5px;background:var(--panel-2);}
+.vp1-framing>.muted{font-size:11px;margin:0;}
+.vp1-framing-actions{display:flex;flex-wrap:wrap;gap:4px;}
+.vp1-image-action{font-size:11px;padding:4px 6px;}
+.vp1-framing-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+.vp1-framing-field{display:flex;flex-direction:column;gap:2px;font-size:11px;min-width:0;}
+.vp1-framing-field input{width:100%;min-width:0;padding:5px;
+  border:1px solid var(--line-soft);border-radius:4px;background:var(--panel);
+  color:var(--text);box-sizing:border-box;}
+.vp1-framing-group{border:1px solid var(--line-soft);border-radius:4px;min-width:0;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px;}
+.vp1-framing-group legend{font-size:11px;padding:0 3px;}
+.vp1-replace-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;}
+.vp1-replace-row select{max-width:100%;min-width:80px;flex:1;}
+.vp1-framing-toggle{font-size:11px;margin-top:3px;}
+.vp1-crop-toggle[aria-pressed="true"]{border-color:#227ad9;color:var(--accent);}
+
+/* Crop editing handles are outside the image's immutable View Limits mask. */
+.vp1-crop-page-overlay{position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:80;overflow:visible;}
+.vp1-crop-page-handle{display:block;position:absolute;z-index:1;
+  width:13px;height:13px;box-sizing:border-box;
+  transform:translate(-50%,-50%);border:2px solid #227ad9;
+  border-radius:3px;background:white;pointer-events:all;
+  box-shadow:0 0 0 1px rgba(0,0,0,.3);}
+.vp1-crop-page-handle.vp1-crop-handle-left,
+.vp1-crop-page-handle.vp1-crop-handle-right{cursor:ew-resize;}
+.vp1-crop-page-handle.vp1-crop-handle-top,
+.vp1-crop-page-handle.vp1-crop-handle-bottom{cursor:ns-resize;}
+
+
+/* VP1-043–051: selectable vector manga effects inside existing clipped slots. */
+.vp1-manga-effects{position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;overflow:visible;z-index:60;}
+.vp1-manga-effects g{pointer-events:none;}
+.vp1-manga-effects g[data-vp1-effect-selected="true"]{
+  pointer-events:visiblePainted;cursor:move;
+  filter:drop-shadow(0 0 2px rgba(70,150,250,.85));}
+.vp1-manga-effects g[data-vp1-effect-selected="true"]>*{
+  pointer-events:visiblePainted;}
+.vp1-manga-brush-preview{position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:99997;overflow:visible;}
+.vp1-manga-fx-inspector{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.vp1-manga-fx-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.vp1-manga-fx-btn{font-size:11px;padding:4px 6px;}
+.vp1-manga-fx-inspector [aria-pressed="true"]{border-color:var(--accent);}
+.vp1-fx-object{display:flex;flex-direction:column;gap:5px;
+  border:1px solid var(--line-soft);border-radius:5px;padding:5px;min-width:0;}
+.vp1-fx-select{flex:1;text-align:left;font-size:11px;}
+.vp1-fx-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;min-width:0;}
+.vp1-fx-input{display:flex;flex-direction:column;gap:2px;
+  min-width:0;font-size:10px;}
+.vp1-fx-input input,.vp1-fx-settings select{min-width:0;width:100%;box-sizing:border-box;
+  padding:4px;border:1px solid var(--line-soft);border-radius:4px;
+  background:var(--panel);color:var(--text);}
+.vp1-fx-preview{display:block;width:100%;height:110px;
+  border:1px solid var(--line-soft);background:#fff;overflow:hidden;}
+
+/* Page effects render below user overlay images, as in PNG/PDF exports. */
+.manga-overlay>.vp1-manga-effects{z-index:0;}
+.vp1-fx-settings input[type="range"]{width:100%;accent-color:var(--accent);}
+
+/* VP1-052–061: dialogue balloons inherit the existing inspector styles. */
+.vp1-balloons [data-vp1-balloon-selected="true"] > path { filter: drop-shadow(0 0 2px #1686df); }
+.vp1-balloon-actions { display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0; }
+.vp1-balloon-preset {flex:1 1 140px;min-width:0;}
+.vp1-balloon-card {margin:8px 0;padding:8px;border:1px solid var(--border,#ccc);border-radius:6px;}
+.vp1-balloon-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.vp1-balloon-field {display:flex;flex-direction:column;gap:3px;font-size:11px;min-width:0;}
+.vp1-balloon-field > input,.vp1-balloon-field > select,.vp1-balloon-field > textarea {max-width:100%;min-width:0;box-sizing:border-box;}
+.vp1-balloon-field:has(textarea),.vp1-balloon-field:has(select),.vp1-balloon-fields > .vp1-balloon-actions {grid-column:1/-1;}
+.vp1-balloon-sketch {user-select:none;}
+
+/* Balloon geometry remains clickable although the container is an inert overlay. */
+.vp1-balloons {pointer-events:none;}
+.vp1-balloons g[data-vp1-balloon-id]:not([data-vp1-balloon-locked="true"]) {pointer-events:visiblePainted;}
+.vp1-balloons g[data-vp1-balloon-id] > path {pointer-events:visiblePainted;}
+
+
+/* VP1-062–068: horizontal text editor, safe selection and inspector. */
+.vp1-horizontal-texts{pointer-events:none;user-select:none;}
+.vp1-horizontal-texts [data-vp1-text-id]{pointer-events:visiblePainted;}
+.vp1-horizontal-texts [data-vp1-text-id] > rect{pointer-events:all;}
+.vp1-text-inline-editor{
+  position:absolute;z-index:1100;box-sizing:border-box;resize:none;
+  border:1.5px dashed #167de0;outline:2px solid rgba(20,130,255,.25);
+  padding:0;margin:0;line-height:1.2;background:rgba(255,255,255,.87);
+  overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;
+  pointer-events:auto;transform-origin:center center;
+}
+.vp1-horizontal-text-inspector{display:flex;flex-direction:column;gap:7px;}
+.vp1-text-object{border:1px solid var(--line-soft);border-radius:5px;padding:6px;min-width:0;}
+.vp1-text-actions{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px;}
+.vp1-text-button{font-size:11px;padding:4px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.vp1-text-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.vp1-text-field{display:flex;flex-direction:column;gap:3px;font-size:11px;min-width:0;}
+.vp1-text-field input,.vp1-text-field select,.vp1-text-field textarea{
+  width:100%;min-width:0;box-sizing:border-box;}
+.vp1-text-field:has(textarea),.vp1-text-field:has(select){grid-column:1/-1;}
+
+
+/* VP1-069–075: hierarchical layer tree and precise in-canvas toolbar. */
+.vp1-layer-tree{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.vp1-tree-folder{border:1px solid var(--line-soft,#5555);border-radius:5px;min-width:0;}
+.vp1-tree-summary{display:flex;gap:5px;align-items:center;padding:4px 5px;cursor:pointer;}
+.vp1-tree-summary::marker{font-size:10px;}
+.vp1-tree-children{margin:0 0 4px 10px;border-left:1px solid var(--line-soft,#5555);}
+.vp1-tree-row{display:flex;align-items:center;gap:4px;padding:3px 4px;min-width:0;}
+.vp1-tree-row.is-selected,.vp1-tree-label[aria-pressed=true]{background:rgba(37,138,229,.16);border-radius:3px;}
+.vp1-tree-row.is-hidden{opacity:.5;}
+.vp1-tree-row.is-locked{border-left:2px solid #888;}
+.vp1-tree-thumb{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;overflow:hidden;border:1px solid #7775;border-radius:3px;background:#fff;color:#303030;font-size:14px;}
+.vp1-tree-thumb img,.vp1-tree-thumb svg{display:block;width:100%;height:100%;object-fit:contain;}
+.vp1-tree-label{min-width:0;flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:inherit;font-size:11px;background:transparent;border:0;color:inherit;padding:3px;cursor:pointer;}
+.vp1-tree-kind{font-size:9px;color:var(--text-muted,#888);}
+.vp1-tree-actions{display:flex;gap:1px;flex:none;}
+.vp1-tree-actions button{border:0;background:transparent;color:inherit;font-size:11px;cursor:pointer;padding:2px;min-width:19px;}
+.vp1-tree-actions button:disabled{opacity:.35;}
+.vp1-tree-context{position:fixed;z-index:1000000;display:flex;flex-direction:column;min-width:172px;padding:4px;border:1px solid #606c7a;background:#252c35;color:#fff;border-radius:6px;box-shadow:0 8px 18px #0005;}
+.vp1-tree-context button{padding:7px 10px;text-align:left;border:0;background:transparent;color:inherit;cursor:pointer;font-size:12px;}
+.vp1-tree-context button:hover{background:#3871ad;}
+.vp1-tree-canvas-controls{position:absolute;display:flex;gap:2px;width:max-content;max-width:240px;padding:3px;background:rgba(26,34,47,.92);color:#fff;border:1px solid #498bd6;border-radius:4px;z-index:1201;pointer-events:auto;box-shadow:0 3px 8px #0004;}
+.vp1-tree-canvas-controls button{background:transparent;color:inherit;border:0;cursor:pointer;min-width:24px;font-size:12px;padding:3px;}
+.vp1-tree-canvas-controls button:hover{background:#41658f;}
+.vp1-tree-canvas-controls button:disabled{opacity:.35;cursor:default;}
+.vp1-tree-locked{cursor:default!important;}
+
+/* VP1-079/083: dirty status and DPI export controls */
+.storage-dot.warn{background:#e4a43a;box-shadow:0 0 0 2px rgba(228,164,58,.20);}
+.vp1-png-dpi{display:flex;flex-direction:column;gap:6px;}
+.vp1-png-dpi-field{display:flex;align-items:center;justify-content:space-between;gap:7px;font-size:11px;}
+.vp1-png-dpi-field input{width:86px;min-width:65px;box-sizing:border-box;}
