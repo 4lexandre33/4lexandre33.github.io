@@ -59,7 +59,11 @@ definePlugin({
             const ps = await PS.promptImport();
             if (!ps)
                 return;
-            await MP.addToBoard(ps.id, cam.data.x, cam.data.y);
+            const T = await kernel.require('panelTemplates');
+            const slot = await T.flowPosition(ps.id);
+            const inst = await MP.addToBoard(ps.id, slot.x, slot.y);
+            if (inst)
+                T.focusPage(inst);
             D.toast('Page "' + ps.name + '" created.', 'ok');
         }
         /* ---------------- New from template ---------------- */
@@ -623,6 +627,72 @@ definePlugin({
         kernel.on('history:changed', renderPageStrip);
         setPagesOpen(pagesOpen);
         renderPageStrip();
+        /* ---------------- Seções recolhíveis do inspetor (layout Quadrid) ----------------
+         * Cada cabeçalho `.side-head` do painel direito recolhe/expande tudo até o próximo cabeçalho
+         * (corpo + divisores). O estado é só preferência local (localStorage), nunca vai ao projeto. */
+        const SECTION_KEY = 'nvb.ui.collapsedSections';
+        const readCollapsed = () => {
+            try {
+                const parsed = JSON.parse(storageGet(SECTION_KEY) || '{}');
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            }
+            catch {
+                return {};
+            }
+        };
+        const collapsedSections = readCollapsed();
+        const sectionId = (head) => right.id + ':' + ((head.querySelector('h2')?.textContent) || '').trim().toLowerCase();
+        function sectionNodes(head) {
+            const nodes = [];
+            let next = head.nextElementSibling;
+            while (next && !next.classList.contains('side-head')) {
+                nodes.push(next);
+                next = next.nextElementSibling;
+            }
+            return nodes;
+        }
+        function applySection(head, collapsed) {
+            head.classList.toggle('is-collapsed', collapsed);
+            head.setAttribute('aria-expanded', String(!collapsed));
+            sectionNodes(head).forEach(node => node.classList.toggle('section-collapsed', collapsed));
+        }
+        function toggleSection(head) {
+            const collapsed = !head.classList.contains('is-collapsed');
+            applySection(head, collapsed);
+            collapsedSections[sectionId(head)] = collapsed;
+            storageSet(SECTION_KEY, JSON.stringify(collapsedSections));
+        }
+        function enhanceSections() {
+            right.querySelectorAll('.side-head').forEach(head => {
+                if (head.dataset.collapsible === '1')
+                    return;
+                head.dataset.collapsible = '1';
+                head.setAttribute('role', 'button');
+                head.tabIndex = 0;
+                applySection(head, collapsedSections[sectionId(head)] === true);
+            });
+        }
+        kernel.listen(right, 'click', event => {
+            const target = event.target;
+            if (target.closest('button'))
+                return; // botões do cabeçalho (ex.: recolher painel) têm ação própria
+            const head = target.closest('.side-head');
+            if (head && head.dataset.collapsible === '1')
+                toggleSection(head);
+        });
+        kernel.listen(right, 'keydown', event => {
+            const e = event;
+            if (e.key !== 'Enter' && e.key !== ' ')
+                return;
+            const head = e.target.closest('.side-head');
+            if (head && head.dataset.collapsible === '1' && e.target === head) {
+                e.preventDefault();
+                toggleSection(head);
+            }
+        });
+        const sectionObserver = new MutationObserver(enhanceSections); // o inspetor de mangá cria o próprio cabeçalho depois
+        sectionObserver.observe(right, { childList: true });
+        enhanceSections();
         const mobileBreakpoint = window.matchMedia('(max-width:820px)');
         kernel.listen(mobileBreakpoint, 'change', () => setWorkspaceMode(currentMode, false));
         /* Progressive disclosure: help appears for a genuinely empty new project. */

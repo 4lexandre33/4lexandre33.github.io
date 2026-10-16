@@ -20,7 +20,7 @@
         "assets": "getUrl hasUrl importFiles createFromFile deleteAsset ensureDefaultPackage restoreFromStorage restoreHistoryBlobs",
         "svgGeometry": "parseSvg parsePathToPoints flattenPath transform elementMatrix contains serializeVector",
         "panelSets": "parseSvg parsePathToPoints getOriginalSvg downloadSvg thumbSvg create get list rename remove promptImport promptPick syncAll",
-        "panelTemplates": "list createFromTemplate promptPick pickAndCreate",
+        "panelTemplates": "list createFromTemplate flowPosition focusPage promptPick pickAndCreate",
         "packages": "create rename remove move assetsOf",
         "boards": "create getBoard current navigate navigateUp rename remove pathOf depthOf list duplicate move update",
         "instances": "addImage addBoard removeSelection duplicateSelection reorder rotateSelection restoreAspect nudge copySelection pasteClipboard selectByIds clearSelection updateById removeById duplicateById reorderById align distribute",
@@ -615,6 +615,8 @@
         'projectFormat.prepare': { params: ['payload:object'], returns: 'object' },
         'projectFormat.envelope': { params: ['document:object', 'assets:array'], returns: 'object' },
         'app.backupNow': { params: [], returns: 'promise<object>' },
+        'panelTemplates.flowPosition': { params: ['panelSetId:string'], returns: 'promise<object>' },
+        'panelTemplates.focusPage': { params: ['page:object'], returns: 'void' },
         'exportImport.exportProject': { params: ['options?:object'], returns: 'promise<object>' },
         'exportImport.importProjectFile': { params: ['file:object'], returns: 'promise<object>' },
         'exportImport.newProject': { params: ['name?:string'], returns: 'promise<object>' },
@@ -686,7 +688,7 @@
         }
         // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
         const MINOR_BUMPS = {
-            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.3.0', app: '1.1.0', 'ui.shell': '1.1.0'
+            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.3.0', app: '1.1.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
         };
         const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {

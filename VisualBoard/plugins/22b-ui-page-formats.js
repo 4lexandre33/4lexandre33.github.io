@@ -144,7 +144,11 @@ definePlugin({
         /* ---------------- Place instance ---------------- */
         async function placeInstance(ps) {
             try {
-                const inst = await MP.addToBoard(ps.id, cam.data.x, cam.data.y);
+                const T = await kernel.require('panelTemplates');
+                const slot = await T.flowPosition(ps.id);
+                const inst = await MP.addToBoard(ps.id, slot.x, slot.y);
+                if (inst)
+                    T.focusPage(inst);
                 if (inst) {
                     D.toast('Page "' + ps.name + '" placed.', 'ok');
                 }

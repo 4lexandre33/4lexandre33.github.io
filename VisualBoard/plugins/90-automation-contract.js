@@ -381,6 +381,8 @@ definePlugin({
             excl('panelSets.promptImport', 'Abre diálogo de arquivo.'),
             excl('panelSets.promptPick', 'Abre diálogo de seleção.'),
             excl('panelSets.syncAll', 'Sincronização interna com a pasta do projeto.'),
+            excl('panelTemplates.flowPosition', 'Auxiliar de interface: page.create_from_template já posiciona a página na fila.'),
+            excl('panelTemplates.focusPage', 'Auxiliar de interface: move a câmera; use viewport.fit_selection.'),
             excl('panelTemplates.promptPick', 'Abre diálogo de seleção.'),
             excl('panelTemplates.pickAndCreate', 'Abre diálogo de seleção.'),
             excl('instances.addBoard', 'Inserir link de board no canvas: decisão de produto pendente (a árvore de boards já é manipulada por board.*); não exposto na Fase 2.'),

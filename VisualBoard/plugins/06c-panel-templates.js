@@ -11,12 +11,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'panel-templates',
-    version: '1.0.0',
+    version: '1.1.0',
     needs: ['utils', 'state', 'panelSets', 'mangaPage', 'camera', 'history'],
     provides: ['panelTemplates'],
     uses: [],
     accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'panelSets': '^1.0.0', 'mangaPage': '^1.0.0', 'camera': '^1.0.0', 'history': '^1.0.0' },
-    contractVersions: { 'panelTemplates': '1.0.0' },
+    contractVersions: { 'panelTemplates': '1.1.0' },
     setup: async function (kernel) {
         const S = (await kernel.require('state')).data;
         const PS = await kernel.require('panelSets');
@@ -291,26 +291,38 @@ definePlugin({
                 horizontal: TEMPLATES.filter(t => t.orientation === 'horizontal').length };
         }
         /* ---------------- Create ---------------- */
-        function freePosition(parsed) {
-            const w = 480, h = Math.round(w * parsed.height / parsed.width);
+        /** Fase 10: páginas de template ocupam o próximo espaço livre de uma grade invisível:
+         *  linhas horizontais da esquerda para a direita; ao chegar na borda do canvas (mundo) desce uma
+         *  linha e recomeça. Só vale para páginas de mangá; boards, sub-boards e imagens ficam onde o
+         *  usuário os coloca. Devolve o CENTRO da página (mesma convenção de mangaPage.addToBoard). */
+        const FLOW_PAGE_WIDTH = 480, FLOW_GAP = 36, FLOW_MARGIN = 120;
+        async function flowPosition(panelSetId) {
+            const set = PS.get(panelSetId);
+            if (!set)
+                throw Error('Unknown panel set');
+            const w = FLOW_PAGE_WIDTH, h = Math.round(w * set.height / set.width);
+            const minX = cam.WORLD_MIN + FLOW_MARGIN, maxX = cam.WORLD_MAX - FLOW_MARGIN;
+            const minY = cam.WORLD_MIN + FLOW_MARGIN, maxY = cam.WORLD_MAX - FLOW_MARGIN;
             const current = S.boards.find(b => b.id === S.currentBoardId);
-            const occupied = (current?.instances || []).filter(i => i.type === 'manga-page' && i.visible !== false);
-            for (let ring = 0; ring <= 10; ring++) {
-                for (let row = -ring; row <= ring; row++)
-                    for (let col = -ring; col <= ring; col++) {
-                        if (Math.max(Math.abs(row), Math.abs(col)) !== ring)
-                            continue;
-                        const x = cam.data.x + col * (w + 36), y = cam.data.y + row * (h + 36);
-                        if (x - w / 2 < cam.WORLD_MIN || x + w / 2 > cam.WORLD_MAX ||
-                            y - h / 2 < cam.WORLD_MIN || y + h / 2 > cam.WORLD_MAX)
-                            continue;
-                        const overlaps = occupied.some(page => x - w / 2 < page.x + page.width + 12 && x + w / 2 > page.x - 12 &&
-                            y - h / 2 < page.y + page.height + 12 && y + h / 2 > page.y - 12);
-                        if (!overlaps)
-                            return { x, y };
-                    }
+            const items = current ? current.instances : [];
+            const half = FLOW_GAP / 2;
+            let y = minY;
+            for (let row = 0; row < 400 && y + h <= maxY; row++) {
+                let x = minX, rowBottom = y + h;
+                while (x + w <= maxX) {
+                    const hit = items.find(i => x < i.x + i.width + half && x + w > i.x - half && y < i.y + i.height + half && y + h > i.y - half);
+                    if (!hit)
+                        return { x: x + w / 2, y: y + h / 2 };
+                    rowBottom = Math.max(rowBottom, hit.y + hit.height);
+                    x = Math.max(x + 1, hit.x + hit.width + FLOW_GAP);
+                }
+                y = rowBottom + FLOW_GAP;
             }
             return { x: cam.data.x, y: cam.data.y };
+        }
+        /** Mostra a página recém-criada (a fila pode estar longe da vista atual). */
+        function focusPage(inst) {
+            cam.fitBounds(cam.bounds([inst]), 140);
         }
         async function createFromTemplate(tpl, options) {
             // IDs are stable; reject edited/foreign descriptors before creating persistent state.
@@ -318,12 +330,13 @@ definePlugin({
             if (!original)
                 throw Error('Unknown built-in page template');
             const parsed = buildParsed(original, options);
-            const position = freePosition(parsed);
             return kernel.call('history', 'transaction', 'template.create', async function () {
                 const ps = PS.create(parsed, original.name);
+                const position = await flowPosition(ps.id);
                 const inst = await MP.addToBoard(ps.id, position.x, position.y);
                 if (!inst)
                     throw Error('Could not create manga page');
+                focusPage(inst);
                 kernel.emit('toast', { message: 'Page "' + original.name + '" created.', kind: 'ok' });
                 return { panelSet: ps, instance: inst };
             });
@@ -435,6 +448,8 @@ definePlugin({
         kernel.provide('panelTemplates', {
             list: function () { return TEMPLATES.slice(); },
             createFromTemplate: createFromTemplate,
+            flowPosition: flowPosition,
+            focusPage: focusPage,
             promptPick: promptPick,
             pickAndCreate: pickAndCreate
         });
