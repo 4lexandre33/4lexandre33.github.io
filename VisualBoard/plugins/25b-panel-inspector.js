@@ -1405,6 +1405,9 @@ definePlugin({
             return root;
         }
         const canvas = document.getElementById('viewport');
+        // Capture phase + stopImmediatePropagation: exactly ONE context menu may open.
+        // Layers/texts/balloons/effects use this tree menu; plain panels, instances and the
+        // empty canvas keep the generic menu from 25-context-menu (never both at once).
         canvas?.addEventListener('contextmenu', e => {
             const t = e.target;
             const group = t.closest?.('[data-vp1-text-id],[data-vp1-balloon-id],' +
@@ -1412,6 +1415,9 @@ definePlugin({
             const parent = group?.closest('.manga-page');
             const page = parent && instanceById(parent.dataset.id || '');
             if (!group || !page || page.type !== 'manga-page')
+                return;
+            if (group.classList.contains('manga-panel') && !group.hasAttribute('data-vp1-text-id') &&
+                !group.hasAttribute('data-vp1-balloon-id') && !group.hasAttribute('data-vp1-effect-id'))
                 return;
             let kind = 'panel', id = null;
             if (group.hasAttribute('data-vp1-text-id')) {
@@ -1433,9 +1439,11 @@ definePlugin({
             else
                 id = group.dataset.panelId || null;
             const node = MP.listLayerTree(page).find(n => n.id === id && n.kind === kind);
-            if (node)
+            if (node) {
+                e.stopImmediatePropagation();
                 showTreeMenu(e, page, node);
-        });
+            }
+        }, true);
         /* ---------------- Render ---------------- */
         function render() {
             const inst = currentFocusInstance();
