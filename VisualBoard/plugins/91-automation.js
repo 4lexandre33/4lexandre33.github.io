@@ -19,13 +19,13 @@ definePlugin({
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
     provides: ['automation'],
-    uses: ['app', 'ui.dialogs', 'ui.shell'],
+    uses: ['app', 'ui.dialogs', 'ui.shell', 'assetHub'],
     accepts: {
         'automationContract': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'camera': '^1.0.0',
         'assets': '^1.0.0', 'packages': '^1.0.0', 'boards': '^1.0.0', 'instances': '^1.0.0',
         'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'mangaEdit': '^1.0.0',
         'exportImport': '^1.0.0', 'mangaExport': '^2.0.0', 'mangaExportPreflight': '^1.0.0',
-        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0'
+        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0'
     },
     contractVersions: { 'automation': '1.4.0' },
     setup: async function (kernel) {
@@ -822,6 +822,69 @@ definePlugin({
                 if (!pages.length)
                     return fail('NOT_FOUND', 'No manga pages to export on the current board');
                 return { result: toJson(await mangaExport.exportChapterPdf(pages, exportOptions(input))) };
+            }
+        };
+        /* ---------- Fase 15: catalog.* → Asset Hub (mesmas ferramentas do Hub; nenhuma lógica aqui) ---------- */
+        const HUB_CODES = {
+            NOT_CONNECTED: 'HUB_UNAVAILABLE', HUB_UNREACHABLE: 'HUB_UNAVAILABLE', NOT_AUTHORIZED: 'PERMISSION_DENIED', PERMISSION_DENIED: 'PERMISSION_DENIED', RATE_LIMITED: 'BUSY',
+            INVALID_ARGUMENT: 'INVALID_ARGUMENT', NOT_FOUND: 'NOT_FOUND', LIMIT_EXCEEDED: 'LIMIT_EXCEEDED', TOO_LARGE: 'LIMIT_EXCEEDED'
+        };
+        async function hubCall(verb, input) {
+            const hub = await kernel.require('assetHub');
+            try {
+                return await hub.call(verb, input);
+            }
+            catch (err) {
+                const hubCode = String(err.code ?? 'HUB_ERROR');
+                return fail(HUB_CODES[hubCode] ?? 'OPERATION_REJECTED', err instanceof Error ? err.message : String(err), { hubCode });
+            }
+        }
+        const hubHandler = (verb) => async (input) => toJson(await hubCall(verb, input));
+        handlers['catalog.status'] = hubHandler('status');
+        handlers['catalog.search'] = hubHandler('search');
+        handlers['catalog.get'] = hubHandler('get');
+        handlers['catalog.add'] = hubHandler('add');
+        handlers['catalog.update'] = hubHandler('update');
+        handlers['catalog.move'] = hubHandler('move');
+        handlers['catalog.remove'] = hubHandler('remove');
+        handlers['catalog.tag_list'] = hubHandler('tag_list');
+        handlers['catalog.tag_add'] = hubHandler('tag_add');
+        handlers['catalog.tag_remove'] = hubHandler('tag_remove');
+        handlers['catalog.tag_merge'] = hubHandler('tag_merge');
+        handlers['catalog.tag_delete'] = hubHandler('tag_delete');
+        handlers['catalog.folder_list'] = hubHandler('folder_list');
+        handlers['catalog.folder_create'] = hubHandler('folder_create');
+        handlers['catalog.folder_update'] = hubHandler('folder_update');
+        handlers['catalog.folder_delete'] = hubHandler('folder_delete');
+        handlers['catalog.usage'] = hubHandler('usage');
+        handlers['catalog.reference_add'] = hubHandler('reference_add');
+        handlers['catalog.reference_remove'] = hubHandler('reference_remove');
+        handlers['catalog.verify'] = hubHandler('verify');
+        handlers['catalog.gc_orphans'] = hubHandler('gc_orphans');
+        handlers['catalog.import_library'] = async (input) => {
+            const hub = await kernel.require('assetHub');
+            const packageId = typeof input['packageId'] === 'string' ? input['packageId'] : undefined;
+            if (packageId && !state.getPackage(packageId))
+                return fail('NOT_FOUND', 'Package not found: ' + packageId);
+            try {
+                return toJson(await hub.importLibrary(packageId));
+            }
+            catch (err) {
+                const hubCode = String(err.code ?? 'HUB_ERROR');
+                return fail(HUB_CODES[hubCode] ?? 'OPERATION_REJECTED', err instanceof Error ? err.message : String(err), { hubCode });
+            }
+        };
+        handlers['catalog.place'] = async (input) => {
+            const hub = await kernel.require('assetHub');
+            const packageId = typeof input['packageId'] === 'string' ? input['packageId'] : undefined;
+            if (packageId && !state.getPackage(packageId))
+                return fail('NOT_FOUND', 'Package not found: ' + packageId);
+            try {
+                return toJson(await hub.place(String(input['id']), packageId));
+            }
+            catch (err) {
+                const hubCode = String(err.code ?? 'HUB_ERROR');
+                return fail(HUB_CODES[hubCode] ?? 'OPERATION_REJECTED', err instanceof Error ? err.message : String(err), { hubCode });
             }
         };
         /* ---------- argument resolution for declarative bindings ---------- */

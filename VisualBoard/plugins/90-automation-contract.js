@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.3.0',
+    version: '1.4.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.3.0';
+        const CONTRACT_VERSION = '1.4.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -162,6 +162,49 @@ definePlugin({
         T('asset', 'import', W, 'Import image', 'Imports an image given as base64 into the asset library. Paths on disk are never read here.', obj({ name: str({ minLength: 1, maxLength: 200 }), mimeType: en(['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
             dataBase64: str({ maxLength: 28000000 }), packageId: id('package id') }, ['name', 'mimeType', 'dataBase64']), comp('asset.import', ['assets.importFiles']), true);
         T('asset', 'delete', D, 'Delete asset', 'Removes an asset from the library. Requires confirmation.', obj({ assetId: id('asset id') }, ['assetId']), call('assets', 'deleteAsset', ['assetId'], 'done'), true);
+        /* ===== catalog (Asset Hub) ===== */
+        const hubId = (what = 'catalog asset id') => ({ type: 'string', minLength: 1, maxLength: 64, description: what });
+        const tagList = () => arr(str({ minLength: 1, maxLength: 70 }), 50);
+        const idList = () => arr(hubId(), 200);
+        const catSearch = () => ({
+            text: str({ maxLength: 200, description: 'free text over title, file name, description and tags' }),
+            tags: obj({ all: tagList(), any: tagList(), none: tagList() }),
+            folder: obj({ id: hubId('folder id'), recursive: bool() }, ['id']),
+            where: arr(obj({ field: en(['width', 'height', 'bytes', 'mime', 'filename', 'title', 'hasAlpha', 'created', 'updated']),
+                op: en(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'like']), value: { description: 'string, number, boolean or array (op=in)' } }, ['field', 'op', 'value']), 20),
+            usage: { type: ['string', 'object'], maxLength: 20, additionalProperties: true, description: "'used', 'unused' or {project: string}" },
+            similarTo: obj({ entityId: hubId(), maxDistance: int(0, 64) }, ['entityId']),
+            sort: obj({ by: en(['created', 'updated', 'name', 'size', 'width', 'height']), dir: en(['asc', 'desc']) }, ['by']),
+            limit: int(1, 200), cursor: str({ maxLength: 400 })
+        });
+        const catMeta = () => ({
+            title: str({ maxLength: 200 }), description: str({ maxLength: 2000 }), source: str({ maxLength: 500 }),
+            license: str({ maxLength: 200 }), notes: str({ maxLength: 2000 })
+        });
+        const hubTool = (verb, scope, title, description, input, undoable = false) => T('catalog', verb, scope, title, description, input, comp('catalog.' + verb, ['assetHub.call']), undoable);
+        hubTool('status', R, 'Catalog status', 'Connection to the Asset Hub, database dialect, counts, limits and server version.', none());
+        hubTool('search', R, 'Search catalog', 'Relational search of catalogued images: text, tags (all/any/none), folder, numeric/text filters, usage, similarity, sort, pagination.', obj(catSearch()));
+        hubTool('get', R, 'Get catalog image', 'All properties of one catalogued image (components, tags, folder, references).', obj({ id: hubId() }, ['id']));
+        hubTool('add', W, 'Add image to catalog', 'Uploads an image given as base64 into the Hub (de-duplicated by SHA-256) with folder, tags and metadata.', obj({ filename: str({ minLength: 1, maxLength: 200 }), dataBase64: str({ maxLength: 28000000 }), folderId: hubId('folder id'), tags: tagList(), ...catMeta() }, ['filename', 'dataBase64']));
+        hubTool('update', W, 'Update catalog image', 'Changes title, description, source, license, notes, file name or folder of an image (optional optimistic version check).', obj({ id: hubId(), filename: str({ maxLength: 200 }), folderId: hubId('folder id'), expectedVersion: int(1, 1e9), ...catMeta() }, ['id']));
+        hubTool('move', W, 'Move images', 'Moves images to a folder.', obj({ ids: idList(), folderId: hubId('folder id') }, ['ids', 'folderId']));
+        hubTool('remove', D, 'Remove catalog images', 'Deletes images from the Hub and the images folder. Refused while referenced unless force=true. Requires confirmation.', obj({ ids: idList(), force: bool() }, ['ids']));
+        hubTool('tag_list', R, 'List tags', 'Tags with usage counts, optionally by prefix.', obj({ prefix: str({ maxLength: 70 }) }));
+        hubTool('tag_add', W, 'Add tags', 'Adds tags (letters, numbers, space, _ . -; optional namespace:name) to images.', obj({ ids: idList(), tags: tagList() }, ['ids', 'tags']));
+        hubTool('tag_remove', W, 'Remove tags', 'Removes tags from images.', obj({ ids: idList(), tags: tagList() }, ['ids', 'tags']));
+        hubTool('tag_merge', W, 'Merge tags', 'Replaces several tags by one on every image.', obj({ from: tagList(), to: str({ minLength: 1, maxLength: 70 }) }, ['from', 'to']));
+        hubTool('tag_delete', D, 'Delete tag', 'Removes a tag from every image. Requires confirmation.', obj({ tag: str({ minLength: 1, maxLength: 70 }) }, ['tag']));
+        hubTool('folder_list', R, 'List folders', 'Folder tree with image counts.', none());
+        hubTool('folder_create', W, 'Create folder', 'Creates a folder inside the images tree.', obj({ name: str({ minLength: 1, maxLength: 120 }), parentId: hubId('parent folder id') }, ['name']));
+        hubTool('folder_update', W, 'Update folder', 'Renames or moves a folder.', obj({ id: hubId('folder id'), name: str({ maxLength: 120 }), parentId: hubId('parent folder id') }, ['id']));
+        hubTool('folder_delete', D, 'Delete folder', 'Deletes an empty folder (or moves its content to the parent). Requires confirmation.', obj({ id: hubId('folder id'), mode: en(['refuse', 'move_to_parent']) }, ['id']));
+        hubTool('usage', R, 'Image usage', 'Projects/instances that reference an image.', obj({ id: hubId() }, ['id']));
+        hubTool('reference_add', W, 'Add reference', 'Records that a project instance uses an image.', obj({ id: hubId(), project: str({ minLength: 1, maxLength: 200 }), instance: str({ minLength: 1, maxLength: 200 }) }, ['id', 'project', 'instance']));
+        hubTool('reference_remove', W, 'Remove reference', 'Removes one (or all) references of a project to an image.', obj({ id: hubId(), project: str({ minLength: 1, maxLength: 200 }), instance: str({ maxLength: 200 }) }, ['id', 'project']));
+        hubTool('verify', R, 'Verify catalog integrity', 'Checks that every catalogued file exists and matches its hash; lists orphan files.', none());
+        hubTool('gc_orphans', D, 'Remove orphan files', 'Deletes files in the images folder that no catalog entry owns. Requires confirmation.', none());
+        T('catalog', 'place', W, 'Place catalog image', 'Downloads a catalogued image from the Hub, imports it as an asset of the open project and records the usage reference.', obj({ id: hubId(), packageId: id('package id') }, ['id']), comp('catalog.place', ['assetHub.call', 'assets.importFiles']), true);
+        T('catalog', 'import_library', W, 'Send project library to catalog', 'Uploads the images of the open project (optionally one package) to the Asset Hub with tags origem:projeto and pacote:<name>; duplicates are recognised by SHA-256.', obj({ packageId: id('package id') }), comp('catalog.import_library', ['assetHub.importLibrary']));
         T('package', 'create', W, 'Create package', 'Creates an asset package.', obj({ name: str({ maxLength: 120 }) }), call('packages', 'create', ['name']), true);
         T('package', 'rename', W, 'Rename package', 'Renames an asset package.', obj({ packageId: id('package id'), name: str({ minLength: 1, maxLength: 120 }) }, ['packageId', 'name']), call('packages', 'rename', ['packageId', 'name'], 'done'), true);
         T('package', 'delete', D, 'Delete package', 'Deletes a package and its assets. Requires confirmation.', obj({ packageId: id('package id') }, ['packageId']), call('packages', 'remove', ['packageId'], 'done'), true);
@@ -306,6 +349,10 @@ definePlugin({
                 description: 'MCP-server tool. Renders the page (export.prepare_transfer), copies the PNG in chunks into the export folder (never overwrites unless overwrite=true), verifies the signature, size and sha256, and returns the path and the verification report.',
                 input: withId({ ...exportOpts(), fileName: str({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$', description: 'file name without folders; .png is added when missing' }), overwrite: bool() }, ['fileName']),
                 uses: ['visualboard.export.prepare_transfer'] },
+            { name: 'visualboard.catalog.add_from_path', title: 'Add image from disk to catalog', domain: 'catalog', scope: 'write',
+                description: 'MCP-server tool. Reads an image from the configured import folders (never elsewhere) and uploads it to the Asset Hub with catalog.add.',
+                input: obj({ path: str({ minLength: 1, maxLength: 1024 }), folderId: hubId('folder id'), tags: tagList(), ...catMeta() }, ['path']),
+                uses: ['visualboard.catalog.add'] },
             { name: 'visualboard.export.verify_file', title: 'Verify exported file', domain: 'export', scope: 'read',
                 description: 'MCP-server tool. Checks a PNG/JPEG/PDF file inside the export or import folders: signature, size, pixel dimensions, DPI (PNG pHYs) and sha256. Reads only the header and a hash; does not return file content.',
                 input: obj({ path: str({ minLength: 1, maxLength: 1024 }) }, ['path']),
@@ -337,6 +384,7 @@ definePlugin({
             excl('ui.packages', 'Renderização de UI.'),
             excl('ui.canvas', 'Marcador de UI sem métodos.'),
             excl('contextMenu', 'Menu de contexto do usuário.'),
+            excl('assetHub', 'Cliente do Asset Hub: exposto pelas ferramentas catalog.* (que o chamam), não por ferramentas próprias.'),
             excl('commandConsole', 'Console de comandos: é o próprio cliente local do contrato, não uma capacidade a automatizar.'),
             excl('panelInspector', 'Renderização de UI.'),
             excl('ui.storage', 'Renderização de UI.'),
@@ -478,6 +526,7 @@ definePlugin({
                 { code: 'CANCELLED', description: 'The request was cancelled (history.cancel) before it finished; a cancelled batch is fully rolled back.', retryable: true },
                 { code: 'BUSY', description: 'Too many pending requests, or the user is in the middle of an edit gesture.', retryable: true },
                 { code: 'TIMEOUT', description: 'The operation exceeded its time limit.', retryable: true },
+                { code: 'HUB_UNAVAILABLE', description: 'The Asset Hub is not connected or cannot be reached (catalog.* tools).', retryable: true },
                 { code: 'INTERNAL', description: 'Unexpected failure inside the application.', retryable: false }
             ],
             tools, gaps, serverTools, exclusions, resources, prompts

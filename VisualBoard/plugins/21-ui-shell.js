@@ -93,7 +93,7 @@ definePlugin({
         }
         /* ---------------- Janelas de configuração (popups) ----------------
          * Boards e Pacotes saem do painel direito: abrem sob demanda, uma por vez, e fecham com Esc, × ou clique fora. */
-        const popupNames = ['boards', 'packages'];
+        const popupNames = ['boards', 'packages', 'catalog'];
         const popupEl = (name) => document.getElementById('popup-' + name);
         function closePopups() {
             for (const name of popupNames) {
@@ -162,6 +162,8 @@ definePlugin({
                     openPopup('boards');
                 else if (cmd === 'open-packages')
                     openPopup('packages');
+                else if (cmd === 'open-catalog')
+                    openPopup('catalog');
                 if (['toggle-left', 'open-properties', 'toggle-right', 'collapse-left', 'collapse-right'].includes(cmd || ''))
                     updateSidebarAria();
                 else if (cmd === 'toggle-pages')

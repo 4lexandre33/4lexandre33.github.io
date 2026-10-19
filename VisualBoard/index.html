@@ -5,7 +5,7 @@
   <!-- Fase 0: política de segurança de conteúdo. Ver docs/architecture/csp.md.
        Rede só em loopback para a bridge MCP opcional (connect-src ws://127.0.0.1:*), sem script inline, sem plugins ou frames.
        'file:' é necessário porque 'self' não é confiável sob file:// em todos os navegadores. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: blob: data:; connect-src ws://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'; font-src 'none'; manifest-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: blob: data:; connect-src ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'; font-src 'none'; manifest-src 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Narrative Visual Board</title>
   <link rel="stylesheet" href="styles/main.css">
@@ -36,6 +36,7 @@
           <button type="button" class="btn" data-cmd="open-properties">Propriedades…</button>
           <button type="button" class="btn" data-cmd="open-boards">Boards…</button>
           <button type="button" class="btn" data-cmd="open-packages">Pacotes…</button>
+          <button type="button" class="btn" data-cmd="open-catalog" title="Catálogo de imagens (banco de dados)">Catálogo de imagens…</button>
           <button type="button" class="btn" data-cmd="open-console" title="Console de comandos (Ctrl+`)">Console de comandos</button>
           <button type="button" class="btn" data-cmd="export">Exportar projeto</button>
           <button type="button" class="btn" data-cmd="load">Abrir projeto</button>
@@ -221,6 +222,10 @@
         </div>
         <div id="package-list" class="package-list"></div>
       </div>
+    </div>
+    <div id="popup-catalog" class="vb-popup vb-popup-wide" role="dialog" aria-label="Catálogo de imagens" hidden>
+      <div class="vb-popup-head"><h2>Catálogo de imagens</h2><button type="button" class="btn ghost" data-popup-close title="Fechar (Esc)" aria-label="Fechar">×</button></div>
+      <div id="catalog-body" class="side-body hub-body"></div>
     </div>
   </div>
 </div>

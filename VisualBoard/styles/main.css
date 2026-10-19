@@ -3261,3 +3261,20 @@ input[type=search], input[type=text], input[type=number], select { background:#2
 .vb-console-input textarea { flex:1 1 auto; min-width:0; resize:none; border:0; outline:0; background:transparent; color:inherit; font:inherit; line-height:20px; max-height:120px; padding:0; }
 @media (max-width:820px) { .vb-console-hint { display:none; } .vb-console { height:var(--vb-console-h, min(240px, 45vh)); } }
 #command-console .vb-console-input textarea { border:0; background:transparent; padding:0; border-radius:0; }
+
+/* ---------------------------------------------------------------------
+ * [21] Fase 15 — Catálogo de imagens (Asset Hub)
+ * ------------------------------------------------------------------- */
+.vb-popup-wide { width:min(560px,calc(100vw - 32px)); max-height:min(82vh,720px); }
+.hub-body input, .hub-body select { width:100%; box-sizing:border-box; }
+.hub-bar { display:grid; grid-template-columns:2fr 1fr 1fr; gap:6px; }
+.hub-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; }
+.hub-card { display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px; background:#23272c; border:1px solid #3a4048; border-radius:8px; color:var(--text); cursor:pointer; }
+.hub-card img { width:96px; height:96px; object-fit:contain; background:#14161a; border-radius:6px; }
+.hub-card.is-selected { border-color:var(--accent,#7aa2ff); }
+.hub-card-name { max-width:96px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; }
+.hub-detail { display:flex; flex-direction:column; gap:6px; padding:8px; border:1px solid #3a4048; border-radius:8px; }
+.hub-chips { display:flex; flex-wrap:wrap; gap:4px; }
+.hub-msg { padding:6px 8px; border-radius:6px; background:#3a2326; color:#ffb4b4; font-size:12px; }
+.hub-connect { display:flex; flex-direction:column; gap:8px; }
+@media (max-width:820px) { .hub-bar { grid-template-columns:1fr; } }

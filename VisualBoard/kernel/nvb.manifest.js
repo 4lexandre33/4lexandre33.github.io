@@ -53,6 +53,7 @@ window.NVB_MANIFEST = {
         'plugins/90-automation-contract.js',
         'plugins/91-automation.js',
         'plugins/92-command-console.js',
+        'plugins/93-asset-hub.js',
         'plugins/99-app.js'
     ]
 };
