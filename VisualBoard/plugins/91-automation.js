@@ -19,13 +19,13 @@ definePlugin({
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
     provides: ['automation'],
-    uses: ['app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition'],
+    uses: ['app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread'],
     accepts: {
         'automationContract': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'camera': '^1.0.0',
         'assets': '^1.0.0', 'packages': '^1.0.0', 'boards': '^1.0.0', 'instances': '^1.0.0',
         'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'mangaEdit': '^1.0.0',
         'exportImport': '^1.0.0', 'mangaExport': '^2.0.0', 'mangaExportPreflight': '^1.0.0',
-        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0', 'composition': '^1.0.0'
+        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0', 'composition': '^1.0.0', 'spread': '^1.0.0'
     },
     contractVersions: { 'automation': '1.4.0' },
     setup: async function (kernel) {

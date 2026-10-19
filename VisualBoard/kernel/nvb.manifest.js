@@ -29,6 +29,7 @@ window.NVB_MANIFEST = {
         'plugins/09b-manga-page.js',
         'plugins/09c-manga-edit.js',
         'plugins/09d-composition.js',
+        'plugins/09e-spread.js',
         'plugins/10-renderer.js',
         'plugins/10b-minimap.js',
         'plugins/10c-renderer-manga.js',

@@ -20,12 +20,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'composition',
-    version: '1.0.0',
+    version: '1.1.0',
     needs: ['utils', 'state', 'history', 'panelSets', 'panelTemplates', 'mangaPage'],
     provides: ['composition'],
     uses: ['ui.dialogs'],
     accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'composition': '1.0.0' },
+    contractVersions: { 'composition': '1.1.0' },
     setup: async function (kernel) {
         const utils = await kernel.require('utils');
         const stateApi = await kernel.require('state');
@@ -61,12 +61,14 @@ definePlugin({
                 spread: options?.spread !== false
             };
         }
-        function planComposition(raw, tpl, optionsIn) {
+        /** `frame` (Fase 20): quando informado, a área de referência é o quadro (ex.: página dupla) e não a união das imagens. */
+        function planComposition(raw, tpl, optionsIn, frame) {
             const options = normalizeOptions(optionsIn);
             const pw = tpl.width ?? 600, ph = tpl.height ?? 850;
             const minX = Math.min(...raw.map(r => r.x)), minY = Math.min(...raw.map(r => r.y));
             const maxX = Math.max(...raw.map(r => r.x + r.width)), maxY = Math.max(...raw.map(r => r.y + r.height));
-            const bounds = { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
+            const bounds = frame ? { x: frame.x, y: frame.y, w: Math.max(1, frame.w), h: Math.max(1, frame.h) }
+                : { x: minX, y: minY, w: Math.max(1, maxX - minX), h: Math.max(1, maxY - minY) };
             const items = raw.map(r => {
                 const stretched = { x: (r.x - bounds.x) / bounds.w * pw, y: (r.y - bounds.y) / bounds.h * ph,
                     w: r.width / bounds.w * pw, h: r.height / bounds.h * ph };
@@ -150,13 +152,14 @@ definePlugin({
                 };
             });
             let pageW = pw * Math.sqrt((bounds.w * bounds.h) / (pw * ph)), pageH = ph * pageW / pw;
-            if (pageW < MIN_PAGE_WIDTH) {
+            if (!frame && pageW < MIN_PAGE_WIDTH) {
                 const k = MIN_PAGE_WIDTH / pageW;
                 pageW *= k;
                 pageH *= k;
             }
-            const page = { x: Math.round(bounds.x + bounds.w / 2 - pageW / 2), y: Math.round(bounds.y + bounds.h / 2 - pageH / 2),
-                width: Math.round(pageW), height: Math.round(pageH) };
+            const page = frame ? { x: round3(frame.x), y: round3(frame.y), width: round3(frame.w), height: round3(frame.h) }
+                : { x: Math.round(bounds.x + bounds.w / 2 - pageW / 2), y: Math.round(bounds.y + bounds.h / 2 - pageH / 2),
+                    width: Math.round(pageW), height: Math.round(pageH) };
             const assignments = items.map(it => ({ objectId: it.r.id, assetId: it.r.assetId, panelId: panels[it.best].id,
                 panels: it.panels.map(i => panels[i].id), spread: it.spread }));
             const warnings = [];
@@ -668,7 +671,14 @@ definePlugin({
         });
         kernel.provide('composition', {
             plan, apply, change, remove, get, list, open, close,
-            selectedImageIds
+            selectedImageIds,
+            /** Fase 20: algoritmo puro sobre imagens informadas e um quadro de referência (usado pela página dupla). */
+            planFrame: function (raw, tpl, options, frame) {
+                if (!raw.length)
+                    throw Error('planFrame needs at least one image');
+                const ordered = raw.map((r, order) => ({ ...r, order })).sort((a, b) => a.z - b.z || a.order - b.order);
+                return planComposition(ordered, tpl, options, { x: frame.x, y: frame.y, w: frame.width, h: frame.height });
+            }
         });
     }
 });

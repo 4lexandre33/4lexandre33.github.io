@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.6.0',
+    version: '1.7.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.6.0';
+        const CONTRACT_VERSION = '1.7.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -156,6 +156,46 @@ definePlugin({
         T('composition', 'remove', W, 'Back to raw (remove layout)', 'Removes the layout page and restores the original loose images exactly where they were. Refused when the page has manual edits or extra objects unless force=true. Undoable.', withId({ force: bool('Discard manual edits and extra objects') }), call('composition', 'remove', ['instanceId', 'force']), true);
         T('composition', 'get', R, 'Get composition info', 'Layout, options, raw image ids and whether the page was edited, for a page created by a composition.', withId({}), call('composition', 'get', ['instanceId'], 'nonnull'));
         T('composition', 'list', R, 'List compositions', 'Pages on the current board that were created by a composition.', none(), call('composition', 'list', []));
+        /* ===== spread: double page with slots, real paper and proportional scale (Fase 20) ===== */
+        const spreadId = () => id('spread id from spread.list');
+        const paperFields = () => ({
+            paper: id('paper preset id from spread.list_papers (e.g. b4-frame, a4, b6-tankobon)'),
+            widthMm: num(20, 1000, 'custom paper width in millimetres (use with heightMm)'),
+            heightMm: num(20, 1000, 'custom paper height in millimetres (use with widthMm)')
+        });
+        const paperTok = () => ({ presetId: '$paper', widthMm: '$widthMm', heightMm: '$heightMm' });
+        const layoutFields = () => ({
+            doubleTemplateId: id('double-page template id from spread.list_templates (geometry crosses the binding)'),
+            templateId: id('single-page template id applied to BOTH slots (from page.list_templates)'),
+            leftTemplateId: id('single-page template id for the left slot'),
+            rightTemplateId: id('single-page template id for the right slot')
+        });
+        const layoutTok = () => ({ doubleTemplateId: '$doubleTemplateId', templateId: '$templateId', leftTemplateId: '$leftTemplateId', rightTemplateId: '$rightTemplateId' });
+        const spreadIds = () => ({ type: 'array', items: id('image instance id'), minItems: 1, maxItems: 60,
+            description: 'Optional: images to use. Default: every loose image overlapping the spread.' });
+        T('spread', 'list_papers', R, 'List paper sizes', 'Real manga/comic paper presets in millimetres (B4 frame/bleed/paper, A4, B5, A5, tankobon, US comic).', none(), call('spread', 'listPapers', []));
+        T('spread', 'list_templates', R, 'List double-page templates', 'Templates whose panels cross the binding between the two pages.', none(), call('spread', 'listTemplates', []));
+        T('spread', 'create', W, 'Create double page', 'Creates two side-by-side slots at real paper size (millimetres x px/mm), shown as guides on the canvas. Images can be placed inside without any layout.', obj({ name: str(), ...paperFields(), pxPerMm: num(0.25, 12, 'canvas pixels per millimetre of paper (default 2)'), x: num(), y: num(),
+            direction: en(['rtl', 'ltr'], 'rtl = right-to-left manga reading (first page on the right)'), gutter: num(0, 200) }), call('spread', 'create', [{ name: '$name', paperId: '$paper', widthMm: '$widthMm', heightMm: '$heightMm', pxPerMm: '$pxPerMm', x: '$x', y: '$y', direction: '$direction', gutter: '$gutter' }]), true);
+        T('spread', 'list', R, 'List double pages', 'Double pages of the current board with slots, contents and layout state.', none(), call('spread', 'list', []));
+        T('spread', 'get', R, 'Get double page', 'Slots, paper, loose images per slot (left, right, straddling the binding), docked pages and layout state.', obj({ spreadId: spreadId() }, ['spreadId']), call('spread', 'get', ['spreadId']));
+        T('spread', 'move', W, 'Move double page', 'Moves the slots together with docked pages and the images inside (withContent, default true).', obj({ spreadId: spreadId(), dx: num(-1e6, 1e6), dy: num(-1e6, 1e6), withContent: bool() }, ['spreadId', 'dx', 'dy']), call('spread', 'move', ['spreadId', 'dx', 'dy', 'withContent']), true);
+        T('spread', 'scale', W, 'Scale double page proportionally', 'Scales slots, docked pages and the images inside by the same factor (0.05 to 20) about the top-left corner; px/mm follows, so the paper size in mm is kept consistent.', obj({ spreadId: spreadId(), factor: num(0.05, 20) }, ['spreadId', 'factor']), call('spread', 'scale', ['spreadId', 'factor']), true);
+        T('spread', 'set_paper', W, 'Change paper size or px/mm', 'Changes the real paper size and/or px per mm. With withContent (default true) images and pages scale proportionally to the width change. Refused while a layout is applied.', obj({ spreadId: spreadId(), ...paperFields(), pxPerMm: num(0.25, 12), withContent: bool() }, ['spreadId']), call('spread', 'setPaper', ['spreadId', paperTok(), 'pxPerMm', 'withContent']), true);
+        T('spread', 'rename', W, 'Rename double page', 'Renames a double page.', obj({ spreadId: spreadId(), name: str({ minLength: 1, maxLength: 80 }) }, ['spreadId', 'name']), call('spread', 'rename', ['spreadId', 'name']), true);
+        T('spread', 'remove', W, 'Remove double page guides', 'Removes the slot guides. Docked pages stay on the canvas as ordinary pages.', obj({ spreadId: spreadId() }, ['spreadId']), call('spread', 'remove', ['spreadId']), true);
+        T('spread', 'dock', W, 'Dock page into slot', 'Fits an existing manga page into the left or right slot (uniform scale, centered).', obj({ spreadId: spreadId(), slot: en(['left', 'right']), instanceId: id('manga-page instance id') }, ['spreadId', 'slot', 'instanceId']), call('spread', 'dock', ['spreadId', 'slot', 'instanceId']), true);
+        T('spread', 'undock', W, 'Release page from slot', 'Releases the page of a slot (the page stays where it is).', obj({ spreadId: spreadId(), slot: en(['left', 'right']) }, ['spreadId', 'slot']), call('spread', 'undock', ['spreadId', 'slot']), true);
+        const spreadOptions = () => ({
+            fit: en(['auto', 'cover', 'contain', 'keep'], 'auto = keep when the panel has a large background, otherwise cover'),
+            spread: bool('Images covering 50% or more of two or more panels cross the panels (continuous background). Default true.')
+        });
+        T('spread', 'plan', R, 'Plan layout over the double page', 'Dry-run: which panel of which page each image would enter (deterministic: relative position, size, z-order). Changes nothing.', obj({ spreadId: spreadId(), ...layoutFields(), ...spreadOptions(), objectIds: spreadIds() }, ['spreadId']), call('spread', 'plan', ['spreadId', layoutTok(), { fit: '$fit', spread: '$spread' }, 'objectIds']));
+        T('spread', 'apply', W, 'Apply layout to the double page', 'Creates the two manga pages inside the slots from a double-page template or a pair of single-page templates, and distributes the loose images. The raw arrangement is kept for restoring.', obj({ spreadId: spreadId(), ...layoutFields(), ...spreadOptions(), objectIds: spreadIds() }, ['spreadId']), call('spread', 'apply', ['spreadId', layoutTok(), { fit: '$fit', spread: '$spread' }, 'objectIds']), true);
+        T('spread', 'change_layout', W, 'Change double-page layout', 'Recomputes both pages from the raw arrangement for another layout. Refused when the pages have manual edits or extra objects unless force=true.', obj({ spreadId: spreadId(), ...layoutFields(), ...spreadOptions(), force: bool('Discard manual edits and extra objects') }, ['spreadId']), call('spread', 'change', ['spreadId', layoutTok(), { fit: '$fit', spread: '$spread' }, 'force']), true);
+        T('spread', 'clear', W, 'Back to raw (remove double-page layout)', 'Removes both layout pages and restores the loose images exactly where they were; the slots stay. Refused when the pages were edited unless force=true. Undoable.', obj({ spreadId: spreadId(), force: bool('Discard manual edits and extra objects') }, ['spreadId']), call('spread', 'clear', ['spreadId', 'force']), true);
+        T('scale', 'objects', W, 'Scale objects proportionally together', 'Scales images and manga pages by the same factor (0.05 to 20) about a pivot (default: centre of their union) so sizes stay proportional. Pages docked in a double page must use spread.scale.', obj({ objectIds: { type: 'array', items: id('image or manga-page instance id'), minItems: 1, maxItems: 200 }, factor: num(0.05, 20), pivot: point() }, ['objectIds', 'factor']), call('spread', 'scaleObjects', ['objectIds', 'factor', 'pivot']), true);
+        T('scale', 'fit_page', W, 'Fit a page to real paper size', 'Scales a manga page to the real size of a paper (contained, no distortion) at px/mm, optionally scaling other images by the same factor.', withId({ ...paperFields(), pxPerMm: num(0.25, 12), alsoScaleIds: { type: 'array', items: id('image or manga-page instance id'), maxItems: 200 } }), call('spread', 'fitPageToPaper', ['instanceId', paperTok(), 'pxPerMm', 'alsoScaleIds']), true);
         /* ===== panels & geometry ===== */
         T('panel', 'list', R, 'List panels', 'Panels of a page with geometry, style and layer counts.', withId({}), comp('panel.list', ['mangaPage.getPanelSet', 'mangaPage.getPanelStyle', 'mangaPage.getPanel']));
         T('panel', 'get_style', R, 'Get panel style', 'Fill and stroke of a panel.', panelRef(), call('mangaPage', 'getPanelStyle', ['@page', 'panelId'], 'nonnull'));
@@ -453,6 +493,9 @@ definePlugin({
             excl('composition.open', 'Abre o popup de interface (seleção do usuário).'),
             excl('composition.close', 'Fecha o popup de interface.'),
             excl('composition.selectedImageIds', 'Seleção da interface; a automação informa objectIds.'),
+            excl('composition.planFrame', 'Algoritmo puro interno; a automação usa composition.plan e spread.plan.'),
+            excl('spread.open', 'Abre o popup de interface.'),
+            excl('spread.close', 'Fecha o popup de interface.'),
             excl('panelTemplates.flowPosition', 'Auxiliar de interface: page.create_from_template já posiciona a página na fila.'),
             excl('panelTemplates.focusPage', 'Auxiliar de interface: move a câmera; use viewport.fit_selection.'),
             excl('panelTemplates.promptPick', 'Abre diálogo de seleção.'),
