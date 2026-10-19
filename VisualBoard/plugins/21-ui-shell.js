@@ -376,8 +376,10 @@ definePlugin({
             });
             if (workspaceLabel)
                 workspaceLabel.textContent = labels[mode];
-            if (workspaceHint)
+            if (workspaceHint) {
                 workspaceHint.textContent = modeHints[mode];
+                workspaceHint.title = modeHints[mode];
+            }
             syncPanelControls();
             if (persist)
                 storageSet('nvb.ui.workspaceMode', mode);

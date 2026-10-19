@@ -68,6 +68,7 @@ definePlugin({
             const o = offset();
             world.style.transform = 'translate3d(' + o.tx + 'px,' + o.ty + 'px,0) scale(' + camera.zoom + ')';
             world.style.setProperty('--izoom', String(1 / camera.zoom));
+            world.classList.toggle('zoom-low', camera.zoom < 0.4);
             const zoomPct = Math.round(camera.zoom * 100);
             const hudZoom = document.getElementById('hud-zoom');
             const zoomLabel = document.getElementById('zoom-label');

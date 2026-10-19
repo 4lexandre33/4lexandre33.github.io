@@ -3156,3 +3156,15 @@ input[type=search], input[type=text], input[type=number], select { background:#2
 @media (max-width:820px) { #zoom-controls { right:auto; top:auto; } }
 @media (max-width:560px) { #zoom-controls .zc-sep, #zoom-controls [data-cmd="zoom-100"], #zoom-controls [data-cmd="zoom-focus"] { display:none; } }
 @media (max-width:820px) { #toast-host { bottom:auto; top:64px; } }
+
+/* ---------- Fase 11: correções achadas pela varredura visual (ferramentas ui_*) ---------- */
+/* A dica da página some em zoom baixo: escalada pelo zoom inverso, ficava ilegível e cortada. */
+.zoom-low .manga-page-hint { display:none !important; }
+/* Em telas estreitas o minimap sobe acima da barra de zoom (antes cobria os controles). */
+@media (max-width:900px) {
+  #minimap { bottom:64px; width:128px; }
+  #minimap canvas { width:128px; height:128px; }
+}
+@media (max-width:620px) {
+  #hud { bottom:64px; }
+}
