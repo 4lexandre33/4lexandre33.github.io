@@ -43,6 +43,19 @@ definePlugin({
                 throw new HubError('INVALID_ARGUMENT', 'Use http(s)://');
             return u.origin + u.pathname.replace(/\/+$/, '');
         };
+        /** Único ponto de saída de rede do editor para o Hub. */
+        const net = (url, init) => fetch(url, { ...init, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
+        /** Se o editor foi aberto pelo próprio Hub (mesmo endereço), já sugere essa URL no formulário. */
+        if (/^https?:$/.test(window.location.protocol)) {
+            const origin = window.location.origin;
+            net(origin + '/v1/health', {})
+                .then(r => r.ok ? r.json() : null).then(j => { if (j && j['ok'] === true && typeof j['version'] === 'string') {
+                lastUrl = origin;
+                if (!conn)
+                    render();
+            } })
+                .catch(() => undefined);
+        }
         function status() {
             return { connected: !!conn, url: conn ? conn.url : null, client: conn ? conn.client : null,
                 scopes: conn ? conn.scopes.slice() : [], version: conn ? conn.version : null, error: lastError };
@@ -58,7 +71,7 @@ definePlugin({
             headers.set('Authorization', 'Bearer ' + c.token);
             let res;
             try {
-                res = await fetch(c.url + path, { ...init, headers, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
+                res = await net(c.url + path, { ...init, headers });
             }
             catch (err) {
                 lastError = 'Sem resposta do Hub (' + (err instanceof Error ? err.message : 'rede') + ')';
