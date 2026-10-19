@@ -3278,3 +3278,4 @@ input[type=search], input[type=text], input[type=number], select { background:#2
 .hub-msg { padding:6px 8px; border-radius:6px; background:#3a2326; color:#ffb4b4; font-size:12px; }
 .hub-connect { display:flex; flex-direction:column; gap:8px; }
 @media (max-width:820px) { .hub-bar { grid-template-columns:1fr; } }
+.hub-pending { display:flex; align-items:center; gap:6px; font-size:12px; }

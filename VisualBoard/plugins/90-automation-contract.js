@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.4.0',
+    version: '1.5.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.4.0';
+        const CONTRACT_VERSION = '1.5.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -201,6 +201,9 @@ definePlugin({
         hubTool('usage', R, 'Image usage', 'Projects/instances that reference an image.', obj({ id: hubId() }, ['id']));
         hubTool('reference_add', W, 'Add reference', 'Records that a project instance uses an image.', obj({ id: hubId(), project: str({ minLength: 1, maxLength: 200 }), instance: str({ minLength: 1, maxLength: 200 }) }, ['id', 'project', 'instance']));
         hubTool('reference_remove', W, 'Remove reference', 'Removes one (or all) references of a project to an image.', obj({ id: hubId(), project: str({ minLength: 1, maxLength: 200 }), instance: str({ maxLength: 200 }) }, ['id', 'project']));
+        hubTool('scan', W, 'Scan the images folder', 'Scans the Hub\'s own images folder (images/<type>/<subfolders>/file), imports new images into the catalog (originals untouched), mirrors the folders and adds tags tipo:<folder>, pasta:<subfolder>, origem:biblioteca. preview=true only reports. Never reads outside that folder.', obj({ preview: bool('only report what would be imported; writes nothing') }));
+        hubTool('classify', W, 'Classify images', 'Records the result of LOOKING at images (use visualboard_catalog_view first): adds tags, optional title/description/notes and marks status:classificado. Up to 50 images per call.', obj({ items: { type: 'array', minItems: 1, maxItems: 50, items: obj({ id: hubId(), tags: tagList(), removeTags: tagList(),
+                    title: str({ maxLength: 200 }), description: str({ maxLength: 2000 }), notes: str({ maxLength: 2000 }) }, ['id']) } }, ['items']));
         hubTool('verify', R, 'Verify catalog integrity', 'Checks that every catalogued file exists and matches its hash; lists orphan files.', none());
         hubTool('gc_orphans', D, 'Remove orphan files', 'Deletes files in the images folder that no catalog entry owns. Requires confirmation.', none());
         T('catalog', 'place', W, 'Place catalog image', 'Downloads a catalogued image from the Hub, imports it as an asset of the open project and records the usage reference.', obj({ id: hubId(), packageId: id('package id') }, ['id']), comp('catalog.place', ['assetHub.call', 'assets.importFiles']), true);
@@ -341,6 +344,10 @@ definePlugin({
             gap('GAP-EXPORT-SVG', 'export.svg', 'export', 'DECIDIDO NA FASE 5 — NÃO IMPLEMENTAR. O renderizador de página é raster (canvas); um SVG fiel exigiria um segundo renderizador, vedado pelo projeto, e um SVG que apenas embute o PNG seria enganoso. A geometria dos painéis já é SVG (panelSets.downloadSvg / project.export). Reabrir só se o produto decidir ter exportação vetorial própria.', 'decidir se o editor passa a ter exportação vetorial própria antes de expor', 5)
         ];
         const serverTools = [
+            { name: 'visualboard.catalog.view', title: 'View catalog images', domain: 'catalog', scope: 'read',
+                description: 'MCP-server tool. Fetches up to 8 images from the Asset Hub (thumbnail or full size) and returns them as images you can SEE, with their metadata, so you can classify them with catalog.classify. Needs the Hub configured in the MCP server.',
+                input: obj({ ids: arr(hubId(), 8), size: en(['thumb', 'full'], 'thumb (default, ~320px) or the original file') }, ['ids']),
+                uses: ['visualboard.catalog.get'] },
             { name: 'visualboard.asset.import_from_path', title: 'Import image from disk', domain: 'asset', scope: 'write',
                 description: 'MCP-server tool. Reads an image file from the configured import folders (never anywhere else; symlinks are resolved and must stay inside), checks size and signature, and imports it with asset.import.',
                 input: obj({ path: str({ minLength: 1, maxLength: 1024, description: 'file name or path inside an allowed import folder' }), name: str({ maxLength: 200 }), packageId: id('package id') }, ['path']),

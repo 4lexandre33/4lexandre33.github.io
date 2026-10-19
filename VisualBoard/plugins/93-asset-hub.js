@@ -224,7 +224,7 @@ definePlugin({
             return el;
         }
         const ui = { tags: [], folders: [],
-            text: '', tag: '', folder: '', selected: null, items: [], total: 0,
+            text: '', tag: '', folder: '', pending: false, selected: null, items: [], total: 0,
             busy: false, message: '' };
         function say(message) { ui.message = message; render(); }
         async function refresh() {
@@ -238,8 +238,13 @@ definePlugin({
                 const q = { limit: 60, sort: { by: 'created', dir: 'desc' } };
                 if (ui.text)
                     q['text'] = ui.text;
+                const tagQ = {};
                 if (ui.tag)
-                    q['tags'] = { all: [ui.tag] };
+                    tagQ['all'] = [ui.tag];
+                if (ui.pending)
+                    tagQ['none'] = ['status:classificado'];
+                if (Object.keys(tagQ).length)
+                    q['tags'] = tagQ;
                 if (ui.folder)
                     q['folder'] = { id: ui.folder, recursive: true };
                 const [found, tags, folders] = await Promise.all([call('search', q), call('tag_list', {}), call('folder_list', {})]);
@@ -349,6 +354,18 @@ definePlugin({
             });
             const up = h('button', { type: 'button', class: 'btn', 'data-hub': 'upload', text: 'Enviar imagens…' });
             up.addEventListener('click', () => file.click());
+            const scan = h('button', { type: 'button', class: 'btn', 'data-hub': 'scan', text: 'Varrer pasta de imagens' });
+            scan.addEventListener('click', () => {
+                call('scan', {}).then(r => {
+                    const rep = r;
+                    dialogs?.toast(rep.imported + ' importada(s), ' + rep.duplicates + ' repetida(s), ' + rep.errors.length + ' erro(s); ' + rep.unclassified + ' sem classificar', 'ok');
+                    return refresh();
+                }).catch(e => say(String(e.message)));
+            });
+            const pendingBox = h('input', { type: 'checkbox', 'data-hub': 'pending', 'aria-label': 'Só imagens ainda não classificadas' });
+            pendingBox.checked = ui.pending;
+            pendingBox.addEventListener('change', () => { ui.pending = pendingBox.checked; refresh(); });
+            const pendingLabel = h('label', { class: 'hub-pending muted' }, pendingBox, ' só não classificadas (a IA ainda não viu)');
             const lib = h('button', { type: 'button', class: 'btn', 'data-hub': 'import-library', text: 'Enviar biblioteca do projeto' });
             lib.addEventListener('click', () => {
                 importLibrary().then(r => { dialogs?.toast(r.uploaded + ' enviada(s), ' + r.duplicates + ' já existiam, ' + r.skipped + ' ignorada(s)', 'ok'); return refresh(); })
@@ -361,7 +378,7 @@ definePlugin({
             if (!ui.items.length && !ui.busy)
                 grid.append(h('p', { class: 'muted', text: 'Nenhuma imagem encontrada.' }));
             const sel = ui.items.find(i => i['id'] === ui.selected);
-            body.append(h('div', { class: 'hub-bar' }, search, tagSel, folderSel), h('div', { class: 'hub-count muted', text: (ui.busy ? 'Carregando… ' : '') + ui.total + ' imagem(ns) · ' + (conn.client || 'cliente') + ' @ ' + conn.url }), h('div', { class: 'nav-actions' }, up, lib, out), file, grid, ...(sel ? [detail(sel)] : []));
+            body.append(h('div', { class: 'hub-bar' }, search, tagSel, folderSel), h('div', { class: 'hub-count muted', text: (ui.busy ? 'Carregando… ' : '') + ui.total + ' imagem(ns) · ' + (conn.client || 'cliente') + ' @ ' + conn.url }), h('div', { class: 'nav-actions' }, scan, up), h('div', { class: 'nav-actions' }, lib, out), pendingLabel, file, grid, ...(sel ? [detail(sel)] : []));
         }
         if (popup) {
             new MutationObserver(() => { if (!popup.hidden) {

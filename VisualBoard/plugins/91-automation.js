@@ -852,6 +852,8 @@ definePlugin({
         handlers['catalog.tag_remove'] = hubHandler('tag_remove');
         handlers['catalog.tag_merge'] = hubHandler('tag_merge');
         handlers['catalog.tag_delete'] = hubHandler('tag_delete');
+        handlers['catalog.scan'] = hubHandler('scan');
+        handlers['catalog.classify'] = hubHandler('classify');
         handlers['catalog.folder_list'] = hubHandler('folder_list');
         handlers['catalog.folder_create'] = hubHandler('folder_create');
         handlers['catalog.folder_update'] = hubHandler('folder_update');
