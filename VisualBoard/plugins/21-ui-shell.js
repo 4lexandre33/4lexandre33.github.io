@@ -508,7 +508,7 @@ definePlugin({
         installResizer(leftGrip, 'left');
         installResizer(rightGrip, 'right');
         const sectionDefaults = {
-            formats: 220, navigator: 160, inspector: 230
+            formats: 400, navigator: 160, inspector: 230
         };
         const sectionProps = {
             formats: '--vb-formats-height',

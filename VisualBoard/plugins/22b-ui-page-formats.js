@@ -79,8 +79,8 @@ definePlugin({
         grid.parentNode.insertBefore(preview, grid);
         const categories = [
             { id: 'saved', label: 'Saved' },
-            { id: 'vertical', label: 'Vertical (41)' },
-            { id: 'horizontal', label: 'Horizontal (28)' }
+            { id: 'vertical', label: 'Vertical (' + PT.list().filter(t => t.orientation === 'vertical').length + ')' },
+            { id: 'horizontal', label: 'Horizontal (' + PT.list().filter(t => t.orientation === 'horizontal').length + ')' }
         ];
         for (const entry of categories) {
             const button = document.createElement('button');
@@ -119,7 +119,7 @@ definePlugin({
                     id: 'p' + (i + 1),
                     points: points.map(p => ({ x: p[0] * dim.width / dw, y: p[1] * dim.height / dh }))
                 }))
-            }, null, 155);
+            }, null, 155, 'layout');
         }
         function selectedTemplate(list) {
             return list.find(t => t.id === activeLayoutId) || list[0] || null;
@@ -268,6 +268,7 @@ definePlugin({
                 item.type = 'button';
                 item.className = 'pf-item pf-layout-item';
                 item.setAttribute('aria-label', tpl.name + ' · ' + tpl.panels.length + ' panels');
+                item.dataset.orientation = tpl.orientation ?? 'vertical';
                 item.setAttribute('aria-pressed', String(tpl.id === activeLayoutId));
                 if (tpl.id === activeLayoutId)
                     item.classList.add('selected');

@@ -130,7 +130,7 @@ definePlugin({
             }
         ];
         /* VP1-006–008: 10 historical templates + 31 original portrait layouts
-         * + 28 original landscape layouts = 69. Nothing GPL is bundled.
+         * + 28 original landscape layouts + 24 hand-authored (Fase 18) = 93. Nothing GPL is bundled.
          * Each generated polygon is a convex partition of the unit rectangle,
          * inset toward its centroid to guarantee visible gutters.
          */
@@ -225,20 +225,118 @@ definePlugin({
                 ]))
             };
         }
+        /* Fase 18: modelos autorais adicionais (24), desenhados à mão com calhas regulares.
+         * bandLayout divide a página em faixas (linhas ou colunas); cada faixa é dividida em partes
+         * por pesos; `slope` inclina as calhas entre faixas (estilo diagonal de ação). */
+        function bandLayout(W, H, bands, slope = 0, dir = 'rows') {
+            if (dir === 'cols')
+                return bandLayout(H, W, bands, slope, 'rows').map(poly => poly.map(pt => [pt[1], pt[0]]));
+            const M = 14, G = 12, n = bands.length, sum = bands.reduce((a, b) => a + b[0], 0);
+            const inner = H - 2 * M - G * (n - 1);
+            const centers = [];
+            let y = M;
+            bands.forEach((band, i) => {
+                y += inner * band[0] / sum;
+                if (i < n - 1) {
+                    centers.push(y + G / 2);
+                    y += G;
+                }
+            });
+            const yAt = (i, x) => centers[i] + (i % 2 ? -slope : slope) * ((x - W / 2) / (W / 2));
+            const out = [];
+            bands.forEach((band, i) => {
+                const weights = band[1], cn = weights.length, wsum = weights.reduce((a, b) => a + b, 0);
+                const avail = W - 2 * M - G * (cn - 1);
+                let x = M;
+                for (const weight of weights) {
+                    const xl = x, xr = x + avail * weight / wsum;
+                    x = xr + G;
+                    const top = (px) => i === 0 ? M : yAt(i - 1, px) + G / 2;
+                    const bottom = (px) => i === n - 1 ? H - M : yAt(i, px) - G / 2;
+                    out.push([[xl, top(xl)], [xr, top(xr)], [xr, bottom(xr)], [xl, bottom(xl)]]
+                        .map(pt => [Math.round(pt[0] * 1000) / 1000, Math.round(pt[1] * 1000) / 1000]));
+                }
+            });
+            return out;
+        }
+        function curatedTemplate(spec, landscape) {
+            const width = landscape ? 850 : 600, height = landscape ? 600 : 850;
+            const panels = bandLayout(width, height, spec.bands, spec.slope ?? 0, spec.dir ?? 'rows');
+            return { id: spec.id, name: spec.name,
+                desc: spec.desc,
+                width, height, orientation: landscape ? 'horizontal' : 'vertical', category: spec.category, panels };
+        }
+        const CURATED_VERTICAL = [
+            { id: 'vb-v-01', name: 'Four-koma', desc: 'Four equal strips, classic gag format.', category: 'classic',
+                bands: [[1, [1]], [1, [1]], [1, [1]], [1, [1]]] },
+            { id: 'vb-v-02', name: 'Z-flow', desc: 'Reading zigzag with varied widths.', category: 'classic',
+                bands: [[1, [1, 2]], [1, [2, 1]], [1, [1, 1]]] },
+            { id: 'vb-v-03', name: 'Staggered', desc: 'Alternating wide and narrow panels.', category: 'mosaic',
+                bands: [[1, [3, 2]], [1, [2, 3]], [1.1, [1]]] },
+            { id: 'vb-v-04', name: 'Hero + strip', desc: 'Large hero panel over three small ones.', category: 'cinematic',
+                bands: [[3, [1]], [1, [1, 1, 1]]] },
+            { id: 'vb-v-05', name: 'Tall center', desc: 'Tall middle column flanked by stacks.', category: 'mosaic',
+                dir: 'cols', bands: [[1, [1, 1]], [1.4, [1]], [1, [1, 1, 1]]] },
+            { id: 'vb-v-06', name: 'Letterbox', desc: 'Slim top and bottom, wide middle.', category: 'cinematic',
+                bands: [[1, [1]], [3, [1]], [1, [1]]] },
+            { id: 'vb-v-07', name: 'Slant 3', desc: 'Three bands with slanted gutters.', category: 'diagonal',
+                slope: 55, bands: [[1, [1]], [1, [1]], [1, [1]]] },
+            { id: 'vb-v-08', name: 'Slant mixed', desc: 'Slanted rows with a split in the middle.', category: 'diagonal',
+                slope: 45, bands: [[1, [1]], [1, [1, 1]], [1, [1]]] },
+            { id: 'vb-v-09', name: 'Action diagonal', desc: 'Dynamic slanted five-panel action page.', category: 'diagonal',
+                slope: 50, bands: [[1, [1, 1]], [1, [1]], [1, [1, 1]]] },
+            { id: 'vb-v-10', name: 'Window 3×3', desc: 'Nine equal panels.', category: 'mosaic',
+                bands: [[1, [1, 1, 1]], [1, [1, 1, 1]], [1, [1, 1, 1]]] },
+            { id: 'vb-v-11', name: 'Pillars', desc: 'Four tall vertical columns.', category: 'mosaic',
+                bands: [[1, [1, 1, 1, 1]]] },
+            { id: 'vb-v-12', name: 'Wide bottom', desc: 'Two panels over one wide closing panel.', category: 'cinematic',
+                bands: [[1, [1, 1]], [1.3, [1]]] },
+            { id: 'vb-v-13', name: 'Manga 7', desc: 'Seven-panel page with a wide centre.', category: 'classic',
+                bands: [[1, [1, 1]], [0.8, [1]], [1, [2, 1]], [1, [1, 2]]] },
+            { id: 'vb-v-14', name: 'Dynamic 6', desc: 'Slanted six-panel flow.', category: 'diagonal',
+                slope: 40, bands: [[1, [1, 1]], [1, [1, 1, 1]], [1, [1]]] },
+            { id: 'vb-v-15', name: 'Big right', desc: 'Large right panel, three on the left.', category: 'classic',
+                dir: 'cols', bands: [[1, [1, 1, 1]], [2.2, [1]]] },
+            { id: 'vb-v-16', name: 'Triptych + hero', desc: 'Three small panels over a tall hero.', category: 'cinematic',
+                bands: [[1, [1, 1, 1]], [2, [1]]] }
+        ];
+        const CURATED_HORIZONTAL = [
+            { id: 'vb-h-01', name: 'Banner 3', desc: 'Three wide banners.', category: 'cinematic',
+                bands: [[1, [1]], [1, [1]], [1, [1]]] },
+            { id: 'vb-h-02', name: 'Four columns', desc: 'Four tall columns across.', category: 'mosaic',
+                bands: [[1, [1, 1, 1, 1]]] },
+            { id: 'vb-h-03', name: 'Cinema hero + 3', desc: 'Wide hero over three panels.', category: 'cinematic',
+                bands: [[2, [1]], [1, [1, 1, 1]]] },
+            { id: 'vb-h-04', name: 'Wide 2×3', desc: 'Six equal panels.', category: 'mosaic',
+                bands: [[1, [1, 1, 1]], [1, [1, 1, 1]]] },
+            { id: 'vb-h-05', name: 'Slant 2 rows', desc: 'Two slanted rows.', category: 'diagonal',
+                slope: 40, bands: [[1, [1, 2]], [1, [2, 1]]] },
+            { id: 'vb-h-06', name: 'Big left wide', desc: 'Large left panel, stack on the right.', category: 'classic',
+                dir: 'cols', bands: [[2, [1]], [1, [1, 1, 1]]] },
+            { id: 'vb-h-07', name: 'Spread 5', desc: 'Two over three, spread style.', category: 'classic',
+                bands: [[1, [1, 1]], [1, [1, 1, 1]]] },
+            { id: 'vb-h-08', name: 'Mosaic 7', desc: 'Seven panels, mixed widths.', category: 'mosaic',
+                bands: [[1, [1, 1, 1, 1]], [1, [2, 1, 1]]] }
+        ];
         TEMPLATES.forEach(t => {
             t.width = PAGE_W;
             t.height = PAGE_H;
             t.orientation = 'vertical';
             t.category = 'classic';
         });
+        for (const spec of CURATED_VERTICAL)
+            TEMPLATES.push(curatedTemplate(spec, false));
         for (let i = 0; i < 31; i++)
             TEMPLATES.push(generatedTemplate(i, 'vertical'));
+        for (const spec of CURATED_HORIZONTAL)
+            TEMPLATES.push(curatedTemplate(spec, true));
         for (let i = 0; i < 28; i++)
             TEMPLATES.push(generatedTemplate(i, 'horizontal'));
-        if (LEGACY_TEMPLATE_COUNT !== 10 || TEMPLATES.length !== 69 ||
-            TEMPLATES.filter(t => t.orientation === 'vertical').length !== 41 ||
-            TEMPLATES.filter(t => t.orientation === 'horizontal').length !== 28 ||
-            new Set(TEMPLATES.map(t => t.id)).size !== 69)
+        if (LEGACY_TEMPLATE_COUNT !== 10 || TEMPLATES.length !== 93 ||
+            TEMPLATES.filter(t => t.orientation === 'vertical').length !== 57 ||
+            TEMPLATES.filter(t => t.orientation === 'horizontal').length !== 36 ||
+            new Set(TEMPLATES.map(t => t.id)).size !== 93 ||
+            TEMPLATES.some(t => t.panels.length > 9))
             throw Error('VP1 layout catalog failed invariants');
         // Stable descriptors: callers cannot modify catalog geometry or historical IDs.
         for (const t of TEMPLATES) {
@@ -283,7 +381,7 @@ definePlugin({
             };
         }
         function thumbForTemplate(tpl) {
-            return PS.thumbSvg(buildParsed(tpl), null, 100);
+            return PS.thumbSvg(buildParsed(tpl), null, 100, 'layout');
         }
         function catalogSummary() {
             return { total: TEMPLATES.length, legacy: LEGACY_TEMPLATE_COUNT,
@@ -363,7 +461,7 @@ definePlugin({
                 filters.className = 'tpl-filter-controls';
                 const orientation = document.createElement('select');
                 orientation.setAttribute('aria-label', 'Layout orientation');
-                for (const [value, label] of [['all', 'All 69'], ['vertical', 'Vertical 41'], ['horizontal', 'Horizontal 28']]) {
+                for (const [value, label] of [['all', 'All ' + TEMPLATES.length], ['vertical', 'Vertical ' + TEMPLATES.filter(t => t.orientation === 'vertical').length], ['horizontal', 'Horizontal ' + TEMPLATES.filter(t => t.orientation === 'horizontal').length]]) {
                     const option = document.createElement('option');
                     option.value = value;
                     option.textContent = label;

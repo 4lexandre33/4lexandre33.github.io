@@ -113,11 +113,26 @@ definePlugin({
          * @param {number} maxDim dimensão máxima em px (padrão 64)
          * @returns {string} string SVG
          */
-        function thumbSvg(ps, highlightPanelId, maxDim) {
+        function thumbSvg(ps, highlightPanelId, maxDim, style) {
             if (!ps || !Number.isFinite(ps.width) || !Number.isFinite(ps.height) ||
                 ps.width <= 0 || ps.height <= 0)
                 return '';
             maxDim = maxDim || 64;
+            if (style === 'layout') {
+                /* Miniatura de modelo: papel creme + painéis azulados com contorno da cor do papel
+                 * (alarga visualmente a calha para continuar visível em 60–100 px). */
+                const sc = maxDim / Math.max(ps.width, ps.height);
+                const gut = Math.max(0.9, 1.5 / sc);
+                const items = ps.panels.map(function (pn, i) {
+                    const v = geometry.serializeVector(pn);
+                    const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return '<path d="' + esc(v.d) + '" fill="' + (i % 2 ? '#8da2d4' : '#7a90c6') +
+                        '" stroke="#f4efe3" stroke-width="' + gut.toFixed(2) + '" stroke-linejoin="round"/>';
+                }).join('');
+                return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + ps.width + ' ' + ps.height +
+                    '" width="' + (ps.width * sc).toFixed(0) + '" height="' + (ps.height * sc).toFixed(0) + '">' +
+                    '<rect x="0" y="0" width="' + ps.width + '" height="' + ps.height + '" fill="#f4efe3"/>' + items + '</svg>';
+            }
             const scale = maxDim / Math.max(ps.width, ps.height);
             const w = ps.width * scale;
             const h = ps.height * scale;
