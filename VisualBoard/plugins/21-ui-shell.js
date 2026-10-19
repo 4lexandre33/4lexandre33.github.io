@@ -77,7 +77,7 @@ definePlugin({
         }
         /* ---------------- Topbar commands ---------------- */
         /* Comandos vivem na barra superior, no trilho de ferramentas, na faixa de modo e na tira de páginas. */
-        const CMD_SELECTOR = '#topbar [data-cmd], #rail [data-cmd], #workspace-strip [data-cmd], #page-strip [data-cmd]';
+        const CMD_SELECTOR = '#topbar [data-cmd], #rail [data-cmd], #workspace-strip [data-cmd], #page-strip [data-cmd], #selection-toolbar [data-cmd]';
         const sideButtons = {
             left: document.querySelector('#rail [data-cmd="toggle-left"]'),
             right: document.querySelector('#workspace-strip [data-cmd="toggle-right"]')
@@ -91,18 +91,78 @@ definePlugin({
                 }
             }
         }
+        /* ---------------- Janelas de configuração (popups) ----------------
+         * Boards e Pacotes saem do painel direito: abrem sob demanda, uma por vez, e fecham com Esc, × ou clique fora. */
+        const popupNames = ['boards', 'packages'];
+        const popupEl = (name) => document.getElementById('popup-' + name);
+        function closePopups() {
+            for (const name of popupNames) {
+                const el = popupEl(name);
+                if (el && !el.hidden) {
+                    el.hidden = true;
+                    document.querySelectorAll('[data-cmd="open-' + name + '"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+                }
+            }
+        }
+        function openPopup(name) {
+            const el = popupEl(name);
+            if (!el)
+                return;
+            const wasOpen = !el.hidden;
+            closePopups();
+            if (wasOpen)
+                return; // o mesmo comando alterna
+            el.hidden = false;
+            document.querySelectorAll('[data-cmd="open-' + name + '"]').forEach(b => b.setAttribute('aria-expanded', 'true'));
+            const focusable = el.querySelector('button:not([data-popup-close]),input,select,[tabindex]');
+            (focusable || el.querySelector('[data-popup-close]'))?.focus();
+        }
+        document.querySelectorAll('[data-popup-close]').forEach(btn => kernel.listen(btn, 'click', closePopups));
+        kernel.listen(document, 'pointerdown', event => {
+            const target = event.target;
+            if (!target)
+                return;
+            const open = popupNames.map(popupEl).find(el => el && !el.hidden);
+            if (!open || open.contains(target))
+                return;
+            if (target.closest('[data-cmd^="open-"]'))
+                return;
+            if (target.closest('#dialog,#context-menu'))
+                return;
+            closePopups();
+        }, true);
+        kernel.listen(document, 'keydown', event => {
+            if (event.key !== 'Escape')
+                return;
+            if (popupNames.some(n => { const el = popupEl(n); return el && !el.hidden; })) {
+                closePopups();
+                event.stopPropagation();
+            }
+        }, true);
         document.querySelectorAll(CMD_SELECTOR).forEach(function (btn) {
             btn.addEventListener('click', async function () {
                 const cmd = btn.dataset.cmd;
                 if (cmd === 'toggle-left')
                     left.classList.toggle('collapsed');
-                else if (cmd === 'toggle-right')
+                else if (cmd === 'toggle-right') {
                     right.classList.toggle('collapsed');
+                    storageSet('nvb.ui.right', right.classList.contains('collapsed') ? '0' : '1');
+                }
                 else if (cmd === 'collapse-left')
                     left.classList.add('collapsed');
-                else if (cmd === 'collapse-right')
+                else if (cmd === 'collapse-right') {
                     right.classList.add('collapsed');
-                if (['toggle-left', 'toggle-right', 'collapse-left', 'collapse-right'].includes(cmd || ''))
+                    storageSet('nvb.ui.right', '0');
+                }
+                else if (cmd === 'open-properties') {
+                    closePopups();
+                    right.classList.remove('collapsed');
+                }
+                else if (cmd === 'open-boards')
+                    openPopup('boards');
+                else if (cmd === 'open-packages')
+                    openPopup('packages');
+                if (['toggle-left', 'open-properties', 'toggle-right', 'collapse-left', 'collapse-right'].includes(cmd || ''))
                     updateSidebarAria();
                 else if (cmd === 'toggle-pages')
                     setPagesOpen(!pagesOpen);
@@ -367,7 +427,7 @@ definePlugin({
             const mobile = window.matchMedia('(max-width:820px)').matches;
             /* Layout Quadrid: a biblioteca abre pelo trilho ou no modo Biblioteca; o inspetor fica à direita. */
             left.classList.toggle('collapsed', mode !== 'library');
-            right.classList.toggle('collapsed', mobile ? mode !== 'manga' : mode === 'focus' || mode === 'library');
+            right.classList.toggle('collapsed', mode !== 'manga' && storageGet('nvb.ui.right') !== '1');
             setSidebarWidths();
             restoreSectionHeights();
             document.querySelectorAll('[data-workspace-mode]').forEach(btn => {
@@ -456,7 +516,7 @@ definePlugin({
         const sectionSide = {
             formats: left, navigator: right, inspector: right
         };
-        const sections = ['formats', 'navigator', 'inspector'];
+        const sections = ['formats'];
         const sectionGrip = (kind) => document.getElementById('resize-' + kind) ||
             (kind === 'formats' ? document.getElementById('resize-formats') : null);
         const sectionPanel = (kind) => {
@@ -550,17 +610,29 @@ definePlugin({
             });
         }
         sections.forEach(installSectionResizer);
+        /* Minimap recolhido por padrão (área principal limpa); a escolha do usuário é lembrada localmente. */
+        const minimapEl = document.getElementById('minimap');
+        const minimapToggle = minimapEl?.querySelector('.minimap-toggle') || null;
+        if (minimapEl && minimapToggle && storageGet('nvb.ui.minimap') !== '1' && !minimapEl.classList.contains('collapsed'))
+            minimapToggle.click();
+        if (minimapToggle)
+            kernel.listen(minimapToggle, 'click', () => storageSet('nvb.ui.minimap', minimapEl.classList.contains('collapsed') ? '0' : '1'));
         /* ---------------- Tira de páginas (layout Quadrid) ---------------- */
         const pageStrip = document.getElementById('page-strip');
         const pageList = document.getElementById('page-list');
         const pageCount = document.getElementById('page-count');
         const pagesToggle = document.querySelector('#workspace-strip [data-cmd="toggle-pages"]');
-        let pagesOpen = storageGet('nvb.ui.pages') !== '0';
-        function setPagesOpen(open) {
+        const pagesPref = storageGet('nvb.ui.pages'); // '1' | '0' | null (null = automático: abre com 2+ páginas)
+        let pagesOpen = pagesPref === null ? false : pagesPref === '1';
+        let pagesAuto = pagesPref === null;
+        function setPagesOpen(open, persist = true) {
             pagesOpen = open;
             workspace.classList.toggle('pages-collapsed', !open);
             pagesToggle?.setAttribute('aria-expanded', String(open));
-            storageSet('nvb.ui.pages', open ? '1' : '0');
+            if (persist) {
+                pagesAuto = false;
+                storageSet('nvb.ui.pages', open ? '1' : '0');
+            }
         }
         let pageRenderQueued = false;
         function renderPageStrip() {
@@ -573,6 +645,8 @@ definePlugin({
                 const sets = kernel.has('panelSets') ? await kernel.require('panelSets') : null;
                 if (pageCount)
                     pageCount.textContent = String(pages.length);
+                if (pagesAuto && pagesOpen !== (pages.length >= 2))
+                    setPagesOpen(pages.length >= 2, false);
                 pageList.textContent = '';
                 pages.forEach((inst, index) => {
                     const set = sets ? sets.get(inst.panelSetId) : null;
@@ -627,74 +701,8 @@ definePlugin({
         kernel.on('board:navigated', renderPageStrip);
         kernel.on('boards:changed', renderPageStrip);
         kernel.on('history:changed', renderPageStrip);
-        setPagesOpen(pagesOpen);
+        setPagesOpen(pagesOpen, false);
         renderPageStrip();
-        /* ---------------- Seções recolhíveis do inspetor (layout Quadrid) ----------------
-         * Cada cabeçalho `.side-head` do painel direito recolhe/expande tudo até o próximo cabeçalho
-         * (corpo + divisores). O estado é só preferência local (localStorage), nunca vai ao projeto. */
-        const SECTION_KEY = 'nvb.ui.collapsedSections';
-        const readCollapsed = () => {
-            try {
-                const parsed = JSON.parse(storageGet(SECTION_KEY) || '{}');
-                return parsed && typeof parsed === 'object' ? parsed : {};
-            }
-            catch {
-                return {};
-            }
-        };
-        const collapsedSections = readCollapsed();
-        const sectionId = (head) => right.id + ':' + ((head.querySelector('h2')?.textContent) || '').trim().toLowerCase();
-        function sectionNodes(head) {
-            const nodes = [];
-            let next = head.nextElementSibling;
-            while (next && !next.classList.contains('side-head')) {
-                nodes.push(next);
-                next = next.nextElementSibling;
-            }
-            return nodes;
-        }
-        function applySection(head, collapsed) {
-            head.classList.toggle('is-collapsed', collapsed);
-            head.setAttribute('aria-expanded', String(!collapsed));
-            sectionNodes(head).forEach(node => node.classList.toggle('section-collapsed', collapsed));
-        }
-        function toggleSection(head) {
-            const collapsed = !head.classList.contains('is-collapsed');
-            applySection(head, collapsed);
-            collapsedSections[sectionId(head)] = collapsed;
-            storageSet(SECTION_KEY, JSON.stringify(collapsedSections));
-        }
-        function enhanceSections() {
-            right.querySelectorAll('.side-head').forEach(head => {
-                if (head.dataset.collapsible === '1')
-                    return;
-                head.dataset.collapsible = '1';
-                head.setAttribute('role', 'button');
-                head.tabIndex = 0;
-                applySection(head, collapsedSections[sectionId(head)] === true);
-            });
-        }
-        kernel.listen(right, 'click', event => {
-            const target = event.target;
-            if (target.closest('button'))
-                return; // botões do cabeçalho (ex.: recolher painel) têm ação própria
-            const head = target.closest('.side-head');
-            if (head && head.dataset.collapsible === '1')
-                toggleSection(head);
-        });
-        kernel.listen(right, 'keydown', event => {
-            const e = event;
-            if (e.key !== 'Enter' && e.key !== ' ')
-                return;
-            const head = e.target.closest('.side-head');
-            if (head && head.dataset.collapsible === '1' && e.target === head) {
-                e.preventDefault();
-                toggleSection(head);
-            }
-        });
-        const sectionObserver = new MutationObserver(enhanceSections); // o inspetor de mangá cria o próprio cabeçalho depois
-        sectionObserver.observe(right, { childList: true });
-        enhanceSections();
         const mobileBreakpoint = window.matchMedia('(max-width:820px)');
         kernel.listen(mobileBreakpoint, 'change', () => setWorkspaceMode(currentMode, false));
         /* Progressive disclosure: help appears for a genuinely empty new project. */

@@ -33,6 +33,9 @@
         <div class="workspace-more-content">
           <button type="button" class="btn" data-cmd="new-manga-page">Nova página mangá</button>
           <button type="button" class="btn" data-cmd="new-template">Modelos de página</button>
+          <button type="button" class="btn" data-cmd="open-properties">Propriedades…</button>
+          <button type="button" class="btn" data-cmd="open-boards">Boards…</button>
+          <button type="button" class="btn" data-cmd="open-packages">Pacotes…</button>
           <button type="button" class="btn" data-cmd="export">Exportar projeto</button>
           <button type="button" class="btn" data-cmd="load">Abrir projeto</button>
           <button type="button" class="btn" data-cmd="debug">Depuração</button>
@@ -169,6 +172,7 @@
         <button data-act="rotate" title="Rotate 90°">⟳</button>
         <button data-act="ratio" title="Restore aspect ratio">⇔</button>
         <span class="tb-sep"></span>
+        <button data-cmd="open-properties" title="Propriedades" aria-label="Propriedades">⚙</button>
         <button data-act="duplicate" title="Duplicate (Ctrl+D)">⧉</button>
         <button data-act="delete" class="danger" title="Delete (Del)">🗑</button>
       </div>
@@ -186,12 +190,19 @@
     </section>
 
     <div id="resize-right" class="workspace-resizer" role="separator" tabindex="0" aria-label="Redimensionar painel direito" aria-controls="right" aria-orientation="vertical" aria-valuemin="190" aria-valuemax="520" aria-valuenow="286"></div>
-    <aside id="right" class="sidebar" aria-label="Navigator and packages">
+    <aside id="right" class="sidebar" aria-label="Propriedades">
       <div class="side-head">
-        <h2>Navigator</h2>
+        <h2>Propriedades</h2>
         <div class="spacer"></div>
-        <button class="btn ghost" data-cmd="collapse-right" title="Collapse">»</button>
+        <button class="btn ghost" data-cmd="collapse-right" title="Fechar propriedades" aria-label="Fechar propriedades">×</button>
       </div>
+      <div id="inspector-slot" hidden></div>
+      <p id="right-empty" class="empty-hint">Selecione uma página de mangá para ver e ajustar suas propriedades.<br>Dica: clique com o botão direito no canvas para ver as ações.</p>
+    </aside>
+
+    <!-- Janelas de configuração (popups): saem do painel direito para deixar a área principal limpa. -->
+    <div id="popup-boards" class="vb-popup" role="dialog" aria-label="Boards" hidden>
+      <div class="vb-popup-head"><h2>Boards</h2><button type="button" class="btn ghost" data-popup-close title="Fechar (Esc)" aria-label="Fechar">×</button></div>
       <div class="side-body nav-body">
         <div id="nav-trail" class="nav-trail"></div>
         <div class="nav-actions">
@@ -199,12 +210,9 @@
           <button class="btn" id="nav-rename" title="Rename this board">Rename</button>
         </div>
       </div>
-      <div id="resize-navigator" class="workspace-section-resizer" role="separator" tabindex="0" aria-label="Redimensionar altura do navegador de boards" aria-controls="nav-trail" aria-orientation="horizontal" aria-valuemin="100" aria-valuemax="460" aria-valuenow="160" title="Arraste para mudar a altura do navegador; use setas e Home no teclado"></div>
-
-      <div id="resize-inspector" class="workspace-section-resizer" role="separator" tabindex="0" aria-label="Redimensionar altura do inspetor de mangá" aria-controls="inspector-body" aria-orientation="horizontal" aria-valuemin="100" aria-valuemax="460" aria-valuenow="230" title="Arraste para mudar a altura do inspetor; use setas e Home no teclado"></div>
-      <div class="side-head">
-        <h2>Package Manager</h2>
-      </div>
+    </div>
+    <div id="popup-packages" class="vb-popup" role="dialog" aria-label="Pacotes de imagens" hidden>
+      <div class="vb-popup-head"><h2>Pacotes</h2><button type="button" class="btn ghost" data-popup-close title="Fechar (Esc)" aria-label="Fechar">×</button></div>
       <div class="side-body pkg-body">
         <button class="btn wide" data-cmd="new-package">+ New Package</button>
         <div class="muted" style="line-height:1.5;padding:0 2px;">
@@ -212,7 +220,7 @@
         </div>
         <div id="package-list" class="package-list"></div>
       </div>
-    </aside>
+    </div>
   </div>
 </div>
 

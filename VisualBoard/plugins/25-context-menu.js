@@ -247,11 +247,19 @@ definePlugin({
                 });
             }
             items.push({ sep: true });
+            items.push({ icon: '🗂', label: 'Boards…', action: function () { openShellWindow('open-boards'); } });
+            items.push({ icon: '📦', label: 'Pacotes de imagens…', action: function () { openShellWindow('open-packages'); } });
+            items.push({ icon: '⚙', label: 'Propriedades…', action: function () { openShellWindow('open-properties'); } });
+            items.push({ sep: true });
             items.push({ icon: '📋', label: 'Paste', shortcut: 'Ctrl+V',
                 action: function () { I.pasteClipboard(); } });
             items.push({ icon: '⤢', label: 'Fit all', shortcut: 'F',
                 action: function () { cam.fitAll(); } });
             show(x, y, items);
+        }
+        /* Abre as janelas do shell (Propriedades / Boards / Pacotes) pelos mesmos botões do menu "Mais". */
+        function openShellWindow(cmd) {
+            document.querySelector('#topbar [data-cmd="' + cmd + '"]')?.click();
         }
         /* -------- Manga page -------- */
         function showMangaPageMenu(inst, x, y) {
@@ -345,6 +353,8 @@ definePlugin({
             items.push({ sep: true });
             items.push({ icon: '🗑', label: 'Delete', shortcut: 'Del', danger: true,
                 action: function () { I.removeSelection(); } });
+            items.push({ sep: true });
+            items.push({ icon: '⚙', label: 'Propriedades…', action: function () { openShellWindow('open-properties'); } });
             show(x, y, items);
         }
         /* -------- Panel (Fase D) -------- */
@@ -410,6 +420,8 @@ definePlugin({
                     showMangaPageMenu(inst, x, y);
                 }
             });
+            items.push({ sep: true });
+            items.push({ icon: '⚙', label: 'Propriedades…', action: function () { openShellWindow('open-properties'); } });
             show(x, y, items);
         }
         /* -------- Instância comum -------- */

@@ -51,7 +51,7 @@ definePlugin({
         const PS = await kernel.require('panelSets');
         const A = await kernel.require('assets');
         const D = await kernel.require('ui.dialogs');
-        const rightBody = document.querySelector('#right .nav-body');
+        const rightBody = document.getElementById('inspector-slot');
         if (!rightBody)
             return;
         const head = document.createElement('div');

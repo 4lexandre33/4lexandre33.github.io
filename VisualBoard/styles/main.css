@@ -3168,3 +3168,58 @@ input[type=search], input[type=text], input[type=number], select { background:#2
 @media (max-width:620px) {
   #hud { bottom:64px; }
 }
+
+/* =====================================================================
+ * [19] Fase 13 — Interface minimalista
+ * - Painel direito vira janela flutuante "Propriedades" (fechada por padrão).
+ * - Boards e Pacotes viram popups (sob demanda).
+ * - Menos texto fixo: dicas, atalhos, slider/foco do zoom, minimap recolhido, páginas só com 2+.
+ * ===================================================================== */
+#right {
+  position:absolute; top:12px; right:12px; bottom:auto; z-index:var(--z-chrome);
+  width:min(320px,calc(100% - 24px)); flex:none; max-height:calc(100% - 24px);
+  display:flex; flex-direction:column; overflow:hidden;
+  background:#1b1e22; border:1px solid #3b4149; border-radius:12px; box-shadow:0 14px 36px #000a;
+}
+#right.collapsed { display:none; }
+#resize-right { display:none !important; }
+#right .side-head { cursor:default; }
+#right .side-head::after { display:none; }
+#right #inspector-slot { display:none; }
+#right #inspector-head { display:none; }
+#right #inspector-body { flex:1 1 auto; min-height:0; max-height:none; overflow:auto; }
+#right .empty-hint { margin:0; padding:18px 16px 20px; color:var(--muted-2); font-size:12px; line-height:1.6; }
+#right #inspector-body:not([hidden]) ~ #right-empty { display:none; }
+
+.vb-popup {
+  position:fixed; top:68px; right:16px; z-index:var(--z-modal);
+  width:min(340px,calc(100vw - 32px)); max-height:min(70vh,560px); overflow:auto;
+  display:flex; flex-direction:column; background:#1b1e22; color:var(--text);
+  border:1px solid #454b54; border-radius:12px; box-shadow:0 18px 44px #000b;
+}
+.vb-popup[hidden] { display:none; }
+.vb-popup-head { display:flex; align-items:center; justify-content:space-between; padding:10px 12px 8px 16px; border-bottom:1px solid var(--line-soft); position:sticky; top:0; background:#1b1e22; }
+.vb-popup-head h2 { margin:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#9298a1; }
+.vb-popup .side-body { padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px; overflow:visible; max-height:none; }
+.vb-popup .nav-actions { display:flex; gap:8px; }
+.vb-popup .nav-actions .btn { flex:1; }
+
+/* Barra do estúdio mais limpa: só o essencial fica sempre visível. */
+#workspace-hint, .workspace-shortcut, #workspace-label, #hud .hud-hint, #hud .hud-sep:last-of-type { display:none !important; }
+#zoom-controls #zoom-slider, #zoom-controls [data-cmd="zoom-focus"], #zoom-controls [data-cmd="zoom-100"], #zoom-controls .zc-sep { display:none; }
+#zoom-controls #zoom-label { min-width:44px; text-align:center; }
+#zoom-controls { gap:2px; }
+/* Indicador de salvamento discreto: só o ponto; o texto fica no tooltip/leitores de tela. */
+#topbar .storage-badge { padding:5px 9px; min-width:30px; justify-content:center; }
+#topbar .storage-badge .storage-label { display:none; }
+.pages-collapsed #page-strip { display:none; }
+#hud-zoom, #hud-zoom + .hud-sep { display:none; }
+.instance.manga-page.is-focused:not(:hover) .manga-page-hint { opacity:0; }
+#right #inspector-body:not([hidden]),
+#app[data-workspace-mode="manga"] #right .inspector-body:not([hidden]) { flex:1 1 auto; min-height:200px; max-height:calc(100vh - 150px); }
+@media (max-width:820px) {
+  #right { top:auto; bottom:8px; right:8px; width:calc(100% - 16px); max-height:62%; }
+  .vb-popup { top:auto; bottom:8px; left:8px; right:8px; width:auto; max-height:70vh; }
+  #selection-toolbar { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; }
+  #selection-toolbar > * { flex:none; }
+}
