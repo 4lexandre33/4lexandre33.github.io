@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.5.0',
+    version: '1.6.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.5.0';
+        const CONTRACT_VERSION = '1.6.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -143,6 +143,19 @@ definePlugin({
         T('page', 'plan_panel_set_change', R, 'Plan layout change', 'Dry-run of a layout change: shows panel mapping and what would become unassigned.', withId({ panelSetId: id('target panel set id') }, ['panelSetId']), call('mangaPage', 'planPanelSetChange', ['@page', 'panelSetId']));
         T('page', 'change_panel_set', W, 'Change page layout', 'Applies another panel set to a page, preserving content where mapped.', withId({ panelSetId: id('target panel set id') }, ['panelSetId']), call('mangaPage', 'changePanelSet', ['@page', 'panelSetId'], 'boolean'), true);
         T('page', 'validate', R, 'Validate page', 'Structural validation of one manga page.', withId({}), call('mangaPage', 'validatePage', ['@page']));
+        /* ===== composition: raw images -> page layout (Fase 19) ===== */
+        const compOptions = () => ({
+            fit: en(['auto', 'cover', 'contain', 'keep'], 'auto = keep when the panel has a large background, otherwise cover'),
+            spread: bool('Images covering 50% or more of two or more panels cross the panels (continuous background). Default true.')
+        });
+        const compIds = () => ({ type: 'array', items: id('image instance id'), minItems: 1, maxItems: 60,
+            description: 'Image objects on the current board, as returned by instance.list' });
+        T('composition', 'plan', R, 'Plan composition', 'Dry-run: which panel each loose image would enter for a layout (deterministic, from relative position, size and z-order). Changes nothing.', obj({ objectIds: compIds(), templateId: id('template id from page.list_templates'), ...compOptions() }, ['objectIds', 'templateId']), call('composition', 'plan', ['objectIds', 'templateId', { fit: '$fit', spread: '$spread' }]));
+        T('composition', 'apply', W, 'Apply layout to loose images', 'Replaces loose images by a manga page built from a layout; each image becomes a layer of the panel chosen by the placement algorithm. The raw arrangement is kept so it can be restored.', obj({ objectIds: compIds(), templateId: id('template id from page.list_templates'), ...compOptions() }, ['objectIds', 'templateId']), call('composition', 'apply', ['objectIds', 'templateId', { fit: '$fit', spread: '$spread' }]), true);
+        T('composition', 'change', W, 'Change composition layout', 'Recomputes a composition page from its raw arrangement for another layout. Refused when the page has manual edits or extra objects unless force=true.', withId({ templateId: id('template id'), ...compOptions(), force: bool('Discard manual edits and extra objects') }, ['templateId']), call('composition', 'change', ['instanceId', 'templateId', { fit: '$fit', spread: '$spread' }, 'force']), true);
+        T('composition', 'remove', W, 'Back to raw (remove layout)', 'Removes the layout page and restores the original loose images exactly where they were. Refused when the page has manual edits or extra objects unless force=true. Undoable.', withId({ force: bool('Discard manual edits and extra objects') }), call('composition', 'remove', ['instanceId', 'force']), true);
+        T('composition', 'get', R, 'Get composition info', 'Layout, options, raw image ids and whether the page was edited, for a page created by a composition.', withId({}), call('composition', 'get', ['instanceId'], 'nonnull'));
+        T('composition', 'list', R, 'List compositions', 'Pages on the current board that were created by a composition.', none(), call('composition', 'list', []));
         /* ===== panels & geometry ===== */
         T('panel', 'list', R, 'List panels', 'Panels of a page with geometry, style and layer counts.', withId({}), comp('panel.list', ['mangaPage.getPanelSet', 'mangaPage.getPanelStyle', 'mangaPage.getPanel']));
         T('panel', 'get_style', R, 'Get panel style', 'Fill and stroke of a panel.', panelRef(), call('mangaPage', 'getPanelStyle', ['@page', 'panelId'], 'nonnull'));
@@ -437,6 +450,9 @@ definePlugin({
             excl('panelSets.promptImport', 'Abre diálogo de arquivo.'),
             excl('panelSets.promptPick', 'Abre diálogo de seleção.'),
             excl('panelSets.syncAll', 'Sincronização interna com a pasta do projeto.'),
+            excl('composition.open', 'Abre o popup de interface (seleção do usuário).'),
+            excl('composition.close', 'Fecha o popup de interface.'),
+            excl('composition.selectedImageIds', 'Seleção da interface; a automação informa objectIds.'),
             excl('panelTemplates.flowPosition', 'Auxiliar de interface: page.create_from_template já posiciona a página na fila.'),
             excl('panelTemplates.focusPage', 'Auxiliar de interface: move a câmera; use viewport.fit_selection.'),
             excl('panelTemplates.promptPick', 'Abre diálogo de seleção.'),

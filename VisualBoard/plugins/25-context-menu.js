@@ -34,6 +34,13 @@ definePlugin({
             kernel.require('mangaEdit').then(function (m) { ME = m; });
         if (kernel.has('mangaExport'))
             kernel.require('mangaExport').then(function (m) { MX = m; });
+        /* Fase 19 — itens contextuais de composição (imagens soltas → modelo de página) vêm de outro plugin
+         * por evento, sem nova dependência: quem escuta acrescenta itens em payload.items. */
+        function compositionItems(page) {
+            const payload = { pageId: page ? page.id : null, items: [] };
+            kernel.emit('contextmenu:extend', payload);
+            return payload.items;
+        }
         const viewport = document.getElementById('viewport');
         const menu = document.createElement('div');
         menu.id = 'context-menu';
@@ -188,7 +195,7 @@ definePlugin({
             const cur = B.current();
             const hasParent = cur && cur.parentBoardId;
             const isRoot = cur && cur.id === S.rootBoardId;
-            const items = [];
+            const items = compositionItems(null);
             if (hasParent) {
                 items.push({ icon: '←', label: 'Go to parent board', shortcut: 'Esc',
                     action: function () { B.navigateUp(); } });
@@ -270,7 +277,7 @@ definePlugin({
                 S.selection.add(inst.id);
                 kernel.emit('selection:changed');
             }
-            const items = [];
+            const items = compositionItems(inst);
             if (MP) {
                 items.push({
                     icon: '✎', label: 'Enter panel edit…',
@@ -373,7 +380,7 @@ definePlugin({
             const panelLabel = panelIdx >= 0 ? 'Panel ' + (panelIdx + 1) : panelId;
             const instPanel = (inst.panels || []).find(function (p) { return p.id === panelId; });
             const layerCount = instPanel ? instPanel.layers.length : 0;
-            const items = [];
+            const items = compositionItems(inst);
             items.push({
                 icon: '✎',
                 label: 'Enter panel edit mode',
@@ -440,7 +447,7 @@ definePlugin({
                 showMangaPageMenu(live, x, y);
                 return;
             }
-            const items = [];
+            const items = inst.type === 'image' ? compositionItems(null) : [];
             if (inst.type === 'board') {
                 items.push({
                     icon: '📂', label: 'Open board',

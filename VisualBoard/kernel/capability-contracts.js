@@ -52,6 +52,7 @@
         "automationContract": "describe listTools getTool",
         "automation": "getStatus isEnabled enable disable setGrants setConfirmHandler validate execute executeLocal readResource getAuditLog pollEvents subscribe cancel isLocked bridgeState bridgeConnect bridgeAuthorize bridgeRefuse bridgeRevoke bridgeDisconnect openPanel closePanel",
         "commandConsole": "parse run open close toggle isOpen",
+        "composition": "plan apply change remove get list open close selectedImageIds",
         "assetHub": "connect disconnect isConnected getStatus call blob objectUrl upload place importLibrary pairFromLocation onChange",
         "app": "saveNow backupNow scheduleSave boot switchBackend isPersistent recoveryInfo restoreRecovery"
     };
