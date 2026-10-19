@@ -337,6 +337,7 @@ definePlugin({
             excl('ui.packages', 'Renderização de UI.'),
             excl('ui.canvas', 'Marcador de UI sem métodos.'),
             excl('contextMenu', 'Menu de contexto do usuário.'),
+            excl('commandConsole', 'Console de comandos: é o próprio cliente local do contrato, não uma capacidade a automatizar.'),
             excl('panelInspector', 'Renderização de UI.'),
             excl('ui.storage', 'Renderização de UI.'),
             excl('ui.accessibility', 'Anúncios de acessibilidade internos.'),

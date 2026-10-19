@@ -248,6 +248,7 @@ definePlugin({
             }
             items.push({ sep: true });
             items.push({ icon: '🗂', label: 'Boards…', action: function () { openShellWindow('open-boards'); } });
+            items.push({ icon: '⌨', label: 'Console de comandos…', action: function () { openShellWindow('open-console'); } });
             items.push({ icon: '📦', label: 'Pacotes de imagens…', action: function () { openShellWindow('open-packages'); } });
             items.push({ icon: '⚙', label: 'Propriedades…', action: function () { openShellWindow('open-properties'); } });
             items.push({ sep: true });

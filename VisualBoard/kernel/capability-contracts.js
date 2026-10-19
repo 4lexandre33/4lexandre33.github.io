@@ -50,7 +50,8 @@
         "ui.imageOperations": "open close",
         "debug": "render",
         "automationContract": "describe listTools getTool",
-        "automation": "getStatus isEnabled enable disable setGrants setConfirmHandler validate execute readResource getAuditLog pollEvents subscribe cancel isLocked bridgeState bridgeConnect bridgeAuthorize bridgeRefuse bridgeRevoke bridgeDisconnect openPanel closePanel",
+        "automation": "getStatus isEnabled enable disable setGrants setConfirmHandler validate execute executeLocal readResource getAuditLog pollEvents subscribe cancel isLocked bridgeState bridgeConnect bridgeAuthorize bridgeRefuse bridgeRevoke bridgeDisconnect openPanel closePanel",
+        "commandConsole": "parse run open close toggle isOpen",
         "app": "saveNow backupNow scheduleSave boot switchBackend isPersistent recoveryInfo restoreRecovery"
     };
     const properties = {
@@ -688,7 +689,7 @@
         }
         // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
         const MINOR_BUMPS = {
-            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.3.0', app: '1.1.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
+            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.4.0', app: '1.1.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
         };
         const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {

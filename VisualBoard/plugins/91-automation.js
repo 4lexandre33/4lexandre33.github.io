@@ -14,7 +14,7 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation',
-    version: '1.3.0',
+    version: '1.4.0',
     needs: ['automationContract', 'state', 'history', 'camera', 'assets', 'packages', 'boards', 'instances',
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
@@ -27,7 +27,7 @@ definePlugin({
         'exportImport': '^1.0.0', 'mangaExport': '^2.0.0', 'mangaExportPreflight': '^1.0.0',
         'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0'
     },
-    contractVersions: { 'automation': '1.3.0' },
+    contractVersions: { 'automation': '1.4.0' },
     setup: async function (kernel) {
         const contractApi = await kernel.require('automationContract');
         const contract = contractApi.describe();
@@ -1060,10 +1060,10 @@ definePlugin({
                             fail('CANCELLED', 'The batch was cancelled; no changes were kept.');
                         if (Date.now() > deadline)
                             fail('TIMEOUT', 'The batch ran out of time; no changes were kept.');
-                        if (!enabled)
+                        if (!enabled && !run?.local)
                             fail('AUTOMATION_DISABLED', 'Access was revoked during the batch; no changes were kept.');
                         const tool = toolsByName.get(op.tool);
-                        if (!grants.has(tool.scope))
+                        if (!run?.local && !grants.has(tool.scope))
                             fail('PERMISSION_DENIED', 'Scope "' + tool.scope + '" was revoked during the batch; no changes were kept.');
                         const started = Date.now();
                         const stepFail = (error) => {
@@ -1128,19 +1128,19 @@ definePlugin({
             return { cancelled: false, state: 'unknown', reason: 'No pending or running request has this id.' };
         }
         /* ---------- confirmation ---------- */
-        async function confirmAction(tool, input) {
+        async function confirmAction(tool, input, local = false) {
             const ask = async () => {
-                if (confirmHandler)
+                if (confirmHandler && !local)
                     return await confirmHandler(tool, input);
                 if (!kernel.has('ui.dialogs'))
                     return false;
                 const dialogs = await kernel.require('ui.dialogs');
                 const target = Object.keys(input).filter(k => /Id$/.test(k)).map(k => k + '=' + String(input[k])).join(', ');
                 return (await dialogs.confirm({
-                    title: 'Allow AI action?',
-                    message: (client || 'An AI client') + ' wants to run "' + tool.title + '"' + (target ? ' (' + target + ')' : '') +
+                    title: local ? 'Run command?' : 'Allow AI action?',
+                    message: (local ? 'The command console will run' : (client || 'An AI client') + ' wants to run') + ' "' + tool.title + '"' + (target ? ' (' + target + ')' : '') +
                         '. ' + tool.description,
-                    danger: true, confirmText: 'Allow'
+                    danger: true, confirmText: local ? 'Run' : 'Allow'
                 })) === true;
             };
             let timer;
@@ -1154,8 +1154,8 @@ definePlugin({
             }
         }
         /* ---------- execution pipeline ---------- */
-        function record(entry) {
-            audit.push({ seq: ++sequence, time: new Date().toISOString(), client, ...entry });
+        function record(entry, who) {
+            audit.push({ seq: ++sequence, time: new Date().toISOString(), client: who ?? client, ...entry });
             while (audit.length > limit('auditLogEntries'))
                 audit.shift();
         }
@@ -1178,18 +1178,19 @@ definePlugin({
             chain = run.then(() => undefined, () => undefined);
             return run.finally(() => { pending--; });
         }
-        async function execute(request) {
+        /** `local` = comando digitado pelo próprio usuário no console: não depende do estado/escopos da ponte; destrutivos pedem confirmação. */
+        async function execute(request, local = false) {
             const started = Date.now();
             const toolName = typeof request?.tool === 'string' ? request.tool : '';
             const requestId = typeof request?.requestId === 'string' && /^[\w.:-]{1,64}$/.test(request.requestId)
                 ? request.requestId : 'r' + (++requestCounter);
-            const finish = (outcome, scope, code) => record({ requestId, tool: toolName || '(invalid)', scope, outcome, code, elapsedMs: Date.now() - started });
+            const finish = (outcome, scope, code) => record({ requestId, tool: toolName || '(invalid)', scope, outcome, code, elapsedMs: Date.now() - started }, local ? 'console' : undefined);
             const failure = (scope, error, outcome = 'error') => {
                 finish(outcome, scope, error.code);
                 return { ok: false, tool: toolName, requestId, contract: contract.version, error };
             };
             try {
-                if (!enabled)
+                if (!enabled && !local)
                     return failure(null, { code: 'AUTOMATION_DISABLED', message: 'AI automation is turned off in VisualBoard.' }, 'denied');
                 const tool = toolsByName.get(toolName);
                 if (!tool) {
@@ -1199,7 +1200,7 @@ definePlugin({
                             details: { gap: gap.id, proposal: gap.proposal, phase: gap.phase } });
                     return failure(null, { code: 'UNKNOWN_TOOL', message: 'Unknown tool: ' + toolName });
                 }
-                if (!grants.has(tool.scope))
+                if (!local && !grants.has(tool.scope))
                     return failure(tool.scope, { code: 'PERMISSION_DENIED',
                         message: 'Scope "' + tool.scope + '" is not granted for this session.' }, 'denied');
                 let size = 0;
@@ -1245,11 +1246,11 @@ definePlugin({
                 queued.set(requestId, ticket);
                 const outcome = await enqueue(async () => {
                     queued.delete(requestId);
-                    if (ticket.cancelled && enabled)
+                    if (ticket.cancelled && (enabled || local))
                         return failure(tool.scope, { code: 'CANCELLED', message: 'The request was cancelled before it started.' });
-                    if (!enabled || !grants.has(tool.scope))
+                    if (!local && (!enabled || !grants.has(tool.scope)))
                         return failure(tool.scope, { code: enabled ? 'PERMISSION_DENIED' : 'AUTOMATION_DISABLED', message: 'Access was revoked.' }, 'denied');
-                    if (tool.scope === 'destructive' && !(await confirmAction(tool, input)))
+                    if (tool.scope === 'destructive' && !(await confirmAction(tool, input, local)))
                         return failure(tool.scope, { code: 'CONFIRMATION_DENIED', message: 'The user did not confirm this action.' }, 'denied');
                     let timer;
                     const isBatch = tool.name === 'visualboard.batch.execute';
@@ -1257,7 +1258,7 @@ definePlugin({
                         // Destructive domain operations also show the editor's own confirmation, which waits for the user.
                         timer = setTimeout(() => reject(new AutomationError('TIMEOUT', 'The operation timed out.')), isBatch ? limit('batchTimeoutMs') : tool.scope === 'destructive' ? limit('confirmTimeoutMs') : limit('requestTimeoutMs'));
                     });
-                    currentRun = { requestId, kind: isBatch ? 'batch' : 'single', cancelled: false };
+                    currentRun = { requestId, kind: isBatch ? 'batch' : 'single', cancelled: false, ...(local ? { local: true } : {}) };
                     executingDepth++;
                     try {
                         if (tool.scope !== 'read')
@@ -1837,7 +1838,8 @@ definePlugin({
                 const issues = validateInput(tool, args);
                 return { valid: issues.length === 0, issues };
             },
-            execute,
+            execute: (request) => execute(request),
+            executeLocal: (request) => execute(request, true),
             readResource,
             getAuditLog: (count) => audit.slice(-(count ?? 100)),
             pollEvents,
