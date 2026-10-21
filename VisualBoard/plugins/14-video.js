@@ -52,7 +52,7 @@ definePlugin({
                 width: 1920, height: 1080, fps: 30, background: '#0b0b0f', sync: 'auto',
                 subtitles: { enabled: false, position: 'bottom', size: 0.045, color: '#ffffff', outline: '#000000' },
                 margin: 0.06, panelIntro: 0.6, linePad: 0.35, lineMin: 1.0, secPerChar: 0.07, shotTail: 0.5,
-                direction: 'rtl', unrevealed: 'hidden',
+                direction: 'rtl', unrevealed: 'hidden', framing: 'page',
                 transitions: { samePage: 'camera-move', newPage: 'crossfade', duration: 0.5 },
                 overviewShots: false
             };
@@ -82,6 +82,7 @@ definePlugin({
                 shotTail: round3(clamp(num(i['shotTail'], base.shotTail), 0, 30)),
                 direction: oneOf(['rtl', 'ltr'], i['direction'], base.direction),
                 unrevealed: oneOf(['hidden', 'dim'], i['unrevealed'], base.unrevealed),
+                framing: oneOf(['page', 'isolated'], i['framing'], base.framing ?? 'page'),
                 transitions: {
                     samePage: oneOf(CATALOG.transitions, tr['samePage'], base.transitions.samePage),
                     newPage: oneOf(CATALOG.transitions, tr['newPage'], base.transitions.newPage),
@@ -202,14 +203,14 @@ definePlugin({
             return p ? { x: p.x, y: p.y, width: Math.max(1, p.width), height: Math.max(1, p.height) } : { x: 0, y: 0, width: info.width, height: info.height };
         }
         /** Retângulo visível com a proporção do vídeo, centrado no foco, sem sair da página quando possível. */
-        function baseCamera(rect, info, st) {
+        function baseCamera(rect, info, st, isolated = false) {
             const aspect = st.width / st.height;
             const ew = rect.width * (1 + 2 * st.margin), eh = rect.height * (1 + 2 * st.margin);
             const w = Math.max(ew, eh * aspect), h = w / aspect;
             let cx = rect.x + rect.width / 2, cy = rect.y + rect.height / 2;
-            if (w <= info.width)
+            if (!isolated && w <= info.width)
                 cx = clamp(cx, w / 2, info.width - w / 2);
-            if (h <= info.height)
+            if (!isolated && h <= info.height)
                 cy = clamp(cy, h / 2, info.height - h / 2);
             return { cx: round3(cx), cy: round3(cy), w: round3(w), rot: 0 };
         }
@@ -240,6 +241,13 @@ definePlugin({
             let cursor = 0;
             let prev = null;
             const assetOf = (clip) => clip.assetId;
+            const modeOf = (sh) => sh.framing === 'isolated' || sh.framing === 'page'
+                ? sh.framing : (st.framing === 'isolated' ? 'isolated' : 'page');
+            const isolatedPanelOf = (sh, info) => {
+                if (modeOf(sh) !== 'isolated' || sh.focus.kind !== 'panel') return null;
+                const id = sh.focus.panelId;
+                return info.panels.some(p => p.id === id) ? id : null;
+            };
             const pending = [];
             const runEnds = new Map();
             let runIndex = -1;
@@ -257,8 +265,11 @@ definePlugin({
                 const first = index === 0;
                 let tKind = first ? 'cut' : shot.transition.kind;
                 const previous = index > 0 ? planned[index - 1] : null;
-                if (tKind === 'camera-move' && previous && previous.shot.pageId !== shot.pageId) {
-                    warnings.push('Shot "' + (shot.label || shot.id) + '": camera-move needs the same page; using crossfade');
+                const isolationPanelId = isolatedPanelOf(shot, info);
+                const prevIsolationPanelId = previous ? isolatedPanelOf(previous.shot, previous.info) : null;
+                if (tKind === 'camera-move' && previous && (previous.shot.pageId !== shot.pageId ||
+                    (isolationPanelId !== null || prevIsolationPanelId !== null) && isolationPanelId !== prevIsolationPanelId)) {
+                    warnings.push('Shot "' + (shot.label || shot.id) + '": camera-move cannot travel across isolated panels/pages; using crossfade');
                     tKind = 'crossfade';
                 }
                 const tDur = first || tKind === 'cut' ? 0 : round3(clamp(shot.transition.duration, 0, 5));
@@ -339,12 +350,12 @@ definePlugin({
                 }
                 /* --- câmera --- */
                 const rect = focusRect(shot, info);
-                const base = baseCamera(rect, info, st);
+                const base = baseCamera(rect, info, st, isolationPanelId !== null);
                 const ends = cameraEnds(shot.camera.move, shot.camera.amount, base, st.width / st.height);
                 shots.push({
                     id: shot.id, pageId: shot.pageId, start: round3(start), end, lead,
                     transition: { kind: tKind, duration: tDur, ease: shot.transition.ease },
-                    focus: rect,
+                    focus: rect, framing: isolationPanelId ? 'isolated' : 'page', isolationPanelId,
                     camera: { move: shot.camera.move, amount: shot.camera.amount, ease: shot.camera.ease, from: ends.from, to: ends.to },
                     fx: shot.fx.map(f => ({ id: f.id, kind: f.kind, start: round3(start + clamp(f.at, 0, 3600)), end: round3(start + clamp(f.at, 0, 3600) + Math.max(0.02, f.duration)),
                         intensity: clamp(f.intensity, 0, 1), color: f.color || '#ffffff' }))
@@ -585,6 +596,7 @@ definePlugin({
             const tr = base.transition;
             return {
                 id: base.id || utils.uid('shot'), pageId: base.pageId, label: String(base.label || '').slice(0, 80), focus,
+                framing: oneOf(['inherit', 'page', 'isolated'], base.framing, 'inherit'),
                 camera: { move: oneOf(CATALOG.cameraMoves, cam?.move, 'static'), amount: round3(clamp(num(cam?.amount, 0.35), 0, 1)), ease: oneOf(CATALOG.eases, cam?.ease, 'ease-in-out') },
                 fx: (base.fx || []).slice(0, LIMITS.fx).map(f => newFx(f)),
                 transition: { kind: oneOf(CATALOG.transitions, tr?.kind, st.transitions.samePage), duration: round3(clamp(num(tr?.duration, st.transitions.duration), 0, 5)),
@@ -629,6 +641,8 @@ definePlugin({
                 }
                 if (patch.focus !== undefined)
                     shot.focus = newShot({ pageId: shot.pageId, focus: patch.focus }, p.settings).focus;
+                if (patch.framing !== undefined)
+                    shot.framing = newShot({ pageId: shot.pageId, framing: patch.framing }, p.settings).framing;
                 if (patch.camera !== undefined)
                     shot.camera = newShot({ pageId: shot.pageId, camera: { ...shot.camera, ...patch.camera } }, p.settings).camera;
                 if (patch.transition !== undefined)

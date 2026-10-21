@@ -39,6 +39,27 @@ definePlugin({
             h ^= s.charCodeAt(i);
             h = Math.imul(h, 16777619);
         } return h >>> 0; };
+        function belongsToPanel(sprite, scene, targetId) {
+            if (sprite.kind === 'panel') return sprite.id === targetId;
+            const px = sprite.x + sprite.w / 2, py = sprite.y + sprite.h / 2;
+            const inside = (poly) => {
+                let hit = false;
+                for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                    const a = poly[i], b = poly[j];
+                    if ((a[1] > py) !== (b[1] > py) &&
+                        px < (b[0] - a[0]) * (py - a[1]) / (b[1] - a[1]) + a[0]) hit = !hit;
+                }
+                return hit;
+            };
+            const owner = scene.panels.find(p => inside(p.polygon));
+            if (owner) return owner.id === targetId;
+            let best = null, dist = Infinity;
+            for (const p of scene.panels) {
+                const d = Math.hypot(px - (p.x + p.width / 2), py - (p.y + p.height / 2));
+                if (d < dist) { dist = d; best = p.id; }
+            }
+            return best === targetId;
+        }
         function trim(src) {
             const w = src.width, h = src.height, ctx = src.getContext('2d');
             let minX = w, minY = h, maxX = -1, maxY = -1;
@@ -143,7 +164,7 @@ definePlugin({
                 }
                 throw e;
             }
-            return { pageId, width: info.width, height: info.height, sprites };
+            return { pageId, width: info.width, height: info.height, sprites, panels: info.panels };
         }
         /* ------------------------------------------------------------------
          * Sessão de renderização
@@ -274,18 +295,35 @@ definePlugin({
                 x.rotate(cam.rot * Math.PI / 180);
                 x.scale(scale, scale);
                 x.translate(-cam.cx, -cam.cy);
+                const focused = shot?.framing === 'isolated' && shot.isolationPanelId
+                    ? scene.panels.find(p => p.id === shot.isolationPanelId) : undefined;
+                if (focused) {
+                    x.beginPath();
+                    focused.polygon.forEach((pt, i) => {
+                        if (i === 0) x.moveTo(pt[0], pt[1]);
+                        else x.lineTo(pt[0], pt[1]);
+                    });
+                    x.closePath();
+                    x.clip();
+                }
                 const active = itemsFor(scene.pageId, t);
+                const implicitPanelId = focused && !plan.items.some(item =>
+                    item.shotId === shot?.id && item.kind === 'panel' && item.targetId === focused.id)
+                    ? focused.id : null;
                 const base = shot ? { x: shot.focus.x + shot.focus.width / 2, y: shot.focus.y + shot.focus.height / 2 } : { x: cam.cx, y: cam.cy };
                 for (const sp of scene.sprites) {
+                    if (focused && !belongsToPanel(sp, scene, focused.id)) continue;
                     const it = active.get(sp.kind + '|' + sp.id);
+                    const implicitFocus = sp.kind === 'panel' && sp.id === implicitPanelId;
                     let alpha = 1, dx = 0, dy = 0, zoom = 1, clip = null, prog = 1;
                     if (!it) {
-                        if (!dim || sp.kind !== 'panel')
-                            continue;
-                        const appear = firstAppear.get(scene.pageId + '|panel|' + sp.id);
-                        if (appear !== undefined && t >= appear)
-                            continue; // já visto e encerrado: não reaparece esmaecido
-                        alpha = 0.14;
+                        if (implicitFocus) { /* render focused panel without a cue */ }
+                        else if (!dim || sp.kind !== 'panel') continue;
+                        else {
+                            const appear = firstAppear.get(scene.pageId + '|panel|' + sp.id);
+                            if (appear !== undefined && t >= appear) continue;
+                            alpha = 0.14;
+                        }
                     }
                     else {
                         const raw = it.animDuration <= 0 || it.anim === 'cut' ? 1 : clamp((t - it.tIn) / it.animDuration, 0, 1);

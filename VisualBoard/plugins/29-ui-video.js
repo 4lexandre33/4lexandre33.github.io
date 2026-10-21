@@ -484,6 +484,9 @@ definePlugin({
             bg.value = /^#[0-9a-f]{6}$/i.test(s.background) ? s.background : '#0b0b0f';
             bg.addEventListener('change', () => up({ background: bg.value }));
             w.appendChild(field('Fundo', bg));
+            w.appendChild(field('Enquadramento do vídeo', select([
+                ['page', 'Página completa (original)'], ['isolated', 'Painel isolado e centralizado']
+            ], s.framing ?? 'page', v => up({ framing: v }), 'Modo padrão para cenas com foco em painel')));
             w.appendChild(field('Margem do enquadramento', number(s.margin, { min: 0, max: 0.6, step: 0.01 }, v => { if (v !== null)
                 up({ margin: v }); }), 'Fração ao redor do painel'));
             w.appendChild(field('Intro do painel (s)', number(s.panelIntro, { min: 0, max: 10, step: 0.1 }, v => { if (v !== null)
@@ -813,6 +816,11 @@ definePlugin({
                 up({ focus: { kind: 'page' } });
             else if (v.startsWith('panel:'))
                 up({ focus: { kind: 'panel', panelId: v.slice(6) } }); })));
+            g1.appendChild(field('Enquadramento do shot', select([
+                ['inherit', 'Herdar do vídeo'], ['page', 'Página completa'], ['isolated', 'Painel isolado']
+            ], shot.framing ?? 'inherit', v => up({ framing: v }), 'Substitui a configuração geral apenas neste shot')));
+            if (shot.focus.kind !== 'panel') g1.appendChild(el('p', 'vbv-hint',
+                'O modo isolado só é aplicado quando o foco deste shot é um painel.'));
             const dur = number(shot.duration, { min: 0.1, max: 3600, step: 0.1, placeholder: 'automática' }, v => up({ duration: v }));
             g1.appendChild(field('Duração (s)', dur, 'Vazio = automática (termina após a última fala + cauda)'));
             g1.appendChild(field('Câmera', select(Object.entries(MOVE_LABEL), shot.camera.move, v => up({ camera: { ...shot.camera, move: v } }))));
