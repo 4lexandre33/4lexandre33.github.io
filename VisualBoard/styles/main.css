@@ -3415,3 +3415,11 @@ input[type=search], input[type=text], input[type=number], select { background:#2
 .vbv-field>select{width:auto;}
 .vbv-field>input[type=text]{width:60%;}
 .vbv-field>input[type=color]{width:42px;height:24px;padding:0;}
+.hub-msg.is-info { background:#1f2c25; color:#b6e6c8; }
+.hub-sync { border:1px solid #3a4048; border-radius:8px; padding:8px; margin-top:8px; }
+.hub-sync summary { cursor:pointer; font-weight:600; }
+.hub-sync h4 { margin:12px 0 4px; font-size:13px; }
+.hub-sync h5 { margin:8px 0 4px; font-size:12px; }
+.hub-sync .hub-field { display:flex; flex-direction:column; gap:2px; margin:4px 0; }
+.hub-sync input[type="text"], .hub-sync input[type="password"], .hub-sync select { width:100%; box-sizing:border-box; }
+.hub-conn { padding:6px 0; border-top:1px solid #2c3137; }

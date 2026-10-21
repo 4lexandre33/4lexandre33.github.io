@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.8.0',
+    version: '1.9.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.8.0';
+        const CONTRACT_VERSION = '1.9.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -289,7 +289,7 @@ definePlugin({
             text: str({ maxLength: 200, description: 'free text over title, file name, description and tags' }),
             tags: obj({ all: tagList(), any: tagList(), none: tagList() }),
             folder: obj({ id: hubId('folder id'), recursive: bool() }, ['id']),
-            where: arr(obj({ field: en(['width', 'height', 'bytes', 'mime', 'filename', 'title', 'hasAlpha', 'created', 'updated']),
+            where: arr(obj({ field: en(['width', 'height', 'bytes', 'mime', 'kind', 'filename', 'title', 'hasAlpha', 'created', 'updated']),
                 op: en(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'like']), value: { description: 'string, number, boolean or array (op=in)' } }, ['field', 'op', 'value']), 20),
             usage: { type: ['string', 'object'], maxLength: 20, additionalProperties: true, description: "'used', 'unused' or {project: string}" },
             similarTo: obj({ entityId: hubId(), maxDistance: int(0, 64) }, ['entityId']),
@@ -325,6 +325,31 @@ definePlugin({
                     title: str({ maxLength: 200 }), description: str({ maxLength: 2000 }), notes: str({ maxLength: 2000 }) }, ['id']) } }, ['items']));
         hubTool('verify', R, 'Verify catalog integrity', 'Checks that every catalogued file exists and matches its hash; lists orphan files.', none());
         hubTool('gc_orphans', D, 'Remove orphan files', 'Deletes files in the images folder that no catalog entry owns. Requires confirmation.', none());
+        /* ---------- Fase 22: sync.* → Hub (Google Drive ⇄ Hub ⇄ espelho Git). Nenhuma lógica aqui: o Hub executa. ---------- */
+        const syncTool = (verb, scope, title, description, input) => T('sync', verb, scope, title, description, input, comp('sync.' + verb, ['assetHub.call']), false);
+        const connId = () => ({ type: 'string', minLength: 1, maxLength: 64, description: 'connection id from sync.connections' });
+        const runId = () => ({ type: 'string', minLength: 1, maxLength: 64, description: 'run id returned by sync.run or sync.mirror_run' });
+        syncTool('status', R, 'Sync status', 'Drive connection state, sync connections, Git mirror state, runs in progress and the number of tombstones.', none());
+        syncTool('connections', R, 'List sync connections', 'Drive folders linked to Hub folders, with direction and options (never secrets).', none());
+        syncTool('drive_configure', W, 'Configure Google client', 'Stores the Google OAuth client id/secret in the Hub secret vault (never returned). mode: app (files this app creates), read (read any file), full (read and write any file).', obj({ clientId: str({ minLength: 10, maxLength: 300 }), clientSecret: str({ minLength: 4, maxLength: 300 }), mode: en(['app', 'read', 'full']) }, ['clientId', 'clientSecret']));
+        syncTool('drive_auth_start', W, 'Start Google sign-in', 'Opens a loopback listener on 127.0.0.1 and returns the authorization URL the user must open in a browser. Poll sync.drive_auth_status.', none());
+        syncTool('drive_auth_status', R, 'Google sign-in status', 'Whether the Google client is configured, the account is connected and a sign-in is pending.', none());
+        syncTool('drive_revoke', D, 'Disconnect Google', 'Revokes the Google token and deletes it from the vault. Nothing is deleted in Drive. Requires confirmation.', none());
+        syncTool('connect', W, 'Link a Drive folder', 'Links a Drive folder (id or link, or a new folder by name) to a Hub folder. direction: pull (Drive→Hub), push (Hub→Drive) or both.', obj({ provider: en(['drive']), label: str({ maxLength: 80 }), direction: en(['pull', 'push', 'both']), rootRemote: str({ minLength: 2, maxLength: 400, description: 'Drive folder id or link' }),
+            createRoot: str({ minLength: 1, maxLength: 100, description: 'create a new Drive folder with this name' }), localFolderId: hubId('Hub folder id (default: library root)'),
+            maxBytes: int(1024, 1e12, 'skip files larger than this (default 100 MB)') }));
+        syncTool('disconnect', D, 'Unlink a Drive folder', 'Removes the link and its remote bookkeeping. Nothing is deleted in Drive, Git or the Hub. Requires confirmation.', obj({ connectionId: connId() }, ['connectionId']));
+        syncTool('plan', R, 'Plan a sync', 'Lists what a sync would do (pull, push, link, alias, move, skip, conflict) without changing anything. Same content is never transferred twice.', obj({ connectionId: connId(), limit: int(1, 1000) }, ['connectionId']));
+        syncTool('run', W, 'Run a sync', 'Starts a sync (simulate=true for a dry run) in the background and returns the run snapshot. Idempotent and resumable: run again after an interruption. Poll sync.run_status.', obj({ connectionId: connId(), simulate: bool() }, ['connectionId']));
+        syncTool('run_status', R, 'Sync run status', 'Progress and counts of a run; waitMs (≤25000) waits for changes; items=true lists per-file outcomes.', obj({ runId: runId(), waitMs: int(0, 25000), items: bool() }, ['runId']));
+        syncTool('runs', R, 'Recent sync runs', 'History of sync and mirror runs.', obj({ limit: int(1, 100) }));
+        syncTool('cancel', W, 'Cancel a run', 'Asks a running sync to stop at the next file.', obj({ runId: runId() }, ['runId']));
+        syncTool('mirror_configure', W, 'Configure the Git mirror', 'Points the mirror at a local Git working copy (clone it yourself; pushes use your git credentials). Copies only what is not yet copied, one file per SHA-256, same folder tree plus .index.json. Files above maxFileBytes (default 100 MB) are skipped and listed.', obj({ repoDir: str({ minLength: 1, maxLength: 500 }), subdir: str({ maxLength: 100 }), push: bool(), remote: str({ maxLength: 100 }), branch: str({ maxLength: 100 }), maxFileBytes: int(1024, 5e9), warnBytes: int(1024, 5e9),
+            batchFiles: int(1, 5000), batchBytes: int(1024, 4e9), init: bool('create the folder and run git init when missing'), localFolderId: hubId('Hub folder to mirror (default: library root)') }, ['repoDir']));
+        syncTool('mirror_status', R, 'Git mirror status', 'Whether the mirror is configured, how many files were copied or skipped, and the last commit.', none());
+        syncTool('mirror_run', W, 'Run the Git mirror', 'Copies new files into the working copy, commits in batches and optionally pushes. simulate=true lists what would be copied.', obj({ simulate: bool() }));
+        syncTool('tombstones', R, 'List tombstones', 'Contents removed from the Hub on purpose; syncs never bring them back.', obj({ limit: int(1, 500) }));
+        syncTool('tombstone_clear', W, 'Clear a tombstone', 'Lets a removed content be imported again by the next sync.', obj({ sha256: str({ minLength: 64, maxLength: 64, pattern: '^[0-9a-f]{64}$' }) }, ['sha256']));
         T('catalog', 'place', W, 'Place catalog image', 'Downloads a catalogued image from the Hub, imports it as an asset of the open project and records the usage reference.', obj({ id: hubId(), packageId: id('package id') }, ['id']), comp('catalog.place', ['assetHub.call', 'assets.importFiles']), true);
         T('catalog', 'import_library', W, 'Send project library to catalog', 'Uploads the images of the open project (optionally one package) to the Asset Hub with tags origem:projeto and pacote:<name>; duplicates are recognised by SHA-256.', obj({ packageId: id('package id') }), comp('catalog.import_library', ['assetHub.importLibrary']));
         T('package', 'create', W, 'Create package', 'Creates an asset package.', obj({ name: str({ maxLength: 120 }) }), call('packages', 'create', ['name']), true);

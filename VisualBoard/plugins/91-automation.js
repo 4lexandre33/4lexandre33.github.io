@@ -950,6 +950,24 @@ definePlugin({
             }
         }
         const hubHandler = (verb) => async (input) => toJson(await hubCall(verb, input));
+        handlers['sync.status'] = hubHandler('sync.status');
+        handlers['sync.connections'] = hubHandler('sync.connections');
+        handlers['sync.drive_configure'] = hubHandler('sync.drive_configure');
+        handlers['sync.drive_auth_start'] = hubHandler('sync.drive_auth_start');
+        handlers['sync.drive_auth_status'] = hubHandler('sync.drive_auth_status');
+        handlers['sync.drive_revoke'] = hubHandler('sync.drive_revoke');
+        handlers['sync.connect'] = hubHandler('sync.connect');
+        handlers['sync.disconnect'] = hubHandler('sync.disconnect');
+        handlers['sync.plan'] = hubHandler('sync.plan');
+        handlers['sync.run'] = hubHandler('sync.run');
+        handlers['sync.run_status'] = hubHandler('sync.run_status');
+        handlers['sync.runs'] = hubHandler('sync.runs');
+        handlers['sync.cancel'] = hubHandler('sync.cancel');
+        handlers['sync.mirror_configure'] = hubHandler('sync.mirror_configure');
+        handlers['sync.mirror_status'] = hubHandler('sync.mirror_status');
+        handlers['sync.mirror_run'] = hubHandler('sync.mirror_run');
+        handlers['sync.tombstones'] = hubHandler('sync.tombstones');
+        handlers['sync.tombstone_clear'] = hubHandler('sync.tombstone_clear');
         handlers['catalog.status'] = hubHandler('status');
         handlers['catalog.search'] = hubHandler('search');
         handlers['catalog.get'] = hubHandler('get');
