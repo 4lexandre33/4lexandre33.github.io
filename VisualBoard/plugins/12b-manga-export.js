@@ -245,10 +245,13 @@ definePlugin({
             const resolution = outputSize(ps, opts, 2);
             const quality = resolution.quality;
             const W = resolution.width, H = resolution.height;
-            const images = new Map();
+            const only = opts.only || null;
+            const images = opts.imageCache || new Map();
             let decodedPixels = 0;
             // Decode before creating a large canvas. Keep only current-page images.
             for (const ref of checked.assets) {
+                if (images.has(ref.id))
+                    continue;
                 const img = await loadImage(ref.url);
                 decodedPixels += img.naturalWidth * img.naturalHeight;
                 if (img.naturalWidth * img.naturalHeight > 40000000 || decodedPixels > 64000000)
@@ -261,8 +264,10 @@ definePlugin({
             const ctx = canvas.getContext('2d');
             if (!ctx)
                 throw new Error('Browser could not allocate export canvas');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, W, H);
+            if (!only) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, W, H);
+            }
             // 3) Helper: draw a single layer
             function drawLayer(layer) {
                 if (MP.getLayerNodeState(inst, 'image', layer.id)?.visible === false)
@@ -324,6 +329,7 @@ definePlugin({
             function drawMangaEffects(scope, panelId) {
                 const effects = MP.listMangaEffects(inst).filter(e => e.scope === scope &&
                     (scope === 'page' || e.panelId === panelId) &&
+                    (!only || (scope === 'page' && only.kind === 'effect' && only.id === e.id) || (scope === 'panel' && only.kind === 'panel')) &&
                     MP.getLayerNodeState(inst, 'drawing', e.id)?.visible !== false);
                 if (!effects.length)
                     return;
@@ -351,6 +357,8 @@ definePlugin({
                 ctx.restore();
             }
             ps.panels.forEach(function (panel) {
+                if (only && !(only.kind === 'panel' && only.id === panel.id))
+                    return;
                 if (MP.getLayerNodeState(inst, 'panel', panel.id)?.visible === false)
                     return;
                 ctx.save();
@@ -383,6 +391,8 @@ definePlugin({
             ctx.lineJoin = 'miter';
             ctx.lineCap = 'butt';
             for (const panel of ps.panels) {
+                if (only && !(only.kind === 'panel' && only.id === panel.id))
+                    continue;
                 if (MP.getLayerNodeState(inst, 'panel', panel.id)?.visible === false)
                     continue;
                 ctx.save();
@@ -405,20 +415,25 @@ definePlugin({
             ctx.restore();
             // Page-wide manga effects are below overlay image layers and above panel borders.
             const showOverlay = MP.getLayerNodeState(inst, 'panel', '__overlay__')?.visible !== false;
-            if (showOverlay)
+            if (showOverlay && (!only || only.kind === 'effect'))
                 drawMangaEffects('page');
             // 6) Draw overlay layers (no clip, on top of everything)
             const overlays = (inst.overlays || []).slice().sort(function (a, b) {
                 return (a.zIndex || 0) - (b.zIndex || 0);
             });
             if (showOverlay)
-                for (let i = 0; i < overlays.length; i++)
+                for (let i = 0; i < overlays.length; i++) {
+                    if (only && !(only.kind === 'overlay' && only.id === overlays[i].id))
+                        continue;
                     drawLayer(overlays[i]);
+                }
             /* VP1-061: same vector paths and text layout for PNG and PDF;
              * balloons are above overlay images and clipped to the page canvas. */
             ctx.save();
             ctx.setTransform(quality, 0, 0, quality, 0, 0);
             for (const b of MP.listBalloons(inst)) {
+                if (only && !(only.kind === 'balloon' && only.id === b.id))
+                    continue;
                 if (!showOverlay || MP.getLayerNodeState(inst, 'balloon', b.id)?.visible === false)
                     continue;
                 ctx.save();
@@ -445,7 +460,7 @@ definePlugin({
                     }
                     ctx.restore();
                 }
-                if (b.text) {
+                if (b.text && !(only && only.noText)) {
                     const layout = MP.balloonTextLayout(b);
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
@@ -462,6 +477,8 @@ definePlugin({
             ctx.save();
             ctx.setTransform(quality, 0, 0, quality, 0, 0);
             for (const item of MP.listHorizontalTexts(inst)) {
+                if (only && !(only.kind === 'text' && only.id === item.id))
+                    continue;
                 if (!showOverlay || MP.getLayerNodeState(inst, 'text', item.id)?.visible === false)
                     continue;
                 ctx.save();

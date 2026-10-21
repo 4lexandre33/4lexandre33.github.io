@@ -12,12 +12,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'asset-hub',
-    version: '1.0.0',
+    version: '1.1.0',
     needs: ['state', 'assets'],
     provides: ['assetHub'],
     uses: ['ui.dialogs'],
     accepts: { 'state': '^1.0.0', 'assets': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'assetHub': '1.0.0' },
+    contractVersions: { 'assetHub': '1.1.0' },
     setup: async function (kernel) {
         const state = await kernel.require('state');
         const assets = await kernel.require('assets');
@@ -406,7 +406,7 @@ definePlugin({
         render();
         pairFromLocation();
         kernel.provide('assetHub', {
-            connect, disconnect, isConnected: () => !!conn, getStatus: status, call, blob, objectUrl, upload, place, importLibrary, pairFromLocation,
+            connect, disconnect, isConnected: () => !!conn, getStatus: status, request: (path, init = {}) => http(path, init), call, blob, objectUrl, upload, place, importLibrary, pairFromLocation,
             onChange: (fn) => { listeners.add(fn); return () => { listeners.delete(fn); }; }
         });
     }

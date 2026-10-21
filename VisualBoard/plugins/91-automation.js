@@ -19,13 +19,13 @@ definePlugin({
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
     provides: ['automation'],
-    uses: ['app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread'],
+    uses: ['app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport'],
     accepts: {
         'automationContract': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'camera': '^1.0.0',
         'assets': '^1.0.0', 'packages': '^1.0.0', 'boards': '^1.0.0', 'instances': '^1.0.0',
         'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'mangaEdit': '^1.0.0',
         'exportImport': '^1.0.0', 'mangaExport': '^2.0.0', 'mangaExportPreflight': '^1.0.0',
-        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0', 'composition': '^1.0.0', 'spread': '^1.0.0'
+        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0', 'composition': '^1.0.0', 'spread': '^1.0.0', 'video': '^1.0.0', 'videoExport': '^1.0.0'
     },
     contractVersions: { 'automation': '1.4.0' },
     setup: async function (kernel) {
@@ -378,6 +378,27 @@ definePlugin({
         const TRANSFER_MAX_BYTES = 80 * 1024 * 1024;
         const TRANSFER_MAX_CHUNK = 384 * 1024;
         const TRANSFER_MAX_ACTIVE = 2;
+        const VIDEO_TRANSFER_TTL_MS = 15 * 60000;
+        const VIDEO_TRANSFER_MAX_BYTES = 512 * 1024 * 1024;
+        const videoJobs = new Map();
+        function sniffAudio(b) {
+            const at = (o, s) => s.split('').every((c, i) => b[o + i] === c.charCodeAt(0));
+            if (b.length < 12)
+                return null;
+            if (at(0, 'RIFF') && at(8, 'WAVE'))
+                return 'audio/wav';
+            if (at(0, 'ID3') || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0))
+                return 'audio/mpeg';
+            if (at(0, 'OggS'))
+                return 'audio/ogg';
+            if (at(0, 'fLaC'))
+                return 'audio/flac';
+            if (at(4, 'ftyp'))
+                return 'audio/mp4';
+            if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3)
+                return 'audio/webm';
+            return null;
+        }
         const transfers = new Map();
         function dropTransfer(id) {
             const t = transfers.get(id);
@@ -703,6 +724,95 @@ definePlugin({
                     return fail('OPERATION_REJECTED', 'The image could not be imported');
                 return { imported: count, assets: created.map(a => ({ id: a.id, name: a.name ?? null, width: a.originalWidth ?? null,
                         height: a.originalHeight ?? null })) };
+            },
+            'video.import_clip': async (input) => {
+                const V = await kernel.require('video');
+                const bytes = decodeBase64(String(input['dataBase64']), 20 * 1024 * 1024);
+                const mime = sniffAudio(bytes);
+                if (!mime)
+                    return fail('INVALID_ARGUMENT', 'Content is not WAV, MP3, OGG, FLAC, M4A or WebM audio (checked by signature)');
+                const file = new File([bytes], String(input['name']), { type: mime });
+                const kind = input['kind'] === 'sfx' || input['kind'] === 'music' ? input['kind'] : 'voice';
+                const clip = await V.importClip(String(input['videoId']), file, kind, typeof input['label'] === 'string' ? input['label'] : undefined);
+                return { clip: toJson(clip) };
+            },
+            'video.export_start': async (input) => {
+                const V = await kernel.require('video');
+                const X = await kernel.require('videoExport');
+                const videoId = String(input['videoId']);
+                V.get(videoId);
+                if (Array.from(videoJobs.values()).some(j => j.state === 'running'))
+                    return fail('BUSY', 'Another video export is running. Wait for it or call video.export_cancel.');
+                const mode = input['mode'] === 'hub' ? 'hub' : 'browser';
+                const job = { id: 'vjob-' + hex(window.crypto.getRandomValues(new Uint8Array(6))), videoId, mode, state: 'running', phase: 'prepare', done: 0, total: 1,
+                    startedAt: Date.now(), updatedAt: Date.now(), abort: new AbortController(), error: null, result: null, transferId: null };
+                for (const [id, old] of videoJobs)
+                    if (old.state !== 'running' && Date.now() - old.updatedAt > 30 * 60000)
+                        videoJobs.delete(id);
+                videoJobs.set(job.id, job);
+                const onProgress = (p) => { job.phase = p.phase; job.done = p.done; job.total = p.total; job.updatedAt = Date.now(); };
+                const codecIn = String(input['codec'] ?? 'auto');
+                const scale = typeof input['scale'] === 'number' ? input['scale'] : undefined;
+                void (async () => {
+                    try {
+                        const result = mode === 'hub'
+                            ? await X.exportViaHub(videoId, { ...(codecIn === 'vp9' ? { codec: 'vp9' } : codecIn === 'h264' || codecIn === 'avc' ? { codec: 'h264' } : {}),
+                                ...(typeof input['crf'] === 'number' ? { crf: input['crf'] } : {}), ...(scale !== undefined ? { scale } : {}), onProgress, signal: job.abort.signal })
+                            : await X.exportMp4(videoId, { ...(codecIn === 'avc' || codecIn === 'h264' ? { codec: 'avc' } : codecIn === 'vp9' || codecIn === 'av1' ? { codec: codecIn } : {}),
+                                ...(typeof input['videoBitrate'] === 'number' ? { videoBitrate: input['videoBitrate'] } : {}), ...(scale !== undefined ? { scale } : {}), onProgress, signal: job.abort.signal });
+                        if (result.bytes > VIDEO_TRANSFER_MAX_BYTES)
+                            throw Object.assign(new Error('The MP4 has ' + result.bytes + ' bytes, above the transfer limit of ' + VIDEO_TRANSFER_MAX_BYTES + '. Lower scale/bitrate.'), { code: 'LIMIT_EXCEEDED' });
+                        const bytes = new Uint8Array(await result.blob.arrayBuffer());
+                        const sha256 = await sha256Hex(bytes);
+                        for (const [id, t] of transfers)
+                            if (t.video)
+                                dropTransfer(id);
+                        const transferId = 'xfer-' + hex(window.crypto.getRandomValues(new Uint8Array(8)));
+                        const timer = setTimeout(() => transfers.delete(transferId), VIDEO_TRANSFER_TTL_MS);
+                        transfers.set(transferId, { bytes, sha256, expires: Date.now() + VIDEO_TRANSFER_TTL_MS, timer, video: true });
+                        job.transferId = transferId;
+                        job.result = { bytes: bytes.length, sha256, mimeType: 'video/mp4', width: result.width, height: result.height, fps: result.fps, frames: result.frames,
+                            duration: result.duration, videoCodec: result.videoCodec, audioCodec: result.audioCodec, hasAudio: result.hasAudio, warnings: result.warnings,
+                            elapsedMs: result.elapsedMs, chunkSize: TRANSFER_MAX_CHUNK, expiresInSeconds: VIDEO_TRANSFER_TTL_MS / 1000 };
+                        job.state = 'done';
+                    }
+                    catch (error) {
+                        const e = error;
+                        if (e.name === 'AbortError')
+                            job.state = 'cancelled';
+                        else {
+                            job.state = 'failed';
+                            job.error = { code: e.code ?? 'OPERATION_REJECTED', message: e.message ?? String(error) };
+                        }
+                    }
+                    finally {
+                        job.updatedAt = Date.now();
+                    }
+                })();
+                return { jobId: job.id, mode, state: job.state };
+            },
+            'video.export_status': async (input) => {
+                const job = videoJobs.get(String(input['jobId']));
+                if (!job)
+                    return fail('NOT_FOUND', 'Export job not found: ' + String(input['jobId']));
+                const wait = typeof input['waitMs'] === 'number' ? Math.min(25000, input['waitMs']) : 0;
+                const t0 = Date.now(), seen = job.updatedAt;
+                while (wait > 0 && job.state === 'running' && Date.now() - t0 < wait && job.updatedAt === seen)
+                    await new Promise(r => setTimeout(r, 250));
+                return { jobId: job.id, videoId: job.videoId, mode: job.mode, state: job.state, phase: job.phase, done: job.done, total: job.total,
+                    elapsedMs: Date.now() - job.startedAt, ...(job.error ? { error: job.error } : {}), ...(job.result ? { result: toJson(job.result), transferId: job.transferId } : {}) };
+            },
+            'video.export_cancel': (input) => {
+                const job = videoJobs.get(String(input['jobId']));
+                if (!job)
+                    return fail('NOT_FOUND', 'Export job not found: ' + String(input['jobId']));
+                if (job.state === 'running')
+                    job.abort.abort();
+                return { jobId: job.id, state: job.state === 'running' ? 'cancelling' : job.state };
+            },
+            'resource.video': async () => {
+                const V = await kernel.require('video');
+                return { videos: toJson(V.list()) };
             },
             'image.list_processors': () => ({ processors: toJson(imageProcessors.list()) }),
             'effect.add_ink': (input) => addEffect(input, 'ink'),
@@ -1439,6 +1549,9 @@ definePlugin({
             }
             bridgeGrantedScopes = [];
             dropAllTransfers();
+            for (const j of videoJobs.values())
+                if (j.state === 'running')
+                    j.abort.abort();
         }
         function scheduleReconnect() {
             if (!bridgeWantReconnect || !bridgeCode || bridgeAttempt >= 8) {

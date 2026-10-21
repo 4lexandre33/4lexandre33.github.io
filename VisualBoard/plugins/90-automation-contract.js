@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.7.0',
+    version: '1.8.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.7.0';
+        const CONTRACT_VERSION = '1.8.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -196,6 +196,72 @@ definePlugin({
         T('spread', 'clear', W, 'Back to raw (remove double-page layout)', 'Removes both layout pages and restores the loose images exactly where they were; the slots stay. Refused when the pages were edited unless force=true. Undoable.', obj({ spreadId: spreadId(), force: bool('Discard manual edits and extra objects') }, ['spreadId']), call('spread', 'clear', ['spreadId', 'force']), true);
         T('scale', 'objects', W, 'Scale objects proportionally together', 'Scales images and manga pages by the same factor (0.05 to 20) about a pivot (default: centre of their union) so sizes stay proportional. Pages docked in a double page must use spread.scale.', obj({ objectIds: { type: 'array', items: id('image or manga-page instance id'), minItems: 1, maxItems: 200 }, factor: num(0.05, 20), pivot: point() }, ['objectIds', 'factor']), call('spread', 'scaleObjects', ['objectIds', 'factor', 'pivot']), true);
         T('scale', 'fit_page', W, 'Fit a page to real paper size', 'Scales a manga page to the real size of a paper (contained, no distortion) at px/mm, optionally scaling other images by the same factor.', withId({ ...paperFields(), pxPerMm: num(0.25, 12), alsoScaleIds: { type: 'array', items: id('image or manga-page instance id'), maxItems: 200 } }), call('spread', 'fitPageToPaper', ['instanceId', paperTok(), 'pxPerMm', 'alsoScaleIds']), true);
+        /* ===== video (voice comic) ===== */
+        const videoId = () => id('video project id from video.list');
+        const MOVES = ['static', 'push-in', 'pull-out', 'pan-left', 'pan-right', 'pan-up', 'pan-down', 'ken-burns', 'roll-cw', 'roll-ccw', 'heartbeat'];
+        const FX_KINDS = ['shake', 'rumble', 'zoom-punch', 'rotate-punch', 'flash', 'blur-in', 'blur-out', 'whip', 'vignette', 'glitch', 'chromatic', 'grayscale', 'sepia',
+            'invert-flash', 'contrast-pop', 'tint', 'grain', 'strobe', 'letterbox', 'speed-zoom', 'fade-in', 'fade-out', 'parallax'];
+        const REVEALS = ['cut', 'fade', 'pop', 'slide-left', 'slide-right', 'slide-up', 'slide-down', 'wipe', 'typewriter'];
+        const TRANSITIONS = ['cut', 'camera-move', 'crossfade', 'dip-black', 'dip-white', 'slide-left', 'slide-right', 'slide-up', 'slide-down', 'push-left', 'push-right',
+            'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'wipe-diagonal', 'iris', 'zoom-through', 'flash', 'glitch', 'blinds', 'dissolve', 'page-turn'];
+        const EASES = ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'back'];
+        const nullableNum = (min, max, d) => ({ type: ['number', 'null'], minimum: min, maximum: max, ...(d ? { description: d } : {}) });
+        const videoSettings = () => obj({
+            width: int(160, 3840), height: int(120, 2160), fps: int(8, 60), background: color(), sync: en(['auto', 'manual'], 'auto: each line lasts as long as its bound audio (default); manual: cue.at / cue.duration decide'),
+            subtitles: obj({ enabled: bool('optional subtitles burned into the video'), position: en(['bottom', 'top']), size: num(0.02, 0.15), color: color(), outline: color() }),
+            margin: num(0, 0.6), panelIntro: num(0, 10), linePad: num(0, 10), lineMin: num(0.1, 30), secPerChar: num(0.01, 1, 'seconds per letter when a line has no audio'), shotTail: num(0, 30),
+            direction: en(['rtl', 'ltr']), unrevealed: en(['hidden', 'dim']),
+            transitions: obj({ samePage: en(TRANSITIONS), newPage: en(TRANSITIONS), duration: num(0, 5) }), overviewShots: bool()
+        });
+        const videoFocus = () => obj({ kind: en(['page', 'panel', 'rect']), panelId: id('panel id (kind=panel)'), x: num(), y: num(), width: num(1, 1e6), height: num(1, 1e6) }, ['kind']);
+        const videoCamera = () => obj({ move: en(MOVES), amount: num(0, 1), ease: en(EASES) });
+        const videoTransition = () => obj({ kind: en(TRANSITIONS), duration: num(0, 5), ease: en(EASES) });
+        const videoFxFields = () => ({ kind: en(FX_KINDS), at: num(0, 3600, 'seconds from the start of the shot'), duration: num(0.02, 3600), intensity: num(0, 1), color: color() });
+        const videoCueFields = () => ({
+            at: nullableNum(0, 3600, 'seconds from the start of the shot; null = automatic'), duration: nullableNum(0, 600, 'null = audio length (balloons) or estimated from the text'),
+            anim: en(REVEALS), animDuration: num(0, 5), clipId: { type: ['string', 'null'], maxLength: 128, description: 'audio clip id from video.get (voice, sfx)' },
+            hold: en(['shot', 'line'], 'shot: stays until the shot ends; line: disappears shortly after its audio'), subtitle: { type: ['string', 'null'], maxLength: 500, description: 'overrides the subtitle text' }
+        });
+        const videoShotFields = () => ({ label: str({ maxLength: 80 }), focus: videoFocus(), camera: videoCamera(), transition: videoTransition(),
+            duration: nullableNum(0.1, 3600, 'null = automatic (last line + tail)') });
+        T('video', 'catalog', R, 'Video effect catalog', 'Camera moves, image effects, reveal animations, transitions and easings available to shots.', none(), call('video', 'catalog', []));
+        T('video', 'list', R, 'List videos', 'Voice-comic video projects of the current board (shots, clips and settings).', none(), call('video', 'list', []));
+        T('video', 'get', R, 'Get video', 'One video project: settings, audio clips, shots with their cues and effects, free audio events.', obj({ videoId: videoId() }, ['videoId']), call('video', 'get', ['videoId']));
+        T('video', 'page_info', R, 'Page elements for video', 'Panels (id, box, polygon), balloons, texts, effects and overlays of a manga page: the ids that cues refer to.', withId({}), call('video', 'pageInfo', ['instanceId']));
+        T('video', 'plan', R, 'Compile video timeline', 'Deterministic timeline: shot start/end, camera, items with in/out times, audio placement and subtitles, plus warnings. Changes nothing.', obj({ videoId: videoId() }, ['videoId']), call('video', 'compile', ['videoId']));
+        T('video', 'estimate', R, 'Estimate video', 'Duration, frames, shots and how many dialogue lines have audio bound.', obj({ videoId: videoId() }, ['videoId']), call('video', 'estimate', ['videoId']));
+        T('video', 'export_capabilities', R, 'Video encoders in this browser', 'WebCodecs availability and the H.264/VP9/AV1 and AAC/Opus encoders this browser can use for in-browser export.', none(), call('videoExport', 'supportedCodecs', []));
+        T('video', 'hub_status', R, 'Video render status of the Hub', 'Whether the connected Asset Hub can render video with ffmpeg (H.264/AAC).', none(), call('videoExport', 'hubStatus', []));
+        T('video', 'create', W, 'Create video', 'Creates an empty video project (default 1920x1080, 30 fps, automatic sync). Up to 8 per board.', obj({ name: str({ maxLength: 80 }), settings: videoSettings() }), call('video', 'create', [{ name: '$name', settings: '$settings' }]), true);
+        T('video', 'rename', W, 'Rename video', 'Renames a video project.', obj({ videoId: videoId(), name: str({ minLength: 1, maxLength: 80 }) }, ['videoId', 'name']), call('video', 'rename', ['videoId', 'name']), true);
+        T('video', 'update_settings', W, 'Change video settings', 'Size, fps, background, sync mode (auto/manual), optional subtitles, pacing, reading direction and default transitions.', obj({ videoId: videoId(), settings: videoSettings() }, ['videoId', 'settings']), call('video', 'updateSettings', ['videoId', 'settings']), true);
+        T('video', 'remove', D, 'Delete video', 'Deletes a video project and its imported audio clips. Requires confirmation; undoable.', obj({ videoId: videoId() }, ['videoId']), call('video', 'remove', ['videoId']), true);
+        T('video', 'auto_build', W, 'Build shots automatically', 'One shot per panel in reading order (manga right-to-left by default), with the panel, effects, overlays, texts and balloons of each panel as cues, camera moves and transitions. Replaces the current shots unless replace=false.', obj({ videoId: videoId(), pageIds: arr(id('manga-page instance id'), 200), replace: bool(), overview: bool('start each page with an overview shot') }, ['videoId']), call('video', 'autoBuild', ['videoId', { pageIds: '$pageIds', replace: '$replace', overview: '$overview' }]), true);
+        T('video', 'add_shot', W, 'Add shot', 'Adds a shot on a manga page (default: whole page, static camera). Cues and effects can be passed directly.', obj({ videoId: videoId(), pageId: id('manga-page instance id'), ...videoShotFields(),
+            cues: arr(obj({ kind: en(['panel', 'balloon', 'text', 'effect', 'overlay', 'sfx']), targetId: { type: ['string', 'null'], maxLength: 128 }, ...videoCueFields() }, ['kind']), 200),
+            fx: arr(obj(videoFxFields(), ['kind']), 60), index: int(0, 2000) }, ['videoId', 'pageId']), call('video', 'addShot', ['videoId', { pageId: '$pageId', label: '$label', focus: '$focus', camera: '$camera', transition: '$transition', duration: '$duration', cues: '$cues', fx: '$fx' }, 'index']), true);
+        T('video', 'update_shot', W, 'Change shot', 'Changes the label, page, focus, camera move, entry transition or duration of a shot.', obj({ videoId: videoId(), shotId: id('shot id'), pageId: id('manga-page instance id'), ...videoShotFields() }, ['videoId', 'shotId']), call('video', 'updateShot', ['videoId', 'shotId', { pageId: '$pageId', label: '$label', focus: '$focus', camera: '$camera', transition: '$transition', duration: '$duration' }]), true);
+        T('video', 'move_shot', W, 'Reorder shot', 'Moves a shot to another position (0 = first).', obj({ videoId: videoId(), shotId: id('shot id'), toIndex: int(0, 2000) }, ['videoId', 'shotId', 'toIndex']), call('video', 'moveShot', ['videoId', 'shotId', 'toIndex']), true);
+        T('video', 'remove_shot', D, 'Remove shot', 'Removes a shot and the audio events anchored to it. Requires confirmation; undoable.', obj({ videoId: videoId(), shotId: id('shot id') }, ['videoId', 'shotId']), call('video', 'removeShot', ['videoId', 'shotId']), true);
+        T('video', 'add_cue', W, 'Add reveal or line', 'Makes a panel, balloon, text, effect or overlay appear in a shot (ids from video.page_info), or an audio-only sound effect (kind=sfx, no target). A voice clip bound to a balloon decides its duration in auto sync.', obj({ videoId: videoId(), shotId: id('shot id'), kind: en(['panel', 'balloon', 'text', 'effect', 'overlay', 'sfx']), targetId: { type: ['string', 'null'], maxLength: 128 }, ...videoCueFields(), index: int(0, 200) }, ['videoId', 'shotId', 'kind']), call('video', 'addCue', ['videoId', 'shotId', { kind: '$kind', targetId: '$targetId', at: '$at', duration: '$duration', anim: '$anim', animDuration: '$animDuration', clipId: '$clipId', hold: '$hold', subtitle: '$subtitle' }, 'index']), true);
+        T('video', 'update_cue', W, 'Change reveal or line', 'Changes timing, animation, bound audio, hold mode or subtitle of a cue.', obj({ videoId: videoId(), cueId: id('cue id'), ...videoCueFields() }, ['videoId', 'cueId']), call('video', 'updateCue', ['videoId', 'cueId', { at: '$at', duration: '$duration', anim: '$anim', animDuration: '$animDuration', clipId: '$clipId', hold: '$hold', subtitle: '$subtitle' }]), true);
+        T('video', 'remove_cue', W, 'Remove reveal or line', 'Removes a cue from its shot.', obj({ videoId: videoId(), cueId: id('cue id') }, ['videoId', 'cueId']), call('video', 'removeCue', ['videoId', 'cueId']), true);
+        T('video', 'bind_clip', W, 'Bind audio to a line', 'Binds (or unbinds with null) an audio clip to a cue.', obj({ videoId: videoId(), cueId: id('cue id'), clipId: { type: ['string', 'null'], maxLength: 128 } }, ['videoId', 'cueId', 'clipId']), call('video', 'bindClip', ['videoId', 'cueId', 'clipId']), true);
+        T('video', 'bind_in_order', W, 'Bind voices to lines in order', 'Binds the unbound voice clips, in import order, to the dialogue balloons in video order.', obj({ videoId: videoId() }, ['videoId']), call('video', 'bindInOrder', ['videoId']), true);
+        T('video', 'import_clip', W, 'Import audio clip', 'Imports an audio file given as base64 (WAV, MP3, OGG, FLAC, M4A, WebM) as a voice, sound effect or music clip. Paths on disk are never read here (use visualboard_video_import_clip_from_path).', obj({ videoId: videoId(), name: str({ minLength: 1, maxLength: 200 }), kind: en(['voice', 'sfx', 'music']), dataBase64: str({ maxLength: 28000000 }), label: str({ maxLength: 80 }) }, ['videoId', 'name', 'dataBase64']), comp('video.import_clip', ['video.importClip']), true);
+        T('video', 'update_clip', W, 'Change audio clip', 'Renames a clip, changes its kind or gain (0 to 4).', obj({ videoId: videoId(), clipId: id('clip id'), label: str({ maxLength: 80 }), kind: en(['voice', 'sfx', 'music']), gain: num(0, 4) }, ['videoId', 'clipId']), call('video', 'updateClip', ['videoId', 'clipId', { label: '$label', kind: '$kind', gain: '$gain' }]), true);
+        T('video', 'remove_clip', D, 'Remove audio clip', 'Removes a clip (unbinding it from cues and events) and its audio asset. Requires confirmation; undoable.', obj({ videoId: videoId(), clipId: id('clip id') }, ['videoId', 'clipId']), call('video', 'removeClip', ['videoId', 'clipId']), true);
+        T('video', 'add_fx', W, 'Add camera/image effect', 'Adds a timed effect to a shot: shake, rumble, zoom/rotate punch, flash, blur, whip, vignette, glitch, chromatic, grayscale, sepia, invert, contrast, tint, grain, strobe, letterbox, speed-zoom, fades, parallax.', obj({ videoId: videoId(), shotId: id('shot id'), ...videoFxFields() }, ['videoId', 'shotId', 'kind']), call('video', 'addFx', ['videoId', 'shotId', { kind: '$kind', at: '$at', duration: '$duration', intensity: '$intensity', color: '$color' }]), true);
+        T('video', 'update_fx', W, 'Change effect', 'Changes kind, timing, intensity or color of an effect.', obj({ videoId: videoId(), fxId: id('effect id'), ...videoFxFields() }, ['videoId', 'fxId']), call('video', 'updateFx', ['videoId', 'fxId', { kind: '$kind', at: '$at', duration: '$duration', intensity: '$intensity', color: '$color' }]), true);
+        T('video', 'remove_fx', W, 'Remove effect', 'Removes an effect from its shot.', obj({ videoId: videoId(), fxId: id('effect id') }, ['videoId', 'fxId']), call('video', 'removeFx', ['videoId', 'fxId']), true);
+        const audioEventFields = () => ({ at: num(0, 36000), gain: num(0, 4), fadeIn: num(0, 60), fadeOut: num(0, 60), loop: bool() });
+        T('video', 'add_audio_event', W, 'Place sound on the timeline', 'Places a sound effect or music clip on the timeline (absolute seconds, or relative to a shot). Music can loop with fades.', obj({ videoId: videoId(), clipId: id('clip id'), shotId: { type: ['string', 'null'], maxLength: 128 }, ...audioEventFields() }, ['videoId', 'clipId']), call('video', 'addAudioEvent', ['videoId', { clipId: '$clipId', shotId: '$shotId', at: '$at', gain: '$gain', fadeIn: '$fadeIn', fadeOut: '$fadeOut', loop: '$loop' }]), true);
+        T('video', 'update_audio_event', W, 'Change timeline sound', 'Changes position, gain, fades, loop or anchor shot of a timeline sound.', obj({ videoId: videoId(), eventId: id('audio event id'), shotId: { type: ['string', 'null'], maxLength: 128 }, ...audioEventFields() }, ['videoId', 'eventId']), call('video', 'updateAudioEvent', ['videoId', 'eventId', { shotId: '$shotId', at: '$at', gain: '$gain', fadeIn: '$fadeIn', fadeOut: '$fadeOut', loop: '$loop' }]), true);
+        T('video', 'remove_audio_event', W, 'Remove timeline sound', 'Removes a timeline sound.', obj({ videoId: videoId(), eventId: id('audio event id') }, ['videoId', 'eventId']), call('video', 'removeAudioEvent', ['videoId', 'eventId']), true);
+        T('video', 'export_start', X, 'Start MP4 export', 'Starts rendering the video in the background (mode "browser": WebCodecs in the page; mode "hub": ffmpeg in the connected local Hub, H.264/AAC) and returns a jobId. Poll video.export_status; save with visualboard_video_save_mp4.', obj({ videoId: videoId(), mode: en(['browser', 'hub']), codec: en(['auto', 'h264', 'avc', 'vp9', 'av1']), scale: num(0.1, 1, 'output size factor (0.5 = draft)'),
+            videoBitrate: int(300000, 80000000), crf: int(0, 51, 'hub only: x264 quality, lower is better (default 18)') }, ['videoId']), comp('video.export_start', ['videoExport.exportMp4', 'videoExport.exportViaHub']));
+        T('video', 'export_status', R, 'MP4 export status', 'State (running, done, failed, cancelled), phase and progress of an export job; waitMs (max 25000) waits for a change. When done it reports size, codecs, warnings and the sha256.', obj({ jobId: id('export job id'), waitMs: int(0, 25000) }, ['jobId']), comp('video.export_status'));
+        T('video', 'export_cancel', X, 'Cancel MP4 export', 'Cancels a running export job.', obj({ jobId: id('export job id') }, ['jobId']), comp('video.export_cancel'));
         /* ===== panels & geometry ===== */
         T('panel', 'list', R, 'List panels', 'Panels of a page with geometry, style and layer counts.', withId({}), comp('panel.list', ['mangaPage.getPanelSet', 'mangaPage.getPanelStyle', 'mangaPage.getPanel']));
         T('panel', 'get_style', R, 'Get panel style', 'Fill and stroke of a panel.', panelRef(), call('mangaPage', 'getPanelStyle', ['@page', 'panelId'], 'nonnull'));
@@ -409,6 +475,14 @@ definePlugin({
                 description: 'MCP-server tool. Renders the page (export.prepare_transfer), copies the PNG in chunks into the export folder (never overwrites unless overwrite=true), verifies the signature, size and sha256, and returns the path and the verification report.',
                 input: withId({ ...exportOpts(), fileName: str({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$', description: 'file name without folders; .png is added when missing' }), overwrite: bool() }, ['fileName']),
                 uses: ['visualboard.export.prepare_transfer'] },
+            { name: 'visualboard.video.import_clip_from_path', title: 'Import audio from disk', domain: 'video', scope: 'write',
+                description: 'MCP-server tool. Reads a voice/sound-effect/music file (WAV, MP3, OGG, FLAC, M4A, WebM) from the configured import folders (never elsewhere), checks size and signature, and imports it with video.import_clip.',
+                input: obj({ videoId: videoId(), path: str({ minLength: 1, maxLength: 1024, description: 'file name or path inside an allowed import folder' }), kind: en(['voice', 'sfx', 'music']), label: str({ maxLength: 80 }) }, ['videoId', 'path']),
+                uses: ['visualboard.video.import_clip'] },
+            { name: 'visualboard.video.save_mp4', title: 'Save exported video to disk', domain: 'video', scope: 'export',
+                description: 'MCP-server tool. Waits (up to waitSeconds, default 50) for an export job from video.export_start, then copies the MP4 in chunks into the export folder (never overwrites unless overwrite=true) and verifies size and sha256. While the job is still running it returns its progress: call it again with the same jobId.',
+                input: obj({ jobId: id('export job id'), fileName: str({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*$', description: 'file name without folders; .mp4 is added when missing' }), overwrite: bool(), waitSeconds: int(0, 300) }, ['jobId', 'fileName']),
+                uses: ['visualboard.video.export_status'] },
             { name: 'visualboard.catalog.add_from_path', title: 'Add image from disk to catalog', domain: 'catalog', scope: 'write',
                 description: 'MCP-server tool. Reads an image from the configured import folders (never elsewhere) and uploads it to the Asset Hub with catalog.add.',
                 input: obj({ path: str({ minLength: 1, maxLength: 1024 }), folderId: hubId('folder id'), tags: tagList(), ...catMeta() }, ['path']),
@@ -496,6 +570,15 @@ definePlugin({
             excl('composition.planFrame', 'Algoritmo puro interno; a automação usa composition.plan e spread.plan.'),
             excl('spread.open', 'Abre o popup de interface.'),
             excl('spread.close', 'Fecha o popup de interface.'),
+            excl('ui.video.open', 'Abre o editor de vídeo da interface.'),
+            excl('ui.video.close', 'Fecha o editor de vídeo da interface.'),
+            excl('ui.video.isOpen', 'Estado da interface.'),
+            excl('video.compileWith', 'Compilação pura interna; a automação usa video.plan (video.compile).'),
+            excl('video.defaultSettings', 'Valores padrão já expostos por video.catalog.'),
+            excl('videoRender.prepare', 'Retorna sessão com canvases/sprites; a automação exporta via video.export_start.'),
+            excl('videoRender.prepareProject', 'Retorna sessão com canvases/sprites; a automação exporta via video.export_start.'),
+            excl('videoExport.mixAudio', 'Mixagem interna do export; resultado só existe dentro do job.'),
+            excl('videoExport.download', 'Dispara download no navegador; a automação usa video.export_start e save_mp4.'),
             excl('panelTemplates.flowPosition', 'Auxiliar de interface: page.create_from_template já posiciona a página na fila.'),
             excl('panelTemplates.focusPage', 'Auxiliar de interface: move a câmera; use viewport.fit_selection.'),
             excl('panelTemplates.promptPick', 'Abre diálogo de seleção.'),
@@ -540,6 +623,8 @@ definePlugin({
                 mimeType: 'application/json', handler: 'resource.layers', uses: ['mangaPage.listLayerTree', 'mangaPage.getFocus'] },
             { uri: 'visualboard://history', title: 'History state', description: 'Undo/redo availability and unsaved-changes flag.',
                 mimeType: 'application/json', handler: 'history.get_state', uses: ['history.canUndo', 'history.canRedo', 'history.isDirty'] },
+            { uri: 'visualboard://video', title: 'Voice-comic videos', description: 'Video projects of the current board with shots, clips and settings.',
+                mimeType: 'application/json', handler: 'resource.video', uses: ['video.list'] },
             { uri: 'visualboard://docs/operations', title: 'Operational guide', description: 'Coordinate systems, units, ordering, limits.',
                 mimeType: 'text/markdown', handler: 'docs.operations', uses: [] }
         ];
@@ -560,6 +645,9 @@ definePlugin({
             { name: 'apply_layout', title: 'Apply layout', description: 'Changes a page layout preserving content.',
                 arguments: [{ name: 'instanceId', description: 'Page instance', required: true }, { name: 'templateId', description: 'Template', required: true }],
                 template: 'Use page.plan_panel_set_change for {{instanceId}} with the panel set of {{templateId}}; review unassigned panels, then page.change_panel_set.' },
+            { name: 'create_voice_comic', title: 'Create a voice-comic video', description: 'Turns the manga pages into a narrated video and exports an MP4.',
+                arguments: [{ name: 'audioFolder', description: 'Import-folder file names of the voices, in reading order', required: false }],
+                template: 'Call video.create, video.auto_build (one shot per panel in reading order), then for each voice file call visualboard_video_import_clip_from_path (kind voice) and video.bind_in_order. Add sound effects/music with video.import_clip kind sfx/music + video.add_audio_event, camera/image effects with video.add_fx, and subtitles with video.update_settings if wanted. Review with video.plan and video.estimate (fix warnings), then video.export_start (mode hub for H.264, otherwise browser) and visualboard_video_save_mp4 with the jobId; check the returned verification. Audio files: {{audioFolder}}.' },
             { name: 'check_integrity', title: 'Check project integrity', description: 'Validates structure and export readiness.',
                 arguments: [], template: 'Call project.validate and history.get_state; list any page with errors.' }
         ];
