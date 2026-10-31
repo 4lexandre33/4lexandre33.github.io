@@ -42,17 +42,59 @@ definePlugin({
                 'wipe-left', 'wipe-right', 'wipe-up', 'wipe-down', 'wipe-diagonal', 'iris', 'zoom-through', 'flash', 'glitch', 'blinds', 'dissolve', 'page-turn'],
             eases: ['linear', 'ease-in', 'ease-out', 'ease-in-out', 'back']
         };
+        const CLIP_KINDS = ['voice', 'narration', 'sfx', 'music', 'ambient'];
         const oneOf = (list, v, d) => list.includes(v) ? v : d;
         const colorOf = (v, d) => typeof v === 'string' && /^#[0-9a-fA-F]{3,8}$|^[a-zA-Z]{3,20}$|^rgba?\([\d.,\s%]+\)$/.test(v) ? v : d;
         /* ------------------------------------------------------------------
          * Padrões e normalização
          * ------------------------------------------------------------------ */
+        const defaultMix = () => ({ master: 1, voice: 1, narration: 1, sfx: 1, music: 1, ambient: 1 });
+        function normalizeMix(input, base) {
+            const m = (input && typeof input === 'object' ? input : {}), b = base ?? defaultMix();
+            const v = (k) => round3(clamp(num(m[k], b[k]), 0, 2));
+            return { master: v('master'), voice: v('voice'), narration: v('narration'), sfx: v('sfx'), music: v('music'), ambient: v('ambient') };
+        }
+        const defaultDucking = () => ({ enabled: false, amount: 0.6, attack: 0.15, release: 0.4 });
+        function normalizeDucking(input, base) {
+            const d = (input && typeof input === 'object' ? input : {}), b = base ?? defaultDucking();
+            return { enabled: typeof d['enabled'] === 'boolean' ? d['enabled'] : b.enabled, amount: round3(clamp(num(d['amount'], b.amount), 0, 1)),
+                attack: round3(clamp(num(d['attack'], b.attack), 0.02, 3)), release: round3(clamp(num(d['release'], b.release), 0.02, 5)) };
+        }
+        /** Curva de ducking (multiplicador 0–1 ao longo do tempo) a partir dos trechos de voz/narração. Pura e determinística: prévia, MP4 do navegador e Hub usam estes mesmos pontos. */
+        function duckCurve(voices, d) {
+            if (!d.enabled || d.amount <= 0 || !voices.length)
+                return [];
+            const low = round3(1 - d.amount), sorted = voices.filter(v => v.end > v.start).sort((a, b) => a.start - b.start);
+            const merged = [];
+            for (const v of sorted) {
+                const last = merged[merged.length - 1];
+                /* Pausas curtas entre falas não deixam o fundo "respirar": o ducking continua baixo. */
+                if (last && v.start - last.end < d.attack + d.release)
+                    last.end = Math.max(last.end, v.end);
+                else
+                    merged.push({ start: v.start, end: v.end });
+            }
+            const pts = [];
+            for (const m of merged)
+                pts.push({ t: round3(m.start - d.attack), g: 1 }, { t: round3(m.start), g: low }, { t: round3(m.end), g: low }, { t: round3(m.end + d.release), g: 1 });
+            return pts;
+        }
+        const duckAt = (pts, t) => {
+            if (!pts.length || t <= pts[0].t)
+                return 1;
+            for (let i = 1; i < pts.length; i++) {
+                const a = pts[i - 1], b = pts[i];
+                if (t <= b.t)
+                    return b.t === a.t ? b.g : a.g + (b.g - a.g) * (t - a.t) / (b.t - a.t);
+            }
+            return 1;
+        };
         function defaultSettings() {
             return {
                 width: 1920, height: 1080, fps: 30, background: '#0b0b0f', sync: 'auto',
                 subtitles: { enabled: false, position: 'bottom', size: 0.045, color: '#ffffff', outline: '#000000' },
                 margin: 0.06, panelIntro: 0.6, linePad: 0.35, lineMin: 1.0, secPerChar: 0.07, shotTail: 0.5,
-                direction: 'rtl', unrevealed: 'hidden', framing: 'page',
+                direction: 'rtl', unrevealed: 'hidden', framing: 'page', mix: defaultMix(), ducking: defaultDucking(),
                 transitions: { samePage: 'camera-move', newPage: 'crossfade', duration: 0.5 },
                 overviewShots: false
             };
@@ -83,6 +125,8 @@ definePlugin({
                 direction: oneOf(['rtl', 'ltr'], i['direction'], base.direction),
                 unrevealed: oneOf(['hidden', 'dim'], i['unrevealed'], base.unrevealed),
                 framing: oneOf(['page', 'isolated'], i['framing'], base.framing ?? 'page'),
+                mix: normalizeMix(i['mix'], base.mix),
+                ducking: normalizeDucking(i['ducking'], base.ducking),
                 transitions: {
                     samePage: oneOf(CATALOG.transitions, tr['samePage'], base.transitions.samePage),
                     newPage: oneOf(CATALOG.transitions, tr['newPage'], base.transitions.newPage),
@@ -236,6 +280,9 @@ definePlugin({
          * ------------------------------------------------------------------ */
         function compileWith(project, infoFor) {
             const st = project.settings;
+            /* Volume final = ganho do clipe × ganho da categoria × geral. Aplicado aqui, o plano já sai mixado para prévia, MP4 do navegador e Hub. */
+            const mixOf = normalizeMix(st.mix, undefined);
+            const catGain = (kind) => round3(mixOf[kind] * mixOf.master);
             const warnings = [];
             const shots = [], items = [], audio = [], subtitles = [];
             let cursor = 0;
@@ -244,7 +291,8 @@ definePlugin({
             const modeOf = (sh) => sh.framing === 'isolated' || sh.framing === 'page'
                 ? sh.framing : (st.framing === 'isolated' ? 'isolated' : 'page');
             const isolatedPanelOf = (sh, info) => {
-                if (modeOf(sh) !== 'isolated' || sh.focus.kind !== 'panel') return null;
+                if (modeOf(sh) !== 'isolated' || sh.focus.kind !== 'panel')
+                    return null;
                 const id = sh.focus.panelId;
                 return info.panels.some(p => p.id === id) ? id : null;
             };
@@ -295,7 +343,7 @@ definePlugin({
                         warnings.push('Cue ' + cue.id + ': panel ' + String(cue.targetId) + ' no longer exists');
                         continue;
                     }
-                    const speech = (cue.kind === 'balloon') || ((cue.kind === 'text' || cue.kind === 'sfx') && !!clip && clip.kind === 'voice');
+                    const speech = (cue.kind === 'balloon') || ((cue.kind === 'text' || cue.kind === 'sfx') && !!clip && (clip.kind === 'voice' || clip.kind === 'narration'));
                     let at;
                     if (cue.kind === 'panel')
                         at = st.sync === 'manual' && cue.at != null ? cue.at : 0;
@@ -326,7 +374,7 @@ definePlugin({
                     lastEnd = Math.max(lastEnd, at + (speech || cue.kind === 'sfx' ? dur : 0));
                     if (clip)
                         audio.push({ id: 'a_' + cue.id, clipId: clip.id, assetId: assetOf(clip), kind: clip.kind, start: round3(start + at), duration: clip.duration,
-                            gain: clip.gain, fadeIn: 0, fadeOut: 0, loop: false, source: 'cue' });
+                            gain: round3(clip.gain * catGain(clip.kind)), fadeIn: 0, fadeOut: 0, loop: false, source: 'cue' });
                     if (text && (cue.kind === 'balloon' || cue.kind === 'text') && (speech || cue.kind === 'balloon'))
                         subtitles.push({ start: round3(start + at), end: round3(start + at + Math.max(dur, 0.3)), text, shotId: shot.id });
                 }
@@ -404,10 +452,22 @@ definePlugin({
                 const dur = ev.loop ? shotDuration - at : Math.min(clip.duration, shotDuration - at);
                 if (!ev.loop && clip.duration > shotDuration - at + 0.01)
                     warnings.push('Audio event ' + ev.id + ' is trimmed at the end of the video');
-                audio.push({ id: 'a_' + ev.id, clipId: clip.id, assetId: clip.assetId, kind: clip.kind, start: round3(at), duration: round3(dur), gain: clip.gain * ev.gain,
+                audio.push({ id: 'a_' + ev.id, clipId: clip.id, assetId: clip.assetId, kind: clip.kind, start: round3(at), duration: round3(dur), gain: round3(clip.gain * ev.gain * catGain(clip.kind)),
                     fadeIn: ev.fadeIn, fadeOut: ev.fadeOut, loop: ev.loop, source: 'event' });
             }
             audio.sort((a, b) => a.start - b.start || a.id.localeCompare(b.id));
+            /* Ducking: música e ambiente abaixam enquanto há voz ou narração (voz solta e vozes presas a balões). */
+            const duckSet = normalizeDucking(st.ducking, undefined);
+            const curve = duckCurve(audio.filter(a => (a.kind === 'voice' || a.kind === 'narration') && a.gain > 0).map(a => ({ start: a.start, end: a.start + a.duration })), duckSet);
+            if (curve.length)
+                for (const a of audio) {
+                    if (a.kind !== 'music' && a.kind !== 'ambient')
+                        continue;
+                    const end = a.start + a.duration, inner = curve.filter(c => c.t > a.start && c.t < end);
+                    const pts = [{ t: a.start, g: round3(duckAt(curve, a.start)) }, ...inner, { t: end, g: round3(duckAt(curve, end)) }];
+                    if (pts.some(c => c.g < 1))
+                        a.duck = pts.slice(0, 400);
+                }
             subtitles.sort((a, b) => a.start - b.start);
             const duration = round3(shotDuration);
             return { projectId: project.id, width: st.width, height: st.height, fps: st.fps, duration, frames: Math.max(1, Math.ceil(duration * st.fps)), sync: st.sync,
@@ -477,7 +537,7 @@ definePlugin({
                 throw Error('Unsupported audio file: ' + (file.name || type));
             if (file.size <= 0 || file.size > LIMITS.clipBytes)
                 throw Error('Audio file must have 1 byte to ' + Math.round(LIMITS.clipBytes / 1048576) + ' MB');
-            const k = oneOf(['voice', 'sfx', 'music'], kind, 'voice');
+            const k = oneOf(CLIP_KINDS, kind, 'voice');
             const duration = await decodeDuration(file);
             if (!(duration > 0) || duration > LIMITS.clipSeconds)
                 throw Error('Audio duration is out of range');
@@ -551,6 +611,26 @@ definePlugin({
             });
             return { removed: clipId, unbound };
         }
+        /** Troca o áudio de um clipe por outro ativo já importado (cues e eventos continuam ligados ao clipe).
+         *  `dropClipId`: clipe temporário criado pela importação do novo áudio, removido sem apagar o ativo. O ativo antigo é mantido (Desfazer). */
+        async function replaceClipAsset(projectId, clipId, assetId, dropClipId) {
+            const p = projectById(projectId);
+            const clip = clipOf(p, clipId);
+            if (!clip)
+                throw Error('Clip not found: ' + clipId);
+            const asset = S.assets.find(a => a.id === assetId);
+            if (!asset || asset.kind !== 'audio')
+                throw Error('Audio asset not found: ' + assetId);
+            await history.transaction('video.replace_clip', async () => {
+                clip.assetId = assetId;
+                clip.duration = round3(Number(asset.duration) || clip.duration);
+                if (dropClipId && dropClipId !== clipId)
+                    p.clips = p.clips.filter(c => c.id !== dropClipId);
+                kernel.emit('assets:changed');
+                notify(projectId);
+            });
+            return clone(clip);
+        }
         async function updateClip(projectId, clipId, patch) {
             const p = projectById(projectId);
             const clip = clipOf(p, clipId);
@@ -560,7 +640,7 @@ definePlugin({
                 if (patch.label !== undefined)
                     clip.label = String(patch.label).trim().slice(0, 80) || clip.label;
                 if (patch.kind !== undefined)
-                    clip.kind = oneOf(['voice', 'sfx', 'music'], patch.kind, clip.kind);
+                    clip.kind = oneOf(CLIP_KINDS, patch.kind, clip.kind);
                 if (patch.gain !== undefined)
                     clip.gain = round3(clamp(num(patch.gain, 1), 0, 4));
                 notify(projectId);
@@ -642,7 +722,7 @@ definePlugin({
                 if (patch.focus !== undefined)
                     shot.focus = newShot({ pageId: shot.pageId, focus: patch.focus }, p.settings).focus;
                 if (patch.framing !== undefined)
-                    shot.framing = newShot({ pageId: shot.pageId, framing: patch.framing }, p.settings).framing;
+                    shot.framing = newShot({ pageId: shot.pageId, framing: patch.framing }, p.settings).framing ?? 'inherit';
                 if (patch.camera !== undefined)
                     shot.camera = newShot({ pageId: shot.pageId, camera: { ...shot.camera, ...patch.camera } }, p.settings).camera;
                 if (patch.transition !== undefined)
@@ -934,7 +1014,7 @@ definePlugin({
             catalog: () => clone(CATALOG),
             defaultSettings,
             list, get, create, rename, remove, updateSettings,
-            importClip, removeClip, updateClip,
+            importClip, replaceClipAsset, removeClip, updateClip,
             addShot, updateShot, removeShot, moveShot,
             addCue, updateCue, removeCue, bindClip, bindInOrder,
             addFx, updateFx, removeFx,

@@ -221,8 +221,20 @@ definePlugin({
                     g.gain.setValueAtTime(a.gain, Math.max(a.start, end - a.fadeOut));
                     g.gain.linearRampToValueAtTime(0, end);
                 }
-                src.connect(g);
-                g.connect(ctx.destination);
+                if (a.duck && a.duck.length) {
+                    /* Ducking: mesma curva da prévia e do Hub (multiplicador por tempo absoluto do vídeo). */
+                    const d = ctx.createGain();
+                    d.gain.setValueAtTime(a.duck[0].g, a.duck[0].t);
+                    for (let i = 1; i < a.duck.length; i++)
+                        d.gain.linearRampToValueAtTime(a.duck[i].g, a.duck[i].t);
+                    src.connect(g);
+                    g.connect(d);
+                    d.connect(ctx.destination);
+                }
+                else {
+                    src.connect(g);
+                    g.connect(ctx.destination);
+                }
                 src.start(a.start, 0, a.loop ? undefined : Math.min(buf.duration, a.duration));
                 if (a.loop)
                     src.stop(end);
@@ -490,7 +502,8 @@ definePlugin({
             const assets = Array.from(new Set(plan.audio.map(a => a.assetId)));
             const srcKey = new Map(assets.map((id, i) => [id, 'f' + i]));
             const spec = { width, height, fps: plan.fps, duration: plan.duration, frames: plan.frames, frameFormat, codec, crf: opts.crf ?? 18, audioBitrate: opts.audioBitrate ?? 192_000,
-                audio: plan.audio.map((a, i) => ({ key: 'a' + i, src: srcKey.get(a.assetId), start: a.start, duration: a.duration, gain: a.gain, fadeIn: a.fadeIn, fadeOut: a.fadeOut, loop: a.loop })) };
+                audio: plan.audio.map((a, i) => ({ key: 'a' + i, src: srcKey.get(a.assetId), start: a.start, duration: a.duration, gain: a.gain, fadeIn: a.fadeIn, fadeOut: a.fadeOut, loop: a.loop,
+                    ...(a.duck && a.duck.length ? { duck: a.duck.map(c => ({ t: Math.round((c.t - a.start) * 1000) / 1000, g: c.g })) } : {}) })) };
             const created = await hubJson(hub, '/v1/render/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(spec) });
             const jobId = String(created.data['jobId']);
             const base = '/v1/render/jobs/' + jobId;

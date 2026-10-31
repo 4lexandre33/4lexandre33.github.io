@@ -14,20 +14,21 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation',
-    version: '1.4.0',
+    version: '1.5.0',
     needs: ['automationContract', 'state', 'history', 'camera', 'assets', 'packages', 'boards', 'instances',
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
     provides: ['automation'],
-    uses: ['app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport'],
+    uses: ['sceneBlocking', 'sceneBlockingEngine', 'app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport', 'imageEdit', 'ui.imageEditor', 'audioEdit', 'ui.audioEditor'],
     accepts: {
+        'sceneBlocking': '^1.1.0', 'sceneBlockingEngine': '^1.1.0',
         'automationContract': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'camera': '^1.0.0',
         'assets': '^1.0.0', 'packages': '^1.0.0', 'boards': '^1.0.0', 'instances': '^1.0.0',
         'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'mangaEdit': '^1.0.0',
         'exportImport': '^1.0.0', 'mangaExport': '^2.0.0', 'mangaExportPreflight': '^1.0.0',
-        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0', 'composition': '^1.0.0', 'spread': '^1.0.0', 'video': '^1.0.0', 'videoExport': '^1.0.0'
+        'imageCommands': '^1.0.0', 'imageProcessors': '^1.0.0', 'app': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.shell': '^1.0.0', 'assetHub': '^1.0.0', 'composition': '^1.0.0', 'spread': '^1.0.0', 'video': '^1.0.0', 'videoExport': '^1.0.0', 'imageEdit': '^1.0.0', 'ui.imageEditor': '^1.0.0', 'audioEdit': '^1.0.0', 'ui.audioEditor': '^1.0.0'
     },
-    contractVersions: { 'automation': '1.4.0' },
+    contractVersions: { 'automation': '1.5.0' },
     setup: async function (kernel) {
         const contractApi = await kernel.require('automationContract');
         const contract = contractApi.describe();
@@ -732,7 +733,7 @@ definePlugin({
                 if (!mime)
                     return fail('INVALID_ARGUMENT', 'Content is not WAV, MP3, OGG, FLAC, M4A or WebM audio (checked by signature)');
                 const file = new File([bytes], String(input['name']), { type: mime });
-                const kind = input['kind'] === 'sfx' || input['kind'] === 'music' ? input['kind'] : 'voice';
+                const kind = ['narration', 'sfx', 'music', 'ambient'].find(k => k === input['kind']) ?? 'voice';
                 const clip = await V.importClip(String(input['videoId']), file, kind, typeof input['label'] === 'string' ? input['label'] : undefined);
                 return { clip: toJson(clip) };
             },
@@ -813,6 +814,180 @@ definePlugin({
             'resource.video': async () => {
                 const V = await kernel.require('video');
                 return { videos: toJson(V.list()) };
+            },
+            'scene_blocking.list_themes': async () => {
+                const [E, B] = [await kernel.require('sceneBlockingEngine'), await kernel.require('sceneBlocking')];
+                return { themes: E.themes(), limits: B.limits(), engineVersion: E.ENGINE_VERSION,
+                    rules: { sheet: '3x3 cells of 600x600, 9 scenes', elevationByColumn: { column1: 'E1', column2: 'E2', column3: 'E3' }, mannequins: '1-8 with fixed color slots', coordinates: 'cell units; compass angles, 0 = north, clockwise; y grows downward' } };
+            },
+            'scene_blocking.get': async (input) => {
+                const B = await kernel.require('sceneBlocking');
+                return sceneCall(() => {
+                    const d = B.get(String(input['assetId']));
+                    if (input['cell'] !== undefined) {
+                        const c = d.sheet.cells[Number(input['cell'])];
+                        return { assetId: d.assetId, name: d.name, cell: toJson(c), violations: toJson(d.violations.filter(v => v.message.includes(c.id))) };
+                    }
+                    return { assetId: d.assetId, name: d.name, config: toJson(d.config), engineVersion: d.engineVersion, sheetIndex: d.sheet.index, violations: toJson(d.violations),
+                        cells: d.sheet.cells.map(c => ({ cell: c.index, mannequins: c.characters.length, theme: c.themeRule.id, variant: c.themeRule.variant, camera: { x: c.camera.x, y: c.camera.y, elevation: c.camera.elevationLevel, distance: c.camera.distanceLevel },
+                            framing: c.framing.type, halfAngle: c.framing.halfAngle, focus: { type: c.focus.targetType, ids: c.focus.targetIds }, locked: c.locked, lockedParts: c.lockedParts, manualEdits: c.manualEdits ?? 0 })) };
+                });
+            },
+            'scene_blocking.validate': async (input) => {
+                const B = await kernel.require('sceneBlocking');
+                return sceneCall(() => { const d = B.get(String(input['assetId'])); return { assetId: d.assetId, valid: d.violations.length === 0, violations: toJson(d.violations) }; });
+            },
+            'scene_blocking.generate': async (input) => {
+                const B = await kernel.require('sceneBlocking');
+                const { cameraAngle, ...rest } = input;
+                const cfg = { ...rest };
+                if (typeof cameraAngle === 'number')
+                    cfg['cameraPosition'] = { angle: cameraAngle };
+                return sceneCall(() => B.generate(cfg));
+            },
+            'scene_blocking.regenerate': async (input) => {
+                const B = await kernel.require('sceneBlocking');
+                const req = {};
+                if (typeof input['cell'] === 'number')
+                    req.cell = input['cell'];
+                if (typeof input['part'] === 'string')
+                    req.part = input['part'];
+                return sceneCall(() => B.regenerate(String(input['assetId']), req));
+            },
+            'scene_blocking.set_lock': async (input) => {
+                const B = await kernel.require('sceneBlocking');
+                const parts = {};
+                for (const k of ['characters', 'camera', 'framing'])
+                    if (typeof input[k] === 'boolean')
+                        parts[k] = input[k];
+                const lock = { parts };
+                if (typeof input['locked'] === 'boolean')
+                    lock.cell = input['locked'];
+                return sceneCall(() => B.setLock(String(input['assetId']), Number(input['cell']), lock));
+            },
+            'scene_blocking.open_editor': async () => {
+                const ui = await kernel.require('ui.imageEditor');
+                await ui.open();
+                return { opened: true, hint: 'The window opens in image editor mode; the user (or the UI) switches to "Blocking de cena".' };
+            },
+            'scene_blocking.export_svg': async (input) => {
+                const B = await kernel.require('sceneBlocking');
+                return sceneCall(async () => {
+                    const svg = input['cell'] === undefined ? await B.exportSvg(String(input['assetId'])) : await B.exportCellSvg(String(input['assetId']), Number(input['cell']));
+                    if (svg.length > 900000)
+                        throw Object.assign(new Error('SVG above 900 KB; use visualboard_scene_blocking_save_file'), { code: 'LIMIT_EXCEEDED' });
+                    return { assetId: input['assetId'], cell: input['cell'] ?? null, bytes: svg.length, svg };
+                });
+            },
+            'scene_blocking.prepare_transfer': async (input) => {
+                if (transfers.size >= TRANSFER_MAX_ACTIVE)
+                    return fail('LIMIT_EXCEEDED', 'Too many transfers waiting (' + TRANSFER_MAX_ACTIVE + '). Finish or wait for them to expire (2 minutes).');
+                const B = await kernel.require('sceneBlocking');
+                return sceneCall(async () => {
+                    const format = String(input['format']), aid = input['assetId'] === undefined ? null : String(input['assetId']);
+                    let bytes, mimeType;
+                    const cellN = input['cell'] === undefined ? undefined : Number(input['cell']);
+                    if (format === 'svg') {
+                        if (!aid)
+                            throw Object.assign(new Error('assetId is required for svg'), { code: 'INVALID_ARGUMENT' });
+                        bytes = new TextEncoder().encode(cellN === undefined ? await B.exportSvg(aid) : await B.exportCellSvg(aid, cellN));
+                        mimeType = 'image/svg+xml';
+                    }
+                    else if (format === 'png') {
+                        if (!aid)
+                            throw Object.assign(new Error('assetId is required for png'), { code: 'INVALID_ARGUMENT' });
+                        const o = {};
+                        if (typeof input['scale'] === 'number')
+                            o.scale = input['scale'];
+                        if (cellN !== undefined)
+                            o.cell = cellN;
+                        bytes = new Uint8Array(await (await B.exportPng(aid, o)).arrayBuffer());
+                        mimeType = 'image/png';
+                    }
+                    else if (format === 'zip') {
+                        const ids = Array.isArray(input['assetIds']) && input['assetIds'].length ? input['assetIds'].map(String) : aid ? [aid] : [];
+                        if (!ids.length)
+                            throw Object.assign(new Error('assetIds or assetId is required for zip'), { code: 'INVALID_ARGUMENT' });
+                        const o = { format: 'svg' };
+                        if (input['cells'] === true)
+                            o.cells = true;
+                        bytes = new Uint8Array(await (await B.exportZip(ids, o)).arrayBuffer());
+                        mimeType = 'application/zip';
+                    }
+                    else
+                        throw Object.assign(new Error('format must be svg, png or zip'), { code: 'INVALID_ARGUMENT' });
+                    if (bytes.length > TRANSFER_MAX_BYTES)
+                        throw Object.assign(new Error('File is ' + bytes.length + ' bytes, above the transfer limit of ' + TRANSFER_MAX_BYTES), { code: 'LIMIT_EXCEEDED' });
+                    const transferId = 'xfer-' + hex(window.crypto.getRandomValues(new Uint8Array(8))), sha256 = await sha256Hex(bytes);
+                    const timer = setTimeout(() => transfers.delete(transferId), TRANSFER_TTL_MS);
+                    transfers.set(transferId, { bytes, sha256, expires: Date.now() + TRANSFER_TTL_MS, timer });
+                    return { transferId, bytes: bytes.length, sha256, mimeType, format, chunkSize: TRANSFER_MAX_CHUNK, expiresInSeconds: TRANSFER_TTL_MS / 1000 };
+                });
+            },
+            'resource.scene_blocking': async () => {
+                const B = await kernel.require('sceneBlocking');
+                return { sheets: toJson(B.list()) };
+            },
+            'image_edit.inspect_colors': async (input) => {
+                const E = await kernel.require('imageEdit');
+                return imageEditCall(() => E.analyze(String(input['assetId']), typeof input['maxColors'] === 'number' ? input['maxColors'] : 8));
+            },
+            'image_edit.inspect_pixel': async (input) => {
+                const E = await kernel.require('imageEdit');
+                return imageEditCall(async () => ({ color: await E.colorAt(String(input['assetId']), Number(input['x']), Number(input['y'])) }));
+            },
+            'image_edit.slice_grid': (input) => imageEditApply(input, 'grid'),
+            'image_edit.remove_background': (input) => imageEditApply(input, 'removeBackground'),
+            'image_edit.cut_by_contour': (input) => imageEditApply(input, 'cutByContour'),
+            'image_edit.crop': (input) => imageEditApply(input, 'crop'),
+            'audio_edit.inspect_clip': async (input) => {
+                const A = await kernel.require('audioEdit');
+                return audioEditCall(() => A.analyze(String(input['videoId']), String(input['clipId']), typeof input['columns'] === 'number' ? input['columns'] : 120));
+            },
+            'audio_edit.list_recipes': async () => {
+                const A = await kernel.require('audioEdit');
+                const ops = ['trim', 'cut', 'gain', 'normalize', 'fade', 'compress', 'limit', 'highpass', 'lowpass', 'notch', 'eq', 'gate', 'denoise', 'declick', 'speed', 'pitch', 'rate', 'effect', 'trimSilence', 'pad', 'reverse', 'mixdown', 'resample', 'loopFit'];
+                return audioEditCall(async () => ({ recipes: A.recipes(), steps: Object.fromEntries(ops.map(op => [op, A.defaults(op)])), limits: A.limits() }));
+            },
+            'audio_edit.preview_process': async (input) => {
+                const A = await kernel.require('audioEdit');
+                return audioEditCall(async () => {
+                    const p = await A.preview(String(input['videoId']), String(input['clipId']), input['steps']);
+                    try {
+                        return { before: p.before, after: p.after, warnings: p.warnings, durations: p.parts.map(x => Math.round((x.end - x.start) * 1000) / 1000) };
+                    }
+                    finally {
+                        A.release(p);
+                    }
+                });
+            },
+            'audio_edit.process': async (input) => {
+                const A = await kernel.require('audioEdit');
+                return audioEditCall(() => A.apply(String(input['videoId']), String(input['clipId']), input['steps'], audioCommitOptions(input)));
+            },
+            'audio_edit.apply_recipe': async (input) => {
+                const A = await kernel.require('audioEdit');
+                return audioEditCall(async () => {
+                    const recipe = A.recipes().find(r => r.id === String(input['recipeId']));
+                    if (!recipe)
+                        throw Object.assign(new Error('Receita não encontrada: ' + String(input['recipeId'])), { code: 'CLIP_NOT_FOUND' });
+                    return A.apply(String(input['videoId']), String(input['clipId']), recipe.steps, audioCommitOptions(input));
+                });
+            },
+            'audio_edit.split_by_silence': async (input) => {
+                const A = await kernel.require('audioEdit');
+                const opts = {};
+                for (const key of ['threshold', 'minSilence', 'pad', 'minSpeech', 'bind', 'steps'])
+                    if (input[key] !== undefined)
+                        opts[key] = input[key];
+                return audioEditCall(() => A.splitBySilence(String(input['videoId']), String(input['clipId']), opts));
+            },
+            'audio_edit.normalize_voices': async (input) => {
+                const A = await kernel.require('audioEdit');
+                return audioEditCall(() => A.levelVoices(String(input['videoId']), {
+                    ...(Array.isArray(input['kinds']) ? { kinds: input['kinds'] } : {}),
+                    ...(input['targets'] && typeof input['targets'] === 'object' ? { targets: input['targets'] } : {})
+                }));
             },
             'image.list_processors': () => ({ processors: toJson(imageProcessors.list()) }),
             'effect.add_ink': (input) => addEffect(input, 'ink'),
@@ -950,6 +1125,17 @@ definePlugin({
             }
         }
         const hubHandler = (verb) => async (input) => toJson(await hubCall(verb, input));
+        handlers['prompt.list'] = hubHandler('prompt.list');
+        handlers['prompt.get'] = hubHandler('prompt.get');
+        handlers['prompt.create'] = hubHandler('prompt.create');
+        handlers['prompt.update'] = hubHandler('prompt.update');
+        handlers['prompt.versions'] = hubHandler('prompt.versions');
+        handlers['prompt.version_text'] = hubHandler('prompt.version_text');
+        handlers['prompt.archive'] = hubHandler('prompt.archive');
+        handlers['prompt.link'] = hubHandler('prompt.link');
+        handlers['prompt.unlink'] = hubHandler('prompt.unlink');
+        handlers['prompt.for_asset'] = hubHandler('prompt.for_asset');
+        handlers['prompt.promote'] = hubHandler('prompt.promote');
         handlers['sync.status'] = hubHandler('sync.status');
         handlers['sync.connections'] = hubHandler('sync.connections');
         handlers['sync.drive_configure'] = hubHandler('sync.drive_configure');
@@ -966,6 +1152,10 @@ definePlugin({
         handlers['sync.mirror_configure'] = hubHandler('sync.mirror_configure');
         handlers['sync.mirror_status'] = hubHandler('sync.mirror_status');
         handlers['sync.mirror_run'] = hubHandler('sync.mirror_run');
+        handlers['sync.conflicts_list'] = hubHandler('sync.conflicts_list');
+        handlers['sync.conflict_resolve'] = hubHandler('sync.conflict_resolve');
+        handlers['sync.local_folder_configure'] = hubHandler('sync.local_folder_configure');
+        handlers['sync.local_status'] = hubHandler('sync.local_status');
         handlers['sync.tombstones'] = hubHandler('sync.tombstones');
         handlers['sync.tombstone_clear'] = hubHandler('sync.tombstone_clear');
         handlers['catalog.status'] = hubHandler('status');
@@ -1017,6 +1207,70 @@ definePlugin({
                 return fail(HUB_CODES[hubCode] ?? 'OPERATION_REJECTED', err instanceof Error ? err.message : String(err), { hubCode });
             }
         };
+        /* ---------- audio editor helpers ---------- */
+        async function audioEditCall(run) {
+            try {
+                return toJson(await run());
+            }
+            catch (err) {
+                const code = String(err.code ?? '');
+                const message = err instanceof Error ? err.message : String(err);
+                if (code === 'INVALID_ARGUMENT')
+                    return fail('INVALID_ARGUMENT', message);
+                if (code === 'CLIP_NOT_FOUND')
+                    return fail('NOT_FOUND', message);
+                if (code === 'AUDIO_TOO_LONG')
+                    return fail('LIMIT_EXCEEDED', message);
+                return fail('OPERATION_REJECTED', message, { audioEditCode: code || undefined });
+            }
+        }
+        function audioCommitOptions(input) {
+            return {
+                ...(input['mode'] === 'replace' || input['mode'] === 'new' ? { mode: input['mode'] } : {}),
+                ...(input['bits'] === '32' ? { bits: 32 } : input['bits'] === '16' ? { bits: 16 } : {}),
+                ...(typeof input['kind'] === 'string' ? { kind: input['kind'] } : {}),
+                ...(typeof input['name'] === 'string' ? { name: input['name'] } : {})
+            };
+        }
+        /* ---------- image editor helpers ---------- */
+        async function sceneCall(run) {
+            try {
+                return toJson(await run());
+            }
+            catch (err) {
+                const code = String(err.code ?? ''), message = err instanceof Error ? err.message : String(err);
+                if (code === 'INVALID_ARGUMENT' || code === 'INVALID_MODEL' || code === 'NOT_A_SCENE')
+                    return fail('INVALID_ARGUMENT', message);
+                if (code === 'NOT_FOUND')
+                    return fail('NOT_FOUND', message);
+                if (code === 'LIMIT_EXCEEDED')
+                    return fail('LIMIT_EXCEEDED', message);
+                return fail('OPERATION_REJECTED', message, { sceneBlockingCode: code || undefined });
+            }
+        }
+        async function imageEditCall(run) {
+            try {
+                return toJson(await run());
+            }
+            catch (err) {
+                const code = String(err.code ?? '');
+                const message = err instanceof Error ? err.message : String(err);
+                if (code === 'INVALID_ARGUMENT')
+                    return fail('INVALID_ARGUMENT', message);
+                if (code === 'ASSET_NOT_FOUND')
+                    return fail('NOT_FOUND', message);
+                return fail('OPERATION_REJECTED', message, { imageEditCode: code || undefined });
+            }
+        }
+        async function imageEditApply(input, op) {
+            const E = await kernel.require('imageEdit');
+            const params = {};
+            for (const key of Object.keys(input))
+                if (key !== 'assetId' && key !== 'pieces')
+                    params[key] = input[key];
+            const pieces = Array.isArray(input['pieces']) ? input['pieces'] : undefined;
+            return imageEditCall(() => E.apply(String(input['assetId']), op, params, pieces));
+        }
         /* ---------- argument resolution for declarative bindings ---------- */
         function resolveArg(token, input) {
             if (typeof token === 'string') {

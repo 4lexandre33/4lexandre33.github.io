@@ -12,8 +12,8 @@ definePlugin({
     version: '1.0.0',
     needs: ['utils', 'state', 'video', 'videoRender', 'videoExport', 'assets'],
     provides: ['ui.video'],
-    uses: ['ui.dialogs'],
-    accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'video': '^1.0.0', 'videoRender': '^1.0.0', 'videoExport': '^1.0.0', 'assets': '^1.0.0', 'ui.dialogs': '^1.0.0' },
+    uses: ['ui.dialogs', 'ui.audioEditor'],
+    accepts: { 'utils': '^1.0.0', 'state': '^1.0.0', 'video': '^1.0.0', 'videoRender': '^1.0.0', 'videoExport': '^1.0.0', 'assets': '^1.0.0', 'ui.dialogs': '^1.0.0', 'ui.audioEditor': '^1.0.0' },
     contractVersions: { 'ui.video': '1.0.0' },
     setup: async function (kernel) {
         const S = (await kernel.require('state')).data;
@@ -53,7 +53,7 @@ definePlugin({
             'wipe-down': 'Cortina ↓', 'wipe-diagonal': 'Cortina diagonal', 'iris': 'Íris', 'zoom-through': 'Atravessar zoom', 'flash': 'Flash', 'glitch': 'Glitch', 'blinds': 'Persiana', 'dissolve': 'Dissolver', 'page-turn': 'Virar página'
         };
         const EASE_LABEL = { 'linear': 'Linear', 'ease-in': 'Acelera', 'ease-out': 'Desacelera', 'ease-in-out': 'Suave', 'back': 'Com retorno' };
-        const CLIP_LABEL = { 'voice': 'Voz', 'sfx': 'Efeito sonoro', 'music': 'Música' };
+        const CLIP_LABEL = { 'voice': 'Voz', 'narration': 'Narração', 'sfx': 'Efeito sonoro', 'music': 'Música', 'ambient': 'Ambiente' };
         /* ------------------------------------------------------------------
          * Estado da janela
          * ------------------------------------------------------------------ */
@@ -187,6 +187,50 @@ definePlugin({
             }
             catch { /* já parou */ }
         } sources = []; }
+        /** Ganho do trecho no instante `t` do vídeo (mesma curva do MP4: fade-in linear no início, fade-out linear no fim). */
+        function gainAt(a, t) {
+            let v = a.gain;
+            if (a.fadeIn > 0 && t < a.start + a.fadeIn)
+                v = Math.min(v, a.gain * Math.max(0, t - a.start) / a.fadeIn);
+            const end = a.start + a.duration;
+            if (a.fadeOut > 0 && t > end - a.fadeOut)
+                v = Math.min(v, a.gain * Math.max(0, end - t) / a.fadeOut);
+            return v;
+        }
+        /** Agenda os fades na prévia, inclusive quando a reprodução começa no meio do som (o valor inicial já vem do ponto certo). */
+        function scheduleGain(g, a) {
+            const end = a.start + a.duration, t0 = Math.max(playhead, a.start);
+            const ctxT = (t) => startCtx + (t - playhead);
+            g.gain.setValueAtTime(gainAt(a, t0), ctxT(t0));
+            if (a.fadeIn > 0 && t0 < a.start + a.fadeIn)
+                g.gain.linearRampToValueAtTime(a.gain, ctxT(a.start + a.fadeIn));
+            if (a.fadeOut > 0) {
+                const fo = Math.max(a.start, end - a.fadeOut);
+                if (t0 <= fo)
+                    g.gain.setValueAtTime(a.gain, ctxT(fo));
+                g.gain.linearRampToValueAtTime(0, ctxT(end));
+            }
+        }
+        /** Multiplicador de ducking no instante `t` (interpolação linear entre os pontos do plano). */
+        function duckAt(pts, t) {
+            if (!pts.length || t <= pts[0].t)
+                return pts[0]?.g ?? 1;
+            for (let i = 1; i < pts.length; i++) {
+                const x = pts[i - 1], y = pts[i];
+                if (t <= y.t)
+                    return y.t === x.t ? y.g : x.g + (y.g - x.g) * (t - x.t) / (y.t - x.t);
+            }
+            return pts[pts.length - 1].g;
+        }
+        /** Ducking da música/ambiente na prévia: um segundo ganho, com a mesma curva usada no MP4. */
+        function scheduleDuck(g, a) {
+            const pts = a.duck ?? [], end = a.start + a.duration, t0 = Math.max(playhead, a.start);
+            const ctxT = (t) => startCtx + (t - playhead);
+            g.gain.setValueAtTime(duckAt(pts, t0), ctxT(t0));
+            for (const c of pts)
+                if (c.t > t0 && c.t <= end)
+                    g.gain.linearRampToValueAtTime(c.g, ctxT(c.t));
+        }
         async function play() {
             const pl = plan();
             if (!pl || !pl.shots.length) {
@@ -219,9 +263,18 @@ definePlugin({
                 src.buffer = buf;
                 src.loop = a.loop;
                 const g = actx.createGain();
-                g.gain.value = a.gain;
-                src.connect(g);
-                g.connect(actx.destination);
+                scheduleGain(g, a);
+                if (a.duck && a.duck.length) {
+                    const d = actx.createGain();
+                    scheduleDuck(d, a);
+                    src.connect(g);
+                    g.connect(d);
+                    d.connect(actx.destination);
+                }
+                else {
+                    src.connect(g);
+                    g.connect(actx.destination);
+                }
                 const offset = Math.max(0, playhead - a.start);
                 const when = startCtx + Math.max(0, a.start - playhead);
                 if (a.loop) {
@@ -484,9 +537,7 @@ definePlugin({
             bg.value = /^#[0-9a-f]{6}$/i.test(s.background) ? s.background : '#0b0b0f';
             bg.addEventListener('change', () => up({ background: bg.value }));
             w.appendChild(field('Fundo', bg));
-            w.appendChild(field('Enquadramento do vídeo', select([
-                ['page', 'Página completa (original)'], ['isolated', 'Painel isolado e centralizado']
-            ], s.framing ?? 'page', v => up({ framing: v }), 'Modo padrão para cenas com foco em painel')));
+            w.appendChild(field('Enquadramento do vídeo', select([['page', 'Página completa (original)'], ['isolated', 'Painel isolado e centralizado']], s.framing ?? 'page', v => up({ framing: v }), 'Modo padrão para cenas com foco em painel')));
             w.appendChild(field('Margem do enquadramento', number(s.margin, { min: 0, max: 0.6, step: 0.01 }, v => { if (v !== null)
                 up({ margin: v }); }), 'Fração ao redor do painel'));
             w.appendChild(field('Intro do painel (s)', number(s.panelIntro, { min: 0, max: 10, step: 0.1 }, v => { if (v !== null)
@@ -732,6 +783,8 @@ definePlugin({
                 side.appendChild(el('p', 'vbv-hint', 'Selecione um shot para ajustar câmera, transição, efeitos e falas.'));
             return side;
         }
+        /** O mixer continua aberto quando o painel é redesenhado depois de uma alteração. */
+        let mixerOpen = false;
         function audioBox(p) {
             const box = el('details', 'vbv-box');
             box.open = true;
@@ -758,9 +811,57 @@ definePlugin({
                 } buffers.clear(); });
             });
             bar.appendChild(file);
-            for (const [k, label] of [['voice', '+ Voz'], ['sfx', '+ Efeito'], ['music', '+ Música']])
+            for (const [k, label] of [['voice', '+ Voz'], ['narration', '+ Narração'], ['sfx', '+ Efeito'], ['music', '+ Música'], ['ambient', '+ Ambiente']])
                 bar.appendChild(button(label, () => { kind = k; file.click(); }, 'btn', 'Importar áudio (' + CLIP_LABEL[k] + '). Pode escolher vários arquivos.'));
             box.appendChild(bar);
+            /* Mixer: volume geral e por categoria (0–200%). O valor só é gravado ao soltar; vale para a prévia (na próxima reprodução) e para o MP4. */
+            const mixNow = { master: 1, voice: 1, narration: 1, sfx: 1, music: 1, ambient: 1, ...(p.settings.mix ?? {}) };
+            const mixer = el('details', 'vbv-mixer');
+            mixer.open = mixerOpen;
+            mixer.addEventListener('toggle', () => { mixerOpen = mixer.open; });
+            mixer.appendChild(el('summary', undefined, 'Mixagem'));
+            for (const [key, label] of [['master', 'Geral'], ['voice', 'Voz'], ['narration', 'Narração'], ['sfx', 'Efeitos'], ['music', 'Música'], ['ambient', 'Ambiente']]) {
+                const row = el('label', 'vbv-mixrow');
+                row.appendChild(el('span', 'vbv-mixname', label));
+                const range = el('input');
+                range.type = 'range';
+                range.min = '0';
+                range.max = '2';
+                range.step = '0.05';
+                range.value = String(mixNow[key]);
+                range.setAttribute('aria-label', 'Volume: ' + label);
+                range.dataset['mix'] = key;
+                const out = el('span', 'vbv-mixval', Math.round(mixNow[key] * 100) + '%');
+                range.addEventListener('input', () => { out.textContent = Math.round(+range.value * 100) + '%'; });
+                range.addEventListener('change', () => { void guarded(async () => { await V.updateSettings(p.id, { mix: { ...mixNow, [key]: +range.value } }); }); });
+                row.appendChild(range);
+                row.appendChild(out);
+                mixer.appendChild(row);
+            }
+            /* Ducking: música e ambiente abaixam enquanto há voz ou narração. */
+            const duckNow = { enabled: false, amount: 0.6, attack: 0.15, release: 0.4, ...(p.settings.ducking ?? {}) };
+            const setDuck = (patch) => { void guarded(async () => { await V.updateSettings(p.id, { ducking: { ...duckNow, ...patch } }); }); };
+            const duckRow = el('label', 'vbv-check');
+            const duckCb = el('input');
+            duckCb.type = 'checkbox';
+            duckCb.checked = duckNow.enabled;
+            duckCb.dataset['duck'] = 'enabled';
+            duckCb.addEventListener('change', () => setDuck({ enabled: duckCb.checked }));
+            duckRow.appendChild(duckCb);
+            duckRow.appendChild(document.createTextNode(' Baixar música e ambiente quando houver voz'));
+            mixer.appendChild(duckRow);
+            if (duckNow.enabled) {
+                const dg = el('div', 'vbv-event-grid');
+                dg.appendChild(field('Redução (%)', number(Math.round(duckNow.amount * 100), { min: 0, max: 100, step: 5 }, v => { if (v !== null)
+                    setDuck({ amount: v / 100 }); })));
+                dg.appendChild(field('Descida (s)', number(duckNow.attack, { min: 0.02, max: 3, step: 0.05 }, v => { if (v !== null)
+                    setDuck({ attack: v }); })));
+                dg.appendChild(field('Subida (s)', number(duckNow.release, { min: 0.02, max: 5, step: 0.05 }, v => { if (v !== null)
+                    setDuck({ release: v }); })));
+                mixer.appendChild(dg);
+            }
+            mixer.appendChild(el('p', 'vbv-hint', '100% = sem alteração; 0% = mudo. A prévia usa o novo volume na próxima reprodução.'));
+            box.appendChild(mixer);
             box.appendChild(button('Vincular vozes às falas na ordem', () => { void guarded(async () => { const r = await V.bindInOrder(p.id); toast(r.bound + ' voz(es) vinculada(s)' + (r.pending ? '; ' + r.pending + ' fala(s) sem voz' : ''), 'info'); sessionDirty = false; await seek(playhead); }); }, 'btn', 'As vozes livres, na ordem em que foram importadas, vão para as falas (balões) na ordem do vídeo'));
             const list = el('div', 'vbv-clips');
             for (const c of p.clips) {
@@ -771,7 +872,17 @@ definePlugin({
                     actx = new AudioContext(); await actx.resume(); const b = await bufferOf(c.assetId); if (!b)
                     return; const s = actx.createBufferSource(); s.buffer = b; const g = actx.createGain(); g.gain.value = c.gain; s.connect(g); g.connect(actx.destination); s.start(); })(); }, 'btn mini', 'Ouvir'));
                 if (c.kind !== 'voice')
-                    row.appendChild(button('+ linha do tempo', () => { void guarded(async () => { await V.addAudioEvent(p.id, { clipId: c.id, shotId: shotId, at: 0, loop: c.kind === 'music', gain: c.kind === 'music' ? 0.5 : 1, fadeIn: c.kind === 'music' ? 1 : 0, fadeOut: c.kind === 'music' ? 1.5 : 0 }); }); }, 'btn mini', 'Põe este áudio na linha do tempo' + (shotId ? ' a partir do shot selecionado' : '')));
+                    row.appendChild(button('+ linha do tempo', () => {
+                        void guarded(async () => {
+                            /* Entra onde está o cursor (dentro do shot selecionado, relativo a ele). Pode repetir o mesmo som ou juntar vários: eles tocam ao mesmo tempo. */
+                            const sh = shotId ? planCache?.shots.find(s => s.id === shotId) : null;
+                            const inShot = !!sh && playhead >= sh.start && playhead < sh.end;
+                            const at = sh ? (inShot ? Math.max(0, +(playhead - sh.start).toFixed(2)) : 0) : Math.max(0, +playhead.toFixed(2));
+                            const bed = c.kind === 'music' || c.kind === 'ambient';
+                            await V.addAudioEvent(p.id, { clipId: c.id, shotId: shotId, at, loop: bed, gain: c.kind === 'music' ? 0.5 : c.kind === 'ambient' ? 0.4 : 1, fadeIn: bed ? 1 : 0, fadeOut: bed ? 1.5 : 0 });
+                        });
+                    }, 'btn mini', 'Põe este áudio na linha do tempo, na posição do cursor' + (shotId ? ' (relativa ao shot selecionado)' : '') + '. Pode repetir ou juntar vários: tocam ao mesmo tempo.'));
+                row.appendChild(button('🎧', () => { void kernel.require('ui.audioEditor').then(ae => ae.open(p.id, c.id)); }, 'btn mini', 'Editar áudio: cortar, limpar ruído, nivelar, efeitos'));
                 row.appendChild(button('🗑', () => { void guarded(async () => { await V.removeClip(p.id, c.id); buffers.delete(c.assetId); }); }, 'btn mini', 'Remover áudio'));
                 list.appendChild(row);
             }
@@ -783,12 +894,27 @@ definePlugin({
                 for (const e of p.audioEvents) {
                     const c = p.clips.find(x => x.id === e.clipId);
                     const row = el('div', 'vbv-event');
-                    row.appendChild(el('span', undefined, (c?.label ?? '?') + (e.shotId ? ' @ shot' : '') + ' ' + e.at.toFixed(1) + 's'));
-                    row.appendChild(number(e.at, { min: 0, max: 36000, step: 0.1 }, v => { if (v !== null)
-                        void guarded(() => V.updateAudioEvent(p.id, e.id, { at: v })); }));
-                    row.appendChild(number(e.gain, { min: 0, max: 4, step: 0.1 }, v => { if (v !== null)
-                        void guarded(() => V.updateAudioEvent(p.id, e.id, { gain: v })); }));
-                    row.appendChild(button('🗑', () => { void guarded(() => V.removeAudioEvent(p.id, e.id)); }, 'btn mini', 'Remover da linha do tempo'));
+                    const head = el('div', 'vbv-event-head');
+                    head.appendChild(el('span', 'vbv-clipk k-' + (c?.kind ?? 'sfx'), CLIP_LABEL[c?.kind ?? 'sfx'] ?? ''));
+                    head.appendChild(el('span', 'vbv-clipn', c?.label ?? '?'));
+                    head.appendChild(button('🗑', () => { void guarded(() => V.removeAudioEvent(p.id, e.id)); }, 'btn mini', 'Remover da linha do tempo'));
+                    row.appendChild(head);
+                    const num = (label, value, o, key) => field(label, number(value, o, v => { if (v !== null)
+                        void guarded(() => V.updateAudioEvent(p.id, e.id, { [key]: v })); }));
+                    const grid = el('div', 'vbv-event-grid');
+                    grid.appendChild(num(e.shotId ? 'Início no shot (s)' : 'Início (s)', e.at, { min: 0, max: 36000, step: 0.1 }, 'at'));
+                    grid.appendChild(num('Volume', e.gain, { min: 0, max: 4, step: 0.1 }, 'gain'));
+                    grid.appendChild(num('Fade-in (s)', e.fadeIn, { min: 0, max: 60, step: 0.1 }, 'fadeIn'));
+                    grid.appendChild(num('Fade-out (s)', e.fadeOut, { min: 0, max: 60, step: 0.1 }, 'fadeOut'));
+                    row.appendChild(grid);
+                    const rep = el('label', 'vbv-check');
+                    const cb = el('input');
+                    cb.type = 'checkbox';
+                    cb.checked = e.loop;
+                    cb.addEventListener('change', () => { void guarded(() => V.updateAudioEvent(p.id, e.id, { loop: cb.checked })); });
+                    rep.appendChild(cb);
+                    rep.appendChild(document.createTextNode(' Repetir até o fim do vídeo'));
+                    row.appendChild(rep);
                     ev.appendChild(row);
                 }
                 box.appendChild(ev);
@@ -816,11 +942,9 @@ definePlugin({
                 up({ focus: { kind: 'page' } });
             else if (v.startsWith('panel:'))
                 up({ focus: { kind: 'panel', panelId: v.slice(6) } }); })));
-            g1.appendChild(field('Enquadramento do shot', select([
-                ['inherit', 'Herdar do vídeo'], ['page', 'Página completa'], ['isolated', 'Painel isolado']
-            ], shot.framing ?? 'inherit', v => up({ framing: v }), 'Substitui a configuração geral apenas neste shot')));
-            if (shot.focus.kind !== 'panel') g1.appendChild(el('p', 'vbv-hint',
-                'O modo isolado só é aplicado quando o foco deste shot é um painel.'));
+            g1.appendChild(field('Enquadramento do shot', select([['inherit', 'Herdar do vídeo'], ['page', 'Página completa'], ['isolated', 'Painel isolado']], shot.framing ?? 'inherit', v => up({ framing: v }), 'Substitui a configuração geral apenas neste shot')));
+            if (shot.focus.kind !== 'panel')
+                g1.appendChild(el('p', 'vbv-hint', 'O modo isolado só é aplicado quando o foco deste shot é um painel.'));
             const dur = number(shot.duration, { min: 0.1, max: 3600, step: 0.1, placeholder: 'automática' }, v => up({ duration: v }));
             g1.appendChild(field('Duração (s)', dur, 'Vazio = automática (termina após a última fala + cauda)'));
             g1.appendChild(field('Câmera', select(Object.entries(MOVE_LABEL), shot.camera.move, v => up({ camera: { ...shot.camera, move: v } }))));
@@ -887,7 +1011,7 @@ definePlugin({
                 head.appendChild(lbl);
                 head.appendChild(button('🗑', () => { void guarded(async () => { await V.removeCue(p.id, cue.id); await seek(playhead); }); }, 'btn mini', 'Remover'));
                 r.appendChild(head);
-                const clipOpts = [['', '— sem áudio —'], ...p.clips.filter(c => cue.kind === 'sfx' ? c.kind !== 'music' : true).map(c => [c.id, CLIP_LABEL[c.kind] + ': ' + c.label])];
+                const clipOpts = [['', '— sem áudio —'], ...p.clips.filter(c => cue.kind === 'sfx' ? (c.kind !== 'music' && c.kind !== 'ambient') : true).map(c => [c.id, CLIP_LABEL[c.kind] + ': ' + c.label])];
                 r.appendChild(field('Áudio', select(clipOpts, cue.clipId ?? '', v => { void guarded(async () => { await V.bindClip(p.id, cue.id, v || null); await seek(playhead); }); })));
                 r.appendChild(field('Entrada', select(Object.entries(REVEAL_LABEL), cue.anim, v => { void guarded(async () => { await V.updateCue(p.id, cue.id, { anim: v }); await seek(playhead); }); })));
                 if (p.settings.sync === 'manual' || cue.at !== null)
@@ -911,7 +1035,8 @@ definePlugin({
             head.appendChild(el('strong', undefined, 'Linha do tempo'));
             head.appendChild(button('−', () => { timelineScale = Math.max(8, timelineScale / 1.4); render(); }, 'btn mini', 'Menos zoom'));
             head.appendChild(button('+', () => { timelineScale = Math.min(400, timelineScale * 1.4); render(); }, 'btn mini', 'Mais zoom'));
-            head.appendChild(el('small', undefined, p.settings.sync === 'manual' ? 'Modo manual: arraste as falas para mudar o início.' : 'Modo automático: cada fala dura o tempo do áudio vinculado.'));
+            head.appendChild(el('small', undefined, (p.settings.sync === 'manual' ? 'Modo manual: arraste as falas para mudar o início.' : 'Modo automático: cada fala dura o tempo do áudio vinculado.')
+                + ' Efeitos e músicas da linha do tempo se arrastam e podem tocar juntos (aparecem empilhados).'));
             tl.appendChild(head);
             if (!pl || !pl.duration) {
                 tl.appendChild(el('p', 'vbv-hint', 'A linha do tempo aparece quando houver shots.'));
@@ -930,7 +1055,31 @@ definePlugin({
             }
             canvas.appendChild(ruler);
             const seekAt = (ev, host) => { const r = host.getBoundingClientRect(); pause(); void seek((ev.clientX - r.left) / timelineScale); };
-            ruler.addEventListener('click', ev => seekAt(ev, canvas));
+            /* O tempo 0 fica na borda esquerda da régua/faixas (depois da coluna de rótulos), não na da tela inteira. */
+            ruler.addEventListener('click', ev => seekAt(ev, ruler));
+            const AUDIO_ROWS = [['voice', 'Voz'], ['narration', 'Narração'], ['sfx', 'SFX'], ['music', 'Música'], ['ambient', 'Ambiente']];
+            const audioRows = [];
+            for (const [kind, name] of AUDIO_ROWS) {
+                const blocks = pl.audio.filter(a => a.kind === kind).map(a => ({
+                    start: a.start, end: a.start + a.duration, label: p.clips.find(c => c.id === a.clipId)?.label ?? '',
+                    cls: 'audio k-' + a.kind + (a.source === 'event' ? ' draggable' : ''), track: 0, ...(a.source === 'event' ? { ev: a.id.replace(/^a_/, '') } : {})
+                }));
+                if (!blocks.length)
+                    continue;
+                const trackEnds = [];
+                for (const blk of [...blocks].sort((x, y) => x.start - y.start || x.end - y.end)) {
+                    let t = trackEnds.findIndex(e => e <= blk.start + 0.001);
+                    if (t < 0) {
+                        t = trackEnds.length;
+                        trackEnds.push(0);
+                    }
+                    trackEnds[t] = blk.end;
+                    blk.track = t;
+                }
+                audioRows.push({ name, tracks: Math.max(1, trackEnds.length), blocks });
+            }
+            if (!audioRows.length)
+                audioRows.push({ name: 'Áudio', tracks: 1, blocks: [] });
             const rows = [
                 { name: 'Shots', blocks: pl.shots.map(s => ({ start: s.start, end: s.end, label: (p.shots.find(x => x.id === s.id)?.label || '') + ' · ' + pageName(s.pageId), cls: 'shot' + (s.id === shotId ? ' sel' : ''), shot: s.id })) },
                 { name: 'Falas', blocks: pl.items.filter(i => i.kind === 'balloon' || i.kind === 'text').map(i => {
@@ -940,19 +1089,51 @@ definePlugin({
                     }) },
                 { name: 'Revelações', blocks: pl.items.filter(i => i.kind === 'panel' || i.kind === 'effect' || i.kind === 'overlay').map(i => ({ start: i.tIn, end: Math.min(i.tOut, i.tIn + 0.6), label: i.kind === 'panel' ? 'painel' : i.kind, cls: 'reveal' })) },
                 { name: 'Efeitos', blocks: pl.shots.flatMap(s => s.fx.map(f => ({ start: f.start, end: f.end, label: FX_LABEL[f.kind] ?? f.kind, cls: 'fx' }))) },
-                { name: 'Áudio', blocks: pl.audio.map(a => ({ start: a.start, end: a.start + a.duration, label: p.clips.find(c => c.id === a.clipId)?.label ?? '', cls: 'audio k-' + a.kind })) }
+                ...audioRows
             ];
             for (const row of rows) {
                 const r = el('div', 'vbv-tlrow');
                 r.appendChild(el('span', 'vbv-tlname', row.name));
                 const lane = el('div', 'vbv-lane');
+                if (row.tracks && row.tracks > 1) {
+                    const h = (row.tracks * 22 + 2) + 'px';
+                    r.style.height = h;
+                    lane.style.height = h;
+                }
                 lane.addEventListener('click', ev => { if (!ev.target.classList.contains('vbv-lane'))
-                    return; seekAt(ev, canvas); });
+                    return; seekAt(ev, lane); });
                 for (const b of row.blocks) {
                     const blk = el('div', 'vbv-block ' + b.cls, b.label);
                     blk.style.left = b.start * timelineScale + 'px';
                     blk.style.width = Math.max(4, (b.end - b.start) * timelineScale) + 'px';
-                    blk.title = b.label + ' (' + b.start.toFixed(2) + 's – ' + b.end.toFixed(2) + 's)';
+                    if (b.track)
+                        blk.style.top = (2 + b.track * 22) + 'px';
+                    blk.title = b.label + ' (' + b.start.toFixed(2) + 's – ' + b.end.toFixed(2) + 's)' + (b.ev ? ' — arraste para mover' : '');
+                    if (b.ev) {
+                        /* Eventos de áudio livres (efeitos/música) podem ser arrastados em qualquer modo de sincronia. */
+                        const evId = b.ev;
+                        blk.addEventListener('pointerdown', pe => {
+                            pe.preventDefault();
+                            blk.setPointerCapture(pe.pointerId);
+                            const x0 = pe.clientX, left0 = b.start;
+                            let moved = 0;
+                            const move = (e) => { moved = (e.clientX - x0) / timelineScale; blk.style.left = Math.max(0, left0 + moved) * timelineScale + 'px'; };
+                            const up = (e) => {
+                                blk.releasePointerCapture(e.pointerId);
+                                blk.removeEventListener('pointermove', move);
+                                blk.removeEventListener('pointerup', up);
+                                if (Math.abs(moved) <= 0.03)
+                                    return;
+                                const ev = p.audioEvents.find(x => x.id === evId);
+                                if (!ev)
+                                    return;
+                                const base = ev.shotId ? (pl.shots.find(s => s.id === ev.shotId)?.start ?? 0) : 0;
+                                void guarded(async () => { await V.updateAudioEvent(p.id, ev.id, { at: Math.max(0, +(left0 + moved - base).toFixed(2)) }); await seek(playhead); });
+                            };
+                            blk.addEventListener('pointermove', move);
+                            blk.addEventListener('pointerup', up);
+                        });
+                    }
                     blk.addEventListener('click', ev => { ev.stopPropagation(); if (b.shot) {
                         shotId = b.shot;
                         cueId = null;

@@ -37,6 +37,17 @@
         "imageProcessors": "register list resolve plan",
         "imageCanvasProcessor": "",
         "imageCommands": "plan execute apply process",
+        "imageEdit": "limits defaults plan preview commit apply release analyze colorAt",
+        "ui.imageEditor": "open close isOpen",
+        "audioEditCore": "parseWav encodeWav lufs analyze waveform findSilences splitBySilence slice concat mix applyStep run",
+        "audioEdit": "limits defaults validate decode analyze preview commit apply splitBySilence replaceClip release recipes levelVoices",
+        "ui.audioEditor": "open close isOpen",
+        "imageEditCore": "deltaE colorMask dilate erode closeMask outsideOf label gridEdges dominantColors estimateBackground cutByContour removeBackground boxAlpha",
+        "sceneBlockingCore": "assertSheetShape hash random round2 norm360 dir angleTo angleDiff dist inConvex normalizeConfig defaultConfig fail",
+        "sceneBlockingEngine": "themes registerTheme resolveTheme generate regenerate setLock editCell validateCell validateBatch computeFraming focusPoint",
+        "sceneBlockingRender": "createCache cellKey renderCell renderSheet renderCellDocument parseDocument zip crc32",
+        "sceneBlocking": "limits isSceneAsset generate list get regenerate setLock editCell duplicate adopt exportSvg exportCellSvg exportPng exportZip",
+        "ui.sceneBlocking": "mount unmount isMounted",
         "ui.dialogs": "toast confirm prompt openPreview closePreview",
         "ui.shell": "renderNav renderTopCrumb renderProjectName updateHistoryButtons getLayout setPanel setWorkspaceMode",
         "ui.library": "renderFilter renderGrid",
@@ -53,12 +64,12 @@
         "automation": "getStatus isEnabled enable disable setGrants setConfirmHandler validate execute executeLocal readResource getAuditLog pollEvents subscribe cancel isLocked bridgeState bridgeConnect bridgeAuthorize bridgeRefuse bridgeRevoke bridgeDisconnect openPanel closePanel",
         "commandConsole": "parse run open close toggle isOpen",
         "spread": "listPapers listTemplates create list get move scale setPaper rename remove dock undock plan apply change clear scaleObjects fitPageToPaper open close",
-        "video": "catalog defaultSettings list get create rename remove updateSettings importClip removeClip updateClip addShot updateShot removeShot moveShot addCue updateCue removeCue bindClip bindInOrder addFx updateFx removeFx addAudioEvent updateAudioEvent removeAudioEvent autoBuild pageInfo compile compileWith estimate",
+        "video": "catalog defaultSettings list get create rename remove updateSettings importClip replaceClipAsset removeClip updateClip addShot updateShot removeShot moveShot addCue updateCue removeCue bindClip bindInOrder addFx updateFx removeFx addAudioEvent updateAudioEvent removeAudioEvent autoBuild pageInfo compile compileWith estimate",
         "videoRender": "prepare prepareProject",
         "videoExport": "supportedCodecs mixAudio exportMp4 download hubStatus exportViaHub",
         "ui.video": "open close isOpen",
         "composition": "plan apply change remove get list open close selectedImageIds planFrame",
-        "assetHub": "connect disconnect isConnected getStatus request call blob objectUrl upload place importLibrary pairFromLocation onChange",
+        "assetHub": "connect disconnect isConnected getStatus request call blob objectUrl upload place importLibrary pairFromLocation onChange deposit flushDeposits depositPending autoDeposit setAutoDeposit",
         "app": "saveNow backupNow scheduleSave boot switchBackend isPersistent recoveryInfo restoreRecovery"
     };
     const properties = {
@@ -75,6 +86,15 @@
         },
         "history": {
             "depth": "number"
+        },
+        "sceneBlockingCore": {
+            "CONST": "object",
+            "PALETTE": "object",
+            "ELEVATION": "object",
+            "RETICLE_COLOR": "string"
+        },
+        "sceneBlockingEngine": {
+            "ENGINE_VERSION": "string"
         },
         "assets": {
             "urls": "map",
@@ -696,7 +716,7 @@
         }
         // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
         const MINOR_BUMPS = {
-            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.4.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.1.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
+            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.1.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.2.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
         };
         const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {

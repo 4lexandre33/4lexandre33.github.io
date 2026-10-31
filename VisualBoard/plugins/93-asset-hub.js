@@ -12,12 +12,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'asset-hub',
-    version: '1.1.0',
+    version: '1.2.0',
     needs: ['state', 'assets'],
     provides: ['assetHub'],
     uses: ['ui.dialogs'],
     accepts: { 'state': '^1.0.0', 'assets': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'assetHub': '1.1.0' },
+    contractVersions: { 'assetHub': '1.2.0' },
     setup: async function (kernel) {
         const state = await kernel.require('state');
         const assets = await kernel.require('assets');
@@ -97,6 +97,7 @@ definePlugin({
             conn = candidate;
             lastError = null;
             emit();
+            void flushDeposits().catch(() => undefined);
             return status();
         }
         function disconnect(notify = true) {
@@ -147,6 +148,85 @@ definePlugin({
             return call('add', { filename: file.name, dataBase64: toBase64(bytes), ...(opts.folderId ? { folderId: opts.folderId } : {}),
                 ...(opts.tags && opts.tags.length ? { tags: opts.tags } : {}) });
         }
+        /* ---------------- depósito (arquivos feitos aqui vão para o Hub/Drive) ----------------
+         * Desligado por padrão. Quando ligado, todo asset derivado (editor de imagem/áudio) é enviado ao Hub com a procedência
+         * (`derivedFrom` = SHA-256 do original). Sem Hub conectado, o arquivo fica numa fila em memória (perdida ao recarregar a página) e sai na próxima conexão.
+         * O Hub nunca sobrescreve: conteúdo diferente vira nova versão/cópia (ver docs/media-sync.md). */
+        const QUEUE_MAX = 100, QUEUE_BYTES = 300 * 1024 * 1024;
+        let autoOn = false; // a política do editor é não usar armazenamento do navegador: a opção vale até recarregar
+        const autoDeposit = () => autoOn;
+        const setAutoDeposit = (on) => { autoOn = !!on; };
+        const memoryQueue = [];
+        const queueEntries = async () => memoryQueue.map((item, i) => ({ key: i, item }));
+        async function enqueue(item) {
+            if (memoryQueue.length >= QUEUE_MAX || memoryQueue.reduce((n, e) => n + e.blob.size, item.blob.size) > QUEUE_BYTES)
+                return false;
+            memoryQueue.push(item);
+            return true;
+        }
+        const dropQueued = async (item) => { const i = memoryQueue.indexOf(item); if (i >= 0)
+            memoryQueue.splice(i, 1); };
+        const sha256Of = async (blob) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))).map(b => b.toString(16).padStart(2, '0')).join('');
+        async function sendPending(item) {
+            const bytes = new Uint8Array(await item.blob.arrayBuffer());
+            await call('add', { filename: item.filename, dataBase64: toBase64(bytes), tags: ['origem:editor'], ...(item.derivedFrom ? { derivedFrom: item.derivedFrom } : {}), ...(item.operations ? { operations: item.operations } : {}) });
+        }
+        /** Deposita um arquivo no Hub (ou na fila, se não houver conexão com escopo de escrita). */
+        async function deposit(file, filename, opts = {}) {
+            const item = { filename, blob: file, ...(opts.derivedFrom ? { derivedFrom: opts.derivedFrom } : {}), ...(opts.operations ? { operations: opts.operations } : {}) };
+            if (conn && conn.scopes.includes('write')) {
+                try {
+                    await sendPending(item);
+                    return { state: 'sent' };
+                }
+                catch (e) {
+                    if (e.code !== 'HUB_UNREACHABLE')
+                        throw e;
+                }
+            }
+            return { state: (await enqueue(item)) ? 'queued' : 'rejected' };
+        }
+        async function flushDeposits() {
+            const out = { sent: 0, failed: 0, remaining: 0 };
+            if (!conn || !conn.scopes.includes('write')) {
+                out.remaining = (await queueEntries()).length;
+                return out;
+            }
+            for (const e of await queueEntries()) {
+                try {
+                    await sendPending(e.item);
+                    await dropQueued(e.item);
+                    out.sent++;
+                }
+                catch {
+                    out.failed++;
+                }
+            }
+            out.remaining = (await queueEntries()).length;
+            return out;
+        }
+        const depositPending = async () => (await queueEntries()).length;
+        const deposited = new Set();
+        async function depositDerived() {
+            if (!autoDeposit())
+                return;
+            for (const a of S.assets) {
+                if (!a.derivedFrom || deposited.has(a.id))
+                    continue;
+                const blob = assets.blobs.get(a.id), src = assets.blobs.get(a.derivedFrom);
+                if (!blob)
+                    continue;
+                deposited.add(a.id);
+                try {
+                    const ops = (a.operations ?? []).map(o => (o.processor ?? '') + ':' + (o.operation ?? '')).join(', ').slice(0, 300);
+                    await deposit(blob, String(a.name || a.id), { ...(src ? { derivedFrom: await sha256Of(src) } : {}), ...(ops ? { operations: ops } : {}) });
+                }
+                catch {
+                    deposited.delete(a.id);
+                }
+            }
+        }
+        kernel.on('assets:changed', () => { void depositDerived(); });
         /** Baixa do Hub, importa como asset do projeto e registra a referência de uso. */
         async function place(id, packageId) {
             const meta = await call('get', { id });
@@ -328,10 +408,10 @@ definePlugin({
                 call('remove', { ids: [id], force: true }).then(() => { ui.selected = null; return refresh(); }).catch(e => say(String(e.message)));
             });
             const dims = item['width'] ? item['width'] + '×' + item['height'] + ' · ' : '';
-            return h('div', { class: 'hub-detail' }, h('strong', { text: String(item['title'] || item['filename']) }), h('span', { class: 'muted', text: dims + String(item['mime']) + ' · ' + Math.round(Number(item['bytes']) / 1024) + ' KB · ' + String(item['folderPath']) }), chips, tagIn, h('div', { class: 'nav-actions' }, use, del));
+            return h('div', { class: 'hub-detail' }, h('strong', { text: String(item['title'] || item['filename']) }), h('span', { class: 'muted', text: dims + String(item['mime']) + ' · ' + Math.round(Number(item['bytes']) / 1024) + ' KB · ' + String(item['folderPath']) }), chips, tagIn, h('div', { class: 'nav-actions' }, use, del), assetPromptsBlock(id, String(item['filename'])));
         }
         /* ------------------ sincronização (Google Drive / espelho Git) ------------------ */
-        const syncUi = { open: false, status: null, msg: '', run: null, timer: 0 };
+        const syncUi = { open: false, status: null, msg: '', run: null, timer: 0, conflicts: [], queued: 0 };
         const poll = async (runId) => {
             for (let n = 0; n < 6000; n++) {
                 const r = await call('sync.run_status', { runId, waitMs: 1500 });
@@ -347,6 +427,13 @@ definePlugin({
             try {
                 syncUi.status = await call('sync.status');
                 syncUi.msg = '';
+                try {
+                    syncUi.conflicts = (await call('sync.conflicts_list', { status: 'pending', limit: 50 }))['relations'] || [];
+                }
+                catch {
+                    syncUi.conflicts = [];
+                }
+                syncUi.queued = await depositPending();
             }
             catch (e) {
                 syncUi.msg = e instanceof Error ? e.message : String(e);
@@ -363,7 +450,7 @@ definePlugin({
             const r = syncUi.run;
             if (!r)
                 return null;
-            const names = { pulled: 'baixados', pushed: 'enviados', duplicate: 'já existiam', 'skipped-unsupported': 'não suportados', 'skipped-tombstoned': 'removidos antes', 'skipped-remote-deleted': 'apagados no Drive', linked: 'vinculados', moved: 'movidos', conflict: 'conflitos' };
+            const names = { pulled: 'baixados', pushed: 'enviados', duplicate: 'já existiam', 'skipped-unsupported': 'não suportados', 'skipped-tombstoned': 'removidos antes', 'skipped-remote-deleted': 'apagados no Drive', linked: 'vinculados', moved: 'movidos', conflict: 'conflitos', 'pulled-as-copy': 'baixados como cópia', 'pushed-as-copy': 'enviados como cópia', 'local-exported': 'gravados na pasta local', 'local-imported': 'lidos da pasta local', 'local-copies': 'cópias na pasta local' };
             const states = { running: 'em andamento', done: 'concluído', failed: 'falhou', cancelled: 'cancelado', interrupted: 'interrompido' };
             const m = r['mirror'];
             const counts = m ? '' : Object.entries(r['counts'] || {}).filter(([k]) => names[k]).map(([k, v]) => names[k] + ': ' + v).join(' · ');
@@ -371,6 +458,32 @@ definePlugin({
             return h('div', { class: 'hub-msg is-info', role: 'status', 'data-run': String(r['kind']) + ':' + String(r['state']) + (r['mode'] === 'dry-run' ? ':sim' : ''),
                 text: (m ? 'Espelho' : 'Sincronização') + (r['mode'] === 'dry-run' ? ' (simulação)' : '') + ' ' + (states[String(r['state'])] || String(r['state'])) +
                     (r['state'] === 'running' ? ' — ' + String(r['done']) + '/' + String(r['total']) : '') + (counts ? ' · ' + counts : '') + (extra ? ' · ' + extra : '') + (r['error'] ? ' · erro: ' + String(r['error']) : '') });
+        }
+        /** Pasta local da conexão (Drive como HD). Só funciona com o Hub no mesmo computador; nada é apagado nem sobrescrito. */
+        function localFolderControls(c) {
+            const cid = String(c['id']), cur = c['options']?.['localDir'];
+            const input = h('input', { type: 'text', 'aria-label': 'Pasta local no computador do Hub', placeholder: 'Caminho absoluto, ou “padrão” para ~/VisualBoard/drive', value: typeof cur === 'string' ? cur : '' });
+            return h('div', { class: 'hub-local', 'data-hub': 'local-folder' }, h('p', { class: 'muted', text: typeof cur === 'string' ? 'Cópia local: ' + cur : 'Sem pasta local: o Drive é só o repositório remoto.' }), field('Pasta local', input), h('div', { class: 'nav-actions' }, runBtn('Salvar pasta local', async () => { const v = input.value.trim(); await call('sync.local_folder_configure', { connectionId: cid, dir: !v ? null : /^(padrão|padrao|default)$/i.test(v) ? 'default' : v }); await loadSync(); }), runBtn('Parar de copiar', async () => { await call('sync.local_folder_configure', { connectionId: cid, dir: null }); await loadSync(); }, 'btn ghost')));
+        }
+        /** Pares de arquivos diferentes que disputaram o mesmo nome, ou arquivos editados no Drive. Nunca apaga: só registra a decisão. */
+        function conflictsBlock() {
+            if (!syncUi.conflicts.length)
+                return null;
+            const kind = { 'content-conflict': 'Mesmo nome, conteúdos diferentes', 'new-version': 'Nova versão' };
+            const box = h('div', { class: 'hub-conflicts', 'data-hub': 'conflicts', role: 'region', 'aria-label': 'Arquivos para revisar' }, h('h5', { text: 'Para revisar (' + syncUi.conflicts.length + ')' }), h('p', { class: 'muted', text: 'Os dois arquivos foram mantidos. Escolher aqui só registra a decisão; nada é apagado.' }));
+            for (const r of syncUi.conflicts) {
+                const rid = String(r['id']), sim = typeof r['similarity'] === 'number' ? ' · semelhança ' + Math.round(Number(r['similarity']) * 100) + '%' : '';
+                const decide = (label, resolution) => runBtn(label, async () => { await call('sync.conflict_resolve', { relationId: rid, resolution }); await loadSync(); }, 'btn ghost');
+                box.append(h('div', { class: 'hub-conflict' }, h('strong', { text: (kind[String(r['relation'])] || String(r['relation'])) + ': ' + String(r['path']) }), h('span', { class: 'muted', text: ' · ' + String(r['shaOld']).slice(0, 8) + ' → ' + String(r['shaNew']).slice(0, 8) + sim }), h('div', { class: 'nav-actions' }, decide('Manter os dois', 'keep-both'), decide('É uma nova versão', 'new-version'), decide('São diferentes', 'different'))));
+            }
+            return box;
+        }
+        /** Depósito de arquivos feitos no editor (desligado por padrão). */
+        function depositBlock() {
+            const cb = h('input', { type: 'checkbox', 'aria-label': 'Depositar automaticamente o que eu editar' });
+            cb.checked = autoDeposit();
+            cb.addEventListener('change', () => { setAutoDeposit(cb.checked); renderSync(); });
+            return h('div', { class: 'hub-deposit', 'data-hub': 'deposit' }, h('label', { class: 'muted' }, cb, ' Depositar no Hub/Drive o que eu editar aqui (imagens e áudios derivados; o original nunca é trocado)'), h('p', { class: 'muted', text: syncUi.queued ? syncUi.queued + ' arquivo(s) aguardando conexão (a fila some se a página for recarregada).' : 'Nenhum arquivo aguardando.' }), syncUi.queued ? runBtn('Enviar fila agora', async () => { await flushDeposits(); await loadSync(); }) : h('span'));
         }
         function renderSync() {
             const box = document.getElementById('hub-sync-body');
@@ -386,6 +499,7 @@ definePlugin({
             }
             const drive = st['drive'], conns = st['connections'] || [], mirror = st['mirror'];
             box.append(h('p', { class: 'muted', text: 'O mesmo arquivo (mesmo conteúdo) nunca é copiado duas vezes. Remover uma imagem aqui nunca apaga no Drive nem no GitHub.' }));
+            box.append(depositBlock());
             /* Google Drive */
             box.append(h('h4', { text: 'Google Drive' }));
             if (!drive['configured']) {
@@ -412,8 +526,11 @@ definePlugin({
                 for (const c of conns) {
                     const cid = String(c['id']);
                     box.append(h('div', { class: 'hub-conn' }, h('strong', { text: String(c['rootRemoteName'] || c['label']) }), h('span', { class: 'muted', text: ' · ' + String(c['direction']) }), h('div', { class: 'nav-actions' }, runBtn('Simular', async () => { const r = await call('sync.run', { connectionId: cid, simulate: true }); syncUi.run = r['run']; renderSync(); }), runBtn('Sincronizar', async () => { const r = await call('sync.run', { connectionId: cid }); syncUi.run = r['run']; renderSync(); await poll(String(r['run']['id'])); await refresh(); }), runBtn('Cancelar', async () => { if (syncUi.run)
-                        await call('sync.cancel', { runId: String(syncUi.run['id']) }); }, 'btn ghost'), runBtn('Desvincular', async () => { await call('sync.disconnect', { connectionId: cid }); await loadSync(); }, 'btn ghost'))));
+                        await call('sync.cancel', { runId: String(syncUi.run['id']) }); }, 'btn ghost'), runBtn('Desvincular', async () => { await call('sync.disconnect', { connectionId: cid }); await loadSync(); }, 'btn ghost')), localFolderControls(c)));
                 }
+                const cb = conflictsBlock();
+                if (cb)
+                    box.append(cb);
                 const link = h('input', { type: 'text', placeholder: 'Link ou ID da pasta do Drive (vazio = criar “VisualBoard”)', 'aria-label': 'Pasta do Drive' });
                 const dir = h('select', { 'aria-label': 'Direção' }, h('option', { value: 'both', text: 'Nos dois sentidos' }), h('option', { value: 'pull', text: 'Só baixar do Drive' }), h('option', { value: 'push', text: 'Só enviar ao Drive' }));
                 box.append(h('h5', { text: 'Vincular pasta' }), field('Pasta', link), field('Direção', dir), runBtn('Vincular', async () => {
@@ -448,6 +565,309 @@ definePlugin({
             if (syncUi.open)
                 queueMicrotask(renderSync);
             return d;
+        }
+        let refreshAssetPrompts = null;
+        const PROMPT_MAX = 256 * 1024;
+        const PURPOSE_OPTIONS = [['image', 'Imagem'], ['audio', 'Áudio'], ['video', 'Vídeo'], ['text', 'Texto'], ['other', 'Outro']];
+        const ROLE_OPTIONS = [['prompt-of', 'descreve'], ['generated-by', 'gerou'], ['reference', 'referência'], ['script', 'roteiro']];
+        const pUi = { open: false, list: [], total: 0, query: '', purpose: '', msg: '', edit: null };
+        const bytesOf = (t) => new TextEncoder().encode(t).length;
+        /** Diferença por linha (LCS). Acima de 1500 linhas por lado devolve null (a tela mostra só o texto). */
+        function lineDiff(a, b) {
+            const x = a.split('\n'), y = b.split('\n');
+            if (x.length > 1500 || y.length > 1500)
+                return null;
+            const n = x.length, m = y.length, L = [];
+            for (let i = 0; i <= n; i++)
+                L.push(new Uint16Array(m + 1));
+            for (let i = n - 1; i >= 0; i--)
+                for (let j = m - 1; j >= 0; j--)
+                    L[i][j] = x[i] === y[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+            const out = [];
+            let i = 0, j = 0;
+            while (i < n && j < m) {
+                if (x[i] === y[j]) {
+                    out.push({ t: '=', s: x[i] });
+                    i++;
+                    j++;
+                }
+                else if (L[i + 1][j] >= L[i][j + 1])
+                    out.push({ t: '-', s: x[i++] });
+                else
+                    out.push({ t: '+', s: y[j++] });
+            }
+            while (i < n)
+                out.push({ t: '-', s: x[i++] });
+            while (j < m)
+                out.push({ t: '+', s: y[j++] });
+            return out;
+        }
+        async function loadPrompts() {
+            try {
+                const r = await call('prompt.list', { limit: 100, ...(pUi.query ? { query: pUi.query } : {}), ...(pUi.purpose ? { purpose: pUi.purpose } : {}) });
+                pUi.list = r.prompts;
+                pUi.total = r.total;
+                pUi.msg = '';
+            }
+            catch (e) {
+                pUi.msg = e instanceof Error ? e.message : String(e);
+            }
+            renderPrompts();
+        }
+        async function openPrompt(id) {
+            if (pUi.edit?.dirty && dialogs && !(await dialogs.confirm({ title: 'Descartar alterações?', message: 'O prompt aberto tem alterações não salvas.', confirmText: 'Descartar' })))
+                return;
+            try {
+                const [g, v] = await Promise.all([call('prompt.get', { id }), call('prompt.versions', { id })]);
+                pUi.edit = { id, title: g.prompt.title, purpose: g.prompt.purpose, model: g.prompt.model, tags: g.prompt.tags.join(', '), text: g.prompt.text ?? '', baseVersion: g.prompt.version, dirty: false,
+                    versions: v.versions, links: g.links, compare: null, linkTarget: null, matches: [] };
+                pUi.msg = '';
+            }
+            catch (e) {
+                pUi.msg = e instanceof Error ? e.message : String(e);
+            }
+            renderPrompts();
+            refreshAssetPrompts?.();
+        }
+        function newPrompt(linkTarget = null, text = '', title = '') {
+            pUi.edit = { id: null, title, purpose: 'image', model: '', tags: '', text, baseVersion: 0, dirty: !!text, versions: [], links: [], compare: null, linkTarget, matches: [] };
+            const was = pUi.open;
+            pUi.open = true;
+            if (was)
+                renderPrompts();
+            else
+                render(); // abre a seção (e a lista carrega em seguida) quando ela estava recolhida
+        }
+        async function savePrompt() {
+            const e = pUi.edit;
+            if (!e)
+                return;
+            if (!e.title.trim()) {
+                pUi.msg = 'Informe um título.';
+                renderPrompts();
+                return;
+            }
+            if (!e.text.trim()) {
+                pUi.msg = 'O prompt está vazio.';
+                renderPrompts();
+                return;
+            }
+            if (bytesOf(e.text) > PROMPT_MAX) {
+                pUi.msg = 'O prompt passa de 256 KB.';
+                renderPrompts();
+                return;
+            }
+            const tags = e.tags.split(',').map(t => t.trim()).filter(Boolean);
+            try {
+                if (!e.id) {
+                    const r = await call('prompt.create', { title: e.title.trim(), text: e.text, purpose: e.purpose, model: e.model, tags });
+                    if (e.linkTarget)
+                        await call('prompt.link', { promptId: r.prompt.id, assetId: e.linkTarget.assetId, role: 'prompt-of' });
+                    pUi.edit = null;
+                    await openPrompt(r.prompt.id);
+                }
+                else {
+                    await call('prompt.update', { id: e.id, text: e.text, title: e.title.trim(), purpose: e.purpose, model: e.model, tags, expectedVersion: e.baseVersion });
+                    e.dirty = false;
+                    await openPrompt(e.id);
+                }
+                dialogs?.toast('Prompt salvo (nova versão).', 'ok');
+                await loadPrompts();
+            }
+            catch (err) {
+                const c = err.code;
+                pUi.msg = c === 'CONFLICT' ? 'Este prompt foi alterado em outro lugar. Reabra-o para ver a versão atual (seu texto continua na caixa até lá).' : err instanceof Error ? err.message : String(err);
+                renderPrompts();
+            }
+        }
+        function download(name, text) {
+            const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+            const a = h('a', { href: url, download: name });
+            document.body.append(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+        function promptEditor(e) {
+            const wrap = h('div', { class: 'hub-prompt-editor', 'data-hub': 'prompt-editor' });
+            const title = h('input', { type: 'text', value: e.title, maxlength: '120', 'aria-label': 'Título do prompt', placeholder: 'Título' });
+            title.addEventListener('input', () => { e.title = title.value; e.dirty = true; });
+            const purpose = h('select', { 'aria-label': 'Finalidade' });
+            for (const [v, l] of PURPOSE_OPTIONS)
+                purpose.append(h('option', { value: v, text: l }));
+            purpose.value = e.purpose;
+            purpose.addEventListener('change', () => { e.purpose = purpose.value; e.dirty = true; });
+            const model = h('input', { type: 'text', value: e.model, maxlength: '120', 'aria-label': 'Modelo ou ferramenta', placeholder: 'Modelo/ferramenta (opcional)' });
+            model.addEventListener('input', () => { e.model = model.value; e.dirty = true; });
+            const tags = h('input', { type: 'text', value: e.tags, 'aria-label': 'Etiquetas do prompt', placeholder: 'etiquetas separadas por vírgula' });
+            tags.addEventListener('input', () => { e.tags = tags.value; e.dirty = true; });
+            const ta = h('textarea', { rows: '10', 'aria-label': 'Texto do prompt', spellcheck: 'false' });
+            ta.value = e.text;
+            const count = h('span', { class: 'muted', 'aria-live': 'polite' });
+            const upd = () => { const b = bytesOf(ta.value); count.textContent = b.toLocaleString('pt-BR') + ' / ' + PROMPT_MAX.toLocaleString('pt-BR') + ' bytes' + (b > PROMPT_MAX ? ' — grande demais' : ''); };
+            ta.addEventListener('input', () => { e.text = ta.value; e.dirty = true; upd(); });
+            ta.addEventListener('keydown', ev => { const k = ev; if ((k.ctrlKey || k.metaKey) && k.key.toLowerCase() === 's') {
+                k.preventDefault();
+                void savePrompt();
+            } });
+            upd();
+            const save = h('button', { type: 'button', class: 'btn primary', 'data-hub': 'prompt-save', text: e.id ? 'Salvar nova versão' : 'Criar prompt' });
+            save.addEventListener('click', () => { void savePrompt(); });
+            const copy = h('button', { type: 'button', class: 'btn ghost', text: 'Copiar texto' });
+            copy.addEventListener('click', () => { navigator.clipboard?.writeText(ta.value).then(() => dialogs?.toast('Copiado.', 'ok')).catch(() => dialogs?.toast('Não foi possível copiar.', 'error')); });
+            const exp = h('button', { type: 'button', class: 'btn ghost', text: 'Baixar .md' });
+            exp.addEventListener('click', () => download((e.title.trim() || 'prompt').replace(/[\\/:*?"<>|]+/g, '_') + '.md', ta.value));
+            const close = h('button', { type: 'button', class: 'btn ghost', text: 'Fechar' });
+            close.addEventListener('click', () => { void (async () => { if (e.dirty && dialogs && !(await dialogs.confirm({ title: 'Descartar alterações?', message: 'Há alterações não salvas.', confirmText: 'Descartar' })))
+                return; pUi.edit = null; renderPrompts(); })(); });
+            const actions = h('div', { class: 'nav-actions' }, save, copy, exp);
+            if (e.id) {
+                const arch = h('button', { type: 'button', class: 'btn ghost', text: 'Arquivar' });
+                arch.addEventListener('click', () => { call('prompt.archive', { id: e.id, archived: true }).then(() => { pUi.edit = null; return loadPrompts(); }).catch(err => { pUi.msg = String(err.message); renderPrompts(); }); });
+                actions.append(arch);
+            }
+            actions.append(close);
+            wrap.append(field('Título', title), h('div', { class: 'hub-bar' }, field('Finalidade', purpose), field('Modelo', model)), field('Etiquetas', tags), ta, count, actions);
+            if (e.linkTarget)
+                wrap.append(h('p', { class: 'muted', text: 'Ao criar, será ligado a: ' + e.linkTarget.filename }));
+            if (e.id) {
+                wrap.append(h('h5', { text: 'Ligado a' }));
+                if (!e.links.length)
+                    wrap.append(h('p', { class: 'muted', text: 'Nenhum arquivo ligado.' }));
+                for (const l of e.links) {
+                    const t = l['target'], un = h('button', { type: 'button', class: 'btn ghost', 'aria-label': 'Desligar', text: 'Desligar' });
+                    un.addEventListener('click', () => { call('prompt.unlink', { linkId: String(l['id']) }).then(() => openPrompt(e.id)).catch(err => { pUi.msg = String(err.message); renderPrompts(); }); });
+                    wrap.append(h('div', { class: 'hub-link', role: 'listitem' }, h('span', { text: (t ? String(t['filename']) + ' (' + String(t['kind']) + ')' : 'arquivo ausente') + ' · ' + String(l['role']) + (l['pinnedSha'] ? ' · versão fixada' : '') }), un));
+                }
+                const q = h('input', { type: 'search', placeholder: 'Buscar arquivo para ligar', 'aria-label': 'Buscar arquivo para ligar' });
+                const sel = h('select', { 'aria-label': 'Arquivo do catálogo' });
+                const role = h('select', { 'aria-label': 'Papel da ligação' });
+                for (const [v, l] of ROLE_OPTIONS)
+                    role.append(h('option', { value: v, text: l }));
+                const find = h('button', { type: 'button', class: 'btn', text: 'Buscar' });
+                const run = () => { call('search', { text: q.value.trim(), limit: 20 }).then(r => { e.matches = r.items; sel.replaceChildren(...e.matches.map(m => h('option', { value: String(m['id']), text: String(m['filename']) + ' · ' + String(m['kind'] ?? 'image') }))); }).catch(err => { pUi.msg = String(err.message); renderPrompts(); }); };
+                find.addEventListener('click', run);
+                q.addEventListener('keydown', ev => { if (ev.key === 'Enter') {
+                    ev.preventDefault();
+                    run();
+                } });
+                const pin = h('input', { type: 'checkbox', 'aria-label': 'Fixar esta versão do prompt' });
+                const go = h('button', { type: 'button', class: 'btn', 'data-hub': 'prompt-link', text: 'Ligar' });
+                go.addEventListener('click', () => { if (!sel.value)
+                    return; call('prompt.link', { promptId: e.id, assetId: sel.value, role: role.value, pin: pin.checked }).then(() => openPrompt(e.id)).catch(err => { pUi.msg = String(err.message); renderPrompts(); }); });
+                wrap.append(h('div', { class: 'hub-bar' }, q, find), h('div', { class: 'hub-bar' }, sel, role), h('label', { class: 'muted' }, pin, ' fixar esta versão'), go);
+                wrap.append(h('h5', { text: 'Versões (' + e.versions.length + ')' }));
+                for (const v of [...e.versions].reverse()) {
+                    const seq = Number(v['seq']);
+                    const view = h('button', { type: 'button', class: 'btn ghost', text: v['current'] ? 'Ver (atual)' : 'Comparar com a atual' });
+                    view.addEventListener('click', () => { call('prompt.version_text', { id: e.id, seq }).then(r => { e.compare = { seq, text: String(r['text']) }; renderPrompts(); }).catch(err => { pUi.msg = String(err.message); renderPrompts(); }); });
+                    const row = h('div', { class: 'hub-version', role: 'listitem' }, h('span', { text: 'v' + seq + ' · ' + String(v['createdAt']).slice(0, 16).replace('T', ' ') + (v['note'] ? ' · ' + String(v['note']) : '') + (v['current'] ? ' · atual' : '') }), view);
+                    if (!v['current']) {
+                        const rest = h('button', { type: 'button', class: 'btn ghost', text: 'Restaurar' });
+                        rest.addEventListener('click', () => { call('prompt.version_text', { id: e.id, seq }).then(r => call('prompt.update', { id: e.id, text: String(r['text']), note: 'restaurada (v' + seq + ')', expectedVersion: e.baseVersion })).then(() => openPrompt(e.id)).then(() => loadPrompts()).catch(err => { pUi.msg = String(err.message); renderPrompts(); }); });
+                        row.append(rest);
+                    }
+                    wrap.append(row);
+                }
+                if (e.compare) {
+                    const d = lineDiff(e.compare.text, e.text), box = h('div', { class: 'hub-diff', role: 'region', 'aria-label': 'Diferenças entre v' + e.compare.seq + ' e o texto atual' });
+                    box.append(h('p', { class: 'muted', text: 'v' + e.compare.seq + ' → texto atual da caixa (− removido, + acrescentado)' }));
+                    if (!d)
+                        box.append(h('pre', { text: e.compare.text }));
+                    else
+                        for (const ln of d)
+                            box.append(h('div', { class: 'hub-diff-' + (ln.t === '=' ? 'same' : ln.t === '-' ? 'del' : 'add'), text: (ln.t === '=' ? '  ' : ln.t + ' ') + ln.s }));
+                    wrap.append(box);
+                }
+            }
+            return wrap;
+        }
+        function renderPrompts() {
+            const box = document.getElementById('hub-prompts-body');
+            if (!box)
+                return;
+            const keep = document.activeElement && box.contains(document.activeElement) ? document.activeElement.getAttribute('aria-label') : null;
+            box.replaceChildren();
+            if (pUi.msg)
+                box.append(h('div', { class: 'hub-msg', role: 'alert', text: pUi.msg }));
+            box.append(h('p', { class: 'muted', text: 'Cada salvamento cria uma nova versão; as anteriores ficam guardadas. O texto de um prompt é só texto: nada é executado.' }));
+            const q = h('input', { type: 'search', value: pUi.query, placeholder: 'Buscar nos prompts', 'aria-label': 'Buscar nos prompts' });
+            q.addEventListener('keydown', ev => { if (ev.key === 'Enter') {
+                pUi.query = q.value.trim();
+                void loadPrompts();
+            } });
+            const pf = h('select', { 'aria-label': 'Filtrar por finalidade' }, h('option', { value: '', text: 'Todas as finalidades' }));
+            for (const [v, l] of PURPOSE_OPTIONS)
+                pf.append(h('option', { value: v, text: l }));
+            pf.value = pUi.purpose;
+            pf.addEventListener('change', () => { pUi.purpose = pf.value; void loadPrompts(); });
+            const nw = h('button', { type: 'button', class: 'btn', 'data-hub': 'prompt-new', text: 'Novo prompt' });
+            nw.addEventListener('click', () => { newPrompt(); });
+            const imp = h('input', { type: 'file', accept: '.md,.txt,text/plain,text/markdown', hidden: '', 'aria-label': 'Importar arquivo .md ou .txt' });
+            imp.addEventListener('change', () => {
+                const f = imp.files?.[0];
+                imp.value = '';
+                if (!f)
+                    return;
+                if (f.size > PROMPT_MAX) {
+                    pUi.msg = 'O arquivo passa de 256 KB.';
+                    renderPrompts();
+                    return;
+                }
+                f.text().then(t => { if (t.includes('\u0000'))
+                    throw new Error('Isto não parece um arquivo de texto.'); newPrompt(null, t.replace(/\r\n?/g, '\n'), f.name.replace(/\.[^.]+$/, '')); }).catch(err => { pUi.msg = String(err.message); renderPrompts(); });
+            });
+            const impBtn = h('button', { type: 'button', class: 'btn', text: 'Importar .md/.txt…' });
+            impBtn.addEventListener('click', () => imp.click());
+            box.append(h('div', { class: 'hub-bar' }, q, pf), h('div', { class: 'nav-actions' }, nw, impBtn), imp);
+            const list = h('div', { class: 'hub-prompt-list', role: 'list', 'aria-label': 'Prompts' });
+            for (const p of pUi.list) {
+                const b = h('button', { type: 'button', class: 'btn ghost', role: 'listitem', 'data-prompt': p.id, text: p.title + ' · ' + p.purpose + ' · v' + p.version + (p.links ? ' · ' + p.links + ' ligado(s)' : '') });
+                b.addEventListener('click', () => { void openPrompt(p.id); });
+                list.append(b);
+            }
+            if (!pUi.list.length)
+                list.append(h('p', { class: 'muted', text: pUi.query || pUi.purpose ? 'Nenhum prompt encontrado.' : 'Ainda não há prompts.' }));
+            box.append(list, h('div', { class: 'muted', text: pUi.total + ' prompt(s)' }));
+            if (pUi.edit)
+                box.append(promptEditor(pUi.edit));
+            if (keep)
+                box.querySelector('[aria-label="' + keep + '"]')?.focus();
+        }
+        function promptsSection() {
+            const d = h('details', { class: 'hub-prompts', 'data-hub': 'prompts' }, h('summary', { text: 'Prompts (.md e .txt)' }), h('div', { id: 'hub-prompts-body' }));
+            if (pUi.open)
+                d.setAttribute('open', '');
+            d.addEventListener('toggle', () => { pUi.open = d.open; if (d.open)
+                void loadPrompts(); });
+            if (pUi.open)
+                queueMicrotask(() => { void loadPrompts(); });
+            return d;
+        }
+        /** Bloco "Prompts deste arquivo" no detalhe de um item do catálogo. */
+        function assetPromptsBlock(assetId, filename) {
+            const box = h('div', { class: 'hub-asset-prompts', 'data-hub': 'asset-prompts' }, h('h5', { text: 'Prompts deste arquivo' }));
+            const list = h('div', { role: 'list' });
+            box.append(list);
+            const load = () => {
+                call('prompt.for_asset', { assetId }).then(r => {
+                    const links = r.links;
+                    list.replaceChildren();
+                    if (!links.length)
+                        list.append(h('p', { class: 'muted', text: 'Nenhum prompt ligado.' }));
+                    for (const l of links) {
+                        const b = h('button', { type: 'button', class: 'btn ghost', role: 'listitem', text: String(l['promptTitle']) + ' · ' + String(l['role']) + (l['viaVersion'] ? ' · de uma versão anterior do arquivo' : '') });
+                        b.addEventListener('click', () => { pUi.open = true; render(); void openPrompt(String(l['promptId'])); });
+                        list.append(b);
+                    }
+                }).catch(() => { list.replaceChildren(h('p', { class: 'muted', text: 'Prompts indisponíveis neste Hub.' })); });
+            };
+            refreshAssetPrompts = load;
+            load();
+            const nw = h('button', { type: 'button', class: 'btn', 'data-hub': 'asset-prompt-new', text: 'Novo prompt para este arquivo' });
+            nw.addEventListener('click', () => { newPrompt({ assetId, filename }); });
+            box.append(nw);
+            return box;
         }
         function render() {
             if (!body)
@@ -510,7 +930,7 @@ definePlugin({
             if (!ui.items.length && !ui.busy)
                 grid.append(h('p', { class: 'muted', text: 'Nenhuma imagem encontrada.' }));
             const sel = ui.items.find(i => i['id'] === ui.selected);
-            body.append(h('div', { class: 'hub-bar' }, search, tagSel, folderSel), h('div', { class: 'hub-count muted', text: (ui.busy ? 'Carregando… ' : '') + ui.total + ' imagem(ns) · ' + (conn.client || 'cliente') + ' @ ' + conn.url }), h('div', { class: 'nav-actions' }, scan, up), h('div', { class: 'nav-actions' }, lib, out), pendingLabel, file, grid, ...(sel ? [detail(sel)] : []), syncSection());
+            body.append(h('div', { class: 'hub-bar' }, search, tagSel, folderSel), h('div', { class: 'hub-count muted', text: (ui.busy ? 'Carregando… ' : '') + ui.total + ' imagem(ns) · ' + (conn.client || 'cliente') + ' @ ' + conn.url }), h('div', { class: 'nav-actions' }, scan, up), h('div', { class: 'nav-actions' }, lib, out), pendingLabel, file, grid, ...(sel ? [detail(sel)] : []), promptsSection(), syncSection());
         }
         if (popup) {
             new MutationObserver(() => { if (!popup.hidden) {
@@ -526,6 +946,7 @@ definePlugin({
         pairFromLocation();
         kernel.provide('assetHub', {
             connect, disconnect, isConnected: () => !!conn, getStatus: status, request: (path, init = {}) => http(path, init), call, blob, objectUrl, upload, place, importLibrary, pairFromLocation,
+            deposit, flushDeposits, depositPending, autoDeposit, setAutoDeposit,
             onChange: (fn) => { listeners.add(fn); return () => { listeners.delete(fn); }; }
         });
     }
