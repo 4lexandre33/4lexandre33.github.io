@@ -268,7 +268,7 @@ definePlugin({
                     item.className = 'ps-picker-item';
                     const thumbWrap = document.createElement('div');
                     thumbWrap.className = 'ps-picker-thumb';
-                    thumbWrap.innerHTML = thumbSvg(ps, null, 72);
+                    thumbWrap.innerHTML = thumbSvg(ps, null, 72, 'layout');
                     item.appendChild(thumbWrap);
                     const meta = document.createElement('div');
                     meta.className = 'ps-picker-meta';

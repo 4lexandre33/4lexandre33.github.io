@@ -660,6 +660,7 @@ definePlugin({
                     list.appendChild(row);
                 });
                 resultsBox.appendChild(list);
+                resultsBox.appendChild(semanticCard());
                 const bar = el('div', 'vbie-actions');
                 const all = el('button', 'btn', 'Marcar todas');
                 all.type = 'button';
@@ -678,19 +679,99 @@ definePlugin({
                 resultsBox.appendChild(el('p', 'vbie-note', 'A imagem original não é alterada. As novas ficam na biblioteca e um único Desfazer remove todas.'));
             }
         }
+        /** Anotações semânticas (opcional) aplicadas às imagens enviadas ao catálogo. O formulário vem do assetHub; sem Hub/escrita fica desabilitado com o motivo. */
+        let semDraft = null;
+        let semLoading = false, semOpen = false; // o cartão não pode fechar a cada atualização da lista
+        /** Anotações herdadas do ORIGINAL (achado no catálogo pelo SHA-256 do arquivo). Só os campos objetivos; "o que representa" não é herdado (descreve a imagem inteira). */
+        let semInherit = null, semInheritOn = true, semInheritNote = '';
+        async function findOriginalSemantic() {
+            semInherit = null;
+            semInheritNote = '';
+            try {
+                const blob = assetId ? A.blobs.get(assetId) : null;
+                if (!blob) {
+                    semInheritNote = 'Não há arquivo original carregado.';
+                    return;
+                }
+                const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))).map(b => b.toString(16).padStart(2, '0')).join('');
+                const hub = await kernel.require('assetHub');
+                const found = await hub.call('search', { where: [{ field: 'sha256', op: 'eq', value: sha }], limit: 1 });
+                if (!found.items.length) {
+                    semInheritNote = 'O original não está no catálogo.';
+                    return;
+                }
+                const g = await hub.semanticGet(found.items[0].id);
+                if (!g.semantic) {
+                    semInheritNote = 'O original está no catálogo, mas sem anotações.';
+                    return;
+                }
+                const { v: _v, updatedAt: _u, origin: _o, represents: _r, ...fields } = g.semantic;
+                semInherit = fields;
+                semInheritNote = 'Herdando do original: ' + Object.keys(fields).length + ' campo(s).';
+            }
+            catch (e) {
+                semInheritNote = 'Não foi possível consultar o catálogo: ' + e.message;
+            }
+        }
+        function semanticCard() {
+            const box = el('details', 'vbie-sem');
+            box.setAttribute('data-vbie', 'semantic');
+            const sum = el('summary', undefined, 'Anotações semânticas das imagens enviadas (opcional)');
+            sum.addEventListener('click', () => { semOpen = !box.open; }); // síncrono: o evento "toggle" é assíncrono e perderia a corrida com um redesenho
+            box.appendChild(sum);
+            if (semOpen)
+                box.setAttribute('open', '');
+            box.addEventListener('toggle', () => { semOpen = box.open; });
+            if (semDraft) {
+                const row = el('div', 'vbie-actions');
+                const find = el('button', 'btn', 'Buscar anotações do original no catálogo');
+                find.type = 'button';
+                find.addEventListener('click', () => { void findOriginalSemantic().then(renderResults); });
+                row.appendChild(find);
+                if (semInherit) {
+                    const lab = el('label', 'vbie-note');
+                    const cb = el('input');
+                    cb.type = 'checkbox';
+                    cb.checked = semInheritOn;
+                    cb.addEventListener('change', () => { semInheritOn = cb.checked; });
+                    lab.append(cb, ' herdar do original (o que você escolher abaixo prevalece)');
+                    row.appendChild(lab);
+                }
+                box.appendChild(row);
+                if (semInheritNote)
+                    box.appendChild(el('p', 'vbie-note', semInheritNote));
+                box.appendChild(semDraft.el);
+                return box;
+            }
+            box.appendChild(el('p', 'vbie-note', semLoading ? 'Carregando o vocabulário do catálogo…' : 'Conecte-se ao catálogo (Mais ▸ Catálogo de imagens) com um token de escrita para anotar; sem isso as imagens são enviadas sem anotação.'));
+            if (!semLoading) {
+                semLoading = true;
+                kernel.require('assetHub').then(h => h.isConnected() ? h.semanticDraftForm() : null)
+                    .then(d => { semLoading = false; if (d) {
+                    semDraft = d;
+                    renderResults();
+                } }).catch(() => { semLoading = false; });
+            }
+            return box;
+        }
         async function sendToCatalog(list) {
             try {
                 const hub = await kernel.require('assetHub');
                 const origin = S.assets.find(a => a.id === assetId)?.name ?? 'imagem';
-                let sent = 0;
+                let sent = 0, notAnnotated = 0;
+                const semantic = { ...(semInherit && semInheritOn ? semInherit : {}), ...(semDraft ? semDraft.patch() : {}) };
                 for (const a of list) {
                     const blob = A.blobs.get(a.id);
                     if (!blob)
                         continue;
-                    await hub.upload(new File([blob], a.name, { type: blob.type || 'image/png' }), { tags: ['origem:editor-de-imagens', 'derivada-de:' + origin.replace(/[^\p{L}\p{N} _.\-]/gu, ' ').trim().slice(0, 60)] });
+                    const res = await hub.upload(new File([blob], a.name, { type: blob.type || 'image/png' }), { tags: ['origem:editor-de-imagens', 'derivada-de:' + origin.replace(/[^\p{L}\p{N} _.\-]/gu, ' ').trim().slice(0, 60)], ...(Object.keys(semantic).length ? { semantic } : {}) });
+                    if (Object.keys(semantic).length && res.semanticApplied === false)
+                        notAnnotated++;
                     sent++;
                 }
                 toast(sent + (sent === 1 ? ' imagem enviada' : ' imagens enviadas') + ' ao catálogo.', 'ok');
+                if (notAnnotated)
+                    message = notAnnotated + ' imagem(ns) foram enviadas, mas a anotação semântica não foi aplicada; ela será tentada de novo ao sincronizar.';
             }
             catch (e) {
                 message = 'Salvo no projeto, mas o catálogo não recebeu: ' + e.message;

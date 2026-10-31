@@ -11,14 +11,14 @@
  * ===================================================================== */
 definePlugin({
     id: 'automation-contract',
-    version: '1.15.0',
+    version: '1.18.0',
     needs: [],
     provides: ['automationContract'],
     uses: [],
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.15.0';
+        const CONTRACT_VERSION = '1.18.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -291,9 +291,12 @@ definePlugin({
             text: str({ maxLength: 200, description: 'free text over title, file name, description and tags' }),
             tags: obj({ all: tagList(), any: tagList(), none: tagList() }),
             folder: obj({ id: hubId('folder id'), recursive: bool() }, ['id']),
-            where: arr(obj({ field: en(['width', 'height', 'bytes', 'mime', 'kind', 'filename', 'title', 'hasAlpha', 'created', 'updated']),
+            where: arr(obj({ field: en(['width', 'height', 'bytes', 'mime', 'kind', 'filename', 'title', 'sha256', 'hasAlpha', 'created', 'updated']),
                 op: en(['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in', 'like']), value: { description: 'string, number, boolean or array (op=in)' } }, ['field', 'op', 'value']), 20),
             usage: { type: ['string', 'object'], maxLength: 20, additionalProperties: true, description: "'used', 'unused' or {project: string}" },
+            semantic: obj(Object.fromEntries(['subject', 'pose', 'facing', 'cameraElevation', 'cameraDistance', 'cameraFraming', 'roles', 'characters', 'sector']
+                .map(k => [k, arr(str({ minLength: 1, maxLength: 40 }), 20)])), [], 'semantic filters: facet → accepted values (OR inside a facet, AND between facets); see catalog.semantic_vocabulary'),
+            annotated: bool('true = only images with semantic annotations; false = only images WITHOUT any'),
             similarTo: obj({ entityId: hubId(), maxDistance: int(0, 64) }, ['entityId']),
             sort: obj({ by: en(['created', 'updated', 'name', 'size', 'width', 'height']), dir: en(['asc', 'desc']) }, ['by']),
             limit: int(1, 200), cursor: str({ maxLength: 400 })
@@ -327,6 +330,27 @@ definePlugin({
         hubTool('scan', W, 'Scan the images folder', 'Scans the Hub\'s own images folder (images/<type>/<subfolders>/file), imports new images into the catalog (originals untouched), mirrors the folders and adds tags tipo:<folder>, pasta:<subfolder>, origem:biblioteca. preview=true only reports. Never reads outside that folder.', obj({ preview: bool('only report what would be imported; writes nothing') }));
         hubTool('classify', W, 'Classify images', 'Records the result of LOOKING at images (use visualboard_catalog_view first): adds tags, optional title/description/notes and marks status:classificado. Up to 50 images per call.', obj({ items: { type: 'array', minItems: 1, maxItems: 50, items: obj({ id: hubId(), tags: tagList(), removeTags: tagList(),
                     title: str({ maxLength: 200 }), description: str({ maxLength: 2000 }), notes: str({ maxLength: 2000 }) }, ['id']) } }, ['items']));
+        /* Anotações semânticas (componente ECS `semantic`): o que a imagem representa, função, pose, orientação e câmera. Vocabulário em hub/src/semantic.ts (teste de paridade). */
+        const semEnum = (values, description) => ({ type: ['string', 'null'], enum: [...values, null], ...(description ? { description } : {}) });
+        const semFields = () => ({
+            represents: { type: ['string', 'null'], maxLength: 500, description: 'free text: what the image represents (null removes)' },
+            subject: semEnum(['manequim', 'personagem', 'grupo', 'objeto', 'cenario', 'textura', 'efeito', 'cena', 'balao', 'outro']),
+            pose: semEnum(['em-pe', 'sentado', 'ajoelhado', 'agachado', 'deitado', 'andando', 'correndo', 'saltando', 'golpeando', 'apontando', 'abracando', 'outro']),
+            facing: semEnum(['frente', 'tres-quartos-frente', 'perfil', 'tres-quartos-costas', 'costas']),
+            facingDegrees: { type: ['number', 'null'], minimum: -3600, maximum: 3600, description: 'body direction in degrees, compass (0=N, clockwise); normalised to [0,360)' },
+            cameraElevation: semEnum(['baixa', 'media', 'alta'], 'baixa=E1 (blue), media=E2 (orange), alta=E3 (purple)'),
+            cameraDistance: semEnum(['perto', 'media', 'longe']),
+            cameraFraming: semEnum(['aberto', 'fechado'], 'aberto=wide (dashed), fechado=tight (solid)'),
+            characters: { type: ['integer', 'null'], minimum: 0, maximum: 8 },
+            roles: { type: ['array', 'null'], maxItems: 9, items: en(['referencia-pose', 'referencia-enquadramento', 'blocking', 'fundo', 'textura', 'adereco', 'quadro', 'efeito', 'outro']) },
+            origin: semEnum(['manual', 'scene-blocking', 'ai'])
+        });
+        hubTool('semantic_vocabulary', R, 'Semantic vocabulary', 'Controlled vocabulary of the semantic annotations (subject, pose, facing, camera elevation/distance/framing, roles) and the numeric ranges. Read it before calling semantic_set.', none());
+        hubTool('semantic_get', R, 'Get semantic annotations', 'Semantic annotations of one catalogued image (what it represents, role, pose, facing, camera) and their sem.* tags.', obj({ id: hubId() }, ['id']));
+        hubTool('semantic_set', W, 'Set semantic annotations', 'Merges semantic annotations into an image (fields set to null are removed; replace=true discards the previous ones). Values come from semantic_vocabulary; free text only in "represents". Rebuilds the sem.* tags used by search (catalog.search → semantic).', obj({ id: hubId(), ...semFields(), replace: bool('discard previous annotations before applying'), expectedVersion: int(1, 1e9) }, ['id']));
+        hubTool('semantic_set_many', W, 'Set semantic annotations on many images', 'Applies the SAME semantic patch to up to 200 images, all-or-nothing (one transaction); each image merges with what it already had. Null removes a field; replace=true discards previous annotations.', obj({ ids: idList(), ...semFields(), replace: bool('discard previous annotations before applying') }, ['ids']));
+        hubTool('semantic_clear', D, 'Clear semantic annotations', 'Removes every semantic annotation (and sem.* tags) of an image. Requires confirmation.', obj({ id: hubId() }, ['id']));
+        hubTool('semantic_facets', R, 'Semantic facets in use', 'Which semantic values exist in the catalog and how many images have each (for filters).', none());
         hubTool('verify', R, 'Verify catalog integrity', 'Checks that every catalogued file exists and matches its hash; lists orphan files.', none());
         hubTool('gc_orphans', D, 'Remove orphan files', 'Deletes files in the images folder that no catalog entry owns. Requires confirmation.', none());
         /* ---------- Fase 22: sync.* → Hub (Google Drive ⇄ Hub ⇄ espelho Git). Nenhuma lógica aqui: o Hub executa. ---------- */
@@ -424,6 +448,7 @@ definePlugin({
         T('scene_blocking', 'duplicate', W, 'Duplicate scene sheet', 'Copies a sheet (model and drawing) into a new asset; the original stays untouched.', obj({ assetId: sbId() }, ['assetId']), call('sceneBlocking', 'duplicate', ['assetId']), true);
         T('scene_blocking', 'adopt', W, 'Open SVG as scene sheet', 'Reads the embedded model of an SVG asset exported by scene blocking and turns it into an editable sheet (validated first; plain SVGs are refused).', obj({ assetId: id('svg asset id') }, ['assetId']), call('sceneBlocking', 'adopt', ['assetId']), true);
         T('scene_blocking', 'open_editor', W, 'Open scene blocking screen', 'Opens the image editor in scene blocking mode in VisualBoard.', none(), comp('scene_blocking.open_editor', ['ui.imageEditor.open']));
+        T('scene_blocking', 'cell_semantics', R, 'Semantic annotations of scene cells', 'Semantic annotations derived from the cell model (subject manequim/grupo, mannequin count, camera elevation/distance/framing, and body direction + facing for single-mannequin cells; origin scene-blocking; pose is never filled because the generator does not model poses). One per cell, or only the requested one. Apply them with catalog.semantic_set after uploading the exported file. Changes nothing.', obj({ assetId: sbId(), cell: sbCell() }, ['assetId']), call('sceneBlocking', 'cellSemantics', ['assetId', 'cell']));
         T('scene_blocking', 'export_svg', X, 'Export scene SVG text', 'Returns the SVG text of a sheet or of one cell (a few hundred KB at most). Use visualboard_scene_blocking_save_file to write files (SVG, PNG, ZIP) to the export folder.', obj({ assetId: sbId(), cell: sbCell() }, ['assetId']), comp('scene_blocking.export_svg', ['sceneBlocking.exportSvg', 'sceneBlocking.exportCellSvg']));
         T('scene_blocking', 'prepare_transfer', X, 'Render scene file for transfer', 'Renders SVG, PNG (scale 1-2) or ZIP and keeps it in memory for two minutes so the MCP server can copy it to disk in chunks. Used by visualboard_scene_blocking_save_file.', obj({ assetId: sbId(), format: en(['svg', 'png', 'zip']), cell: sbCell(), scale: int(1, 2), assetIds: arr(sbId(), 50), cells: bool('zip only: one file per cell of the sheet') }, ['format']), comp('scene_blocking.prepare_transfer', ['sceneBlocking.exportSvg', 'sceneBlocking.exportCellSvg', 'sceneBlocking.exportPng', 'sceneBlocking.exportZip']));
         /* ===== audio editor (voice-comic lines: clean, level, split, effects) ===== */

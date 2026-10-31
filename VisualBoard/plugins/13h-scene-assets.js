@@ -8,7 +8,7 @@ definePlugin({
     provides: ['sceneBlocking'],
     uses: ['app'],
     accepts: { sceneBlockingCore: '^1.0.0', sceneBlockingEngine: '^1.0.0', sceneBlockingRender: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { sceneBlocking: '1.1.0' },
+    contractVersions: { sceneBlocking: '1.2.0' },
     setup: async function (kernel) {
         const core = await kernel.require('sceneBlockingCore');
         const engine = await kernel.require('sceneBlockingEngine');
@@ -305,6 +305,30 @@ definePlugin({
             copy.set(zipped);
             return new Blob([copy.buffer], { type: 'application/zip' });
         }
-        kernel.provide('sceneBlocking', { limits: () => ({ ...LIMITS }), isSceneAsset, generate, list, get, regenerate, setLock, editCell, duplicate, adopt, exportSvg, exportCellSvg, exportPng, exportZip });
+        /* ------------------------------ anotações semânticas ------------------------------ */
+        const SEM_ELEV = { E1: 'baixa', E2: 'media', E3: 'alta' };
+        const SEM_DIST = { near: 'perto', medium: 'media', far: 'longe' };
+        const SEM_FRAME = { wide: 'aberto', tight: 'fechado' };
+        /** Anotação semântica derivada do MODELO da célula (nada é inventado): assunto, nº de manequins, elevação, distância, enquadramento e, com um só manequim,
+         * a direção do corpo (bússola) e a orientação em relação à câmera. A pose NÃO é modelada pelo gerador e por isso nunca é preenchida. */
+        function semanticOfCell(c) {
+            const n = c.characters.length;
+            const out = { subject: n === 1 ? 'manequim' : n > 1 ? 'grupo' : 'cena', characters: n,
+                cameraElevation: SEM_ELEV[c.camera.elevationLevel], cameraDistance: SEM_DIST[c.camera.distanceLevel], cameraFraming: SEM_FRAME[c.framing.type],
+                roles: ['blocking', 'referencia-enquadramento'], origin: 'scene-blocking' };
+            if (n === 1) {
+                const ch = c.characters[0], toCam = core.angleDiff(ch.rotation, core.angleTo(ch, c.camera));
+                out['facingDegrees'] = core.norm360(ch.rotation);
+                out['facing'] = toCam <= 22.5 ? 'frente' : toCam <= 67.5 ? 'tres-quartos-frente' : toCam <= 112.5 ? 'perfil' : toCam <= 157.5 ? 'tres-quartos-costas' : 'costas';
+            }
+            return out;
+        }
+        /** Anotações (uma por célula, ou só a pedida) prontas para `catalog.semantic_set` / `assetHub.upload({semantic})`. Só lê. */
+        function cellSemantics(assetId, cell) {
+            const m = metaOf(assetOf(assetId));
+            const idx = cell === undefined ? m.sheet.cells.map(c => c.index) : [cellIndex(cell)];
+            return idx.map(i => ({ cell: i, semantic: semanticOfCell(m.sheet.cells[i]) }));
+        }
+        kernel.provide('sceneBlocking', { limits: () => ({ ...LIMITS }), isSceneAsset, generate, list, get, regenerate, setLock, editCell, duplicate, adopt, exportSvg, exportCellSvg, exportPng, exportZip, cellSemantics });
     }
 });

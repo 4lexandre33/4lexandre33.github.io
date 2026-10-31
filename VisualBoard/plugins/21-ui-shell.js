@@ -665,7 +665,7 @@ definePlugin({
                     const thumb = document.createElement('span');
                     thumb.className = 'page-thumb';
                     if (set) {
-                        const svg = sets.thumbSvg(set, null, 70);
+                        const svg = sets.thumbSvg(set, null, 70, 'layout');
                         if (svg) {
                             const img = document.createElement('img');
                             img.alt = '';

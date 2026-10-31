@@ -1179,6 +1179,12 @@ definePlugin({
         handlers['catalog.usage'] = hubHandler('usage');
         handlers['catalog.reference_add'] = hubHandler('reference_add');
         handlers['catalog.reference_remove'] = hubHandler('reference_remove');
+        handlers['catalog.semantic_vocabulary'] = hubHandler('semantic_vocabulary');
+        handlers['catalog.semantic_get'] = hubHandler('semantic_get');
+        handlers['catalog.semantic_set'] = hubHandler('semantic_set');
+        handlers['catalog.semantic_set_many'] = hubHandler('semantic_set_many');
+        handlers['catalog.semantic_clear'] = hubHandler('semantic_clear');
+        handlers['catalog.semantic_facets'] = hubHandler('semantic_facets');
         handlers['catalog.verify'] = hubHandler('verify');
         handlers['catalog.gc_orphans'] = hubHandler('gc_orphans');
         handlers['catalog.import_library'] = async (input) => {

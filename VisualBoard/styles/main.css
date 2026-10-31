@@ -3587,3 +3587,29 @@ input[type=search], input[type=text], input[type=number], select { background:#2
   .vbsb-view,.vbsb-board{flex:0 0 auto;align-items:flex-start;}
   .vbsb-svg{width:min(100%,560px);}
 }
+
+/* ---- Catálogo semântico (ficha, selos, legenda de câmera) ---- */
+.hub-card-badges{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;min-height:1.2em}
+.hub-badge{font-size:.68rem;line-height:1.2;padding:1px 5px;border-radius:8px;border:1px solid currentColor;opacity:.9}
+.hub-badge.is-empty{opacity:.55;border-style:dashed}
+.hub-sem{display:grid;gap:8px;padding:8px;border:1px solid var(--line,#8884);border-radius:8px}
+.hub-sem-group{display:grid;gap:4px}
+.hub-sem-title{font-size:.78rem;opacity:.8}
+.hub-sem-opts{display:flex;flex-wrap:wrap;gap:4px}
+.hub-sem-opt{padding:3px 8px;font-size:.8rem}
+.hub-sem-opt.is-on{font-weight:700;outline:2px solid currentColor;outline-offset:-2px}
+.hub-sem-dir{grid-template-columns:auto 1fr;align-items:center}
+.hub-sem-dir .hub-sem-title{grid-column:1 / -1}
+.hub-sem-compass{cursor:pointer;color:inherit}
+.hub-sem-legend{font-size:.75rem;margin:0}
+.hub-sem-dot{display:inline-block;width:.7em;height:.7em;border-radius:50%;vertical-align:baseline}
+.hub-sem-dot.e1{background:#1565C0}.hub-sem-dot.e2{background:#D97706}.hub-sem-dot.e3{background:#7E22CE}
+.hub-sem textarea{width:100%;box-sizing:border-box}
+.hub-card.is-multi{outline:3px solid currentColor;outline-offset:-3px}
+.hub-selbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.hub-sem-filter{margin:6px 0}
+.hub-sem-filter summary{cursor:pointer}
+.hub-sem-check{display:inline-flex;align-items:center;gap:4px;margin-right:8px;font-size:.8rem}
+.hub-batch fieldset{border:0;padding:0;margin:0}
+.vbie-sem{margin:8px 0;padding:6px 8px;border:1px solid var(--line,#8884);border-radius:8px}
+.vbie-sem summary{cursor:pointer}

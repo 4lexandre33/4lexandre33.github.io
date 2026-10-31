@@ -171,7 +171,7 @@ definePlugin({
                 '\nClick to place on canvas · Right-click for more';
             const thumb = document.createElement('div');
             thumb.className = 'pf-thumb';
-            thumb.innerHTML = PS.thumbSvg(ps, null, 72);
+            thumb.innerHTML = PS.thumbSvg(ps, null, 72, 'layout');
             item.appendChild(thumb);
             const label = document.createElement('div');
             label.className = 'pf-label';

@@ -12,12 +12,12 @@
  * ===================================================================== */
 definePlugin({
     id: 'asset-hub',
-    version: '1.2.0',
+    version: '1.3.0',
     needs: ['state', 'assets'],
     provides: ['assetHub'],
     uses: ['ui.dialogs'],
     accepts: { 'state': '^1.0.0', 'assets': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'assetHub': '1.2.0' },
+    contractVersions: { 'assetHub': '1.3.0' },
     setup: async function (kernel) {
         const state = await kernel.require('state');
         const assets = await kernel.require('assets');
@@ -143,10 +143,28 @@ definePlugin({
                 out += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
             return btoa(out);
         }
+        /** Anotações que não puderam ser aplicadas depois do envio (o arquivo já está no Hub): tentadas de novo em `flushDeposits`. */
+        const semanticRetry = [];
+        async function applySemantic(res, patch) {
+            if (!patch || !Object.keys(patch).length)
+                return { semanticApplied: false };
+            const id = String((res || {})['asset']?.['id'] ?? '');
+            if (!id)
+                return { semanticApplied: false, semanticError: 'resposta do Hub sem id' };
+            try {
+                await call('semantic_set', { id, origin: 'manual', ...patch });
+                return { semanticApplied: true };
+            }
+            catch (e) {
+                semanticRetry.push({ id, patch });
+                return { semanticApplied: false, semanticError: e instanceof Error ? e.message : String(e) };
+            }
+        }
         async function upload(file, opts = {}) {
             const bytes = new Uint8Array(await file.arrayBuffer());
-            return call('add', { filename: file.name, dataBase64: toBase64(bytes), ...(opts.folderId ? { folderId: opts.folderId } : {}),
+            const res = await call('add', { filename: file.name, dataBase64: toBase64(bytes), ...(opts.folderId ? { folderId: opts.folderId } : {}),
                 ...(opts.tags && opts.tags.length ? { tags: opts.tags } : {}) });
+            return opts.semantic ? { ...res, ...(await applySemantic(res, opts.semantic)) } : res;
         }
         /* ---------------- depósito (arquivos feitos aqui vão para o Hub/Drive) ----------------
          * Desligado por padrão. Quando ligado, todo asset derivado (editor de imagem/áudio) é enviado ao Hub com a procedência
@@ -169,11 +187,12 @@ definePlugin({
         const sha256Of = async (blob) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))).map(b => b.toString(16).padStart(2, '0')).join('');
         async function sendPending(item) {
             const bytes = new Uint8Array(await item.blob.arrayBuffer());
-            await call('add', { filename: item.filename, dataBase64: toBase64(bytes), tags: ['origem:editor'], ...(item.derivedFrom ? { derivedFrom: item.derivedFrom } : {}), ...(item.operations ? { operations: item.operations } : {}) });
+            const res = await call('add', { filename: item.filename, dataBase64: toBase64(bytes), tags: ['origem:editor'], ...(item.derivedFrom ? { derivedFrom: item.derivedFrom } : {}), ...(item.operations ? { operations: item.operations } : {}) });
+            await applySemantic(res, item.semantic); // falha só da anotação não perde o arquivo: fica em semanticRetry
         }
         /** Deposita um arquivo no Hub (ou na fila, se não houver conexão com escopo de escrita). */
         async function deposit(file, filename, opts = {}) {
-            const item = { filename, blob: file, ...(opts.derivedFrom ? { derivedFrom: opts.derivedFrom } : {}), ...(opts.operations ? { operations: opts.operations } : {}) };
+            const item = { filename, blob: file, ...(opts.semantic && Object.keys(opts.semantic).length ? { semantic: opts.semantic } : {}), ...(opts.derivedFrom ? { derivedFrom: opts.derivedFrom } : {}), ...(opts.operations ? { operations: opts.operations } : {}) };
             if (conn && conn.scopes.includes('write')) {
                 try {
                     await sendPending(item);
@@ -202,10 +221,19 @@ definePlugin({
                     out.failed++;
                 }
             }
-            out.remaining = (await queueEntries()).length;
+            for (const r of semanticRetry.splice(0)) {
+                try {
+                    await call('semantic_set', { id: r.id, origin: 'manual', ...r.patch });
+                }
+                catch {
+                    semanticRetry.push(r);
+                    out.failed++;
+                }
+            }
+            out.remaining = (await queueEntries()).length + semanticRetry.length;
             return out;
         }
-        const depositPending = async () => (await queueEntries()).length;
+        const depositPending = async () => (await queueEntries()).length + semanticRetry.length;
         const deposited = new Set();
         async function depositDerived() {
             if (!autoDeposit())
@@ -300,6 +328,51 @@ definePlugin({
                 return false;
             }
         }
+        /* ---------------- anotações semânticas (componente `semantic` do Hub) ---------------- */
+        /** Rótulos em português. Os VALORES vêm sempre do Hub (`semantic_vocabulary`); valor sem rótulo aparece cru. */
+        const SEM_LABEL = {
+            manequim: 'Manequim', personagem: 'Personagem', grupo: 'Grupo', objeto: 'Objeto', cenario: 'Cenário', textura: 'Textura', efeito: 'Efeito', cena: 'Cena', balao: 'Balão', outro: 'Outro',
+            'em-pe': 'Em pé', sentado: 'Sentado', ajoelhado: 'Ajoelhado', agachado: 'Agachado', deitado: 'Deitado', andando: 'Andando', correndo: 'Correndo', saltando: 'Saltando',
+            golpeando: 'Golpeando', apontando: 'Apontando', abracando: 'Abraçando',
+            frente: 'Frente', 'tres-quartos-frente': '3/4 frente', perfil: 'Perfil', 'tres-quartos-costas': '3/4 costas', costas: 'Costas',
+            baixa: 'Baixa (E1 azul)', media: 'Média', alta: 'Alta (E3 roxo)', perto: 'Perto', longe: 'Longe', aberto: 'Aberto (tracejado)', fechado: 'Fechado (sólido)',
+            'referencia-pose': 'Referência de pose', 'referencia-enquadramento': 'Referência de enquadramento', blocking: 'Blocking', fundo: 'Fundo', adereco: 'Adereço', quadro: 'Quadro'
+        };
+        const SEM_GROUPS = [
+            { key: 'subject', title: 'Assunto' }, { key: 'roles', title: 'Função', multi: true }, { key: 'pose', title: 'Pose' }, { key: 'facing', title: 'Orientação do corpo' },
+            { key: 'cameraElevation', title: 'Elevação da câmera', cls: 'elev' }, { key: 'cameraDistance', title: 'Distância da câmera' }, { key: 'cameraFraming', title: 'Enquadramento' }
+        ];
+        /** Distância/elevação "media" têm o mesmo valor; o rótulo é por faceta. */
+        const semLabel = (facet, value) => facet === 'cameraElevation' && value === 'media' ? 'Média (E2 laranja)' : facet === 'cameraDistance' && value === 'media' ? 'Média' : (SEM_LABEL[value] ?? value);
+        let semVocab = null;
+        async function semanticVocabulary() {
+            if (semVocab && semVocab.conn === conn)
+                return semVocab.data;
+            const data = await call('semantic_vocabulary');
+            if (conn)
+                semVocab = { conn, data };
+            return data;
+        }
+        const semanticGet = async (id) => await call('semantic_get', { id });
+        const semanticSet = async (id, patch, opts = {}) => await call('semantic_set', { id, ...patch, ...opts });
+        const semanticClear = async (id) => await call('semantic_clear', { id });
+        const semanticFacets = async () => (await call('semantic_facets'))['facets'] ?? [];
+        /** Cartão de anotação para outros plugins (editor de imagem): null sem conexão/escopo de escrita. `patch()` = só o que foi tocado. */
+        async function semanticDraftForm() {
+            if (!conn || !conn.scopes.includes('write'))
+                return null;
+            try {
+                return draftFields(await semanticVocabulary());
+            }
+            catch {
+                return null;
+            }
+        }
+        /** Selos das miniaturas: assunto, pose e elevação, lidos das tags `sem.*` (sem chamada extra). */
+        function semBadges(tags) {
+            const pick = (ns, facet) => tags.filter(t => t.startsWith('sem.' + ns + ':')).map(t => semLabel(facet, t.slice(('sem.' + ns + ':').length)).replace(/ \(.*\)$/, ''));
+            return [...pick('assunto', 'subject'), ...pick('pose', 'pose'), ...pick('elevacao', 'cameraElevation')].slice(0, 3);
+        }
         /* ---------------------------- interface ---------------------------- */
         const popup = document.getElementById('popup-catalog');
         const body = document.getElementById('catalog-body');
@@ -318,8 +391,35 @@ definePlugin({
         }
         const ui = { tags: [], folders: [],
             text: '', tag: '', folder: '', pending: false, selected: null, items: [], total: 0,
-            busy: false, message: '' };
+            busy: false, message: '',
+            /* semântica: filtros, seleção múltipla e vocabulário/contagens carregados do Hub */
+            sem: {}, annotated: '', multi: new Set(), selectMode: false, lastIndex: -1,
+            facets: [], vocab: null, batchOpen: false, filtersOpen: false };
         function say(message) { ui.message = message; render(); }
+        /** Consulta atual do painel (texto, tag, pendentes, pasta e filtros semânticos). */
+        function buildQuery() {
+            const q = { limit: 60, sort: { by: 'created', dir: 'desc' } };
+            if (ui.text)
+                q['text'] = ui.text;
+            const tagQ = {};
+            if (ui.tag)
+                tagQ['all'] = [ui.tag];
+            if (ui.pending)
+                tagQ['none'] = ['status:classificado'];
+            if (Object.keys(tagQ).length)
+                q['tags'] = tagQ;
+            if (ui.folder)
+                q['folder'] = { id: ui.folder, recursive: true };
+            const sem = {};
+            for (const [k, set] of Object.entries(ui.sem))
+                if (set.size)
+                    sem[k] = [...set];
+            if (Object.keys(sem).length)
+                q['semantic'] = sem;
+            if (ui.annotated)
+                q['annotated'] = ui.annotated === 'yes';
+            return q;
+        }
         async function refresh() {
             if (!conn) {
                 render();
@@ -328,25 +428,19 @@ definePlugin({
             ui.busy = true;
             render();
             try {
-                const q = { limit: 60, sort: { by: 'created', dir: 'desc' } };
-                if (ui.text)
-                    q['text'] = ui.text;
-                const tagQ = {};
-                if (ui.tag)
-                    tagQ['all'] = [ui.tag];
-                if (ui.pending)
-                    tagQ['none'] = ['status:classificado'];
-                if (Object.keys(tagQ).length)
-                    q['tags'] = tagQ;
-                if (ui.folder)
-                    q['folder'] = { id: ui.folder, recursive: true };
-                const [found, tags, folders] = await Promise.all([call('search', q), call('tag_list', {}), call('folder_list', {})]);
+                const [found, tags, folders, facets, vocab] = await Promise.all([call('search', buildQuery()), call('tag_list', {}), call('folder_list', {}),
+                    semanticFacets().catch(() => []), semanticVocabulary().catch(() => null)]);
                 ui.items = found.items;
                 ui.total = found.total;
                 ui.tags = tags.tags;
                 ui.folders = folders.folders;
+                ui.facets = facets;
+                ui.vocab = vocab;
                 if (ui.selected && !ui.items.some(i => i['id'] === ui.selected))
                     ui.selected = null;
+                for (const id of [...ui.multi])
+                    if (!ui.items.some(i => i['id'] === id))
+                        ui.multi.delete(id);
                 ui.message = '';
             }
             catch (err) {
@@ -366,20 +460,371 @@ definePlugin({
             });
             return h('div', { class: 'hub-connect' }, h('p', { class: 'muted', text: 'O catálogo guarda imagens em um banco de dados real (Asset Hub). A URL e o token ficam só na memória desta aba; o editor funciona normalmente sem o Hub.' }), url, token, go);
         }
+        /** Ficha semântica de UMA imagem: seletores do vocabulário do Hub, bússola e texto livre. Grava por campo (um `semantic_set` por alteração). */
+        function semanticBlock(id, version) {
+            const box = h('div', { class: 'hub-sem', 'data-hub': 'semantic' });
+            const canWrite = !!conn && conn.scopes.includes('write');
+            const live = h('span', { class: 'hub-sem-live muted', role: 'status', 'aria-live': 'polite' });
+            let ver = version, cur = {}, vocab = null;
+            const set = (text) => { live.textContent = text; };
+            const save = async (patch) => {
+                set('Salvando…');
+                try {
+                    const r = await semanticSet(id, cur.origin === 'scene-blocking' ? { ...patch, origin: 'manual' } : patch, ver ? { expectedVersion: ver } : {});
+                    ver = r.version;
+                    cur = r.semantic ?? {};
+                    set('Salvo');
+                    sync();
+                    refreshQuiet();
+                }
+                catch (e) {
+                    const code = e.code;
+                    if (code === 'CONFLICT') {
+                        set('A imagem foi alterada em outro lugar; recarregando.');
+                        refresh().catch(() => undefined);
+                    }
+                    else
+                        set(e instanceof Error ? e.message : String(e));
+                    semanticGet(id).then(g => { cur = g.semantic ?? {}; sync(); }).catch(() => undefined);
+                }
+            };
+            const group = (g) => {
+                const def = g.multi ? vocab.multi[g.key] : vocab.single[g.key];
+                const wrap = h('div', { class: 'hub-sem-group', role: 'group', 'aria-label': g.title }, h('span', { class: 'hub-sem-title', text: g.title }));
+                if (!def)
+                    return wrap;
+                const row = h('div', { class: 'hub-sem-opts' });
+                for (const v of def.values) {
+                    const isOn = () => g.multi ? (cur.roles ?? []).includes(v) : cur[g.key] === v;
+                    const b = h('button', { type: 'button', class: 'btn ghost hub-sem-opt' + (isOn() ? ' is-on' : ''), 'aria-pressed': String(isOn()), 'data-sem': g.key, 'data-value': v, text: semLabel(g.key, v) });
+                    if (!canWrite)
+                        b.setAttribute('disabled', '');
+                    b.addEventListener('click', () => {
+                        const on = isOn();
+                        if (g.multi) {
+                            const list = new Set(cur.roles ?? []);
+                            if (on)
+                                list.delete(v);
+                            else
+                                list.add(v);
+                            void save({ roles: list.size ? [...list] : null });
+                        }
+                        else
+                            void save({ [g.key]: on ? null : v });
+                    });
+                    row.append(b);
+                }
+                wrap.append(row);
+                return wrap;
+            };
+            let redrawCompass = null;
+            const compass = () => {
+                const deg = typeof cur.facingDegrees === 'number' ? cur.facingDegrees : null;
+                const NS = 'http://www.w3.org/2000/svg';
+                const svg = document.createElementNS(NS, 'svg');
+                svg.setAttribute('viewBox', '-50 -50 100 100');
+                svg.setAttribute('width', '84');
+                svg.setAttribute('height', '84');
+                svg.setAttribute('class', 'hub-sem-compass');
+                svg.setAttribute('role', 'img');
+                svg.setAttribute('aria-label', deg === null ? 'Bússola sem direção definida' : 'Bússola apontando para ' + deg + ' graus');
+                const ring = document.createElementNS(NS, 'circle');
+                ring.setAttribute('r', '44');
+                ring.setAttribute('fill', 'none');
+                ring.setAttribute('stroke', 'currentColor');
+                ring.setAttribute('stroke-width', '2');
+                const north = document.createElementNS(NS, 'text');
+                north.setAttribute('y', '-33');
+                north.setAttribute('text-anchor', 'middle');
+                north.setAttribute('font-size', '14');
+                north.setAttribute('fill', 'currentColor');
+                north.textContent = 'N';
+                svg.append(ring, north);
+                const needle = document.createElementNS(NS, 'polygon');
+                needle.setAttribute('points', '0,-26 7,8 0,3 -7,8');
+                needle.setAttribute('fill', 'currentColor');
+                needle.setAttribute('class', 'hub-sem-needle');
+                svg.append(needle);
+                const draw = (d) => {
+                    needle.setAttribute('display', d === null ? 'none' : 'inline');
+                    if (d !== null)
+                        needle.setAttribute('transform', 'rotate(' + d + ')');
+                    svg.setAttribute('aria-label', d === null ? 'Bússola sem direção definida' : 'Bússola apontando para ' + d + ' graus');
+                };
+                draw(deg);
+                redrawCompass = draw;
+                if (canWrite)
+                    svg.addEventListener('click', ev => {
+                        const r = svg.getBoundingClientRect();
+                        const dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+                        void save({ facingDegrees: Math.round((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360) });
+                    });
+                const num = h('input', { type: 'number', min: '0', max: '359', step: '1', 'aria-label': 'Direção do corpo em graus (0 = norte, sentido horário)', 'data-sem': 'facingDegrees', value: deg === null ? '' : String(deg) });
+                if (!canWrite)
+                    num.setAttribute('disabled', '');
+                num.addEventListener('change', () => { void save({ facingDegrees: num.value.trim() === '' ? null : Number(num.value) }); });
+                return h('div', { class: 'hub-sem-group hub-sem-dir' }, h('span', { class: 'hub-sem-title', text: 'Direção do corpo (graus)' }), svg, num);
+            };
+            /** Atualiza estados e valores NO LUGAR (sem recriar controles): o que a pessoa está digitando em outro campo não se perde. */
+            function sync() {
+                for (const b of Array.from(box.querySelectorAll('button[data-sem]'))) {
+                    const key = b.dataset['sem'] ?? '', v = b.dataset['value'] ?? '';
+                    const on = key === 'roles' ? (cur.roles ?? []).includes(v) : cur[key] === v;
+                    b.classList.toggle('is-on', on);
+                    b.setAttribute('aria-pressed', String(on));
+                }
+                const put = (sel, value) => { const el = box.querySelector(sel); if (el && document.activeElement !== el)
+                    el.value = value; };
+                put('[data-sem="facingDegrees"]', typeof cur.facingDegrees === 'number' ? String(cur.facingDegrees) : '');
+                put('[data-sem="characters"]', typeof cur.characters === 'number' ? String(cur.characters) : '');
+                put('[data-sem="represents"]', cur.represents ?? '');
+                redrawCompass?.(typeof cur.facingDegrees === 'number' ? cur.facingDegrees : null);
+            }
+            function build() {
+                box.replaceChildren();
+                if (!vocab)
+                    return;
+                box.append(h('strong', { text: 'Semântica' }), live);
+                if (!canWrite)
+                    box.append(h('p', { class: 'muted', text: 'Este token só lê: peça um token com escopo de escrita para catalogar.' }));
+                for (const g of SEM_GROUPS) {
+                    box.append(group(g));
+                    if (g.key === 'facing')
+                        box.append(compass());
+                }
+                box.append(h('p', { class: 'hub-sem-legend muted' }, h('span', { class: 'hub-sem-dot e1' }), ' baixa E1 ', h('span', { class: 'hub-sem-dot e2' }), ' média E2 ', h('span', { class: 'hub-sem-dot e3' }), ' alta E3 · tracejado = aberto · sólido = fechado'));
+                const chars = h('input', { type: 'number', min: '0', max: '8', step: '1', 'aria-label': 'Quantidade de personagens (0 a 8)', 'data-sem': 'characters', value: typeof cur.characters === 'number' ? String(cur.characters) : '' });
+                if (!canWrite)
+                    chars.setAttribute('disabled', '');
+                chars.addEventListener('change', () => { void save({ characters: chars.value.trim() === '' ? null : Number(chars.value) }); });
+                box.append(h('label', { class: 'hub-sem-group' }, h('span', { class: 'hub-sem-title', text: 'Personagens' }), chars));
+                const rep = h('textarea', { maxlength: '500', rows: '2', 'aria-label': 'O que a imagem representa', 'data-sem': 'represents', placeholder: 'O que esta imagem representa (opcional)' });
+                rep.value = cur.represents ?? '';
+                if (!canWrite)
+                    rep.setAttribute('disabled', '');
+                rep.addEventListener('change', () => { void save({ represents: rep.value.trim() === '' ? null : rep.value }); });
+                box.append(h('label', { class: 'hub-sem-group' }, h('span', { class: 'hub-sem-title', text: 'O que representa' }), rep));
+                if (cur.origin === 'scene-blocking')
+                    box.append(h('p', { class: 'muted', text: 'Preenchido a partir do Scene Blocking; editar à mão passa a valer como manual.' }));
+            }
+            function load() {
+                Promise.all([semanticVocabulary(), semanticGet(id)]).then(([v, g]) => { vocab = v; cur = g.semantic ?? {}; build(); })
+                    .catch(e => { box.replaceChildren(h('p', { class: 'muted', text: 'Semântica indisponível: ' + (e instanceof Error ? e.message : String(e)) })); });
+            }
+            load();
+            return box;
+        }
+        /** Atualiza a lista (selos e contagens) sem recriar a ficha aberta nem tirar o foco do usuário. */
+        function refreshQuiet() {
+            if (!conn)
+                return;
+            call('search', buildQuery()).then(r => {
+                const found = r;
+                for (const it of found.items) {
+                    const old = ui.items.find(o => o['id'] === it['id']);
+                    if (old)
+                        old['tags'] = it['tags'];
+                    const cardEl = body?.querySelector('[data-hub-id="' + String(it['id']).replace(/"/g, '') + '"] .hub-card-badges');
+                    if (cardEl)
+                        cardEl.replaceChildren(...semBadgeNodes(it['tags'] || []));
+                }
+            }).catch(() => undefined);
+        }
+        function semBadgeNodes(tags) {
+            const b = semBadges(tags);
+            return b.length ? b.map(t => h('span', { class: 'hub-badge', text: t })) : [h('span', { class: 'hub-badge is-empty', text: 'sem anotação' })];
+        }
+        /** Filtros por faceta (E entre facetas, OU dentro de uma faceta) com a contagem de imagens de cada valor. */
+        function semanticFilters() {
+            const active = Object.values(ui.sem).reduce((n, set) => n + set.size, 0) + (ui.annotated ? 1 : 0);
+            const det = h('details', { class: 'hub-sem-filter', 'data-hub': 'semantic-filters' }, h('summary', { text: 'Filtrar por semântica' + (active ? ' (' + active + ' ativo' + (active > 1 ? 's' : '') + ')' : '') }));
+            if (active || ui.filtersOpen)
+                det.setAttribute('open', '');
+            det.addEventListener('toggle', () => { ui.filtersOpen = det.open; });
+            const vocab = ui.vocab;
+            if (!vocab) {
+                det.append(h('p', { class: 'muted', text: 'Vocabulário semântico indisponível neste Hub.' }));
+                return det;
+            }
+            const ann = h('select', { 'aria-label': 'Anotação semântica', 'data-sem-filter': 'annotated' }, h('option', { value: '', text: 'Com ou sem anotação' }), h('option', { value: 'no', text: 'Só sem anotação' }), h('option', { value: 'yes', text: 'Só anotadas' }));
+            ann.value = ui.annotated;
+            ann.addEventListener('change', () => { ui.annotated = ann.value; ui.multi.clear(); refresh(); });
+            det.append(ann);
+            for (const g of SEM_GROUPS) {
+                const def = g.multi ? vocab.multi[g.key] : vocab.single[g.key];
+                if (!def)
+                    continue;
+                const count = (v) => ui.facets.find(f => f.facet === def.tag && f.value === v)?.assets ?? 0;
+                const row = h('div', { class: 'hub-sem-opts' });
+                for (const v of def.values) {
+                    const on = ui.sem[g.key]?.has(v) ?? false;
+                    const b = h('button', { type: 'button', class: 'btn ghost hub-sem-opt' + (on ? ' is-on' : ''), 'aria-pressed': String(on), 'data-sem-filter': g.key, 'data-value': v, text: semLabel(g.key, v) + ' (' + count(v) + ')' });
+                    b.addEventListener('click', () => {
+                        const set = ui.sem[g.key] ?? (ui.sem[g.key] = new Set());
+                        if (set.has(v))
+                            set.delete(v);
+                        else
+                            set.add(v);
+                        ui.multi.clear();
+                        refresh();
+                    });
+                    row.append(b);
+                }
+                det.append(h('div', { class: 'hub-sem-group', role: 'group', 'aria-label': 'Filtro: ' + g.title }, h('span', { class: 'hub-sem-title', text: g.title }), row));
+            }
+            if (active) {
+                const clear = h('button', { type: 'button', class: 'btn ghost', 'data-hub': 'semantic-filters-clear', text: 'Limpar filtros semânticos' });
+                clear.addEventListener('click', () => { ui.sem = {}; ui.annotated = ''; ui.multi.clear(); refresh(); });
+                det.append(clear);
+            }
+            return det;
+        }
+        /** Barra de seleção: modo seleção (teclado/toque), selecionar a página, limpar. */
+        function selectionBar() {
+            const mode = h('input', { type: 'checkbox', 'data-hub': 'select-mode', 'aria-label': 'Modo seleção: clicar marca várias imagens' });
+            mode.checked = ui.selectMode;
+            mode.addEventListener('change', () => { ui.selectMode = mode.checked; if (ui.selectMode)
+                ui.selected = null; render(); });
+            const all = h('button', { type: 'button', class: 'btn ghost', 'data-hub': 'select-page', text: 'Selecionar esta página' });
+            all.addEventListener('click', () => { ui.selectMode = true; ui.selected = null; for (const i of ui.items)
+                ui.multi.add(String(i['id'])); render(); });
+            const none = h('button', { type: 'button', class: 'btn ghost', 'data-hub': 'select-none', text: 'Limpar seleção' });
+            none.addEventListener('click', () => { ui.multi.clear(); render(); });
+            return h('div', { class: 'hub-selbar' }, h('label', { class: 'muted' }, mode, ' modo seleção (Ctrl/Shift+clique também)'), all, none, h('span', { class: 'muted', role: 'status', 'aria-live': 'polite', 'data-hub': 'select-count', text: ui.multi.size ? ui.multi.size + ' selecionada(s)' : '' }));
+        }
+        /** Campos "não alterar" por padrão (vocabulário do Hub): usado no lote e no cartão do editor de imagem. `patch()` devolve só o que foi tocado. */
+        function draftFields(vocab) {
+            const container = h('div', { class: 'hub-draft' });
+            const fields = [];
+            for (const g of SEM_GROUPS) {
+                const def = g.multi ? vocab.multi[g.key] : vocab.single[g.key];
+                if (!def)
+                    continue;
+                if (g.multi) {
+                    const wrap = h('fieldset', { class: 'hub-sem-group' }, h('legend', { class: 'hub-sem-title', text: g.title + ' (substitui as funções atuais)' }));
+                    const boxes = def.values.map(v => { const c = h('input', { type: 'checkbox', value: v, 'data-batch': g.key }); wrap.append(h('label', { class: 'hub-sem-check' }, c, ' ' + semLabel(g.key, v))); return c; });
+                    container.append(wrap);
+                    fields.push(() => boxes.some(c => c.checked) ? [g.key, boxes.filter(c => c.checked).map(c => c.value)] : null);
+                    continue;
+                }
+                const sel = h('select', { 'aria-label': g.title, 'data-batch': g.key }, h('option', { value: '', text: 'não alterar' }), h('option', { value: '__clear__', text: '(limpar)' }));
+                for (const v of def.values)
+                    sel.append(h('option', { value: v, text: semLabel(g.key, v) }));
+                container.append(h('label', { class: 'hub-sem-group' }, h('span', { class: 'hub-sem-title', text: g.title }), sel));
+                fields.push(() => sel.value === '' ? null : [g.key, sel.value === '__clear__' ? null : sel.value]);
+            }
+            const deg = h('input', { type: 'number', min: '0', max: '359', step: '1', placeholder: 'não alterar', 'aria-label': 'Direção do corpo em graus', 'data-batch': 'facingDegrees' });
+            const chars = h('input', { type: 'number', min: '0', max: '8', step: '1', placeholder: 'não alterar', 'aria-label': 'Quantidade de personagens', 'data-batch': 'characters' });
+            container.append(h('label', { class: 'hub-sem-group' }, h('span', { class: 'hub-sem-title', text: 'Direção do corpo (graus)' }), deg), h('label', { class: 'hub-sem-group' }, h('span', { class: 'hub-sem-title', text: 'Personagens' }), chars));
+            fields.push(() => deg.value.trim() === '' ? null : ['facingDegrees', Number(deg.value)], () => chars.value.trim() === '' ? null : ['characters', Number(chars.value)]);
+            return { el: container, patch: () => { const out = {}; for (const f of fields) {
+                    const kv = f();
+                    if (kv)
+                        out[kv[0]] = kv[1];
+                } return out; } };
+        }
+        /** Anotação em lote: só o que a pessoa tocar é enviado (mescla); "(limpar)" remove o campo; tudo-ou-nada no Hub. */
+        function batchPanel() {
+            const ids = [...ui.multi];
+            const box = h('div', { class: 'hub-sem hub-batch', 'data-hub': 'semantic-batch' }, h('strong', { text: 'Anotar ' + ids.length + ' imagem(ns) de uma vez' }));
+            const vocab = ui.vocab;
+            if (!vocab || !conn || !conn.scopes.includes('write')) {
+                box.append(h('p', { class: 'muted', text: !vocab ? 'Vocabulário semântico indisponível.' : 'Este token só lê: peça um token com escopo de escrita.' }));
+                return box;
+            }
+            box.append(h('p', { class: 'muted', text: 'Campos em "não alterar" ficam como estão em cada imagem.' }));
+            const draft = draftFields(vocab);
+            box.append(draft.el);
+            const go = h('button', { type: 'button', class: 'btn', 'data-hub': 'semantic-batch-apply', text: 'Aplicar a ' + ids.length });
+            const out = h('span', { class: 'muted', role: 'status', 'aria-live': 'polite', 'data-hub': 'semantic-batch-result' });
+            go.addEventListener('click', async () => {
+                const patch = draft.patch();
+                if (!Object.keys(patch).length) {
+                    out.textContent = 'Escolha ao menos um campo para alterar.';
+                    return;
+                }
+                if (ids.length > 5 && dialogs) {
+                    const ok = await dialogs.confirm({ title: 'Anotar em lote', message: 'Aplicar ' + Object.keys(patch).length + ' campo(s) a ' + ids.length + ' imagens? Isso não tem Desfazer no Hub.', confirmText: 'Aplicar' });
+                    if (!ok)
+                        return;
+                }
+                go.setAttribute('disabled', '');
+                out.textContent = 'Aplicando…';
+                try {
+                    const r = await call('semantic_set_many', { ids, ...patch });
+                    dialogs?.toast(r.updated + ' imagem(ns) anotada(s)', 'ok');
+                    await refresh();
+                }
+                catch (e) {
+                    out.textContent = 'Nada foi alterado: ' + (e instanceof Error ? e.message : String(e));
+                    go.removeAttribute('disabled');
+                }
+            });
+            box.append(h('div', { class: 'nav-actions' }, go), out);
+            /* copiar as anotações de uma imagem para as selecionadas (substitui as anteriores) */
+            const src = h('select', { 'aria-label': 'Copiar anotações de', 'data-hub': 'semantic-copy-source' }, h('option', { value: '', text: 'Copiar anotações de…' }));
+            for (const i of ui.items.filter(x => !ui.multi.has(String(x['id']))))
+                src.append(h('option', { value: String(i['id']), text: String(i['title'] || i['filename'] || i['id']) }));
+            const copy = h('button', { type: 'button', class: 'btn ghost', 'data-hub': 'semantic-copy', text: 'Copiar para as selecionadas' });
+            copy.addEventListener('click', async () => {
+                if (!src.value) {
+                    out.textContent = 'Escolha a imagem de origem.';
+                    return;
+                }
+                try {
+                    const g = await semanticGet(src.value);
+                    if (!g.semantic) {
+                        out.textContent = 'A imagem de origem não tem anotações.';
+                        return;
+                    }
+                    const { v: _v, updatedAt: _u, ...fields } = g.semantic;
+                    if (dialogs && !(await dialogs.confirm({ title: 'Copiar anotações', message: 'Substituir as anotações de ' + ids.length + ' imagem(ns) pelas da imagem escolhida?', confirmText: 'Copiar' })))
+                        return;
+                    const r = await call('semantic_set_many', { ids, ...fields, origin: 'manual', replace: true });
+                    dialogs?.toast(r.updated + ' imagem(ns) atualizada(s)', 'ok');
+                    await refresh();
+                }
+                catch (e) {
+                    out.textContent = 'Nada foi alterado: ' + (e instanceof Error ? e.message : String(e));
+                }
+            });
+            box.append(h('div', { class: 'nav-actions' }, src, copy));
+            return box;
+        }
         function card(item) {
             const id = String(item['id']);
             const img = h('img', { alt: String(item['title'] || item['filename'] || id), loading: 'lazy', width: '96', height: '96' });
             objectUrl(id, 'thumb').then(u => { img.src = u; }).catch(() => { img.alt = 'miniatura indisponível'; });
-            const b = h('button', { type: 'button', class: 'hub-card' + (ui.selected === id ? ' is-selected' : ''), 'data-hub-id': id,
-                title: String(item['title'] || item['filename'] || id), 'aria-pressed': String(ui.selected === id) }, img, h('span', { class: 'hub-card-name', text: String(item['title'] || item['filename'] || id) }));
-            b.addEventListener('click', () => { ui.selected = ui.selected === id ? null : id; render(); });
+            const multi = ui.multi.has(id);
+            const b = h('button', { type: 'button', class: 'hub-card' + (ui.selected === id ? ' is-selected' : '') + (multi ? ' is-multi' : ''), 'data-hub-id': id,
+                title: String(item['title'] || item['filename'] || id), 'aria-pressed': String(ui.selected === id || multi) }, img, h('span', { class: 'hub-card-name', text: String(item['title'] || item['filename'] || id) }), h('span', { class: 'hub-card-badges' }, ...semBadgeNodes(item['tags'] || [])));
+            b.addEventListener('click', ev => {
+                const idx = ui.items.findIndex(i => i['id'] === id);
+                if (ev.shiftKey && ui.lastIndex >= 0) { // intervalo desde o último clique
+                    const [lo, hi] = [Math.min(ui.lastIndex, idx), Math.max(ui.lastIndex, idx)];
+                    for (let n = lo; n <= hi; n++)
+                        ui.multi.add(String(ui.items[n]['id']));
+                }
+                else if (ev.ctrlKey || ev.metaKey || ui.selectMode) {
+                    if (ui.multi.has(id))
+                        ui.multi.delete(id);
+                    else
+                        ui.multi.add(id);
+                }
+                else {
+                    ui.selected = ui.selected === id ? null : id;
+                    ui.multi.clear();
+                }
+                ui.lastIndex = idx;
+                render();
+            });
             return b;
         }
         function detail(item) {
             const id = String(item['id']);
             const tags = item['tags'] || [];
             const chips = h('div', { class: 'hub-chips' });
-            for (const t of tags) {
+            for (const t of tags.filter(x => !x.startsWith('sem.'))) {
                 const x = h('button', { type: 'button', class: 'btn ghost', 'aria-label': 'Remover tag ' + t, text: t + ' ×' });
                 x.addEventListener('click', () => { call('tag_remove', { ids: [id], tags: [t] }).then(refresh).catch(e => say(String(e.message))); });
                 chips.append(x);
@@ -408,7 +853,7 @@ definePlugin({
                 call('remove', { ids: [id], force: true }).then(() => { ui.selected = null; return refresh(); }).catch(e => say(String(e.message)));
             });
             const dims = item['width'] ? item['width'] + '×' + item['height'] + ' · ' : '';
-            return h('div', { class: 'hub-detail' }, h('strong', { text: String(item['title'] || item['filename']) }), h('span', { class: 'muted', text: dims + String(item['mime']) + ' · ' + Math.round(Number(item['bytes']) / 1024) + ' KB · ' + String(item['folderPath']) }), chips, tagIn, h('div', { class: 'nav-actions' }, use, del), assetPromptsBlock(id, String(item['filename'])));
+            return h('div', { class: 'hub-detail' }, h('strong', { text: String(item['title'] || item['filename']) }), h('span', { class: 'muted', text: dims + String(item['mime']) + ' · ' + Math.round(Number(item['bytes']) / 1024) + ' KB · ' + String(item['folderPath']) }), semanticBlock(id, typeof item['version'] === 'number' ? item['version'] : null), chips, tagIn, h('div', { class: 'nav-actions' }, use, del), assetPromptsBlock(id, String(item['filename'])));
         }
         /* ------------------ sincronização (Google Drive / espelho Git) ------------------ */
         const syncUi = { open: false, status: null, msg: '', run: null, timer: 0, conflicts: [], queued: 0 };
@@ -885,7 +1330,7 @@ definePlugin({
                 refresh();
             } });
             const tagSel = h('select', { 'aria-label': 'Filtrar por tag' }, h('option', { value: '', text: 'Todas as tags' }));
-            for (const t of ui.tags)
+            for (const t of ui.tags.filter(x => !x.tag.startsWith('sem.')))
                 tagSel.append(h('option', { value: t.tag, text: t.tag + ' (' + t.assets + ')' }));
             tagSel.value = ui.tag;
             tagSel.addEventListener('change', () => { ui.tag = tagSel.value; refresh(); });
@@ -905,6 +1350,10 @@ definePlugin({
                 })().catch(e => say(String(e.message)));
             });
             const up = h('button', { type: 'button', class: 'btn', 'data-hub': 'upload', text: 'Enviar imagens…' });
+            if (!conn || !conn.scopes.includes('write')) {
+                up.setAttribute('disabled', '');
+                up.setAttribute('title', 'Este token só lê: use um token com escopo de escrita para enviar imagens.');
+            }
             up.addEventListener('click', () => file.click());
             const scan = h('button', { type: 'button', class: 'btn', 'data-hub': 'scan', text: 'Varrer pasta de imagens' });
             scan.addEventListener('click', () => {
@@ -930,7 +1379,7 @@ definePlugin({
             if (!ui.items.length && !ui.busy)
                 grid.append(h('p', { class: 'muted', text: 'Nenhuma imagem encontrada.' }));
             const sel = ui.items.find(i => i['id'] === ui.selected);
-            body.append(h('div', { class: 'hub-bar' }, search, tagSel, folderSel), h('div', { class: 'hub-count muted', text: (ui.busy ? 'Carregando… ' : '') + ui.total + ' imagem(ns) · ' + (conn.client || 'cliente') + ' @ ' + conn.url }), h('div', { class: 'nav-actions' }, scan, up), h('div', { class: 'nav-actions' }, lib, out), pendingLabel, file, grid, ...(sel ? [detail(sel)] : []), promptsSection(), syncSection());
+            body.append(h('div', { class: 'hub-bar' }, search, tagSel, folderSel), h('div', { class: 'hub-count muted', text: (ui.busy ? 'Carregando… ' : '') + ui.total + ' imagem(ns) · ' + (conn.client || 'cliente') + ' @ ' + conn.url }), h('div', { class: 'nav-actions' }, scan, up), h('div', { class: 'nav-actions' }, lib, out), pendingLabel, semanticFilters(), selectionBar(), ...(ui.multi.size ? [batchPanel()] : []), file, grid, ...(sel && !ui.multi.size ? [detail(sel)] : []), promptsSection(), syncSection());
         }
         if (popup) {
             new MutationObserver(() => { if (!popup.hidden) {
@@ -947,6 +1396,7 @@ definePlugin({
         kernel.provide('assetHub', {
             connect, disconnect, isConnected: () => !!conn, getStatus: status, request: (path, init = {}) => http(path, init), call, blob, objectUrl, upload, place, importLibrary, pairFromLocation,
             deposit, flushDeposits, depositPending, autoDeposit, setAutoDeposit,
+            semanticVocabulary, semanticGet, semanticSet, semanticClear, semanticFacets, semanticDraftForm,
             onChange: (fn) => { listeners.add(fn); return () => { listeners.delete(fn); }; }
         });
     }

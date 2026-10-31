@@ -288,16 +288,20 @@ definePlugin({
             renderSide();
         }
         const baseName = (id) => (S.assets.find(a => a.id === id)?.name ?? 'folha').replace(/\.svg$/i, '');
-        async function toCatalog(ids, cell) {
+        /** `annotate`: junta ao arquivo as anotações semânticas derivadas do modelo da célula (nunca a pose). Sem escopo de escrita, o envio segue sem anotação. */
+        async function toCatalog(ids, cell, annotate = false) {
             const hub = await kernel.require('assetHub');
-            let sent = 0;
+            let sent = 0, annotated = 0;
             for (const id of ids) {
                 const name = S.assets.find(a => a.id === id)?.name ?? 'folha.svg';
                 const text = cell === undefined ? await SB.exportSvg(id) : await SB.exportCellSvg(id, cell);
-                await hub.upload(new File([text], cell === undefined ? name : name.replace(/\.svg$/i, '') + '_CELL_' + String(cell + 1).padStart(2, '0') + '.svg', { type: 'image/svg+xml' }), { tags: ['origem:scene-blocking', 'tipo:storyboard'] });
+                const semantic = annotate && cell !== undefined ? SB.cellSemantics(id, cell)[0]?.semantic : undefined;
+                const res = await hub.upload(new File([text], cell === undefined ? name : name.replace(/\.svg$/i, '') + '_CELL_' + String(cell + 1).padStart(2, '0') + '.svg', { type: 'image/svg+xml' }), { tags: ['origem:scene-blocking', 'tipo:storyboard'], ...(semantic ? { semantic } : {}) });
                 sent++;
+                if (res && res.semanticApplied)
+                    annotated++;
             }
-            toast(sent + (sent === 1 ? ' arquivo enviado' : ' arquivos enviados') + ' ao catálogo.', 'ok');
+            toast(sent + (sent === 1 ? ' arquivo enviado' : ' arquivos enviados') + ' ao catálogo' + (annotate ? ' (' + annotated + ' com anotações semânticas)' : '') + '.', 'ok');
         }
         function renderRight() {
             if (!right)
@@ -347,8 +351,10 @@ definePlugin({
             const zipAll = btn('⬇ ZIP de todas as folhas', 'Um ZIP com um SVG por folha (SPRITESHEET_nn.svg)', () => { void run('zip', async () => { download('scene-blocking.zip', await SB.exportZip(all.map(s => s.id), { format: 'svg' }), 'application/zip'); }); });
             const zipCells = btn('⬇ ZIP das 9 células', 'Um SVG por célula desta folha', () => { void run('zip', async () => { download(baseName(selected) + '_celulas.zip', await SB.exportZip([selected], { format: 'svg', cells: true }), 'application/zip'); }); });
             const cloud = btn('☁ Enviar ao catálogo', 'Envia o SVG da folha ao Asset Hub, sem apagar nada', () => { void run('catálogo', async () => { await toCatalog([selected]); }); });
-            zipAll.disabled = zipCells.disabled = cloud.disabled = dis;
-            row3.append(zipAll, zipCells, cloud);
+            const cloudCells = btn('☁ Catalogar as 9 células com anotações', 'Envia cada célula como SVG ao catálogo com assunto, nº de manequins, elevação, distância e enquadramento já preenchidos (a pose fica em branco: o gerador não a define)', () => { void run('catálogo', async () => { for (let k = 0; k < 9; k++)
+                await toCatalog([selected], k, true); }); });
+            zipAll.disabled = zipCells.disabled = cloud.disabled = cloudCells.disabled = dis;
+            row3.append(zipAll, zipCells, cloud, cloudCells);
             box.appendChild(row3);
             if (cellSel === null)
                 box.appendChild(el('p', 'vbie-note', 'Clique numa célula da folha para ver os detalhes, regenerar partes e bloquear.'));
@@ -403,8 +409,9 @@ definePlugin({
             const ex = el('div', 'vbie-actions');
             const s = btn('⬇ Célula SVG', 'SVG 600×600 desta célula', () => { void run('svg', async () => { download(baseName(selected) + '_CELL_' + String(i + 1).padStart(2, '0') + '.svg', await SB.exportCellSvg(selected, i), 'image/svg+xml'); }); });
             const p = btn('⬇ Célula PNG', 'PNG 600×600 desta célula', () => { void run('png', async () => { download(baseName(selected) + '_CELL_' + String(i + 1).padStart(2, '0') + '.png', await SB.exportPng(selected, { cell: i, scale: 1 }), 'image/png'); }); });
-            s.disabled = p.disabled = dis;
-            ex.append(s, p);
+            const cc = btn('☁ Catalogar célula com anotações', 'Envia esta célula ao catálogo já anotada (elevação, distância, enquadramento, manequins; direção do corpo se houver um só). A pose não é preenchida.', () => { void run('catálogo', async () => { await toCatalog([selected], i, true); }); });
+            s.disabled = p.disabled = cc.disabled = dis;
+            ex.append(s, p, cc);
             box.appendChild(ex);
             const ed = btn('✎ Editar célula', 'Abre o editor: arrastar manequins e câmera, inspetor numérico e camadas', () => { editing = i; sel = null; hidden.clear(); renderStage(); renderRight(); }, 'btn primary');
             ed.disabled = dis || c.locked;
