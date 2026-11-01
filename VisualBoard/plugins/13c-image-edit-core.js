@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEditCore'],
     uses: [],
     accepts: {},
-    contractVersions: { imageEditCore: '1.0.0' },
+    contractVersions: { imageEditCore: '1.1.0' },
     setup: function (kernel) {
         /* ------------------------------ cor (Lab) ------------------------------ */
         const LIN = new Float32Array(256);
@@ -549,8 +549,127 @@ definePlugin({
                 overlay[i] = labels[i] && chosen.has(labels[i]) ? 3 : shape[i] ? 2 : m1[i] ? 1 : 0;
             return { objects: result, modeUsed, leak, suggestBehind, interiorRatio, contourPixels, overlay };
         }
+        /* ------------------------------ trocar cores ------------------------------ */
+        /** Cor média do bin mais frequente (4 bits por canal) entre os pixels aceitos por `keep`. */
+        function topColor(rgba, n, keep) {
+            const bins = new Map();
+            for (let i = 0; i < n; i++) {
+                if (!keep(i))
+                    continue;
+                const o = i * 4, k = ((rgba[o] >> 4) << 8) | ((rgba[o + 1] >> 4) << 4) | (rgba[o + 2] >> 4);
+                let e = bins.get(k);
+                if (!e) {
+                    e = { n: 0, r: 0, g: 0, b: 0 };
+                    bins.set(k, e);
+                }
+                e.n++;
+                e.r += rgba[o];
+                e.g += rgba[o + 1];
+                e.b += rgba[o + 2];
+            }
+            let best = null;
+            for (const e of bins.values())
+                if (!best || e.n > best.n)
+                    best = e;
+            return best ? [Math.round(best.r / best.n), Math.round(best.g / best.n), Math.round(best.b / best.n)] : null;
+        }
+        /** Contorno = cor mais comum na borda da silhueta (ou a cor escura dominante, se não há transparência); preenchimento = cor mais comum do resto. */
+        function detectRoles(rgba, w, h) {
+            const n = w * h, trans = new Uint8Array(n);
+            let tcount = 0;
+            for (let i = 0; i < n; i++)
+                if (rgba[i * 4 + 3] < 128) {
+                    trans[i] = 1;
+                    tcount++;
+                }
+            const hasAlpha = tcount > n * 0.002;
+            let outline = null, bgc = null;
+            if (hasAlpha) {
+                const near = dilate(trans, w, h, 2);
+                outline = topColor(rgba, n, i => !trans[i] && !!near[i]);
+            }
+            else {
+                const dom = dominantColors(rgba, w, h, 12);
+                const lum = (c) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+                const dark = dom.filter(c => c.share >= 0.01).sort((a, b) => lum(a) - lum(b))[0];
+                if (dark && lum(dark) < 120)
+                    outline = [dark.r, dark.g, dark.b];
+                bgc = estimateBackground(rgba, w, h, 12).color;
+            }
+            const tOut = new Float64Array(3), tBg = new Float64Array(3), tmp = new Float64Array(3);
+            if (outline)
+                lab(outline[0], outline[1], outline[2], tOut);
+            if (bgc)
+                lab(bgc[0], bgc[1], bgc[2], tBg);
+            const fill = topColor(rgba, n, i => {
+                if (trans[i])
+                    return false;
+                if (outline && pixelDelta(rgba, i, tOut, tmp) <= 20)
+                    return false;
+                if (bgc && pixelDelta(rgba, i, tBg, tmp) <= 12)
+                    return false;
+                return true;
+            });
+            return { outline, fill, hasAlpha };
+        }
+        /** Troca cores sem mexer na transparência. A cor mais próxima (ΔE) de cada pixel decide o par; bordas suavizadas recebem peso parcial. */
+        function recolor(rgba, w, h, p) {
+            const n = w * h, out = new Uint8ClampedArray(rgba);
+            let changed = 0;
+            let roles = null;
+            if (p.mode === 'uniform') {
+                const c = p.color ?? [0, 0, 0];
+                for (let i = 0; i < n; i++) {
+                    const o = i * 4;
+                    if (!rgba[o + 3])
+                        continue;
+                    out[o] = c[0];
+                    out[o + 1] = c[1];
+                    out[o + 2] = c[2];
+                    changed++;
+                }
+                return { out, changedShare: n ? changed / n : 0, roles };
+            }
+            let pairs = p.pairs;
+            if (p.mode === 'roles') {
+                roles = detectRoles(rgba, w, h);
+                pairs = [];
+                if (roles.outline && p.outlineTo)
+                    pairs.push({ from: roles.outline, to: p.outlineTo });
+                if (roles.fill && p.fillTo)
+                    pairs.push({ from: roles.fill, to: p.fillTo });
+            }
+            if (!pairs.length)
+                return { out, changedShare: 0, roles };
+            const labs = pairs.map(pr => { const t = new Float64Array(3); lab(pr.from[0], pr.from[1], pr.from[2], t); return t; });
+            const tol = Math.max(1, p.tolerance), tmp = new Float64Array(3), soft = 1.6;
+            for (let i = 0; i < n; i++) {
+                const o = i * 4;
+                if (!rgba[o + 3])
+                    continue;
+                lab(rgba[o], rgba[o + 1], rgba[o + 2], tmp);
+                let best = -1, bd = Infinity;
+                for (let k = 0; k < labs.length; k++) {
+                    const t = labs[k], d = Math.hypot(tmp[0] - t[0], tmp[1] - t[1], tmp[2] - t[2]);
+                    if (d < bd) {
+                        bd = d;
+                        best = k;
+                    }
+                }
+                const ratio = bd / tol;
+                if (ratio >= soft)
+                    continue;
+                const wgt = ratio <= 1 ? 1 : (soft - ratio) / (soft - 1), pr = pairs[best];
+                for (let c = 0; c < 3; c++) {
+                    const target = p.keepShading ? clampByte(pr.to[c] + (rgba[o + c] - pr.from[c])) : pr.to[c];
+                    out[o + c] = clampByte(rgba[o + c] * (1 - wgt) + target * wgt);
+                }
+                changed++;
+            }
+            return { out, changedShare: n ? changed / n : 0, roles };
+        }
         kernel.provide('imageEditCore', {
-            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, dominantColors, estimateBackground, cutByContour, removeBackground,
+            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
             /* usado só pela operação de ativos (alfa suave por objeto) */
             boxAlpha
         });

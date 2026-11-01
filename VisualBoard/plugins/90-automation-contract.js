@@ -18,7 +18,7 @@ definePlugin({
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.20.0';
+        const CONTRACT_VERSION = '1.21.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -427,6 +427,11 @@ definePlugin({
             mode: en(['auto', 'single', 'behind']), seeds: arr(obj({ x: int(0, 100000), y: int(0, 100000) }, ['x', 'y']), 50), minArea: int(1, 1000000),
             grow: int(-50, 50), feather: int(0, 10), padding: int(0, 200), pieces: piecesS() }, ['assetId', 'color']), comp('image_edit.cut_by_contour', ['imageEdit.apply']), true);
         T('image_edit', 'crop', W, 'Crop image', 'Rectangular crop in source pixels saved as a derived asset.', obj({ assetId: id('asset id'), x: int(0, 100000), y: int(0, 100000), width: int(1, 100000), height: int(1, 100000) }, ['assetId', 'width', 'height']), comp('image_edit.crop', ['imageEdit.apply']), true);
+        T('image_edit', 'recolor', W, 'Change colors', 'Recolors an image and saves a derived asset (transparency and soft edges are kept; the source is never changed). mode roles = detect outline and fill automatically and set outlineTo / fillTo (diagnostics.outlineFrom/fillFrom report what was found); replace = explicit pairs [{from,to}] (use image_edit.inspect_colors to pick "from"); uniform = every non-transparent pixel becomes "color" (outline and fill identical). Check warnings in the result.', obj({ assetId: id('asset id'), mode: en(['replace', 'roles', 'uniform']), pairs: arr(obj({ from: rgbS('original color'), to: rgbS('new color') }, ['from', 'to']), 16), color: rgbS('uniform: the single color'),
+            outlineTo: rgbS('roles: new outline color'), fillTo: rgbS('roles: new fill color'), tolerance: num(1, 80, 'color distance (Lab ΔE) counted as the same color'), keepShading: bool('keep light/dark variation (default true)') }, ['assetId']), comp('image_edit.recolor', ['imageEdit.apply']), true);
+        T('image_edit', 'compose', W, 'Combine images into one', 'Places several library images on one clean canvas and saves a single derived asset (<first>_montagem). arrange row|column|grid lays them out automatically (gap, margin, columns); none uses each layer x/y. The canvas is fitted to the set when width/height are 0. Up to 40 layers, 16 megapixels. background omitted = transparent.', obj({ layers: arr(obj({ assetId: id('asset id'), x: num(-100000, 100000), y: num(-100000, 100000), scale: num(0.01, 50), width: int(1, 16000), height: int(1, 16000),
+                rotation: num(-360, 360), flipH: bool(), flipV: bool(), opacity: num(0, 1) }, ['assetId']), 40), width: int(0, 16000, '0 = fit to the images'), height: int(0, 16000, '0 = fit to the images'),
+            background: rgbS('canvas color; transparent when omitted'), arrange: en(['none', 'row', 'column', 'grid']), gap: int(0, 2000), margin: int(0, 2000), columns: int(0, 40) }, ['layers']), comp('image_edit.compose', ['imageEdit.apply']), true);
         T('image_edit', 'open', W, 'Open image editor', 'Opens the image editor window in VisualBoard, optionally on an asset.', obj({ assetId: id('asset id') }), call('ui.imageEditor', 'open', ['assetId'], 'done'));
         /* ===== scene blocking (folhas 3×3 de cenas vistas de cima, SVG editável) ===== */
         const sbId = () => id('scene sheet asset id from scene_blocking.list');
@@ -680,6 +685,7 @@ definePlugin({
             excl('imageEdit.commit', 'Depende de uma prévia com canvases em memória; as ferramentas usam imageEdit.apply.'),
             excl('imageEdit.release', 'Libera prévias em memória; sem equivalente na automação.'),
             excl('ui.imageEditor.close', 'Fechamento da janela feito pelo usuário.'),
+            excl('ui.imageEditor.compose', 'Interface; a automação usa image_edit.compose (sem janela).'),
             excl('ui.imageEditor.isOpen', 'Estado de interface sem valor para a automação.'),
             excl('ui.imageOperations', 'Diálogo de operações de imagem; automação usa image.apply_command.'),
             excl('debug', 'Painel de depuração.'),

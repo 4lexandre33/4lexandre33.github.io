@@ -3471,6 +3471,16 @@ input[type=search], input[type=text], input[type=number], select { background:#2
 .vbie-check{display:flex;align-items:center;gap:6px;font-size:12px;}
 .vbie-colorrow,.vbie-palette,.vbie-others,.vbie-presets,.vbie-actions{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
 .vbie-swatch{width:22px;height:22px;padding:0;border:1px solid var(--line);border-radius:4px;cursor:pointer;color:var(--muted);font-size:10px;}
+.vbie-recent{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--border,#3333);}
+.vbie-recent .btn{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;padding:2px 6px;}
+.vbie-newcolor{display:flex;flex-direction:column;gap:4px;align-items:flex-start;}
+.vbie-newcolor input[type=color]{width:44px;height:26px;padding:0;border:1px solid var(--line);border-radius:4px;background:none;}
+.vbie-pair{display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding:4px 0;border-bottom:1px solid var(--line);}
+.vbie-pair input[type=color]{width:34px;height:24px;padding:0;}
+.vbie-layers{display:flex;flex-direction:column;gap:3px;}
+.vbie-layer{display:flex;gap:3px;align-items:center;padding:2px;border-radius:4px;}
+.vbie-layer.on{background:rgba(77,163,255,.18);}
+.vbie-layer>.btn:first-child{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .vbie-note{margin:0;font-size:11px;color:var(--muted);line-height:1.4;}
 .vbie-reshead{display:flex;align-items:center;justify-content:space-between;}
 .vbie-busy{font-size:11px;color:var(--muted);}

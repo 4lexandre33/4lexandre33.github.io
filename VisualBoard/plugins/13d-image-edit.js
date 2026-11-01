@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.0.0' },
+    contractVersions: { imageEdit: '1.1.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -42,6 +42,10 @@ definePlugin({
         const BG_KEYS = ['mode', 'color', 'tolerance', 'gradientStep', 'edgeSoft', 'trim', 'lineFloor'];
         const CONTOUR_KEYS = ['color', 'tolerance', 'close', 'others', 'mode', 'seeds', 'minArea', 'grow', 'feather', 'padding'];
         const CROP_KEYS = ['x', 'y', 'width', 'height'];
+        const RECOLOR_KEYS = ['mode', 'pairs', 'color', 'outlineTo', 'fillTo', 'tolerance', 'keepShading'];
+        const COMPOSE_KEYS = ['width', 'height', 'background', 'arrange', 'gap', 'margin', 'columns', 'layers'];
+        const LAYER_KEYS = ['assetId', 'x', 'y', 'scale', 'width', 'height', 'rotation', 'flipH', 'flipV', 'opacity'];
+        const MAX_LAYERS = 40;
         function oneOf(v, list, d, name) {
             if (v === undefined || v === null)
                 return d;
@@ -112,6 +116,70 @@ definePlugin({
                 fail('INVALID_ARGUMENT', 'O recorte sai da imagem (' + w + '×' + h + ')');
             return { x, y, width, height };
         }
+        function recolorParams(raw) {
+            if (!isObj(raw))
+                fail('INVALID_ARGUMENT', 'params deve ser um objeto');
+            known(raw, RECOLOR_KEYS, 'recolor');
+            const mode = oneOf(raw['mode'], ['replace', 'roles', 'uniform'], 'replace', 'mode');
+            const pairsRaw = raw['pairs'] === undefined ? [] : raw['pairs'];
+            if (!Array.isArray(pairsRaw) || pairsRaw.length > 16)
+                fail('INVALID_ARGUMENT', 'pairs deve ser uma lista de até 16 pares {from, to}');
+            const pairs = pairsRaw.map((q, i) => {
+                if (!isObj(q))
+                    fail('INVALID_ARGUMENT', 'pairs[' + i + '] deve ser {from, to}');
+                return { from: rgb(q['from'], 'pairs[' + i + '].from'), to: rgb(q['to'], 'pairs[' + i + '].to') };
+            });
+            const opt = (v, name) => v === undefined || v === null ? null : rgb(v, name);
+            const out = { mode, pairs, color: opt(raw['color'], 'color'), outlineTo: opt(raw['outlineTo'], 'outlineTo'), fillTo: opt(raw['fillTo'], 'fillTo'),
+                tolerance: num(raw['tolerance'], 22, 1, 80, 'tolerance'), keepShading: raw['keepShading'] !== false };
+            if (mode === 'replace' && !pairs.length)
+                fail('INVALID_ARGUMENT', 'Informe ao menos um par {from, to} em pairs');
+            if (mode === 'uniform' && !out.color)
+                fail('INVALID_ARGUMENT', 'color (a cor única) é obrigatória em mode "uniform"');
+            if (mode === 'roles' && !out.outlineTo && !out.fillTo)
+                fail('INVALID_ARGUMENT', 'Informe outlineTo e/ou fillTo em mode "roles"');
+            return out;
+        }
+        function composeParams(raw) {
+            if (!isObj(raw))
+                fail('INVALID_ARGUMENT', 'params deve ser um objeto com layers');
+            known(raw, COMPOSE_KEYS, 'compose');
+            const layersRaw = raw['layers'];
+            if (!Array.isArray(layersRaw) || !layersRaw.length)
+                fail('INVALID_ARGUMENT', 'layers deve ser uma lista com ao menos uma imagem');
+            if (layersRaw.length > MAX_LAYERS)
+                fail('INVALID_ARGUMENT', 'No máximo ' + MAX_LAYERS + ' imagens por montagem');
+            const layers = layersRaw.map((l, i) => {
+                if (!isObj(l))
+                    fail('INVALID_ARGUMENT', 'layers[' + i + '] deve ser um objeto');
+                known(l, LAYER_KEYS, 'layers[' + i + ']');
+                assetOf(l['assetId']);
+                const o = { assetId: l['assetId'] };
+                if (l['x'] !== undefined)
+                    o.x = num(l['x'], 0, -100000, 100000, 'layers[' + i + '].x');
+                if (l['y'] !== undefined)
+                    o.y = num(l['y'], 0, -100000, 100000, 'layers[' + i + '].y');
+                if (l['scale'] !== undefined)
+                    o.scale = num(l['scale'], 1, 0.01, 50, 'layers[' + i + '].scale');
+                if (l['width'] !== undefined)
+                    o.width = num(l['width'], 1, 1, 16000, 'layers[' + i + '].width');
+                if (l['height'] !== undefined)
+                    o.height = num(l['height'], 1, 1, 16000, 'layers[' + i + '].height');
+                if (l['rotation'] !== undefined)
+                    o.rotation = num(l['rotation'], 0, -360, 360, 'layers[' + i + '].rotation');
+                if (l['flipH'] !== undefined)
+                    o.flipH = l['flipH'] === true;
+                if (l['flipV'] !== undefined)
+                    o.flipV = l['flipV'] === true;
+                if (l['opacity'] !== undefined)
+                    o.opacity = num(l['opacity'], 1, 0, 1, 'layers[' + i + '].opacity');
+                return o;
+            });
+            return { width: num(raw['width'], 0, 0, 16000, 'width', true), height: num(raw['height'], 0, 0, 16000, 'height', true),
+                background: raw['background'] === undefined || raw['background'] === null ? null : rgb(raw['background'], 'background'),
+                arrange: oneOf(raw['arrange'], ['none', 'row', 'column', 'grid'], 'none', 'arrange'),
+                gap: num(raw['gap'], 0, 0, 2000, 'gap', true), margin: num(raw['margin'], 0, 0, 2000, 'margin', true), columns: num(raw['columns'], 0, 0, 40, 'columns', true), layers };
+        }
         function defaults(op) {
             if (op === 'grid')
                 return { rows: 3, cols: 3, gap: 0, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, direction: 'ltr', trim: false };
@@ -119,6 +187,10 @@ definePlugin({
                 return { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false, lineFloor: 0.08 };
             if (op === 'cutByContour')
                 return { color: [0, 0, 0], tolerance: 25, close: 1, others: [], mode: 'auto', seeds: [], minArea: 64, grow: 0, feather: 0, padding: 2 };
+            if (op === 'recolor')
+                return { mode: 'replace', pairs: [], color: null, outlineTo: null, fillTo: null, tolerance: 22, keepShading: true };
+            if (op === 'compose')
+                return { width: 0, height: 0, background: null, arrange: 'row', gap: 0, margin: 0, columns: 0, layers: [] };
             return { x: 0, y: 0, width: 1, height: 1 };
         }
         /* ------------------------------ ativos ------------------------------ */
@@ -340,6 +412,131 @@ definePlugin({
         function runCrop(src, asset, p, res) {
             res.pieces.push({ name: baseName(asset) + '_recorte', x: p.x, y: p.y, width: p.width, height: p.height, canvas: cropOf(src, p.x, p.y, p.width, p.height), info: {} });
         }
+        function runRecolor(src, asset, p, res) {
+            const w = src.width, h = src.height, img = imageOf(src);
+            const r = core.recolor(img.data, w, h, p);
+            res.diagnostics.changedShare = Math.round(r.changedShare * 1000) / 1000;
+            if (r.roles) {
+                res.diagnostics.outlineFrom = r.roles.outline;
+                res.diagnostics.fillFrom = r.roles.fill;
+                res.diagnostics.hasAlpha = r.roles.hasAlpha;
+            }
+            if (p.mode === 'roles' && r.roles) {
+                if (p.outlineTo && !r.roles.outline)
+                    res.warnings.push('Não foi possível identificar a cor do contorno; use o modo de pares e escolha a cor com o conta-gotas');
+                if (p.fillTo && !r.roles.fill)
+                    res.warnings.push('Não foi possível identificar a cor do preenchimento; use o modo de pares e escolha a cor com o conta-gotas');
+                if (!r.roles.hasAlpha)
+                    res.warnings.push('A imagem não tem transparência: o contorno foi estimado pela cor escura dominante. Remova o fundo antes para um resultado mais preciso');
+            }
+            if (p.mode === 'uniform') {
+                let opaque = 0;
+                for (let i = 0; i < w * h; i++)
+                    if (img.data[i * 4 + 3] > 0)
+                        opaque++;
+                if (opaque > w * h * 0.995)
+                    res.warnings.push('A imagem não tem transparência, então tudo virou uma cor só. Remova o fundo antes se quiser pintar apenas o desenho');
+            }
+            else if (r.changedShare < 0.0005)
+                res.warnings.push('Quase nada foi alterado; aumente a tolerância ou escolha a cor com o conta-gotas');
+            res.pieces.push({ name: baseName(asset) + '_cor', x: 0, y: 0, width: w, height: h, canvas: canvasOf(r.out, w, h), info: { mode: p.mode } });
+        }
+        async function runCompose(p, res) {
+            const cache = new Map();
+            try {
+                for (const l of p.layers)
+                    if (!cache.has(l.assetId))
+                        cache.set(l.assetId, await loadCanvas(assetOf(l.assetId)));
+                const boxes = p.layers.map(l => {
+                    const c = cache.get(l.assetId);
+                    let w = c.width, h = c.height;
+                    if (l.width && l.height) {
+                        w = l.width;
+                        h = l.height;
+                    }
+                    else if (l.width) {
+                        h = Math.max(1, Math.round(c.height * l.width / c.width));
+                        w = l.width;
+                    }
+                    else if (l.height) {
+                        w = Math.max(1, Math.round(c.width * l.height / c.height));
+                        h = l.height;
+                    }
+                    else if (l.scale) {
+                        w = Math.max(1, Math.round(c.width * l.scale));
+                        h = Math.max(1, Math.round(c.height * l.scale));
+                    }
+                    return { c, l, w, h, x: l.x ?? 0, y: l.y ?? 0 };
+                });
+                if (p.arrange === 'row') {
+                    let x = 0;
+                    for (const b of boxes) {
+                        b.x += x;
+                        x += b.w + p.gap;
+                    }
+                }
+                else if (p.arrange === 'column') {
+                    let y = 0;
+                    for (const b of boxes) {
+                        b.y += y;
+                        y += b.h + p.gap;
+                    }
+                }
+                else if (p.arrange === 'grid') {
+                    const cols = p.columns || Math.ceil(Math.sqrt(boxes.length)), rows = Math.ceil(boxes.length / cols);
+                    const cw = Array(cols).fill(0), rh = Array(rows).fill(0);
+                    boxes.forEach((b, i) => { const c = i % cols, r = Math.floor(i / cols); cw[c] = Math.max(cw[c], b.w); rh[r] = Math.max(rh[r], b.h); });
+                    boxes.forEach((b, i) => {
+                        const c = i % cols, r = Math.floor(i / cols);
+                        const ox = cw.slice(0, c).reduce((s, v) => s + v + p.gap, 0), oy = rh.slice(0, r).reduce((s, v) => s + v + p.gap, 0);
+                        b.x += ox + (cw[c] - b.w) / 2;
+                        b.y += oy + (rh[r] - b.h) / 2;
+                    });
+                }
+                /* caixa que envolve todas as imagens (com rotação) */
+                let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+                for (const b of boxes) {
+                    const a = (b.l.rotation || 0) * Math.PI / 180, cs = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a));
+                    const bw = b.w * cs + b.h * sn, bh = b.w * sn + b.h * cs, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+                    x0 = Math.min(x0, cx - bw / 2);
+                    y0 = Math.min(y0, cy - bh / 2);
+                    x1 = Math.max(x1, cx + bw / 2);
+                    y1 = Math.max(y1, cy + bh / 2);
+                }
+                const fitW = Math.ceil(x1 - x0) + 2 * p.margin, fitH = Math.ceil(y1 - y0) + 2 * p.margin;
+                const W = p.width || fitW, H = p.height || fitH;
+                if (W * H > LIMITS.maxPixels)
+                    fail('IMAGE_TOO_LARGE', 'A montagem passa de 16 megapixels (' + W + '×' + H + ')');
+                const offX = p.width ? 0 : p.margin - x0, offY = p.height ? 0 : p.margin - y0;
+                const canvas = newCanvas(W, H), ctx = canvas.getContext('2d', { willReadFrequently: true });
+                if (p.background) {
+                    ctx.fillStyle = 'rgb(' + p.background.join(',') + ')';
+                    ctx.fillRect(0, 0, W, H);
+                }
+                ctx.imageSmoothingQuality = 'high';
+                for (const b of boxes) {
+                    ctx.save();
+                    ctx.globalAlpha = b.l.opacity ?? 1;
+                    ctx.translate(b.x + b.w / 2 + offX, b.y + b.h / 2 + offY);
+                    ctx.rotate((b.l.rotation || 0) * Math.PI / 180);
+                    ctx.scale(b.l.flipH ? -1 : 1, b.l.flipV ? -1 : 1);
+                    ctx.drawImage(b.c, -b.w / 2, -b.h / 2, b.w, b.h);
+                    ctx.restore();
+                }
+                res.diagnostics.cells = boxes.length;
+                res.diagnostics.layout = boxes.map(b => ({ x: Math.round(b.x + offX), y: Math.round(b.y + offY), width: b.w, height: b.h }));
+                res.width = W;
+                res.height = H;
+                const first = assetOf(p.layers[0].assetId);
+                res.pieces.push({ name: baseName(first) + '_montagem', x: 0, y: 0, width: W, height: H, canvas, info: { images: boxes.length, arrange: p.arrange } });
+            }
+            finally {
+                for (const c of cache.values()) {
+                    c.width = 0;
+                    c.height = 0;
+                }
+            }
+        }
         /** Valida os parâmetros sem tocar nos pixels (usa só as dimensões do ativo). */
         function plan(assetId, op, params) {
             const asset = assetOf(assetId), w = asset.originalWidth || 0, h = asset.originalHeight || 0;
@@ -358,11 +555,23 @@ definePlugin({
                 return contourParams(params, w, h);
             if (op === 'crop')
                 return cropParams(params, w, h);
+            if (op === 'recolor')
+                return recolorParams(params);
+            if (op === 'compose')
+                return composeParams(params);
             return fail('INVALID_ARGUMENT', 'Operação desconhecida: ' + String(op));
         }
         /** Calcula o resultado sem gravar nada (prévia). As telas dos resultados pertencem a quem chamou. */
         async function preview(assetId, op, params) {
-            const asset = assetOf(assetId), src = await loadCanvas(asset);
+            const asset = assetOf(assetId);
+            if (op === 'compose') {
+                const p = composeParams(params);
+                const res = { op, sourceAssetId: p.layers[0].assetId, width: 0, height: 0, pieces: [], diagnostics: {}, warnings: [], overlay: null };
+                await runCompose(p, res);
+                res.params = { ...p, layers: p.layers };
+                return res;
+            }
+            const src = await loadCanvas(asset);
             try {
                 const w = src.width, h = src.height, p = normalize(op, params, w, h);
                 const res = { op, sourceAssetId: asset.id, width: w, height: h, pieces: [], diagnostics: {}, warnings: [], overlay: null };
@@ -372,6 +581,8 @@ definePlugin({
                     runBackground(src, asset, p, res);
                 else if (op === 'cutByContour')
                     runContour(src, asset, p, res);
+                else if (op === 'recolor')
+                    runRecolor(src, asset, p, res);
                 else
                     runCrop(src, asset, p, res);
                 res.params = p;

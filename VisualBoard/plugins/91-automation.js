@@ -963,6 +963,11 @@ definePlugin({
             'image_edit.remove_background': (input) => imageEditApply(input, 'removeBackground'),
             'image_edit.cut_by_contour': (input) => imageEditApply(input, 'cutByContour'),
             'image_edit.crop': (input) => imageEditApply(input, 'crop'),
+            'image_edit.recolor': (input) => imageEditApply(input, 'recolor'),
+            'image_edit.compose': (input) => {
+                const first = Array.isArray(input['layers']) && input['layers'][0] && typeof input['layers'][0] === 'object' ? String(input['layers'][0]['assetId']) : '';
+                return imageEditApply({ ...input, assetId: first }, 'compose');
+            },
             'audio_edit.inspect_clip': async (input) => {
                 const A = await kernel.require('audioEdit');
                 return audioEditCall(() => A.analyze(String(input['videoId']), String(input['clipId']), typeof input['columns'] === 'number' ? input['columns'] : 120));

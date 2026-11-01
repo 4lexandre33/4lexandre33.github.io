@@ -8,13 +8,13 @@ definePlugin({
     provides: ['ui.imageEditor'],
     uses: ['assetHub', 'ui.sceneBlocking'],
     accepts: { imageEdit: '^1.0.0', imageCommands: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', assetHub: '^1.0.0', 'ui.sceneBlocking': '^1.0.0' },
-    contractVersions: { 'ui.imageEditor': '1.0.0' },
+    contractVersions: { 'ui.imageEditor': '1.1.0' },
     setup: async function (kernel) {
         const E = await kernel.require('imageEdit');
         const C = await kernel.require('imageCommands');
         const A = await kernel.require('assets');
         const S = (await kernel.require('state')).data;
-        const TABS = [['grid', '▦ Grade'], ['bg', '◌ Fundo'], ['contour', '✂ Contorno'], ['crop', '⛶ Recorte'], ['adjust', '🎚 Ajustes']];
+        const TABS = [['grid', '▦ Grade'], ['bg', '◌ Fundo'], ['contour', '✂ Contorno'], ['crop', '⛶ Recorte'], ['color', '🎨 Cor'], ['compose', '🧩 Montar'], ['adjust', '🎚 Ajustes']];
         const toast = (message, kind = 'error') => { kernel.emit('toast', { message, kind }); };
         function el(tag, cls, text) {
             const e = document.createElement(tag);
@@ -53,12 +53,19 @@ definePlugin({
         let resultsBox = null;
         let stageBox = null;
         let cropDrag = null;
+        let moveDrag = null;
+        let recent = []; // últimas imagens salvas (para continuar editando)
+        const rememberRecent = (ids) => { recent = [...ids.slice().reverse(), ...recent.filter(r => !ids.includes(r))].slice(0, 8); };
         const P = {
             grid: { rows: 3, cols: 3, gap: 0, margin: 0, direction: 'ltr', trim: false },
             bg: { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false },
             contour: { color: null, tolerance: 25, close: 1, others: [], mode: 'auto',
                 seeds: [], grow: 0, feather: 0, padding: 2 },
-            crop: { x: 0, y: 0, width: 1, height: 1 }
+            crop: { x: 0, y: 0, width: 1, height: 1 },
+            color: { mode: 'roles', outlineTo: null, fillTo: null, pairs: [],
+                color: [220, 30, 30], tolerance: 22, keepShading: true, pickIndex: 0 },
+            compose: { layers: [], arrange: 'row', gap: 0, margin: 0, columns: 0, width: 0, height: 0,
+                bg: 'transparent', bgColor: [255, 255, 255], selected: 0 }
         };
         function paramsOf(t) {
             if (t === 'grid') {
@@ -73,9 +80,21 @@ definePlugin({
                 const c = P.contour;
                 return { color: c.color ?? [0, 0, 0], tolerance: c.tolerance, close: c.close, others: c.others, mode: c.mode, seeds: c.seeds, grow: c.grow, feather: c.feather, padding: c.padding };
             }
+            if (t === 'color') {
+                const c = P.color;
+                if (c.mode === 'uniform')
+                    return { mode: 'uniform', color: c.color };
+                if (c.mode === 'pairs')
+                    return { mode: 'replace', pairs: c.pairs.filter(q => q.from).map(q => ({ from: q.from, to: q.to })), tolerance: c.tolerance, keepShading: c.keepShading };
+                return { mode: 'roles', ...(c.outlineTo ? { outlineTo: c.outlineTo } : {}), ...(c.fillTo ? { fillTo: c.fillTo } : {}), tolerance: c.tolerance, keepShading: c.keepShading };
+            }
+            if (t === 'compose') {
+                const c = P.compose;
+                return { width: c.width, height: c.height, background: c.bg === 'transparent' ? null : c.bg === 'white' ? [255, 255, 255] : c.bgColor, arrange: c.arrange, gap: c.gap, margin: c.margin, columns: c.columns, layers: c.layers };
+            }
             return { ...P.crop };
         }
-        const opOf = (t) => t === 'grid' ? 'grid' : t === 'bg' ? 'removeBackground' : t === 'contour' ? 'cutByContour' : 'crop';
+        const opOf = (t) => t === 'grid' ? 'grid' : t === 'bg' ? 'removeBackground' : t === 'contour' ? 'cutByContour' : t === 'color' ? 'recolor' : t === 'compose' ? 'compose' : 'crop';
         /* ---------------- carregar imagem ---------------- */
         const usable = () => S.assets.filter(a => A.blobs.has(a.id));
         async function loadSource(id) {
@@ -154,13 +173,37 @@ definePlugin({
                 drawStage();
                 return;
             }
+            if (tab === 'color') {
+                const c = P.color;
+                if (c.mode === 'roles' && !c.outlineTo && !c.fillTo) {
+                    clearResult();
+                    message = 'Escolha a nova cor do contorno e/ou do preenchimento.';
+                    renderResults();
+                    drawStage();
+                    return;
+                }
+                if (c.mode === 'pairs' && !c.pairs.some(q => q.from)) {
+                    clearResult();
+                    message = 'Adicione uma cor para trocar e escolha a cor original com o conta-gotas ou a paleta.';
+                    renderResults();
+                    drawStage();
+                    return;
+                }
+            }
+            if (tab === 'compose' && !P.compose.layers.length) {
+                clearResult();
+                message = 'Adicione imagens da biblioteca para montar.';
+                renderResults();
+                drawStage();
+                return;
+            }
             const mine = ++token;
             busy = true;
             message = '';
             renderResults();
             let res = null;
             try {
-                res = await E.preview(assetId, opOf(tab), paramsOf(tab));
+                res = await E.preview(tab === 'compose' ? P.compose.layers[0].assetId : assetId, opOf(tab), paramsOf(tab));
             }
             catch (e) {
                 if (mine === token) {
@@ -183,19 +226,25 @@ definePlugin({
             drawStage();
         }
         /* ---------------- palco ---------------- */
+        /** A montagem tem tela própria; nas outras abas o palco mostra a imagem aberta. */
+        function stageDims() {
+            if (tab === 'compose' && result?.pieces[0])
+                return { w: result.pieces[0].width, h: result.pieces[0].height };
+            return { w: src?.width ?? 1, h: src?.height ?? 1 };
+        }
         function scale() {
             if (!src)
                 return 1;
             if (zoom > 0)
                 return zoom;
-            const box = stageBox;
+            const d = stageDims(), box = stageBox;
             const aw = Math.max(80, (box?.clientWidth ?? 700) - 24), ah = Math.max(80, (box?.clientHeight ?? 500) - 24);
-            return Math.min(8, aw / src.width, ah / src.height);
+            return Math.min(8, aw / d.w, ah / d.h);
         }
         function drawStage() {
             if (!canvas || !src)
                 return;
-            const w = src.width, h = src.height;
+            const dims = stageDims(), w = dims.w, h = dims.h;
             if (canvas.width !== w || canvas.height !== h) {
                 canvas.width = w;
                 canvas.height = h;
@@ -206,7 +255,23 @@ definePlugin({
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, w, h);
             const lw = Math.max(1, 1.5 / s);
-            if (tab === 'bg' && result && result.pieces[0] && !showBefore) {
+            if (tab === 'compose') {
+                const piece = result?.pieces[0];
+                if (!piece)
+                    return;
+                ctx.drawImage(piece.canvas, 0, 0);
+                const lay = result.diagnostics.layout ?? [];
+                lay.forEach((b, i) => {
+                    const on = i === P.compose.selected;
+                    ctx.strokeStyle = on ? '#4da3ff' : 'rgba(138,143,152,.6)';
+                    ctx.lineWidth = on ? 2 * lw : lw;
+                    ctx.setLineDash(on ? [] : [6 / s, 4 / s]);
+                    ctx.strokeRect(b.x, b.y, b.width, b.height);
+                    ctx.setLineDash([]);
+                });
+                return;
+            }
+            if ((tab === 'bg' || tab === 'color') && result && result.pieces[0] && !showBefore) {
                 const p = result.pieces[0];
                 ctx.drawImage(p.canvas, p.x, p.y);
                 return;
@@ -238,7 +303,7 @@ definePlugin({
                 ctx.globalAlpha = 1;
             }
             result.pieces.forEach((p, i) => {
-                if (tab !== 'bg')
+                if (tab !== 'bg' && tab !== 'color')
                     ctx.drawImage(p.canvas, p.x, p.y);
                 ctx.strokeStyle = checked.has(i) ? '#4da3ff' : '#8a8f98';
                 ctx.lineWidth = lw;
@@ -288,8 +353,34 @@ definePlugin({
                 }
                 else if (kind === 'seed')
                     P.contour.seeds.push({ x: pt.x, y: pt.y });
+                else if (kind === 'from') {
+                    const q = P.color.pairs[P.color.pickIndex];
+                    if (q)
+                        q.from = c;
+                }
                 renderSide();
                 schedule(0);
+                return;
+            }
+            if (tab === 'compose') {
+                const lay = result?.diagnostics.layout ?? [];
+                let hit = -1;
+                for (let i = lay.length - 1; i >= 0; i--) {
+                    const b = lay[i];
+                    if (pt.x >= b.x && pt.y >= b.y && pt.x < b.x + b.width && pt.y < b.y + b.height) {
+                        hit = i;
+                        break;
+                    }
+                }
+                if (hit < 0)
+                    return;
+                P.compose.selected = hit;
+                makeManual();
+                const b = lay[hit];
+                moveDrag = { dx: pt.x - b.x, dy: pt.y - b.y };
+                canvas.setPointerCapture(e.pointerId);
+                renderSide();
+                drawStage();
                 return;
             }
             if (tab === 'crop') {
@@ -300,6 +391,15 @@ definePlugin({
             }
         }
         function onPointerMove(e) {
+            if (moveDrag && tab === 'compose') {
+                const pt = toImage(e), l = P.compose.layers[P.compose.selected];
+                if (l) {
+                    l.x = Math.round(pt.x - moveDrag.dx);
+                    l.y = Math.round(pt.y - moveDrag.dy);
+                    schedule(30);
+                }
+                return;
+            }
             if (!cropDrag || !src)
                 return;
             const pt = toImage(e), x0 = Math.max(0, Math.min(cropDrag.x, pt.x)), y0 = Math.max(0, Math.min(cropDrag.y, pt.y));
@@ -307,7 +407,12 @@ definePlugin({
             P.crop = { x: x0, y: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
             drawStage();
         }
-        function onPointerUp() { if (cropDrag) {
+        function onPointerUp() { if (moveDrag) {
+            moveDrag = null;
+            renderSide();
+            schedule(0);
+            return;
+        } if (cropDrag) {
             cropDrag = null;
             renderSide();
             schedule(0);
@@ -588,6 +693,246 @@ definePlugin({
             box.appendChild(field('Tamanho (px, mantém proporção)', dims));
             box.appendChild(go);
         }
+        /* ---------------- aba Cor ---------------- */
+        const PRESETS = [['Vermelho', [220, 30, 30]], ['Laranja', [240, 140, 20]], ['Amarelo', [240, 210, 30]], ['Verde', [40, 170, 70]], ['Azul', [40, 90, 220]], ['Roxo', [140, 50, 200]], ['Preto', [0, 0, 0]], ['Branco', [255, 255, 255]]];
+        function newColor(label, value, on, optional) {
+            const wrap = el('div', 'vbie-newcolor');
+            const pick = el('input');
+            pick.type = 'color';
+            pick.value = value ? hex(value) : '#ff0000';
+            pick.setAttribute('aria-label', label);
+            pick.addEventListener('input', () => { const v = parseHex(pick.value); if (v) {
+                on(v);
+                schedule(120);
+            } });
+            pick.addEventListener('change', () => renderSide());
+            wrap.appendChild(pick);
+            const row = el('span', 'vbie-presets');
+            for (const [name, c] of PRESETS) {
+                const b = swatch(c, () => { on(c); renderSide(); schedule(0); });
+                b.title = name;
+                row.appendChild(b);
+            }
+            wrap.appendChild(row);
+            if (optional) {
+                const none = el('button', 'btn' + (value ? '' : ' primary'), value ? 'Não mexer' : '✓ não mexer');
+                none.type = 'button';
+                none.addEventListener('click', () => { on(null); renderSide(); schedule(0); });
+                wrap.appendChild(none);
+            }
+            return field(label, wrap);
+        }
+        function colorControls(box) {
+            const c = P.color;
+            box.appendChild(el('p', 'vbie-note', 'Troca cores sem mexer na transparência nem nas bordas suaves. Sempre cria uma cópia na biblioteca.'));
+            box.appendChild(choice('Como trocar', [['roles', 'Contorno e preenchimento (automático)'], ['pairs', 'Cores que eu escolher'], ['uniform', 'Uma cor só em tudo']], c.mode, v => { c.mode = v; renderSide(); }, 'Automático: o editor identifica a cor do contorno e a do preenchimento. Escolhidas: você marca cada cor. Uma cor só: contorno e preenchimento ficam iguais.'));
+            const d = result?.diagnostics;
+            if (c.mode === 'roles') {
+                if (d && 'outlineFrom' in d) {
+                    const line = el('p', 'vbie-note');
+                    line.append('Detectado — contorno: ', d.outlineFrom ? swatch(d.outlineFrom) : el('span', undefined, '—'), '  preenchimento: ', d.fillFrom ? swatch(d.fillFrom) : el('span', undefined, '—'));
+                    box.appendChild(line);
+                }
+                box.appendChild(newColor('Novo contorno', c.outlineTo, v => { c.outlineTo = v; }, true));
+                box.appendChild(newColor('Novo preenchimento', c.fillTo, v => { c.fillTo = v; }, true));
+                const same = el('button', 'btn', 'Mesma cor nos dois');
+                same.type = 'button';
+                same.setAttribute('data-vbie', 'same-color');
+                same.title = 'Contorno e preenchimento ficam com a cor do contorno (ou a do preenchimento, se só ela estiver escolhida)';
+                same.addEventListener('click', () => { const v = c.outlineTo ?? c.fillTo ?? c.color; c.outlineTo = v; c.fillTo = v; renderSide(); schedule(0); });
+                box.appendChild(same);
+            }
+            else if (c.mode === 'pairs') {
+                const pal = paletteRow(col => { const q = c.pairs[c.pickIndex] ?? c.pairs[c.pairs.length - 1]; if (q)
+                    q.from = col;
+                else
+                    c.pairs.push({ from: col, to: [220, 30, 30] }); });
+                if (pal)
+                    box.appendChild(pal);
+                c.pairs.forEach((q, i) => {
+                    const row = el('div', 'vbie-pair');
+                    row.setAttribute('data-vbie', 'pair');
+                    row.appendChild(swatch(q.from, () => { c.pickIndex = i; pick = 'from'; if (canvas)
+                        canvas.style.cursor = 'crosshair'; renderSide(); }));
+                    const pk = el('button', 'btn' + (pick === 'from' && c.pickIndex === i ? ' primary' : ''), '💧');
+                    pk.type = 'button';
+                    pk.title = 'Escolher a cor original com o conta-gotas';
+                    pk.addEventListener('click', () => { c.pickIndex = i; pick = pick === 'from' && c.pickIndex === i ? null : 'from'; if (canvas)
+                        canvas.style.cursor = pick ? 'crosshair' : ''; renderSide(); });
+                    row.append(pk, el('span', undefined, '→'));
+                    const ci = el('input');
+                    ci.type = 'color';
+                    ci.value = hex(q.to);
+                    ci.setAttribute('aria-label', 'Nova cor ' + (i + 1));
+                    ci.addEventListener('input', () => { const v = parseHex(ci.value); if (v) {
+                        q.to = v;
+                        schedule(120);
+                    } });
+                    row.appendChild(ci);
+                    for (const [name, col] of PRESETS.slice(0, 6)) {
+                        const b = swatch(col, () => { q.to = col; renderSide(); schedule(0); });
+                        b.title = name;
+                        row.appendChild(b);
+                    }
+                    const rm = el('button', 'btn', '✕');
+                    rm.type = 'button';
+                    rm.title = 'Remover';
+                    rm.addEventListener('click', () => { c.pairs.splice(i, 1); renderSide(); schedule(0); });
+                    row.appendChild(rm);
+                    box.appendChild(row);
+                });
+                const add = el('button', 'btn', '＋ Adicionar cor');
+                add.type = 'button';
+                add.setAttribute('data-vbie', 'add-pair');
+                add.addEventListener('click', () => { if (c.pairs.length >= 16)
+                    return; c.pairs.push({ from: null, to: [220, 30, 30] }); c.pickIndex = c.pairs.length - 1; pick = 'from'; if (canvas)
+                    canvas.style.cursor = 'crosshair'; renderSide(); });
+                box.appendChild(add);
+            }
+            else {
+                box.appendChild(newColor('Cor única', c.color, v => { c.color = v ?? c.color; }, false));
+                box.appendChild(el('p', 'vbie-note', 'Tudo o que não é transparente vira essa cor (contorno e preenchimento iguais). Se a imagem tem fundo, remova-o antes.'));
+            }
+            if (c.mode !== 'uniform') {
+                box.appendChild(slider('Tolerância', c.tolerance, 1, 80, 1, v => { c.tolerance = v; }, 'Quanto uma cor pode variar e ainda contar como a mesma (sombras, suavização)'));
+                box.appendChild(check('Manter o sombreado', c.keepShading, v => { c.keepShading = v; }, 'A variação de claro/escuro de cada pixel é aplicada à nova cor'));
+            }
+            const hold = el('button', 'btn', '👁 Segurar para ver o original');
+            hold.type = 'button';
+            const set = (v) => { showBefore = v; drawStage(); };
+            hold.addEventListener('pointerdown', () => set(true));
+            hold.addEventListener('pointerup', () => set(false));
+            hold.addEventListener('pointerleave', () => set(false));
+            box.appendChild(hold);
+        }
+        /* ---------------- aba Montar ---------------- */
+        const nameOf = (id) => S.assets.find(a => a.id === id)?.name ?? id;
+        /** Congela a posição atual (automática) e passa ao modo manual com tela de tamanho fixo. */
+        function makeManual() {
+            const c = P.compose, lay = result?.diagnostics.layout, piece = result?.pieces[0];
+            if (c.arrange === 'none' || !lay || !piece || lay.length !== c.layers.length)
+                return;
+            c.layers.forEach((l, i) => { l.x = lay[i].x; l.y = lay[i].y; l.width = lay[i].width; l.height = lay[i].height; delete l.scale; });
+            c.width = piece.width;
+            c.height = piece.height;
+            c.arrange = 'none';
+        }
+        function fitCanvas() {
+            const c = P.compose, lay = result?.diagnostics.layout;
+            if (!lay || !lay.length)
+                return;
+            makeManual();
+            const l2 = result.diagnostics.layout;
+            const x0 = Math.min(...l2.map(b => b.x)), y0 = Math.min(...l2.map(b => b.y)), x1 = Math.max(...l2.map(b => b.x + b.width)), y1 = Math.max(...l2.map(b => b.y + b.height));
+            c.layers.forEach(l => { l.x = (l.x ?? 0) - x0 + c.margin; l.y = (l.y ?? 0) - y0 + c.margin; });
+            c.width = x1 - x0 + 2 * c.margin;
+            c.height = y1 - y0 + 2 * c.margin;
+        }
+        function addLayers(ids) {
+            const c = P.compose;
+            for (const id of ids) {
+                if (c.layers.length >= 40) {
+                    message = 'No máximo 40 imagens por montagem.';
+                    break;
+                }
+                if (A.blobs.has(id))
+                    c.layers.push({ assetId: id });
+            }
+            if (c.arrange === 'none') { /* manual: novas imagens entram no canto e podem ser arrastadas */ }
+            c.selected = Math.max(0, c.layers.length - 1);
+        }
+        function composeControls(box) {
+            const c = P.compose;
+            box.appendChild(el('p', 'vbie-note', 'Junte várias imagens numa só (por exemplo, peças de uma grade). Arraste as imagens no palco para posicionar.'));
+            const list = el('div', 'vbie-layers');
+            list.setAttribute('data-vbie', 'layers');
+            c.layers.forEach((l, i) => {
+                const row = el('div', 'vbie-layer' + (i === c.selected ? ' on' : ''));
+                row.setAttribute('data-layer', String(i));
+                const nm = el('button', 'btn', (i + 1) + '. ' + nameOf(l.assetId));
+                nm.type = 'button';
+                nm.addEventListener('click', () => { c.selected = i; renderSide(); drawStage(); });
+                const mv = (d) => { const j = i + d; if (j < 0 || j >= c.layers.length)
+                    return; const t = c.layers[i]; c.layers[i] = c.layers[j]; c.layers[j] = t; c.selected = j; renderSide(); schedule(0); };
+                const up = el('button', 'btn', '▲');
+                up.type = 'button';
+                up.title = 'Mover para trás';
+                up.addEventListener('click', () => mv(-1));
+                const dn = el('button', 'btn', '▼');
+                dn.type = 'button';
+                dn.title = 'Mover para frente';
+                dn.addEventListener('click', () => mv(1));
+                const rm = el('button', 'btn', '✕');
+                rm.type = 'button';
+                rm.title = 'Tirar da montagem';
+                rm.addEventListener('click', () => { c.layers.splice(i, 1); c.selected = Math.max(0, Math.min(c.selected, c.layers.length - 1)); renderSide(); schedule(0); });
+                row.append(nm, up, dn, rm);
+                list.appendChild(row);
+            });
+            box.appendChild(list);
+            const add = el('select');
+            add.setAttribute('aria-label', 'Adicionar imagem da biblioteca');
+            const o0 = el('option', undefined, '＋ adicionar da biblioteca…');
+            o0.value = '';
+            add.appendChild(o0);
+            for (const a of usable()) {
+                const o = el('option', undefined, a.name || a.id);
+                o.value = a.id;
+                add.appendChild(o);
+            }
+            add.addEventListener('change', () => { if (add.value) {
+                addLayers([add.value]);
+                renderSide();
+                schedule(0);
+            } });
+            box.appendChild(field('Adicionar imagem', add));
+            const live = recent.filter(id => A.blobs.has(id));
+            if (live.length) {
+                const b = el('button', 'btn', '＋ Todas as salvas agora (' + live.length + ')');
+                b.type = 'button';
+                b.addEventListener('click', () => { addLayers(live.slice().reverse().filter(id => !c.layers.some(l => l.assetId === id))); renderSide(); schedule(0); });
+                box.appendChild(b);
+            }
+            const sel = c.layers[c.selected];
+            if (sel) {
+                const nat = S.assets.find(a => a.id === sel.assetId);
+                const pct = nat?.originalWidth && sel.width ? Math.round(sel.width / nat.originalWidth * 100) : Math.round((sel.scale ?? 1) * 100);
+                box.appendChild(field('Tamanho (%)', number(pct, 1, 500, 1, v => { sel.scale = v / 100; delete sel.width; delete sel.height; })));
+                box.appendChild(slider('Girar (°)', sel.rotation ?? 0, -180, 180, 1, v => { sel.rotation = v; }));
+                box.appendChild(slider('Opacidade', Math.round((sel.opacity ?? 1) * 100), 0, 100, 1, v => { sel.opacity = v / 100; }));
+                const fl = el('div', 'vbie-actions');
+                fl.append(check('Espelhar ↔', !!sel.flipH, v => { sel.flipH = v; }), check('Espelhar ↕', !!sel.flipV, v => { sel.flipV = v; }));
+                box.appendChild(fl);
+            }
+            box.appendChild(choice('Organização', [['row', 'Lado a lado (linha)'], ['column', 'Empilhadas (coluna)'], ['grid', 'Grade'], ['none', 'Manual (arrastar)']], c.arrange, v => { if (v === 'none')
+                makeManual();
+            else
+                c.arrange = v; if (v === 'none')
+                c.arrange = 'none'; renderSide(); }, 'Manual: arraste as imagens no palco. As outras organizam sozinhas.'));
+            if (c.arrange === 'grid')
+                box.appendChild(field('Colunas', number(c.columns || Math.ceil(Math.sqrt(Math.max(1, c.layers.length))), 1, 40, 1, v => { c.columns = Math.round(v); })));
+            if (c.arrange !== 'none') {
+                box.appendChild(slider('Espaço entre (px)', c.gap, 0, 200, 1, v => { c.gap = v; }));
+                box.appendChild(slider('Margem (px)', c.margin, 0, 200, 1, v => { c.margin = v; }));
+            }
+            else {
+                const dims = el('div', 'vbie-colorrow');
+                dims.append(number(c.width || 1, 1, 16000, 1, v => { c.width = Math.round(v); }), el('span', undefined, '×'), number(c.height || 1, 1, 16000, 1, v => { c.height = Math.round(v); }));
+                box.appendChild(field('Tela (px)', dims));
+                const fit = el('button', 'btn', 'Ajustar a tela ao conjunto');
+                fit.type = 'button';
+                fit.setAttribute('data-vbie', 'fit-canvas');
+                fit.addEventListener('click', () => { fitCanvas(); renderSide(); schedule(0); });
+                box.appendChild(fit);
+                if (sel) {
+                    box.appendChild(field('X', number(sel.x ?? 0, -16000, 16000, 1, v => { sel.x = Math.round(v); })));
+                    box.appendChild(field('Y', number(sel.y ?? 0, -16000, 16000, 1, v => { sel.y = Math.round(v); })));
+                }
+            }
+            box.appendChild(choice('Fundo', [['transparent', 'Transparente'], ['white', 'Branco'], ['color', 'Outra cor…']], c.bg, v => { c.bg = v; renderSide(); }));
+            if (c.bg === 'color')
+                box.appendChild(newColor('Cor do fundo', c.bgColor, v => { c.bgColor = v ?? c.bgColor; }, false));
+        }
         function renderSide() {
             if (!side)
                 return;
@@ -601,11 +946,29 @@ definePlugin({
                 b.setAttribute('role', 'tab');
                 b.setAttribute('aria-selected', String(t === tab));
                 b.addEventListener('click', () => { if (t === tab)
-                    return; tab = t; pick = null; if (canvas)
+                    return; tab = t; pick = null; if (t === 'compose' && !P.compose.layers.length && assetId)
+                    addLayers([assetId]); if (canvas)
                     canvas.style.cursor = ''; clearResult(); renderSide(); renderResults(); drawStage(); schedule(0); });
                 tabs.appendChild(b);
             }
             side.appendChild(tabs);
+            const live = recent.filter(id => S.assets.some(a => a.id === id) && A.blobs.has(id));
+            if (live.length) {
+                const rc = el('div', 'vbie-recent');
+                rc.setAttribute('data-vbie', 'recent');
+                rc.appendChild(el('span', 'vbie-note', 'Salvas agora (clique para editar):'));
+                for (const id of live) {
+                    const a = S.assets.find(x => x.id === id);
+                    const b = el('button', 'btn' + (id === assetId ? ' primary' : ''), a.name);
+                    b.type = 'button';
+                    b.title = 'Editar ' + a.name;
+                    b.setAttribute('data-recent', id);
+                    b.addEventListener('click', () => { if (id !== assetId)
+                        void loadSource(id); });
+                    rc.appendChild(b);
+                }
+                side.appendChild(rc);
+            }
             const box = el('div', 'vbie-controls');
             side.appendChild(box);
             if (!src)
@@ -618,6 +981,10 @@ definePlugin({
                 contourControls(box);
             else if (tab === 'crop')
                 cropControls(box);
+            else if (tab === 'color')
+                colorControls(box);
+            else if (tab === 'compose')
+                composeControls(box);
             else
                 adjustControls(box);
             side.scrollTop = keep;
@@ -669,12 +1036,18 @@ definePlugin({
                 save.type = 'button';
                 save.disabled = !checked.size || busy;
                 save.addEventListener('click', () => { void saveChecked(false); });
+                const edit = el('button', 'btn', '✎ Salvar e editar');
+                edit.type = 'button';
+                edit.disabled = !checked.size || busy;
+                edit.setAttribute('data-vbie', 'save-edit');
+                edit.title = 'Salva na biblioteca e já abre a primeira imagem marcada aqui para continuar (tirar fundo, trocar cor, montar…)';
+                edit.addEventListener('click', () => { void saveChecked(false, true); });
                 const cloud = el('button', 'btn', '☁ Salvar e enviar ao catálogo');
                 cloud.type = 'button';
                 cloud.disabled = !checked.size || busy;
                 cloud.title = 'Salva no projeto e também envia as imagens ao catálogo (Asset Hub), sem apagar nada';
                 cloud.addEventListener('click', () => { void saveChecked(true); });
-                bar.append(all, save, cloud);
+                bar.append(all, save, edit, cloud);
                 resultsBox.appendChild(bar);
                 resultsBox.appendChild(el('p', 'vbie-note', 'A imagem original não é alterada. As novas ficam na biblioteca e um único Desfazer remove todas.'));
             }
@@ -777,7 +1150,7 @@ definePlugin({
                 message = 'Salvo no projeto, mas o catálogo não recebeu: ' + e.message;
             }
         }
-        async function saveChecked(toCatalog) {
+        async function saveChecked(toCatalog, editAfter = false) {
             if (!result || !checked.size || busy)
                 return;
             busy = true;
@@ -787,8 +1160,17 @@ definePlugin({
                 message = '';
                 toast(done.assets.length + (done.assets.length === 1 ? ' imagem salva' : ' imagens salvas') + ' na biblioteca.', 'ok');
                 kernel.emit('assets:changed');
+                rememberRecent(done.assets.map(a => a.id));
                 if (toCatalog)
                     await sendToCatalog(done.assets);
+                if (editAfter && done.assets[0]) {
+                    busy = false;
+                    if (tab === 'grid' || tab === 'crop' || tab === 'contour')
+                        tab = 'bg';
+                    await loadSource(done.assets[0].id);
+                    renderHeader();
+                    return;
+                }
             }
             catch (e) {
                 message = e.message;
@@ -796,6 +1178,7 @@ definePlugin({
             busy = false;
             renderResults();
             renderHeader();
+            renderSide();
         }
         /* ---------------- janela ---------------- */
         let headEl = null;
@@ -849,6 +1232,15 @@ definePlugin({
             open.type = 'button';
             open.addEventListener('click', () => file.click());
             headEl.append(file, open);
+            if (selectedLayer && findLayer(selectedLayer)) {
+                const lid = selectedLayer;
+                const pc = el('button', 'btn', '✂ Recorte do painel');
+                pc.type = 'button';
+                pc.setAttribute('data-vbie', 'panel-crop');
+                pc.title = 'Salva o recorte da imagem selecionada no painel como imagem da biblioteca e abre aqui';
+                pc.addEventListener('click', () => { void saveLayerCrop(lid); });
+                headEl.appendChild(pc);
+            }
             if (kernel.has('ui.sceneBlocking')) {
                 const sb = el('button', 'btn', '🎬 Blocking de cena');
                 sb.type = 'button';
@@ -975,10 +1367,81 @@ definePlugin({
             drawStage(); });
         kernel.on('assets:changed', () => { if (root)
             renderHeader(); });
+        /* Recorte feito no painel → imagem da biblioteca (e já abre no editor para continuar). */
+        let selectedLayer = null;
+        kernel.on('manga-edit:selection', payload => { selectedLayer = payload.layerId ?? null; });
+        function findLayer(layerId) {
+            const board = S.boards.find(b => b.id === S.currentBoardId);
+            for (const i of board?.instances ?? []) {
+                if (i.type !== 'manga-page')
+                    continue;
+                const lists = [];
+                for (const p of i.panels || [])
+                    lists.push(p.layers || []);
+                lists.push(i.overlays || []);
+                for (const u of i.unassignedPanels || [])
+                    lists.push(u.layers || []);
+                for (const l of lists.flat())
+                    if (l.id === layerId && l.assetId)
+                        return { assetId: l.assetId, crop: { left: 0, top: 0, right: 0, bottom: 0, ...(l.vp1Crop || {}) } };
+            }
+            return null;
+        }
+        async function saveLayerCrop(layerId) {
+            const found = findLayer(layerId);
+            const asset = found ? S.assets.find(a => a.id === found.assetId) : null;
+            if (!found || !asset) {
+                toast('Selecione uma imagem dentro de um painel.');
+                return;
+            }
+            const w = asset.originalWidth || 0, h = asset.originalHeight || 0, c = found.crop;
+            if (!c.left && !c.top && !c.right && !c.bottom) {
+                toast('Esta imagem não tem recorte no painel. Use o recorte do painel primeiro.');
+                return;
+            }
+            const x = Math.round(c.left * w), y = Math.round(c.top * h);
+            const width = Math.max(1, Math.round((1 - c.left - c.right) * w)), height = Math.max(1, Math.round((1 - c.top - c.bottom) * h));
+            try {
+                const done = await E.apply(asset.id, 'crop', { x, y, width: Math.min(width, w - x), height: Math.min(height, h - y) });
+                kernel.emit('assets:changed');
+                rememberRecent(done.assets.map(a => a.id));
+                toast('Recorte salvo como imagem: ' + done.assets[0].name, 'ok');
+                tab = 'bg';
+                await open(done.assets[0].id);
+            }
+            catch (e) {
+                toast(e.message);
+            }
+        }
         kernel.on('contextmenu:extend', payload => {
             const target = payload;
             target.items.push({ icon: '🖼', label: 'Editor de imagens…', action: () => { void open(); } });
+            const layer = selectedLayer;
+            if (layer && findLayer(layer))
+                target.items.push({ icon: '✂', label: 'Salvar recorte como imagem', action: () => { void saveLayerCrop(layer); } });
         });
-        kernel.provide('ui.imageEditor', { open, close: closeEditor, isOpen: () => !!root });
+        /** Abre o editor já na montagem com as imagens indicadas. */
+        async function compose(ids) {
+            const valid = ids.filter(id => A.blobs.has(id)).slice(0, 40);
+            if (!valid.length) {
+                toast('Selecione imagens da biblioteca para montar.');
+                return;
+            }
+            await open(valid[0]);
+            P.compose.layers = [];
+            P.compose.selected = 0;
+            P.compose.arrange = 'row';
+            addLayers(valid);
+            P.compose.selected = 0;
+            tab = 'compose';
+            pick = null;
+            clearResult();
+            renderSide();
+            renderResults();
+            drawStage();
+            schedule(0);
+        }
+        kernel.on('image-editor:compose', payload => { void compose(payload.ids ?? []); });
+        kernel.provide('ui.imageEditor', { open, close: closeEditor, isOpen: () => !!root, compose });
     }
 });

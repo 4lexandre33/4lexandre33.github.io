@@ -53,7 +53,14 @@ definePlugin({
             none.setAttribute('data-lib', 'select-none');
             none.textContent = 'Limpar';
             none.addEventListener('click', () => { selected.clear(); renderGrid(); });
-            selbar.append(n, del, all, none);
+            const mix = document.createElement('button');
+            mix.type = 'button';
+            mix.className = 'btn';
+            mix.setAttribute('data-lib', 'compose-selected');
+            mix.textContent = '🧩 Montar ' + selected.size;
+            mix.title = 'Junta as imagens selecionadas numa só no editor de imagens';
+            mix.addEventListener('click', () => { kernel.emit('image-editor:compose', { ids: [...selected] }); });
+            selbar.append(n, mix, del, all, none);
         }
         /** Exclui sem diálogo quando nada está em uso; sempre oferece Desfazer (um único passo restaura todas). */
         async function removeMany(ids) {
