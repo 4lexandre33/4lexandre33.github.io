@@ -997,6 +997,18 @@ definePlugin({
             t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
             return t;
         }
+        /** Nome-base do ZIP: a imagem aberta sem extensão. */
+        const baseName = () => (S.assets.find(a => a.id === assetId)?.name ?? 'imagens').replace(/\.[A-Za-z0-9]{2,5}$/, '').replace(/_(cor|sem-fundo|recorte|r\d+c\d+)$/i, '') + '-editadas';
+        async function exportIds(ids, name) {
+            try {
+                const r = await E.exportZip(ids, name ? { name } : undefined);
+                batchNote = '⬇ ' + r.count + (r.count === 1 ? ' imagem exportada' : ' imagens exportadas') + ' em ' + r.filename;
+            }
+            catch (e) {
+                message = e.message;
+            }
+            renderResults();
+        }
         /* ---------------- lote: a mesma operação em várias imagens ---------------- */
         let batch = [], batchNote = '', batchBusy = false;
         const OP_LABEL = { grid: 'Cortar em grade', bg: 'Tirar fundo', contour: 'Recortar por contorno', crop: 'Recortar', color: 'Trocar cor', compose: 'Montar', adjust: 'Ajustar' };
@@ -1108,6 +1120,12 @@ definePlugin({
             go.title = 'Aplica as configurações desta aba a todas as imagens do lote, cada resultado vira uma imagem nova na biblioteca';
             go.addEventListener('click', () => { void applyToAll(); });
             box.appendChild(go);
+            const exp = el('button', 'btn', '⬇ Exportar o lote (' + batch.length + ') em ZIP');
+            exp.type = 'button';
+            exp.setAttribute('data-vbie', 'batch-export');
+            exp.title = 'Baixa todas as imagens do lote num arquivo ZIP (arquivos originais, sem recomprimir)';
+            exp.addEventListener('click', () => { void exportIds(batch, baseName()); });
+            box.appendChild(exp);
             box.appendChild(el('p', 'vbie-note', 'A prévia abaixo mostra só a imagem aberta; ao aplicar, as mesmas configurações valem para todas. Depois, o lote passa a ser as novas imagens para você continuar (ex.: cor → tirar fundo).'));
             if (batchNote)
                 box.appendChild(el('p', 'vbie-batchnote', batchNote));
@@ -1190,7 +1208,13 @@ definePlugin({
                 many.hidden = checked.size < 2;
                 many.title = 'Salva as imagens marcadas e abre todas como um lote: trocar cor, tirar fundo etc. em todas de uma vez';
                 many.addEventListener('click', () => { void saveChecked(false, true, true); });
-                bar.append(all, save, edit, many, cloud);
+                const zipBtn = el('button', 'btn', '⬇ Salvar e exportar ZIP');
+                zipBtn.type = 'button';
+                zipBtn.setAttribute('data-vbie', 'save-zip');
+                zipBtn.disabled = !checked.size || busy;
+                zipBtn.title = 'Salva as imagens marcadas na biblioteca e baixa todas num arquivo ZIP';
+                zipBtn.addEventListener('click', () => { void saveChecked(false, false, false, true); });
+                bar.append(all, save, edit, many, zipBtn, cloud);
                 resultsBox.appendChild(bar);
                 resultsBox.appendChild(el('p', 'vbie-note', 'A imagem original não é alterada. As novas ficam na biblioteca e um único Desfazer remove todas.'));
             }
@@ -1293,7 +1317,7 @@ definePlugin({
                 message = 'Salvo no projeto, mas o catálogo não recebeu: ' + e.message;
             }
         }
-        async function saveChecked(toCatalog, editAfter = false, asBatch = false) {
+        async function saveChecked(toCatalog, editAfter = false, asBatch = false, exportAfter = false) {
             if (!result || !checked.size || busy)
                 return;
             busy = true;
@@ -1306,6 +1330,8 @@ definePlugin({
                 rememberRecent(done.assets.map(a => a.id));
                 if (toCatalog)
                     await sendToCatalog(done.assets);
+                if (exportAfter)
+                    await exportIds(done.assets.map(a => a.id), baseName());
                 if (editAfter && done.assets[0]) {
                     busy = false;
                     if (tab === 'grid' || tab === 'crop' || tab === 'contour')
@@ -1611,6 +1637,28 @@ definePlugin({
             schedule(0);
         }
         kernel.on('image-editor:compose', payload => { void compose(payload.ids ?? []); });
+        kernel.on('image-editor:export', payload => { void E.exportZip(payload.ids ?? []).catch(e => toast(e.message)); });
+        kernel.on('image-editor:open', () => { void open(); });
+        /* Botões "Editor de imagens" (topo, trilho, área vazia). Na área vazia o canvas captura o ponteiro e redireciona o clique, por isso também se escuta o pointerdown. */
+        let lastPointer = 0, lastPointerEl = null;
+        const fromButton = (ev) => {
+            const btn = ev.target?.closest?.('[data-cmd="open-image-editor"]') ?? null;
+            if (!btn)
+                return;
+            if (ev.type === 'pointerdown') {
+                lastPointer = Date.now();
+                lastPointerEl = btn;
+            }
+            else {
+                const dup = lastPointerEl === btn && Date.now() - lastPointer < 800;
+                lastPointerEl = null;
+                if (dup)
+                    return;
+            } // o clique que segue o pointerdown já foi tratado
+            void open();
+        };
+        kernel.listen(document, 'pointerdown', fromButton, { capture: true });
+        kernel.listen(document, 'click', fromButton, { capture: true });
         kernel.on('image-editor:batch', payload => { void startBatch(payload.ids ?? []); });
         kernel.provide('ui.imageEditor', { open, close: closeEditor, isOpen: () => !!root, compose, batch: startBatch });
     }

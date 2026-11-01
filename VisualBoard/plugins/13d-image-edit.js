@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.2.0' },
+    contractVersions: { imageEdit: '1.3.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -16,7 +16,7 @@ definePlugin({
         const backend = await kernel.require('backend');
         const utils = await kernel.require('utils');
         const H = await kernel.require('history');
-        const LIMITS = { maxPixels: 16_000_000, maxCells: 400, maxBytes: 32 * 1024 * 1024, maxObjects: 100, maxBatch: 80 };
+        const LIMITS = { maxPixels: 16_000_000, maxCells: 400, maxBytes: 32 * 1024 * 1024, maxObjects: 100, maxBatch: 80, maxZipFiles: 200, maxZipBytes: 200 * 1024 * 1024 };
         const SUPPORTED = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/bmp', 'image/avif']);
         /* ------------------------------ erros e parâmetros ------------------------------ */
         function fail(code, message) { const e = new Error(message); e.code = code; throw e; }
@@ -752,6 +752,111 @@ definePlugin({
                 kernel.emit('toast', { message: created + (created === 1 ? ' imagem criada' : ' imagens criadas') + (failed ? ' · ' + failed + ' com erro' : ''), kind: failed ? 'error' : 'ok' });
             return { op, total: ids.length, created, failed, saved, cancelled: !!opts?.signal?.aborted, results };
         }
+        /* ------------------------------ exportar em ZIP ------------------------------ */
+        let crcTable = null;
+        function crc32(data) {
+            if (!crcTable) {
+                crcTable = new Uint32Array(256);
+                for (let i = 0; i < 256; i++) {
+                    let c = i;
+                    for (let k = 0; k < 8; k++)
+                        c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+                    crcTable[i] = c >>> 0;
+                }
+            }
+            let c = 0xffffffff;
+            for (let i = 0; i < data.length; i++)
+                c = crcTable[(c ^ data[i]) & 0xff] ^ (c >>> 8);
+            return (c ^ 0xffffffff) >>> 0;
+        }
+        /** ZIP sem compressão (as imagens já são comprimidas), nomes em UTF-8. */
+        function zipStore(files) {
+            const enc = new TextEncoder(), parts = [], central = [];
+            let offset = 0;
+            for (const f of files) {
+                const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+                const lh = new DataView(new ArrayBuffer(30));
+                lh.setUint32(0, 0x04034b50, true);
+                lh.setUint16(4, 20, true);
+                lh.setUint16(6, 0x0800, true);
+                lh.setUint16(12, 0x21, true);
+                lh.setUint32(14, crc, true);
+                lh.setUint32(18, size, true);
+                lh.setUint32(22, size, true);
+                lh.setUint16(26, name.length, true);
+                parts.push(new Uint8Array(lh.buffer), name, f.data);
+                const ch = new DataView(new ArrayBuffer(46));
+                ch.setUint32(0, 0x02014b50, true);
+                ch.setUint16(4, 20, true);
+                ch.setUint16(6, 20, true);
+                ch.setUint16(8, 0x0800, true);
+                ch.setUint16(14, 0x21, true);
+                ch.setUint32(16, crc, true);
+                ch.setUint32(20, size, true);
+                ch.setUint32(24, size, true);
+                ch.setUint16(28, name.length, true);
+                ch.setUint32(42, offset, true);
+                central.push(new Uint8Array(ch.buffer), name);
+                offset += 30 + name.length + size;
+            }
+            const cdSize = central.reduce((n, p) => n + p.length, 0), end = new DataView(new ArrayBuffer(22));
+            end.setUint32(0, 0x06054b50, true);
+            end.setUint16(8, files.length, true);
+            end.setUint16(10, files.length, true);
+            end.setUint32(12, cdSize, true);
+            end.setUint32(16, offset, true);
+            const all = [...parts, ...central, new Uint8Array(end.buffer)], out = new Uint8Array(all.reduce((n, p) => n + p.length, 0));
+            let at = 0;
+            for (const p of all) {
+                out.set(p, at);
+                at += p.length;
+            }
+            return out;
+        }
+        const EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/bmp': 'bmp', 'image/avif': 'avif' };
+        /** Reúne as imagens num ZIP (arquivos originais, sem recomprimir). Nomes seguros e únicos; nada é alterado no projeto. */
+        async function buildZip(assetIds, opts) {
+            const ids = [...new Set(assetIds)];
+            if (!ids.length)
+                fail('INVALID_ARGUMENT', 'Escolha pelo menos uma imagem para exportar');
+            if (ids.length > LIMITS.maxZipFiles)
+                fail('INVALID_ARGUMENT', 'No máximo ' + LIMITS.maxZipFiles + ' imagens por ZIP');
+            const used = new Set(), files = [], info = [];
+            let total = 0;
+            for (const id of ids) {
+                const a = assetOf(id), blob = A.blobs.get(id);
+                if (!blob)
+                    fail('ASSET_NOT_FOUND', 'A imagem "' + a.name + '" não tem dados carregados');
+                total += blob.size;
+                if (total > LIMITS.maxZipBytes)
+                    fail('IMAGE_TOO_LARGE', 'O ZIP passaria de ' + Math.round(LIMITS.maxZipBytes / 1048576) + ' MB; exporte em partes');
+                const ext = EXT[a.mimeType || ''] ?? 'png';
+                let base = (a.name || id).replace(/\.[A-Za-z0-9]{2,5}$/, '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/^\.+/, '').trim().slice(0, 100) || 'imagem';
+                let name = base + '.' + ext, n = 2;
+                while (used.has(name.toLowerCase()))
+                    name = base + ' (' + (n++) + ').' + ext;
+                used.add(name.toLowerCase());
+                files.push({ name, data: new Uint8Array(await blob.arrayBuffer()) });
+                info.push({ assetId: id, name, size: blob.size, width: a.originalWidth ?? 0, height: a.originalHeight ?? 0 });
+            }
+            const bytes = zipStore(files), copy = new Uint8Array(bytes.length);
+            copy.set(bytes);
+            const stem = (opts?.name ?? 'imagens-editadas').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').replace(/\.zip$/i, '').trim().slice(0, 80) || 'imagens-editadas';
+            return { blob: new Blob([copy.buffer], { type: 'application/zip' }), filename: stem + '.zip', count: files.length, files: info };
+        }
+        /** Gera o ZIP e dispara o download no navegador. */
+        async function exportZip(assetIds, opts) {
+            const z = await buildZip(assetIds, opts);
+            const url = URL.createObjectURL(z.blob), a = document.createElement('a');
+            a.href = url;
+            a.download = z.filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 30000);
+            kernel.emit('toast', { message: z.count + (z.count === 1 ? ' imagem exportada' : ' imagens exportadas') + ' em ' + z.filename, kind: 'ok' });
+            return { filename: z.filename, size: z.blob.size, count: z.count, files: z.files };
+        }
         /** Cores dominantes da imagem (ajuda a escolher a cor do contorno e a do fundo). */
         async function analyze(assetId, max = 12) {
             const asset = assetOf(assetId), src = await loadCanvas(asset);
@@ -779,6 +884,6 @@ definePlugin({
                 src.height = 0;
             }
         }
-        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, release, analyze, colorAt });
+        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt });
     }
 });

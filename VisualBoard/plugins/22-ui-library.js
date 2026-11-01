@@ -67,7 +67,14 @@ definePlugin({
             many.textContent = '⚙ Editar em lote';
             many.title = 'Abre as imagens selecionadas no editor para trocar cor, tirar fundo etc. em todas de uma vez';
             many.addEventListener('click', () => { kernel.emit('image-editor:batch', { ids: [...selected] }); });
-            selbar.append(n, many, mix, del, all, none);
+            const exp = document.createElement('button');
+            exp.type = 'button';
+            exp.className = 'btn';
+            exp.setAttribute('data-lib', 'export-selected');
+            exp.textContent = '⬇ Exportar ZIP';
+            exp.title = 'Baixa as imagens selecionadas num arquivo ZIP';
+            exp.addEventListener('click', () => { kernel.emit('image-editor:export', { ids: [...selected] }); });
+            selbar.append(n, many, mix, exp, del, all, none);
         }
         /** Exclui sem diálogo quando nada está em uso; sempre oferece Desfazer (um único passo restaura todas). */
         async function removeMany(ids) {

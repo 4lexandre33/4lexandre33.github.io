@@ -988,6 +988,10 @@ definePlugin({
                 const params = input['params'] && typeof input['params'] === 'object' ? input['params'] : {};
                 return imageEditCall(() => E.applyBatch(input['assetIds'].map(String), op, params));
             },
+            'image_edit.export_zip': async (input) => {
+                const E = await kernel.require('imageEdit');
+                return imageEditCall(() => E.exportZip(input['assetIds'].map(String), typeof input['name'] === 'string' ? { name: input['name'] } : undefined));
+            },
             'image_edit.compose': (input) => {
                 const first = Array.isArray(input['layers']) && input['layers'][0] && typeof input['layers'][0] === 'object' ? String(input['layers'][0]['assetId']) : '';
                 return imageEditApply({ ...input, assetId: first }, 'compose');

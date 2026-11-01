@@ -18,7 +18,7 @@ definePlugin({
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.23.0';
+        const CONTRACT_VERSION = '1.24.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -432,6 +432,7 @@ definePlugin({
         T('image_edit', 'recolor', W, 'Change colors', 'Recolors an image and saves a derived asset (transparency and soft edges are kept; the source is never changed). mode roles = detect outline and fill automatically and set outlineTo / fillTo (diagnostics.outlineFrom/fillFrom report what was found); replace = explicit pairs [{from,to}] (use image_edit.inspect_colors to pick "from"); uniform = every non-transparent pixel becomes "color" (outline and fill identical). Check warnings in the result.', obj({ assetId: id('asset id'), mode: en(['replace', 'roles', 'uniform']), pairs: arr(obj({ from: rgbS('original color'), to: rgbS('new color') }, ['from', 'to']), 16), color: rgbS('uniform: the single color'),
             outlineTo: rgbS('roles: new outline color'), fillTo: rgbS('roles: new fill color'), tolerance: num(1, 80, 'color distance (Lab ΔE) counted as the same color'), keepShading: bool('keep light/dark variation (default true)') }, ['assetId']), comp('image_edit.recolor', ['imageEdit.apply']), true);
         T('image_edit', 'batch', W, 'Edit many images at once', 'Applies the SAME operation to up to 80 images in ONE history step (e.g. recolor or remove the background of every piece of a grid cut). op is one of remove_background, recolor, crop, cut_by_contour, slice_grid; params are that tool\'s parameters without assetId (validated per image). One failing image does not stop the others: each result reports its own error. The sources are never changed.', obj({ assetIds: arr(id('asset id'), 80), op: en(['remove_background', 'recolor', 'crop', 'cut_by_contour', 'slice_grid']), params: free('parameters of the chosen operation, same names as its own tool') }, ['assetIds', 'op']), comp('image_edit.batch', ['imageEdit.applyBatch']), true);
+        T('image_edit', 'export_zip', X, 'Export images as ZIP', 'Packs up to 200 library images (the original files, not re-compressed) into one ZIP and triggers the browser download; the report lists file names, sizes and dimensions. Nothing in the project changes.', obj({ assetIds: arr(id('asset id'), 200), name: str({ minLength: 1, maxLength: 80, description: 'ZIP file name without extension' }) }, ['assetIds']), comp('image_edit.export_zip', ['imageEdit.exportZip']));
         T('image_edit', 'compose', W, 'Combine images into one', 'Places several library images on one clean canvas and saves a single derived asset (<first>_montagem). arrange row|column|grid lays them out automatically (gap, margin, columns); none uses each layer x/y. The canvas is fitted to the set when width/height are 0. Up to 40 layers, 16 megapixels. background omitted = transparent.', obj({ layers: arr(obj({ assetId: id('asset id'), x: num(-100000, 100000), y: num(-100000, 100000), scale: num(0.01, 50), width: int(1, 16000), height: int(1, 16000),
                 rotation: num(-360, 360), flipH: bool(), flipV: bool(), opacity: num(0, 1) }, ['assetId']), 40), width: int(0, 16000, '0 = fit to the images'), height: int(0, 16000, '0 = fit to the images'),
             background: rgbS('canvas color; transparent when omitted'), arrange: en(['none', 'row', 'column', 'grid']), gap: int(0, 2000), margin: int(0, 2000), columns: int(0, 40) }, ['layers']), comp('image_edit.compose', ['imageEdit.apply']), true);
@@ -686,6 +687,7 @@ definePlugin({
             excl('imageEdit.plan', 'Validação ocorre dentro de cada ferramenta image_edit.*.'),
             excl('imageEdit.preview', 'Devolve canvases não serializáveis; as ferramentas image_edit.* gravam o resultado como asset.'),
             excl('imageEdit.commit', 'Depende de uma prévia com canvases em memória; as ferramentas usam imageEdit.apply.'),
+            excl('imageEdit.buildZip', 'Devolve um Blob; a automação usa image_edit.export_zip (download).'),
             excl('imageEdit.release', 'Libera prévias em memória; sem equivalente na automação.'),
             excl('ui.imageEditor.close', 'Fechamento da janela feito pelo usuário.'),
             excl('ui.imageEditor.compose', 'Interface; a automação usa image_edit.compose (sem janela).'),
