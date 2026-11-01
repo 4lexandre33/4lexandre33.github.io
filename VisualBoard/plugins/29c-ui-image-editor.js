@@ -54,10 +54,15 @@ definePlugin({
         let stageBox = null;
         let cropDrag = null;
         let moveDrag = null;
+        let gridSel = null;
+        let gridDrag = null;
+        let gridHist = [];
+        let gridIssues = [];
+        let gridNote = '';
         let recent = []; // últimas imagens salvas (para continuar editando)
         const rememberRecent = (ids) => { recent = [...ids.slice().reverse(), ...recent.filter(r => !ids.includes(r))].slice(0, 8); };
         const P = {
-            grid: { rows: 3, cols: 3, gap: 0, margin: 0, direction: 'ltr', trim: false },
+            grid: { rows: 3, cols: 3, gap: 0, margin: 0, direction: 'ltr', trim: false, colCuts: null, rowCuts: null, auto: false, segment: false },
             bg: { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false },
             contour: { color: null, tolerance: 25, close: 1, others: [], mode: 'auto',
                 seeds: [], grow: 0, feather: 0, padding: 2 },
@@ -70,7 +75,8 @@ definePlugin({
         function paramsOf(t) {
             if (t === 'grid') {
                 const g = P.grid;
-                return { rows: g.rows, cols: g.cols, gap: g.gap, marginTop: g.margin, marginRight: g.margin, marginBottom: g.margin, marginLeft: g.margin, direction: g.direction, trim: g.trim };
+                return { rows: g.rows, cols: g.cols, gap: g.gap, marginTop: g.margin, marginRight: g.margin, marginBottom: g.margin, marginLeft: g.margin, direction: g.direction, trim: g.trim,
+                    ...(g.colCuts ? { colCuts: g.colCuts } : {}), ...(g.rowCuts ? { rowCuts: g.rowCuts } : {}), autoAdjust: g.auto };
             }
             if (t === 'bg') {
                 const b = P.bg;
@@ -103,6 +109,7 @@ definePlugin({
             srcPixels = null;
             palette = [];
             clearResult();
+            resetGridCuts();
             const blob = A.blobs.get(id);
             if (!blob) {
                 message = 'Imagem sem dados.';
@@ -225,6 +232,8 @@ definePlugin({
                 E.release(result);
             result = res;
             checked = new Set(res ? res.pieces.map((_, i) => i) : []);
+            if (tab === 'grid')
+                gridIssues = res?.diagnostics.gridIssueList ?? [];
             if (res && tab === 'bg' && !P.bg.color && res.diagnostics.backgroundColor) { /* cor detectada exibida na lateral */ }
             renderSide();
             renderResults();
@@ -300,8 +309,11 @@ definePlugin({
             ctx.globalAlpha = tab === 'grid' || tab === 'contour' ? 0.4 : 1;
             ctx.drawImage(src, 0, 0);
             ctx.globalAlpha = 1;
-            if (!result)
+            if (!result) {
+                if (tab === 'grid')
+                    drawGridHandles(ctx, s, lw);
                 return;
+            }
             if (tab === 'contour' && result.overlay) {
                 ctx.globalAlpha = 0.55;
                 ctx.drawImage(result.overlay, 0, 0);
@@ -321,6 +333,8 @@ definePlugin({
                     ctx.fillText(String(i + 1), p.x + 4 / s, p.y + 14 / s);
                 }
             });
+            if (tab === 'grid')
+                drawGridHandles(ctx, s, lw);
             if (tab === 'contour') {
                 ctx.fillStyle = '#ffd24d';
                 ctx.strokeStyle = '#000';
@@ -341,6 +355,28 @@ definePlugin({
             if (!src)
                 return;
             const pt = toImage(e);
+            if (tab === 'grid' && !pick) {
+                const hit = hitDivider(pt);
+                if (!hit) {
+                    if (gridSel) {
+                        gridSel = null;
+                        renderSide();
+                        drawStage();
+                    }
+                    return;
+                }
+                gridSel = hit;
+                canvas.focus({ preventScroll: true });
+                const base = cloneCuts(effectiveCuts());
+                pushGridHist();
+                P.grid.auto = false;
+                setCuts(base);
+                gridDrag = { sel: hit, base, startPx: dividerPx(base, hit), segment: P.grid.segment !== e.shiftKey };
+                canvas.setPointerCapture(e.pointerId);
+                renderSide();
+                drawStage();
+                return;
+            }
             if (pick) {
                 const c = pixelAt(pt.x, pt.y);
                 if (!c)
@@ -396,6 +432,18 @@ definePlugin({
             }
         }
         function onPointerMove(e) {
+            if (gridDrag && src) {
+                const pt = toImage(e), d = gridDrag, raw = d.sel.axis === 'h' ? pt.y : pt.x;
+                const px = e.altKey ? raw : snapPx(d.sel, raw, Math.max(3, 7 / scale()), d.base, d.segment);
+                moveDivider(d.sel, px, d.segment, d.base);
+                drawStage();
+                schedule(180);
+                return;
+            }
+            if (tab === 'grid' && !pick && canvas && !cropDrag && !moveDrag) {
+                const h = hitDivider(toImage(e));
+                canvas.style.cursor = h ? (h.axis === 'h' ? 'ns-resize' : 'ew-resize') : '';
+            }
             if (moveDrag && tab === 'compose') {
                 const pt = toImage(e), l = P.compose.layers[P.compose.selected];
                 if (l) {
@@ -412,7 +460,13 @@ definePlugin({
             P.crop = { x: x0, y: y0, width: Math.max(1, x1 - x0), height: Math.max(1, y1 - y0) };
             drawStage();
         }
-        function onPointerUp() { if (moveDrag) {
+        function onPointerUp() { if (gridDrag) {
+            gridDrag = null;
+            renderSide();
+            drawStage();
+            schedule(0);
+            return;
+        } if (moveDrag) {
             moveDrag = null;
             renderSide();
             schedule(0);
@@ -422,6 +476,298 @@ definePlugin({
             renderSide();
             schedule(0);
         } }
+        /* ---------------- grade ajustável ---------------- */
+        const GRID_MIN = 4;
+        const r4 = (v) => Math.round(v * 10000) / 10000;
+        const clampN = (v, a, b) => Math.min(b, Math.max(a, v));
+        const cloneCuts = (c) => ({ col: c.col.map(r => r.slice()), row: c.row.slice() });
+        function uniformCuts() {
+            const g = P.grid, w = src.width, h = src.height;
+            const cut = (len, n) => { const cell = (len - 2 * g.margin - g.gap * (n - 1)) / n; return Array.from({ length: n - 1 }, (_, i) => r4((g.margin + (i + 1) * cell + i * g.gap + g.gap / 2) / len)); };
+            const col = cut(w, g.cols);
+            return { col: Array.from({ length: g.rows }, () => col.slice()), row: cut(h, g.rows) };
+        }
+        /** Cortes em uso: os do usuário; com ajuste automático ligado, os que a prévia calculou; senão, a grade uniforme. */
+        function effectiveCuts() {
+            const g = P.grid;
+            if (g.colCuts && g.rowCuts)
+                return { col: g.colCuts, row: g.rowCuts };
+            const d = result?.diagnostics.gridCuts;
+            if (g.auto && d && d.rowCuts.length === g.rows - 1 && d.colCuts.length === g.rows && d.colCuts.every(r => r.length === g.cols - 1))
+                return { col: d.colCuts, row: d.rowCuts };
+            const u = uniformCuts();
+            return { col: g.colCuts ?? u.col, row: g.rowCuts ?? u.row };
+        }
+        function setCuts(c) { P.grid.colCuts = c ? c.col : null; P.grid.rowCuts = c ? c.row : null; }
+        function resetGridCuts() { setCuts(null); gridSel = null; gridHist = []; gridIssues = []; gridNote = ''; }
+        function pushGridHist() { gridHist.push({ col: P.grid.colCuts ? P.grid.colCuts.map(r => r.slice()) : null, row: P.grid.rowCuts ? P.grid.rowCuts.slice() : null, auto: P.grid.auto }); if (gridHist.length > 50)
+            gridHist.shift(); }
+        function undoGrid() {
+            const h = gridHist.pop();
+            if (!h)
+                return;
+            P.grid.colCuts = h.col;
+            P.grid.rowCuts = h.row;
+            P.grid.auto = h.auto;
+            gridNote = 'Ajuste desfeito.';
+            renderSide();
+            drawStage();
+            schedule(0);
+        }
+        function dividerPx(c, sel) { return sel.axis === 'h' ? c.row[sel.index] * src.height : c.col[sel.row][sel.index] * src.width; }
+        /** Faixa permitida (px) para a divisória: a célula vizinha nunca fica menor que GRID_MIN. */
+        function gridBounds(c, sel) {
+            const g = P.grid, half = g.gap / 2, m = g.margin;
+            const L = sel.axis === 'h' ? src.height : src.width, n = sel.axis === 'h' ? g.rows : g.cols;
+            const list = sel.axis === 'h' ? c.row : c.col[sel.row];
+            const a = sel.index === 0 ? m - half : list[sel.index - 1] * L, b = sel.index === n - 2 ? L - m + half : list[sel.index + 1] * L;
+            return [a + g.gap + GRID_MIN, b - g.gap - GRID_MIN];
+        }
+        /** Move uma divisória a partir do estado `base`. Vertical: a coluna inteira (todas as fileiras) ou só o trecho. */
+        function moveDivider(sel, px, segment, base) {
+            const out = cloneCuts(base), W = src.width, H = src.height;
+            if (sel.axis === 'h') {
+                const [lo, hi] = gridBounds(base, sel);
+                out.row[sel.index] = r4(clampN(px, lo, hi) / H);
+                setCuts(out);
+                return;
+            }
+            if (segment) {
+                const [lo, hi] = gridBounds(base, sel);
+                out.col[sel.row][sel.index] = r4(clampN(px, lo, hi) / W);
+                setCuts(out);
+                return;
+            }
+            const start = dividerPx(base, sel);
+            let dmin = -Infinity, dmax = Infinity;
+            for (let r = 0; r < P.grid.rows; r++) {
+                const [lo, hi] = gridBounds(base, { axis: 'v', row: r, index: sel.index }), s0 = base.col[r][sel.index] * W;
+                dmin = Math.max(dmin, lo - s0);
+                dmax = Math.min(dmax, hi - s0);
+            }
+            const d = dmin > dmax ? 0 : clampN(px - start, dmin, dmax);
+            for (let r = 0; r < P.grid.rows; r++)
+                out.col[r][sel.index] = r4((base.col[r][sel.index] * W + d) / W);
+            setCuts(out);
+        }
+        function rowRange(c, r) {
+            const g = P.grid, H = src.height, half = g.gap / 2;
+            return [r === 0 ? g.margin : c.row[r - 1] * H + half, r === g.rows - 1 ? H - g.margin : c.row[r] * H - half];
+        }
+        function hitDivider(pt) {
+            if (!src || P.grid.rows * P.grid.cols < 2)
+                return null;
+            const c = effectiveCuts(), tol = Math.max(5, 9 / scale()), g = P.grid;
+            let best = null, bd = tol;
+            for (let j = 0; j < g.rows - 1; j++) {
+                const d = Math.abs(pt.y - c.row[j] * src.height);
+                if (d <= bd) {
+                    bd = d;
+                    best = { axis: 'h', row: -1, index: j };
+                }
+            }
+            for (let r = 0; r < g.rows; r++) {
+                const [y0, y1] = rowRange(c, r);
+                if (pt.y < y0 - tol || pt.y > y1 + tol)
+                    continue;
+                for (let i = 0; i < g.cols - 1; i++) {
+                    const d = Math.abs(pt.x - c.col[r][i] * src.width);
+                    if (d <= bd) {
+                        bd = d;
+                        best = { axis: 'v', row: r, index: i };
+                    }
+                }
+            }
+            return best;
+        }
+        /** Ímã: encaixa na posição uniforme e, ao mover só um trecho, no alinhamento das outras fileiras (usa o estado do início do arrasto). */
+        function snapPx(sel, px, tol, base, segment) {
+            const g = P.grid, W = src.width, H = src.height, cands = [];
+            if (sel.axis === 'v') {
+                if (segment)
+                    for (let r = 0; r < g.rows; r++)
+                        if (r !== sel.row)
+                            cands.push(base.col[r][sel.index] * W);
+                cands.push(uniformCuts().col[0][sel.index] * W);
+            }
+            else
+                cands.push(uniformCuts().row[sel.index] * H);
+            let best = px, bd = tol;
+            for (const v of cands) {
+                const d = Math.abs(v - px);
+                if (d <= bd) {
+                    bd = d;
+                    best = v;
+                }
+            }
+            return best;
+        }
+        const issueHas = (axis, row, index) => gridIssues.some(i => i.axis === axis && i.index === index && (axis === 'h' || i.row === row));
+        function drawGridHandles(ctx, s, lw) {
+            if (!src || P.grid.rows * P.grid.cols < 2)
+                return;
+            const g = P.grid, c = effectiveCuts(), W = src.width, H = src.height, k = Math.max(4, 6 / s);
+            const line = (x0, y0, x1, y1, bad, on) => {
+                ctx.save();
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'rgba(0,0,0,.65)';
+                ctx.lineWidth = lw * (on ? 4.5 : 3.5);
+                ctx.beginPath();
+                ctx.moveTo(x0, y0);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+                ctx.strokeStyle = bad ? '#ff4d4d' : on ? '#ffffff' : '#ffb84d';
+                ctx.lineWidth = lw * (on ? 2.5 : 1.8);
+                ctx.setLineDash(bad ? [8 / s, 4 / s] : []);
+                ctx.beginPath();
+                ctx.moveTo(x0, y0);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+                ctx.restore();
+            };
+            const knob = (x, y, bad, on) => {
+                ctx.beginPath();
+                ctx.arc(x, y, k * (on ? 1.3 : 1), 0, 7);
+                ctx.fillStyle = bad ? '#ff4d4d' : '#ffb84d';
+                ctx.fill();
+                ctx.lineWidth = lw;
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+            };
+            for (let j = 0; j < g.rows - 1; j++) {
+                const y = c.row[j] * H, bad = issueHas('h', -1, j), on = !!gridSel && gridSel.axis === 'h' && gridSel.index === j;
+                line(g.margin, y, W - g.margin, y, bad, on);
+                knob(W / 2, y, bad, on);
+            }
+            for (let r = 0; r < g.rows; r++) {
+                const [y0, y1] = rowRange(c, r);
+                for (let i = 0; i < g.cols - 1; i++) {
+                    const x = c.col[r][i] * W, bad = issueHas('v', r, i), on = !!gridSel && gridSel.axis === 'v' && gridSel.index === i && (gridSel.row === r || !P.grid.segment);
+                    line(x, y0, x, y1, bad, on);
+                    knob(x, (y0 + y1) / 2, bad, on);
+                }
+            }
+        }
+        /** Ajuste automático: desloca as divisórias para onde menos desenho é atravessado. */
+        async function autoAdjustGrid() {
+            if (!assetId || !src)
+                return;
+            const params = { ...paramsOf('grid'), autoAdjust: false };
+            gridNote = 'Procurando o melhor lugar para cada divisória…';
+            renderSide();
+            try {
+                const sg = await E.gridSuggest(assetId, params);
+                pushGridHist();
+                setCuts({ col: sg.colCuts, row: sg.rowCuts });
+                P.grid.auto = false;
+                gridNote = !sg.reliable ? 'O fundo não é uniforme; o ajuste é só uma estimativa.' : sg.moved.length ? sg.moved.length + (sg.moved.length === 1 ? ' divisória deslocada.' : ' divisórias deslocadas.') + (sg.after.length ? ' Ainda há conteúdo encostado: use "Cortar por objeto" (aba Contorno).' : ' Nada mais é cortado.') : sg.after.length ? 'Não há espaço livre perto: o desenho encosta nas peças vizinhas. Use "Cortar por objeto" (aba Contorno).' : 'Nenhuma divisória precisou ser movida.';
+            }
+            catch (e) {
+                gridNote = e.message;
+            }
+            renderSide();
+            drawStage();
+            schedule(0);
+        }
+        async function detectGrid() {
+            if (!assetId || !src)
+                return;
+            gridNote = 'Verificando…';
+            renderSide();
+            try {
+                const r = await E.gridDiagnose(assetId, paramsOf('grid'));
+                gridIssues = r.reliable ? r.issues : [];
+                gridNote = !r.reliable ? 'O fundo não é uniforme; não dá para detectar com segurança.' : r.issues.length ? '' : 'Nenhuma divisória corta conteúdo.';
+            }
+            catch (e) {
+                gridNote = e.message;
+            }
+            renderSide();
+            drawStage();
+        }
+        function gridStatus() {
+            if (!gridIssues.length)
+                return gridNote || (result ? '✓ Nenhuma divisória corta conteúdo.' : '');
+            const g = P.grid, ids = new Set();
+            for (const i of gridIssues)
+                for (const c of i.cells)
+                    ids.add(c.r * g.cols + (g.direction === 'rtl' ? g.cols - 1 - c.c : c.c) + 1);
+            return '⚠ ' + gridIssues.length + (gridIssues.length === 1 ? ' divisória corta' : ' divisórias cortam') + ' conteúdo (peças ' + [...ids].sort((a, b) => a - b).slice(0, 10).join(', ') + (ids.size > 10 ? '…' : '') + '). ' + gridNote;
+        }
+        function gridAdjustPanel(box) {
+            const g = P.grid, panel = el('div', 'vbie-gridadj');
+            const st = el('p', 'vbie-note vbie-gridstatus' + (gridIssues.length ? ' warn' : ''), gridStatus());
+            st.setAttribute('role', 'status');
+            st.setAttribute('data-vbie', 'grid-status');
+            panel.appendChild(st);
+            const row = el('div', 'vbie-presets');
+            const mk = (label, title, on, id, disabled = false) => {
+                const b = el('button', 'btn', label);
+                b.type = 'button';
+                b.title = title;
+                b.disabled = disabled;
+                b.setAttribute('data-vbie', id);
+                b.addEventListener('click', on);
+                return b;
+            };
+            row.append(mk('✨ Ajustar automaticamente', 'Desloca as divisórias para onde menos desenho é atravessado', () => { void autoAdjustGrid(); }, 'grid-auto'), mk('🔍 Detectar', 'Mostra quais divisórias cortam conteúdo', () => { void detectGrid(); }, 'grid-detect'), mk('↶ Desfazer ajuste', 'Volta ao ajuste anterior das divisórias', undoGrid, 'grid-undo', !gridHist.length), mk('Redefinir grade', 'Volta a dividir em partes iguais', () => { pushGridHist(); setCuts(null); gridSel = null; gridNote = 'Grade redefinida.'; renderSide(); drawStage(); schedule(0); }, 'grid-reset', !g.colCuts && !g.rowCuts));
+            panel.appendChild(row);
+            panel.appendChild(choice('Arrastar divisória vertical', [['column', 'Coluna inteira'], ['segment', 'Só o trecho da fileira']], g.segment ? 'segment' : 'column', v => { g.segment = v === 'segment'; }, 'Com a tecla Shift o arrasto faz o contrário'));
+            panel.appendChild(check('Ajustar sozinho ao cortar', g.auto, v => { g.auto = v; if (v)
+                setCuts(null); renderSide(); }, 'Antes de cortar, desloca as divisórias que atravessam o desenho (e mostra o resultado na prévia)'));
+            if (gridSel && src) {
+                const c = effectiveCuts(), sel = gridSel, cur = Math.round(dividerPx(c, sel));
+                const inp = number(cur, 0, sel.axis === 'h' ? src.height : src.width, 1, () => { });
+                inp.setAttribute('data-vbie', 'grid-pos');
+                inp.addEventListener('change', () => {
+                    const v = Number(inp.value);
+                    if (!Number.isFinite(v))
+                        return;
+                    pushGridHist();
+                    const base = cloneCuts(effectiveCuts());
+                    P.grid.auto = false;
+                    moveDivider(sel, v, g.segment, base);
+                    renderSide();
+                    drawStage();
+                    schedule(0);
+                });
+                panel.appendChild(field(sel.axis === 'h' ? 'Divisória horizontal ' + (sel.index + 1) + ' (px)' : 'Divisória vertical ' + (sel.index + 1) + (g.segment ? ' · fileira ' + (sel.row + 1) : '') + ' (px)', inp, 'Setas do teclado movem 1 px; Shift+seta, 10 px'));
+            }
+            else
+                panel.appendChild(el('p', 'vbie-note', 'Arraste as linhas laranja na imagem para ajustar o corte. Clique numa linha e use as setas do teclado para ajustar com precisão.'));
+            box.appendChild(panel);
+        }
+        function onGridKey(e) {
+            if (tab !== 'grid' || !gridSel || !src)
+                return;
+            const dx = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0, dy = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0;
+            if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                e.stopPropagation();
+                undoGrid();
+                return;
+            }
+            if (!dx && !dy) {
+                if (e.key === 'Escape') {
+                    gridSel = null;
+                    renderSide();
+                    drawStage();
+                    e.stopPropagation();
+                }
+                return;
+            }
+            if ((gridSel.axis === 'v') !== (dx !== 0))
+                return;
+            e.preventDefault();
+            e.stopPropagation();
+            const step = e.shiftKey ? 10 : 1, c = effectiveCuts();
+            pushGridHist();
+            P.grid.auto = false;
+            moveDivider(gridSel, dividerPx(c, gridSel) + (dx || dy) * step, P.grid.segment, cloneCuts(c));
+            renderSide();
+            drawStage();
+            schedule(150);
+        }
         /* ---------------- controles ---------------- */
         function field(label, control, hint) {
             const r = el('div', 'vbie-field');
@@ -539,13 +885,13 @@ definePlugin({
         }
         function gridControls(box) {
             const g = P.grid;
-            box.appendChild(field('Linhas', number(g.rows, 1, 50, 1, v => { g.rows = Math.round(v); })));
-            box.appendChild(field('Colunas', number(g.cols, 1, 50, 1, v => { g.cols = Math.round(v); })));
+            box.appendChild(field('Linhas', number(g.rows, 1, 50, 1, v => { g.rows = Math.round(v); resetGridCuts(); })));
+            box.appendChild(field('Colunas', number(g.cols, 1, 50, 1, v => { g.cols = Math.round(v); resetGridCuts(); })));
             const presets = el('div', 'vbie-presets');
             for (const [r, c] of [[2, 2], [3, 3], [3, 4], [4, 4], [1, 2], [2, 1]]) {
                 const b = el('button', 'btn', r + '×' + c);
                 b.type = 'button';
-                b.addEventListener('click', () => { g.rows = r; g.cols = c; renderSide(); schedule(0); });
+                b.addEventListener('click', () => { g.rows = r; g.cols = c; resetGridCuts(); renderSide(); schedule(0); });
                 presets.appendChild(b);
             }
             box.appendChild(presets);
@@ -553,7 +899,8 @@ definePlugin({
             box.appendChild(slider('Margem (px)', g.margin, 0, 200, 1, v => { g.margin = v; }, 'Borda externa descartada'));
             box.appendChild(choice('Ordem', [['ltr', 'Esquerda → direita'], ['rtl', 'Direita → esquerda (mangá)']], g.direction, v => { g.direction = v; }, 'Define onde fica a coluna 1 e como as peças são numeradas'));
             box.appendChild(check('Aparar bordas transparentes', g.trim, v => { g.trim = v; }, 'Remove da peça o que for transparente e ignora células vazias'));
-            box.appendChild(el('p', 'vbie-note', 'Todas as células cobrem a imagem inteira e diferem no máximo 1 px entre si.'));
+            gridAdjustPanel(box);
+            box.appendChild(el('p', 'vbie-note', 'Sem ajuste, as células cobrem a imagem inteira e diferem no máximo 1 px entre si.'));
         }
         function bgControls(box) {
             const b = P.bg;
@@ -1711,6 +2058,8 @@ definePlugin({
             canvas.addEventListener('pointerdown', onPointerDown);
             canvas.addEventListener('pointermove', onPointerMove);
             canvas.addEventListener('pointerup', onPointerUp);
+            canvas.tabIndex = 0;
+            canvas.addEventListener('keydown', onGridKey);
             if (src)
                 stageBox.appendChild(canvas);
             else

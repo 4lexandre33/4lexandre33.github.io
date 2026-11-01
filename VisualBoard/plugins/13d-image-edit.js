@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.3.0' },
+    contractVersions: { imageEdit: '1.4.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -38,7 +38,7 @@ definePlugin({
                 if (!keys.includes(k))
                     fail('INVALID_ARGUMENT', 'Parâmetro desconhecido em ' + what + ': ' + k);
         }
-        const GRID_KEYS = ['rows', 'cols', 'gap', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'direction', 'trim'];
+        const GRID_KEYS = ['rows', 'cols', 'gap', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'direction', 'trim', 'colCuts', 'rowCuts', 'autoAdjust'];
         const BG_KEYS = ['mode', 'color', 'tolerance', 'gradientStep', 'edgeSoft', 'trim', 'lineFloor'];
         const CONTOUR_KEYS = ['color', 'tolerance', 'close', 'others', 'mode', 'seeds', 'minArea', 'grow', 'feather', 'padding'];
         const CROP_KEYS = ['x', 'y', 'width', 'height', 'unit'];
@@ -62,13 +62,48 @@ definePlugin({
                 rows: num(p['rows'], 2, 1, 50, 'rows', true), cols: num(p['cols'], 2, 1, 50, 'cols', true), gap: num(p['gap'], 0, 0, 4000, 'gap', true),
                 marginTop: num(p['marginTop'], 0, 0, 4000, 'marginTop', true), marginRight: num(p['marginRight'], 0, 0, 4000, 'marginRight', true),
                 marginBottom: num(p['marginBottom'], 0, 0, 4000, 'marginBottom', true), marginLeft: num(p['marginLeft'], 0, 0, 4000, 'marginLeft', true),
-                direction: oneOf(p['direction'], ['ltr', 'rtl'], 'ltr', 'direction'), trim: p['trim'] === true
+                direction: oneOf(p['direction'], ['ltr', 'rtl'], 'ltr', 'direction'), trim: p['trim'] === true,
+                colCuts: null, rowCuts: null, autoAdjust: p['autoAdjust'] === true
             };
             if (out.rows * out.cols > LIMITS.maxCells)
                 fail('INVALID_ARGUMENT', 'No máximo ' + LIMITS.maxCells + ' células por grade');
-            void w;
-            void h;
+            out.rowCuts = cutList(p['rowCuts'], out.rows - 1, 'rowCuts');
+            const cc = p['colCuts'];
+            if (cc === undefined || cc === null)
+                out.colCuts = null;
+            else if (Array.isArray(cc) && cc.every(v => typeof v === 'number')) {
+                const one = cutList(cc, out.cols - 1, 'colCuts');
+                out.colCuts = Array.from({ length: out.rows }, () => one.slice());
+            }
+            else if (Array.isArray(cc) && cc.length === out.rows)
+                out.colCuts = cc.map((row, i) => cutList(row, out.cols - 1, 'colCuts[' + (i + 1) + ']'));
+            else
+                fail('INVALID_ARGUMENT', 'colCuts deve ser uma lista de ' + (out.cols - 1) + ' números (vale para todas as fileiras) ou uma lista por fileira (' + out.rows + ')');
+            if (out.rowCuts || out.colCuts) {
+                try {
+                    core.gridLayout(w, h, out);
+                }
+                catch (e) {
+                    fail('INVALID_ARGUMENT', e.message);
+                }
+            }
             return out;
+        }
+        /** Lista de cortes (frações 0–1, estritamente crescentes); null/undefined = uniforme. */
+        function cutList(v, n, name) {
+            if (v === undefined || v === null)
+                return null;
+            if (!Array.isArray(v) || v.length !== n)
+                fail('INVALID_ARGUMENT', name + ' deve ter ' + n + ' números entre 0 e 1');
+            let prev = 0;
+            for (const x of v) {
+                if (typeof x !== 'number' || !Number.isFinite(x) || x <= 0 || x >= 1)
+                    fail('INVALID_ARGUMENT', name + ' aceita só números entre 0 e 1 (fração da imagem)');
+                if (x <= prev)
+                    fail('INVALID_ARGUMENT', name + ' deve estar em ordem crescente');
+                prev = x;
+            }
+            return v.map(x => Math.round(x * 10000) / 10000);
         }
         function backgroundParams(raw) {
             const p = raw === undefined ? {} : raw;
@@ -191,7 +226,7 @@ definePlugin({
         }
         function defaults(op) {
             if (op === 'grid')
-                return { rows: 3, cols: 3, gap: 0, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, direction: 'ltr', trim: false };
+                return { rows: 3, cols: 3, gap: 0, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, direction: 'ltr', trim: false, colCuts: null, rowCuts: null, autoAdjust: false };
             if (op === 'removeBackground')
                 return { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false, lineFloor: 0.08 };
             if (op === 'cutByContour')
@@ -275,21 +310,41 @@ definePlugin({
             return c;
         }
         /* ------------------------------ operações ------------------------------ */
-        function runGrid(src, asset, p, res) {
+        function runGrid(src, asset, p0, res) {
             const w = src.width, h = src.height;
-            let xs, ys;
+            let p = p0, L;
+            const rgba = imageOf(src).data;
+            if (p.autoAdjust) {
+                const sg = core.suggestGridCuts(rgba, w, h, p);
+                p = { ...p, colCuts: sg.colCuts, rowCuts: sg.rowCuts };
+                res.diagnostics.gridMoved = sg.moved.length;
+                if (sg.moved.length)
+                    res.warnings.push('Ajuste automático: ' + sg.moved.length + (sg.moved.length === 1 ? ' divisória foi deslocada' : ' divisórias foram deslocadas') + ' para não cortar o desenho');
+                if (!sg.reliable)
+                    res.warnings.push('O fundo não é uniforme; o ajuste automático é uma estimativa');
+                if (sg.after.length)
+                    res.warnings.push(gridIssueText(sg.after, p));
+                res.diagnostics.gridIssueList = sg.reliable ? sg.after : [];
+            }
+            else if (p.colCuts || p.rowCuts || p.rows * p.cols > 1) {
+                const dg = core.diagnoseGrid(rgba, w, h, p);
+                if (dg.issues.length && dg.reliable)
+                    res.warnings.push(gridIssueText(dg.issues, p));
+                res.diagnostics.gridIssues = dg.issues.length;
+                res.diagnostics.gridIssueList = dg.reliable ? dg.issues : [];
+            }
             try {
-                xs = core.gridEdges(w, p.cols, p.marginLeft, p.marginRight, p.gap);
-                ys = core.gridEdges(h, p.rows, p.marginTop, p.marginBottom, p.gap);
+                L = core.gridLayout(w, h, p);
             }
             catch (e) {
                 return fail('INVALID_ARGUMENT', e.message);
             }
+            res.diagnostics.gridCuts = { colCuts: p.colCuts ?? core.defaultGridCuts(w, h, p).colCuts, rowCuts: p.rowCuts ?? core.defaultGridCuts(w, h, p).rowCuts };
             const base = baseName(asset), rtl = p.direction === 'rtl';
             for (let r = 0; r < p.rows; r++)
                 for (let k = 0; k < p.cols; k++) {
-                    const vc = rtl ? p.cols - 1 - k : k, [x0, x1] = xs[vc], [y0, y1] = ys[r];
-                    let cx = x0, cy = y0, cw = x1 - x0, ch = y1 - y0;
+                    const vc = rtl ? p.cols - 1 - k : k, cell = L.cells[r * p.cols + vc];
+                    let cx = cell.x, cy = cell.y, cw = cell.width, ch = cell.height;
                     let piece = cropOf(src, cx, cy, cw, ch);
                     if (p.trim) {
                         const img = imageOf(piece), box = opaqueBox(img.data, cw, ch);
@@ -306,6 +361,38 @@ definePlugin({
                     res.pieces.push({ name: base + '_r' + (r + 1) + 'c' + (k + 1), x: cx, y: cy, width: cw, height: ch, canvas: piece, info: { row: r + 1, col: k + 1 } });
                 }
             res.diagnostics.cells = res.pieces.length;
+        }
+        /** Texto do aviso: qual divisória corta conteúdo e quais peças são afetadas. */
+        function gridIssueText(issues, p) {
+            const cells = new Set();
+            for (const i of issues)
+                for (const c of i.cells)
+                    cells.add('r' + (c.r + 1) + 'c' + (p.direction === 'rtl' ? p.cols - c.c : c.c + 1));
+            return 'Há conteúdo atravessando ' + issues.length + (issues.length === 1 ? ' divisória' : ' divisórias') + ' da grade (peças ' + [...cells].slice(0, 8).join(', ') + (cells.size > 8 ? '…' : '') + '); mova a divisória ou use o ajuste automático';
+        }
+        /** Mede onde a grade corta conteúdo, sem gravar nada. */
+        async function gridDiagnose(assetId, params) {
+            const asset = assetOf(assetId), src = await loadCanvas(asset);
+            try {
+                const w = src.width, h = src.height, p = gridParams(params, w, h), dg = core.diagnoseGrid(imageOf(src).data, w, h, p), def = core.defaultGridCuts(w, h, p);
+                return { width: w, height: h, params: p, colCuts: p.colCuts ?? def.colCuts, rowCuts: p.rowCuts ?? def.rowCuts, reliable: dg.reliable, issues: dg.issues };
+            }
+            finally {
+                src.width = 0;
+                src.height = 0;
+            }
+        }
+        /** Sugere divisórias que cortam menos conteúdo; não altera nada (use o resultado em params.colCuts/rowCuts). */
+        async function gridSuggest(assetId, params, opts) {
+            const asset = assetOf(assetId), src = await loadCanvas(asset);
+            try {
+                const w = src.width, h = src.height, p = gridParams(params, w, h), win = num(opts?.window, 0.15, 0.01, 0.4, 'window');
+                return { ...core.suggestGridCuts(imageOf(src).data, w, h, p, { window: win }), width: w, height: h };
+            }
+            finally {
+                src.width = 0;
+                src.height = 0;
+            }
         }
         function runBackground(src, asset, p, res) {
             const w = src.width, h = src.height, img = imageOf(src);
@@ -893,6 +980,6 @@ definePlugin({
                 src.height = 0;
             }
         }
-        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt });
+        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest });
     }
 });

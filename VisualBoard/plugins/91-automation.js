@@ -974,6 +974,22 @@ definePlugin({
                 const E = await kernel.require('imageEdit');
                 return imageEditCall(async () => ({ color: await E.colorAt(String(input['assetId']), Number(input['x']), Number(input['y'])) }));
             },
+            'image_edit.grid_diagnose': async (input) => {
+                const E = await kernel.require('imageEdit');
+                const params = {};
+                for (const key of Object.keys(input))
+                    if (key !== 'assetId')
+                        params[key] = input[key];
+                return imageEditCall(async () => { const r = await E.gridDiagnose(String(input['assetId']), params); return { width: r.width, height: r.height, colCuts: r.colCuts, rowCuts: r.rowCuts, reliable: r.reliable, issues: r.issues }; });
+            },
+            'image_edit.grid_suggest': async (input) => {
+                const E = await kernel.require('imageEdit');
+                const params = {};
+                for (const key of Object.keys(input))
+                    if (key !== 'assetId' && key !== 'window')
+                        params[key] = input[key];
+                return imageEditCall(() => E.gridSuggest(String(input['assetId']), params, typeof input['window'] === 'number' ? { window: input['window'] } : undefined));
+            },
             'image_edit.slice_grid': (input) => imageEditApply(input, 'grid'),
             'image_edit.remove_background': (input) => imageEditApply(input, 'removeBackground'),
             'image_edit.cut_by_contour': (input) => imageEditApply(input, 'cutByContour'),

@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEditCore'],
     uses: [],
     accepts: {},
-    contractVersions: { imageEditCore: '1.1.0' },
+    contractVersions: { imageEditCore: '1.2.0' },
     setup: function (kernel) {
         /* ------------------------------ cor (Lab) ------------------------------ */
         const LIN = new Float32Array(256);
@@ -290,6 +290,202 @@ definePlugin({
             for (let i = 0; i < n; i++)
                 out.push([Math.round(before + i * (cell + gap)), Math.round(before + i * (cell + gap) + cell)]);
             return out;
+        }
+        /* ------------------------------ grade ajustável (cortes) ------------------------------ */
+        /** Divide `length` em n partes usando cortes (frações 0–1 da imagem). O corte é o centro da calha. */
+        function cutEdges(length, n, before, after, gap, cuts) {
+            if (!cuts)
+                return gridEdges(length, n, before, after, gap);
+            if (cuts.length !== n - 1)
+                throw Error('São necessários ' + (n - 1) + ' cortes, recebi ' + cuts.length);
+            const hg = gap / 2, out = [];
+            let start = before;
+            for (let i = 0; i < n; i++) {
+                const last = i === n - 1, end = last ? length - after : Math.round(cuts[i] * length - hg);
+                if (!(end - start >= 2))
+                    throw Error('A célula ' + (i + 1) + ' ficou estreita demais (corte fora de ordem ou perto demais da borda)');
+                out.push([start, end]);
+                if (!last)
+                    start = Math.round(cuts[i] * length + hg);
+            }
+            if (out[n - 1][1] > length)
+                throw Error('Os cortes passam do limite da imagem');
+            return out;
+        }
+        function gridLayout(w, h, s) {
+            const ys = cutEdges(h, s.rows, s.marginTop, s.marginBottom, s.gap, s.rowCuts);
+            if (s.colCuts && s.colCuts.length !== s.rows)
+                throw Error('colCuts precisa ter uma lista por fileira (' + s.rows + ')');
+            const xsByRow = [], cells = [];
+            for (let r = 0; r < s.rows; r++) {
+                const xs = cutEdges(w, s.cols, s.marginLeft, s.marginRight, s.gap, s.colCuts ? s.colCuts[r] : null);
+                xsByRow.push(xs);
+                for (let c = 0; c < s.cols; c++)
+                    cells.push({ r, c, x: xs[c][0], y: ys[r][0], width: xs[c][1] - xs[c][0], height: ys[r][1] - ys[r][0] });
+            }
+            return { ys, xsByRow, cells };
+        }
+        const r4 = (v) => Math.round(v * 10000) / 10000;
+        /** Cortes da grade uniforme (ponto de partida para ajustar). */
+        function defaultGridCuts(w, h, s) {
+            const ys = gridEdges(h, s.rows, s.marginTop, s.marginBottom, s.gap), xs = gridEdges(w, s.cols, s.marginLeft, s.marginRight, s.gap);
+            const rowCuts = [], colRow = [];
+            for (let j = 0; j < s.rows - 1; j++)
+                rowCuts.push(r4((ys[j][1] + s.gap / 2) / h));
+            for (let i = 0; i < s.cols - 1; i++)
+                colRow.push(r4((xs[i][1] + s.gap / 2) / w));
+            const colCuts = [];
+            for (let r = 0; r < s.rows; r++)
+                colCuts.push(colRow.slice());
+            return { colCuts, rowCuts };
+        }
+        /* ------------------------------ tinta que atravessa as linhas ------------------------------ */
+        function inkOf(rgba, w, h, tolerance) {
+            const est = estimateBackground(rgba, w, h, tolerance), t = new Float64Array(3), tmp = new Float64Array(3);
+            lab(est.color[0], est.color[1], est.color[2], t);
+            const ink = new Uint8Array(w * h);
+            for (let i = 0; i < w * h; i++)
+                if (rgba[i * 4 + 3] >= 128 && pixelDelta(rgba, i, t, tmp) > tolerance)
+                    ink[i] = 1;
+            return { ink, reliable: est.coverage >= 0.5 || est.coverage === 0, background: est.color };
+        }
+        /** Perfil vertical: para cada x, quantos pixels de tinta continuam dos dois lados (conn) e prefixo da tinta por coluna. */
+        function profileV(ink, w, y0, y1) {
+            const conn = new Int32Array(w + 1), col = new Int32Array(w);
+            for (let y = y0; y < y1; y++) {
+                const o = y * w;
+                for (let x = 0; x < w; x++)
+                    if (ink[o + x]) {
+                        col[x]++;
+                        if (x > 0 && ink[o + x - 1])
+                            conn[x]++;
+                    }
+            }
+            const pre = new Float64Array(w + 1);
+            for (let x = 0; x < w; x++)
+                pre[x + 1] = pre[x] + col[x];
+            return { conn, pre };
+        }
+        function profileH(ink, w, h, x0, x1) {
+            const conn = new Int32Array(h + 1), row = new Int32Array(h);
+            for (let y = 0; y < h; y++) {
+                const o = y * w;
+                for (let x = x0; x < x1; x++)
+                    if (ink[o + x]) {
+                        row[y]++;
+                        if (y > 0 && ink[o - w + x])
+                            conn[y]++;
+                    }
+            }
+            const pre = new Float64Array(h + 1);
+            for (let y = 0; y < h; y++)
+                pre[y + 1] = pre[y] + row[y];
+            return { conn, pre };
+        }
+        function scoreAt(pr, p, gap, max) {
+            const a = Math.max(0, Math.round(p - gap / 2)), b = Math.min(max, Math.round(p + gap / 2));
+            return (p >= 0 && p <= max ? pr.conn[p] : 0) + (b > a ? pr.pre[b] - pr.pre[a] : 0);
+        }
+        function diagnoseGrid(rgba, w, h, s, opts) {
+            const tol = opts?.tolerance ?? 18, minPx = opts?.minPixels ?? 2;
+            const inkR = opts?.ink ? { ink: opts.ink, reliable: true, background: [255, 255, 255] } : inkOf(rgba, w, h, tol);
+            const L = gridLayout(w, h, s), c0 = defaultGridCuts(w, h, s);
+            const rowCuts = s.rowCuts ?? c0.rowCuts, colCuts = s.colCuts ?? c0.colCuts, issues = [];
+            const x0 = s.marginLeft, x1 = w - s.marginRight;
+            for (let j = 0; j < s.rows - 1; j++) {
+                const pos = Math.round(rowCuts[j] * h), pr = profileH(inkR.ink, w, h, x0, x1), ink = scoreAt(pr, pos, s.gap, h);
+                if (ink < minPx)
+                    continue;
+                const cells = new Set(), band0 = Math.max(0, Math.round(pos - s.gap / 2)), band1 = Math.min(h, Math.round(pos + s.gap / 2));
+                for (let x = x0; x < x1; x++) {
+                    let hit = !!(pos > 0 && pos < h && inkR.ink[(pos - 1) * w + x] && inkR.ink[pos * w + x]);
+                    for (let y = band0; !hit && y < band1; y++)
+                        if (inkR.ink[y * w + x])
+                            hit = true;
+                    if (!hit)
+                        continue;
+                    for (const r of [j, j + 1]) {
+                        const xs = L.xsByRow[r];
+                        for (let c = 0; c < s.cols; c++)
+                            if (x >= xs[c][0] && x < xs[c][1])
+                                cells.add(r * s.cols + c);
+                    }
+                }
+                issues.push({ axis: 'h', row: -1, index: j, position: pos, ink, cells: [...cells].sort((a, b) => a - b).map(k => ({ r: Math.floor(k / s.cols), c: k % s.cols })) });
+            }
+            for (let r = 0; r < s.rows; r++) {
+                const pr = profileV(inkR.ink, w, L.ys[r][0], L.ys[r][1]);
+                for (let i = 0; i < s.cols - 1; i++) {
+                    const pos = Math.round(colCuts[r][i] * w), ink = scoreAt(pr, pos, s.gap, w);
+                    if (ink >= minPx)
+                        issues.push({ axis: 'v', row: r, index: i, position: pos, ink, cells: [{ r, c: i }, { r, c: i + 1 }] });
+                }
+            }
+            return { reliable: inkR.reliable, background: inkR.background, issues };
+        }
+        /** Procura, perto de cada divisória, a posição com menos tinta atravessando. Nunca mexe em divisórias já limpas. */
+        function suggestGridCuts(rgba, w, h, s, opts) {
+            const tol = opts?.tolerance ?? 18, minPx = opts?.minPixels ?? 2, win = Math.max(0.01, Math.min(0.4, opts?.window ?? 0.15));
+            const inkR = inkOf(rgba, w, h, tol), start = defaultGridCuts(w, h, s);
+            const rowCuts = (s.rowCuts ?? start.rowCuts).slice(), colCuts = (s.colCuts ?? start.colCuts).map(a => a.slice());
+            const moved = [];
+            const best = (score, cur, lo, hi) => {
+                const sc = (p) => { const v = score(p); return v < minPx ? 0 : v; };
+                if (sc(cur) === 0)
+                    return cur;
+                let min = Infinity, at = cur;
+                for (let p = lo; p <= hi; p++) {
+                    const v = sc(p);
+                    if (v < min || (v === min && Math.abs(p - cur) < Math.abs(at - cur))) {
+                        min = v;
+                        at = p;
+                    }
+                }
+                if (min >= sc(cur))
+                    return cur;
+                let a = at, b = at;
+                while (a - 1 >= lo && sc(a - 1) === min)
+                    a--;
+                while (b + 1 <= hi && sc(b + 1) === min)
+                    b++;
+                return Math.round((a + b) / 2);
+            };
+            const MIN = 4;
+            const base = { ...s, rowCuts: null, colCuts: null };
+            const x0 = s.marginLeft, x1 = w - s.marginRight, y0 = s.marginTop, y1 = h - s.marginBottom;
+            const prH = s.rows > 1 ? profileH(inkR.ink, w, h, x0, x1) : null;
+            for (let j = 0; j < s.rows - 1; j++) {
+                const cur = Math.round(rowCuts[j] * h), span = (y1 - y0) / s.rows, lim = Math.round(win * span);
+                const prev = j === 0 ? y0 : Math.round(rowCuts[j - 1] * h), next = j === s.rows - 2 ? y1 : Math.round(rowCuts[j + 1] * h);
+                const lo = Math.max(prev + MIN + Math.ceil(s.gap / 2), cur - lim), hi = Math.min(next - MIN - Math.ceil(s.gap / 2), cur + lim);
+                if (lo > hi)
+                    continue;
+                const to = best(p => scoreAt(prH, p, s.gap, h), cur, lo, hi);
+                if (to !== cur) {
+                    moved.push({ axis: 'h', row: -1, index: j, from: cur, to });
+                    rowCuts[j] = r4(to / h);
+                }
+            }
+            base.rowCuts = rowCuts;
+            const ys = cutEdges(h, s.rows, s.marginTop, s.marginBottom, s.gap, rowCuts);
+            for (let r = 0; r < s.rows; r++) {
+                const pr = profileV(inkR.ink, w, ys[r][0], ys[r][1]), row = colCuts[r], span = (x1 - x0) / s.cols, lim = Math.round(win * span);
+                for (let i = 0; i < s.cols - 1; i++) {
+                    const cur = Math.round(row[i] * w), prev = i === 0 ? x0 : Math.round(row[i - 1] * w), next = i === s.cols - 2 ? x1 : Math.round(row[i + 1] * w);
+                    const lo = Math.max(prev + MIN + Math.ceil(s.gap / 2), cur - lim), hi = Math.min(next - MIN - Math.ceil(s.gap / 2), cur + lim);
+                    if (lo > hi)
+                        continue;
+                    const to = best(p => scoreAt(pr, p, s.gap, w), cur, lo, hi);
+                    if (to !== cur) {
+                        moved.push({ axis: 'v', row: r, index: i, from: cur, to });
+                        row[i] = r4(to / w);
+                    }
+                }
+            }
+            base.colCuts = colCuts;
+            const before = diagnoseGrid(rgba, w, h, s, { tolerance: tol, minPixels: minPx, ink: inkR.ink }).issues;
+            const after = diagnoseGrid(rgba, w, h, base, { tolerance: tol, minPixels: minPx, ink: inkR.ink }).issues;
+            return { colCuts, rowCuts, moved, before, after, reliable: inkR.reliable, background: inkR.background };
         }
         /* ------------------------------ cores dominantes ------------------------------ */
         function dominantColors(rgba, w, h, max) {
@@ -783,7 +979,7 @@ definePlugin({
             return { out, changedShare: n ? changed / n : 0, roles };
         }
         kernel.provide('imageEditCore', {
-            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
+            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, gridLayout, defaultGridCuts, diagnoseGrid, suggestGridCuts, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
             /* usado só pela operação de ativos (alfa suave por objeto) */
             boxAlpha
         });

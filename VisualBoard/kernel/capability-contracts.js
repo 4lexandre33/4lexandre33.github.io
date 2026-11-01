@@ -37,12 +37,12 @@
         "imageProcessors": "register list resolve plan",
         "imageCanvasProcessor": "",
         "imageCommands": "plan execute apply applyBatch process",
-        "imageEdit": "limits defaults plan preview commit apply applyBatch buildZip exportZip release analyze colorAt",
+        "imageEdit": "limits defaults plan preview commit apply applyBatch buildZip exportZip release analyze colorAt gridDiagnose gridSuggest",
         "ui.imageEditor": "open close isOpen compose batch",
         "audioEditCore": "parseWav encodeWav lufs analyze waveform findSilences splitBySilence slice concat mix applyStep run",
         "audioEdit": "limits defaults validate decode analyze preview commit apply splitBySilence replaceClip release recipes levelVoices",
         "ui.audioEditor": "open close isOpen",
-        "imageEditCore": "deltaE colorMask dilate erode closeMask outsideOf label gridEdges dominantColors estimateBackground cutByContour removeBackground boxAlpha detectRoles recolor",
+        "imageEditCore": "deltaE colorMask dilate erode closeMask outsideOf label gridEdges gridLayout defaultGridCuts diagnoseGrid suggestGridCuts dominantColors estimateBackground cutByContour removeBackground boxAlpha detectRoles recolor",
         "sceneBlockingCore": "assertSheetShape hash random round2 norm360 dir angleTo angleDiff dist inConvex normalizeConfig defaultConfig fail",
         "sceneBlockingEngine": "themes registerTheme resolveTheme generate regenerate setLock editCell validateCell validateBatch computeFraming focusPoint",
         "sceneBlockingRender": "createCache cellKey renderCell renderSheet renderCellDocument parseDocument zip crc32",
@@ -789,7 +789,7 @@
         }
         // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
         const MINOR_BUMPS = {
-            camera: '1.1.0', assets: '1.2.0', packages: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.2.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.3.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0', imageEdit: '1.3.0', imageEditCore: '1.1.0', imageCommands: '1.1.0', 'ui.imageEditor': '1.2.0'
+            camera: '1.1.0', assets: '1.2.0', packages: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.2.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.3.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0', imageEdit: '1.4.0', imageEditCore: '1.2.0', imageCommands: '1.1.0', 'ui.imageEditor': '1.2.0'
         };
         const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {
