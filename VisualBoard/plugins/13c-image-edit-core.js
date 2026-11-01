@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEditCore'],
     uses: [],
     accepts: {},
-    contractVersions: { imageEditCore: '1.2.0' },
+    contractVersions: { imageEditCore: '1.3.0' },
     setup: function (kernel) {
         /* ------------------------------ cor (Lab) ------------------------------ */
         const LIN = new Float32Array(256);
@@ -563,6 +563,139 @@ definePlugin({
                     ok++;
             return { color, coverage: Math.round((ok / seeds.length) * 1000) / 1000 };
         }
+        /* ------------------------------ áreas internas do fundo (vãos fechados) ------------------------------ */
+        /** Espessura típica do traço externo: corre para dentro a partir da borda da figura até achar a cor do fundo de novo. */
+        function strokeWidth(bg, isBgColor, w, h) {
+            const runs = [], n = w * h, step = Math.max(1, Math.floor(n / 4000));
+            for (let i = 0; i < n && runs.length < 300; i += step) {
+                if (bg[i])
+                    continue;
+                const y = (i / w) | 0, x = i - y * w;
+                let dx = 0, dy = 0;
+                if (x > 0 && bg[i - 1])
+                    dx = 1;
+                else if (x < w - 1 && bg[i + 1])
+                    dx = -1;
+                else if (y > 0 && bg[i - w])
+                    dy = 1;
+                else if (y < h - 1 && bg[i + w])
+                    dy = -1;
+                else
+                    continue;
+                let run = 0, cx = x, cy = y;
+                while (run < 60 && cx >= 0 && cy >= 0 && cx < w && cy < h && !bg[cy * w + cx] && !isBgColor(cy * w + cx)) {
+                    run++;
+                    cx += dx;
+                    cy += dy;
+                }
+                if (run > 0 && run < 60)
+                    runs.push(run);
+            }
+            if (!runs.length)
+                return 3;
+            runs.sort((a, b) => a - b);
+            return runs[runs.length >> 1];
+        }
+        /** Áreas da cor do fundo que NÃO tocam a borda (fechadas por contorno): candidatas, remoção por clique e por tamanho. */
+        function holeStage(rgba, w, h, bg, t, color, p) {
+            const H = p.holes, n = w * h, report = { candidates: [], removed: 0, warnings: [] };
+            const tmp = new Float64Array(3), th = H.tolerance;
+            const isBgColor = (i) => rgba[i * 4 + 3] < 128 || pixelDelta(rgba, i, t, tmp) <= th;
+            const hole = new Uint8Array(n);
+            const wantList = H.suggest || H.auto === 'small';
+            if (wantList) {
+                const cand = new Uint8Array(n);
+                for (let i = 0; i < n; i++)
+                    if (!bg[i] && isBgColor(i))
+                        cand[i] = 1;
+                const lb = label(cand, w, h), minArea = Math.max(12, Math.round(n * 0.00002));
+                const sw = strokeWidth(bg, isBgColor, w, h), rim = dilate(bg, w, h, Math.max(2, Math.round(sw * 1.4)));
+                const bound = new Float64Array(lb.objects.length + 1), outer = new Float64Array(lb.objects.length + 1);
+                const best = new Float64Array(lb.objects.length + 1).fill(Infinity), at = new Int32Array(lb.objects.length + 1);
+                for (let i = 0; i < n; i++) {
+                    const id = lb.labels[i];
+                    if (!id)
+                        continue;
+                    const y = (i / w) | 0, x = i - y * w, o = lb.objects[id - 1];
+                    const d = (x - (o.x0 + o.x1) / 2) ** 2 + (y - (o.y0 + o.y1) / 2) ** 2;
+                    if (d < best[id]) {
+                        best[id] = d;
+                        at[id] = i;
+                    }
+                    const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1 || lb.labels[i - 1] !== id || lb.labels[i + 1] !== id || lb.labels[i - w] !== id || lb.labels[i + w] !== id;
+                    if (edge) {
+                        bound[id]++;
+                        if (rim[i])
+                            outer[id]++;
+                    }
+                }
+                const limit = Math.max(0, H.maxArea) / 100 * n, list = [], drop = new Set();
+                for (const o of lb.objects) {
+                    if (o.area < minArea)
+                        continue;
+                    const i = at[o.id], y = (i / w) | 0, x = i - y * w;
+                    if (H.auto === 'small' && o.area <= limit) {
+                        drop.add(o.id);
+                        report.removed++;
+                        continue;
+                    }
+                    list.push({ id: 0, area: o.area, share: Math.round(o.area / n * 10000) / 10000, x0: o.x0, y0: o.y0, x1: o.x1, y1: o.y1, seed: { x, y }, outer: Math.round(outer[o.id] / Math.max(1, bound[o.id]) * 100) / 100 });
+                }
+                if (drop.size)
+                    for (let k = 0; k < n; k++)
+                        if (drop.has(lb.labels[k]))
+                            hole[k] = 1;
+                list.sort((a, b) => b.outer - a.outer || b.area - a.area);
+                list.length = Math.min(list.length, 60);
+                list.forEach((c, k) => { c.id = k + 1; });
+                report.candidates = list;
+            }
+            const tl = new Float64Array(3);
+            for (const sd of H.seeds) {
+                if (sd.x < 0 || sd.y < 0 || sd.x >= w || sd.y >= h) {
+                    report.warnings.push('Ponto (' + sd.x + ', ' + sd.y + ') está fora da imagem');
+                    continue;
+                }
+                const idx = sd.y * w + sd.x;
+                if (bg[idx]) {
+                    report.warnings.push('O ponto (' + sd.x + ', ' + sd.y + ') já é fundo');
+                    continue;
+                }
+                if (hole[idx])
+                    continue;
+                lab(rgba[idx * 4], rgba[idx * 4 + 1], rgba[idx * 4 + 2], tl);
+                const mine = grow(w, h, [idx], (_f, to) => !bg[to] && !hole[to] && (rgba[to * 4 + 3] < 128 ? rgba[idx * 4 + 3] < 128 : pixelDelta(rgba, to, tl, tmp) <= th));
+                let area = 0, leak = false;
+                for (let i = 0; i < n && !leak; i++) {
+                    if (!mine[i])
+                        continue;
+                    area++;
+                    const y = (i / w) | 0, x = i - y * w;
+                    if (x === 0 || y === 0 || x === w - 1 || y === h - 1 || bg[i - 1] || bg[i + 1] || bg[i - w] || bg[i + w])
+                        leak = true;
+                }
+                if (leak) {
+                    report.warnings.push('A área marcada em (' + sd.x + ', ' + sd.y + ') não é fechada (encosta no fundo externo ou na borda); feche a falha do contorno ou use outro ponto');
+                    continue;
+                }
+                if (area > n * 0.25) {
+                    report.warnings.push('A área marcada em (' + sd.x + ', ' + sd.y + ') é grande demais (' + Math.round(area / n * 100) + '% da imagem); não foi apagada');
+                    continue;
+                }
+                const d = Math.hypot(tl[0] - t[0], tl[1] - t[1], tl[2] - t[2]);
+                if (d > 30 && rgba[idx * 4 + 3] >= 128)
+                    report.warnings.push('A área marcada em (' + sd.x + ', ' + sd.y + ') não tem a cor do fundo; foi apagada mesmo assim');
+                for (let i = 0; i < n; i++)
+                    if (mine[i])
+                        hole[i] = 1;
+                report.removed++;
+            }
+            void color;
+            for (let i = 0; i < n; i++)
+                if (hole[i])
+                    bg[i] = 1;
+            return report;
+        }
         /* ------------------------------ remover fundo ------------------------------ */
         function removeBackground(rgba, w, h, p) {
             const out = new Uint8ClampedArray(rgba), n = w * h;
@@ -589,7 +722,7 @@ definePlugin({
                 for (let i = 0; i < n; i++)
                     if (out[i * 4 + 3] === 0)
                         gone++;
-                return { out, color: [255, 255, 255], coverage: 1, removedShare: gone / n };
+                return { out, color: [255, 255, 255], coverage: 1, removedShare: gone / n, holes: { candidates: [], removed: 0, warnings: p.holes.seeds.length || p.holes.auto !== 'off' ? ['Áreas internas não se aplicam ao modo arte-final'] : [] } };
             }
             const t = new Float64Array(3), tmp = new Float64Array(3), tmp2 = new Float64Array(3);
             lab(color[0], color[1], color[2], t);
@@ -618,6 +751,7 @@ definePlugin({
                     return Math.hypot(tmp[0] - tmp2[0], tmp[1] - tmp2[1], tmp[2] - tmp2[2]) <= step;
                 });
             }
+            const holes = p.mode === 'edge' ? holeStage(rgba, w, h, bg, t, color, p) : { candidates: [], removed: 0, warnings: p.holes.seeds.length || p.holes.auto !== 'off' ? ['Áreas internas só no modo "Fundo ligado à borda" (o modo global já apaga a cor em todo lugar)'] : [] };
             const fg = invert(bg);
             /* Borda suave: só do lado do objeto (nunca cria halo da cor do fundo), cor tirada dos vizinhos opacos. */
             const soft = Math.max(0, Math.min(3, Math.round(p.edgeSoft)));
@@ -658,7 +792,7 @@ definePlugin({
                     }
                 }
             }
-            return { out, color, coverage: est.coverage, removedShare: countOf(bg) / n };
+            return { out, color, coverage: est.coverage, removedShare: countOf(bg) / n, holes };
         }
         /* ------------------------------ corte por contorno ------------------------------ */
         function cutByContour(rgba, w, h, p) {

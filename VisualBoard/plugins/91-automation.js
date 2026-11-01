@@ -974,6 +974,14 @@ definePlugin({
                 const E = await kernel.require('imageEdit');
                 return imageEditCall(async () => ({ color: await E.colorAt(String(input['assetId']), Number(input['x']), Number(input['y'])) }));
             },
+            'image_edit.background_holes': async (input) => {
+                const E = await kernel.require('imageEdit');
+                const params = {};
+                for (const key of Object.keys(input))
+                    if (key !== 'assetId')
+                        params[key] = input[key];
+                return imageEditCall(() => E.backgroundHoles(String(input['assetId']), params));
+            },
             'image_edit.grid_diagnose': async (input) => {
                 const E = await kernel.require('imageEdit');
                 const params = {};

@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.4.0' },
+    contractVersions: { imageEdit: '1.5.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -39,7 +39,8 @@ definePlugin({
                     fail('INVALID_ARGUMENT', 'Parâmetro desconhecido em ' + what + ': ' + k);
         }
         const GRID_KEYS = ['rows', 'cols', 'gap', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'direction', 'trim', 'colCuts', 'rowCuts', 'autoAdjust'];
-        const BG_KEYS = ['mode', 'color', 'tolerance', 'gradientStep', 'edgeSoft', 'trim', 'lineFloor'];
+        const BG_KEYS = ['mode', 'color', 'tolerance', 'gradientStep', 'edgeSoft', 'trim', 'lineFloor', 'holes'];
+        const HOLE_KEYS = ['seeds', 'auto', 'maxArea', 'tolerance', 'suggest'];
         const CONTOUR_KEYS = ['color', 'tolerance', 'close', 'others', 'mode', 'seeds', 'minArea', 'grow', 'feather', 'padding'];
         const CROP_KEYS = ['x', 'y', 'width', 'height', 'unit'];
         const RECOLOR_KEYS = ['mode', 'pairs', 'color', 'outlineTo', 'fillTo', 'tolerance', 'keepShading'];
@@ -105,7 +106,26 @@ definePlugin({
             }
             return v.map(x => Math.round(x * 10000) / 10000);
         }
-        function backgroundParams(raw) {
+        function holeParams(raw, w, h) {
+            if (raw === undefined || raw === null)
+                return { seeds: [], auto: 'off', maxArea: 2, tolerance: 12, suggest: false };
+            if (!isObj(raw))
+                fail('INVALID_ARGUMENT', 'holes deve ser um objeto');
+            known(raw, HOLE_KEYS, 'holes');
+            const sr = raw['seeds'] === undefined ? [] : raw['seeds'];
+            if (!Array.isArray(sr) || sr.length > 50)
+                fail('INVALID_ARGUMENT', 'holes.seeds deve ser uma lista de até 50 pontos');
+            const seeds = sr.map((q, i) => {
+                if (!isObj(q))
+                    fail('INVALID_ARGUMENT', 'holes.seeds[' + i + '] deve ser {x, y}');
+                const x = num(q['x'], NaN, 0, w - 1, 'holes.seeds[' + i + '].x', true), y = num(q['y'], NaN, 0, h - 1, 'holes.seeds[' + i + '].y', true);
+                if (Number.isNaN(x) || Number.isNaN(y))
+                    fail('INVALID_ARGUMENT', 'holes.seeds[' + i + '] precisa de x e y');
+                return { x, y };
+            });
+            return { seeds, auto: oneOf(raw['auto'], ['off', 'small'], 'off', 'holes.auto'), maxArea: num(raw['maxArea'], 2, 0, 30, 'holes.maxArea'), tolerance: num(raw['tolerance'], 12, 0, 60, 'holes.tolerance'), suggest: raw['suggest'] === true };
+        }
+        function backgroundParams(raw, w, h) {
             const p = raw === undefined ? {} : raw;
             if (!isObj(p))
                 fail('INVALID_ARGUMENT', 'params deve ser um objeto');
@@ -114,7 +134,7 @@ definePlugin({
                 mode: oneOf(p['mode'], ['edge', 'global', 'lineart'], 'edge', 'mode'),
                 color: p['color'] === undefined || p['color'] === null ? null : rgb(p['color'], 'color'),
                 tolerance: num(p['tolerance'], 12, 0, 100, 'tolerance'), gradientStep: num(p['gradientStep'], 0, 0, 30, 'gradientStep'),
-                edgeSoft: num(p['edgeSoft'], 1, 0, 3, 'edgeSoft', true), trim: p['trim'] === true, lineFloor: num(p['lineFloor'], 0.08, 0, 0.5, 'lineFloor')
+                edgeSoft: num(p['edgeSoft'], 1, 0, 3, 'edgeSoft', true), trim: p['trim'] === true, lineFloor: num(p['lineFloor'], 0.08, 0, 0.5, 'lineFloor'), holes: holeParams(p['holes'], w, h)
             };
         }
         function contourParams(raw, w, h) {
@@ -228,7 +248,7 @@ definePlugin({
             if (op === 'grid')
                 return { rows: 3, cols: 3, gap: 0, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, direction: 'ltr', trim: false, colCuts: null, rowCuts: null, autoAdjust: false };
             if (op === 'removeBackground')
-                return { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false, lineFloor: 0.08 };
+                return { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false, lineFloor: 0.08, holes: { seeds: [], auto: 'off', maxArea: 2, tolerance: 12, suggest: false } };
             if (op === 'cutByContour')
                 return { color: [0, 0, 0], tolerance: 25, close: 1, others: [], mode: 'auto', seeds: [], minArea: 64, grow: 0, feather: 0, padding: 2 };
             if (op === 'recolor')
@@ -382,6 +402,19 @@ definePlugin({
                 src.height = 0;
             }
         }
+        /** Lista as áreas internas (fechadas, da cor do fundo) candidatas a serem apagadas; não grava nada. */
+        async function backgroundHoles(assetId, params) {
+            const asset = assetOf(assetId), src = await loadCanvas(asset);
+            try {
+                const w = src.width, h = src.height, p0 = backgroundParams(params, w, h), p = { ...p0, mode: 'edge', holes: { ...p0.holes, seeds: [], auto: 'off', suggest: true } };
+                const r = core.removeBackground(imageOf(src).data, w, h, p);
+                return { width: w, height: h, backgroundColor: r.color, candidates: r.holes.candidates };
+            }
+            finally {
+                src.width = 0;
+                src.height = 0;
+            }
+        }
         /** Sugere divisórias que cortam menos conteúdo; não altera nada (use o resultado em params.colCuts/rowCuts). */
         async function gridSuggest(assetId, params, opts) {
             const asset = assetOf(assetId), src = await loadCanvas(asset);
@@ -402,6 +435,10 @@ definePlugin({
             res.diagnostics.removedShare = Math.round(r.removedShare * 1000) / 1000;
             if (p.mode !== 'lineart' && !p.color && r.coverage < 0.6)
                 res.warnings.push('O fundo não parece uniforme (' + Math.round(r.coverage * 100) + '% da borda tem a cor detectada); escolha a cor do fundo ou aumente a tolerância');
+            res.diagnostics.holeCandidates = r.holes.candidates;
+            res.diagnostics.holesRemoved = r.holes.removed;
+            for (const m of r.holes.warnings)
+                res.warnings.push(m);
             if (r.removedShare < 0.001)
                 res.warnings.push('Quase nada foi removido; aumente a tolerância ou escolha a cor do fundo');
             if (r.removedShare > 0.98)
@@ -641,7 +678,7 @@ definePlugin({
             if (op === 'grid')
                 return gridParams(params, w, h);
             if (op === 'removeBackground')
-                return backgroundParams(params);
+                return backgroundParams(params, w, h);
             if (op === 'cutByContour')
                 return contourParams(params, w, h);
             if (op === 'crop')
@@ -980,6 +1017,6 @@ definePlugin({
                 src.height = 0;
             }
         }
-        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest });
+        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest, backgroundHoles });
     }
 });

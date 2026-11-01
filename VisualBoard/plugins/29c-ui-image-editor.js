@@ -63,7 +63,8 @@ definePlugin({
         const rememberRecent = (ids) => { recent = [...ids.slice().reverse(), ...recent.filter(r => !ids.includes(r))].slice(0, 8); };
         const P = {
             grid: { rows: 3, cols: 3, gap: 0, margin: 0, direction: 'ltr', trim: false, colCuts: null, rowCuts: null, auto: false, segment: false },
-            bg: { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false },
+            bg: { mode: 'edge', color: null, tolerance: 12, gradientStep: 0, edgeSoft: 1, trim: false,
+                holes: { seeds: [], auto: 'off', maxArea: 2, tol: 12, show: false } },
             contour: { color: null, tolerance: 25, close: 1, others: [], mode: 'auto',
                 seeds: [], grow: 0, feather: 0, padding: 2 },
             crop: { x: 0, y: 0, width: 1, height: 1 },
@@ -80,7 +81,8 @@ definePlugin({
             }
             if (t === 'bg') {
                 const b = P.bg;
-                return { mode: b.mode, ...(b.color ? { color: b.color } : {}), tolerance: b.tolerance, gradientStep: b.gradientStep, edgeSoft: b.edgeSoft, trim: b.trim };
+                return { mode: b.mode, ...(b.color ? { color: b.color } : {}), tolerance: b.tolerance, gradientStep: b.gradientStep, edgeSoft: b.edgeSoft, trim: b.trim,
+                    ...(b.mode === 'edge' && (b.holes.seeds.length || b.holes.auto !== 'off' || b.holes.show) ? { holes: { seeds: b.holes.seeds, auto: b.holes.auto, maxArea: b.holes.maxArea, tolerance: b.holes.tol, suggest: b.holes.show } } : {}) };
             }
             if (t === 'contour') {
                 const c = P.contour;
@@ -110,6 +112,7 @@ definePlugin({
             palette = [];
             clearResult();
             resetGridCuts();
+            P.bg.holes.seeds = [];
             const blob = A.blobs.get(id);
             if (!blob) {
                 message = 'Imagem sem dados.';
@@ -288,6 +291,8 @@ definePlugin({
             if ((tab === 'bg' || tab === 'color') && result && result.pieces[0] && !showBefore) {
                 const p = result.pieces[0];
                 ctx.drawImage(p.canvas, p.x, p.y);
+                if (tab === 'bg')
+                    drawHoleMarks(ctx, s, lw);
                 return;
             }
             if (tab === 'crop') {
@@ -384,7 +389,13 @@ definePlugin({
                 const kind = pick;
                 pick = null;
                 canvas.style.cursor = '';
-                if (kind === 'bg')
+                if (kind === 'hole') {
+                    if (P.bg.holes.seeds.length < 50)
+                        P.bg.holes.seeds.push({ x: pt.x, y: pt.y });
+                    pick = 'hole';
+                    canvas.style.cursor = 'crosshair';
+                }
+                else if (kind === 'bg')
                     P.bg.color = c;
                 else if (kind === 'contour')
                     P.contour.color = c;
@@ -476,6 +487,85 @@ definePlugin({
             renderSide();
             schedule(0);
         } }
+        /* ---------------- áreas internas do fundo ---------------- */
+        const holeList = () => P.bg.holes.show ? (result?.diagnostics.holeCandidates ?? []) : [];
+        function drawHoleMarks(ctx, s, lw) {
+            const H = P.bg.holes;
+            for (const c of holeList()) {
+                const likely = c.outer >= 0.7;
+                ctx.save();
+                ctx.strokeStyle = likely ? '#ff4da6' : '#4dd2ff';
+                ctx.lineWidth = lw * 1.5;
+                ctx.setLineDash([6 / s, 4 / s]);
+                ctx.strokeRect(c.x0, c.y0, c.x1 - c.x0 + 1, c.y1 - c.y0 + 1);
+                ctx.restore();
+                ctx.fillStyle = likely ? '#ff4da6' : '#4dd2ff';
+                ctx.font = 'bold ' + Math.max(11, 13 / s) + 'px sans-serif';
+                ctx.fillText(String(c.id), c.x0 + 3 / s, c.y0 + 13 / s);
+            }
+            for (const sd of H.seeds) {
+                ctx.beginPath();
+                ctx.arc(sd.x, sd.y, 5 / s, 0, 7);
+                ctx.fillStyle = '#ffd24d';
+                ctx.fill();
+                ctx.lineWidth = 1 / s;
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+            }
+        }
+        function holesPanel(box) {
+            const H = P.bg.holes, panel = el('div', 'vbie-holes');
+            panel.setAttribute('data-vbie', 'holes');
+            panel.appendChild(el('p', 'vbie-note', 'Áreas fechadas dentro da figura (ex.: o vão do cotovelo) ficam como estão: o app não sabe se são "ar" ou "corpo". Clique nelas para apagar.'));
+            const row = el('div', 'vbie-presets');
+            const pk = el('button', 'btn' + (pick === 'hole' ? ' primary' : ''), (pick === 'hole' ? '● Clique nas áreas… (clique aqui para parar)' : '💧 Apagar área interna'));
+            pk.type = 'button';
+            pk.setAttribute('data-vbie', 'hole-pick');
+            pk.title = 'Depois de ligar, cada clique na imagem apaga a área fechada que contém o ponto';
+            pk.addEventListener('click', () => { pick = pick === 'hole' ? null : 'hole'; if (canvas)
+                canvas.style.cursor = pick ? 'crosshair' : ''; renderSide(); });
+            row.appendChild(pk);
+            if (H.seeds.length) {
+                const clr = el('button', 'btn', 'Limpar (' + H.seeds.length + ')');
+                clr.type = 'button';
+                clr.setAttribute('data-vbie', 'hole-clear');
+                clr.addEventListener('click', () => { H.seeds = []; renderSide(); schedule(0); });
+                const und = el('button', 'btn', '↶ Último');
+                und.type = 'button';
+                und.setAttribute('data-vbie', 'hole-undo');
+                und.addEventListener('click', () => { H.seeds.pop(); renderSide(); schedule(0); });
+                row.append(und, clr);
+            }
+            panel.appendChild(row);
+            panel.appendChild(check('Mostrar áreas internas candidatas', H.show, v => { H.show = v; renderSide(); }, 'Numera as áreas fechadas da cor do fundo; rosa = provável vão (contorno só do traço externo)'));
+            if (H.show) {
+                const list = holeList();
+                const box2 = el('div', 'vbie-holelist');
+                box2.setAttribute('data-vbie', 'hole-list');
+                if (!list.length)
+                    box2.appendChild(el('p', 'vbie-note', result ? 'Nenhuma área interna da cor do fundo.' : 'Calculando…'));
+                for (const c of list.slice(0, 12)) {
+                    const r = el('div', 'vbie-holeitem');
+                    r.appendChild(el('span', undefined, c.id + ' · ' + (c.share * 100).toFixed(1) + '%' + (c.outer >= 0.7 ? ' · provável vão' : '')));
+                    const b = el('button', 'btn', 'Apagar');
+                    b.type = 'button';
+                    b.setAttribute('data-vbie', 'hole-erase');
+                    b.title = 'Apaga esta área';
+                    b.addEventListener('click', () => { if (H.seeds.length < 50)
+                        H.seeds.push({ x: c.seed.x, y: c.seed.y }); renderSide(); schedule(0); });
+                    r.appendChild(b);
+                    box2.appendChild(r);
+                }
+                if (list.length > 12)
+                    box2.appendChild(el('p', 'vbie-note', '+ ' + (list.length - 12) + ' menores (use "Apagar áreas pequenas").'));
+                panel.appendChild(box2);
+            }
+            panel.appendChild(choice('Apagar automaticamente', [['off', 'Não'], ['small', 'Áreas internas pequenas']], H.auto, v => { H.auto = v; renderSide(); }, 'Apaga sozinho as áreas fechadas da cor do fundo de até o tamanho escolhido (vale também para todas as imagens do lote)'));
+            if (H.auto === 'small')
+                panel.appendChild(slider('Até (% da imagem)', H.maxArea, 0.1, 30, 0.1, v => { H.maxArea = v; }, 'Áreas internas maiores que isto são mantidas (provavelmente são o corpo)'));
+            panel.appendChild(slider('Tolerância da área', H.tol, 0, 60, 1, v => { H.tol = v; }, 'Quanto uma cor pode diferir para contar como a mesma área'));
+            box.appendChild(panel);
+        }
         /* ---------------- grade ajustável ---------------- */
         const GRID_MIN = 4;
         const r4 = (v) => Math.round(v * 10000) / 10000;
@@ -913,6 +1003,8 @@ definePlugin({
                 box.appendChild(slider('Tolerância', b.tolerance, 0, 60, 1, v => { b.tolerance = v; }, 'Quanto uma cor pode diferir do fundo'));
                 box.appendChild(slider('Degradê', b.gradientStep, 0, 12, 1, v => { b.gradientStep = v; }, 'Acompanha fundos com gradiente suave (0 = desligado)'));
             }
+            if (b.mode === 'edge')
+                holesPanel(box);
             box.appendChild(slider('Suavizar borda', b.edgeSoft, 0, 3, 1, v => { b.edgeSoft = v; }));
             box.appendChild(check('Aparar ao objeto', b.trim, v => { b.trim = v; }));
             const hold = el('button', 'btn', '👁 Segurar para ver o original');
@@ -1490,6 +1582,8 @@ definePlugin({
             const p = { ...paramsOf(t) };
             if (t === 'contour')
                 delete p['seeds'];
+            if (t === 'bg' && p['holes'] && typeof p['holes'] === 'object')
+                p['holes'] = { ...p['holes'], seeds: [] }; // pontos de uma imagem não servem às outras
             if (t === 'crop' && src) {
                 const c = P.crop, w = src.width, h = src.height;
                 return { unit: 'percent', x: c.x / w * 100, y: c.y / h * 100, width: c.width / w * 100, height: c.height / h * 100 };
