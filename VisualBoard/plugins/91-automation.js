@@ -38,6 +38,7 @@ definePlugin({
         const history = await kernel.require('history');
         const camera = await kernel.require('camera');
         const assets = await kernel.require('assets');
+        const packages = await kernel.require('packages');
         const boards = await kernel.require('boards');
         const panelSets = await kernel.require('panelSets');
         const panelTemplates = await kernel.require('panelTemplates');
@@ -696,7 +697,7 @@ definePlugin({
                     return fail('NOT_FOUND', 'Package not found: ' + packageId);
                 const all = S.assets.filter(a => !packageId || a.packageId === packageId);
                 return { total: all.length, offset, limit: size,
-                    packages: S.packages.map(p => ({ id: p.id, name: p.name ?? null })),
+                    packages: S.packages.map(p => ({ id: p.id, name: p.name ?? null, parentId: p.parentId ?? null })),
                     assets: all.slice(offset, offset + size).map(a => ({ id: a.id, name: a.name ?? null, packageId: a.packageId ?? null,
                         mimeType: a.mimeType ?? null, width: a.originalWidth ?? null, height: a.originalHeight ?? null,
                         size: a.size ?? null, derivedFrom: a.derivedFrom ?? null })) };
@@ -706,6 +707,28 @@ definePlugin({
                 if (!asset)
                     return fail('NOT_FOUND', 'Asset not found: ' + String(input['assetId']));
                 return { asset: toJson(asset) };
+            },
+            'package.tree': () => {
+                const walk = (parent, depth) => packages.childrenOf(parent).flatMap(p => [
+                    { id: p.id, name: p.name ?? null, parentId: p.parentId ?? null, depth, path: packages.pathOf(p.id).map(x => x.name).join(' / '),
+                        images: packages.assetsOf(p.id).length, imagesInSubtree: packages.assetsOf(p.id, true).length }, ...walk(p.id, depth + 1)
+                ]);
+                return { packages: walk(null, 1) };
+            },
+            'asset.delete_many': async (input) => {
+                const ids = input['assetIds'].map(String);
+                const missing = ids.filter(i => !state.getAsset(i));
+                if (missing.length)
+                    return fail('NOT_FOUND', 'Asset not found: ' + missing[0]);
+                const r = await assets.deleteAssets(ids, { ask: 'never' }); // a confirmação já foi pedida pela camada de permissões
+                return { deleted: r.deleted, instancesRemoved: r.used };
+            },
+            'asset.usage': (input) => {
+                const ids = input['assetIds'].map(String);
+                const missing = ids.filter(i => !state.getAsset(i));
+                if (missing.length)
+                    return fail('NOT_FOUND', 'Asset not found: ' + missing[0]);
+                return { usage: ids.map(i => ({ assetId: i, uses: assets.usageOf(i) })) };
             },
             'asset.import': async (input) => {
                 const bytes = decodeBase64(String(input['dataBase64']), 20 * 1024 * 1024);

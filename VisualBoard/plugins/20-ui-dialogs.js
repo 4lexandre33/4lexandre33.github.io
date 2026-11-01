@@ -59,15 +59,26 @@ definePlugin({
         function focusBack(element) { if (element && element.isConnected && typeof element.focus === 'function')
             element.focus(); }
         /* ---------------- Toast ---------------- */
-        function toast(message, kind) {
+        function toast(message, kind, action) {
             const el = document.createElement('div');
             el.className = 'toast' + (kind ? ' ' + kind : '');
-            el.textContent = message;
+            el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+            const text = document.createElement('span');
+            text.textContent = message;
+            el.appendChild(text);
+            let timer = 0;
+            const close = () => { clearTimeout(timer); el.classList.add('out'); setTimeout(function () { el.remove(); }, 300); };
+            if (action) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'toast-action';
+                b.textContent = action.label;
+                b.setAttribute('data-toast-action', '1');
+                b.addEventListener('click', () => { close(); void Promise.resolve(action.run()); });
+                el.appendChild(b);
+            }
             toastHost.appendChild(el);
-            setTimeout(function () {
-                el.classList.add('out');
-                setTimeout(function () { el.remove(); }, 300);
-            }, kind === 'error' ? 5000 : 2400);
+            timer = window.setTimeout(close, action ? 8000 : kind === 'error' ? 5000 : 2400);
         }
         /* ---------------- Dialog ---------------- */
         function confirm(opts) {

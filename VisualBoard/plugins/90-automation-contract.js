@@ -18,7 +18,7 @@ definePlugin({
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.18.0';
+        const CONTRACT_VERSION = '1.20.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -283,6 +283,8 @@ definePlugin({
         T('asset', 'import', W, 'Import image', 'Imports an image given as base64 into the asset library. Paths on disk are never read here.', obj({ name: str({ minLength: 1, maxLength: 200 }), mimeType: en(['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
             dataBase64: str({ maxLength: 28000000 }), packageId: id('package id') }, ['name', 'mimeType', 'dataBase64']), comp('asset.import', ['assets.importFiles']), true);
         T('asset', 'delete', D, 'Delete asset', 'Removes an asset from the library. Requires confirmation.', obj({ assetId: id('asset id') }, ['assetId']), call('assets', 'deleteAsset', ['assetId'], 'done'), true);
+        T('asset', 'delete_many', D, 'Delete assets', 'Removes up to 200 assets in ONE history step (one undo restores all); instances using them are removed too. Requires confirmation.', obj({ assetIds: arr(id('asset id'), 200) }, ['assetIds']), comp('asset.delete_many', ['assets.deleteAssets']), true);
+        T('asset', 'usage', R, 'Asset usage', 'Counts how many instances, panel layers and overlays use each asset (before deleting).', obj({ assetIds: arr(id('asset id'), 200) }, ['assetIds']), comp('asset.usage', ['assets.usageOf']));
         /* ===== catalog (Asset Hub) ===== */
         const hubId = (what = 'catalog asset id') => ({ type: 'string', minLength: 1, maxLength: 64, description: what });
         const tagList = () => arr(str({ minLength: 1, maxLength: 70 }), 50);
@@ -402,9 +404,11 @@ definePlugin({
         syncTool('tombstone_clear', W, 'Clear a tombstone', 'Lets a removed content be imported again by the next sync.', obj({ sha256: str({ minLength: 64, maxLength: 64, pattern: '^[0-9a-f]{64}$' }) }, ['sha256']));
         T('catalog', 'place', W, 'Place catalog image', 'Downloads a catalogued image from the Hub, imports it as an asset of the open project and records the usage reference.', obj({ id: hubId(), packageId: id('package id') }, ['id']), comp('catalog.place', ['assetHub.call', 'assets.importFiles']), true);
         T('catalog', 'import_library', W, 'Send project library to catalog', 'Uploads the images of the open project (optionally one package) to the Asset Hub with tags origem:projeto and pacote:<name>; duplicates are recognised by SHA-256.', obj({ packageId: id('package id') }), comp('catalog.import_library', ['assetHub.importLibrary']));
-        T('package', 'create', W, 'Create package', 'Creates an asset package.', obj({ name: str({ maxLength: 120 }) }), call('packages', 'create', ['name']), true);
+        T('package', 'create', W, 'Create package', 'Creates an asset package; with parentId it becomes a subpackage (max depth 8).', obj({ name: str({ maxLength: 120 }), parentId: id('parent package id') }), call('packages', 'create', ['name', 'parentId']), true);
+        T('package', 'reparent', W, 'Move package', 'Moves a package (with its subtree) under another package, or to the root when parentId is omitted. Cycles and depth above 8 are refused.', obj({ packageId: id('package id'), parentId: id('new parent package id (omit for root)'), index: int(0, 10000) }, ['packageId']), call('packages', 'reparent', ['packageId', 'parentId', 'index'], 'done'), true);
+        T('package', 'tree', R, 'Package tree', 'Lists the package hierarchy (depth-first) with image counts per package and in its subtree.', obj({}), comp('package.tree', ['packages.childrenOf']));
         T('package', 'rename', W, 'Rename package', 'Renames an asset package.', obj({ packageId: id('package id'), name: str({ minLength: 1, maxLength: 120 }) }, ['packageId', 'name']), call('packages', 'rename', ['packageId', 'name'], 'done'), true);
-        T('package', 'delete', D, 'Delete package', 'Deletes a package and its assets. Requires confirmation.', obj({ packageId: id('package id') }, ['packageId']), call('packages', 'remove', ['packageId'], 'done'), true);
+        T('package', 'delete', D, 'Delete package', 'Deletes a package. mode "cascade" (default) also deletes its subpackages and images; "lift" dissolves only the package and moves its subpackages and images to the parent. Requires confirmation.', obj({ packageId: id('package id'), mode: en(['cascade', 'lift']) }, ['packageId']), call('packages', 'remove', ['packageId', 'mode'], 'done'), true);
         T('package', 'move', W, 'Reorder package', 'Moves a package up (-1) or down (+1) in the library.', obj({ packageId: id('package id'), delta: int(-100, 100) }, ['packageId', 'delta']), call('packages', 'move', ['packageId', 'delta'], 'done'), true);
         T('image', 'add_to_board', W, 'Place image on board', 'Places an asset as a free image on the current board.', obj({ assetId: id('asset id'), x: num(), y: num() }, ['assetId', 'x', 'y']), call('instances', 'addImage', ['assetId', 'x', 'y'], 'instance'), true);
         T('image', 'plan_command', R, 'Plan image operation', 'Validates an image processing command (crop, resize, adjust…) without running it.', obj({ command: free('ImageCommand: {source:{assetId}, operation|steps, parameters}') }, ['command']), call('imageCommands', 'plan', ['command']));
@@ -689,6 +693,11 @@ definePlugin({
             excl('assets.hasUrl', 'Detalhe interno.'),
             excl('assets.createFromFile', 'Coberto por assets.importFiles (asset.import).'),
             excl('assets.restoreFromStorage', 'Inicialização interna.'),
+            excl('packages.descendantsOf', 'Derivado de package.tree (a árvore já traz os descendentes).'),
+            excl('packages.pathOf', 'Derivado de package.tree (cada nó traz seu caminho).'),
+            excl('packages.depthOf', 'Derivado de package.tree (cada nó traz sua profundidade).'),
+            excl('packages.planTree', 'Recebe objetos File do navegador; a automação não tem acesso a pastas locais sem caminho autorizado (lacuna documentada: importar pasta via MCP).'),
+            excl('packages.importTree', 'Recebe objetos File do navegador; mesma lacuna de planTree. A hierarquia pode ser montada via package.create/reparent + asset.import.'),
             excl('assets.restoreHistoryBlobs', 'Mecanismo interno do Undo/Redo.'),
             excl('history.push', 'Mecanismo interno; a automação usa operações que já criam passos de Undo.'),
             excl('history.clear', 'Destrutivo e sem caso de uso de automação.'),

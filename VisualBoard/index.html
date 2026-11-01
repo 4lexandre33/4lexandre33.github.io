@@ -44,6 +44,7 @@
         </div>
       </details>
       <button type="button" class="btn action-import" data-cmd="import-images"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> <span>Importar imagens</span></button>
+      <button type="button" class="btn action-import" data-cmd="import-folder" title="Importar uma pasta inteira (subpastas viram subpacotes)"><span>Importar pasta</span></button>
       <button type="button" class="btn primary action-export" data-cmd="export" title="Exportar projeto" aria-label="Exportar projeto"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v3h16v-3"/></svg> <span>Exportar</span></button>
     </div>
   </header>
@@ -217,6 +218,7 @@
       <div class="vb-popup-head"><h2>Pacotes</h2><button type="button" class="btn ghost" data-popup-close title="Fechar (Esc)" aria-label="Fechar">×</button></div>
       <div class="side-body pkg-body">
         <button class="btn wide" data-cmd="new-package">+ New Package</button>
+        <button class="btn wide" data-cmd="import-folder" title="Subpastas viram subpacotes">Importar pasta…</button>
         <div class="muted" style="line-height:1.5;padding:0 2px;">
           Packages are library collections, not canvas areas.
         </div>
@@ -257,6 +259,7 @@
 
 <div id="toast-host" aria-live="polite" aria-relevant="additions"></div>
 <input type="file" id="file-input-images" accept="image/*" multiple hidden>
+<input type="file" id="file-input-folder" webkitdirectory multiple hidden>
 <input type="file" id="file-input-project" accept=".json,application/json" hidden>
 
 <script src="kernel/kernel.js"></script>

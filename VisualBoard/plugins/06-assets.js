@@ -11,7 +11,7 @@ definePlugin({
     provides: ['assets'],
     uses: ['history', 'ui.dialogs'],
     accepts: { 'utils': '^1.0.0', 'backend': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'assets': '1.0.0' },
+    contractVersions: { 'assets': '1.1.0' },
     setup: async function (kernel) {
         const utils = await kernel.require('utils');
         const backend = await kernel.require('backend');
@@ -22,8 +22,9 @@ definePlugin({
         function getUrl(id) { return urls.get(id); }
         function hasUrl(id) { return urls.has(id); }
         function ensureDefaultPackage() {
-            if (S.packages.length) {
-                return S.packages.slice().sort((a, b) => (a.order || 0) - (b.order || 0))[0].id;
+            const roots = S.packages.filter(p => !p.parentId); // com hierarquia, o pacote padrão é sempre um pacote da raiz
+            if (roots.length) {
+                return roots.sort((a, b) => (a.order || 0) - (b.order || 0))[0].id;
             }
             const p = {
                 id: utils.uid('pkg'),
@@ -99,65 +100,89 @@ definePlugin({
                 kernel.emit('toast', { message: fail + ' falharam.', kind: 'error' });
             return ok;
         }
-        async function deleteAsset(id) {
-            const asset = S.assets.find(a => a.id === id);
-            if (!asset)
-                return;
+        /** Quantas vezes a imagem é usada no documento (instâncias soltas, camadas de painéis, sobreposições e painéis sem página). */
+        function usageOf(id) {
             let used = 0;
             for (const b of S.boards)
                 for (const i of b.instances) {
                     if (i.assetId === id)
                         used++;
                     if (i.type === 'manga-page') {
-                        for (const p of i.panels || []) {
+                        for (const p of i.panels || [])
                             used += (p.layers || []).filter(l => l.assetId === id).length;
-                        }
                         used += (i.overlays || []).filter(l => l.assetId === id).length;
-                        for (const item of i.unassignedPanels || []) {
+                        for (const item of i.unassignedPanels || [])
                             used += (item.layers || []).filter(l => l.assetId === id).length;
-                        }
                     }
                 }
-            const ok = await kernel.call('ui.dialogs', 'confirm', {
-                title: 'Excluir imagem',
-                message: 'Excluir "' + asset.name + '"' +
-                    (used ? ' (usada por ' + used + ' instância(s))' : '') + '?',
-                danger: true
-            });
-            if (!ok)
-                return;
+            return used;
+        }
+        /**
+         * Exclui várias imagens num único passo de histórico (um Desfazer restaura todas).
+         * ask: 'auto' (padrão) só pergunta se alguma imagem estiver em uso; 'always' sempre pergunta; 'never' nunca pergunta.
+         */
+        async function deleteAssets(ids, opts) {
+            const doomed = new Set(ids.filter(id => S.assets.some(a => a.id === id)));
+            if (!doomed.size)
+                return { deleted: 0, used: 0, cancelled: false };
+            let used = 0;
+            for (const id of doomed)
+                used += usageOf(id);
+            const ask = opts?.ask ?? 'auto';
+            if (ask === 'always' || (ask === 'auto' && used > 0)) {
+                const one = doomed.size === 1 ? S.assets.find(a => doomed.has(a.id)) : null;
+                const ok = await kernel.call('ui.dialogs', 'confirm', {
+                    title: doomed.size === 1 ? 'Excluir imagem' : 'Excluir imagens',
+                    message: 'Excluir ' + (one ? '"' + one.name + '"' : doomed.size + ' imagens') +
+                        (used ? ' (usada' + (used === 1 ? '' : 's') + ' por ' + used + ' instância(s) no documento, que também serão removidas)' : '') + '?',
+                    danger: true
+                });
+                if (!ok)
+                    return { deleted: 0, used, cancelled: true };
+            }
             const before = await kernel.call('history', 'snapshot');
             for (const b of S.boards) {
-                b.instances = b.instances.filter(i => i.assetId !== id);
+                b.instances = b.instances.filter(i => !doomed.has(i.assetId));
                 for (const i of b.instances) {
                     if (i.type !== 'manga-page')
                         continue;
                     for (const p of i.panels || []) {
-                        p.layers = (p.layers || []).filter(l => l.assetId !== id);
+                        p.layers = (p.layers || []).filter(l => !doomed.has(l.assetId));
                         p.layers.forEach((l, index) => { l.zIndex = index + 1; });
                     }
-                    i.overlays = (i.overlays || []).filter(l => l.assetId !== id);
+                    i.overlays = (i.overlays || []).filter(l => !doomed.has(l.assetId));
                     i.overlays.forEach((l, index) => { l.zIndex = index + 1; });
                     for (const item of i.unassignedPanels || []) {
-                        item.layers = (item.layers || []).filter(l => l.assetId !== id);
+                        item.layers = (item.layers || []).filter(l => !doomed.has(l.assetId));
                         item.layers.forEach((l, index) => { l.zIndex = index + 1; });
                     }
                 }
             }
-            S.assets = S.assets.filter(a => a.id !== id);
-            const u = urls.get(id);
-            if (u) {
-                URL.revokeObjectURL(u);
-                urls.delete(id);
+            S.assets = S.assets.filter(a => !doomed.has(a.id));
+            for (const id of doomed) {
+                const u = urls.get(id);
+                if (u) {
+                    URL.revokeObjectURL(u);
+                    urls.delete(id);
+                }
+                blobs.delete(id);
+                try {
+                    await kernel.call('backend', 'del', 'blobs', id);
+                }
+                catch (e) { /* ignora */ }
             }
-            blobs.delete(id);
-            try {
-                await kernel.call('backend', 'del', 'blobs', id);
-            }
-            catch (e) { /* ignora */ }
             await kernel.call('history', 'push', before);
             kernel.emit('assets:changed');
             kernel.emit('state:changed');
+            if (opts?.notify) {
+                const n = doomed.size;
+                await kernel.call('ui.dialogs', 'toast', n === 1 ? 'Imagem excluída.' : n + ' imagens excluídas.', 'ok', { label: 'Desfazer', run: async () => { await kernel.call('history', 'undo'); } });
+            }
+            return { deleted: doomed.size, used, cancelled: false };
+        }
+        /** Exclusão de uma imagem com confirmação (usada pela automação e por quem exige confirmar sempre). */
+        async function deleteAsset(id) {
+            await deleteAssets([id], { ask: 'always' });
         }
         async function restoreFromStorage() {
             for (const asset of S.assets) {
@@ -245,7 +270,7 @@ definePlugin({
         kernel.provide('assets', {
             urls, blobs, missing,
             getUrl, hasUrl,
-            importFiles, createFromFile, deleteAsset,
+            importFiles, createFromFile, deleteAsset, deleteAssets, usageOf,
             ensureDefaultPackage, restoreFromStorage, restoreHistoryBlobs
         });
     }

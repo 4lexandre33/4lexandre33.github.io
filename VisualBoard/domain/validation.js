@@ -205,7 +205,39 @@ var NVBDomain;
             optional(pck, 'name', string, issues, p);
             for (const key of ['order', 'createdAt', 'updatedAt'])
                 optional(pck, key, finite, issues, p);
+            if (pck.parentId !== undefined && pck.parentId !== null && typeof pck.parentId !== 'string')
+                issue(issues, p + '.parentId', 'expected string or null');
         });
+        if (Array.isArray(doc.packages)) {
+            // Hierarquia de pacotes: o pai existe, não há ciclos e a profundidade respeita o limite (8).
+            const byId = new Map();
+            for (const v of doc.packages)
+                if (record(v) && typeof v['id'] === 'string')
+                    byId.set(v['id'], v);
+            byId.forEach((pck, id) => {
+                const parent = pck['parentId'];
+                if (typeof parent !== 'string')
+                    return;
+                if (!byId.has(parent)) {
+                    issue(issues, 'project.packages[' + id + '].parentId', 'unknown parent package');
+                    return;
+                }
+                const seen = new Set([id]);
+                let depth = 1;
+                for (let cur = parent; cur;) {
+                    if (seen.has(cur)) {
+                        issue(issues, 'project.packages[' + id + '].parentId', 'package hierarchy has a cycle');
+                        return;
+                    }
+                    seen.add(cur);
+                    depth++;
+                    const up = byId.get(cur)?.['parentId'];
+                    cur = typeof up === 'string' && byId.has(up) ? up : undefined;
+                }
+                if (depth > 8)
+                    issue(issues, 'project.packages[' + id + '].parentId', 'package hierarchy deeper than 8 levels');
+            });
+        }
         unique(doc.panelSets, 'project.panelSets', (ps, p) => {
             optional(ps, 'name', string, issues, p);
             required(ps, 'width', finite, issues, p);

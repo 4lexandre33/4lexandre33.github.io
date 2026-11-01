@@ -17,11 +17,11 @@
         "documentSnapshot": "serialize capture restore equal",
         "history": "snapshot push transaction undo redo clear canUndo canRedo isRestoring",
         "camera": "apply panTo zoomAt zoomByFactor setCentered reset screenToWorld worldToScreen offset clampCamera fitAll fitSelection fitBounds bounds",
-        "assets": "getUrl hasUrl importFiles createFromFile deleteAsset ensureDefaultPackage restoreFromStorage restoreHistoryBlobs",
+        "assets": "getUrl hasUrl importFiles createFromFile deleteAsset deleteAssets usageOf ensureDefaultPackage restoreFromStorage restoreHistoryBlobs",
         "svgGeometry": "parseSvg parsePathToPoints flattenPath transform elementMatrix contains serializeVector",
         "panelSets": "parseSvg parsePathToPoints getOriginalSvg downloadSvg thumbSvg create get list rename remove promptImport promptPick syncAll",
         "panelTemplates": "list createFromTemplate flowPosition focusPage promptPick pickAndCreate",
-        "packages": "create rename remove move assetsOf",
+        "packages": "create rename remove move assetsOf reparent childrenOf descendantsOf pathOf depthOf planTree importTree",
         "boards": "create getBoard current navigate navigateUp rename remove pathOf depthOf list duplicate move update",
         "instances": "addImage addBoard removeSelection duplicateSelection reorder rotateSelection restoreAspect nudge copySelection pasteClipboard selectByIds clearSelection updateById removeById duplicateById reorderById align distribute",
         "panelMigration": "plan migrate recover validatePage",
@@ -184,6 +184,65 @@
                 "id:string"
             ],
             "returns": "promise<void>"
+        },
+        "packages.reparent": {
+            "params": [
+                "id:string",
+                "parentId?:string",
+                "index?:number"
+            ],
+            "returns": "void"
+        },
+        "packages.childrenOf": {
+            "params": [
+                "parentId?:string|null"
+            ],
+            "returns": "array"
+        },
+        "packages.descendantsOf": {
+            "params": [
+                "id:string"
+            ],
+            "returns": "array"
+        },
+        "packages.pathOf": {
+            "params": [
+                "id:string"
+            ],
+            "returns": "array"
+        },
+        "packages.planTree": {
+            "params": [
+                "entries:array",
+                "opts?:object"
+            ],
+            "returns": "object"
+        },
+        "packages.importTree": {
+            "params": [
+                "entries:array",
+                "opts?:object"
+            ],
+            "returns": "promise<object>"
+        },
+        "packages.depthOf": {
+            "params": [
+                "id:string"
+            ],
+            "returns": "number"
+        },
+        "assets.deleteAssets": {
+            "params": [
+                "ids:array",
+                "opts?:object"
+            ],
+            "returns": "promise<object>"
+        },
+        "assets.usageOf": {
+            "params": [
+                "id:string"
+            ],
+            "returns": "number"
         },
         "boards.create": {
             "params": [
@@ -716,7 +775,7 @@
         }
         // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
         const MINOR_BUMPS = {
-            camera: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.2.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.3.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
+            camera: '1.1.0', assets: '1.1.0', packages: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.2.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.3.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0'
         };
         const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {
