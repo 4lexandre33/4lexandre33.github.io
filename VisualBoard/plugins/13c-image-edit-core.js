@@ -612,6 +612,24 @@ definePlugin({
             });
             return { outline, fill, hasAlpha };
         }
+        function labToRgb(L, a, b) {
+            const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+            const inv = (t) => t * t * t > 0.008856 ? t * t * t : (t - 16 / 116) / 7.787;
+            const x = 0.95047 * inv(fx), y = inv(fy), z = 1.08883 * inv(fz);
+            const lin = [3.2406 * x - 1.5372 * y - 0.4986 * z, -0.9689 * x + 1.8758 * y + 0.0415 * z, 0.0557 * x - 0.2040 * y + 1.0570 * z];
+            const g = (v) => { const c = Math.max(0, Math.min(1, v)); return 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055); };
+            return [g(lin[0]), g(lin[1]), g(lin[2])];
+        }
+        /** Fundo ligado à borda de uma imagem SEM transparência (JPG, por exemplo): fica de fora das trocas de cor. */
+        function borderBackground(rgba, w, h) {
+            const n = w * h, est = estimateBackground(rgba, w, h, 12), barrier = new Uint8Array(n);
+            const t = new Float64Array(3), tmp = new Float64Array(3);
+            lab(est.color[0], est.color[1], est.color[2], t);
+            for (let i = 0; i < n; i++)
+                if (pixelDelta(rgba, i, t, tmp) > 14)
+                    barrier[i] = 1;
+            return outsideOf(barrier, w, h);
+        }
         /** Troca cores sem mexer na transparência. A cor mais próxima (ΔE) de cada pixel decide o par; bordas suavizadas recebem peso parcial. */
         function recolor(rgba, w, h, p) {
             const n = w * h, out = new Uint8ClampedArray(rgba);
@@ -619,9 +637,14 @@ definePlugin({
             let roles = null;
             if (p.mode === 'uniform') {
                 const c = p.color ?? [0, 0, 0];
+                let hasT = false;
+                for (let i = 0; i < n && !hasT; i++)
+                    if (rgba[i * 4 + 3] < 128)
+                        hasT = true;
+                const bgm = hasT ? null : borderBackground(rgba, w, h);
                 for (let i = 0; i < n; i++) {
                     const o = i * 4;
-                    if (!rgba[o + 3])
+                    if (!rgba[o + 3] || (bgm && bgm[i]))
                         continue;
                     out[o] = c[0];
                     out[o + 1] = c[1];
@@ -641,29 +664,120 @@ definePlugin({
             }
             if (!pairs.length)
                 return { out, changedShare: 0, roles };
-            const labs = pairs.map(pr => { const t = new Float64Array(3); lab(pr.from[0], pr.from[1], pr.from[2], t); return t; });
-            const tol = Math.max(1, p.tolerance), tmp = new Float64Array(3), soft = 1.6;
+            /* Cada par vira uma "família": cores cromáticas casam pelo MATIZ (todo o degradê do azul, do claro ao escuro);
+             * cores neutras (preto/branco/cinza) casam pela distância ΔE. O claro/escuro de cada pixel é mantido (keepShading). */
+            const fam = pairs.map(pr => {
+                const f = new Float64Array(3), t = new Float64Array(3);
+                lab(pr.from[0], pr.from[1], pr.from[2], f);
+                lab(pr.to[0], pr.to[1], pr.to[2], t);
+                const cf = Math.hypot(f[1], f[2]);
+                return { f, t, cf, chromatic: cf >= 12, hue: Math.atan2(f[2], f[1]) * 180 / Math.PI, ct: Math.hypot(t[1], t[2]) };
+            });
+            const tol = Math.max(1, p.tolerance), soft = 1.6, px = new Float64Array(3);
+            const bgm = p.mode === 'roles' && roles && !roles.hasAlpha ? borderBackground(rgba, w, h) : null;
+            /* Contorno e preenchimento NEUTROS (preto/branco/cinza): mapa de gradiente — escuro → cor do contorno, claro → cor do preenchimento,
+             * tons intermediários (suavização das bordas, linhas finas) viram a mistura das duas. */
+            if (p.mode === 'roles' && roles && roles.outline && roles.fill && p.outlineTo && p.fillTo && !fam[0].chromatic && !fam[1].chromatic) {
+                const Lo = fam[0].f[0], Lf = Math.max(Lo + 1, fam[1].f[0]), O = fam[0].t, F = fam[1].t;
+                for (let i = 0; i < n; i++) {
+                    const o = i * 4;
+                    if (!rgba[o + 3] || (bgm && bgm[i]))
+                        continue;
+                    lab(rgba[o], rgba[o + 1], rgba[o + 2], px);
+                    const t = Math.max(0, Math.min(1, (px[0] - Lo) / (Lf - Lo)));
+                    let L = O[0] + (F[0] - O[0]) * t;
+                    const a2 = O[1] + (F[1] - O[1]) * t, b2 = O[2] + (F[2] - O[2]) * t;
+                    if (p.keepShading)
+                        L += px[0] - (Lo + t * (Lf - Lo));
+                    const rgbOut = labToRgb(Math.max(0, Math.min(100, L)), a2, b2);
+                    out[o] = clampByte(rgbOut[0]);
+                    out[o + 1] = clampByte(rgbOut[1]);
+                    out[o + 2] = clampByte(rgbOut[2]);
+                    changed++;
+                }
+                return { out, changedShare: n ? changed / n : 0, roles };
+            }
+            /* 1ª passada: a que família cada pixel pertence (e com que "distância", em centésimos da tolerância). */
+            const pick = new Int8Array(n).fill(-1), dist = new Uint8Array(n);
             for (let i = 0; i < n; i++) {
                 const o = i * 4;
-                if (!rgba[o + 3])
+                if (!rgba[o + 3] || (bgm && bgm[i]))
                     continue;
-                lab(rgba[o], rgba[o + 1], rgba[o + 2], tmp);
-                let best = -1, bd = Infinity;
-                for (let k = 0; k < labs.length; k++) {
-                    const t = labs[k], d = Math.hypot(tmp[0] - t[0], tmp[1] - t[1], tmp[2] - t[2]);
-                    if (d < bd) {
-                        bd = d;
+                lab(rgba[o], rgba[o + 1], rgba[o + 2], px);
+                const cp = Math.hypot(px[1], px[2]), hp = Math.atan2(px[2], px[1]) * 180 / Math.PI;
+                let best = -1, bestScore = Infinity, bestRatio = Infinity;
+                for (let k = 0; k < fam.length; k++) {
+                    const m = fam[k];
+                    let ratio, score;
+                    if (m.chromatic) {
+                        if (cp < 3)
+                            continue; // cinza/branco/preto puros não pertencem a uma família colorida
+                        let dh = Math.abs(hp - m.hue);
+                        if (dh > 180)
+                            dh = 360 - dh;
+                        ratio = dh / tol;
+                        score = ratio + Math.abs(px[0] - m.f[0]) / 60;
+                    }
+                    else {
+                        const d = Math.hypot(px[0] - m.f[0], px[1] - m.f[1], px[2] - m.f[2]);
+                        ratio = d / tol;
+                        score = ratio;
+                    }
+                    if (ratio < soft && score < bestScore) {
                         best = k;
+                        bestScore = score;
+                        bestRatio = ratio;
                     }
                 }
-                const ratio = bd / tol;
-                if (ratio >= soft)
-                    continue;
-                const wgt = ratio <= 1 ? 1 : (soft - ratio) / (soft - 1), pr = pairs[best];
-                for (let c = 0; c < 3; c++) {
-                    const target = p.keepShading ? clampByte(pr.to[c] + (rgba[o + c] - pr.from[c])) : pr.to[c];
-                    out[o + c] = clampByte(rgba[o + c] * (1 - wgt) + target * wgt);
+                if (best >= 0) {
+                    pick[i] = best;
+                    dist[i] = Math.min(255, Math.round(bestRatio * 100));
                 }
+            }
+            /* Contorno × preenchimento da mesma cor (preenchimento escuro com contorno mais escuro): o contorno é FINO.
+             * O que é escuro mas grosso (sobrevive a uma abertura morfológica) é preenchimento. */
+            if (p.mode === 'roles' && roles && roles.outline && roles.fill && p.outlineTo && p.fillTo) {
+                const oi = 0, fi = 1, r = Math.max(2, Math.round(Math.min(w, h) * 0.012)), loOut = fam[oi].f[0];
+                const dark = new Uint8Array(n), fillM = new Uint8Array(n), light = new Float32Array(n);
+                for (let i = 0; i < n; i++) {
+                    if (pick[i] === oi)
+                        dark[i] = 1;
+                    else if (pick[i] === fi)
+                        fillM[i] = 1;
+                    if (pick[i] >= 0) {
+                        const o = i * 4;
+                        lab(rgba[o], rgba[o + 1], rgba[o + 2], px);
+                        light[i] = px[0];
+                    }
+                }
+                const thick = dilate(erode(dark, w, h, r), w, h, r); // partes escuras GROSSAS não são contorno
+                const fillClosed = closeMask(fillM, w, h, 2); // fecha pontinhos de ruído (JPG) dentro do preenchimento
+                for (let i = 0; i < n; i++)
+                    if (pick[i] === oi && light[i] > loOut + 8 && (thick[i] || fillClosed[i]))
+                        pick[i] = fi;
+            }
+            for (let i = 0; i < n; i++) {
+                const best = pick[i];
+                if (best < 0)
+                    continue;
+                const o = i * 4;
+                lab(rgba[o], rgba[o + 1], rgba[o + 2], px);
+                const cp = Math.hypot(px[1], px[2]), ratio = dist[i] / 100;
+                const m = fam[best], wgt = ratio <= 1 ? 1 : (soft - ratio) / (soft - 1);
+                const L = p.keepShading ? Math.max(0, Math.min(100, px[0] + (m.t[0] - m.f[0]))) : m.t[0];
+                let a2 = m.t[1], b2 = m.t[2];
+                if (m.ct < 3) {
+                    a2 = 0;
+                    b2 = 0;
+                }
+                else if (m.chromatic && p.keepShading) {
+                    const c = Math.max(0.35, Math.min(1.5, cp / m.cf));
+                    a2 *= c;
+                    b2 *= c;
+                }
+                const rgbOut = labToRgb(L, a2, b2);
+                for (let c = 0; c < 3; c++)
+                    out[o + c] = clampByte(rgba[o + c] * (1 - wgt) + rgbOut[c] * wgt);
                 changed++;
             }
             return { out, changedShare: n ? changed / n : 0, roles };

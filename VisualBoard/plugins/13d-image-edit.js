@@ -427,15 +427,10 @@ definePlugin({
                 if (p.fillTo && !r.roles.fill)
                     res.warnings.push('Não foi possível identificar a cor do preenchimento; use o modo de pares e escolha a cor com o conta-gotas');
                 if (!r.roles.hasAlpha)
-                    res.warnings.push('A imagem não tem transparência: o contorno foi estimado pela cor escura dominante. Remova o fundo antes para um resultado mais preciso');
+                    res.warnings.push('A imagem não tem transparência: o fundo ligado à borda foi preservado e o contorno foi estimado pela cor escura dominante. Remova o fundo antes para um resultado mais preciso');
             }
             if (p.mode === 'uniform') {
-                let opaque = 0;
-                for (let i = 0; i < w * h; i++)
-                    if (img.data[i * 4 + 3] > 0)
-                        opaque++;
-                if (opaque > w * h * 0.995)
-                    res.warnings.push('A imagem não tem transparência, então tudo virou uma cor só. Remova o fundo antes se quiser pintar apenas o desenho');
+                /* o fundo ligado à borda de imagens sem transparência é preservado; sem aviso */
             }
             else if (r.changedShare < 0.0005)
                 res.warnings.push('Quase nada foi alterado; aumente a tolerância ou escolha a cor com o conta-gotas');
