@@ -41,7 +41,7 @@ definePlugin({
         const GRID_KEYS = ['rows', 'cols', 'gap', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'direction', 'trim'];
         const BG_KEYS = ['mode', 'color', 'tolerance', 'gradientStep', 'edgeSoft', 'trim', 'lineFloor'];
         const CONTOUR_KEYS = ['color', 'tolerance', 'close', 'others', 'mode', 'seeds', 'minArea', 'grow', 'feather', 'padding'];
-        const CROP_KEYS = ['x', 'y', 'width', 'height'];
+        const CROP_KEYS = ['x', 'y', 'width', 'height', 'unit'];
         const RECOLOR_KEYS = ['mode', 'pairs', 'color', 'outlineTo', 'fillTo', 'tolerance', 'keepShading'];
         const COMPOSE_KEYS = ['width', 'height', 'background', 'arrange', 'gap', 'margin', 'columns', 'layers'];
         const LAYER_KEYS = ['assetId', 'x', 'y', 'scale', 'width', 'height', 'rotation', 'flipH', 'flipV', 'opacity'];
@@ -110,6 +110,15 @@ definePlugin({
             if (!isObj(raw))
                 fail('INVALID_ARGUMENT', 'params deve ser {x, y, width, height}');
             known(raw, CROP_KEYS, 'crop');
+            if (oneOf(raw['unit'], ['px', 'percent'], 'px', 'unit') === 'percent') {
+                /* Em %: vale para imagens de tamanhos diferentes (x/width em % da largura; y/height em % da altura). */
+                const px = num(raw['x'], 0, 0, 99.99, 'x', false), py = num(raw['y'], 0, 0, 99.99, 'y', false);
+                const pw = num(raw['width'], 100 - px, 0.01, 100, 'width', false), ph = num(raw['height'], 100 - py, 0.01, 100, 'height', false);
+                if (px + pw > 100.0001 || py + ph > 100.0001)
+                    fail('INVALID_ARGUMENT', 'O recorte em % sai da imagem');
+                const x = Math.min(w - 1, Math.round(px / 100 * w)), y = Math.min(h - 1, Math.round(py / 100 * h));
+                return { x, y, width: Math.max(1, Math.min(w - x, Math.round(pw / 100 * w))), height: Math.max(1, Math.min(h - y, Math.round(ph / 100 * h))) };
+            }
             const x = num(raw['x'], 0, 0, w - 1, 'x', true), y = num(raw['y'], 0, 0, h - 1, 'y', true);
             const width = num(raw['width'], w - x, 1, w, 'width', true), height = num(raw['height'], h - y, 1, h, 'height', true);
             if (x + width > w || y + height > h)

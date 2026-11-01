@@ -992,6 +992,20 @@ definePlugin({
                 const E = await kernel.require('imageEdit');
                 return imageEditCall(() => E.exportZip(input['assetIds'].map(String), typeof input['name'] === 'string' ? { name: input['name'] } : undefined));
             },
+            'image.apply_command_batch': async (input) => {
+                const C = await kernel.require('imageCommands');
+                const steps = Array.isArray(input['steps']) ? input['steps'] : undefined;
+                if (!steps && typeof input['operation'] !== 'string')
+                    return fail('INVALID_ARGUMENT', 'Provide operation (with parameters) or steps');
+                try {
+                    return toJson(await C.applyBatch(input['assetIds'].map(String), {
+                        ...(steps ? { steps } : { operation: String(input['operation']), parameters: (input['parameters'] && typeof input['parameters'] === 'object' ? input['parameters'] : {}) })
+                    }));
+                }
+                catch (err) {
+                    return fail('INVALID_ARGUMENT', err instanceof Error ? err.message : String(err));
+                }
+            },
             'image_edit.compose': (input) => {
                 const first = Array.isArray(input['layers']) && input['layers'][0] && typeof input['layers'][0] === 'object' ? String(input['layers'][0]['assetId']) : '';
                 return imageEditApply({ ...input, assetId: first }, 'compose');

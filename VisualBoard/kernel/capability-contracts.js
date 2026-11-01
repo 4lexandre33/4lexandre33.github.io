@@ -36,7 +36,7 @@
         "mangaExport": "validateExport renderPageToBlob renderPageToCanvas exportPng exportChapterPdf exportSelectionAsPdf exportWholeBoardAsPdf collectMangaPagesOnCurrentBoard",
         "imageProcessors": "register list resolve plan",
         "imageCanvasProcessor": "",
-        "imageCommands": "plan execute apply process",
+        "imageCommands": "plan execute apply applyBatch process",
         "imageEdit": "limits defaults plan preview commit apply applyBatch buildZip exportZip release analyze colorAt",
         "ui.imageEditor": "open close isOpen compose batch",
         "audioEditCore": "parseWav encodeWav lufs analyze waveform findSilences splitBySilence slice concat mix applyStep run",
@@ -766,6 +766,7 @@
         'imageCommands.plan': { params: ['command:object'], returns: 'object' },
         'imageCommands.execute': { params: ['command:object'], returns: 'promise<object>' },
         'imageCommands.apply': { params: ['command:object'], returns: 'promise<object>' },
+        'imageCommands.applyBatch': { params: ['assetIds:array', 'template:object', 'opts?:object'], returns: 'promise<object>' },
         'imageCommands.process': { params: ['command:object'], returns: 'promise<object>' },
         'ui.imageOperations.open': { params: ['assetId:string', 'trigger?:object'], returns: 'void' },
         'ui.imageOperations.close': { params: [], returns: 'void' }
@@ -788,7 +789,7 @@
         }
         // Additive minor bumps (Fase 2): same major, so every existing `^1.0.0` / `^2.0.0` consumer still resolves.
         const MINOR_BUMPS = {
-            camera: '1.1.0', assets: '1.2.0', packages: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.2.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.3.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0', imageEdit: '1.3.0', imageEditCore: '1.1.0', 'ui.imageEditor': '1.2.0'
+            camera: '1.1.0', assets: '1.2.0', packages: '1.1.0', boards: '1.1.0', instances: '1.1.0', exportImport: '1.1.0', mangaExport: '2.1.0', automation: '1.5.0', sceneBlockingEngine: '1.1.0', sceneBlocking: '1.2.0', 'ui.sceneBlocking': '1.1.0', app: '1.1.0', composition: '1.1.0', assetHub: '1.3.0', 'ui.shell': '1.1.0', panelTemplates: '1.1.0', imageEdit: '1.3.0', imageEditCore: '1.1.0', imageCommands: '1.1.0', 'ui.imageEditor': '1.2.0'
         };
         const version = MINOR_BUMPS[name] || '1.0.0';
         types[name] = {

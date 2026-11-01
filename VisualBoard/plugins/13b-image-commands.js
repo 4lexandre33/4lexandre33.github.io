@@ -11,7 +11,7 @@ definePlugin({
         assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0',
         utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0'
     },
-    contractVersions: { imageCommands: '1.0.0' },
+    contractVersions: { imageCommands: '1.1.0' },
     setup: async function (kernel) {
         const processors = await kernel.require('imageProcessors');
         const A = await kernel.require('assets');
@@ -142,7 +142,7 @@ definePlugin({
                 }
             }
         }
-        async function apply(command) {
+        async function apply(command, opts) {
             let job;
             try {
                 job = normalize(command);
@@ -205,6 +205,9 @@ definePlugin({
                 return { success: false, errors: [{ code: 'ASSET_COMMIT_FAILED', message: error.message }] };
             }
             let saved = false, warnings = [];
+            if (opts?.quiet)
+                return { success: true, assetId: id, asset: metadata, saved,
+                    width: result.width, height: result.height, bytes: result.bytes, warnings, errors: [] };
             if (kernel.has('app')) {
                 try {
                     saved = !!(await kernel.call('app', 'saveNow'));
@@ -222,6 +225,45 @@ definePlugin({
                 width: result.width, height: result.height, bytes: result.bytes,
                 warnings, errors: [] };
         }
+        /** Aplica o MESMO ajuste (girar, P&B, brilho, redimensionar…) a várias imagens, num único Desfazer. Uma falha não derruba as outras. */
+        async function applyBatch(assetIds, template, opts) {
+            const ids = [...new Set(assetIds)];
+            if (!ids.length)
+                throw Error('Escolha pelo menos uma imagem');
+            if (ids.length > 80)
+                throw Error('No máximo 80 imagens por lote');
+            const results = [];
+            await H.transaction('image.process.batch', async () => {
+                for (let i = 0; i < ids.length; i++) {
+                    if (opts?.signal?.aborted)
+                        break;
+                    const id = ids[i];
+                    const command = { source: { assetId: id }, output: { kind: 'asset' },
+                        ...(template.steps ? { steps: template.steps } : { operation: template.operation, parameters: template.parameters }) };
+                    try {
+                        const r = await apply(command, { quiet: true });
+                        results.push(r.success ? { sourceAssetId: id, ok: true, assetId: r.assetId, name: r.asset?.name } : { sourceAssetId: id, ok: false, error: r.errors.map(e => e.message).join('; ') });
+                    }
+                    catch (e) {
+                        results.push({ sourceAssetId: id, ok: false, error: e.message });
+                    }
+                    opts?.onProgress?.(i + 1, ids.length);
+                }
+            });
+            const created = results.filter(r => r.ok).length, failed = results.length - created;
+            let saved = false;
+            if (created && kernel.has('app')) {
+                try {
+                    saved = !!(await kernel.call('app', 'saveNow'));
+                }
+                catch (e) {
+                    kernel.log.error('image batch save failed', e);
+                }
+            }
+            if (created)
+                kernel.emit('toast', { message: created + (created === 1 ? ' imagem criada' : ' imagens criadas') + (failed ? ' · ' + failed + ' com erro' : ''), kind: failed ? 'error' : 'ok' });
+            return { total: ids.length, created, failed, saved, cancelled: !!opts?.signal?.aborted, results };
+        }
         async function process(command) {
             try {
                 const job = normalize(command);
@@ -233,6 +275,6 @@ definePlugin({
                         }] };
             }
         }
-        kernel.provide('imageCommands', { plan, execute, apply, process });
+        kernel.provide('imageCommands', { plan, execute, apply, applyBatch, process });
     }
 });

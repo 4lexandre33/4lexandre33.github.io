@@ -97,7 +97,7 @@ definePlugin({
         const opOf = (t) => t === 'grid' ? 'grid' : t === 'bg' ? 'removeBackground' : t === 'contour' ? 'cutByContour' : t === 'color' ? 'recolor' : t === 'compose' ? 'compose' : 'crop';
         /* ---------------- carregar imagem ---------------- */
         const usable = () => S.assets.filter(a => A.blobs.has(a.id));
-        async function loadSource(id) {
+        async function loadSource(id, opts) {
             assetId = id;
             src = null;
             srcPixels = null;
@@ -131,7 +131,8 @@ definePlugin({
                     if (!P.bg.color) { /* mantém detecção automática */ }
                     renderSide();
                 } }, () => { });
-                schedule(0);
+                if (opts?.preview !== false)
+                    schedule(0);
             }
         }
         function pixelAt(x, y) {
@@ -159,6 +160,10 @@ definePlugin({
         async function run() {
             if (!root || !assetId || !src)
                 return;
+            if (inAll())
+                scheduleAllPreview(0);
+            else if (allPrev.size)
+                clearAllPrev();
             if (tab === 'adjust') {
                 clearResult();
                 message = '';
@@ -623,7 +628,43 @@ definePlugin({
             all.addEventListener('click', () => { P.crop = { x: 0, y: 0, width: w, height: h }; renderSide(); schedule(0); });
             box.appendChild(all);
         }
+        /** Mesmo ajuste em todas as imagens do lote (um Desfazer). */
+        async function applyAdjustAll(operation, parameters) {
+            if (batchBusy)
+                return;
+            batchBusy = true;
+            message = '';
+            batchNote = 'Aplicando em ' + batch.length + ' imagens…';
+            renderResults();
+            renderSide();
+            try {
+                const done = await C.applyBatch(targets(), { operation, parameters }, { onProgress: (d, n) => { batchNote = 'Aplicando… ' + d + ' de ' + n; renderResults(); } });
+                const made = done.results.filter(r => r.ok && r.assetId).map(r => r.assetId);
+                const errs = done.results.filter(r => !r.ok).map(r => (S.assets.find(a => a.id === r.sourceAssetId)?.name ?? r.sourceAssetId) + ': ' + r.error);
+                batchNote = done.created + (done.created === 1 ? ' imagem criada' : ' imagens criadas') + ' · um Desfazer remove todas.' + (errs.length ? ' Com erro — ' + errs.slice(0, 3).join(' | ') : '');
+                if (made.length) {
+                    rememberRecent(made);
+                    kernel.emit('assets:changed');
+                    prevBatch = batch.slice();
+                    setBatch(made);
+                    await loadSource(made[0], { preview: false });
+                    clearResult();
+                    renderHeader();
+                }
+            }
+            catch (e) {
+                message = e.message;
+                batchNote = '';
+            }
+            batchBusy = false;
+            renderResults();
+            renderSide();
+        }
         async function applyAdjust(operation, parameters) {
+            if (inAll()) {
+                await applyAdjustAll(operation, parameters);
+                return;
+            }
             if (!assetId || busy)
                 return;
             busy = true;
@@ -933,6 +974,77 @@ definePlugin({
             if (c.bg === 'color')
                 box.appendChild(newColor('Cor do fundo', c.bgColor, v => { c.bgColor = v ?? c.bgColor; }, false));
         }
+        /** Chave fixa "Editar: só esta / todas (N)", visível em todas as abas. */
+        function scopeBanner() {
+            const live = recent.filter(id => S.assets.some(a => a.id === id) && A.blobs.has(id));
+            if (batch.length < 2 && live.length < 2)
+                return null;
+            const box = el('div', 'vbie-scope');
+            box.setAttribute('data-vbie', 'scope');
+            if (batch.length < 2) {
+                const b = el('button', 'btn', '🗂 Editar as ' + live.length + ' salvas agora, juntas');
+                b.type = 'button';
+                b.setAttribute('data-vbie', 'scope-recent');
+                b.title = 'Forma um lote com as imagens recém-salvas: o que você fizer vale para todas';
+                b.addEventListener('click', () => { setBatch(live); batchNote = ''; renderSide(); renderResults(); });
+                box.appendChild(b);
+                return box;
+            }
+            box.appendChild(el('span', 'vbie-scopelab', 'Editar:'));
+            const seg = el('div', 'vbie-seg');
+            seg.setAttribute('role', 'group');
+            seg.setAttribute('aria-label', 'Editar só esta imagem ou todas do lote');
+            const mk = (v, label, key) => {
+                const b = el('button', 'vbie-segbtn' + (scope === v ? ' on' : ''), label);
+                b.type = 'button';
+                b.setAttribute('aria-pressed', String(scope === v));
+                b.setAttribute('data-vbie', key);
+                b.addEventListener('click', () => { if (scope === v)
+                    return; scope = v; clearAllPrev(); renderSide(); renderResults(); if (v === 'all')
+                    scheduleAllPreview(0); });
+                seg.appendChild(b);
+            };
+            mk('one', 'Só esta', 'scope-one');
+            mk('all', 'Todas (' + batch.length + ')', 'scope-all');
+            box.appendChild(seg);
+            if (prevBatch.length >= 2) {
+                const back = el('button', 'btn ghost', '↩ Lote anterior');
+                back.type = 'button';
+                back.setAttribute('data-vbie', 'batch-prev');
+                back.title = 'Volta a editar as imagens de antes da última aplicação';
+                back.addEventListener('click', () => { const keep = batch.slice(); setBatch(prevBatch); prevBatch = keep; batchNote = ''; if (batch[0])
+                    void loadSource(batch[0], { preview: false }).then(() => { clearResult(); renderHeader(); renderSide(); renderResults(); }); });
+                box.appendChild(back);
+            }
+            return box;
+        }
+        /** Botão principal "… em todas (N)" colado no fim dos controles de cada aba. */
+        function batchAction() {
+            if (!inAll())
+                return null;
+            const wrap = el('div', 'vbie-allaction');
+            wrap.setAttribute('data-vbie', 'all-action');
+            if (tab === 'compose') {
+                wrap.appendChild(el('p', 'vbie-note', 'Montar junta várias imagens numa só, por isso não existe "em todas". Use as outras abas para editar o lote.'));
+                return wrap;
+            }
+            if (tab === 'adjust') {
+                wrap.appendChild(el('p', 'vbie-note', '🗂 Modo "todas" ligado: cada ajuste abaixo vale para as ' + batch.length + ' imagens do lote (um Desfazer).'));
+                return wrap;
+            }
+            const go = el('button', 'btn primary', '⚡ ' + OP_LABEL[tab] + ' em todas (' + targets().length + ')');
+            go.type = 'button';
+            go.setAttribute('data-vbie', 'all-apply');
+            go.disabled = batchBusy || busy || targets().length < 1;
+            go.title = 'Aplica as configurações desta aba a todas as imagens do lote';
+            go.addEventListener('click', () => { void applyToAll(); });
+            wrap.appendChild(go);
+            if (tab === 'crop')
+                wrap.appendChild(el('p', 'vbie-note', 'Em todas, o recorte vale em % da imagem (serve para tamanhos diferentes).'));
+            if (tab === 'contour')
+                wrap.appendChild(el('p', 'vbie-note', 'Pontos marcados à mão só valem na imagem aberta; em todas usa-se a cor do contorno.'));
+            return wrap;
+        }
         function renderSide() {
             if (!side)
                 return;
@@ -951,6 +1063,9 @@ definePlugin({
                     canvas.style.cursor = ''; clearResult(); renderSide(); renderResults(); drawStage(); schedule(0); });
                 tabs.appendChild(b);
             }
+            const sb = scopeBanner();
+            if (sb)
+                side.appendChild(sb);
             side.appendChild(tabs);
             const live = recent.filter(id => S.assets.some(a => a.id === id) && A.blobs.has(id));
             if (live.length) {
@@ -987,6 +1102,9 @@ definePlugin({
                 composeControls(box);
             else
                 adjustControls(box);
+            const ba = batchAction();
+            if (ba)
+                side.appendChild(ba);
             side.scrollTop = keep;
         }
         function thumb(c) {
@@ -1010,7 +1128,14 @@ definePlugin({
             renderResults();
         }
         /* ---------------- lote: a mesma operação em várias imagens ---------------- */
-        let batch = [], batchNote = '', batchBusy = false;
+        let batch = [], prevBatch = [], batchNote = '', batchBusy = false;
+        /** 'all': tudo o que se faz vale para todas as imagens do lote. */
+        let scope = 'one';
+        const allPrev = new Map();
+        const excluded = new Set();
+        let allToken = 0, allTimer = null;
+        const PREVIEW_MAX = 24;
+        const targets = () => batch.filter(id => !excluded.has(id));
         const OP_LABEL = { grid: 'Cortar em grade', bg: 'Tirar fundo', contour: 'Recortar por contorno', crop: 'Recortar', color: 'Trocar cor', compose: 'Montar', adjust: 'Ajustar' };
         const batchable = (t) => t !== 'compose' && t !== 'adjust';
         /** Parâmetros que valem para todas as imagens do lote (pontos marcados numa imagem não servem para as outras). */
@@ -1018,11 +1143,25 @@ definePlugin({
             const p = { ...paramsOf(t) };
             if (t === 'contour')
                 delete p['seeds'];
+            if (t === 'crop' && src) {
+                const c = P.crop, w = src.width, h = src.height;
+                return { unit: 'percent', x: c.x / w * 100, y: c.y / h * 100, width: c.width / w * 100, height: c.height / h * 100 };
+            } // pixels de uma imagem não servem às outras
             return p;
         }
-        function setBatch(ids) { batch = [...new Set(ids)].filter(id => S.assets.some(a => a.id === id)).slice(0, 80); }
+        function setBatch(ids) {
+            batch = [...new Set(ids)].filter(id => S.assets.some(a => a.id === id)).slice(0, 80);
+            excluded.clear();
+            clearAllPrev();
+            if (batch.length >= 2)
+                scope = 'all';
+            else {
+                scope = 'one';
+            }
+        }
+        const inAll = () => scope === 'all' && batch.length >= 2;
         async function applyToAll() {
-            if (batchBusy || batch.length < 2 || !batchable(tab))
+            if (batchBusy || !inAll() || !batchable(tab))
                 return;
             if (tab === 'contour' && !P.contour.color) {
                 message = 'Escolha a cor do contorno antes de aplicar a todas.';
@@ -1047,19 +1186,21 @@ definePlugin({
             batchNote = 'Aplicando em ' + batch.length + ' imagens…';
             renderResults();
             try {
-                const done = await E.applyBatch(batch, opOf(tab), batchParams(tab), { onProgress: (d, n) => { batchNote = 'Aplicando… ' + d + ' de ' + n; renderResults(); } });
+                const done = await E.applyBatch(targets(), opOf(tab), batchParams(tab), { onProgress: (d, n) => { batchNote = 'Aplicando… ' + d + ' de ' + n; renderResults(); } });
                 const made = done.results.flatMap(r => (r.assets ?? []).map(a => a.id));
                 const errs = done.results.filter(r => !r.ok).map(r => (S.assets.find(a => a.id === r.sourceAssetId)?.name ?? r.sourceAssetId) + ': ' + r.error);
                 batchNote = done.created + (done.created === 1 ? ' imagem criada' : ' imagens criadas') + ' a partir de ' + (done.total - done.failed) + ' · um Desfazer remove todas.' + (errs.length ? ' Com erro — ' + errs.slice(0, 3).join(' | ') + (errs.length > 3 ? ' …' : '') : '');
                 if (made.length) {
                     rememberRecent(made);
                     kernel.emit('assets:changed');
+                    prevBatch = batch.slice();
                     setBatch(made); // o lote passa a ser o resultado: dá para encadear (cor → fundo → …)
                     const first = made[0];
                     if (batch.length) {
-                        if (tab === 'grid' || tab === 'crop' || tab === 'contour')
+                        if (tab === 'grid')
                             tab = 'bg';
-                        await loadSource(first);
+                        await loadSource(first, { preview: false });
+                        clearResult();
                         renderHeader();
                     }
                 }
@@ -1072,8 +1213,60 @@ definePlugin({
             renderResults();
             renderSide();
         }
+        function clearAllPrev() { allToken++; allPrev.clear(); }
+        /** Calcula, em fila e cancelável, o efeito da aba atual em cada imagem do lote (as 24 primeiras; o resto só ao aplicar). */
+        function scheduleAllPreview(delay = 450) {
+            if (allTimer)
+                clearTimeout(allTimer);
+            allTimer = window.setTimeout(() => { allTimer = null; void runAllPreview(); }, delay);
+        }
+        async function runAllPreview() {
+            const mine = ++allToken;
+            if (!inAll() || !batchable(tab)) {
+                allPrev.clear();
+                renderResults();
+                return;
+            }
+            if (tab === 'contour' && !P.contour.color) {
+                allPrev.clear();
+                renderResults();
+                return;
+            }
+            if (tab === 'color') {
+                const c = P.color;
+                if ((c.mode === 'roles' && !c.outlineTo && !c.fillTo) || (c.mode === 'pairs' && !c.pairs.some(q => q.from))) {
+                    allPrev.clear();
+                    renderResults();
+                    return;
+                }
+            }
+            const params = batchParams(tab), op = opOf(tab), ids = batch.slice();
+            allPrev.clear();
+            ids.slice(PREVIEW_MAX).forEach(id => allPrev.set(id, { status: 'skip', note: 'Calculada ao aplicar' }));
+            for (const id of ids.slice(0, PREVIEW_MAX)) {
+                if (mine !== allToken)
+                    return;
+                let res = null;
+                try {
+                    res = await E.preview(id, op, params);
+                    const p0 = res.pieces[0];
+                    const thumbCanvas = p0 ? thumb(p0.canvas) : undefined;
+                    const real = res.warnings.filter(w => !/não tem transparência/i.test(w)); // aviso geral, não é problema desta imagem
+                    allPrev.set(id, { status: real.length ? 'warn' : 'ok', ...(thumbCanvas ? { thumb: thumbCanvas } : {}), ...(real.length ? { note: real[0] } : {}), pieces: res.pieces.length });
+                }
+                catch (e) {
+                    allPrev.set(id, { status: 'err', note: e.message });
+                }
+                finally {
+                    if (res)
+                        E.release(res);
+                }
+                if (mine === allToken)
+                    renderResults();
+            }
+        }
         function batchBar() {
-            if (batch.length < 2)
+            if (!inAll())
                 return null;
             const box = el('div', 'vbie-batch');
             box.setAttribute('data-vbie', 'batch');
@@ -1082,7 +1275,7 @@ definePlugin({
             const clear = el('button', 'btn ghost', 'Sair do lote');
             clear.type = 'button';
             clear.setAttribute('data-vbie', 'batch-clear');
-            clear.addEventListener('click', () => { batch = []; batchNote = ''; renderResults(); });
+            clear.addEventListener('click', () => { batch = []; scope = 'one'; batchNote = ''; renderResults(); renderSide(); });
             top.appendChild(clear);
             box.appendChild(top);
             const chips = el('div', 'vbie-batchchips');
@@ -1090,41 +1283,69 @@ definePlugin({
                 const a = S.assets.find(x => x.id === id);
                 if (!a)
                     continue;
-                const chip = el('button', 'vbie-batchchip' + (id === assetId ? ' on' : ''));
-                chip.type = 'button';
-                chip.title = (a.name || id) + ' — ver a prévia nesta imagem';
-                const url = A.urls.get(id);
-                if (url) {
-                    const im = el('img');
-                    im.src = url;
-                    im.alt = a.name;
-                    im.draggable = false;
-                    chip.appendChild(im);
+                const pv = allPrev.get(id), off = excluded.has(id);
+                const chip = el('div', 'vbie-batchchip' + (id === assetId ? ' on' : '') + (off ? ' off' : '') + (pv ? ' ' + pv.status : ''));
+                chip.setAttribute('data-vbie', 'batch-chip');
+                chip.tabIndex = 0;
+                chip.title = (a.name || id) + (pv?.note ? '\n' + (pv.status === 'err' ? '✕ ' : '⚠ ') + pv.note : '') + '\nClique para abrir esta imagem';
+                if (pv?.thumb) {
+                    const c = pv.thumb;
+                    const cp = el('canvas');
+                    cp.width = c.width;
+                    cp.height = c.height;
+                    cp.getContext('2d').drawImage(c, 0, 0);
+                    chip.appendChild(cp);
                 }
+                else {
+                    const url = A.urls.get(id);
+                    if (url) {
+                        const im = el('img');
+                        im.src = url;
+                        im.alt = a.name;
+                        im.draggable = false;
+                        chip.appendChild(im);
+                    }
+                    else
+                        chip.textContent = (a.name || id).slice(0, 6);
+                }
+                const mark = pv ? (pv.status === 'ok' ? '✓' : pv.status === 'warn' ? '⚠' : pv.status === 'err' ? '✕' : '…') : '';
+                if (mark)
+                    chip.appendChild(el('span', 'vbie-batchmark', mark));
+                const cb = el('input');
+                cb.type = 'checkbox';
+                cb.checked = !off;
+                cb.className = 'vbie-batchcb';
+                cb.title = 'Incluir esta imagem ao aplicar';
+                cb.setAttribute('aria-label', 'Incluir ' + a.name);
+                cb.addEventListener('click', ev => ev.stopPropagation());
+                cb.addEventListener('change', () => { if (cb.checked)
+                    excluded.delete(id);
                 else
-                    chip.textContent = (a.name || id).slice(0, 6);
+                    excluded.add(id); renderResults(); renderSide(); });
+                chip.appendChild(cb);
                 chip.addEventListener('click', () => { if (id !== assetId)
                     void loadSource(id); });
                 const x = el('span', 'vbie-batchx', '✕');
                 x.title = 'Tirar do lote';
                 x.setAttribute('role', 'button');
-                x.addEventListener('click', ev => { ev.stopPropagation(); batch = batch.filter(b => b !== id); renderResults(); });
+                x.addEventListener('click', ev => { ev.stopPropagation(); batch = batch.filter(b => b !== id); excluded.delete(id); allPrev.delete(id); if (batch.length < 2)
+                    scope = 'one'; renderResults(); renderSide(); });
                 chip.appendChild(x);
                 chips.appendChild(chip);
             }
             box.appendChild(chips);
-            const go = el('button', 'btn primary', batchable(tab) ? '⚡ ' + OP_LABEL[tab] + ' em todas (' + batch.length + ')' : 'Escolha uma aba de edição');
+            const go = el('button', 'btn primary', batchable(tab) ? '⚡ ' + OP_LABEL[tab] + ' em todas (' + targets().length + ')' : 'Escolha uma aba de edição');
             go.type = 'button';
             go.setAttribute('data-vbie', 'batch-apply');
-            go.disabled = batchBusy || busy || !batchable(tab);
+            go.disabled = batchBusy || busy || !batchable(tab) || targets().length < 1;
             go.title = 'Aplica as configurações desta aba a todas as imagens do lote, cada resultado vira uma imagem nova na biblioteca';
             go.addEventListener('click', () => { void applyToAll(); });
             box.appendChild(go);
-            const exp = el('button', 'btn', '⬇ Exportar o lote (' + batch.length + ') em ZIP');
+            const exp = el('button', 'btn', '⬇ Exportar o lote (' + targets().length + ') em ZIP');
             exp.type = 'button';
             exp.setAttribute('data-vbie', 'batch-export');
             exp.title = 'Baixa todas as imagens do lote num arquivo ZIP (arquivos originais, sem recomprimir)';
-            exp.addEventListener('click', () => { void exportIds(batch, baseName()); });
+            exp.addEventListener('click', () => { void exportIds(targets(), baseName()); });
             box.appendChild(exp);
             box.appendChild(el('p', 'vbie-note', 'A prévia abaixo mostra só a imagem aberta; ao aplicar, as mesmas configurações valem para todas. Depois, o lote passa a ser as novas imagens para você continuar (ex.: cor → tirar fundo).'));
             if (batchNote)
@@ -1332,16 +1553,20 @@ definePlugin({
                     await sendToCatalog(done.assets);
                 if (exportAfter)
                     await exportIds(done.assets.map(a => a.id), baseName());
+                if (done.assets.length > 1) {
+                    prevBatch = [];
+                    setBatch(done.assets.map(a => a.id));
+                    batchNote = '';
+                    editAfter = true;
+                } // 2+ peças salvas formam o lote e o editor passa a trabalhar nelas
                 if (editAfter && done.assets[0]) {
                     busy = false;
                     if (tab === 'grid' || tab === 'crop' || tab === 'contour')
                         tab = 'bg';
-                    if (asBatch && done.assets.length > 1) {
-                        setBatch(done.assets.map(a => a.id));
-                        batchNote = '';
-                    }
-                    else
+                    if (done.assets.length <= 1) {
                         batch = [];
+                        scope = 'one';
+                    }
                     await loadSource(done.assets[0].id);
                     renderHeader();
                     renderResults();

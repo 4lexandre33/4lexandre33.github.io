@@ -18,7 +18,7 @@ definePlugin({
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.24.0';
+        const CONTRACT_VERSION = '1.25.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -415,6 +415,8 @@ definePlugin({
         T('image', 'add_to_board', W, 'Place image on board', 'Places an asset as a free image on the current board.', obj({ assetId: id('asset id'), x: num(), y: num() }, ['assetId', 'x', 'y']), call('instances', 'addImage', ['assetId', 'x', 'y'], 'instance'), true);
         T('image', 'plan_command', R, 'Plan image operation', 'Validates an image processing command (crop, resize, adjust…) without running it.', obj({ command: free('ImageCommand: {source:{assetId}, operation|steps, parameters}') }, ['command']), call('imageCommands', 'plan', ['command']));
         T('image', 'apply_command', W, 'Apply image operation', 'Runs an image command and stores the result as a new derived asset.', obj({ command: free('ImageCommand: {source:{assetId}, operation|steps, parameters, output}') }, ['command']), call('imageCommands', 'apply', ['command']), true);
+        T('image', 'apply_command_batch', W, 'Apply image operation to many images', 'Runs the SAME image command (e.g. rotate90, grayscale, brightness, resize) on up to 80 assets in ONE history step; each result is a new derived asset. One failing image does not stop the others.', obj({ assetIds: arr(id('asset id'), 80), operation: str({ minLength: 1, maxLength: 60 }), parameters: free('operation parameters, validated per image'),
+            steps: arr(free('ImageProcessingStep'), 8) }, ['assetIds']), comp('image.apply_command_batch', ['imageCommands.applyBatch']), true);
         T('image', 'list_processors', R, 'List image operations', 'Registered image processors and the operations they support.', none(), comp('image.list_processors', ['imageProcessors.list']));
         /* ===== image editor (grid, background removal, contour cut, crop) ===== */
         const rgbS = (d) => ({ type: 'array', items: int(0, 255), minItems: 3, maxItems: 3, description: d });
