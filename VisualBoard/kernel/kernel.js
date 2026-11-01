@@ -528,7 +528,8 @@
     function loadScript(src) {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = src;
+            const stamp = global.NVB_BUILD; // carimbo da publicação: evita que o navegador reutilize plugins antigos do cache
+            script.src = typeof stamp === 'string' && /^[\w.-]{1,40}$/.test(stamp) ? src + (src.includes('?') ? '&' : '?') + 'v=' + stamp : src;
             script.async = false;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('failed to load ' + src));

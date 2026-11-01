@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: blob: data:; connect-src ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'; font-src 'none'; manifest-src 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Narrative Visual Board</title>
-  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/main.css?v=0d1fb74">
 </head>
 <body>
 <a class="skip-link" href="#viewport">Skip to canvas</a>
@@ -265,10 +265,11 @@
 <input type="file" id="file-input-folder" webkitdirectory multiple hidden>
 <input type="file" id="file-input-project" accept=".json,application/json" hidden>
 
-<script src="kernel/kernel.js"></script>
-<script src="kernel/capability-contracts.js"></script>
-<script src="kernel/contract-runtime.js"></script>
-<script src="kernel/nvb.manifest.js"></script>
-<script src="kernel/bootstrap.js"></script>
+<script src="kernel/build-stamp.js?v=0d1fb74"></script>
+<script src="kernel/kernel.js?v=0d1fb74"></script>
+<script src="kernel/capability-contracts.js?v=0d1fb74"></script>
+<script src="kernel/contract-runtime.js?v=0d1fb74"></script>
+<script src="kernel/nvb.manifest.js?v=0d1fb74"></script>
+<script src="kernel/bootstrap.js?v=0d1fb74"></script>
 </body>
 </html>
