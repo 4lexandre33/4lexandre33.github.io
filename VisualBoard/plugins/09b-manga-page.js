@@ -2040,6 +2040,134 @@ definePlugin({
                 return true;
             });
         }
+        function balloonBodyPolygon(b) {
+            const X = (n) => b.x + n * b.width, Y = (n) => b.y + n * b.height;
+            const P = (u, v) => ({ x: X(u), y: Y(v) });
+            const out = [];
+            const cubic = (p0, p1, p2, p3, n) => {
+                for (let i = 1; i <= n; i++) {
+                    const t = i / n, m = 1 - t;
+                    out.push({ x: m * m * m * p0.x + 3 * m * m * t * p1.x + 3 * m * t * t * p2.x + t * t * t * p3.x,
+                        y: m * m * m * p0.y + 3 * m * m * t * p1.y + 3 * m * t * t * p2.y + t * t * t * p3.y });
+                }
+            };
+            const quad = (p0, p1, p2, n) => {
+                for (let i = 1; i <= n; i++) {
+                    const t = i / n, m = 1 - t;
+                    out.push({ x: m * m * p0.x + 2 * m * t * p1.x + t * t * p2.x, y: m * m * p0.y + 2 * m * t * p1.y + t * t * p2.y });
+                }
+            };
+            if (b.shape === 'oval' || b.shape === 'thought') {
+                let cur = P(.5, .08);
+                out.push(cur);
+                const seg = [[P(.78, .08), P(.96, .24), P(.96, .5)], [P(.96, .76), P(.78, .92), P(.5, .92)],
+                    [P(.22, .92), P(.04, .76), P(.04, .5)], [P(.04, .24), P(.22, .08), P(.5, .08)]];
+                for (const [c1, c2, e] of seg) {
+                    cubic(cur, c1, c2, e, 40);
+                    cur = e;
+                }
+                out.pop();
+            }
+            else if (b.shape === 'round') {
+                out.push(P(.2, .07), P(.8, .07));
+                quad(P(.8, .07), P(.95, .07), P(.95, .24), 14);
+                out.push(P(.95, .76));
+                quad(P(.95, .76), P(.95, .93), P(.8, .93), 14);
+                out.push(P(.2, .93));
+                quad(P(.2, .93), P(.05, .93), P(.05, .76), 14);
+                out.push(P(.05, .24));
+                quad(P(.05, .24), P(.05, .07), P(.2, .07), 14);
+                out.pop();
+            }
+            else if (b.shape === 'box' || b.shape === 'caption') {
+                out.push(P(.05, .08), P(.95, .08), P(.95, .92), P(.05, .92));
+            }
+            else {
+                const steps = b.shape === 'burst' ? 32 : b.shape === 'shout' ? 24 : 20;
+                for (let i = 0; i < steps; i++) {
+                    const angle = i * Math.PI * 2 / steps - Math.PI / 2;
+                    const radius = b.shape === 'cloud' ? (i % 2 === 0 ? .44 : .49) :
+                        (i % 2 === 0 ? .5 : b.shape === 'shout' ? .37 : .29);
+                    out.push(P(.5 + Math.cos(angle) * radius, .5 + Math.sin(angle) * radius * .86));
+                }
+            }
+            return out;
+        }
+        function balloonInside(poly, q) {
+            let inside = false;
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const a = poly[i], c = poly[j];
+                if ((a.y > q.y) !== (c.y > q.y) && q.x < (c.x - a.x) * (q.y - a.y) / (c.y - a.y) + a.x)
+                    inside = !inside;
+            }
+            return inside;
+        }
+        /** Interseção do segmento a→b com c→d: devolve t em a→b e u em c→d. */
+        function balloonCross(a, b, c, d) {
+            const r = { x: b.x - a.x, y: b.y - a.y }, s = { x: d.x - c.x, y: d.y - c.y };
+            const den = r.x * s.y - r.y * s.x;
+            if (Math.abs(den) < 1e-9)
+                return null;
+            const t = ((c.x - a.x) * s.y - (c.y - a.y) * s.x) / den, u = ((c.x - a.x) * r.y - (c.y - a.y) * r.x) / den;
+            return t >= 0 && t <= 1 && u >= 0 && u < 1 ? { t, u } : null;
+        }
+        /** Corpo + cauda como UM contorno fechado (sem divisória). Devolve null se a geometria não permitir. */
+        function balloonJoinedOutline(poly, base1, base2, apex) {
+            const n = poly.length, mid = { x: (base1.x + base2.x) / 2, y: (base1.y + base2.y) / 2 };
+            const grow = (q) => {
+                let cur = q;
+                for (let i = 0; i < 10; i++) {
+                    if (balloonInside(poly, cur))
+                        return cur;
+                    cur = { x: cur.x + (mid.x - apex.x) * .18, y: cur.y + (mid.y - apex.y) * .18 };
+                }
+                return balloonInside(poly, cur) ? cur : null;
+            };
+            const B1 = grow(base1), B2 = grow(base2);
+            if (!B1 || !B2)
+                return null;
+            if (balloonInside(poly, apex))
+                return null;
+            const pick = (from) => {
+                let best = null;
+                for (let i = 0; i < n; i++) {
+                    const c = poly[i], d = poly[(i + 1) % n], x = balloonCross(from, apex, c, d);
+                    if (x && (!best || x.t > best.t))
+                        best = { e: i, u: x.u, t: x.t, pt: { x: from.x + (apex.x - from.x) * x.t, y: from.y + (apex.y - from.y) * x.t } };
+                }
+                return best;
+            };
+            const c1 = pick(B1), c2 = pick(B2);
+            if (!c1 || !c2)
+                return null;
+            const sign = (p, a, c) => (p.x - c.x) * (a.y - c.y) - (a.x - c.x) * (p.y - c.y);
+            const inTri = (q) => {
+                const d1 = sign(q, B1, B2), d2 = sign(q, B2, apex), d3 = sign(q, apex, B1);
+                return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+            };
+            const arc = (x, y) => {
+                const idx = [];
+                if (y.e + y.u >= x.e + x.u) {
+                    for (let i = x.e + 1; i <= y.e; i++)
+                        idx.push(i);
+                }
+                else {
+                    for (let i = x.e + 1; i < n; i++)
+                        idx.push(i);
+                    for (let i = 0; i <= y.e; i++)
+                        idx.push(i);
+                }
+                return idx.map(i => poly[i]);
+            };
+            const [pa, pb] = (c1.e + c1.u <= c2.e + c2.u) ? [c1, c2] : [c2, c1];
+            const keepA = arc(pb, pa), keepB = arc(pa, pb);
+            const bad = (pts) => pts.filter(inTri).length;
+            const useA = bad(keepA) <= bad(keepB);
+            const first = useA ? pa : pb, second = useA ? pb : pa, kept = useA ? keepA : keepB;
+            const f = (v) => String(Math.round(v * 100) / 100);
+            const pts = [first.pt, apex, second.pt, ...kept];
+            return 'M' + pts.map(q => f(q.x) + ' ' + f(q.y)).join(' L') + ' Z';
+        }
         function balloonPaths(b) {
             if (b.visible === false)
                 return [];
@@ -2077,23 +2205,52 @@ definePlugin({
                 d = 'M' + nodes.join(' L') + ' Z';
             }
             const result = [];
+            const body = { d, fill: b.fill, stroke: b.stroke,
+                strokeWidth: b.strokeWidth, opacity: b.fillOpacity };
             if (b.tail !== 'none' && !b.vertices) {
                 const cfg = {
-                    'bottom-left': [.22, .83, .08, 1.12, .35, .86],
-                    'bottom': [.44, .89, .5, 1.14, .56, .89],
-                    'bottom-right': [.65, .86, .91, 1.12, .78, .83],
-                    'left': [.1, .42, -.15, .55, .1, .62],
-                    'right': [.9, .42, 1.15, .55, .9, .62]
+                    'bottom-left': [.26, .8, .12, 1.15, .42, .88],
+                    'bottom': [.42, .88, .5, 1.16, .58, .88],
+                    'bottom-right': [.58, .88, .88, 1.15, .74, .8],
+                    'left': [.12, .36, -.16, .58, .12, .64],
+                    'right': [.88, .36, 1.16, .58, .88, .64]
                 };
                 const t = cfg[b.tail];
                 if (t) {
-                    result.push({ d: 'M' + pt(t[0], t[1]) + ' L' + pt(t[2], t[3]) +
-                            ' L' + pt(t[4], t[5]) + ' Z', fill: b.fill, stroke: b.stroke,
-                        strokeWidth: b.strokeWidth, opacity: b.fillOpacity });
+                    const poly = balloonBodyPolygon(b);
+                    const base1 = { x: X(t[0]), y: Y(t[1]) }, apex = { x: X(t[2]), y: Y(t[3]) }, base2 = { x: X(t[4]), y: Y(t[5]) };
+                    if (b.shape === 'thought') {
+                        // Balão de pensamento: corpo + bolinhas decrescentes (continuam sendo balões inteiros).
+                        result.push(body);
+                        const mid = { x: (base1.x + base2.x) / 2, y: (base1.y + base2.y) / 2 };
+                        let edge = mid;
+                        for (let i = 0; i < poly.length; i++) {
+                            const x = balloonCross(mid, apex, poly[i], poly[(i + 1) % poly.length]);
+                            if (x)
+                                edge = { x: mid.x + (apex.x - mid.x) * x.t, y: mid.y + (apex.y - mid.y) * x.t };
+                        }
+                        const L = Math.hypot(apex.x - edge.x, apex.y - edge.y) || 1;
+                        const dir = { x: (apex.x - edge.x) / L, y: (apex.y - edge.y) / L };
+                        const sz = Math.min(b.width, b.height);
+                        const rs = [.1, .07, .045].map(k => k * sz), gap = .03 * sz;
+                        let off = 0;
+                        for (const r of rs) {
+                            off += gap + r;
+                            const cx = edge.x + dir.x * off, cy = edge.y + dir.y * off;
+                            off += r;
+                            result.push({ d: 'M' + (cx - r) + ' ' + cy + ' a' + r + ' ' + r + ' 0 1 0 ' + 2 * r + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 Z',
+                                fill: b.fill, stroke: b.stroke, strokeWidth: b.strokeWidth, opacity: b.fillOpacity });
+                        }
+                        return result;
+                    }
+                    const joined = balloonJoinedOutline(poly, base1, base2, apex);
+                    if (joined) {
+                        result.push({ d: joined, fill: b.fill, stroke: b.stroke, strokeWidth: b.strokeWidth, opacity: b.fillOpacity });
+                        return result;
+                    }
                 }
             }
-            result.push({ d, fill: b.fill, stroke: b.stroke,
-                strokeWidth: b.strokeWidth, opacity: b.fillOpacity });
+            result.push(body);
             return result;
         }
         function balloonTextLayout(b) {
