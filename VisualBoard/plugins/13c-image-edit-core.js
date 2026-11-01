@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEditCore'],
     uses: [],
     accepts: {},
-    contractVersions: { imageEditCore: '1.3.0' },
+    contractVersions: { imageEditCore: '1.4.0' },
     setup: function (kernel) {
         /* ------------------------------ cor (Lab) ------------------------------ */
         const LIN = new Float32Array(256);
@@ -486,6 +486,98 @@ definePlugin({
             const before = diagnoseGrid(rgba, w, h, s, { tolerance: tol, minPixels: minPx, ink: inkR.ink }).issues;
             const after = diagnoseGrid(rgba, w, h, base, { tolerance: tol, minPixels: minPx, ink: inkR.ink }).issues;
             return { colCuts, rowCuts, moved, before, after, reliable: inkR.reliable, background: inkR.background };
+        }
+        /* ------------------------------ montagem: layout puro ------------------------------ */
+        /** Calcula onde cada imagem cai na tela, sem tocar em pixels. `sizes` = tamanho natural de cada camada. */
+        function composeLayout(sizes, layers, p) {
+            const boxes = layers.map((l, i) => {
+                const nat = sizes[i];
+                let w = nat.w, h = nat.h, dw = w, dh = h, clip = false;
+                if (l.width && l.height) {
+                    w = l.width;
+                    h = l.height;
+                    dw = w;
+                    dh = h;
+                    const fit = l.fit ?? 'stretch';
+                    if (fit === 'contain' || fit === 'cover') {
+                        const k = fit === 'contain' ? Math.min(w / nat.w, h / nat.h) : Math.max(w / nat.w, h / nat.h);
+                        dw = Math.max(1, Math.round(nat.w * k));
+                        dh = Math.max(1, Math.round(nat.h * k));
+                        if (fit === 'contain') {
+                            w = dw;
+                            h = dh;
+                        }
+                        else
+                            clip = true;
+                    }
+                }
+                else if (l.width) {
+                    h = Math.max(1, Math.round(nat.h * l.width / nat.w));
+                    w = l.width;
+                    dw = w;
+                    dh = h;
+                }
+                else if (l.height) {
+                    w = Math.max(1, Math.round(nat.w * l.height / nat.h));
+                    h = l.height;
+                    dw = w;
+                    dh = h;
+                }
+                else if (l.scale) {
+                    w = Math.max(1, Math.round(nat.w * l.scale));
+                    h = Math.max(1, Math.round(nat.h * l.scale));
+                    dw = w;
+                    dh = h;
+                }
+                let x = l.x ?? 0, y = l.y ?? 0;
+                if (l.width && l.height && (l.fit === 'contain')) {
+                    x += (l.width - w) / 2;
+                    y += (l.height - h) / 2;
+                }
+                return { x, y, w, h, dw, dh, clip, rotation: l.rotation || 0 };
+            });
+            if (p.arrange === 'row') {
+                let x = 0;
+                for (const b of boxes) {
+                    b.x += x;
+                    x += b.w + p.gap;
+                }
+            }
+            else if (p.arrange === 'column') {
+                let y = 0;
+                for (const b of boxes) {
+                    b.y += y;
+                    y += b.h + p.gap;
+                }
+            }
+            else if (p.arrange === 'grid') {
+                const cols = p.columns || Math.ceil(Math.sqrt(boxes.length)), rows = Math.ceil(boxes.length / cols);
+                const cw = Array(cols).fill(0), rh = Array(rows).fill(0);
+                boxes.forEach((b, i) => { const c = i % cols, r = Math.floor(i / cols); cw[c] = Math.max(cw[c], b.w); rh[r] = Math.max(rh[r], b.h); });
+                boxes.forEach((b, i) => {
+                    const c = i % cols, r = Math.floor(i / cols);
+                    const ox = cw.slice(0, c).reduce((s, v) => s + v + p.gap, 0), oy = rh.slice(0, r).reduce((s, v) => s + v + p.gap, 0);
+                    b.x += ox + (cw[c] - b.w) / 2;
+                    b.y += oy + (rh[r] - b.h) / 2;
+                });
+            }
+            let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+            for (const b of boxes) {
+                const a = b.rotation * Math.PI / 180, cs = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a));
+                const bw = b.w * cs + b.h * sn, bh = b.w * sn + b.h * cs, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+                x0 = Math.min(x0, cx - bw / 2);
+                y0 = Math.min(y0, cy - bh / 2);
+                x1 = Math.max(x1, cx + bw / 2);
+                y1 = Math.max(y1, cy + bh / 2);
+            }
+            if (!boxes.length) {
+                x0 = y0 = 0;
+                x1 = y1 = 1;
+            }
+            const fitW = Math.ceil(x1 - x0) + 2 * p.margin, fitH = Math.ceil(y1 - y0) + 2 * p.margin;
+            const W = p.width || fitW, H = p.height || fitH;
+            const offX = p.width ? 0 : p.margin - x0, offY = p.height ? 0 : p.margin - y0;
+            return { width: W, height: H, offX, offY, boxes: boxes.map(b => ({ x: b.x + offX, y: b.y + offY, w: b.w, h: b.h, dw: b.dw, dh: b.dh, clip: b.clip, rotation: b.rotation })) };
         }
         /* ------------------------------ cores dominantes ------------------------------ */
         function dominantColors(rgba, w, h, max) {
@@ -1113,7 +1205,7 @@ definePlugin({
             return { out, changedShare: n ? changed / n : 0, roles };
         }
         kernel.provide('imageEditCore', {
-            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, gridLayout, defaultGridCuts, diagnoseGrid, suggestGridCuts, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
+            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, gridLayout, defaultGridCuts, diagnoseGrid, suggestGridCuts, composeLayout, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
             /* usado só pela operação de ativos (alfa suave por objeto) */
             boxAlpha
         });

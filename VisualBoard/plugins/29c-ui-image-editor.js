@@ -53,12 +53,19 @@ definePlugin({
         let resultsBox = null;
         let stageBox = null;
         let cropDrag = null;
-        let moveDrag = null;
         let gridSel = null;
         let gridDrag = null;
         let gridHist = [];
         let gridIssues = [];
         let gridNote = '';
+        let liveL = null;
+        let stageK = 1;
+        let cdrag = null;
+        let guides = { x: [], y: [] };
+        let chist = [], cfut = [], lastC = 0;
+        let sel = new Set();
+        const bmpCache = new Map();
+        let drawQueued = false;
         let recent = []; // últimas imagens salvas (para continuar editando)
         const rememberRecent = (ids) => { recent = [...ids.slice().reverse(), ...recent.filter(r => !ids.includes(r))].slice(0, 8); };
         const P = {
@@ -70,7 +77,7 @@ definePlugin({
             crop: { x: 0, y: 0, width: 1, height: 1 },
             color: { mode: 'roles', outlineTo: null, fillTo: null, pairs: [],
                 color: [220, 30, 30], tolerance: 22, keepShading: true, pickIndex: 0 },
-            compose: { layers: [], arrange: 'row', gap: 0, margin: 0, columns: 0, width: 0, height: 0,
+            compose: { layers: [], lock: true, center: false, fixed: false, arrange: 'none', gap: 0, margin: 0, columns: 0, width: 0, height: 0,
                 bg: 'transparent', bgColor: [255, 255, 255], selected: 0 }
         };
         function paramsOf(t) {
@@ -98,7 +105,7 @@ definePlugin({
             }
             if (t === 'compose') {
                 const c = P.compose;
-                return { width: c.width, height: c.height, background: c.bg === 'transparent' ? null : c.bg === 'white' ? [255, 255, 255] : c.bgColor, arrange: c.arrange, gap: c.gap, margin: c.margin, columns: c.columns, layers: c.layers };
+                return { width: c.width, height: c.height, background: c.bg === 'transparent' ? null : c.bg === 'white' ? [255, 255, 255] : c.bgColor, arrange: c.arrange, gap: c.gap, margin: c.margin, columns: c.columns, layers: c.layers.filter(l => !l.hidden).map(l => { const o = { ...l }; delete o.hidden; delete o.locked; return o; }) };
             }
             return { ...P.crop };
         }
@@ -165,7 +172,8 @@ definePlugin({
         function schedule(delay = 220) {
             if (timer)
                 clearTimeout(timer);
-            timer = window.setTimeout(() => { timer = null; void run(); }, delay);
+            const d = tab === 'compose' ? Math.max(delay, 500) : delay; // a montagem final (resolução cheia) só roda quando você para de mexer
+            timer = window.setTimeout(() => { timer = null; void run(); }, d);
         }
         async function run() {
             if (!root || !assetId || !src)
@@ -205,7 +213,9 @@ definePlugin({
                     return;
                 }
             }
-            if (tab === 'compose' && !P.compose.layers.length) {
+            if (tab === 'compose' && cdrag)
+                return;
+            if (tab === 'compose' && !P.compose.layers.some(l => !l.hidden)) {
                 clearResult();
                 message = 'Adicione imagens da biblioteca para montar.';
                 renderResults();
@@ -218,7 +228,7 @@ definePlugin({
             renderResults();
             let res = null;
             try {
-                res = await E.preview(tab === 'compose' ? P.compose.layers[0].assetId : assetId, opOf(tab), paramsOf(tab));
+                res = await E.preview(tab === 'compose' ? P.compose.layers.find(l => !l.hidden).assetId : assetId, opOf(tab), paramsOf(tab));
             }
             catch (e) {
                 if (mine === token) {
@@ -238,15 +248,24 @@ definePlugin({
             if (tab === 'grid')
                 gridIssues = res?.diagnostics.gridIssueList ?? [];
             if (res && tab === 'bg' && !P.bg.color && res.diagnostics.backgroundColor) { /* cor detectada exibida na lateral */ }
-            renderSide();
-            renderResults();
-            drawStage();
+            if (tab === 'compose') {
+                renderResults();
+                drawStage();
+            }
+            else {
+                renderSide();
+                renderResults();
+                drawStage();
+            }
         }
         /* ---------------- palco ---------------- */
         /** A montagem tem tela própria; nas outras abas o palco mostra a imagem aberta. */
         function stageDims() {
-            if (tab === 'compose' && result?.pieces[0])
-                return { w: result.pieces[0].width, h: result.pieces[0].height };
+            if (tab === 'compose') {
+                const L = composeLive();
+                if (L)
+                    return { w: L.width, h: L.height };
+            }
             return { w: src?.width ?? 1, h: src?.height ?? 1 };
         }
         function scale() {
@@ -262,30 +281,21 @@ definePlugin({
             if (!canvas || !src)
                 return;
             const dims = stageDims(), w = dims.w, h = dims.h;
-            if (canvas.width !== w || canvas.height !== h) {
-                canvas.width = w;
-                canvas.height = h;
+            stageK = tab === 'compose' ? Math.min(1, 2600 / Math.max(w, h)) : 1; // a montagem desenha na escala do palco, nunca na resolução cheia
+            const bw = Math.max(1, Math.round(w * stageK)), bh = Math.max(1, Math.round(h * stageK));
+            if (canvas.width !== bw || canvas.height !== bh) {
+                canvas.width = bw;
+                canvas.height = bh;
             }
             const s = scale();
             canvas.style.width = Math.round(w * s) + 'px';
             canvas.style.height = Math.round(h * s) + 'px';
             const ctx = canvas.getContext('2d');
+            ctx.setTransform(stageK, 0, 0, stageK, 0, 0);
             ctx.clearRect(0, 0, w, h);
             const lw = Math.max(1, 1.5 / s);
             if (tab === 'compose') {
-                const piece = result?.pieces[0];
-                if (!piece)
-                    return;
-                ctx.drawImage(piece.canvas, 0, 0);
-                const lay = result.diagnostics.layout ?? [];
-                lay.forEach((b, i) => {
-                    const on = i === P.compose.selected;
-                    ctx.strokeStyle = on ? '#4da3ff' : 'rgba(138,143,152,.6)';
-                    ctx.lineWidth = on ? 2 * lw : lw;
-                    ctx.setLineDash(on ? [] : [6 / s, 4 / s]);
-                    ctx.strokeRect(b.x, b.y, b.width, b.height);
-                    ctx.setLineDash([]);
-                });
+                drawCompose(ctx, s, lw);
                 return;
             }
             if ((tab === 'bg' || tab === 'color') && result && result.pieces[0] && !showBefore) {
@@ -353,8 +363,8 @@ definePlugin({
             }
         }
         function toImage(e) {
-            const r = canvas.getBoundingClientRect();
-            return { x: Math.floor((e.clientX - r.left) * canvas.width / r.width), y: Math.floor((e.clientY - r.top) * canvas.height / r.height) };
+            const r = canvas.getBoundingClientRect(), d = stageDims();
+            return { x: Math.floor((e.clientX - r.left) * d.w / r.width), y: Math.floor((e.clientY - r.top) * d.h / r.height) };
         }
         function onPointerDown(e) {
             if (!src)
@@ -415,24 +425,7 @@ definePlugin({
                 return;
             }
             if (tab === 'compose') {
-                const lay = result?.diagnostics.layout ?? [];
-                let hit = -1;
-                for (let i = lay.length - 1; i >= 0; i--) {
-                    const b = lay[i];
-                    if (pt.x >= b.x && pt.y >= b.y && pt.x < b.x + b.width && pt.y < b.y + b.height) {
-                        hit = i;
-                        break;
-                    }
-                }
-                if (hit < 0)
-                    return;
-                P.compose.selected = hit;
-                makeManual();
-                const b = lay[hit];
-                moveDrag = { dx: pt.x - b.x, dy: pt.y - b.y };
-                canvas.setPointerCapture(e.pointerId);
-                renderSide();
-                drawStage();
+                composeDown(e);
                 return;
             }
             if (tab === 'crop') {
@@ -451,17 +444,12 @@ definePlugin({
                 schedule(180);
                 return;
             }
-            if (tab === 'grid' && !pick && canvas && !cropDrag && !moveDrag) {
+            if (tab === 'grid' && !pick && canvas && !cropDrag) {
                 const h = hitDivider(toImage(e));
                 canvas.style.cursor = h ? (h.axis === 'h' ? 'ns-resize' : 'ew-resize') : '';
             }
-            if (moveDrag && tab === 'compose') {
-                const pt = toImage(e), l = P.compose.layers[P.compose.selected];
-                if (l) {
-                    l.x = Math.round(pt.x - moveDrag.dx);
-                    l.y = Math.round(pt.y - moveDrag.dy);
-                    schedule(30);
-                }
+            if (tab === 'compose') {
+                composeMove(e);
                 return;
             }
             if (!cropDrag || !src)
@@ -477,10 +465,8 @@ definePlugin({
             drawStage();
             schedule(0);
             return;
-        } if (moveDrag) {
-            moveDrag = null;
-            renderSide();
-            schedule(0);
+        } if (cdrag) {
+            composeUp();
             return;
         } if (cropDrag) {
             cropDrag = null;
@@ -827,6 +813,17 @@ definePlugin({
                 panel.appendChild(el('p', 'vbie-note', 'Arraste as linhas laranja na imagem para ajustar o corte. Clique numa linha e use as setas do teclado para ajustar com precisão.'));
             box.appendChild(panel);
         }
+        function onWheel(e) {
+            if (!e.ctrlKey && !e.metaKey)
+                return;
+            e.preventDefault();
+            zoom = Math.max(0.05, Math.min(16, scale() * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+            drawStage();
+        }
+        function onCanvasKey(e) { if (tab === 'compose')
+            composeKey(e);
+        else
+            onGridKey(e); }
         function onGridKey(e) {
             if (tab !== 'grid' || !gridSel || !src)
                 return;
@@ -1287,74 +1284,859 @@ definePlugin({
         }
         /* ---------------- aba Montar ---------------- */
         const nameOf = (id) => S.assets.find(a => a.id === id)?.name ?? id;
-        /** Congela a posição atual (automática) e passa ao modo manual com tela de tamanho fixo. */
-        function makeManual() {
-            const c = P.compose, lay = result?.diagnostics.layout, piece = result?.pieces[0];
-            if (c.arrange === 'none' || !lay || !piece || lay.length !== c.layers.length)
+        const MAXPX = 16_000_000, MAXSIDE = 16000;
+        let lDirty = true;
+        const touch = () => { lDirty = true; };
+        const visIdx = () => { const r = []; P.compose.layers.forEach((l, i) => { if (!l.hidden)
+            r.push(i); }); return r; };
+        const rawLayer = (l) => { const o = { ...l }; delete o.hidden; delete o.locked; return o; };
+        const natOf = (id) => { const a = S.assets.find(x => x.id === id); return { w: a?.originalWidth || 100, h: a?.originalHeight || 100 }; };
+        const aabb = (b) => {
+            const a = b.rotation * Math.PI / 180, cs = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a)), bw = b.w * cs + b.h * sn, bh = b.w * sn + b.h * cs, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+            return { x0: cx - bw / 2, y0: cy - bh / 2, x1: cx + bw / 2, y1: cy + bh / 2 };
+        };
+        /** Medida da montagem (só dimensões; não decodifica nada). */
+        function composeLive() {
+            if (!lDirty && liveL)
+                return liveL;
+            const c = P.compose;
+            if (!visIdx().length) {
+                liveL = { width: c.width || 1200, height: c.height || 1200, offX: 0, offY: 0, boxes: [] };
+                lDirty = false;
+                return liveL;
+            }
+            try {
+                const r = E.composeLayout(paramsOf('compose'));
+                liveL = { width: r.width, height: r.height, offX: 0, offY: 0, boxes: r.layout };
+                lDirty = false;
+                if (message && /^(Dimensões|Montagem|Tela)/.test(message))
+                    message = '';
+            }
+            catch (e) {
+                message = e.message;
+                lDirty = false;
+                if (!liveL)
+                    liveL = { width: c.width || 1200, height: c.height || 1200, offX: 0, offY: 0, boxes: [] };
+            }
+            return liveL;
+        }
+        /* cache de bitmaps reduzidos: cada imagem é decodificada uma única vez */
+        function requestDraw() {
+            if (drawQueued)
                 return;
-            c.layers.forEach((l, i) => { l.x = lay[i].x; l.y = lay[i].y; l.width = lay[i].width; l.height = lay[i].height; delete l.scale; });
-            c.width = piece.width;
-            c.height = piece.height;
+            drawQueued = true;
+            requestAnimationFrame(() => { drawQueued = false; if (root && tab === 'compose')
+                drawStage(); });
+        }
+        function bmpOf(id) {
+            const e = bmpCache.get(id);
+            if (e)
+                return e.bmp;
+            const blob = A.blobs.get(id);
+            if (!blob)
+                return null;
+            bmpCache.set(id, { bmp: null, loading: true });
+            void (async () => {
+                let b = null;
+                try {
+                    const full = await createImageBitmap(blob), k = Math.min(1, 1024 / Math.max(full.width, full.height));
+                    if (k < 1) {
+                        b = await createImageBitmap(full, { resizeWidth: Math.max(1, Math.round(full.width * k)), resizeHeight: Math.max(1, Math.round(full.height * k)), resizeQuality: 'medium' });
+                        full.close();
+                    }
+                    else
+                        b = full;
+                }
+                catch {
+                    b = null;
+                }
+                const cur = bmpCache.get(id);
+                if (!cur || !root) {
+                    b?.close();
+                    return;
+                }
+                cur.bmp = b;
+                cur.loading = false;
+                requestDraw();
+            })();
+            return null;
+        }
+        function releaseBmps(keep) {
+            for (const [id, e] of bmpCache) {
+                if (keep?.has(id))
+                    continue;
+                e.bmp?.close();
+                bmpCache.delete(id);
+            }
+        }
+        const trimBmps = () => releaseBmps(new Set(P.compose.layers.map(l => l.assetId)));
+        /* histórico da montagem */
+        const snapC = () => { const c = P.compose; return JSON.stringify({ l: c.layers, w: c.width, h: c.height, a: c.arrange, g: c.gap, m: c.margin, k: c.columns, b: c.bg, bc: c.bgColor, f: c.fixed }); };
+        function restoreC(s) {
+            const o = JSON.parse(s);
+            const c = P.compose;
+            c.layers = o.l;
+            c.width = o.w;
+            c.height = o.h;
+            c.arrange = o.a;
+            c.gap = o.g;
+            c.margin = o.m;
+            c.columns = o.k;
+            c.bg = o.b;
+            c.bgColor = o.bc;
+            c.fixed = o.f;
+            sel = new Set([...sel].filter(i => i < c.layers.length));
+            touch();
+            trimBmps();
+        }
+        function pushC() { const s = snapC(); if (chist[chist.length - 1] === s)
+            return; chist.push(s); if (chist.length > 80)
+            chist.shift(); cfut = []; }
+        function undoC() { const p = chist.pop(); if (p === undefined)
+            return; cfut.push(snapC()); restoreC(p); afterC(); }
+        function redoC() { const n = cfut.pop(); if (n === undefined)
+            return; chist.push(snapC()); restoreC(n); afterC(); }
+        function afterC() { touch(); renderSide(); drawStage(); schedule(0); }
+        /** Congela posições e tamanho da tela: dali em diante tudo é número explícito, editável com o mouse. */
+        function ensureManual() {
+            const c = P.compose;
+            if (c.arrange === 'none' && c.width > 0 && c.height > 0 && c.layers.every(l => l.width && l.height && !l.scale))
+                return;
+            if (!c.layers.length) {
+                c.arrange = 'none';
+                if (!c.width)
+                    c.width = 1200;
+                if (!c.height)
+                    c.height = 1200;
+                touch();
+                return;
+            }
+            const L = E.composeLayout({ ...paramsOf('compose'), layers: c.layers.map(rawLayer) });
+            c.layers.forEach((l, i) => {
+                const b = L.layout[i];
+                l.x = Math.round(b.x);
+                l.y = Math.round(b.y);
+                l.width = Math.max(1, Math.round(b.w));
+                l.height = Math.max(1, Math.round(b.h));
+                delete l.scale;
+                if (b.clip)
+                    l.fit = 'cover';
+                else
+                    delete l.fit;
+            });
+            c.width = L.width;
+            c.height = L.height;
             c.arrange = 'none';
+            touch();
         }
-        function fitCanvas() {
-            const c = P.compose, lay = result?.diagnostics.layout;
-            if (!lay || !lay.length)
+        const clampCanvas = (w, h) => {
+            w = Math.max(16, Math.min(MAXSIDE, Math.round(w)));
+            h = Math.max(16, Math.min(MAXSIDE, Math.round(h)));
+            if (w * h > MAXPX) {
+                const k = Math.sqrt(MAXPX / (w * h));
+                w = Math.floor(w * k);
+                h = Math.floor(h * k);
+            }
+            return { w, h };
+        };
+        /* ---------------- desenho ---------------- */
+        function drawCompose(ctx, s, lw) {
+            const L = composeLive();
+            if (!L)
                 return;
-            makeManual();
-            const l2 = result.diagnostics.layout;
-            const x0 = Math.min(...l2.map(b => b.x)), y0 = Math.min(...l2.map(b => b.y)), x1 = Math.max(...l2.map(b => b.x + b.width)), y1 = Math.max(...l2.map(b => b.y + b.height));
-            c.layers.forEach(l => { l.x = (l.x ?? 0) - x0 + c.margin; l.y = (l.y ?? 0) - y0 + c.margin; });
-            c.width = x1 - x0 + 2 * c.margin;
-            c.height = y1 - y0 + 2 * c.margin;
+            const c = P.compose, vis = visIdx();
+            canvas.style.background = c.bg === 'transparent' ? 'repeating-conic-gradient(#2a2d33 0 25%, #3a3e46 0 50%) 0 0 / 16px 16px' : '';
+            if (c.bg !== 'transparent') {
+                ctx.fillStyle = c.bg === 'white' ? '#fff' : hex(c.bgColor);
+                ctx.fillRect(0, 0, L.width, L.height);
+            }
+            vis.forEach((li, k) => {
+                const b = L.boxes[k], l = c.layers[li];
+                if (!b || !l)
+                    return;
+                ctx.save();
+                ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+                if (b.rotation)
+                    ctx.rotate(b.rotation * Math.PI / 180);
+                if (b.clip) {
+                    ctx.beginPath();
+                    ctx.rect(-b.w / 2, -b.h / 2, b.w, b.h);
+                    ctx.clip();
+                }
+                ctx.scale(l.flipH ? -1 : 1, l.flipV ? -1 : 1);
+                ctx.globalAlpha = l.opacity ?? 1;
+                const bmp = bmpOf(l.assetId);
+                if (bmp)
+                    ctx.drawImage(bmp, -b.dw / 2, -b.dh / 2, b.dw, b.dh);
+                else {
+                    ctx.fillStyle = 'rgba(120,125,135,.6)';
+                    ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+                }
+                ctx.restore();
+            });
+            ctx.strokeStyle = 'rgba(77,163,255,.55)';
+            ctx.lineWidth = lw;
+            ctx.strokeRect(lw / 2, lw / 2, L.width - lw, L.height - lw);
+            const hs = 9 / s;
+            vis.forEach((li, k) => {
+                if (!sel.has(li))
+                    return;
+                const b = L.boxes[k];
+                const l = c.layers[li];
+                ctx.save();
+                ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+                ctx.rotate(b.rotation * Math.PI / 180);
+                ctx.strokeStyle = l.locked ? '#d9a441' : '#4da3ff';
+                ctx.lineWidth = lw;
+                ctx.setLineDash(l.locked ? [5 / s, 4 / s] : []);
+                ctx.strokeRect(-b.w / 2, -b.h / 2, b.w, b.h);
+                ctx.setLineDash([]);
+                if (sel.size === 1 && !l.locked) {
+                    ctx.fillStyle = '#fff';
+                    ctx.strokeStyle = '#4da3ff';
+                    for (const [sx, sy] of HANDLES) {
+                        ctx.beginPath();
+                        ctx.rect(sx * b.w / 2 - hs / 2, sy * b.h / 2 - hs / 2, hs, hs);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    ctx.beginPath();
+                    ctx.moveTo(0, -b.h / 2);
+                    ctx.lineTo(0, -b.h / 2 - 26 / s);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(0, -b.h / 2 - 26 / s, hs * 0.6, 0, 7);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                ctx.restore();
+            });
+            ctx.strokeStyle = '#ff4fa0';
+            ctx.lineWidth = lw;
+            ctx.beginPath();
+            for (const x of guides.x) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, L.height);
+            }
+            for (const y of guides.y) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(L.width, y);
+            }
+            ctx.stroke();
+            const t = Math.min(14 / s, L.width / 5, L.height / 5);
+            ctx.fillStyle = '#ffb347';
+            ctx.fillRect(L.width - t, L.height / 2 - t * 1.5, t, t * 3);
+            ctx.fillRect(L.width / 2 - t * 1.5, L.height - t, t * 3, t);
+            ctx.fillRect(L.width - t * 1.4, L.height - t * 1.4, t * 1.4, t * 1.4);
         }
+        const HANDLES = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
+        /* ---------------- interação ---------------- */
+        function ptF(e) {
+            const r = canvas.getBoundingClientRect(), d = stageDims();
+            return { x: (e.clientX - r.left) * d.w / r.width, y: (e.clientY - r.top) * d.h / r.height };
+        }
+        const toLocal = (b, p) => {
+            const a = -b.rotation * Math.PI / 180, dx = p.x - (b.x + b.w / 2), dy = p.y - (b.y + b.h / 2);
+            return { x: dx * Math.cos(a) - dy * Math.sin(a), y: dx * Math.sin(a) + dy * Math.cos(a) };
+        };
+        function hitLayer(p) {
+            const L = composeLive();
+            if (!L)
+                return -1;
+            const vis = visIdx();
+            for (let k = vis.length - 1; k >= 0; k--) {
+                const b = L.boxes[k];
+                if (!b)
+                    continue;
+                const q = toLocal(b, p);
+                if (Math.abs(q.x) <= b.w / 2 && Math.abs(q.y) <= b.h / 2)
+                    return vis[k];
+            }
+            return -1;
+        }
+        function hitHandles(p) {
+            const L = composeLive();
+            if (!L)
+                return null;
+            const s = scale(), th = 10 / s, c = P.compose, vis = visIdx();
+            if (sel.size === 1) {
+                const li = [...sel][0], k = vis.indexOf(li), b = L.boxes[k], l = c.layers[li];
+                if (b && l && !l.locked) {
+                    const q = toLocal(b, p);
+                    if (Math.hypot(q.x, q.y + b.h / 2 + 26 / s) <= th * 1.2)
+                        return { kind: 'rotate', li };
+                    for (const [sx, sy] of HANDLES)
+                        if (Math.abs(q.x - sx * b.w / 2) <= th && Math.abs(q.y - sy * b.h / 2) <= th)
+                            return { kind: 'resize', sx, sy, li };
+                }
+            }
+            const t = Math.max(th, Math.min(14 / s, L.width / 5, L.height / 5));
+            if (p.x >= L.width - t * 1.5 && p.y >= L.height - t * 1.5 && p.x <= L.width + th && p.y <= L.height + th)
+                return { kind: 'canvas', sx: 1, sy: 1 };
+            if (p.x >= L.width - t && p.x <= L.width + th && Math.abs(p.y - L.height / 2) <= t * 1.5)
+                return { kind: 'canvas', sx: 1, sy: 0 };
+            if (p.y >= L.height - t && p.y <= L.height + th && Math.abs(p.x - L.width / 2) <= t * 1.5)
+                return { kind: 'canvas', sx: 0, sy: 1 };
+            return null;
+        }
+        let zoomWas = 0;
+        function composeDown(e) {
+            const p = ptF(e), c = P.compose;
+            canvas.focus({ preventScroll: true });
+            const hh = hitHandles(p);
+            if (hh && hh.kind === 'canvas') {
+                pushC();
+                ensureManual();
+                const L = composeLive();
+                zoomWas = zoom;
+                if (!zoom)
+                    zoom = scale();
+                cdrag = { kind: 'canvas', start: { x: e.clientX, y: e.clientY }, orig: [], handle: { sx: hh.sx, sy: hh.sy }, primary: -1, cw: L.width, ch: L.height, box: null };
+                canvas.setPointerCapture(e.pointerId);
+                return;
+            }
+            if (hh) {
+                pushC();
+                ensureManual();
+                const L = composeLive(), k = visIdx().indexOf(hh.li), box = L.boxes[k];
+                const l = c.layers[hh.li];
+                cdrag = { kind: hh.kind, start: p, orig: [{ i: hh.li, x: l.x ?? 0, y: l.y ?? 0, w: l.width ?? box.w, h: l.height ?? box.h, rot: l.rotation ?? 0 }], handle: { sx: hh.kind === 'resize' ? hh.sx : 0, sy: hh.kind === 'resize' ? hh.sy : 0 }, primary: hh.li, cw: L.width, ch: L.height, box: { ...box } };
+                canvas.setPointerCapture(e.pointerId);
+                return;
+            }
+            const hit = hitLayer(p);
+            if (hit < 0) {
+                if (!e.shiftKey && sel.size) {
+                    sel.clear();
+                    renderSide();
+                    drawStage();
+                }
+                return;
+            }
+            if (e.shiftKey) {
+                if (sel.has(hit))
+                    sel.delete(hit);
+                else
+                    sel.add(hit);
+            }
+            else if (!sel.has(hit))
+                sel = new Set([hit]);
+            c.selected = hit;
+            const movable = [...sel].filter(i => !c.layers[i].locked);
+            if (!movable.length) {
+                renderSide();
+                drawStage();
+                return;
+            }
+            pushC();
+            ensureManual();
+            const L = composeLive();
+            cdrag = { kind: 'move', start: p, orig: movable.map(i => { const l = c.layers[i]; return { i, x: l.x ?? 0, y: l.y ?? 0, w: l.width ?? 0, h: l.height ?? 0, rot: l.rotation ?? 0 }; }), handle: { sx: 0, sy: 0 }, primary: hit, cw: L.width, ch: L.height, box: null };
+            canvas.setPointerCapture(e.pointerId);
+            renderSide();
+            drawStage();
+        }
+        const CURSORS = { '-1,-1': 'nwse-resize', '1,1': 'nwse-resize', '1,-1': 'nesw-resize', '-1,1': 'nesw-resize', '0,-1': 'ns-resize', '0,1': 'ns-resize', '1,0': 'ew-resize', '-1,0': 'ew-resize' };
+        /** Ímãs: bordas e centro da tela e das outras imagens (Alt desliga). */
+        function snapAxis(vals, cands, tol) {
+            let best = tol + 1, d = 0, at = null;
+            for (const v of vals)
+                for (const t of cands) {
+                    const dd = t - v;
+                    if (Math.abs(dd) < best) {
+                        best = Math.abs(dd);
+                        d = dd;
+                        at = t;
+                    }
+                }
+            return best <= tol ? { d, at } : { d: 0, at: null };
+        }
+        function composeMove(e) {
+            const c = P.compose;
+            if (!cdrag) {
+                const p = ptF(e), hh = hitHandles(p);
+                canvas.style.cursor = hh ? (hh.kind === 'rotate' ? 'grab' : hh.kind === 'canvas' ? (hh.sx && hh.sy ? 'nwse-resize' : hh.sx ? 'ew-resize' : 'ns-resize') : CURSORS[hh.sx + ',' + hh.sy] ?? 'move') : hitLayer(p) >= 0 ? 'move' : 'default';
+                return;
+            }
+            const d = cdrag, s = scale();
+            if (d.kind === 'canvas') {
+                const z = clampCanvas(d.cw + (d.handle.sx ? (e.clientX - d.start.x) / s : 0), d.ch + (d.handle.sy ? (e.clientY - d.start.y) / s : 0));
+                c.width = z.w;
+                c.height = z.h;
+                c.fixed = true;
+                touch();
+                requestDraw();
+                return;
+            }
+            const p = ptF(e), L = composeLive();
+            if (d.kind === 'move') {
+                let dx = p.x - d.start.x, dy = p.y - d.start.y;
+                guides = { x: [], y: [] };
+                const prim = d.orig.find(o => o.i === d.primary) ?? d.orig[0];
+                if (!e.altKey && d.box === null) {
+                    const pl = c.layers[prim.i], vis = visIdx(), k = vis.indexOf(prim.i), b0 = L.boxes[k];
+                    if (b0) {
+                        const moved = { ...b0, x: prim.x + dx, y: prim.y + dy }, a = aabb(moved), tol = 7 / s;
+                        const cx = [0, L.width / 2, L.width], cy = [0, L.height / 2, L.height];
+                        vis.forEach((li, kk) => { if (sel.has(li))
+                            return; const bb = L.boxes[kk]; if (!bb)
+                            return; const q = aabb(bb); cx.push(q.x0, (q.x0 + q.x1) / 2, q.x1); cy.push(q.y0, (q.y0 + q.y1) / 2, q.y1); });
+                        const sx = snapAxis([a.x0, (a.x0 + a.x1) / 2, a.x1], cx, tol), sy = snapAxis([a.y0, (a.y0 + a.y1) / 2, a.y1], cy, tol);
+                        dx += sx.d;
+                        dy += sy.d;
+                        if (sx.at !== null)
+                            guides.x.push(sx.at);
+                        if (sy.at !== null)
+                            guides.y.push(sy.at);
+                        void pl;
+                    }
+                }
+                for (const o of d.orig) {
+                    const l = c.layers[o.i];
+                    l.x = Math.round(o.x + dx);
+                    l.y = Math.round(o.y + dy);
+                }
+            }
+            else if (d.kind === 'rotate' && d.box) {
+                const cxy = { x: d.box.x + d.box.w / 2, y: d.box.y + d.box.h / 2 };
+                let ang = Math.atan2(p.y - cxy.y, p.x - cxy.x) * 180 / Math.PI + 90;
+                if (e.shiftKey)
+                    ang = Math.round(ang / 15) * 15;
+                else {
+                    const r = Math.round(ang / 90) * 90;
+                    if (Math.abs(ang - r) < 3)
+                        ang = r;
+                }
+                ang = ((ang + 540) % 360) - 180;
+                c.layers[d.primary].rotation = Math.round(ang * 10) / 10;
+            }
+            else if (d.kind === 'resize' && d.box) {
+                const o = d.orig[0], a = o.rot * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+                const dxw = p.x - d.start.x, dyw = p.y - d.start.y, dl = { x: dxw * ca + dyw * sa, y: -dxw * sa + dyw * ca };
+                const { sx, sy } = d.handle;
+                let w = o.w, h = o.h;
+                if (sx)
+                    w = Math.max(8, o.w + sx * dl.x);
+                if (sy)
+                    h = Math.max(8, o.h + sy * dl.y);
+                if (c.lock !== e.shiftKey || (sx && sy)) {
+                    const k = sx && sy ? Math.max(w / o.w, h / o.h) : sx ? w / o.w : h / o.h;
+                    w = Math.max(8, o.w * k);
+                    h = Math.max(8, o.h * k);
+                }
+                if (e.altKey) { /* Alt: cresce pelo centro */ }
+                const ow = o.w, oh = o.h, ocx = o.x + ow / 2, ocy = o.y + oh / 2;
+                const offx = sx ? sx * (w - ow) / 2 : 0, offy = sy ? sy * (h - oh) / 2 : 0;
+                const ncx = ocx + offx * ca - offy * sa, ncy = ocy + offx * sa + offy * ca;
+                const l = c.layers[o.i];
+                l.width = Math.max(1, Math.round(w));
+                l.height = Math.max(1, Math.round(h));
+                l.x = Math.round(ncx - l.width / 2);
+                l.y = Math.round(ncy - l.height / 2);
+                delete l.scale;
+            }
+            touch();
+            requestDraw();
+        }
+        function composeUp() {
+            cdrag = null;
+            guides = { x: [], y: [] };
+            if (zoomWas === 0 && P.compose.fixed)
+                zoom = 0;
+            else if (zoomWas === 0)
+                zoom = 0;
+            zoomWas = 0;
+            touch();
+            renderSide();
+            drawStage();
+            schedule(0);
+        }
+        /* ---------------- operações ---------------- */
+        function selList() { return [...sel].filter(i => i < P.compose.layers.length).sort((a, b) => a - b); }
+        function mutate(fn) { pushC(); ensureManual(); fn(); touch(); renderSide(); drawStage(); schedule(0); }
         function addLayers(ids) {
             const c = P.compose;
+            pushC();
             for (const id of ids) {
                 if (c.layers.length >= 40) {
                     message = 'No máximo 40 imagens por montagem.';
                     break;
                 }
-                if (A.blobs.has(id))
-                    c.layers.push({ assetId: id });
+                if (!A.blobs.has(id))
+                    continue;
+                const nat = natOf(id), l = { assetId: id, width: nat.w, height: nat.h, x: 0, y: 0 };
+                if (c.layers.length)
+                    ensureManual();
+                if (c.fixed && c.width > 0) {
+                    const k = Math.min(1, c.width * 0.8 / nat.w, c.height * 0.8 / nat.h), w = Math.max(1, Math.round(nat.w * k)), h = Math.max(1, Math.round(nat.h * k)), n = c.layers.length % 8 * 24;
+                    l.width = w;
+                    l.height = h;
+                    l.x = Math.round((c.width - w) / 2 + n);
+                    l.y = Math.round((c.height - h) / 2 + n);
+                }
+                else if (c.layers.length) {
+                    l.x = Math.max(...c.layers.map(q => (q.x ?? 0) + (q.width ?? 0))) + c.gap;
+                    l.y = 0;
+                    c.width = 0;
+                    c.height = 0;
+                    c.arrange = 'none'; // tela automática: cresce junto com o conjunto
+                }
+                c.layers.push(l);
+                sel = new Set([c.layers.length - 1]);
+                c.selected = c.layers.length - 1;
             }
-            if (c.arrange === 'none') { /* manual: novas imagens entram no canto e podem ser arrastadas */ }
-            c.selected = Math.max(0, c.layers.length - 1);
+            touch();
+        }
+        function removeSel() { const L = selList(); if (!L.length)
+            return; mutate(() => { const c = P.compose; c.layers = c.layers.filter((_, i) => !L.includes(i)); sel.clear(); c.selected = 0; trimBmps(); }); }
+        function dupSel() {
+            const L = selList();
+            if (!L.length || P.compose.layers.length + L.length > 40)
+                return;
+            mutate(() => { const c = P.compose, out = []; for (const i of L) {
+                const o = { ...c.layers[i] };
+                o.x = (o.x ?? 0) + 24;
+                o.y = (o.y ?? 0) + 24;
+                c.layers.push(o);
+                out.push(c.layers.length - 1);
+            } sel = new Set(out); });
+        }
+        function reorder(dir) {
+            const L = selList();
+            if (!L.length)
+                return;
+            mutate(() => {
+                const c = P.compose, ls = c.layers, pick = new Set(L);
+                const arr = ls.map((l, i) => ({ l, i, s: pick.has(i) }));
+                if (dir > 0)
+                    for (let i = arr.length - 2; i >= 0; i--) {
+                        if (arr[i].s && !arr[i + 1].s) {
+                            const t = arr[i];
+                            arr[i] = arr[i + 1];
+                            arr[i + 1] = t;
+                        }
+                    }
+                else
+                    for (let i = 1; i < arr.length; i++) {
+                        if (arr[i].s && !arr[i - 1].s) {
+                            const t = arr[i];
+                            arr[i] = arr[i - 1];
+                            arr[i - 1] = t;
+                        }
+                    }
+                c.layers = arr.map(a => a.l);
+                sel = new Set(arr.map((a, i) => a.s ? i : -1).filter(i => i >= 0));
+            });
+        }
+        function nudge(dx, dy) { const L = selList().filter(i => !P.compose.layers[i].locked); if (!L.length)
+            return; mutate(() => { for (const i of L) {
+            const l = P.compose.layers[i];
+            l.x = (l.x ?? 0) + dx;
+            l.y = (l.y ?? 0) + dy;
+        } }); }
+        function fitTo(mode) {
+            const L = selList().filter(i => !P.compose.layers[i].locked);
+            if (!L.length)
+                return;
+            mutate(() => {
+                const c = P.compose;
+                for (const i of L) {
+                    const l = c.layers[i], nat = natOf(l.assetId), W = c.width, H = c.height;
+                    if (mode === 'center') {
+                        l.x = Math.round((W - (l.width ?? nat.w)) / 2);
+                        l.y = Math.round((H - (l.height ?? nat.h)) / 2);
+                        continue;
+                    }
+                    l.rotation = 0;
+                    if (mode === 'original') {
+                        const cx = (l.x ?? 0) + (l.width ?? nat.w) / 2, cy = (l.y ?? 0) + (l.height ?? nat.h) / 2;
+                        l.width = nat.w;
+                        l.height = nat.h;
+                        l.x = Math.round(cx - nat.w / 2);
+                        l.y = Math.round(cy - nat.h / 2);
+                        delete l.fit;
+                        continue;
+                    }
+                    if (mode === 'contain') {
+                        const k = Math.min(W / nat.w, H / nat.h), w = Math.max(1, Math.round(nat.w * k)), h = Math.max(1, Math.round(nat.h * k));
+                        l.width = w;
+                        l.height = h;
+                        l.x = Math.round((W - w) / 2);
+                        l.y = Math.round((H - h) / 2);
+                        delete l.fit;
+                    }
+                    else {
+                        l.width = W;
+                        l.height = H;
+                        l.x = 0;
+                        l.y = 0;
+                        if (mode === 'cover')
+                            l.fit = 'cover';
+                        else
+                            delete l.fit;
+                    }
+                }
+            });
+        }
+        function alignSel(kind) {
+            const L = selList().filter(i => !P.compose.layers[i].locked);
+            if (!L.length)
+                return;
+            mutate(() => {
+                const c = P.compose, live = composeLive(), vis = visIdx();
+                const bx = L.map(i => ({ i, a: aabb(live.boxes[vis.indexOf(i)]) })).filter(o => vis.includes(o.i));
+                if (!bx.length)
+                    return;
+                const T = bx.length === 1 ? { x0: 0, y0: 0, x1: live.width, y1: live.height } : { x0: Math.min(...bx.map(o => o.a.x0)), y0: Math.min(...bx.map(o => o.a.y0)), x1: Math.max(...bx.map(o => o.a.x1)), y1: Math.max(...bx.map(o => o.a.y1)) };
+                for (const o of bx) {
+                    const l = c.layers[o.i];
+                    let dx = 0, dy = 0;
+                    if (kind === 'l')
+                        dx = T.x0 - o.a.x0;
+                    else if (kind === 'r')
+                        dx = T.x1 - o.a.x1;
+                    else if (kind === 'cx')
+                        dx = (T.x0 + T.x1) / 2 - (o.a.x0 + o.a.x1) / 2;
+                    else if (kind === 't')
+                        dy = T.y0 - o.a.y0;
+                    else if (kind === 'b')
+                        dy = T.y1 - o.a.y1;
+                    else
+                        dy = (T.y0 + T.y1) / 2 - (o.a.y0 + o.a.y1) / 2;
+                    l.x = Math.round((l.x ?? 0) + dx);
+                    l.y = Math.round((l.y ?? 0) + dy);
+                }
+            });
+        }
+        function distribute(axis) {
+            const L = selList().filter(i => !P.compose.layers[i].locked);
+            if (L.length < 3)
+                return;
+            mutate(() => {
+                const c = P.compose, live = composeLive(), vis = visIdx();
+                const it = L.filter(i => vis.includes(i)).map(i => ({ i, a: aabb(live.boxes[vis.indexOf(i)]) })).sort((p, q) => axis === 'h' ? p.a.x0 - q.a.x0 : p.a.y0 - q.a.y0);
+                if (it.length < 3)
+                    return;
+                const lo = axis === 'h' ? it[0].a.x0 : it[0].a.y0, hi = axis === 'h' ? it[it.length - 1].a.x1 : it[it.length - 1].a.y1;
+                const total = it.reduce((s, o) => s + (axis === 'h' ? o.a.x1 - o.a.x0 : o.a.y1 - o.a.y0), 0), gap = (hi - lo - total) / (it.length - 1);
+                let pos = lo;
+                for (const o of it) {
+                    const size = axis === 'h' ? o.a.x1 - o.a.x0 : o.a.y1 - o.a.y0, l = c.layers[o.i];
+                    if (axis === 'h')
+                        l.x = Math.round((l.x ?? 0) + pos - o.a.x0);
+                    else
+                        l.y = Math.round((l.y ?? 0) + pos - o.a.y0);
+                    pos += size + gap;
+                }
+            });
+        }
+        /** Organiza uma vez (lado a lado, empilhado, grade) e volta ao modo livre. */
+        function arrangeOnce(mode) {
+            pushC();
+            const c = P.compose;
+            if (!c.layers.length)
+                return;
+            ensureManual();
+            const keep = { w: c.width, h: c.height, fixed: c.fixed };
+            const lay = c.layers.map(l => { const o = rawLayer(l); o.x = 0; o.y = 0; return o; });
+            const r = E.composeLayout({ width: 0, height: 0, background: null, arrange: mode, gap: c.gap, margin: c.margin, columns: c.columns, layers: lay.map(o => ({ ...o, rotation: 0 })) });
+            c.layers.forEach((l, i) => { const b = r.layout[i]; l.x = Math.round(b.x); l.y = Math.round(b.y); l.width = Math.max(1, Math.round(b.w)); l.height = Math.max(1, Math.round(b.h)); l.rotation = 0; if (b.clip)
+                l.fit = 'cover';
+            else
+                delete l.fit; });
+            if (keep.fixed) {
+                c.width = keep.w;
+                c.height = keep.h;
+            }
+            else {
+                c.width = r.width;
+                c.height = r.height;
+            }
+            touch();
+            renderSide();
+            drawStage();
+            schedule(0);
+        }
+        function fitCanvasToContent() {
+            mutate(() => {
+                const c = P.compose, live = composeLive(), vis = visIdx();
+                if (!vis.length)
+                    return;
+                const a = live.boxes.map(aabb), x0 = Math.min(...a.map(q => q.x0)), y0 = Math.min(...a.map(q => q.y0)), x1 = Math.max(...a.map(q => q.x1)), y1 = Math.max(...a.map(q => q.y1));
+                const z = clampCanvas(x1 - x0 + 2 * c.margin, y1 - y0 + 2 * c.margin);
+                for (const l of c.layers) {
+                    l.x = Math.round((l.x ?? 0) - x0 + c.margin);
+                    l.y = Math.round((l.y ?? 0) - y0 + c.margin);
+                }
+                c.width = z.w;
+                c.height = z.h;
+                c.fixed = true;
+            });
+        }
+        function setCanvas(w, h, rerender) {
+            const c = P.compose, z = clampCanvas(w, h);
+            pushC();
+            ensureManual();
+            c.width = z.w;
+            c.height = z.h;
+            c.fixed = true;
+            if (c.layers.length === 1 && rerender) { /* única imagem: ajusta à nova tela */
+                const l = c.layers[0], nat = natOf(l.assetId), k = Math.min(1, z.w * 0.9 / nat.w, z.h * 0.9 / nat.h);
+                l.width = Math.max(1, Math.round(nat.w * k));
+                l.height = Math.max(1, Math.round(nat.h * k));
+                l.x = Math.round((z.w - l.width) / 2);
+                l.y = Math.round((z.h - l.height) / 2);
+                l.rotation = 0;
+                delete l.fit;
+            }
+            touch();
+            if (rerender)
+                renderSide();
+            drawStage();
+            schedule(0);
+        }
+        function expandCanvas(side, frac) {
+            mutate(() => {
+                const c = P.compose, horiz = side === 'l' || side === 'r', add = Math.round((horiz ? c.width : c.height) * frac), z = clampCanvas(c.width + (horiz ? add : 0), c.height + (horiz ? 0 : add));
+                const gx = z.w - c.width, gy = z.h - c.height;
+                if (side === 'l')
+                    for (const l of c.layers)
+                        l.x = (l.x ?? 0) + gx;
+                if (side === 't')
+                    for (const l of c.layers)
+                        l.y = (l.y ?? 0) + gy;
+                c.width = z.w;
+                c.height = z.h;
+                c.fixed = true;
+            });
+        }
+        function composeKey(e) {
+            const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+            let used = true;
+            if (mod && k === 'z' && !e.shiftKey)
+                undoC();
+            else if (mod && (k === 'y' || (k === 'z' && e.shiftKey)))
+                redoC();
+            else if (mod && k === 'd')
+                dupSel();
+            else if (mod && k === 'a') {
+                sel = new Set(visIdx());
+                renderSide();
+                drawStage();
+            }
+            else if (k === 'delete' || k === 'backspace')
+                removeSel();
+            else if (k === 'escape') {
+                sel.clear();
+                renderSide();
+                drawStage();
+            }
+            else if (k === 'arrowleft')
+                nudge(e.shiftKey ? -10 : -1, 0);
+            else if (k === 'arrowright')
+                nudge(e.shiftKey ? 10 : 1, 0);
+            else if (k === 'arrowup')
+                nudge(0, e.shiftKey ? -10 : -1);
+            else if (k === 'arrowdown')
+                nudge(0, e.shiftKey ? 10 : 1);
+            else if (k === ']')
+                reorder(1);
+            else if (k === '[')
+                reorder(-1);
+            else
+                used = false;
+            if (used)
+                e.preventDefault();
+        }
+        /* ---------------- painel ---------------- */
+        const SIZES = [
+            ['a4p', 'A4 retrato (300 dpi) 2480×3508', 2480, 3508], ['a4l', 'A4 paisagem (300 dpi) 3508×2480', 3508, 2480], ['b4', 'Página de mangá B4 (300 dpi) 3035×4299', 3035, 4299],
+            ['hd', 'Full HD 1920×1080', 1920, 1080], ['uhd', '4K UHD 3840×2160', 3840, 2160], ['sq', 'Quadrado 2000×2000', 2000, 2000]
+        ];
+        const ibtn = (txt, title, fn, cls = 'btn') => { const b = el('button', cls, txt); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.addEventListener('click', fn); return b; };
+        function intInput(value, min, max, on, label) {
+            const i = el('input');
+            i.type = 'number';
+            i.min = String(min);
+            i.max = String(max);
+            i.step = '1';
+            i.value = String(Math.round(value));
+            i.setAttribute('aria-label', label);
+            i.addEventListener('input', () => { const v = Number(i.value); if (Number.isFinite(v) && v >= min)
+                on(Math.min(max, Math.round(v))); });
+            return i;
         }
         function composeControls(box) {
-            const c = P.compose;
-            box.appendChild(el('p', 'vbie-note', 'Junte várias imagens numa só (por exemplo, peças de uma grade). Arraste as imagens no palco para posicionar.'));
+            const c = P.compose, L = composeLive();
+            /* 1. tela */
+            const card = el('div', 'vbie-card');
+            card.setAttribute('data-vbie', 'canvas-card');
+            card.appendChild(el('strong', undefined, 'Tela da montagem'));
+            const cw = intInput(L.width, 16, MAXSIDE, () => { }, 'Largura da tela'), ch = intInput(L.height, 16, MAXSIDE, () => { }, 'Altura da tela');
+            cw.setAttribute('data-vbie', 'canvas-w');
+            ch.setAttribute('data-vbie', 'canvas-h');
+            const apply = () => setCanvas(Number(cw.value) || L.width, Number(ch.value) || L.height, false);
+            cw.addEventListener('input', apply);
+            ch.addEventListener('input', apply);
+            cw.addEventListener('change', () => { renderSide(); });
+            ch.addEventListener('change', () => { renderSide(); });
+            const dims = el('div', 'vbie-colorrow');
+            dims.append(cw, el('span', undefined, '×'), ch, el('span', 'vbie-dim', 'px'));
+            card.appendChild(field('Tamanho', dims, 'Defina antes de montar; dá para ampliar a qualquer momento'));
+            const ps = el('select');
+            ps.setAttribute('aria-label', 'Tamanho predefinido');
+            ps.setAttribute('data-vbie', 'canvas-preset');
+            const o0 = el('option', undefined, 'Tamanho predefinido…');
+            o0.value = '';
+            ps.appendChild(o0);
+            for (const [id, name] of SIZES) {
+                const o = el('option', undefined, name);
+                o.value = id;
+                ps.appendChild(o);
+            }
+            ps.addEventListener('change', () => { const z = SIZES.find(q => q[0] === ps.value); if (z)
+                setCanvas(z[2], z[3], true); });
+            card.appendChild(field('Predefinição', ps));
+            const ex = el('div', 'vbie-actions');
+            ex.setAttribute('data-vbie', 'canvas-expand');
+            ex.append(ibtn('◀＋', 'Ampliar a tela 25% à esquerda', () => expandCanvas('l', 0.25)), ibtn('▲＋', 'Ampliar a tela 25% acima', () => expandCanvas('t', 0.25)), ibtn('＋▼', 'Ampliar a tela 25% abaixo', () => expandCanvas('b', 0.25)), ibtn('＋▶', 'Ampliar a tela 25% à direita', () => expandCanvas('r', 0.25)));
+            card.append(field('Ampliar 25%', ex), ibtn('⤢ Ajustar a tela ao conjunto', 'Encolhe/expande a tela até cobrir todas as imagens', fitCanvasToContent));
+            card.appendChild(choice('Fundo', [['transparent', 'Transparente'], ['white', 'Branco'], ['color', 'Outra cor…']], c.bg, v => { pushC(); c.bg = v; touch(); renderSide(); }));
+            if (c.bg === 'color')
+                card.appendChild(newColor('Cor do fundo', c.bgColor, v => { c.bgColor = v ?? c.bgColor; touch(); requestDraw(); }, false));
+            const px = L.width * L.height;
+            card.appendChild(el('p', 'vbie-note' + (px > MAXPX ? ' warn' : ''), px > MAXPX ? 'Passa de 16 megapixels: não poderá ser salva.' : (px / 1e6).toFixed(1) + ' MP · arraste as alças laranja da tela para ampliar.'));
+            box.appendChild(card);
+            /* 2. camadas */
             const list = el('div', 'vbie-layers');
             list.setAttribute('data-vbie', 'layers');
-            c.layers.forEach((l, i) => {
-                const row = el('div', 'vbie-layer' + (i === c.selected ? ' on' : ''));
+            for (let i = c.layers.length - 1; i >= 0; i--) {
+                const l = c.layers[i], row = el('div', 'vbie-layer' + (sel.has(i) ? ' on' : ''));
                 row.setAttribute('data-layer', String(i));
+                const eye = ibtn(l.hidden ? '🚫' : '👁', l.hidden ? 'Mostrar' : 'Ocultar', () => { pushC(); l.hidden = !l.hidden; if (l.hidden)
+                    sel.delete(i); touch(); renderSide(); drawStage(); schedule(0); });
+                const lock = ibtn(l.locked ? '🔒' : '🔓', l.locked ? 'Destravar' : 'Travar posição', () => { pushC(); l.locked = !l.locked; renderSide(); drawStage(); });
                 const nm = el('button', 'btn', (i + 1) + '. ' + nameOf(l.assetId));
                 nm.type = 'button';
-                nm.addEventListener('click', () => { c.selected = i; renderSide(); drawStage(); });
-                const mv = (d) => { const j = i + d; if (j < 0 || j >= c.layers.length)
-                    return; const t = c.layers[i]; c.layers[i] = c.layers[j]; c.layers[j] = t; c.selected = j; renderSide(); schedule(0); };
-                const up = el('button', 'btn', '▲');
-                up.type = 'button';
-                up.title = 'Mover para trás';
-                up.addEventListener('click', () => mv(-1));
-                const dn = el('button', 'btn', '▼');
-                dn.type = 'button';
-                dn.title = 'Mover para frente';
-                dn.addEventListener('click', () => mv(1));
-                const rm = el('button', 'btn', '✕');
-                rm.type = 'button';
-                rm.title = 'Tirar da montagem';
-                rm.addEventListener('click', () => { c.layers.splice(i, 1); c.selected = Math.max(0, Math.min(c.selected, c.layers.length - 1)); renderSide(); schedule(0); });
-                row.append(nm, up, dn, rm);
+                nm.addEventListener('click', e => { if (e.shiftKey) {
+                    if (sel.has(i))
+                        sel.delete(i);
+                    else
+                        sel.add(i);
+                }
+                else
+                    sel = new Set([i]); c.selected = i; renderSide(); drawStage(); });
+                row.append(eye, lock, nm);
                 list.appendChild(row);
-            });
+            }
+            if (!c.layers.length)
+                list.appendChild(el('p', 'vbie-note', 'Nenhuma imagem ainda. Adicione da biblioteca abaixo.'));
             box.appendChild(list);
             const add = el('select');
             add.setAttribute('aria-label', 'Adicionar imagem da biblioteca');
-            const o0 = el('option', undefined, '＋ adicionar da biblioteca…');
-            o0.value = '';
-            add.appendChild(o0);
+            const a0 = el('option', undefined, '＋ adicionar da biblioteca…');
+            a0.value = '';
+            add.appendChild(a0);
             for (const a of usable()) {
                 const o = el('option', undefined, a.name || a.id);
                 o.value = a.id;
@@ -1363,55 +2145,81 @@ definePlugin({
             add.addEventListener('change', () => { if (add.value) {
                 addLayers([add.value]);
                 renderSide();
+                drawStage();
                 schedule(0);
             } });
             box.appendChild(field('Adicionar imagem', add));
-            const live = recent.filter(id => A.blobs.has(id));
-            if (live.length) {
-                const b = el('button', 'btn', '＋ Todas as salvas agora (' + live.length + ')');
-                b.type = 'button';
-                b.addEventListener('click', () => { addLayers(live.slice().reverse().filter(id => !c.layers.some(l => l.assetId === id))); renderSide(); schedule(0); });
-                box.appendChild(b);
-            }
-            const sel = c.layers[c.selected];
-            if (sel) {
-                const nat = S.assets.find(a => a.id === sel.assetId);
-                const pct = nat?.originalWidth && sel.width ? Math.round(sel.width / nat.originalWidth * 100) : Math.round((sel.scale ?? 1) * 100);
-                box.appendChild(field('Tamanho (%)', number(pct, 1, 500, 1, v => { sel.scale = v / 100; delete sel.width; delete sel.height; })));
-                box.appendChild(slider('Girar (°)', sel.rotation ?? 0, -180, 180, 1, v => { sel.rotation = v; }));
-                box.appendChild(slider('Opacidade', Math.round((sel.opacity ?? 1) * 100), 0, 100, 1, v => { sel.opacity = v / 100; }));
-                const fl = el('div', 'vbie-actions');
-                fl.append(check('Espelhar ↔', !!sel.flipH, v => { sel.flipH = v; }), check('Espelhar ↕', !!sel.flipV, v => { sel.flipV = v; }));
-                box.appendChild(fl);
-            }
-            box.appendChild(choice('Organização', [['row', 'Lado a lado (linha)'], ['column', 'Empilhadas (coluna)'], ['grid', 'Grade'], ['none', 'Manual (arrastar)']], c.arrange, v => { if (v === 'none')
-                makeManual();
-            else
-                c.arrange = v; if (v === 'none')
-                c.arrange = 'none'; renderSide(); }, 'Manual: arraste as imagens no palco. As outras organizam sozinhas.'));
-            if (c.arrange === 'grid')
-                box.appendChild(field('Colunas', number(c.columns || Math.ceil(Math.sqrt(Math.max(1, c.layers.length))), 1, 40, 1, v => { c.columns = Math.round(v); })));
-            if (c.arrange !== 'none') {
-                box.appendChild(slider('Espaço entre (px)', c.gap, 0, 200, 1, v => { c.gap = v; }));
-                box.appendChild(slider('Margem (px)', c.margin, 0, 200, 1, v => { c.margin = v; }));
-            }
-            else {
-                const dims = el('div', 'vbie-colorrow');
-                dims.append(number(c.width || 1, 1, 16000, 1, v => { c.width = Math.round(v); }), el('span', undefined, '×'), number(c.height || 1, 1, 16000, 1, v => { c.height = Math.round(v); }));
-                box.appendChild(field('Tela (px)', dims));
-                const fit = el('button', 'btn', 'Ajustar a tela ao conjunto');
-                fit.type = 'button';
-                fit.setAttribute('data-vbie', 'fit-canvas');
-                fit.addEventListener('click', () => { fitCanvas(); renderSide(); schedule(0); });
-                box.appendChild(fit);
-                if (sel) {
-                    box.appendChild(field('X', number(sel.x ?? 0, -16000, 16000, 1, v => { sel.x = Math.round(v); })));
-                    box.appendChild(field('Y', number(sel.y ?? 0, -16000, 16000, 1, v => { sel.y = Math.round(v); })));
+            const live = recent.filter(id => A.blobs.has(id) && !c.layers.some(l => l.assetId === id));
+            if (live.length)
+                box.appendChild(ibtn('＋ Todas as salvas agora (' + live.length + ')', 'Adiciona as imagens salvas agora', () => { addLayers(live.slice().reverse()); arrangeOnce('row'); }));
+            /* 3. elemento */
+            const SL = selList();
+            const one = SL.length === 1 ? c.layers[SL[0]] : null;
+            if (SL.length) {
+                const ep = el('div', 'vbie-card');
+                ep.setAttribute('data-vbie', 'element-panel');
+                ep.appendChild(el('strong', undefined, SL.length === 1 ? 'Elemento: ' + nameOf(one.assetId) : SL.length + ' elementos'));
+                if (one) {
+                    const nat = natOf(one.assetId), ratio = (one.width ?? nat.w) / Math.max(1, one.height ?? nat.h);
+                    const live2 = composeLive(), bx = live2.boxes[visIdx().indexOf(SL[0])];
+                    const iw = intInput(one.width ?? bx?.w ?? nat.w, 1, MAXSIDE, () => { }, 'Largura do elemento'), ih = intInput(one.height ?? bx?.h ?? nat.h, 1, MAXSIDE, () => { }, 'Altura do elemento');
+                    iw.setAttribute('data-vbie', 'el-w');
+                    ih.setAttribute('data-vbie', 'el-h');
+                    const setWH = (w, h) => { pushC(); ensureManual(); one.width = w; one.height = h; delete one.scale; touch(); requestDraw(); };
+                    iw.addEventListener('input', () => { const w = Math.max(1, Math.round(Number(iw.value) || 1)); const h = c.lock ? Math.max(1, Math.round(w / ratio)) : Math.max(1, Math.round(Number(ih.value) || 1)); if (c.lock)
+                        ih.value = String(h); setWH(w, h); });
+                    ih.addEventListener('input', () => { const h = Math.max(1, Math.round(Number(ih.value) || 1)); const w = c.lock ? Math.max(1, Math.round(h * ratio)) : Math.max(1, Math.round(Number(iw.value) || 1)); if (c.lock)
+                        iw.value = String(w); setWH(w, h); });
+                    const wh = el('div', 'vbie-colorrow');
+                    wh.append(iw, el('span', undefined, '×'), ih, el('span', 'vbie-dim', 'px'));
+                    ep.appendChild(field('Tamanho', wh));
+                    ep.appendChild(check('Manter proporção', c.lock, v => { c.lock = v; }, 'Shift no arrasto inverte'));
+                    const xy = el('div', 'vbie-colorrow');
+                    const ix = intInput(one.x ?? 0, -MAXSIDE, MAXSIDE, v => { pushC(); ensureManual(); one.x = v; touch(); requestDraw(); }, 'Posição X'), iy = intInput(one.y ?? 0, -MAXSIDE, MAXSIDE, v => { pushC(); ensureManual(); one.y = v; touch(); requestDraw(); }, 'Posição Y');
+                    xy.append(ix, el('span', undefined, ','), iy);
+                    ep.appendChild(field('Posição X, Y', xy));
+                    const pct = Math.round((one.width ?? nat.w) / nat.w * 100);
+                    ep.appendChild(field('Escala (%)', intInput(pct, 1, 1000, v => { const w = Math.max(1, Math.round(nat.w * v / 100)), h = Math.max(1, Math.round(nat.h * v / 100)); setWH(w, h); iw.value = String(w); ih.value = String(h); }, 'Escala em porcentagem')));
+                    const rot = slider('Girar (°)', one.rotation ?? 0, -180, 180, 1, v => { pushC(); one.rotation = v; touch(); requestDraw(); });
+                    ep.appendChild(rot);
+                    ep.appendChild(slider('Opacidade', Math.round((one.opacity ?? 1) * 100), 0, 100, 1, v => { pushC(); one.opacity = v / 100; touch(); requestDraw(); }));
+                    const fl = el('div', 'vbie-actions');
+                    fl.append(check('Espelhar ↔', !!one.flipH, v => { pushC(); one.flipH = v; touch(); requestDraw(); }), check('Espelhar ↕', !!one.flipV, v => { pushC(); one.flipV = v; touch(); requestDraw(); }));
+                    ep.appendChild(fl);
                 }
+                const fit = el('div', 'vbie-actions');
+                fit.setAttribute('data-vbie', 'fit-actions');
+                fit.append(ibtn('Caber', 'Cabe inteira na tela, sem cortar', () => fitTo('contain')), ibtn('Cobrir', 'Preenche a tela cortando o excesso', () => fitTo('cover')), ibtn('Esticar', 'Ocupa a tela toda, deformando', () => fitTo('stretch')), ibtn('Original', 'Tamanho original (100%)', () => fitTo('original')), ibtn('Centralizar', 'Centraliza na tela', () => fitTo('center')));
+                ep.appendChild(fit);
+                const al = el('div', 'vbie-actions');
+                al.setAttribute('data-vbie', 'align-actions');
+                al.append(ibtn('⇤', 'Alinhar à esquerda', () => alignSel('l')), ibtn('⇹', 'Centralizar na horizontal', () => alignSel('cx')), ibtn('⇥', 'Alinhar à direita', () => alignSel('r')), ibtn('⤒', 'Alinhar ao topo', () => alignSel('t')), ibtn('⇳', 'Centralizar na vertical', () => alignSel('cy')), ibtn('⤓', 'Alinhar à base', () => alignSel('b')));
+                if (SL.length >= 3)
+                    al.append(ibtn('↔ distribuir', 'Distribuir na horizontal', () => distribute('h')), ibtn('↕ distribuir', 'Distribuir na vertical', () => distribute('v')));
+                ep.appendChild(field(SL.length === 1 ? 'Alinhar à tela' : 'Alinhar', al));
+                const ord = el('div', 'vbie-actions');
+                ord.append(ibtn('▲ Frente', 'Trazer para a frente ( ] )', () => reorder(1)), ibtn('▼ Trás', 'Enviar para trás ( [ )', () => reorder(-1)), ibtn('⧉ Duplicar', 'Duplicar (Ctrl+D)', dupSel), ibtn('✕ Remover', 'Tirar da montagem (Delete)', removeSel));
+                ep.appendChild(ord);
+                box.appendChild(ep);
             }
-            box.appendChild(choice('Fundo', [['transparent', 'Transparente'], ['white', 'Branco'], ['color', 'Outra cor…']], c.bg, v => { c.bg = v; renderSide(); }));
-            if (c.bg === 'color')
-                box.appendChild(newColor('Cor do fundo', c.bgColor, v => { c.bgColor = v ?? c.bgColor; }, false));
+            else
+                box.appendChild(el('p', 'vbie-note', 'Clique numa imagem no palco para mover, redimensionar (alças brancas) ou girar (círculo). Shift soma à seleção; Alt desliga os ímãs; Ctrl+roda dá zoom.'));
+            /* 4. organizar / histórico */
+            if (c.layers.length > 1) {
+                const ar = el('div', 'vbie-actions');
+                ar.setAttribute('data-vbie', 'arrange-actions');
+                ar.append(ibtn('Lado a lado', 'Organiza em linha', () => arrangeOnce('row')), ibtn('Empilhar', 'Organiza em coluna', () => arrangeOnce('column')), ibtn('Grade', 'Organiza em grade', () => arrangeOnce('grid')));
+                box.appendChild(field('Organizar', ar, 'Posiciona uma vez; depois continua livre'));
+                box.appendChild(slider('Espaço entre (px)', c.gap, 0, 200, 1, v => { c.gap = v; }, 'Usado ao organizar'));
+                box.appendChild(slider('Margem (px)', c.margin, 0, 200, 1, v => { c.margin = v; }, 'Usada ao organizar e ao ajustar a tela'));
+            }
+            const hist = el('div', 'vbie-actions');
+            hist.setAttribute('data-vbie', 'compose-history');
+            const u = ibtn('↶ Desfazer', 'Desfazer (Ctrl+Z)', undoC), r = ibtn('↷ Refazer', 'Refazer (Ctrl+Y)', redoC);
+            u.disabled = !chist.length;
+            r.disabled = !cfut.length;
+            hist.append(u, r);
+            box.appendChild(hist);
         }
         /** Chave fixa "Editar: só esta / todas (N)", visível em todas as abas. */
         function scopeBanner() {
@@ -2153,7 +2961,8 @@ definePlugin({
             canvas.addEventListener('pointermove', onPointerMove);
             canvas.addEventListener('pointerup', onPointerUp);
             canvas.tabIndex = 0;
-            canvas.addEventListener('keydown', onGridKey);
+            stageBox.addEventListener('wheel', onWheel, { passive: false });
+            canvas.addEventListener('keydown', onCanvasKey);
             if (src)
                 stageBox.appendChild(canvas);
             else
@@ -2182,6 +2991,8 @@ definePlugin({
                 timer = null;
             }
             clearResult();
+            releaseBmps();
+            cdrag = null;
             root?.remove();
             root = null;
             src = null;
@@ -2293,9 +3104,16 @@ definePlugin({
             await open(valid[0]);
             P.compose.layers = [];
             P.compose.selected = 0;
-            P.compose.arrange = 'row';
+            P.compose.arrange = 'none';
+            P.compose.width = 0;
+            P.compose.height = 0;
+            P.compose.fixed = false;
+            chist = [];
+            cfut = [];
+            sel.clear();
             addLayers(valid);
-            P.compose.selected = 0;
+            arrangeOnce('row');
+            sel.clear();
             tab = 'compose';
             pick = null;
             clearResult();

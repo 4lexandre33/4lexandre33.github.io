@@ -1030,6 +1030,10 @@ definePlugin({
                     return fail('INVALID_ARGUMENT', err instanceof Error ? err.message : String(err));
                 }
             },
+            'image_edit.compose_layout': async (input) => {
+                const E = await kernel.require('imageEdit');
+                return imageEditCall(async () => { const r = E.composeLayout(input); return { width: r.width, height: r.height, layout: r.layout, warnings: r.warnings }; });
+            },
             'image_edit.compose': (input) => {
                 const first = Array.isArray(input['layers']) && input['layers'][0] && typeof input['layers'][0] === 'object' ? String(input['layers'][0]['assetId']) : '';
                 return imageEditApply({ ...input, assetId: first }, 'compose');

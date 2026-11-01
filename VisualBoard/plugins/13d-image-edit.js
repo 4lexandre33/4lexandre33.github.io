@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.5.0' },
+    contractVersions: { imageEdit: '1.6.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -45,7 +45,7 @@ definePlugin({
         const CROP_KEYS = ['x', 'y', 'width', 'height', 'unit'];
         const RECOLOR_KEYS = ['mode', 'pairs', 'color', 'outlineTo', 'fillTo', 'tolerance', 'keepShading'];
         const COMPOSE_KEYS = ['width', 'height', 'background', 'arrange', 'gap', 'margin', 'columns', 'layers'];
-        const LAYER_KEYS = ['assetId', 'x', 'y', 'scale', 'width', 'height', 'rotation', 'flipH', 'flipV', 'opacity'];
+        const LAYER_KEYS = ['assetId', 'x', 'y', 'scale', 'width', 'height', 'fit', 'rotation', 'flipH', 'flipV', 'opacity'];
         const MAX_LAYERS = 40;
         function oneOf(v, list, d, name) {
             if (v === undefined || v === null)
@@ -229,6 +229,8 @@ definePlugin({
                     o.width = num(l['width'], 1, 1, 16000, 'layers[' + i + '].width');
                 if (l['height'] !== undefined)
                     o.height = num(l['height'], 1, 1, 16000, 'layers[' + i + '].height');
+                if (l['fit'] !== undefined)
+                    o.fit = oneOf(l['fit'], ['stretch', 'contain', 'cover'], 'stretch', 'layers[' + i + '].fit');
                 if (l['rotation'] !== undefined)
                     o.rotation = num(l['rotation'], 0, -360, 360, 'layers[' + i + '].rotation');
                 if (l['flipH'] !== undefined)
@@ -575,88 +577,37 @@ definePlugin({
                 for (const l of p.layers)
                     if (!cache.has(l.assetId))
                         cache.set(l.assetId, await loadCanvas(assetOf(l.assetId)));
-                const boxes = p.layers.map(l => {
-                    const c = cache.get(l.assetId);
-                    let w = c.width, h = c.height;
-                    if (l.width && l.height) {
-                        w = l.width;
-                        h = l.height;
-                    }
-                    else if (l.width) {
-                        h = Math.max(1, Math.round(c.height * l.width / c.width));
-                        w = l.width;
-                    }
-                    else if (l.height) {
-                        w = Math.max(1, Math.round(c.width * l.height / c.height));
-                        h = l.height;
-                    }
-                    else if (l.scale) {
-                        w = Math.max(1, Math.round(c.width * l.scale));
-                        h = Math.max(1, Math.round(c.height * l.scale));
-                    }
-                    return { c, l, w, h, x: l.x ?? 0, y: l.y ?? 0 };
-                });
-                if (p.arrange === 'row') {
-                    let x = 0;
-                    for (const b of boxes) {
-                        b.x += x;
-                        x += b.w + p.gap;
-                    }
-                }
-                else if (p.arrange === 'column') {
-                    let y = 0;
-                    for (const b of boxes) {
-                        b.y += y;
-                        y += b.h + p.gap;
-                    }
-                }
-                else if (p.arrange === 'grid') {
-                    const cols = p.columns || Math.ceil(Math.sqrt(boxes.length)), rows = Math.ceil(boxes.length / cols);
-                    const cw = Array(cols).fill(0), rh = Array(rows).fill(0);
-                    boxes.forEach((b, i) => { const c = i % cols, r = Math.floor(i / cols); cw[c] = Math.max(cw[c], b.w); rh[r] = Math.max(rh[r], b.h); });
-                    boxes.forEach((b, i) => {
-                        const c = i % cols, r = Math.floor(i / cols);
-                        const ox = cw.slice(0, c).reduce((s, v) => s + v + p.gap, 0), oy = rh.slice(0, r).reduce((s, v) => s + v + p.gap, 0);
-                        b.x += ox + (cw[c] - b.w) / 2;
-                        b.y += oy + (rh[r] - b.h) / 2;
-                    });
-                }
-                /* caixa que envolve todas as imagens (com rotação) */
-                let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-                for (const b of boxes) {
-                    const a = (b.l.rotation || 0) * Math.PI / 180, cs = Math.abs(Math.cos(a)), sn = Math.abs(Math.sin(a));
-                    const bw = b.w * cs + b.h * sn, bh = b.w * sn + b.h * cs, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-                    x0 = Math.min(x0, cx - bw / 2);
-                    y0 = Math.min(y0, cy - bh / 2);
-                    x1 = Math.max(x1, cx + bw / 2);
-                    y1 = Math.max(y1, cy + bh / 2);
-                }
-                const fitW = Math.ceil(x1 - x0) + 2 * p.margin, fitH = Math.ceil(y1 - y0) + 2 * p.margin;
-                const W = p.width || fitW, H = p.height || fitH;
+                const L = core.composeLayout(p.layers.map(l => { const c = cache.get(l.assetId); return { w: c.width, h: c.height }; }), p.layers, p);
+                const W = L.width, H = L.height;
                 if (W * H > LIMITS.maxPixels)
                     fail('IMAGE_TOO_LARGE', 'A montagem passa de 16 megapixels (' + W + '×' + H + ')');
-                const offX = p.width ? 0 : p.margin - x0, offY = p.height ? 0 : p.margin - y0;
-                const canvas = newCanvas(W, H), ctx = canvas.getContext('2d', { willReadFrequently: true });
+                const canvas = newCanvas(W, H), ctx = canvas.getContext('2d');
                 if (p.background) {
                     ctx.fillStyle = 'rgb(' + p.background.join(',') + ')';
                     ctx.fillRect(0, 0, W, H);
                 }
                 ctx.imageSmoothingQuality = 'high';
-                for (const b of boxes) {
+                p.layers.forEach((l, i) => {
+                    const b = L.boxes[i], img = cache.get(l.assetId);
                     ctx.save();
-                    ctx.globalAlpha = b.l.opacity ?? 1;
-                    ctx.translate(b.x + b.w / 2 + offX, b.y + b.h / 2 + offY);
-                    ctx.rotate((b.l.rotation || 0) * Math.PI / 180);
-                    ctx.scale(b.l.flipH ? -1 : 1, b.l.flipV ? -1 : 1);
-                    ctx.drawImage(b.c, -b.w / 2, -b.h / 2, b.w, b.h);
+                    ctx.globalAlpha = l.opacity ?? 1;
+                    ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+                    ctx.rotate((b.rotation || 0) * Math.PI / 180);
+                    if (b.clip) {
+                        ctx.beginPath();
+                        ctx.rect(-b.w / 2, -b.h / 2, b.w, b.h);
+                        ctx.clip();
+                    }
+                    ctx.scale(l.flipH ? -1 : 1, l.flipV ? -1 : 1);
+                    ctx.drawImage(img, -b.dw / 2, -b.dh / 2, b.dw, b.dh);
                     ctx.restore();
-                }
-                res.diagnostics.cells = boxes.length;
-                res.diagnostics.layout = boxes.map(b => ({ x: Math.round(b.x + offX), y: Math.round(b.y + offY), width: b.w, height: b.h }));
+                });
+                res.diagnostics.cells = L.boxes.length;
+                res.diagnostics.layout = L.boxes.map(b => ({ x: Math.round(b.x), y: Math.round(b.y), width: b.w, height: b.h }));
                 res.width = W;
                 res.height = H;
                 const first = assetOf(p.layers[0].assetId);
-                res.pieces.push({ name: baseName(first) + '_montagem', x: 0, y: 0, width: W, height: H, canvas, info: { images: boxes.length, arrange: p.arrange } });
+                res.pieces.push({ name: baseName(first) + '_montagem', x: 0, y: 0, width: W, height: H, canvas, info: { images: L.boxes.length, arrange: p.arrange } });
             }
             finally {
                 for (const c of cache.values()) {
@@ -664,6 +615,18 @@ definePlugin({
                     c.height = 0;
                 }
             }
+        }
+        /** Mede a montagem sem decodificar nem desenhar: usa só as dimensões dos ativos. */
+        function composeLayout(params) {
+            const p = composeParams(params), warnings = [];
+            const sizes = p.layers.map(l => { const a = assetOf(l.assetId); if (!a.originalWidth || !a.originalHeight)
+                fail('UNSUPPORTED_IMAGE', 'Dimensões da imagem desconhecidas: ' + l.assetId); return { w: a.originalWidth, h: a.originalHeight }; });
+            const L = core.composeLayout(sizes, p.layers, p);
+            if (L.width * L.height > LIMITS.maxPixels)
+                warnings.push('A montagem passa de 16 megapixels (' + L.width + '×' + L.height + ') e não poderá ser salva');
+            p.layers.forEach((l, i) => { const b = L.boxes[i]; if (b.x + b.w < 0 || b.y + b.h < 0 || b.x > L.width || b.y > L.height)
+                warnings.push('A camada ' + (i + 1) + ' está fora da tela'); void l; });
+            return { width: L.width, height: L.height, layout: L.boxes, warnings };
         }
         /** Valida os parâmetros sem tocar nos pixels (usa só as dimensões do ativo). */
         function plan(assetId, op, params) {
@@ -1017,6 +980,6 @@ definePlugin({
                 src.height = 0;
             }
         }
-        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest, backgroundHoles });
+        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest, backgroundHoles, composeLayout });
     }
 });
