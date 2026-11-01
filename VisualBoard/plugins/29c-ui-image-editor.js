@@ -1215,6 +1215,25 @@ definePlugin({
             s.addEventListener('change', () => { if (s.value)
                 void loadSource(s.value); });
             headEl.appendChild(s);
+            const cur = assetId ? S.assets.find(a => a.id === assetId) : undefined;
+            const orig = cur?.derivedFrom ? S.assets.find(a => a.id === cur.derivedFrom) : undefined;
+            if (cur && orig) {
+                const tag = el('span', 'vbie-edited', '✎ Editada de "' + orig.name + '"');
+                tag.title = 'Esta imagem é uma versão editada; o original continua na biblioteca';
+                const back = el('button', 'btn', '↩ Abrir original');
+                back.type = 'button';
+                back.setAttribute('data-vbie', 'open-original');
+                back.addEventListener('click', () => { void loadSource(orig.id).then(() => renderHeader()); });
+                headEl.append(tag, back);
+                if (A.usageOf(cur.id) > 0) {
+                    const sw = el('button', 'btn', '⟲ Voltar nos quadros');
+                    sw.type = 'button';
+                    sw.setAttribute('data-vbie', 'restore-original');
+                    sw.title = 'Troca esta imagem pelo original em todos os quadros (um Desfazer)';
+                    sw.addEventListener('click', () => { void A.restoreOriginal(cur.id, { notify: true }).then(() => renderHeader()); });
+                    headEl.appendChild(sw);
+                }
+            }
             const file = el('input');
             file.type = 'file';
             file.accept = 'image/*';

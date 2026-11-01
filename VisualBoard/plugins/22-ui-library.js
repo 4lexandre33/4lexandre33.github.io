@@ -72,6 +72,41 @@ definePlugin({
         search.addEventListener('input', e => { S.data.ui.search = e.target.value; renderGrid(); });
         filter.addEventListener('change', e => { S.data.ui.filterPackage = e.target.value; renderGrid(); });
         sort.addEventListener('change', e => { S.data.ui.sort = e.target.value; renderGrid(); });
+        /** Filtro por origem: todas, só editadas (derivadas no editor de imagens) ou só originais. */
+        let kindFilter = 'all';
+        const kindSel = document.createElement('select');
+        kindSel.setAttribute('data-lib', 'kind-filter');
+        kindSel.setAttribute('aria-label', 'Filtrar por origem');
+        for (const [v, t] of [['all', 'Todas as imagens'], ['edited', '✎ Só editadas'], ['originals', 'Só originais']]) {
+            const o = document.createElement('option');
+            o.value = v;
+            o.textContent = t;
+            kindSel.appendChild(o);
+        }
+        kindSel.addEventListener('change', () => { kindFilter = kindSel.value; renderGrid(); });
+        kindSel.className = 'lib-kind';
+        (count.parentElement ?? grid.parentElement)?.insertAdjacentElement('afterend', kindSel);
+        const derivedOf = (a) => a.derivedFrom;
+        const hasOriginal = (a) => { const d = derivedOf(a); return !!d && S.data.assets.some(x => x.id === d); };
+        /** Rola até a imagem original e a destaca por um instante. */
+        function revealAsset(id) {
+            if (!S.data.assets.some(a => a.id === id))
+                return;
+            kindFilter = 'all';
+            kindSel.value = 'all';
+            S.data.ui.search = '';
+            search.value = '';
+            S.data.ui.filterPackage = 'all';
+            renderFilter();
+            renderGrid();
+            const c = grid.querySelector('[data-asset-id="' + id + '"]');
+            if (c) {
+                c.scrollIntoView({ block: 'nearest' });
+                c.classList.add('is-flash');
+                c.focus({ preventScroll: true });
+                setTimeout(() => c.classList.remove('is-flash'), 1800);
+            }
+        }
         /** "Incluir subpacotes" (padrão ligado): filtrar por um pacote mostra também as imagens dos subpacotes. */
         let includeSub = true;
         const subLabel = document.createElement('label');
@@ -114,6 +149,10 @@ definePlugin({
                 if (scope && !(a.packageId && scope.has(a.packageId)))
                     return false;
                 if (q && a.name.toLowerCase().indexOf(q) === -1)
+                    return false;
+                if (kindFilter === 'edited' && !derivedOf(a))
+                    return false;
+                if (kindFilter === 'originals' && derivedOf(a))
                     return false;
                 return true;
             });
@@ -159,6 +198,51 @@ definePlugin({
             label.className = 'asset-label';
             label.textContent = asset.name;
             el.appendChild(label);
+            const dId = derivedOf(asset);
+            if (dId) {
+                const orig = S.data.assets.find(x => x.id === dId);
+                const badge = document.createElement('span');
+                badge.className = 'asset-edited';
+                badge.setAttribute('data-lib', 'edited-badge');
+                badge.textContent = '✎ Editada';
+                const ops = (asset.operations ?? []).map(o => o.operation).filter(Boolean).join(', ');
+                badge.title = 'Editada a partir de ' + (orig ? '"' + orig.name + '"' : 'uma imagem que não está mais na biblioteca') + (ops ? ' · ' + ops : '');
+                el.appendChild(badge);
+                if (orig) {
+                    const back = document.createElement('button');
+                    back.type = 'button';
+                    back.className = 'asset-orig-btn';
+                    back.setAttribute('data-lib', 'original');
+                    back.draggable = false;
+                    back.textContent = '↩ Original';
+                    back.title = 'Ir para o original "' + orig.name + '"';
+                    back.setAttribute('aria-label', 'Ir para o original de ' + asset.name);
+                    back.addEventListener('click', ev => { ev.stopPropagation(); revealAsset(A.lineageOf(asset.id).original ?? orig.id); });
+                    el.appendChild(back);
+                    {
+                        const swap = document.createElement('button');
+                        swap.type = 'button';
+                        swap.className = 'asset-orig-btn asset-orig-swap';
+                        swap.setAttribute('data-lib', 'restore-original');
+                        swap.draggable = false;
+                        swap.textContent = '⟲ Quadros';
+                        swap.title = 'Troca esta imagem pelo original em todos os quadros (um Desfazer)';
+                        swap.addEventListener('click', ev => { ev.stopPropagation(); void A.restoreOriginal(asset.id, { notify: true }); });
+                        el.appendChild(swap);
+                    }
+                }
+            }
+            else {
+                const n = S.data.assets.filter(x => derivedOf(x) === asset.id).length;
+                if (n) {
+                    const chip = document.createElement('span');
+                    chip.className = 'asset-edits';
+                    chip.setAttribute('data-lib', 'edits-chip');
+                    chip.textContent = n + (n === 1 ? ' edição' : ' edições');
+                    chip.title = 'Há ' + n + ' versão(ões) editada(s) desta imagem';
+                    el.appendChild(chip);
+                }
+            }
             const processButton = document.createElement('button');
             processButton.type = 'button';
             processButton.className = 'asset-process-btn';

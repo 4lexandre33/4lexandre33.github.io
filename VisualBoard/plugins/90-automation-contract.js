@@ -18,7 +18,7 @@ definePlugin({
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.21.0';
+        const CONTRACT_VERSION = '1.22.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -282,6 +282,8 @@ definePlugin({
         T('asset', 'get', R, 'Get asset', 'Metadata of one asset (dimensions, type, size, derivation).', obj({ assetId: id('asset id') }, ['assetId']), comp('asset.get', ['state.getAsset']));
         T('asset', 'import', W, 'Import image', 'Imports an image given as base64 into the asset library. Paths on disk are never read here.', obj({ name: str({ minLength: 1, maxLength: 200 }), mimeType: en(['image/png', 'image/jpeg', 'image/webp', 'image/gif']),
             dataBase64: str({ maxLength: 28000000 }), packageId: id('package id') }, ['name', 'mimeType', 'dataBase64']), comp('asset.import', ['assets.importFiles']), true);
+        T('asset', 'lineage', R, 'Asset lineage', 'Provenance of an edited image: direct parent, original (root of the chain), depth and how many edits derive from it.', obj({ assetId: id('asset id') }, ['assetId']), comp('asset.lineage', ['assets.lineageOf', 'state.getAsset']));
+        T('asset', 'restore_original', W, 'Restore original', 'Swaps every use of an edited image (instances, panel layers, overlays) back to its original (or direct parent) in ONE history step; the edited image stays in the library. Layers with their own crop or a different aspect ratio are skipped and counted.', obj({ assetId: id('asset id'), to: en(['original', 'parent']) }, ['assetId']), comp('asset.restore_original', ['assets.restoreOriginal', 'state.getAsset']));
         T('asset', 'delete', D, 'Delete asset', 'Removes an asset from the library. Requires confirmation.', obj({ assetId: id('asset id') }, ['assetId']), call('assets', 'deleteAsset', ['assetId'], 'done'), true);
         T('asset', 'delete_many', D, 'Delete assets', 'Removes up to 200 assets in ONE history step (one undo restores all); instances using them are removed too. Requires confirmation.', obj({ assetIds: arr(id('asset id'), 200) }, ['assetIds']), comp('asset.delete_many', ['assets.deleteAssets']), true);
         T('asset', 'usage', R, 'Asset usage', 'Counts how many instances, panel layers and overlays use each asset (before deleting).', obj({ assetIds: arr(id('asset id'), 200) }, ['assetIds']), comp('asset.usage', ['assets.usageOf']));

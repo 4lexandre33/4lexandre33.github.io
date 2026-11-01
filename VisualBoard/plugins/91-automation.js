@@ -700,7 +700,7 @@ definePlugin({
                     packages: S.packages.map(p => ({ id: p.id, name: p.name ?? null, parentId: p.parentId ?? null })),
                     assets: all.slice(offset, offset + size).map(a => ({ id: a.id, name: a.name ?? null, packageId: a.packageId ?? null,
                         mimeType: a.mimeType ?? null, width: a.originalWidth ?? null, height: a.originalHeight ?? null,
-                        size: a.size ?? null, derivedFrom: a.derivedFrom ?? null })) };
+                        size: a.size ?? null, derivedFrom: a.derivedFrom ?? null, edits: S.assets.filter(x => x.derivedFrom === a.id).length })) };
             },
             'asset.get': (input) => {
                 const asset = state.getAsset(String(input['assetId']));
@@ -722,6 +722,21 @@ definePlugin({
                     return fail('NOT_FOUND', 'Asset not found: ' + missing[0]);
                 const r = await assets.deleteAssets(ids, { ask: 'never' }); // a confirmação já foi pedida pela camada de permissões
                 return { deleted: r.deleted, instancesRemoved: r.used };
+            },
+            'asset.lineage': (input) => {
+                const id = String(input['assetId']);
+                if (!state.getAsset(id))
+                    return fail('NOT_FOUND', 'Asset not found: ' + id);
+                return { assetId: id, ...assets.lineageOf(id) };
+            },
+            'asset.restore_original': async (input) => {
+                const id = String(input['assetId']);
+                if (!state.getAsset(id))
+                    return fail('NOT_FOUND', 'Asset not found: ' + id);
+                const r = await assets.restoreOriginal(id, { to: input['to'] === 'parent' ? 'parent' : 'original' });
+                if (!r.target)
+                    return fail('INVALID_ARGUMENT', 'The asset has no original (it is not an edited image)');
+                return { assetId: id, ...r };
             },
             'asset.usage': (input) => {
                 const ids = input['assetIds'].map(String);

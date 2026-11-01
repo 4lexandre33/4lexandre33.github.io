@@ -11,7 +11,7 @@ definePlugin({
     provides: ['assets'],
     uses: ['history', 'ui.dialogs'],
     accepts: { 'utils': '^1.0.0', 'backend': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'ui.dialogs': '^1.0.0' },
-    contractVersions: { 'assets': '1.1.0' },
+    contractVersions: { 'assets': '1.2.0' },
     setup: async function (kernel) {
         const utils = await kernel.require('utils');
         const backend = await kernel.require('backend');
@@ -116,6 +116,74 @@ definePlugin({
                     }
                 }
             return used;
+        }
+        /** Linhagem de uma imagem editada: pai direto, original (raiz da cadeia derivedFrom) e quantas edições derivam dela. */
+        function lineageOf(id) {
+            const byId = new Map(S.assets.map(a => [a.id, a]));
+            const seen = new Set([id]);
+            let cur = byId.get(id), parent = null, original = null, depth = 0;
+            while (cur?.derivedFrom && byId.has(cur.derivedFrom) && !seen.has(cur.derivedFrom)) {
+                seen.add(cur.derivedFrom);
+                if (!parent)
+                    parent = cur.derivedFrom;
+                original = cur.derivedFrom;
+                depth++;
+                cur = byId.get(cur.derivedFrom);
+            }
+            return { parent, original, edits: S.assets.filter(a => a.derivedFrom === id).length, depth };
+        }
+        /**
+         * "Voltar ao original": troca nos quadros/instâncias a imagem editada pelo original (ou pelo pai), num único Desfazer.
+         * A imagem editada continua na biblioteca. Camadas com recorte próprio ou de proporção diferente são puladas e contadas.
+         */
+        async function restoreOriginal(id, opts) {
+            const L = lineageOf(id), target = (opts?.to === 'parent' ? L.parent : L.original);
+            if (!target)
+                return { target: null, replaced: 0, skipped: 0 };
+            const from = S.assets.find(a => a.id === id), to = S.assets.find(a => a.id === target);
+            const ar = (a) => (a.originalWidth && a.originalHeight) ? a.originalWidth / a.originalHeight : 0;
+            const sameShape = Math.abs(ar(from) - ar(to)) <= 0.03 * Math.max(ar(from), ar(to), 1e-9);
+            let replaced = 0, skipped = 0;
+            const before = await kernel.call('history', 'snapshot');
+            const swapLayer = (l) => {
+                if (l.assetId !== id)
+                    return;
+                if (!sameShape || l.vp1Crop) {
+                    skipped++;
+                    return;
+                }
+                l.assetId = target;
+                replaced++;
+            };
+            for (const b of S.boards)
+                for (const i of b.instances) {
+                    const im = i;
+                    if (im.assetId === id) {
+                        if (sameShape) {
+                            im.assetId = target;
+                            replaced++;
+                        }
+                        else
+                            skipped++;
+                    }
+                    if (i.type === 'manga-page') {
+                        for (const p of i.panels || [])
+                            (p.layers || []).forEach(swapLayer);
+                        (i.overlays || []).forEach(swapLayer);
+                        for (const item of i.unassignedPanels || [])
+                            (item.layers || []).forEach(swapLayer);
+                    }
+                }
+            if (replaced) {
+                await kernel.call('history', 'push', before);
+                kernel.emit('assets:changed');
+                kernel.emit('state:changed');
+            }
+            if (opts?.notify) {
+                const msg = replaced ? replaced + ' uso(s) voltaram para "' + to.name + '".' : 'Nenhum uso para trocar.';
+                await kernel.call('ui.dialogs', 'toast', msg + (skipped ? ' ' + skipped + ' pulado(s) (recorte ou proporção diferente).' : ''), replaced ? 'ok' : 'info', replaced ? { label: 'Desfazer', run: async () => { await kernel.call('history', 'undo'); } } : undefined);
+            }
+            return { target, replaced, skipped };
         }
         /**
          * Exclui várias imagens num único passo de histórico (um Desfazer restaura todas).
@@ -270,7 +338,7 @@ definePlugin({
         kernel.provide('assets', {
             urls, blobs, missing,
             getUrl, hasUrl,
-            importFiles, createFromFile, deleteAsset, deleteAssets, usageOf,
+            importFiles, createFromFile, deleteAsset, deleteAssets, usageOf, lineageOf, restoreOriginal,
             ensureDefaultPackage, restoreFromStorage, restoreHistoryBlobs
         });
     }
