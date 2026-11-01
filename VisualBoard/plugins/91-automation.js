@@ -979,6 +979,15 @@ definePlugin({
             'image_edit.cut_by_contour': (input) => imageEditApply(input, 'cutByContour'),
             'image_edit.crop': (input) => imageEditApply(input, 'crop'),
             'image_edit.recolor': (input) => imageEditApply(input, 'recolor'),
+            'image_edit.batch': async (input) => {
+                const E = await kernel.require('imageEdit');
+                const ops = { remove_background: 'removeBackground', recolor: 'recolor', crop: 'crop', cut_by_contour: 'cutByContour', slice_grid: 'grid' };
+                const op = ops[String(input['op'])];
+                if (!op)
+                    return fail('INVALID_ARGUMENT', 'Unsupported op: ' + String(input['op']));
+                const params = input['params'] && typeof input['params'] === 'object' ? input['params'] : {};
+                return imageEditCall(() => E.applyBatch(input['assetIds'].map(String), op, params));
+            },
             'image_edit.compose': (input) => {
                 const first = Array.isArray(input['layers']) && input['layers'][0] && typeof input['layers'][0] === 'object' ? String(input['layers'][0]['assetId']) : '';
                 return imageEditApply({ ...input, assetId: first }, 'compose');

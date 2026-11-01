@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.1.0' },
+    contractVersions: { imageEdit: '1.2.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -16,7 +16,7 @@ definePlugin({
         const backend = await kernel.require('backend');
         const utils = await kernel.require('utils');
         const H = await kernel.require('history');
-        const LIMITS = { maxPixels: 16_000_000, maxCells: 400, maxBytes: 32 * 1024 * 1024, maxObjects: 100 };
+        const LIMITS = { maxPixels: 16_000_000, maxCells: 400, maxBytes: 32 * 1024 * 1024, maxObjects: 100, maxBatch: 80 };
         const SUPPORTED = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/bmp', 'image/avif']);
         /* ------------------------------ erros e parâmetros ------------------------------ */
         function fail(code, message) { const e = new Error(message); e.code = code; throw e; }
@@ -607,7 +607,7 @@ definePlugin({
             }
         });
         /** Grava as peças escolhidas como ativos derivados, numa única transação (um Desfazer). */
-        async function commit(result, indices) {
+        async function commit(result, indices, opts) {
             const original = assetOf(result.sourceAssetId);
             const pick = indices ?? result.pieces.map((_, i) => i);
             if (pick.some(i => !Number.isInteger(i) || i < 0 || i >= result.pieces.length))
@@ -677,6 +677,9 @@ definePlugin({
             }
             let saved = false;
             const warnings = result.warnings.slice();
+            if (opts?.quiet)
+                return { op: result.op, sourceAssetId: result.sourceAssetId, diagnostics: result.diagnostics, warnings, saved,
+                    assets: metas.map((m, i) => ({ id: m.id, name: m.name, width: pieces[i].width, height: pieces[i].height, x: pieces[i].x, y: pieces[i].y })) };
             if (kernel.has('app')) {
                 try {
                     saved = !!(await kernel.call('app', 'saveNow'));
@@ -698,6 +701,56 @@ definePlugin({
             finally {
                 release(res);
             }
+        }
+        /**
+         * Aplica a MESMA operação a várias imagens (ex.: trocar a cor ou tirar o fundo de todas as peças de uma grade),
+         * num único passo de Desfazer. Uma imagem com problema não impede as demais: o erro dela volta em `results`.
+         */
+        async function applyBatch(assetIds, op, params, opts) {
+            if (op === 'compose')
+                fail('INVALID_ARGUMENT', 'A montagem usa várias imagens de uma vez; não existe em lote');
+            const ids = [...new Set(assetIds)];
+            if (!ids.length)
+                fail('INVALID_ARGUMENT', 'Escolha pelo menos uma imagem');
+            if (ids.length > LIMITS.maxBatch)
+                fail('INVALID_ARGUMENT', 'No máximo ' + LIMITS.maxBatch + ' imagens por lote');
+            for (const id of ids)
+                assetOf(id);
+            const results = [];
+            await H.transaction('imageEdit.batch.' + op, async () => {
+                for (let i = 0; i < ids.length; i++) {
+                    if (opts?.signal?.aborted)
+                        break;
+                    const id = ids[i];
+                    try {
+                        const res = await preview(id, op, params);
+                        try {
+                            const a = await commit(res, undefined, { quiet: true });
+                            results.push({ sourceAssetId: id, ok: true, assets: a.assets, warnings: a.warnings });
+                        }
+                        finally {
+                            release(res);
+                        }
+                    }
+                    catch (e) {
+                        results.push({ sourceAssetId: id, ok: false, error: e.message });
+                    }
+                    opts?.onProgress?.(i + 1, ids.length);
+                }
+            });
+            const created = results.reduce((n, r) => n + (r.assets?.length ?? 0), 0), failed = results.filter(r => !r.ok).length;
+            let saved = false;
+            if (created && kernel.has('app')) {
+                try {
+                    saved = !!(await kernel.call('app', 'saveNow'));
+                }
+                catch (e) {
+                    kernel.log.error('imageEdit batch save failed', e);
+                }
+            }
+            if (created)
+                kernel.emit('toast', { message: created + (created === 1 ? ' imagem criada' : ' imagens criadas') + (failed ? ' · ' + failed + ' com erro' : ''), kind: failed ? 'error' : 'ok' });
+            return { op, total: ids.length, created, failed, saved, cancelled: !!opts?.signal?.aborted, results };
         }
         /** Cores dominantes da imagem (ajuda a escolher a cor do contorno e a do fundo). */
         async function analyze(assetId, max = 12) {
@@ -726,6 +779,6 @@ definePlugin({
                 src.height = 0;
             }
         }
-        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, release, analyze, colorAt });
+        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, release, analyze, colorAt });
     }
 });

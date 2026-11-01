@@ -8,7 +8,7 @@ definePlugin({
     provides: ['ui.imageEditor'],
     uses: ['assetHub', 'ui.sceneBlocking'],
     accepts: { imageEdit: '^1.0.0', imageCommands: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', assetHub: '^1.0.0', 'ui.sceneBlocking': '^1.0.0' },
-    contractVersions: { 'ui.imageEditor': '1.1.0' },
+    contractVersions: { 'ui.imageEditor': '1.2.0' },
     setup: async function (kernel) {
         const E = await kernel.require('imageEdit');
         const C = await kernel.require('imageCommands');
@@ -997,6 +997,139 @@ definePlugin({
             t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
             return t;
         }
+        /* ---------------- lote: a mesma operação em várias imagens ---------------- */
+        let batch = [], batchNote = '', batchBusy = false;
+        const OP_LABEL = { grid: 'Cortar em grade', bg: 'Tirar fundo', contour: 'Recortar por contorno', crop: 'Recortar', color: 'Trocar cor', compose: 'Montar', adjust: 'Ajustar' };
+        const batchable = (t) => t !== 'compose' && t !== 'adjust';
+        /** Parâmetros que valem para todas as imagens do lote (pontos marcados numa imagem não servem para as outras). */
+        function batchParams(t) {
+            const p = { ...paramsOf(t) };
+            if (t === 'contour')
+                delete p['seeds'];
+            return p;
+        }
+        function setBatch(ids) { batch = [...new Set(ids)].filter(id => S.assets.some(a => a.id === id)).slice(0, 80); }
+        async function applyToAll() {
+            if (batchBusy || batch.length < 2 || !batchable(tab))
+                return;
+            if (tab === 'contour' && !P.contour.color) {
+                message = 'Escolha a cor do contorno antes de aplicar a todas.';
+                renderResults();
+                return;
+            }
+            if (tab === 'color') {
+                const c = P.color;
+                if (c.mode === 'roles' && !c.outlineTo && !c.fillTo) {
+                    message = 'Escolha a nova cor do contorno e/ou do preenchimento.';
+                    renderResults();
+                    return;
+                }
+                if (c.mode === 'pairs' && !c.pairs.some(q => q.from)) {
+                    message = 'Adicione a cor a trocar (conta-gotas) antes de aplicar a todas.';
+                    renderResults();
+                    return;
+                }
+            }
+            batchBusy = true;
+            message = '';
+            batchNote = 'Aplicando em ' + batch.length + ' imagens…';
+            renderResults();
+            try {
+                const done = await E.applyBatch(batch, opOf(tab), batchParams(tab), { onProgress: (d, n) => { batchNote = 'Aplicando… ' + d + ' de ' + n; renderResults(); } });
+                const made = done.results.flatMap(r => (r.assets ?? []).map(a => a.id));
+                const errs = done.results.filter(r => !r.ok).map(r => (S.assets.find(a => a.id === r.sourceAssetId)?.name ?? r.sourceAssetId) + ': ' + r.error);
+                batchNote = done.created + (done.created === 1 ? ' imagem criada' : ' imagens criadas') + ' a partir de ' + (done.total - done.failed) + ' · um Desfazer remove todas.' + (errs.length ? ' Com erro — ' + errs.slice(0, 3).join(' | ') + (errs.length > 3 ? ' …' : '') : '');
+                if (made.length) {
+                    rememberRecent(made);
+                    kernel.emit('assets:changed');
+                    setBatch(made); // o lote passa a ser o resultado: dá para encadear (cor → fundo → …)
+                    const first = made[0];
+                    if (batch.length) {
+                        if (tab === 'grid' || tab === 'crop' || tab === 'contour')
+                            tab = 'bg';
+                        await loadSource(first);
+                        renderHeader();
+                    }
+                }
+            }
+            catch (e) {
+                message = e.message;
+                batchNote = '';
+            }
+            batchBusy = false;
+            renderResults();
+            renderSide();
+        }
+        function batchBar() {
+            if (batch.length < 2)
+                return null;
+            const box = el('div', 'vbie-batch');
+            box.setAttribute('data-vbie', 'batch');
+            const top = el('div', 'vbie-batchtop');
+            top.append(el('strong', undefined, '🗂 Lote: ' + batch.length + ' imagens'));
+            const clear = el('button', 'btn ghost', 'Sair do lote');
+            clear.type = 'button';
+            clear.setAttribute('data-vbie', 'batch-clear');
+            clear.addEventListener('click', () => { batch = []; batchNote = ''; renderResults(); });
+            top.appendChild(clear);
+            box.appendChild(top);
+            const chips = el('div', 'vbie-batchchips');
+            for (const id of batch) {
+                const a = S.assets.find(x => x.id === id);
+                if (!a)
+                    continue;
+                const chip = el('button', 'vbie-batchchip' + (id === assetId ? ' on' : ''));
+                chip.type = 'button';
+                chip.title = (a.name || id) + ' — ver a prévia nesta imagem';
+                const url = A.urls.get(id);
+                if (url) {
+                    const im = el('img');
+                    im.src = url;
+                    im.alt = a.name;
+                    im.draggable = false;
+                    chip.appendChild(im);
+                }
+                else
+                    chip.textContent = (a.name || id).slice(0, 6);
+                chip.addEventListener('click', () => { if (id !== assetId)
+                    void loadSource(id); });
+                const x = el('span', 'vbie-batchx', '✕');
+                x.title = 'Tirar do lote';
+                x.setAttribute('role', 'button');
+                x.addEventListener('click', ev => { ev.stopPropagation(); batch = batch.filter(b => b !== id); renderResults(); });
+                chip.appendChild(x);
+                chips.appendChild(chip);
+            }
+            box.appendChild(chips);
+            const go = el('button', 'btn primary', batchable(tab) ? '⚡ ' + OP_LABEL[tab] + ' em todas (' + batch.length + ')' : 'Escolha uma aba de edição');
+            go.type = 'button';
+            go.setAttribute('data-vbie', 'batch-apply');
+            go.disabled = batchBusy || busy || !batchable(tab);
+            go.title = 'Aplica as configurações desta aba a todas as imagens do lote, cada resultado vira uma imagem nova na biblioteca';
+            go.addEventListener('click', () => { void applyToAll(); });
+            box.appendChild(go);
+            box.appendChild(el('p', 'vbie-note', 'A prévia abaixo mostra só a imagem aberta; ao aplicar, as mesmas configurações valem para todas. Depois, o lote passa a ser as novas imagens para você continuar (ex.: cor → tirar fundo).'));
+            if (batchNote)
+                box.appendChild(el('p', 'vbie-batchnote', batchNote));
+            return box;
+        }
+        async function startBatch(ids) {
+            const valid = ids.filter(id => A.blobs.has(id)).slice(0, 80);
+            if (!valid.length) {
+                toast('Selecione imagens da biblioteca para editar em lote.');
+                return;
+            }
+            await open(valid[0]);
+            setBatch(valid);
+            batchNote = '';
+            if (tab === 'compose' || tab === 'adjust' || tab === 'grid')
+                tab = 'bg';
+            renderHeader();
+            renderSide();
+            renderResults();
+            drawStage();
+            schedule(0);
+        }
         function renderResults() {
             if (!resultsBox)
                 return;
@@ -1006,6 +1139,9 @@ definePlugin({
             if (busy)
                 head.appendChild(el('span', 'vbie-busy', 'calculando…'));
             resultsBox.appendChild(head);
+            const bb = batchBar();
+            if (bb)
+                resultsBox.appendChild(bb);
             if (message)
                 resultsBox.appendChild(el('p', 'vbie-error', message));
             if (result) {
@@ -1047,7 +1183,14 @@ definePlugin({
                 cloud.disabled = !checked.size || busy;
                 cloud.title = 'Salva no projeto e também envia as imagens ao catálogo (Asset Hub), sem apagar nada';
                 cloud.addEventListener('click', () => { void saveChecked(true); });
-                bar.append(all, save, edit, cloud);
+                const many = el('button', 'btn', '⚙ Salvar e editar todas');
+                many.type = 'button';
+                many.setAttribute('data-vbie', 'save-batch');
+                many.disabled = checked.size < 2 || busy;
+                many.hidden = checked.size < 2;
+                many.title = 'Salva as imagens marcadas e abre todas como um lote: trocar cor, tirar fundo etc. em todas de uma vez';
+                many.addEventListener('click', () => { void saveChecked(false, true, true); });
+                bar.append(all, save, edit, many, cloud);
                 resultsBox.appendChild(bar);
                 resultsBox.appendChild(el('p', 'vbie-note', 'A imagem original não é alterada. As novas ficam na biblioteca e um único Desfazer remove todas.'));
             }
@@ -1150,7 +1293,7 @@ definePlugin({
                 message = 'Salvo no projeto, mas o catálogo não recebeu: ' + e.message;
             }
         }
-        async function saveChecked(toCatalog, editAfter = false) {
+        async function saveChecked(toCatalog, editAfter = false, asBatch = false) {
             if (!result || !checked.size || busy)
                 return;
             busy = true;
@@ -1167,8 +1310,15 @@ definePlugin({
                     busy = false;
                     if (tab === 'grid' || tab === 'crop' || tab === 'contour')
                         tab = 'bg';
+                    if (asBatch && done.assets.length > 1) {
+                        setBatch(done.assets.map(a => a.id));
+                        batchNote = '';
+                    }
+                    else
+                        batch = [];
                     await loadSource(done.assets[0].id);
                     renderHeader();
+                    renderResults();
                     return;
                 }
             }
@@ -1461,6 +1611,7 @@ definePlugin({
             schedule(0);
         }
         kernel.on('image-editor:compose', payload => { void compose(payload.ids ?? []); });
-        kernel.provide('ui.imageEditor', { open, close: closeEditor, isOpen: () => !!root, compose });
+        kernel.on('image-editor:batch', payload => { void startBatch(payload.ids ?? []); });
+        kernel.provide('ui.imageEditor', { open, close: closeEditor, isOpen: () => !!root, compose, batch: startBatch });
     }
 });

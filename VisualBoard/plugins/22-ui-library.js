@@ -60,7 +60,14 @@ definePlugin({
             mix.textContent = '🧩 Montar ' + selected.size;
             mix.title = 'Junta as imagens selecionadas numa só no editor de imagens';
             mix.addEventListener('click', () => { kernel.emit('image-editor:compose', { ids: [...selected] }); });
-            selbar.append(n, mix, del, all, none);
+            const many = document.createElement('button');
+            many.type = 'button';
+            many.className = 'btn';
+            many.setAttribute('data-lib', 'batch-selected');
+            many.textContent = '⚙ Editar em lote';
+            many.title = 'Abre as imagens selecionadas no editor para trocar cor, tirar fundo etc. em todas de uma vez';
+            many.addEventListener('click', () => { kernel.emit('image-editor:batch', { ids: [...selected] }); });
+            selbar.append(n, many, mix, del, all, none);
         }
         /** Exclui sem diálogo quando nada está em uso; sempre oferece Desfazer (um único passo restaura todas). */
         async function removeMany(ids) {
