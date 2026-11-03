@@ -67,6 +67,13 @@ definePlugin({
             many.textContent = '⚙ Editar em lote';
             many.title = 'Abre as imagens selecionadas no editor para trocar cor, tirar fundo etc. em todas de uma vez';
             many.addEventListener('click', () => { kernel.emit('image-editor:batch', { ids: [...selected] }); });
+            const big = document.createElement('button');
+            big.type = 'button';
+            big.className = 'btn';
+            big.setAttribute('data-lib', 'enlarge-selected');
+            big.textContent = '🔍 Ampliar / converter';
+            big.title = 'Amplia as imagens selecionadas sem perder qualidade (vetor para traço, ampliação exata) e converte para SVG quando fiel';
+            big.addEventListener('click', () => { kernel.emit('image-editor:enlarge', { ids: [...selected] }); });
             const exp = document.createElement('button');
             exp.type = 'button';
             exp.className = 'btn';
@@ -74,7 +81,7 @@ definePlugin({
             exp.textContent = '⬇ Exportar ZIP';
             exp.title = 'Baixa as imagens selecionadas num arquivo ZIP';
             exp.addEventListener('click', () => { kernel.emit('image-editor:export', { ids: [...selected] }); });
-            selbar.append(n, many, mix, exp, del, all, none);
+            selbar.append(n, many, mix, big, exp, del, all, none);
         }
         /** Exclui sem diálogo quando nada está em uso; sempre oferece Desfazer (um único passo restaura todas). */
         async function removeMany(ids) {

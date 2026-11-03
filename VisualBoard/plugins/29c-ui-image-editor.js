@@ -14,7 +14,7 @@ definePlugin({
         const C = await kernel.require('imageCommands');
         const A = await kernel.require('assets');
         const S = (await kernel.require('state')).data;
-        const TABS = [['grid', '▦ Grade'], ['bg', '◌ Fundo'], ['contour', '✂ Contorno'], ['crop', '⛶ Recorte'], ['color', '🎨 Cor'], ['compose', '🧩 Montar'], ['adjust', '🎚 Ajustes']];
+        const TABS = [['grid', '▦ Grade'], ['bg', '◌ Fundo'], ['contour', '✂ Contorno'], ['crop', '⛶ Recorte'], ['color', '🎨 Cor'], ['compose', '🧩 Montar'], ['enlarge', '🔍 Ampliar'], ['adjust', '🎚 Ajustes']];
         const toast = (message, kind = 'error') => { kernel.emit('toast', { message, kind }); };
         function el(tag, cls, text) {
             const e = document.createElement(tag);
@@ -77,10 +77,29 @@ definePlugin({
             crop: { x: 0, y: 0, width: 1, height: 1 },
             color: { mode: 'roles', outlineTo: null, fillTo: null, pairs: [],
                 color: [220, 30, 30], tolerance: 22, keepShading: true, pickIndex: 0 },
+            enlarge: { mode: 'scale', scale: 2, width: 2000, height: 2000, longSide: 3000, cm: 21, dpi: 300, format: 'png', method: 'auto', allowLossy: true },
             compose: { layers: [], lock: true, center: false, fixed: false, arrange: 'none', gap: 0, margin: 0, columns: 0, width: 0, height: 0,
                 bg: 'transparent', bgColor: [255, 255, 255], selected: 0 }
         };
+        function enlargeTarget() {
+            const e = P.enlarge, t = {};
+            if (e.mode === 'scale')
+                t['scale'] = e.scale;
+            else if (e.mode === 'width')
+                t['width'] = e.width;
+            else if (e.mode === 'height')
+                t['height'] = e.height;
+            else if (e.mode === 'longSide')
+                t['longSide'] = e.longSide;
+            else {
+                t['cm'] = e.cm;
+                t['dpi'] = e.dpi;
+            }
+            return { ...t, format: e.format, method: e.method, allowLossy: e.allowLossy };
+        }
         function paramsOf(t) {
+            if (t === 'enlarge')
+                return enlargeTarget();
             if (t === 'grid') {
                 const g = P.grid;
                 return { rows: g.rows, cols: g.cols, gap: g.gap, marginTop: g.margin, marginRight: g.margin, marginBottom: g.margin, marginLeft: g.margin, direction: g.direction, trim: g.trim,
@@ -187,6 +206,10 @@ definePlugin({
                 message = '';
                 renderResults();
                 drawStage();
+                return;
+            }
+            if (tab === 'enlarge') {
+                await runEnlargePlan();
                 return;
             }
             if (tab === 'contour' && !P.contour.color) {
@@ -551,6 +574,208 @@ definePlugin({
                 panel.appendChild(slider('Até (% da imagem)', H.maxArea, 0.1, 30, 0.1, v => { H.maxArea = v; }, 'Áreas internas maiores que isto são mantidas (provavelmente são o corpo)'));
             panel.appendChild(slider('Tolerância da área', H.tol, 0, 60, 1, v => { H.tol = v; }, 'Quanto uma cor pode diferir para contar como a mesma área'));
             box.appendChild(panel);
+        }
+        /* ---------------- aba Ampliar (sem perda) ---------------- */
+        let ePlan = null, eBusy = false, eNote = '', eDone = null, eToken = 0, eAbort = null;
+        const enlargeIds = () => inAll() ? targets() : (assetId ? [assetId] : []);
+        const LOSS_TEXT = { nenhuma: 'sem perda (exato)', vetorial: 'vetorial (nítido em qualquer tamanho)', suavizada: 'suavizada (perde qualidade)' };
+        const METHOD_TEXT = { vector: 'Vetorizar', nearest: 'Ampliação exata', resample: 'Suavizada' };
+        const KIND_TEXT = { traco: 'traço', chapado: 'cores chapadas', pixelart: 'pixel art', reticula: 'retícula', foto: 'foto/degradê', vazia: 'vazia', svg: 'SVG' };
+        async function runEnlargePlan() {
+            const mine = ++eToken, ids = enlargeIds();
+            clearResult();
+            if (!ids.length) {
+                ePlan = null;
+                busy = false;
+                renderResults();
+                drawStage();
+                return;
+            }
+            busy = true;
+            message = '';
+            renderResults();
+            try {
+                const pl = await E.enlargePlan(ids.slice(0, PREVIEW_MAX), enlargeTarget());
+                if (mine !== eToken)
+                    return;
+                ePlan = pl;
+            }
+            catch (e) {
+                if (mine !== eToken)
+                    return;
+                ePlan = null;
+                message = e.message;
+            }
+            busy = false;
+            renderResults();
+            drawStage();
+        }
+        async function enlargeRun() {
+            const ids = enlargeIds();
+            if (!ids.length || eBusy)
+                return;
+            eBusy = true;
+            eDone = null;
+            message = '';
+            eAbort = new AbortController();
+            eNote = 'Ampliando…';
+            renderResults();
+            renderSide();
+            try {
+                const done = await E.enlarge(ids, enlargeTarget(), { signal: eAbort.signal, onProgress: (d, n) => { eNote = 'Ampliando… ' + d + ' de ' + n; renderResults(); } });
+                eDone = done;
+                const made = done.results.filter(r => r.ok && r.assetId).map(r => r.assetId);
+                if (made.length) {
+                    rememberRecent(made);
+                    kernel.emit('assets:changed');
+                }
+                eNote = done.cancelled ? 'Cancelado. ' + done.created + ' já criadas (um Desfazer remove).' : done.created + (done.created === 1 ? ' imagem criada' : ' imagens criadas') + ' · um Desfazer remove todas.';
+            }
+            catch (e) {
+                message = e.message;
+                eNote = '';
+            }
+            eBusy = false;
+            eAbort = null;
+            renderResults();
+            renderSide();
+        }
+        function enlargeControls(box) {
+            const e = P.enlarge;
+            box.appendChild(el('p', 'vbie-note', 'Amplia sem perder qualidade quando possível: traço vira vetor (SVG), fator inteiro é exato. Fotos não têm ampliação sem perda além do fator inteiro. A imagem original nunca é alterada.'));
+            const quick = el('div', 'vbie-presets');
+            quick.setAttribute('data-vbie', 'enlarge-quick');
+            for (const k of [2, 3, 4, 6, 8]) {
+                const b = el('button', 'btn' + (e.mode === 'scale' && e.scale === k ? ' primary' : ''), '×' + k);
+                b.type = 'button';
+                b.title = 'Ampliar ' + k + ' vezes';
+                b.addEventListener('click', () => { e.mode = 'scale'; e.scale = k; renderSide(); schedule(0); });
+                quick.appendChild(b);
+            }
+            box.appendChild(field('Fator', quick));
+            box.appendChild(choice('Definir por', [['scale', 'Fator (×)'], ['width', 'Largura (px)'], ['height', 'Altura (px)'], ['longSide', 'Lado maior (px)'], ['cm', 'Tamanho impresso (cm)']], e.mode, v => { e.mode = v; renderSide(); }));
+            const val = (label, v, min, max, step, on) => { const i = number(v, min, max, step, on); i.setAttribute('data-vbie', 'enlarge-value'); return field(label, i); };
+            if (e.mode === 'scale')
+                box.appendChild(val('Fator (×)', e.scale, 1, 64, 0.5, n => { e.scale = n; }));
+            else if (e.mode === 'width')
+                box.appendChild(val('Largura (px)', e.width, 1, 64000, 1, n => { e.width = Math.round(n); }));
+            else if (e.mode === 'height')
+                box.appendChild(val('Altura (px)', e.height, 1, 64000, 1, n => { e.height = Math.round(n); }));
+            else if (e.mode === 'longSide')
+                box.appendChild(val('Lado maior (px)', e.longSide, 1, 64000, 1, n => { e.longSide = Math.round(n); }));
+            else {
+                box.appendChild(val('Largura impressa (cm)', e.cm, 0.1, 1000, 0.1, n => { e.cm = n; }));
+                box.appendChild(val('Resolução (dpi)', e.dpi, 30, 2400, 1, n => { e.dpi = Math.round(n); }));
+            }
+            box.appendChild(choice('Formato', [['png', 'PNG (pixels)'], ['svg', 'SVG (vetor, só traço/cores chapadas)']], e.format, v => { e.format = v; renderSide(); }, 'SVG só é gerado se a cópia vetorial for fiel ao original'));
+            box.appendChild(choice('Método', [['auto', 'Recomendado'], ['vector', 'Vetorizar (traço)'], ['nearest', 'Exato (fator inteiro)'], ['quality', 'Suavizada (perde qualidade)']], e.method, v => { e.method = v; renderSide(); }, 'Recomendado escolhe o mais fiel para cada imagem: vetor, exato ou, por último, suavizada'));
+            box.appendChild(check('Permitir suavização se não houver método sem perda', e.allowLossy, v => { e.allowLossy = v; }, 'Desligado: imagens sem método sem perda são recusadas em vez de suavizadas'));
+            const go = el('button', 'btn primary', eBusy ? 'Ampliando…' : '🔍 Ampliar ' + (enlargeIds().length === 1 ? 'esta imagem' : enlargeIds().length + ' imagens'));
+            go.type = 'button';
+            go.setAttribute('data-vbie', 'enlarge-go');
+            go.disabled = eBusy || !enlargeIds().length || !ePlan || ePlan.items.every(i => !!i.error);
+            go.addEventListener('click', () => { void enlargeRun(); });
+            box.appendChild(go);
+            if (eBusy) {
+                const cancel = el('button', 'btn', 'Cancelar');
+                cancel.type = 'button';
+                cancel.addEventListener('click', () => eAbort?.abort());
+                box.appendChild(cancel);
+            }
+        }
+        function enlargePanel(host) {
+            if (ePlan) {
+                for (const w of ePlan.warnings)
+                    host.appendChild(el('p', 'vbie-warn', '⚠ ' + w));
+                const list = el('div', 'vbie-list');
+                list.setAttribute('data-vbie', 'enlarge-plan');
+                for (const it of ePlan.items) {
+                    const row = el('div', 'vbie-item');
+                    row.setAttribute('data-vbie', 'enlarge-item');
+                    const info = el('span', 'vbie-iteminfo');
+                    info.append(el('b', undefined, it.name), el('small', undefined, it.error ? '⚠ ' + it.error : it.width + '×' + it.height + ' → ' + it.targetWidth + '×' + it.targetHeight + ' (×' + (Math.round(it.factor * 100) / 100) + ') · ' + (KIND_TEXT[it.kind] ?? it.kind) + (it.method && it.loss ? ' · ' + METHOD_TEXT[it.method] + ': ' + LOSS_TEXT[it.loss] : '')));
+                    for (const n of it.notes.slice(0, 2))
+                        info.appendChild(el('small', 'vbie-dim', n));
+                    row.appendChild(info);
+                    list.appendChild(row);
+                }
+                host.appendChild(list);
+                if (enlargeIds().length > PREVIEW_MAX)
+                    host.appendChild(el('p', 'vbie-note', 'Mostrando as primeiras ' + PREVIEW_MAX + '; todas serão ampliadas.'));
+            }
+            else if (!busy && !message)
+                host.appendChild(el('p', 'vbie-note', 'Escolha o tamanho para ver o plano.'));
+            if (eNote)
+                host.appendChild(el('p', 'vbie-note', eNote));
+            if (eDone) {
+                const list = el('div', 'vbie-list');
+                list.setAttribute('data-vbie', 'enlarge-done');
+                for (const r of eDone.results) {
+                    const row = el('div', 'vbie-item');
+                    const info = el('span', 'vbie-iteminfo');
+                    if (r.ok) {
+                        info.append(el('b', undefined, r.name ?? ''), el('small', undefined, (r.width ?? 0) + '×' + (r.height ?? 0) + ' · ' + (r.method ? METHOD_TEXT[r.method] : '') + (r.loss ? ': ' + LOSS_TEXT[r.loss] : '') + (r.fidelity ? ' · fidelidade ' + ((1 - r.fidelity.badShare) * 100).toFixed(1) + '%' : '')));
+                        for (const w of r.warnings.slice(0, 1))
+                            info.appendChild(el('small', 'vbie-dim', w));
+                    }
+                    else
+                        info.append(el('b', undefined, nameOf(r.sourceAssetId)), el('small', 'vbie-error', r.error ?? 'erro'));
+                    row.appendChild(info);
+                    list.appendChild(row);
+                }
+                host.appendChild(list);
+                const made = eDone.results.filter(r => r.ok && r.assetId).map(r => r.assetId);
+                if (made.length) {
+                    const zip = el('button', 'btn', '⬇ Baixar ZIP (' + made.length + ')');
+                    zip.type = 'button';
+                    zip.setAttribute('data-vbie', 'enlarge-zip');
+                    zip.addEventListener('click', () => { void E.exportZip(made).catch(err => toast(err.message)); });
+                    host.appendChild(zip);
+                }
+            }
+        }
+        /** Em qualquer aba: grava as peças marcadas já ampliadas (usa as opções da aba Ampliar). */
+        function enlargeCard() {
+            const card = el('div', 'vbie-actions');
+            card.setAttribute('data-vbie', 'enlarge-card');
+            const sel = el('select');
+            sel.setAttribute('aria-label', 'Fator de ampliação');
+            for (const k of [2, 3, 4, 6, 8]) {
+                const o = el('option', undefined, '×' + k);
+                o.value = String(k);
+                sel.appendChild(o);
+            }
+            sel.value = String(P.enlarge.mode === 'scale' ? P.enlarge.scale : 2);
+            if (!Array.from(sel.options).some(o => o.value === sel.value))
+                sel.value = '2';
+            const go = el('button', 'btn', '🔍 Salvar ampliadas (' + checked.size + ')');
+            go.type = 'button';
+            go.setAttribute('data-vbie', 'enlarge-save');
+            go.disabled = !checked.size || !!eBusy;
+            go.title = 'Salva as peças marcadas já ampliadas, sem perda quando possível (método e formato: aba Ampliar)';
+            go.addEventListener('click', () => {
+                const res = result;
+                if (!res)
+                    return;
+                const params = { scale: Number(sel.value), format: P.enlarge.format, method: P.enlarge.method, allowLossy: P.enlarge.allowLossy };
+                eBusy = true;
+                go.disabled = true;
+                go.textContent = 'Ampliando…';
+                void E.enlargeResult(res, [...checked], params).then(done => {
+                    eBusy = false;
+                    const ok = done.results.filter(r => r.ok && r.assetId).map(r => r.assetId);
+                    if (ok.length) {
+                        rememberRecent(ok);
+                        kernel.emit('assets:changed');
+                    }
+                    const errs = done.results.filter(r => !r.ok).map(r => r.error).slice(0, 2);
+                    message = errs.length ? 'Ampliação: ' + errs.join(' | ') : '';
+                    renderResults();
+                    renderSide();
+                }).catch(err => { eBusy = false; message = err.message; renderResults(); });
+            });
+            card.append(sel, go);
+            return card;
         }
         /* ---------------- grade ajustável ---------------- */
         const GRID_MIN = 4;
@@ -2347,6 +2572,8 @@ definePlugin({
                 colorControls(box);
             else if (tab === 'compose')
                 composeControls(box);
+            else if (tab === 'enlarge')
+                enlargeControls(box);
             else
                 adjustControls(box);
             const ba = batchAction();
@@ -2383,8 +2610,8 @@ definePlugin({
         let allToken = 0, allTimer = null;
         const PREVIEW_MAX = 24;
         const targets = () => batch.filter(id => !excluded.has(id));
-        const OP_LABEL = { grid: 'Cortar em grade', bg: 'Tirar fundo', contour: 'Recortar por contorno', crop: 'Recortar', color: 'Trocar cor', compose: 'Montar', adjust: 'Ajustar' };
-        const batchable = (t) => t !== 'compose' && t !== 'adjust';
+        const OP_LABEL = { grid: 'Cortar em grade', bg: 'Tirar fundo', contour: 'Recortar por contorno', crop: 'Recortar', color: 'Trocar cor', compose: 'Montar', adjust: 'Ajustar', enlarge: 'Ampliar' };
+        const batchable = (t) => t !== 'compose' && t !== 'adjust' && t !== 'enlarge';
         /** Parâmetros que valem para todas as imagens do lote (pontos marcados numa imagem não servem para as outras). */
         function batchParams(t) {
             const p = { ...paramsOf(t) };
@@ -2601,7 +2828,7 @@ definePlugin({
                 box.appendChild(el('p', 'vbie-batchnote', batchNote));
             return box;
         }
-        async function startBatch(ids) {
+        async function startBatch(ids, goTab) {
             const valid = ids.filter(id => A.blobs.has(id)).slice(0, 80);
             if (!valid.length) {
                 toast('Selecione imagens da biblioteca para editar em lote.');
@@ -2612,6 +2839,8 @@ definePlugin({
             batchNote = '';
             if (tab === 'compose' || tab === 'adjust' || tab === 'grid')
                 tab = 'bg';
+            if (goTab)
+                tab = goTab;
             renderHeader();
             renderSide();
             renderResults();
@@ -2632,6 +2861,10 @@ definePlugin({
                 resultsBox.appendChild(bb);
             if (message)
                 resultsBox.appendChild(el('p', 'vbie-error', message));
+            if (tab === 'enlarge') {
+                enlargePanel(resultsBox);
+                return;
+            }
             if (result) {
                 for (const w of result.warnings)
                     resultsBox.appendChild(el('p', 'vbie-warn', '⚠ ' + w));
@@ -2652,6 +2885,7 @@ definePlugin({
                 });
                 resultsBox.appendChild(list);
                 resultsBox.appendChild(semanticCard());
+                resultsBox.appendChild(enlargeCard());
                 const bar = el('div', 'vbie-actions');
                 const all = el('button', 'btn', 'Marcar todas');
                 all.type = 'button';
@@ -3146,6 +3380,7 @@ definePlugin({
         kernel.listen(document, 'pointerdown', fromButton, { capture: true });
         kernel.listen(document, 'click', fromButton, { capture: true });
         kernel.on('image-editor:batch', payload => { void startBatch(payload.ids ?? []); });
+        kernel.on('image-editor:enlarge', payload => { void startBatch(payload.ids ?? [], 'enlarge'); });
         kernel.provide('ui.imageEditor', { open, close: closeEditor, isOpen: () => !!root, compose, batch: startBatch });
     }
 });

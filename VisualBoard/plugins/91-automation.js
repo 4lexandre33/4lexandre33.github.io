@@ -1030,6 +1030,22 @@ definePlugin({
                     return fail('INVALID_ARGUMENT', err instanceof Error ? err.message : String(err));
                 }
             },
+            'image_edit.enlarge_plan': async (input) => {
+                const E = await kernel.require('imageEdit');
+                const params = {};
+                for (const key of Object.keys(input))
+                    if (key !== 'assetIds')
+                        params[key] = input[key];
+                return imageEditCall(() => E.enlargePlan(input['assetIds'].map(String), params));
+            },
+            'image_edit.enlarge': async (input) => {
+                const E = await kernel.require('imageEdit');
+                const params = {};
+                for (const key of Object.keys(input))
+                    if (key !== 'assetIds')
+                        params[key] = input[key];
+                return imageEditCall(() => E.enlarge(input['assetIds'].map(String), params));
+            },
             'image_edit.compose_layout': async (input) => {
                 const E = await kernel.require('imageEdit');
                 return imageEditCall(async () => { const r = E.composeLayout(input); return { width: r.width, height: r.height, layout: r.layout, warnings: r.warnings }; });

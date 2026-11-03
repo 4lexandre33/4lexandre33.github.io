@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEdit'],
     uses: ['app'],
     accepts: { imageEditCore: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', backend: '^1.0.0', utils: '^1.0.0', history: '^1.0.0', app: '^1.0.0' },
-    contractVersions: { imageEdit: '1.6.0' },
+    contractVersions: { imageEdit: '1.7.0' },
     setup: async function (kernel) {
         const core = await kernel.require('imageEditCore');
         const A = await kernel.require('assets');
@@ -848,6 +848,383 @@ definePlugin({
                 kernel.emit('toast', { message: created + (created === 1 ? ' imagem criada' : ' imagens criadas') + (failed ? ' · ' + failed + ' com erro' : ''), kind: failed ? 'error' : 'ok' });
             return { op, total: ids.length, created, failed, saved, cancelled: !!opts?.signal?.aborted, results };
         }
+        /* ------------------------------ ampliar sem perda ------------------------------ */
+        const SVG_MIME = 'image/svg+xml';
+        function enlargeParams(raw) {
+            const p = raw === undefined ? {} : raw;
+            if (!isObj(p))
+                fail('INVALID_ARGUMENT', 'params deve ser um objeto');
+            const num = (k, min, max) => {
+                const v = p[k];
+                if (v === undefined)
+                    return undefined;
+                if (typeof v !== 'number' || !Number.isFinite(v) || v < min || v > max)
+                    fail('INVALID_ARGUMENT', k + ' deve ser um número entre ' + min + ' e ' + max);
+                return v;
+            };
+            const t = {};
+            const scale = num('scale', 1, 64), width = num('width', 1, 64000), height = num('height', 1, 64000), longSide = num('longSide', 1, 64000), cm = num('cm', 0.1, 1000), dpi = num('dpi', 30, 2400), fw = num('fitWidth', 1, 64000), fh = num('fitHeight', 1, 64000);
+            const given = [scale, width, height, longSide, cm, (fw !== undefined && fh !== undefined) ? 1 : undefined].filter(v => v !== undefined).length;
+            if (given !== 1)
+                fail('INVALID_ARGUMENT', 'Informe exatamente um destino: scale, width, height, longSide, cm (com dpi) ou fitWidth+fitHeight');
+            if (scale !== undefined)
+                t.scale = scale;
+            if (width !== undefined)
+                t.width = width;
+            if (height !== undefined)
+                t.height = height;
+            if (longSide !== undefined)
+                t.longSide = longSide;
+            if (cm !== undefined) {
+                t.cm = cm;
+                t.dpi = dpi ?? 300;
+                const d = p['dimension'];
+                if (d !== undefined && d !== 'width' && d !== 'height')
+                    fail('INVALID_ARGUMENT', 'dimension deve ser width ou height');
+                t.dimension = d === 'height' ? 'height' : 'width';
+            }
+            if (fw !== undefined && fh !== undefined) {
+                t.fitWidth = fw;
+                t.fitHeight = fh;
+            }
+            const format = p['format'] ?? 'png', method = p['method'] ?? 'auto', allowLossy = p['allowLossy'] ?? true;
+            if (format !== 'png' && format !== 'svg')
+                fail('INVALID_ARGUMENT', 'format deve ser png ou svg');
+            if (method !== 'auto' && method !== 'vector' && method !== 'nearest' && method !== 'quality')
+                fail('INVALID_ARGUMENT', 'method deve ser auto, vector, nearest ou quality');
+            if (typeof allowLossy !== 'boolean')
+                fail('INVALID_ARGUMENT', 'allowLossy deve ser verdadeiro ou falso');
+            return { ...t, format, method, allowLossy };
+        }
+        /** Cede o controle ao navegador de tempos em tempos para a tela não congelar. */
+        function slicer(signal) {
+            let last = performance.now();
+            return async () => { if (signal?.aborted)
+                fail('CANCELLED', 'Cancelado'); if (performance.now() - last > 30) {
+                await new Promise(r => setTimeout(r, 0));
+                last = performance.now();
+            } };
+        }
+        async function rasterizeSvg(svg, w, h) {
+            const url = URL.createObjectURL(new Blob([svg], { type: SVG_MIME }));
+            try {
+                const img = new Image();
+                img.src = url;
+                try {
+                    await img.decode();
+                }
+                catch {
+                    fail('UNSUPPORTED_IMAGE', 'Não foi possível desenhar o SVG');
+                }
+                const c = newCanvas(w, h), ctx = c.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(img, 0, 0, w, h);
+                return c;
+            }
+            finally {
+                URL.revokeObjectURL(url);
+            }
+        }
+        function resampleCanvas(src, W, H) {
+            let cur = src, owned = false;
+            while (cur.width < W || cur.height < H) {
+                const nw = Math.min(W, Math.max(cur.width, Math.round(cur.width * 2))), nh = Math.min(H, Math.max(cur.height, Math.round(cur.height * 2)));
+                const c = newCanvas(nw, nh), ctx = c.getContext('2d', { willReadFrequently: true });
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(cur, 0, 0, nw, nh);
+                if (owned) {
+                    cur.width = 0;
+                    cur.height = 0;
+                }
+                cur = c;
+                owned = true;
+            }
+            return cur;
+        }
+        /** Núcleo da ampliação de UMA tela: escolhe o método, produz o arquivo e mede a fidelidade. */
+        async function enlargeCanvas(src, p, tick) {
+            const w = src.width, h = src.height, sz = core.enlargeSize(w, h, p, LIMITS.maxPixels);
+            if (sz.error)
+                fail('INVALID_ARGUMENT', sz.error);
+            const wantSvgEarly = p.format === 'svg', rgba = imageOf(src).data, cls = core.classifyForEnlarge(rgba, w, h), warnings = [];
+            const order = wantSvgEarly ? ['vector'] : p.method === 'auto' ? cls.recommend.slice() : [p.method === 'quality' ? 'resample' : p.method];
+            const wantSvg = wantSvgEarly;
+            if (wantSvg && p.method !== 'auto' && p.method !== 'vector')
+                fail('INVALID_ARGUMENT', 'Para gerar SVG o método deve ser "vector" (ou automático)');
+            let lastReason = '';
+            for (const m of order) {
+                if (wantSvg && m !== 'vector')
+                    continue;
+                if (m === 'vector') {
+                    const v = await core.vectorize(rgba, w, h, { outWidth: sz.width, outHeight: sz.height, tick });
+                    if (!v.ok) {
+                        lastReason = v.reason ?? 'não vetorizável';
+                        if (p.method === 'vector' || wantSvg)
+                            fail('NOT_VECTORIZABLE', 'Não dá para vetorizar com fidelidade: ' + lastReason);
+                        continue;
+                    }
+                    const back = await rasterizeSvg(v.svg, w, h), fid = core.fidelity(rgba, imageOf(back).data, w, h);
+                    back.width = 0;
+                    back.height = 0;
+                    const limit = cls.kind === 'traco' ? 0.012 : 0.03;
+                    if (fid.badShare > limit) {
+                        lastReason = 'a cópia vetorial difere em ' + (fid.badShare * 100).toFixed(1) + '% dos pixels';
+                        if (p.method === 'vector' || wantSvg)
+                            fail('NOT_VECTORIZABLE', 'Fidelidade insuficiente: ' + lastReason);
+                        continue;
+                    }
+                    if (wantSvg)
+                        return { blob: new Blob([v.svg], { type: SVG_MIME }), mime: SVG_MIME, width: sz.width, height: sz.height, method: 'vector', loss: 'vetorial', fidelity: fid, paths: v.paths, warnings, ext: 'svg' };
+                    const big = await rasterizeSvg(v.svg, sz.width, sz.height);
+                    const blob = await toBlob(big);
+                    big.width = 0;
+                    big.height = 0;
+                    return { blob, mime: 'image/png', width: sz.width, height: sz.height, method: 'vector', loss: 'vetorial', fidelity: fid, paths: v.paths, warnings, ext: 'png' };
+                }
+                if (m === 'nearest') {
+                    if (!sz.integer) {
+                        lastReason = 'o fator ' + sz.factor.toFixed(2) + ' não é inteiro';
+                        if (p.method === 'nearest')
+                            fail('INVALID_ARGUMENT', 'Ampliação exata exige fator inteiro (2×, 3×, 4×…); o pedido dá ' + sz.factor.toFixed(2) + '×');
+                        continue;
+                    }
+                    const out = canvasOf(core.nearestInteger(rgba, w, h, sz.factor), sz.width, sz.height);
+                    const blob = await toBlob(out);
+                    out.width = 0;
+                    out.height = 0;
+                    if (cls.kind === 'foto')
+                        warnings.push('Ampliação exata de uma foto: sem perda, mas fica quadriculada');
+                    return { blob, mime: 'image/png', width: sz.width, height: sz.height, method: 'nearest', loss: 'nenhuma', warnings, ext: 'png' };
+                }
+                if (!p.allowLossy && p.method === 'auto')
+                    fail('NO_LOSSLESS_METHOD', 'Nenhum método sem perda serve' + (lastReason ? ' (' + lastReason + ')' : '') + '. Use um fator inteiro ou permita a suavização.');
+                const big = resampleCanvas(src, sz.width, sz.height);
+                const blob = await toBlob(big);
+                big.width = 0;
+                big.height = 0;
+                warnings.push('Ampliação suavizada: o detalhe novo é interpolado, não recuperado' + (lastReason ? ' (' + lastReason + ')' : ''));
+                return { blob, mime: 'image/png', width: sz.width, height: sz.height, method: 'resample', loss: 'suavizada', warnings, ext: 'png' };
+            }
+            return fail('NO_LOSSLESS_METHOD', 'Nenhum método sem perda serve' + (lastReason ? ' (' + lastReason + ')' : '') + '. Use um fator inteiro ou permita a suavização.');
+        }
+        async function svgSourceCanvas(asset, p) {
+            if (p.format === 'svg')
+                fail('INVALID_ARGUMENT', 'A imagem já é SVG; escolha PNG para rasterizar em outro tamanho');
+            let blob = A.blobs.get(asset.id);
+            if (!(blob instanceof Blob))
+                blob = await backend.get('blobs', asset.id);
+            if (!(blob instanceof Blob) || !blob.size)
+                fail('ASSET_NOT_FOUND', 'Arquivo da imagem indisponível: ' + asset.id);
+            const w = asset.originalWidth || 0, h = asset.originalHeight || 0;
+            if (!w || !h)
+                fail('UNSUPPORTED_IMAGE', 'Dimensões do SVG desconhecidas');
+            const sz = core.enlargeSize(w, h, p, LIMITS.maxPixels);
+            if (sz.error)
+                fail('INVALID_ARGUMENT', sz.error);
+            const c = await rasterizeSvg(await blob.text(), sz.width, sz.height), out = await toBlob(c);
+            c.width = 0;
+            c.height = 0;
+            return { blob: out, mime: 'image/png', width: sz.width, height: sz.height, method: 'vector', loss: 'vetorial', warnings: [], ext: 'png' };
+        }
+        async function enlargePlan(assetIds, raw) {
+            const p = enlargeParams(raw), ids = [...new Set(assetIds)];
+            if (!ids.length)
+                fail('INVALID_ARGUMENT', 'Escolha pelo menos uma imagem');
+            if (ids.length > LIMITS.maxBatch)
+                fail('INVALID_ARGUMENT', 'No máximo ' + LIMITS.maxBatch + ' imagens por lote');
+            const items = [], warnings = [];
+            for (const id of ids) {
+                const a = S.assets.find(x => x.id === id);
+                if (!a) {
+                    items.push({ assetId: id, name: id, width: 0, height: 0, targetWidth: 0, targetHeight: 0, factor: 0, integer: false, kind: 'vazia', recommend: [], method: null, loss: null, notes: [], error: 'Imagem não encontrada' });
+                    continue;
+                }
+                const base = { assetId: id, name: a.name, width: a.originalWidth || 0, height: a.originalHeight || 0, targetWidth: 0, targetHeight: 0, factor: 0, integer: false, kind: 'foto', recommend: [], method: null, loss: null, notes: [] };
+                try {
+                    if (a.mimeType === SVG_MIME) {
+                        const sz = core.enlargeSize(base.width, base.height, p, LIMITS.maxPixels);
+                        items.push({ ...base, kind: 'svg', targetWidth: sz.width, targetHeight: sz.height, factor: sz.factor, integer: sz.integer, method: 'vector', loss: 'vetorial', recommend: ['vector'], notes: ['SVG: desenhado direto no tamanho pedido, nítido', ...(sz.error ? [] : [])], ...(sz.error ? { error: sz.error } : {}) });
+                        continue;
+                    }
+                    const canvas = await loadCanvas(assetOf(id));
+                    try {
+                        const sz = core.enlargeSize(canvas.width, canvas.height, p, LIMITS.maxPixels), cls = core.classifyForEnlarge(imageOf(canvas).data, canvas.width, canvas.height);
+                        const notes = [];
+                        let method = null, loss = null;
+                        const pick = p.method === 'auto' ? cls.recommend : [p.method === 'quality' ? 'resample' : p.method];
+                        for (const m of pick) {
+                            if (p.format === 'svg' && m !== 'vector')
+                                continue;
+                            if (m === 'vector') {
+                                method = 'vector';
+                                loss = 'vetorial';
+                                break;
+                            }
+                            if (m === 'nearest' && sz.integer) {
+                                method = 'nearest';
+                                loss = 'nenhuma';
+                                break;
+                            }
+                            if (m === 'resample' && (p.allowLossy || p.method !== 'auto')) {
+                                method = 'resample';
+                                loss = 'suavizada';
+                                break;
+                            }
+                        }
+                        if (cls.kind === 'traco' || cls.kind === 'chapado')
+                            notes.push('Arte de linha/cores chapadas: SVG recomendado (fidelidade é conferida ao gerar)');
+                        if (cls.kind === 'reticula')
+                            notes.push('Retícula (pontilhado): não vetorizar; use fator inteiro para ampliar sem perda');
+                        if (cls.kind === 'foto')
+                            notes.push('Foto/degradê: não existe ampliação sem perda além do fator inteiro (quadriculado); a suavização interpola');
+                        if (cls.kind === 'pixelart')
+                            notes.push('Pixel art: fator inteiro mantém cada pixel nítido');
+                        if (!method && !sz.error)
+                            notes.push('Sem método sem perda para este pedido; permita a suavização ou use um fator inteiro');
+                        items.push({ ...base, width: canvas.width, height: canvas.height, targetWidth: sz.width, targetHeight: sz.height, factor: sz.factor, integer: sz.integer, kind: cls.kind, recommend: cls.recommend, method, loss, notes, ...(sz.error ? { error: sz.error } : {}) });
+                    }
+                    finally {
+                        canvas.width = 0;
+                        canvas.height = 0;
+                    }
+                }
+                catch (e) {
+                    items.push({ ...base, error: e.message });
+                }
+            }
+            const total = items.reduce((n, i) => n + i.targetWidth * i.targetHeight, 0);
+            if (total > 64_000_000)
+                warnings.push('O lote soma ' + (total / 1e6).toFixed(0) + ' MP de saída; pode demorar e usar muita memória');
+            return { items, warnings };
+        }
+        /** Grava os arquivos ampliados como ativos derivados, numa única transação (um Desfazer). */
+        async function commitEnlarged(jobs, p, opts) {
+            const tick = slicer(opts?.signal), results = [], made = [];
+            const taken = (n) => S.assets.some(a => a.name.toLowerCase() === n.toLowerCase()) || made.some(m => m.meta.name.toLowerCase() === n.toLowerCase());
+            let bytes = 0;
+            for (let i = 0; i < jobs.length; i++) {
+                if (opts?.signal?.aborted)
+                    break;
+                const job = jobs[i], src = assetOf2(job.sourceId);
+                try {
+                    const r = await job.produce(tick);
+                    bytes += r.blob.size;
+                    if (bytes > LIMITS.maxBytes * 4)
+                        fail('IMAGE_TOO_LARGE', 'O lote passa do limite de tamanho');
+                    const tag = r.method === 'vector' && r.ext === 'svg' ? '_vetor' : '_x' + (Number.isInteger(r.width / (job.srcW || 1)) ? String(r.width / (job.srcW || 1)) : r.width + 'px');
+                    let name = job.name + tag + '.' + r.ext, n = 2;
+                    while (taken(name))
+                        name = job.name + tag + ' (' + (n++) + ').' + r.ext;
+                    const meta = { id: utils.uid('asset'), name, packageId: src.packageId, mimeType: r.mime, originalWidth: r.width, originalHeight: r.height, size: r.blob.size, createdAt: Date.now(), updatedAt: Date.now(), derivedFrom: src.id,
+                        operations: [{ processor: 'imageEdit', operation: 'enlarge', params: { method: r.method, loss: r.loss, format: r.ext, width: r.width, height: r.height } }] };
+                    made.push({ meta, blob: r.blob, resultIndex: results.length });
+                    results.push({ sourceAssetId: job.sourceId, ok: true, assetId: meta.id, name, width: r.width, height: r.height, method: r.method, format: r.ext === 'svg' ? 'svg' : 'png', loss: r.loss, ...(r.fidelity ? { fidelity: r.fidelity } : {}), ...(r.paths !== undefined ? { paths: r.paths } : {}), bytes: r.blob.size, warnings: r.warnings });
+                }
+                catch (e) {
+                    if (e.code === 'CANCELLED')
+                        break;
+                    results.push({ sourceAssetId: job.sourceId, ok: false, error: e.message, warnings: [] });
+                }
+                opts?.onProgress?.(i + 1, jobs.length);
+            }
+            const persisted = [], urls = [];
+            if (made.length) {
+                try {
+                    await H.transaction('imageEdit.enlarge', async () => {
+                        for (const m of made) {
+                            if (backend.isAvailable()) {
+                                await backend.put('blobs', m.meta.id, m.blob);
+                                persisted.push(m.meta.id);
+                            }
+                            const url = URL.createObjectURL(m.blob);
+                            urls.push(url);
+                            A.blobs.set(m.meta.id, m.blob);
+                            A.urls.set(m.meta.id, url);
+                            A.missing.delete(m.meta.id);
+                            S.assets.push(m.meta);
+                        }
+                        kernel.emit('assets:changed');
+                        kernel.emit('state:changed');
+                    });
+                }
+                catch (error) {
+                    for (const u of urls)
+                        URL.revokeObjectURL(u);
+                    for (const m of made) {
+                        A.urls.delete(m.meta.id);
+                        A.blobs.delete(m.meta.id);
+                    }
+                    S.assets = S.assets.filter(a => !made.some(m => m.meta.id === a.id));
+                    for (const id of persisted) {
+                        try {
+                            await backend.del('blobs', id);
+                        }
+                        catch (rollback) {
+                            kernel.log.error('enlarge rollback failed', rollback);
+                        }
+                    }
+                    return fail('COMMIT_FAILED', error.message);
+                }
+            }
+            let saved = false;
+            if (made.length && kernel.has('app')) {
+                try {
+                    saved = !!(await kernel.call('app', 'saveNow'));
+                }
+                catch (e) {
+                    kernel.log.error('enlarge save failed', e);
+                }
+            }
+            const failed = results.filter(r => !r.ok).length;
+            if (made.length)
+                kernel.emit('toast', { message: made.length + (made.length === 1 ? ' imagem ampliada' : ' imagens ampliadas') + (failed ? ' · ' + failed + ' com erro' : ''), kind: failed ? 'error' : 'ok' });
+            void p;
+            return { total: jobs.length, created: made.length, failed, saved, cancelled: !!opts?.signal?.aborted, results };
+        }
+        /** Como assetOf, mas aceita SVG (origem de ampliação). */
+        function assetOf2(id) {
+            const a = S.assets.find(x => x.id === id);
+            if (!a)
+                fail('ASSET_NOT_FOUND', 'Imagem não encontrada: ' + id);
+            return a;
+        }
+        async function enlarge(assetIds, raw, opts) {
+            const p = enlargeParams(raw), ids = [...new Set(assetIds)];
+            if (!ids.length)
+                fail('INVALID_ARGUMENT', 'Escolha pelo menos uma imagem');
+            if (ids.length > LIMITS.maxBatch)
+                fail('INVALID_ARGUMENT', 'No máximo ' + LIMITS.maxBatch + ' imagens por lote');
+            for (const id of ids)
+                assetOf2(id);
+            const jobs = ids.map(id => {
+                const a = assetOf2(id);
+                return { sourceId: id, srcW: a.originalWidth || 1, name: baseName(a), produce: async (tick) => {
+                        if (a.mimeType === SVG_MIME)
+                            return svgSourceCanvas(a, p);
+                        const c = await loadCanvas(assetOf(id));
+                        try {
+                            return await enlargeCanvas(c, p, tick);
+                        }
+                        finally {
+                            c.width = 0;
+                            c.height = 0;
+                        }
+                    } };
+            });
+            return commitEnlarged(jobs, p, opts);
+        }
+        /** Amplia peças ainda não salvas (resultado de qualquer aba) e grava só as ampliadas. */
+        async function enlargeResult(result, indices, raw, opts) {
+            const p = enlargeParams(raw);
+            assetOf(result.sourceAssetId);
+            const pick = indices ?? result.pieces.map((_, i) => i);
+            if (!pick.length)
+                fail('NO_RESULT', 'Nada para ampliar: a operação não produziu imagens');
+            if (pick.some(i => !Number.isInteger(i) || i < 0 || i >= result.pieces.length))
+                fail('INVALID_ARGUMENT', 'Índice de peça inválido');
+            const jobs = [...new Set(pick)].map(i => { const piece = result.pieces[i]; return { sourceId: result.sourceAssetId, srcW: piece.width, name: piece.name, produce: (tick) => enlargeCanvas(piece.canvas, p, tick) }; });
+            return commitEnlarged(jobs, p, opts);
+        }
         /* ------------------------------ exportar em ZIP ------------------------------ */
         let crcTable = null;
         function crc32(data) {
@@ -980,6 +1357,6 @@ definePlugin({
                 src.height = 0;
             }
         }
-        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest, backgroundHoles, composeLayout });
+        kernel.provide('imageEdit', { limits: () => ({ ...LIMITS }), defaults, plan, preview, commit, apply, applyBatch, buildZip, exportZip, release, analyze, colorAt, gridDiagnose, gridSuggest, backgroundHoles, composeLayout, enlargePlan, enlarge, enlargeResult });
     }
 });

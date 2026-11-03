@@ -8,7 +8,7 @@ definePlugin({
     provides: ['imageEditCore'],
     uses: [],
     accepts: {},
-    contractVersions: { imageEditCore: '1.4.0' },
+    contractVersions: { imageEditCore: '1.5.0' },
     setup: function (kernel) {
         /* ------------------------------ cor (Lab) ------------------------------ */
         const LIN = new Float32Array(256);
@@ -578,6 +578,510 @@ definePlugin({
             const W = p.width || fitW, H = p.height || fitH;
             const offX = p.width ? 0 : p.margin - x0, offY = p.height ? 0 : p.margin - y0;
             return { width: W, height: H, offX, offY, boxes: boxes.map(b => ({ x: b.x + offX, y: b.y + offY, w: b.w, h: b.h, dw: b.dw, dh: b.dh, clip: b.clip, rotation: b.rotation })) };
+        }
+        /* ------------------------------ ampliar sem perda ------------------------------ */
+        /** Tamanho de saída a partir de fator, largura, altura, lado maior, cm@dpi ou caixa. */
+        function enlargeSize(w, h, t, maxPixels) {
+            let k = 0;
+            if (t.scale !== undefined)
+                k = t.scale;
+            else if (t.width !== undefined)
+                k = t.width / w;
+            else if (t.height !== undefined)
+                k = t.height / h;
+            else if (t.longSide !== undefined)
+                k = t.longSide / Math.max(w, h);
+            else if (t.cm !== undefined) {
+                const px = t.cm / 2.54 * (t.dpi ?? 300);
+                k = px / ((t.dimension ?? 'width') === 'height' ? h : w);
+            }
+            else if (t.fitWidth !== undefined && t.fitHeight !== undefined)
+                k = Math.min(t.fitWidth / w, t.fitHeight / h);
+            const bad = (error) => ({ width: w, height: h, factor: 1, integer: false, error });
+            if (!Number.isFinite(k) || k <= 0)
+                return bad('Tamanho de destino inválido');
+            const W = Math.max(1, Math.round(w * k)), H = Math.max(1, Math.round(h * k));
+            if (W < w || H < h)
+                return bad('O destino é menor que a imagem; use Redimensionar para reduzir');
+            if (W * H > maxPixels)
+                return bad('A saída teria ' + W + '×' + H + ' (' + (W * H / 1e6).toFixed(1) + ' MP), acima de ' + (maxPixels / 1e6) + ' MP');
+            const integer = W % w === 0 && H % h === 0 && W / w === H / h;
+            return { width: W, height: H, factor: W / w, integer };
+        }
+        /** Ampliação exata: cada pixel vira um bloco k×k (reversível). */
+        function nearestInteger(rgba, w, h, k) {
+            const W = w * k, H = h * k, out = new Uint8ClampedArray(W * H * 4);
+            const src32 = new Uint32Array(rgba.buffer, rgba.byteOffset, w * h), out32 = new Uint32Array(out.buffer);
+            for (let y = 0; y < h; y++) {
+                const row0 = y * k * W;
+                for (let x = 0; x < w; x++) {
+                    const v = src32[y * w + x], o = row0 + x * k;
+                    for (let i = 0; i < k; i++)
+                        out32[o + i] = v;
+                }
+                for (let j = 1; j < k; j++)
+                    out32.copyWithin(row0 + j * W, row0, row0 + W);
+            }
+            return out;
+        }
+        /** Compara duas imagens do mesmo tamanho sobre fundo branco: fração de pixels que diferem muito, diferença média e máxima (0–255). */
+        function fidelity(a, b, w, h, threshold = 96) {
+            let bad = 0, sum = 0, max = 0;
+            const n = w * h;
+            for (let i = 0; i < n; i++) {
+                const o = i * 4, aa = a[o + 3], ba = b[o + 3];
+                let d = 0;
+                for (let c = 0; c < 3; c++) {
+                    const av = (a[o + c] * aa + 255 * (255 - aa)) / 255, bv = (b[o + c] * ba + 255 * (255 - ba)) / 255, dd = Math.abs(av - bv);
+                    if (dd > d)
+                        d = dd;
+                }
+                sum += d;
+                if (d > max)
+                    max = d;
+                if (d > threshold)
+                    bad++;
+            }
+            return { badShare: n ? bad / n : 0, meanDiff: n ? sum / n : 0, maxDiff: max };
+        }
+        /** Que tipo de imagem é e quais métodos de ampliação fazem sentido (do mais fiel ao menos fiel). */
+        function classifyForEnlarge(rgba, w, h) {
+            const bins = new Uint32Array(32768);
+            let n = 0, extreme = 0;
+            const dark = new Uint8Array(w * h);
+            for (let i = 0; i < w * h; i++) {
+                const o = i * 4;
+                if (rgba[o + 3] < 128)
+                    continue;
+                n++;
+                bins[((rgba[o] >> 3) << 10) | ((rgba[o + 1] >> 3) << 5) | (rgba[o + 2] >> 3)]++;
+                const lum = (rgba[o] * 299 + rgba[o + 1] * 587 + rgba[o + 2] * 114) / 1000;
+                if (lum < 64 || lum > 192)
+                    extreme++;
+                if (lum < 128)
+                    dark[i] = 1;
+            }
+            if (!n)
+                return { kind: 'vazia', colors: 0, top16: 0, extremeShare: 0, components: 0, smallComponents: 0, recommend: ['nearest', 'resample'] };
+            const counts = Array.from(bins).filter(c => c > 0).sort((a, b) => b - a);
+            const top16 = counts.slice(0, 16).reduce((s, c) => s + c, 0) / n, colors = counts.filter(c => c / n >= 0.001).length, extremeShare = extreme / n;
+            let components = 0, small = 0;
+            const stack = new Int32Array(w * h);
+            for (let s = 0; s < w * h; s++) {
+                if (dark[s] !== 1)
+                    continue;
+                let sp = 0, area = 0;
+                stack[sp++] = s;
+                dark[s] = 2;
+                while (sp) {
+                    const p = stack[--sp];
+                    area++;
+                    const x = p % w, y = (p - x) / w;
+                    if (x > 0 && dark[p - 1] === 1) {
+                        dark[p - 1] = 2;
+                        stack[sp++] = p - 1;
+                    }
+                    if (x < w - 1 && dark[p + 1] === 1) {
+                        dark[p + 1] = 2;
+                        stack[sp++] = p + 1;
+                    }
+                    if (y > 0 && dark[p - w] === 1) {
+                        dark[p - w] = 2;
+                        stack[sp++] = p - w;
+                    }
+                    if (y < h - 1 && dark[p + w] === 1) {
+                        dark[p + w] = 2;
+                        stack[sp++] = p + w;
+                    }
+                }
+                components++;
+                if (area <= 40)
+                    small++;
+            }
+            const mp = Math.max(0.0001, n / 1e6);
+            let kind;
+            if (Math.max(w, h) <= 64 && colors <= 16 && top16 >= 0.98)
+                kind = 'pixelart';
+            else if (extremeShare >= 0.65 && components >= 500 && small / components >= 0.7 && components / mp >= 3000)
+                kind = 'reticula';
+            else if (extremeShare >= 0.85 && top16 >= 0.8)
+                kind = 'traco';
+            else if (top16 >= 0.85)
+                kind = 'chapado';
+            else
+                kind = 'foto';
+            const recommend = kind === 'traco' || kind === 'chapado' ? ['vector', 'nearest', 'resample'] : kind === 'pixelart' ? ['nearest', 'resample', 'vector'] : kind === 'reticula' ? ['nearest', 'resample'] : ['nearest', 'resample'];
+            return { kind, colors, top16, extremeShare, components, smallComponents: small, recommend };
+        }
+        /* vetorizador: contornos com precisão de subpixel (marching squares) + curvas */
+        function pickPalette(rgba, w, h, maxColors) {
+            const sum = new Float64Array(4096 * 3), cnt = new Uint32Array(4096);
+            let n = 0;
+            for (let i = 0; i < w * h; i++) {
+                const o = i * 4;
+                if (rgba[o + 3] < 128)
+                    continue;
+                const k = ((rgba[o] >> 4) << 8) | ((rgba[o + 1] >> 4) << 4) | (rgba[o + 2] >> 4);
+                cnt[k]++;
+                sum[k * 3] += rgba[o];
+                sum[k * 3 + 1] += rgba[o + 1];
+                sum[k * 3 + 2] += rgba[o + 2];
+                n++;
+            }
+            const order = Array.from(cnt.keys()).filter(k => cnt[k] > 0).sort((a, b) => cnt[b] - cnt[a]);
+            const pal = [];
+            for (const k of order) {
+                if (pal.length >= maxColors)
+                    break;
+                if (cnt[k] / n < 0.004 && pal.length >= 2)
+                    break;
+                const c = [sum[k * 3] / cnt[k], sum[k * 3 + 1] / cnt[k], sum[k * 3 + 2] / cnt[k]];
+                if (pal.some(p => Math.hypot(p[0] - c[0], p[1] - c[1], p[2] - c[2]) < 48))
+                    continue;
+                let blend = false; // tom intermediário de suavização entre duas cores já escolhidas
+                for (let a = 0; a < pal.length && !blend; a++)
+                    for (let b = a + 1; b < pal.length && !blend; b++) {
+                        const p = pal[a], q = pal[b], dx = q[0] - p[0], dy = q[1] - p[1], dz = q[2] - p[2], L = dx * dx + dy * dy + dz * dz;
+                        const t = Math.max(0, Math.min(1, ((c[0] - p[0]) * dx + (c[1] - p[1]) * dy + (c[2] - p[2]) * dz) / (L || 1)));
+                        if (Math.hypot(p[0] + dx * t - c[0], p[1] + dy * t - c[1], p[2] + dz * t - c[2]) < 28)
+                            blend = true;
+                    }
+                if (!blend)
+                    pal.push([Math.round(c[0]), Math.round(c[1]), Math.round(c[2])]);
+            }
+            const isBlend = (c, others) => {
+                for (let a = 0; a < others.length; a++)
+                    for (let b = a + 1; b < others.length; b++) {
+                        const p = others[a], q = others[b], dx = q[0] - p[0], dy = q[1] - p[1], dz = q[2] - p[2], L = dx * dx + dy * dy + dz * dz;
+                        const t = Math.max(0, Math.min(1, ((c[0] - p[0]) * dx + (c[1] - p[1]) * dy + (c[2] - p[2]) * dz) / (L || 1)));
+                        if (Math.hypot(p[0] + dx * t - c[0], p[1] + dy * t - c[1], p[2] + dz * t - c[2]) < 28)
+                            return true;
+                    }
+                return false;
+            };
+            for (let i = pal.length - 1; i >= 0 && pal.length > 2; i--) {
+                const c = pal[i];
+                if (isBlend(c, pal.filter((_, j) => j !== i)))
+                    pal.splice(i, 1);
+            } // tons de suavização que só existem entre duas cores reais
+            return pal;
+        }
+        /** Cantos verdadeiros do contorno denso: viragem forte numa janela curta, com supressão de vizinhos. */
+        function detectCorners(pts) {
+            const n = pts.length, ang = new Float32Array(n), k = 2, out = new Uint8Array(n);
+            if (n < 3 * k)
+                return out;
+            for (let i = 0; i < n; i++) {
+                const a = pts[(i - k + n) % n], b = pts[i], c = pts[(i + k) % n], v1x = b[0] - a[0], v1y = b[1] - a[1], v2x = c[0] - b[0], v2y = c[1] - b[1];
+                const l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+                ang[i] = l1 && l2 ? Math.acos(Math.max(-1, Math.min(1, (v1x * v2x + v1y * v2y) / (l1 * l2)))) * 180 / Math.PI : 0;
+            }
+            for (let i = 0; i < n; i++) {
+                if (ang[i] < 65)
+                    continue;
+                let max = true;
+                for (let j = -3; j <= 3 && max; j++) {
+                    const q = ang[(i + j + n) % n];
+                    if (j !== 0 && (q > ang[i] || (q === ang[i] && j < 0)))
+                        max = false;
+                }
+                if (max)
+                    out[i] = 1;
+            }
+            return out;
+        }
+        /** Douglas-Peucker em laço fechado, mantendo sempre os cantos. Devolve os pontos e quais são cantos. */
+        function simplifyLoop(pts, eps, corner) {
+            const n = pts.length;
+            const dist = (p, a, b) => {
+                const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+                if (!L)
+                    return Math.hypot(p[0] - a[0], p[1] - a[1]);
+                const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L));
+                return Math.hypot(p[0] - a[0] - dx * t, p[1] - a[1] - dy * t);
+            };
+            const keep = new Uint8Array(n);
+            let anchors = 0;
+            for (let i = 0; i < n; i++)
+                if (corner[i]) {
+                    keep[i] = 1;
+                    anchors++;
+                }
+            if (anchors < 2) {
+                keep[0] = 1;
+                let far = 0, fd = -1;
+                for (let i = 1; i < n; i++) {
+                    const d = Math.hypot(pts[i][0] - pts[0][0], pts[i][1] - pts[0][1]);
+                    if (d > fd) {
+                        fd = d;
+                        far = i;
+                    }
+                }
+                keep[far] = 1;
+            }
+            const idx = [];
+            for (let i = 0; i < n; i++)
+                if (keep[i])
+                    idx.push(i);
+            for (let s = 0; s < idx.length; s++) {
+                const a0 = idx[s], b0 = s + 1 < idx.length ? idx[s + 1] : idx[0] + n, st = [[a0, b0]];
+                while (st.length) {
+                    const [a, b] = st.pop();
+                    let md = -1, mi = -1;
+                    for (let i = a + 1; i < b; i++) {
+                        const d = dist(pts[i % n], pts[a % n], pts[b % n]);
+                        if (d > md) {
+                            md = d;
+                            mi = i;
+                        }
+                    }
+                    if (md > eps && mi >= 0) {
+                        keep[mi % n] = 1;
+                        st.push([a, mi], [mi, b]);
+                    }
+                }
+            }
+            const out = [], flags = [];
+            for (let i = 0; i < n; i++)
+                if (keep[i]) {
+                    out.push(pts[i]);
+                    flags.push(!!corner[i]);
+                }
+            return { pts: out, corner: flags };
+        }
+        const fmt = (v) => { const s = (Math.round(v * 100) / 100).toString(); return s; };
+        function loopPath(p, corner) {
+            const n = p.length;
+            if (n < 3)
+                return '';
+            const tan = p.map((_, i) => {
+                const a = p[(i + n - 1) % n], c = p[(i + 1) % n], dx = c[0] - a[0], dy = c[1] - a[1], l = Math.hypot(dx, dy) || 1;
+                return [dx / l, dy / l];
+            });
+            let d = 'M' + fmt(p[0][0]) + ' ' + fmt(p[0][1]);
+            for (let i = 0; i < n; i++) {
+                const a = p[i], b = p[(i + 1) % n], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+                const t0 = corner[i] ? [ux, uy] : tan[i], t1 = corner[(i + 1) % n] ? [ux, uy] : tan[(i + 1) % n];
+                if (corner[i] && corner[(i + 1) % n])
+                    d += 'L' + fmt(b[0]) + ' ' + fmt(b[1]);
+                else
+                    d += 'C' + fmt(a[0] + t0[0] * len / 3) + ' ' + fmt(a[1] + t0[1] * len / 3) + ' ' + fmt(b[0] - t1[0] * len / 3) + ' ' + fmt(b[1] - t1[1] * len / 3) + ' ' + fmt(b[0]) + ' ' + fmt(b[1]);
+            }
+            return d + 'Z';
+        }
+        /** Contornos de um campo escalar (limiar 0,5) em coordenadas de imagem. */
+        async function contours(field, w, h, tick) {
+            const W1 = w + 2, H1 = h + 2, thr = 0.5, next = new Int32Array(2 * W1 * H1).fill(-1);
+            const F = (i, j) => (i <= 0 || j <= 0 || i > w || j > h) ? 0 : field[(j - 1) * w + (i - 1)];
+            const Hk = (i, j) => 2 * (j * W1 + i), Vk = (i, j) => 2 * (j * W1 + i) + 1;
+            const seg = (a, b) => { next[a] = b; };
+            for (let j = 0; j < H1 - 1; j++) {
+                if (tick && j % 128 === 0)
+                    await tick();
+                for (let i = 0; i < W1 - 1; i++) {
+                    const tl = F(i, j) >= thr, tr = F(i + 1, j) >= thr, br = F(i + 1, j + 1) >= thr, bl = F(i, j + 1) >= thr;
+                    const c = (tl ? 8 : 0) | (tr ? 4 : 0) | (br ? 2 : 0) | (bl ? 1 : 0);
+                    if (c === 0 || c === 15)
+                        continue;
+                    const T = Hk(i, j), B = Hk(i, j + 1), L = Vk(i, j), R = Vk(i + 1, j);
+                    switch (c) {
+                        case 1:
+                            seg(L, B);
+                            break;
+                        case 2:
+                            seg(B, R);
+                            break;
+                        case 3:
+                            seg(L, R);
+                            break;
+                        case 4:
+                            seg(R, T);
+                            break;
+                        case 5: {
+                            const mid = (F(i, j) + F(i + 1, j) + F(i + 1, j + 1) + F(i, j + 1)) / 4 >= thr;
+                            if (mid) {
+                                seg(L, T);
+                                seg(R, B);
+                            }
+                            else {
+                                seg(R, T);
+                                seg(L, B);
+                            }
+                            break;
+                        }
+                        case 6:
+                            seg(B, T);
+                            break;
+                        case 7:
+                            seg(L, T);
+                            break;
+                        case 8:
+                            seg(T, L);
+                            break;
+                        case 9:
+                            seg(T, B);
+                            break;
+                        case 10: {
+                            const mid = (F(i, j) + F(i + 1, j) + F(i + 1, j + 1) + F(i, j + 1)) / 4 >= thr;
+                            if (mid) {
+                                seg(T, R);
+                                seg(B, L);
+                            }
+                            else {
+                                seg(T, L);
+                                seg(B, R);
+                            }
+                            break;
+                        }
+                        case 11:
+                            seg(T, R);
+                            break;
+                        case 12:
+                            seg(R, L);
+                            break;
+                        case 13:
+                            seg(R, B);
+                            break;
+                        case 14:
+                            seg(B, L);
+                            break;
+                    }
+                }
+            }
+            const point = (key) => {
+                const horiz = (key & 1) === 0, cell = key >> 1, i = cell % W1, j = (cell - i) / W1;
+                if (horiz) {
+                    const a = F(i, j), b = F(i + 1, j), t = (thr - a) / ((b - a) || 1);
+                    return [i - 1 + 0.5 + t, j - 1 + 0.5];
+                }
+                const a = F(i, j), b = F(i, j + 1), t = (thr - a) / ((b - a) || 1);
+                return [i - 1 + 0.5, j - 1 + 0.5 + t];
+            };
+            const loops = [];
+            for (let s = 0; s < next.length; s++) {
+                if (next[s] < 0)
+                    continue;
+                const pts = [];
+                let k = s;
+                while (k >= 0 && next[k] >= 0) {
+                    const nk = next[k];
+                    next[k] = -1;
+                    pts.push(point(k));
+                    k = nk;
+                    if (k === s)
+                        break;
+                }
+                if (pts.length >= 3)
+                    loops.push(pts);
+            }
+            return loops;
+        }
+        const hex2 = (c) => '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+        const loopArea = (p) => { let s = 0; for (let i = 0; i < p.length; i++) {
+            const a = p[i], b = p[(i + 1) % p.length];
+            s += a[0] * b[1] - b[0] * a[1];
+        } return s / 2; };
+        /** PNG → SVG. Devolve `ok:false` com o motivo quando a imagem não é vetorizável (foto, retícula, arquivo grande demais). */
+        async function vectorize(rgba, w, h, o = {}) {
+            const maxPaths = o.maxPaths ?? 20000, maxBytes = o.maxBytes ?? 8 * 1024 * 1024, eps = o.epsilon ?? 0.2, outW = o.outWidth ?? w, outH = o.outHeight ?? h;
+            const fail = (reason) => ({ ok: false, reason, svg: '', paths: 0, bytes: 0, palette: [], loops: [] });
+            if (w * h > (o.maxInputPixels ?? 4_000_000))
+                return fail('Imagem grande demais para vetorizar (' + (w * h / 1e6).toFixed(1) + ' MP)');
+            const pal = pickPalette(rgba, w, h, o.colors ?? 8);
+            if (!pal.length)
+                return fail('Imagem sem pixels visíveis');
+            let transparent = false;
+            for (let i = 0; i < w * h; i++)
+                if (rgba[i * 4 + 3] < 128) {
+                    transparent = true;
+                    break;
+                }
+            const nearest = new Uint8Array(w * h);
+            for (let i = 0; i < w * h; i++) {
+                const q = i * 4;
+                let best = 0, bd = 1e9;
+                for (let c = 0; c < pal.length; c++) {
+                    const p = pal[c], d = (rgba[q] - p[0]) ** 2 + (rgba[q + 1] - p[1]) ** 2 + (rgba[q + 2] - p[2]) ** 2;
+                    if (d < bd) {
+                        bd = d;
+                        best = c;
+                    }
+                }
+                nearest[i] = best;
+            }
+            let bg = -1;
+            if (!transparent) {
+                const bc = new Uint32Array(pal.length);
+                for (let x = 0; x < w; x++) {
+                    bc[nearest[x]]++;
+                    bc[nearest[(h - 1) * w + x]]++;
+                }
+                for (let y = 0; y < h; y++) {
+                    bc[nearest[y * w]]++;
+                    bc[nearest[y * w + w - 1]]++;
+                }
+                bg = 0;
+                for (let c = 1; c < pal.length; c++)
+                    if (bc[c] > bc[bg])
+                        bg = c;
+            }
+            const two = pal.length === 2 && bg >= 0, lum = (p) => (p[0] * 299 + p[1] * 587 + p[2] * 114) / 1000;
+            const parts = [], allLoops = [];
+            let paths = 0;
+            const order = pal.map((_, c) => c).filter(c => c !== bg);
+            const field = new Float32Array(w * h), tmp = new Float32Array(w * h);
+            for (const c of order) {
+                if (o.tick)
+                    await o.tick();
+                if (two) {
+                    const other = pal[bg], me = pal[c], lo = lum(me), hi = lum(other), span = (hi - lo) || 1;
+                    for (let i = 0; i < w * h; i++) {
+                        const q = i * 4, l = (rgba[q] * 299 + rgba[q + 1] * 587 + rgba[q + 2] * 114) / 1000;
+                        field[i] = Math.max(0, Math.min(1, (hi - l) / span));
+                    }
+                }
+                else {
+                    for (let i = 0; i < w * h; i++)
+                        tmp[i] = rgba[i * 4 + 3] >= 128 && nearest[i] === c ? 1 : 0;
+                    for (let y = 0; y < h; y++)
+                        for (let x = 0; x < w; x++) {
+                            const a = tmp[y * w + Math.max(0, x - 1)], b = tmp[y * w + x], d = tmp[y * w + Math.min(w - 1, x + 1)];
+                            field[y * w + x] = (a + 2 * b + d) / 4;
+                        }
+                    for (let y = 0; y < h; y++)
+                        for (let x = 0; x < w; x++) {
+                            const a = field[Math.max(0, y - 1) * w + x], b = field[y * w + x], d = field[Math.min(h - 1, y + 1) * w + x];
+                            tmp[y * w + x] = (a + 2 * b + d) / 4;
+                        }
+                    field.set(tmp);
+                }
+                if (transparent || two)
+                    for (let i = 0; i < w * h; i++)
+                        field[i] = field[i] * (rgba[i * 4 + 3] / 255);
+                const loops = (await contours(field, w, h, o.tick)).filter(l => Math.abs(loopArea(l)) >= 1.5);
+                if (!loops.length)
+                    continue;
+                let d = '';
+                const simplified = [];
+                for (const l of loops) {
+                    const s = simplifyLoop(l, eps, detectCorners(l));
+                    if (s.pts.length >= 3) {
+                        simplified.push(s.pts);
+                        d += loopPath(s.pts, s.corner);
+                    }
+                }
+                paths += simplified.length;
+                if (paths > maxPaths)
+                    return fail('Muitos detalhes (' + paths + '+ contornos): provavelmente retícula ou foto');
+                allLoops.push(...simplified);
+                parts.push('<path fill="' + hex2(pal[c]) + '"' + (pal.length > 2 ? ' stroke="' + hex2(pal[c]) + '" stroke-width="0.35" stroke-linejoin="round"' : '') + ' fill-rule="evenodd" d="' + d + '"/>');
+            }
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + outW + '" height="' + outH + '" shape-rendering="geometricPrecision">' +
+                (bg >= 0 ? '<rect width="' + w + '" height="' + h + '" fill="' + hex2(pal[bg]) + '"/>' : '') + parts.join('') + '</svg>';
+            const bytes = svg.length;
+            if (bytes > maxBytes)
+                return fail('O SVG passaria de ' + Math.round(maxBytes / 1048576) + ' MB');
+            return { ok: true, svg, paths, bytes, palette: pal, loops: allLoops };
         }
         /* ------------------------------ cores dominantes ------------------------------ */
         function dominantColors(rgba, w, h, max) {
@@ -1205,7 +1709,7 @@ definePlugin({
             return { out, changedShare: n ? changed / n : 0, roles };
         }
         kernel.provide('imageEditCore', {
-            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, gridLayout, defaultGridCuts, diagnoseGrid, suggestGridCuts, composeLayout, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
+            deltaE, colorMask, dilate, erode, closeMask, outsideOf, label, gridEdges, gridLayout, defaultGridCuts, diagnoseGrid, suggestGridCuts, composeLayout, enlargeSize, nearestInteger, fidelity, classifyForEnlarge, vectorize, dominantColors, estimateBackground, cutByContour, removeBackground, detectRoles, recolor,
             /* usado só pela operação de ativos (alfa suave por objeto) */
             boxAlpha
         });

@@ -18,7 +18,7 @@ definePlugin({
     accepts: {},
     contractVersions: { 'automationContract': '1.0.0' },
     setup: function (kernel) {
-        const CONTRACT_VERSION = '1.28.0';
+        const CONTRACT_VERSION = '1.29.0';
         /* ---------- schema helpers ---------- */
         const str = (o = {}) => ({ type: 'string', maxLength: 500, ...o });
         const id = (what = 'identifier') => ({ type: 'string', minLength: 1, maxLength: 128, description: what });
@@ -448,6 +448,10 @@ definePlugin({
             background: rgbS('canvas color; transparent when omitted'), arrange: en(['none', 'row', 'column', 'grid']), gap: int(0, 2000), margin: int(0, 2000), columns: int(0, 40) }, ['layers']), comp('image_edit.compose', ['imageEdit.apply']), true);
         T('image_edit', 'compose_layout', R, 'Measure a composition', 'Computes the final canvas size and the box (x, y, w, h, rotation, clip) of every layer without decoding or saving anything. Accepts the same input as image_edit.compose; use it to pick the canvas size and to check for layers outside the canvas before composing. fit per layer: stretch (default, uses width×height), contain (fits inside the box, keeps ratio) or cover (fills the box, clipping the excess).', obj({ layers: arr(obj({ assetId: id('asset id'), x: num(-100000, 100000), y: num(-100000, 100000), scale: num(0.01, 50), width: int(1, 16000), height: int(1, 16000), rotation: num(-360, 360), fit: en(['stretch', 'contain', 'cover']) }, ['assetId']), 40), width: int(0, 16000), height: int(0, 16000),
             arrange: en(['none', 'row', 'column', 'grid']), gap: int(0, 2000), margin: int(0, 2000), columns: int(0, 40) }, ['layers']), comp('image_edit.compose_layout', ['imageEdit.composeLayout']));
+        const enlargeIn = () => ({ assetIds: arr(id('asset id'), 80), scale: num(1, 64, 'times (2 = double); exact when integer'), width: int(1, 64000), height: int(1, 64000), longSide: int(1, 64000), cm: num(0.1, 1000, 'printed size; use with dpi'), dpi: int(30, 2400), dimension: en(['width', 'height']),
+            fitWidth: int(1, 64000), fitHeight: int(1, 64000), format: en(['png', 'svg']), method: en(['auto', 'vector', 'nearest', 'quality']), allowLossy: bool('false refuses images with no lossless method instead of smoothing them') });
+        T('image_edit', 'enlarge_plan', R, 'Plan an enlargement', 'Classifies each image (line art, flat colors, pixel art, halftone, photo), reports the output size and which method would be used and whether it loses quality. Give exactly one target: scale, width, height, longSide, cm (+dpi) or fitWidth+fitHeight. Nothing is saved.', obj(enlargeIn(), ['assetIds']), comp('image_edit.enlarge_plan', ['imageEdit.enlargePlan']));
+        T('image_edit', 'enlarge', W, 'Enlarge or convert images without losing quality', 'Creates enlarged copies (the originals are untouched, one undo removes all). method auto picks the most faithful: vector (line art traced to SVG, fidelity measured against the original; PNG output is the vector rasterized at the final size), nearest (exact, integer factors only) or smoothed (loses quality; refused when allowLossy=false). format svg only succeeds when the vector copy is faithful. Up to 80 images; output up to 16 megapixels each.', obj(enlargeIn(), ['assetIds']), comp('image_edit.enlarge', ['imageEdit.enlarge']), true);
         T('image_edit', 'open', W, 'Open image editor', 'Opens the image editor window in VisualBoard, optionally on an asset.', obj({ assetId: id('asset id') }), call('ui.imageEditor', 'open', ['assetId'], 'done'));
         /* ===== scene blocking (folhas 3×3 de cenas vistas de cima, SVG editável) ===== */
         const sbId = () => id('scene sheet asset id from scene_blocking.list');
@@ -701,6 +705,7 @@ definePlugin({
             excl('imageEdit.commit', 'Depende de uma prévia com canvases em memória; as ferramentas usam imageEdit.apply.'),
             excl('imageEdit.buildZip', 'Devolve um Blob; a automação usa image_edit.export_zip (download).'),
             excl('imageEdit.release', 'Libera prévias em memória; sem equivalente na automação.'),
+            excl('imageEdit.enlargeResult', 'Depende de uma prévia com canvases em memória (peças ainda não salvas); a automação usa image_edit.enlarge sobre assets.'),
             excl('ui.imageEditor.close', 'Fechamento da janela feito pelo usuário.'),
             excl('ui.imageEditor.compose', 'Interface; a automação usa image_edit.compose (sem janela).'),
             excl('ui.imageEditor.batch', 'Interface; a automação usa image_edit.batch (sem janela).'),
