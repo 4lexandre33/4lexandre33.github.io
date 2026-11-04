@@ -4,13 +4,15 @@
 definePlugin({
     id: 'ui-scene-blocking',
     version: '1.1.0',
-    needs: ['sceneBlocking', 'sceneBlockingEngine', 'sceneBlockingCore', 'sceneBlockingRender', 'history', 'assets', 'state'],
+    needs: ['sceneBlocking', 'sceneElevation', 'sceneElevationAssets', 'sceneBlockingEngine', 'sceneBlockingCore', 'sceneBlockingRender', 'history', 'assets', 'state'],
     provides: ['ui.sceneBlocking'],
     uses: ['assetHub'],
-    accepts: { sceneBlocking: '^1.1.0', sceneBlockingEngine: '^1.1.0', sceneBlockingCore: '^1.0.0', sceneBlockingRender: '^1.0.0', history: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', assetHub: '^1.0.0' },
-    contractVersions: { 'ui.sceneBlocking': '1.1.0' },
+    accepts: { sceneBlocking: '^1.1.0', sceneElevation: '^1.0.0', sceneElevationAssets: '^1.0.0', sceneBlockingEngine: '^1.1.0', sceneBlockingCore: '^1.0.0', sceneBlockingRender: '^1.0.0', history: '^1.0.0', assets: '^1.0.0', state: '^1.0.0', assetHub: '^1.0.0' },
+    contractVersions: { 'ui.sceneBlocking': '1.2.0' },
     setup: async function (kernel) {
         const SB = await kernel.require('sceneBlocking');
+        const EL = await kernel.require('sceneElevationAssets');
+        const ELE = await kernel.require('sceneElevation');
         const EN = await kernel.require('sceneBlockingEngine');
         const CORE = await kernel.require('sceneBlockingCore');
         const REN = await kernel.require('sceneBlockingRender');
@@ -200,6 +202,11 @@ definePlugin({
                 return;
             }
             editing = null;
+            if (elevId && EL.isElevationAsset(elevId)) {
+                renderElevationStage(stage);
+                return;
+            }
+            elevId = null;
             const all = sheets();
             if (!all.length) {
                 stage.appendChild(el('p', 'vbie-empty', 'Nenhuma folha ainda. Ajuste a configuração e use “Gerar folhas”. Elas ficam na biblioteca do projeto como SVG.'));
@@ -309,6 +316,11 @@ definePlugin({
             const keep = right.scrollTop;
             right.textContent = '';
             const all = sheets();
+            if (elevId && EL.isElevationAsset(elevId)) {
+                renderElevationPanel(right);
+                right.scrollTop = keep;
+                return;
+            }
             if (editing !== null && selected && all.some(x => x.id === selected)) {
                 renderPanel(right);
                 right.scrollTop = keep;
@@ -416,6 +428,161 @@ definePlugin({
             const ed = btn('✎ Editar célula', 'Abre o editor: arrastar manequins e câmera, inspetor numérico e camadas', () => { editing = i; sel = null; hidden.clear(); renderStage(); renderRight(); }, 'btn primary');
             ed.disabled = dis || c.locked;
             box.insertBefore(ed, info);
+            elevationSection(box, i, dis);
+        }
+        /* ---------------- vistas laterais (elevações) ---------------- */
+        let elevId = null, elevView = null, elevUrl = '';
+        const elevDraft = { variation: 0.5, frameAspect: 1.5, cameraHeight: null };
+        const POSE_LABEL = { standing: 'Em pé', crouching: 'Agachado', sitting: 'Sentado' };
+        const ELEV_STATE = { current: 'atualizada', stale: 'desatualizada (a vista de cima mudou)', 'source-missing': 'folha de origem removida' };
+        function numIn(value, min, max, step, label, on) {
+            const i = el('input');
+            i.type = 'number';
+            i.min = String(min);
+            i.max = String(max);
+            i.step = String(step);
+            i.value = value === '' ? '' : String(value);
+            i.setAttribute('aria-label', label);
+            i.addEventListener('change', () => { if (i.value === '') {
+                on(null);
+                return;
+            } const v = Number(i.value); if (Number.isFinite(v))
+                on(Math.min(max, Math.max(min, v))); });
+            return i;
+        }
+        function draftOptions() { return { variation: elevDraft.variation, frameAspect: elevDraft.frameAspect, ...(elevDraft.cameraHeight !== null ? { cameraHeight: elevDraft.cameraHeight } : {}) }; }
+        function elevationSection(box, i, dis) {
+            const sec = el('div', 'vbsb-elev');
+            sec.setAttribute('data-vbsb', 'elev-section');
+            box.appendChild(sec);
+            sec.appendChild(el('h4', 'vbsb-h', '⬍ Vistas laterais'));
+            sec.appendChild(el('p', 'vbie-note', 'Gera 8 vistas laterais desta cena. As posições da vista de cima não mudam: só a altura é nova. A folha de origem não é alterada.'));
+            for (const e of EL.list().filter(x => x.sourceAssetId === selected && x.cell === i)) {
+                const row = el('div', 'vbie-actions'), o = btn('Abrir ' + e.name, 'Abre as vistas laterais', () => { elevId = e.id; elevView = null; renderStage(); renderRight(); });
+                o.setAttribute('data-vbsb', 'elev-open');
+                row.append(o, el('span', 'vbie-note', ELEV_STATE[e.state] ?? e.state));
+                sec.appendChild(row);
+            }
+            const form = el('div', 'vbie-controls');
+            form.append(field('Variação de altura dos manequins (0 = todos iguais)', numIn(elevDraft.variation, 0, 1, 0.1, 'Variação de altura', v => { elevDraft.variation = v ?? 0.5; renderRight(); })), field('Proporção do quadro (largura/altura)', numIn(elevDraft.frameAspect, 0.5, 3, 0.1, 'Proporção do quadro', v => { elevDraft.frameAspect = v ?? 1.5; renderRight(); })), field('Altura da câmera em H (vazio = a da elevação ' + (selected ? SB.get(selected).sheet.cells[i].camera.elevationLevel : '') + ')', numIn(elevDraft.cameraHeight ?? '', 0.05, 4, 0.05, 'Altura da câmera', v => { elevDraft.cameraHeight = v; renderRight(); })));
+            sec.appendChild(form);
+            try {
+                for (const w of EL.plan(selected, i, draftOptions()).warnings)
+                    sec.appendChild(el('p', 'vbie-warn', '⚠ ' + w.message));
+            }
+            catch (e) {
+                sec.appendChild(el('p', 'vbie-warn', e.message));
+            }
+            const go = btn('⬍ Gerar vistas laterais', 'Cria um ativo SVG com a vista de cima no centro e 8 vistas laterais (um Desfazer remove)', () => { void run('elevações', async () => { const r = await EL.generate(selected, i, draftOptions()); elevId = r.asset.id; elevView = null; }); }, 'btn primary');
+            go.setAttribute('data-vbsb', 'elev-generate');
+            go.disabled = dis;
+            sec.appendChild(go);
+        }
+        /** O endereço antigo só é liberado depois de um tempo: uma imagem que ainda está carregando não pode perdê-lo. */
+        function elevBlobUrl(blob) { const old = elevUrl; if (old)
+            setTimeout(() => URL.revokeObjectURL(old), 8000); elevUrl = blob ? URL.createObjectURL(blob) : ''; return elevUrl; }
+        function renderElevationStage(host2) {
+            const id = elevId;
+            const bar = el('div', 'vbie-actions');
+            const back = btn('← Voltar à folha', 'Fecha as vistas laterais', () => { elevId = null; elevBlobUrl(null); renderStage(); renderRight(); });
+            back.setAttribute('data-vbsb', 'elev-back');
+            bar.append(back, btn('↶ Desfazer', 'Desfaz a última alteração do projeto', () => { void HIST.undo().then(() => { renderStage(); renderRight(); }); }), btn('↷ Refazer', 'Refaz a alteração desfeita', () => { void HIST.redo().then(() => { renderStage(); renderRight(); }); }));
+            host2.appendChild(bar);
+            const tabs = el('div', 'vbie-actions');
+            tabs.setAttribute('role', 'tablist');
+            for (const [v, label] of [[null, 'Folha completa'], ...ELE.views().map((x) => [x.id, x.title])]) {
+                const b = btn(label, label, () => { elevView = v; renderStage(); }, 'btn' + (elevView === v ? ' primary' : ''));
+                b.setAttribute('role', 'tab');
+                b.setAttribute('aria-selected', String(elevView === v));
+                b.setAttribute('data-vbsb', 'elev-tab');
+                tabs.appendChild(b);
+            }
+            host2.appendChild(tabs);
+            const wrap = el('div', 'vbsb-stage'), view = el('div', 'vbsb-view'), sheet = el('div', 'vbsb-sheet'), img = el('img', 'vbsb-big');
+            img.alt = 'Vistas laterais';
+            img.draggable = false;
+            img.setAttribute('data-vbsb', 'elev-image');
+            sheet.appendChild(img);
+            view.appendChild(sheet);
+            wrap.appendChild(view);
+            host2.appendChild(wrap);
+            if (elevView === null) {
+                elevBlobUrl(null);
+                img.src = A.urls.get(id) ?? '';
+            }
+            else {
+                const v = elevView;
+                void EL.exportViewSvg(id, v).then(svg => { if (elevId === id && elevView === v)
+                    img.src = elevBlobUrl(new Blob([svg], { type: 'image/svg+xml' })); }).catch(e => { note = e.message; renderRight(); });
+            }
+        }
+        function renderElevationPanel(host2) {
+            const id = elevId, box = el('div', 'vbie-controls');
+            host2.appendChild(box);
+            let d;
+            try {
+                d = EL.get(id);
+            }
+            catch (e) {
+                box.appendChild(el('p', 'vbie-warn', e.message));
+                return;
+            }
+            const dis = !!busy, set = (patch) => { void run('elevações', async () => { await EL.setOptions(id, patch); }); };
+            box.appendChild(el('h3', 'vbsb-h', d.name));
+            const st = el('p', d.state === 'current' ? 'vbie-note' : 'vbie-warn', 'Estado: ' + (ELEV_STATE[d.state] ?? d.state) + ' · inclinação da câmera ' + d.cameraPitchDegrees + '° · H = ' + ELE.H() + ' u');
+            st.setAttribute('data-vbsb', 'elev-state');
+            box.appendChild(st);
+            if (d.state === 'stale') {
+                const r = btn('↻ Atualizar a partir da vista de cima', 'Copia de novo a cena de origem; as alturas dos manequins que ainda existem são mantidas', () => { void run('elevações', async () => { await EL.refresh(id); }); }, 'btn primary');
+                r.setAttribute('data-vbsb', 'elev-refresh');
+                r.disabled = dis;
+                box.appendChild(r);
+            }
+            for (const w of d.warnings)
+                box.appendChild(el('p', 'vbie-warn', '⚠ ' + w.message));
+            box.appendChild(field('Variação automática (0–1)', Object.assign(numIn(d.options.variation, 0, 1, 0.1, 'Variação', v => set({ variation: v ?? 0.5 })), { disabled: dis })));
+            box.appendChild(field('Proporção do quadro', Object.assign(numIn(d.options.frameAspect, 0.5, 3, 0.1, 'Proporção do quadro', v => set({ frameAspect: v ?? 1.5 })), { disabled: dis })));
+            box.appendChild(field('Altura da câmera em H (vazio = automática)', Object.assign(numIn(d.options.cameraHeight ?? '', 0.05, 4, 0.05, 'Altura da câmera', v => set({ cameraHeight: v })), { disabled: dis })));
+            box.appendChild(el('h4', 'vbsb-h', 'Manequins'));
+            for (const ch of d.characters) {
+                const r = d.resolved.characters[ch.id], row = el('div', 'vbsb-elevrow');
+                row.setAttribute('data-vbsb-char', ch.id);
+                const h = Object.assign(numIn(r.heightScale, 0.3, 1.4, 0.05, 'Altura de ' + ch.id, v => set({ characters: { [ch.id]: v === null ? null : { heightScale: v } } })), { disabled: dis });
+                const b = Object.assign(numIn(r.baseZ, 0, 3, 0.1, 'Base de ' + ch.id, v => set({ characters: { [ch.id]: { baseZ: v ?? 0 } } })), { disabled: dis });
+                const p = el('select');
+                p.setAttribute('aria-label', 'Pose de ' + ch.id);
+                p.disabled = dis;
+                for (const k of ELE.limits().poses) {
+                    const o = el('option', undefined, POSE_LABEL[k]);
+                    o.value = k;
+                    p.appendChild(o);
+                }
+                p.value = r.pose;
+                p.addEventListener('change', () => set({ characters: { [ch.id]: { pose: p.value } } }));
+                row.append(el('strong', undefined, ch.id.replace('char-', 'M')), field('Altura (× H)', h), field('Base (× H)', b), field('Pose', p));
+                box.appendChild(row);
+            }
+            box.appendChild(el('h4', 'vbsb-h', 'Vistas incluídas'));
+            const vrow = el('div', 'vbsb-locks');
+            for (const v of ELE.views()) {
+                const l = el('label', 'vbsb-lockrow'), cb = el('input');
+                cb.type = 'checkbox';
+                cb.checked = d.options.views.includes(v.id);
+                cb.disabled = dis;
+                cb.addEventListener('change', () => { const next = ELE.viewIds().filter((x) => (x === v.id ? cb.checked : d.options.views.includes(x))); if (!next.length) {
+                    cb.checked = true;
+                    return;
+                } set({ views: next }); });
+                l.append(cb, el('span', undefined, v.title));
+                vrow.appendChild(l);
+            }
+            box.appendChild(vrow);
+            const ex = el('div', 'vbie-actions'), nm = baseName(id), cur = elevView;
+            const mk = (label, title, fn) => { const b = btn(label, title, () => { void run('exportar', fn); }); b.disabled = dis; return b; };
+            ex.append(mk('⬇ SVG', 'Folha completa (ou a vista aberta) em SVG', async () => { download(nm + (cur ? '_' + cur : '') + '.svg', cur ? await EL.exportViewSvg(id, cur) : await EL.exportSvg(id), 'image/svg+xml'); }), mk('⬇ PNG', 'PNG da folha (1800×1800) ou da vista aberta (600×600)', async () => { download(nm + (cur ? '_' + cur : '') + '.png', await EL.exportPng(id, { ...(cur ? { view: cur } : {}), scale: 1 }), 'image/png'); }), mk('⬇ ZIP (SVG)', 'A folha e uma vista por arquivo', async () => { download(nm + '.zip', await EL.exportZip(id, { format: 'svg' }), 'application/zip'); }), mk('⬇ ZIP (PNG)', 'A folha e uma vista por arquivo, em PNG', async () => { download(nm + '_png.zip', await EL.exportZip(id, { format: 'png' }), 'application/zip'); }));
+            box.appendChild(ex);
+            if (note)
+                box.appendChild(el('p', 'vbie-warn', note));
         }
         /* ---------------- editor de célula (B17) e camadas (B18) ---------------- */
         const KIND_LABEL = { character: 'Manequim', camera: 'Câmera', 'focus-reticle': 'Retículo de foco', 'capture-footprint': 'Área enquadrada', 'field-of-view': 'Campo de visão', 'optical-axis': 'Eixo óptico', characters: 'Manequins' };

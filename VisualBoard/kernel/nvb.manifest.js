@@ -46,6 +46,8 @@ window.NVB_MANIFEST = {
         'plugins/13f-scene-engine.js',
         'plugins/13g-scene-render.js',
         'plugins/13h-scene-assets.js',
+        'plugins/13i-scene-elevation.js',
+        'plugins/13j-scene-elevation-assets.js',
         'plugins/14-video.js',
         'plugins/14a-video-render.js',
         'plugins/14b-video-export.js',

@@ -19,9 +19,9 @@ definePlugin({
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
     provides: ['automation'],
-    uses: ['sceneBlocking', 'sceneBlockingEngine', 'app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport', 'imageEdit', 'ui.imageEditor', 'audioEdit', 'ui.audioEditor'],
+    uses: ['sceneBlocking', 'sceneElevationAssets', 'sceneBlockingEngine', 'app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport', 'imageEdit', 'ui.imageEditor', 'audioEdit', 'ui.audioEditor'],
     accepts: {
-        'sceneBlocking': '^1.1.0', 'sceneBlockingEngine': '^1.1.0',
+        'sceneBlocking': '^1.1.0', 'sceneElevationAssets': '^1.0.0', 'sceneBlockingEngine': '^1.1.0',
         'automationContract': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'camera': '^1.0.0',
         'assets': '^1.0.0', 'packages': '^1.0.0', 'boards': '^1.0.0', 'instances': '^1.0.0',
         'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'mangaEdit': '^1.0.0',
@@ -903,6 +903,25 @@ definePlugin({
                     lock.cell = input['locked'];
                 return sceneCall(() => B.setLock(String(input['assetId']), Number(input['cell']), lock));
             },
+            'scene_blocking.plan_elevations': async (input) => { const EL = await kernel.require('sceneElevationAssets'); return sceneCall(() => EL.plan(String(input['assetId']), Number(input['cell']), elevOptions(input, false))); },
+            'scene_blocking.generate_elevations': async (input) => { const EL = await kernel.require('sceneElevationAssets'); return sceneCall(() => EL.generate(String(input['assetId']), Number(input['cell']), elevOptions(input, false))); },
+            'scene_blocking.list_elevations': async () => { const EL = await kernel.require('sceneElevationAssets'); return sceneCall(() => ({ elevations: EL.list() })); },
+            'scene_blocking.get_elevation': async (input) => { const EL = await kernel.require('sceneElevationAssets'); return sceneCall(() => ({ ...EL.get(String(input['elevationId'])), status: EL.status(String(input['elevationId'])) })); },
+            'scene_blocking.set_elevation': async (input) => {
+                const EL = await kernel.require('sceneElevationAssets');
+                return sceneCall(() => { const patch = elevOptions(input, true); if (input['autoCameraHeight'] === true)
+                    patch['cameraHeight'] = null; return EL.setOptions(String(input['elevationId']), patch); });
+            },
+            'scene_blocking.refresh_elevations': async (input) => { const EL = await kernel.require('sceneElevationAssets'); return sceneCall(() => EL.refresh(String(input['elevationId']))); },
+            'scene_blocking.export_elevation_svg': async (input) => {
+                const EL = await kernel.require('sceneElevationAssets');
+                return sceneCall(async () => {
+                    const id = String(input['elevationId']), svg = typeof input['view'] === 'string' ? await EL.exportViewSvg(id, input['view']) : await EL.exportSvg(id);
+                    if (svg.length > 900000)
+                        throw Object.assign(new Error('SVG above 900 KB; use visualboard_scene_blocking_save_file with elevationId'), { code: 'LIMIT_EXCEEDED' });
+                    return { elevationId: id, view: input['view'] ?? null, bytes: svg.length, svg };
+                });
+            },
             'scene_blocking.open_editor': async () => {
                 const ui = await kernel.require('ui.imageEditor');
                 await ui.open();
@@ -920,12 +939,34 @@ definePlugin({
             'scene_blocking.prepare_transfer': async (input) => {
                 if (transfers.size >= TRANSFER_MAX_ACTIVE)
                     return fail('LIMIT_EXCEEDED', 'Too many transfers waiting (' + TRANSFER_MAX_ACTIVE + '). Finish or wait for them to expire (2 minutes).');
-                const B = await kernel.require('sceneBlocking');
+                const B = await kernel.require('sceneBlocking'), EL = await kernel.require('sceneElevationAssets');
                 return sceneCall(async () => {
                     const format = String(input['format']), aid = input['assetId'] === undefined ? null : String(input['assetId']);
                     let bytes, mimeType;
                     const cellN = input['cell'] === undefined ? undefined : Number(input['cell']);
-                    if (format === 'svg') {
+                    const eid = input['elevationId'] === undefined ? null : String(input['elevationId']), view = typeof input['view'] === 'string' ? input['view'] : undefined;
+                    if (eid) {
+                        if (format === 'svg') {
+                            bytes = new TextEncoder().encode(view ? await EL.exportViewSvg(eid, view) : await EL.exportSvg(eid));
+                            mimeType = 'image/svg+xml';
+                        }
+                        else if (format === 'png') {
+                            const o = {};
+                            if (view)
+                                o.view = view;
+                            if (typeof input['scale'] === 'number')
+                                o.scale = input['scale'];
+                            bytes = new Uint8Array(await (await EL.exportPng(eid, o)).arrayBuffer());
+                            mimeType = 'image/png';
+                        }
+                        else if (format === 'zip') {
+                            bytes = new Uint8Array(await (await EL.exportZip(eid, { format: 'svg' })).arrayBuffer());
+                            mimeType = 'application/zip';
+                        }
+                        else
+                            throw Object.assign(new Error('format must be svg, png or zip'), { code: 'INVALID_ARGUMENT' });
+                    }
+                    else if (format === 'svg') {
                         if (!aid)
                             throw Object.assign(new Error('assetId is required for svg'), { code: 'INVALID_ARGUMENT' });
                         bytes = new TextEncoder().encode(cellN === undefined ? await B.exportSvg(aid) : await B.exportCellSvg(aid, cellN));
@@ -1353,13 +1394,29 @@ definePlugin({
             };
         }
         /* ---------- image editor helpers ---------- */
+        /** Converte as opções do contrato (lista de manequins) no formato interno (objeto por id). `auto: true` volta ao procedural (null no patch). */
+        function elevOptions(input, patch) {
+            const out = {};
+            for (const k of ['views', 'frameAspect', 'variation', 'cameraHeight'])
+                if (input[k] !== undefined)
+                    out[k] = input[k];
+            if (Array.isArray(input['characters'])) {
+                const chars = {};
+                for (const raw of input['characters']) {
+                    const { id, auto, ...rest } = raw;
+                    chars[String(id)] = patch && auto === true ? null : rest;
+                }
+                out['characters'] = chars;
+            }
+            return out;
+        }
         async function sceneCall(run) {
             try {
                 return toJson(await run());
             }
             catch (err) {
                 const code = String(err.code ?? ''), message = err instanceof Error ? err.message : String(err);
-                if (code === 'INVALID_ARGUMENT' || code === 'INVALID_MODEL' || code === 'NOT_A_SCENE')
+                if (code === 'INVALID_ARGUMENT' || code === 'INVALID_MODEL' || code === 'NOT_A_SCENE' || code === 'NOT_AN_ELEVATION')
                     return fail('INVALID_ARGUMENT', message);
                 if (code === 'NOT_FOUND')
                     return fail('NOT_FOUND', message);
