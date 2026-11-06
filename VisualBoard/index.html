@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: blob: data:; connect-src ws://127.0.0.1:* http://127.0.0.1:* http://localhost:* https:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; media-src 'none'; font-src 'none'; manifest-src 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Narrative Visual Board</title>
-  <link rel="stylesheet" href="styles/main.css?v=8d13ea5">
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 <a class="skip-link" href="#viewport">Skip to canvas</a>
@@ -43,6 +43,7 @@
           <button type="button" class="btn" data-cmd="debug">Depuração</button>
         </div>
       </details>
+      <button type="button" class="btn action-import" data-cmd="open-webtoon" title="Modo Webtoon: tiras verticais para celular, prévia, fatiamento e exportação" aria-label="Abrir o modo Webtoon"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M7 9h10M7 15h10"/></svg><span>Webtoon</span></button>
       <button type="button" class="btn action-import" data-cmd="open-image-editor" title="Editor de imagens: cortar em grade, tirar fundo, trocar cor, montar e exportar" aria-label="Abrir o editor de imagens"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3A3.7 3.7 0 0 0 21 8.7C21 5.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7" r="1"/></svg> <span>Editor de imagens</span></button>
       <button type="button" class="btn action-import" data-cmd="import-images"><svg class="ico" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> <span>Importar imagens</span></button>
       <button type="button" class="btn action-import" data-cmd="import-folder" title="Importar uma pasta inteira (subpastas viram subpacotes)"><span>Importar pasta</span></button>
@@ -265,11 +266,10 @@
 <input type="file" id="file-input-folder" webkitdirectory multiple hidden>
 <input type="file" id="file-input-project" accept=".json,application/json" hidden>
 
-<script src="kernel/build-stamp.js?v=8d13ea5"></script>
-<script src="kernel/kernel.js?v=8d13ea5"></script>
-<script src="kernel/capability-contracts.js?v=8d13ea5"></script>
-<script src="kernel/contract-runtime.js?v=8d13ea5"></script>
-<script src="kernel/nvb.manifest.js?v=8d13ea5"></script>
-<script src="kernel/bootstrap.js?v=8d13ea5"></script>
+<script src="kernel/kernel.js"></script>
+<script src="kernel/capability-contracts.js"></script>
+<script src="kernel/contract-runtime.js"></script>
+<script src="kernel/nvb.manifest.js"></script>
+<script src="kernel/bootstrap.js"></script>
 </body>
 </html>

@@ -19,9 +19,9 @@ definePlugin({
         'panelSets', 'panelTemplates', 'mangaPage', 'mangaEdit', 'exportImport', 'mangaExport',
         'mangaExportPreflight', 'imageCommands', 'imageProcessors'],
     provides: ['automation'],
-    uses: ['sceneBlocking', 'sceneElevationAssets', 'sceneBlockingEngine', 'app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport', 'imageEdit', 'ui.imageEditor', 'audioEdit', 'ui.audioEditor'],
+    uses: ['sceneBlocking', 'sceneElevationAssets', 'webtoon', 'sceneBlockingEngine', 'app', 'ui.dialogs', 'ui.shell', 'assetHub', 'composition', 'spread', 'video', 'videoExport', 'imageEdit', 'ui.imageEditor', 'audioEdit', 'ui.audioEditor'],
     accepts: {
-        'sceneBlocking': '^1.1.0', 'sceneElevationAssets': '^1.0.0', 'sceneBlockingEngine': '^1.1.0',
+        'sceneBlocking': '^1.1.0', 'webtoon': '^1.0.0', 'sceneElevationAssets': '^1.0.0', 'sceneBlockingEngine': '^1.1.0',
         'automationContract': '^1.0.0', 'state': '^1.0.0', 'history': '^1.0.0', 'camera': '^1.0.0',
         'assets': '^1.0.0', 'packages': '^1.0.0', 'boards': '^1.0.0', 'instances': '^1.0.0',
         'panelSets': '^1.0.0', 'panelTemplates': '^1.0.0', 'mangaPage': '^1.0.0', 'mangaEdit': '^1.0.0',
@@ -1003,6 +1003,80 @@ definePlugin({
                     return { transferId, bytes: bytes.length, sha256, mimeType, format, chunkSize: TRANSFER_MAX_CHUNK, expiresInSeconds: TRANSFER_TTL_MS / 1000 };
                 });
             },
+            'webtoon.get_mode': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.getMode(typeof input['boardId'] === 'string' ? input['boardId'] : undefined)); },
+            'webtoon.list_templates': async () => { const W = await kernel.require('webtoon'); return { templates: toJson(W.templates()), limits: toJson(W.limits()), reference: 'WEBTOON Canvas: 800 px wide, images up to 1280 px tall (configurable; check the platform rules)' }; },
+            'webtoon.list_strips': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => ({ strips: W.list(typeof input['boardId'] === 'string' ? input['boardId'] : undefined) })); },
+            'webtoon.get_strip': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.get(String(input['instanceId']))); },
+            'webtoon.plan_slices': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.plan(String(input['instanceId']), input['settings'])); },
+            'webtoon.set_mode': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.setMode(input['mode'], typeof input['boardId'] === 'string' ? input['boardId'] : undefined)); },
+            'webtoon.create_strip': async (input) => {
+                const W = await kernel.require('webtoon');
+                return webtoonCall(() => {
+                    const o = {};
+                    for (const k of ['name', 'template', 'settings', 'blocks', 'x', 'y'])
+                        if (input[k] !== undefined)
+                            o[k] = input[k];
+                    return W.create(o);
+                });
+            },
+            'webtoon.add_block': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => { const { instanceId, ...spec } = input; return W.addBlock(String(instanceId), spec); }); },
+            'webtoon.set_block': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => { const { instanceId, blockId, ...patch } = input; return W.setBlock(String(instanceId), String(blockId), patch); }); },
+            'webtoon.move_block': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.moveBlock(String(input['instanceId']), String(input['blockId']), Number(input['toIndex']))); },
+            'webtoon.remove_block': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.removeBlock(String(input['instanceId']), String(input['blockId']), { force: input['force'] === true })); },
+            'webtoon.set_settings': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => { const { instanceId, ...patch } = input; return W.setSettings(String(instanceId), patch); }); },
+            'webtoon.convert_from_manga': async (input) => {
+                const W = await kernel.require('webtoon');
+                return webtoonCall(() => { const o = {}; if (Array.isArray(input['pageIds']))
+                    o.pageIds = input['pageIds'].map(String); if (typeof input['gap'] === 'number')
+                    o.gap = input['gap']; if (typeof input['name'] === 'string')
+                    o.name = input['name']; return W.fromMangaPages(o); });
+            },
+            'webtoon.convert_to_manga': async (input) => { const W = await kernel.require('webtoon'); return webtoonCall(() => W.toMangaPages(String(input['instanceId']), typeof input['pageHeight'] === 'number' ? { pageHeight: input['pageHeight'] } : {})); },
+            'webtoon.preview': async (input) => {
+                const W = await kernel.require('webtoon');
+                return webtoonCall(async () => {
+                    const blob = await W.previewBlob(String(input['instanceId']), Number(input['y0']), Number(input['y1']), typeof input['maxWidth'] === 'number' ? input['maxWidth'] : 360);
+                    const r = await blobPayload({ success: true, blob, mimeType: 'image/png', width: 0, height: 0, errors: [], warnings: [] }, 'webtoon preview');
+                    return r;
+                });
+            },
+            'webtoon.prepare_transfer': async (input) => {
+                if (transfers.size >= TRANSFER_MAX_ACTIVE)
+                    return fail('LIMIT_EXCEEDED', 'Too many transfers waiting (' + TRANSFER_MAX_ACTIVE + '). Finish or wait for them to expire (2 minutes).');
+                const W = await kernel.require('webtoon');
+                return webtoonCall(async () => {
+                    const id = String(input['instanceId']), format = String(input['format']);
+                    const o = {};
+                    if (typeof input['jpegQuality'] === 'number')
+                        o.jpegQuality = input['jpegQuality'];
+                    let bytes, mimeType, issues;
+                    if (format === 'zip') {
+                        if (input['imageFormat'] === 'jpeg')
+                            o.format = 'jpeg';
+                        const z = await W.exportZip(id, o);
+                        bytes = new Uint8Array(await z.blob.arrayBuffer());
+                        mimeType = 'application/zip';
+                        issues = z.result.issues;
+                    }
+                    else if (format === 'png' || format === 'jpeg') {
+                        o.format = format;
+                        const seg = typeof input['segment'] === 'number' ? input['segment'] : 1, r = await W.exportSlices(id, o), f = r.files.find(x => x.segment === seg);
+                        if (!f)
+                            throw Object.assign(new Error('Segmento inexistente: ' + seg + ' (a tira tem ' + r.files.length + ')'), { code: 'NOT_FOUND' });
+                        bytes = new Uint8Array(await f.blob.arrayBuffer());
+                        mimeType = 'image/' + format;
+                        issues = r.issues;
+                    }
+                    else
+                        throw Object.assign(new Error('format must be zip, png or jpeg'), { code: 'INVALID_ARGUMENT' });
+                    if (bytes.length > TRANSFER_MAX_BYTES)
+                        throw Object.assign(new Error('File is ' + bytes.length + ' bytes, above the transfer limit of ' + TRANSFER_MAX_BYTES), { code: 'LIMIT_EXCEEDED' });
+                    const transferId = 'xfer-' + hex(window.crypto.getRandomValues(new Uint8Array(8))), sha256 = await sha256Hex(bytes);
+                    const timer = setTimeout(() => transfers.delete(transferId), TRANSFER_TTL_MS);
+                    transfers.set(transferId, { bytes, sha256, expires: Date.now() + TRANSFER_TTL_MS, timer });
+                    return { transferId, bytes: bytes.length, sha256, mimeType, format, chunkSize: TRANSFER_MAX_CHUNK, expiresInSeconds: TRANSFER_TTL_MS / 1000, issues };
+                });
+            },
             'resource.scene_blocking': async () => {
                 const B = await kernel.require('sceneBlocking');
                 return { sheets: toJson(B.list()) };
@@ -1409,6 +1483,21 @@ definePlugin({
                 out['characters'] = chars;
             }
             return out;
+        }
+        async function webtoonCall(run) {
+            try {
+                return toJson(await run());
+            }
+            catch (err) {
+                const code = String(err.code ?? ''), message = err instanceof Error ? err.message : String(err);
+                if (code === 'INVALID_ARGUMENT')
+                    return fail('INVALID_ARGUMENT', message);
+                if (code === 'NOT_FOUND')
+                    return fail('NOT_FOUND', message);
+                if (code === 'LIMIT_EXCEEDED')
+                    return fail('LIMIT_EXCEEDED', message);
+                return fail('OPERATION_REJECTED', message, { webtoonCode: code || undefined });
+            }
         }
         async function sceneCall(run) {
             try {

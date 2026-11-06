@@ -265,7 +265,7 @@ definePlugin({
             if (!ctx)
                 throw new Error('Browser could not allocate export canvas');
             if (!only) {
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = typeof opts.background === 'string' && /^#[0-9a-fA-F]{6}$/.test(opts.background) ? opts.background : '#ffffff';
                 ctx.fillRect(0, 0, W, H);
             }
             // 3) Helper: draw a single layer
