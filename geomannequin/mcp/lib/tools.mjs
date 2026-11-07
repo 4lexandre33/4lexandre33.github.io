@@ -242,6 +242,8 @@ export function registerAll(server, getWorld, opts = {}) {
       altura_olhos: num("Altura da câmera acima do chão, em R.").optional(),
       inclinacao: num("Com altura_olhos: inclinação em graus (0 = horizonte reto).").optional(),
       zoom: num("Tamanho na tela (1 = padrão). Em perspectiva aproxima/afasta a câmera.").optional(),
+      zoom_lente: num("Zoom óptico: nova lente em mm (18 a 200) com a câmera PARADA (posição e alvo não mudam; a foto fecha ou abre a partir do centro). Diferente de lente, que afasta/aproxima para manter o tamanho.").optional(),
+      campo_graus: num("Campo de visão horizontal em graus (5 a 120): abre ou fecha o cone sem mover a câmera.").optional(),
       eixo: z.enum(["x", "-x", "z", "-z", "y"]).optional().describe("Câmera sobre um eixo do mundo, olhando para o centro (y = de cima)."),
       elevacao: z.string().optional().describe("\"alta\" (de cima, plongée), \"muito alta\", \"média\", \"olhos\", \"baixa\" (contra-plongée), \"muito baixa\", ou graus acima do horizonte (\"30\")."),
       plano: z.enum(["plongée", "contra-plongée", "de cima", "nível dos olhos", "de baixo"]).optional(),
@@ -260,10 +262,14 @@ export function registerAll(server, getWorld, opts = {}) {
     if (a.lente !== undefined) c.lente(a.lente);
     if (a.distancia !== undefined) c.distancia(a.distancia);
     if (a.zoom !== undefined) c.zoom(a.zoom);
-    const fit = a.enquadrar !== undefined ? a.enquadrar : !(a.distancia !== undefined || a.zoom !== undefined || a.posicao);
+    if (a.zoom_lente !== undefined) c.zoomLente(a.zoom_lente);
+    if (a.campo_graus !== undefined) c.campo(a.campo_graus);
+    const parada = a.zoom_lente !== undefined || a.campo_graus !== undefined;
+    const fit = a.enquadrar !== undefined ? a.enquadrar : !(a.distancia !== undefined || a.zoom !== undefined || a.posicao || parada);
     if (fit) w.autoFit();
     if (a.altura_olhos !== undefined) { c.alturaOlhos(a.altura_olhos, a.inclinacao); if (fit) w.autoFit(); }
-    return ok(w, "Câmera ajustada.");
+    const li = c.lenteInfo();
+    return ok(w, "Câmera ajustada" + (li.perspectiva ? " — lente " + li.lente + " mm, " + li.campoGraus + "°, " + li.faixa : "") + ".", [], { lente: li });
   }));
 
   server.registerTool("descrever_cena", {
@@ -326,6 +332,7 @@ export function registerAll(server, getWorld, opts = {}) {
       fibras: z.boolean().optional().describe("Linhas finas mostrando a direção das fibras dos músculos."),
       estilo: z.enum(["creme", "azul", "bege", "gelo", "pessego", "lapis", "cinza"]).optional().describe("Paleta do manequim principal no tema claro."),
       sombras: z.boolean().optional(), horizonte: z.boolean().optional(), chao: z.boolean().optional(),
+      pontos_de_fuga_objetos: z.boolean().optional().describe("Guias das arestas dos objetos até os pontos de fuga deles (objetos girados têm os próprios pontos no horizonte; com a câmera inclinada, também o terceiro ponto). Liga o horizonte."),
       atmosfera: num("0 a 1: quanto os manequins distantes clareiam.").optional(),
       linhasOcultas: num("0 a 1: opacidade das linhas que ficam atrás do corpo (0 = escondidas; modo construção usa 0.16).").optional(),
       rosto: z.enum(["completo", "minimo", "liso"]).optional().describe("minimo = só a cruz de construção (estilo Loomis), liso = sem traços no rosto."),
@@ -339,6 +346,7 @@ export function registerAll(server, getWorld, opts = {}) {
     if (a.estilo) w.setStyle(a.estilo);
     if (a.sombras !== undefined) w.setLayer("shadow", a.sombras);
     if (a.horizonte !== undefined) w.setLayer("horizon", a.horizonte);
+    if (a.pontos_de_fuga_objetos !== undefined) w.cena.pontosDeFugaObjetos(a.pontos_de_fuga_objetos);
     if (a.chao !== undefined) w.setLayer("floor", a.chao);
     if (a.fibras !== undefined) w.setLayer("fibras", a.fibras);
     if (a.atmosfera !== undefined) w.cena.atmosfera(a.atmosfera);
@@ -407,7 +415,7 @@ export function registerAll(server, getWorld, opts = {}) {
     const vl = w.encaixar(pl, 520, 340, 34), L = a.largura || 900;
     const cima = await toPng(w.comFundo(w.svgPlanta(d, vc), 520, 420), L), lado = await toPng(w.comFundo(w.svgPerfil(d, vl, modo), 520, 340), L);
     const C = d.camera, info = {
-      camera: { posicao_m: C.pos.map((v, i) => m(i === 1 ? v - d.chao : v)), alvo_m: C.alvo.map((v, i) => m(i === 1 ? v - d.chao : v)), lente_mm: Math.round(C.lente), campo_horizontal_graus: Math.round(C.fovH), perspectiva: C.persp, distancia_ao_alvo_m: m(C.d) },
+      camera: { posicao_m: C.pos.map((v, i) => m(i === 1 ? v - d.chao : v)), alvo_m: C.alvo.map((v, i) => m(i === 1 ? v - d.chao : v)), lente_mm: Math.round(C.lente), campo_horizontal_graus: Math.round(C.fovH), faixa_lente: C.persp ? w.faixaLente(C.lente) : "sem perspectiva", perspectiva: C.persp, distancia_ao_alvo_m: m(C.d) },
       manequins: d.manequins.map(q => ({ nome: q.nome, x_m: m(q.x), z_m: m(q.z), giro: q.giro, profundidade_m: m(q.foto.prof), altura_na_foto: Math.round(q.foto.frac * 100) + "%", na_foto: q.foto.atras ? "atrás da câmera" : !q.foto.dentro ? "fora" : q.foto.inteiro ? "inteiro" : "cortado" })),
       objetos: d.objetos.map(o => ({ nome: o.nome, tipo: o.tipo, cor: o.cor.fill, x_m: m(o.x), z_m: m(o.z), giro: o.giro, sobre: o.sobre ? (d.objetos.find(q => q.id === o.sobre) || {}).nome || null : null }))
     };

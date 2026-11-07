@@ -8,9 +8,9 @@
    janela do navegador. */
 import { P, SCN, UIH, addInst, delInst, dupInst, setActive } from "../scene/modelo.js";
 import { COL, corrigirAtivo, separarObjeto } from "../scene/colisoes.js";
-import { abrirCone, alturaManequim, apontarManequim, girarManequim, girarObjeto, leituraBlocking, medidasObjeto, moverAlvo, moverCamera, moverManequim, moverObjeto, selecionarObjeto } from "../scene/blocking.js";
+import { LENTES, zoomLente, zoomPasso, abrirCone, alturaManequim, apontarManequim, girarManequim, girarObjeto, leituraBlocking, medidasObjeto, moverAlvo, moverCamera, moverManequim, moverObjeto, selecionarObjeto } from "../scene/blocking.js";
 import { adicionarObjeto, duplicarObjeto, editarObjeto, removerObjeto, APOIAVEL } from "../scene/cenario.js";
-import { D, M_R, TIPOS_OBJETO, cameraNoMundo, eixoPerfil, encaixar, svgPerfil, svgPlanta } from "../engine/index.js";
+import { D, M_R, TIPOS_OBJETO, faixaLente, cameraNoMundo, eixoPerfil, encaixar, svgPerfil, svgPlanta } from "../engine/index.js";
 import { render, setQuick, setSettle, settle } from "./palco.js";
 import { syncControls } from "./controles.js";
 import { refreshScene } from "./painel-cena.js";
@@ -143,7 +143,14 @@ function desenhar() {
   const d = dadosCache = leituraBlocking();
   if (visivel("cima")) { E.cimaSvg.innerHTML = svgPlanta(d, ajustarCima(d)); fantasma(); }
   if (visivel("lado")) { E.ladoSvg.innerHTML = svgPerfil(d, ajustarLado(d), vista.lado.modo); bussola(d); }
-  if (!E.painel.hidden && !E.painel.classList.contains("recolhido")) { lista(d); campos(d); }
+  if (!E.painel.hidden && !E.painel.classList.contains("recolhido")) { lista(d); campos(d); mostrarZoom(d); }
+}
+function mostrarZoom(d) {
+  const Z = E.zoom, C = d.camera, mm = C.lente, f = C.persp ? faixaLente(mm) : "sem perspectiva";
+  if (Z.zr.ownerDocument.activeElement !== Z.zr) Z.zr.value = Math.round((Math.log(mm) - Z.lnMin) / (Z.lnMax - Z.lnMin) * 1000);
+  const perto = LENTES.reduce((a, b) => Math.abs(b - mm) < Math.abs(a - mm) ? b : a); Z.zl.value = String(perto);
+  Z.info.textContent = Math.round(mm) + " mm · " + Math.round(C.fovH) + "° · " + f;
+  Z.info.className = "blk-zoom-info " + (C.persp ? "lente-" + { "grande-angular": "grande", normal: "normal", tele: "tele" }[f] : "");
 }
 function pedirDesenho() { if (!pedido) pedido = requestAnimationFrame(desenhar); }
 function bussola(d) {
@@ -271,7 +278,9 @@ function ligarCima() {
       const C = cameraNoMundo(P); arr = w => moverAlvo(snap(C.alvo[0] + w[0] - w0[0]), undefined, snap(C.alvo[2] + w[1] - w0[1]));
     } else if (k.startsWith("cone:")) {
       arr = w => { const C = cameraNoMundo(P), h = Math.hypot(C.frente[0], C.frente[2]) || 1, f = [C.frente[0] / h, C.frente[2] / h], u = [w[0] - C.pos[0], w[1] - C.pos[2]], l = Math.hypot(u[0], u[1]) || 1;
-        abrirCone(2 * Math.acos(Math.max(-1, Math.min(1, (f[0] * u[0] + f[1] * u[1]) / l))) / D); };
+        /* o ângulo no chão encolhe com a inclinação da câmera: tan(meio campo) = tan(ângulo na planta) / cos(inclinação) */
+        const a = Math.acos(Math.max(-1, Math.min(1, (f[0] * u[0] + f[1] * u[1]) / l))), cp = Math.max(0.2, Math.hypot(C.frente[0], C.frente[2]));
+        abrirCone(2 * Math.atan(Math.tan(Math.min(a, 1.45)) / cp) / D); };
     } else {
       /* vazio: arrasta a vista (só a vista; a cena não muda) */
       const cx = v.cx, cy = v.cy; v.auto = false; host.setPointerCapture(e.pointerId);
@@ -281,7 +290,10 @@ function ligarCima() {
     }
     arrastar(host, e, vista.cima, cimaParaMundo, arr, k);
   });
-  host.addEventListener("wheel", e => { e.preventDefault(); const v = vista.cima; v.auto = false; v.s = Math.max(0.5, Math.min(60, v.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); pedirDesenho(); }, { passive: false });
+  host.addEventListener("wheel", e => { e.preventDefault();
+    /* roda sobre o cone (ou com Alt): zoom da lente, com a câmera parada */
+    if (e.altKey || (e.target.closest && e.target.closest(".blk-cone,.blk-cone-borda,.blk-raio"))) { zoomLente((P.lens || 50) * Math.exp(-e.deltaY * 0.0015)); mudou(false); clearTimeout(host._zt); host._zt = setTimeout(() => mudou(true), 200); return; }
+    const v = vista.cima; v.auto = false; v.s = Math.max(0.5, Math.min(60, v.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); pedirDesenho(); }, { passive: false });
 }
 /* arrasto comum às duas vistas: a vista fica parada durante o gesto; ao soltar, corrige colisões (modo "corrigir") */
 function arrastar(host, e, v, conv, arr, k) {
@@ -331,6 +343,8 @@ function ligarLado() {
 function teclado(e) {
   if (e.key === "Escape" && colocar) { pararColocar(); e.preventDefault(); return; }
   if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "+" || e.key === "=") { zoomPasso(1); mudou(true); e.preventDefault(); return; }
+  if (e.key === "-" || e.key === "_") { zoomPasso(-1); mudou(true); e.preventDefault(); return; }
   const p = e.shiftKey ? M_R : M_R / 4, mv = { ArrowLeft: [-p, 0], ArrowRight: [p, 0], ArrowUp: [0, -p], ArrowDown: [0, p] }[e.key];
   const o = SCN.objSel ? objPorId(SCN.objSel) : null, it = SCN.list[SCN.active];
   if (o) {
@@ -422,12 +436,15 @@ export function iniciarBlocking() {
     '<div class="blk-conteudo">' +
     '<div class="blk-inserir"><button type="button" data-p="manequim" class="blk-mais">+ Manequim</button><div class="blk-menu-w"><button type="button" data-p="objeto" class="blk-mais" aria-haspopup="true" aria-expanded="false">+ Objeto ▾</button><div class="blk-menu" role="menu" hidden>' + opcoes + '</div></div>' +
     '<label class="blk-chk"><input type="checkbox" data-p="encaixe" checked> encaixe</label><label class="blk-chk"><input type="checkbox" data-p="persp"> perspectiva</label></div>' +
+    '<div class="blk-zoom" role="group" aria-label="Zoom da lente (a câmera fica parada)"><span class="blk-zoom-tit">Zoom</span><button type="button" data-z="-1" title="Abrir: lente menor, mais campo (grande-angular)" aria-label="Abrir o campo">−</button>' +
+    '<input type="range" data-z="faixa" min="0" max="1000" step="1" aria-label="Lente"><button type="button" data-z="1" title="Fechar: lente maior, menos campo (tele)" aria-label="Fechar o campo">+</button>' +
+    '<select data-z="lista" aria-label="Lente em mm">' + LENTES.map(v => '<option value="' + v + '">' + v + " mm</option>").join("") + '</select><span class="blk-zoom-info" aria-live="polite"></span></div>' +
     '<p class="blk-msg" aria-live="polite"></p>' +
     '<section class="blk-vista" data-vista="cima"><header><h3>Vista de cima</h3><button type="button" data-enq>Enquadrar</button><button type="button" data-destacar title="Destacar esta vista (janela flutuante)">⇱</button><button type="button" data-ocultar title="Esconder/mostrar esta vista">–</button></header><div class="blk-svg-host" data-svg="cima"></div></section>' +
     '<section class="blk-vista" data-vista="lado"><header><h3>Vista lateral</h3><select data-modo aria-label="Olhar de"><option value="camera">do lado da câmera</option><option value="0">frente (+z)</option><option value="90">direita (+x)</option><option value="180">trás (−z)</option><option value="270">esquerda (−x)</option><option value="45">frente-direita</option><option value="135">trás-direita</option><option value="225">trás-esquerda</option><option value="315">frente-esquerda</option></select><span class="blk-bussola" title="De onde a lateral olha (na planta)"><i>↑</i></span><button type="button" data-enq>Enquadrar</button><button type="button" data-destacar title="Destacar esta vista (janela flutuante)">⇱</button><button type="button" data-ocultar title="Esconder/mostrar esta vista">–</button></header><div class="blk-svg-host" data-svg="lado"></div></section>' +
     '<h3 class="blk-sub">Na cena</h3><ul class="blk-lista"></ul>' +
     '<div class="blk-campos"></div>' +
-    '<p class="blk-dica">Arraste para mover; a seta gira o manequim; no objeto selecionado, a bolinha gira e o quadradinho muda o tamanho (na lateral, a altura). Solto sobre uma mesa ou caixa maior, o objeto fica em cima dela (Alt: sem apoiar). Arraste o vazio para mover a vista; roda = zoom. Teclas: setas, Q/E, Delete, Esc. Medidas em metros.</p>' +
+    '<p class="blk-dica">Arraste para mover; a seta gira o manequim; no objeto selecionado, a bolinha gira e o quadradinho muda o tamanho (na lateral, a altura). Solto sobre uma mesa ou caixa maior, o objeto fica em cima dela (Alt: sem apoiar). Arraste o vazio para mover a vista; roda = zoom. Zoom (lente): os botões − e +, a roda sobre o cone ou as teclas + e −; a câmera não sai do lugar. Teclas: setas, Q/E, Delete, Esc. Medidas em metros.</p>' +
     "</div>";
   const q = s => painel.querySelector(s);
   Object.assign(E, { painel, alca: q(".blk-largura"), msg: q(".blk-msg"), lista: q(".blk-lista"), campos: q(".blk-campos"), menu: q(".blk-menu"), bMenu: q('[data-p="objeto"]'),
@@ -451,6 +468,13 @@ export function iniciarBlocking() {
     sec.querySelector("[data-destacar]").addEventListener("click", () => destacar(nome));
     sec.querySelector("[data-ocultar]").addEventListener("click", () => { sec.classList.toggle("fechada"); pedirDesenho(); });
   });
+  /* zoom óptico: escala logarítmica de 18 a 200 mm no controle deslizante; a câmera não se move */
+  const zr = q('[data-z="faixa"]'), zl = q('[data-z="lista"]'), lnMin = Math.log(18), lnMax = Math.log(200);
+  zr.addEventListener("input", () => { zoomLente(Math.exp(lnMin + (lnMax - lnMin) * zr.value / 1000)); mudou(false); });
+  zr.addEventListener("change", () => mudou(true));
+  zl.addEventListener("change", () => { zoomLente(+zl.value); mudou(true); });
+  painel.querySelectorAll('button[data-z]').forEach(b => b.addEventListener("click", () => { zoomPasso(+b.dataset.z); mudou(true); }));
+  E.zoom = { zr, zl, info: q(".blk-zoom-info"), lnMin, lnMax };
   painel.addEventListener("keydown", teclado);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && colocar) pararColocar(); });
   ligarCima(); ligarLado(); ligarCampos(); ligarLargura();

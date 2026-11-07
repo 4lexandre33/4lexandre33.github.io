@@ -83,6 +83,15 @@ async function suite(client, tag) {
   check(r.isError || /usada/.test(JSON.stringify(r)), "objetos: cor repetida é recusada");
   r = await call("objetos", { acao: "adicionar", tipo: "cilindro", x: 20, raio: 1.5, altura: 5 });
   check(!r.isError && r.structuredContent.objetos[0].forma === "cilindro" && r.structuredContent.objetos[0].raio === 1.5, "objetos: cilindro com raio");
+  r = await call("camera", { perspectiva: true, posicao: { x: 10, y: 5, z: 30 }, enquadrar: false });
+  r = await call("camera", { zoom_lente: 120 });
+  check(!r.isError && r.structuredContent.lente.lente === 120 && r.structuredContent.lente.faixa === "tele", "camera: zoom_lente 120 mm (tele)");
+  r = await call("planta_da_cena", {});
+  check(!r.isError && r.structuredContent.camera && Math.abs(r.structuredContent.camera.posicao_m[2] - 30 * 0.114) < 0.05, "zoom da lente não move a câmera (z = " + (r.structuredContent.camera || {}).posicao_m + ")");
+  r = await call("camera", { campo_graus: 74 });
+  check(!r.isError && r.structuredContent.lente.faixa === "grande-angular", "camera: campo de 74° = grande-angular (" + r.structuredContent.lente.lente + " mm)");
+  r = await call("aparencia_cena", { pontos_de_fuga_objetos: true });
+  check(!r.isError, "aparencia_cena: pontos de fuga dos objetos");
   r = await call("editar_manequim", { manequim: "1", sentar: "Cadeira", olhar: "câmera", gesto: { lado: "direita", nome: "joinha" }, articulacoes: [{ nome: "cotovelo esquerdo", dobrar: 200 }, { nome: "pescoço", girar: 20 }] });
   check(!r.isError && /limite/.test((r.structuredContent.avisos || []).join(" ")), "editar_manequim: sentar, olhar, gesto e articulações com limite");
   r = await call("editar_manequim", { manequim: "2", deitar: { tipo: "brucos", eixo: "-z" }, espelhar: true });

@@ -80,7 +80,9 @@ export function iniciarArrastar(){
     syncControls();render();
   });
   stage.addEventListener("wheel",e=>{e.preventDefault();
-    if(P.persp)P.camDist=+clamp(P.camDist*Math.exp(e.deltaY*0.0012),4,200).toFixed(2);else P.zoom=clamp(P.zoom*Math.exp(-e.deltaY*0.0012),0.05,3);
+    /* Alt + roda: zoom óptico (só a lente; a câmera fica parada). Roda sozinha: aproxima ou afasta a câmera. */
+    if(e.altKey){P.persp=1;P.lens=+clamp((P.lens||50)*Math.exp(-e.deltaY*0.0012),18,200).toFixed(1)}
+    else if(P.persp)P.camDist=+clamp(P.camDist*Math.exp(e.deltaY*0.0012),4,200).toFixed(2);else P.zoom=clamp(P.zoom*Math.exp(-e.deltaY*0.0012),0.05,3);
     /* zoom: prévia instantânea (escala o desenho pronto) e o desenho certo logo depois que a roda para */
     previa();clearTimeout(rodaT);rodaT=setTimeout(()=>{syncControls();render()},180)},{passive:false});
   stage.addEventListener("pointerup",endDrag);

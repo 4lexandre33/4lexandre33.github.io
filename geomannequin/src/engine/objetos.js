@@ -36,7 +36,7 @@ function objetoPadrao(tipo, o) {
 function partesLocais(o) {
   const L = o.larg / 2, P = o.prof / 2, A = o.alt, out = [], perna = (x, z, alt) => out.push({ c: [x, alt / 2, z], h: [0.17, alt / 2, 0.17] });
   if (o.tipo === "mesaRedonda") {
-    const t = 0.3; out.push({ cil: true, c: [0, A - t / 2, 0], r: o.raio, hh: t / 2 }); out.push({ cil: true, c: [0, (A - t) / 2, 0], r: Math.max(0.35, o.raio * 0.12), hh: (A - t) / 2 });
+    const t = 0.3, b = 0.2; out.push({ cil: true, c: [0, A - t / 2, 0], r: o.raio, hh: t / 2 }); out.push({ cil: true, c: [0, (A - t + b) / 2, 0], r: Math.max(0.35, o.raio * 0.12), hh: (A - t - b) / 2 });
     out.push({ cil: true, c: [0, 0.1, 0], r: Math.max(0.9, o.raio * 0.45), hh: 0.1 }); return out;
   }
   if (ehCilindro(o)) { out.push({ cil: true, c: [0, A / 2, 0], r: o.raio, hh: A / 2 }); return out; }
@@ -51,7 +51,8 @@ function partesLocais(o) {
     }
   } else if (o.tipo === "cama") {
     /* estrado + colchão e cabeceira (no lado −z local) */
-    out.push({ c: [0, A / 2, 0], h: [L, A / 2, P] });
+    /* colchão até a cabeceira (as peças só se tocam, nunca se atravessam: assim a ordem de desenho fica certa) */
+    out.push({ c: [0, A / 2, 0.25], h: [L, A / 2, P - 0.25] });
     const cb = o.cabeceira || 4.0; out.push({ c: [0, (A + cb) / 2, -P + 0.25], h: [L, (A + cb) / 2, 0.25] });
   } else out.push({ c: [0, A / 2, 0], h: [L, A / 2, P] });
   return out;
@@ -142,7 +143,7 @@ function camInfo(p) {
   const cam = makeXf(Object.assign({}, p, { wRot: 0 })), S = effScale(p), d = Math.max(3, p.camDist || 30);
   const cs = w => cam([w[0] - (p.tx || 0), w[1] - (p.ty || 0), w[2] - (p.tz || 0)]);
   const tela = q => { const k = p.persp ? d / Math.max(0.2 * d, d - q[2]) : 1; return [CX + S * (q[0] * k + p.panX), CY - S * (q[1] * k + p.panY), q[2]]; };
-  return { cam, cs, tela, d, persp: !!p.persp };
+  return { cam, cs, tela, d, S, persp: !!p.persp };
 }
 function luzCam(p) { const A = (p.lightAz || 0) * D, E = (p.lightEl || 45) * D; return [Math.sin(A) * Math.cos(E), Math.sin(E), Math.cos(A) * Math.cos(E)]; }
 const FACES = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]];
@@ -150,13 +151,14 @@ function cantos(b) { const out = []; for (const sx of [-1, 1]) for (const sy of 
 /* desenha o objeto: faces visíveis com tom pela luz, contorno e sombra no chão; devolve também a profundidade por célula */
 function desenharObjeto(o, p, pal0, g0, L) {
   const pal = paletaObjeto(o, pal0);
-  const ci = camInfo(p), LD = luzCam(p), bs = partesDoObjeto(o, g0), faces = [], cils = [];
+  const ci = camInfo(p), LD = luzCam(p), bs = partesDoObjeto(o, g0), faces = [], grupos = [];
   /* direção da luz no mundo (a luz é fixa na vista): Rᵀ · LD */
   const ex = ci.cam([1, 0, 0]), ey = ci.cam([0, 1, 0]), ez = ci.cam([0, 0, 1]);
   const Lw = [ex[0] * LD[0] + ex[1] * LD[1] + ex[2] * LD[2], ey[0] * LD[0] + ey[1] * LD[1] + ey[2] * LD[2], ez[0] * LD[0] + ez[1] * LD[1] + ez[2] * LD[2]];
   let sombra = "";
   for (const b of bs) {
-    if (b.cil) { cils.push(cilindroFaces(b, ci, LD, faces)); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(cilPontos(b), Lw, g0, ci, pal); continue; }
+    const fs = [], g = { b, fs, cil: null };
+    if (b.cil) { g.cil = cilindroFaces(b, ci, LD, fs); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(cilPontos(b), Lw, g0, ci, pal); grupos.push(g); faces.push(...fs); continue; }
     const C = cantos(b), Cc = C.map(ci.cs), T = Cc.map(ci.tela);
     FACES.forEach(f => {
       const a = Cc[f[0]], bb = Cc[f[1]], c = Cc[f[2]];
@@ -169,8 +171,9 @@ function desenharObjeto(o, p, pal0, g0, L) {
       const olho = p.persp ? [-cen[0], -cen[1], ci.d - cen[2]] : [0, 0, 1];
       if (n[0] * olho[0] + n[1] * olho[1] + n[2] * olho[2] <= 1e-6) return;
       const lum = n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2];
-      faces.push({ pts: f.map(i => T[i]), z: cen[2], lum });
+      fs.push({ pts: f.map(i => T[i]), z: cen[2], lum });
     });
+    grupos.push(g); faces.push(...fs);
     /* sombra no chão: cantos projetados ao longo da luz, casca convexa */
     if (L.shadow && Lw[1] > 0.08) {
       const pts = C.map(w => { const t = (w[1] - g0) / Lw[1]; return ci.tela(ci.cs([w[0] - Lw[0] * t, g0, w[2] - Lw[2] * t])); });
@@ -178,19 +181,106 @@ function desenharObjeto(o, p, pal0, g0, L) {
       if (hull.length > 2) sombra += '<path d="M' + hull.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + pal.shade3 + ';stroke:none;opacity:.34"/>';
     }
   }
-  faces.sort((a, b) => a.z - b.z);
   const tom = l => l > 0.55 ? pal.fill : l > 0.15 ? pal.shade1 : l > -0.25 ? pal.shade2 : pal.shade3;
   let svg = "";
-  for (const fc of faces) {
-    /* lateral do cilindro: tom contínuo (degradê pela luz); faces planas: degraus de tom */
-    const cor = !L.fill ? "none" : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
-    /* lateral do cilindro: só preenchimento (o contorno vem depois, pela silhueta) */
-    if (fc.lado) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? cor : "none") + ';stroke-width:0.7;stroke-linejoin:round"/>';
-    else svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + pal.ink + ';stroke-width:1.5;stroke-linejoin:round"/>';
+  /* peça por peça, na ordem certa (de quem está atrás para quem está na frente); dentro de uma peça convexa, só as faces
+     voltadas para a câmera, que não se cobrem entre si */
+  const ordem = ordenarPartes(grupos, ci, p);
+  for (const g of ordem) {
+    g.fs.sort((a, b) => a.z - b.z);
+    for (const fc of g.fs) {
+      /* lateral do cilindro: tom contínuo (degradê pela luz) e só preenchimento (o contorno vem da silhueta); faces planas: degraus de tom */
+      const cor = !L.fill ? "none" : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
+      if (fc.lado) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? cor : "none") + ';stroke-width:0.7;stroke-linejoin:round"/>';
+      else svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + pal.ink + ';stroke-width:1.5;stroke-linejoin:round"/>';
+    }
+    /* silhueta do cilindro (a projeção de um cilindro é convexa), logo depois das faces dele */
+    if (g.cil) { const h = cascaConvexa(g.cil.pts); if (h.length > 2) svg += '<path d="M' + h.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>'; }
   }
-  /* silhueta de cada cilindro (a projeção de um cilindro é convexa) */
-  cils.forEach(c => { const h = cascaConvexa(c.pts); if (h.length > 2) svg += '<path d="M' + h.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>'; });
-  return { svg, sombra, z: zDasFaces(faces), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [] } };
+  return { svg, sombra, z: zDasFaces(faces), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [], ordemPartes: ordem.map(g => grupos.indexOf(g)) } };
+}
+/* ===== ordem de desenho entre as peças de um objeto =====
+   Cada peça (caixa ou cilindro em pé) é convexa e as peças só se tocam; então entre duas peças sempre há um plano que as
+   separa: horizontal (quando as alturas não se cruzam) ou vertical (quando não se cruzam em planta). A peça do lado oposto
+   ao da câmera vai primeiro. Isso vale de cima, de baixo, com e sem perspectiva (o algoritmo do pintor pelo centro das
+   faces falha: o tampo grande da mesa redonda tem o centro longe e ficava atrás da coluna). */
+function olhoNoMundo(ci, p) {
+  const ex = ci.cam([1, 0, 0]), ey = ci.cam([0, 1, 0]), ez = ci.cam([0, 0, 1]), M = q => [q[0] * ex[0] + q[1] * ex[1] + q[2] * ex[2], q[0] * ey[0] + q[1] * ey[1] + q[2] * ey[2], q[0] * ez[0] + q[1] * ez[1] + q[2] * ez[2]];
+  const v = M([0, 0, 1]);
+  return p.persp ? { pos: [(p.tx || 0) + v[0] * ci.d, (p.ty || 0) + v[1] * ci.d, (p.tz || 0) + v[2] * ci.d] } : { dir: v };
+}
+/* raio da projeção de uma peça num eixo do chão (ax = [x, z] unitário) */
+function raioEixo(b, ax) { return b.cil ? b.r : Math.abs(b.h[0] * (b.e[0][0] * ax[0] + b.e[0][2] * ax[1])) + Math.abs(b.h[2] * (b.e[2][0] * ax[0] + b.e[2][2] * ax[1])); }
+/* plano que separa a de b: {n (de a para b), d} com n·x = d no plano; null se as peças se cruzam */
+function planoSeparador(a, b) {
+  const eps = 1e-4, aT = a.c[1] + a.h[1], aB = a.c[1] - a.h[1], bT = b.c[1] + b.h[1], bB = b.c[1] - b.h[1];
+  if (aT <= bB + eps) return { n: [0, 1, 0], d: (aT + bB) / 2 };
+  if (bT <= aB + eps) return { n: [0, -1, 0], d: -(bT + aB) / 2 };
+  const eixos = [], dx = b.c[0] - a.c[0], dz = b.c[2] - a.c[2], dl = Math.hypot(dx, dz);
+  if (dl > 1e-6) eixos.push([dx / dl, dz / dl]);
+  for (const q of [a, b]) if (!q.cil) for (const k of [0, 2]) eixos.push([q.e[k][0], q.e[k][2]]);
+  /* círculo × retângulo: o eixo do centro do círculo ao ponto mais perto do retângulo */
+  if (a.cil !== b.cil) { const C = a.cil ? a : b, R = a.cil ? b : a, vx = C.c[0] - R.c[0], vz = C.c[2] - R.c[2];
+    const lx = Math.max(-R.h[0], Math.min(R.h[0], vx * R.e[0][0] + vz * R.e[0][2])), lz = Math.max(-R.h[2], Math.min(R.h[2], vx * R.e[2][0] + vz * R.e[2][2]));
+    const px = R.c[0] + lx * R.e[0][0] + lz * R.e[2][0], pz = R.c[2] + lx * R.e[0][2] + lz * R.e[2][2], ux = C.c[0] - px, uz = C.c[2] - pz, ul = Math.hypot(ux, uz);
+    if (ul > 1e-6) eixos.push([ux / ul, uz / ul]); }
+  for (const ax of eixos) {
+    const sa = a.c[0] * ax[0] + a.c[2] * ax[1], sb = b.c[0] * ax[0] + b.c[2] * ax[1], ra = raioEixo(a, ax), rb = raioEixo(b, ax);
+    if (sa + ra <= sb - rb + eps) return { n: [ax[0], 0, ax[1]], d: (sa + ra + sb - rb) / 2 };
+    if (sb + rb <= sa - ra + eps) return { n: [-ax[0], 0, -ax[1]], d: -(sb + rb + sa - ra) / 2 };
+  }
+  return null;
+}
+function ordenarPartes(grupos, ci, p) {
+  const n = grupos.length; if (n < 2) return grupos;
+  const O = olhoNoMundo(ci, p), prof = g => g.fs.length ? g.fs.reduce((s, f) => s + f.z, 0) / g.fs.length : -1e9;
+  /* antes[j] = peças que precisam ir antes de j */
+  const antes = grupos.map(() => new Set());
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const P = planoSeparador(grupos[i].b, grupos[j].b); if (!P) continue;
+    const lado = O.pos ? P.n[0] * O.pos[0] + P.n[1] * O.pos[1] + P.n[2] * O.pos[2] - P.d : P.n[0] * O.dir[0] + P.n[1] * O.dir[1] + P.n[2] * O.dir[2];
+    if (Math.abs(lado) < 1e-9) continue;
+    /* câmera do lado de j (o plano aponta de i para j): i fica atrás, vai primeiro */
+    if (lado > 0) antes[j].add(i); else antes[i].add(j);
+  }
+  const feito = new Set(), out = [];
+  while (out.length < n) {
+    let livres = grupos.map((g, k) => k).filter(k => !feito.has(k) && [...antes[k]].every(q => feito.has(q)));
+    if (!livres.length) livres = grupos.map((g, k) => k).filter(k => !feito.has(k)); /* ciclo (não deveria): pela profundidade */
+    livres.sort((a, b) => prof(grupos[a]) - prof(grupos[b]));
+    feito.add(livres[0]); out.push(grupos[livres[0]]);
+  }
+  return out;
+}
+/* ===== pontos de fuga dos objetos =====
+   Os objetos já são desenhados com a mesma câmera (as arestas convergem sozinhas). Aqui só se desenham as guias: das
+   arestas de cima de cada caixa até os pontos de fuga das direções DELA (um objeto girado tem os seus próprios pontos,
+   sobre o mesmo horizonte) e, com a câmera inclinada, das arestas verticais até o terceiro ponto. */
+function pfObjetosSvg(p, pal, objs, g0) {
+  if (!p.persp || !objs || !objs.length) return "";
+  const ci = camInfo(p), o = [], marcas = [];
+  const vp = v => { const c = ci.cam(v); if (c[2] > -1e-3) return null; return [CX + ci.S * (ci.d * c[0] / (-c[2]) + (p.panX || 0)), CY - ci.S * (ci.d * c[1] / (-c[2]) + (p.panY || 0))]; };
+  const dentro = q => q && q[0] > -1.5 * W && q[0] < 2.5 * W && q[1] > -1.5 * H && q[1] < 2.5 * H;
+  for (const ob of objs) {
+    const caixas = partesDoObjeto(ob, g0).filter(b => !b.cil); if (!caixas.length) continue;
+    /* a maior caixa do objeto (tampo, colchão, a própria caixa) */
+    const b = caixas.reduce((a, c) => a.h[0] * a.h[2] >= c.h[0] * c.h[2] ? a : c);
+    const cor = (ob._cor && ob._cor.ink) || pal.cobalt, topo = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, k]) => [0, 1, 2].map(q => b.c[q] + b.e[0][q] * i * b.h[0] + b.e[1][q] * b.h[1] + b.e[2][q] * k * b.h[2]));
+    const T = topo.map(w => ci.tela(ci.cs(w)));
+    let d = "";
+    for (const k of [0, 2]) {
+      for (const sg of [1, -1]) {
+        const v = b.e[k].map(x => x * sg), q = vp(v); if (!dentro(q)) continue;
+        T.forEach(t => { d += "M" + f1(t[0]) + " " + f1(t[1]) + "L" + f1(q[0]) + " " + f1(q[1]); });
+        if (!marcas.some(m => Math.hypot(m[0] - q[0], m[1] - q[1]) < 6)) { marcas.push(q); o.push('<circle cx="' + f1(q[0]) + '" cy="' + f1(q[1]) + '" r="3.5" style="fill:' + cor + ';stroke:none;opacity:.8"/>'); }
+      }
+    }
+    /* terceiro ponto (vertical): só com a câmera inclinada para cima ou para baixo */
+    const q3 = vp([0, -1, 0]) || vp([0, 1, 0]);
+    if (dentro(q3) && Math.abs(p.pitch || 0) > 4) T.forEach(t => { d += "M" + f1(t[0]) + " " + f1(t[1]) + "L" + f1(q3[0]) + " " + f1(q3[1]); });
+    if (d) o.unshift('<path d="' + d + '" style="fill:none;stroke:' + cor + ';stroke-width:0.6;stroke-dasharray:2 5;opacity:.5"/>');
+  }
+  return o.join("");
 }
 /* cilindro: pontos dos círculos de baixo e de cima (no mundo) */
 const NCIL = 40;
@@ -200,7 +290,7 @@ function cilPontos(b) {
   return out;
 }
 /* faces do cilindro: quadriláteros da lateral (só os voltados para a câmera) e as tampas visíveis */
-function cilindroFaces(b, ci, LD, faces) {
+function cilindroFaces(b, ci, LD, faces) { /* faces: lista onde as faces visíveis entram */
   const W0 = cilPontos(b), Cc = W0.map(ci.cs), T = Cc.map(ci.tela), olho = q => ci.persp ? [-q[0], -q[1], ci.d - q[2]] : [0, 0, 1];
   const cen = ci.cs(b.c);
   for (let i = 0; i < NCIL; i++) {
@@ -251,4 +341,4 @@ function zDasFaces(faces) {
   return { x0, y0, w, h, z };
 }
 
-export { colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };
+export { pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };

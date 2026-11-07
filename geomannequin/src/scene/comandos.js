@@ -3,7 +3,7 @@ import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextH
 import { applyParams, num, POSEKEYS } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
-import { leituraBlocking, moverCamera } from "./blocking.js";
+import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { L, setMode, setPreset } from "./modos.js";
@@ -11,7 +11,7 @@ import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
 import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -139,7 +139,7 @@ function apiObjeto(q){
 function painelBlk(acao,arg){const h=UIH.blocking;if(!h)return {aviso:"Sem página: o painel de blocking só existe no app."};return h[acao](arg)}
 function blockingApi(){const d=leituraBlocking(),m=v=>Math.round(v*0.114*100)/100,C=d.camera;
   return {camera:{posicao:C.pos.map((v,i)=>m(i===1?v-d.chao:v)),alvo:C.alvo.map((v,i)=>m(i===1?v-d.chao:v)),lente:Math.round(C.lente),campoGraus:Math.round(C.fovH),perspectiva:C.persp},
-    manequins:d.manequins.map(q=>({nome:q.nome,x:m(q.x),z:m(q.z),giro:q.giro,profundidade:m(q.foto.prof),naFoto:Math.round(q.foto.frac*100),dentro:q.foto.dentro,inteiro:q.foto.inteiro,cor:q.cor.fill})),
+    camera_faixa:C.persp?faixaLente(C.lente):"sem perspectiva",manequins:d.manequins.map(q=>({nome:q.nome,x:m(q.x),z:m(q.z),giro:q.giro,profundidade:m(q.foto.prof),naFoto:Math.round(q.foto.frac*100),dentro:q.foto.dentro,inteiro:q.foto.inteiro,cor:q.cor.fill})),
     objetos:d.objetos.map(o=>Object.assign({nome:o.nome,tipo:o.tipo,forma:o.forma,x:m(o.x),z:m(o.z),giro:o.giro,altura:m(o.alt),base:m(o.base),cor:o.cor.fill,sobre:o.sobre?(d.objetos.find(q=>q.id===o.sobre)||{}).nome||null:null},o.forma==="cilindro"?{raio:m(o.raio)}:{largura:m(o.larg),profundidade:m(o.prof)})),
     colisoes:listaColisoes().map(c=>c.descricao)}}
 Object.assign(blockingApi,{abrir:()=>painelBlk("abrir"),fechar:()=>painelBlk("fechar"),destacar:q=>painelBlk("destacar",q),flutuar:()=>painelBlk("flutuar"),devolver:q=>painelBlk("devolver",q),
@@ -155,6 +155,8 @@ const cena={
   get total(){return SCN.list.length},
   enquadrar(){autoFit()},
   horizonte(on){L.horizon=on!==false&&on!==0;setMode(null);updateModeButtons()},
+  /* guias das arestas dos objetos até os pontos de fuga deles (aparecem com o horizonte ligado) */
+  pontosDeFugaObjetos(on){L.pfObjetos=on!==false&&on!==0;if(L.pfObjetos)L.horizon=true;setMode(null);updateModeButtons()},
   sombras(on){L.shadow=on!==false&&on!==0;setMode(null);updateModeButtons()},
   atmosfera(x){P.atmo=clamp(num(x===undefined?0.4:x,"atmosfera"),0,1)},
   /* modo de desenho: "manequim", "construcao" ou "ecorche" (anatomia limpa, como pranchas de Bridgman/Loomis) */
@@ -210,6 +212,12 @@ const camera={
   distancia(d){camSet("camDist",d,4,200,"distância");return camera},
   /* lente em mm: 18–35 grande-angular (perspectiva forte), 50 normal, 85–200 tele (achata). Mantém o tamanho do alvo na tela. */
   lente(mm,manterTamanho){const z=distToZoom(P);camSet("lens",mm,18,200,"lente");if(manterTamanho!==false)P.camDist=clamp(zoomToDist(P,z),4,200);return camera},
+  /* zoom óptico (a câmera fica parada; só a lente muda): camera.zoomLente(85) em mm, ou camera.zoomLente("2x") / ("0.5x") */
+  zoomLente(v){const t=String(v).trim().replace(",",".");if(/x$/i.test(t)){const k=parseFloat(t);if(!(k>0))throw new Error("Zoom: use mm (18–200) ou um fator como \"2x\".");zoomFator(k)}else zoomLente(num(+t,"lente"));return camera},
+  /* campo de visão horizontal em graus (abre ou fecha o "cone" sem mover a câmera) */
+  campo(graus){abrirCone(num(graus,"graus"));return camera},
+  /* estado da lente: mm, graus, faixa (grande-angular, normal, tele) */
+  lenteInfo(){const C=cameraNoMundo(P);return {lente:Math.round(C.lente),campoGraus:Math.round(C.fovH),faixa:C.persp?faixaLente(C.lente):"sem perspectiva",perspectiva:C.persp}},
   /* altura dos olhos (da câmera) acima do chão, em R; mantém distância e alvo */
   /* olhos da câmera a h R do chão. Sem inclinação (padrão) o horizonte fica exatamente na altura h em todos os manequins. */
   alturaOlhos(h,inclinacao){num(h,"altura");const g0=restGround(SCN.list[0].params),pt=inclinacao===undefined?0:clamp(num(inclinacao,"inclinação"),-70,70);

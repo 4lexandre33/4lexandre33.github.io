@@ -19,7 +19,7 @@ import { chainSetup, legPose } from "./cadeia.js";
 import { armPose } from "./bracos.js";
 import { legDims } from "./pernas.js";
 import { figDepth, floorSvg, vanishSvg } from "./cena.js";
-import { TIPOS_OBJETO, desenharObjeto } from "./objetos.js";
+import { TIPOS_OBJETO, desenharObjeto, pfObjetosSvg } from "./objetos.js";
 
 /* contadores (para testes e para a bancada de desempenho) */
 const ESTAT = { camadas: 0, grupos: 0, composicoes: 0 };
@@ -230,7 +230,7 @@ function comporCamadas(plan, opts) {
   cams.forEach(c => { if (!c.objeto) infos[c.g.membros[0]] = c.res.info; });
   let floorStr = "";
   if (plan.floor && list0.length) { let R = plan.floor; list0.forEach(o => R = Math.max(R, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2))); floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R, 80)); }
-  const guias = L.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) : "";
+  const guias = L.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) + (L.pfObjetos !== false ? pfObjetosSvg(list0[0].p, list0[0].pal, list0.objetos, list0.chao !== undefined ? list0.chao : (list0[0].gy || 0)) : "") : "";
   const lay = (id, nome, s) => opts.inkscape ? '<g id="' + id + '" inkscape:label="' + nome + '"' + ink + ">" + s + "</g>" : (s ? '<g id="' + id + '">' + s + "</g>" : "");
   const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias);
   if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros })) });

@@ -62,6 +62,33 @@ function grade(v, mapa, passoR, eixo) {
   return o.join("");
 }
 
+/* faixa da lente: grande-angular (até 35 mm), normal (35–70), tele (acima de 70) — muda a cor do cone */
+function faixaLente(mm) { return mm < 35 ? "grande-angular" : mm <= 70 ? "normal" : "tele"; }
+function classeLente(C) { return C.persp ? "lente-" + { "grande-angular": "grande", normal: "normal", tele: "tele" }[faixaLente(C.lente)] : "lente-orto"; }
+/* onde um raio da câmera toca o chão (ou, se não toca, um ponto longe na direção dele, na altura do chão) */
+function tocaChao(r, g0, L) {
+  if (r.v[1] < -1e-6) { const t = (g0 - r.o[1]) / r.v[1], h = Math.hypot(r.v[0], r.v[2]) * t;
+    if (h <= L) return [r.o[0] + r.v[0] * t, g0, r.o[2] + r.v[2] * t]; }
+  const h = Math.hypot(r.v[0], r.v[2]) || 1; return [r.o[0] + r.v[0] / h * L, g0, r.o[2] + r.v[2] / h * L];
+}
+/* pegada da foto no chão, na ordem: alto-esq., alto-dir., baixo-dir., baixo-esq. */
+function pegadaNoChao(C, g0, L) { return C.cantos.map(r => tocaChao(r, g0, L)); }
+/* distância no chão (ao longo da mira) em que uma pessoa em pé ocupa a fração f da altura da foto — pela profundidade
+   real (distância ao longo do eixo da câmera, que com a câmera inclinada não é a distância no chão) */
+function distEscala(C, g0, alt, f) {
+  const prof = alt * C.S * C.d / (f * H), hl = Math.hypot(C.frente[0], C.frente[2]); if (hl < 0.05) return null;
+  const s = (prof - (g0 + alt / 2 - C.pos[1]) * C.frente[1]) / hl; return s > 0 ? s : null;
+}
+/* reta (ponto a, direção n) cortada por um polígono convexo no plano: os dois pontos de entrada e saída */
+function cortaPoligono(poly, a, n) {
+  let t0 = 1e9, t1 = -1e9;
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i], q = poly[(i + 1) % poly.length], e = [q[0] - p[0], q[1] - p[1]], den = n[0] * e[1] - n[1] * e[0]; if (Math.abs(den) < 1e-9) continue;
+    const w = [p[0] - a[0], p[1] - a[1]], t = (w[0] * e[1] - w[1] * e[0]) / den, u = (w[0] * n[1] - w[1] * n[0]) / den;
+    if (u >= -1e-6 && u <= 1 + 1e-6) { t0 = Math.min(t0, t); t1 = Math.max(t1, t); }
+  }
+  return t1 > t0 ? [[a[0] + n[0] * t0, a[1] + n[1] * t0], [a[0] + n[0] * t1, a[1] + n[1] * t1]] : null;
+}
 /* ----- vista de cima: x para a direita, z para baixo (o lado da câmera padrão fica embaixo) ----- */
 function svgPlanta(dados, v, opts) {
   opts = opts || {};
@@ -71,25 +98,25 @@ function svgPlanta(dados, v, opts) {
   /* eixos do mundo (x vermelho, z azul, como no chão do palco) */
   { const a = mp([v.cx - 1e3, 0]), b = mp([v.cx + 1e3, 0]), c = mp([0, v.cy - 1e3]), e = mp([0, v.cy + 1e3]);
     o.push('<path d="M' + f1(a[0]) + " " + f1(a[1]) + "L" + f1(b[0]) + " " + f1(b[1]) + '" class="blk-eixo-x"/><path d="M' + f1(c[0]) + " " + f1(c[1]) + "L" + f1(e[0]) + " " + f1(e[1]) + '" class="blk-eixo-z"/>'); }
-  /* campo de visão no chão: raios dos cantos da foto projetados no plano X/Z */
-  const L = Math.max(60, 3 * C.d);
+  /* campo de visão: o que a foto cobre no chão (os 4 raios dos cantos até tocarem o chão, ou até longe se passam do
+     horizonte), as linhas da câmera até esses pontos e, no eixo da mira, as distâncias em que uma pessoa ocupa 100/50/25% */
+  const L = Math.max(60, 3 * C.d), g0 = dados.chao, cls = classeLente(C);
   const hz = r => { const h = Math.hypot(r.v[0], r.v[2]) || 1; return [r.v[0] / h, r.v[2] / h]; };
-  const fh = hz({ v: C.frente }), ang = r => { const u = hz(r); return Math.atan2(fh[0] * u[1] - fh[1] * u[0], fh[0] * u[0] + fh[1] * u[1]); };
-  let rl = C.cantos[0], rr = C.cantos[0]; C.cantos.forEach(r => { if (ang(r) < ang(rl)) rl = r; if (ang(r) > ang(rr)) rr = r; });
-  { const pl = rl.o, pr = rr.o, ul = hz(rl), ur = hz(rr);
-    const A = m3(pl), B = mp([pl[0] + ul[0] * L, pl[2] + ul[1] * L]), Cc = mp([pr[0] + ur[0] * L, pr[2] + ur[1] * L]), Dd = m3(pr);
-    o.push('<path d="M' + [A, B, Cc, Dd].map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-cone' + (C.persp ? "" : " orto") + '"/>');
-    o.push('<path d="M' + f1(A[0]) + " " + f1(A[1]) + "L" + f1(B[0]) + " " + f1(B[1]) + '" class="blk-cone-borda" data-k="cone:l"/>');
-    o.push('<path d="M' + f1(Dd[0]) + " " + f1(Dd[1]) + "L" + f1(Cc[0]) + " " + f1(Cc[1]) + '" class="blk-cone-borda" data-k="cone:r"/>');
-    /* profundidade × escala: com perspectiva, linhas onde uma pessoa em pé ocupa 100%, 50% e 25% da altura da foto */
-    if (C.persp && dados.alturaPessoa) {
-      [1, 0.5, 0.25].forEach(f => {
-        const dd = dados.alturaPessoa * C.S * C.d / (f * H); if (dd > L) return;
-        const pa = [C.pos[0] + fh[0] * dd, C.pos[2] + fh[1] * dd], tl = Math.tan(ang(rl)), tr = Math.tan(ang(rr)), n = [-fh[1], fh[0]];
-        const a1 = mp([pa[0] + n[0] * dd * tl, pa[1] + n[1] * dd * tl]), a2 = mp([pa[0] + n[0] * dd * tr, pa[1] + n[1] * dd * tr]);
-        o.push('<path d="M' + f1(a1[0]) + " " + f1(a1[1]) + "L" + f1(a2[0]) + " " + f1(a2[1]) + '" class="blk-escala"/><text x="' + f1(a2[0] + 4) + '" y="' + f1(a2[1]) + '" class="blk-txt blk-escala-txt">' + Math.round(f * 100) + "%</text>");
-      });
-    }
+  const fh = hz({ v: C.frente });
+  { const pe = pegadaNoChao(C, g0, L), P4 = pe.map(q => m3(q)), c = m3(C.pos);
+    o.push('<path d="M' + P4.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-cone ' + cls + (C.persp ? "" : " orto") + '"/>');
+    /* linhas da câmera aos 4 cantos (com perspectiva saem do olho; sem, são paralelas) */
+    if (C.persp) o.push('<path d="' + P4.map(q => "M" + f1(c[0]) + " " + f1(c[1]) + "L" + f1(q[0]) + " " + f1(q[1])).join("") + '" class="blk-raio ' + cls + '"/>');
+    /* bordas esquerda e direita (arrastáveis: funilam ou abrem a lente) */
+    const ini = C.persp ? "M" + f1(c[0]) + " " + f1(c[1]) + "L" : "M";
+    o.push('<path d="' + ini + f1(P4[3][0]) + " " + f1(P4[3][1]) + "L" + f1(P4[0][0]) + " " + f1(P4[0][1]) + '" class="blk-cone-borda ' + cls + '" data-k="cone:l"/>');
+    o.push('<path d="' + ini + f1(P4[2][0]) + " " + f1(P4[2][1]) + "L" + f1(P4[1][0]) + " " + f1(P4[1][1]) + '" class="blk-cone-borda ' + cls + '" data-k="cone:r"/>');
+    if (C.persp && dados.alturaPessoa) [1, 0.5, 0.25].forEach(f => {
+      const s = distEscala(C, g0, dados.alturaPessoa, f); if (s === null || s > L) return;
+      const pa = [C.pos[0] + fh[0] * s, C.pos[2] + fh[1] * s], n = [-fh[1], fh[0]], cut = cortaPoligono(pe.map(q => [q[0], q[2]]), pa, n); if (!cut) return;
+      const a1 = mp(cut[0]), a2 = mp(cut[1]);
+      o.push('<path d="M' + f1(a1[0]) + " " + f1(a1[1]) + "L" + f1(a2[0]) + " " + f1(a2[1]) + '" class="blk-escala"/><text x="' + f1(a2[0] + 4) + '" y="' + f1(a2[1]) + '" class="blk-txt blk-escala-txt">' + Math.round(f * 100) + "%</text>");
+    });
   }
   /* objetos: cada um na sua cor; partes mais baixas primeiro (o tampo cobre as pernas); alças de girar e de tamanho no selecionado */
   [...(dados.objetos || [])].sort((a, b) => (a.base || 0) - (b.base || 0)).forEach(ob => {
@@ -129,7 +156,7 @@ function svgPlanta(dados, v, opts) {
     o.push('<path d="M' + f1(c[0]) + " " + f1(c[1]) + "L" + f1(t[0]) + " " + f1(t[1]) + '" class="blk-mira"/>');
     o.push('<g data-k="alvo" class="blk-alvo" transform="translate(' + f1(t[0]) + " " + f1(t[1]) + ')"><circle r="7"/><circle r="2"/><path d="M-12 0H-4M4 0H12M0 -12V-4M0 4V12"/></g>');
     o.push('<g data-k="cam" class="blk-cam" transform="translate(' + f1(c[0]) + " " + f1(c[1]) + ") rotate(" + f1(a) + ')"><rect x="-13" y="-8" width="18" height="16" rx="3"/><path d="M5 -5L12 -8V8L5 5Z"/></g>');
-    o.push('<text x="' + f1(c[0]) + '" y="' + f1(c[1] + 22) + '" class="blk-txt blk-info">' + (C.persp ? Math.round(C.lente) + " mm · " + Math.round(C.fovH) + "°" : "sem perspectiva") + "</text>");
+    o.push('<text x="' + f1(c[0]) + '" y="' + f1(c[1] + 22) + '" class="blk-txt blk-info blk-lente-txt ' + classeLente(C) + '">' + (C.persp ? faixaLente(C.lente) + " · " + Math.round(C.lente) + " mm · " + Math.round(C.fovH) + "°" : "sem perspectiva") + "</text>");
   }
   o.push("</svg>");
   return o.join("");
@@ -153,15 +180,21 @@ function svgPerfil(dados, v, modo) {
   { const a = mp([v.cx - 1e3, g0]), b = mp([v.cx + 1e3, g0]), base = mp([v.cx, g0 - 1e3]);
     o.push('<path d="M' + f1(a[0]) + " " + f1(a[1]) + "L" + f1(b[0]) + " " + f1(b[1]) + "V" + f1(base[1]) + "H" + f1(a[0]) + 'Z" class="blk-chao"/><path d="M' + f1(a[0]) + " " + f1(a[1]) + "L" + f1(b[0]) + " " + f1(b[1]) + '" class="blk-chao-linha"/>');
     for (let m = 0; m <= 4; m += 0.5) { const p = mp([0, g0 + m * M_R]); p[0] = 0; o.push('<path d="M2 ' + f1(p[1]) + "H" + (m % 1 ? 8 : 14) + '" class="blk-regua"/>' + (m % 1 ? "" : '<text x="17" y="' + f1(p[1] + 3) + '" class="blk-txt blk-regua-txt">' + m + " m</text>")); } }
-  /* campo de visão vertical: raios do alto e de baixo da foto (no meio da largura) no plano do perfil */
-  { const L = Math.max(60, 3 * C.d), top = C.raio(W / 2, 0), bot = C.raio(W / 2, H);
-    const fim = r => { const h = Math.hypot(r.v[0], r.v[1], r.v[2]) || 1; return [r.o[0] + r.v[0] / h * L, r.o[1] + r.v[1] / h * L, r.o[2] + r.v[2] / h * L]; };
-    const pts = [top.o, fim(top), fim(bot), bot.o].map(m3);
-    o.push('<path d="M' + pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-cone' + (C.persp ? "" : " orto") + '"/>');
-    /* profundidade × escala (modo câmera): linhas verticais com o tamanho de uma pessoa em pé na foto */
+  /* campo de visão vertical: raios do alto e de baixo da foto (no meio da largura), recortados no chão */
+  { const L = Math.max(60, 3 * C.d), cls = classeLente(C), top = C.raio(W / 2, 0), bot = C.raio(W / 2, H);
+    const fim = r => { if (r.v[1] < -1e-6) { const t = (g0 - r.o[1]) / r.v[1], h = Math.hypot(r.v[0], r.v[2]) * t; if (h <= L) return { p: [r.o[0] + r.v[0] * t, g0, r.o[2] + r.v[2] * t], chao: true }; }
+      const h = Math.hypot(r.v[0], r.v[1], r.v[2]) || 1, k = L / Math.max(0.05, Math.hypot(r.v[0], r.v[2]) / h); return { p: [r.o[0] + r.v[0] / h * k, r.o[1] + r.v[1] / h * k, r.o[2] + r.v[2] / h * k], chao: false }; };
+    const ft = fim(top), fb = fim(bot), pts = [top.o, ft.p];
+    /* se os dois raios tocam o chão, o fundo do cone é o trecho de chão entre eles */
+    pts.push(fb.p, bot.o);
+    const ps = pts.map(m3);
+    o.push('<path d="M' + ps.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-cone ' + cls + (C.persp ? "" : " orto") + '"/>');
+    o.push('<path d="M' + f1(ps[0][0]) + " " + f1(ps[0][1]) + "L" + f1(ps[1][0]) + " " + f1(ps[1][1]) + "M" + f1(ps[3][0]) + " " + f1(ps[3][1]) + "L" + f1(ps[2][0]) + " " + f1(ps[2][1]) + '" class="blk-raio ' + cls + '"/>');
+    [ft, fb].forEach(q => { if (q.chao) { const c = m3(q.p); o.push('<circle cx="' + f1(c[0]) + '" cy="' + f1(c[1]) + '" r="3" class="blk-toque ' + cls + '"/>'); } });
+    /* profundidade × escala (modo câmera): onde uma pessoa em pé ocupa 100/50/25% da altura da foto */
     if (C.persp && dados.alturaPessoa && (!modo || modo === "camera")) [1, 0.5, 0.25].forEach(f => {
-      const dd = dados.alturaPessoa * C.S * C.d / (f * H); if (dd > L) return;
-      const p = mp([dd, g0]), q = mp([dd, g0 + dados.alturaPessoa * 1.6]);
+      const sd = distEscala(C, g0, dados.alturaPessoa, f); if (sd === null || sd > L) return;
+      const p = mp([sd, g0]), q = mp([sd, g0 + dados.alturaPessoa]);
       o.push('<path d="M' + f1(p[0]) + " " + f1(p[1]) + "V" + f1(q[1]) + '" class="blk-escala"/><text x="' + f1(q[0]) + '" y="' + f1(q[1] - 3) + '" class="blk-txt blk-escala-txt">' + Math.round(f * 100) + "%</text>");
     });
   }
@@ -209,6 +242,6 @@ function encaixar(pts, w, h, margem) {
   return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, s, w, h };
 }
 /* folha de estilo fixa (tema claro) para usar as vistas fora do app (MCP, exportação) */
-const CSS_PLANTA = "<style>.blk-grade{fill:none;stroke:#CBD4DF;stroke-width:.7}.blk-eixo-x{stroke:#CF4A27;opacity:.55}.blk-eixo-z{stroke:#2B63D9;opacity:.55}.blk-cone{fill:#2B63D9;fill-opacity:.07}.blk-cone-borda{stroke:#2B63D9;stroke-width:1.5;stroke-dasharray:7 4}.blk-escala{stroke:#586577;stroke-width:.8;stroke-dasharray:2 4}.blk-txt{font:10px sans-serif;fill:#586577;text-anchor:middle}.blk-nome{fill:#15212F;font-weight:bold}.blk-escala-txt{text-anchor:start;fill:#2B63D9}.blk-info-t{font-weight:normal;fill:#586577}.blk-regua-txt{text-anchor:start}.blk-obj{fill:#E4E4EB;stroke:#586577;stroke-width:1.2}.blk-alca{fill:#fff;stroke:#2B63D9;stroke-width:1.5}.blk-col{fill:#CF4A27;fill-opacity:.2;stroke:#CF4A27;stroke-width:1.6}.blk-obj-txt{font-weight:bold}.blk-seta{stroke:#fff}.blk-sel{fill:none;stroke:#2B63D9;stroke-width:1.4;stroke-dasharray:4 3}.blk-sel-seta{fill:#2B63D9}.blk-mira{stroke:#586577;stroke-width:.8}.blk-alvo{fill:none;stroke:#CF4A27;stroke-width:1.5}.blk-cam rect,.blk-cam path{fill:#CF4A27;stroke:#15212F;stroke-width:1.2}.blk-chao{fill:#EAEFF4}.blk-chao-linha{stroke:#15212F;stroke-width:1.4}.blk-regua{stroke:#586577}.blk-prumo{stroke:#586577;stroke-dasharray:3 3}</style>";
+const CSS_PLANTA = "<style>.blk-grade{fill:none;stroke:#CBD4DF;stroke-width:.7}.blk-eixo-x{stroke:#CF4A27;opacity:.55}.blk-eixo-z{stroke:#2B63D9;opacity:.55}.blk-cone{fill:#2B63D9;fill-opacity:.08;stroke:none}.blk-cone-borda{fill:none;stroke:#2B63D9;stroke-width:1.6;stroke-dasharray:7 4}.blk-raio{fill:none;stroke:#2B63D9;stroke-width:.7;opacity:.5}.blk-toque{fill:#2B63D9}.lente-grande.blk-cone{fill:#0E9F8A}.lente-grande.blk-cone-borda,.lente-grande.blk-raio{stroke:#0E9F8A}.lente-tele.blk-cone{fill:#C2410C}.lente-tele.blk-cone-borda,.lente-tele.blk-raio{stroke:#C2410C}.lente-grande.blk-toque{fill:#0E9F8A}.lente-tele.blk-toque{fill:#C2410C}.blk-lente-txt.lente-grande{fill:#0E9F8A}.blk-lente-txt.lente-tele{fill:#C2410C}.blk-lente-txt.lente-normal{fill:#2B63D9}.blk-escala{stroke:#586577;stroke-width:.8;stroke-dasharray:2 4}.blk-txt{font:10px sans-serif;fill:#586577;text-anchor:middle}.blk-nome{fill:#15212F;font-weight:bold}.blk-escala-txt{text-anchor:start;fill:#2B63D9}.blk-info-t{font-weight:normal;fill:#586577}.blk-regua-txt{text-anchor:start}.blk-obj{fill:#E4E4EB;stroke:#586577;stroke-width:1.2}.blk-alca{fill:#fff;stroke:#2B63D9;stroke-width:1.5}.blk-col{fill:#CF4A27;fill-opacity:.2;stroke:#CF4A27;stroke-width:1.6}.blk-obj-txt{font-weight:bold}.blk-seta{stroke:#fff}.blk-sel{fill:none;stroke:#2B63D9;stroke-width:1.4;stroke-dasharray:4 3}.blk-sel-seta{fill:#2B63D9}.blk-mira{stroke:#586577;stroke-width:.8}.blk-alvo{fill:none;stroke:#CF4A27;stroke-width:1.5}.blk-cam rect,.blk-cam path{fill:#CF4A27;stroke:#15212F;stroke-width:1.2}.blk-chao{fill:#EAEFF4}.blk-chao-linha{stroke:#15212F;stroke-width:1.4}.blk-regua{stroke:#586577}.blk-prumo{stroke:#586577;stroke-dasharray:3 3}</style>";
 function comFundo(svg, w, h) { return svg.replace('class="blk-svg">', 'class="blk-svg" width="' + w + '" height="' + h + '">' + CSS_PLANTA + '<rect width="' + w + '" height="' + h + '" fill="#F9FBFD"/>'); }
-export { CSS_PLANTA, comFundo, M_R, cameraNoMundo, tamanhoNaFoto, svgPlanta, svgPerfil, eixoPerfil, encaixar };
+export { faixaLente, classeLente, pegadaNoChao, distEscala, CSS_PLANTA, comFundo, M_R, cameraNoMundo, tamanhoNaFoto, svgPlanta, svgPerfil, eixoPerfil, encaixar };

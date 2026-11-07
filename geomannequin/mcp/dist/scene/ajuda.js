@@ -141,6 +141,9 @@ export function iniciarAjuda(){
   cena.blocking() — posições em metros (manequins e objetos), profundidade, % da foto, cores e colisões · camera.posicaoMundo() · camera.colocar(x, y, z) (mantém o alvo)
   cena.blocking.abrir() · .fechar() · .recolher() · .destacar("painel" | "cima" | "lateral") · .flutuar() · .devolver() · .lateral("camera" | "frente" | "direita" | graus) · .inserir("mesa") · .estado()
   cena.selecionar("Ana" | 0 | "mesa") — o mesmo que clicar na lista do painel
+  Zoom óptico (a câmera fica parada): camera.zoomLente(85) · camera.zoomLente("2x") · camera.campo(60) (graus) · camera.lenteInfo() — no painel: −/+, roda sobre o cone, teclas + e −; no palco: Alt + roda
+  camera.lente(mm) muda a lente e afasta/aproxima para manter o tamanho; camera.lente(mm, false) = zoomLente
+  cena.pontosDeFugaObjetos(true) — guias das arestas dos objetos até os pontos de fuga deles (objetos girados têm os próprios; com a câmera inclinada, o terceiro ponto)
   cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")
   Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
   m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)

@@ -55,6 +55,12 @@ function moverAlvo(x, y, z) { const C = cameraNoMundo(P); aplicarCameraBlk(C.pos
 /* abertura do campo de visão: ângulo horizontal → lente (filme de 36 mm) */
 function abrirCone(grausH) { P.lens = Math.round(clamp(18 / Math.tan(clamp(grausH, 5, 120) / 2 * D), 18, 200)); if (!P.persp) P.persp = 1; }
 function perspectivaBlk(on) { P.persp = on ? 1 : 0; }
+/* zoom óptico: troca só a lente — posição da câmera e alvo ficam onde estão (a foto fecha ou abre a partir do centro) */
+const LENTES = [18, 24, 28, 35, 50, 70, 85, 105, 135, 200];
+function zoomLente(mm) { if (!P.persp) P.persp = 1; P.lens = Math.round(clamp(mm, 18, 200) * 10) / 10; return P.lens; }
+function zoomFator(k) { return zoomLente((P.lens || 50) * k); }
+/* próxima lente da lista (dir = +1 fecha / tele, −1 abre / grande-angular) */
+function zoomPasso(dir) { const l = P.lens || 50, s = dir > 0 ? LENTES.find(v => v > l + 0.5) : [...LENTES].reverse().find(v => v < l - 0.5); return zoomLente(s || l); }
 /* ===== objetos ===== */
 const achaObj = id => SCN.objetos.find(q => q.id === id);
 /* cabe em cima? (a base do objeto é menor que o tampo do outro) */
@@ -70,4 +76,4 @@ function girarObjeto(id, graus) { const o = achaObj(id); if (!o) return; editarO
 function medidasObjeto(id, m) { const o = achaObj(id); if (!o) return; editarObjeto(o, m); }
 function selecionarObjeto(id) { SCN.objSel = id && achaObj(id) ? id : null; }
 export { cabeEmCima, girarObjeto, medidasObjeto, selecionarObjeto };
-export { chaoBlk, leituraBlocking, moverManequim, girarManequim, apontarManequim, alturaManequim, direcaoPara, aplicarCameraBlk, moverCamera, moverAlvo, abrirCone, perspectivaBlk, moverObjeto };
+export { LENTES, zoomLente, zoomFator, zoomPasso, chaoBlk, leituraBlocking, moverManequim, girarManequim, apontarManequim, alturaManequim, direcaoPara, aplicarCameraBlk, moverCamera, moverAlvo, abrirCone, perspectivaBlk, moverObjeto };
