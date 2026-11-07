@@ -70,7 +70,8 @@ function makeFields(doShade,cel){
   }
   blurPlain(FcRaw,FcTmp);blurPlain(FcTmp,Fc);borders(Fc);
   if(doShade){blurMasked(FARaw,FA);blurMasked(FBRaw,FB);blurMasked(FHRaw,FH);blurMasked(FRRaw,FR);
-    if(cel)for(let i=0;i<3;i++){blurMasked(FA,CelTmp);blurMasked(CelTmp,FA);blurMasked(FB,CelTmp);blurMasked(CelTmp,FB)}
+    for(let i=0;i<(cel?3:1);i++){blurMasked(FA,CelTmp);blurMasked(CelTmp,FA);blurMasked(FB,CelTmp);blurMasked(CelTmp,FB)}
+    if(!cel){blurMasked(FH,CelTmp);blurMasked(CelTmp,FH)}
     borders(FA);borders(FB);borders(FH);borders(FR)}
 }
 

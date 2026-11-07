@@ -47,12 +47,13 @@ function scene(p,L,pal,fast,mode){
     const hs=L.hands?M["hand"+i].map(m=>{m.tf=[Ah];return proj(m,Mx,S)}):[];
     /* axila: peitoral (frente) e grande dorsal (atrás) ligam o tronco ao braço e esticam quando o braço sobe */
     const fw=mv(A2.M,[0,0,1]),k=Ad.k,mid=(P,Q,o)=>[0,1,2].map(i=>(P[i]+Q[i])/2+o[i]);
-    const pa=applyA(A2,[s*0.38,F.yJ-0.9,-0.02]),pb=applyA(Aa,[-s*0.08,-0.8,0.17]);
+    /* peitoral → braço: começa escondido dentro do tórax e entra no braço por baixo do deltoide anterior (parede da frente da axila) */
+    const pa=applyA(A2,[s*0.32,F.yJ-0.88,-0.22]),pb=applyA(Aa,[-s*0.1,-0.82,0.08]);
     const la=applyA(A2,[s*0.55,F.yJ-1.35,-0.5]),lb=applyA(Aa,[-s*0.06,-0.62,-0.1]);
     /* músculo esticado fica mais fino */
     const thin=(P,Q,L0)=>Math.pow(clamp(L0/Math.hypot(P[0]-Q[0],P[1]-Q[1],P[2]-Q[2]),0.45,1),0.8);
     const tp=thin(pa,pb,1.3),tl=thin(la,lb,1.25);
-    const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.1)),0.38*k*tp,0.21*k*tp,fw),Mx,S);
+    const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.02)),0.36*k*tp,0.2*k*tp,fw,0.2),Mx,S);
     const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.4*k*tl,0.3*k*tl,fw,0.2),Mx,S);
     arms.push({s,a,f,el,d,ap,Aa,Af,Ah,Ae,hs,pec,lat});
     const wp=Ah.T,ws=xv(wp),ep=Af.T,es=xv(ep);
@@ -134,8 +135,13 @@ function scene(p,L,pal,fast,mode){
     const isSil=k==="sil"||k==="silN"||k==="silH";
     const eps=k==="sil"?0.2:(k==="silN"||k==="silH")?0.05:0.035;
     let dh="",lastH=false;const dv=["","",""];let lastC=-1;
+    /* visibilidade por segmento; nos contornos das peças (silN), trechos visíveis muito curtos são dobras internas soltas e saem */
+    const VIS=new Uint8Array(Math.max(0,n-1));
+    for(let i=0;i<n-1;i++)VIS[i]=visAt((sx[i]+sx[i+1])/2,(sy[i]+sy[i+1])/2,(sz[i]+sz[i+1])/2,eps)?1:0;
+    if(k==="silN"){let i=0;while(i<n-1){if(!VIS[i]){i++;continue}let j=i,len=0;while(j<n-1&&VIS[j]){len+=Math.hypot(sx[j+1]-sx[j],sy[j+1]-sy[j]);j++}
+      if(len<16)for(let q=i;q<j;q++)VIS[q]=0;i=j}}
     for(let i=0;i<n-1;i++){
-      const v=visAt((sx[i]+sx[i+1])/2,(sy[i]+sy[i+1])/2,(sz[i]+sz[i+1])/2,eps);
+      const v=VIS[i];
       const pre="M"+f1(sx[i])+" "+f1(sy[i]),seg="L"+f1(sx[i+1])+" "+f1(sy[i+1]);
       if(!v){if(!lastH)dh+=pre;dh+=seg;lastH=true;lastC=-1;continue}
       lastH=false;
@@ -549,7 +555,7 @@ function scene(p,L,pal,fast,mode){
     };
     draw(head,hSil);if(bust)draw(bust,bSil,"silN");
     arms.forEach(o=>{
-      draw(o.a,silhouette(o.a),"silN");draw(o.f,silhouette(o.f),"silN");draw(o.el,silhouette(o.el),"silN");draw(o.d,silDelt(o.d,o.s),"silN");draw(o.pec,silhouette(o.pec),"silN");draw(o.lat,silhouette(o.lat),"silN");
+      draw(o.a,silhouette(o.a),"silN");draw(o.f,silhouette(o.f),"silN");draw(o.el,silhouette(o.el),"silN");draw(o.d,silDelt(o.d,o.s),"silN");draw(o.pec,silhouette(o.pec),"silH");draw(o.lat,silhouette(o.lat),"silH");
       o.hs.forEach(h=>draw(h,silhouette(h),"silH"));
     });
     legs.forEach(o=>{

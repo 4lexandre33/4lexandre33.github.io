@@ -774,6 +774,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const Mu = muscleDefs(F), pec = Mu.pec, c = F.chestW, ms = F.B.breast < 0.35;
     const fy = (Q) => Q.map(([x, yy]) => [x, Y(yy)]);
     if (ms) linha("peitoral_borda_inferior", "dobra", fr2, fy([[0.2, -1.36], [0.45, -1.33], [0.72 * c, -1.18], [0.92 * c, -0.92], [0.98 * c, -0.62]]), 7);
+    linha("sulco_deltopeitoral", "divisao", fr2, fy([[W2 - 0.62, 0.03], [W2 - 0.66, -0.3], [0.93 * c, -0.62]]), 6, 0.06);
     linha("peitoral_esterno", "divisao", fr2, fy([[0.06, -0.18], [0.07, -0.7], [0.06, -1.3]]), 6, 0.08);
     linha("peitoral_clavicular", "fibra", fr2, fy([[0.12, -0.36], [0.45, -0.42], [0.85 * c, -0.48]]), 6, 0.3);
     const ab = Mu.abs, aw = Mu.aw;
@@ -1794,11 +1795,15 @@ pre.cmdout .ok{color:var(--cobalt)}
       blurMasked(FBRaw, FB);
       blurMasked(FHRaw, FH);
       blurMasked(FRRaw, FR);
-      if (cel) for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < (cel ? 3 : 1); i++) {
         blurMasked(FA, CelTmp);
         blurMasked(CelTmp, FA);
         blurMasked(FB, CelTmp);
         blurMasked(CelTmp, FB);
+      }
+      if (!cel) {
+        blurMasked(FH, CelTmp);
+        blurMasked(CelTmp, FH);
       }
       borders(FA);
       borders(FB);
@@ -2761,11 +2766,11 @@ pre.cmdout .ok{color:var(--cobalt)}
         return proj(m, Mx, S);
       }) : [];
       const fw = mv(A2.M, [0, 0, 1]), k = Ad.k, mid = (P2, Q, o) => [0, 1, 2].map((i2) => (P2[i2] + Q[i2]) / 2 + o[i2]);
-      const pa = applyA(A2, [s * 0.38, F.yJ - 0.9, -0.02]), pb = applyA(Aa, [-s * 0.08, -0.8, 0.17]);
+      const pa = applyA(A2, [s * 0.32, F.yJ - 0.88, -0.22]), pb = applyA(Aa, [-s * 0.1, -0.82, 0.08]);
       const la = applyA(A2, [s * 0.55, F.yJ - 1.35, -0.5]), lb = applyA(Aa, [-s * 0.06, -0.62, -0.1]);
       const thin = (P2, Q, L0) => Math.pow(clamp(L0 / Math.hypot(P2[0] - Q[0], P2[1] - Q[1], P2[2] - Q[2]), 0.45, 1), 0.8);
       const tp = thin(pa, pb, 1.3), tl = thin(la, lb, 1.25);
-      const pec = proj(bandMesh(pa, pb, mid(pa, pb, fw.map((c) => c * 0.1)), 0.38 * k * tp, 0.21 * k * tp, fw), Mx, S);
+      const pec = proj(bandMesh(pa, pb, mid(pa, pb, fw.map((c) => c * 0.02)), 0.36 * k * tp, 0.2 * k * tp, fw, 0.2), Mx, S);
       const lat = proj(bandMesh(la, lb, mid(la, lb, fw.map((c) => -c * 0.12)), 0.4 * k * tl, 0.3 * k * tl, fw, 0.2), Mx, S);
       arms.push({ s, a, f, el, d, ap, Aa, Af, Ah, Ae, hs, pec, lat });
       const wp = Ah.T, ws = xv(wp), ep = Af.T, es = xv(ep);
@@ -2918,8 +2923,26 @@ pre.cmdout .ok{color:var(--cobalt)}
       let dh = "", lastH = false;
       const dv = ["", "", ""];
       let lastC = -1;
+      const VIS = new Uint8Array(Math.max(0, n - 1));
+      for (let i = 0; i < n - 1; i++) VIS[i] = visAt((sx[i] + sx[i + 1]) / 2, (sy[i] + sy[i + 1]) / 2, (sz[i] + sz[i + 1]) / 2, eps) ? 1 : 0;
+      if (k === "silN") {
+        let i = 0;
+        while (i < n - 1) {
+          if (!VIS[i]) {
+            i++;
+            continue;
+          }
+          let j = i, len = 0;
+          while (j < n - 1 && VIS[j]) {
+            len += Math.hypot(sx[j + 1] - sx[j], sy[j + 1] - sy[j]);
+            j++;
+          }
+          if (len < 16) for (let q = i; q < j; q++) VIS[q] = 0;
+          i = j;
+        }
+      }
       for (let i = 0; i < n - 1; i++) {
-        const v = visAt((sx[i] + sx[i + 1]) / 2, (sy[i] + sy[i + 1]) / 2, (sz[i] + sz[i + 1]) / 2, eps);
+        const v = VIS[i];
         const pre = "M" + f1(sx[i]) + " " + f1(sy[i]), seg = "L" + f1(sx[i + 1]) + " " + f1(sy[i + 1]);
         if (!v) {
           if (!lastH) dh += pre;
@@ -3474,8 +3497,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         draw2(o.f, silhouette(o.f), "silN");
         draw2(o.el, silhouette(o.el), "silN");
         draw2(o.d, silDelt(o.d, o.s), "silN");
-        draw2(o.pec, silhouette(o.pec), "silN");
-        draw2(o.lat, silhouette(o.lat), "silN");
+        draw2(o.pec, silhouette(o.pec), "silH");
+        draw2(o.lat, silhouette(o.lat), "silH");
         o.hs.forEach((h) => draw2(h, silhouette(h), "silH"));
       });
       legs.forEach((o) => {

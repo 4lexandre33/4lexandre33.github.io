@@ -71,6 +71,8 @@ function lado(p, F, s) {
   const Mu = muscleDefs(F), pec = Mu.pec, c = F.chestW, ms = F.B.breast < 0.35;
   const fy = Q => Q.map(([x, yy]) => [x, Y(yy)]);
   if (ms) linha("peitoral_borda_inferior", "dobra", fr, fy([[0.2, -1.36], [0.45, -1.33], [0.72 * c, -1.18], [0.92 * c, -0.92], [0.98 * c, -0.62]]), 7);
+  /* sulco deltopeitoral: do terço lateral da clavícula descendo entre o deltoide anterior e o peitoral até a axila */
+  linha("sulco_deltopeitoral", "divisao", fr, fy([[W - 0.62, 0.03], [W - 0.66, -0.3], [0.93 * c, -0.62]]), 6, 0.06);
   linha("peitoral_esterno", "divisao", fr, fy([[0.06, -0.18], [0.07, -0.7], [0.06, -1.3]]), 6, 0.08);
   linha("peitoral_clavicular", "fibra", fr, fy([[0.12, -0.36], [0.45, -0.42], [0.85 * c, -0.48]]), 6, 0.3);
   const ab = Mu.abs, aw = Mu.aw;
