@@ -5,6 +5,7 @@ import { $ } from "./ambiente.js";
 import { L, setMode } from "./modos.js";
 import { CAMK, MAXM, P, SCN, hex2rgb, newInst, nextHue, setP } from "./modelo.js";
 import { DEF, clamp, zoomToDist } from "../engine/index.js";
+import { COL, setModoColisao, setPreferir } from "./colisoes.js";
 
 function applyState(s){
   if(s&&s.scene){loadScene(s.scene);if(s.style&&STYLES[s.style])setStyleName(s.style);
@@ -24,7 +25,7 @@ function applyState(s){
 /* estado da cena (salvar / carregar / JSON) */
 function sceneState(){
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
-  return {active:SCN.active,camera:cam,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;return o})};
+  return {active:SCN.active,camera:cam,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao}};
 }
 function loadScene(sc){
   if(!sc||!Array.isArray(sc.list)||!sc.list.length)throw new Error("JSON da cena sem manequins.");
@@ -33,6 +34,9 @@ function loadScene(sc){
     it.hue=typeof o.hue==="number"?o.hue:null;it.col=o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink)?o.col:null;
     it.congelado=!!o.congelado;it.oculto=!!o.oculto;it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
   SCN.exato=!!sc.exato;
+  /* contatos permitidos (abraço, aperto de mão): guardados como índices na lista */
+  sc.list.slice(0,MAXM).forEach((o,i)=>{if(Array.isArray(o.contato))SCN.list[i].contato=o.contato.filter(j=>Number.isInteger(j)&&SCN.list[j]&&j!==i).map(j=>SCN.list[j].id)});
+  if(sc.colisao&&typeof sc.colisao==="object"){try{if(sc.colisao.modo)setModoColisao(sc.colisao.modo)}catch(e){}try{if(sc.colisao.preferir)setPreferir(sc.colisao.preferir)}catch(e){}COL.composicao=!!sc.colisao.composicao}
   if(SCN.list.length>1&&SCN.list[0].hue===null&&false)SCN.list[0].hue=nextHue();
   SCN.active=clamp(sc.active|0,0,SCN.list.length-1);setP(SCN.list[SCN.active].params);
   if(sc.camera)CAMK.forEach(k=>{const d=SLK[k];if(typeof sc.camera[k]==="number"&&d)P[k]=clamp(sc.camera[k],d.min,d.max)});

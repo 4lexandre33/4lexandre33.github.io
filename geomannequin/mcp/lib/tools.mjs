@@ -321,6 +321,38 @@ export function registerAll(server, getWorld, opts = {}) {
     return { content, structuredContent: { camadas: lista, link: sceneLink(w) } };
   }));
 
+  server.registerTool("colisoes", {
+    title: "Colisões entre manequins",
+    description: "Verifica se algum manequim atravessa outro (mão no quadril do vizinho, braços cruzando, corpos sobrepostos) e, se pedido, corrige. Soluções: auto (testa as outras e muda o mínimo), distancia (afasta no chão), giro (gira no chão), pose (corrige só o braço/perna que entra no outro). Também permite contato proposital (abraço, aperto de mão) entre dois manequins.",
+    inputSchema: {
+      acao: z.enum(["listar", "corrigir", "permitir_contato", "desfazer"]).optional().describe("listar (padrão), corrigir, permitir_contato ou desfazer a última correção."),
+      solucao: z.enum(["auto", "distancia", "giro", "pose"]).optional().describe("Como corrigir (padrão auto)."),
+      manequim: Ref,
+      outro: z.string().optional().describe("Com quem (nome ou índice) — para corrigir só esse par ou permitir contato."),
+      mexer_em: z.enum(["manequim", "outro", "os_dois"]).optional().describe("Quem muda ao corrigir um par (padrão: outro).")
+    },
+    annotations: RW
+  }, guard((a) => {
+    const w = W(), acao = a.acao || "listar";
+    let feitos = [];
+    if (acao === "desfazer") feitos = [w.desfazerColisao() ? "Correção desfeita." : "Nada para desfazer."];
+    else if (acao === "permitir_contato") {
+      if (!a.outro) throw new Error("Informe o outro manequim em 'outro'.");
+      const A = pick(w, a.manequim), B = pick(w, a.outro);
+      w.permitirContato(w.SCN.list.indexOf(A), w.SCN.list.indexOf(B), true); feitos = [`${A.name} e ${B.name} podem encostar sem aviso.`];
+    } else if (acao === "corrigir") {
+      if (a.outro !== undefined) {
+        const A = pick(w, a.manequim), B = pick(w, a.outro), ia = w.SCN.list.indexOf(A), ib = w.SCN.list.indexOf(B);
+        const [i, j] = ia < ib ? [ia, ib] : [ib, ia], m = a.mexer_em || "outro";
+        const quem = m === "os_dois" ? "ambos" : ((m === "manequim") === (ia === i) ? "a" : "b");
+        feitos = w.resolverPar(i, j, a.solucao || "auto", quem);
+      } else feitos = w.resolverTodas(a.solucao || "auto");
+    }
+    const lista = w.listaColisoes();
+    const txt = (feitos.length ? feitos.join("\n") + "\n\n" : "") + (lista.length ? lista.length + " colisão(ões):\n" + lista.map(c => "• " + c.descricao).join("\n") : "Nenhum manequim atravessa outro.");
+    return ok(w, txt, [], { colisoes: lista });
+  }));
+
   server.registerTool("exportar_cena", {
     title: "Exportar cena",
     description: "Devolve a cena em JSON (o mesmo formato do app) e o link. Guarde para recriar a cena depois com carregar_cena.",

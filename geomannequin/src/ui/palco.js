@@ -10,6 +10,8 @@ import { sceneState } from "../scene/estado.js";
 import { styleName } from "../scene/paletas.js";
 import { CX, CY, H, W, comporCamadas, effScale, f1, guardarCamada, prepararCamadas, renderGrupoLocal, renderScene } from "../engine/index.js";
 import { paraleloAtivo, pedirCamada } from "./trabalhadores.js";
+import { COL, colisoesDaCena, composicaoDaCena } from "../scene/colisoes.js";
+import { telaDoMundo } from "../engine/index.js";
 
 /* grade da tela */
 function gridSvg(){
@@ -45,7 +47,7 @@ function draw(){
     });
     r=comporCamadas(plan);camadasInfo=r.camadas;
   }else{r=renderScene(lst,L,rapido,floor,{exato:true});camadasInfo=[]}
-  svgEl.innerHTML=(L.grid?GRID:"")+'<g id="gm-cena">'+wrapStyle(r.svg)+'</g>';
+  svgEl.innerHTML=(L.grid?GRID:"")+'<g id="gm-cena">'+wrapStyle(r.svg)+marcasColisao(lst)+'</g>';
   ULT={S:effScale(P),panX:P.panX,panY:P.panY};
   lastInfo=r.infos[SCN.active]||r.infos[0];
   const i=lastInfo;
@@ -71,6 +73,18 @@ function draw(){
   try{localStorage.setItem("geomannequin.v8",JSON.stringify({scene:sceneState(),layers:L,style:styleName}))}catch(e){}
   clearTimeout(outTimer);if(!drag)outTimer=setTimeout(refreshOut,600);
   if(typeof window!=="undefined"&&window.dispatchEvent)try{window.dispatchEvent(new CustomEvent("gm:desenhou"))}catch(e){}
+}
+/* colisões: círculo nos pontos onde um manequim entra no outro (só na tela; não sai na exportação) */
+function marcasColisao(lst){
+  if(COL.modo==="desligado"||SCN.list.filter(it=>!it.oculto).length<2){COL.ultima=[];return ""}
+  const cs=colisoesDaCena(),cp=COL.composicao?composicaoDaCena():(COL.ultimaComp=[]);if(!cs.length&&!cp.length)return "";
+  const p0=lst[0].p;let g='<g id="gm-colisoes" pointer-events="none">';
+  /* composição: círculo tracejado (não é erro, é aviso de desenho) */
+  cp.forEach(c=>{if(c.pt&&isFinite(c.pt[0]))g+='<circle cx="'+f1(c.pt[0])+'" cy="'+f1(c.pt[1])+'" r="11" style="fill:none;stroke:var(--cobalt);stroke-width:1.6;stroke-dasharray:4 3"/>'});
+  cs.forEach(c=>c.contatos.slice(0,3).forEach((k,i)=>{const q=telaDoMundo(p0,k.ponto);if(!isFinite(q[0])||!isFinite(q[1]))return;
+    const r=i?6:9;g+='<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="'+r+'" style="fill:var(--coral);fill-opacity:.18;stroke:var(--coral);stroke-width:1.8"/>';
+    if(!i)g+='<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="2" style="fill:var(--coral)"/>'}));
+  return g+"</g>";
 }
 /* prévia instantânea para arrastar a tela e dar zoom: só transforma o desenho que já está na tela (não redesenha);
    o desenho certo vem quando o gesto termina */

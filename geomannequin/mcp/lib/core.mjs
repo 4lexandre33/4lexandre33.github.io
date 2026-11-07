@@ -58,7 +58,9 @@ return {
   autoFit, sceneState, loadScene, applyState, apiFor, eyeHeight,
   renderScene, sceneList, W, H, PRESETS, STYLES, BODIES, BPOSES, POSTURES, FACES, ALIAS, SL, LAY, EXAMPLES, REF, MAXM,
   instColors, isDark, DEF, POSEKEYS,
-  cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas
+  cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas,
+  COL, colisoesDaCena, listaColisoes, resolverPar, resolverTodas, desfazerColisao, permitirContato, setModoColisao, setPreferir,
+  composicaoDaCena, ajustarComposicao, setComposicao
 };`;
   const make = new Function("E", src);
   FACTORY = () => make(ENGINE);

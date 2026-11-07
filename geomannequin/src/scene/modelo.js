@@ -69,13 +69,14 @@ function addInst(params,name,silent){
   let mx=-1e9;SCN.list.forEach(it=>mx=Math.max(mx,it.params.wx));
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const it=newInst(Object.assign({},params||{},cam),name);
-  if(!params||params.wx===undefined)it.params.wx=Math.round((mx+4.5)*10)/10;
+  /* 7,5 R (≈ 85 cm) entre centros: com os braços soltos, as mãos de um não entram no vizinho */
+  if(!params||params.wx===undefined)it.params.wx=Math.round((mx+7.5)*10)/10;
   it.hue=nextHue(it);SCN.list.push(it);
   if(!silent)setActive(SCN.list.length-1);
   return it;
 }
 function dupInst(src,silent){
-  const it=addInst(Object.assign({},src.params,{wx:src.params.wx+4,wz:src.params.wz}),src.name+" (cópia)",true);
+  const it=addInst(Object.assign({},src.params,{wx:src.params.wx+7.5,wz:src.params.wz}),src.name+" (cópia)",true);
   if(!silent)setActive(SCN.list.indexOf(it));
   return it;
 }

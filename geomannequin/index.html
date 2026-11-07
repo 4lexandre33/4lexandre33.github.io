@@ -122,6 +122,19 @@
       </div>
       <label class="check-linha"><input type="checkbox" id="cExato"> Modo exato (todos juntos, mais lento)</label>
       <p class="hint camadas-status" id="cStatus" aria-live="polite"></p>
+      <h2>Colisões</h2>
+      <p class="hint camadas-dica">Quando um manequim atravessa outro (mão no quadril do vizinho, braços cruzando), escolha como corrigir: afastar, girar, ajustar a pose ou automático.</p>
+      <label class="sel-linha">Quando houver colisão
+        <select id="colModo"><option value="avisar">Só avisar</option><option value="corrigir">Corrigir ao soltar</option><option value="bloquear">Bloquear ao arrastar</option><option value="desligado">Desligado</option></select></label>
+      <label class="sel-linha">Solução preferida
+        <select id="colPref"><option value="auto">Automática (muda o mínimo)</option><option value="distancia">Afastar no chão</option><option value="giro">Girar no chão</option><option value="pose">Ajustar a pose</option></select></label>
+      <label class="check-linha"><input type="checkbox" id="colComp"> Avisar composição: tangências e cabeça escondida</label>
+      <div id="colLista" class="col-lista"></div>
+      <div class="group poses">
+        <button type="button" id="colTodas">Corrigir todas</button>
+        <button type="button" id="colDesfazer" disabled>Desfazer correção</button>
+      </div>
+      <p class="msg" id="colMsg" aria-live="polite"></p>
       <div id="slScene"></div>
       <h2>Tipo corporal</h2>
       <div class="group poses" role="group" aria-label="Tipo corporal">

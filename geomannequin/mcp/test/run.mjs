@@ -16,7 +16,7 @@ const text = r => (r.content || []).filter(c => c.type === "text").map(c => c.te
 async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
-  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena"].every(t => tools.includes(t)), "17 ferramentas: " + tools.length);
+  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes"].every(t => tools.includes(t)), "18 ferramentas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
   const bad = [];
@@ -64,6 +64,12 @@ async function suite(client, tag) {
   check(!r.isError && img2, "renderizar escuro");
   r = await call("editar_manequim", { manequim: "1", congelar: true, ordem: "frente" });
   check(!r.isError, "congelar e ordem da camada");
+  r = await call("adicionar_manequim", { nome: "Perto", x: 0.4, z: 0.3 });
+  r = await call("colisoes", {});
+  const nCol = (r.structuredContent && r.structuredContent.colisoes || []).length;
+  r = await call("colisoes", { acao: "corrigir", solucao: "auto" });
+  check(!r.isError && nCol > 0 && r.structuredContent.colisoes.length === 0, `colisoes: ${nCol} encontrada(s) e corrigida(s)`);
+  r = await call("remover_manequim", { manequim: "Perto" });
   t0 = Date.now(); r = await call("camadas_da_cena", { foto: "0", incluir_svg: true });
   const fotoImg = (r.content || []).find(c => c.type === "image"), svgC = (r.content || []).find(c => c.resource && /cena-em-camadas/.test(c.resource.uri));
   check(!r.isError && fotoImg && svgC && /inkscape:groupmode="layer"/.test(svgC.resource.text) && r.structuredContent.camadas.some(c => c.congelado), `camadas_da_cena: foto + SVG em camadas (${Date.now() - t0} ms)`);

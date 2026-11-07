@@ -18,6 +18,7 @@ O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), ent
 | `aparencia_cena` | Tema noturno, modo, estilo, sombras, horizonte e pontos de fuga, atmosfera, camadas |
 | `renderizar` | Desenha e devolve PNG + link do app (no ChatGPT aparece num quadro com botão “Abrir no GeoMannequin”) |
 | `camadas_da_cena` | Cena em camadas: ordem (de trás para a frente), congelados/ocultos, quem faz sombra em quem; SVG com uma camada por manequim e foto .svg/.png de um manequim só |
+| `colisoes` | Lista quem atravessa quem e corrige (auto, distancia, giro, pose), permite contato proposital ou desfaz |
 | `listar_cena`, `exportar_cena`, `carregar_cena` | Ver, salvar (JSON) e recarregar (JSON ou link) |
 | `referencia` | Poses rápidas, tipos corporais, parâmetros e limites |
 | `executar_codigo` | Roda o mesmo código do editor do app (`cena.adicionar(...)`, `camera.lente(35)`…). Ligado no modo local; desligado no servidor público |

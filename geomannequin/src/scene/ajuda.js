@@ -6,17 +6,17 @@ const EXAMPLES={
   "Três manequins em fila":`// cria três manequins lado a lado, cada um com sua cor
 cena.limpar();
 const a = cena.ativo;
-a.posicao(-5.5, 0).poseRapida("contrapposto");
+a.posicao(-8, 0).poseRapida("contrapposto");
 const b = cena.adicionar({ nome: "Atleta", x: 0, z: 0, corpo: "atletico" });
 b.poseRapida("erguido");
-const c = cena.adicionar({ nome: "Ana", x: 5.5, z: 0, corpo: { feminino: 0.95, seios: 0.55 } });
+const c = cena.adicionar({ nome: "Ana", x: 8, z: 0, corpo: { feminino: 0.95, seios: 0.55 } });
 c.girar(-25).poseRapida("cintura");
 camera.mirar(0, 6, 0).posicao(4, 9, 30);
 cena.enquadrar();`,
   "Caminhada em grupo":`cena.limpar();
 const lider = cena.ativo.renomear("Líder").poseRapida("caminhando");
 for (let i = 1; i < 4; i++) {
-  lider.copiar().posicao(i * 3, -i * 3).girar(0);
+  lider.copiar().posicao(i * 7.5, -i * 4).girar(0);
 }
 camera.posicao(14, 7, 18).mirar(4, 6, -4);
 camera.perspectiva(true, 34);
@@ -44,6 +44,15 @@ cena.enquadrar();`,
   "Lente: grande-angular × tele":`// mesma cena, troque a lente: 24 mm exagera a distância, 135 mm achata
 camera.perspectiva(true).lente(24);   // experimente 50, 85, 135
 cena.enquadrar();`,
+  "Colisões: fila apertada":`// manequins caminhando perto demais: as mãos entram no vizinho
+cena.limpar();
+cena.ativo.poseRapida("caminhando");
+for (let i = 1; i < 4; i++) cena.adicionar({ x: i * 2.3, z: -i * 1.9 }).poseRapida("caminhando");
+camera.perspectiva(true).girar(-35, -10);
+cena.enquadrar();
+log(cena.colisoes().map(c => c.descricao));
+// corrigir mudando o mínimo (troque por "distancia", "giro" ou "pose"):
+// cena.resolverColisoes({ preferir: "auto" });`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -68,6 +77,11 @@ export function iniciarAjuda(){
   Camadas (cada manequim é uma foto .svg na câmera da cena; só a que muda é refeita):
   m.congelar() · m.descongelar() · m.ocultar() · m.mostrar() · m.frente() · m.tras() · m.ordemAuto() · m.foto() → SVG só dele
   cena.camadas() → ordem e estado · cena.exportarCamadas() → SVG com uma camada por manequim · cena.exato(true) = todos juntos (mais lento)
+  Colisões (um manequim atravessando outro):
+  cena.colisoes() → lista · cena.resolverColisoes({preferir: "auto" | "distancia" | "giro" | "pose"}) · cena.desfazerColisao()
+  cena.colisao("avisar" | "corrigir" | "bloquear" | "desligado", "auto" | "distancia" | "giro" | "pose")
+  m.resolverColisoes("pose") — só este muda · m.permitirContato(outro, true) — abraço, aperto de mão
+  cena.composicao(true) → avisa tangências e cabeças escondidas (só na tela) · cena.ajustarComposicao(0)
   tema("claro" | "escuro" | "sistema") · log(...)
   
   Poses rápidas: ${Object.keys(BPOSES).concat(["cintura","cruzar","ombro"]).join(", ")}

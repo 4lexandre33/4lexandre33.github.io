@@ -7,6 +7,7 @@ import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
+import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
@@ -39,7 +40,13 @@ function apiFor(it){
     frente(){chk();it.ordem=Math.min(99,Math.max(0,...SCN.list.filter(o=>o!==it).map(o=>o.ordem||0))+1);return m},
     tras(){chk();it.ordem=Math.max(-99,Math.min(0,...SCN.list.filter(o=>o!==it).map(o=>o.ordem||0))-1);return m},
     ordemAuto(){chk();it.ordem=0;return m},
-    foto(opts){chk();return fotoSvg(SCN.list.indexOf(it),opts)}
+    foto(opts){chk();return fotoSvg(SCN.list.indexOf(it),opts)},
+    /* colisão: deixa encostar neste outro manequim sem contar como erro (abraço, aperto de mão) */
+    permitirContato(outro,on){chk();const o=typeof outro==="object"&&outro?SCN.list.find(x=>x.name===outro.nome):typeof outro==="number"?SCN.list[outro]:SCN.list.find(x=>x.name===outro);
+      if(!o)throw new Error("Manequim “"+outro+"” não existe.");permitirContato(SCN.list.indexOf(it),SCN.list.indexOf(o),on);return m},
+    /* corrige as colisões deste manequim com os outros (só ele muda): "auto" | "distancia" | "giro" | "pose" */
+    resolverColisoes(metodo){chk();const r=[];SCN.list.forEach((o,j)=>{if(o===it)return;const a=SCN.list.indexOf(it);
+      if(colisoesDaCena().some(c=>(c.a===a&&c.b===j)||(c.a===j&&c.b===a)))r.push(...resolverPar(Math.min(a,j),Math.max(a,j),metodo,a<j?"a":"b"))});r.forEach(t=>LOG.push(["aviso",t]));return m}
   };
   return m;
 }
@@ -63,7 +70,15 @@ const cena={
   /* cena em camadas (padrão) ou exata (todos num z-buffer comum, mais lento) */
   exato(on){SCN.exato=on!==false&&on!==0},
   camadas(){return listaCamadas()},
-  exportarCamadas(opts){return cenaCamadasSvg(opts)}
+  exportarCamadas(opts){return cenaCamadasSvg(opts)},
+  /* colisões entre manequins */
+  colisoes(){return listaColisoes()},
+  colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
+  resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
+  desfazerColisao(){return desfazerColisao()},
+  /* composição 2D (opcional): tangências e cabeças escondidas atrás de outro manequim */
+  composicao(on){if(on!==undefined)setComposicao(on);return composicaoDaCena().map(c=>c.texto)},
+  ajustarComposicao(i){const r=ajustarComposicao(i||0);r.forEach(t=>LOG.push(["aviso",t]));return r}
 };
 function camSet(k,v,min,max,nome){P[k]=clamp(num(v,nome),min,max)}
 const camera={
