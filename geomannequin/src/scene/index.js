@@ -13,6 +13,7 @@ export * from "./modos.js";
 export * from "./estado.js";
 export * from "./enquadrar.js";
 export * from "./poses.js";
+export * from "./camadas-cena.js";
 export * from "./comandos.js";
 export * from "./ajuda.js";
 

@@ -16,7 +16,7 @@ const text = r => (r.content || []).filter(c => c.type === "text").map(c => c.te
 async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
-  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch"].every(t => tools.includes(t)), "16 ferramentas: " + tools.length);
+  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena"].every(t => tools.includes(t)), "17 ferramentas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
   const bad = [];
@@ -62,6 +62,11 @@ async function suite(client, tag) {
   const img2 = (r.content || []).find(c => c.type === "image");
   if (img2) writeFileSync(join(OUT, tag + "_escuro.png"), Buffer.from(img2.data, "base64"));
   check(!r.isError && img2, "renderizar escuro");
+  r = await call("editar_manequim", { manequim: "1", congelar: true, ordem: "frente" });
+  check(!r.isError, "congelar e ordem da camada");
+  t0 = Date.now(); r = await call("camadas_da_cena", { foto: "0", incluir_svg: true });
+  const fotoImg = (r.content || []).find(c => c.type === "image"), svgC = (r.content || []).find(c => c.resource && /cena-em-camadas/.test(c.resource.uri));
+  check(!r.isError && fotoImg && svgC && /inkscape:groupmode="layer"/.test(svgC.resource.text) && r.structuredContent.camadas.some(c => c.congelado), `camadas_da_cena: foto + SVG em camadas (${Date.now() - t0} ms)`);
   r = await call("exportar_cena");
   const json = r.content[0].text;
   check(!r.isError && JSON.parse(json).scene.list.length === 3, "exportar_cena");

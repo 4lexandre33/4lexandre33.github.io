@@ -8,3 +8,9 @@
 .colorrow label{display:flex;align-items:center;gap:6px}
 .colorrow input[type=text]{width:120px;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:5px;padding:3px 6px}
 .colorrow input[type=color]{width:34px;height:24px;border:1px solid var(--rule);border-radius:5px;background:none;padding:0}
+.scene-item .tags{display:flex;gap:4px;margin-left:4px}
+.scene-item .tag{font-size:10.5px;padding:0 5px;border-radius:9px;border:1px solid var(--rule);color:var(--muted);background:var(--paper)}
+.scene-item[data-oculto="true"]{opacity:.55}
+.check-linha{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:6px 0}
+.camadas-status{font-family:var(--font-mono);font-size:11px;min-height:1.2em;margin:2px 0 8px}
+.camadas-dica{margin:0 0 6px}

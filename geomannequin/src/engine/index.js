@@ -25,6 +25,7 @@ export * from "./sombra.js";
 export * from "./contornos.js";
 export * from "./desenho.js";
 export * from "./cena.js";
+export * from "./camadas.js";
 
 iniciarMontagem();
 iniciarZbuffer();

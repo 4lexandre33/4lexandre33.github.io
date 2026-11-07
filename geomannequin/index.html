@@ -106,6 +106,22 @@
         <button type="button" id="mAuto">Cor automática</button>
       </div>
       <p class="msg" id="sceneMsg"></p>
+      <h2>Camadas da cena</h2>
+      <p class="hint camadas-dica">Cada manequim é desenhado sozinho, como uma foto .svg no ângulo da cena, e as fotos são empilhadas. Mexer em um manequim refaz só a foto dele.</p>
+      <div class="group poses" role="group" aria-label="Camada do manequim ativo">
+        <button type="button" id="cOcultar" aria-pressed="false">Ocultar</button>
+        <button type="button" id="cCongelar" aria-pressed="false" title="A foto deste manequim fica fixa: não é refeita, nem quando a câmera muda">Congelar</button>
+        <button type="button" id="cFrente" title="Desenhar este manequim por cima dos outros">Para frente</button>
+        <button type="button" id="cTras" title="Desenhar este manequim por baixo dos outros">Para trás</button>
+        <button type="button" id="cAuto" title="Ordem pela distância da câmera">Ordem automática</button>
+      </div>
+      <div class="group poses" role="group" aria-label="Exportar camadas">
+        <button type="button" id="cFoto" title="SVG só deste manequim, fundo transparente, na posição da cena">Fotografar manequim (.svg)</button>
+        <button type="button" id="cExportar" title="Um SVG com cada manequim numa camada nomeada (Inkscape, Illustrator, Figma, Affinity)">Cena em camadas (.svg)</button>
+        <button type="button" id="cZip" title="Cena em camadas, uma foto por manequim, o chão e a cena em JSON">Baixar camadas (.zip)</button>
+      </div>
+      <label class="check-linha"><input type="checkbox" id="cExato"> Modo exato (todos juntos, mais lento)</label>
+      <p class="hint camadas-status" id="cStatus" aria-live="polite"></p>
       <div id="slScene"></div>
       <h2>Tipo corporal</h2>
       <div class="group poses" role="group" aria-label="Tipo corporal">

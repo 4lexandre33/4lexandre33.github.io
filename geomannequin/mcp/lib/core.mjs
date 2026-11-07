@@ -57,7 +57,8 @@ return {
   get theme(){return THEMES[themeIdx][0]},
   autoFit, sceneState, loadScene, applyState, apiFor, eyeHeight,
   renderScene, sceneList, W, H, PRESETS, STYLES, BODIES, BPOSES, POSTURES, FACES, ALIAS, SL, LAY, EXAMPLES, REF, MAXM,
-  instColors, isDark, DEF, POSEKEYS
+  instColors, isDark, DEF, POSEKEYS,
+  cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas
 };`;
   const make = new Function("E", src);
   FACTORY = () => make(ENGINE);

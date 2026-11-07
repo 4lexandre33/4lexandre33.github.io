@@ -1,5 +1,5 @@
 /* GeoMannequin — exportar SVG/JSON, abas e cópia */
-import { P, sceneList } from "../scene/modelo.js";
+import { P, SCN, sceneList } from "../scene/modelo.js";
 import { L } from "../scene/modos.js";
 import { styleName } from "../scene/paletas.js";
 import { draw, lastInfo } from "./palco.js";
@@ -11,7 +11,7 @@ import { H, W, renderScene } from "../engine/index.js";
 
 /* exportação */
 function exportSvg(){
-  const r=renderScene(sceneList(true),Object.assign({},L,{grid:false}),false,L.floor?16:0);
+  const r=renderScene(sceneList(true),Object.assign({},L,{grid:false}),false,L.floor?16:0,{canal:"export",exato:SCN.exato});
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">\n'+
     '<title>GeoMannequin</title>\n<rect width="'+W+'" height="'+H+'" fill="#FFFFFF"/>\n'+
     wrapStyle(r.svg).replace(/(<path|<circle)/g,"\n$1")+"\n</svg>\n";
@@ -22,8 +22,12 @@ function wrapStyle(svg){
 }
 function exportJson(){return JSON.stringify({app:"GeoMannequin",version:8,scene:sceneState(),layers:L,style:styleName,code:$("code")?$("code").value:""},null,2)}
 let tab="svg";
+/* a caixa de exportação só é atualizada quando está à vista (gerar o SVG de exportação também custa) */
+let outVisivel=true,outSujo=false;
 function refreshOut(){
   const ta=$("out");
+  if(!outVisivel){outSujo=true;return}
+  outSujo=false;
   if(tab==="svg"){ta.value=exportSvg();ta.readOnly=true}
   else if(document.activeElement!==ta){ta.value=exportJson()}
 }
@@ -46,6 +50,7 @@ function fmt(d,v){
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarExportar(){
+  try{if(typeof IntersectionObserver!=="undefined"){outVisivel=false;new IntersectionObserver(es=>{outVisivel=es.some(e=>e.isIntersecting);if(outVisivel&&outSujo)refreshOut()}).observe($("out"))}}catch(e){outVisivel=true}
   window.gmState=()=>({info:lastInfo,P});
   $("tabSvg").addEventListener("click",()=>setTab("svg"));
   $("tabJson").addEventListener("click",()=>setTab("json"));

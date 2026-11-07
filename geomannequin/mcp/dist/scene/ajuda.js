@@ -65,6 +65,9 @@ export function iniciarAjuda(){
   cena.horizonte(true) · cena.sombras(true) · cena.atmosfera(0..1)
   cena.modo("ecorche" | "manequim" | "construcao") · cena.fibras(true)   — écorché: músculos com linhas de borda e tons planos
   Perspectiva: quem está longe fica menor, mais alto na tela (perto do horizonte), com traço mais fino e cor mais clara.
+  Camadas (cada manequim é uma foto .svg na câmera da cena; só a que muda é refeita):
+  m.congelar() · m.descongelar() · m.ocultar() · m.mostrar() · m.frente() · m.tras() · m.ordemAuto() · m.foto() → SVG só dele
+  cena.camadas() → ordem e estado · cena.exportarCamadas() → SVG com uma camada por manequim · cena.exato(true) = todos juntos (mais lento)
   tema("claro" | "escuro" | "sistema") · log(...)
   
   Poses rápidas: ${Object.keys(BPOSES).concat(["cintura","cruzar","ombro"]).join(", ")}

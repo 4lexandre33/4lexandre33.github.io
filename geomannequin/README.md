@@ -6,6 +6,8 @@ Manequim anatômico paramétrico para referência de desenho.
 - **Arquivo único para baixar** (abre com dois cliques, sem internet para o desenho): [`dist/geomannequin.html`](dist/geomannequin.html)
 - **MCP para Claude, ChatGPT e Gemini:** pasta [`mcp/`](mcp/README.md)
 
+**Gerador de cenas em camadas:** com 2 ou mais manequins, cada um é desenhado sozinho, como uma foto .svg tirada pela câmera da cena, e as fotos são empilhadas. Mexer em um manequim refaz só a foto dele (numa cena de 8, cerca de 6× mais rápido); arrastar a tela e o zoom não redesenham nada até soltar; as outras camadas são desenhadas em paralelo em vários núcleos. Dá para congelar um manequim (a foto fica fixa), ocultar, mudar a ordem na pilha, fotografar um manequim só e exportar a cena com uma camada por manequim (Inkscape, Illustrator, Figma, Affinity) ou um .zip com as fotos separadas.
+
 Recursos: três modos de desenho — **Manequim**, **Construção** e **Écorché** (anatomia limpa no estilo Bridgman/Loomis, com linhas de músculo em hierarquia de traço, tons planos e fibras opcionais); poses com limites anatômicos e cinemática inversa, vários manequins na mesma cena com cores exclusivas, perspectiva (lente, altura dos olhos, horizonte e pontos de fuga, sombras no chão, perspectiva atmosférica), modo noturno, editor de comandos em português, exportação SVG/JSON e link de cena.
 
 ## Organização
@@ -47,6 +49,8 @@ geomannequin/
 │  │  ├─ contornos.js    vetorização dos tons, silhueta, preenchimento
 │  │  ├─ desenho.js      desenha um manequim (gera o SVG)
 │  │  ├─ cena.js         vários manequins, chão, horizonte, pontos de fuga
+│  │  ├─ camadas.js      cena em camadas: cada manequim é uma "foto" .svg guardada (cache), compositor com recorte por profundidade
+│  │  ├─ trabalhador.js  Web Worker: desenha camadas em paralelo, fora da thread da página
 │  │  └─ atlas/          ATLAS MUSCULAR (écorché): cada músculo como forma na pele → volume + linhas
 │  │     ├─ tronco.js    peitoral, abdômen, serrátil, oblíquos, grande dorsal, trapézio, escápula, eretores
 │  │     ├─ bracos.js    deltoide (3 feixes), bíceps, braquial, tríceps, braquiorradial, flexores, extensores
@@ -59,6 +63,7 @@ geomannequin/
 │  │  ├─ parametros.js   faixas e rótulos dos parâmetros, nomes em português
 │  │  ├─ modelo.js       manequins da cena, cores exclusivas
 │  │  ├─ tema.js, modos.js, estado.js, enquadrar.js, poses.js
+│  │  ├─ camadas-cena.js foto de um manequim, cena em camadas nomeadas, arquivos para remontar a cena
 │  │  ├─ comandos.js     API em português: cena, camera, tema
 │  │  ├─ ajuda.js        exemplos e referência da API
 │  │  └─ ordem.json      ordem dos módulos (usada pelo MCP)
@@ -68,10 +73,12 @@ geomannequin/
 │     ├─ controles.js    sliders, camadas, botões de pose/corpo/rosto
 │     ├─ painel-cena.js  lista de manequins e cores
 │     ├─ editor.js       editor de comandos
+│     ├─ trabalhadores.js fila de Web Workers (um por núcleo, até 4); sem suporte, desenha na página
+│     ├─ zip.js          .zip simples para baixar as camadas
 │     ├─ exportar.js, link.js, tema.js, modos.js, estilo.js, persistencia.js, inicio.js
 ├─ dist/                 versão em arquivo único (gerada — não edite à mão)
 ├─ ferramentas/          construir.mjs (gera dist/), servir.mjs (servidor local)
-├─ testes/               motor.mjs, cenas.mjs (26 cenas com assinatura de desenho), corpo.mjs (recortes de pescoço, peito, pelve e pernas)
+├─ testes/               motor.mjs, cenas.mjs (26 cenas), corpo.mjs (recortes do corpo), camadas.mjs (camadas × cena exata), desempenho.mjs (bancada)
 └─ mcp/                  servidor MCP
 ```
 

@@ -9,6 +9,7 @@
   "estado.js",
   "enquadrar.js",
   "poses.js",
+  "camadas-cena.js",
   "comandos.js",
   "ajuda.js"
  ],

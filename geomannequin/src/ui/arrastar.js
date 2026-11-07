@@ -1,6 +1,6 @@
 /* GeoMannequin — interação no palco: girar, mover no chão, alças de cinemática inversa, roda do mouse */
 import { $ } from "../scene/ambiente.js";
-import { lastInfo, render, svgEl } from "./palco.js";
+import { lastInfo, previa, render, svgEl } from "./palco.js";
 import { P, SCN, sceneList, setActive } from "../scene/modelo.js";
 import { moveMode, refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
@@ -8,7 +8,7 @@ import { guardArms } from "../scene/poses.js";
 import { D, H, W, bodyProxies, clamp, effScale, ikArm, ikLeg, makeMat, pickAt, ptW, pushOut, shape } from "../engine/index.js";
 
 /* arrastar para girar */
-let drag=null;
+let drag=null,rodaT=null;
 let stage;
 function svgPt(e){
   const r=svgEl.getBoundingClientRect();
@@ -41,7 +41,9 @@ export function iniciarArrastar(){
       P.yaw=Math.round(yaw);
       P.pitch=Math.round(clamp(drag.pitch-(e.clientY-drag.y)*0.4,-70,70));
     }else if(drag.mode==="pan"){
+      /* arrastar a tela: só desloca o desenho pronto; redesenha ao soltar */
       const q=svgPt(e),Sx=effScale(P);P.panX=drag.px+(q[0]-drag.q0[0])/Sx;P.panY=drag.py-(q[1]-drag.q0[1])/Sx;
+      previa();return;
     }else if(drag.mode==="move"){
       const q=svgPt(e),Sx=effScale(P)*drag.w,x1=(q[0]-drag.q0[0])/Sx,z1=(q[1]-drag.q0[1])/Sx/Math.max(0.35,Math.abs(Math.sin(P.pitch*D))||0.35);
       const yw=P.yaw*D;P.wx=clamp(drag.wx+x1*Math.cos(yw)-z1*Math.sin(yw),-30,30);P.wz=clamp(drag.wz+x1*Math.sin(yw)+z1*Math.cos(yw),-30,30);
@@ -67,7 +69,8 @@ export function iniciarArrastar(){
   });
   stage.addEventListener("wheel",e=>{e.preventDefault();
     if(P.persp)P.camDist=+clamp(P.camDist*Math.exp(e.deltaY*0.0012),4,200).toFixed(2);else P.zoom=clamp(P.zoom*Math.exp(-e.deltaY*0.0012),0.05,3);
-    syncControls();render()},{passive:false});
+    /* zoom: prévia instantânea (escala o desenho pronto) e o desenho certo logo depois que a roda para */
+    previa();clearTimeout(rodaT);rodaT=setTimeout(()=>{syncControls();render()},180)},{passive:false});
   stage.addEventListener("pointerup",endDrag);
   stage.addEventListener("pointercancel",endDrag);
 }

@@ -8,7 +8,8 @@
   "scripts": {
     "servir": "node ferramentas/servir.mjs",
     "construir": "node ferramentas/construir.mjs",
-    "testar": "node testes/motor.mjs && node testes/cenas.mjs"
+    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs",
+    "desempenho": "node testes/desempenho.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

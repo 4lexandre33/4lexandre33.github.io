@@ -7,6 +7,7 @@ import { makeXf } from "./camera.js";
 import { PAN, PERSP, camPt, effScale, setCUR_ID, setMULTI, setPAN, setPERSP, setSPAN } from "./projecao.js";
 import { HN, HW, RS, SMN, SMO, hid, hz, setSMO, setSMS, sm, zb } from "./zbuffer.js";
 import { scene } from "./desenho.js";
+import { ULTIMA, pickCamadas, renderCamadas, setUltima } from "./camadas.js";
 
 /* ===== Cena com vários manequins: z-buffer comum, cada manequim com suas cores ===== */
 function restGround(p){const S=shape(p),F=bustFrame(p,S),A=legDims(p);return hipJoint(F,1)[1]-A.L1-A.L2-A.hA}
@@ -67,11 +68,14 @@ function mixC(a,b,t){const A=/^#([0-9a-f]{6})$/i.exec(a||""),B=/^#([0-9a-f]{6})$
   return "#"+[16,8,0].map(sh=>{const u=x>>sh&255,v=y>>sh&255;return Math.round(u+(v-u)*t).toString(16).padStart(2,"0")}).join("")}
 function atmoPal(pal,bg,t){const o={};for(const k in pal)o[k]=mixC(pal[k],bg,k==="ink"?t*0.85:t);return o}
 function figDepth(p){const cam=makeXf(Object.assign({},p,{wRot:0}));return cam([(p.wx||0)-(p.tx||0),(p.wy||0)-6-(p.ty||0),(p.wz||0)-(p.tz||0)])[2]}
-function renderScene(list0,L,fast,floor){
+/* opts.exato: todos num z-buffer comum (modo antigo); sem ele, com 2 ou mais manequins visíveis, a cena é montada em camadas (camadas.js) */
+function renderScene(list0,L,fast,floor,opts){
+  setUltima(null);
+  if(!(opts&&opts.exato)&&list0.filter(o=>!o.p._oculto).length>1)return renderCamadas(list0,L,fast,floor,opts);
   let floorStr="";
   if(floor&&list0.length){let R=floor;list0.forEach(o=>R=Math.max(R,2*Math.ceil((Math.max(Math.abs(o.p.wx||0),Math.abs(o.p.wz||0))+5)/2)));floorStr=floorSvg(list0[0].p,list0[0].gy||0,list0[0].pal,Math.min(R,80))}
   /* quem está atrás da câmera (ou colado nela) não é desenhado */
-  const vis=list0.map(o=>!o.p.persp||figDepth(o.p)<Math.max(3,o.p.camDist||30)-3);
+  const vis=list0.map(o=>!o.p._oculto&&(!o.p.persp||figDepth(o.p)<Math.max(3,o.p.camDist||30)-3));
   const idx=list0.map((o,i)=>i).filter(i=>vis[i]),list=idx.map(i=>list0[i]);
   const hidden={hidden:true,handles:[],bb:null,fit:null};
   const remap=inf=>{const out=list0.map(()=>hidden);idx.forEach((i,k)=>out[i]=inf[k]);return out};
@@ -97,6 +101,6 @@ function renderScene(list0,L,fast,floor){
   }finally{setMULTI(false)}
 }
 function ptW(p,v){const xv0=makeXf(p),cam=makeXf(Object.assign({},p,{wRot:0})),T=cam([(p.wx||0)-(p.tx||0),(p.wy||0)-(p.ty||0),(p.wz||0)-(p.tz||0)]),qz=xv0(v)[2]+T[2],d=Math.max(3,p.camDist||30);return p.persp?d/Math.max(0.2*d,d-qz):1}
-function pickAt(x,y){const k=Math.floor(y/RS)*HW+Math.floor(x/RS);return k>=0&&k<HN?hid[k]:-1}
+function pickAt(x,y){if(ULTIMA)return pickCamadas(x,y);const k=Math.floor(y/RS)*HW+Math.floor(x/RS);return k>=0&&k<HN?hid[k]:-1}
 
 export { restGround, zoomToDist, distToZoom, fitFromBB, floorSvg, vanishSvg, mixC, atmoPal, figDepth, renderScene, ptW, pickAt };

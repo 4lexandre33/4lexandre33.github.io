@@ -22,6 +22,9 @@ import { scapTri } from "./corpo.js";
 import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
 import { atlasBraco } from "./atlas/bracos.js";
 
+/* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
+let CASTERS=[];
+function setCasters(v){return CASTERS=v||[]}
 function scene(p,L,pal,fast,mode){
   setLight(p.lightAz,p.lightEl);
   {const cam=makeXf(Object.assign({},p,{wRot:0})),T=cam([(p.wx||0)-(p.tx||0),(p.wy||0)-(p.ty||0),(p.wz||0)-(p.tz||0)]);setPAN(T);setSPAN([p.panX,p.panY]);setPERSP(p.persp?Math.max(3,p.camDist||20):0)}
@@ -76,7 +79,10 @@ function scene(p,L,pal,fast,mode){
   {const hc=xv(applyA(A3,[0,0,0]));handles.push({k:"head",s:0,P:applyA(A3,[0,0,0]),x:CX+S*hc[0],y:CY-S*hc[1]})}
   const ears=L.ears?[proj(M.earL,Mx,S),proj(M.earR,Mx,S)]:[];
   const all=[head];if(bust)all.push(bust);arms.forEach(o=>{all.push(o.a,o.f,o.el,o.d,o.pec,o.lat);o.hs.forEach(h=>all.push(h))});legs.forEach(o=>{all.push(o.t,o.kn,o.c,o.an,o.ft);o.toes.forEach(m=>all.push(m))});ears.forEach(e=>all.push(e));
-  if(!MULTI){let mx=1;all.forEach(m=>{const n=m.LX.length;for(let i=0;i<n;i+=3){const a=Math.abs(m.LX[i]),b=Math.abs(m.LY[i]);if(a>mx)mx=a;if(b>mx)mx=b}});setSMO(mx+0.3);setSMS(SMN/(2*SMO))}
+  /* só as malhas projetadas: este manequim vai apenas fazer sombra na camada de outro */
+  if(mode==="malhas")return {all};
+  const lanc=mode==="camada"?CASTERS:[];
+  if(!MULTI){let mx=1;all.concat(lanc).forEach(m=>{const n=m.LX.length;for(let i=0;i<n;i+=3){const a=Math.abs(m.LX[i]),b=Math.abs(m.LY[i]);if(a>mx)mx=a;if(b>mx)mx=b}});setSMO(mx+0.3);setSMS(SMN/(2*SMO))}
   /* caixa delimitadora em espaço de câmera (independente de zoom/pan) para o ajuste automático de distância */
   let bbX0=1e9,bbX1=-1e9,bbY0=1e9,bbY1=-1e9;
   all.forEach(m=>{const X=m.X,Y=m.Y,n=X.length;for(let i=0;i<n;i++){const x=X[i],y=Y[i];if(x<bbX0)bbX0=x;if(x>bbX1)bbX1=x;if(y<bbY0)bbY0=y;if(y>bbY1)bbY1=y}});
@@ -110,9 +116,9 @@ function scene(p,L,pal,fast,mode){
   }
   const t=sh.t,chinY=sh.chinY,eyeY=sh.eyeY,mouthY=sh.mouthY;
   const out=[];
-  if(shadow&&mode!=="draw")out.push('<g id="sombra">'+shadow+'</g>');
+  if(shadow&&mode!=="draw"&&mode!=="camada")out.push('<g id="sombra">'+shadow+'</g>');
   /* linhas-guia de proporção: módulo de "cabeças" cobrindo a altura visível inteira */
-  if(L.prop&&!MULTI&&mode!=="draw"){
+  if(L.prop&&!MULTI&&mode!=="draw"&&mode!=="camada"){
     out.push('<g id="proporcao">');
     const nMod=8,x0=Math.max(16,CX-240),x1=Math.min(W-16,CX+240);
     for(let i=1;i<nMod;i++){
@@ -220,7 +226,7 @@ function scene(p,L,pal,fast,mode){
   /* corpo: preenchimento e sombras vetorizados a partir dos campos por pixel */
   const hSil=silhouette(head),bSil=bust?silhouette(bust):[];
   if(!fast&&(L.fill||L.shade)){
-    if(mode!=="draw"){hz.fill(-1e6);sm.fill(-9);hid.fill(-1);all.forEach(m=>{rasterH(m);rasterS(m)})}
+    if(mode!=="draw"){hz.fill(-1e6);sm.fill(-9);hid.fill(-1);all.forEach(m=>{rasterH(m);rasterS(m)});lanc.forEach(m=>rasterS(m))}
     makeFields(!!L.shade,!!L.cel);
     if(L.fill){const d=contourPath(Fc);if(d)out.push('<path d="'+d+'" style="fill:'+pal.fill+';stroke:none;fill-rule:evenodd"/>')}
     if(L.shade){
@@ -602,10 +608,10 @@ function scene(p,L,pal,fast,mode){
     let th=ang/D;th=((th%180)+180)%180;if(th>90)th-=180;
     return {a:mx*S,b:mn*S,th};
   };
-  const info={handles,S,t,chinY,eyeY,fit,bb,depth:PAN[2],
+  const info={handles,S,t,chinY,eyeY,fit,bb,depth:PAN[2],shadow,
     brow:axes(a=>[p.skull*Math.sin(a),0,Math.cos(a)]),
     mer:axes(a=>[0,Math.sin(a),Math.cos(a)])};
   return {svg:out.join(""),info};
 }
 
-export { scene };
+export { scene, CASTERS, setCasters };

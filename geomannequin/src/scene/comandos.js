@@ -6,6 +6,7 @@ import { autoFit, setZoomEff } from "./enquadrar.js";
 import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
+import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
 import { D, DEF, PRESETS, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
@@ -29,7 +30,16 @@ function apiFor(it){
     copiar(){chk();return apiFor(dupInst(it,true))},
     remover(){chk();delInst(it);return null},
     ativar(){chk();SCN.active=SCN.list.indexOf(it);setP(it.params);return m},
-    info(){chk();const c=instColors(it);return {nome:it.name,x:it.params.wx,z:it.params.wz,giro:it.params.wRot,preenchimento:c.fill,contorno:c.ink}}
+    info(){chk();const c=instColors(it);return {nome:it.name,x:it.params.wx,z:it.params.wz,giro:it.params.wRot,preenchimento:c.fill,contorno:c.ink,congelado:!!it.congelado,oculto:!!it.oculto,ordem:it.ordem||0}},
+    /* camadas: congelado vira foto fixa (não é refeito, nem quando a câmera muda); oculto sai da cena; ordem manual na pilha */
+    congelar(on){chk();it.congelado=on!==false&&on!==0;return m},
+    descongelar(){chk();it.congelado=false;return m},
+    ocultar(on){chk();const v=on!==false&&on!==0;if(v&&SCN.list.filter(o=>!o.oculto&&o!==it).length===0)throw new Error("Pelo menos um manequim precisa ficar visível.");it.oculto=v;return m},
+    mostrar(){chk();it.oculto=false;return m},
+    frente(){chk();it.ordem=Math.min(99,Math.max(0,...SCN.list.filter(o=>o!==it).map(o=>o.ordem||0))+1);return m},
+    tras(){chk();it.ordem=Math.max(-99,Math.min(0,...SCN.list.filter(o=>o!==it).map(o=>o.ordem||0))-1);return m},
+    ordemAuto(){chk();it.ordem=0;return m},
+    foto(opts){chk();return fotoSvg(SCN.list.indexOf(it),opts)}
   };
   return m;
 }
@@ -49,7 +59,11 @@ const cena={
   /* modo de desenho: "manequim", "construcao" ou "ecorche" (anatomia limpa, como pranchas de Bridgman/Loomis) */
   modo(nome){const n=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace("construção","construcao");
     if(!PRESETS[n])throw new Error("Modo desconhecido: use \"manequim\", \"construcao\" ou \"ecorche\".");setPreset(n)},
-  fibras(on){L.fibras=on!==false&&on!==0;setMode(null);updateModeButtons()}
+  fibras(on){L.fibras=on!==false&&on!==0;setMode(null);updateModeButtons()},
+  /* cena em camadas (padrão) ou exata (todos num z-buffer comum, mais lento) */
+  exato(on){SCN.exato=on!==false&&on!==0},
+  camadas(){return listaCamadas()},
+  exportarCamadas(opts){return cenaCamadasSvg(opts)}
 };
 function camSet(k,v,min,max,nome){P[k]=clamp(num(v,nome),min,max)}
 const camera={

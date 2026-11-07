@@ -7,10 +7,11 @@ import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
 let P;
 /* ===== Cena: vários manequins, câmera comum, cores exclusivas ===== */
 let UID=0;
-const SCN={list:[],active:0};
+/* exato: todos num z-buffer comum (mais lento); sem ele, cada manequim vira uma camada (foto .svg) guardada em cache */
+const SCN={list:[],active:0,exato:false};
 const CAMK=["yaw","pitch","roll","zoom","panX","panY","lightAz","lightEl","tx","ty","tz","persp","camDist","lens","atmo"];
 const WORLDK=["wx","wy","wz","wRot"];
-function newInst(params,name){UID++;return {id:UID,name:name||("Manequim "+UID),params:Object.assign({},DEF,params||{}),cache:newCache(),hue:null,col:null}}
+function newInst(params,name){UID++;return {id:UID,name:name||("Manequim "+UID),params:Object.assign({},DEF,params||{}),cache:newCache(),hue:null,col:null,congelado:false,oculto:false,ordem:0}}
 function isDark(){const t=document.documentElement.dataset.theme;return t==="dark"||(t!=="light"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)}
 function hsl2hex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
   return "#"+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,"0")).join("")}
@@ -48,11 +49,11 @@ function sceneList(exp){
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const bg=exp?"#ffffff":cssHex("var(--paper)");
   return SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
-    return {p:Object.assign({},it.params,cam,{_cache:it.cache,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
+    return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
 }
 function sceneBB(only){
   const lst=sceneList();lst.forEach(o=>Object.assign(o.p,{zoom:1,panX:0,panY:0,atmo:0}));
-  const r=renderScene(lst,L,true,0),bb=[1e9,-1e9,1e9,-1e9];
+  const r=renderScene(lst,L,true,0,{canal:"enquadrar",exato:SCN.exato}),bb=[1e9,-1e9,1e9,-1e9];
   r.infos.forEach((i,k)=>{if(!i||!i.bb||(only!==undefined&&k!==only))return;bb[0]=Math.min(bb[0],i.bb[0]);bb[1]=Math.max(bb[1],i.bb[1]);bb[2]=Math.min(bb[2],i.bb[2]);bb[3]=Math.max(bb[3],i.bb[3])});
   return bb;
 }

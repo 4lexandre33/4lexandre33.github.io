@@ -133,7 +133,10 @@ export function registerAll(server, getWorld, opts = {}) {
       contorno: z.string().optional().describe("Cor do contorno #RRGGBB."),
       corAutomatica: z.boolean().optional().describe("true = volta para a cor automática exclusiva."),
       renomear: z.string().max(24).optional(),
-      ativar: z.boolean().optional().describe("Torna este o manequim ativo.")
+      ativar: z.boolean().optional().describe("Torna este o manequim ativo."),
+      congelar: z.boolean().optional().describe("true = a foto (camada) deste manequim fica fixa: não é refeita, nem quando a câmera muda; false = volta a acompanhar."),
+      ocultar: z.boolean().optional().describe("true = some da cena (não é desenhado nem exportado); false = volta."),
+      ordem: z.enum(["frente", "tras", "auto"]).optional().describe("Ordem na pilha de camadas: por cima de todos, por baixo de todos, ou automática (pela distância).")
     },
     annotations: RW
   }, guard((a) => {
@@ -150,6 +153,9 @@ export function registerAll(server, getWorld, opts = {}) {
       else if (a.cor) m.cor(a.cor, a.contorno);
       if (a.renomear) m.renomear(a.renomear);
       if (a.ativar) m.ativar();
+      if (a.congelar !== undefined) m.congelar(a.congelar);
+      if (a.ocultar !== undefined) m.ocultar(a.ocultar);
+      if (a.ordem === "frente") m.frente(); else if (a.ordem === "tras") m.tras(); else if (a.ordem === "auto") m.ordemAuto();
     });
     return ok(w, `Manequim “${it.name}” atualizado.`, avisos);
   }));
@@ -289,6 +295,30 @@ export function registerAll(server, getWorld, opts = {}) {
       structuredContent: Object.assign({ link }, s),
       _meta: { imagem: "data:image/png;base64," + png.toString("base64"), link, app: APP_URL }
     };
+  }));
+
+  server.registerTool("camadas_da_cena", {
+    title: "Cena em camadas",
+    description: "Gerador de cenas: cada manequim é desenhado sozinho como uma \"foto\" .svg na câmera da cena e as fotos são empilhadas. Devolve a ordem das camadas (de trás para a frente), quem está congelado ou oculto e quem faz sombra em quem. Pode devolver o SVG com cada manequim numa camada nomeada (Inkscape, Illustrator, Figma, Affinity) e/ou a foto de um manequim só (PNG e SVG com fundo transparente). Entre chamadas, só as camadas que mudaram são redesenhadas.",
+    inputSchema: {
+      incluir_svg: z.boolean().optional().describe("Devolver o SVG da cena em camadas (texto grande)."),
+      foto: z.string().optional().describe("Nome ou índice de um manequim para devolver só a foto dele."),
+      largura: z.number().int().min(200).max(2400).optional().describe("Largura do PNG da foto (padrão 700).")
+    },
+    annotations: RO
+  }, guard(async (a) => {
+    const w = W(), lista = w.listaCamadas();
+    const linhas = lista.map(c => `${c.posicao ? c.posicao + "." : "—"} ${c.nome}` + (c.oculto ? " (oculto)" : "") + (c.congelado ? " (congelado)" : "") + (c.ordem ? ` (ordem manual ${c.ordem > 0 ? "frente" : "trás"})` : "") + (c.sombraDe.length ? ` — recebe sombra de ${c.sombraDe.join(", ")}` : ""));
+    const content = [{ type: "text", text: "Camadas, de trás para a frente:\n" + linhas.join("\n") + "\n\nAbrir no app: " + sceneLink(w) }];
+    if (a.foto !== undefined) {
+      const it = pick(w, a.foto), svg = w.fotoSvg(w.SCN.list.indexOf(it));
+      const fundo = svg.replace(/(<title>[^<]*<\/title>\n)/, '$1<rect width="' + w.W + '" height="' + w.H + '" fill="#FFFFFF"/>');
+      const png = await toPng(fundo, a.largura || 700);
+      content.push({ type: "image", data: png.toString("base64"), mimeType: "image/png" });
+      content.push({ type: "resource", resource: { uri: "geomannequin://foto-" + encodeURIComponent(it.name) + ".svg", mimeType: "image/svg+xml", text: svg } });
+    }
+    if (a.incluir_svg) content.push({ type: "resource", resource: { uri: "geomannequin://cena-em-camadas.svg", mimeType: "image/svg+xml", text: w.cenaCamadasSvg() } });
+    return { content, structuredContent: { camadas: lista, link: sceneLink(w) } };
   }));
 
   server.registerTool("exportar_cena", {
