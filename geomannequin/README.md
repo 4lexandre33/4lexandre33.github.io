@@ -6,7 +6,7 @@ Manequim anatômico paramétrico para referência de desenho.
 - **Arquivo único para baixar** (abre com dois cliques, sem internet para o desenho): [`dist/geomannequin.html`](dist/geomannequin.html)
 - **MCP para Claude, ChatGPT e Gemini:** pasta [`mcp/`](mcp/README.md)
 
-Recursos: poses com limites anatômicos e cinemática inversa, vários manequins na mesma cena com cores exclusivas, perspectiva (lente, altura dos olhos, horizonte e pontos de fuga, sombras no chão, perspectiva atmosférica), modo noturno, editor de comandos em português, exportação SVG/JSON e link de cena.
+Recursos: três modos de desenho — **Manequim**, **Construção** e **Écorché** (anatomia limpa no estilo Bridgman/Loomis, com linhas de músculo em hierarquia de traço, tons planos e fibras opcionais); poses com limites anatômicos e cinemática inversa, vários manequins na mesma cena com cores exclusivas, perspectiva (lente, altura dos olhos, horizonte e pontos de fuga, sombras no chão, perspectiva atmosférica), modo noturno, editor de comandos em português, exportação SVG/JSON e link de cena.
 
 ## Organização
 
@@ -46,7 +46,11 @@ geomannequin/
 │  │  ├─ sombra.js       sombra no chão
 │  │  ├─ contornos.js    vetorização dos tons, silhueta, preenchimento
 │  │  ├─ desenho.js      desenha um manequim (gera o SVG)
-│  │  └─ cena.js         vários manequins, chão, horizonte, pontos de fuga
+│  │  ├─ cena.js         vários manequins, chão, horizonte, pontos de fuga
+│  │  └─ atlas/          ATLAS MUSCULAR (écorché): cada músculo como forma na pele → volume + linhas
+│  │     ├─ tronco.js    peitoral, abdômen, serrátil, oblíquos, grande dorsal, trapézio, escápula, eretores
+│  │     ├─ bracos.js    deltoide (3 feixes), bíceps, braquial, tríceps, braquiorradial, flexores, extensores
+│  │     └─ util.js      curvas suaves, distância a polígonos, volume
 │  ├─ scene/             CENA E COMANDOS — não usa a página; o MCP usa estes mesmos arquivos
 │  │  ├─ index.js        reúne os módulos e cria a cena inicial
 │  │  ├─ ambiente.js     ponte com a página (ganchos que a interface registra)
@@ -86,6 +90,7 @@ npm install          # só na primeira vez (instala o esbuild)
 npm run servir       # abre em http://localhost:8080 (módulos não abrem com dois cliques)
 npm run testar       # motor + 26 cenas comparadas com a referência
 npm run construir    # gera dist/geomannequin.html (arquivo único)
+node testes/vistas.mjs ecorche atletico   # 6 vistas + comparação lado a lado com as referências (precisa de mcp/node_modules)
 ```
 
 Depois de mudar o código: rode `npm run testar`. Se o desenho mudou de propósito, confira no navegador e grave a nova referência com `node testes/cenas.mjs --gravar`. Depois rode `npm run construir` e, se mexeu em `src/scene` ou `src/engine`, também `npm run build` dentro de `mcp/` (pacote usado pela extensão do Gemini).
