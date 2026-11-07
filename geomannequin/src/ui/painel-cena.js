@@ -41,10 +41,18 @@ function statusCamadas(){
   const nt=quantosTrabalhadores(),oc=ocupados();
   el.textContent=vis+" camadas"+(cg?" · "+cg+" congelada"+(cg>1?"s":""):"")+(nt?" · "+nt+" núcleo"+(nt>1?"s":"")+" em paralelo"+(oc?" · desenhando "+oc:""):" · desenho na página");
 }
-/* baixar um arquivo (fora do navegador comum, como em visualizadores que bloqueiam downloads, o SVG também vai para a caixa de exportação) */
-function baixar(nome,dados,tipo){
-  try{const url=URL.createObjectURL(new Blob([dados],{type:tipo}));const a=document.createElement("a");a.href=url;a.download=nome;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);return true}
-  catch(e){return false}
+/* baixar um arquivo: no visualizador de artefatos do Claude pela permissão "downloads" (o visitante confirma);
+   no navegador comum, por link. Devolve "ok", "recusado" ou "indisponivel". */
+let DL;
+async function baixar(nome,dados,tipo){
+  try{
+    if(typeof window!=="undefined"&&window.claude&&typeof window.claude.use==="function"){
+      if(DL===undefined)DL=await window.claude.use("downloads");
+      if(DL){try{await DL.save({filename:nome,data:new Blob([dados],{type:tipo})});return "ok"}catch(e){return e&&e.code==="declined"?"recusado":"indisponivel"}}
+      return "indisponivel";
+    }
+    const url=URL.createObjectURL(new Blob([dados],{type:tipo}));const a=document.createElement("a");a.href=url;a.download=nome;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);return "ok";
+  }catch(e){return "indisponivel"}
 }
 function mostrarNaExportacao(txt){const ta=$("out");if(ta){ta.value=txt;ta.readOnly=true}}
 function acaoCamada(fn,msg){try{fn(SCN.list[SCN.active]);sceneMsg(msg||"");refreshScene();syncControls();render()}catch(e){sceneMsg(e.message,true)}}
@@ -70,12 +78,13 @@ export function iniciarPainelCena(){
   $("cTras").addEventListener("click",()=>acaoCamada(it=>{it.ordem=Math.max(-99,Math.min(0,...SCN.list.filter(o=>o!==it).map(o=>o.ordem||0))-1)},"Desenhado por baixo dos outros."));
   $("cAuto").addEventListener("click",()=>acaoCamada(it=>{it.ordem=0},"Ordem pela distância da câmera."));
   $("cExato").addEventListener("change",()=>{SCN.exato=$("cExato").checked;refreshScene();render()});
-  $("cFoto").addEventListener("click",()=>{try{const it=SCN.list[SCN.active],svg=fotoSvg(SCN.active);mostrarNaExportacao(svg);
-    sceneMsg(baixar(nomeArquivo(it.name)+".svg",svg,"image/svg+xml")?"Foto de “"+it.name+"” baixada (também está na caixa SVG abaixo).":"Foto pronta na caixa SVG abaixo: copie e salve como .svg.")}catch(e){sceneMsg(e.message,true)}});
-  $("cExportar").addEventListener("click",()=>{try{const svg=cenaCamadasSvg();mostrarNaExportacao(svg);
-    sceneMsg(baixar("geomannequin-camadas.svg",svg,"image/svg+xml")?"Cena em camadas baixada (também está na caixa SVG abaixo).":"Cena em camadas pronta na caixa SVG abaixo.")}catch(e){sceneMsg(e.message,true)}});
-  $("cZip").addEventListener("click",()=>{try{const fx=arquivosCamadas(exportJson()),z=criarZip(fx);
-    sceneMsg(baixar("geomannequin-camadas.zip",z,"application/zip")?fx.length+" arquivos baixados em geomannequin-camadas.zip.":"Este visualizador não permite baixar arquivos; use “Cena em camadas (.svg)”.",false)}catch(e){sceneMsg(e.message,true)}});
+  const fimBaixar=(r,ok,naCaixa)=>sceneMsg(r==="ok"?ok:r==="recusado"?"Download cancelado."+(naCaixa?" O SVG está na caixa abaixo.":""):naCaixa?"Pronto na caixa SVG abaixo: copie e salve como .svg.":"Este visualizador não permite baixar arquivos; use “Cena em camadas (.svg)” e copie da caixa abaixo.");
+  $("cFoto").addEventListener("click",async()=>{try{const it=SCN.list[SCN.active],svg=fotoSvg(SCN.active);mostrarNaExportacao(svg);
+    fimBaixar(await baixar(nomeArquivo(it.name)+".svg",svg,"image/svg+xml"),"Foto de “"+it.name+"” baixada (também está na caixa SVG abaixo).",true)}catch(e){sceneMsg(e.message,true)}});
+  $("cExportar").addEventListener("click",async()=>{try{const svg=cenaCamadasSvg();mostrarNaExportacao(svg);
+    fimBaixar(await baixar("geomannequin-camadas.svg",svg,"image/svg+xml"),"Cena em camadas baixada (também está na caixa SVG abaixo).",true)}catch(e){sceneMsg(e.message,true)}});
+  $("cZip").addEventListener("click",async()=>{try{const fx=arquivosCamadas(exportJson()),z=criarZip(fx);
+    fimBaixar(await baixar("geomannequin-camadas.zip",z,"application/zip"),fx.length+" arquivos baixados em geomannequin-camadas.zip.",false)}catch(e){sceneMsg(e.message,true)}});
   if(typeof window!=="undefined")window.addEventListener("gm:desenhou",statusCamadas);
   setInterval(()=>{if(ocupados())statusCamadas()},400);
   $("mAuto").addEventListener("click",()=>{const it=SCN.list[SCN.active];it.col=null;it.hue=it===SCN.list[0]?null:nextHue(it);refreshScene();render()});

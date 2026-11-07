@@ -5871,8 +5871,21 @@ cena.enquadrar();`,
     const nt = quantosTrabalhadores(), oc = ocupados();
     el.textContent = vis + " camadas" + (cg ? " · " + cg + " congelada" + (cg > 1 ? "s" : "") : "") + (nt ? " · " + nt + " núcleo" + (nt > 1 ? "s" : "") + " em paralelo" + (oc ? " · desenhando " + oc : "") : " · desenho na página");
   }
-  function baixar(nome, dados, tipo) {
+  var DL;
+  async function baixar(nome, dados, tipo) {
     try {
+      if (typeof window !== "undefined" && window.claude && typeof window.claude.use === "function") {
+        if (DL === void 0) DL = await window.claude.use("downloads");
+        if (DL) {
+          try {
+            await DL.save({ filename: nome, data: new Blob([dados], { type: tipo }) });
+            return "ok";
+          } catch (e) {
+            return e && e.code === "declined" ? "recusado" : "indisponivel";
+          }
+        }
+        return "indisponivel";
+      }
       const url = URL.createObjectURL(new Blob([dados], { type: tipo }));
       const a = document.createElement("a");
       a.href = url;
@@ -5881,9 +5894,9 @@ cena.enquadrar();`,
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4e3);
-      return true;
+      return "ok";
     } catch (e) {
-      return false;
+      return "indisponivel";
     }
   }
   function mostrarNaExportacao(txt) {
@@ -5989,28 +6002,29 @@ cena.enquadrar();`,
       refreshScene2();
       render2();
     });
-    $("cFoto").addEventListener("click", () => {
+    const fimBaixar = (r, ok2, naCaixa) => sceneMsg(r === "ok" ? ok2 : r === "recusado" ? "Download cancelado." + (naCaixa ? " O SVG está na caixa abaixo." : "") : naCaixa ? "Pronto na caixa SVG abaixo: copie e salve como .svg." : "Este visualizador não permite baixar arquivos; use “Cena em camadas (.svg)” e copie da caixa abaixo.");
+    $("cFoto").addEventListener("click", async () => {
       try {
         const it = SCN.list[SCN.active], svg = fotoSvg(SCN.active);
         mostrarNaExportacao(svg);
-        sceneMsg(baixar(nomeArquivo(it.name) + ".svg", svg, "image/svg+xml") ? "Foto de “" + it.name + "” baixada (também está na caixa SVG abaixo)." : "Foto pronta na caixa SVG abaixo: copie e salve como .svg.");
+        fimBaixar(await baixar(nomeArquivo(it.name) + ".svg", svg, "image/svg+xml"), "Foto de “" + it.name + "” baixada (também está na caixa SVG abaixo).", true);
       } catch (e) {
         sceneMsg(e.message, true);
       }
     });
-    $("cExportar").addEventListener("click", () => {
+    $("cExportar").addEventListener("click", async () => {
       try {
         const svg = cenaCamadasSvg();
         mostrarNaExportacao(svg);
-        sceneMsg(baixar("geomannequin-camadas.svg", svg, "image/svg+xml") ? "Cena em camadas baixada (também está na caixa SVG abaixo)." : "Cena em camadas pronta na caixa SVG abaixo.");
+        fimBaixar(await baixar("geomannequin-camadas.svg", svg, "image/svg+xml"), "Cena em camadas baixada (também está na caixa SVG abaixo).", true);
       } catch (e) {
         sceneMsg(e.message, true);
       }
     });
-    $("cZip").addEventListener("click", () => {
+    $("cZip").addEventListener("click", async () => {
       try {
         const fx = arquivosCamadas(exportJson()), z = criarZip(fx);
-        sceneMsg(baixar("geomannequin-camadas.zip", z, "application/zip") ? fx.length + " arquivos baixados em geomannequin-camadas.zip." : "Este visualizador não permite baixar arquivos; use “Cena em camadas (.svg)”.", false);
+        fimBaixar(await baixar("geomannequin-camadas.zip", z, "application/zip"), fx.length + " arquivos baixados em geomannequin-camadas.zip.", false);
       } catch (e) {
         sceneMsg(e.message, true);
       }
