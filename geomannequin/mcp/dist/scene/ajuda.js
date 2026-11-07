@@ -91,6 +91,15 @@ cena.adicionar({nome: "Meio", x: 2, z: -4});
 cena.adicionar({nome: "Longe", x: 6, z: -18}).girar(-30);
 camera.perspectiva(true).lente(35).mirar(0, -2, -4).colocar(-4, 2, 28);
 log(cena.blocking().manequins.map(m => m.nome + ": " + m.profundidade + " m, " + m.naFoto + "% da altura").join("\n"));`,
+  "Objetos: mesa, copo e cadeira":`// cada objeto tem uma cor só dele; "sobre" põe um em cima do outro
+cena.limpar();
+const mesa = cena.objeto("mesa", {x: 8, cor: "#7FA8E0"});
+cena.objeto("copo", {sobre: "mesa"}).posicao(9, 1);
+cena.objeto("cadeira", {x: 8, z: 5, giro: 180});
+cena.objeto("cilindro", {x: -8, raio: 2, altura: 5});
+mesa.mover(1, 0);            // o copo vai junto
+log(cena.colisoes().map(c => c.descricao).join("\\n") || "nada atravessa nada");
+cena.blocking.abrir();`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -128,15 +137,19 @@ export function iniciarAjuda(){
   m.flexibilidade("normal" | "atleta" | "ginasta" | "contorcionista") — amplia os limites (ponte, espacate, arabesque pedem "ginasta")
   m.apoiar("maos pes" | "maos" | "maos joelhos" | "mao esquerda pe direito") — vários pontos no chão ao mesmo tempo (ponte, parada de mão, prancha)
   Poses de ginasta: ponte, ponteUmaPerna, paradaAbertura, escorpiao, arabesque, espacateSaltado, camelo, agachamentoProfundo, prancha, quatroApoios
-  Blocking (botão "Blocking"): vista de cima (X/Z) e lateral sincronizadas com a cena — arraste manequins, setas, câmera, alvo e bordas do cone
-  cena.blocking() — posições em metros, profundidade e % da altura da foto de cada manequim · camera.posicaoMundo() · camera.colocar(x, y, z) (mantém o alvo)
+  Blocking (painel ao lado do palco): vista de cima (X/Z) e lateral sincronizadas com a cena — + Manequim / + Objeto (clique para colocar), arraste, gire, mude o tamanho
+  cena.blocking() — posições em metros (manequins e objetos), profundidade, % da foto, cores e colisões · camera.posicaoMundo() · camera.colocar(x, y, z) (mantém o alvo)
+  cena.blocking.abrir() · .fechar() · .recolher() · .destacar("painel" | "cima" | "lateral") · .flutuar() · .devolver() · .lateral("camera" | "frente" | "direita" | graus) · .inserir("mesa") · .estado()
+  cena.selecionar("Ana" | 0 | "mesa") — o mesmo que clicar na lista do painel
   cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")
   Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
   m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)
   m.saltar(altura R) · m.altura(R) · m.inclinar(graus, rolar?) — corpo inteiro (−90 costas, 90 bruços, 180 de cabeça para baixo)
   m.sentar(objeto?) · m.subir(objeto) · m.encostar(objeto) · m.olhar("baixo" | "cima" | "câmera" | "Ana" | [x,y,z])
   m.maoEm("esquerda", [x, y, z]) · m.peEm("direita", [x, y, z]) · m.apontar(alvo, "direita")
-  cena.objeto("banco" | "cadeira" | "caixa" | "degrau" | "mesa" | "parede", {x, z, giro, largura, profundidade, altura}) → o.posicao/girar/medidas/remover
+  cena.objeto(tipo, {x, z, giro, largura, profundidade, altura, raio, cor, sobre}) — caixas: banco, cadeira, caixa, cubo, degrau, mesa, cama, parede; cilindros: cilindro, copo, coluna, barril, "mesa redonda"
+  o.posicao(x, z) · o.mover(dx, dz) · o.girar(graus) · o.medidas({altura, raio…}) · o.cor("#RRGGBB" | "auto") (exclusiva) · o.sobre("mesa" | null | "auto") · o.duplicar() · o.renomear() · o.remover() · o.info()
+  cena.objetos() · cena.obterObjeto("mesa") · cena.removerObjeto("mesa") · cena.tiposDeObjeto() — colisões de objeto × objeto e manequim × objeto em cena.colisoes()
   cena.montar([{pose: "sentado"}, {deitar: {tipo: "costas", eixo: "x"}}, {pose: "saltando", altura: 4, olhar: "baixo"}], {camera: {eixo: "z", elevacao: "alta"}})
   cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta")
   camera.eixo("x" | "-x" | "z" | "-z" | "y") · camera.elevacao("alta" | "muito alta" | "média" | "olhos" | "baixa" | "muito baixa" | graus) · camera.plano("plongée" | "contra-plongée" | "de cima")

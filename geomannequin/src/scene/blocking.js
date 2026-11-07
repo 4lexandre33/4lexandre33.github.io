@@ -2,9 +2,10 @@
    Não há cópia: os manequins são SCN.list (wx, wz, wRot, bodyLift, pose), a câmera é P (tx/ty/tz, yaw, pitch, camDist,
    lens, persp) e os objetos são SCN.objetos. Cada edição escreve nesses campos, com os mesmos limites e o mesmo modo de
    colisão dos comandos; as vistas só leem. */
-import { P, SCN, instColors } from "./modelo.js";
-import { COL, bloquearMovimento, colisoesDaCena, pMundo } from "./colisoes.js";
-import { D, M_R, cameraNoMundo, caixasDoObjeto, capsulas, clamp, restGround, tamanhoNaFoto } from "../engine/index.js";
+import { P, SCN, instColors, corObjeto, atualizarApoios } from "./modelo.js";
+import { COL, bloquearMovimento, colisoesDaCena, pMundo, separarObjeto } from "./colisoes.js";
+import { apoioSob, editarObjeto } from "./cenario.js";
+import { D, M_R, TIPOS_OBJETO, ehCilindro, cameraNoMundo, caixasDoObjeto, capsulas, clamp, restGround, tamanhoNaFoto } from "../engine/index.js";
 
 const chaoBlk = () => restGround(SCN.list[0].params);
 /* tudo o que as vistas desenham, lido agora do estado da cena */
@@ -13,9 +14,11 @@ function leituraBlocking() {
   const manequins = SCN.list.map((it, i) => {
     const cp = capsulas(pMundo(it)).caps;
     return { id: it.id, i, nome: it.name, cor: instColors(it, typeof document === "undefined"), caps: cp, x: it.params.wx || 0, z: it.params.wz || 0, giro: it.params.wRot || 0,
-      altura: it.params.bodyLift || 0, sel: i === SCN.active, oculto: !!it.oculto, foto: tamanhoNaFoto(C, cp) };
+      altura: it.params.bodyLift || 0, sel: i === SCN.active && !SCN.objSel, oculto: !!it.oculto, foto: tamanhoNaFoto(C, cp) };
   });
-  const objetos = SCN.objetos.map(o => ({ id: o.id, nome: o.nome || o.tipo, tipo: o.tipo, x: o.x, z: o.z, giro: o.giro || 0, caixas: caixasDoObjeto(o, g0) }));
+  atualizarApoios();
+  const objetos = SCN.objetos.map(o => ({ id: o.id, nome: o.nome || (TIPOS_OBJETO[o.tipo] || {}).nome || o.tipo, tipo: o.tipo, forma: ehCilindro(o) ? "cilindro" : "caixa", x: o.x, z: o.z, giro: o.giro || 0,
+    larg: o.larg, prof: o.prof, alt: o.alt, raio: o.raio, base: o.base || 0, sobre: o.sobre || null, cor: corObjeto(o, typeof document === "undefined"), sel: SCN.objSel === o.id, caixas: caixasDoObjeto(o, g0) }));
   /* altura de uma pessoa em pé (do chão ao alto da cabeça), para as linhas de escala da perspectiva */
   const alturaPessoa = 1.0 - restGround(SCN.list[0].params);
   let colisoes = [];
@@ -53,5 +56,18 @@ function moverAlvo(x, y, z) { const C = cameraNoMundo(P); aplicarCameraBlk(C.pos
 function abrirCone(grausH) { P.lens = Math.round(clamp(18 / Math.tan(clamp(grausH, 5, 120) / 2 * D), 18, 200)); if (!P.persp) P.persp = 1; }
 function perspectivaBlk(on) { P.persp = on ? 1 : 0; }
 /* ===== objetos ===== */
-function moverObjeto(id, x, z) { const o = SCN.objetos.find(q => q.id === id); if (!o) return; o.x = r2(clamp(x, -30, 30)); o.z = r2(clamp(z, -30, 30)); }
+const achaObj = id => SCN.objetos.find(q => q.id === id);
+/* cabe em cima? (a base do objeto é menor que o tampo do outro) */
+function cabeEmCima(o, s) { const a = ehCilindro(o) ? Math.PI * o.raio * o.raio : o.larg * o.prof, b = ehCilindro(s) ? Math.PI * s.raio * s.raio : s.larg * s.prof; return a < 0.8 * b; }
+/* mover no chão; com "apoiar" (padrão ao arrastar), ao passar sobre um tampo maior o objeto sobe nele, ao sair desce */
+function moverObjeto(id, x, z, apoiar) {
+  const o = achaObj(id); if (!o) return;
+  editarObjeto(o, { x: r2(clamp(x, -40, 40)), z: r2(clamp(z, -40, 40)) });
+  if (apoiar !== false) { const s = apoioSob(o, o.x, o.z); o.sobre = s && cabeEmCima(o, s) ? s.id : null; atualizarApoios(); }
+  if (COL.modo === "bloquear") separarObjeto(o, 6);
+}
+function girarObjeto(id, graus) { const o = achaObj(id); if (!o) return; editarObjeto(o, { giro: ((graus % 360) + 540) % 360 - 180 }); }
+function medidasObjeto(id, m) { const o = achaObj(id); if (!o) return; editarObjeto(o, m); }
+function selecionarObjeto(id) { SCN.objSel = id && achaObj(id) ? id : null; }
+export { cabeEmCima, girarObjeto, medidasObjeto, selecionarObjeto };
 export { chaoBlk, leituraBlocking, moverManequim, girarManequim, apontarManequim, alturaManequim, direcaoPara, aplicarCameraBlk, moverCamera, moverAlvo, abrirCone, perspectivaBlk, moverObjeto };

@@ -76,7 +76,7 @@ function draw(){
 }
 /* colisões: círculo nos pontos onde um manequim entra no outro (só na tela; não sai na exportação) */
 function marcasColisao(lst){
-  if(COL.modo==="desligado"||SCN.list.filter(it=>!it.oculto).length<2){COL.ultima=[];return ""}
+  if(COL.modo==="desligado"||SCN.list.filter(it=>!it.oculto).length+SCN.objetos.length<2){COL.ultima=[];return ""}
   const cs=colisoesDaCena(),cp=COL.composicao?composicaoDaCena():(COL.ultimaComp=[]);if(!cs.length&&!cp.length)return "";
   const p0=lst[0].p;let g='<g id="gm-colisoes" pointer-events="none">';
   /* composição: círculo tracejado (não é erro, é aviso de desenho) */

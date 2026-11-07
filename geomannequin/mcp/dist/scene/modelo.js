@@ -9,7 +9,9 @@ let P;
 let UID=0,OBJID=1000;
 function novoIdObjeto(){return ++OBJID}
 /* exato: todos num z-buffer comum (mais lento); sem ele, cada manequim vira uma camada (foto .svg) guardada em cache */
-const SCN={list:[],active:0,exato:false,objetos:[]};
+const SCN={list:[],active:0,exato:false,objetos:[],objSel:null};
+/* ganchos da interface (o código chama a página sem depender dela; no MCP ficam vazios) */
+const UIH={};
 const CAMK=["yaw","pitch","roll","zoom","panX","panY","lightAz","lightEl","tx","ty","tz","persp","camDist","lens","atmo"];
 const WORLDK=["wx","wy","wz","wRot"];
 function newInst(params,name){UID++;return {id:UID,name:name||("Manequim "+UID),params:Object.assign({},DEF,params||{}),cache:newCache(),hue:null,col:null,congelado:false,oculto:false,ordem:0}}
@@ -23,10 +25,35 @@ function hueColors(h,dark){
   return dark?{fill:hsl2hex(h,24,25),shade1:hsl2hex(h,24,20),shade2:hsl2hex(h,26,15),shade3:hsl2hex(h,28,11),ink:hsl2hex(h,60,82)}
              :{fill:hsl2hex(h,40,91),shade1:hsl2hex(h,32,83),shade2:hsl2hex(h,28,73),shade3:hsl2hex(h,26,58),ink:hsl2hex(h,48,27)};
 }
+/* matiz livre: longe (> 24°) de TODOS os manequins e objetos da cena — cada item tem a sua cor */
+function matizesUsados(skip){return SCN.list.filter(it=>it!==skip&&it.hue!==null).map(it=>it.hue).concat(SCN.objetos.filter(o=>o!==skip&&typeof o.hue==="number"&&!o.col).map(o=>o.hue))}
 function nextHue(skip){
-  const used=SCN.list.filter(it=>it!==skip&&it.hue!==null).map(it=>it.hue);
-  for(let i=0;i<720;i++){const h=(205+i*137.508)%360;if(used.every(u=>Math.min(Math.abs(u-h),360-Math.abs(u-h))>24))return Math.round(h)}
+  const used=matizesUsados(skip);
+  for(const gap of [24,16,10])for(let i=0;i<720;i++){const h=(205+i*137.508)%360;if(used.every(u=>Math.min(Math.abs(u-h),360-Math.abs(u-h))>gap))return Math.round(h)}
   return Math.round(Math.random()*360);
+}
+/* cores de objeto: mais saturadas que as dos manequins (lê-se como coisa, não como gente), no tema claro ou escuro */
+function hueColorsObj(h,dark){
+  return dark?{fill:hsl2hex(h,34,30),ink:hsl2hex(h,62,80)}:{fill:hsl2hex(h,52,82),ink:hsl2hex(h,52,26)};
+}
+function corObjeto(o,exp){
+  const dark=exp?false:(typeof document!=="undefined"&&isDark());
+  if(o.col)return {fill:o.col.fill,ink:o.col.ink};
+  if(typeof o.hue!=="number")o.hue=nextHue(o);
+  return hueColorsObj(o.hue,dark);
+}
+/* cor manual de um objeto: não pode repetir a de outro objeto nem a de um manequim */
+function setCorObjeto(o,fill,ink){
+  if(!hex2rgb(fill))throw new Error("Use cores no formato #RRGGBB, por exemplo '#7FB3D5'.");
+  if(!ink||!hex2rgb(ink)){const A=hex2rgb(fill),l=(0.3*A[0]+0.59*A[1]+0.11*A[2])/255;ink=mixHex(fill,l>0.5?"#000000":"#ffffff",0.72)}
+  if(colDist(fill,ink)<60)throw new Error("Preenchimento e contorno estão parecidos demais; o contorno não ficaria visível.");
+  conflitoCor(fill,o);
+  o.col={fill:fill.toLowerCase(),ink:ink.toLowerCase()};
+}
+/* quem já usa uma cor parecida (manequim ou objeto) */
+function conflitoCor(fill,skip){
+  for(const it of SCN.list){if(it===skip)continue;if(colDist(instColors(it).fill,fill)<18)throw new Error("Essa cor já é usada por “"+it.name+"”. Escolha outra.")}
+  for(const q of SCN.objetos){if(q===skip)continue;if(colDist(corObjeto(q).fill,fill)<18)throw new Error("Essa cor já é usada pelo objeto “"+(q.nome||q.tipo)+"”. Escolha outra.")}
 }
 /* cores efetivas do manequim (preenchimento e contorno em hexadecimal, para comparar e mostrar) */
 function instColors(it,exp){
@@ -46,13 +73,20 @@ function cssHex(v){
   const m=/^var\((--[\w-]+)\)$/.exec(v||"");if(!m)return v;
   try{const c=getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();return /^#[0-9a-f]{6}$/i.test(c)?c:(/^#[0-9a-f]{3}$/i.test(c)?"#"+c.slice(1).split("").map(x=>x+x).join(""):v)}catch(e){return v}
 }
+/* objeto em cima de outro (o.sobre = id do de baixo): a base dele é o topo do de baixo, em cadeia */
+function atualizarApoios(){
+  const por=new Map(SCN.objetos.map(o=>[o.id,o]));
+  const topo=(o,vis)=>{if(!o.sobre||!por.has(o.sobre)||vis.has(o.id)){o.sobre=o.sobre&&por.has(o.sobre)?o.sobre:null;return 0}vis.add(o.id);const s=por.get(o.sobre);return topo(s,vis)+s.alt};
+  SCN.objetos.forEach(o=>{o.base=Math.round(topo(o,new Set())*1000)/1000});
+}
 function sceneList(exp){
+  atualizarApoios();
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const bg=exp?"#ffffff":cssHex("var(--paper)");
   const lst=SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
     return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
   /* objetos da cena (banco, cadeira, parede…), o chão e as cores neutras deles */
-  lst.objetos=SCN.objetos.slice();lst.chao=g0;
+  lst.objetos=SCN.objetos.map(o=>Object.assign({},o,{_cor:corObjeto(o,exp)}));lst.chao=g0;
   const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
   return lst;
 }
@@ -99,6 +133,7 @@ function setColor(it,fill,ink){
   for(const o of SCN.list){if(o===it)continue;const c=instColors(o);
     if(colDist(c.fill,fill)<18)throw new Error("Essa cor de preenchimento já é usada por “"+o.name+"”. Escolha outra.");
     if(colDist(c.ink,ink)<18)throw new Error("Essa cor de contorno já é usada por “"+o.name+"”. Escolha outra.");}
+  for(const q of SCN.objetos){if(colDist(corObjeto(q).fill,fill)<18)throw new Error("Essa cor já é usada pelo objeto “"+(q.nome||q.tipo)+"”. Escolha outra.")}
   it.col={fill:fill.toLowerCase(),ink:ink.toLowerCase()};it.hue=it.hue;
 }
 
@@ -112,4 +147,4 @@ export function iniciarModelo(){
 /* alteração de variáveis deste módulo por outros módulos */
 export function setP(v){return P=v}
 
-export { novoIdObjeto, P, UID, SCN, CAMK, WORLDK, newInst, isDark, hsl2hex, hex2rgb, mixHex, colDist, hueColors, nextHue, instColors, palOf, cssHex, sceneList, sceneBB, setActive, MAXM, addInst, dupInst, delInst, setColor };
+export { UIH, novoIdObjeto, P, UID, SCN, CAMK, WORLDK, newInst, isDark, hsl2hex, hex2rgb, mixHex, colDist, hueColors, nextHue, instColors, hueColorsObj, corObjeto, atualizarApoios, setCorObjeto, conflitoCor, palOf, cssHex, sceneList, sceneBB, setActive, MAXM, addInst, dupInst, delInst, setColor };

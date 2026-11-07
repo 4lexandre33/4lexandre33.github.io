@@ -62,7 +62,8 @@ return {
   COL, colisoesDaCena, listaColisoes, resolverPar, resolverTodas, desfazerColisao, permitirContato, setModoColisao, setPreferir,
   composicaoDaCena, ajustarComposicao, setComposicao,
   todasPoses, GESTOS, TIPOS_OBJETO, ARTICULACOES,
-  leituraBlocking, svgPlanta, svgPerfil, encaixar, eixoPerfil, moverManequim, girarManequim, apontarManequim, alturaManequim, moverCamera, moverAlvo, abrirCone, cameraNoMundo, M_R, comFundo
+  leituraBlocking, svgPlanta, svgPerfil, encaixar, eixoPerfil, moverManequim, girarManequim, apontarManequim, alturaManequim, moverCamera, moverAlvo, abrirCone, cameraNoMundo, M_R, comFundo,
+  moverObjeto, girarObjeto, medidasObjeto, selecionarObjeto, corObjeto
 };`;
   const make = new Function("E", src);
   FACTORY = () => make(ENGINE);

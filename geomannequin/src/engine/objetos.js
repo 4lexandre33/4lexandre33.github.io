@@ -11,17 +11,35 @@ const TIPOS_OBJETO = {
   banco: { nome: "banco", larg: 4.2, prof: 3.4, alt: 4.0 },
   cadeira: { nome: "cadeira", larg: 4.0, prof: 4.0, alt: 4.0, encosto: 4.2 },
   caixa: { nome: "caixa", larg: 4.0, prof: 4.0, alt: 4.0 },
+  cubo: { nome: "cubo", larg: 4.0, prof: 4.0, alt: 4.0 },
   degrau: { nome: "degrau", larg: 8.0, prof: 2.6, alt: 1.6 },
   mesa: { nome: "mesa", larg: 10.0, prof: 6.0, alt: 6.5 },
-  parede: { nome: "parede", larg: 20.0, prof: 0.6, alt: 22.0 }
+  cama: { nome: "cama", larg: 8.8, prof: 17.5, alt: 4.2, cabeceira: 4.0 },
+  parede: { nome: "parede", larg: 20.0, prof: 0.6, alt: 22.0 },
+  /* cilindros: raio e altura */
+  cilindro: { nome: "cilindro", forma: "cilindro", raio: 2.0, alt: 4.0 },
+  copo: { nome: "copo", forma: "cilindro", raio: 0.35, alt: 1.0 },
+  coluna: { nome: "coluna", forma: "cilindro", raio: 1.4, alt: 22.0 },
+  barril: { nome: "barril", forma: "cilindro", raio: 2.3, alt: 7.6 },
+  mesaRedonda: { nome: "mesa redonda", forma: "cilindro", raio: 4.0, alt: 6.5 }
 };
+const ehCilindro = o => (TIPOS_OBJETO[o.tipo] || {}).forma === "cilindro";
 function objetoPadrao(tipo, o) {
   const t = TIPOS_OBJETO[tipo]; if (!t) throw new Error("Objeto desconhecido: “" + tipo + "”. Opções: " + Object.keys(TIPOS_OBJETO).join(", ") + ".");
-  return Object.assign({ tipo, x: 0, z: 0, giro: 0, larg: t.larg, prof: t.prof, alt: t.alt }, t.encosto ? { encosto: t.encosto } : {}, o || {});
+  const base = t.forma === "cilindro" ? { tipo, x: 0, z: 0, giro: 0, raio: t.raio, larg: 2 * t.raio, prof: 2 * t.raio, alt: t.alt } : { tipo, x: 0, z: 0, giro: 0, larg: t.larg, prof: t.prof, alt: t.alt };
+  const r = Object.assign(base, t.encosto ? { encosto: t.encosto } : {}, t.cabeceira ? { cabeceira: t.cabeceira } : {}, o || {});
+  if (t.forma === "cilindro") { r.larg = r.prof = 2 * r.raio; }
+  return r;
 }
-/* caixas do objeto em coordenadas locais (base no chão, centro em x/z): {c:[x,y,z], h:[meia largura, meia altura, meia prof.]} */
-function caixasLocais(o) {
+/* partes do objeto em coordenadas locais (base no chão, centro em x/z):
+   caixa {c, h:[meia largura, meia altura, meia prof.]} ou cilindro {cil:true, c, r, hh: meia altura} */
+function partesLocais(o) {
   const L = o.larg / 2, P = o.prof / 2, A = o.alt, out = [], perna = (x, z, alt) => out.push({ c: [x, alt / 2, z], h: [0.17, alt / 2, 0.17] });
+  if (o.tipo === "mesaRedonda") {
+    const t = 0.3; out.push({ cil: true, c: [0, A - t / 2, 0], r: o.raio, hh: t / 2 }); out.push({ cil: true, c: [0, (A - t) / 2, 0], r: Math.max(0.35, o.raio * 0.12), hh: (A - t) / 2 });
+    out.push({ cil: true, c: [0, 0.1, 0], r: Math.max(0.9, o.raio * 0.45), hh: 0.1 }); return out;
+  }
+  if (ehCilindro(o)) { out.push({ cil: true, c: [0, A / 2, 0], r: o.raio, hh: A / 2 }); return out; }
   if (o.tipo === "banco" || o.tipo === "cadeira" || o.tipo === "mesa") {
     const t = o.tipo === "mesa" ? 0.3 : 0.35;
     out.push({ c: [0, A - t / 2, 0], h: [L, t / 2, P] });
@@ -31,22 +49,38 @@ function caixasLocais(o) {
       const e = o.encosto || 4.2;
       out.push({ c: [0, A + e / 2, -P + 0.18], h: [L, e / 2, 0.18] });
     }
+  } else if (o.tipo === "cama") {
+    /* estrado + colchão e cabeceira (no lado −z local) */
+    out.push({ c: [0, A / 2, 0], h: [L, A / 2, P] });
+    const cb = o.cabeceira || 4.0; out.push({ c: [0, (A + cb) / 2, -P + 0.25], h: [L, (A + cb) / 2, 0.25] });
   } else out.push({ c: [0, A / 2, 0], h: [L, A / 2, P] });
   return out;
 }
-/* caixas no mundo: centro, eixos (girados pelo "giro" do objeto) e meias medidas */
-function caixasDoObjeto(o, g0) {
-  const r = (o.giro || 0) * D, c = Math.cos(r), s = Math.sin(r);
+function caixasLocais(o) { return partesLocais(o).filter(b => !b.cil); }
+/* base do objeto: no chão (g0) ou em cima de outro (o.base = altura do topo do de baixo, mantida pela cena) */
+function baseY(o, g0) { return g0 + (o.base || 0); }
+/* partes no mundo: centro, eixos (girados pelo "giro" do objeto) e medidas */
+function partesDoObjeto(o, g0) {
+  const r = (o.giro || 0) * D, c = Math.cos(r), s = Math.sin(r), y0 = baseY(o, g0);
   const eixos = [[c, 0, -s], [0, 1, 0], [s, 0, c]];
-  return caixasLocais(o).map(b => ({ c: [o.x + b.c[0] * c + b.c[2] * s, g0 + b.c[1], o.z - b.c[0] * s + b.c[2] * c], h: b.h, e: eixos }));
+  return partesLocais(o).map(b => Object.assign({}, b, { c: [o.x + b.c[0] * c + b.c[2] * s, y0 + b.c[1], o.z - b.c[0] * s + b.c[2] * c], e: eixos }, b.cil ? { h: [b.r, b.hh, b.r] } : {}));
 }
-/* topo de apoio (para sentar/subir): altura do assento no mundo */
-function alturaApoio(o, g0) { return g0 + o.alt; }
+function caixasDoObjeto(o, g0) { return partesDoObjeto(o, g0); }
+/* topo de apoio (para sentar/subir ou pôr um objeto em cima): altura no mundo */
+function alturaApoio(o, g0) { return baseY(o, g0) + o.alt; }
 
-/* cápsulas que preenchem cada caixa (para a colisão com os manequins) */
+/* cápsulas que preenchem cada parte (para a colisão com os manequins e entre objetos) */
 function capsulasObjeto(o, g0) {
   const caps = [];
-  for (const b of caixasDoObjeto(o, g0)) {
+  for (const b of partesDoObjeto(o, g0)) {
+    if (b.cil) {
+      /* cilindro em pé: alto → uma cápsula vertical; baixo e largo (tampo, copo largo) → cordas horizontais */
+      if (b.hh >= b.r * 0.9) { const l = Math.max(0, b.hh - b.r); caps.push({ nome: o.tipo, a: [b.c[0], b.c[1] - l, b.c[2]], b: [b.c[0], b.c[1] + l, b.c[2]], r: b.r }); }
+      else { const n = Math.max(1, Math.ceil(b.r / Math.max(0.05, b.hh * 0.9)));
+        for (let k = 0; k < n; k++) { const off = n === 1 ? 0 : -b.r + b.hh + (2 * b.r - 2 * b.hh) * k / (n - 1), w = Math.sqrt(Math.max(0, b.r * b.r - off * off)), len = Math.max(0, w - b.hh);
+          caps.push({ nome: o.tipo, a: [b.c[0] - len, b.c[1], b.c[2] + off], b: [b.c[0] + len, b.c[1], b.c[2] + off], r: b.hh }); } }
+      continue;
+    }
     const idx = [0, 1, 2].sort((i, j) => b.h[i] - b.h[j]), [a0, a1, a2] = idx, r = b.h[a0];
     const n = Math.max(1, Math.ceil(b.h[a1] / Math.max(0.05, r * 0.9)));
     for (let k = 0; k < n; k++) {
@@ -59,25 +93,70 @@ function capsulasObjeto(o, g0) {
   caps.forEach(c => [c.a, c.b].forEach(q => { for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], q[k] - c.r); hi[k] = Math.max(hi[k], q[k] + c.r); } }));
   return { caps, lo, hi };
 }
+/* ===== colisão entre objetos: todos ficam em pé (giram só no chão), então o teste é exato:
+   separação no plano do chão (retângulo × retângulo, círculo × retângulo, círculo × círculo) e intervalo de altura ===== */
+function sobrepoePartes(A, B) {
+  const yA = [A.c[1] - A.h[1], A.c[1] + A.h[1]], yB = [B.c[1] - B.h[1], B.c[1] + B.h[1]], oy = Math.min(yA[1], yB[1]) - Math.max(yA[0], yB[0]);
+  if (oy <= 0) return null;
+  const dx = B.c[0] - A.c[0], dz = B.c[2] - A.c[2];
+  let prof, n;
+  if (A.cil && B.cil) { const d = Math.hypot(dx, dz); prof = A.r + B.r - d; n = d > 1e-6 ? [-dx / d, -dz / d] : [1, 0]; }
+  else if (A.cil || B.cil) {
+    const C = A.cil ? A : B, R = A.cil ? B : A, ux = [R.e[0][0], R.e[0][2]], uz = [R.e[2][0], R.e[2][2]];
+    const vx = C.c[0] - R.c[0], vz = C.c[2] - R.c[2], lx = vx * ux[0] + vz * ux[1], lz = vx * uz[0] + vz * uz[1];
+    const qx = Math.max(-R.h[0], Math.min(R.h[0], lx)), qz = Math.max(-R.h[2], Math.min(R.h[2], lz)), ex = lx - qx, ez = lz - qz, d = Math.hypot(ex, ez);
+    let nl;
+    if (d > 1e-6) { prof = C.r - d; nl = [ex / d, ez / d]; }
+    else { const fx = R.h[0] - Math.abs(lx), fz = R.h[2] - Math.abs(lz); if (fx < fz) { prof = C.r + fx; nl = [Math.sign(lx) || 1, 0]; } else { prof = C.r + fz; nl = [0, Math.sign(lz) || 1]; } }
+    /* nl aponta do retângulo para o círculo; n é a direção para empurrar A */
+    const w = [nl[0] * ux[0] + nl[1] * uz[0], nl[0] * ux[1] + nl[1] * uz[1]]; n = A.cil ? w : [-w[0], -w[1]];
+  } else {
+    prof = 1e9; n = [1, 0];
+    for (const E of [A, B]) for (const k of [0, 2]) {
+      const ax = [E.e[k][0], E.e[k][2]], proj = R => Math.abs(R.h[0] * (R.e[0][0] * ax[0] + R.e[0][2] * ax[1])) + Math.abs(R.h[2] * (R.e[2][0] * ax[0] + R.e[2][2] * ax[1]));
+      const dist = dx * ax[0] + dz * ax[1], ov = proj(A) + proj(B) - Math.abs(dist);
+      if (ov < prof) { prof = ov; n = dist > 0 ? [-ax[0], -ax[1]] : ax; }
+    }
+  }
+  if (prof <= 0) return null;
+  /* empurrar para cima resolveria com menos? (coisa apoiada um pouco para dentro do tampo) — a profundidade é o menor dos dois */
+  const ponto = [(A.c[0] + B.c[0]) / 2, (Math.max(yA[0], yB[0]) + Math.min(yA[1], yB[1])) / 2, (A.c[2] + B.c[2]) / 2];
+  return { prof: Math.min(prof, oy), plano: prof, ponto, n: [n[0], 0, n[1]] };
+}
+function colisaoEntreObjetos(o1, o2, g0, tol) {
+  tol = tol === undefined ? 0.03 : tol;
+  const PA = partesDoObjeto(o1, g0), PB = partesDoObjeto(o2, g0); let best = null;
+  for (const a of PA) for (const b of PB) { const r = sobrepoePartes(a, b); if (r && r.prof > tol && (!best || r.prof > best.prof)) best = r; }
+  return best ? [Object.assign(best, { pa: "objeto", pb: "objeto" })] : [];
+}
+/* cores do objeto: as dele (o._cor, calculadas pela cena) ou a paleta neutra */
+function hx(h) { const m = /^#?([0-9a-f]{6})$/i.exec(h || ""); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function mistura(a, b, t) { const A = hx(a), B = hx(b); if (!A || !B) return a; return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+function paletaObjeto(o, pal) {
+  const c = o._cor; if (!c) return pal;
+  return Object.assign({}, pal, { fill: c.fill, ink: c.ink, shade1: mistura(c.fill, c.ink, 0.12), shade2: mistura(c.fill, c.ink, 0.26), shade3: mistura(c.fill, c.ink, 0.42) });
+}
 
 /* ===== desenho ===== */
 function camInfo(p) {
   const cam = makeXf(Object.assign({}, p, { wRot: 0 })), S = effScale(p), d = Math.max(3, p.camDist || 30);
   const cs = w => cam([w[0] - (p.tx || 0), w[1] - (p.ty || 0), w[2] - (p.tz || 0)]);
   const tela = q => { const k = p.persp ? d / Math.max(0.2 * d, d - q[2]) : 1; return [CX + S * (q[0] * k + p.panX), CY - S * (q[1] * k + p.panY), q[2]]; };
-  return { cam, cs, tela, d };
+  return { cam, cs, tela, d, persp: !!p.persp };
 }
 function luzCam(p) { const A = (p.lightAz || 0) * D, E = (p.lightEl || 45) * D; return [Math.sin(A) * Math.cos(E), Math.sin(E), Math.cos(A) * Math.cos(E)]; }
 const FACES = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]];
 function cantos(b) { const out = []; for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) out.push([0, 1, 2].map(q => b.c[q] + b.e[0][q] * sx * b.h[0] + b.e[1][q] * sy * b.h[1] + b.e[2][q] * sz * b.h[2])); return out; }
 /* desenha o objeto: faces visíveis com tom pela luz, contorno e sombra no chão; devolve também a profundidade por célula */
-function desenharObjeto(o, p, pal, g0, L) {
-  const ci = camInfo(p), LD = luzCam(p), bs = caixasDoObjeto(o, g0), faces = [];
+function desenharObjeto(o, p, pal0, g0, L) {
+  const pal = paletaObjeto(o, pal0);
+  const ci = camInfo(p), LD = luzCam(p), bs = partesDoObjeto(o, g0), faces = [], cils = [];
   /* direção da luz no mundo (a luz é fixa na vista): Rᵀ · LD */
   const ex = ci.cam([1, 0, 0]), ey = ci.cam([0, 1, 0]), ez = ci.cam([0, 0, 1]);
   const Lw = [ex[0] * LD[0] + ex[1] * LD[1] + ex[2] * LD[2], ey[0] * LD[0] + ey[1] * LD[1] + ey[2] * LD[2], ez[0] * LD[0] + ez[1] * LD[1] + ez[2] * LD[2]];
   let sombra = "";
   for (const b of bs) {
+    if (b.cil) { cils.push(cilindroFaces(b, ci, LD, faces)); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(cilPontos(b), Lw, g0, ci, pal); continue; }
     const C = cantos(b), Cc = C.map(ci.cs), T = Cc.map(ci.tela);
     FACES.forEach(f => {
       const a = Cc[f[0]], bb = Cc[f[1]], c = Cc[f[2]];
@@ -102,8 +181,46 @@ function desenharObjeto(o, p, pal, g0, L) {
   faces.sort((a, b) => a.z - b.z);
   const tom = l => l > 0.55 ? pal.fill : l > 0.15 ? pal.shade1 : l > -0.25 ? pal.shade2 : pal.shade3;
   let svg = "";
-  for (const fc of faces) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + (L.fill ? tom(L.shade ? fc.lum : 1) : "none") + ';stroke:' + pal.ink + ';stroke-width:1.5;stroke-linejoin:round"/>';
+  for (const fc of faces) {
+    /* lateral do cilindro: tom contínuo (degradê pela luz); faces planas: degraus de tom */
+    const cor = !L.fill ? "none" : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
+    /* lateral do cilindro: só preenchimento (o contorno vem depois, pela silhueta) */
+    if (fc.lado) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? cor : "none") + ';stroke-width:0.7;stroke-linejoin:round"/>';
+    else svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + pal.ink + ';stroke-width:1.5;stroke-linejoin:round"/>';
+  }
+  /* silhueta de cada cilindro (a projeção de um cilindro é convexa) */
+  cils.forEach(c => { const h = cascaConvexa(c.pts); if (h.length > 2) svg += '<path d="M' + h.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>'; });
   return { svg, sombra, z: zDasFaces(faces), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [] } };
+}
+/* cilindro: pontos dos círculos de baixo e de cima (no mundo) */
+const NCIL = 40;
+function cilPontos(b) {
+  const out = [];
+  for (const sy of [-1, 1]) for (let i = 0; i < NCIL; i++) { const a = i / NCIL * 2 * Math.PI; out.push([b.c[0] + Math.cos(a) * b.r, b.c[1] + sy * b.hh, b.c[2] + Math.sin(a) * b.r]); }
+  return out;
+}
+/* faces do cilindro: quadriláteros da lateral (só os voltados para a câmera) e as tampas visíveis */
+function cilindroFaces(b, ci, LD, faces) {
+  const W0 = cilPontos(b), Cc = W0.map(ci.cs), T = Cc.map(ci.tela), olho = q => ci.persp ? [-q[0], -q[1], ci.d - q[2]] : [0, 0, 1];
+  const cen = ci.cs(b.c);
+  for (let i = 0; i < NCIL; i++) {
+    const j = (i + 1) % NCIL, q = [i, j, NCIL + j, NCIL + i], m = [0, 1, 2].map(k => (Cc[i][k] + Cc[j][k] + Cc[NCIL + i][k] + Cc[NCIL + j][k]) / 4);
+    const a = (i + 0.5) / NCIL * 2 * Math.PI, nw = [Math.cos(a), 0, Math.sin(a)], nc0 = ci.cs([b.c[0] + nw[0], b.c[1], b.c[2] + nw[2]]), n = [nc0[0] - cen[0], nc0[1] - cen[1], nc0[2] - cen[2]];
+    const e = olho(m); if (n[0] * e[0] + n[1] * e[1] + n[2] * e[2] <= 0) continue;
+    faces.push({ pts: q.map(k => T[k]), z: m[2], lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], lado: true });
+  }
+  for (const sy of [-1, 1]) {
+    const ids = [...Array(NCIL).keys()].map(i => i + (sy > 0 ? NCIL : 0)), m = ci.cs([b.c[0], b.c[1] + sy * b.hh, b.c[2]]), up = ci.cs([b.c[0], b.c[1] + sy * (b.hh + 1), b.c[2]]);
+    const n = [up[0] - m[0], up[1] - m[1], up[2] - m[2]], e = olho(m); if (n[0] * e[0] + n[1] * e[1] + n[2] * e[2] <= 0) continue;
+    /* tampa como leque de quadriláteros (para o recorte por profundidade) e um polígono só para o desenho */
+    faces.push({ pts: ids.map(k => T[k]), z: m[2] + 0.001, lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], tampa: true });
+  }
+  return { pts: T.map(q => [q[0], q[1]]) };
+}
+function sombraPts(W0, Lw, g0, ci, pal) {
+  const pts = W0.map(w => { const t = (w[1] - g0) / Lw[1]; return ci.tela(ci.cs([w[0] - Lw[0] * t, g0, w[2] - Lw[2] * t])); });
+  const hull = cascaConvexa(pts.map(q => [q[0], q[1]]));
+  return hull.length > 2 ? '<path d="M' + hull.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + pal.shade3 + ';stroke:none;opacity:.34"/>' : "";
 }
 function cascaConvexa(P) {
   const pts = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (pts.length < 3) return pts;
@@ -130,8 +247,8 @@ function zDasFaces(faces) {
       const zz = l1 * a[2] + l2 * b[2] + l3 * c[2], k = (cy - y0) * w + cx - x0; if (zz > z[k]) z[k] = zz;
     }
   };
-  faces.forEach(f => { tri(f.pts[0], f.pts[1], f.pts[2]); tri(f.pts[0], f.pts[2], f.pts[3]); });
+  faces.forEach(f => { for (let i = 1; i + 1 < f.pts.length; i++) tri(f.pts[0], f.pts[i], f.pts[i + 1]); });
   return { x0, y0, w, h, z };
 }
 
-export { TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };
+export { colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };

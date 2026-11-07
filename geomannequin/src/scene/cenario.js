@@ -2,40 +2,91 @@
    objetos (banco, cadeira, caixa, degrau, mesa, parede), sentar/subir/encostar, orientar o corpo por eixo,
    deitar ao longo de um eixo, olhar para algo, mão/pé em um ponto, apontar. Eixos do mundo: x (lado), y (altura),
    z (profundidade; a câmera padrão olha de +z). 1 R ≈ 11,4 cm. */
-import { SCN, novoIdObjeto, P, setP } from "./modelo.js";
+import { SCN, novoIdObjeto, P, setP, nextHue, setCorObjeto, atualizarApoios } from "./modelo.js";
 import { doBodyPose, guardArms, POSE0 } from "./poses.js";
 import { pMundo } from "./colisoes.js";
-import { TIPOS_OBJETO, objetoPadrao, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
+import { TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
 
 const chaoY = () => restGround(SCN.list[0].params);
 /* roda uma função de pose com este manequim como ativo (as poses usam P) */
 function comP(it, fn) { const prev = P; setP(it.params); try { return fn(); } finally { setP(prev); } }
 
 /* ===== objetos ===== */
+const semAcento = t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+/* nomes aceitos (com sinônimos) → tipo */
+const SINONIMOS_OBJ = { "mesa redonda": "mesaRedonda", mesaredonda: "mesaRedonda", redonda: "mesaRedonda", cubo: "cubo", caixa: "caixa", bloco: "cubo", cama: "cama", cilindro: "cilindro", tubo: "cilindro",
+  copo: "copo", xicara: "copo", caneca: "copo", garrafa: "copo", coluna: "coluna", pilar: "coluna", poste: "coluna", barril: "barril", tambor: "barril", balde: "barril", banqueta: "banco", sofa: "cama", poltrona: "cadeira" };
+function tipoObjeto(tipo) {
+  const t = semAcento(tipo); if (TIPOS_OBJETO[t]) return t;
+  if (SINONIMOS_OBJ[t]) return SINONIMOS_OBJ[t];
+  const k = Object.keys(TIPOS_OBJETO).find(k => k.toLowerCase() === t.replace(/\s+/g, "")); if (k) return k;
+  throw new Error("Objeto desconhecido: “" + tipo + "”. Opções: " + Object.values(TIPOS_OBJETO).map(x => x.nome).join(", ") + ".");
+}
+/* tem tampo para apoiar coisas em cima? */
+const APOIAVEL = new Set(["banco", "cadeira", "caixa", "cubo", "degrau", "mesa", "cama", "cilindro", "barril", "mesaRedonda", "coluna"]);
+/* objetos que estão (direta ou indiretamente) em cima de q */
+function emCimaDe(q) { const out = []; const rec = id => SCN.objetos.forEach(o => { if (o.sobre === id && !out.includes(o)) { out.push(o); rec(o.id); } }); rec(q.id); return out; }
+/* o objeto de tampo mais alto sob o ponto (x, z) — o candidato a apoio quando se solta um objeto em cima de outro */
+function apoioSob(q, x, z) {
+  atualizarApoios(); const fora = new Set([q, ...emCimaDe(q)]); let best = null, hb = -1e9;
+  for (const o of SCN.objetos) {
+    if (fora.has(o) || !APOIAVEL.has(o.tipo)) continue;
+    const r = -(o.giro || 0) * D, dx = x - o.x, dz = z - o.z, lx = dx * Math.cos(r) + dz * Math.sin(r), lz = -dx * Math.sin(r) + dz * Math.cos(r);
+    const dentro = ehCilindro(o) ? Math.hypot(dx, dz) <= o.raio : Math.abs(lx) <= o.larg / 2 && Math.abs(lz) <= o.prof / 2;
+    const h = (o.base || 0) + o.alt; if (dentro && h > hb) { hb = h; best = o; }
+  }
+  return best;
+}
 function adicionarObjeto(tipo, o) {
-  if (SCN.objetos.length >= 24) throw new Error("Limite de 24 objetos na cena.");
-  const t = String(tipo || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-  const q = objetoPadrao(t, {}); q.id = novoIdObjeto();
-  editarObjeto(q, o || {});
-  SCN.objetos.push(q); return q;
+  if (SCN.objetos.length >= 40) throw new Error("Limite de 40 objetos na cena.");
+  const q = objetoPadrao(tipoObjeto(tipo), {}); q.id = novoIdObjeto();
+  SCN.objetos.push(q); q.hue = nextHue(q);
+  try { editarObjeto(q, o || {}); } catch (e) { SCN.objetos.splice(SCN.objetos.indexOf(q), 1); throw e; }
+  /* em cima de outro e sem posição dada: no centro do de baixo */
+  if (q.sobre && o && o.x === undefined && o.z === undefined) { const s = SCN.objetos.find(x => x.id === q.sobre); if (s) { q.x = s.x; q.z = s.z; } }
+  atualizarApoios(); return q;
 }
 function editarObjeto(q, o) {
-  const n = (v, mn, mx) => typeof v === "number" && isFinite(v) ? clamp(v, mn, mx) : undefined;
-  [["x", -40, 40], ["z", -40, 40], ["giro", -180, 180], ["larg", 0.3, 40], ["prof", 0.3, 40], ["alt", 0.2, 40], ["encosto", 0.5, 12]].forEach(([k, a, b]) => {
-    const v = n(o[k] !== undefined ? o[k] : o[{ larg: "largura", prof: "profundidade", alt: "altura" }[k]], a, b); if (v !== undefined) q[k] = v;
+  const n = (v, mn, mx) => typeof v === "number" && isFinite(v) ? clamp(v, mn, mx) : undefined, cil = ehCilindro(q);
+  const sin = { larg: "largura", prof: "profundidade", alt: "altura", raio: "diametro" };
+  const ox = q.x, oz = q.z;
+  [["x", -40, 40], ["z", -40, 40], ["giro", -180, 180], ["larg", 0.2, 40], ["prof", 0.2, 40], ["alt", 0.2, 40], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
+    let v0 = o[k] !== undefined ? o[k] : o[sin[k]]; if (k === "raio" && o.raio === undefined && typeof o.diametro === "number") v0 = o.diametro / 2;
+    const v = n(v0, a, b); if (v !== undefined) q[k] = Math.round(v * 1000) / 1000;
   });
+  if (cil) { if (o.raio === undefined && o.diametro === undefined && (o.larg !== undefined || o.largura !== undefined || o.prof !== undefined || o.profundidade !== undefined)) q.raio = Math.max(0.1, Math.max(q.larg, q.prof) / 2); q.larg = q.prof = 2 * q.raio; }
+  else if (q.raio !== undefined) delete q.raio;
   if (typeof o.nome === "string") q.nome = o.nome.slice(0, 24);
+  if (o.cor !== undefined) { if (o.cor === null || o.cor === "auto") { q.col = null; q.hue = nextHue(q); } else setCorObjeto(q, String(o.cor), o.contorno); }
+  if (o.sobre !== undefined) {
+    if (o.sobre === null || o.sobre === false || o.sobre === "chao" || o.sobre === "chão") q.sobre = null;
+    else { const s = o.sobre === "auto" ? apoioSob(q, q.x, q.z) : acharObjeto(o.sobre);
+      if (!s && o.sobre !== "auto") throw new Error("Objeto de apoio não encontrado: “" + o.sobre + "”.");
+      if (s && (s === q || emCimaDe(q).includes(s))) throw new Error("Um objeto não pode ficar em cima de si mesmo.");
+      q.sobre = s ? s.id : null; }
+  }
+  /* quem está em cima vai junto */
+  if (q.x !== ox || q.z !== oz) emCimaDe(q).forEach(c => { c.x = Math.round((c.x + q.x - ox) * 1000) / 1000; c.z = Math.round((c.z + q.z - oz) * 1000) / 1000; });
+  atualizarApoios();
   return q;
 }
 function removerObjeto(q) {
   const i = SCN.objetos.indexOf(q); if (i < 0) return;
   SCN.objetos.splice(i, 1); SCN.list.forEach(it => { if (it.apoioEm === q.id) it.apoioEm = null; });
+  /* o que estava em cima cai para o apoio de baixo (ou para o chão) */
+  SCN.objetos.forEach(o => { if (o.sobre === q.id) o.sobre = q.sobre || null; });
+  atualizarApoios();
+}
+function duplicarObjeto(q) {
+  const o = Object.assign({}, q); delete o.id; delete o.hue; delete o.col; delete o.base;
+  const c = adicionarObjeto(q.tipo, Object.assign(o, { x: q.x + Math.max(2, q.larg + 1), nome: q.nome ? (q.nome + " (cópia)").slice(0, 24) : undefined, sobre: undefined }));
+  c.sobre = q.sobre; atualizarApoios(); return c;
 }
 function acharObjeto(ref) {
   if (ref && typeof ref === "object" && ref.id) return SCN.objetos.find(o => o.id === ref.id) || null;
-  if (typeof ref === "number") return SCN.objetos[ref] || null;
-  const s = String(ref || "").toLowerCase();
-  return SCN.objetos.find(o => (o.nome || "").toLowerCase() === s) || SCN.objetos.find(o => o.tipo === s) || null;
+  if (typeof ref === "number") return SCN.objetos.find(o => o.id === ref) || SCN.objetos[ref] || null;
+  const s = semAcento(ref); let t = null; try { t = tipoObjeto(ref); } catch (e) { }
+  return SCN.objetos.find(o => semAcento(o.nome) === s) || SCN.objetos.find(o => o.tipo === t) || null;
 }
 
 /* ===== orientação ===== */
@@ -159,4 +210,4 @@ function encostarEm(it, ref) {
   it.apoioEm = q.id; return q;
 }
 
-export { adicionarObjeto, editarObjeto, removerObjeto, acharObjeto, direcaoMundo, orientar, deitar, olharPara, maoEm, peEm, apontarPara, isquios, sentar, subirEm, encostarEm, DIRS };
+export { adicionarObjeto, editarObjeto, removerObjeto, duplicarObjeto, acharObjeto, apoioSob, emCimaDe, tipoObjeto, APOIAVEL, direcaoMundo, orientar, deitar, olharPara, maoEm, peEm, apontarPara, isquios, sentar, subirEm, encostarEm, DIRS };

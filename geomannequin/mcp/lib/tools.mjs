@@ -280,29 +280,34 @@ export function registerAll(server, getWorld, opts = {}) {
 
   server.registerTool("objetos", {
     title: "Objetos da cena",
-    description: "Adiciona, move ou remove objetos de apoio (banco, cadeira, caixa, degrau, mesa, parede). Os manequins podem sentar, subir ou encostar neles (editar_manequim: sentar/subir/encostar). Medidas em R (1 R ≈ 11,4 cm).",
+    description: "Adiciona, edita, copia ou remove objetos: caixas (banco, cadeira, caixa, cubo, degrau, mesa, cama, parede) e cilindros (cilindro, copo, coluna, barril, mesaRedonda). Cada objeto tem uma cor exclusiva (automática ou \"#RRGGBB\" que nenhum outro item usa). \"sobre\" põe um objeto em cima de outro (copo sobre a mesa: a base dele segue o topo do de baixo e ele vai junto quando o de baixo se move). Colisões entre objetos e com os manequins aparecem em colisoes. Os manequins podem sentar, subir ou encostar neles (editar_manequim). Medidas em R (1 R ≈ 11,4 cm).",
     inputSchema: {
-      acao: z.enum(["adicionar", "editar", "remover", "listar"]),
+      acao: z.enum(["adicionar", "editar", "copiar", "remover", "listar"]),
       tipo: OBJ_E.optional(),
-      nome: z.string().optional().describe("Nome do objeto (para editar/remover; também dá nome ao novo)."),
+      nome: z.string().optional().describe("Nome do objeto (para editar/copiar/remover; também dá nome ao novo)."),
       x: z.number().optional(), z: z.number().optional(), giro: z.number().optional().describe("Graus."),
-      largura: z.number().optional(), profundidade: z.number().optional(), altura: z.number().optional()
+      largura: z.number().optional().describe("Caixas."), profundidade: z.number().optional().describe("Caixas."), raio: z.number().optional().describe("Cilindros."), altura: z.number().optional(),
+      cor: z.string().optional().describe("\"#RRGGBB\" exclusiva, ou \"auto\"."),
+      sobre: z.string().optional().describe("Nome/tipo do objeto de baixo; \"chao\" para voltar ao chão; \"auto\" para o tampo que estiver embaixo.")
     },
     annotations: RW
   }, guard((a) => {
     const w = W();
-    const med = {}; if (a.largura !== undefined) med.larg = a.largura; if (a.profundidade !== undefined) med.prof = a.profundidade; if (a.altura !== undefined) med.alt = a.altura;
+    const med = {}; if (a.largura !== undefined) med.larg = a.largura; if (a.profundidade !== undefined) med.prof = a.profundidade; if (a.altura !== undefined) med.alt = a.altura; if (a.raio !== undefined) med.raio = a.raio;
     const { r, avisos } = run(w, () => {
       if (a.acao === "listar") return w.cena.objetos().map(o => o.info());
-      if (a.acao === "adicionar") { if (!a.tipo) throw new Error("Diga o tipo do objeto."); const o = w.cena.objeto(a.tipo, Object.assign({ x: a.x ?? 0, z: a.z ?? 0, giro: a.giro ?? 0 }, med)); if (a.nome) o.renomear(a.nome); return [o.info()]; }
-      const o = w.cena.objetos().find(q => q.nome === (a.nome || a.tipo) || q.tipo === (a.nome || a.tipo)); if (!o) throw new Error("Objeto não encontrado.");
+      const extra = o => { if (a.cor !== undefined) o.cor(a.cor); if (a.sobre !== undefined) o.sobre(/^ch[aã]o$/i.test(a.sobre) ? null : a.sobre); };
+      if (a.acao === "adicionar") { if (!a.tipo) throw new Error("Diga o tipo do objeto."); const o = w.cena.objeto(a.tipo, Object.assign({ x: a.x ?? 0, z: a.z ?? 0, giro: a.giro ?? 0 }, med)); if (a.nome) o.renomear(a.nome); extra(o); return [o.info()]; }
+      const o = w.cena.obterObjeto(a.nome || a.tipo);
       if (a.acao === "remover") { o.remover(); return []; }
+      if (a.acao === "copiar") { const c = o.duplicar(); if (a.x !== undefined || a.z !== undefined) c.posicao(a.x ?? c.info().x, a.z ?? c.info().z); return [c.info()]; }
       if (a.x !== undefined || a.z !== undefined) o.posicao(a.x ?? o.info().x, a.z ?? o.info().z);
       if (a.giro !== undefined) o.girar(a.giro);
       if (Object.keys(med).length) o.medidas(med);
+      extra(o);
       return [o.info()];
     });
-    return ok(w, a.acao === "listar" ? "Objetos: " + (r.length ? r.map(o => `${o.nome} (${o.tipo}) em x=${o.x}, z=${o.z}`).join("; ") : "nenhum") : "Objeto " + (a.acao === "remover" ? "removido." : "pronto."), avisos, { objetos: r });
+    return ok(w, a.acao === "listar" ? "Objetos: " + (r.length ? r.map(o => `${o.nome} (${o.tipo}, ${o.cor}) em x=${o.x}, z=${o.z}${o.sobre ? " sobre " + o.sobre : ""}`).join("; ") : "nenhum") : "Objeto " + (a.acao === "remover" ? "removido." : a.acao === "copiar" ? "copiado." : "pronto."), avisos, { objetos: r });
   }));
 
   server.registerTool("luz", {
@@ -395,7 +400,7 @@ export function registerAll(server, getWorld, opts = {}) {
     annotations: RO
   }, guard(async (a) => {
     const w = W(), d = w.leituraBlocking(), m = v => Math.round(v * 0.114 * 100) / 100, modo = a.lateral || "camera";
-    const pts = []; d.manequins.forEach(q => pts.push([q.x - 3, q.z - 3], [q.x + 3, q.z + 3])); d.objetos.forEach(o => pts.push([o.x, o.z])); pts.push([d.camera.pos[0], d.camera.pos[2]], [d.camera.alvo[0], d.camera.alvo[2]]);
+    const pts = []; d.manequins.forEach(q => pts.push([q.x - 3, q.z - 3], [q.x + 3, q.z + 3])); d.objetos.forEach(o => pts.push([o.x - o.larg / 2, o.z - o.prof / 2], [o.x + o.larg / 2, o.z + o.prof / 2])); pts.push([d.camera.pos[0], d.camera.pos[2]], [d.camera.alvo[0], d.camera.alvo[2]]);
     const vc = w.encaixar(pts, 520, 420, 34), E = w.eixoPerfil(d, modo), u = q => (q[0] - E.o[0]) * E.r[0] + (q[2] - E.o[2]) * E.r[2];
     const pl = [[u(d.camera.pos), d.chao], [u(d.camera.pos), d.camera.pos[1]], [u(d.camera.alvo), d.camera.alvo[1]], [u(d.camera.pos), d.chao + d.alturaPessoa * 1.2]];
     d.manequins.forEach(q => q.caps.forEach(c => pl.push([u(c.a), c.a[1] + c.r], [u(c.b), c.b[1] - c.r])));
@@ -404,7 +409,7 @@ export function registerAll(server, getWorld, opts = {}) {
     const C = d.camera, info = {
       camera: { posicao_m: C.pos.map((v, i) => m(i === 1 ? v - d.chao : v)), alvo_m: C.alvo.map((v, i) => m(i === 1 ? v - d.chao : v)), lente_mm: Math.round(C.lente), campo_horizontal_graus: Math.round(C.fovH), perspectiva: C.persp, distancia_ao_alvo_m: m(C.d) },
       manequins: d.manequins.map(q => ({ nome: q.nome, x_m: m(q.x), z_m: m(q.z), giro: q.giro, profundidade_m: m(q.foto.prof), altura_na_foto: Math.round(q.foto.frac * 100) + "%", na_foto: q.foto.atras ? "atrás da câmera" : !q.foto.dentro ? "fora" : q.foto.inteiro ? "inteiro" : "cortado" })),
-      objetos: d.objetos.map(o => ({ nome: o.nome, x_m: m(o.x), z_m: m(o.z), giro: o.giro }))
+      objetos: d.objetos.map(o => ({ nome: o.nome, tipo: o.tipo, cor: o.cor.fill, x_m: m(o.x), z_m: m(o.z), giro: o.giro, sobre: o.sobre ? (d.objetos.find(q => q.id === o.sobre) || {}).nome || null : null }))
     };
     const txt = "Câmera em (" + info.camera.posicao_m.join(", ") + ") m, " + (C.persp ? info.camera.lente_mm + " mm" : "sem perspectiva") + ".\n" + info.manequins.map(q => "- " + q.nome + ": (" + q.x_m + ", " + q.z_m + ") m, a " + q.profundidade_m + " m da câmera, " + q.altura_na_foto + " da altura da foto (" + q.na_foto + ")").join("\n");
     return { content: [{ type: "image", data: cima.toString("base64"), mimeType: "image/png" }, { type: "image", data: lado.toString("base64"), mimeType: "image/png" }, { type: "text", text: txt }], structuredContent: info };

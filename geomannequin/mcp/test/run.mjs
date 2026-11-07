@@ -76,6 +76,13 @@ async function suite(client, tag) {
   check(!r.isError && r.structuredContent.manequins.length === 3 && r.structuredContent.feito.length >= 6, "descrever_cena: " + (r.structuredContent && r.structuredContent.feito || []).length + " ações");
   r = await call("objetos", { acao: "adicionar", tipo: "cadeira", x: -6, nome: "Cadeira" });
   check(!r.isError && r.structuredContent.objetos[0].tipo === "cadeira", "objetos: adicionar");
+  r = await call("objetos", { acao: "adicionar", tipo: "mesa", x: 12, nome: "Mesa" });
+  r = await call("objetos", { acao: "adicionar", tipo: "copo", sobre: "Mesa", cor: "#2E86C1" });
+  check(!r.isError && r.structuredContent.objetos[0].sobre === "Mesa" && r.structuredContent.objetos[0].base > 6 && r.structuredContent.objetos[0].cor === "#2e86c1", "objetos: copo sobre a mesa, com cor própria");
+  r = await call("objetos", { acao: "editar", nome: "Mesa", cor: "#2E86C1" });
+  check(r.isError || /usada/.test(JSON.stringify(r)), "objetos: cor repetida é recusada");
+  r = await call("objetos", { acao: "adicionar", tipo: "cilindro", x: 20, raio: 1.5, altura: 5 });
+  check(!r.isError && r.structuredContent.objetos[0].forma === "cilindro" && r.structuredContent.objetos[0].raio === 1.5, "objetos: cilindro com raio");
   r = await call("editar_manequim", { manequim: "1", sentar: "Cadeira", olhar: "câmera", gesto: { lado: "direita", nome: "joinha" }, articulacoes: [{ nome: "cotovelo esquerdo", dobrar: 200 }, { nome: "pescoço", girar: 20 }] });
   check(!r.isError && /limite/.test((r.structuredContent.avisos || []).join(" ")), "editar_manequim: sentar, olhar, gesto e articulações com limite");
   r = await call("editar_manequim", { manequim: "2", deitar: { tipo: "brucos", eixo: "-z" }, espelhar: true });

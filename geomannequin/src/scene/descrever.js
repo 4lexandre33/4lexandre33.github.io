@@ -20,6 +20,13 @@ const POSE_PALAVRAS = (() => {
   return Object.keys(m).sort((a, b) => b.length - a.length).map(k => [k, m[k]]);
 })();
 const EIXO = "([+-]?\\s*[xyz])\\b";
+/* objetos por palavra (sem acento) → tipo; as mais longas primeiro (“mesa redonda” vence “mesa”) */
+const OBJ_PALAVRAS = [["mesa redonda", "mesaRedonda"], ["mesa", "mesa"], ["cadeira", "cadeira"], ["poltrona", "cadeira"], ["cama", "cama"], ["sofa", "cama"], ["banco", "banco"], ["banqueta", "banco"], ["caixa", "caixa"], ["cubo", "cubo"], ["bloco", "cubo"],
+  ["degrau", "degrau"], ["parede", "parede"], ["cilindro", "cilindro"], ["copo", "copo"], ["xicara", "copo"], ["caneca", "copo"], ["garrafa", "copo"], ["coluna", "coluna"], ["pilar", "coluna"], ["barril", "barril"], ["tambor", "barril"]];
+const OBJ_RE = OBJ_PALAVRAS.map(p => p[0]).join("|");
+/* cores por nome (o app ajusta um pouco se já houver um item com a mesma cor) */
+const CORES = { azul: "#7fa8e0", "azul claro": "#a9cdf2", "azul escuro": "#3f63a8", vermelho: "#e07a6f", vermelha: "#e07a6f", verde: "#86c98a", "verde escuro": "#4c8a53", amarelo: "#ecd06f", amarela: "#ecd06f",
+  laranja: "#efa865", roxo: "#ad8fd6", roxa: "#ad8fd6", lilas: "#c4b1e6", rosa: "#ec9fc0", branco: "#f4f4f2", branca: "#f4f4f2", preto: "#3a3a40", preta: "#3a3a40", cinza: "#a9adb5", marrom: "#a5795a", bege: "#e2cfae", madeira: "#c79b6b", turquesa: "#6fcfc4", vinho: "#9c4a5a" };
 
 function acharPose(t) {
   for (const [k, v] of POSE_PALAVRAS) { const re = new RegExp("(^|[^a-z])" + k.replace(/\s+/g, "\\s+") + "($|[^a-z])"); if (re.test(t)) return v; }
@@ -40,11 +47,15 @@ function manequimRef(s) { const m = /manequim\s+(\d+|\w+)/.exec(s); if (!m) retu
 function trechos(txt) {
   const t = sem(txt).replace(/[“”"]/g, "");
   const nomes = SCN.list.map(it => sem(it.name)).filter(n => !/^manequim \d+$/.test(n)).sort((a, b) => b.length - a.length);
-  const pats = ["manequim\\s+(?:\\d+|" + Object.keys(NUMS).join("|") + ")\\b", "(?:o\\s+|a\\s+)?(?:\\d+|" + Object.keys(NUMS).join("|") + ")[ºo°]?\\s+manequim\\b", "c[a]mera\\b|camara\\b", "\\bluz\\b", "\\bcena\\b"]
+  const pats = ["(?:\\b(?:um|uma|o|a)\\s+)?(?:" + OBJ_RE + ")s?\\b", "manequim\\s+(?:\\d+|" + Object.keys(NUMS).join("|") + ")\\b", "(?:o\\s+|a\\s+)?(?:\\d+|" + Object.keys(NUMS).join("|") + ")[ºo°]?\\s+manequim\\b", "c[a]mera\\b|camara\\b", "\\bluz\\b", "\\bcena\\b"]
     .concat(nomes.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b"));
   const re = new RegExp(pats.join("|"), "g"), marcas = []; let m;
   /* “olhando para o manequim 2”, “virado para a câmera”: é referência, não sujeito */
-  while ((m = re.exec(t))) { if (/(?:\b(?:para|pra|pro|do|da|no|na|ao|com|entre|ate|sobre|perto|de|em)\s+(?:o\s+|a\s+)?)$/.test(t.slice(0, m.index)) && !/^(?:o\s|a\s)/.test(m[0])) continue; marcas.push({ i: m.index, s: m[0] }); }
+  const ehObj = new RegExp("^(?:(?:um|uma|o|a)\\s+)?(?:" + OBJ_RE + ")s?$");
+  while ((m = re.exec(t))) {
+    /* objeto citado como lugar (“sobre a mesa”, “sentado no banco”, “perto da parede”): referência, não sujeito */
+    if (ehObj.test(m[0].trim()) && /\b(?:sobre|cima\s+d[oa]|n[oa]s?|d[oa]s?|para|pra|pro|em|com|ate|perto\s+d[oa]|lado\s+d[oa]|frente\s+d[oa])\s+(?:o\s+|a\s+)?$/.test(t.slice(0, m.index) + (/^(?:o|a)\s/.test(m[0]) ? m[0].slice(0, 2) : ""))) continue;
+    if (/(?:\b(?:para|pra|pro|do|da|no|na|ao|com|entre|ate|sobre|perto|de|em)\s+(?:o\s+|a\s+)?)$/.test(t.slice(0, m.index)) && !/^(?:o\s|a\s)/.test(m[0])) continue; marcas.push({ i: m.index, s: m[0] }); }
   if (!marcas.length) return [{ sujeito: { indice: 1 }, texto: t }];
   const out = [];
   if (marcas[0].i > 0 && /[a-z]/.test(t.slice(0, marcas[0].i))) out.push({ sujeito: { cena: true }, texto: t.slice(0, marcas[0].i) });
@@ -53,6 +64,7 @@ function trechos(txt) {
     if (/^c[a]m|^camara/.test(s)) suj = { camera: true };
     else if (s === "luz") suj = { luz: true };
     else if (s === "cena") suj = { cena: true };
+    else if (new RegExp("^(?:(?:um|uma|o|a)\\s+)?(?:" + OBJ_RE + ")s?$").test(s)) { const w = s.replace(/^(?:um|uma|o|a)\s+/, "").replace(/s$/, ""); suj = { objeto: (OBJ_PALAVRAS.find(p => p[0] === w) || OBJ_PALAVRAS.find(p => w.startsWith(p[0])))[1], novo: /^(um|uma)\s/.test(s) }; }
     else if (/manequim/.test(s)) { const n = /(\d+)/.exec(s) ? +/(\d+)/.exec(s)[1] : NUMS[s.split(/\s+/).find(w => NUMS[w])]; suj = { indice: n || 1 }; }
     else suj = { nome: SCN.list.find(it => sem(it.name) === s).name };
     out.push({ sujeito: suj, texto: t.slice(k.i + k.s.length, fim) });
@@ -131,16 +143,49 @@ function aplicarCamera(cam, t, feito) {
   const gi = numero(/(?:girad[ao]|azimute|yaw)\s+(-?\d+)/, t); if (gi !== null) cam.girar(gi);
 }
 
+/* aplica um trecho a um objeto: “copo sobre a mesa”, “mesa azul”, “cadeira à direita do manequim 1, girada 90” */
+function aplicarObjeto(suj, t, api, feito, usadosObj) {
+  const lista = api.cena.objetos(), livre = lista.filter(o => o.tipo === suj.objeto && !usadosObj.has(o.id));
+  let o = !suj.novo && (lista.filter(o => o.tipo === suj.objeto).length === 1 ? lista.find(o => o.tipo === suj.objeto) : livre[0]);
+  let criado = false;
+  if (!o) { o = api.cena.objeto(suj.objeto, {}); feito.push("criado " + o.nome); criado = true; }
+  usadosObj.add(o.id);
+  /* em cima de outro */
+  const so = new RegExp("(?:sobre|em\\s+cima\\s+d[oa]|n[oa])\\s+(?:o\\s+|a\\s+)?(" + OBJ_RE + ")\\b").exec(t);
+  if (so) { const tp = OBJ_PALAVRAS.find(p => p[0] === so[1])[1]; let base = api.cena.objetos().find(q => q.tipo === tp && q.id !== o.id);
+    if (!base) { base = api.cena.objeto(tp, {}); feito.push("criado " + base.nome); usadosObj.add(base.id); }
+    o.sobre(base); feito.push(o.nome + " sobre " + base.nome); }
+  /* perto de um manequim: à direita/esquerda/frente/atrás (eixos do mundo) */
+  const pe = /(a\s+direita|a\s+esquerda|na\s+frente|em\s+frente|atras|ao\s+lado)\s+d[oa]\s+(manequim\s+\w+)/.exec(t);
+  if (pe && !so) { const r = manequimRef(pe[2]), mq = r ? api.manequim(r.indice) : null;
+    if (mq) { const f = mq.info(), i = o.info(), larg = (i.largura || 2 * i.raio), prof = (i.profundidade || 2 * i.raio), d = { "a direita": [1, 0], "ao lado": [1, 0], "a esquerda": [-1, 0], "na frente": [0, 1], "em frente": [0, 1], "atras": [0, -1] }[pe[1].replace(/\s+/g, " ")];
+      o.posicao(f.x + d[0] * (3.2 + larg / 2), f.z + d[1] * (3.2 + prof / 2)); feito.push(o.nome + " " + { "a direita": "à direita", "a esquerda": "à esquerda", "na frente": "na frente", "em frente": "em frente", "atras": "atrás", "ao lado": "ao lado" }[pe[1].replace(/\s+/g, " ")] + " de " + mq.nome); } }
+  /* novo, sem lugar pedido: ao lado de tudo o que já está na cena (para não nascer dentro de um manequim) */
+  if (criado && !so && !(pe && !so)) { let mx = -1e9; api.cena.lista().forEach(q => { mx = Math.max(mx, q.info().x + 2.5); });
+    api.cena.objetos().forEach(q => { if (q.id === o.id) return; const i = q.info(); if (!i.sobre) mx = Math.max(mx, i.x + (i.largura || 2 * i.raio) / 2); });
+    const i = o.info(); o.posicao(Math.round((mx + 1.5 + (i.largura || 2 * i.raio) / 2) * 2) / 2, 0); }
+  const gi = numero(/(?:girad[oa]|virad[oa]|giro)\s+(-?\d+)/, t); if (gi !== null) o.girar(gi);
+  const al = /altura\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*(cm|m)/.exec(t); if (al) { const v = parseFloat(al[1].replace(",", ".")) * (al[2] === "cm" ? 0.01 : 1) / 0.114; o.medidas({ altura: v }); }
+  const ra = /raio\s+(?:de\s+)?(\d+(?:[.,]\d+)?)\s*(cm|m)/.exec(t); if (ra) { const v = parseFloat(ra[1].replace(",", ".")) * (ra[2] === "cm" ? 0.01 : 1) / 0.114; o.medidas({ raio: v }); }
+  /* cor por nome: se já houver um item com cor parecida, clareia/escurece até ficar exclusiva */
+  const cn = Object.keys(CORES).sort((a, b) => b.length - a.length).find(k => new RegExp("\\b" + k + "\\b").test(t));
+  if (cn) { const base = CORES[cn]; let ok = false;
+    for (const k of [0, 0.15, -0.15, 0.3, -0.3, 0.45]) { const c = k >= 0 ? misturaCor(base, "#ffffff", k) : misturaCor(base, "#000000", -k); try { o.cor(c); ok = true; break; } catch (e) { } }
+    feito.push(o.nome + (ok ? " " + cn : ": cor " + cn + " já usada")); }
+}
+function misturaCor(a, b, t) { const h = x => [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16)), A = h(a), B = h(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+
 /* api: {cena, camera, manequim(i)} — dado por comandos.js (evita dependência circular) */
 function descreverCena(texto, api) {
-  const feito = [], avisos = [], usados = new Set();
+  const feito = [], avisos = [], usados = new Set(), usadosObj = new Set();
   let enq = true;
   /* a câmera primeiro: “virado para a câmera” usa a câmera já posicionada */
-  const tr = trechos(texto).sort((a, b) => (b.sujeito.camera ? 1 : 0) - (a.sujeito.camera ? 1 : 0));
+  const ordemSuj = x => x.camera ? 0 : x.objeto ? 2 : 1, tr = trechos(texto).sort((a, b) => ordemSuj(a.sujeito) - ordemSuj(b.sujeito));
   for (const { sujeito, texto: t } of tr) {
     try {
       if (sujeito.camera) { aplicarCamera(api.camera, t, feito); continue; }
       if (sujeito.luz) { const a = numero(/(-?\d+)/, t); if (a !== null) api.camera.luz(a); continue; }
+      if (sujeito.objeto) { aplicarObjeto(sujeito, t, api, feito, usadosObj); continue; }
       if (sujeito.cena) { if (/sem\s+enquadrar/.test(t)) enq = false; if (/sem\s+sombra/.test(t)) api.cena.sombras(false); continue; }
       let m;
       if (sujeito.nome) m = api.cena.obter(sujeito.nome);

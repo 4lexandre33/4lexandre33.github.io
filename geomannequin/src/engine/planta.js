@@ -91,12 +91,29 @@ function svgPlanta(dados, v, opts) {
       });
     }
   }
-  /* objetos */
-  (dados.objetos || []).forEach(ob => {
-    ob.caixas.forEach(b => { const pts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => m3([b.c[0] + i * b.h[0] * b.e[0][0] + j * b.h[2] * b.e[2][0], 0, b.c[2] + i * b.h[0] * b.e[0][2] + j * b.h[2] * b.e[2][2]]));
-      o.push('<path d="M' + pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-obj"/>'); });
-    const c = m3([ob.x, 0, ob.z]); o.push('<text x="' + f1(c[0]) + '" y="' + f1(c[1] + 3) + '" class="blk-txt blk-obj-txt">' + esc(ob.nome) + "</text>");
+  /* objetos: cada um na sua cor; partes mais baixas primeiro (o tampo cobre as pernas); alças de girar e de tamanho no selecionado */
+  [...(dados.objetos || [])].sort((a, b) => (a.base || 0) - (b.base || 0)).forEach(ob => {
+    const cor = ob.cor || { fill: "#E4E4EB", ink: "#586577" }, st = ' style="fill:' + cor.fill + ";stroke:" + cor.ink + '"';
+    let g = '<g data-k="o:' + ob.id + '" class="blk-obj-g' + (ob.sel ? " sel" : "") + '">';
+    [...ob.caixas].sort((a, b) => (a.c[1] + a.h[1]) - (b.c[1] + b.h[1])).forEach(b => {
+      if (b.cil) { const c = m3(b.c); g += '<circle cx="' + f1(c[0]) + '" cy="' + f1(c[1]) + '" r="' + f1(Math.max(1.5, b.r * v.s)) + '" class="blk-obj"' + st + "/>"; return; }
+      const pts = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => m3([b.c[0] + i * b.h[0] * b.e[0][0] + j * b.h[2] * b.e[2][0], 0, b.c[2] + i * b.h[0] * b.e[0][2] + j * b.h[2] * b.e[2][2]]));
+      g += '<path d="M' + pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-obj"' + st + "/>";
+    });
+    o.push(g + "</g>");
+    const c = m3([ob.x, 0, ob.z]);
+    if (ob.sel) {
+      const r = (ob.giro || 0) * D, ex = [Math.cos(r), -Math.sin(r)], ez = [Math.sin(r), Math.cos(r)], hl = ob.larg / 2, hp = ob.prof / 2;
+      const contorno = ob.forma === "cilindro" ? '<circle cx="' + f1(c[0]) + '" cy="' + f1(c[1]) + '" r="' + f1(ob.raio * v.s + 4) + '" class="blk-sel"/>'
+        : '<path d="M' + [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => m3([ob.x + i * hl * ex[0] + j * hp * ez[0], 0, ob.z + i * hl * ex[1] + j * hp * ez[1]])).map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" class="blk-sel"/>';
+      const fr = m3([ob.x + ez[0] * (hp + 1.2), 0, ob.z + ez[1] * (hp + 1.2)]), canto = ob.forma === "cilindro" ? m3([ob.x + ex[0] * ob.raio, 0, ob.z + ex[1] * ob.raio]) : m3([ob.x + hl * ex[0] + hp * ez[0], 0, ob.z + hl * ex[1] + hp * ez[1]]);
+      o.push(contorno + '<path d="M' + f1(c[0]) + " " + f1(c[1]) + "L" + f1(fr[0]) + " " + f1(fr[1]) + '" class="blk-mira"/><circle cx="' + f1(fr[0]) + '" cy="' + f1(fr[1]) + '" r="6" class="blk-alca" data-k="orot:' + ob.id + '"><title>Girar</title></circle>' +
+        '<rect x="' + f1(canto[0] - 5) + '" y="' + f1(canto[1] - 5) + '" width="10" height="10" class="blk-alca" data-k="otam:' + ob.id + '"><title>' + (ob.forma === "cilindro" ? "Raio" : "Largura e profundidade") + "</title></rect>");
+    }
+    o.push('<text x="' + f1(c[0]) + '" y="' + f1(c[1] + 3) + '" class="blk-txt blk-obj-txt" style="fill:' + cor.ink + '">' + esc(ob.nome) + "</text>");
   });
+  /* colisões: marcas nos pontos de contato */
+  (dados.colisoes || []).forEach(q => { const c = m3(q); o.push('<circle cx="' + f1(c[0]) + '" cy="' + f1(c[1]) + '" r="6" class="blk-col"/>'); });
   /* manequins: silhueta de cima, seta de orientação (alça para girar), nome e tamanho na foto */
   dados.manequins.forEach(mq => {
     o.push(silhueta(mq.caps, m3, v.s, mq.cor, mq.id, mq.oculto ? 0.35 : 1));
@@ -150,10 +167,20 @@ function svgPerfil(dados, v, modo) {
   }
   /* objetos e manequins, do mais distante (mais claro) para o mais próximo de quem olha */
   const itens = [];
-  (dados.objetos || []).forEach(ob => itens.push({ f: fundo([ob.x, 0, ob.z]), svg: () => ob.caixas.map(b => {
-    const cs = []; [-1, 1].forEach(i => [-1, 1].forEach(j => [-1, 1].forEach(k => cs.push([b.c[0] + i * b.h[0] * b.e[0][0] + k * b.h[2] * b.e[2][0], b.c[1] + j * b.h[1], b.c[2] + i * b.h[0] * b.e[0][2] + k * b.h[2] * b.e[2][2]]))));
-    const ps = cs.map(m3), x0 = Math.min(...ps.map(q => q[0])), x1 = Math.max(...ps.map(q => q[0])), y0 = Math.min(...ps.map(q => q[1])), y1 = Math.max(...ps.map(q => q[1]));
-    return '<rect x="' + f1(x0) + '" y="' + f1(y0) + '" width="' + f1(x1 - x0) + '" height="' + f1(y1 - y0) + '" class="blk-obj"/>'; }).join("") }));
+  (dados.objetos || []).forEach(ob => itens.push({ f: fundo([ob.x, 0, ob.z]), svg: () => {
+    const cor = ob.cor || { fill: "#E4E4EB", ink: "#586577" }, st = ' style="fill:' + cor.fill + ";stroke:" + cor.ink + '"';
+    let topo = -1e9, g = '<g data-k="o:' + ob.id + '" class="blk-obj-g' + (ob.sel ? " sel" : "") + '">';
+    ob.caixas.forEach(b => {
+      let x0, x1; const y0 = mp([0, b.c[1] + b.h[1]])[1], y1 = mp([0, b.c[1] - b.h[1]])[1]; topo = Math.max(topo, b.c[1] + b.h[1]);
+      if (b.cil) { const uc = m3(b.c)[0]; x0 = uc - b.r * v.s; x1 = uc + b.r * v.s; }
+      else { const ps = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, k]) => m3([b.c[0] + i * b.h[0] * b.e[0][0] + k * b.h[2] * b.e[2][0], 0, b.c[2] + i * b.h[0] * b.e[0][2] + k * b.h[2] * b.e[2][2]])[0]); x0 = Math.min(...ps); x1 = Math.max(...ps); }
+      g += '<rect x="' + f1(x0) + '" y="' + f1(y0) + '" width="' + f1(Math.max(1, x1 - x0)) + '" height="' + f1(Math.max(1, y1 - y0)) + '"' + (b.cil ? ' rx="' + f1(Math.min(3, (x1 - x0) / 4)) + '"' : "") + ' class="blk-obj"' + st + "/>";
+    });
+    g += "</g>";
+    const c = mp([u([ob.x, 0, ob.z]), topo]);
+    if (ob.sel) g += '<rect x="' + f1(c[0] - 5) + '" y="' + f1(c[1] - 5) + '" width="10" height="10" class="blk-alca" data-k="oalt:' + ob.id + '"><title>Altura</title></rect>';
+    return g + '<text x="' + f1(c[0]) + '" y="' + f1(c[1] - 9) + '" class="blk-txt blk-obj-txt" style="fill:' + cor.ink + '">' + esc(ob.nome) + "</text>";
+  } }));
   const fs = dados.manequins.map(mq => fundo([mq.x, 0, mq.z])), fmin = Math.min(...fs, 0), fmax = Math.max(...fs, 1);
   dados.manequins.forEach((mq, i) => itens.push({ f: fs[i], svg: () => {
     const op = (mq.oculto ? 0.35 : 1) * (0.55 + 0.45 * (fmax > fmin ? (fs[i] - fmin) / (fmax - fmin) : 1));
@@ -163,6 +190,7 @@ function svgPerfil(dados, v, modo) {
       '<text x="' + f1(c[0]) + '" y="' + f1(c[1] - 20) + '" class="blk-txt blk-nome">' + esc(mq.nome) + "</text>";
   } }));
   itens.sort((a, b) => b.f - a.f).forEach(it => o.push(it.svg()));
+  (dados.colisoes || []).forEach(q => { const c = m3(q); o.push('<circle cx="' + f1(c[0]) + '" cy="' + f1(c[1]) + '" r="6" class="blk-col"/>'); });
   /* câmera, linha até o alvo e altura dos olhos */
   { const c = m3(C.pos), t = m3(C.alvo), fr = [u([C.pos[0] + C.frente[0], 0, C.pos[2] + C.frente[2]]) - u([C.pos[0], 0, C.pos[2]]), C.frente[1]];
     const a = Math.atan2(-fr[1], fr[0]) / D, gch = mp([u(C.pos), g0]);
@@ -181,6 +209,6 @@ function encaixar(pts, w, h, margem) {
   return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, s, w, h };
 }
 /* folha de estilo fixa (tema claro) para usar as vistas fora do app (MCP, exportação) */
-const CSS_PLANTA = "<style>.blk-grade{fill:none;stroke:#CBD4DF;stroke-width:.7}.blk-eixo-x{stroke:#CF4A27;opacity:.55}.blk-eixo-z{stroke:#2B63D9;opacity:.55}.blk-cone{fill:#2B63D9;fill-opacity:.07}.blk-cone-borda{stroke:#2B63D9;stroke-width:1.5;stroke-dasharray:7 4}.blk-escala{stroke:#586577;stroke-width:.8;stroke-dasharray:2 4}.blk-txt{font:10px sans-serif;fill:#586577;text-anchor:middle}.blk-nome{fill:#15212F;font-weight:bold}.blk-escala-txt{text-anchor:start;fill:#2B63D9}.blk-info-t{font-weight:normal;fill:#586577}.blk-regua-txt{text-anchor:start}.blk-obj{fill:#E4E4EB;stroke:#586577}.blk-seta{stroke:#fff}.blk-sel{fill:none;stroke:#2B63D9;stroke-width:1.4;stroke-dasharray:4 3}.blk-sel-seta{fill:#2B63D9}.blk-mira{stroke:#586577;stroke-width:.8}.blk-alvo{fill:none;stroke:#CF4A27;stroke-width:1.5}.blk-cam rect,.blk-cam path{fill:#CF4A27;stroke:#15212F;stroke-width:1.2}.blk-chao{fill:#EAEFF4}.blk-chao-linha{stroke:#15212F;stroke-width:1.4}.blk-regua{stroke:#586577}.blk-prumo{stroke:#586577;stroke-dasharray:3 3}</style>";
+const CSS_PLANTA = "<style>.blk-grade{fill:none;stroke:#CBD4DF;stroke-width:.7}.blk-eixo-x{stroke:#CF4A27;opacity:.55}.blk-eixo-z{stroke:#2B63D9;opacity:.55}.blk-cone{fill:#2B63D9;fill-opacity:.07}.blk-cone-borda{stroke:#2B63D9;stroke-width:1.5;stroke-dasharray:7 4}.blk-escala{stroke:#586577;stroke-width:.8;stroke-dasharray:2 4}.blk-txt{font:10px sans-serif;fill:#586577;text-anchor:middle}.blk-nome{fill:#15212F;font-weight:bold}.blk-escala-txt{text-anchor:start;fill:#2B63D9}.blk-info-t{font-weight:normal;fill:#586577}.blk-regua-txt{text-anchor:start}.blk-obj{fill:#E4E4EB;stroke:#586577;stroke-width:1.2}.blk-alca{fill:#fff;stroke:#2B63D9;stroke-width:1.5}.blk-col{fill:#CF4A27;fill-opacity:.2;stroke:#CF4A27;stroke-width:1.6}.blk-obj-txt{font-weight:bold}.blk-seta{stroke:#fff}.blk-sel{fill:none;stroke:#2B63D9;stroke-width:1.4;stroke-dasharray:4 3}.blk-sel-seta{fill:#2B63D9}.blk-mira{stroke:#586577;stroke-width:.8}.blk-alvo{fill:none;stroke:#CF4A27;stroke-width:1.5}.blk-cam rect,.blk-cam path{fill:#CF4A27;stroke:#15212F;stroke-width:1.2}.blk-chao{fill:#EAEFF4}.blk-chao-linha{stroke:#15212F;stroke-width:1.4}.blk-regua{stroke:#586577}.blk-prumo{stroke:#586577;stroke-dasharray:3 3}</style>";
 function comFundo(svg, w, h) { return svg.replace('class="blk-svg">', 'class="blk-svg" width="' + w + '" height="' + h + '">' + CSS_PLANTA + '<rect width="' + w + '" height="' + h + '" fill="#F9FBFD"/>'); }
 export { CSS_PLANTA, comFundo, M_R, cameraNoMundo, tamanhoNaFoto, svgPlanta, svgPerfil, eixoPerfil, encaixar };

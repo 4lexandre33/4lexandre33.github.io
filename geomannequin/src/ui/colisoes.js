@@ -2,7 +2,7 @@
    (automática, afastar, girar, ajustar a pose ou permitir o contato), para cada colisão ou para todas */
 import { $ } from "../scene/ambiente.js";
 import { SCN, setActive } from "../scene/modelo.js";
-import { COL, resolverObjeto, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
+import { COL, resolverObjetos, resolverObjeto, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
 import { render } from "./palco.js";
 import { refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
@@ -20,16 +20,19 @@ function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 function atualizarColisoes(lista) {
   const el = $("colLista"); if (!el) return;
   if (COL.modo === "desligado") { if (assinatura !== "off") { el.innerHTML = '<p class="col-ok">Verificação desligada.</p>'; assinatura = "off"; } return; }
-  const vis = SCN.list.filter(it => !it.oculto).length;
+  const vis = SCN.list.filter(it => !it.oculto).length + SCN.objetos.length;
   const cs = lista || (vis > 1 ? COL.ultima || colisoesDaCena() : []), cp = COL.composicao ? COL.ultimaComp || [] : [];
   const perm = [];
   SCN.list.forEach((a, i) => (a.contato || []).forEach(id => { const j = SCN.list.findIndex(x => x.id === id); if (j >= 0) perm.push([i, j]); }));
-  const sig = cs.map(c => c.a + "-" + c.b + ":" + Math.round(c.prof * 20)).join("|") + "#" + perm.map(x => x.join("-")).join("|") + "#" + cp.map(c => c.tipo + c.a + "-" + c.b).join("|") + "#" + SCN.active + SCN.list.map(i => i.name).join(",");
+  const sig = cs.map(c => c.a + "-" + c.b + "o" + c.objeto + "-" + c.objeto2 + ":" + Math.round(c.prof * 20)).join("|") + "#" + perm.map(x => x.join("-")).join("|") + "#" + cp.map(c => c.tipo + c.a + "-" + c.b).join("|") + "#" + SCN.active + SCN.list.map(i => i.name).join(",");
   if (sig === assinatura) return;
   assinatura = sig;
   let h = "";
-  if (!cs.length) h += '<p class="col-ok">' + (vis > 1 ? "Nenhum manequim atravessa outro." : "Com 2 ou mais manequins, as colisões aparecem aqui.") + "</p>";
+  if (!cs.length) h += '<p class="col-ok">' + (vis > 1 ? "Nada atravessa nada: manequins e objetos livres." : "Com 2 ou mais manequins ou objetos, as colisões aparecem aqui.") + "</p>";
   cs.slice(0, 8).forEach((c, k) => {
+    if (c.objeto2 !== undefined) { const oa = SCN.objetos[c.objeto], ob = SCN.objetos[c.objeto2];
+      h += '<div class="col-item" data-k="' + k + '"><p>' + esc(c.texto) + '</p><div class="linha"><label>Afastar <select data-quem><option value="b" selected>' + esc(oa && ob ? (ob.nome || ob.tipo) : "") + '</option><option value="a">' + esc(oa ? (oa.nome || oa.tipo) : "") + '</option></select></label>' +
+        '<button type="button" data-m="objetos" title="Empurra no chão pelo menor caminho">Afastar</button></div></div>'; return; }
     const A = SCN.list[c.a], B = c.objeto !== undefined ? null : SCN.list[c.b], padrao = quemMexer(c);
     if (!B) { h += '<div class="col-item" data-k="' + k + '"><p>' + esc(c.texto) + '</p><div class="linha"><select data-quem hidden><option value="a">a</option></select>' +
       '<button type="button" data-m="auto">Automático</button><button type="button" data-m="distancia">Afastar</button><button type="button" data-m="giro">Girar</button><button type="button" data-m="pose">Ajustar pose</button><button type="button" data-m="ver">Ver</button></div></div>'; return; }
@@ -66,6 +69,7 @@ export function iniciarColisoes() {
       if (b.dataset.tirar) { const [i, j] = b.dataset.tirar.split("-").map(Number); permitirContato(i, j, false); assinatura = ""; depois(["Contato volta a ser verificado."]); return; }
       const box = b.closest(".col-item"), c = el._cs && el._cs[+box.dataset.k]; if (!c) return;
       const m = b.dataset.m, quem = box.querySelector("[data-quem]").value;
+      if (c.objeto2 !== undefined) { depois(resolverObjetos(c.objeto, c.objeto2, quem)); return; }
       if (m === "ver") { setActive(quem === "a" ? c.a : c.b); return; }
       if (c.objeto !== undefined && m !== "ver") { depois(resolverObjeto(c.a, c.objeto, m)); return; }
       if (m === "contato") { permitirContato(c.a, c.b, true); assinatura = ""; depois([SCN.list[c.a].name + " e " + SCN.list[c.b].name + " podem encostar (sem aviso)."]); return; }

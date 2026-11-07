@@ -1,7 +1,7 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
-import { CAMK, P, SCN, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP } from "./modelo.js";
+import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
 import { applyParams, num, POSEKEYS } from "./parametros.js";
-import { adicionarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
+import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import { leituraBlocking, moverCamera } from "./blocking.js";
 import { BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
@@ -11,7 +11,7 @@ import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
 import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -113,18 +113,37 @@ function espelharPose(Q){
   const c=Object.assign({},Q);Object.entries(par).forEach(([a,b])=>{Q[a]=c[b]});
   ["spineSide","spineTwist","headYaw","headRoll","pelvisSide","pelvisTwist","neckSide","neckTwist","lumSide","lumTwist","thoSide","thoTwist","bodyRoll"].forEach(k=>{if(typeof Q[k]==="number")Q[k]=-Q[k]});
 }
-/* objeto da cena (banco, cadeira, caixa, degrau, mesa, parede) */
+/* objeto da cena: caixas (banco, cadeira, caixa, cubo, degrau, mesa, cama, parede) e cilindros (cilindro, copo, coluna, barril, mesa redonda) */
 function apiObjeto(q){
   const chk=()=>{if(!SCN.objetos.includes(q))throw new Error("Este objeto foi removido da cena.")};
-  const o={get nome(){return q.nome||q.tipo},get tipo(){return q.tipo},
+  const o={get nome(){return q.nome||TIPOS_OBJETO[q.tipo].nome},get tipo(){return q.tipo},get id(){return q.id},
     posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
-    girar(g){chk();editarObjeto(q,{giro:num(g,"graus")});return o},
+    mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
+    girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
     medidas(m){chk();editarObjeto(q,m||{});return o},
+    /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
+    cor(c,contorno){chk();editarObjeto(q,{cor:c===undefined?"auto":c,contorno});return o},
+    /* em cima de outro objeto (nome, tipo ou objeto); null = no chão; "auto" = o tampo embaixo dele */
+    sobre(ref){chk();const r=ref&&typeof ref==="object"&&ref.id?ref.id:ref;editarObjeto(q,{sobre:r===undefined?null:r});
+      if(q.sobre&&ref!=="auto"){const s=SCN.objetos.find(x=>x.id===q.sobre);editarObjeto(q,{x:s.x,z:s.z})}return o},
     renomear(n){chk();q.nome=String(n).slice(0,24);return o},
-    remover(){chk();removerObjeto(q);return null},
-    info(){chk();return {tipo:q.tipo,nome:q.nome||q.tipo,x:q.x,z:q.z,giro:q.giro,largura:q.larg,profundidade:q.prof,altura:q.alt}}};
+    duplicar(){chk();return apiObjeto(duplicarObjeto(q))},
+    selecionar(){chk();SCN.objSel=q.id;return o},
+    remover(){chk();removerObjeto(q);if(SCN.objSel===q.id)SCN.objSel=null;return null},
+    info(){chk();atualizarApoios();const s=q.sobre?SCN.objetos.find(x=>x.id===q.sobre):null,c=corObjeto(q,true);
+      return Object.assign({tipo:q.tipo,nome:q.nome||TIPOS_OBJETO[q.tipo].nome,forma:ehCilindro(q)?"cilindro":"caixa",x:q.x,z:q.z,giro:q.giro||0},ehCilindro(q)?{raio:q.raio}:{largura:q.larg,profundidade:q.prof},
+        {altura:q.alt,base:q.base||0,topo:(q.base||0)+q.alt,sobre:s?(s.nome||TIPOS_OBJETO[s.tipo].nome):null,cor:q.col?q.col.fill:c.fill,corAutomatica:!q.col})}};
   return o;
 }
+/* blocking por código: cena.blocking() lê a composição (em metros); os métodos mexem no painel da página */
+function painelBlk(acao,arg){const h=UIH.blocking;if(!h)return {aviso:"Sem página: o painel de blocking só existe no app."};return h[acao](arg)}
+function blockingApi(){const d=leituraBlocking(),m=v=>Math.round(v*0.114*100)/100,C=d.camera;
+  return {camera:{posicao:C.pos.map((v,i)=>m(i===1?v-d.chao:v)),alvo:C.alvo.map((v,i)=>m(i===1?v-d.chao:v)),lente:Math.round(C.lente),campoGraus:Math.round(C.fovH),perspectiva:C.persp},
+    manequins:d.manequins.map(q=>({nome:q.nome,x:m(q.x),z:m(q.z),giro:q.giro,profundidade:m(q.foto.prof),naFoto:Math.round(q.foto.frac*100),dentro:q.foto.dentro,inteiro:q.foto.inteiro,cor:q.cor.fill})),
+    objetos:d.objetos.map(o=>Object.assign({nome:o.nome,tipo:o.tipo,forma:o.forma,x:m(o.x),z:m(o.z),giro:o.giro,altura:m(o.alt),base:m(o.base),cor:o.cor.fill,sobre:o.sobre?(d.objetos.find(q=>q.id===o.sobre)||{}).nome||null:null},o.forma==="cilindro"?{raio:m(o.raio)}:{largura:m(o.larg),profundidade:m(o.prof)})),
+    colisoes:listaColisoes().map(c=>c.descricao)}}
+Object.assign(blockingApi,{abrir:()=>painelBlk("abrir"),fechar:()=>painelBlk("fechar"),destacar:q=>painelBlk("destacar",q),flutuar:()=>painelBlk("flutuar"),devolver:q=>painelBlk("devolver",q),
+  recolher:on=>painelBlk("recolher",on),lateral:mo=>painelBlk("lateral",mo),inserir:t=>painelBlk("inserir",t),estado:()=>painelBlk("estado")});
 const cena={
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
   copiar(m){const it=m?SCN.list.find(x=>x.name===m.nome):SCN.list[SCN.active];if(!it)throw new Error("Manequim não encontrado.");return apiFor(dupInst(it,true))},
@@ -157,16 +176,20 @@ const cena={
   colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
   resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
   desfazerColisao(){return desfazerColisao()},
-  /* objetos: cena.objeto("banco", {x: 3, z: 0, giro: 90, altura: 4}) */
+  /* objetos: cena.objeto("mesa", {x: 3, z: 0, giro: 90, altura: 6.5, cor: "#7FB3D5"}) · cena.objeto("copo", {sobre: "mesa"})
+     cilindros: cena.objeto("cilindro", {raio: 2, altura: 4}) */
   objeto(tipo,o){return apiObjeto(adicionarObjeto(tipo,o||{}))},
   objetos(){return SCN.objetos.map(apiObjeto)},
-  removerObjeto(ref){const q=acharObjeto(ref);if(!q)throw new Error("Objeto não encontrado.");removerObjeto(q)},
+  obterObjeto(ref){const q=acharObjeto(ref);if(!q)throw new Error("Objeto “"+ref+"” não existe.");return apiObjeto(q)},
+  removerObjeto(ref){const q=acharObjeto(ref);if(!q)throw new Error("Objeto não encontrado.");removerObjeto(q);if(SCN.objSel===q.id)SCN.objSel=null},
+  tiposDeObjeto(){return Object.entries(TIPOS_OBJETO).map(([k,t])=>({tipo:k,nome:t.nome,forma:t.forma||"caixa"}))},
+  /* seleciona um manequim (nome/índice) ou um objeto (nome/tipo) — o mesmo que clicar no painel de blocking */
+  selecionar(ref){const i=typeof ref==="number"?ref:SCN.list.findIndex(x=>x.name===ref);if(i>=0&&SCN.list[i]){SCN.objSel=null;const cam={};CAMK.forEach(k=>cam[k]=P[k]);SCN.active=i;setP(SCN.list[i].params);Object.assign(P,cam);return apiFor(SCN.list[i])}
+    const q=acharObjeto(ref);if(!q)throw new Error("Nada com o nome “"+ref+"” na cena.");SCN.objSel=q.id;return apiObjeto(q)},
   /* monta a cena de uma vez a partir de uma lista (veja a Referência) */
   montar(lista,opts){return montarCena(lista,opts,API)},
-  /* composição lida do estado (a mesma que as janelas de blocking mostram), em metros */
-  blocking(){const d=leituraBlocking(),m=v=>Math.round(v*0.114*100)/100,C=d.camera;
-    return {camera:{posicao:C.pos.map((v,i)=>m(i===1?v-d.chao:v)),alvo:C.alvo.map((v,i)=>m(i===1?v-d.chao:v)),lente:Math.round(C.lente),campoGraus:Math.round(C.fovH),perspectiva:C.persp},
-      manequins:d.manequins.map(q=>({nome:q.nome,x:m(q.x),z:m(q.z),giro:q.giro,profundidade:m(q.foto.prof),naFoto:Math.round(q.foto.frac*100),dentro:q.foto.dentro,inteiro:q.foto.inteiro}))}},
+  /* composição lida do estado (a mesma que o painel de blocking mostra), em metros; cena.blocking.abrir(), .destacar("lateral"), .devolver() … */
+  blocking:blockingApi,
   /* cena descrita em português: "manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta" */
   descrever(texto){const r=descreverCena(String(texto||""),API);r.avisos.forEach(t=>LOG.push(["aviso",t]));return r.feito},
   /* composição 2D (opcional): tangências e cabeças escondidas atrás de outro manequim */

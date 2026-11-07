@@ -15,6 +15,17 @@ main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
 #stagebox{grid-area:stage;display:flex;flex-direction:column;gap:8px;min-width:0}
 #params{grid-area:params}
 #export{grid-area:export}
+/* painel de blocking: coluna própria ao lado do palco (encaixado), embaixo do palco em telas menores */
+#blkPainel{grid-area:blk}
+main.com-blk{grid-template-areas:"stage" "blk" "commands" "params" "layers" "export"}
+@media (min-width:1040px) and (max-width:1279px){
+  main.com-blk{grid-template-areas:"layers stage params" "layers blk params" "layers commands params" "layers export params"}
+}
+@media (min-width:1280px){
+  main.com-blk{grid-template-columns:200px minmax(0,1fr) var(--blk-w,380px) 300px;grid-template-areas:"layers stage blk params" "layers commands blk params" "layers export blk params"}
+  main.com-blk.blk-recolhido{grid-template-columns:200px minmax(0,1fr) 44px 300px}
+  main.com-blk #blkPainel{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+}
 .stage{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;touch-action:none;cursor:grab}
 .stage:active{cursor:grabbing}
 .stage svg{display:block;width:100%;height:auto;max-height:82vh;user-select:none}

@@ -5,7 +5,7 @@
    "bloquear" (ao arrastar, o manequim/mão para na superfície do outro). Sem depender da página (o MCP usa). */
 import { SCN, setP, P, sceneList } from "./modelo.js";
 import { guardArms } from "./poses.js";
-import { MEMBRO, PARTES, capsulas, capsulasObjeto, TIPOS_OBJETO, telaDoMundo, clamp, contatosEntre, doMundo, ikArm, paraMundo, restGround, segSeg, shape, chainSetup, armPose, comp, applyA } from "../engine/index.js";
+import { MEMBRO, PARTES, capsulas, capsulasObjeto, colisaoEntreObjetos, TIPOS_OBJETO, telaDoMundo, clamp, contatosEntre, doMundo, ikArm, paraMundo, restGround, segSeg, shape, chainSetup, armPose, comp, applyA } from "../engine/index.js";
 
 /* 1 R (unidade do manequim) ≈ 11,4 cm num corpo de 1,75 m */
 const CM = 11.4;
@@ -47,8 +47,39 @@ function colisoesDaCena() {
     const a = SCN.list.indexOf(it), nomeO = o.nome || TIPOS_OBJETO[o.tipo].nome;
     out.push({ a, b: -1, objeto: k, prof: cs[0].prof, contatos: cs, texto: PARTES[cs[0].pa] + " de " + it.name + " entra em " + nomeO + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" + (cs.length > 1 ? " · mais " + (cs.length - 1) + " ponto" + (cs.length > 2 ? "s" : "") : "") });
   }));
+  /* objeto × objeto (a mesa e a cadeira, o copo e a parede…); quem está em cima de outro não conta como colisão com ele */
+  const objs = SCN.objetos, g0 = chao();
+  for (let k = 0; k < objs.length; k++) for (let j = k + 1; j < objs.length; j++) {
+    const A = objs[k], B = objs[j]; if (A.sobre === B.id || B.sobre === A.id) continue;
+    const cs = colisaoEntreObjetos(A, B, g0); if (!cs.length) continue;
+    out.push({ a: -1, b: -1, objeto: k, objeto2: j, prof: cs[0].prof, contatos: cs, texto: nomeObj(A) + " entra em " + nomeObj(B) + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" });
+  }
   COL.ultima = out;
   return out;
+}
+const nomeObj = o => o.nome || TIPOS_OBJETO[o.tipo].nome;
+/* objeto: empurra no chão para fora dos outros objetos e dos manequins (o apoio dele não conta) */
+function separarObjeto(o, max) {
+  const g0 = chao(); let mov = 0;
+  for (let it = 0; it < 24; it++) {
+    let vx = 0, vz = 0, pm = 0; const mine = capsulasObjeto(o, g0);
+    SCN.objetos.forEach(b => { if (b === o || b.sobre === o.id || o.sobre === b.id) return; colisaoEntreObjetos(o, b, g0, 0).forEach(c => { const d = c.plano + 0.06; vx += c.n[0] * d; vz += c.n[2] * d; pm = Math.max(pm, c.prof); }); });
+    visiveis().forEach(m => { if (m.apoioEm === o.id) return; contatosEntre(mine, capsulas(pMundo(m)), 0).forEach(c => { const d = c.prof + 0.06, L = Math.hypot(c.n[0], c.n[2]) || 1; vx += c.n[0] / L * d; vz += c.n[2] / L * d; pm = Math.max(pm, c.prof); }); });
+    if (pm <= 0.03) break;
+    const L = Math.hypot(vx, vz); if (L < 1e-6) { vx = 1; vz = 0; }
+    const st = Math.min(L || 1, 3); o.x += vx / (L || 1) * st; o.z += vz / (L || 1) * st; mov += st;
+    SCN.objetos.forEach(c => { if (c.sobre === o.id) { c.x += vx / (L || 1) * st; c.z += vz / (L || 1) * st; } });
+    if (max && mov > max) break;
+  }
+  o.x = Math.round(o.x * 100) / 100; o.z = Math.round(o.z * 100) / 100;
+  return mov;
+}
+/* corrige objeto × objeto: muda o mais novo (o último colocado), a não ser que se diga qual */
+function resolverObjetos(k, j, qual) {
+  const o = SCN.objetos[qual === "a" ? k : j] || SCN.objetos[j]; if (!o) throw new Error("Objeto não encontrado.");
+  const x0 = o.x, z0 = o.z; separarObjeto(o);
+  const d = Math.hypot(o.x - x0, o.z - z0);
+  return [nomeObj(o) + (d > 0.01 ? ": afastado " + Math.round(d * CM) + " cm" : ": nada para corrigir")];
 }
 /* corrige manequim × objeto: só o manequim muda */
 function resolverObjeto(a, k, metodo) {
@@ -60,7 +91,7 @@ function resolverObjeto(a, k, metodo) {
   aplicar(it, r.params); return [it.name + ": " + r.desc];
 }
 /* lista simples, em português (comandos e MCP) */
-function listaColisoes() { return colisoesDaCena().map(c => ({ a: SCN.list[c.a].name, b: c.objeto !== undefined ? (SCN.objetos[c.objeto].nome || SCN.objetos[c.objeto].tipo) : SCN.list[c.b].name, cm: Math.round(c.prof * CM), descricao: c.texto, partes: c.contatos.map(x => PARTES[x.pa] + " × " + PARTES[x.pb]) })); }
+function listaColisoes() { return colisoesDaCena().map(c => c.objeto2 !== undefined ? { a: nomeObj(SCN.objetos[c.objeto]), b: nomeObj(SCN.objetos[c.objeto2]), cm: Math.round(c.prof * CM), descricao: c.texto, partes: ["objeto × objeto"] } : ({ a: SCN.list[c.a].name, b: c.objeto !== undefined ? (SCN.objetos[c.objeto].nome || SCN.objetos[c.objeto].tipo) : SCN.list[c.b].name, cm: Math.round(c.prof * CM), descricao: c.texto, partes: c.contatos.map(x => PARTES[x.pa] + " × " + (PARTES[x.pb] || (c.objeto !== undefined ? nomeObj(SCN.objetos[c.objeto]) : x.pb))) })); }
 
 /* ===== soluções (cada uma devolve novos parâmetros e o "custo" da mudança, sem aplicar) ===== */
 /* 1) distância: empurra no chão pela soma das direções de saída, até não haver penetração */
@@ -199,11 +230,12 @@ function quemMexer(c) {
 }
 /* corrige todos os conflitos da cena */
 function resolverTodas(metodo) {
-  const met = metodo || COL.preferir, antes = SCN.list.map(it => ({ it, params: Object.assign({}, it.params) })), mudados = new Set(), tentou = new Set();
+  const objMov = [], met = metodo || COL.preferir, antes = SCN.list.map(it => ({ it, params: Object.assign({}, it.params) })), mudados = new Set(), tentou = new Set();
   for (let rodada = 0; rodada < 10; rodada++) {
     const cs = colisoesDaCena(); if (!cs.length) break;
     let mexeu = false;
     for (const c of cs) {
+      if (c.objeto2 !== undefined) { const o = SCN.objetos[c.objeto2]; if (!tentou.has(o)) { tentou.add(o); const x0 = o.x, z0 = o.z; separarObjeto(o); if (o.x !== x0 || o.z !== z0) { objMov.push([o, x0, z0]); mexeu = true; } } continue; }
       const quem = quemMexer(c), it = SCN.list[quem === "a" || c.objeto !== undefined ? c.a : c.b];
       const outros = capsOutros(it), p0 = penet(it, it.params, outros); if (p0 <= 0) continue;
       const r = met === "auto" ? solAuto(it, outros) : SOL[met](it, outros);
@@ -221,6 +253,7 @@ function resolverTodas(metodo) {
     if (d > 0.01) partes.push("afastado " + Math.round(d * CM) + " cm"); if (g > 0.5) partes.push("girado " + Math.round(g) + "°"); if (j > 0.5) partes.push("pose ajustada (" + Math.round(j) + "° nas articulações)");
     feitos.push(it.name + ": " + (partes.join(", ") || "sem mudança"));
   }
+  objMov.forEach(([o, x0, z0]) => feitos.push(nomeObj(o) + ": afastado " + Math.round(Math.hypot(o.x - x0, o.z - z0) * CM) + " cm"));
   const restam = colisoesDaCena().length;
   if (restam) feitos.push(restam + " colisão(ões) não resolvida(s) com " + ({ distancia: "afastar", giro: "girar", pose: "a pose", auto: "o automático" }[met]) + (met === "auto" || met === "distancia" ? "." : " — tente Automático ou Afastar."));
   return feitos;
@@ -300,6 +333,6 @@ function ajustarComposicao(k) {
 }
 function setComposicao(on) { COL.composicao = on !== false && on !== 0; }
 
-export { resolverObjeto, capsObjetos, composicaoDaCena, ajustarComposicao, setComposicao, quemMexer };
+export { separarObjeto, resolverObjetos, nomeObj, resolverObjeto, capsObjetos, composicaoDaCena, ajustarComposicao, setComposicao, quemMexer };
 export { CM, COL, setModoColisao, setPreferir, pMundo, colisoesDaCena, listaColisoes, solDistancia, solGiro, solPose, solAuto, resolverPar, resolverTodas,
   desfazerColisao, bloquearMovimento, bloquearAlvo, corrigirAtivo, permitirContato, contatoPermitido };
