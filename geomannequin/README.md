@@ -12,6 +12,8 @@ Manequim anatômico paramétrico para referência de desenho.
 
 **Esqueleto e cena por código:** o manequim tem ossos com nome anatômico (vértebras L5–C1, crânio, pelve, esterno, costelas, clavículas, escápulas, úmero, rádio/ulna, metacarpos e falanges, fêmur, patela, tíbia/fíbula, tálus, calcâneo, metatarsos) e articulações com os limites do corpo humano (amplitude clínica, limites acoplados como isquiotibiais e rotação do ombro, ritmo escápulo-umeral). Ligue “Mostrar ossos”, clique numa articulação e arraste para girá-la; a coluna é dividida em lombar, torácica e cervical, cada dedo dobra sozinho e o polegar faz oposição. O corpo inteiro pode deitar (costas, bruços, lado), ficar de cabeça para baixo ou saltar, sempre apoiado no chão ou num objeto (banco, cadeira, caixa, degrau, mesa, parede). Perfis de flexibilidade (normal, atleta, ginasta, contorcionista) liberam ponte, espacate, arabesque e parada com abertura; `m.apoiar("maos pes")` põe vários pontos no chão ao mesmo tempo, com equilíbrio. A coluna é uma curva contínua (sem quinas), o glúteo acompanha o fêmur, o pé é uma cunha escultural com só o dedão separado, os traços saem em curvas de Bézier com hierarquia de peso (silhueta, sobreposição, linhas internas) e as linhas ocultas têm opacidade regulável. Por código: `m.orientar("+x")`, `m.deitar("costas", "x")`, `m.olhar("baixo")`, `m.articulacao("cotovelo esquerdo", {dobrar: 90})`, `camera.eixo("z").elevacao("alta")`, ou uma frase só: `cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta")`.
 
+**Blocking:** o botão "Blocking" abre duas janelas sincronizadas: a vista de cima (planta X/Z) para compor à mão — arrastar manequins, girar pela seta, mover a câmera, o alvo e as bordas do cone (lente) — e a vista lateral, que abre sozinha e mostra a mesma cena de perfil (régua de altura, câmera, cone vertical). As duas leem e escrevem o mesmo estado da cena (wx/wz/wRot dos manequins; alvo, direção, distância e lente da câmera); nada é copiado. Com perspectiva, a profundidade é a distância ao longo do eixo da câmera e é ela que decide o tamanho na foto: as vistas marcam onde uma pessoa ocupa 100%, 50% e 25% da altura da foto e cada manequim mostra a sua porcentagem (ou "cortado", "fora", "atrás da câmera").
+
 Recursos: três modos de desenho — **Manequim**, **Construção** e **Écorché** (anatomia limpa no estilo Bridgman/Loomis, com linhas de músculo em hierarquia de traço, tons planos e fibras opcionais); poses com limites anatômicos e cinemática inversa, vários manequins na mesma cena com cores exclusivas, perspectiva (lente, altura dos olhos, horizonte e pontos de fuga, sombras no chão, perspectiva atmosférica), modo noturno, editor de comandos em português, exportação SVG/JSON e link de cena.
 
 ## Organização
@@ -58,6 +60,7 @@ geomannequin/
 │  │  ├─ amplitude.js    limites das articulações por perfil de flexibilidade
 │  │  ├─ apoio.js        apoio em vários pontos (mãos e pés no chão), com equilíbrio
 │  │  ├─ curvas.js       traços em curvas de Bézier (simplificação + Catmull-Rom)
+│  │  ├─ planta.js       blocking: câmera no mundo, tamanho na foto, vista de cima e perfil em SVG
 │  │  ├─ objetos.js      objetos de apoio (banco, cadeira, caixa, degrau, mesa, parede): caixas, cápsulas e desenho
 │  │  ├─ camadas.js      cena em camadas: cada manequim é uma "foto" .svg guardada (cache), compositor com recorte por profundidade
 │  │  ├─ trabalhador.js  Web Worker: desenha camadas em paralelo, fora da thread da página
@@ -75,6 +78,7 @@ geomannequin/
 │  │  ├─ tema.js, modos.js, estado.js, enquadrar.js, poses.js
 │  │  ├─ colisoes.js     detectar e corrigir colisões (afastar, girar, ajustar a pose, automático), modos avisar/corrigir/bloquear
 │  │  ├─ cenario.js      objetos, orientar por eixo, deitar, olhar, mão/pé num ponto, apontar, sentar/subir/encostar
+│  │  ├─ blocking.js     leitura e escrita da composição no estado da cena (sem cópia)
 │  │  ├─ descrever.js    cena descrita em português e cena montada por lista
 │  │  ├─ camadas-cena.js foto de um manequim, cena em camadas nomeadas, arquivos para remontar a cena
 │  │  ├─ comandos.js     API em português: cena, camera, tema
@@ -87,6 +91,7 @@ geomannequin/
 │     ├─ painel-cena.js  lista de manequins e cores
 │     ├─ editor.js       editor de comandos
 │     ├─ trabalhadores.js fila de Web Workers (um por núcleo, até 4); sem suporte, desenha na página
+│     ├─ blocking.js     janelas flutuantes da vista de cima e lateral, arrastar e campos
 │     ├─ articulacoes.js clicar e girar articulações, biblioteca de poses, gestos, espelhar/copiar/colar pose
 │     ├─ colisoes.js     painel "Colisões": escolher a correção de cada colisão
 │     ├─ zip.js          .zip simples para baixar as camadas

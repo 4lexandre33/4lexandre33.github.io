@@ -32,6 +32,7 @@ export * from "./objetos.js";
 export * from "./amplitude.js";
 export * from "./apoio.js";
 export * from "./curvas.js";
+export * from "./planta.js";
 
 iniciarMontagem();
 iniciarZbuffer();

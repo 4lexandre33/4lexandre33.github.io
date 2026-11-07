@@ -3,6 +3,7 @@ import { CAMK, P, SCN, addInst, delInst, dupInst, instColors, mixHex, nextHue, s
 import { applyParams, num, POSEKEYS } from "./parametros.js";
 import { adicionarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
+import { leituraBlocking, moverCamera } from "./blocking.js";
 import { BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { L, setMode, setPreset } from "./modos.js";
@@ -10,7 +11,7 @@ import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
 import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, apoiarContatos, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -162,6 +163,10 @@ const cena={
   removerObjeto(ref){const q=acharObjeto(ref);if(!q)throw new Error("Objeto não encontrado.");removerObjeto(q)},
   /* monta a cena de uma vez a partir de uma lista (veja a Referência) */
   montar(lista,opts){return montarCena(lista,opts,API)},
+  /* composição lida do estado (a mesma que as janelas de blocking mostram), em metros */
+  blocking(){const d=leituraBlocking(),m=v=>Math.round(v*0.114*100)/100,C=d.camera;
+    return {camera:{posicao:C.pos.map((v,i)=>m(i===1?v-d.chao:v)),alvo:C.alvo.map((v,i)=>m(i===1?v-d.chao:v)),lente:Math.round(C.lente),campoGraus:Math.round(C.fovH),perspectiva:C.persp},
+      manequins:d.manequins.map(q=>({nome:q.nome,x:m(q.x),z:m(q.z),giro:q.giro,profundidade:m(q.foto.prof),naFoto:Math.round(q.foto.frac*100),dentro:q.foto.dentro,inteiro:q.foto.inteiro}))}},
   /* cena descrita em português: "manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta" */
   descrever(texto){const r=descreverCena(String(texto||""),API);r.avisos.forEach(t=>LOG.push(["aviso",t]));return r.feito},
   /* composição 2D (opcional): tangências e cabeças escondidas atrás de outro manequim */
@@ -188,6 +193,10 @@ const camera={
     P.pitch=pt;P.ty=clamp(g0+h+Math.sin(pt*D)*Math.max(3,P.camDist),-20,20);return camera},
   luz(az,el){camSet("lightAz",az,-180,180,"azimute");if(el!==undefined)camSet("lightEl",el,10,80,"elevação");return camera},
   enquadrar(){autoFit();return camera},
+  /* posição da câmera no mundo (em R), calculada do alvo, da direção e da distância */
+  posicaoMundo(){return cameraNoMundo(P).pos.map(v=>Math.round(v*100)/100)},
+  /* põe a câmera num ponto do mundo mantendo o alvo (como arrastar a câmera na vista de cima) */
+  colocar(x,y,z){moverCamera(num(x,"x"),num(y,"y"),num(z,"z"));return camera},
   /* câmera num eixo ("x", "-x", "z", "-z", "y" = de cima), mantendo distância e alvo */
   eixo(a,opts){const t=String(a).toLowerCase().replace(/^eixo\s*/,"").replace("câmera","");const v={"x":[1,0,0],"+x":[1,0,0],"-x":[-1,0,0],"z":[0,0,1],"+z":[0,0,1],"-z":[0,0,-1],"y":[0,1,0],"+y":[0,1,0],"cima":[0,1,0],"-y":[0,-1,0]}[t];
     if(!v)throw new Error("Eixo da câmera: use x, -x, z, -z ou y (de cima).");

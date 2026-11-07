@@ -13,6 +13,7 @@ O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), ent
 | `adicionar_manequim` | Novo manequim com nome, posição `x`/`z`, giro, corpo, pose e cor (cores nunca se repetem) |
 | `editar_manequim` | Muda posição, giro, pose, corpo, cor ou nome; orientar por eixo, deitar, sentar/subir/encostar, saltar, olhar, apontar, mão/pé num ponto, gestos, articulações pelo nome (com limites anatômicos), espelhar, copiar pose |
 | `descrever_cena` | Monta a cena a partir de uma frase: “manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta” |
+| `planta_da_cena` | Vista de cima e lateral da composição (blocking), com profundidade e % da altura da foto de cada manequim |
 | `objetos` | Banco, cadeira, caixa, degrau, mesa e parede para os manequins se apoiarem |
 | `copiar_manequim` / `remover_manequim` | Copia ou remove |
 | `camera` | Eixo (x, −x, z, −z, de cima), elevação (alta, média, olhos, baixa), plano, perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar |

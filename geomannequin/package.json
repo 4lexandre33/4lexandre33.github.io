@@ -8,7 +8,7 @@
   "scripts": {
     "servir": "node ferramentas/servir.mjs",
     "construir": "node ferramentas/construir.mjs",
-    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs",
+    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs",
     "desempenho": "node testes/desempenho.mjs"
   },
   "devDependencies": {

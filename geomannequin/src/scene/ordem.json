@@ -12,6 +12,7 @@
   "camadas-cena.js",
   "colisoes.js",
   "cenario.js",
+  "blocking.js",
   "descrever.js",
   "comandos.js",
   "ajuda.js"

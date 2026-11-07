@@ -84,6 +84,13 @@ const c = cena.adicionar({nome: "Arabesque", x: 18}).poseRapida("arabesque");
 cena.rosto("minimo");
 camera.eixo("z").elevacao("média");
 cena.enquadrar();`,
+  "Blocking: profundidade e perspectiva":`// com perspectiva, a profundidade (distância até a câmera) decide o tamanho na foto
+cena.limpar();
+cena.ativo.renomear("Perto").posicao(-3, 6);
+cena.adicionar({nome: "Meio", x: 2, z: -4});
+cena.adicionar({nome: "Longe", x: 6, z: -18}).girar(-30);
+camera.perspectiva(true).lente(35).mirar(0, -2, -4).colocar(-4, 2, 28);
+log(cena.blocking().manequins.map(m => m.nome + ": " + m.profundidade + " m, " + m.naFoto + "% da altura").join("\n"));`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -121,6 +128,8 @@ export function iniciarAjuda(){
   m.flexibilidade("normal" | "atleta" | "ginasta" | "contorcionista") — amplia os limites (ponte, espacate, arabesque pedem "ginasta")
   m.apoiar("maos pes" | "maos" | "maos joelhos" | "mao esquerda pe direito") — vários pontos no chão ao mesmo tempo (ponte, parada de mão, prancha)
   Poses de ginasta: ponte, ponteUmaPerna, paradaAbertura, escorpiao, arabesque, espacateSaltado, camelo, agachamentoProfundo, prancha, quatroApoios
+  Blocking (botão "Blocking"): vista de cima (X/Z) e lateral sincronizadas com a cena — arraste manequins, setas, câmera, alvo e bordas do cone
+  cena.blocking() — posições em metros, profundidade e % da altura da foto de cada manequim · camera.posicaoMundo() · camera.colocar(x, y, z) (mantém o alvo)
   cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")
   Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
   m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)

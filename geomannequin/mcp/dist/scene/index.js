@@ -17,6 +17,7 @@ export * from "./camadas-cena.js";
 export * from "./colisoes.js";
 export * from "./cenario.js";
 export * from "./descrever.js";
+export * from "./blocking.js";
 export * from "./comandos.js";
 export * from "./ajuda.js";
 

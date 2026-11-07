@@ -16,7 +16,7 @@ const text = r => (r.content || []).filter(c => c.type === "text").map(c => c.te
 async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
-  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos"].every(t => tools.includes(t)), "20 ferramentas: " + tools.length);
+  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos", "planta_da_cena"].every(t => tools.includes(t)), "21 ferramentas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
   const bad = [];
@@ -86,6 +86,8 @@ async function suite(client, tag) {
   check(!r.isError && /limite/.test((r.structuredContent.avisos || []).join(" ")), "flexibilidade normal limita a extensão da coluna");
   r = await call("editar_manequim", { manequim: "2", flexibilidade: "ginasta", poseRapida: "prancha", apoiar: "maos pes" });
   check(!r.isError, "apoiar: prancha com mãos e pés no chão" + (r.isError ? " " + r.content[0].text : ""));
+  r = await call("planta_da_cena", { largura: 400 });
+  check(!r.isError && r.content.filter(c => c.type === "image").length === 2 && r.structuredContent.manequins.length >= 3, "planta_da_cena: planta e perfil, " + (r.structuredContent ? r.structuredContent.manequins.map(q => q.altura_na_foto).join(" ") : (r.content[0].text||"")));
   r = await call("aparencia_cena", { linhasOcultas: 0.05, rosto: "minimo" });
   check(!r.isError, "aparencia_cena: linhas ocultas e rosto mínimo");
   r = await call("camera", { eixo: "-x", elevacao: "baixa" });

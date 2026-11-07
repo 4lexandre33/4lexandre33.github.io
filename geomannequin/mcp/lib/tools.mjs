@@ -385,6 +385,31 @@ export function registerAll(server, getWorld, opts = {}) {
     };
   }));
 
+  server.registerTool("planta_da_cena", {
+    title: "Planta e perfil (blocking)",
+    description: "Mostra a composição da cena vista de cima (planta X/Z) e de lado (perfil), lida do mesmo estado da cena: onde está cada manequim, para onde olha, a câmera com o cone do campo de visão e o alvo. Com perspectiva, a profundidade (distância ao longo do eixo da câmera) decide o tamanho na foto: o resultado traz a % da altura da foto que cada manequim ocupa e se está cortado ou fora. Use para conferir a composição antes de renderizar. Medidas em metros.",
+    inputSchema: {
+      lateral: z.string().optional().describe("De onde a vista lateral olha: \"camera\" (padrão: perpendicular à câmera, a profundidade fica na horizontal) ou graus 0 (frente, +z), 90 (direita, +x), 180, 270."),
+      largura: z.number().int().min(300).max(1600).optional()
+    },
+    annotations: RO
+  }, guard(async (a) => {
+    const w = W(), d = w.leituraBlocking(), m = v => Math.round(v * 0.114 * 100) / 100, modo = a.lateral || "camera";
+    const pts = []; d.manequins.forEach(q => pts.push([q.x - 3, q.z - 3], [q.x + 3, q.z + 3])); d.objetos.forEach(o => pts.push([o.x, o.z])); pts.push([d.camera.pos[0], d.camera.pos[2]], [d.camera.alvo[0], d.camera.alvo[2]]);
+    const vc = w.encaixar(pts, 520, 420, 34), E = w.eixoPerfil(d, modo), u = q => (q[0] - E.o[0]) * E.r[0] + (q[2] - E.o[2]) * E.r[2];
+    const pl = [[u(d.camera.pos), d.chao], [u(d.camera.pos), d.camera.pos[1]], [u(d.camera.alvo), d.camera.alvo[1]], [u(d.camera.pos), d.chao + d.alturaPessoa * 1.2]];
+    d.manequins.forEach(q => q.caps.forEach(c => pl.push([u(c.a), c.a[1] + c.r], [u(c.b), c.b[1] - c.r])));
+    const vl = w.encaixar(pl, 520, 340, 34), L = a.largura || 900;
+    const cima = await toPng(w.comFundo(w.svgPlanta(d, vc), 520, 420), L), lado = await toPng(w.comFundo(w.svgPerfil(d, vl, modo), 520, 340), L);
+    const C = d.camera, info = {
+      camera: { posicao_m: C.pos.map((v, i) => m(i === 1 ? v - d.chao : v)), alvo_m: C.alvo.map((v, i) => m(i === 1 ? v - d.chao : v)), lente_mm: Math.round(C.lente), campo_horizontal_graus: Math.round(C.fovH), perspectiva: C.persp, distancia_ao_alvo_m: m(C.d) },
+      manequins: d.manequins.map(q => ({ nome: q.nome, x_m: m(q.x), z_m: m(q.z), giro: q.giro, profundidade_m: m(q.foto.prof), altura_na_foto: Math.round(q.foto.frac * 100) + "%", na_foto: q.foto.atras ? "atrás da câmera" : !q.foto.dentro ? "fora" : q.foto.inteiro ? "inteiro" : "cortado" })),
+      objetos: d.objetos.map(o => ({ nome: o.nome, x_m: m(o.x), z_m: m(o.z), giro: o.giro }))
+    };
+    const txt = "Câmera em (" + info.camera.posicao_m.join(", ") + ") m, " + (C.persp ? info.camera.lente_mm + " mm" : "sem perspectiva") + ".\n" + info.manequins.map(q => "- " + q.nome + ": (" + q.x_m + ", " + q.z_m + ") m, a " + q.profundidade_m + " m da câmera, " + q.altura_na_foto + " da altura da foto (" + q.na_foto + ")").join("\n");
+    return { content: [{ type: "image", data: cima.toString("base64"), mimeType: "image/png" }, { type: "image", data: lado.toString("base64"), mimeType: "image/png" }, { type: "text", text: txt }], structuredContent: info };
+  }));
+
   server.registerTool("camadas_da_cena", {
     title: "Cena em camadas",
     description: "Gerador de cenas: cada manequim é desenhado sozinho como uma \"foto\" .svg na câmera da cena e as fotos são empilhadas. Devolve a ordem das camadas (de trás para a frente), quem está congelado ou oculto e quem faz sombra em quem. Pode devolver o SVG com cada manequim numa camada nomeada (Inkscape, Illustrator, Figma, Affinity) e/ou a foto de um manequim só (PNG e SVG com fundo transparente). Entre chamadas, só as camadas que mudaram são redesenhadas.",
