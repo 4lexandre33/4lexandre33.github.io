@@ -80,6 +80,14 @@ async function suite(client, tag) {
   check(!r.isError && /limite/.test((r.structuredContent.avisos || []).join(" ")), "editar_manequim: sentar, olhar, gesto e articulações com limite");
   r = await call("editar_manequim", { manequim: "2", deitar: { tipo: "brucos", eixo: "-z" }, espelhar: true });
   check(!r.isError, "editar_manequim: deitar de bruços e espelhar");
+  r = await call("editar_manequim", { manequim: "2", poseRapida: "ponte" });
+  check(!r.isError, "editar_manequim: ponte (perfil ginasta automático)" + (r.isError ? " " + r.content[0].text : ""));
+  r = await call("editar_manequim", { manequim: "2", flexibilidade: "normal", pose: { colunaFrente: -80 } });
+  check(!r.isError && /limite/.test((r.structuredContent.avisos || []).join(" ")), "flexibilidade normal limita a extensão da coluna");
+  r = await call("editar_manequim", { manequim: "2", flexibilidade: "ginasta", poseRapida: "prancha", apoiar: "maos pes" });
+  check(!r.isError, "apoiar: prancha com mãos e pés no chão" + (r.isError ? " " + r.content[0].text : ""));
+  r = await call("aparencia_cena", { linhasOcultas: 0.05, rosto: "minimo" });
+  check(!r.isError, "aparencia_cena: linhas ocultas e rosto mínimo");
   r = await call("camera", { eixo: "-x", elevacao: "baixa" });
   check(!r.isError, "camera: eixo e elevação");
   r = await call("renderizar", {});

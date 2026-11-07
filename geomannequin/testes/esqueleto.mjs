@@ -42,5 +42,29 @@ const mundo = (w, it) => { const p = Object.assign({}, it.params, { wy: E.restGr
   ok(w.cena.colisoes().length === 0, "montar: deitados e agachados sem colisão");
   const r = w.renderScene(w.sceneList(true), Object.assign({}, w.L, { ossos: true }), true, 0); ok(r.svg.includes('id="ossos"'), "camada de ossos desenhada"); }
 
+/* perfis de flexibilidade */
+{ const w = createWorld(), m = w.cena.ativo;
+  m.pose({ colunaFrente: -80 }); ok(w.P.spineFlex === -30, "normal: coluna estende até −30°");
+  m.flexibilidade("ginasta"); m.pose({ colunaFrente: -80, hipFlexL: 170, kneeFlexL: 0 }); ok(w.P.spineFlex === -65 && w.P.hipFlexL === 160, "ginasta: coluna −65° e perna esticada até 160°");
+  m.flexibilidade("normal"); ok(w.P.spineFlex === -30 && w.P.hipFlexL <= 91, "voltar para normal traz a pose de volta aos limites"); }
+/* coluna como curva: sem saltos entre quadros vizinhos, mesmo em extensão extrema */
+{ const w = createWorld(), m = w.cena.ativo; m.flexibilidade("contorcionista"); m.pose({ spineFlex: -90, lumFlex: -60, thoFlex: -45, spineTwist: 40 });
+  const p = w.SCN.list[0].params, ch = E.chainSetup(p, E.shape(p)); let mx = 0;
+  for (let i = 1; i <= 128; i++) { const a = ch.tab[i - 1], b = ch.tab[i], y = E.faixaColuna(ch.F).yA + (i / 128) * (E.faixaColuna(ch.F).yB - E.faixaColuna(ch.F).yA);
+    const pa = E.applyA(a, [0.8, y, 0.5]), pb = E.applyA(b, [0.8, y, 0.5]); mx = Math.max(mx, Math.hypot(pa[0] - pb[0], pa[1] - pb[1], pa[2] - pb[2])); }
+  ok(mx < 0.08, "coluna contínua em extensão extrema (maior salto " + mx.toFixed(3) + " R)"); }
+/* apoio em vários pontos */
+for (const [pose, cont] of [["ponte", ["maoE", "maoD", "peE", "peD"]], ["prancha", ["maoE", "maoD", "peE", "peD"]], ["paradaDeMao", []], ["paradaAbertura", ["maoE", "maoD"]]]) {
+  const w = createWorld(), m = w.cena.ativo; m.poseRapida(pose);
+  const p = w.SCN.list[0].params, ch = E.chainSetup(p, E.shape(p)), F = ch.F, g0 = E.restGround(p);
+  const alt = {}; [1, -1].forEach(s => { const L_ = s > 0 ? "E" : "D"; alt["mao" + L_] = E.comp(ch.A2, E.armPose(p, F, s).hand).T[1] - g0; const Af = E.comp(ch.Pel, E.legPose(p, F, ch, s).foot), A = E.legDims(p), f = A.f;
+    alt["pe" + L_] = Math.min(...[[0, -A.hA, -0.42 * f], [0, -A.hA, 1.2 * f], [0, -0.58 * f, 1.5 * f]].map(v => E.applyA(Af, v)[1])) - g0; });
+  ok(cont.every(k => alt[k] < (k.startsWith("pe") ? 0.45 : 0.6)), pose + ": contatos no chão (" + cont.map(k => k + " " + alt[k].toFixed(2)).join(", ") + ")");
+}
+/* traços em Bézier e linhas ocultas reguláveis */
+{ const w = createWorld(); w.setPreset("construcao"); const r = w.renderScene(w.sceneList(true), w.L, false, 0);
+  ok(/ d="M[^"]*C/.test(r.svg), "traços saem como curvas de Bézier (C)");
+  ok(/stroke-dasharray:3 6;opacity:0\.2/.test(r.svg) && !/stroke-dasharray:3 6;opacity:\.5/.test(r.svg), "modo construção: linhas ocultas bem claras");
+  w.cena.linhasOcultas(0); const r2 = w.renderScene(w.sceneList(true), w.L, false, 0); ok(!/stroke-dasharray:3 6/.test(r2.svg), "linhas ocultas em 0: nenhuma tracejada"); }
 console.log(falhou ? "\nFALHOU." : "\nTudo certo.");
 process.exit(falhou ? 1 : 0);

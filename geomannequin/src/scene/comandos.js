@@ -10,7 +10,7 @@ import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
 import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, apoiarContatos, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -49,6 +49,10 @@ function apiFor(it){
     saltar(alt){chk();withInst(it,()=>doBodyPose("saltando"));if(alt!==undefined)it.params.bodyLift=clamp(num(alt,"altura"),0,30);return m},
     altura(y){chk();it.params.bodyLift=clamp(num(y,"altura"),-2,30);return m},
     inclinar(graus,rolar){chk();it.params.bodyPitch=clamp(num(graus,"graus"),-180,180);if(rolar!==undefined)it.params.bodyRoll=clamp(num(rolar,"rolar"),-180,180);return m},
+    /* perfil de flexibilidade: "normal" (clínico), "atleta", "ginasta" (ponte, espacate), "contorcionista" */
+    flexibilidade(n){chk();applyParams(it,{flex:n},false).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));return m},
+    /* apoio em vários pontos: m.apoiar("maos pes") — ponte, parada de mão, prancha, quatro apoios */
+    apoiar(q,opts){chk();apoiarContatos(it.params,q===undefined?"maos pes":q,opts).forEach(t=>LOG.push(["aviso",t]));return m},
     apoio(on){chk();it.params.ground=on===false||on===0?0:1;return m},
     sentar(obj){chk();const q=sentar(it,obj);return m},
     subir(obj){chk();subirEm(it,obj);return m},
@@ -136,6 +140,12 @@ const cena={
   /* modo de desenho: "manequim", "construcao" ou "ecorche" (anatomia limpa, como pranchas de Bridgman/Loomis) */
   modo(nome){const n=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace("construção","construcao");
     if(!PRESETS[n])throw new Error("Modo desconhecido: use \"manequim\", \"construcao\" ou \"ecorche\".");setPreset(n)},
+  /* linhas atrás do corpo: 0 = escondidas, 1 = tracejado forte (padrão do modo construção: 0,16) */
+  linhasOcultas(x){const v=clamp(num(x===undefined?0.16:x,"opacidade"),0,1);L.ocultas=v;L.hidden=v>0.01?1:0;setMode(null);updateModeButtons()},
+  /* rosto: "completo", "minimo" (só a cruz de construção, estilo Loomis) ou "liso" */
+  rosto(modo){const t=String(modo||"completo").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    if(/^comp/.test(t))Object.assign(L,{feat:1,eyes:1,merid:1});else if(/^min/.test(t))Object.assign(L,{feat:0,eyes:0,merid:1,rings:1});else if(/^lis/.test(t))Object.assign(L,{feat:0,eyes:0,merid:0});
+    else throw new Error("Rosto: use \"completo\", \"minimo\" ou \"liso\".");setMode(null);updateModeButtons()},
   fibras(on){L.fibras=on!==false&&on!==0;setMode(null);updateModeButtons()},
   /* cena em camadas (padrão) ou exata (todos num z-buffer comum, mais lento) */
   exato(on){SCN.exato=on!==false&&on!==0},

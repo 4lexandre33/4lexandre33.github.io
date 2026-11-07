@@ -38,7 +38,7 @@ for (const [nome, monta] of CENAS) {
   const ca = w.renderScene(w.sceneList(true), L, false, L.floor ? 16 : 0);
   const A = pixels(ex.svg), B = pixels(ca.svg), d = diff(A.px, B.px);
   writeFileSync(join(OUT, "camadas-" + nome + "-exato.png"), A.png); writeFileSync(join(OUT, "camadas-" + nome + "-camadas.png"), B.png);
-  const ok = d < 0.012; /* diferença esperada: só a resolução do mapa de sombra muda um pouco */
+  const ok = d < 0.015; /* diferença esperada: a resolução do mapa de sombra e os traços de sobreposição (na cena exata o outro manequim conta como "atrás") */
   if (!ok) falhou = true;
   console.log((ok ? "  ok  " : "  DIFERENTE  ") + nome + ": " + (100 * d).toFixed(2) + "% dos pixels diferem");
 }

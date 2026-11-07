@@ -9,15 +9,16 @@ import { contourPath, fillPath, silhouette } from "./contornos.js";
 import { armDims, armJoint, armPose, armRadius, foreR } from "./bracos.js";
 import { bandMesh } from "./malhas.js";
 import { atlasPerna } from "./atlas/pernas.js";
+import { suavizarSvg } from "./curvas.js";
 import { suave } from "./atlas/util.js";
 import { ossosDoCorpo } from "./esqueleto.js";
 import { SMN, SMO, hid, hz, raster, rasterH, rasterS, setSMO, setSMS, sm, visAt, zb } from "./zbuffer.js";
 import { restGround } from "./cena.js";
 import { FS, FSRaw, shadowMesh } from "./sombra.js";
-import { FA, FB, FH, FR, Fc, blurPlain, makeFields } from "./campos.js";
-import { calfR, legDims, thighR } from "./pernas.js";
+import { FA, FB, FH, FK, FR, Fc, blurPlain, makeFields } from "./campos.js";
+import { calfR, legDims, linhaDedao, quadrosGluteo, thighR } from "./pernas.js";
 import { ST } from "./padroes.js";
-import { bustLocal, bustTh, bustTw, shoulderWarp } from "./tronco.js";
+import { bustLocal, bustTh, bustTw, pesoGluteo, shoulderWarp } from "./tronco.js";
 import { muscleDefs } from "./musculos.js";
 import { scapTri } from "./corpo.js";
 import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
@@ -36,7 +37,7 @@ function scene(p,L,pal,fast,mode){
    if(hp<200)L=Object.assign({},L,{girdle:0,rings:0,merid:0,prop:0,sphere:0,planes:0});
    if(hp<120)L=Object.assign({},L,{anat:0,hidden:0})}
   const ch=chainSetup(p,sh),F=ch.F,tab=ch.tab,A3=ch.A3,A2=ch.A2;
-  M.head.tf=[A3];M.earL.tf=[A3];M.earR.tf=[A3];M.bust.tf=tab;
+  M.head.tf=[A3];M.earL.tf=[A3];M.earR.tf=[A3];M.bust.tf=tab;M.bust.tq=quadrosGluteo(p,F,ch);
   const xf=v=>xv(applyA(A3,v));
   const xfd=v=>xv0(mv(A3.M,v));
   const head=proj(M.head,Mx,S),bust=L.torso?proj(M.bust,Mx,S):null;
@@ -137,7 +138,10 @@ function scene(p,L,pal,fast,mode){
   }
   function style(k,hid,wm){
     const s=ST[k];
-    return "fill:none;stroke:"+pal[s.c]+";stroke-width:"+f1(s.w*(wm||1)*LWK)+";stroke-linecap:round;stroke-linejoin:round"+(hid?";stroke-dasharray:3 6;opacity:.5":(k==="gdash"||k==="jaxis"?";stroke-dasharray:5 5":""));
+    /* hierarquia: silhueta grossa; sobreposição (peça na frente de outra) média; linhas internas finas e mais claras.
+       Linhas ocultas (atrás do corpo): tracejadas com a opacidade escolhida (L.ocultas, 0 a 1) */
+    const oc=L.ocultas===undefined?0.5:+L.ocultas;
+    return "fill:none;stroke:"+pal[s.c]+";stroke-width:"+f1(s.w*(wm||1)*LWK)+";stroke-linecap:round;stroke-linejoin:round"+(hid?";stroke-dasharray:3 6;opacity:"+f1(oc):(k==="gdash"||k==="jaxis"?";stroke-dasharray:5 5":"")+(s.o?";opacity:"+s.o:""));
   }
   const LS=(()=>{const l=Math.hypot(LD[0],LD[1])||1;return [LD[0]/l,-LD[1]/l]})();
   function emit(k,sx,sy,sz,n,showHid,cen){
@@ -151,15 +155,18 @@ function scene(p,L,pal,fast,mode){
       if(len<16)for(let q=i;q<j;q++)VIS[q]=0;i=j}}
     /* dobra interna: corpo dos dois lados do traço, na mesma profundidade (ex.: relevo do abdômen visto de lado) → traço fino */
     const Z=(x,y)=>{x=Math.floor(x);y=Math.floor(y);return x<0||y<0||x>=W||y>=H?-1e6:zb[y*W+x]};
-    let dIn="";let lastIn=false;
+    let dIn="";let lastIn=false;let dOv="",lastOv=false;
     for(let i=0;i<n-1;i++){
       const v=VIS[i];
       if(v&&isSil){
         const mx=(sx[i]+sx[i+1])/2,my=(sy[i]+sy[i+1])/2,mz=(sz[i]+sz[i+1])/2;let nx=-(sy[i+1]-sy[i]),ny=sx[i+1]-sx[i];const l=Math.hypot(nx,ny)||1;nx/=l;ny/=l;
         const a=Z(mx+4*nx,my+4*ny),b=Z(mx-4*nx,my-4*ny);
         if(a>-1e5&&b>-1e5&&Math.abs(a-mz)<0.3&&Math.abs(b-mz)<0.3){if(!lastIn)dIn+="M"+f1(sx[i])+" "+f1(sy[i]);dIn+="L"+f1(sx[i+1])+" "+f1(sy[i+1]);lastIn=true;lastC=-1;continue}
+        /* junção em T: a peça da frente passa sobre outra parte do corpo bem mais atrás → traço de sobreposição (mais firme) */
+        if(k==="silN"&&a>-1e5&&b>-1e5&&Math.abs(a-b)>0.9){if(!lastOv)dOv+="M"+f1(sx[i])+" "+f1(sy[i]);dOv+="L"+f1(sx[i+1])+" "+f1(sy[i+1]);lastOv=true;lastIn=false;lastC=-1;continue}
+        lastOv=false;
       }
-      lastIn=false;
+      lastIn=false;lastOv=false;
       const pre="M"+f1(sx[i])+" "+f1(sy[i]),seg="L"+f1(sx[i+1])+" "+f1(sy[i+1]);
       if(!v){if(!lastH)dh+=pre;dh+=seg;lastH=true;lastC=-1;continue}
       lastH=false;
@@ -172,10 +179,11 @@ function scene(p,L,pal,fast,mode){
       if(c!==lastC)dv[c]+=pre;
       dv[c]+=seg;lastC=c;
     }
-    if(dh&&(L.hidden||showHid)&&!isSil)out.push('<path d="'+dh+'" style="'+style(k,true)+'"/>');
+    if(dh&&(L.hidden||showHid)&&!isSil&&(L.ocultas===undefined||L.ocultas>0.01))out.push('<path d="'+dh+'" style="'+style(k,true)+'"/>');
     const WM=isSil?[0.72,1,1.32]:[1,1,1];
     dv.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,WM[c])+'"/>')});
     if(dIn)out.push('<path d="'+dIn+'" style="'+style("divisao",false)+'"/>');
+    if(dOv)out.push('<path d="'+dOv+'" style="'+style(k,false,1.2)+'"/>');
   }
   function curve(k,pts,X,showHid){
     X=X||xf;
@@ -197,7 +205,10 @@ function scene(p,L,pal,fast,mode){
     }
     paths.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,W3[c])+'"/>')});
   }
-  const xb=v=>{const w=bustTw(v[0],v[1],F),A=tab[Math.round(clamp(w,0,3)*64)],q=A.M;return xv([q[0]*v[0]+q[1]*v[1]+q[2]*v[2]+A.T[0],q[3]*v[0]+q[4]*v[1]+q[5]*v[2]+A.T[1],q[6]*v[0]+q[7]*v[1]+q[8]*v[2]+A.T[2]])};
+  const GQ=M.bust.tq;
+  const xb=v=>{const w=bustTw(v[0],v[1],F),A=tab[Math.round(clamp(w,0,3)*64)];let r=applyA(A,v);
+    if(GQ){const [wl,wr]=pesoGluteo(v[0],v[1],v[2],F);if(wl>0.001||wr>0.001){const a=applyA(GQ[0],v),b=applyA(GQ[1],v),w0=1-wl-wr;r=[0,1,2].map(i=>w0*r[i]+wl*a[i]+wr*b[i])}}
+    return xv(r)};
   const bp=(y,th,off)=>bustLocal(y,th,p,F,off);
   function poly(k,pts,fillCol){
     const n=pts.length;let d="",vis=0;
@@ -236,6 +247,7 @@ function scene(p,L,pal,fast,mode){
       if(d1)out.push('<path d="'+d1+'" style="fill:'+pal.shade1+';stroke:none;fill-rule:evenodd"/>');
       if(d2)out.push('<path d="'+d2+'" style="fill:'+pal.shade2+';stroke:none;fill-rule:evenodd"/>');
       const dr=contourPath(FR);if(dr)out.push('<path d="'+dr+'" style="fill:'+pal.shade1+';stroke:none;fill-rule:evenodd;opacity:.85"/>');
+      const dk=contourPath(FK);if(dk)out.push('<path d="'+dk+'" style="fill:'+pal.shade2+';stroke:none;fill-rule:evenodd;opacity:'+(L.cel?0.75:0.45)+'"/>');
     }
   }else if(L.fill){
     out.push('<path d="'+fillPath(hSil,head)+(bust?fillPath(bSil,bust):"")+arms.map(o=>fillPath(silhouette(o.a),o.a)+fillPath(silhouette(o.f),o.f)+o.hs.map(h=>fillPath(silhouette(h),h)).join("")).join("")+legs.map(o=>[o.t,o.c,o.ft].map(m=>fillPath(silhouette(m),m)).join("")).join("")+'" style="fill:'+pal.fill+';stroke:none"/>');
@@ -302,6 +314,7 @@ function scene(p,L,pal,fast,mode){
     curve("gdash",arr(k=>[lerp(acr[0][0],acr[1][0],k),lerp(acr[0][1],acr[1][1],k),lerp(acr[0][2],acr[1][2],k)],0,1,30),xb);
     [-1,1].forEach(s=>{
       const G=xv(applyA(A2,armJoint(p,F,s))),gx=CX+S*G[0],gy=CY-S*G[1];
+      if(zb[Math.floor(gy)*W+Math.floor(gx)]>G[2]+0.62+0.45&&gx>=1&&gy>=1&&gx<W-1&&gy<H-1)return;
       const lat=xv0(mv(A2.M,[s,0,0])),la=Math.atan2(-lat[1],lat[0]);
       const r1=0.2*S,r2=0.62*S,r3=0.36*S;
       out.push('<circle cx="'+f1(gx)+'" cy="'+f1(gy)+'" r="'+f1(r1)+'" style="'+style("plane",false)+'"/>');
@@ -313,7 +326,9 @@ function scene(p,L,pal,fast,mode){
       [0,1].forEach(q=>{const x=s*(0.14+q*(F.W-0.3)),yc=F.yJ+0.06+0.04*q+0.035*Math.sin(Math.PI*q),v=xb(bp(yc,bustTh(yc,x,true,p,F),0.02));
         out.push('<circle cx="'+f1(CX+S*v[0])+'" cy="'+f1(CY-S*v[1])+'" r="3.2" style="fill:none;stroke:'+pal.coral+';stroke-width:1.1"/>')});
     });
-    const jc=(P,r)=>{const q=xv(P),x=CX+S*q[0],y=CY-S*q[1];
+    /* círculo de construção escondido atrás de outra parte do corpo (ex.: ombro atrás da cabeça): some ou fica como linha oculta */
+    const tapado=(q,r)=>{const x=Math.floor(CX+S*q[0]),y=Math.floor(CY-S*q[1]);if(x<1||y<1||x>=W-1||y>=H-1)return false;return zb[y*W+x]>q[2]+r+0.45};
+    const jc=(P,r)=>{const q=xv(P),x=CX+S*q[0],y=CY-S*q[1];if(tapado(q,r)){if(L.hidden&&(L.ocultas===undefined||L.ocultas>0.01))out.push('<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+f1(r*S)+'" style="'+style("plane",true)+'"/>');return}
       out.push('<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="'+f1(r*S)+'" style="'+style("plane",false)+'"/>');
       out.push('<circle cx="'+f1(x)+'" cy="'+f1(y)+'" r="2.2" style="fill:'+pal.cobalt+';stroke:none"/>')};
     arms.forEach(o=>{jc(o.Af.T,0.2);jc(o.Ah.T,0.14)});
@@ -370,7 +385,15 @@ function scene(p,L,pal,fast,mode){
       /* borda da frente do trapézio: desce do lado do pescoço e abre sobre o ombro até a ponta da clavícula */
       {const nw=F.B.neck;lineT("divisao",suave([[F.yJ+0.62,0.8*nw],[F.yJ+0.38,0.98*nw],[F.yJ+0.2,0.5*(nw+F.W-0.3)],[F.yJ+0.1,F.W-0.42]],8).map(([y,ax])=>bp(y,bustTh(y,s*ax,true,p,F),0.012)),xb);}
       /* esternocleidomastoideo (pescoço) e clavícula em S */
-      lineT("divisao",arr(u=>bp(lerp(-0.7,F.yJ+0.04,u),s*lerp(112,16,u)*D,0.012),0.22,0.97,26),xb);
+      /* esternocleidomastoideo: do processo mastoide (atrás da orelha, gira com a cabeça) até a fúrcula esternal (fixa no
+         tórax); a linha é apoiada na superfície do pescoço e estica/curva quando a cabeça gira ou inclina */
+      {const WT=v=>applyA(tab[Math.round(clamp(bustTw(v[0],v[1],F),0,3)*64)],v);
+       const Wm=applyA(A3,[s*0.68,-0.62,-0.3]),Wn=WT(bp(F.yJ+0.04,s*0.09,0.0)),C0=WT([0,F.yJ+0.12,-0.28]),C1=applyA(A3,[0,-0.62,-0.2]);
+       const ax=[C1[0]-C0[0],C1[1]-C0[1],C1[2]-C0[2]],al=ax[0]*ax[0]+ax[1]*ax[1]+ax[2]*ax[2]||1;
+       const raio=P=>{const t=clamp(((P[0]-C0[0])*ax[0]+(P[1]-C0[1])*ax[1]+(P[2]-C0[2])*ax[2])/al,0,1),c=[C0[0]+ax[0]*t,C0[1]+ax[1]*t,C0[2]+ax[2]*t];return {c,d:[P[0]-c[0],P[1]-c[1],P[2]-c[2]]}};
+       const rm=Math.hypot(...raio(Wm).d),rn=Math.hypot(...raio(Wn).d);
+       lineT("divisao",arr(u=>{const P=[0,1,2].map(i=>lerp(Wm[i],Wn[i],u)),q=raio(P),l=Math.hypot(...q.d)||1,r=lerp(rm,rn,u)*(1+0.1*Math.sin(Math.PI*u))+0.025;
+         return xv([q.c[0]+q.d[0]/l*r,q.c[1]+q.d[1]/l*r,q.c[2]+q.d[2]/l*r])},0.08,0.97,26),v=>v);}
       lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.18)),yc=F.yJ+0.0+0.2*q*q+0.03*Math.sin(Math.PI*q)-0.05*Math.sin(2*Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.1,0.86,30),xb);
     });
     /* músculos do tronco: linhas do atlas muscular (mesmas formas que geram o relevo) */
@@ -426,6 +449,12 @@ function scene(p,L,pal,fast,mode){
       const kf=s>0?p.kneeFlexL:p.kneeFlexR,hf=s>0?p.hipFlexL:p.hipFlexR,Xt=v=>xv(applyA(o.Ath,v));
       /* vinco atrás do joelho quando dobra */
       if(kf>25)lineT("dobra",arr(a=>{const r=0.36*k;return [-r*Math.sin(a),-0.02*k,-r*Math.cos(a)]},-0.85,0.85,14).map(Xk),v=>v);
+      /* joelho dobrado: tendão patelar (da ponta da patela à tuberosidade da tíbia) salta na frente */
+      if(kf>20){const fk=clamp((kf-20)/60,0,1);[-1,1].forEach(q=>lineT("mus",arr(u=>{const th=q*(0.2+0.04*u),r=calfR(u*0.32*A.L2,th,A,s)+0.012+0.03*fk*Math.sin(Math.PI*u);return [r*Math.sin(th),-u*0.32*A.L2,r*Math.cos(th)]},0,1,10).map(Xc),v=>v))}
+      /* pé em cunha: só a divisão do dedão aparece na caixa dos dedos */
+      {const Xf=v=>xv(applyA(o.Aft,v));lineT("divisao",linhaDedao(p,s,s>0?p.toesL:p.toesR).map(Xf),v=>v)}
+      /* trocânter maior: o relevo ósseo do lado de fora, logo abaixo do quadril */
+      lineT("mus",arr(a=>{const u=A.L1*(0.07+0.05*Math.sin(a)),th=s*(Math.PI/2+0.25*Math.cos(a)),r=thighR(u,th,A,s)+0.012;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.3,Math.PI*2-0.3,14).map(Xt),v=>v);
       /* dobra do glúteo: um "sorriso" sob cada nádega, da fenda para fora (some quando a coxa sobe) */
       if(hf<45)lineT("dobra",arr(a=>{const th=Math.PI+s*a,u=A.L1*(0.2-0.03*Math.pow(a,1.6)),r=thighR(u,th,A,s)+0.05;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.04,1.3,18).map(Xt),v=>v);
       /* maléolos (o de dentro mais alto) */
@@ -627,7 +656,7 @@ function scene(p,L,pal,fast,mode){
   const info={handles,S,t,chinY,eyeY,fit,bb,depth:PAN[2],shadow,juntas:juntasTela,
     brow:axes(a=>[p.skull*Math.sin(a),0,Math.cos(a)]),
     mer:axes(a=>[0,Math.sin(a),Math.cos(a)])};
-  return {svg:out.join(""),info};
+  return {svg:L.retas?out.join(""):suavizarSvg(out.join("")),info};
 }
 
 export { scene, CASTERS, setCasters };

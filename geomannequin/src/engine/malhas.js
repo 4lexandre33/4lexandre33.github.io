@@ -29,8 +29,8 @@ function bandMesh(Pa,Pb,Pc,wr,tk,nref,ponta){
   }
   return {V,rows,cols,flip:1,fb:null};
 }
-function fingerMesh(base,dirs,lens,r0,ref,flat){
-  ref=ref||[0,0,1];flat=flat||1;
+function fingerMesh(base,dirs,lens,r0,ref,flat,larg){
+  ref=ref||[0,0,1];flat=flat||1;larg=larg||1;
   const pts=[base.slice()],rs=[];
   let cur=base.slice();
   const N=6;
@@ -45,7 +45,7 @@ function fingerMesh(base,dirs,lens,r0,ref,flat){
     const n1=[t[1]*n2[2]-t[2]*n2[1],t[2]*n2[0]-t[0]*n2[2],t[0]*n2[1]-t[1]*n2[0]];
     for(let j=0;j<cols;j++){
       const th=j/cols*2*Math.PI,q=(row*cols+j)*3;
-      const a1=rad*Math.sin(th),a2=rad*Math.cos(th)*flat;
+      const a1=rad*Math.sin(th)*larg,a2=rad*Math.cos(th)*flat;
       V[q]=c[0]+a1*n1[0]+a2*n2[0];V[q+1]=c[1]+a1*n1[1]+a2*n2[1];V[q+2]=c[2]+a1*n1[2]+a2*n2[2];
     }
   };

@@ -7,7 +7,7 @@ import { applyState, sceneState } from "../scene/estado.js";
 import { $ } from "../scene/ambiente.js";
 import { syncControls } from "./controles.js";
 import { updateModeButtons } from "./modos.js";
-import { H, W, renderScene } from "../engine/index.js";
+import { FLEX_NOMES, H, W, renderScene } from "../engine/index.js";
 
 /* exportação */
 function exportSvg(){
@@ -43,6 +43,7 @@ function setTab(t){
 function say(text,cls){const m=$("msg");m.textContent=text;m.className="msg"+(cls?" "+cls:"")}
 /* controles */
 function fmt(d,v){
+  if(d.k==="flex")return FLEX_NOMES[Math.round(v)]||"normal";
   if(d.pct)return Math.round(v*100)+d.u;
   const dec=d.step>=1?0:d.step>=0.01?2:3;
   return v.toFixed(dec)+d.u;

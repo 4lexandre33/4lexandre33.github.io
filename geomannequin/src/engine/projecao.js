@@ -19,7 +19,13 @@ function proj(m,Mx,S){
     let x=V[i*3],y=V[i*3+1],z=V[i*3+2];
     if(tf){
       const A=m.tw?tf[Math.round(m.tw[i]*64)]:(tf.length>1?tf[(i/cols)|0]:tf[0]),q=A.M;
-      const x1=q[0]*x+q[1]*y+q[2]*z+A.T[0],y1=q[3]*x+q[4]*y+q[5]*z+A.T[1],z1=q[6]*x+q[7]*y+q[8]*z+A.T[2];
+      let x1=q[0]*x+q[1]*y+q[2]*z+A.T[0],y1=q[3]*x+q[4]*y+q[5]*z+A.T[1],z1=q[6]*x+q[7]*y+q[8]*z+A.T[2];
+      /* mistura com os quadros das coxas (glúteo e virilha acompanham o fêmur) */
+      if(m.wq&&m.tq){const wl=m.wq[i*2],wr=m.wq[i*2+1];
+        if(wl>0.001||wr>0.001){const G=m.tq,a1=G[0].M,a2=G[1].M,w0=1-wl-wr;
+          x1=w0*x1+wl*(a1[0]*x+a1[1]*y+a1[2]*z+G[0].T[0])+wr*(a2[0]*x+a2[1]*y+a2[2]*z+G[1].T[0]);
+          y1=w0*y1+wl*(a1[3]*x+a1[4]*y+a1[5]*z+G[0].T[1])+wr*(a2[3]*x+a2[4]*y+a2[5]*z+G[1].T[1]);
+          z1=w0*z1+wl*(a1[6]*x+a1[7]*y+a1[8]*z+G[0].T[2])+wr*(a2[6]*x+a2[7]*y+a2[8]*z+G[1].T[2]);}}
       x=x1;y=y1;z=z1;
     }
     const px=a[0]*x+b[0]*y+c[0]*z,py=a[1]*x+b[1]*y+c[1]*z,pz=a[2]*x+b[2]*y+c[2]*z;

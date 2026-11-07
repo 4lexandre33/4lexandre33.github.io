@@ -1,11 +1,32 @@
 /* GeoMannequin — cadeia do corpo: pelve → coluna → pescoço, poses das pernas e cinemática inversa (pernas e braços) */
-import { bustFrame } from "./corpo.js";
+import { bustFrame, faixaColuna, tauTronco } from "./corpo.js";
 import { poseSetup } from "./montagem.js";
 import { D, applyA, clamp, comp, mT, mmul, mv, rotM, rotP } from "./matematica.js";
 import { hipJoint, legDims } from "./pernas.js";
 import { armDims, armJoint, armPose } from "./bracos.js";
+import { ampliar } from "./amplitude.js";
 import { bodyProxies, minAbd, proxyDepth } from "./colisao.js";
 
+/* bump suave (0 nas pontas) normalizado no intervalo [a, b] de h */
+function bump(h,a,b){if(h<=a||h>=b)return 0;const t=(h-a)/(b-a);return Math.sin(Math.PI*t)**2}
+function colunaCurva(p,F,Pel,fl,side,tw){
+  const {yA,yB,zc}=faixaColuna(F),N=128,dy=(yB-yA)/N,hm=clamp((F.yJ-2.85-yA)/(yB-yA),0.3,0.7);
+  const ang=[[(tw*0.3+(p.lumTwist||0)),(fl*0.6+(p.lumFlex||0)),(side*0.5+(p.lumSide||0))],[(tw*0.7+(p.thoTwist||0)),(fl*0.4+(p.thoFlex||0)),(side*0.5+(p.thoSide||0))]];
+  const wl=[],wt=[];let sl=0,st=0;
+  for(let k=0;k<N;k++){const h=(k+0.5)/N;wl.push(bump(h,-0.05,hm+0.12));wt.push(bump(h,hm-0.12,1.02));sl+=wl[k];st+=wt[k]}
+  let R=[1,0,0,0,1,0,0,0,1],C=[0,yA,zc];
+  const out=[comp(Pel,{M:R,T:[0,0,0]})];
+  for(let k=0;k<N;k++){
+    const a=wl[k]/sl,b=wt[k]/st,d=[0,1,2].map(i=>(ang[0][i]*a+ang[1][i]*b)*D);
+    const Rh=mmul(R,rotM(d[0]/2,d[1]/2,d[2]/2)),v=mv(Rh,[0,dy,0]);
+    C=[C[0]+v[0],C[1]+v[1],C[2]+v[2]];R=mmul(R,rotM(d[0],d[1],d[2]));
+    const y=yA+(k+1)*dy,q=mv(R,[0,y,zc]);
+    out.push(comp(Pel,{M:R,T:[C[0]-q[0],C[1]-q[1],C[2]-q[2]]}));
+  }
+  return out;
+}
+/* quadro do tronco na altura y (corpo em repouso) */
+function quadroTronco(ch,y){return ch.tab[Math.round(clamp(tauTronco(y,ch.F),0,2)*64)]}
 /* ===== Cadeia: pelve → lombar → torácica → pescoço/cabeça, com limites e acoplamentos ===== */
 function chainSetup(p,S){
   const F=bustFrame(p,S),po=poseSetup(p,S);
@@ -17,14 +38,12 @@ function chainSetup(p,S){
   const PelL=rotP(rotM(p.pelvisTwist*D,tilt*D,p.pelvisSide*D),Pp);
   const Pel=raiz?comp(raiz,PelL):PelL;
   const fl=flex-0.45*Math.max(0,flex-35);
-  /* lombar (mais flexão), torácica (mais rotação); cada uma pode ter um ajuste próprio */
-  const lum=t=>rotP(rotM((tw*0.3+(p.lumTwist||0))*t*D,(fl*0.6+(p.lumFlex||0))*t*D,(side*0.5+(p.lumSide||0))*t*D),Lp);
-  const tho=t=>rotP(rotM((tw*0.7+(p.thoTwist||0))*t*D,(fl*0.4+(p.thoFlex||0))*t*D,(side*0.5+(p.thoSide||0))*t*D),Tp);
-  const tab=[];
-  for(let i=0;i<=192;i++){
-    const tau=i/64,a=clamp(tau,0,1),b=clamp(tau-1,0,1),c=clamp(tau-2,0,1);
-    tab.push(comp(Pel,comp(lum(a),comp(tho(b),po.neck(c)))));
-  }
+  /* coluna como curva mestra: a curvatura (frente/trás, lado, torção) se distribui ao longo da altura — lombar embaixo,
+     torácica em cima, com densidades suaves (sem quinas) —, e os quadros são integrados vértebra a vértebra (transporte
+     ao longo da curva). Cada fatia do tronco fica perpendicular à curva: o lado convexo estica, o côncavo comprime,
+     sem colapsar em extensão extrema (ponte) nem em flexão. Pelve e caixa torácica são blocos rígidos nas pontas. */
+  const tab=colunaCurva(p,F,Pel,fl,side,tw);
+  for(let j=1;j<=64;j++)tab.push(comp(tab[128],po.neck(j/64)));
   /* apoio no chão: o corpo inteiro sobe ou desce para que a parte mais baixa (pé, joelho, quadril, costas, mão, cabeça)
      encoste no chão; "altura" levanta o corpo (salto) ou, sem apoio, desloca a partir da posição em pé */
   let gY=null;
@@ -54,7 +73,7 @@ function pontoMaisBaixo(p,F,tab,Pel,tilt){
     ve(applyA(Pel,[s*B.hip*0.42,F.yHip-0.55,-0.75]),0.55);
   });
   ve(applyA(tab[192],[0,0.1,0.05]),0.98);
-  [[tab[128],F.yJ-1.3],[tab[110],F.yJ-2.1],[tab[64],F.yNav]].forEach(([T,y])=>{ve(applyA(T,[0,y,-0.46]),0.82);ve(applyA(T,[0,y,0.1]),0.4)});
+  [[tab[128],F.yJ-1.3],[tab[Math.round(tauTronco(F.yJ-2.1,F)*64)],F.yJ-2.1],[tab[Math.round(tauTronco(F.yNav,F)*64)],F.yNav]].forEach(([T,y])=>{ve(applyA(T,[0,y,-0.46]),0.82);ve(applyA(T,[0,y,0.1]),0.4)});
   ve(applyA(Pel,[0,F.yHip-0.2,-0.48]),0.85);
   return mn;
 }
@@ -97,7 +116,7 @@ function ikLeg(p,S,s,Pw){
   const r={hipFlex:clamp(fl/D-ch.tilt,-30,125),hipAbd:clamp(s*(rl/D+p.pelvisSide),-30,45),hipRot:clamp(s*yw/D+p.pelvisTwist,-45,45),knee:clamp(kf/D,0,150)};
   const L_=s>0?"L":"R",pp=Object.assign({},p);
   /* refinamento: busca local dentro dos limites anatômicos até o tornozelo chegar o mais perto possível do alvo */
-  const keys=["hipFlex","hipAbd","hipRot","kneeFlex"],lim=[[-30,125],[-30,45],[-45,45],[0,150]],x=[r.hipFlex,r.hipAbd,r.hipRot,r.knee];
+  const keys=["hipFlex","hipAbd","hipRot","kneeFlex"],lim=[["hipFlex",-30,125],["hipAbd",-30,45],["hipRot",-45,45],["kneeFlex",0,150]].map(([k,a,b])=>ampliar(k,a,b,p.flex)),x=[r.hipFlex,r.hipAbd,r.hipRot,r.knee];
   const err=v=>{keys.forEach((k,i)=>pp[k+L_]=v[i]);const T=comp(Pel,legPose(pp,F,ch,s).foot).T;return Math.hypot(T[0]-Pw[0],T[1]-Pw[1],T[2]-Pw[2])};
   let e=err(x),st=8;
   for(let it=0;it<60&&st>0.05&&e>1e-3;it++){
@@ -127,7 +146,7 @@ function flatAnkle(p,S,s){
 function handOnHip(p,S,s){
   const ch=chainSetup(p,S),F=ch.F;
   const T0=[s*(F.B.hip+0.14),F.yJ-4.0,-0.46];
-  const r=ikArm(p,S,s,applyA(ch.tab[0],T0));
+  const r=ikArm(p,S,s,applyA(quadroTronco(ch,T0[1]),T0));
   return r;
 }
 /* cinemática inversa de dois ossos para levar o punho a um ponto (em coordenadas do mundo, antes da câmera) */
@@ -151,7 +170,7 @@ function ikArm(p,S,s,Pw,pole0){
   const el=Math.acos(clamp(-fl2[1],-1,1));
   let ro=el>0.05?s*Math.atan2(fl2[0],fl2[2]):(s>0?p.armRotL:p.armRotR)*D;
   /* refinamento dentro dos limites anatômicos, evitando que o antebraço e a mão entrem no corpo */
-  const L_=s>0?"L":"R",keys=["armAbd","armFlex","armRot","elbow"],lim=[[-45,160],[-50,160],[-70,90],[0,145]],pp=Object.assign({},p);
+  const L_=s>0?"L":"R",keys=["armAbd","armFlex","armRot","elbow"],lim=[["armAbd",-45,160],["armFlex",-50,160],["armRot",-70,90],["elbow",0,145]].map(([k,a,b])=>ampliar(k,a,b,p.flex)),pp=Object.assign({},p);
   const PX=bodyProxies(p,S),pad=0.12*A.k;
   const err=v=>{keys.forEach((k,i)=>pp[k+L_]=v[i]);const ap=armPose(pp,F,s),Af=comp(A2,ap.fore),Ah=comp(A2,ap.hand);
     const W=Ah.T,e=Math.hypot(W[0]-Pw[0],W[1]-Pw[1],W[2]-Pw[2]),Aa=comp(A2,ap.arm);
@@ -165,4 +184,4 @@ function ikArm(p,S,s,Pw,pole0){
   return {abd:c.x[0],flex:c.x[1],rot:c.x[2],elbow:c.x[3],err:c.e};
 }
 
-export { chainSetup, legPose, ikLeg, flatAnkle, handOnHip, ikArm };
+export { quadroTronco, chainSetup, legPose, ikLeg, flatAnkle, handOnHip, ikArm };

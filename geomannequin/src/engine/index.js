@@ -29,6 +29,9 @@ export * from "./camadas.js";
 export * from "./colisao-cena.js";
 export * from "./esqueleto.js";
 export * from "./objetos.js";
+export * from "./amplitude.js";
+export * from "./apoio.js";
+export * from "./curvas.js";
 
 iniciarMontagem();
 iniciarZbuffer();

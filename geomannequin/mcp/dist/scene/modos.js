@@ -5,7 +5,7 @@ import { PRESETS } from "../engine/index.js";
 
 let L={};
 let mode="manequim";
-function setPreset(name){mode=name;LAY.forEach(l=>L[l.k]=!!PRESETS[name][l.k]);updateModeButtons()}
+function setPreset(name){mode=name;LAY.forEach(l=>L[l.k]=!!PRESETS[name][l.k]);L.ocultas=PRESETS[name].ocultas===undefined?0.5:PRESETS[name].ocultas;updateModeButtons()}
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarModos(){

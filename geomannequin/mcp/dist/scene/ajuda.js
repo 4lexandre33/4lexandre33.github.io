@@ -76,6 +76,14 @@ m.articulacao("coluna", {lado: 10, girar: -15});
 m.articulacao("pescoço", {girar: 30});
 m.dedos("direita", {indicador: -0.2, mao: 0.8});
 cena.modo("manequim");`,
+  "Ginástica: ponte, parada e arabesque":`// poses de ginasta: o perfil "ginasta" amplia os limites; "apoiar" põe mãos e pés no chão
+cena.limpar();
+const a = cena.ativo.renomear("Ponte").poseRapida("ponte");
+const b = cena.adicionar({nome: "Parada", x: 9}).poseRapida("paradaAbertura");
+const c = cena.adicionar({nome: "Arabesque", x: 18}).poseRapida("arabesque");
+cena.rosto("minimo");
+camera.eixo("z").elevacao("média");
+cena.enquadrar();`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -110,6 +118,10 @@ export function iniciarAjuda(){
     coluna, lombar, toracica, pescoco, cabeca, pelve, corpo; movimentos: dobrar, frente, abrir, girar, lado, inclinar, desvio, apontar, virar, subir
   m.gesto("direita" | "esquerda" | "ambas", "punho" | "apontar" | "pinca" | "joinha" | "paz" | "ok" | "garra" | "acenar" | …)
   m.dedos("esquerda", {polegar, indicador, medio, anelar, minimo, mao, afastar, opor}) · m.espelhar() · m.copiarPose(outro)
+  m.flexibilidade("normal" | "atleta" | "ginasta" | "contorcionista") — amplia os limites (ponte, espacate, arabesque pedem "ginasta")
+  m.apoiar("maos pes" | "maos" | "maos joelhos" | "mao esquerda pe direito") — vários pontos no chão ao mesmo tempo (ponte, parada de mão, prancha)
+  Poses de ginasta: ponte, ponteUmaPerna, paradaAbertura, escorpiao, arabesque, espacateSaltado, camelo, agachamentoProfundo, prancha, quatroApoios
+  cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")
   Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
   m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)
   m.saltar(altura R) · m.altura(R) · m.inclinar(graus, rolar?) — corpo inteiro (−90 costas, 90 bruços, 180 de cabeça para baixo)

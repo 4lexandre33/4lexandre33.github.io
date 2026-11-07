@@ -7,7 +7,7 @@ let cov,aoA;
 const RIMD=[[1,0],[-1,0],[0,1],[0,-1],[0.7,0.7],[-0.7,0.7],[0.7,-0.7],[-0.7,-0.7]];
 let AOD;
 let FcRaw,FcTmp,Fc;
-let FARaw,FA,FBRaw,FB,FHRaw,FH,FRRaw,FR;
+let FARaw,FA,FBRaw,FB,FHRaw,FH,FRRaw,FR,FKRaw,FK;
 let CelTmp;
 function blurPlain(src,dst){
   for(let y=0;y<HH;y++){
@@ -40,9 +40,9 @@ function borders(F){
 function makeFields(doShade,cel){
   for(let y=0;y<HH;y++)for(let x=0;x<HW;x++){
     const k=y*HW+x;
-    if(hz[k]<-1e5||hid[k]!==CUR_ID){cov[k]=0;FcRaw[k]=1;FARaw[k]=1;FBRaw[k]=1;FHRaw[k]=1;FRRaw[k]=1;continue}
+    if(hz[k]<-1e5||hid[k]!==CUR_ID){cov[k]=0;FcRaw[k]=1;FARaw[k]=1;FBRaw[k]=1;FHRaw[k]=1;FRRaw[k]=1;FKRaw[k]=1;continue}
     cov[k]=1;FcRaw[k]=-1;
-    if(!doShade){FARaw[k]=1;FBRaw[k]=1;FHRaw[k]=1;FRRaw[k]=1;continue}
+    if(!doShade){FARaw[k]=1;FBRaw[k]=1;FHRaw[k]=1;FRRaw[k]=1;FKRaw[k]=1;continue}
     const sx=(hlx[k]+SMO)*SMS,sy=(hly[k]+SMO)*SMS,ref=hld[k];
     const ix=Math.floor(sx),iy=Math.floor(sy);
     let lit=0;
@@ -59,6 +59,8 @@ function makeFields(doShade,cel){
       if(dd>0.03)occ+=Math.min(1,(dd-0.03)/0.22);
     }
     const ao=occ/AOD.length;
+    /* cavidades (abaixo do peitoral, do glúteo, da mandíbula, axila, parte interna da coxa): faixa escura mesmo na luz */
+    FKRaw[k]=0.3-ao;
     const cs=(lit/9-0.5)*2,nl=hnl[k]-0.9*ao;
     FHRaw[k]=Math.min(nl-0.44,cs+0.5);
     /* luz refletida: faixa clara dentro da sombra, junto ao contorno externo */
@@ -69,10 +71,10 @@ function makeFields(doShade,cel){
     FBRaw[k]=Math.min(nl-(-0.12),Math.max(nl-0.20,cs));
   }
   blurPlain(FcRaw,FcTmp);blurPlain(FcTmp,Fc);borders(Fc);
-  if(doShade){blurMasked(FARaw,FA);blurMasked(FBRaw,FB);blurMasked(FHRaw,FH);blurMasked(FRRaw,FR);
+  if(doShade){blurMasked(FARaw,FA);blurMasked(FBRaw,FB);blurMasked(FHRaw,FH);blurMasked(FRRaw,FR);blurMasked(FKRaw,FK);
     for(let i=0;i<(cel?3:1);i++){blurMasked(FA,CelTmp);blurMasked(CelTmp,FA);blurMasked(FB,CelTmp);blurMasked(CelTmp,FB)}
     if(!cel){blurMasked(FH,CelTmp);blurMasked(CelTmp,FH)}
-    borders(FA);borders(FB);borders(FH);borders(FR)}
+    borders(FA);borders(FB);borders(FH);borders(FR);borders(FK)}
 }
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
@@ -92,6 +94,8 @@ export function iniciarCampos(){
   FRRaw=new Float32Array(HN);
   FR=new Float32Array(HN);
   CelTmp=new Float32Array(HN);
+  FKRaw=new Float32Array(HN);
+  FK=new Float32Array(HN);
 }
 
-export { cov, aoA, RIMD, AOD, FcRaw, FcTmp, Fc, FARaw, FA, FBRaw, FB, FHRaw, FH, FRRaw, FR, blurPlain, blurMasked, borders, makeFields };
+export { cov, aoA, RIMD, AOD, FcRaw, FcTmp, Fc, FARaw, FA, FBRaw, FB, FHRaw, FH, FRRaw, FR, FKRaw, FK, blurPlain, blurMasked, borders, makeFields };

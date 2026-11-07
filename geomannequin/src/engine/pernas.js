@@ -1,6 +1,6 @@
 /* GeoMannequin — pernas: coxa, joelho, perna, tornozelo, pé, dedos e glúteo */
 import { bodyEff } from "./corpo.js";
-import { D, comp, gauss, lerp, rotM, rotP, sstep } from "./matematica.js";
+import { D, clamp, comp, gauss, lerp, rotM, rotP, sstep } from "./matematica.js";
 import { blobMesh, fingerMesh, tubeMesh } from "./malhas.js";
 
 /* ===== Pernas: coxa, joelho, perna, tornozelo, pé e dedos, como peças articuladas ===== */
@@ -59,45 +59,58 @@ function buildAnkle(p,s){
   for(let i=1;i<m.V.length;i+=3)m.V[i]-=A.L2;
   return m;
 }
-/* pé: calcanhar redondo, arco interno elevado, peito do pé inclinado, bola do pé larga e planta plana */
-function buildFoot(p,s){
-  const A=legDims(p),f=A.f,hA=A.hA,rows=38,cols=44,V=new Float32Array(rows*cols*3),n=2.8,e=2/n;
-  const z0=-0.5*f,z1=1.5*f;
-  for(let r=0;r<rows;r++){
-    const t=r/(rows-1),z=lerp(z0,z1,t),zz=z/f;
-    const eb=t<0.2?Math.max(0.04,Math.sqrt(Math.max(0,1-Math.pow((0.2-t)/0.2,2)))):1;
-    const ef=t>0.86?Math.max(0.04,Math.sqrt(Math.max(0,1-Math.pow((t-0.86)/0.14,3)))):1;
-    const w=f*(0.17+0.1*sstep((zz+0.05)/0.75)+0.23*sstep((zz-0.45)/0.85))*(1-0.06*sstep((zz-1.3)/0.2));
-    const yT=zz<0.15?lerp(-0.22*f,0.03*f,sstep((zz+0.5)/0.55)):lerp(0.03*f,-0.34*hA/0.62*f,sstep((zz-0.15)/1.15));
-    const yB=-hA,yc=(yT+yB)/2,hh=(yT-yB)/2;
-    const cx=-s*0.05*f*sstep((zz-0.5)/0.8)+s*0.02*f*(1-sstep((zz+0.2)/0.6));
-    for(let j=0;j<cols;j++){
-      const th=j/cols*2*Math.PI,sn=Math.sin(th),cs=Math.cos(th);
-      const ex=Math.sign(sn)*Math.pow(Math.abs(sn),e),ey=cs>0?Math.pow(cs,e):-Math.pow(-cs,0.45);
-      let x=cx+w*ex*eb*ef,y=yc+hh*ey*eb*ef;
-      if(eb<1)y-=(1-eb)*hh*0.35;
-      /* arco medial: a borda de dentro da planta sobe entre o calcanhar e a bola do pé */
-      if(cs<0){const md=Math.max(0,-s*sn);y+=0.17*f*gauss(zz,0.55,0.32)*Math.pow(md,1.3)*Math.pow(-cs,0.5)}
-      const q=(r*cols+j)*3;V[q]=x;V[q+1]=y;V[q+2]=z;
-    }
-  }
-  return {V,rows,cols,flip:1,fb:null};
+/* pé: calcanhar redondo, arco interno elevado, peito do pé inclinado, bola do pé larga e planta plana.
+   O pé é uma cunha escultural: o corpo (calcanhar → bola) e a caixa dos dedos (bola → ponta) são a mesma seção,
+   e a caixa dos dedos dobra inteira em volta da linha da bola do pé (sem dedos soltos). */
+const PE_N=2.8,PE_E=2/PE_N;
+function secaoPe(A,s,zz){
+  const f=A.f,hA=A.hA,t=(zz+0.5)/2;
+  const eb=t<0.2?Math.max(0.04,Math.sqrt(Math.max(0,1-Math.pow((0.2-t)/0.2,2)))):1;
+  const ef=t>0.86?Math.max(0.04,Math.sqrt(Math.max(0,1-Math.pow((t-0.86)/0.14,3)))):1;
+  /* caixa dos dedos: mais larga do lado do dedão, ponta inclinada (dedos de fora mais curtos) */
+  const w=f*(0.17+0.1*sstep((zz+0.05)/0.75)+0.23*sstep((zz-0.45)/0.85))*(1-0.06*sstep((zz-1.3)/0.2));
+  const yT=zz<0.15?lerp(-0.22*f,0.03*f,sstep((zz+0.5)/0.55)):lerp(0.03*f,-0.34*hA/0.62*f,sstep((zz-0.15)/1.15));
+  const yB=-hA,yc=(yT+yB)/2,hh=(yT-yB)/2;
+  const cx=-s*0.05*f*sstep((zz-0.5)/0.8)+s*0.02*f*(1-sstep((zz+0.2)/0.6));
+  return {eb,ef,w,yc,hh,cx};
 }
-/* dedos do pé: dedão e quatro dedos com falanges, mesma técnica dos dedos da mão; toes>0 dobra para baixo, <0 levanta */
+function pontoPe(A,s,zz,th,abreT,abreF){
+  const f=A.f,c=secaoPe(A,s,zz),eb=abreT?1:c.eb,ef=abreF?1:c.ef,sn=Math.sin(th),cs=Math.cos(th);
+  const ex=Math.sign(sn)*Math.pow(Math.abs(sn),PE_E),ey=cs>0?Math.pow(cs,PE_E):-Math.pow(-cs,0.45);
+  /* a ponta é cortada em diagonal: do dedão (mais longo) para o dedo mínimo */
+  const x=c.cx+c.w*ex*eb*ef*(zz>1.2?1-0.1*Math.max(0,s*ex):1);let y=c.yc+c.hh*ey*eb*ef;
+  if(eb<1)y-=(1-eb)*c.hh*0.35;
+  if(cs<0){const md=Math.max(0,-s*sn);y+=0.17*f*gauss(zz/f*f,0.55,0.32)*Math.pow(md,1.3)*Math.pow(-cs,0.5)}
+  let z=zz*f;
+  if(zz>1.15)z-=0.12*f*sstep((zz-1.15)/0.35)*Math.max(0,s*ex+0.3);
+  return [x,y,z];
+}
+function buildFoot(p,s){
+  const A=legDims(p),rows=34,cols=44,V=new Float32Array(rows*cols*3);
+  for(let r=0;r<rows;r++){const zz=lerp(-0.5,1.24,r/(rows-1));
+    for(let j=0;j<cols;j++){const q=(r*cols+j)*3,v=pontoPe(A,s,zz,j/cols*2*Math.PI,false,true);V[q]=v[0];V[q+1]=v[1];V[q+2]=v[2]}}
+  return {V,rows,cols,flip:1,fb:null,open:true};
+}
+/* linha da bola do pé (eixo da dobra dos dedos) e a dobra: toes>0 aponta os dedos para baixo, <0 levanta */
+function eixoDedos(A){return [0,-A.hA+0.11*A.f,1.12*A.f]}
+function dobraDedos(A,toes,v,zz){
+  const w=sstep((zz-1.04)/0.16),a=toes*D*w,C=eixoDedos(A),dy=v[1]-C[1],dz=v[2]-C[2],c=Math.cos(a),sn=Math.sin(a);
+  return [v[0],C[1]+dy*c-dz*sn,C[2]+dy*sn+dz*c];
+}
 function buildToes(p,s,toes){
-  const A=legDims(p),f=A.f,hA=A.hA/0.62,out=[];
-  const X=[-0.29,-0.06,0.1,0.235,0.355],Z=[1.36,1.37,1.31,1.23,1.13],Y=[-0.47,-0.485,-0.495,-0.505,-0.515];
-  const R=[0.125,0.083,0.078,0.073,0.066],SP=[-0.03,0.02,0.05,0.08,0.11];
-  const LN=[[0.2,0.15,0.13],[0.17,0.12,0.1],[0.15,0.1,0.09],[0.13,0.09,0.08],[0.11,0.08,0.07]];
-  const BA=[[-2,6,4],[-6,22,14],[-6,22,14],[-5,20,12],[-4,18,10]];
-  for(let i=0;i<5;i++){
-    const dirs=[];let c=0;
-    for(let j=0;j<3;j++){
-      c+=(BA[i][j]+(j===0?toes:[0.7,0.5][j-1]*Math.max(0,toes)))*D;
-      const sx=s*SP[i],l=Math.hypot(sx,1);
-      dirs.push([sx/l*Math.cos(c),-Math.sin(c),Math.cos(c)/l]);
-    }
-    const tm=fingerMesh([s*X[i]*f,Y[i]*f*hA,Z[i]*f],dirs,LN[i].map(v=>v*f),R[i]*f,[0,1,0],0.8);tm.flip=-1;out.push(tm);
+  const A=legDims(p),rows=22,cols=44,V=new Float32Array(rows*cols*3);
+  for(let r=0;r<rows;r++){const zz=lerp(1.02,1.5,r/(rows-1));
+    for(let j=0;j<cols;j++){const q=(r*cols+j)*3,v=dobraDedos(A,toes,pontoPe(A,s,zz,j/cols*2*Math.PI,true,false),zz);V[q]=v[0];V[q+1]=v[1];V[q+2]=v[2]}}
+  const m={V,rows,cols,flip:1,fb:null,open:true};
+  return [m];
+}
+/* divisão do dedão: linha sobre a caixa dos dedos (no lado de cima), da bola até a ponta */
+function linhaDedao(p,s,toes){
+  const A=legDims(p),c0=secaoPe(A,s,1.3),out=[];
+  for(let i=0;i<=10;i++){
+    const zz=lerp(1.18,1.47,i/10),c=secaoPe(A,s,zz),xr=c.cx-s*0.17*A.f,ex=clamp((xr-c.cx)/(c.w*c.ef),-0.98,0.98);
+    const sn=Math.sign(ex)*Math.pow(Math.abs(ex),PE_N/2),th=Math.asin(sn);
+    out.push(dobraDedos(A,toes,pontoPe(A,s,zz,th,true,false),zz).map((v,k)=>k===1?v+0.035:v));
   }
   return out;
 }
@@ -118,4 +131,12 @@ function glutePose(p,F,ch,s){
   return comp(ch.Pel,comp(R,{M:[1,0,0,0,1,0,0,0,1],T:C}));
 }
 
-export { legDims, thighR, buildThigh, buildKnee, calfR, buildCalf, buildAnkle, buildFoot, buildToes, hipJoint, gluteDims, buildGlute, glutePose };
+/* quadros que o glúteo e a virilha seguem: parte da flexão/extensão do quadril (e um pouco da abertura), em volta da articulação */
+function quadrosGluteo(p,F,ch){
+  return [1,-1].map(s=>{
+    const fl=(s>0?p.hipFlexL:p.hipFlexR)||0,ab=(s>0?p.hipAbdL:p.hipAbdR)||0;
+    const a=fl>0?0.5*fl*(1-0.25*sstep((fl-60)/70)):0.35*fl;
+    return comp(ch.Pel,rotP(rotM(0,-a*D,s*0.25*ab*D),hipJoint(F,s)));
+  });
+}
+export { linhaDedao, eixoDedos, quadrosGluteo, legDims, thighR, buildThigh, buildKnee, calfR, buildCalf, buildAnkle, buildFoot, buildToes, hipJoint, gluteDims, buildGlute, glutePose };

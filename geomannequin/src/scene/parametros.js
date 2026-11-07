@@ -1,6 +1,6 @@
 /* GeoMannequin — definição dos parâmetros (faixas, rótulos), camadas, nomes em português e aplicação de valores */
 import { CAMK, WORLDK } from "./modelo.js";
-import { clamp } from "../engine/index.js";
+import { FLEX_NOMES, ampliar, clamp } from "../engine/index.js";
 
 const fr=(x,d)=>x.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const SL=[
@@ -32,6 +32,7 @@ const SL=[
   {k:"gluteVol",g:"slBody",label:"Volume dos glúteos",min:0,max:2,step:0.05,u:"×"},
   {k:"thighThick",g:"slBody",label:"Espessura das coxas",min:0.75,max:1.3,step:0.01,u:"×"},
   {k:"legLen",g:"slBody",label:"Comprimento das pernas",min:0.85,max:1.15,step:0.01,u:"×"},
+  {k:"flex",g:"slBody",label:"Flexibilidade (normal · atleta · ginasta · contorcionista)",min:0,max:3,step:1,u:""},
   {k:"spineFlex",g:"slSpine",label:"Coluna: estender (−) / flexionar (+)",min:-30,max:80,step:1,u:"°"},
   {k:"spineSide",g:"slSpine",label:"Coluna: inclinar para o lado",min:-35,max:35,step:1,u:"°"},
   {k:"spineTwist",g:"slSpine",label:"Coluna: girar o tronco",min:-45,max:45,step:1,u:"°"},
@@ -170,15 +171,19 @@ const ALIAS={
   dedosEsqAfastar:"fSpreadL",dedosDirAfastar:"fSpreadR",polegarEsqOpor:"thumbOppL",polegarDirOpor:"thumbOppR",
   peEsqVirar:"ankleTiltL",peDirVirar:"ankleTiltR",
   corpoInclinar:"bodyPitch",corpoRolar:"bodyRoll",altura:"bodyLift",apoio:"ground",
-  comprimentoPernas:"legLen",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF"
+  comprimentoPernas:"legLen",flexibilidade:"flex",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF"
 };
 const SLK={};
 let POSEKEYS;
 function num(v,nome){if(typeof v!=="number"||!isFinite(v))throw new Error("“"+nome+"” precisa ser um número (recebi "+JSON.stringify(v)+").");return v}
+/* faixa de um parâmetro para o perfil de flexibilidade */
+function faixa(k,flex){const d=SLK[k];if(!d)return [-1e9,1e9];return POSEKEYS.has(k)?ampliar(k,d.min,d.max,flex):[d.min,d.max]}
+/* depois de diminuir a flexibilidade: traz a pose de volta para a faixa do novo perfil */
+function ajustarAoPerfil(Q){const av=[];POSEKEYS.forEach(k=>{if(typeof Q[k]!=="number")return;const [a,b]=faixa(k,Q.flex),c=clamp(Q[k],a,b);if(c!==Q[k]){Q[k]=c;av.push(k+" ajustado para "+c+" (perfil "+FLEX_NOMES[Math.round(Q.flex||0)]+")")}});return av}
 function applyParams(it,obj,onlyPose){
   if(!obj||typeof obj!=="object")throw new Error("Passe um objeto, por exemplo {joelhoEsq: 60}.");
   const out=[];
-  for(const [k0,v] of Object.entries(obj)){
+  for(let [k0,v] of Object.entries(obj)){
     const k=ALIAS[k0]||k0,d=SLK[k];
     if(!d||CAMK.includes(k)||WORLDK.includes(k)){
       const sug=Object.keys(ALIAS).filter(a=>a.toLowerCase().startsWith(k0.toLowerCase().slice(0,4))).slice(0,5);
@@ -186,9 +191,13 @@ function applyParams(it,obj,onlyPose){
     }
     if(onlyPose&&!POSEKEYS.has(k))throw new Error("“"+k0+"” é medida do corpo; use m.corpo({...}).");
     if(!onlyPose&&POSEKEYS.has(k))throw new Error("“"+k0+"” é de pose; use m.pose({...}).");
-    const x=num(v,k0),c=clamp(x,d.min,d.max);
-    if(c!==x)out.push(k0+" ajustado para "+c+" (limite "+d.min+" a "+d.max+")");
+    /* a faixa das articulações depende do perfil de flexibilidade do manequim (normal, atleta, ginasta, contorcionista) */
+    if(k==="flex"&&typeof v==="string"){const i=FLEX_NOMES.indexOf(v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));if(i<0)throw new Error("Flexibilidade: use "+FLEX_NOMES.join(", ")+".");v=i}
+    const fx=k==="flex"?0:(obj.flex!==undefined&&typeof obj.flex==="number"?obj.flex:it.params.flex),[mn,mx]=faixa(k,fx);
+    const x=num(v,k0),c=clamp(x,mn,mx);
+    if(c!==x)out.push(k0+" ajustado para "+c+" (limite "+mn+" a "+mx+(fx?", perfil "+FLEX_NOMES[Math.round(fx)]:"")+")");
     it.params[k]=c;
+    if(k==="flex")ajustarAoPerfil(it.params).forEach(t=>out.push(t));
   }
   return out;
 }
@@ -203,4 +212,4 @@ export function iniciarParametros(){
     "fThL","fInL","fMeL","fAnL","fMiL","fThR","fInR","fMeR","fAnR","fMiR","fSpreadL","fSpreadR","thumbOppL","thumbOppR","bodyPitch","bodyRoll","bodyLift"]);
 }
 
-export { fr, SL, LAY, ALIAS, SLK, POSEKEYS, num, applyParams };
+export { fr, SL, LAY, ALIAS, SLK, POSEKEYS, num, applyParams, faixa, ajustarAoPerfil };

@@ -1,5 +1,5 @@
 /* GeoMannequin — sliders, camadas e botões de poses, corpos, rostos e enquadramentos */
-import { LAY, SL } from "../scene/parametros.js";
+import { LAY, SL, POSEKEYS, faixa, ajustarAoPerfil } from "../scene/parametros.js";
 import { $ } from "../scene/ambiente.js";
 import { P, WORLDK } from "../scene/modelo.js";
 import { BODIES, FACES, GUARD, POSTURES, doBodyPose, guardArms } from "../scene/poses.js";
@@ -13,8 +13,10 @@ import { refreshScene } from "./painel-cena.js";
 import { CY, DEF, effScale } from "../engine/index.js";
 
 function syncControls(){
-  SL.forEach(d=>{$("sl_"+d.k).value=P[d.k];$("ov_"+d.k).textContent=fmt(d,P[d.k])});
+  /* a faixa dos sliders de pose acompanha o perfil de flexibilidade */
+  SL.forEach(d=>{const el=$("sl_"+d.k);if(POSEKEYS.has(d.k)){const [a,b]=faixa(d.k,P.flex);if(+el.min!==a)el.min=a;if(+el.max!==b)el.max=b}el.value=P[d.k];$("ov_"+d.k).textContent=fmt(d,P[d.k])});
   LAY.forEach(l=>{$("ly_"+l.k).checked=!!L[l.k]});
+  {const o=$("ocultas");if(o){const v=Math.round(100*(L.ocultas===undefined?0.5:L.ocultas));o.value=v;$("ov_ocultas").textContent=v+"%"}}
 }
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
@@ -25,7 +27,7 @@ export function iniciarControles(){
       '<input type="range" id="sl_'+d.k+'" min="'+d.min+'" max="'+d.max+'" step="'+d.step+'">';
     $(d.g).appendChild(wrap);
     const inp=wrap.querySelector("input");
-    inp.addEventListener("input",()=>{P[d.k]=parseFloat(inp.value);if(GUARD.test(d.k)&&guardArms())syncControls();$("ov_"+d.k).textContent=fmt(d,P[d.k]);setQuick(true);clearTimeout(settle);setSettle(setTimeout(()=>{setQuick(false);render()},260));render()});
+    inp.addEventListener("input",()=>{P[d.k]=parseFloat(inp.value);if(d.k==="flex"){ajustarAoPerfil(P);syncControls()}if(GUARD.test(d.k)&&guardArms())syncControls();$("ov_"+d.k).textContent=fmt(d,P[d.k]);setQuick(true);clearTimeout(settle);setSettle(setTimeout(()=>{setQuick(false);render()},260));render()});
   });
   LAY.forEach(l=>{
     const lab=document.createElement("label");lab.className="layer";
@@ -33,6 +35,7 @@ export function iniciarControles(){
     $("layerList").appendChild(lab);
     lab.querySelector("input").addEventListener("change",e=>{L[l.k]=e.target.checked;setMode(null);updateModeButtons();render()});
   });
+  {const o=$("ocultas");if(o)o.addEventListener("input",()=>{L.ocultas=+o.value/100;$("ov_ocultas").textContent=o.value+"%";if(L.ocultas>0.01&&!L.hidden)L.hidden=1;setMode(null);updateModeButtons();syncControls();render()})}
   document.querySelectorAll("[data-head]").forEach(b=>{
     b.addEventListener("click",()=>{
       const v=b.dataset.head.split(",").map(Number);

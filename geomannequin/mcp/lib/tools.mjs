@@ -156,6 +156,8 @@ export function registerAll(server, getWorld, opts = {}) {
       gesto: z.object({ lado: z.enum(["esquerda", "direita", "ambas"]).optional(), nome: GESTOS_E }).optional().describe("Gesto pronto da mão: punho, apontar, pinça, joinha, paz, ok, acenar…"),
       articulacoes: z.array(z.object({ nome: z.string().describe("Ex.: \"cotovelo esquerdo\", \"joelho direito\", \"pescoço\", \"coluna\", \"lombar\", \"quadril esquerdo\"."), dobrar: z.number().optional(), frente: z.number().optional(), abrir: z.number().optional(), girar: z.number().optional(), lado: z.number().optional(), inclinar: z.number().optional(), desvio: z.number().optional(), apontar: z.number().optional(), virar: z.number().optional() })).optional().describe("Move articulações pelo nome anatômico, em graus; os limites do corpo humano são respeitados."),
       espelhar: z.boolean().optional().describe("true = espelha a pose (esquerda ↔ direita)."),
+      flexibilidade: z.enum(["normal", "atleta", "ginasta", "contorcionista"]).optional().describe("Perfil de amplitude das articulações. Ponte, espacate, arabesque e parada com abertura pedem \"ginasta\"."),
+      apoiar: z.string().optional().describe("Vários pontos no chão ao mesmo tempo: \"maos pes\", \"maos\", \"maos joelhos\", \"mao esquerda pe direito\" (ponte, parada de mão, prancha)."),
       copiarPoseDe: z.string().optional().describe("Copia a pose de outro manequim (nome).")
     },
     annotations: RW
@@ -176,6 +178,7 @@ export function registerAll(server, getWorld, opts = {}) {
       if (a.congelar !== undefined) m.congelar(a.congelar);
       if (a.ocultar !== undefined) m.ocultar(a.ocultar);
       if (a.ordem === "frente") m.frente(); else if (a.ordem === "tras") m.tras(); else if (a.ordem === "auto") m.ordemAuto();
+      if (a.flexibilidade) m.flexibilidade(a.flexibilidade);
       if (a.copiarPoseDe) m.copiarPose(a.copiarPoseDe);
       if (a.deitar) m.deitar(a.deitar.tipo === "brucos" ? "bruços" : a.deitar.tipo, a.deitar.eixo !== undefined ? dirV(a.deitar.eixo) : undefined);
       if (a.sentar !== undefined) m.sentar(a.sentar === "" ? undefined : a.sentar);
@@ -191,6 +194,7 @@ export function registerAll(server, getWorld, opts = {}) {
       if (a.gesto) m.gesto(a.gesto.lado || "ambas", a.gesto.nome);
       if (a.olhar) m.olhar(a.olhar);
       if (a.espelhar) m.espelhar();
+      if (a.apoiar) m.apoiar(a.apoiar);
     });
     return ok(w, `Manequim “${it.name}” atualizado.`, avisos);
   }));
@@ -318,6 +322,8 @@ export function registerAll(server, getWorld, opts = {}) {
       estilo: z.enum(["creme", "azul", "bege", "gelo", "pessego", "lapis", "cinza"]).optional().describe("Paleta do manequim principal no tema claro."),
       sombras: z.boolean().optional(), horizonte: z.boolean().optional(), chao: z.boolean().optional(),
       atmosfera: num("0 a 1: quanto os manequins distantes clareiam.").optional(),
+      linhasOcultas: num("0 a 1: opacidade das linhas que ficam atrás do corpo (0 = escondidas; modo construção usa 0.16).").optional(),
+      rosto: z.enum(["completo", "minimo", "liso"]).optional().describe("minimo = só a cruz de construção (estilo Loomis), liso = sem traços no rosto."),
       camadas: Camadas.optional()
     },
     annotations: RW
@@ -331,6 +337,8 @@ export function registerAll(server, getWorld, opts = {}) {
     if (a.chao !== undefined) w.setLayer("floor", a.chao);
     if (a.fibras !== undefined) w.setLayer("fibras", a.fibras);
     if (a.atmosfera !== undefined) w.cena.atmosfera(a.atmosfera);
+    if (a.linhasOcultas !== undefined) w.cena.linhasOcultas(a.linhasOcultas);
+    if (a.rosto) w.cena.rosto(a.rosto);
     if (a.camadas) for (const [k, v] of Object.entries(a.camadas)) { if (v === undefined) continue; if (!w.LAY.some(l => l.k === k)) throw new Error(`Camada desconhecida: “${k}”.`); w.setLayer(k, v); }
     return ok(w, "Aparência ajustada.");
   }));

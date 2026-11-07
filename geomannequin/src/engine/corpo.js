@@ -102,4 +102,8 @@ function scapTri(p,F,s){
 }
 function segDist(px,py,ax,ay,bx,by){const ex=bx-ax,ey=by-ay,t=clamp(((px-ax)*ex+(py-ay)*ey)/(ex*ex+ey*ey),0,1);return Math.hypot(px-ax-ex*t,py-ay-ey*t)}
 
-export { bodyEff, bustFrame, torsoProfile, crInterp, bustZc, bustR, sdTri, scapTri, segDist };
+/* coluna: trecho que dobra (do alto da pelve até o meio da caixa torácica); abaixo segue a pelve, acima a caixa torácica (blocos rígidos).
+   tau: 0 = pelve, 1 = meio (lombar → torácica), 2 = caixa torácica; 2..3 = pescoço */
+function faixaColuna(F){return {yA:F.yHip+0.35,yB:F.yJ-1.2,zc:-0.55}}
+function tauTronco(y,F){const c=faixaColuna(F);return 2*clamp((y-c.yA)/(c.yB-c.yA),0,1)}
+export { faixaColuna, tauTronco, bodyEff, bustFrame, torsoProfile, crInterp, bustZc, bustR, sdTri, scapTri, segDist };

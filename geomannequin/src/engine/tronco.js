@@ -1,7 +1,7 @@
 /* GeoMannequin — tronco: relevo da pele, ombros, clavícula, deformação e malha do busto */
 import { D, clamp, gauss, lerp, mv, rotAbout, rotM, sstep } from "./matematica.js";
 import { muscleBump, sdPoly } from "./musculos.js";
-import { bustFrame, bustR, bustZc, scapTri, segDist } from "./corpo.js";
+import { bustFrame, bustR, bustZc, scapTri, segDist, tauTronco } from "./corpo.js";
 import { relevoTronco } from "./atlas/tronco.js";
 
 /* relevos de todo o tronco */
@@ -99,9 +99,9 @@ function bustLocal(y,th,p,F,off){
 }
 /* peso na cadeia: 0 pelve, 1 lombar, 2 torácica (ombros, braços), 3 cabeça */
 function bustTw(x,y,F){
-  const lum=sstep((y-(F.yJ-4.3))/1.2),tho=sstep((y-(F.yJ-2.6))/1.2);
+  const t=tauTronco(y,F);
   const nk=sstep((y-(F.yJ+0.15))/(F.yTop-(F.yJ+0.15)))*(1-sstep((Math.abs(x)-0.5)/0.35));
-  return lum+tho+nk;
+  return t+nk;
 }
 function bustTh(y,x,front,p,F){
   let th=Math.asin(clamp(x/Math.max(0.05,F.B.neck),-1,1));
@@ -110,6 +110,12 @@ function bustTh(y,x,front,p,F){
     th=Math.asin(clamp(x/r,-0.999,0.999));
   }
   return front?th:Math.PI-th;
+}
+/* peso do glúteo/virilha no fêmur esquerdo e direito para um ponto do tronco em repouso */
+function pesoGluteo(x,y,z,F){
+  const baixo=sstep((F.yHip+0.25-y)/0.75),tras=sstep((-z-0.15)/0.55),frente=sstep((F.yHip-0.35-y)/0.5)*sstep((z-0.1)/0.4)*0.35;
+  const w=clamp(baixo*(tras+frente*(1-tras)),0,1)*sstep((Math.abs(x)-0.02)/0.18),l=sstep((x+0.1)/0.2);
+  return [w*l,w*(1-l)];
 }
 function buildBust(p,S){
   const F=bustFrame(p,S),cols=168;
@@ -132,7 +138,14 @@ function buildBust(p,S){
     const lap=(a+b+c+d+0.5*(e+f))/5-DZ[k];
     CAV[k]=clamp(lap*34,0,0.7);
   }
-  return {V,rows,cols,flip:1,fb:null,open:true,tw:TW,cav:CAV};
+  /* glúteo e virilha seguem em parte o fêmur (skinning): pesos para a coxa esquerda e direita.
+     Atrás e abaixo da crista ilíaca o glúteo acompanha a flexão do quadril (a prega some e o arco continua na coxa);
+     na frente, só a dobra da virilha, de leve. */
+  const WQ=new Float32Array(rows*cols*2);
+  for(let i=0;i<rows*cols;i++){
+    const q=pesoGluteo(V[i*3],V[i*3+1],V[i*3+2],F);WQ[i*2]=q[0];WQ[i*2+1]=q[1];
+  }
+  return {V,rows,cols,flip:1,fb:null,open:true,tw:TW,cav:CAV,wq:WQ};
 }
 
-export { bustBump, shoulderAngles, shoulderWarp, LAST_DZ, bustLocal, bustTw, bustTh, buildBust };
+export { pesoGluteo, bustBump, shoulderAngles, shoulderWarp, LAST_DZ, bustLocal, bustTw, bustTh, buildBust };

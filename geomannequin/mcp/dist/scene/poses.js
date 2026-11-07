@@ -1,6 +1,6 @@
 /* GeoMannequin — poses rápidas, tipos corporais, rostos, posturas e proteção dos braços */
 import { P } from "./modelo.js";
-import { aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, legClear, legDims, legPose, minAbd, pushOut, shape } from "../engine/index.js";
+import { ISQUIO, ampliar, nivelFlex, apoiarContatos, aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, legClear, legDims, legPose, minAbd, pushOut, shape } from "../engine/index.js";
 
 /* o braço e a mão não atravessam a cabeça nem o tronco */
 const GUARD=/^(armAbd|armFlex|armRot|elbow|pron|wrist|spine|pelvis|shElev|shProt|head|hip|knee|ankle|toes)/;
@@ -9,8 +9,8 @@ function limitesAcoplados(Q){
   const av=[];
   [["L","esquerda"],["R","direita"]].forEach(([L_,n])=>{
     /* isquiotibiais: com o joelho esticado a coxa sobe menos (≈ 90°); com o joelho dobrado vai até ~125° */
-    const mx=Math.round(90+35*Math.min(1,Math.max(0,Q["kneeFlex"+L_])/90));
-    if(Q["hipFlex"+L_]>mx){Q["hipFlex"+L_]=mx;av.push("coxa "+n+": com o joelho quase esticado sobe só até "+mx+"° (músculos de trás da coxa)")}
+    const fx=nivelFlex(Q),top=ampliar("hipFlex",-30,125,fx)[1],mx=Math.round(Math.min(top,ISQUIO[fx]+(top-ISQUIO[fx])*Math.min(1,Math.max(0,Q["kneeFlex"+L_])/90)));
+    if(Q["hipFlex"+L_]>mx){Q["hipFlex"+L_]=mx;av.push("coxa "+n+": com o joelho quase esticado sobe só até "+mx+"° (músculos de trás da coxa"+(fx<2?"; perfil “ginasta” vai mais longe":"")+")")}
     /* braço acima da cabeça pela lateral: o úmero precisa girar para fora (rotação externa) */
     if(Q["armAbd"+L_]>120&&Q["armRot"+L_]<-20){Q["armRot"+L_]=-20;av.push("braço "+(n==="esquerda"?"esquerdo":"direito")+": acima de 120° pela lateral o braço gira para fora")}
   });
@@ -74,6 +74,8 @@ function maoNoCorpo(Q,s,onde,extra){
 /* ===== Biblioteca de poses humanas (usa o esqueleto: corpo inteiro, apoio no chão, mãos) =====
    Cada pose escreve só os ângulos; o apoio no chão assenta o corpo pela parte mais baixa.
    lado: 1 = o lado esquerdo faz o movimento principal, −1 = o direito. */
+/* poses que pedem flexibilidade de ginasta */
+const gin=Q=>{if(nivelFlex(Q)<2)Q.flex=2};
 const lad=(s,k)=>k+(s>0?"L":"R"),opo=(s,k)=>k+(s>0?"R":"L");
 const POSES_CORPO={
   sentado:(Q,s)=>{Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:88,kneeFlexR:84,hipAbdL:6,hipAbdR:8,ankleFlexL:2,ankleFlexR:4,spineFlex:6,pronL:-40,pronR:-40,handCurlL:0.35,handCurlR:0.35,headPitch:4});
@@ -107,6 +109,25 @@ const POSES_CORPO={
   maosNaCintura:(Q,s)=>Object.assign(Q,{}),
   encostado:(Q,s)=>Object.assign(Q,{bodyPitch:-8,[lad(s,"hipFlex")]:30,[lad(s,"kneeFlex")]:55,[lad(s,"hipRot")]:30,[lad(s,"ankleFlex")]:20,armFlexL:-15,armFlexR:-15,elbowL:20,elbowR:20,headPitch:-4,spineFlex:-4}),
   caindo:(Q,s)=>Object.assign(Q,{bodyPitch:-35,bodyLift:2,armAbdL:120,armAbdR:110,elbowL:40,elbowR:30,armFlexL:30,hipFlexL:55,kneeFlexL:70,hipFlexR:25,kneeFlexR:40,headPitch:-25,handCurlL:0.1,handCurlR:0.1}),
+  /* ===== poses de ginasta / bailarina (pedem o perfil “ginasta”: o manequim passa a ele se estiver abaixo) ===== */
+  ponte:(Q,s)=>{gin(Q);Object.assign(Q,{bodyPitch:-90,spineFlex:-40,lumFlex:-20,thoFlex:-10,neckFlex:-20,headPitch:-30,armFlexL:190,armFlexR:190,armAbdL:14,armAbdR:14,hipFlexL:-20,hipFlexR:-20,hipAbdL:10,hipAbdR:10,kneeFlexL:90,kneeFlexR:90});
+    aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos pes")},
+  ponteUmaPerna:(Q,s)=>{POSES_CORPO.ponte(Q,s);Object.assign(Q,{[lad(s,"hipFlex")]:150,[lad(s,"kneeFlex")]:0,[lad(s,"ankleFlex")]:60});apoiarContatos(Q,"maos pe "+(s>0?"direito":"esquerdo"),{girar:false})},
+  paradaAbertura:(Q,s)=>{gin(Q);Object.assign(Q,{bodyPitch:180,armFlexL:180,armFlexR:180,armAbdL:10,armAbdR:10,elbowL:0,elbowR:0,spineFlex:-15,headPitch:-35,
+    [lad(s,"hipFlex")]:150,[opo(s,"hipFlex")]:-55,kneeFlexL:0,kneeFlexR:0,ankleFlexL:60,ankleFlexR:60});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos",{faixa:40})},
+  escorpiao:(Q,s)=>{gin(Q);Object.assign(Q,{bodyPitch:-80,armFlexL:178,armFlexR:178,armAbdL:12,armAbdR:12,elbowL:0,elbowR:0,spineFlex:-55,lumFlex:-30,thoFlex:-15,headPitch:-45,neckFlex:-20,
+    hipFlexL:-45,hipFlexR:-35,kneeFlexL:95,kneeFlexR:75,ankleFlexL:55,ankleFlexR:55});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos",{faixa:90})},
+  arabesque:(Q,s)=>{gin(Q);Object.assign(Q,{bodyPitch:28,[opo(s,"hipFlex")]:28,[opo(s,"ankleFlex")]:8,[lad(s,"hipFlex")]:-58,[lad(s,"hipRot")]:-25,[lad(s,"ankleFlex")]:60,kneeFlexL:0,kneeFlexR:0,
+    spineFlex:-38,lumFlex:-12,headPitch:-18,[opo(s,"armFlex")]:110,[opo(s,"elbow")]:8,[lad(s,"armAbd")]:95,[lad(s,"armFlex")]:-10,[lad(s,"elbow")]:10,handCurlL:0.15,handCurlR:0.15})},
+  espacateSaltado:(Q,s)=>{gin(Q);Object.assign(Q,{bodyLift:6,bodyPitch:-6,[lad(s,"hipFlex")]:150,[opo(s,"hipFlex")]:-55,kneeFlexL:0,kneeFlexR:0,ankleFlexL:65,ankleFlexR:65,
+    spineFlex:-18,headPitch:-15,[opo(s,"armFlex")]:120,[opo(s,"armAbd")]:20,[lad(s,"armAbd")]:100,[lad(s,"armFlex")]:-5,elbowL:8,elbowR:8,handCurlL:0.15,handCurlR:0.15})},
+  camelo:(Q,s)=>{gin(Q);Object.assign(Q,{kneeFlexL:90,kneeFlexR:90,hipFlexL:-15,hipFlexR:-15,ankleFlexL:45,ankleFlexR:45,spineFlex:-50,lumFlex:-25,thoFlex:-15,neckFlex:-20,headPitch:-40,pelvisTilt:-10});
+    [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[t].Cf,[0,-pe[t].A.L2-0.35,-0.45]),{["pron"+(t>0?"L":"R")]:0}))},
+  agachamentoProfundo:(Q,s)=>{if(nivelFlex(Q)<1)Q.flex=1;Object.assign(Q,{hipFlexL:128,hipFlexR:128,kneeFlexL:150,kneeFlexR:150,hipAbdL:20,hipAbdR:20,hipRotL:-10,hipRotR:-10,ankleFlexL:-32,ankleFlexR:-32,
+    spineFlex:28,headPitch:-22,armFlexL:80,armFlexR:80,elbowL:10,elbowR:10,armAbdL:8,armAbdR:8})},
+  prancha:(Q,s)=>{Object.assign(Q,{bodyPitch:90,armFlexL:90,armFlexR:90,elbowL:0,elbowR:0,ankleFlexL:30,ankleFlexR:30,toesL:-60,toesR:-60,headPitch:-20});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos pes")},
+  quatroApoios:(Q,s)=>{Object.assign(Q,{bodyPitch:90,armFlexL:90,armFlexR:90,elbowL:0,elbowR:0,hipFlexL:90,hipFlexR:90,kneeFlexL:90,kneeFlexR:90,ankleFlexL:40,ankleFlexR:40,headPitch:-30});
+    aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos joelhos")},
   meditando:(Q,s)=>{POSES_CORPO.sentadoChao(Q,s);Object.assign(Q,{spineFlex:0,headPitch:4,pronL:-70,pronR:-70,wristL:-15,wristR:-15});
     [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>{const k=pe[t].Cf.T;return [k[0],k[1]+0.75,k[2]]}));aplicarGesto(Q,1,"ok");aplicarGesto(Q,-1,"ok")}
 };
@@ -116,7 +137,7 @@ const POSE_ALIAS={"sentada":"sentado","sentado no chão":"sentadoChao","pernas c
   "de cócoras":"cocoras","cócoras":"cocoras","correndo":"correndo","correr":"correndo","saltando":"saltando","pulando":"saltando","salto":"saltando","pulo":"saltando","chutando":"chutando","chute":"chutando",
   "socando":"socando","soco":"socando","alongando":"alongando","parada de mão":"paradaDeMao","de cabeça para baixo":"paradaDeMao","engatinhando":"engatinhando","de quatro":"engatinhando",
   "apontando":"apontando","acenando":"acenando","carregando":"carregando","empurrando":"empurrando","pensando":"pensando","encostado":"encostado","caindo":"caindo","meditando":"meditando",
-  "em pé":"empe","de pé":"empe","caminhando":"caminhando","andando":"caminhando","abraçando os joelhos":"abracandoJoelhos","sentado nos calcanhares":"sentadoCalcanhares","apoiado nos cotovelos":"apoiadoCotovelos"};
+  "em pé":"empe","de pé":"empe","caminhando":"caminhando","andando":"caminhando","abraçando os joelhos":"abracandoJoelhos","sentado nos calcanhares":"sentadoCalcanhares","apoiado nos cotovelos":"apoiadoCotovelos","ponte":"ponte","ponte em uma perna":"ponteUmaPerna","parada com abertura":"paradaAbertura","parada de mão com abertura":"paradaAbertura","escorpião":"escorpiao","arabesque":"arabesque","arabesco":"arabesque","espacate":"espacateSaltado","espacate saltado":"espacateSaltado","salto espacate":"espacateSaltado","camelo":"camelo","agachamento profundo":"agachamentoProfundo","prancha":"prancha","quatro apoios":"quatroApoios"};
 function nomePose(k){const t=String(k||"").trim();if(POSES_CORPO[t]||BPOSES[t]||["cintura","cruzar","ombro"].includes(t))return t;const a=POSE_ALIAS[t.toLowerCase()];return a||t}
 function todasPoses(){return Object.keys(BPOSES).concat(["cintura","cruzar","ombro"],Object.keys(POSES_CORPO).filter(k=>k!=="maosNaCintura"))}
 function doBodyPose(k,opts){
