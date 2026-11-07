@@ -32,12 +32,15 @@ function muscleDefs(F){
 function muscleBump(x,y,th,p,F){
   const cs=Math.cos(th),cf=Math.max(0,cs),ax=Math.abs(x),B=F.B,mu=B.mus,fat=B.fat,fem=B.fem,yy=y-F.yJ,Mu=muscleDefs(F);
   let dz=0;
-  if(cf>0.02&&yy<0.05&&yy>-1.5){
-    const h=(0.08+0.16*mu)*(1-0.55*fem)*(1-0.3*fat);
+  if(cf>0.02&&yy<0.05&&yy>-1.7){
+    const h=(0.09+0.19*mu)*(1-0.55*fem)*(1-0.3*fat);
     const d=sdPoly(ax,yy,Mu.pec);
-    if(d>-0.1){
-      const gr=0.62+0.38*clamp((-yy-0.25)/0.95,0,1);
-      dz+=cf*h*gr*plate(d,0.13)-cf*0.03*mu*gauss(ax,0,0.045)*sstep((-yy-0.25)/0.3);
+    if(d>-0.16){
+      /* massa do peitoral: mais cheia embaixo e por fora (projeta para a frente e aparece no contorno em 3/4) */
+      const gr=0.55+0.45*clamp((-yy-0.25)/0.95,0,1)+0.12*clamp((ax-0.5)/0.6,0,1);
+      dz+=cf*h*gr*plate(d,0.12)-cf*0.03*mu*gauss(ax,0,0.045)*sstep((-yy-0.25)/0.3);
+      /* vinco logo abaixo da borda inferior (sombra sob o peito) */
+      if(d<0&&yy<-0.85)dz-=cf*h*0.4*gauss(d,-0.05,0.045);
     }
   }
   if(cf>0.02&&yy<-1.6&&yy>F.yCr-F.yJ+0.4){

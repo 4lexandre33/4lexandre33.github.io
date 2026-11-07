@@ -50,6 +50,7 @@ geomannequin/
 │  │  └─ atlas/          ATLAS MUSCULAR (écorché): cada músculo como forma na pele → volume + linhas
 │  │     ├─ tronco.js    peitoral, abdômen, serrátil, oblíquos, grande dorsal, trapézio, escápula, eretores
 │  │     ├─ bracos.js    deltoide (3 feixes), bíceps, braquial, tríceps, braquiorradial, flexores, extensores
+│  │     ├─ pernas.js    sartório, reto femoral, vastos, trato iliotibial, adutores, isquiotibiais, tíbia, gastrocnêmio, sóleo, Aquiles
 │  │     └─ util.js      curvas suaves, distância a polígonos, volume
 │  ├─ scene/             CENA E COMANDOS — não usa a página; o MCP usa estes mesmos arquivos
 │  │  ├─ index.js        reúne os módulos e cria a cena inicial
@@ -70,7 +71,7 @@ geomannequin/
 │     ├─ exportar.js, link.js, tema.js, modos.js, estilo.js, persistencia.js, inicio.js
 ├─ dist/                 versão em arquivo único (gerada — não edite à mão)
 ├─ ferramentas/          construir.mjs (gera dist/), servir.mjs (servidor local)
-├─ testes/               motor.mjs, cenas.mjs (26 cenas com assinatura de desenho)
+├─ testes/               motor.mjs, cenas.mjs (26 cenas com assinatura de desenho), corpo.mjs (recortes de pescoço, peito, pelve e pernas)
 └─ mcp/                  servidor MCP
 ```
 

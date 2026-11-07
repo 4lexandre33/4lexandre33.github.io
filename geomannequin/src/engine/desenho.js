@@ -8,6 +8,8 @@ import { BASE, CX, CY, D, H, W, applyA, clamp, comp, f1, gauss, lerp, mmul, mv, 
 import { contourPath, fillPath, silhouette } from "./contornos.js";
 import { armDims, armJoint, armPose, armRadius, foreR } from "./bracos.js";
 import { bandMesh } from "./malhas.js";
+import { atlasPerna } from "./atlas/pernas.js";
+import { suave } from "./atlas/util.js";
 import { SMN, SMO, hid, hz, raster, rasterH, rasterS, setSMO, setSMS, sm, visAt, zb } from "./zbuffer.js";
 import { restGround } from "./cena.js";
 import { FS, FSRaw, shadowMesh } from "./sombra.js";
@@ -358,9 +360,11 @@ function scene(p,L,pal,fast,mode){
   /* linhas anatômicas: esternocleidomastoideo, clavículas, incisura, peitoral, deltoide, escápulas, trapézio, coluna */
   if(bust&&L.anat){
     [-1,1].forEach(s=>{
+      /* borda da frente do trapézio: desce do lado do pescoço e abre sobre o ombro até a ponta da clavícula */
+      {const nw=F.B.neck;lineT("divisao",suave([[F.yJ+0.62,0.8*nw],[F.yJ+0.38,0.98*nw],[F.yJ+0.2,0.5*(nw+F.W-0.3)],[F.yJ+0.1,F.W-0.42]],8).map(([y,ax])=>bp(y,bustTh(y,s*ax,true,p,F),0.012)),xb);}
       /* esternocleidomastoideo (pescoço) e clavícula em S */
       lineT("divisao",arr(u=>bp(lerp(-0.7,F.yJ+0.04,u),s*lerp(112,16,u)*D,0.012),0.22,0.97,26),xb);
-      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.12)),yc=F.yJ+0.03+0.04*q+0.035*Math.sin(Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.08,0.97,30),xb);
+      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.18)),yc=F.yJ+0.0+0.2*q*q+0.03*Math.sin(Math.PI*q)-0.05*Math.sin(2*Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.1,0.86,30),xb);
     });
     /* músculos do tronco: linhas do atlas muscular (mesmas formas que geram o relevo) */
     {const at=atlasTronco(p,F),B=F.B,def=clamp(B.mus*(1-B.fat)*(1-0.75*B.fem),0,2);
@@ -370,8 +374,6 @@ function scene(p,L,pal,fast,mode){
        lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb);
      }));
     }
-    /* base do pescoço: só na frente (atrás o trapézio continua sem dobra) */
-    lineT("divisao",arr(th=>{const y=lerp(F.yJ+0.14,F.yC7,(1-Math.cos(th))/2);return bp(y,th,0.01)},-1.35,1.35,50),xb);
     lineT("anat",arr(x=>{const y=F.yJ+0.05+3*x*x;return bp(y,bustTh(y,x,true,p,F),0.012)},-0.11,0.11,10),xb);
     /* sulco da coluna e processos espinhosos */
     lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb);
@@ -380,10 +382,18 @@ function scene(p,L,pal,fast,mode){
     lineT("anat",arr(a=>{const x=0.03*Math.cos(a),y=F.yNav+0.035*Math.sin(a);return bp(y,bustTh(y,x,true,p,F),0.01)},0,2*Math.PI,12),xb);
     [-1,1].forEach(s=>{
       /* linha da "calcinha": abertura da perna na frente (do quadril até a virilha) e o "V" do sacro atrás */
-      lineT("anat",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb);
-      lineT("mus",arr(k=>{const ax=lerp(0.9*F.B.hip*0.93,0.03,k),y=lerp(F.yHip+0.38,F.yHip-0.3,Math.pow(k,1.3));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,20),xb);
+      lineT("dobra",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb);
+      lineT("divisao",arr(k=>{const ax=lerp(0.26,0.02,k),y=lerp(F.yHip+0.32,F.yHip-0.3,Math.pow(k,1.1));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,16),xb);
     });
-    lineT("anat",arr(y=>bp(y,Math.PI,0.012),F.yHip-0.1,F.yCr+0.05,14),xb);
+    /* fenda entre os glúteos */
+    lineT("dobra",arr(y=>bp(y,Math.PI,0.012),F.yHip-0.2,F.yCr+0.05,14),xb);
+    /* glúteo máximo: borda de fora (do sacro, descendo em diagonal para fora até o trocânter) e glúteo médio acima, no lado */
+    {const gk=clamp(F.B.glute/0.21,0,2.5),hw=F.B.hip;
+     if(gk>0.25)[-1,1].forEach(s=>{
+       lineT("divisao",arr(k=>{const y=lerp(F.yHip-0.02,F.yJ-5.45,k),ax=lerp(0.1,0.74*hw,Math.pow(k,0.75))-0.04*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb);
+       lineT("fibra",arr(k=>{const y=lerp(F.yHip+0.42,F.yHip-0.25,k),ax=lerp(0.62*hw,0.88*hw,Math.pow(k,0.8));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,12),xb);
+     });
+    }
     /* braços: borda do deltoide, bíceps, tríceps e braquiorradial (com a torção do antebraço) */
     arms.forEach(o=>{
       const A=armDims(p),s=o.s,X=v=>xv(applyA(o.Aa,v)),L1=A.L1,L2=A.L2;
@@ -400,22 +410,30 @@ function scene(p,L,pal,fast,mode){
       const el=s>0?p.elbowL:p.elbowR;
       if(el>25)lineT("mus",arr(a=>{const r=0.34*A.k;return xv(applyA(o.Ae,[r*Math.sin(a),0.02*A.k,r*Math.cos(a)]))},-0.8,0.8,12),v=>v);
     });
-    /* pernas: oval da patela, maléolos, divisa da panturrilha e linha da canela */
+    /* pernas: patela, dobras do joelho e do glúteo, maléolos e linhas do atlas da perna (coxa e panturrilha) */
+    {const def=clamp(F.B.mus*(1-F.B.fat)*(1-0.75*F.B.fem),0,2),AP=atlasPerna();
     legs.forEach(o=>{
       const A=legDims(p),k=A.k,s=o.s,Xk=v=>xv(applyA(o.Akn,v)),Xc=v=>xv(applyA(o.Acf,v));
-      lineT("mus",arr(a=>[0.15*k*Math.cos(a),0.06*k+0.19*k*Math.sin(a),0.42*k],0,2*Math.PI,24).map(Xk),v=>v);
+      /* patela: escudo arredondado, mais estreito embaixo */
+      lineT("divisao",arr(a=>{const sn=Math.sin(a),c=Math.cos(a),q=1-0.32*Math.max(0,-sn);return [0.15*k*q*Math.sign(c)*Math.pow(Math.abs(c),0.8),0.06*k+0.19*k*Math.sign(sn)*Math.pow(Math.abs(sn),0.9),0.42*k]},0,2*Math.PI,28).map(Xk),v=>v);
       const kf=s>0?p.kneeFlexL:p.kneeFlexR,hf=s>0?p.hipFlexL:p.hipFlexR,Xt=v=>xv(applyA(o.Ath,v));
       /* vinco atrás do joelho quando dobra */
-      if(kf>25)lineT("mus",arr(a=>{const r=0.36*k;return [-r*Math.sin(a),-0.02*k,-r*Math.cos(a)]},-0.85,0.85,14).map(Xk),v=>v);
-      /* dobra do glúteo (some quando a coxa sobe) */
-      if(hf<45)lineT("mus",arr(a=>{const th=Math.PI+s*a,u=A.L1*(0.19+0.035*a),r=thighR(u,th,A,s)+0.012;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.95,-0.35,16).map(Xt),v=>v);
+      if(kf>25)lineT("dobra",arr(a=>{const r=0.36*k;return [-r*Math.sin(a),-0.02*k,-r*Math.cos(a)]},-0.85,0.85,14).map(Xk),v=>v);
+      /* dobra do glúteo: um "sorriso" sob cada nádega, da fenda para fora (some quando a coxa sobe) */
+      if(hf<45)lineT("dobra",arr(a=>{const th=Math.PI+s*a,u=A.L1*(0.2-0.03*Math.pow(a,1.6)),r=thighR(u,th,A,s)+0.05;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.04,1.3,18).map(Xt),v=>v);
+      /* maléolos (o de dentro mais alto) */
       [[-1,0.07],[1,-0.06]].forEach(([sd,dy])=>lineT("mus",arr(a=>[s*sd*0.205*k,-A.L2+dy*k+0.06*k*Math.sin(a),0.06*k*Math.cos(a)],0,2*Math.PI,14).map(Xc),v=>v));
-      lineT("mus",arr(u=>{const th=Math.PI-s*0.08,r=calfR(u,th,A,s)+0.012;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.12*A.L2,0.5*A.L2,14).map(Xc),v=>v);
-      lineT("mus",arr(u=>{const th=s*0.18,r=calfR(u,th,A,s)+0.012;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.1*A.L2,0.85*A.L2,16).map(Xc),v=>v);
-    });
+      /* atlas: sartório, reto femoral, vastos, trato iliotibial, adutores, isquiotibiais; tíbia, gastrocnêmio, sóleo, Aquiles */
+      AP.forEach(l=>{
+        if(l.tipo==="fibra"&&!L.fibras)return;if(def<(l.min||0))return;
+        const coxa=l.parte==="coxa",LL=coxa?A.L1:A.L2,X=coxa?Xt:Xc;
+        lineT(l.tipo,l.pts.map(([t,a])=>{const th=s*a,u=t*LL,r=(coxa?thighR(u,th,A,s):calfR(u,th,A,s))+0.012;return X([r*Math.sin(th),-u,r*Math.cos(th)])}),v=>v);
+      });
+    });}
     /* crista ilíaca (borda de cima da pelve) dos lados e borda do grande dorsal nas costas */
     [-1,1].forEach(s=>{
-      lineT("anat",arr(a=>{const y=F.yHip+0.52+0.07*Math.sin(Math.PI*(a-0.9)/1.7);return bp(y,s*a,0.012)},0.95,2.45,22),xb);
+      /* crista ilíaca: da espinha ilíaca anterior (frente) até as covinhas do sacro (atrás) */
+      lineT("divisao",arr(a=>{const y=F.yHip+0.52+0.07*Math.sin(Math.PI*(a-0.9)/1.7)-0.12*Math.max(0,0.95-a);return bp(y,s*a,0.012)},0.7,2.5,24),xb);
     });
   }
   out.push('</g>');

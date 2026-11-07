@@ -20,7 +20,8 @@ function bodyEff(p){
     fat:f,fem:w,
     armK:p.armThick*(1+0.3*m+0.32*f-0.2*w),
     thighK:p.thighThick*(1+0.16*m+0.32*f+0.14*w),
-    glute:0.07+0.12*w+0.07*f+0.04*m,
+    /* glúteo: massa anatômica (referências); gluteVol permite deixar mais sutil ou mais cheio */
+    glute:(0.12+0.1*w+0.07*f+0.1*m)*(p.gluteVol===undefined?1:p.gluteVol),
     breast:p.chestF
   };
 }
@@ -32,7 +33,7 @@ function bustFrame(p,S){
 /* perfil vertical do tronco: [y, meia-largura, frente, trás, centro z, expoente] interpolado por Catmull-Rom */
 function torsoProfile(F){
   if(F._prof)return F._prof;
-  const B=F.B,f=B.fat,yJ=F.yJ,c=F.chestW,c0=B.chest0,mf=clamp(1-1.4*B.fem,0,1)*0.85;
+  const B=F.B,f=B.fat,yJ=F.yJ,c=F.chestW,c0=B.chest0,mf=clamp(1-1.4*B.fem,0,1)*0.85,gk=clamp(B.glute/0.21,0,2.5);
   F._prof=[
     [F.yAc,F.W-0.05,0.75,0.8,-0.47,2.4],
     [F.yAc-0.75,c,1.06,0.95,-0.47,2.4],
@@ -42,9 +43,10 @@ function torsoProfile(F){
     [F.yWst,lerp(B.waist*0.9,c0*0.82,mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
     [F.yNav,lerp(B.waist*0.94,c0*0.83,mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
     [yJ-4.1,lerp((B.waist+B.hip)/2,Math.max(c0*0.84,B.hip*0.9),mf),0.84+0.2*f,0.82,-0.45,2.3],
-    [F.yHip,B.hip*0.93,0.8+0.1*f,0.94,-0.48,2.3],
-    [yJ-5.4,B.hip*0.6,0.66,0.8,-0.5,2.2],
-    [F.yCr,0.3,0.4,0.42,-0.46,2.1],
+    /* glúteo máximo: a parte de trás da pelve sai para trás (perfil redondo), mais cheia na altura da virilha */
+    [F.yHip,B.hip*0.93,0.8+0.1*f,0.94+0.22*gk,-0.48,2.3],
+    [yJ-5.4,B.hip*(0.6+0.08*gk),0.66,0.8+0.3*gk,-0.5,2.2],
+    [F.yCr,0.3+0.12*gk,0.4,0.42+0.22*gk,-0.46,2.1],
     [F.yB,0.02,0.02,0.02,-0.46,2]
   ];
   return F._prof;

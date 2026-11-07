@@ -552,12 +552,13 @@ pre.cmdout .ok{color:var(--cobalt)}
   function muscleBump(x, y, th, p, F) {
     const cs = Math.cos(th), cf = Math.max(0, cs), ax = Math.abs(x), B = F.B, mu = B.mus, fat = B.fat, fem = B.fem, yy = y - F.yJ, Mu = muscleDefs(F);
     let dz = 0;
-    if (cf > 0.02 && yy < 0.05 && yy > -1.5) {
-      const h = (0.08 + 0.16 * mu) * (1 - 0.55 * fem) * (1 - 0.3 * fat);
+    if (cf > 0.02 && yy < 0.05 && yy > -1.7) {
+      const h = (0.09 + 0.19 * mu) * (1 - 0.55 * fem) * (1 - 0.3 * fat);
       const d = sdPoly(ax, yy, Mu.pec);
-      if (d > -0.1) {
-        const gr = 0.62 + 0.38 * clamp((-yy - 0.25) / 0.95, 0, 1);
-        dz += cf * h * gr * plate(d, 0.13) - cf * 0.03 * mu * gauss(ax, 0, 0.045) * sstep((-yy - 0.25) / 0.3);
+      if (d > -0.16) {
+        const gr = 0.55 + 0.45 * clamp((-yy - 0.25) / 0.95, 0, 1) + 0.12 * clamp((ax - 0.5) / 0.6, 0, 1);
+        dz += cf * h * gr * plate(d, 0.12) - cf * 0.03 * mu * gauss(ax, 0, 0.045) * sstep((-yy - 0.25) / 0.3);
+        if (d < 0 && yy < -0.85) dz -= cf * h * 0.4 * gauss(d, -0.05, 0.045);
       }
     }
     if (cf > 0.02 && yy < -1.6 && yy > F.yCr - F.yJ + 0.4) {
@@ -602,7 +603,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       fem: w,
       armK: p.armThick * (1 + 0.3 * m + 0.32 * f - 0.2 * w),
       thighK: p.thighThick * (1 + 0.16 * m + 0.32 * f + 0.14 * w),
-      glute: 0.07 + 0.12 * w + 0.07 * f + 0.04 * m,
+      /* glúteo: massa anatômica (referências); gluteVol permite deixar mais sutil ou mais cheio */
+      glute: (0.12 + 0.1 * w + 0.07 * f + 0.1 * m) * (p.gluteVol === void 0 ? 1 : p.gluteVol),
       breast: p.chestF
     };
   }
@@ -628,7 +630,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function torsoProfile(F) {
     if (F._prof) return F._prof;
-    const B = F.B, f = B.fat, yJ = F.yJ, c = F.chestW, c0 = B.chest0, mf = clamp(1 - 1.4 * B.fem, 0, 1) * 0.85;
+    const B = F.B, f = B.fat, yJ = F.yJ, c = F.chestW, c0 = B.chest0, mf = clamp(1 - 1.4 * B.fem, 0, 1) * 0.85, gk = clamp(B.glute / 0.21, 0, 2.5);
     F._prof = [
       [F.yAc, F.W - 0.05, 0.75, 0.8, -0.47, 2.4],
       [F.yAc - 0.75, c, 1.06, 0.95, -0.47, 2.4],
@@ -638,9 +640,10 @@ pre.cmdout .ok{color:var(--cobalt)}
       [F.yWst, lerp(B.waist * 0.9, c0 * 0.82, mf), 0.78 + 0.2 * f, 0.68 + 0.08 * f, -0.42, 2.2],
       [F.yNav, lerp(B.waist * 0.94, c0 * 0.83, mf), 0.8 + 0.28 * f, 0.7 + 0.08 * f, -0.42, 2.2],
       [yJ - 4.1, lerp((B.waist + B.hip) / 2, Math.max(c0 * 0.84, B.hip * 0.9), mf), 0.84 + 0.2 * f, 0.82, -0.45, 2.3],
-      [F.yHip, B.hip * 0.93, 0.8 + 0.1 * f, 0.94, -0.48, 2.3],
-      [yJ - 5.4, B.hip * 0.6, 0.66, 0.8, -0.5, 2.2],
-      [F.yCr, 0.3, 0.4, 0.42, -0.46, 2.1],
+      /* glúteo máximo: a parte de trás da pelve sai para trás (perfil redondo), mais cheia na altura da virilha */
+      [F.yHip, B.hip * 0.93, 0.8 + 0.1 * f, 0.94 + 0.22 * gk, -0.48, 2.3],
+      [yJ - 5.4, B.hip * (0.6 + 0.08 * gk), 0.66, 0.8 + 0.3 * gk, -0.5, 2.2],
+      [F.yCr, 0.3 + 0.12 * gk, 0.4, 0.42 + 0.22 * gk, -0.46, 2.1],
       [F.yB, 0.02, 0.02, 0.02, -0.46, 2]
     ];
     return F._prof;
@@ -816,8 +819,8 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function atlasTronco(p, F) {
     if (F._atlas) return F._atlas;
-    const L2 = lado(p, F, 1), R = lado(p, F, -1);
-    F._atlas = { 1: L2, "-1": R };
+    const L3 = lado(p, F, 1), R = lado(p, F, -1);
+    F._atlas = { 1: L3, "-1": R };
     return F._atlas;
   }
   function relevoTronco(x, y, th, p, F) {
@@ -862,7 +865,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       if (y < yS0 + 0.05 && y > yS1 - 0.08) {
         const u = clamp((yS0 - y) / (yS0 - yS1), 0, 1), thS = lerp(112, 16, u) * D;
         const a = Math.abs(Math.atan2(Math.sin(th), Math.cos(th)));
-        dz += (0.02 + 0.025 * mu + 0.03 * p.shTension) * gauss(a, thS, 0.2) * sstep(u * 4) * sstep((1.08 - u) * 8);
+        dz += (0.03 + 0.035 * mu + 0.03 * p.shTension) * gauss(a, thS, 0.19) * sstep(u * 4) * sstep((1.08 - u) * 8);
       }
       dz += p.adam * 0.045 * gauss(y, F.yJ + 0.62, 0.07) * gauss(x, 0, 0.09) * cf;
       dz -= 0.05 * gauss(y, F.yJ + 0.03, 0.05) * gauss(x, 0, 0.09) * cf;
@@ -873,7 +876,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const s01 = (ax - 0.1) / (F.W - 0.12);
     if (s01 > 0 && s01 < 1) {
       const yc = F.yJ + 0.03 + 0.04 * s01 + 0.035 * Math.sin(Math.PI * s01);
-      dz += cf * (0.045 * gauss(y, yc, 0.035) - 0.04 * gauss(y, yc + 0.14, 0.06) * gauss(s01, 0.4, 0.3) - 0.03 * gauss(y, yc - 0.12, 0.05) * gauss(s01, 0.75, 0.2)) * sstep(s01 * 5) * sstep((1 - s01) * 6);
+      dz += cf * (0.06 * gauss(y, yc, 0.035) - 0.065 * gauss(y, yc + 0.15, 0.065) * gauss(s01, 0.42, 0.28) - 0.03 * gauss(y, yc - 0.12, 0.05) * gauss(s01, 0.75, 0.2)) * sstep(s01 * 5) * sstep((1 - s01) * 6);
     }
     if (y > F.yJ - 2.6) {
       if (B.breast > 0.01) {
@@ -900,8 +903,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       dz -= 0.035 * cb * gauss(x, 0, 0.08) * clamp((F.yC7 - y) / 0.4, 0, 1) * sstep((y - (F.yHip - 0.1)) / 0.3);
       if (y < F.yC7 && y > F.yHip - 0.2) dz += cb * 0.014 * gauss(x, 0, 0.035) * Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * (F.yC7 - y) / 0.3), 2);
       dz -= 0.02 * cb * gauss(ax, 0.2, 0.05) * gauss(y, F.yJ - 4.45, 0.06);
-      const gl = 0.05 + 0.75 * B.glute;
-      dz += cb * gl * gauss(ax, 0.5, 0.4) * gauss(y, F.yHip - 0.35, 0.5) * (1 - 0.6 * gauss(x, 0, 0.05));
+      const gl = 0.04 + 0.85 * B.glute;
+      dz += cb * gl * gauss(ax, 0.55, 0.36) * gauss(y, F.yHip - 0.6, 0.42) * (1 - 0.75 * gauss(x, 0, 0.055));
+      dz += (0.4 + 0.6 * cb) * 0.35 * gl * gauss(Math.abs(Math.atan2(Math.sin(th), cs)), 1.75, 0.35) * gauss(y, F.yHip + 0.05, 0.3);
     }
     dz += p.shTension * 0.045 * gauss(y, F.yTr - 0.12, 0.14) * gauss(ax, 0.72, 0.3);
     dz += muscleBump(x, y, th, p, F) + relevoTronco(x, y, th, p, F);
@@ -1095,13 +1099,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     return tubeMesh(46, 48, -0.47 * A.k, A.L1 + 0.3 * A.k, (u, th) => armRadius(u, th, A, s));
   }
   function foreR(u, th, A, s) {
-    const L2 = A.L2, k = A.k, r0 = 0.31 * k, r1 = 0.18 * k, mu = A.mus;
+    const L22 = A.L2, k = A.k, r0 = 0.31 * k, r1 = 0.18 * k, mu = A.mus;
     if (u < 0) return Math.sqrt(Math.max(0, r0 * r0 - u * u));
-    if (u > L2) {
-      const q = r1 * r1 - (u - L2) * (u - L2);
+    if (u > L22) {
+      const q = r1 * r1 - (u - L22) * (u - L22);
       return q > 0 ? Math.sqrt(q) : 0;
     }
-    const cs = Math.cos(th), sn = Math.sin(th), t = u / L2, lat = Math.max(0, s * sn), med = Math.max(0, -s * sn);
+    const cs = Math.cos(th), sn = Math.sin(th), t = u / L22, lat = Math.max(0, s * sn), med = Math.max(0, -s * sn);
     const fl = lerp(0.92, 0.68, sstep(t / 0.9));
     const base = lerp(r0, r1, Math.pow(t, 0.8)) * (1 + (0.5 + 0.6 * mu) * (0.2 * gauss(t, 0.2, 0.16) * (0.5 + 0.5 * lat) + 0.12 * gauss(t, 0.22, 0.18) * med));
     return base / Math.sqrt(cs * cs + sn * sn / (fl * fl));
@@ -1155,9 +1159,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     return shoulderWarp([s * (F.W - 0.06), F.yAc - 0.3, F.zT + 0.02], p, F);
   }
   function armPose(p, F, s) {
-    const L2 = s > 0;
-    const ab = L2 ? p.armAbdL : p.armAbdR, fl = L2 ? p.armFlexL : p.armFlexR, ro = L2 ? p.armRotL : p.armRotR, el = L2 ? p.elbowL : p.elbowR;
-    const pr = L2 ? p.pronL : p.pronR, wf = L2 ? p.wristL : p.wristR;
+    const L3 = s > 0;
+    const ab = L3 ? p.armAbdL : p.armAbdR, fl = L3 ? p.armFlexL : p.armFlexR, ro = L3 ? p.armRotL : p.armRotR, el = L3 ? p.elbowL : p.elbowR;
+    const pr = L3 ? p.pronL : p.pronR, wf = L3 ? p.wristL : p.wristR;
     const G = armJoint(p, F, s), M = rotM(s * ro * D, -fl * D, s * ab * D), A = armDims(p);
     const e = mv(M, [0, -A.L1, 0]);
     const Mb = mmul(M, rotM(0, -el * D, 0)), Mf = mmul(Mb, rotM(s * pr * D, 0, 0));
@@ -1170,20 +1174,23 @@ pre.cmdout .ok{color:var(--cobalt)}
 
   // src/engine/pernas.js
   function legDims(p) {
-    const B = bodyEff(p), L2 = p.legLen;
-    return { L1: 3.85 * L2, L2: 3.7 * L2, k: B.thighK, mus: B.mus, fat: B.fat, glute: B.glute, f: L2 * (1 + 0.04 * B.fat) * (0.97 + 0.06 * (1 - B.fem)), hA: 0.62 * L2 };
+    const B = bodyEff(p), L3 = p.legLen;
+    return { L1: 3.85 * L3, L2: 3.7 * L3, k: B.thighK, mus: B.mus, fat: B.fat, glute: B.glute, f: L3 * (1 + 0.04 * B.fat) * (0.97 + 0.06 * (1 - B.fem)), hA: 0.62 * L3 };
   }
   function thighR(u, th, A, s) {
-    const k = A.k, L1 = A.L1, r0 = 0.74 * k, r1 = 0.36 * k, mu = A.mus;
-    if (u < 0) return Math.sqrt(Math.max(0, r0 * r0 - u * u));
+    const k = A.k, L1 = A.L1, r0 = 0.68 * k, r1 = 0.36 * k, mu = A.mus;
+    if (u < 0) return Math.sqrt(Math.max(0, r0 * r0 - u * u)) * (1 - 0.16 * Math.max(0, Math.cos(th)));
     if (u > L1) {
       const q = r1 * r1 - (u - L1) * (u - L1);
       return q > 0 ? Math.sqrt(q) : 0;
     }
     const t = u / L1, cs = Math.cos(th), sn = Math.sin(th), fr2 = Math.max(0, cs), bk = Math.max(0, -cs), med = Math.max(0, -s * sn), lat = Math.max(0, s * sn);
-    let r = lerp(r0, r1, Math.pow(t, 1.15)) * (1 + 0.13 * gauss(t, 0.13, 0.14) * Math.pow(lat, 1.2) - 0.07 * gauss(t, 0.72, 0.2) * med);
+    let r = lerp(r0, r1, Math.pow(t, 1.15)) * (1 + 0.07 * gauss(t, 0.13, 0.14) * Math.pow(lat, 1.2) - 0.07 * gauss(t, 0.72, 0.2) * med - 0.16 * fr2 * gauss(t, 0, 0.14));
     r *= 1 + mu * (0.11 * gauss(t, 0.4, 0.22) * fr2 * fr2 + 0.13 * gauss(t, 0.8, 0.09) * fr2 * med + 0.06 * gauss(t, 0.48, 0.24) * lat * (0.6 + 0.4 * fr2) + 0.08 * gauss(t, 0.38, 0.22) * bk) + 0.08 * gauss(t, 0.1, 0.16) * med - 0.04 * gauss(t, 0.62, 0.25) * lat * bk;
-    r *= 1 + (0.06 + 0.5 * (A.glute || 0.15)) * gauss(t, 0.06, 0.1) * Math.pow(bk, 1.3) * (0.6 + 0.4 * med);
+    {
+      const tf = 0.2 - 0.06 * Math.pow(lat, 1.4), g = t < tf ? gauss(t, 0.08, 0.11) : gauss(tf, 0.08, 0.11) * Math.exp(-Math.pow((t - tf) / 0.06, 2));
+      r *= 1 + (0.06 + 0.7 * (A.glute || 0.15)) * g * Math.pow(bk, 1.2) * (0.55 + 0.45 * lat + 0.2 * med);
+    }
     return r * (1 - 0.05 * sn * sn * (1 - t));
   }
   function buildThigh(p, s) {
@@ -1199,13 +1206,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     }, [1.03 + 0.05 * f, 1, 0.96]);
   }
   function calfR(u, th, A, s) {
-    const k = A.k, L2 = A.L2, rt = 0.34 * k, ra = 0.165 * k, mu = A.mus;
+    const k = A.k, L22 = A.L2, rt = 0.34 * k, ra = 0.165 * k, mu = A.mus;
     if (u < 0) return Math.sqrt(Math.max(0, rt * rt - u * u));
-    if (u > L2) {
-      const q = ra * ra - (u - L2) * (u - L2);
+    if (u > L22) {
+      const q = ra * ra - (u - L22) * (u - L22);
       return q > 0 ? Math.sqrt(q) : 0;
     }
-    const t = u / L2, cs = Math.cos(th), sn = Math.sin(th), fr2 = Math.max(0, cs), bk = Math.max(0, -cs), med = Math.max(0, -s * sn), lat = Math.max(0, s * sn);
+    const t = u / L22, cs = Math.cos(th), sn = Math.sin(th), fr2 = Math.max(0, cs), bk = Math.max(0, -cs), med = Math.max(0, -s * sn), lat = Math.max(0, s * sn);
     let r = lerp(rt, ra, Math.pow(t, 1.15)) * (1 + 0.08 * sstep(t / 0.12) * (1 - sstep((t - 0.35) / 0.5)));
     const g = 0.3 + 0.3 * mu;
     r *= 1 + g * (gauss(t, 0.24, 0.13) * Math.pow(bk, 1.2) * (0.8 + 0.3 * lat) + 0.9 * gauss(t, 0.33, 0.12) * bk * med) + (0.7 + 0.5 * mu) * (0.2 * gauss(t, 0.33, 0.15) * Math.pow(med, 0.8) + 0.13 * gauss(t, 0.25, 0.14) * Math.pow(lat, 0.8)) + 0.04 * gauss(t, 0.5, 0.24) * lat + 0.05 * mu * gauss(t, 0.3, 0.18) * fr2 * lat - 0.06 * fr2 * fr2 * (1 - 0.6 * gauss(t, 0.05, 0.08)) - 0.1 * gauss(t, 0.9, 0.08) * bk * (0.5 + 0.5 * Math.abs(sn));
@@ -1297,7 +1304,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function buildFingers(p, s, curl) {
     const k = bodyEff(p).armK * 0.95 * p.armLen, out = [];
-    const zs = [0.25, 0.085, -0.08, -0.23], L2 = [0.74, 0.82, 0.76, 0.6], R = [0.075, 0.078, 0.073, 0.064], sp = [5, 0, -5, -11];
+    const zs = [0.25, 0.085, -0.08, -0.23], L3 = [0.74, 0.82, 0.76, 0.6], R = [0.075, 0.078, 0.073, 0.064], sp = [5, 0, -5, -11];
     const fr2 = [0.45, 0.3, 0.25], base = [12, 18, 10], full = [78, 98, 72];
     for (let f = 0; f < 4; f++) {
       let c = 0;
@@ -1307,7 +1314,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         const spl = sp[f] * D * (1 - 0.6 * curl);
         dirs.push([-s * Math.sin(c) * Math.cos(spl), -Math.cos(c) * Math.cos(spl), Math.sin(spl)]);
       }
-      out.push(fingerMesh([0, -0.86 * k, zs[f] * k], dirs, [L2[f] * k * fr2[0], L2[f] * k * fr2[1], L2[f] * k * fr2[2]], R[f] * k));
+      out.push(fingerMesh([0, -0.86 * k, zs[f] * k], dirs, [L3[f] * k * fr2[0], L3[f] * k * fr2[1], L3[f] * k * fr2[2]], R[f] * k));
     }
     {
       let c = 0;
@@ -2169,6 +2176,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     muscle: 0.6,
     fat: 0.15,
     fem: 0.2,
+    gluteVol: 1,
     waist: 0.93,
     hips: 1.08,
     thighThick: 1,
@@ -2358,9 +2366,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { F, tab: tab2, Pel, tilt, gY, A2: tab2[128], A3: tab2[192] };
   }
   function legPose(p, F, ch, s) {
-    const L2 = s > 0;
-    const fl = (L2 ? p.hipFlexL : p.hipFlexR) + ch.tilt, ab = L2 ? p.hipAbdL : p.hipAbdR, ro = (L2 ? p.hipRotL : p.hipRotR) - p.pelvisTwist;
-    const kf = clamp(L2 ? p.kneeFlexL : p.kneeFlexR, 0, 150), af = L2 ? p.ankleFlexL : p.ankleFlexR, at = L2 ? p.ankleTiltL : p.ankleTiltR;
+    const L3 = s > 0;
+    const fl = (L3 ? p.hipFlexL : p.hipFlexR) + ch.tilt, ab = L3 ? p.hipAbdL : p.hipAbdR, ro = (L3 ? p.hipRotL : p.hipRotR) - p.pelvisTwist;
+    const kf = clamp(L3 ? p.kneeFlexL : p.kneeFlexR, 0, 150), af = L3 ? p.ankleFlexL : p.ankleFlexR, at = L3 ? p.ankleTiltL : p.ankleTiltR;
     const J = hipJoint(F, s), A = legDims(p);
     const M = rotM(s * ro * D, -fl * D, (s * ab - p.pelvisSide) * D);
     const e = mv(M, [0, -A.L1, 0]), K = [J[0] + e[0], J[1] + e[1], J[2] + e[2]];
@@ -2374,10 +2382,10 @@ pre.cmdout .ok{color:var(--cobalt)}
   function ikLeg(p, S, s, Pw) {
     const ch = chainSetup(p, S), F = ch.F, A = legDims(p), Pel = ch.Pel;
     const MT = mT(Pel.M), q = [Pw[0] - Pel.T[0], Pw[1] - Pel.T[1], Pw[2] - Pel.T[2]], P2 = mv(MT, q);
-    const J = hipJoint(F, s), L1 = A.L1, L2 = A.L2;
+    const J = hipJoint(F, s), L1 = A.L1, L22 = A.L2;
     const dv = [P2[0] - J[0], P2[1] - J[1], P2[2] - J[2]], d = Math.hypot(dv[0], dv[1], dv[2]) || 1e-6;
-    const dc = clamp(d, Math.abs(L1 - L2) + 0.05, L1 + L2 - 5e-3), dir = dv.map((c) => c / d);
-    const a = (L1 * L1 - L2 * L2 + dc * dc) / (2 * dc), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+    const dc = clamp(d, Math.abs(L1 - L22) + 0.05, L1 + L22 - 5e-3), dir = dv.map((c) => c / d);
+    const a = (L1 * L1 - L22 * L22 + dc * dc) / (2 * dc), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
     let pole = [0, 0, 1];
     const pd = pole[0] * dir[0] + pole[1] * dir[1] + pole[2] * dir[2];
     pole = [pole[0] - pd * dir[0], pole[1] - pd * dir[1], pole[2] - pd * dir[2]];
@@ -2385,7 +2393,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     pole = pole.map((c) => c / pl);
     const K = [J[0] + dir[0] * a + pole[0] * h, J[1] + dir[1] * a + pole[1] * h, J[2] + dir[2] * a + pole[2] * h];
     const Pc = [J[0] + dir[0] * dc, J[1] + dir[1] * dc, J[2] + dir[2] * dc];
-    const u = [(K[0] - J[0]) / L1, (K[1] - J[1]) / L1, (K[2] - J[2]) / L1], w = [(Pc[0] - K[0]) / L2, (Pc[1] - K[1]) / L2, (Pc[2] - K[2]) / L2];
+    const u = [(K[0] - J[0]) / L1, (K[1] - J[1]) / L1, (K[2] - J[2]) / L1], w = [(Pc[0] - K[0]) / L22, (Pc[1] - K[1]) / L22, (Pc[2] - K[2]) / L22];
     const fl = Math.asin(clamp(u[2], -1, 1)), rl = Math.atan2(u[0], -u[1]);
     const w0 = mv(mT(rotM(0, -fl, rl)), w);
     const kf = Math.acos(clamp(-w0[1], -1, 1));
@@ -2446,10 +2454,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     const MT = mT(A2.M), q = [Pw[0] - A2.T[0], Pw[1] - A2.T[1], Pw[2] - A2.T[2]], P2 = mv(MT, q);
     const G = armJoint(p, F, s);
     let dv = [P2[0] - G[0], P2[1] - G[1], P2[2] - G[2]], d = Math.hypot(dv[0], dv[1], dv[2]) || 1e-6;
-    const L1 = A.L1, L2 = A.L2;
-    const dc = clamp(d, Math.abs(L1 - L2) + 0.02, L1 + L2 - 0.02);
+    const L1 = A.L1, L22 = A.L2;
+    const dc = clamp(d, Math.abs(L1 - L22) + 0.02, L1 + L22 - 0.02);
     const dir = dv.map((c3) => c3 / d);
-    const a = (L1 * L1 - L2 * L2 + dc * dc) / (2 * dc), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+    const a = (L1 * L1 - L22 * L22 + dc * dc) / (2 * dc), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
     let pole = pole0 ? pole0.slice() : [s * 1, -0.15, -0.45];
     const pd = pole[0] * dir[0] + pole[1] * dir[1] + pole[2] * dir[2];
     pole = [pole[0] - pd * dir[0], pole[1] - pd * dir[1], pole[2] - pd * dir[2]];
@@ -2457,7 +2465,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     pole = pole.map((c3) => c3 / pl);
     const E = [G[0] + dir[0] * a + pole[0] * h, G[1] + dir[1] * a + pole[1] * h, G[2] + dir[2] * a + pole[2] * h];
     const Pc = [G[0] + dir[0] * dc, G[1] + dir[1] * dc, G[2] + dir[2] * dc];
-    const u = [(E[0] - G[0]) / L1, (E[1] - G[1]) / L1, (E[2] - G[2]) / L1], w = [(Pc[0] - E[0]) / L2, (Pc[1] - E[1]) / L2, (Pc[2] - E[2]) / L2];
+    const u = [(E[0] - G[0]) / L1, (E[1] - G[1]) / L1, (E[2] - G[2]) / L1], w = [(Pc[0] - E[0]) / L22, (Pc[1] - E[1]) / L22, (Pc[2] - E[2]) / L22];
     const fl = Math.asin(clamp(u[2], -1, 1)), b = Math.atan2(u[0], -u[1]);
     const ab = s * b;
     const M0 = rotM(0, -fl, s * ab * 1), fl2 = mv(mT(M0), w);
@@ -2469,7 +2477,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       keys.forEach((k, i) => pp[k + L_] = v[i]);
       const ap = armPose(pp, F, s), Af = comp(A2, ap.fore), Ah = comp(A2, ap.hand);
       const W2 = Ah.T, e = Math.hypot(W2[0] - Pw[0], W2[1] - Pw[1], W2[2] - Pw[2]), Aa = comp(A2, ap.arm);
-      return e + 2 * proxyDepth([applyA(Aa, [0, -L1 * 0.55, 0]), Af.T, applyA(Af, [0, -L2 * 0.5, 0]), W2, applyA(Ah, [0, -0.9 * A.k, 0])], PX, pad) + 0.05 * Math.max(0, minAbd(v[1]) - v[0]);
+      return e + 2 * proxyDepth([applyA(Aa, [0, -L1 * 0.55, 0]), Af.T, applyA(Af, [0, -L22 * 0.5, 0]), W2, applyA(Ah, [0, -0.9 * A.k, 0])], PX, pad) + 0.05 * Math.max(0, minAbd(v[1]) - v[0]);
     };
     const solve = (x0) => {
       const x = x0.map((v, i) => clamp(v, lim[i][0], lim[i][1]));
@@ -2492,6 +2500,48 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
     const c1 = solve([ab / D, fl / D, ro / D, el / D]), c2 = solve([(ab / D + 180 + 180) % 360 - 180, 180 - fl / D, ro / D, el / D]), c = c1.e <= c2.e + 0.05 ? c1 : c2;
     return { abd: c.x[0], flex: c.x[1], rot: c.x[2], elbow: c.x[3], err: c.e };
+  }
+
+  // src/engine/atlas/pernas.js
+  var L = (nome, parte, tipo, P2, min = 0, n = 6) => ({ nome, parte, tipo, min, pts: suave(P2, n) });
+  function atlasPerna() {
+    return [
+      /* ===== coxa ===== */
+      /* sartório: da espinha ilíaca (alto, por fora) em espiral até o lado de dentro do joelho */
+      L("sartorio", "coxa", "divisao", [[0.02, 0.95], [0.2, 0.35], [0.42, -0.4], [0.66, -1.05], [0.9, -1.6], [1, -1.75]], 0.1),
+      /* reto femoral: as duas bordas descem pela frente e se juntam no tendão acima da patela */
+      L("reto-fora", "coxa", "divisao", [[0.1, 0.62], [0.35, 0.52], [0.62, 0.42], [0.86, 0.22], [0.95, 0.06]], 0.25),
+      L("reto-dentro", "coxa", "fibra", [[0.28, -0.1], [0.55, -0.22], [0.8, -0.2], [0.94, -0.06]], 0.25),
+      /* vasto medial: a "gota" por dentro, logo acima do joelho */
+      L("vasto-medial", "coxa", "dobra", [[0.56, -0.85], [0.72, -0.72], [0.86, -0.5], [0.95, -0.25]], 0.2),
+      /* vasto lateral e trato iliotibial (faixa achatada por fora) */
+      L("vasto-lateral", "coxa", "divisao", [[0.12, 1.5], [0.4, 1.5], [0.7, 1.38], [0.93, 1.12]], 0.15),
+      L("trato-iliotibial", "coxa", "fibra", [[0.18, 1.85], [0.5, 1.9], [0.8, 1.8], [0.96, 1.6]], 0.2),
+      /* adutores: massa no alto por dentro, da virilha descendo até o meio da coxa */
+      L("adutores", "coxa", "divisao", [[0.03, -1.25], [0.22, -1.5], [0.45, -1.78], [0.62, -2]], 0.15),
+      /* isquiotibiais: um só volume atrás que se abre em dois tendões (bíceps femoral por fora, semitendíneo por dentro) */
+      L("isquio-meio", "coxa", "divisao", [[0.3, 3.1], [0.55, 3.14], [0.72, 3.18]], 0.25),
+      L("biceps-femoral", "coxa", "divisao", [[0.72, 3.18], [0.86, 2.75], [0.98, 2.35]], 0.15),
+      L("semitendineo", "coxa", "divisao", [[0.72, 3.18], [0.86, 3.65], [0.98, 4]], 0.15),
+      /* ===== perna ===== */
+      /* tíbia: a canela é osso logo abaixo da pele, um pouco para dentro da frente */
+      L("tibia", "perna", "divisao", [[0.12, -0.12], [0.4, -0.22], [0.7, -0.24], [0.9, -0.3]], 0),
+      /* tibial anterior: borda de fora do músculo da canela */
+      L("tibial-anterior", "perna", "fibra", [[0.12, 0.55], [0.4, 0.62], [0.68, 0.45], [0.85, 0.15]], 0.2),
+      /* gastrocnêmio: duas cabeças em "coração" invertido; a de dentro desce mais */
+      L("gastro-medial", "perna", "dobra", [[0.06, -1.85], [0.26, -2.15], [0.48, -2.55], [0.6, -2.95], [0.6, -3.14]], 0.1),
+      L("gastro-lateral", "perna", "dobra", [[0.06, 1.85], [0.24, 2.1], [0.42, 2.5], [0.53, 2.9], [0.55, 3.14]], 0.1),
+      L("gastro-meio", "perna", "fibra", [[0.1, 3.14], [0.3, 3.14], [0.5, 3.14]], 0.2),
+      /* sóleo: aparece dos dois lados, por baixo das cabeças do gastrocnêmio */
+      L("soleo-fora", "perna", "divisao", [[0.3, 1.6], [0.5, 1.75], [0.7, 2.05]], 0.25),
+      L("soleo-dentro", "perna", "divisao", [[0.32, -1.6], [0.52, -1.75], [0.72, -2.05]], 0.25),
+      /* tendão de Aquiles */
+      L("aquiles-fora", "perna", "fibra", [[0.62, 2.85], [0.8, 2.92], [0.97, 2.95]], 0.15),
+      L("aquiles-dentro", "perna", "fibra", [[0.64, -2.85], [0.8, -2.92], [0.97, -2.95]], 0.15),
+      /* tendão patelar: da patela até a tuberosidade da tíbia */
+      L("patelar-fora", "perna", "fibra", [[-0.02, 0.2], [0.06, 0.16], [0.11, 0.12]], 0.1, 3),
+      L("patelar-dentro", "perna", "fibra", [[-0.02, -0.2], [0.06, -0.16], [0.11, -0.12]], 0.1, 3)
+    ];
   }
 
   // src/engine/cena.js
@@ -2624,7 +2674,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const cam = makeXf(Object.assign({}, p, { wRot: 0 }));
     return cam([(p.wx || 0) - (p.tx || 0), (p.wy || 0) - 6 - (p.ty || 0), (p.wz || 0) - (p.tz || 0)])[2];
   }
-  function renderScene(list0, L2, fast, floor) {
+  function renderScene(list0, L3, fast, floor) {
     let floorStr = "";
     if (floor && list0.length) {
       let R = floor;
@@ -2639,11 +2689,11 @@ pre.cmdout .ok{color:var(--cobalt)}
       idx.forEach((i, k) => out[i] = inf[k]);
       return out;
     };
-    const guides = (infos2) => L2.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos2) : "";
+    const guides = (infos2) => L3.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos2) : "";
     if (!list.length) return { svg: floorStr + guides([]), infos: remap([]) };
     if (list.length === 1) {
       setCUR_ID(0);
-      const r = scene(list[0].p, L2, list[0].pal, fast);
+      const r = scene(list[0].p, L3, list[0].pal, fast);
       return { svg: floorStr + r.svg + guides([r.info]), infos: remap([r.info]) };
     }
     setMULTI(true);
@@ -2659,7 +2709,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     try {
       list.forEach((o, i) => {
         setCUR_ID(i);
-        infos[i] = scene(o.p, L2, o.pal, fast, "depth").info;
+        infos[i] = scene(o.p, L3, o.pal, fast, "depth").info;
       });
       const at = list[0].p.persp ? list[0].p.atmo || 0 : 0, bg = list[0].p.bg;
       if (at > 0 && bg) {
@@ -2673,7 +2723,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       let svg = floorStr + '<g id="sombras">' + infos.map((i) => i.shadow || "").join("") + "</g>";
       order.forEach((i) => {
         setCUR_ID(i);
-        const r = scene(list[i].p, L2, list[i].pal, fast, "draw");
+        const r = scene(list[i].p, L3, list[i].pal, fast, "draw");
         infos[i] = r.info;
         svg += '<g data-m="' + idx[i] + '">' + r.svg + "</g>";
       });
@@ -2699,8 +2749,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return o;
   };
   function atlasBraco(A, s) {
-    const L2 = [], k = A.k, L1 = A.L1;
-    const linha = (nome, tipo, parte, pts, min = 0, off) => L2.push({ nome, tipo, parte, pts, min, off });
+    const L3 = [], k = A.k, L1 = A.L1;
+    const linha = (nome, tipo, parte, pts, min = 0, off) => L3.push({ nome, tipo, parte, pts, min, off });
     const sobreDelt = (t, th) => {
       const v = t * L1, r = deltR(v, th, A, s), ra = armRadius(v, th, A, s);
       return [t, th, Math.max(0.012, r - ra + 0.012)];
@@ -2710,9 +2760,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       const t = deltV(ph) / 2.9 * 0.97;
       return sobreDelt(t, lat + ph);
     }, -1.85, 1.85, 44);
-    L2.push({ nome: "deltoide_borda", tipo: "dobra", parte: "braco", pts3: borda });
+    L3.push({ nome: "deltoide_borda", tipo: "dobra", parte: "braco", pts3: borda });
     const tIns = deltV(0) / 2.9 * 0.9;
-    [-0.95, 0.95].forEach((ph, i) => L2.push({
+    [-0.95, 0.95].forEach((ph, i) => L3.push({
       nome: i ? "deltoide_feixe_posterior" : "deltoide_feixe_anterior",
       tipo: "divisao",
       min: 0.12,
@@ -2721,7 +2771,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }));
     for (let i = -3; i <= 3; i++) {
       const ph = i * 0.42;
-      L2.push({ nome: "fibra_deltoide", tipo: "fibra", parte: "braco", min: 0.3, pts3: arr((t) => sobreDelt(t, lat + ph * (1 - 0.35 * t / (deltV(ph) / 2.9))), 0.03, deltV(ph) / 2.9 * 0.85, 8) });
+      L3.push({ nome: "fibra_deltoide", tipo: "fibra", parte: "braco", min: 0.3, pts3: arr((t) => sobreDelt(t, lat + ph * (1 - 0.35 * t / (deltV(ph) / 2.9))), 0.03, deltV(ph) / 2.9 * 0.85, 8) });
     }
     [-0.62, 0.62].forEach((a) => linha("biceps_borda", "divisao", "braco", arr((t) => [t, a * (1 + 0.15 * Math.sin(Math.PI * t))], 0.42, 0.88, 16), 0.1));
     linha("braquial", "divisao", "braco", arr((t) => [t, s * (Math.PI / 2 + 0.2 - 0.35 * (t - 0.5))], 0.5, 0.9, 12), 0.14);
@@ -2731,11 +2781,11 @@ pre.cmdout .ok{color:var(--cobalt)}
     linha("flexores", "divisao", "ante", arr((t) => [t, -s * 0.55], 0.12, 0.55, 12), 0.12);
     linha("extensores", "divisao", "ante", arr((t) => [t, s * (1.95 - 0.2 * t)], 0.1, 0.62, 12), 0.16);
     linha("punho", "fibra", "ante", arr((th) => [0.95, th], 0, 2 * Math.PI, 28));
-    return L2;
+    return L3;
   }
 
   // src/engine/desenho.js
-  function scene(p, L2, pal, fast, mode2) {
+  function scene(p, L3, pal, fast, mode2) {
     setLight(p.lightAz, p.lightEl);
     {
       const cam = makeXf(Object.assign({}, p, { wRot: 0 })), T = cam([(p.wx || 0) - (p.tx || 0), (p.wy || 0) - (p.ty || 0), (p.wz || 0) - (p.tz || 0)]);
@@ -2747,8 +2797,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     {
       const qz = xv0([0, -5.5, -0.4])[2] + PAN[2], wc = PERSP > 0 ? PERSP / Math.max(0.2 * PERSP, PERSP - qz) : 1, hp2 = S * wc * 14;
       setLWK(PERSP > 0 ? clamp(Math.pow(wc, 0.6), 0.45, 1.2) : 1);
-      if (hp2 < 200) L2 = Object.assign({}, L2, { girdle: 0, rings: 0, merid: 0, prop: 0, sphere: 0, planes: 0 });
-      if (hp2 < 120) L2 = Object.assign({}, L2, { anat: 0, hidden: 0 });
+      if (hp2 < 200) L3 = Object.assign({}, L3, { girdle: 0, rings: 0, merid: 0, prop: 0, sphere: 0, planes: 0 });
+      if (hp2 < 120) L3 = Object.assign({}, L3, { anat: 0, hidden: 0 });
     }
     const ch = chainSetup(p, sh), F = ch.F, tab2 = ch.tab, A3 = ch.A3, A2 = ch.A2;
     M.head.tf = [A3];
@@ -2757,9 +2807,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     M.bust.tf = tab2;
     const xf = (v) => xv(applyA(A3, v));
     const xfd = (v) => xv0(mv(A3.M, v));
-    const head = proj(M.head, Mx, S), bust = L2.torso ? proj(M.bust, Mx, S) : null;
+    const head = proj(M.head, Mx, S), bust = L3.torso ? proj(M.bust, Mx, S) : null;
     const arms = [], legs = [], handles = [];
-    if (L2.torso && L2.arms) [-1, 1].forEach((s, i) => {
+    if (L3.torso && L3.arms) [-1, 1].forEach((s, i) => {
       const ap = armPose(p, F, s), Aa = comp(A2, ap.arm), Af = comp(A2, ap.fore), Ah = comp(A2, ap.hand), Ae = comp(A2, ap.elbow), n = s > 0 ? "L" : "R";
       const am = M["arm" + n];
       am.tf = [Aa];
@@ -2777,7 +2827,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       const dm = M["delt" + n];
       dm.tf = [Aa];
       const d = proj(dm, Mx, S);
-      const hs = L2.hands ? M["hand" + i].map((m) => {
+      const hs = L3.hands ? M["hand" + i].map((m) => {
         m.tf = [Ah];
         return proj(m, Mx, S);
       }) : [];
@@ -2793,7 +2843,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       handles.push({ k: "wrist", s, P: wp, x: CX + S * ws[0], y: CY - S * ws[1] });
       handles.push({ k: "elbow", s, P: ep, x: CX + S * es[0], y: CY - S * es[1] });
     });
-    if (L2.torso && L2.legs) [-1, 1].forEach((s) => {
+    if (L3.torso && L3.legs) [-1, 1].forEach((s) => {
       const lp = legPose(p, F, ch, s), n = s > 0 ? "L" : "R";
       const Ath = comp(ch.Pel, lp.thigh), Akn = comp(ch.Pel, lp.knee), Acf = comp(ch.Pel, lp.calf), Aft = comp(ch.Pel, lp.foot);
       const pj = (m, A) => {
@@ -2811,7 +2861,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       const hc = xv(applyA(A3, [0, 0, 0]));
       handles.push({ k: "head", s: 0, P: applyA(A3, [0, 0, 0]), x: CX + S * hc[0], y: CY - S * hc[1] });
     }
-    const ears = L2.ears ? [proj(M.earL, Mx, S), proj(M.earR, Mx, S)] : [];
+    const ears = L3.ears ? [proj(M.earL, Mx, S), proj(M.earR, Mx, S)] : [];
     const all = [head];
     if (bust) all.push(bust);
     arms.forEach((o) => {
@@ -2866,7 +2916,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       return ((n >> 16 & 255) * 0.3 + (n >> 8 & 255) * 0.59 + (n & 255) * 0.11) / 255;
     })();
     const shCol = bgL < 0.35 ? "#000000" : pal.shade3, shOp = bgL < 0.35 ? 0.55 : 0.38;
-    if (L2.shadow && L2.legs && L2.torso && mode2 !== "draw") {
+    if (L3.shadow && L3.legs && L3.torso && mode2 !== "draw") {
       const gY = restGround(p), G = camQ(xv0([0, gY, 0])), n = xv0([0, 1, 0]), ln = LD[0] * n[0] + LD[1] * n[1] + LD[2] * n[2];
       if (ln > 0.08) {
         FSRaw.fill(1);
@@ -2897,7 +2947,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const t = sh.t, chinY = sh.chinY, eyeY = sh.eyeY, mouthY = sh.mouthY;
     const out = [];
     if (shadow && mode2 !== "draw") out.push('<g id="sombra">' + shadow + "</g>");
-    if (L2.prop && !MULTI && mode2 !== "draw") {
+    if (L3.prop && !MULTI && mode2 !== "draw") {
       out.push('<g id="proporcao">');
       const nMod = 8, x0 = Math.max(16, CX - 240), x1 = Math.min(W - 16, CX + 240);
       for (let i = 1; i < nMod; i++) {
@@ -3008,7 +3058,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         dv[c] += seg;
         lastC = c;
       }
-      if (dh && (L2.hidden || showHid) && !isSil) out.push('<path d="' + dh + '" style="' + style(k, true) + '"/>');
+      if (dh && (L3.hidden || showHid) && !isSil) out.push('<path d="' + dh + '" style="' + style(k, true) + '"/>');
       const WM = isSil ? [0.72, 1, 1.32] : [1, 1, 1];
       dv.forEach((d, c) => {
         if (d) out.push('<path d="' + d + '" style="' + style(k, false, WM[c]) + '"/>');
@@ -3084,7 +3134,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const hp = (y, th, off) => headPt(y, th, p, sh, off);
     out.push('<g id="corpo">');
     const hSil = silhouette(head), bSil = bust ? silhouette(bust) : [];
-    if (!fast && (L2.fill || L2.shade)) {
+    if (!fast && (L3.fill || L3.shade)) {
       if (mode2 !== "draw") {
         hz.fill(-1e6);
         sm.fill(-9);
@@ -3094,13 +3144,13 @@ pre.cmdout .ok{color:var(--cobalt)}
           rasterS(m);
         });
       }
-      makeFields(!!L2.shade, !!L2.cel);
-      if (L2.fill) {
+      makeFields(!!L3.shade, !!L3.cel);
+      if (L3.fill) {
         const d = contourPath(Fc);
         if (d) out.push('<path d="' + d + '" style="fill:' + pal.fill + ';stroke:none;fill-rule:evenodd"/>');
       }
-      if (L2.shade) {
-        const dh = L2.cel ? "" : contourPath(FH);
+      if (L3.shade) {
+        const dh = L3.cel ? "" : contourPath(FH);
         if (dh) out.push('<path d="' + dh + '" style="fill:' + pal.shade1 + ';stroke:none;fill-rule:evenodd;opacity:.5"/>');
         const d1 = contourPath(FA), d2 = contourPath(FB);
         if (d1) out.push('<path d="' + d1 + '" style="fill:' + pal.shade1 + ';stroke:none;fill-rule:evenodd"/>');
@@ -3108,17 +3158,17 @@ pre.cmdout .ok{color:var(--cobalt)}
         const dr = contourPath(FR);
         if (dr) out.push('<path d="' + dr + '" style="fill:' + pal.shade1 + ';stroke:none;fill-rule:evenodd;opacity:.85"/>');
       }
-    } else if (L2.fill) {
+    } else if (L3.fill) {
       out.push('<path d="' + fillPath(hSil, head) + (bust ? fillPath(bSil, bust) : "") + arms.map((o) => fillPath(silhouette(o.a), o.a) + fillPath(silhouette(o.f), o.f) + o.hs.map((h) => fillPath(silhouette(h), h)).join("")).join("") + legs.map((o) => [o.t, o.c, o.ft].map((m) => fillPath(silhouette(m), m)).join("")).join("") + '" style="fill:' + pal.fill + ';stroke:none"/>');
     }
     out.push("</g>");
-    out.push('<g id="construction-guides" style="opacity:' + (L2.cel ? 0.45 : 0.8) + '">');
-    if (L2.sphere) {
+    out.push('<g id="construction-guides" style="opacity:' + (L3.cel ? 0.45 : 0.8) + '">');
+    if (L3.sphere) {
       const c0 = xf([0, 0, 0]), cx0 = CX + S * c0[0], cy0 = CY - S * c0[1];
       out.push('<circle cx="' + f1(cx0) + '" cy="' + f1(cy0) + '" r="' + f1(S) + '" style="' + style("sphere", false) + '"/>');
       out.push('<path d="M' + f1(cx0 - 6) + " " + f1(cy0) + "H" + f1(cx0 + 6) + "M" + f1(cx0) + " " + f1(cy0 - 6) + "V" + f1(cy0 + 6) + '" style="' + style("sphere", false) + '"/>');
     }
-    if (L2.planes) {
+    if (L3.planes) {
       [-1, 1].forEach((s) => {
         const pts = arr2((a) => {
           const y = 0.05 + 0.56 * Math.sin(a), z = 0.56 * Math.cos(a);
@@ -3128,7 +3178,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         curve("plane", pts);
       });
     }
-    if (L2.rings) {
+    if (L3.rings) {
       const full = (y) => arr2((th) => hp(y, th, 4e-3), 0, 2 * Math.PI, 140);
       const part_ = (y) => arr2((th) => hp(y, th, 4e-3), -110 * D, 110 * D, 90);
       curve("ring", full(t));
@@ -3137,19 +3187,19 @@ pre.cmdout .ok{color:var(--cobalt)}
       curve("ring", part_(-t));
       curve("ring", part_(mouthY));
     }
-    if (L2.rings) {
+    if (L3.rings) {
       [0.11, eyeY, -t].forEach((y) => {
         const r = ringAt(y, p, sh), xe = r[0] + 0.3;
         curve("ext", arr2((x) => [x, y, r[1]], -xe, xe, 40));
         [-1, 1].forEach((q) => curve("ext", [[q * xe, y - 0.035, r[1]], [q * xe, y + 0.035, r[1]]]));
       });
     }
-    if (L2.merid) {
+    if (L3.merid) {
       curve("axis", arr2((i) => hp(i, 0, 4e-3), 1, chinY + 0.015, 110));
       curve("ring", arr2((i) => hp(i, Math.PI, 0), 1, -0.85, 60));
       [-1, 1].forEach((s) => curve("ring", arr2((i) => hp(i, s * 38 * D, 4e-3), t, -t, 50)));
     }
-    if (L2.jaw) {
+    if (L3.jaw) {
       [-1, 1].forEach((s) => {
         curve("jaw", arr2((k) => {
           const y = lerp(-0.5, chinY + 0.01, k);
@@ -3157,7 +3207,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         }, 0, 1, 50));
       });
     }
-    if (bust && L2.girdle) {
+    if (bust && L3.girdle) {
       [-1.2, F.yJ + 0.3].forEach((y) => curve("ring", arr2((th) => bp(y, th, 6e-3), 0, 2 * Math.PI, 90), xb, true));
       const notch = bp(F.yJ + 0.03, 0, 0.01);
       const acr = [-1, 1].map((s) => shoulderWarp([s * (F.W - 0.1), F.yAc + 0.06, F.zT + 0.05], p, F));
@@ -3260,18 +3310,22 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     out.push("</g>");
     out.push('<g id="anatomia">');
-    if (bust && L2.anat) {
+    if (bust && L3.anat) {
       [-1, 1].forEach((s) => {
+        {
+          const nw = F.B.neck;
+          lineT("divisao", suave([[F.yJ + 0.62, 0.8 * nw], [F.yJ + 0.38, 0.98 * nw], [F.yJ + 0.2, 0.5 * (nw + F.W - 0.3)], [F.yJ + 0.1, F.W - 0.42]], 8).map(([y, ax]) => bp(y, bustTh(y, s * ax, true, p, F), 0.012)), xb);
+        }
         lineT("divisao", arr2((u) => bp(lerp(-0.7, F.yJ + 0.04, u), s * lerp(112, 16, u) * D, 0.012), 0.22, 0.97, 26), xb);
         lineT("divisao", arr2((q) => {
-          const x = s * (0.1 + q * (F.W - 0.12)), yc = F.yJ + 0.03 + 0.04 * q + 0.035 * Math.sin(Math.PI * q);
+          const x = s * (0.1 + q * (F.W - 0.18)), yc = F.yJ + 0 + 0.2 * q * q + 0.03 * Math.sin(Math.PI * q) - 0.05 * Math.sin(2 * Math.PI * q);
           return bp(yc, bustTh(yc, x, true, p, F), 0.012);
-        }, 0.08, 0.97, 30), xb);
+        }, 0.1, 0.86, 30), xb);
       });
       {
         const at = atlasTronco(p, F), B = F.B, def = clamp(B.mus * (1 - B.fat) * (1 - 0.75 * B.fem), 0, 2);
         [1, -1].forEach((s) => at[s].linhas.forEach((l) => {
-          if (l.tipo === "fibra" && !L2.fibras) return;
+          if (l.tipo === "fibra" && !L3.fibras) return;
           if (def < (l.min || 0)) return;
           lineT(l.tipo, l.pts.map((q) => {
             const yt = linhaParaPele(l, q, bustTh, p, F);
@@ -3279,10 +3333,6 @@ pre.cmdout .ok{color:var(--cobalt)}
           }), xb);
         }));
       }
-      lineT("divisao", arr2((th) => {
-        const y = lerp(F.yJ + 0.14, F.yC7, (1 - Math.cos(th)) / 2);
-        return bp(y, th, 0.01);
-      }, -1.35, 1.35, 50), xb);
       lineT("anat", arr2((x) => {
         const y = F.yJ + 0.05 + 3 * x * x;
         return bp(y, bustTh(y, x, true, p, F), 0.012);
@@ -3294,16 +3344,29 @@ pre.cmdout .ok{color:var(--cobalt)}
         return bp(y, bustTh(y, x, true, p, F), 0.01);
       }, 0, 2 * Math.PI, 12), xb);
       [-1, 1].forEach((s) => {
-        lineT("anat", arr2((k) => {
+        lineT("dobra", arr2((k) => {
           const ax = lerp(0.97 * F.B.hip * 0.93, 0.04, k), y = lerp(F.yHip + 0.42, F.yCr + 0.06, Math.pow(k, 1.25)) - 0.1 * Math.sin(Math.PI * k);
           return bp(y, bustTh(y, s * ax, true, p, F), 0.012);
         }, 0, 1, 24), xb);
-        lineT("mus", arr2((k) => {
-          const ax = lerp(0.9 * F.B.hip * 0.93, 0.03, k), y = lerp(F.yHip + 0.38, F.yHip - 0.3, Math.pow(k, 1.3));
+        lineT("divisao", arr2((k) => {
+          const ax = lerp(0.26, 0.02, k), y = lerp(F.yHip + 0.32, F.yHip - 0.3, Math.pow(k, 1.1));
           return bp(y, bustTh(y, s * ax, false, p, F), 0.012);
-        }, 0, 1, 20), xb);
+        }, 0, 1, 16), xb);
       });
-      lineT("anat", arr2((y) => bp(y, Math.PI, 0.012), F.yHip - 0.1, F.yCr + 0.05, 14), xb);
+      lineT("dobra", arr2((y) => bp(y, Math.PI, 0.012), F.yHip - 0.2, F.yCr + 0.05, 14), xb);
+      {
+        const gk = clamp(F.B.glute / 0.21, 0, 2.5), hw = F.B.hip;
+        if (gk > 0.25) [-1, 1].forEach((s) => {
+          lineT("divisao", arr2((k) => {
+            const y = lerp(F.yHip - 0.02, F.yJ - 5.45, k), ax = lerp(0.1, 0.74 * hw, Math.pow(k, 0.75)) - 0.04 * Math.sin(Math.PI * k);
+            return bp(y, bustTh(y, s * ax, false, p, F), 0.012);
+          }, 0.04, 1, 22), xb);
+          lineT("fibra", arr2((k) => {
+            const y = lerp(F.yHip + 0.42, F.yHip - 0.25, k), ax = lerp(0.62 * hw, 0.88 * hw, Math.pow(k, 0.8));
+            return bp(y, bustTh(y, s * ax, false, p, F), 0.012);
+          }, 0, 1, 12), xb);
+        });
+      }
       arms.forEach((o) => {
         const A = armDims(p), s = o.s, X = (v) => xv(applyA(o.Aa, v)), L1 = A.L1, L22 = A.L2;
         const onA = (u, th, off) => {
@@ -3316,7 +3379,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         };
         const def = clamp(F.B.mus * (1 - F.B.fat) * (1 - 0.75 * F.B.fem), 0, 2);
         atlasBraco(A, s).forEach((l) => {
-          if (l.tipo === "fibra" && !L2.fibras) return;
+          if (l.tipo === "fibra" && !L3.fibras) return;
           if (def < (l.min || 0)) return;
           const pts = l.parte === "ante" ? l.pts.map(([t2, th]) => XF(t2 * L22, th)) : l.pts3 ? l.pts3.map(([t2, th, off]) => X(onA(t2 * L1, th, off))) : l.pts.map(([t2, th]) => X(onA(t2 * L1, th, l.off || 0.012)));
           lineT(l.tipo, pts, (v) => v);
@@ -3327,39 +3390,46 @@ pre.cmdout .ok{color:var(--cobalt)}
           return xv(applyA(o.Ae, [r * Math.sin(a), 0.02 * A.k, r * Math.cos(a)]));
         }, -0.8, 0.8, 12), (v) => v);
       });
-      legs.forEach((o) => {
-        const A = legDims(p), k = A.k, s = o.s, Xk = (v) => xv(applyA(o.Akn, v)), Xc = (v) => xv(applyA(o.Acf, v));
-        lineT("mus", arr2((a) => [0.15 * k * Math.cos(a), 0.06 * k + 0.19 * k * Math.sin(a), 0.42 * k], 0, 2 * Math.PI, 24).map(Xk), (v) => v);
-        const kf = s > 0 ? p.kneeFlexL : p.kneeFlexR, hf = s > 0 ? p.hipFlexL : p.hipFlexR, Xt = (v) => xv(applyA(o.Ath, v));
-        if (kf > 25) lineT("mus", arr2((a) => {
-          const r = 0.36 * k;
-          return [-r * Math.sin(a), -0.02 * k, -r * Math.cos(a)];
-        }, -0.85, 0.85, 14).map(Xk), (v) => v);
-        if (hf < 45) lineT("mus", arr2((a) => {
-          const th = Math.PI + s * a, u = A.L1 * (0.19 + 0.035 * a), r = thighR(u, th, A, s) + 0.012;
-          return [r * Math.sin(th), -u, r * Math.cos(th)];
-        }, 0.95, -0.35, 16).map(Xt), (v) => v);
-        [[-1, 0.07], [1, -0.06]].forEach(([sd, dy]) => lineT("mus", arr2((a) => [s * sd * 0.205 * k, -A.L2 + dy * k + 0.06 * k * Math.sin(a), 0.06 * k * Math.cos(a)], 0, 2 * Math.PI, 14).map(Xc), (v) => v));
-        lineT("mus", arr2((u) => {
-          const th = Math.PI - s * 0.08, r = calfR(u, th, A, s) + 0.012;
-          return [r * Math.sin(th), -u, r * Math.cos(th)];
-        }, 0.12 * A.L2, 0.5 * A.L2, 14).map(Xc), (v) => v);
-        lineT("mus", arr2((u) => {
-          const th = s * 0.18, r = calfR(u, th, A, s) + 0.012;
-          return [r * Math.sin(th), -u, r * Math.cos(th)];
-        }, 0.1 * A.L2, 0.85 * A.L2, 16).map(Xc), (v) => v);
-      });
+      {
+        const def = clamp(F.B.mus * (1 - F.B.fat) * (1 - 0.75 * F.B.fem), 0, 2), AP = atlasPerna();
+        legs.forEach((o) => {
+          const A = legDims(p), k = A.k, s = o.s, Xk = (v) => xv(applyA(o.Akn, v)), Xc = (v) => xv(applyA(o.Acf, v));
+          lineT("divisao", arr2((a) => {
+            const sn = Math.sin(a), c = Math.cos(a), q = 1 - 0.32 * Math.max(0, -sn);
+            return [0.15 * k * q * Math.sign(c) * Math.pow(Math.abs(c), 0.8), 0.06 * k + 0.19 * k * Math.sign(sn) * Math.pow(Math.abs(sn), 0.9), 0.42 * k];
+          }, 0, 2 * Math.PI, 28).map(Xk), (v) => v);
+          const kf = s > 0 ? p.kneeFlexL : p.kneeFlexR, hf = s > 0 ? p.hipFlexL : p.hipFlexR, Xt = (v) => xv(applyA(o.Ath, v));
+          if (kf > 25) lineT("dobra", arr2((a) => {
+            const r = 0.36 * k;
+            return [-r * Math.sin(a), -0.02 * k, -r * Math.cos(a)];
+          }, -0.85, 0.85, 14).map(Xk), (v) => v);
+          if (hf < 45) lineT("dobra", arr2((a) => {
+            const th = Math.PI + s * a, u = A.L1 * (0.2 - 0.03 * Math.pow(a, 1.6)), r = thighR(u, th, A, s) + 0.05;
+            return [r * Math.sin(th), -u, r * Math.cos(th)];
+          }, 0.04, 1.3, 18).map(Xt), (v) => v);
+          [[-1, 0.07], [1, -0.06]].forEach(([sd, dy]) => lineT("mus", arr2((a) => [s * sd * 0.205 * k, -A.L2 + dy * k + 0.06 * k * Math.sin(a), 0.06 * k * Math.cos(a)], 0, 2 * Math.PI, 14).map(Xc), (v) => v));
+          AP.forEach((l) => {
+            if (l.tipo === "fibra" && !L3.fibras) return;
+            if (def < (l.min || 0)) return;
+            const coxa = l.parte === "coxa", LL = coxa ? A.L1 : A.L2, X = coxa ? Xt : Xc;
+            lineT(l.tipo, l.pts.map(([t2, a]) => {
+              const th = s * a, u = t2 * LL, r = (coxa ? thighR(u, th, A, s) : calfR(u, th, A, s)) + 0.012;
+              return X([r * Math.sin(th), -u, r * Math.cos(th)]);
+            }), (v) => v);
+          });
+        });
+      }
       [-1, 1].forEach((s) => {
-        lineT("anat", arr2((a) => {
-          const y = F.yHip + 0.52 + 0.07 * Math.sin(Math.PI * (a - 0.9) / 1.7);
+        lineT("divisao", arr2((a) => {
+          const y = F.yHip + 0.52 + 0.07 * Math.sin(Math.PI * (a - 0.9) / 1.7) - 0.12 * Math.max(0, 0.95 - a);
           return bp(y, s * a, 0.012);
-        }, 0.95, 2.45, 22), xb);
+        }, 0.7, 2.5, 24), xb);
       });
     }
     out.push("</g>");
     out.push('<g id="feicoes">');
     const surfX = (y, x) => Math.asin(clamp(x / ringAt(y, p, sh)[0], -0.99, 0.99));
-    if (L2.feat) {
+    if (L3.feat) {
       [-1, 1].forEach((s) => {
         const browPt = (u, dy) => {
           const y = 0.1 + 0.045 * Math.sin(Math.PI * Math.pow(u, 0.8)) - 0.04 * u + dy;
@@ -3374,7 +3444,7 @@ pre.cmdout .ok{color:var(--cobalt)}
           }
           poly("brow", up.concat(lo.reverse()), pal.shade3);
         } else curve("feat", arr2((u) => browPt(u, 0), 0, 1, 30));
-        if (!L2.eyes) curve("feat", arr2((u) => hp(eyeY + 0.03 * Math.sin(Math.PI * u) * (1 - 0.4 * u), s * (15 + 27 * u) * D, 8e-3), 0, 1, 24));
+        if (!L3.eyes) curve("feat", arr2((u) => hp(eyeY + 0.03 * Math.sin(Math.PI * u) * (1 - 0.4 * u), s * (15 + 27 * u) * D, 8e-3), 0, 1, 24));
         const ytip = -0.76 * t;
         curve("feat", arr2((k) => {
           const y = lerp(-0.02, ytip, k), xw = lerp(0.045, 0.105, Math.pow(k, 1.2));
@@ -3431,7 +3501,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     out.push("</g>");
     out.push('<g id="olhos">');
-    if (L2.eyes) {
+    if (L3.eyes) {
       const w = 0.3 * p.eyeSize, hu = 0.062 * p.eyeSize * p.eyeOpen, hl = 0.036 * p.eyeSize * p.eyeOpen;
       const tilt = (q) => 0.034 * (q - 0.45);
       const up = (q) => {
@@ -3494,7 +3564,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     out.push("</g>");
     out.push('<g id="orelhas">');
-    if (L2.ears) {
+    if (L3.ears) {
       [-1, 1].forEach((s) => {
         const E = (u, v) => earSurf(p, sh, s, u, v);
         if (s * xfd([1, 0, 0])[2] > 0.05) fillP(arr2((a) => E(0.12 + 0.34 * Math.cos(a), -0.05 + 0.36 * Math.sin(a)), 0, 2 * Math.PI, 28), pal.shade2, 0.9);
@@ -3508,7 +3578,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     out.push("</g>");
     out.push('<g id="contorno">');
-    if (L2.sil) {
+    if (L3.sil) {
       const draw2 = (m, chains, kk) => {
         let cx = 0, cy = 0;
         const N = m.SX.length;
@@ -3632,6 +3702,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     { k: "fat", g: "slBody", label: "Gordura", min: 0, max: 1, step: 0.01, u: "%", pct: true },
     { k: "waist", g: "slBody", label: "Cintura", min: 0.7, max: 1.2, step: 0.01, u: " R" },
     { k: "hips", g: "slBody", label: "Quadril", min: 0.85, max: 1.4, step: 0.01, u: " R" },
+    { k: "gluteVol", g: "slBody", label: "Volume dos glúteos", min: 0, max: 2, step: 0.05, u: "×" },
     { k: "thighThick", g: "slBody", label: "Espessura das coxas", min: 0.75, max: 1.3, step: 0.01, u: "×" },
     { k: "legLen", g: "slBody", label: "Comprimento das pernas", min: 0.85, max: 1.15, step: 0.01, u: "×" },
     { k: "spineFlex", g: "slSpine", label: "Coluna: estender (−) / flexionar (+)", min: -30, max: 80, step: 1, u: "°" },
@@ -3772,6 +3843,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     ombros: "shW",
     cintura: "waist",
     quadril: "hips",
+    gluteos: "gluteVol",
     pescoco: "neck",
     alturaPescoco: "neckLen",
     comprimentoPernas: "legLen",
@@ -3872,11 +3944,11 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
 
   // src/scene/modos.js
-  var L = {};
+  var L2 = {};
   var mode = "manequim";
   function setPreset(name) {
     mode = name;
-    LAY.forEach((l) => L[l.k] = !!PRESETS[name][l.k]);
+    LAY.forEach((l) => L2[l.k] = !!PRESETS[name][l.k]);
     updateModeButtons();
   }
   function iniciarModos() {
@@ -3969,7 +4041,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   function sceneBB(only) {
     const lst = sceneList();
     lst.forEach((o) => Object.assign(o.p, { zoom: 1, panX: 0, panY: 0, atmo: 0 }));
-    const r = renderScene(lst, L, true, 0), bb = [1e9, -1e9, 1e9, -1e9];
+    const r = renderScene(lst, L2, true, 0), bb = [1e9, -1e9, 1e9, -1e9];
     r.infos.forEach((i, k) => {
       if (!i || !i.bb || only !== void 0 && k !== only) return;
       bb[0] = Math.min(bb[0], i.bb[0]);
@@ -4262,8 +4334,8 @@ cena.enquadrar();`,
       if (s.layers && typeof s.layers === "object") {
         LAY.forEach((l) => {
           const v = s.layers[l.k];
-          if (typeof v === "boolean") L[l.k] = v;
-          else if (typeof v === "number") L[l.k] = !!v;
+          if (typeof v === "boolean") L2[l.k] = v;
+          else if (typeof v === "number") L2[l.k] = !!v;
         });
         setMode(null);
       }
@@ -4284,8 +4356,8 @@ cena.enquadrar();`,
     if (s.layers && typeof s.layers === "object") {
       LAY.forEach((l) => {
         const v = s.layers[l.k];
-        if (typeof v === "boolean") L[l.k] = v;
-        else if (typeof v === "number") L[l.k] = !!v;
+        if (typeof v === "boolean") L2[l.k] = v;
+        else if (typeof v === "number") L2[l.k] = !!v;
       });
       setMode(null);
     }
@@ -4500,12 +4572,12 @@ cena.enquadrar();`,
       autoFit();
     },
     horizonte(on) {
-      L.horizon = on !== false && on !== 0;
+      L2.horizon = on !== false && on !== 0;
       setMode(null);
       updateModeButtons();
     },
     sombras(on) {
-      L.shadow = on !== false && on !== 0;
+      L2.shadow = on !== false && on !== 0;
       setMode(null);
       updateModeButtons();
     },
@@ -4519,7 +4591,7 @@ cena.enquadrar();`,
       setPreset(n);
     },
     fibras(on) {
-      L.fibras = on !== false && on !== 0;
+      L2.fibras = on !== false && on !== 0;
       setMode(null);
       updateModeButtons();
     }
@@ -4747,15 +4819,15 @@ cena.enquadrar();`,
     });
   }
   function draw() {
-    const r = renderScene(sceneList(), L, !!drag || quick, L.floor ? 16 : 0);
-    svgEl.innerHTML = (L.grid ? GRID : "") + wrapStyle(r.svg);
+    const r = renderScene(sceneList(), L2, !!drag || quick, L2.floor ? 16 : 0);
+    svgEl.innerHTML = (L2.grid ? GRID : "") + wrapStyle(r.svg);
     lastInfo = r.infos[SCN.active] || r.infos[0];
     const i = lastInfo;
     $("readout").innerHTML = "yaw <b>" + Math.round(P.yaw) + "°</b> · pitch <b>" + Math.round(P.pitch) + "°</b> · roll <b>" + Math.round(P.roll) + "°</b> · 1 R = <b>" + f1(i.S) + " px</b>" + (P.persp ? " · lente <b>" + Math.round(P.lens) + " mm</b> · olhos a <b>" + fr(eyeHeight(), 1) + " R</b> do chão" : " · sem perspectiva");
     $("measures").innerHTML = "<dt>Altura da cabeça</dt><dd>" + fr(1 - i.chinY, 2) + " R</dd><dt>Largura do crânio</dt><dd>" + fr(2 * P.skull, 2) + " R</dd><dt>Terço do rosto</dt><dd>" + fr(i.t, 2) + " R</dd><dt>Linha dos olhos</dt><dd>y = " + fr(i.eyeY, 2) + " R</dd><dt>Altura / largura</dt><dd>" + fr((1 - i.chinY) / (2 * P.skull), 2) + "</dd>";
     $("eq").textContent = "Crânio: elipsoide (sx, 1, 1)·r\n  x = cx + r·cos t\n  y = cy + r·sin t\n  r = " + f1(i.S) + "  sx = " + fr(P.skull, 2) + "\n\nLinha das sobrancelhas (elipse)\n  a = " + f1(i.brow.a) + "  b = " + f1(i.brow.b) + "\n  θ = " + f1(i.brow.th) + "°\n\nEixo facial (elipse)\n  a = " + f1(i.mer.a) + "  b = " + f1(i.mer.b) + "\n  θ = " + f1(i.mer.th) + "°";
     try {
-      localStorage.setItem("geomannequin.v8", JSON.stringify({ scene: sceneState(), layers: L, style: styleName }));
+      localStorage.setItem("geomannequin.v8", JSON.stringify({ scene: sceneState(), layers: L2, style: styleName }));
     } catch (e) {
     }
     clearTimeout(outTimer);
@@ -4782,7 +4854,7 @@ cena.enquadrar();`,
 
   // src/ui/exportar.js
   function exportSvg() {
-    const r = renderScene(sceneList(true), Object.assign({}, L, { grid: false }), false, L.floor ? 16 : 0);
+    const r = renderScene(sceneList(true), Object.assign({}, L2, { grid: false }), false, L2.floor ? 16 : 0);
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '">\n<title>GeoMannequin</title>\n<rect width="' + W + '" height="' + H + '" fill="#FFFFFF"/>\n' + wrapStyle(r.svg).replace(/(<path|<circle)/g, "\n$1") + "\n</svg>\n";
   }
   function wrapStyle(svg) {
@@ -4790,7 +4862,7 @@ cena.enquadrar();`,
     return '<defs><filter id="gmPencil" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter></defs><g filter="url(#gmPencil)">' + svg + "</g>";
   }
   function exportJson() {
-    return JSON.stringify({ app: "GeoMannequin", version: 8, scene: sceneState(), layers: L, style: styleName, code: $("code") ? $("code").value : "" }, null, 2);
+    return JSON.stringify({ app: "GeoMannequin", version: 8, scene: sceneState(), layers: L2, style: styleName, code: $("code") ? $("code").value : "" }, null, 2);
   }
   var tab = "svg";
   function refreshOut() {
@@ -4874,7 +4946,7 @@ cena.enquadrar();`,
       $("ov_" + d.k).textContent = fmt(d, P[d.k]);
     });
     LAY.forEach((l) => {
-      $("ly_" + l.k).checked = !!L[l.k];
+      $("ly_" + l.k).checked = !!L2[l.k];
     });
   }
   function iniciarControles() {
@@ -4903,7 +4975,7 @@ cena.enquadrar();`,
       lab.innerHTML = '<input type="checkbox" id="ly_' + l.k + '"><span class="sw ' + l.sw + '"></span><span>' + l.label + "</span>";
       $("layerList").appendChild(lab);
       lab.querySelector("input").addEventListener("change", (e) => {
-        L[l.k] = e.target.checked;
+        L2[l.k] = e.target.checked;
         setMode(null);
         updateModeButtons2();
         render2();
@@ -5301,7 +5373,7 @@ cena.enquadrar();`,
     return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
   }
   function linkPayload() {
-    const o = { v: 1, scene: sceneState(), layers: L, style: styleName };
+    const o = { v: 1, scene: sceneState(), layers: L2, style: styleName };
     const t = THEMES[themeIdx][0];
     if (t !== "sistema") o.tema = t;
     return o;

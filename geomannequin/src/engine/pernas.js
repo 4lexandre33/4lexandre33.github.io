@@ -11,15 +11,17 @@ function legDims(p){
 }
 /* coxa: quadríceps na frente, vasto medial (gota) acima do joelho por dentro, isquiotibiais atrás, adutores no alto por dentro */
 function thighR(u,th,A,s){
-  const k=A.k,L1=A.L1,r0=0.74*k,r1=0.36*k,mu=A.mus;
-  if(u<0)return Math.sqrt(Math.max(0,r0*r0-u*u));
+  const k=A.k,L1=A.L1,r0=0.68*k,r1=0.36*k,mu=A.mus;
+  /* topo da coxa recuado na frente: a pelve (linha inguinal em "V") fica por cima, como no corpo real */
+  if(u<0)return Math.sqrt(Math.max(0,r0*r0-u*u))*(1-0.16*Math.max(0,Math.cos(th)));
   if(u>L1){const q=r1*r1-(u-L1)*(u-L1);return q>0?Math.sqrt(q):0}
   const t=u/L1,cs=Math.cos(th),sn=Math.sin(th),fr=Math.max(0,cs),bk=Math.max(0,-cs),med=Math.max(0,-s*sn),lat=Math.max(0,s*sn);
-  let r=lerp(r0,r1,Math.pow(t,1.15))*(1+0.13*gauss(t,0.13,0.14)*Math.pow(lat,1.2)-0.07*gauss(t,0.72,0.2)*med);
+  let r=lerp(r0,r1,Math.pow(t,1.15))*(1+0.07*gauss(t,0.13,0.14)*Math.pow(lat,1.2)-0.07*gauss(t,0.72,0.2)*med-0.16*fr*gauss(t,0,0.14));
   r*=1+mu*(0.11*gauss(t,0.4,0.22)*fr*fr+0.13*gauss(t,0.8,0.09)*fr*med+0.06*gauss(t,0.48,0.24)*lat*(0.6+0.4*fr)+0.08*gauss(t,0.38,0.22)*bk)
       +0.08*gauss(t,0.1,0.16)*med-0.04*gauss(t,0.62,0.25)*lat*bk;
   /* parte de baixo do glúteo, terminando suave na dobra */
-  r*=1+(0.06+0.5*(A.glute||0.15))*gauss(t,0.06,0.1)*Math.pow(bk,1.3)*(0.6+0.4*med);
+  {const tf=0.2-0.06*Math.pow(lat,1.4),g=t<tf?gauss(t,0.08,0.11):gauss(tf,0.08,0.11)*Math.exp(-Math.pow((t-tf)/0.06,2));
+   r*=1+(0.06+0.7*(A.glute||0.15))*g*Math.pow(bk,1.2)*(0.55+0.45*lat+0.2*med);}
   return r*(1-0.05*sn*sn*(1-t));
 }
 function buildThigh(p,s){const A=legDims(p);return tubeMesh(46,48,-0.74*A.k,A.L1+0.36*A.k,(u,th)=>thighR(u,th,A,s))}

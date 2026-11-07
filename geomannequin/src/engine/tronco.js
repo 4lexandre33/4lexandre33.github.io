@@ -13,7 +13,7 @@ function bustBump(x,y,th,p,F){
     if(y<yS0+0.05&&y>yS1-0.08){
       const u=clamp((yS0-y)/(yS0-yS1),0,1),thS=lerp(112,16,u)*D;
       const a=Math.abs(Math.atan2(Math.sin(th),Math.cos(th)));
-      dz+=(0.02+0.025*mu+0.03*p.shTension)*gauss(a,thS,0.2)*sstep(u*4)*sstep((1.08-u)*8);
+      dz+=(0.03+0.035*mu+0.03*p.shTension)*gauss(a,thS,0.19)*sstep(u*4)*sstep((1.08-u)*8);
     }
     dz+=p.adam*0.045*gauss(y,F.yJ+0.62,0.07)*gauss(x,0,0.09)*cf;
     dz-=0.05*gauss(y,F.yJ+0.03,0.05)*gauss(x,0,0.09)*cf;
@@ -24,7 +24,8 @@ function bustBump(x,y,th,p,F){
   const s01=(ax-0.1)/(F.W-0.12);
   if(s01>0&&s01<1){
     const yc=F.yJ+0.03+0.04*s01+0.035*Math.sin(Math.PI*s01);
-    dz+=cf*(0.045*gauss(y,yc,0.035)-0.04*gauss(y,yc+0.14,0.06)*gauss(s01,0.4,0.3)-0.03*gauss(y,yc-0.12,0.05)*gauss(s01,0.75,0.2))*sstep(s01*5)*sstep((1-s01)*6);
+    /* clavícula (osso saliente) com a fossa supraclavicular acima e o vão abaixo, por fora */
+    dz+=cf*(0.06*gauss(y,yc,0.035)-0.065*gauss(y,yc+0.15,0.065)*gauss(s01,0.42,0.28)-0.03*gauss(y,yc-0.12,0.05)*gauss(s01,0.75,0.2))*sstep(s01*5)*sstep((1-s01)*6);
   }
   if(y>F.yJ-2.6){
     /* seios esféricos */
@@ -55,8 +56,10 @@ function bustBump(x,y,th,p,F){
     if(y<F.yC7&&y>F.yHip-0.2)dz+=cb*0.014*gauss(x,0,0.035)*Math.pow(0.5+0.5*Math.cos(2*Math.PI*(F.yC7-y)/0.3),2);
     dz-=0.02*cb*gauss(ax,0.2,0.05)*gauss(y,F.yJ-4.45,0.06);
     /* glúteo: curva suave e baixa da lombar até a dobra; fenda no meio */
-    const gl=0.05+0.75*B.glute;
-    dz+=cb*gl*gauss(ax,0.5,0.4)*gauss(y,F.yHip-0.35,0.5)*(1-0.6*gauss(x,0,0.05));
+    /* glúteo máximo: massa mais cheia embaixo e por fora; glúteo médio no alto do lado; fenda no meio */
+    const gl=0.04+0.85*B.glute;
+    dz+=cb*gl*gauss(ax,0.55,0.36)*gauss(y,F.yHip-0.6,0.42)*(1-0.75*gauss(x,0,0.055));
+    dz+=(0.4+0.6*cb)*0.35*gl*gauss(Math.abs(Math.atan2(Math.sin(th),cs)),1.75,0.35)*gauss(y,F.yHip+0.05,0.3);
   }
   dz+=p.shTension*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);
   dz+=muscleBump(x,y,th,p,F)+relevoTronco(x,y,th,p,F);

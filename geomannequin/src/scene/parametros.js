@@ -29,6 +29,7 @@ const SL=[
   {k:"fat",g:"slBody",label:"Gordura",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"waist",g:"slBody",label:"Cintura",min:0.7,max:1.2,step:0.01,u:" R"},
   {k:"hips",g:"slBody",label:"Quadril",min:0.85,max:1.4,step:0.01,u:" R"},
+  {k:"gluteVol",g:"slBody",label:"Volume dos glúteos",min:0,max:2,step:0.05,u:"×"},
   {k:"thighThick",g:"slBody",label:"Espessura das coxas",min:0.75,max:1.3,step:0.01,u:"×"},
   {k:"legLen",g:"slBody",label:"Comprimento das pernas",min:0.85,max:1.15,step:0.01,u:"×"},
   {k:"spineFlex",g:"slSpine",label:"Coluna: estender (−) / flexionar (+)",min:-30,max:80,step:1,u:"°"},
@@ -132,7 +133,7 @@ const ALIAS={
   cotoveloEsq:"elbowL",cotoveloDir:"elbowR",antebracoEsqGirar:"pronL",antebracoDirGirar:"pronR",punhoEsq:"wristL",punhoDir:"wristR",maoEsq:"handCurlL",maoDir:"handCurlR",
   coxaEsqFrente:"hipFlexL",coxaDirFrente:"hipFlexR",coxaEsqAbrir:"hipAbdL",coxaDirAbrir:"hipAbdR",coxaEsqGirar:"hipRotL",coxaDirGirar:"hipRotR",
   joelhoEsq:"kneeFlexL",joelhoDir:"kneeFlexR",tornozeloEsq:"ankleFlexL",tornozeloDir:"ankleFlexR",dedosPeEsq:"toesL",dedosPeDir:"toesR",
-  musculo:"muscle",gordura:"fat",feminino:"fem",ombros:"shW",cintura:"waist",quadril:"hips",pescoco:"neck",alturaPescoco:"neckLen",
+  musculo:"muscle",gordura:"fat",feminino:"fem",ombros:"shW",cintura:"waist",quadril:"hips",gluteos:"gluteVol",pescoco:"neck",alturaPescoco:"neckLen",
   comprimentoPernas:"legLen",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF"
 };
 const SLK={};
