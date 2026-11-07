@@ -1,0 +1,13 @@
+{
+  "name": "geomannequin",
+  "version": "1.0.0",
+  "description": "GeoMannequin: monta cenas de manequins anatômicos em perspectiva (referência para desenho) e devolve a imagem e o link do app.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "geomannequin": {
+      "command": "node",
+      "args": ["${extensionPath}${/}geomannequin${/}mcp${/}dist${/}server.mjs"],
+      "cwd": "${extensionPath}${/}geomannequin${/}mcp"
+    }
+  }
+}

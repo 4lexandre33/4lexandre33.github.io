@@ -1,4 +1,4 @@
-/* Ferramentas, recursos e prompts MCP do GeoMannequin (Claude e ChatGPT) */
+/* Ferramentas, recursos e prompts MCP do GeoMannequin (Claude, ChatGPT e Gemini) */
 import { z } from "zod";
 import vm from "node:vm";
 import { readFileSync } from "node:fs";
@@ -6,19 +6,33 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { summary, summaryText, renderSvg, sceneLink, loadInto, pick, APP_URL } from "./scene.mjs";
 import { toPng } from "./png.mjs";
+import { asset } from "./assets.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
-const WIDGET_HTML = readFileSync(join(HERE, "..", "widget", "geomannequin.html"), "utf8");
+const WIDGET_HTML = readFileSync(asset("widget", "geomannequin.html"), "utf8");
 
 const RO = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 const RW = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
 const DEL = { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false };
 
 const num = (d) => z.number().describe(d);
-const Ref = z.union([z.string(), z.number()]).optional().describe("Manequim: nome ou índice (0, 1, …). Vazio = o manequim ativo.");
-const Pose = z.record(z.string(), z.number()).describe("Parâmetros de pose em graus/valores, por nome em português ou interno. Ex.: {joelhoEsq: 60, cotoveloDir: 90, colunaFrente: 20}. Use a ferramenta referencia para a lista.");
-const Corpo = z.union([z.string(), z.record(z.string(), z.number())]).describe("Tipo corporal (magro, medio, atletico, musculoso, cheio) ou medidas {musculo: 0.8, feminino: 0.9, ...}.");
+/* Esquemas sem uniões e sem objetos livres: o Gemini (e alguns clientes) rejeitam esses formatos.
+   Cada parâmetro de pose/corpo vira uma propriedade explícita, com a faixa anatômica na descrição. */
+const Ref = z.string().optional().describe("Manequim: nome (ex.: \"Ana\") ou índice (\"0\", \"1\"…). Vazio = o manequim ativo.");
+let Pose, Medidas, Camadas, TIPOS, POSES_RAPIDAS;
+function buildSchemas(w) {
+  if (Pose) return;
+  const field = (alias, k) => { const d = w.SL.find(x => x.k === k); return z.number().optional().describe(d ? `${d.label} (${d.min} a ${d.max}${d.u.trim() ? " " + d.u.trim() : ""})` : k); };
+  const pose = {}, med = {};
+  for (const [a, k] of Object.entries(w.ALIAS)) (w.POSEKEYS.has(k) ? pose : med)[a] = field(a, k);
+  Pose = z.object(pose).passthrough().describe("Ângulos da pose (só os que mudam). Ex.: {joelhoEsq: 60, cotoveloDir: 90, colunaFrente: 20}. Valores fora do limite anatômico são ajustados e avisados.");
+  Medidas = z.object(med).passthrough().describe("Medidas do corpo (só as que mudam). Ex.: {musculo: 0.8, feminino: 0.9}.");
+  const cam = {}; for (const l of w.LAY) cam[l.k] = z.boolean().optional().describe(l.label);
+  Camadas = z.object(cam).describe("Liga (true) ou desliga (false) camadas de desenho.");
+  TIPOS = z.enum(Object.keys(w.BODIES)).describe("Tipo corporal pronto.");
+  POSES_RAPIDAS = z.enum(Object.keys(w.BPOSES).concat(["cintura", "cruzar", "ombro"])).describe("Pose pronta.");
+}
 
 /* executa uma ação na cena, colhendo avisos (valores ajustados ao limite etc.) */
 function run(w, fn) {
@@ -52,6 +66,7 @@ function docs(w) {
 
 export function registerAll(server, getWorld, opts = {}) {
   const W = () => getWorld();
+  buildSchemas(W());
 
   /* ---------- cena ---------- */
   server.registerTool("nova_cena", {
@@ -79,11 +94,12 @@ export function registerAll(server, getWorld, opts = {}) {
       x: num("Posição lateral no chão, de −30 a 30 R.").optional(),
       z: num("Profundidade no chão, de −30 a 30 R (negativo = mais longe da câmera no ângulo padrão).").optional(),
       giro: num("Rotação no chão em graus (−180 a 180).").optional(),
-      corpo: Corpo.optional(),
-      poseRapida: z.string().optional().describe("empe, contrapposto, caminhando, frente, torcao, passo, joelho, ponta, erguido, alcancar, lateral, agachar, cintura, cruzar, ombro."),
+      corpo: TIPOS.optional(),
+      medidas: Medidas.optional(),
+      poseRapida: POSES_RAPIDAS.optional(),
       pose: Pose.optional(),
-      cor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("Cor de preenchimento #RRGGBB (precisa ser diferente das outras)."),
-      contorno: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("Cor do contorno #RRGGBB."),
+      cor: z.string().optional().describe("Cor de preenchimento #RRGGBB (precisa ser diferente das outras)."),
+      contorno: z.string().optional().describe("Cor do contorno #RRGGBB."),
       enquadrar: z.boolean().optional().describe("Ajustar a câmera para todos caberem (padrão: sim).")
     },
     annotations: RW
@@ -91,8 +107,9 @@ export function registerAll(server, getWorld, opts = {}) {
     const w = W();
     const { avisos } = run(w, () => {
       const m = w.cena.adicionar({ nome: a.nome, x: a.x, z: a.z, giro: a.giro, corpo: a.corpo, cor: a.cor, contorno: a.contorno });
+      if (a.medidas && Object.keys(a.medidas).length) m.corpo(a.medidas);
       if (a.poseRapida) m.poseRapida(a.poseRapida);
-      if (a.pose) m.pose(a.pose);
+      if (a.pose && Object.keys(a.pose).length) m.pose(a.pose);
       m.ativar();
     });
     if (a.enquadrar !== false) w.autoFit();
@@ -108,11 +125,12 @@ export function registerAll(server, getWorld, opts = {}) {
       z: num("Nova profundidade (R).").optional(),
       mover: z.object({ dx: z.number(), dz: z.number().optional() }).optional().describe("Deslocamento relativo no chão."),
       giro: num("Rotação no chão em graus.").optional(),
-      poseRapida: z.string().optional().describe("Aplica uma pose pronta (substitui a pose atual)."),
+      poseRapida: POSES_RAPIDAS.optional(),
       pose: Pose.optional(),
-      corpo: Corpo.optional(),
-      cor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-      contorno: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+      corpo: TIPOS.optional(),
+      medidas: Medidas.optional(),
+      cor: z.string().optional().describe("Cor de preenchimento #RRGGBB."),
+      contorno: z.string().optional().describe("Cor do contorno #RRGGBB."),
       corAutomatica: z.boolean().optional().describe("true = volta para a cor automática exclusiva."),
       renomear: z.string().max(24).optional(),
       ativar: z.boolean().optional().describe("Torna este o manequim ativo.")
@@ -125,8 +143,9 @@ export function registerAll(server, getWorld, opts = {}) {
       if (a.mover) m.mover(a.mover.dx, a.mover.dz || 0);
       if (a.giro !== undefined) m.girar(a.giro);
       if (a.corpo !== undefined) m.corpo(a.corpo);
+      if (a.medidas && Object.keys(a.medidas).length) m.corpo(a.medidas);
       if (a.poseRapida) m.poseRapida(a.poseRapida);
-      if (a.pose) m.pose(a.pose);
+      if (a.pose && Object.keys(a.pose).length) m.pose(a.pose);
       if (a.corAutomatica) m.cor();
       else if (a.cor) m.cor(a.cor, a.contorno);
       if (a.renomear) m.renomear(a.renomear);
@@ -138,7 +157,7 @@ export function registerAll(server, getWorld, opts = {}) {
   server.registerTool("copiar_manequim", {
     title: "Copiar manequim",
     description: "Cria uma cópia de um manequim (mesma pose e corpo, cor nova exclusiva), ao lado do original ou na posição indicada.",
-    inputSchema: { manequim: Ref, x: z.number().optional(), z: z.number().optional(), giro: z.number().optional(), nome: z.string().max(24).optional() },
+    inputSchema: { manequim: Ref, x: num("Posição lateral da cópia (R).").optional(), z: num("Profundidade da cópia (R).").optional(), giro: num("Giro da cópia em graus.").optional(), nome: z.string().max(24).optional() },
     annotations: RW
   }, guard((a) => {
     const w = W(), it = pick(w, a.manequim);
@@ -212,7 +231,7 @@ export function registerAll(server, getWorld, opts = {}) {
       estilo: z.enum(["creme", "azul", "bege", "gelo", "pessego", "lapis", "cinza"]).optional().describe("Paleta do manequim principal no tema claro."),
       sombras: z.boolean().optional(), horizonte: z.boolean().optional(), chao: z.boolean().optional(),
       atmosfera: num("0 a 1: quanto os manequins distantes clareiam.").optional(),
-      camadas: z.record(z.string(), z.boolean()).optional().describe("Camadas avulsas: sil, fill, shade, sphere, planes, rings, merid, jaw, feat, eyes, ears, neck, torso, anat, girdle, arms, hands, legs, hidden, prop, floor, shadow, horizon.")
+      camadas: Camadas.optional()
     },
     annotations: RW
   }, guard((a) => {
@@ -224,7 +243,7 @@ export function registerAll(server, getWorld, opts = {}) {
     if (a.horizonte !== undefined) w.setLayer("horizon", a.horizonte);
     if (a.chao !== undefined) w.setLayer("floor", a.chao);
     if (a.atmosfera !== undefined) w.cena.atmosfera(a.atmosfera);
-    if (a.camadas) for (const [k, v] of Object.entries(a.camadas)) { if (!w.LAY.some(l => l.k === k)) throw new Error(`Camada desconhecida: “${k}”.`); w.setLayer(k, v); }
+    if (a.camadas) for (const [k, v] of Object.entries(a.camadas)) { if (v === undefined) continue; if (!w.LAY.some(l => l.k === k)) throw new Error(`Camada desconhecida: “${k}”.`); w.setLayer(k, v); }
     return ok(w, "Aparência ajustada.");
   }));
 

@@ -1,6 +1,6 @@
 # GeoMannequin MCP
 
-Servidor MCP que deixa o **Claude** e o **ChatGPT** montarem cenas do GeoMannequin conversando: adicionar manequins, posar, posicionar em perspectiva, mudar câmera, lente e luz, ligar sombras e horizonte, e devolver a **imagem** da cena e um **link** que abre a mesma cena no app:
+Servidor MCP que deixa o **Claude**, o **ChatGPT** e o **Gemini** montarem cenas do GeoMannequin conversando: adicionar manequins, posar, posicionar em perspectiva, mudar câmera, lente e luz, ligar sombras e horizonte, e devolver a **imagem** da cena e um **link** que abre a mesma cena no app:
 <https://4lexandre33.github.io/geomannequin/>
 
 O servidor usa o próprio app (`../index.html`) como motor de desenho, então qualquer melhoria no app vale também para o MCP.
@@ -26,35 +26,89 @@ Também há recursos (`geomannequin://referencia`, `geomannequin://cena/atual`) 
 
 Medidas: **R** = raio da cabeça; o manequim tem cerca de **16 R** de altura. No chão, `x` vai para os lados e `z` para frente (+) e para trás (−).
 
-## Instalar no computador (Claude Desktop e Claude Code)
+## Instalar no computador (Claude Desktop, Claude Code, Gemini CLI)
 
-Precisa do [Node.js](https://nodejs.org) 18 ou mais novo.
+Precisa só do [Node.js](https://nodejs.org) 18 ou mais novo. O servidor já vem pronto em `mcp/dist/server.mjs`, **sem `npm install`**.
 
-1. Baixe a pasta `geomannequin` deste repositório (botão **Code → Download ZIP** no GitHub) e descompacte.
-2. Num terminal, dentro de `geomannequin/mcp`, rode:
-   ```
-   npm install
-   ```
-3. **Claude Desktop**: abra o arquivo de configuração (Configurações → Desenvolvedor → Editar configuração) e adicione:
+1. Baixe este repositório (botão **Code → Download ZIP** no GitHub) e descompacte. O que importa é a pasta `geomannequin` (ela precisa do `index.html` ao lado da pasta `mcp`).
+2. **Claude Desktop**: abra o arquivo de configuração (Configurações → Desenvolvedor → Editar configuração) e adicione:
    ```json
    {
      "mcpServers": {
        "geomannequin": {
          "command": "node",
-         "args": ["C:/caminho/para/geomannequin/mcp/server.mjs"]
+         "args": ["C:/caminho/para/geomannequin/mcp/dist/server.mjs"]
        }
      }
    }
    ```
-   Troque o caminho pelo da sua pasta (no Mac/Linux, algo como `/Users/voce/geomannequin/mcp/server.mjs`) e reinicie o Claude Desktop.
-4. **Claude Code**:
+   Troque o caminho pelo da sua pasta (no Mac/Linux, algo como `/Users/voce/geomannequin/mcp/dist/server.mjs`) e reinicie o Claude Desktop.
+3. **Claude Code**:
    ```
-   claude mcp add geomannequin -- node /caminho/para/geomannequin/mcp/server.mjs
+   claude mcp add geomannequin -- node /caminho/para/geomannequin/mcp/dist/server.mjs
    ```
 
-## Servidor na internet (claude.ai e ChatGPT)
+## Gemini
 
-O claude.ai e o ChatGPT só se conectam a servidores com endereço público `https`. O GitHub Pages não roda servidores, então o MCP fica num serviço à parte. O repositório já traz a configuração para o **Render** (plano grátis):
+### Gemini CLI — extensão (mais fácil)
+
+```
+gemini extensions install https://github.com/4lexandre33/4lexandre33.github.io
+```
+
+Confirme a pergunta de confiança. A extensão traz o servidor e um `GEMINI.md` que ensina o Gemini a usar as ferramentas. Confira com `gemini mcp list` (deve aparecer “geomannequin … Connected”) e peça, por exemplo: *“monte três manequins em fila com lente de 35 mm e desenhe”*. Para atualizar: `gemini extensions update geomannequin`.
+
+Sem GitHub, a partir da pasta baixada: `gemini extensions install /caminho/para/a/pasta/do/repositorio`.
+
+### Gemini CLI — configuração manual
+
+Em `~/.gemini/settings.json` (ou `.gemini/settings.json` do projeto):
+
+```json
+{
+  "mcpServers": {
+    "geomannequin": {
+      "command": "node",
+      "args": ["/caminho/para/geomannequin/mcp/dist/server.mjs"]
+    }
+  }
+}
+```
+
+Ou, usando o servidor na internet (seção abaixo):
+
+```json
+{
+  "mcpServers": {
+    "geomannequin": { "httpUrl": "https://geomannequin-mcp.onrender.com/mcp?token=SEU_GM_TOKEN" }
+  }
+}
+```
+
+O Gemini CLI só liga servidores MCP em pastas marcadas como confiáveis; se aparecer “Disabled” em `gemini mcp list`, confie na pasta quando ele perguntar.
+
+### App Gemini (gemini.google.com)
+
+O app aceita servidores MCP na internet como “apps personalizados”: **Configurações → Apps conectados → Apps personalizados → Adicionar** e cole o endereço do servidor da internet (seção abaixo), com o `?token=`. Segundo a documentação disponível, isso só é possível pelo site (não pelo celular) e, por enquanto, com o Gemini em inglês; depois de adicionado, aparece também no celular. Os nomes dos menus podem mudar.
+
+### API do Gemini (seus próprios programas)
+
+O exemplo `exemplos/gemini-api.mjs` liga o servidor e entrega as ferramentas ao Gemini pelo SDK oficial (`mcpToTool`):
+
+```
+cd geomannequin/mcp
+npm install
+npm install @google/genai
+GEMINI_API_KEY=sua-chave node exemplos/gemini-api.mjs "duas pessoas conversando, vista de baixo"
+```
+
+Sem a chave, ele só lista as ferramentas no formato que o Gemini recebe.
+
+As ferramentas usam só o formato de parâmetros que o Gemini aceita (sem tipos alternativos e sem objetos livres): cada ângulo de pose e medida do corpo é um campo próprio, com a faixa anatômica na descrição.
+
+## Servidor na internet (claude.ai, ChatGPT e app Gemini)
+
+O claude.ai, o ChatGPT e o app Gemini só se conectam a servidores com endereço público `https`. O GitHub Pages não roda servidores, então o MCP fica num serviço à parte. O repositório já traz a configuração para o **Render** (plano grátis):
 
 1. Entre em <https://render.com> com sua conta do GitHub.
 2. **New → Blueprint** e escolha o repositório `4lexandre33.github.io`. O Render lê o `render.yaml` da raiz e cria o serviço `geomannequin-mcp`.
@@ -95,8 +149,13 @@ Cada conversa tem a sua cena. Para continuar uma cena outro dia, peça o link (o
 ## Desenvolvimento
 
 ```
-npm test          # testa todas as ferramentas em stdio e HTTP
+npm install
+npm test          # testa todas as ferramentas em stdio e HTTP (inclui checagem dos esquemas para o Gemini)
+npm run build     # gera dist/ (servidor em arquivo único, usado pela extensão e pela instalação local)
+npm run test:dist # testa o dist/
 npm start         # servidor HTTP em http://localhost:8787/mcp
 ```
 
-A fonte DejaVu Sans (em `fonts/`) é usada para os textos das imagens PNG; licença em `fonts/LICENSE-DejaVu.txt`.
+Depois de mudar o código em `lib/` ou o app, rode `npm run build` e envie o `dist/` junto.
+
+As imagens PNG são geradas com o resvg em WebAssembly (funciona em qualquer sistema). A fonte DejaVu Sans (em `fonts/`) é usada nos textos das imagens; licença em `fonts/LICENSE-DejaVu.txt`.

@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /* o app é a fonte única do motor: no repositório fica em ../index.html; um pacote avulso pode trazer app/geomannequin.html */
-export const APP_HTML_PATH = process.env.GM_APP_HTML || [join(HERE, "..", "..", "index.html"), join(HERE, "..", "app", "geomannequin.html")].find(p => existsSync(p) && /ENGINE-START/.test(readFileSync(p, "utf8"))) || join(HERE, "..", "app", "geomannequin.html");
+export const APP_HTML_PATH = process.env.GM_APP_HTML || [join(HERE, "..", "..", "index.html"), join(HERE, "..", "..", "..", "index.html"), join(HERE, "app", "geomannequin.html"), join(HERE, "..", "app", "geomannequin.html")].find(p => existsSync(p) && /ENGINE-START/.test(readFileSync(p, "utf8"))) || join(HERE, "..", "app", "geomannequin.html");
 
 /* declarações da interface que não dependem da página (ordem importa) */
 const UI_NAMES = [

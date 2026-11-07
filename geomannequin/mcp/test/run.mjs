@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { spawn } from "node:child_process";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = join(HERE, ".."), OUT = join(HERE, "out");
 mkdirSync(OUT, { recursive: true });
@@ -18,9 +18,16 @@ async function suite(client, tag) {
   const tools = (await client.listTools()).tools.map(t => t.name);
   check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch"].every(t => tools.includes(t)), "16 ferramentas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
+  /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
+  const bad = [];
+  const walk = (x, p) => { if (!x || typeof x !== "object") return; for (const k of ["anyOf", "oneOf", "allOf", "additionalProperties", "$ref", "$schema"]) if (k in x) bad.push(p + "." + k);
+    if (Array.isArray(x.type)) bad.push(p + ".type[]"); if (x.type === "object" && p.split(".").length > 2 && !(x.properties && Object.keys(x.properties).length)) bad.push(p + " objeto vazio");
+    for (const [k, v] of Object.entries(x)) if (v && typeof v === "object") walk(v, p + "." + k); };
+  for (const t of (await client.listTools()).tools) walk(t.inputSchema, t.name);
+  check(!bad.length, "esquemas compatíveis com Gemini" + (bad.length ? ": " + bad.slice(0, 5).join(", ") : ""));
   let r = await call("nova_cena", { tema: "claro" });
   check(!r.isError && r.structuredContent.manequins.length === 1, "nova_cena");
-  r = await call("adicionar_manequim", { nome: "Ana", x: 4, z: -10, giro: -30, corpo: { feminino: 0.95, seios: 0.5 }, poseRapida: "caminhando" });
+  r = await call("adicionar_manequim", { nome: "Ana", x: 4, z: -10, giro: -30, medidas: { feminino: 0.95, seios: 0.5 }, poseRapida: "caminhando" });
   check(!r.isError && r.structuredContent.manequins.length === 2, "adicionar_manequim");
   r = await call("adicionar_manequim", { nome: "Leo", x: -5, z: -22, corpo: "musculoso", pose: { bracoEsqAbrir: 150, cotoveloEsq: 30 } });
   check(!r.isError && r.structuredContent.manequins.length === 3, "adicionar com pose em português");
@@ -30,11 +37,11 @@ async function suite(client, tag) {
   check(!r.isError && /ajustado/.test(text(r)), "limite anatômico gera aviso");
   r = await call("editar_manequim", { manequim: "Ana", pose: { joelhoXYZ: 3 } });
   check(r.isError && /desconhecido/.test(text(r)), "parâmetro errado → erro em português");
-  r = await call("editar_manequim", { manequim: 0, cor: cores[1] });
+  r = await call("editar_manequim", { manequim: "0", cor: cores[1] });
   check(r.isError && /já é usada/.test(text(r)), "cor repetida recusada");
   r = await call("copiar_manequim", { manequim: "Leo", x: 8, z: -30 });
   check(!r.isError && r.structuredContent.manequins.length === 4, "copiar_manequim");
-  r = await call("remover_manequim", { manequim: 3 });
+  r = await call("remover_manequim", { manequim: "3" });
   check(!r.isError && r.structuredContent.manequins.length === 3, "remover_manequim");
   r = await call("camera", { perspectiva: true, lente: 35, girar: { yaw: 25 }, altura_olhos: 14.5 });
   check(!r.isError && Math.abs(r.structuredContent.camera.altura_olhos - 14.5) < 0.2 && r.structuredContent.camera.lente_mm === 35, "camera: lente e altura dos olhos");
@@ -91,7 +98,7 @@ async function suite(client, tag) {
 /* stdio */
 {
   const client = new Client({ name: "teste", version: "1" });
-  await client.connect(new StdioClientTransport({ command: process.execPath, args: [join(ROOT, "server.mjs")], stderr: "ignore" }));
+  await client.connect(new StdioClientTransport({ command: process.execPath, args: [resolve(ROOT, process.env.GM_SERVER || "server.mjs")], stderr: "ignore" }));
   const link = await suite(client, "stdio");
   writeFileSync(join(OUT, "link.txt"), link);
   await client.close();
@@ -99,7 +106,7 @@ async function suite(client, tag) {
 /* HTTP com token */
 {
   const port = 18000 + Math.floor(Math.random() * 1000);
-  const p = spawn(process.execPath, [join(ROOT, "server.mjs"), "--http"], { env: Object.assign({}, process.env, { PORT: String(port), GM_TOKEN: "segredo" }), stdio: ["ignore", "pipe", "inherit"] });
+  const p = spawn(process.execPath, [resolve(ROOT, process.env.GM_SERVER || "server.mjs"), "--http"], { env: Object.assign({}, process.env, { PORT: String(port), GM_TOKEN: "segredo" }), stdio: ["ignore", "pipe", "inherit"] });
   await new Promise(r => p.stdout.once("data", r));
   const bad = await fetch(`http://127.0.0.1:${port}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }) });
   check(bad.status === 401, "HTTP sem token → 401");

@@ -1,9 +1,24 @@
 /* Operações de cena usadas pelas ferramentas MCP: resumo, desenho (SVG/PNG) e link para o app */
 import { deflateRawSync, inflateRawSync } from "node:zlib";
-import { Resvg } from "@resvg/resvg-js";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-const FONTS = ["DejaVuSans.ttf", "DejaVuSans-Bold.ttf"].map(f => join(dirname(fileURLToPath(import.meta.url)), "..", "fonts", f));
+import { readFileSync, existsSync } from "node:fs";
+import { createRequire } from "node:module";
+import { initWasm, Resvg } from "@resvg/resvg-wasm";
+import { asset } from "./assets.mjs";
+
+/* rasterizador em WebAssembly: roda em qualquer sistema, sem compilação nativa */
+let wasmReady = null, FONTS = null;
+function wasmPath() {
+  const local = asset("resvg.wasm");
+  if (existsSync(local)) return local;
+  return createRequire(import.meta.url).resolve("@resvg/resvg-wasm/index_bg.wasm");
+}
+function ready() {
+  if (!wasmReady) {
+    wasmReady = initWasm(readFileSync(wasmPath()));
+    FONTS = ["DejaVuSans.ttf", "DejaVuSans-Bold.ttf"].map(f => readFileSync(asset("fonts", f)));
+  }
+  return wasmReady;
+}
 
 export const APP_URL = (process.env.GM_APP_URL || "https://4lexandre33.github.io/geomannequin/").replace(/#.*$/, "");
 
@@ -105,9 +120,10 @@ export function sanitizeSvg(svg, W = 600, H = 700, pad = 4) {
     .replace(/<circle\b[^>]*?\bcx="([-\d.e]+)"[^>]*?\bcy="([-\d.e]+)"[^>]*?\br="([-\d.e]+)"[^>]*\/>/g, (el, x, y, r) => { x = +x; y = +y; r = +r; return out([x - r, y - r, x + r, y + r]) ? "" : el; })
     .replace(/<text\b[^>]*?\bx="([-\d.e]+)"[^>]*?\by="([-\d.e]+)"[^>]*>[\s\S]*?<\/text>/g, (el, x, y) => (+x < -400 || +x > W + 400 || +y < -20 || +y > H + 20) ? "" : el);
 }
-export function svgToPng(svg, largura = 900) {
+export async function svgToPng(svg, largura = 900) {
+  await ready();
   svg = sanitizeSvg(svg);
-  const r = new Resvg(svg, { fitTo: { mode: "width", value: Math.max(200, Math.min(2400, largura | 0)) }, font: { fontFiles: FONTS, loadSystemFonts: false, defaultFontFamily: "DejaVu Sans", sansSerifFamily: "DejaVu Sans" } });
+  const r = new Resvg(svg, { fitTo: { mode: "width", value: Math.max(200, Math.min(2400, largura | 0)) }, font: { fontBuffers: FONTS, defaultFontFamily: "DejaVu Sans", sansSerifFamily: "DejaVu Sans" } });
   return r.render().asPng();
 }
 

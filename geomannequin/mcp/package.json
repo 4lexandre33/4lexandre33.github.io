@@ -1,7 +1,7 @@
 {
   "name": "geomannequin-mcp",
   "version": "1.0.0",
-  "description": "Servidor MCP do GeoMannequin: monta cenas de manequins anatômicos em perspectiva e devolve imagem (PNG/SVG) e link para o app. Funciona com Claude (Desktop, Code, claude.ai) e ChatGPT.",
+  "description": "Servidor MCP do GeoMannequin: monta cenas de manequins anatômicos em perspectiva e devolve imagem (PNG/SVG) e link para o app. Funciona com Claude (Desktop, Code, claude.ai), ChatGPT e Gemini (CLI, app e API).",
   "type": "module",
   "bin": {
     "geomannequin-mcp": "server.mjs"
@@ -10,7 +10,9 @@
   "scripts": {
     "start": "node server.mjs --http",
     "stdio": "node server.mjs",
-    "test": "node test/run.mjs"
+    "test": "node test/run.mjs",
+    "build": "node build.mjs",
+    "test:dist": "GM_SERVER=dist/server.mjs node test/run.mjs"
   },
   "engines": {
     "node": ">=18.17"
@@ -19,8 +21,11 @@
   "private": true,
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
-    "@resvg/resvg-js": "^2.6.2",
+    "@resvg/resvg-wasm": "^2.6.2",
     "express": "^5.3.0",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }

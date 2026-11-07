@@ -1,8 +1,7 @@
 /* fila de conversão SVG → PNG num processo filho reaproveitado (reinicia sozinho se cair) */
 import { fork } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-const WORKER = join(dirname(fileURLToPath(import.meta.url)), "png-worker.mjs");
+import { asset } from "./assets.mjs";
+const WORKER = asset("png-worker.mjs");
 let child = null, seq = 0;
 const waiting = new Map();
 function spawnChild() {

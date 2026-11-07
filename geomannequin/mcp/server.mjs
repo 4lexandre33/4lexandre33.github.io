@@ -22,7 +22,31 @@ Use referencia para os nomes de poses e parâmetros. Cada manequim tem cor exclu
 function makeServer(getWorld, opts) {
   const s = new McpServer({ name: "geomannequin", title: "GeoMannequin", version: VERSION }, { instructions: INSTRUCTIONS, capabilities: { logging: {} } });
   registerAll(s, getWorld, opts);
+  geminiSafeSchemas(s);
   return s;
+}
+
+/* Gemini aceita só um subconjunto do JSON Schema: limpa as chaves que ele recusa da lista de ferramentas */
+function cleanSchema(x) {
+  if (Array.isArray(x)) return x.map(cleanSchema);
+  if (!x || typeof x !== "object") return x;
+  const o = {};
+  for (const [k, v] of Object.entries(x)) {
+    if (k === "$schema" || k === "additionalProperties" || k === "$ref" || k === "definitions" || k === "$defs") continue;
+    o[k] = cleanSchema(v);
+  }
+  if (o.type === "object" && o.properties && Object.keys(o.properties).length === 0) delete o.properties;
+  return o;
+}
+function geminiSafeSchemas(s) {
+  const h = s.server && s.server._requestHandlers;
+  const orig = h && h.get("tools/list");
+  if (!orig) return;
+  h.set("tools/list", async (req, extra) => {
+    const r = await orig(req, extra);
+    r.tools = r.tools.map(t => Object.assign({}, t, { inputSchema: cleanSchema(t.inputSchema), outputSchema: undefined }));
+    return r;
+  });
 }
 
 const args = process.argv.slice(2);
