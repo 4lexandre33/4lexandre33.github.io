@@ -1,0 +1,32 @@
+<div id="gm-root">
+  <style>
+    #gm-root{--fg:#1d2430;--muted:#5d6878;--card:#ffffff;--rule:#dde3ea;--accent:#2f5fb3;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg)}
+    @media (prefers-color-scheme: dark){#gm-root{--fg:#e5ecf4;--muted:#93a1b3;--card:#151d27;--rule:#2a3644;--accent:#8db0e2}}
+    #gm-root .card{background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+    #gm-root img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:#fff}
+    #gm-root .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border-top:1px solid var(--rule)}
+    #gm-root .meta{color:var(--muted);font-size:12.5px;min-width:0}
+    #gm-root button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff;cursor:pointer}
+    #gm-root .empty{padding:24px;color:var(--muted);text-align:center}
+  </style>
+  <div class="card">
+    <div id="gm-img" class="empty">Desenhando a cena…</div>
+    <div class="bar"><span class="meta" id="gm-meta"></span><button type="button" id="gm-open">Abrir no GeoMannequin</button></div>
+  </div>
+</div>
+<script>
+(function(){
+  var root=document.getElementById("gm-root");
+  function data(){var o=window.openai||{};return {meta:o.toolResponseMetadata||{},out:o.toolOutput||{}}}
+  function draw(){
+    var d=data(),img=d.meta.imagem,link=d.meta.link||d.out.link,box=document.getElementById("gm-img");
+    if(img){box.className="";box.innerHTML="";var el=document.createElement("img");el.alt="Cena de manequins do GeoMannequin";el.src=img;box.appendChild(el)}
+    var m=(d.out.manequins||[]).length,c=d.out.camera||{};
+    document.getElementById("gm-meta").textContent=m?(m+" manequim"+(m>1?"s":"")+(c.perspectiva?" · lente "+c.lente_mm+" mm · olhos a "+c.altura_olhos+" R":"")):"";
+    var b=document.getElementById("gm-open");b.disabled=!link;
+    b.onclick=function(){if(!link)return;if(window.openai&&window.openai.openExternal)window.openai.openExternal({href:link});else window.open(link,"_blank","noopener")};
+  }
+  draw();
+  window.addEventListener("openai:set_globals",draw);
+})();
+</script>

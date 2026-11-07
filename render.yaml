@@ -1,0 +1,24 @@
+# Render Blueprint: servidor MCP remoto do GeoMannequin (para ChatGPT e claude.ai).
+# No Render: New → Blueprint → escolha este repositório. O endereço do MCP será https://<nome>.onrender.com/mcp
+services:
+  - type: web
+    name: geomannequin-mcp
+    runtime: node
+    plan: free
+    rootDir: geomannequin/mcp
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.mjs --http
+    healthCheckPath: /healthz
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - geomannequin/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: GM_APP_URL
+        value: https://4lexandre33.github.io/geomannequin/
+      - key: GM_TOKEN
+        generateValue: true
+      - key: GM_ALLOW_CODE
+        value: "0"
