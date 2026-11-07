@@ -17,6 +17,8 @@ import { ST } from "./padroes.js";
 import { bustLocal, bustTh, bustTw, shoulderWarp } from "./tronco.js";
 import { muscleDefs } from "./musculos.js";
 import { scapTri } from "./corpo.js";
+import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
+import { atlasBraco } from "./atlas/bracos.js";
 
 function scene(p,L,pal,fast,mode){
   setLight(p.lightAz,p.lightEl);
@@ -194,10 +196,10 @@ function scene(p,L,pal,fast,mode){
   const hSil=silhouette(head),bSil=bust?silhouette(bust):[];
   if(!fast&&(L.fill||L.shade)){
     if(mode!=="draw"){hz.fill(-1e6);sm.fill(-9);hid.fill(-1);all.forEach(m=>{rasterH(m);rasterS(m)})}
-    makeFields(!!L.shade);
+    makeFields(!!L.shade,!!L.cel);
     if(L.fill){const d=contourPath(Fc);if(d)out.push('<path d="'+d+'" style="fill:'+pal.fill+';stroke:none;fill-rule:evenodd"/>')}
     if(L.shade){
-      const dh=contourPath(FH);if(dh)out.push('<path d="'+dh+'" style="fill:'+pal.shade1+';stroke:none;fill-rule:evenodd;opacity:.5"/>');
+      const dh=L.cel?"":contourPath(FH);if(dh)out.push('<path d="'+dh+'" style="fill:'+pal.shade1+';stroke:none;fill-rule:evenodd;opacity:.5"/>');
       const d1=contourPath(FA),d2=contourPath(FB);
       if(d1)out.push('<path d="'+d1+'" style="fill:'+pal.shade1+';stroke:none;fill-rule:evenodd"/>');
       if(d2)out.push('<path d="'+d2+'" style="fill:'+pal.shade2+';stroke:none;fill-rule:evenodd"/>');
@@ -208,7 +210,8 @@ function scene(p,L,pal,fast,mode){
   }
 
   out.push('</g>');
-  out.push('<g id="guias">');
+  /* guias de construção: grupo separado, mais leve, para não competir com a anatomia */
+  out.push('<g id="construction-guides" style="opacity:'+(L.cel?0.45:0.8)+'">');
   /* esfera guia */
   if(L.sphere){
     const c0=xf([0,0,0]),cx0=CX+S*c0[0],cy0=CY-S*c0[1];
@@ -332,37 +335,23 @@ function scene(p,L,pal,fast,mode){
   /* linhas anatômicas: esternocleidomastoideo, clavículas, incisura, peitoral, deltoide, escápulas, trapézio, coluna */
   if(bust&&L.anat){
     [-1,1].forEach(s=>{
-      lineT("anat",arr(u=>bp(lerp(-0.7,F.yJ+0.04,u),s*lerp(112,16,u)*D,0.012),0.22,0.97,26),xb);
-      lineT("anat",arr(q=>{const x=s*(0.1+q*(F.W-0.12)),yc=F.yJ+0.03+0.04*q+0.035*Math.sin(Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.08,0.97,30),xb);
-      /* bordas dos músculos (mesmas formas que geram o relevo) */
-      const Mu=muscleDefs(F),B=F.B,mu=B.mus;
-      const cr=(Pts,n)=>{const o=[];for(let i=0;i<Pts.length-1;i++){const a=Pts[Math.max(0,i-1)],b=Pts[i],c=Pts[i+1],d=Pts[Math.min(Pts.length-1,i+2)];
-        for(let j=0;j<n;j++){const t=j/n,t2=t*t,t3=t2*t;o.push([0,1].map(k=>0.5*(2*b[k]+(-a[k]+c[k])*t+(2*a[k]-5*b[k]+4*c[k]-d[k])*t2+(-a[k]+3*b[k]-3*c[k]+d[k])*t3)))}}
-        o.push(Pts[Pts.length-1]);return o};
-      const onF=(Q,side)=>Q.map(([ax,yy])=>{const y=F.yJ+yy;return bp(y,bustTh(y,s*ax,side,p,F),0.012)});
-      const pec=Mu.pec,ms=B.breast<0.35;
-      if(ms)lineT("mus",onF(cr(pec.slice(3,10),7),true),xb);
-      lineT("mus",onF(cr(pec.slice(1,5),6),true),xb);
-      if(!ms){const yb=-1.28-0.3;lineT("mus",onF(arr(q=>[lerp(0.26,0.9,q),yb+0.22*Math.pow(2*q-1,2)*(q<0.5?0.6:1)],0,1,22),true),xb)}
-      if(mu*(1-B.fat)*(1-0.75*B.fem)>0.16){
-        Mu.abs.forEach((P,i)=>{if(i<3)lineT("mus",onF(arr(q=>[lerp(0.04,P[3][0],q),P[3][1]+0.02-0.04*q*q],0,1,10),true),xb)});
-        const a0=Mu.abs[0],a3=Mu.abs[3];
-        lineT("mus",onF(cr([[a0[1][0]+0.01,a0[1][1]],[a0[2][0]+0.02,a0[2][1]],[Mu.abs[2][2][0]+0.02,Mu.abs[2][2][1]],[a3[2][0]+0.01,a3[2][1]],[a3[3][0],a3[3][1]]],6),true),xb);
-        lineT("mus",onF(cr([[Mu.obl[0][0],Mu.obl[0][1]],[Mu.obl[1][0]*0.98,Mu.obl[1][1]]],8),true),xb);
-        /* dedos do serrátil */
-        for(let i=0;i<4;i++){const yc=-1.2-0.3*i,ac=1.18+0.06*i;lineT("mus",arr(q=>{const a=ac+0.16*(q-0.5),y=F.yJ+yc-0.09+0.12*(q-0.5);return bp(y,s*a,0.012)},0,1,6),xb)}
-      }
-      {const T=scapTri(p,F,s);const ed=(P,Q,n)=>lineT("anat",arr(k=>{const ax=lerp(P[0],Q[0],k),y=lerp(P[1],Q[1],k);return bp(y,bustTh(y,s*ax,false,p,F),0.014)},0,1,n),xb);
-       const sp=cr(T.poly.concat([T.poly[0],T.poly[1]]),5).slice(0,-5);lineT("mus",sp.map(([ax,y])=>bp(y,bustTh(y,s*ax,false,p,F),0.014)),xb);
-       ed(T.sp0,T.sp1,16);ed(T.poly[4],[F.W-0.4,F.yJ-0.98],12);
-       lineT("mus",onF(cr([[0.05,F.yJ-2.9-F.yJ],[0.3,-1.6],[T.sp0[0]+0.02,T.sp0[1]-F.yJ-0.05]],8),false),xb);}
+      /* esternocleidomastoideo (pescoço) e clavícula em S */
+      lineT("divisao",arr(u=>bp(lerp(-0.7,F.yJ+0.04,u),s*lerp(112,16,u)*D,0.012),0.22,0.97,26),xb);
+      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.12)),yc=F.yJ+0.03+0.04*q+0.035*Math.sin(Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.08,0.97,30),xb);
     });
+    /* músculos do tronco: linhas do atlas muscular (mesmas formas que geram o relevo) */
+    {const at=atlasTronco(p,F),B=F.B,def=clamp(B.mus*(1-B.fat)*(1-0.75*B.fem),0,2);
+     [1,-1].forEach(s=>at[s].linhas.forEach(l=>{
+       if(l.tipo==="fibra"&&!L.fibras)return;
+       if(def<(l.min||0))return;
+       lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb);
+     }));
+    }
     curve("anat",arr(th=>{const y=lerp(F.yJ+0.14,F.yC7,(1-Math.cos(th))/2);return bp(y,th,0.01)},0,2*Math.PI,90),xb);
-    lineT("anat",arr(x=>{const y=F.yJ-2.35-0.6*Math.pow(x/0.75,2)-0.04;return bp(y,bustTh(y,x,true,p,F),0.012)},-0.72,0.72,30),xb);
     lineT("anat",arr(x=>{const y=F.yJ+0.05+3*x*x;return bp(y,bustTh(y,x,true,p,F),0.012)},-0.11,0.11,10),xb);
-    lineT("anat",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb);
-    for(let y=F.yC7-0.05;y>F.yHip+0.1;y-=0.3)lineT("mus",arr(x=>bp(y,Math.PI+x,0.012),-0.06,0.06,4),xb);
-    lineT("mus",arr(y=>bp(y,0,0.012),F.yJ-1.45,F.yNav+0.06,20),xb);
+    /* sulco da coluna e processos espinhosos */
+    lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb);
+    for(let y=F.yC7-0.05;y>F.yHip+0.1;y-=0.3)lineT("fibra",arr(x=>bp(y,Math.PI+x,0.012),-0.05,0.05,4),xb);
     /* umbigo, linha inguinal, glúteos */
     lineT("anat",arr(a=>{const x=0.03*Math.cos(a),y=F.yNav+0.035*Math.sin(a);return bp(y,bustTh(y,x,true,p,F),0.01)},0,2*Math.PI,12),xb);
     [-1,1].forEach(s=>{
@@ -375,12 +364,14 @@ function scene(p,L,pal,fast,mode){
     arms.forEach(o=>{
       const A=armDims(p),s=o.s,X=v=>xv(applyA(o.Aa,v)),L1=A.L1,L2=A.L2;
       const onA=(u,th,off)=>{const r=armRadius(u,th,A,s)+(off||0.012);return [r*Math.sin(th),-u,r*Math.cos(th)]};
-      lineT("mus",arr(ph=>{const th=s*Math.PI/2+ph,u=L1*(0.47-0.3*Math.pow(Math.abs(ph)/1.95,1.3));return onA(u,th,0.03)},-1.9,1.9,40).map(X),v=>v);
-      [-0.62,0.62].forEach(a=>lineT("mus",arr(u=>onA(u,a*(1+0.15*Math.sin(Math.PI*u/L1)),0.012),0.4*L1,0.88*L1,16).map(X),v=>v));
-      lineT("mus",arr(q=>{const th=Math.PI+(q-0.5)*1.2,u=L1*(0.72-0.34*Math.pow(Math.abs(2*q-1),1.6));return onA(u,th)},0,1,22).map(X),v=>v);
       const XF=(u,th)=>{const t=clamp(u/L2,0,1),Afu=comp(A2,{M:mmul(o.ap.Mb,rotM(o.ap.pr*t,0,0)),T:o.ap.fore.T}),r=foreR(u,th,A,s)+0.012;return xv(applyA(Afu,[r*Math.sin(th),-u,r*Math.cos(th)]))};
-      lineT("mus",arr(u=>XF(u,s*(0.75+0.25*u/L2)),0.06*L2,0.7*L2,16),v=>v);
-      lineT("mus",arr(u=>XF(u,-s*0.55),0.12*L2,0.55*L2,12),v=>v);
+      const def=clamp(F.B.mus*(1-F.B.fat)*(1-0.75*F.B.fem),0,2);
+      /* atlas do braço: deltoide (borda e 3 feixes), bíceps, braquial, tríceps; antebraço: braquiorradial, extensores, flexores */
+      atlasBraco(A,s).forEach(l=>{
+        if(l.tipo==="fibra"&&!L.fibras)return;if(def<(l.min||0))return;
+        const pts=l.parte==="ante"?l.pts.map(([t,th])=>XF(t*L2,th)):(l.pts3?l.pts3.map(([t,th,off])=>X(onA(t*L1,th,off))):l.pts.map(([t,th])=>X(onA(t*L1,th,l.off||0.012))));
+        lineT(l.tipo,pts,v=>v);
+      });
       /* vinco na dobra do cotovelo */
       const el=s>0?p.elbowL:p.elbowR;
       if(el>25)lineT("mus",arr(a=>{const r=0.34*A.k;return xv(applyA(o.Ae,[r*Math.sin(a),0.02*A.k,r*Math.cos(a)]))},-0.8,0.8,12),v=>v);
@@ -401,7 +392,6 @@ function scene(p,L,pal,fast,mode){
     /* crista ilíaca (borda de cima da pelve) dos lados e borda do grande dorsal nas costas */
     [-1,1].forEach(s=>{
       lineT("anat",arr(a=>{const y=F.yHip+0.52+0.07*Math.sin(Math.PI*(a-0.9)/1.7);return bp(y,s*a,0.012)},0.95,2.45,22),xb);
-      lineT("anat",arr(k=>{const ax=lerp(F.W-0.42,0.8,k),y=lerp(F.yJ-1.15,F.yWst+0.2,k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,20),xb);
     });
   }
   out.push('</g>');

@@ -39,7 +39,17 @@ function buildElbow(p,s,el){
     return 0.33*k*(1+(0.12+0.4*f)*ol+(0.08+0.08*f)*ep)*(1-0.12*f*Math.max(0,Math.cos(th))*gauss(ph,0,0.5));
   },[1.02,1,1]);
 }
-function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.75);return 0.3+0.95*g*g}
+/* comprimento do deltoide em volta do braço: gota que aponta para a inserção no meio do braço, do lado de fora */
+function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.8);return 0.3+0.92*Math.pow(Math.max(0,g),2.2)}
+/* raio do deltoide a uma distância v do ombro, no ângulo th (mesma fórmula da malha e das linhas) */
+function deltR(v,th,A,s){
+  const Rc=0.58*A.k,thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc));
+  const vmax=deltV(phi)*A.L1/2.9,inner=sstep((Math.abs(phi)-95*D)/(45*D));
+  if(v<0)return Math.sqrt(Math.max(0,Rc*Rc-v*v/0.72));
+  /* topo achatado (não é uma bola) e corpo em gota: cheio em cima, afinando até a inserção */
+  const t2=v/vmax,ra=armRadius(v,th,A,s),outer=lerp(Rc*(1+0.03*Math.sin(Math.PI*Math.min(1,t2*2))),ra-0.015*A.k,sstep(Math.min(1,t2*1.1)));
+  return lerp(outer,ra-0.06*A.k,inner);
+}
 function buildDelt(p,s){
   const A=armDims(p),Rc=0.58*A.k,rows=22,cols=56,V=new Float32Array(rows*cols*3);
   const thc=s*Math.PI/2;
@@ -48,14 +58,9 @@ function buildDelt(p,s){
     for(let j=0;j<cols;j++){
       const th=j/cols*2*Math.PI;
       const phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc));
-      const vmax=deltV(phi)*A.L1/2.9,v=lerp(-Rc*0.999,vmax,t);
+      const vmax=deltV(phi)*A.L1/2.9,v=lerp(-Rc*0.848,vmax,t);
       const inner=sstep((Math.abs(phi)-95*D)/(45*D));
-      let rr;
-      if(v<0)rr=Math.sqrt(Math.max(0,Rc*Rc-v*v));
-      else{
-        const ra=armRadius(v,th,A,s),outer=lerp(Rc,ra-0.02*A.k,sstep(v/vmax));
-        rr=lerp(outer,ra-0.06*A.k,inner);
-      }
+      const rr=deltR(v,th,A,s);
       const k=(r*cols+j)*3;
       V[k]=rr*Math.sin(th)+s*0.03*(1-inner);V[k+1]=-v;V[k+2]=rr*Math.cos(th);
     }
@@ -78,4 +83,4 @@ function armPose(p,F,s){
   return {arm:{M,T:G},fore,hand,elbow,G,Mb,pr:s*pr*D};
 }
 
-export { armDims, armRadius, buildArm, foreR, buildForearm, buildElbow, deltV, buildDelt, armJoint, armPose };
+export { deltR, armDims, armRadius, buildArm, foreR, buildForearm, buildElbow, deltV, buildDelt, armJoint, armPose };

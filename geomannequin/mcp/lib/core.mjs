@@ -51,7 +51,7 @@ ${ordem.iniciar.map(f => f + "();").join("\n")}
 return {
   get P(){return P}, SCN, cena, camera, tema, LOG,
   get L(){return L}, setLayer:(k,v)=>{L[k]=!!v;mode=null},
-  setPreset:n=>{if(!PRESETS[n])throw new Error("Modo desconhecido: use 'manequim' ou 'construcao'.");setPreset(n)},
+  setPreset:n=>{if(!PRESETS[n])throw new Error("Modo desconhecido: use 'manequim', 'construcao' ou 'ecorche'.");setPreset(n)},
   get mode(){return mode},
   get style(){return styleName}, setStyle:n=>{if(!STYLES[n])throw new Error("Estilo desconhecido. Opções: "+Object.keys(STYLES).join(", ")+".");styleName=n;PAL_EXPORT=STYLES[n]},
   get theme(){return THEMES[themeIdx][0]},

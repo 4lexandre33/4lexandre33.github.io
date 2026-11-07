@@ -10,7 +10,8 @@ function bodyEff(p){
     neck:p.neck*(1+0.18*m+0.18*f-0.15*w),
     chest:(0.45*p.shW+0.35)*(1+0.1*m+0.13*f-0.07*w),
     waist:p.waist*(1+0.52*f+0.06*m-0.24*w),
-    hip:p.hips*(1+0.26*f+0.32*w),
+    /* quadril: masculino mais estreito que o tórax (écorché), feminino mais largo; w=0.5 mantém a medida antiga */
+    hip:p.hips*(1.16+0.26*f+0.5*(w-0.5)),
     belly:0.02+0.36*f*f,
     mus:0.25+1.0*m*(1-0.5*f),
     fat:f,fem:w,
@@ -28,15 +29,16 @@ function bustFrame(p,S){
 /* perfil vertical do tronco: [y, meia-largura, frente, trás, centro z, expoente] interpolado por Catmull-Rom */
 function torsoProfile(F){
   if(F._prof)return F._prof;
-  const B=F.B,f=B.fat,yJ=F.yJ,c=F.chestW;
+  const B=F.B,f=B.fat,yJ=F.yJ,c=F.chestW,mf=clamp(1-1.4*B.fem,0,1)*0.85;
   F._prof=[
     [F.yAc,F.W-0.05,0.75,0.8,-0.47,2.4],
     [F.yAc-0.75,c,1.0,0.92,-0.47,2.4],
     [F.yUB,c*1.0,0.98+0.1*f,0.92,-0.46,2.35],
-    [yJ-2.4,c*0.95,0.92+0.15*f,0.86+0.05*f,-0.45,2.3],
-    [F.yWst,B.waist*0.9,0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
-    [F.yNav,B.waist*0.94,0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
-    [yJ-4.1,(B.waist+B.hip)/2,0.84+0.2*f,0.82,-0.45,2.3],
+    [yJ-2.4,c*(0.95+0.02*mf),0.92+0.15*f,0.86+0.05*f,-0.45,2.3],
+    /* cintura: no corpo masculino a caixa torácica e os oblíquos enchem o flanco (sem "ampulheta"); no feminino a cintura afina */
+    [F.yWst,lerp(B.waist*0.9,c*0.82,mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
+    [F.yNav,lerp(B.waist*0.94,c*0.83,mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
+    [yJ-4.1,lerp((B.waist+B.hip)/2,Math.max(c*0.84,B.hip*0.9),mf),0.84+0.2*f,0.82,-0.45,2.3],
     [F.yHip,B.hip*0.93,0.8+0.1*f,0.94,-0.48,2.3],
     [yJ-5.4,B.hip*0.6,0.66,0.8,-0.5,2.2],
     [F.yCr,0.3,0.4,0.42,-0.46,2.1],
@@ -91,7 +93,7 @@ function scapTri(p,F,s){
   const tp=(qx,qy)=>{qx*=sk*1.1;qy*=sk*1.25;return [sx0+(qx*cr-qy*sr),sy0+(qx*sr+qy*cr)]};
   const poly=[[-0.27,0.48],[0.02,0.56],[0.28,0.54],[0.42,0.4],[0.33,0.1],[0.12,-0.32],[-0.08,-0.58],[-0.18,-0.63],[-0.25,-0.5],[-0.3,-0.1],[-0.31,0.28]].map(q=>tp(q[0],q[1]));
   const acr=[F.W-0.2,F.yAc-0.16];
-  return {A:tp(-0.27,0.48),B:tp(0.36,0.52),C:tp(-0.17,-0.62),sp0:tp(-0.27,0.36),sp1:acr,ax:tp(0.36,0.25),poly};
+  return {A:tp(-0.27,0.48),B:tp(0.36,0.52),C:tp(-0.17,-0.62),sp0:tp(-0.27,0.36),sp1:acr,ax:tp(0.36,0.25),poly,tp};
 }
 function segDist(px,py,ax,ay,bx,by){const ex=bx-ax,ey=by-ay,t=clamp(((px-ax)*ex+(py-ay)*ey)/(ex*ex+ey*ey),0,1);return Math.hypot(px-ax-ex*t,py-ay-ey*t)}
 

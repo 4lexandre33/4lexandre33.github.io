@@ -160,6 +160,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       <div class="group" role="group" aria-label="Estilo">
         <button type="button" id="modeMan" data-mode="manequim" aria-pressed="true">Manequim</button>
         <button type="button" id="modeCon" data-mode="construcao" aria-pressed="false">Construção</button>
+        <button type="button" id="modeEco" data-mode="ecorche" aria-pressed="false">Écorché</button>
       </div>
       <div class="group" role="group" aria-label="Rosto">
         <button type="button" data-face="neutro">Neutro</button>
@@ -590,7 +591,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       neck: p.neck * (1 + 0.18 * m + 0.18 * f - 0.15 * w),
       chest: (0.45 * p.shW + 0.35) * (1 + 0.1 * m + 0.13 * f - 0.07 * w),
       waist: p.waist * (1 + 0.52 * f + 0.06 * m - 0.24 * w),
-      hip: p.hips * (1 + 0.26 * f + 0.32 * w),
+      /* quadril: masculino mais estreito que o tórax (écorché), feminino mais largo; w=0.5 mantém a medida antiga */
+      hip: p.hips * (1.16 + 0.26 * f + 0.5 * (w - 0.5)),
       belly: 0.02 + 0.36 * f * f,
       mus: 0.25 + 1 * m * (1 - 0.5 * f),
       fat: f,
@@ -623,15 +625,16 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function torsoProfile(F) {
     if (F._prof) return F._prof;
-    const B = F.B, f = B.fat, yJ = F.yJ, c = F.chestW;
+    const B = F.B, f = B.fat, yJ = F.yJ, c = F.chestW, mf = clamp(1 - 1.4 * B.fem, 0, 1) * 0.85;
     F._prof = [
       [F.yAc, F.W - 0.05, 0.75, 0.8, -0.47, 2.4],
       [F.yAc - 0.75, c, 1, 0.92, -0.47, 2.4],
       [F.yUB, c * 1, 0.98 + 0.1 * f, 0.92, -0.46, 2.35],
-      [yJ - 2.4, c * 0.95, 0.92 + 0.15 * f, 0.86 + 0.05 * f, -0.45, 2.3],
-      [F.yWst, B.waist * 0.9, 0.78 + 0.2 * f, 0.68 + 0.08 * f, -0.42, 2.2],
-      [F.yNav, B.waist * 0.94, 0.8 + 0.28 * f, 0.7 + 0.08 * f, -0.42, 2.2],
-      [yJ - 4.1, (B.waist + B.hip) / 2, 0.84 + 0.2 * f, 0.82, -0.45, 2.3],
+      [yJ - 2.4, c * (0.95 + 0.02 * mf), 0.92 + 0.15 * f, 0.86 + 0.05 * f, -0.45, 2.3],
+      /* cintura: no corpo masculino a caixa torácica e os oblíquos enchem o flanco (sem "ampulheta"); no feminino a cintura afina */
+      [F.yWst, lerp(B.waist * 0.9, c * 0.82, mf), 0.78 + 0.2 * f, 0.68 + 0.08 * f, -0.42, 2.2],
+      [F.yNav, lerp(B.waist * 0.94, c * 0.83, mf), 0.8 + 0.28 * f, 0.7 + 0.08 * f, -0.42, 2.2],
+      [yJ - 4.1, lerp((B.waist + B.hip) / 2, Math.max(c * 0.84, B.hip * 0.9), mf), 0.84 + 0.2 * f, 0.82, -0.45, 2.3],
       [F.yHip, B.hip * 0.93, 0.8 + 0.1 * f, 0.94, -0.48, 2.3],
       [yJ - 5.4, B.hip * 0.6, 0.66, 0.8, -0.5, 2.2],
       [F.yCr, 0.3, 0.4, 0.42, -0.46, 2.1],
@@ -689,11 +692,162 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
     const poly = [[-0.27, 0.48], [0.02, 0.56], [0.28, 0.54], [0.42, 0.4], [0.33, 0.1], [0.12, -0.32], [-0.08, -0.58], [-0.18, -0.63], [-0.25, -0.5], [-0.3, -0.1], [-0.31, 0.28]].map((q) => tp(q[0], q[1]));
     const acr = [F.W - 0.2, F.yAc - 0.16];
-    return { A: tp(-0.27, 0.48), B: tp(0.36, 0.52), C: tp(-0.17, -0.62), sp0: tp(-0.27, 0.36), sp1: acr, ax: tp(0.36, 0.25), poly };
+    return { A: tp(-0.27, 0.48), B: tp(0.36, 0.52), C: tp(-0.17, -0.62), sp0: tp(-0.27, 0.36), sp1: acr, ax: tp(0.36, 0.25), poly, tp };
   }
   function segDist(px, py, ax, ay, bx, by) {
     const ex = bx - ax, ey = by - ay, t = clamp(((px - ax) * ex + (py - ay) * ey) / (ex * ex + ey * ey), 0, 1);
     return Math.hypot(px - ax - ex * t, py - ay - ey * t);
+  }
+
+  // src/engine/atlas/util.js
+  function suave(P2, n = 6, fechado = false) {
+    const Q = fechado ? P2.concat([P2[0]]) : P2, m = Q.length, o = [];
+    const at = (i) => fechado ? Q[(i + m - 1) % (m - 1)] : Q[clamp(i, 0, m - 1)];
+    for (let i = 0; i < m - 1; i++) {
+      const a = fechado ? Q[(i - 1 + m - 1) % (m - 1)] : at(i - 1), b = Q[i], c = Q[i + 1], d = fechado ? Q[(i + 2) % (m - 1)] : at(i + 2);
+      for (let j = 0; j < n; j++) {
+        const t = j / n, t2 = t * t, t3 = t2 * t;
+        o.push([0, 1].map((k) => 0.5 * (2 * b[k] + (-a[k] + c[k]) * t + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * t2 + (-a[k] + 3 * b[k] - 3 * c[k] + d[k]) * t3)));
+      }
+    }
+    o.push(Q[m - 1]);
+    return o;
+  }
+  function dentro(px, py, P2) {
+    let d = 1e9, inside = false;
+    for (let i = 0, j = P2.length - 1; i < P2.length; j = i++) {
+      const a = P2[j], b = P2[i], ex = b[0] - a[0], ey = b[1] - a[1], wx = px - a[0], wy = py - a[1];
+      const t = clamp((wx * ex + wy * ey) / (ex * ex + ey * ey), 0, 1), dx = wx - ex * t, dy = wy - ey * t;
+      d = Math.min(d, dx * dx + dy * dy);
+      if (a[1] > py !== b[1] > py && px < (b[0] - a[0]) * (py - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+    }
+    d = Math.sqrt(d);
+    return inside ? d : -d;
+  }
+  function volume(d, e, meio = 3.2) {
+    return d <= 0 ? 0 : sstep(d / e) * (0.7 + 0.3 * sstep(d / (meio * e)));
+  }
+  function caixa(P2, m = 0.3) {
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (const [x, y] of P2) {
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+    return [x0 - m, x1 + m, y0 - m, y1 + m];
+  }
+
+  // src/engine/atlas/tronco.js
+  var R_ANG = (F) => F.chestW;
+  var graus = (F, a, yy) => [a * D * R_ANG(F), F.yJ + yy];
+  function forca(F) {
+    const B = F.B, mu = B.mus, fat = B.fat, fem = B.fem;
+    return { mu, def: clamp(mu * (1 - fat) * (1 - 0.55 * fem), 0, 1.4), fat, fem };
+  }
+  function lado(p, F, s) {
+    const yJ = F.yJ, W2 = F.W, T = scapTri(p, F, s), tp = T.tp, k = forca(F);
+    const formas = [], linhas = [];
+    const forma = (nome, ref, poly, h, e) => {
+      formas.push({ nome, ref, poly, h, e, bx: caixa(poly, e * 2) });
+    };
+    const linha = (nome, tipo, ref, pts, n = 6, min = 0) => linhas.push({ nome, tipo, ref, s, min, pts: suave(pts, n) });
+    const Y = (yy) => yJ + yy;
+    const sp0 = T.sp0, sp1 = T.sp1, spAt = (t) => [sp0[0] + (sp1[0] - sp0[0]) * t, sp0[1] + (sp1[1] - sp0[1]) * t];
+    const t12 = [0.03, Y(-2.62)];
+    const trap = [[0, Y(0.95)], [0.2, Y(0.9)], [0.36, Y(0.5)], [0.62, Y(0.22)], [W2 - 0.32, Y(0.07)], sp1, spAt(0.6), spAt(0.25), sp0, [sp0[0] - 0.06, sp0[1] - 0.45], [0.2, Y(-1.85)], t12];
+    forma("trapezio", "b", trap, 0.012 + 0.02 * k.mu, 0.12);
+    const infra = [[-0.27, 0.3], [0.05, 0.38], [0.36, 0.36], [0.55, 0.16], [0.48, -0.06], [0.15, -0.26], [-0.12, -0.42], [-0.28, -0.3], [-0.31, 0]].map((q) => tp(q[0], q[1]));
+    const redondo = [[-0.12, -0.42], [0.15, -0.26], [0.48, -0.06], [0.82, 0.04], [0.92, -0.1], [0.55, -0.34], [0.12, -0.6], [-0.16, -0.64]].map((q) => tp(q[0], q[1]));
+    forma("infraespinhoso", "b", infra, 0.012 + 0.02 * k.def, 0.16);
+    forma("redondo", "b", redondo, 0.015 + 0.025 * k.def, 0.14);
+    const eret = [[0.075, Y(-2.1)], [0.26, Y(-2.45)], [0.36, Y(-3.4)], [0.33, Y(-4.4)], [0.2, Y(-4.95)], [0.075, Y(-4.95)]];
+    forma("eretores", "b", eret, 0.02 + 0.04 * k.mu, 0.12);
+    const dors = [[99, -0.95], [116, -0.78], [138, -1.25], [158, -1.9], [174, -2.75], [176, -3.9], [150, -4.25], [118, -4.05], [100, -3.4], [94, -2.3], [94, -1.45]].map(([a, yy]) => graus(F, a, yy));
+    forma("grande_dorsal", "a", dors, 0.035 + 0.06 * k.mu * (1 - 0.6 * k.fem), 0.16);
+    const obl = [[60, -2.1], [92, -2.25], [100, -3.4], [96, -4.3], [74, -4.4], [58, -3.3]].map(([a, yy]) => graus(F, a, yy));
+    forma("obliquo", "a", obl, 0.025 + 0.04 * k.mu * (1 - 0.5 * k.fem) + 0.02 * k.fat, 0.18);
+    const back = "b", ang = "a", fr2 = "f";
+    const aY = (a, yy) => [a * D, Y(yy)];
+    linha("trapezio_borda_inferior", "dobra", back, [sp0, [sp0[0] - 0.05, sp0[1] - 0.45], [0.2, Y(-1.85)], t12], 8);
+    linha("trapezio_superior", "divisao", back, [[0.17, Y(0.85)], [0.36, Y(0.45)], [0.62, Y(0.2)], [W2 - 0.34, Y(0.05)]], 7);
+    linha("espinha_escapula", "dobra", back, [sp0, spAt(0.35), spAt(0.7), sp1], 6);
+    linha("escapula_borda_medial", "divisao", back, [sp0, tp(-0.31, 0), tp(-0.27, -0.32), tp(-0.16, -0.64)], 6);
+    linha("infraespinhoso_redondo", "divisao", back, [tp(-0.12, -0.42), tp(0.15, -0.26), tp(0.48, -0.06), tp(0.82, 0.04)], 6, 0.16);
+    linha("redondo_borda", "dobra", back, [tp(-0.16, -0.64), tp(0.12, -0.6), tp(0.55, -0.34), tp(0.92, -0.1)], 6);
+    linha("eretores", "divisao", back, [[0.27, Y(-2.6)], [0.35, Y(-3.4)], [0.33, Y(-4.3)], [0.22, Y(-4.85)]], 6, 0.16);
+    linha("dorsal_borda_lateral", "dobra", ang, [aY(98, -1), aY(95, -1.8), aY(96, -2.7), aY(101, -3.5), aY(110, -4.05)], 8);
+    linha("dorsal_borda_inferior", "divisao", ang, [aY(118, -4.05), aY(148, -4.2), aY(172, -3.6)], 6);
+    linha("dorsal_borda_superior", "divisao", ang, [aY(138, -1.25), aY(158, -1.9), aY(173, -2.7)], 6);
+    const Mu = muscleDefs(F), pec = Mu.pec, c = F.chestW, ms = F.B.breast < 0.35;
+    const fy = (Q) => Q.map(([x, yy]) => [x, Y(yy)]);
+    if (ms) linha("peitoral_borda_inferior", "dobra", fr2, fy([[0.2, -1.36], [0.45, -1.33], [0.72 * c, -1.18], [0.92 * c, -0.92], [0.98 * c, -0.62]]), 7);
+    linha("peitoral_esterno", "divisao", fr2, fy([[0.06, -0.18], [0.07, -0.7], [0.06, -1.3]]), 6, 0.08);
+    linha("peitoral_clavicular", "fibra", fr2, fy([[0.12, -0.36], [0.45, -0.42], [0.85 * c, -0.48]]), 6, 0.3);
+    const ab = Mu.abs, aw = Mu.aw;
+    linha("linha_alba", "divisao", fr2, fy([[0, -1.55], [0, -2.6], [0, F.yNav - yJ + 0.06]]), 8);
+    ab.forEach((P2, i) => {
+      if (i < 3) linha("abdomen_intersecao_" + (i + 1), "divisao", fr2, fy([[0.035, P2[3][1] + 0.02], [P2[3][0] * 0.55, P2[3][1] + 0], [P2[3][0] + 0.01, P2[3][1] - 0.03]]), 5, 0.16);
+    });
+    linha("linha_semilunar", "divisao", fr2, fy([[aw + 0.01, -1.78], [aw + 0.04, -2.6], [aw + 0.03, F.yNav - yJ], [aw - 0.02, F.yHip - yJ + 0.3], [0.1, F.yCr - yJ + 0.7]]), 7, 0.16);
+    linha("arco_costal", "divisao", fr2, fy([[0.06, -1.55], [0.35, -1.95], [0.62, -2.35], [0.86 * c, -2.55]]), 7);
+    for (let i = 0; i < 4; i++) {
+      const a0 = 62 + 6 * i, yy = -1.25 - 0.3 * i;
+      linha("serratil_" + (i + 1), "divisao", ang, [aY(a0 + 14, yy + 0.06), aY(a0 + 4, yy - 0.04), aY(a0 - 4, yy - 0.14)], 4, 0.2);
+    }
+    linha("obliquo_frente", "divisao", ang, [aY(56, -2.25), aY(54, -3.2), aY(60, -4.1), aY(78, -4.45)], 6, 0.16);
+    for (let i = 1; i <= 5; i++) {
+      const t = i / 6;
+      linha("fibra_trapezio_" + i, "fibra", back, [[0.04, Y(0.6 - 3 * t * t)], [0.3 + 0.15 * t, Y(0.35 - 1.6 * t * t)], spAt(1 - 0.85 * t)], 4, 0.3);
+    }
+    for (let i = 1; i <= 5; i++) {
+      const t = i / 6;
+      linha("fibra_dorsal_" + i, "fibra", ang, [aY(100 + 4 * t, -1.1 - 0.4 * t), aY(125 + 25 * t, -1.9 - 1.2 * t), aY(150 + 22 * t, -2.6 - 1.4 * t)], 4, 0.3);
+    }
+    for (let i = 1; i <= 5; i++) {
+      const t = i / 6;
+      linha("fibra_peitoral_" + i, "fibra", fr2, fy([[0.09, -0.3 - 0.95 * t], [0.5, -0.5 - 0.55 * t], [0.88 * c, -0.62 - 0.12 * t]]), 4, 0.3);
+    }
+    linha("esternocleidomastoideo", "divisao", ang, [aY(108, 0.62), aY(70, 0.4), aY(36, 0.2), aY(12, 0.03)], 7);
+    return { formas, linhas };
+  }
+  function atlasTronco(p, F) {
+    if (F._atlas) return F._atlas;
+    const L2 = lado(p, F, 1), R = lado(p, F, -1);
+    F._atlas = { 1: L2, "-1": R };
+    return F._atlas;
+  }
+  function relevoTronco(x, y, th, p, F) {
+    const at = atlasTronco(p, F), s = x >= 0 ? 1 : -1, ax = Math.abs(x), cs = Math.cos(th);
+    const a = Math.abs(Math.atan2(Math.sin(th), cs)), am = a * R_ANG(F);
+    const cf = sstep((cs - 0.02) / 0.25), cb = sstep((-cs - 0.02) / 0.25);
+    let dz = 0;
+    for (const f of at[s].formas) {
+      let u, w;
+      if (f.ref === "f") {
+        if (cf <= 0) continue;
+        u = ax;
+        w = cf;
+      } else if (f.ref === "b") {
+        if (cb <= 0) continue;
+        u = ax;
+        w = cb;
+      } else {
+        u = am;
+        w = 1;
+      }
+      const b = f.bx;
+      if (u < b[0] || u > b[1] || y < b[2] || y > b[3]) continue;
+      const d = dentro(u, y, f.poly);
+      if (d > 0) dz += w * f.h * volume(d, f.e);
+    }
+    dz -= cb * 0.012 * gauss(ax, 0, 0.06) * sstep((F.yJ - 2.2 - y) / 0.4) * sstep((y - (F.yHip - 0.2)) / 0.3);
+    return dz;
+  }
+  function linhaParaPele(l, q, bustTh2, p, F) {
+    if (l.ref === "a") return [q[1], l.s * q[0]];
+    const y = q[1];
+    return [y, bustTh2(y, l.s * q[0], l.ref === "f", p, F)];
   }
 
   // src/engine/tronco.js
@@ -735,14 +889,11 @@ pre.cmdout .ok{color:var(--cobalt)}
       dz += 0.02 * gauss(ax, 0.86, 0.12) * gauss(y, F.yJ - 4.3, 0.12) * (0.4 + 0.6 * cf) * (1 - B.fat);
     }
     if (cb > 0) {
-      if (y > F.yJ - 2.3) {
-        const T = scapTri(p, F, s), sd = -sdPoly(ax, y, T.poly);
-        dz += cb * (0.035 + 0.05 * mu) * sstep(-sd / 0.16 + 0.2) * (0.7 + 0.3 * sstep(-sd / 0.3));
-        dz += cb * (0.02 + 0.025 * mu) * gauss(segDist(ax, y, T.sp0[0], T.sp0[1], T.sp1[0], T.sp1[1]), 0, 0.04);
+      {
+        const T = scapTri(p, F, s);
+        dz += cb * (0.015 + 0.02 * mu) * gauss(segDist(ax, y, T.sp0[0], T.sp0[1], T.sp1[0], T.sp1[1]), 0, 0.035);
       }
-      dz += cb * (0.02 + 0.04 * mu) * gauss(ax, 0.95, 0.22) * gauss(y, F.yJ - 1.7, 0.6);
-      dz += cb * (0.03 + 0.04 * mu) * gauss(ax, 0.45, 0.3) * gauss(y, F.yJ - 0.05, 0.35);
-      dz += cb * (0.015 + 0.035 * mu) * gauss(ax, 0.27, 0.11) * gauss(y, F.yJ - 3.8, 0.7);
+      dz += cb * (0.025 + 0.03 * mu) * gauss(ax, 0.45, 0.3) * gauss(y, F.yJ + 0.05, 0.3);
       dz -= 0.035 * cb * gauss(x, 0, 0.08) * clamp((F.yC7 - y) / 0.4, 0, 1) * sstep((y - (F.yHip - 0.1)) / 0.3);
       if (y < F.yC7 && y > F.yHip - 0.2) dz += cb * 0.014 * gauss(x, 0, 0.035) * Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * (F.yC7 - y) / 0.3), 2);
       dz -= 0.02 * cb * gauss(ax, 0.2, 0.05) * gauss(y, F.yJ - 4.45, 0.06);
@@ -750,7 +901,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       dz += cb * gl * gauss(ax, 0.5, 0.4) * gauss(y, F.yHip - 0.35, 0.5) * (1 - 0.6 * gauss(x, 0, 0.05));
     }
     dz += p.shTension * 0.045 * gauss(y, F.yTr - 0.12, 0.14) * gauss(ax, 0.72, 0.3);
-    dz += muscleBump(x, y, th, p, F);
+    dz += muscleBump(x, y, th, p, F) + relevoTronco(x, y, th, p, F);
     {
       const sb = (p.spineSide || 0) / 30, sf = (p.spineFlex || 0) / 40, gw = gauss(y, F.yWst - 0.15, 0.55), side = Math.abs(Math.sin(th));
       dz += side * gw * (0.07 * Math.max(0, -s * sb) - 0.03 * Math.max(0, s * sb));
@@ -962,8 +1113,15 @@ pre.cmdout .ok{color:var(--cobalt)}
     }, [1.02, 1, 1]);
   }
   function deltV(phi) {
-    const g = Math.cos(clamp(phi, -2.1, 2.1) * 0.75);
-    return 0.3 + 0.95 * g * g;
+    const g = Math.cos(clamp(phi, -2.1, 2.1) * 0.8);
+    return 0.3 + 0.92 * Math.pow(Math.max(0, g), 2.2);
+  }
+  function deltR(v, th, A, s) {
+    const Rc = 0.58 * A.k, thc = s * Math.PI / 2, phi = Math.atan2(Math.sin(th - thc), Math.cos(th - thc));
+    const vmax = deltV(phi) * A.L1 / 2.9, inner = sstep((Math.abs(phi) - 95 * D) / (45 * D));
+    if (v < 0) return Math.sqrt(Math.max(0, Rc * Rc - v * v / 0.72));
+    const t2 = v / vmax, ra = armRadius(v, th, A, s), outer = lerp(Rc * (1 + 0.03 * Math.sin(Math.PI * Math.min(1, t2 * 2))), ra - 0.015 * A.k, sstep(Math.min(1, t2 * 1.1)));
+    return lerp(outer, ra - 0.06 * A.k, inner);
   }
   function buildDelt(p, s) {
     const A = armDims(p), Rc = 0.58 * A.k, rows = 22, cols = 56, V = new Float32Array(rows * cols * 3);
@@ -973,14 +1131,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       for (let j = 0; j < cols; j++) {
         const th = j / cols * 2 * Math.PI;
         const phi = Math.atan2(Math.sin(th - thc), Math.cos(th - thc));
-        const vmax = deltV(phi) * A.L1 / 2.9, v = lerp(-Rc * 0.999, vmax, t);
+        const vmax = deltV(phi) * A.L1 / 2.9, v = lerp(-Rc * 0.848, vmax, t);
         const inner = sstep((Math.abs(phi) - 95 * D) / (45 * D));
-        let rr;
-        if (v < 0) rr = Math.sqrt(Math.max(0, Rc * Rc - v * v));
-        else {
-          const ra = armRadius(v, th, A, s), outer = lerp(Rc, ra - 0.02 * A.k, sstep(v / vmax));
-          rr = lerp(outer, ra - 0.06 * A.k, inner);
-        }
+        const rr = deltR(v, th, A, s);
         const k = (r * cols + j) * 3;
         V[k] = rr * Math.sin(th) + s * 0.03 * (1 - inner);
         V[k + 1] = -v;
@@ -1544,6 +1697,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   var FH;
   var FRRaw;
   var FR;
+  var CelTmp;
   function blurPlain(src, dst) {
     for (let y = 0; y < HH; y++) {
       const y0 = y > 0 ? y - 1 : 0, y1 = y < HH - 1 ? y + 1 : y;
@@ -1586,7 +1740,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       F[y * HW + HW - 1] = 1;
     }
   }
-  function makeFields(doShade) {
+  function makeFields(doShade, cel) {
     for (let y = 0; y < HH; y++) for (let x = 0; x < HW; x++) {
       const k = y * HW + x;
       if (hz[k] < -1e5 || hid[k] !== CUR_ID) {
@@ -1648,6 +1802,12 @@ pre.cmdout .ok{color:var(--cobalt)}
       blurMasked(FBRaw, FB);
       blurMasked(FHRaw, FH);
       blurMasked(FRRaw, FR);
+      if (cel) for (let i = 0; i < 3; i++) {
+        blurMasked(FA, CelTmp);
+        blurMasked(CelTmp, FA);
+        blurMasked(FB, CelTmp);
+        blurMasked(CelTmp, FB);
+      }
       borders(FA);
       borders(FB);
       borders(FH);
@@ -1676,6 +1836,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     FH = new Float32Array(HN);
     FRRaw = new Float32Array(HN);
     FR = new Float32Array(HN);
+    CelTmp = new Float32Array(HN);
   }
 
   // src/engine/sombra.js
@@ -2041,8 +2202,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     atmo: 0.4
   };
   var PRESETS = {
-    manequim: { sil: 1, fill: 1, shade: 1, sphere: 0, planes: 0, rings: 1, merid: 1, jaw: 0, feat: 1, eyes: 1, ears: 1, neck: 1, torso: 1, anat: 1, girdle: 1, arms: 1, hands: 1, legs: 1, hidden: 0, grid: 1, prop: 1, floor: 1, shadow: 1, horizon: 0 },
-    construcao: { sil: 1, fill: 1, shade: 0, sphere: 1, planes: 1, rings: 1, merid: 1, jaw: 1, feat: 1, eyes: 1, ears: 1, neck: 1, torso: 1, anat: 1, girdle: 1, arms: 1, hands: 1, legs: 1, hidden: 1, grid: 1, prop: 1, floor: 1, shadow: 1, horizon: 1 }
+    manequim: { sil: 1, fill: 1, shade: 1, sphere: 0, planes: 0, rings: 1, merid: 1, jaw: 0, feat: 1, eyes: 1, ears: 1, neck: 1, torso: 1, anat: 1, girdle: 1, arms: 1, hands: 1, legs: 1, hidden: 0, grid: 1, prop: 1, floor: 1, shadow: 1, horizon: 0, fibras: 0, cel: 0 },
+    construcao: { sil: 1, fill: 1, shade: 0, sphere: 1, planes: 1, rings: 1, merid: 1, jaw: 1, feat: 1, eyes: 1, ears: 1, neck: 1, torso: 1, anat: 1, girdle: 1, arms: 1, hands: 1, legs: 1, hidden: 1, grid: 1, prop: 1, floor: 1, shadow: 1, horizon: 1, fibras: 0, cel: 0 },
+    /* écorché: anatomia limpa (linhas de músculo com hierarquia, tons planos), sem guias */
+    ecorche: { sil: 1, fill: 1, shade: 1, sphere: 0, planes: 0, rings: 0, merid: 0, jaw: 0, feat: 1, eyes: 1, ears: 1, neck: 1, torso: 1, anat: 1, girdle: 0, arms: 1, hands: 1, legs: 1, hidden: 0, grid: 1, prop: 0, floor: 1, shadow: 1, horizon: 0, fibras: 0, cel: 1 }
   };
   var ST = {
     eyeU: { c: "ink", w: 2 },
@@ -2051,6 +2214,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     jaw: { c: "ink", w: 1.2 },
     anat: { c: "ink", w: 1.5 },
     mus: { c: "ink", w: 1.05 },
+    /* hierarquia de traço anatômico: sobreposição firme, divisão interna média, fibras finas */
+    dobra: { c: "ink", w: 1.95 },
+    divisao: { c: "ink", w: 1 },
+    fibra: { c: "ink", w: 0.5 },
     gdash: { c: "ink", w: 0.9 },
     ext: { c: "cobalt", w: 1 },
     sil: { c: "ink", w: 2.3 },
@@ -2512,6 +2679,47 @@ pre.cmdout .ok{color:var(--cobalt)}
     return k >= 0 && k < HN ? hid[k] : -1;
   }
 
+  // src/engine/atlas/bracos.js
+  var arr = (fn, a0, a1, n) => {
+    const o = [];
+    for (let i = 0; i <= n; i++) o.push(fn(a0 + (a1 - a0) * i / n));
+    return o;
+  };
+  function atlasBraco(A, s) {
+    const L2 = [], k = A.k, L1 = A.L1;
+    const linha = (nome, tipo, parte, pts, min = 0, off) => L2.push({ nome, tipo, parte, pts, min, off });
+    const sobreDelt = (t, th) => {
+      const v = t * L1, r = deltR(v, th, A, s), ra = armRadius(v, th, A, s);
+      return [t, th, Math.max(0.012, r - ra + 0.012)];
+    };
+    const lat = s * Math.PI / 2;
+    const borda = arr((ph) => {
+      const t = deltV(ph) / 2.9 * 0.97;
+      return sobreDelt(t, lat + ph);
+    }, -1.85, 1.85, 44);
+    L2.push({ nome: "deltoide_borda", tipo: "dobra", parte: "braco", pts3: borda });
+    [-0.72, 0.72].forEach((ph, i) => L2.push({
+      nome: i ? "deltoide_feixe_posterior" : "deltoide_feixe_anterior",
+      tipo: "divisao",
+      min: 0.12,
+      parte: "braco",
+      pts3: arr((t) => sobreDelt(t, lat + ph * (0.75 + 0.25 * t / (deltV(ph) / 2.9))), 0.06, deltV(ph) / 2.9 * 0.85, 12)
+    }));
+    for (let i = -3; i <= 3; i++) {
+      const ph = i * 0.42;
+      L2.push({ nome: "fibra_deltoide", tipo: "fibra", parte: "braco", min: 0.3, pts3: arr((t) => sobreDelt(t, lat + ph * (1 - 0.35 * t / (deltV(ph) / 2.9))), 0.03, deltV(ph) / 2.9 * 0.85, 8) });
+    }
+    [-0.62, 0.62].forEach((a) => linha("biceps_borda", "divisao", "braco", arr((t) => [t, a * (1 + 0.15 * Math.sin(Math.PI * t))], 0.42, 0.88, 16), 0.1));
+    linha("braquial", "divisao", "braco", arr((t) => [t, s * (Math.PI / 2 + 0.2 - 0.35 * (t - 0.5))], 0.5, 0.9, 12), 0.14);
+    linha("triceps_ferradura", "dobra", "braco", arr((q) => [0.72 - 0.34 * Math.pow(Math.abs(2 * q - 1), 1.6), Math.PI + (q - 0.5) * 1.2], 0, 1, 22), 0.08);
+    linha("triceps_cabecas", "divisao", "braco", arr((t) => [t, Math.PI - s * 0.38], 0.36, 0.66, 10), 0.2);
+    linha("braquiorradial", "divisao", "ante", arr((t) => [t, s * (0.75 + 0.25 * t)], 0.04, 0.7, 16), 0.06);
+    linha("flexores", "divisao", "ante", arr((t) => [t, -s * 0.55], 0.12, 0.55, 12), 0.12);
+    linha("extensores", "divisao", "ante", arr((t) => [t, s * (1.95 - 0.2 * t)], 0.1, 0.62, 12), 0.16);
+    linha("punho", "fibra", "ante", arr((th) => [0.95, th], 0, 2 * Math.PI, 28));
+    return L2;
+  }
+
   // src/engine/desenho.js
   function scene(p, L2, pal, fast, mode2) {
     setLight(p.lightAz, p.lightEl);
@@ -2793,7 +3001,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       if (vis < pts.length * 0.7) return;
       out.push('<path d="' + d + 'Z" style="fill:' + col + ";stroke:none" + (op ? ";opacity:" + op : "") + '"/>');
     };
-    const arr = (fn, a0, a1, n) => {
+    const arr2 = (fn, a0, a1, n) => {
       const o = [];
       for (let i = 0; i <= n; i++) o.push(fn(a0 + (a1 - a0) * i / n));
       return o;
@@ -2811,13 +3019,13 @@ pre.cmdout .ok{color:var(--cobalt)}
           rasterS(m);
         });
       }
-      makeFields(!!L2.shade);
+      makeFields(!!L2.shade, !!L2.cel);
       if (L2.fill) {
         const d = contourPath(Fc);
         if (d) out.push('<path d="' + d + '" style="fill:' + pal.fill + ';stroke:none;fill-rule:evenodd"/>');
       }
       if (L2.shade) {
-        const dh = contourPath(FH);
+        const dh = L2.cel ? "" : contourPath(FH);
         if (dh) out.push('<path d="' + dh + '" style="fill:' + pal.shade1 + ';stroke:none;fill-rule:evenodd;opacity:.5"/>');
         const d1 = contourPath(FA), d2 = contourPath(FB);
         if (d1) out.push('<path d="' + d1 + '" style="fill:' + pal.shade1 + ';stroke:none;fill-rule:evenodd"/>');
@@ -2829,7 +3037,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       out.push('<path d="' + fillPath(hSil, head) + (bust ? fillPath(bSil, bust) : "") + arms.map((o) => fillPath(silhouette(o.a), o.a) + fillPath(silhouette(o.f), o.f) + o.hs.map((h) => fillPath(silhouette(h), h)).join("")).join("") + legs.map((o) => [o.t, o.c, o.ft].map((m) => fillPath(silhouette(m), m)).join("")).join("") + '" style="fill:' + pal.fill + ';stroke:none"/>');
     }
     out.push("</g>");
-    out.push('<g id="guias">');
+    out.push('<g id="construction-guides" style="opacity:' + (L2.cel ? 0.45 : 0.8) + '">');
     if (L2.sphere) {
       const c0 = xf([0, 0, 0]), cx0 = CX + S * c0[0], cy0 = CY - S * c0[1];
       out.push('<circle cx="' + f1(cx0) + '" cy="' + f1(cy0) + '" r="' + f1(S) + '" style="' + style("sphere", false) + '"/>');
@@ -2837,7 +3045,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     if (L2.planes) {
       [-1, 1].forEach((s) => {
-        const pts = arr((a) => {
+        const pts = arr2((a) => {
           const y = 0.05 + 0.56 * Math.sin(a), z = 0.56 * Math.cos(a);
           const r = ringAt(y, p, sh), cs = clamp((z - r[1]) / r[2], -1, 1);
           return [s * r[0] * Math.sqrt(1 - cs * cs) * 1.004, y, z];
@@ -2846,8 +3054,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       });
     }
     if (L2.rings) {
-      const full = (y) => arr((th) => hp(y, th, 4e-3), 0, 2 * Math.PI, 140);
-      const part_ = (y) => arr((th) => hp(y, th, 4e-3), -110 * D, 110 * D, 90);
+      const full = (y) => arr2((th) => hp(y, th, 4e-3), 0, 2 * Math.PI, 140);
+      const part_ = (y) => arr2((th) => hp(y, th, 4e-3), -110 * D, 110 * D, 90);
       curve("ring", full(t));
       curve("axis", full(0));
       curve("ring", full(eyeY));
@@ -2857,28 +3065,28 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (L2.rings) {
       [0.11, eyeY, -t].forEach((y) => {
         const r = ringAt(y, p, sh), xe = r[0] + 0.3;
-        curve("ext", arr((x) => [x, y, r[1]], -xe, xe, 40));
+        curve("ext", arr2((x) => [x, y, r[1]], -xe, xe, 40));
         [-1, 1].forEach((q) => curve("ext", [[q * xe, y - 0.035, r[1]], [q * xe, y + 0.035, r[1]]]));
       });
     }
     if (L2.merid) {
-      curve("axis", arr((i) => hp(i, 0, 4e-3), 1, chinY + 0.015, 110));
-      curve("ring", arr((i) => hp(i, Math.PI, 0), 1, -0.85, 60));
-      [-1, 1].forEach((s) => curve("ring", arr((i) => hp(i, s * 38 * D, 4e-3), t, -t, 50)));
+      curve("axis", arr2((i) => hp(i, 0, 4e-3), 1, chinY + 0.015, 110));
+      curve("ring", arr2((i) => hp(i, Math.PI, 0), 1, -0.85, 60));
+      [-1, 1].forEach((s) => curve("ring", arr2((i) => hp(i, s * 38 * D, 4e-3), t, -t, 50)));
     }
     if (L2.jaw) {
       [-1, 1].forEach((s) => {
-        curve("jaw", arr((k) => {
+        curve("jaw", arr2((k) => {
           const y = lerp(-0.5, chinY + 0.01, k);
           return hp(y, s * lerp(92, 0, Math.pow(k, 1.3)) * D, 4e-3);
         }, 0, 1, 50));
       });
     }
     if (bust && L2.girdle) {
-      [-1.2, F.yJ + 0.3].forEach((y) => curve("ring", arr((th) => bp(y, th, 6e-3), 0, 2 * Math.PI, 90), xb, true));
+      [-1.2, F.yJ + 0.3].forEach((y) => curve("ring", arr2((th) => bp(y, th, 6e-3), 0, 2 * Math.PI, 90), xb, true));
       const notch = bp(F.yJ + 0.03, 0, 0.01);
       const acr = [-1, 1].map((s) => shoulderWarp([s * (F.W - 0.1), F.yAc + 0.06, F.zT + 0.05], p, F));
-      curve("gdash", arr((k) => [lerp(acr[0][0], acr[1][0], k), lerp(acr[0][1], acr[1][1], k), lerp(acr[0][2], acr[1][2], k)], 0, 1, 30), xb);
+      curve("gdash", arr2((k) => [lerp(acr[0][0], acr[1][0], k), lerp(acr[0][1], acr[1][1], k), lerp(acr[0][2], acr[1][2], k)], 0, 1, 30), xb);
       [-1, 1].forEach((s) => {
         const G = xv(applyA(A2, armJoint(p, F, s))), gx = CX + S * G[0], gy = CY - S * G[1];
         const lat = xv0(mv(A2.M, [s, 0, 0])), la = Math.atan2(-lat[1], lat[0]);
@@ -2888,7 +3096,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         out.push('<path d="M' + f1(gx - r3) + " " + f1(gy) + "H" + f1(gx + r3) + "M" + f1(gx) + " " + f1(gy - r3) + "V" + f1(gy + r3) + '" style="' + style("plane", false, 0.7) + '"/>');
         const a0 = la - 1.75, a1 = la + 0.55;
         out.push('<path d="M' + f1(gx + r2 * Math.cos(a0)) + " " + f1(gy + r2 * Math.sin(a0)) + "A" + f1(r2) + " " + f1(r2) + " 0 0 1 " + f1(gx + r2 * Math.cos(a1)) + " " + f1(gy + r2 * Math.sin(a1)) + '" style="' + style("plane", false, 0.8) + '"/>');
-        curve("ring", arr((q) => {
+        curve("ring", arr2((q) => {
           const x = s * (0.14 + q * (F.W - 0.3)), yc = F.yJ + 0.06 + 0.04 * q + 0.035 * Math.sin(Math.PI * q);
           return bp(yc, bustTh(yc, x, true, p, F), 0.02);
         }, 0, 1, 24), xb);
@@ -2908,7 +3116,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       });
       const arc3 = (k, C, U, V, r, a0, a1, X) => {
         const P2 = (a) => [C[0] + r * (U[0] * Math.cos(a) + V[0] * Math.sin(a)), C[1] + r * (U[1] * Math.cos(a) + V[1] * Math.sin(a)), C[2] + r * (U[2] * Math.cos(a) + V[2] * Math.sin(a))];
-        curve(k, arr(P2, a0, a1, 24), X);
+        curve(k, arr2(P2, a0, a1, 24), X);
         const e = P2(a1), tg = [-U[0] * Math.sin(a1) + V[0] * Math.cos(a1), -U[1] * Math.sin(a1) + V[1] * Math.cos(a1), -U[2] * Math.sin(a1) + V[2] * Math.cos(a1)], rd = [e[0] - C[0], e[1] - C[1], e[2] - C[2]].map((c) => c / r);
         const h = 0.16 * r, sg = Math.sign(a1 - a0);
         [1, -1].forEach((q) => curve(k, [e, [e[0] - sg * tg[0] * h + q * rd[0] * h * 0.6, e[1] - sg * tg[1] * h + q * rd[1] * h * 0.6, e[2] - sg * tg[2] * h + q * rd[2] * h * 0.6]], X));
@@ -2920,21 +3128,21 @@ pre.cmdout .ok{color:var(--cobalt)}
         jc(o.Aft.T, 0.12);
         [0.3, 0.62].forEach((t2) => {
           const u = t2 * Ll.L1;
-          curve("ring", arr((th) => {
+          curve("ring", arr2((th) => {
             const r = thighR(u, th, Ll, s) + 0.012;
             return [r * Math.sin(th), -u, r * Math.cos(th)];
           }, 0, 2 * Math.PI, 56), Xt, true);
         });
         [0.3, 0.68].forEach((t2) => {
           const u = t2 * Ll.L2;
-          curve("ring", arr((th) => {
+          curve("ring", arr2((th) => {
             const r = calfR(u, th, Ll, s) + 0.012;
             return [r * Math.sin(th), -u, r * Math.cos(th)];
           }, 0, 2 * Math.PI, 48), Xc, true);
         });
-        curve("axis", arr((u) => [0, -u, thighR(u, 0, Ll, s) + 0.012], 0.14 * Ll.L1, 0.93 * Ll.L1, 26), Xt);
-        curve("axis", arr((u) => [0, -u, calfR(u, 0, Ll, s) + 0.012], 0.07 * Ll.L2, 0.93 * Ll.L2, 24), Xc);
-        curve("axis", arr((u) => [s * (thighR(u, s * Math.PI / 2, Ll, s) + 0.012), -u, 0], 0.2 * Ll.L1, 0.9 * Ll.L1, 22), Xt);
+        curve("axis", arr2((u) => [0, -u, thighR(u, 0, Ll, s) + 0.012], 0.14 * Ll.L1, 0.93 * Ll.L1, 26), Xt);
+        curve("axis", arr2((u) => [0, -u, calfR(u, 0, Ll, s) + 0.012], 0.07 * Ll.L2, 0.93 * Ll.L2, 24), Xc);
+        curve("axis", arr2((u) => [s * (thighR(u, s * Math.PI / 2, Ll, s) + 0.012), -u, 0], 0.2 * Ll.L1, 0.9 * Ll.L1, 22), Xt);
         curve("jaxis", [[-0.95 * k, 0, 0], [0.95 * k, 0, 0]], Xk);
         curve("jaxis", [[-0.55 * k, -Ll.L2, 0], [0.55 * k, -Ll.L2, 0]], Xc);
         arc3("plane", [s * 0.47 * k, 0, 0], [0, -1, 0], [0, 0, -1], 0.68 * k, -0.35, 1.25, Xk);
@@ -2943,187 +3151,134 @@ pre.cmdout .ok{color:var(--cobalt)}
         curve("plane", [[xm, y0, zA], [xl, y0, zA], [xl, y0, zB], [xm, y0, zB], [xm, y0, zA]], Xf, true);
         curve("jaxis", [[0, y0, zA - 0.15 * f], [0, y0, zB + 0.15 * f]], Xf);
       });
-      [F.yUB, F.yWst, F.yHip].forEach((y) => curve("ring", arr((th) => bp(y, th, 8e-3), 0, 2 * Math.PI, 110), xb, true));
+      [F.yUB, F.yWst, F.yHip].forEach((y) => curve("ring", arr2((th) => bp(y, th, 8e-3), 0, 2 * Math.PI, 110), xb, true));
       arms.forEach((o) => {
         const A = armDims(p), s = o.s, k = A.k, X = (v) => xv(applyA(o.Aa, v)), Xf = (v) => xv(applyA(o.Af, v)), Xe = (v) => xv(applyA(o.Ae, v));
         [0.35, 0.7].forEach((t2) => {
           const u = A.L1 * t2;
-          curve("ring", arr((th) => {
+          curve("ring", arr2((th) => {
             const r = armRadius(u, th, A, s) + 0.01;
             return [r * Math.sin(th), -u, r * Math.cos(th)];
           }, 0, 2 * Math.PI, 48), X, true);
         });
         [0.3, 0.68].forEach((t2) => {
           const u = A.L2 * t2;
-          curve("ring", arr((th) => {
+          curve("ring", arr2((th) => {
             const r = foreR(u, th, A, s) + 0.01;
             return [r * Math.sin(th), -u, r * Math.cos(th)];
           }, 0, 2 * Math.PI, 40), Xf, true);
         });
-        curve("axis", arr((uu) => [0, -uu, armRadius(uu, 0, A, s) + 0.012], 0.55, A.L1 * 0.95, 26), X);
-        curve("axis", arr((uu) => [s * (armRadius(uu, s * Math.PI / 2, A, s) + 0.012), -uu, 0], 0.55, A.L1, 26), X);
-        curve("axis", arr((uu) => [0, -uu, foreR(uu, 0, A, s) + 0.012], 0.1 * A.L2, 0.92 * A.L2, 22), Xf);
+        curve("axis", arr2((uu) => [0, -uu, armRadius(uu, 0, A, s) + 0.012], 0.55, A.L1 * 0.95, 26), X);
+        curve("axis", arr2((uu) => [s * (armRadius(uu, s * Math.PI / 2, A, s) + 0.012), -uu, 0], 0.55, A.L1, 26), X);
+        curve("axis", arr2((uu) => [0, -uu, foreR(uu, 0, A, s) + 0.012], 0.1 * A.L2, 0.92 * A.L2, 22), Xf);
         curve("jaxis", [[-0.6 * k, 0, 0], [0.6 * k, 0, 0]], Xe);
         curve("jaxis", [[0, 0, -0.75 * k], [0, 0, 0.75 * k]], X);
         arc3("plane", [s * 0.4 * k, 0, 0], [0, -1, 0], [0, 0, 1], 0.6 * k, -0.3, 1.3, Xe);
         arc3("plane", [0, 0, 0], [s, 0, 0], [0, 1, 0], 0.78 * k, -0.5, 0.9, X);
       });
-      curve("axis", arr((y) => bp(y, 0, 6e-3), F.yJ - 0.02, F.yCr + 0.05, 90), xb);
-      curve("axis", arr((y) => bp(y, Math.PI, 6e-3), F.yC7, F.yHip - 0.2, 90), xb);
-      curve("ring", arr((th) => bp(F.yJ - 0.95, th, 6e-3), -100 * D, 100 * D, 60), xb);
+      curve("axis", arr2((y) => bp(y, 0, 6e-3), F.yJ - 0.02, F.yCr + 0.05, 90), xb);
+      curve("axis", arr2((y) => bp(y, Math.PI, 6e-3), F.yC7, F.yHip - 0.2, 90), xb);
+      curve("ring", arr2((th) => bp(F.yJ - 0.95, th, 6e-3), -100 * D, 100 * D, 60), xb);
       const cy0 = F.yJ - 0.72;
-      lineT("anat", arr((y) => bp(y, 0, 0.012), cy0 + 0.13, cy0 - 0.13, 8), xb);
-      lineT("anat", arr((x) => bp(cy0, bustTh(cy0, x, true, p, F), 0.012), -0.11, 0.11, 8), xb);
+      lineT("anat", arr2((y) => bp(y, 0, 0.012), cy0 + 0.13, cy0 - 0.13, 8), xb);
+      lineT("anat", arr2((x) => bp(cy0, bustTh(cy0, x, true, p, F), 0.012), -0.11, 0.11, 8), xb);
     }
     out.push("</g>");
     out.push('<g id="anatomia">');
     if (bust && L2.anat) {
       [-1, 1].forEach((s) => {
-        lineT("anat", arr((u) => bp(lerp(-0.7, F.yJ + 0.04, u), s * lerp(112, 16, u) * D, 0.012), 0.22, 0.97, 26), xb);
-        lineT("anat", arr((q) => {
+        lineT("divisao", arr2((u) => bp(lerp(-0.7, F.yJ + 0.04, u), s * lerp(112, 16, u) * D, 0.012), 0.22, 0.97, 26), xb);
+        lineT("divisao", arr2((q) => {
           const x = s * (0.1 + q * (F.W - 0.12)), yc = F.yJ + 0.03 + 0.04 * q + 0.035 * Math.sin(Math.PI * q);
           return bp(yc, bustTh(yc, x, true, p, F), 0.012);
         }, 0.08, 0.97, 30), xb);
-        const Mu = muscleDefs(F), B = F.B, mu = B.mus;
-        const cr = (Pts, n) => {
-          const o = [];
-          for (let i = 0; i < Pts.length - 1; i++) {
-            const a = Pts[Math.max(0, i - 1)], b = Pts[i], c = Pts[i + 1], d = Pts[Math.min(Pts.length - 1, i + 2)];
-            for (let j = 0; j < n; j++) {
-              const t2 = j / n, t22 = t2 * t2, t3 = t22 * t2;
-              o.push([0, 1].map((k) => 0.5 * (2 * b[k] + (-a[k] + c[k]) * t2 + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * t22 + (-a[k] + 3 * b[k] - 3 * c[k] + d[k]) * t3)));
-            }
-          }
-          o.push(Pts[Pts.length - 1]);
-          return o;
-        };
-        const onF = (Q, side) => Q.map(([ax, yy]) => {
-          const y = F.yJ + yy;
-          return bp(y, bustTh(y, s * ax, side, p, F), 0.012);
-        });
-        const pec = Mu.pec, ms = B.breast < 0.35;
-        if (ms) lineT("mus", onF(cr(pec.slice(3, 10), 7), true), xb);
-        lineT("mus", onF(cr(pec.slice(1, 5), 6), true), xb);
-        if (!ms) {
-          const yb = -1.28 - 0.3;
-          lineT("mus", onF(arr((q) => [lerp(0.26, 0.9, q), yb + 0.22 * Math.pow(2 * q - 1, 2) * (q < 0.5 ? 0.6 : 1)], 0, 1, 22), true), xb);
-        }
-        if (mu * (1 - B.fat) * (1 - 0.75 * B.fem) > 0.16) {
-          Mu.abs.forEach((P2, i) => {
-            if (i < 3) lineT("mus", onF(arr((q) => [lerp(0.04, P2[3][0], q), P2[3][1] + 0.02 - 0.04 * q * q], 0, 1, 10), true), xb);
-          });
-          const a0 = Mu.abs[0], a3 = Mu.abs[3];
-          lineT("mus", onF(cr([[a0[1][0] + 0.01, a0[1][1]], [a0[2][0] + 0.02, a0[2][1]], [Mu.abs[2][2][0] + 0.02, Mu.abs[2][2][1]], [a3[2][0] + 0.01, a3[2][1]], [a3[3][0], a3[3][1]]], 6), true), xb);
-          lineT("mus", onF(cr([[Mu.obl[0][0], Mu.obl[0][1]], [Mu.obl[1][0] * 0.98, Mu.obl[1][1]]], 8), true), xb);
-          for (let i = 0; i < 4; i++) {
-            const yc = -1.2 - 0.3 * i, ac = 1.18 + 0.06 * i;
-            lineT("mus", arr((q) => {
-              const a = ac + 0.16 * (q - 0.5), y = F.yJ + yc - 0.09 + 0.12 * (q - 0.5);
-              return bp(y, s * a, 0.012);
-            }, 0, 1, 6), xb);
-          }
-        }
-        {
-          const T = scapTri(p, F, s);
-          const ed = (P2, Q, n) => lineT("anat", arr((k) => {
-            const ax = lerp(P2[0], Q[0], k), y = lerp(P2[1], Q[1], k);
-            return bp(y, bustTh(y, s * ax, false, p, F), 0.014);
-          }, 0, 1, n), xb);
-          const sp = cr(T.poly.concat([T.poly[0], T.poly[1]]), 5).slice(0, -5);
-          lineT("mus", sp.map(([ax, y]) => bp(y, bustTh(y, s * ax, false, p, F), 0.014)), xb);
-          ed(T.sp0, T.sp1, 16);
-          ed(T.poly[4], [F.W - 0.4, F.yJ - 0.98], 12);
-          lineT("mus", onF(cr([[0.05, F.yJ - 2.9 - F.yJ], [0.3, -1.6], [T.sp0[0] + 0.02, T.sp0[1] - F.yJ - 0.05]], 8), false), xb);
-        }
       });
-      curve("anat", arr((th) => {
+      {
+        const at = atlasTronco(p, F), B = F.B, def = clamp(B.mus * (1 - B.fat) * (1 - 0.75 * B.fem), 0, 2);
+        [1, -1].forEach((s) => at[s].linhas.forEach((l) => {
+          if (l.tipo === "fibra" && !L2.fibras) return;
+          if (def < (l.min || 0)) return;
+          lineT(l.tipo, l.pts.map((q) => {
+            const yt = linhaParaPele(l, q, bustTh, p, F);
+            return bp(yt[0], yt[1], 0.012);
+          }), xb);
+        }));
+      }
+      curve("anat", arr2((th) => {
         const y = lerp(F.yJ + 0.14, F.yC7, (1 - Math.cos(th)) / 2);
         return bp(y, th, 0.01);
       }, 0, 2 * Math.PI, 90), xb);
-      lineT("anat", arr((x) => {
-        const y = F.yJ - 2.35 - 0.6 * Math.pow(x / 0.75, 2) - 0.04;
-        return bp(y, bustTh(y, x, true, p, F), 0.012);
-      }, -0.72, 0.72, 30), xb);
-      lineT("anat", arr((x) => {
+      lineT("anat", arr2((x) => {
         const y = F.yJ + 0.05 + 3 * x * x;
         return bp(y, bustTh(y, x, true, p, F), 0.012);
       }, -0.11, 0.11, 10), xb);
-      lineT("anat", arr((y) => bp(y, Math.PI, 0.012), F.yC7 - 0.15, F.yHip - 0.25, 40), xb);
-      for (let y = F.yC7 - 0.05; y > F.yHip + 0.1; y -= 0.3) lineT("mus", arr((x) => bp(y, Math.PI + x, 0.012), -0.06, 0.06, 4), xb);
-      lineT("mus", arr((y) => bp(y, 0, 0.012), F.yJ - 1.45, F.yNav + 0.06, 20), xb);
-      lineT("anat", arr((a) => {
+      lineT("divisao", arr2((y) => bp(y, Math.PI, 0.012), F.yC7 - 0.15, F.yHip - 0.25, 40), xb);
+      for (let y = F.yC7 - 0.05; y > F.yHip + 0.1; y -= 0.3) lineT("fibra", arr2((x) => bp(y, Math.PI + x, 0.012), -0.05, 0.05, 4), xb);
+      lineT("anat", arr2((a) => {
         const x = 0.03 * Math.cos(a), y = F.yNav + 0.035 * Math.sin(a);
         return bp(y, bustTh(y, x, true, p, F), 0.01);
       }, 0, 2 * Math.PI, 12), xb);
       [-1, 1].forEach((s) => {
-        lineT("anat", arr((k) => {
+        lineT("anat", arr2((k) => {
           const ax = lerp(0.97 * F.B.hip * 0.93, 0.04, k), y = lerp(F.yHip + 0.42, F.yCr + 0.06, Math.pow(k, 1.25)) - 0.1 * Math.sin(Math.PI * k);
           return bp(y, bustTh(y, s * ax, true, p, F), 0.012);
         }, 0, 1, 24), xb);
-        lineT("mus", arr((k) => {
+        lineT("mus", arr2((k) => {
           const ax = lerp(0.9 * F.B.hip * 0.93, 0.03, k), y = lerp(F.yHip + 0.38, F.yHip - 0.3, Math.pow(k, 1.3));
           return bp(y, bustTh(y, s * ax, false, p, F), 0.012);
         }, 0, 1, 20), xb);
       });
-      lineT("anat", arr((y) => bp(y, Math.PI, 0.012), F.yHip - 0.1, F.yCr + 0.05, 14), xb);
+      lineT("anat", arr2((y) => bp(y, Math.PI, 0.012), F.yHip - 0.1, F.yCr + 0.05, 14), xb);
       arms.forEach((o) => {
         const A = armDims(p), s = o.s, X = (v) => xv(applyA(o.Aa, v)), L1 = A.L1, L22 = A.L2;
         const onA = (u, th, off) => {
           const r = armRadius(u, th, A, s) + (off || 0.012);
           return [r * Math.sin(th), -u, r * Math.cos(th)];
         };
-        lineT("mus", arr((ph) => {
-          const th = s * Math.PI / 2 + ph, u = L1 * (0.47 - 0.3 * Math.pow(Math.abs(ph) / 1.95, 1.3));
-          return onA(u, th, 0.03);
-        }, -1.9, 1.9, 40).map(X), (v) => v);
-        [-0.62, 0.62].forEach((a) => lineT("mus", arr((u) => onA(u, a * (1 + 0.15 * Math.sin(Math.PI * u / L1)), 0.012), 0.4 * L1, 0.88 * L1, 16).map(X), (v) => v));
-        lineT("mus", arr((q) => {
-          const th = Math.PI + (q - 0.5) * 1.2, u = L1 * (0.72 - 0.34 * Math.pow(Math.abs(2 * q - 1), 1.6));
-          return onA(u, th);
-        }, 0, 1, 22).map(X), (v) => v);
         const XF = (u, th) => {
           const t2 = clamp(u / L22, 0, 1), Afu = comp(A2, { M: mmul(o.ap.Mb, rotM(o.ap.pr * t2, 0, 0)), T: o.ap.fore.T }), r = foreR(u, th, A, s) + 0.012;
           return xv(applyA(Afu, [r * Math.sin(th), -u, r * Math.cos(th)]));
         };
-        lineT("mus", arr((u) => XF(u, s * (0.75 + 0.25 * u / L22)), 0.06 * L22, 0.7 * L22, 16), (v) => v);
-        lineT("mus", arr((u) => XF(u, -s * 0.55), 0.12 * L22, 0.55 * L22, 12), (v) => v);
+        const def = clamp(F.B.mus * (1 - F.B.fat) * (1 - 0.75 * F.B.fem), 0, 2);
+        atlasBraco(A, s).forEach((l) => {
+          if (l.tipo === "fibra" && !L2.fibras) return;
+          if (def < (l.min || 0)) return;
+          const pts = l.parte === "ante" ? l.pts.map(([t2, th]) => XF(t2 * L22, th)) : l.pts3 ? l.pts3.map(([t2, th, off]) => X(onA(t2 * L1, th, off))) : l.pts.map(([t2, th]) => X(onA(t2 * L1, th, l.off || 0.012)));
+          lineT(l.tipo, pts, (v) => v);
+        });
         const el = s > 0 ? p.elbowL : p.elbowR;
-        if (el > 25) lineT("mus", arr((a) => {
+        if (el > 25) lineT("mus", arr2((a) => {
           const r = 0.34 * A.k;
           return xv(applyA(o.Ae, [r * Math.sin(a), 0.02 * A.k, r * Math.cos(a)]));
         }, -0.8, 0.8, 12), (v) => v);
       });
       legs.forEach((o) => {
         const A = legDims(p), k = A.k, s = o.s, Xk = (v) => xv(applyA(o.Akn, v)), Xc = (v) => xv(applyA(o.Acf, v));
-        lineT("mus", arr((a) => [0.15 * k * Math.cos(a), 0.06 * k + 0.19 * k * Math.sin(a), 0.42 * k], 0, 2 * Math.PI, 24).map(Xk), (v) => v);
+        lineT("mus", arr2((a) => [0.15 * k * Math.cos(a), 0.06 * k + 0.19 * k * Math.sin(a), 0.42 * k], 0, 2 * Math.PI, 24).map(Xk), (v) => v);
         const kf = s > 0 ? p.kneeFlexL : p.kneeFlexR, hf = s > 0 ? p.hipFlexL : p.hipFlexR, Xt = (v) => xv(applyA(o.Ath, v));
-        if (kf > 25) lineT("mus", arr((a) => {
+        if (kf > 25) lineT("mus", arr2((a) => {
           const r = 0.36 * k;
           return [-r * Math.sin(a), -0.02 * k, -r * Math.cos(a)];
         }, -0.85, 0.85, 14).map(Xk), (v) => v);
-        if (hf < 45) lineT("mus", arr((a) => {
+        if (hf < 45) lineT("mus", arr2((a) => {
           const th = Math.PI + s * a, u = A.L1 * (0.19 + 0.035 * a), r = thighR(u, th, A, s) + 0.012;
           return [r * Math.sin(th), -u, r * Math.cos(th)];
         }, 0.95, -0.35, 16).map(Xt), (v) => v);
-        [[-1, 0.07], [1, -0.06]].forEach(([sd, dy]) => lineT("mus", arr((a) => [s * sd * 0.205 * k, -A.L2 + dy * k + 0.06 * k * Math.sin(a), 0.06 * k * Math.cos(a)], 0, 2 * Math.PI, 14).map(Xc), (v) => v));
-        lineT("mus", arr((u) => {
+        [[-1, 0.07], [1, -0.06]].forEach(([sd, dy]) => lineT("mus", arr2((a) => [s * sd * 0.205 * k, -A.L2 + dy * k + 0.06 * k * Math.sin(a), 0.06 * k * Math.cos(a)], 0, 2 * Math.PI, 14).map(Xc), (v) => v));
+        lineT("mus", arr2((u) => {
           const th = Math.PI - s * 0.08, r = calfR(u, th, A, s) + 0.012;
           return [r * Math.sin(th), -u, r * Math.cos(th)];
         }, 0.12 * A.L2, 0.5 * A.L2, 14).map(Xc), (v) => v);
-        lineT("mus", arr((u) => {
+        lineT("mus", arr2((u) => {
           const th = s * 0.18, r = calfR(u, th, A, s) + 0.012;
           return [r * Math.sin(th), -u, r * Math.cos(th)];
         }, 0.1 * A.L2, 0.85 * A.L2, 16).map(Xc), (v) => v);
       });
       [-1, 1].forEach((s) => {
-        lineT("anat", arr((a) => {
+        lineT("anat", arr2((a) => {
           const y = F.yHip + 0.52 + 0.07 * Math.sin(Math.PI * (a - 0.9) / 1.7);
           return bp(y, s * a, 0.012);
         }, 0.95, 2.45, 22), xb);
-        lineT("anat", arr((k) => {
-          const ax = lerp(F.W - 0.42, 0.8, k), y = lerp(F.yJ - 1.15, F.yWst + 0.2, k);
-          return bp(y, bustTh(y, s * ax, false, p, F), 0.012);
-        }, 0, 1, 20), xb);
       });
     }
     out.push("</g>");
@@ -3143,32 +3298,32 @@ pre.cmdout .ok{color:var(--cobalt)}
             lo.push(browPt(u, -th / 2));
           }
           poly("brow", up.concat(lo.reverse()), pal.shade3);
-        } else curve("feat", arr((u) => browPt(u, 0), 0, 1, 30));
-        if (!L2.eyes) curve("feat", arr((u) => hp(eyeY + 0.03 * Math.sin(Math.PI * u) * (1 - 0.4 * u), s * (15 + 27 * u) * D, 8e-3), 0, 1, 24));
+        } else curve("feat", arr2((u) => browPt(u, 0), 0, 1, 30));
+        if (!L2.eyes) curve("feat", arr2((u) => hp(eyeY + 0.03 * Math.sin(Math.PI * u) * (1 - 0.4 * u), s * (15 + 27 * u) * D, 8e-3), 0, 1, 24));
         const ytip = -0.76 * t;
-        curve("feat", arr((k) => {
+        curve("feat", arr2((k) => {
           const y = lerp(-0.02, ytip, k), xw = lerp(0.045, 0.105, Math.pow(k, 1.2));
           return hp(y, s * surfX(y, xw), 8e-3);
         }, 0, 1, 18));
-        curve("feat", arr((u) => {
+        curve("feat", arr2((u) => {
           const x = s * lerp(0.055, 0.115, u), y = -0.965 * t + 0.014 * Math.sin(Math.PI * u);
           return hp(y, surfX(y, x), 0.01);
         }, 0, 1, 10));
-        curve("feat", arr((k) => {
+        curve("feat", arr2((k) => {
           const y = lerp(-t * 0.99, mouthY + 0.032, k);
           return hp(y, surfX(y, s * 0.035), 8e-3);
         }, 0, 1, 10));
       });
-      fillP(arr((a) => {
+      fillP(arr2((a) => {
         const y = -0.83 * t + 0.2 * t * Math.sin(a / 2) * 0 + -0.1 * t * (1 - Math.cos(a)) / 2 * 0;
         return hp(-0.84 * t - 0.12 * t * Math.sin(a / 2), surfX(-0.9 * t, 0.12 * Math.cos(a)), 0.01);
       }, 0, Math.PI, 14), pal.shade2, 0.7);
       [-1, 1].forEach((s) => {
-        fillP(arr((a) => {
+        fillP(arr2((a) => {
           const y = -0.955 * t + 0.012 * Math.sin(a);
           return hp(y, surfX(y, s * (0.066 + 0.034 * Math.cos(a))), 0.011);
         }, 0, 2 * Math.PI, 14), pal.shade3);
-        curve("feat", arr((k) => {
+        curve("feat", arr2((k) => {
           const y = lerp(-0.8 * t, -0.96 * t, k), x = s * (0.12 + 0.05 * Math.sin(Math.PI * k));
           return hp(y, surfX(y, x), 0.01);
         }, 0, 1, 12));
@@ -3178,23 +3333,23 @@ pre.cmdout .ok{color:var(--cobalt)}
         const top = (x) => mouthY + 0.034 * (1 - Math.pow(Math.abs(x) / 0.2, 1.3)) * (1 - 0.35 * gauss(x, 0, 0.035)) + 0.016 * Math.pow(x / 0.2, 2);
         const bot = (x) => mouthY - 0.07 - 0.02 * (1 - Math.pow(x / 0.13, 2));
         const H2 = (x, y, o) => hp(y, surfX(y, x), o || 8e-3);
-        fillP(arr((x) => H2(x, top(x)), -0.2, 0.2, 24).concat(arr((x) => H2(x, mY(x)), 0.2, -0.2, 24)), pal.shade3);
-        fillP(arr((x) => H2(x, mY(x)), -0.2, 0.2, 24).concat(arr((x) => H2(x, mY(x) - 0.055 * Math.max(0, 1 - Math.pow(x / 0.2, 2)) - 4e-3), 0.2, -0.2, 24)), pal.shade1);
-        fillP(arr((x) => H2(x, bot(x) - 5e-3, 6e-3), -0.13, 0.13, 16).concat(arr((x) => H2(x, bot(x) - 0.05 * (1 - Math.pow(x / 0.13, 2)), 6e-3), 0.13, -0.13, 16)), pal.shade2, 0.8);
+        fillP(arr2((x) => H2(x, top(x)), -0.2, 0.2, 24).concat(arr2((x) => H2(x, mY(x)), 0.2, -0.2, 24)), pal.shade3);
+        fillP(arr2((x) => H2(x, mY(x)), -0.2, 0.2, 24).concat(arr2((x) => H2(x, mY(x) - 0.055 * Math.max(0, 1 - Math.pow(x / 0.2, 2)) - 4e-3), 0.2, -0.2, 24)), pal.shade1);
+        fillP(arr2((x) => H2(x, bot(x) - 5e-3, 6e-3), -0.13, 0.13, 16).concat(arr2((x) => H2(x, bot(x) - 0.05 * (1 - Math.pow(x / 0.13, 2)), 6e-3), 0.13, -0.13, 16)), pal.shade2, 0.8);
       }
       const wing = [[0.105, -0.76], [0.14, -0.85], [0.17, -0.93], [0.14, -0.985], [0.07, -1], [0, -1]];
       const half = wing.map((w) => [w[0], w[1] * t]);
       const poly2 = half.slice().reverse().map((w) => [-w[0], w[1]]).concat(half.slice(1));
       curve("feat", poly2.map((w) => hp(w[1], surfX(w[1], w[0]), 8e-3)));
-      curve("feat", arr((x) => {
+      curve("feat", arr2((x) => {
         const y = mouthY + 0.016 * Math.pow(x / 0.2, 2);
         return hp(y, surfX(y, x), 8e-3);
       }, -0.2, 0.2, 30));
-      curve("feat", arr((x) => {
+      curve("feat", arr2((x) => {
         const y = mouthY + 0.034 * (1 - Math.pow(Math.abs(x) / 0.2, 1.3)) * (1 - 0.35 * gauss(x, 0, 0.035)) + 0.016 * Math.pow(x / 0.2, 2);
         return hp(y, surfX(y, x), 8e-3);
       }, -0.2, 0.2, 40));
-      curve("feat", arr((x) => {
+      curve("feat", arr2((x) => {
         const y = mouthY - 0.07 - 0.02 * (1 - Math.pow(x / 0.13, 2));
         return hp(y, surfX(y, x), 8e-3);
       }, -0.13, 0.13, 24));
@@ -3236,9 +3391,9 @@ pre.cmdout .ok{color:var(--cobalt)}
           si.push(E(X(q), up(q), 4e-3));
         }
         fillP2(so.concat(si.reverse()), pal.shade2, 0.75);
-        const al = arr((q) => E(X(q), up(q), 8e-3), 0, 1, 28), bl = arr((q) => E(X(q), lo(q), 8e-3), 1, 0, 28);
+        const al = arr2((q) => E(X(q), up(q), 8e-3), 0, 1, 28), bl = arr2((q) => E(X(q), lo(q), 8e-3), 1, 0, 28);
         fillP2(al.concat(bl), pal.fill);
-        const sh1 = arr((q) => E(X(q), up(q), 0.01), 0.05, 0.95, 20), sh2 = arr((q) => E(X(q), up(q) - 0.4 * hu * Math.sin(Math.PI * q), 0.01), 0.95, 0.05, 20);
+        const sh1 = arr2((q) => E(X(q), up(q), 0.01), 0.05, 0.95, 20), sh2 = arr2((q) => E(X(q), up(q) - 0.4 * hu * Math.sin(Math.PI * q), 0.01), 0.95, 0.05, 20);
         fillP2(sh1.concat(sh2), pal.shade1, 0.9);
         if (p.eyeStyle >= 0.5) {
           const ri = 0.066 * p.eyeSize;
@@ -3248,18 +3403,18 @@ pre.cmdout .ok{color:var(--cobalt)}
             ip.push(E(ex, clamp(ey, lo(q) * 0.98, up(q) * 0.98), 0.012));
           }
           fillP2(ip, pal.shade2);
-          const pp = arr((a) => E(0.024 * p.eyeSize * Math.cos(a), 0.024 * p.eyeSize * Math.sin(a), 0.013), 0, 2 * Math.PI, 16);
+          const pp = arr2((a) => E(0.024 * p.eyeSize * Math.cos(a), 0.024 * p.eyeSize * Math.sin(a), 0.013), 0, 2 * Math.PI, 16);
           fillP2(pp, pal.ink);
-          fillP2(arr((a) => E(0.012 * p.eyeSize + 7e-3 * Math.cos(a), 0.02 * p.eyeSize + 7e-3 * Math.sin(a), 0.014), 0, 2 * Math.PI, 10), "#fff");
+          fillP2(arr2((a) => E(0.012 * p.eyeSize + 7e-3 * Math.cos(a), 0.02 * p.eyeSize + 7e-3 * Math.sin(a), 0.014), 0, 2 * Math.PI, 10), "#fff");
         }
-        curve("eyeU", arr((q) => E(X(q), up(q)), -0.04, 1.02, 32));
-        curve("feat", arr((q) => E(X(q), lo(q)), 0.03, 0.97, 28));
-        curve("feat", arr((q) => {
+        curve("eyeU", arr2((q) => E(X(q), up(q)), -0.04, 1.02, 32));
+        curve("feat", arr2((q) => E(X(q), lo(q)), 0.03, 0.97, 28));
+        curve("feat", arr2((q) => {
           const r = 0.1 + 0.8 * q;
           return E(X(r), up(r) + 0.026 * p.eyeSize + 0.01 * Math.sin(Math.PI * q), 0.01);
         }, 0, 1, 20));
-        curve("feat", arr((k) => E(X(1) + 0.012 * k, up(1) - 4e-3 + 5e-3 * k), 0, 1, 4));
-        curve("feat", arr((a) => E(X(0) + 0.012 * Math.cos(a) + 0.012, lo(0) + 0.012 * Math.sin(a) + 6e-3), -0.5, 2.8, 10));
+        curve("feat", arr2((k) => E(X(1) + 0.012 * k, up(1) - 4e-3 + 5e-3 * k), 0, 1, 4));
+        curve("feat", arr2((a) => E(X(0) + 0.012 * Math.cos(a) + 0.012, lo(0) + 0.012 * Math.sin(a) + 6e-3), -0.5, 2.8, 10));
       });
     }
     out.push("</g>");
@@ -3267,13 +3422,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (L2.ears) {
       [-1, 1].forEach((s) => {
         const E = (u, v) => earSurf(p, sh, s, u, v);
-        if (s * xfd([1, 0, 0])[2] > 0.05) fillP(arr((a) => E(0.12 + 0.34 * Math.cos(a), -0.05 + 0.36 * Math.sin(a)), 0, 2 * Math.PI, 28), pal.shade2, 0.9);
-        curve("ear", arr((a) => E(Math.cos(a), Math.sin(a)), 0, 2 * Math.PI, 64));
-        curve("ear", arr((a) => E(0.8 * Math.cos(a) - 0.02, 0.84 * Math.sin(a)), 35 * D, 335 * D, 52));
-        curve("ear", arr((k) => E(-0.07 - 0.38 * Math.sin(Math.PI * k), 0.62 - 1.12 * k), 0, 1, 22));
-        curve("ear", arr((k) => E(lerp(0.25, -0.1, k), lerp(0.78, 0.5, k)), 0, 1, 8));
-        curve("ear", arr((a) => E(0.8 + 0.1 * Math.cos(a), -0.18 + 0.16 * Math.sin(a)), -80 * D, 100 * D, 12));
-        curve("ear", arr((k) => E(lerp(-0.5, 0.45, k), -0.74 + 0.06 * Math.sin(Math.PI * k)), 0, 1, 14));
+        if (s * xfd([1, 0, 0])[2] > 0.05) fillP(arr2((a) => E(0.12 + 0.34 * Math.cos(a), -0.05 + 0.36 * Math.sin(a)), 0, 2 * Math.PI, 28), pal.shade2, 0.9);
+        curve("ear", arr2((a) => E(Math.cos(a), Math.sin(a)), 0, 2 * Math.PI, 64));
+        curve("ear", arr2((a) => E(0.8 * Math.cos(a) - 0.02, 0.84 * Math.sin(a)), 35 * D, 335 * D, 52));
+        curve("ear", arr2((k) => E(-0.07 - 0.38 * Math.sin(Math.PI * k), 0.62 - 1.12 * k), 0, 1, 22));
+        curve("ear", arr2((k) => E(lerp(0.25, -0.1, k), lerp(0.78, 0.5, k)), 0, 1, 8));
+        curve("ear", arr2((a) => E(0.8 + 0.1 * Math.cos(a), -0.18 + 0.16 * Math.sin(a)), -80 * D, 100 * D, 12));
+        curve("ear", arr2((k) => E(lerp(-0.5, 0.45, k), -0.74 + 0.06 * Math.sin(Math.PI * k)), 0, 1, 14));
       });
     }
     out.push("</g>");
@@ -3492,7 +3647,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     { k: "grid", label: "Grade", sw: "dash" },
     { k: "floor", label: "Chão do cenário", sw: "dash" },
     { k: "shadow", label: "Sombra no chão", sw: "ink" },
-    { k: "horizon", label: "Horizonte e pontos de fuga", sw: "coral" }
+    { k: "horizon", label: "Horizonte e pontos de fuga", sw: "coral" },
+    { k: "fibras", label: "Fibras dos músculos", sw: "ink" },
+    { k: "cel", label: "Tons planos (écorché)", sw: "ink" }
   ];
   var ALIAS = {
     cabecaGirar: "headYaw",
@@ -3997,6 +4154,7 @@ cena.enquadrar();`,
   camera.zoom(z) · camera.perspectiva(true, distância) · camera.distancia(R) · camera.luz(azimute, elevação) · camera.enquadrar()
   camera.lente(mm) — 18–35 grande-angular, 50 normal, 85–200 tele · camera.alturaOlhos(R acima do chão, inclinação?) — manequim ≈ 16 R
   cena.horizonte(true) · cena.sombras(true) · cena.atmosfera(0..1)
+  cena.modo("ecorche" | "manequim" | "construcao") · cena.fibras(true)   — écorché: músculos com linhas de borda e tons planos
   Perspectiva: quem está longe fica menor, mais alto na tela (perto do horizonte), com traço mais fino e cor mais clara.
   tema("claro" | "escuro" | "sistema") · log(...)
   
@@ -4278,6 +4436,17 @@ cena.enquadrar();`,
     },
     atmosfera(x) {
       P.atmo = clamp(num(x === void 0 ? 0.4 : x, "atmosfera"), 0, 1);
+    },
+    /* modo de desenho: "manequim", "construcao" ou "ecorche" (anatomia limpa, como pranchas de Bridgman/Loomis) */
+    modo(nome) {
+      const n = String(nome || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace("construção", "construcao");
+      if (!PRESETS[n]) throw new Error('Modo desconhecido: use "manequim", "construcao" ou "ecorche".');
+      setPreset(n);
+    },
+    fibras(on) {
+      L.fibras = on !== false && on !== 0;
+      setMode(null);
+      updateModeButtons();
     }
   };
   function camSet(k, v, min, max, nome) {
@@ -4533,6 +4702,7 @@ cena.enquadrar();`,
   function updateModeButtons2() {
     $("modeMan").setAttribute("aria-pressed", String(mode === "manequim"));
     $("modeCon").setAttribute("aria-pressed", String(mode === "construcao"));
+    $("modeEco").setAttribute("aria-pressed", String(mode === "ecorche"));
   }
 
   // src/ui/exportar.js

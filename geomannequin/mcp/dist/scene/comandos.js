@@ -3,10 +3,10 @@ import { CAMK, P, SCN, addInst, delInst, dupInst, instColors, mixHex, nextHue, s
 import { applyParams, num } from "./parametros.js";
 import { BODIES, BPOSES, doBodyPose, guardArms } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
-import { L, setMode } from "./modos.js";
+import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
-import { D, DEF, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -45,7 +45,11 @@ const cena={
   enquadrar(){autoFit()},
   horizonte(on){L.horizon=on!==false&&on!==0;setMode(null);updateModeButtons()},
   sombras(on){L.shadow=on!==false&&on!==0;setMode(null);updateModeButtons()},
-  atmosfera(x){P.atmo=clamp(num(x===undefined?0.4:x,"atmosfera"),0,1)}
+  atmosfera(x){P.atmo=clamp(num(x===undefined?0.4:x,"atmosfera"),0,1)},
+  /* modo de desenho: "manequim", "construcao" ou "ecorche" (anatomia limpa, como pranchas de Bridgman/Loomis) */
+  modo(nome){const n=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace("construção","construcao");
+    if(!PRESETS[n])throw new Error("Modo desconhecido: use \"manequim\", \"construcao\" ou \"ecorche\".");setPreset(n)},
+  fibras(on){L.fibras=on!==false&&on!==0;setMode(null);updateModeButtons()}
 };
 function camSet(k,v,min,max,nome){P[k]=clamp(num(v,nome),min,max)}
 const camera={

@@ -119,7 +119,9 @@ const LAY=[
   {k:"grid",label:"Grade",sw:"dash"},
   {k:"floor",label:"Chão do cenário",sw:"dash"},
   {k:"shadow",label:"Sombra no chão",sw:"ink"},
-  {k:"horizon",label:"Horizonte e pontos de fuga",sw:"coral"}
+  {k:"horizon",label:"Horizonte e pontos de fuga",sw:"coral"},
+  {k:"fibras",label:"Fibras dos músculos",sw:"ink"},
+  {k:"cel",label:"Tons planos (écorché)",sw:"ink"}
 ];
 /* ===== Comandos da cena: API em português e editor ===== */
 const ALIAS={

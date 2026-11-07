@@ -8,6 +8,7 @@ const RIMD=[[1,0],[-1,0],[0,1],[0,-1],[0.7,0.7],[-0.7,0.7],[0.7,-0.7],[-0.7,-0.7
 let AOD;
 let FcRaw,FcTmp,Fc;
 let FARaw,FA,FBRaw,FB,FHRaw,FH,FRRaw,FR;
+let CelTmp;
 function blurPlain(src,dst){
   for(let y=0;y<HH;y++){
     const y0=y>0?y-1:0,y1=y<HH-1?y+1:y;
@@ -35,7 +36,8 @@ function borders(F){
   for(let x=0;x<HW;x++){F[x]=1;F[(HH-1)*HW+x]=1}
   for(let y=0;y<HH;y++){F[y*HW]=1;F[y*HW+HW-1]=1}
 }
-function makeFields(doShade){
+/* cel: tons planos (écorché) — mais desfoque e só a normal suavizada decide o tom, sem ruído do mapa de sombra */
+function makeFields(doShade,cel){
   for(let y=0;y<HH;y++)for(let x=0;x<HW;x++){
     const k=y*HW+x;
     if(hz[k]<-1e5||hid[k]!==CUR_ID){cov[k]=0;FcRaw[k]=1;FARaw[k]=1;FBRaw[k]=1;FHRaw[k]=1;FRRaw[k]=1;continue}
@@ -67,7 +69,9 @@ function makeFields(doShade){
     FBRaw[k]=Math.min(nl-(-0.12),Math.max(nl-0.20,cs));
   }
   blurPlain(FcRaw,FcTmp);blurPlain(FcTmp,Fc);borders(Fc);
-  if(doShade){blurMasked(FARaw,FA);blurMasked(FBRaw,FB);blurMasked(FHRaw,FH);blurMasked(FRRaw,FR);borders(FA);borders(FB);borders(FH);borders(FR)}
+  if(doShade){blurMasked(FARaw,FA);blurMasked(FBRaw,FB);blurMasked(FHRaw,FH);blurMasked(FRRaw,FR);
+    if(cel)for(let i=0;i<3;i++){blurMasked(FA,CelTmp);blurMasked(CelTmp,FA);blurMasked(FB,CelTmp);blurMasked(CelTmp,FB)}
+    borders(FA);borders(FB);borders(FH);borders(FR)}
 }
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
@@ -86,6 +90,7 @@ export function iniciarCampos(){
   FH=new Float32Array(HN);
   FRRaw=new Float32Array(HN);
   FR=new Float32Array(HN);
+  CelTmp=new Float32Array(HN);
 }
 
 export { cov, aoA, RIMD, AOD, FcRaw, FcTmp, Fc, FARaw, FA, FBRaw, FB, FHRaw, FH, FRRaw, FR, blurPlain, blurMasked, borders, makeFields };

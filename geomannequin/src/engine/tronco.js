@@ -2,6 +2,7 @@
 import { D, clamp, gauss, lerp, rotAbout, sstep } from "./matematica.js";
 import { muscleBump, sdPoly } from "./musculos.js";
 import { bustFrame, bustR, bustZc, scapTri, segDist } from "./corpo.js";
+import { relevoTronco } from "./atlas/tronco.js";
 
 /* relevos de todo o tronco */
 function bustBump(x,y,th,p,F){
@@ -47,15 +48,9 @@ function bustBump(x,y,th,p,F){
   }
   /* costas: escápulas, dorsais, coluna, covinhas sacrais, glúteos */
   if(cb>0){
-    if(y>F.yJ-2.3){
-      const T=scapTri(p,F,s),sd=-sdPoly(ax,y,T.poly);
-      dz+=cb*(0.035+0.05*mu)*sstep(-sd/0.16+0.2)*(0.7+0.3*sstep(-sd/0.3));
-      dz+=cb*(0.02+0.025*mu)*gauss(segDist(ax,y,T.sp0[0],T.sp0[1],T.sp1[0],T.sp1[1]),0,0.04);
-
-    }
-    dz+=cb*(0.02+0.04*mu)*gauss(ax,0.95,0.22)*gauss(y,F.yJ-1.7,0.6);
-    dz+=cb*(0.03+0.04*mu)*gauss(ax,0.45,0.3)*gauss(y,F.yJ-0.05,0.35);
-    dz+=cb*(0.015+0.035*mu)*gauss(ax,0.27,0.11)*gauss(y,F.yJ-3.8,0.7);
+    /* escápula, trapézio, grande dorsal e eretores vêm do atlas muscular (relevoTronco) */
+    {const T=scapTri(p,F,s);dz+=cb*(0.015+0.02*mu)*gauss(segDist(ax,y,T.sp0[0],T.sp0[1],T.sp1[0],T.sp1[1]),0,0.035)}
+    dz+=cb*(0.025+0.03*mu)*gauss(ax,0.45,0.3)*gauss(y,F.yJ+0.05,0.3);
     dz-=0.035*cb*gauss(x,0,0.08)*clamp((F.yC7-y)/0.4,0,1)*sstep((y-(F.yHip-0.1))/0.3);
     if(y<F.yC7&&y>F.yHip-0.2)dz+=cb*0.014*gauss(x,0,0.035)*Math.pow(0.5+0.5*Math.cos(2*Math.PI*(F.yC7-y)/0.3),2);
     dz-=0.02*cb*gauss(ax,0.2,0.05)*gauss(y,F.yJ-4.45,0.06);
@@ -64,7 +59,7 @@ function bustBump(x,y,th,p,F){
     dz+=cb*gl*gauss(ax,0.5,0.4)*gauss(y,F.yHip-0.35,0.5)*(1-0.6*gauss(x,0,0.05));
   }
   dz+=p.shTension*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);
-  dz+=muscleBump(x,y,th,p,F);
+  dz+=muscleBump(x,y,th,p,F)+relevoTronco(x,y,th,p,F);
   {
     const sb=(p.spineSide||0)/30,sf=(p.spineFlex||0)/40,gw=gauss(y,F.yWst-0.15,0.55),side=Math.abs(Math.sin(th));
     dz+=side*gw*(0.07*Math.max(0,-s*sb)-0.03*Math.max(0,s*sb));

@@ -72,7 +72,7 @@ export function registerAll(server, getWorld, opts = {}) {
   server.registerTool("nova_cena", {
     title: "Nova cena",
     description: "Começa uma cena nova com um único manequim em pé, câmera em perspectiva padrão. Apaga a cena atual desta conversa.",
-    inputSchema: { tema: z.enum(["claro", "escuro", "sistema"]).optional().describe("Tema da cena; escuro = modo noturno."), modo: z.enum(["manequim", "construcao"]).optional().describe("manequim = acabamento com sombreado; construcao = linhas de construção (esferas, planos, horizonte).") },
+    inputSchema: { tema: z.enum(["claro", "escuro", "sistema"]).optional().describe("Tema da cena; escuro = modo noturno."), modo: z.enum(["manequim", "construcao", "ecorche"]).optional().describe("manequim = acabamento com sombreado; construcao = linhas de construção (esferas, planos, horizonte); ecorche = anatomia limpa com linhas de músculos e tons planos (estilo Bridgman/Loomis).") },
     annotations: DEL
   }, guard(({ tema, modo }) => {
     const w = W();
@@ -227,7 +227,8 @@ export function registerAll(server, getWorld, opts = {}) {
     description: "Tema (escuro = modo noturno), modo de desenho, estilo de cor, sombras no chão, horizonte com pontos de fuga, perspectiva atmosférica e outras camadas.",
     inputSchema: {
       tema: z.enum(["claro", "escuro", "sistema"]).optional(),
-      modo: z.enum(["manequim", "construcao"]).optional(),
+      modo: z.enum(["manequim", "construcao", "ecorche"]).optional().describe("ecorche = anatomia limpa com linhas de músculos e tons planos."),
+      fibras: z.boolean().optional().describe("Linhas finas mostrando a direção das fibras dos músculos."),
       estilo: z.enum(["creme", "azul", "bege", "gelo", "pessego", "lapis", "cinza"]).optional().describe("Paleta do manequim principal no tema claro."),
       sombras: z.boolean().optional(), horizonte: z.boolean().optional(), chao: z.boolean().optional(),
       atmosfera: num("0 a 1: quanto os manequins distantes clareiam.").optional(),
@@ -242,6 +243,7 @@ export function registerAll(server, getWorld, opts = {}) {
     if (a.sombras !== undefined) w.setLayer("shadow", a.sombras);
     if (a.horizonte !== undefined) w.setLayer("horizon", a.horizonte);
     if (a.chao !== undefined) w.setLayer("floor", a.chao);
+    if (a.fibras !== undefined) w.setLayer("fibras", a.fibras);
     if (a.atmosfera !== undefined) w.cena.atmosfera(a.atmosfera);
     if (a.camadas) for (const [k, v] of Object.entries(a.camadas)) { if (v === undefined) continue; if (!w.LAY.some(l => l.k === k)) throw new Error(`Camada desconhecida: “${k}”.`); w.setLayer(k, v); }
     return ok(w, "Aparência ajustada.");
