@@ -93,7 +93,7 @@ function scapTri(p,F,s){
   const tp=(qx,qy)=>{qx*=sk*1.1;qy*=sk*1.25;return [sx0+(qx*cr-qy*sr),sy0+(qx*sr+qy*cr)]};
   const poly=[[-0.27,0.48],[0.02,0.56],[0.28,0.54],[0.42,0.4],[0.33,0.1],[0.12,-0.32],[-0.08,-0.58],[-0.18,-0.63],[-0.25,-0.5],[-0.3,-0.1],[-0.31,0.28]].map(q=>tp(q[0],q[1]));
   const acr=[F.W-0.2,F.yAc-0.16];
-  return {A:tp(-0.27,0.48),B:tp(0.36,0.52),C:tp(-0.17,-0.62),sp0:tp(-0.27,0.36),sp1:acr,ax:tp(0.36,0.25),poly,tp};
+  return {A:tp(-0.27,0.48),B:tp(0.36,0.52),C:tp(-0.17,-0.62),sp0:tp(-0.3,0.16),sp1:acr,ax:tp(0.36,0.25),poly,tp};
 }
 function segDist(px,py,ax,ay,bx,by){const ex=bx-ax,ey=by-ay,t=clamp(((px-ax)*ex+(py-ay)*ey)/(ex*ex+ey*ey),0,1);return Math.hypot(px-ax-ex*t,py-ay-ey*t)}
 

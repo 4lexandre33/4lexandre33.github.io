@@ -40,10 +40,10 @@ function buildElbow(p,s,el){
   },[1.02,1,1]);
 }
 /* comprimento do deltoide em volta do braço: gota que aponta para a inserção no meio do braço, do lado de fora */
-function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.8);return 0.3+0.92*Math.pow(Math.max(0,g),2.2)}
+function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.62);return 0.55+0.75*Math.pow(Math.max(0,g),1.6)}
 /* raio do deltoide a uma distância v do ombro, no ângulo th (mesma fórmula da malha e das linhas) */
 function deltR(v,th,A,s){
-  const Rc=0.58*A.k,thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc));
+  const thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc)),Rc=0.55*A.k*(1-0.1*Math.max(0,-Math.cos(th)));
   const vmax=deltV(phi)*A.L1/2.9,inner=sstep((Math.abs(phi)-95*D)/(45*D));
   if(v<0)return Math.sqrt(Math.max(0,Rc*Rc-v*v/0.72));
   /* topo achatado (não é uma bola) e corpo em gota: cheio em cima, afinando até a inserção */
@@ -51,7 +51,7 @@ function deltR(v,th,A,s){
   return lerp(outer,ra-0.06*A.k,inner);
 }
 function buildDelt(p,s){
-  const A=armDims(p),Rc=0.58*A.k,rows=22,cols=56,V=new Float32Array(rows*cols*3);
+  const A=armDims(p),Rc=0.55*A.k,rows=22,cols=56,V=new Float32Array(rows*cols*3);
   const thc=s*Math.PI/2;
   for(let r=0;r<rows;r++){
     const t=r/(rows-1);

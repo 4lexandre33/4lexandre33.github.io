@@ -13,14 +13,15 @@ function tubeMesh(rows,cols,u0,u1,rad){
   return {V,rows,cols,flip:1,fb:null};
 }
 /* faixa muscular entre dois pontos do mundo (peitoral e grande dorsal formando a axila): curva de Bézier com seção elíptica */
-function bandMesh(Pa,Pb,Pc,wr,tk,nref){
+function bandMesh(Pa,Pb,Pc,wr,tk,nref,ponta){
   const rows=16,cols=24,V=new Float32Array(rows*cols*3);
   for(let r=0;r<rows;r++){
     const t=r/(rows-1),it=1-t,c=[0,1,2].map(i=>it*it*Pa[i]+2*it*t*Pc[i]+t*t*Pb[i]);
     let d=[0,1,2].map(i=>2*it*(Pc[i]-Pa[i])+2*t*(Pb[i]-Pc[i]));const dl=Math.hypot(d[0],d[1],d[2])||1;d=d.map(x=>x/dl);
     const nd=nref[0]*d[0]+nref[1]*d[1]+nref[2]*d[2];let n2=[0,1,2].map(i=>nref[i]-nd*d[i]);const nl=Math.hypot(n2[0],n2[1],n2[2])||1;n2=n2.map(x=>x/nl);
     const n1=[d[1]*n2[2]-d[2]*n2[1],d[2]*n2[0]-d[0]*n2[2],d[0]*n2[1]-d[1]*n2[0]];
-    const env=Math.max(0.04,Math.pow(Math.sin(Math.PI*t),0.4));
+    /* ponta: expoente do envelope (menor = extremidades mais cheias, sem bico) */
+    const env=Math.max(0.04,Math.pow(Math.sin(Math.PI*t),ponta||0.4));
     for(let j=0;j<cols;j++){
       const a=j/cols*2*Math.PI,ca=Math.cos(a)*wr*env,sa=Math.sin(a)*tk*env,q=(r*cols+j)*3;
       for(let i=0;i<3;i++)V[q+i]=c[i]+n1[i]*ca+n2[i]*sa;

@@ -14,8 +14,10 @@ export function atlasBraco(A, s) {
   /* deltoide: borda da gota (sobreposição sobre bíceps e tríceps) e as divisões entre os 3 feixes */
   const borda = arr(ph => { const t = deltV(ph) / 2.9 * 0.97; return sobreDelt(t, lat + ph); }, -1.85, 1.85, 44);
   L.push({ nome: "deltoide_borda", tipo: "dobra", parte: "braco", pts3: borda });
-  [-0.72, 0.72].forEach((ph, i) => L.push({ nome: i ? "deltoide_feixe_posterior" : "deltoide_feixe_anterior", tipo: "divisao", min: 0.12, parte: "braco",
-    pts3: arr(t => sobreDelt(t, lat + ph * (0.75 + 0.25 * t / (deltV(ph) / 2.9))), 0.06, deltV(ph) / 2.9 * 0.85, 12) }));
+  /* divisões dos feixes: nascem separadas no alto (clavícula / acrômio / espinha) e convergem para a inserção */
+  const tIns = deltV(0) / 2.9 * 0.9;
+  [-0.95, 0.95].forEach((ph, i) => L.push({ nome: i ? "deltoide_feixe_posterior" : "deltoide_feixe_anterior", tipo: "divisao", min: 0.12, parte: "braco",
+    pts3: arr(q => sobreDelt(0.04 + (tIns - 0.04) * q, lat + ph * (1 - q) * (1 - 0.15 * q)), 0, 0.92, 12) }));
   /* fibras do deltoide (camada opcional) */
   for (let i = -3; i <= 3; i++) { const ph = i * 0.42; L.push({ nome: "fibra_deltoide", tipo: "fibra", parte: "braco", min: 0.3, pts3: arr(t => sobreDelt(t, lat + ph * (1 - 0.35 * t / (deltV(ph) / 2.9))), 0.03, deltV(ph) / 2.9 * 0.85, 8) }); }
   /* bíceps (dois lados), braquial (lado de fora, entre bíceps e tríceps), tríceps (ferradura e divisão das cabeças) */

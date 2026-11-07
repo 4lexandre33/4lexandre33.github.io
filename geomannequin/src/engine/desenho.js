@@ -48,12 +48,12 @@ function scene(p,L,pal,fast,mode){
     /* axila: peitoral (frente) e grande dorsal (atrás) ligam o tronco ao braço e esticam quando o braço sobe */
     const fw=mv(A2.M,[0,0,1]),k=Ad.k,mid=(P,Q,o)=>[0,1,2].map(i=>(P[i]+Q[i])/2+o[i]);
     const pa=applyA(A2,[s*0.38,F.yJ-0.9,-0.02]),pb=applyA(Aa,[-s*0.08,-0.8,0.17]);
-    const la=applyA(A2,[s*0.62,F.yJ-1.85,-0.7]),lb=applyA(Aa,[-s*0.08,-0.95,-0.13]);
+    const la=applyA(A2,[s*0.55,F.yJ-1.35,-0.5]),lb=applyA(Aa,[-s*0.06,-0.62,-0.1]);
     /* músculo esticado fica mais fino */
     const thin=(P,Q,L0)=>Math.pow(clamp(L0/Math.hypot(P[0]-Q[0],P[1]-Q[1],P[2]-Q[2]),0.45,1),0.8);
     const tp=thin(pa,pb,1.3),tl=thin(la,lb,1.25);
     const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.1)),0.38*k*tp,0.21*k*tp,fw),Mx,S);
-    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.04)),0.31*k*tl,0.17*k*tl,fw),Mx,S);
+    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.4*k*tl,0.3*k*tl,fw,0.2),Mx,S);
     arms.push({s,a,f,el,d,ap,Aa,Af,Ah,Ae,hs,pec,lat});
     const wp=Ah.T,ws=xv(wp),ep=Af.T,es=xv(ep);
     handles.push({k:"wrist",s,P:wp,x:CX+S*ws[0],y:CY-S*ws[1]});
@@ -117,6 +117,13 @@ function scene(p,L,pal,fast,mode){
       out.push('<path d="M'+f1(x0)+' '+f1(sy)+'H'+f1(x1)+'" style="fill:none;stroke:'+pal.coral+';stroke-width:0.6;stroke-dasharray:4 5;opacity:.5"/>');
     }
     out.push('</g>');
+  }
+  /* contorno do deltoide sem a parte de dentro (que fica sob o braço e criava um "bico" na axila) */
+  function silDelt(m,s){
+    const cols=m.cols,out=[];
+    const fora=v=>{const c=v%cols,th=c/cols*2*Math.PI,phi=Math.atan2(Math.sin(th-s*Math.PI/2),Math.cos(th-s*Math.PI/2));return Math.abs(phi)<100*D};
+    silhouette(m).forEach(ch=>{let cur=[];ch.forEach(v=>{if(fora(v))cur.push(v);else{if(cur.length>1)out.push(cur);cur=[]}});if(cur.length>1)out.push(cur)});
+    return out;
   }
   function style(k,hid,wm){
     const s=ST[k];
@@ -347,7 +354,8 @@ function scene(p,L,pal,fast,mode){
        lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb);
      }));
     }
-    curve("anat",arr(th=>{const y=lerp(F.yJ+0.14,F.yC7,(1-Math.cos(th))/2);return bp(y,th,0.01)},0,2*Math.PI,90),xb);
+    /* base do pescoço: só na frente (atrás o trapézio continua sem dobra) */
+    lineT("divisao",arr(th=>{const y=lerp(F.yJ+0.14,F.yC7,(1-Math.cos(th))/2);return bp(y,th,0.01)},-1.35,1.35,50),xb);
     lineT("anat",arr(x=>{const y=F.yJ+0.05+3*x*x;return bp(y,bustTh(y,x,true,p,F),0.012)},-0.11,0.11,10),xb);
     /* sulco da coluna e processos espinhosos */
     lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb);
@@ -541,7 +549,7 @@ function scene(p,L,pal,fast,mode){
     };
     draw(head,hSil);if(bust)draw(bust,bSil,"silN");
     arms.forEach(o=>{
-      draw(o.a,silhouette(o.a),"silN");draw(o.f,silhouette(o.f),"silN");draw(o.el,silhouette(o.el),"silN");draw(o.d,silhouette(o.d),"silN");draw(o.pec,silhouette(o.pec),"silN");draw(o.lat,silhouette(o.lat),"silN");
+      draw(o.a,silhouette(o.a),"silN");draw(o.f,silhouette(o.f),"silN");draw(o.el,silhouette(o.el),"silN");draw(o.d,silDelt(o.d,o.s),"silN");draw(o.pec,silhouette(o.pec),"silN");draw(o.lat,silhouette(o.lat),"silN");
       o.hs.forEach(h=>draw(h,silhouette(h),"silH"));
     });
     legs.forEach(o=>{

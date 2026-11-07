@@ -37,8 +37,8 @@ function lado(p, F, s) {
   const trap = [[0.0, Y(0.95)], [0.2, Y(0.9)], [0.36, Y(0.5)], [0.62, Y(0.22)], [W - 0.32, Y(0.07)], sp1, spAt(0.6), spAt(0.25), sp0, [sp0[0] - 0.06, sp0[1] - 0.45], [0.2, Y(-1.85)], t12];
   forma("trapezio", "b", trap, 0.012 + 0.02 * k.mu, 0.12);
   /* bloco escapular: infraespinhoso (em cima) e redondo maior (embaixo, indo para a axila) */
-  const infra = [[-0.27, 0.3], [0.05, 0.38], [0.36, 0.36], [0.55, 0.16], [0.48, -0.06], [0.15, -0.26], [-0.12, -0.42], [-0.28, -0.3], [-0.31, 0.0]].map(q => tp(q[0], q[1]));
-  const redondo = [[-0.12, -0.42], [0.15, -0.26], [0.48, -0.06], [0.82, 0.04], [0.92, -0.1], [0.55, -0.34], [0.12, -0.6], [-0.16, -0.64]].map(q => tp(q[0], q[1]));
+  const infra = [[-0.3, 0.12], [0.05, 0.26], [0.36, 0.34], [0.6, 0.2], [0.66, 0.0], [0.3, -0.2], [-0.08, -0.4], [-0.27, -0.3], [-0.31, -0.05]].map(q => tp(q[0], q[1]));
+  const redondo = [[-0.08, -0.4], [0.3, -0.2], [0.66, 0.0], [0.92, 0.08], [0.95, -0.06], [0.65, -0.3], [0.25, -0.55], [-0.17, -0.64]].map(q => tp(q[0], q[1]));
   forma("infraespinhoso", "b", infra, 0.012 + 0.02 * k.def, 0.16);
   forma("redondo", "b", redondo, 0.015 + 0.025 * k.def, 0.14);
   /* eretores da espinha: duas colunas ao lado do sulco, mais fortes na lombar */
@@ -60,9 +60,8 @@ function lado(p, F, s) {
   linha("trapezio_borda_inferior", "dobra", back, [sp0, [sp0[0] - 0.05, sp0[1] - 0.45], [0.2, Y(-1.85)], t12], 8);
   linha("trapezio_superior", "divisao", back, [[0.17, Y(0.85)], [0.36, Y(0.45)], [0.62, Y(0.2)], [W - 0.34, Y(0.05)]], 7);
   linha("espinha_escapula", "dobra", back, [sp0, spAt(0.35), spAt(0.7), sp1], 6);
-  linha("escapula_borda_medial", "divisao", back, [sp0, tp(-0.31, 0.0), tp(-0.27, -0.32), tp(-0.16, -0.64)], 6);
-  linha("infraespinhoso_redondo", "divisao", back, [tp(-0.12, -0.42), tp(0.15, -0.26), tp(0.48, -0.06), tp(0.82, 0.04)], 6, 0.16);
-  linha("redondo_borda", "dobra", back, [tp(-0.16, -0.64), tp(0.12, -0.6), tp(0.55, -0.34), tp(0.92, -0.1)], 6);
+  linha("infraespinhoso_redondo", "divisao", back, [tp(-0.08, -0.4), tp(0.3, -0.2), tp(0.66, 0.0), tp(0.9, 0.08)], 7, 0.16);
+  linha("redondo_borda", "dobra", back, [tp(-0.17, -0.64), tp(0.25, -0.55), tp(0.65, -0.3), tp(0.95, -0.06)], 8);
   linha("eretores", "divisao", back, [[0.27, Y(-2.6)], [0.35, Y(-3.4)], [0.33, Y(-4.3)], [0.22, Y(-4.85)]], 6, 0.16);
   /* lados */
   linha("dorsal_borda_lateral", "dobra", ang, [aY(98, -1.0), aY(95, -1.8), aY(96, -2.7), aY(101, -3.5), aY(110, -4.05)], 8);
