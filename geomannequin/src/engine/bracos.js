@@ -10,7 +10,8 @@ function armDims(p){const B=bodyEff(p);return {L1:3.1*p.armLen,L2:2.75*p.armLen,
 function armRadius(u,th,A,s){
   s=s||1;
   const L1=A.L1,k=A.k,r0=0.47*k,re=0.3*k,mu=A.mus;
-  if(u<0)return Math.sqrt(Math.max(0,r0*r0-u*u));
+  /* topo do braço: menor do lado de dentro (axila) — não aparece como bola quando o braço sobe */
+  if(u<0){const ri=r0*(1-0.4*Math.max(0,-s*Math.sin(th)));return Math.sqrt(Math.max(0,ri*ri-u*u))}
   if(u>L1){const q=re*re-(u-L1)*(u-L1);return q>0?Math.sqrt(q):0}
   const cs=Math.cos(th),sn=Math.sin(th),t=u/L1,fr=Math.max(0,cs),bk=Math.max(0,-cs),lat=Math.max(0,s*sn);
   const base=lerp(r0,re,Math.pow(t,1.35)),fx=A.flex||0;
@@ -45,7 +46,8 @@ function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.62);return 0.55+0.75*
 function deltR(v,th,A,s){
   const thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc)),Rc=0.55*A.k*(1-0.1*Math.max(0,-Math.cos(th)));
   const vmax=deltV(phi)*A.L1/2.9,inner=sstep((Math.abs(phi)-95*D)/(45*D));
-  if(v<0)return Math.sqrt(Math.max(0,Rc*Rc-v*v/0.72));
+  /* lado de dentro (voltado para a axila): o topo encolhe para não formar uma bola na axila quando o braço sobe */
+  if(v<0){const Ri=Rc*(1-0.45*inner);return Math.sqrt(Math.max(0,Ri*Ri-v*v/0.72))}
   /* topo achatado (não é uma bola) e corpo em gota: cheio em cima, afinando até a inserção */
   const t2=v/vmax,ra=armRadius(v,th,A,s),outer=lerp(Rc*(1+0.03*Math.sin(Math.PI*Math.min(1,t2*2))),ra-0.015*A.k,sstep(Math.min(1,t2*1.1)));
   return lerp(outer,ra-0.06*A.k,inner);

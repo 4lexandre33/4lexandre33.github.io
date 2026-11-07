@@ -140,8 +140,17 @@ function scene(p,L,pal,fast,mode){
     for(let i=0;i<n-1;i++)VIS[i]=visAt((sx[i]+sx[i+1])/2,(sy[i]+sy[i+1])/2,(sz[i]+sz[i+1])/2,eps)?1:0;
     if(k==="silN"){let i=0;while(i<n-1){if(!VIS[i]){i++;continue}let j=i,len=0;while(j<n-1&&VIS[j]){len+=Math.hypot(sx[j+1]-sx[j],sy[j+1]-sy[j]);j++}
       if(len<16)for(let q=i;q<j;q++)VIS[q]=0;i=j}}
+    /* dobra interna: corpo dos dois lados do traço, na mesma profundidade (ex.: relevo do abdômen visto de lado) → traço fino */
+    const Z=(x,y)=>{x=Math.floor(x);y=Math.floor(y);return x<0||y<0||x>=W||y>=H?-1e6:zb[y*W+x]};
+    let dIn="";let lastIn=false;
     for(let i=0;i<n-1;i++){
       const v=VIS[i];
+      if(v&&isSil){
+        const mx=(sx[i]+sx[i+1])/2,my=(sy[i]+sy[i+1])/2,mz=(sz[i]+sz[i+1])/2;let nx=-(sy[i+1]-sy[i]),ny=sx[i+1]-sx[i];const l=Math.hypot(nx,ny)||1;nx/=l;ny/=l;
+        const a=Z(mx+4*nx,my+4*ny),b=Z(mx-4*nx,my-4*ny);
+        if(a>-1e5&&b>-1e5&&Math.abs(a-mz)<0.3&&Math.abs(b-mz)<0.3){if(!lastIn)dIn+="M"+f1(sx[i])+" "+f1(sy[i]);dIn+="L"+f1(sx[i+1])+" "+f1(sy[i+1]);lastIn=true;lastC=-1;continue}
+      }
+      lastIn=false;
       const pre="M"+f1(sx[i])+" "+f1(sy[i]),seg="L"+f1(sx[i+1])+" "+f1(sy[i+1]);
       if(!v){if(!lastH)dh+=pre;dh+=seg;lastH=true;lastC=-1;continue}
       lastH=false;
@@ -157,6 +166,7 @@ function scene(p,L,pal,fast,mode){
     if(dh&&(L.hidden||showHid)&&!isSil)out.push('<path d="'+dh+'" style="'+style(k,true)+'"/>');
     const WM=isSil?[0.72,1,1.32]:[1,1,1];
     dv.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,WM[c])+'"/>')});
+    if(dIn)out.push('<path d="'+dIn+'" style="'+style("divisao",false)+'"/>');
   }
   function curve(k,pts,X,showHid){
     X=X||xf;

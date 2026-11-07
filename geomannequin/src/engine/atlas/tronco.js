@@ -48,7 +48,7 @@ function lado(p, F, s) {
   /* ---------- LADOS ---------- */
   /* grande dorsal: da parede de trás da axila desce em V até a cintura e a crista ilíaca */
   const dors = [[99, -0.95], [116, -0.78], [138, -1.25], [158, -1.9], [174, -2.75], [176, -3.9], [150, -4.25], [118, -4.05], [100, -3.4], [94, -2.3], [94, -1.45]].map(([a, yy]) => graus(F, a, yy));
-  forma("grande_dorsal", "a", dors, 0.035 + 0.06 * k.mu * (1 - 0.6 * k.fem), 0.16);
+  forma("grande_dorsal", "a", dors, 0.035 + 0.055 * k.mu * (1 - 0.6 * k.fem), 0.26);
   /* oblíquo externo: flanco acima da crista ilíaca */
   const obl = [[60, -2.1], [92, -2.25], [100, -3.4], [96, -4.3], [74, -4.4], [58, -3.3]].map(([a, yy]) => graus(F, a, yy));
   forma("obliquo", "a", obl, 0.025 + 0.04 * k.mu * (1 - 0.5 * k.fem) + 0.02 * k.fat, 0.18);
