@@ -1,0 +1,165 @@
+/* GeoMannequin — definição dos parâmetros (faixas, rótulos), camadas, nomes em português e aplicação de valores */
+import { CAMK, WORLDK } from "./modelo.js";
+import { clamp } from "../engine/index.js";
+
+const fr=(x,d)=>x.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const SL=[
+  {k:"yaw",g:"slOrient",label:"Rotação horizontal",min:-180,max:180,step:1,u:"°"},
+  {k:"pitch",g:"slOrient",label:"Inclinação vertical",min:-70,max:70,step:1,u:"°"},
+  {k:"roll",g:"slOrient",label:"Inclinação lateral",min:-45,max:45,step:1,u:"°"},
+  {k:"skull",g:"slProp",label:"Largura do crânio",min:0.6,max:0.95,step:0.01,u:" R"},
+  {k:"jaw",g:"slProp",label:"Largura da mandíbula",min:0.40,max:0.85,step:0.01,u:" R"},
+  {k:"chin",g:"slProp",label:"Largura do queixo",min:0.10,max:0.45,step:0.01,u:" R"},
+  {k:"face",g:"slProp",label:"Linha do cabelo",min:26,max:50,step:1,u:"°"},
+  {k:"chinProj",g:"slProp",label:"Projeção do queixo",min:0.55,max:0.95,step:0.01,u:" R"},
+  {k:"neck",g:"slProp",label:"Largura do pescoço",min:0.3,max:0.75,step:0.01,u:" R"},
+  {k:"brow",g:"slFeat",label:"Arcada superciliar",min:0,max:0.12,step:0.005,u:" R"},
+  {k:"nose",g:"slFeat",label:"Projeção do nariz",min:0.10,max:0.40,step:0.005,u:" R"},
+  {k:"lips",g:"slFeat",label:"Volume dos lábios",min:0.02,max:0.08,step:0.005,u:" R"},
+  {k:"browW",g:"slFeat",label:"Espessura das sobrancelhas",min:0,max:0.06,step:0.002,u:" R"},
+  {k:"eyeSize",g:"slFeat",label:"Tamanho dos olhos",min:0.7,max:1.4,step:0.01,u:"%",pct:true},
+  {k:"eyeGap",g:"slFeat",label:"Posição dos olhos",min:16,max:30,step:1,u:"°"},
+  {k:"shW",g:"slProp",label:"Largura dos ombros",min:1.3,max:2.3,step:0.01,u:" R"},
+  {k:"shDrop",g:"slProp",label:"Queda do trapézio",min:0.2,max:0.9,step:0.01,u:" R"},
+  {k:"neckLen",g:"slProp",label:"Altura do pescoço",min:0.7,max:1.35,step:0.01,u:"×"},
+  {k:"chestF",g:"slProp",label:"Peito feminino",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"adam",g:"slProp",label:"Pomo de adão",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"fem",g:"slBody",label:"Masculino ↔ feminino",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"muscle",g:"slBody",label:"Musculatura",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"fat",g:"slBody",label:"Gordura",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"waist",g:"slBody",label:"Cintura",min:0.7,max:1.2,step:0.01,u:" R"},
+  {k:"hips",g:"slBody",label:"Quadril",min:0.85,max:1.4,step:0.01,u:" R"},
+  {k:"thighThick",g:"slBody",label:"Espessura das coxas",min:0.75,max:1.3,step:0.01,u:"×"},
+  {k:"legLen",g:"slBody",label:"Comprimento das pernas",min:0.85,max:1.15,step:0.01,u:"×"},
+  {k:"spineFlex",g:"slSpine",label:"Coluna: estender (−) / flexionar (+)",min:-30,max:80,step:1,u:"°"},
+  {k:"spineSide",g:"slSpine",label:"Coluna: inclinar para o lado",min:-35,max:35,step:1,u:"°"},
+  {k:"spineTwist",g:"slSpine",label:"Coluna: girar o tronco",min:-45,max:45,step:1,u:"°"},
+  {k:"pelvisTilt",g:"slSpine",label:"Pelve: báscula",min:-15,max:20,step:1,u:"°"},
+  {k:"pelvisSide",g:"slSpine",label:"Pelve: inclinação lateral",min:-10,max:10,step:1,u:"°"},
+  {k:"pelvisTwist",g:"slSpine",label:"Pelve: giro",min:-25,max:25,step:1,u:"°"},
+  {k:"pronL",g:"slHand",label:"Antebraço esquerdo: virar a palma",min:-80,max:90,step:1,u:"°"},
+  {k:"pronR",g:"slHand",label:"Antebraço direito: virar a palma",min:-80,max:90,step:1,u:"°"},
+  {k:"wristL",g:"slHand",label:"Punho esquerdo: estender / flexionar",min:-70,max:80,step:1,u:"°"},
+  {k:"wristR",g:"slHand",label:"Punho direito: estender / flexionar",min:-70,max:80,step:1,u:"°"},
+  {k:"handCurlL",g:"slHand",label:"Mão esquerda: abrir / fechar",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"handCurlR",g:"slHand",label:"Mão direita: abrir / fechar",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"hipFlexL",g:"slLeg",label:"Coxa esquerda: trás / frente",min:-20,max:120,step:1,u:"°"},
+  {k:"hipFlexR",g:"slLeg",label:"Coxa direita: trás / frente",min:-20,max:120,step:1,u:"°"},
+  {k:"hipAbdL",g:"slLeg",label:"Coxa esquerda: fechar / abrir",min:-15,max:45,step:1,u:"°"},
+  {k:"hipAbdR",g:"slLeg",label:"Coxa direita: fechar / abrir",min:-15,max:45,step:1,u:"°"},
+  {k:"hipRotL",g:"slLeg",label:"Coxa esquerda: girar",min:-35,max:45,step:1,u:"°"},
+  {k:"hipRotR",g:"slLeg",label:"Coxa direita: girar",min:-35,max:45,step:1,u:"°"},
+  {k:"kneeFlexL",g:"slLeg",label:"Joelho esquerdo: dobrar",min:0,max:150,step:1,u:"°"},
+  {k:"kneeFlexR",g:"slLeg",label:"Joelho direito: dobrar",min:0,max:150,step:1,u:"°"},
+  {k:"ankleFlexL",g:"slLeg",label:"Tornozelo esquerdo: levantar ponta / apontar",min:-20,max:50,step:1,u:"°"},
+  {k:"ankleFlexR",g:"slLeg",label:"Tornozelo direito: levantar ponta / apontar",min:-20,max:50,step:1,u:"°"},
+  {k:"ankleTiltL",g:"slLeg",label:"Pé esquerdo: virar sola para fora / dentro",min:-20,max:30,step:1,u:"°"},
+  {k:"ankleTiltR",g:"slLeg",label:"Pé direito: virar sola para fora / dentro",min:-20,max:30,step:1,u:"°"},
+  {k:"toesL",g:"slLeg",label:"Dedos do pé esquerdo: levantar / dobrar",min:-40,max:45,step:1,u:"°"},
+  {k:"toesR",g:"slLeg",label:"Dedos do pé direito: levantar / dobrar",min:-40,max:45,step:1,u:"°"},
+  {k:"ground",g:"slLeg",label:"Pés apoiados no chão (0 = solto, 1 = apoiado)",min:0,max:1,step:1,u:""},
+  {k:"zoom",g:"slOrient",label:"Zoom (sem perspectiva)",min:0.05,max:3,step:0.01,u:"×"},
+  {k:"panY",g:"slOrient",label:"Deslocar na vertical",min:-12,max:24,step:0.05,u:" R"},
+  {k:"panX",g:"slOrient",label:"Deslocar na horizontal",min:-24,max:24,step:0.05,u:" R"},
+  {k:"tx",g:"slCam",label:"Alvo da câmera: X",min:-30,max:30,step:0.1,u:" R"},
+  {k:"ty",g:"slCam",label:"Alvo da câmera: altura",min:-20,max:20,step:0.1,u:" R"},
+  {k:"tz",g:"slCam",label:"Alvo da câmera: Z",min:-30,max:30,step:0.1,u:" R"},
+  {k:"persp",g:"slCam",label:"Perspectiva (0 = desligada, 1 = ligada)",min:0,max:1,step:1,u:""},
+  {k:"camDist",g:"slCam",label:"Distância da câmera (perspectiva)",min:4,max:200,step:0.5,u:" R"},
+  {k:"lens",g:"slCam",label:"Lente: grande-angular (18) a teleobjetiva (200)",min:18,max:200,step:1,u:" mm"},
+  {k:"atmo",g:"slCam",label:"Perspectiva atmosférica (longe = mais claro)",min:0,max:1,step:0.05,u:""},
+  {k:"wx",g:"slScene",label:"Posição no chão: X",min:-30,max:30,step:0.1,u:" R"},
+  {k:"wz",g:"slScene",label:"Posição no chão: Z",min:-30,max:30,step:0.1,u:" R"},
+  {k:"wRot",g:"slScene",label:"Girar no chão",min:-180,max:180,step:1,u:"°"},
+  {k:"headYaw",g:"slPose",label:"Girar o pescoço (rotação)",min:-80,max:80,step:1,u:"°"},
+  {k:"headPitch",g:"slPose",label:"Baixar (+) / levantar (−) a cabeça",min:-60,max:50,step:1,u:"°"},
+  {k:"headRoll",g:"slPose",label:"Inclinar para o ombro",min:-45,max:45,step:1,u:"°"},
+  {k:"shElevL",g:"slShoulder",label:"Ombro esquerdo: abaixar / elevar",min:-1,max:1,step:0.01,u:"%",pct:true},
+  {k:"shElevR",g:"slShoulder",label:"Ombro direito: abaixar / elevar",min:-1,max:1,step:0.01,u:"%",pct:true},
+  {k:"shProtL",g:"slShoulder",label:"Ombro esquerdo: para trás / à frente",min:-1,max:1,step:0.01,u:"%",pct:true},
+  {k:"shProtR",g:"slShoulder",label:"Ombro direito: para trás / à frente",min:-1,max:1,step:0.01,u:"%",pct:true},
+  {k:"armAbdL",g:"slArm",label:"Braço esquerdo: cruzar / abrir",min:-45,max:160,step:1,u:"°"},
+  {k:"armAbdR",g:"slArm",label:"Braço direito: cruzar / abrir",min:-45,max:160,step:1,u:"°"},
+  {k:"armFlexL",g:"slArm",label:"Braço esquerdo: trás / frente",min:-50,max:160,step:1,u:"°"},
+  {k:"armFlexR",g:"slArm",label:"Braço direito: trás / frente",min:-50,max:160,step:1,u:"°"},
+  {k:"armRotL",g:"slArm",label:"Braço esquerdo: girar",min:-70,max:90,step:1,u:"°"},
+  {k:"armRotR",g:"slArm",label:"Braço direito: girar",min:-70,max:90,step:1,u:"°"},
+  {k:"elbowL",g:"slArm",label:"Cotovelo esquerdo: dobrar",min:0,max:145,step:1,u:"°"},
+  {k:"elbowR",g:"slArm",label:"Cotovelo direito: dobrar",min:0,max:145,step:1,u:"°"},
+  {k:"armLen",g:"slArm",label:"Comprimento dos braços",min:0.8,max:1.2,step:0.01,u:"×"},
+  {k:"armThick",g:"slArm",label:"Espessura dos braços",min:0.75,max:1.3,step:0.01,u:"×"},
+  {k:"shTension",g:"slShoulder",label:"Relaxado ↔ tenso",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"lightAz",g:"slOrient",label:"Luz: direção",min:-180,max:180,step:1,u:"°"},
+  {k:"lightEl",g:"slOrient",label:"Luz: altura",min:10,max:80,step:1,u:"°"},
+  {k:"eyeStyle",g:"slFeat",label:"Íris (0 vazio, 1 com íris)",min:0,max:1,step:1,u:""},
+  {k:"eyeOpen",g:"slFeat",label:"Abertura das pálpebras",min:0.4,max:1.4,step:0.01,u:"%",pct:true},
+  {k:"earSize",g:"slFeat",label:"Tamanho das orelhas",min:0.8,max:1.3,step:0.01,u:"%",pct:true},
+  {k:"earFlare",g:"slFeat",label:"Abertura das orelhas",min:0.4,max:1.6,step:0.01,u:"%",pct:true}
+];
+const LAY=[
+  {k:"sil",label:"Contorno",sw:"ink"},
+  {k:"fill",label:"Preenchimento",sw:"ink"},
+  {k:"shade",label:"Sombreamento",sw:"ink"},
+  {k:"sphere",label:"Esfera guia",sw:""},
+  {k:"planes",label:"Planos laterais",sw:""},
+  {k:"rings",label:"Contornos transversais",sw:"coral"},
+  {k:"merid",label:"Meridianos",sw:"coral"},
+  {k:"jaw",label:"Linha da mandíbula",sw:"ink"},
+  {k:"feat",label:"Sobrancelhas, nariz e boca",sw:"ink"},
+  {k:"eyes",label:"Olhos",sw:"ink"},
+  {k:"ears",label:"Orelhas",sw:"ink"},
+  {k:"torso",label:"Busto: pescoço, ombros e tronco",sw:"ink"},
+  {k:"arms",label:"Braços",sw:"ink"},
+  {k:"hands",label:"Mãos",sw:"ink"},
+  {k:"legs",label:"Pernas e pés",sw:"ink"},
+  {k:"anat",label:"Linhas anatômicas",sw:"ink"},
+  {k:"girdle",label:"Guias do busto",sw:"coral"},
+  {k:"prop",label:"Linhas de proporção",sw:"dash"},
+  {k:"hidden",label:"Linhas ocultas",sw:"dash"},
+  {k:"grid",label:"Grade",sw:"dash"},
+  {k:"floor",label:"Chão do cenário",sw:"dash"},
+  {k:"shadow",label:"Sombra no chão",sw:"ink"},
+  {k:"horizon",label:"Horizonte e pontos de fuga",sw:"coral"}
+];
+/* ===== Comandos da cena: API em português e editor ===== */
+const ALIAS={
+  cabecaGirar:"headYaw",cabecaInclinar:"headPitch",cabecaLado:"headRoll",
+  colunaFrente:"spineFlex",colunaLado:"spineSide",colunaTorcao:"spineTwist",pelveInclinar:"pelvisTilt",pelveLado:"pelvisSide",pelveTorcao:"pelvisTwist",
+  ombroEsqSubir:"shElevL",ombroDirSubir:"shElevR",ombroEsqAvancar:"shProtL",ombroDirAvancar:"shProtR",
+  bracoEsqAbrir:"armAbdL",bracoDirAbrir:"armAbdR",bracoEsqFrente:"armFlexL",bracoDirFrente:"armFlexR",bracoEsqGirar:"armRotL",bracoDirGirar:"armRotR",
+  cotoveloEsq:"elbowL",cotoveloDir:"elbowR",antebracoEsqGirar:"pronL",antebracoDirGirar:"pronR",punhoEsq:"wristL",punhoDir:"wristR",maoEsq:"handCurlL",maoDir:"handCurlR",
+  coxaEsqFrente:"hipFlexL",coxaDirFrente:"hipFlexR",coxaEsqAbrir:"hipAbdL",coxaDirAbrir:"hipAbdR",coxaEsqGirar:"hipRotL",coxaDirGirar:"hipRotR",
+  joelhoEsq:"kneeFlexL",joelhoDir:"kneeFlexR",tornozeloEsq:"ankleFlexL",tornozeloDir:"ankleFlexR",dedosPeEsq:"toesL",dedosPeDir:"toesR",
+  musculo:"muscle",gordura:"fat",feminino:"fem",ombros:"shW",cintura:"waist",quadril:"hips",pescoco:"neck",alturaPescoco:"neckLen",
+  comprimentoPernas:"legLen",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF"
+};
+const SLK={};
+let POSEKEYS;
+function num(v,nome){if(typeof v!=="number"||!isFinite(v))throw new Error("“"+nome+"” precisa ser um número (recebi "+JSON.stringify(v)+").");return v}
+function applyParams(it,obj,onlyPose){
+  if(!obj||typeof obj!=="object")throw new Error("Passe um objeto, por exemplo {joelhoEsq: 60}.");
+  const out=[];
+  for(const [k0,v] of Object.entries(obj)){
+    const k=ALIAS[k0]||k0,d=SLK[k];
+    if(!d||CAMK.includes(k)||WORLDK.includes(k)){
+      const sug=Object.keys(ALIAS).filter(a=>a.toLowerCase().startsWith(k0.toLowerCase().slice(0,4))).slice(0,5);
+      throw new Error("Parâmetro desconhecido: “"+k0+"”."+(sug.length?" Talvez: "+sug.join(", ")+".":" Veja a Referência."));
+    }
+    if(onlyPose&&!POSEKEYS.has(k))throw new Error("“"+k0+"” é medida do corpo; use m.corpo({...}).");
+    if(!onlyPose&&POSEKEYS.has(k))throw new Error("“"+k0+"” é de pose; use m.pose({...}).");
+    const x=num(v,k0),c=clamp(x,d.min,d.max);
+    if(c!==x)out.push(k0+" ajustado para "+c+" (limite "+d.min+" a "+d.max+")");
+    it.params[k]=c;
+  }
+  return out;
+}
+
+/* execução inicial deste módulo (na mesma ordem do app original) */
+export function iniciarParametros(){
+  SL.forEach(d=>SLK[d.k]=d);
+  POSEKEYS=new Set(["headYaw","headPitch","headRoll","spineFlex","spineSide","spineTwist","pelvisTilt","pelvisSide","pelvisTwist","shElevL","shElevR","shProtL","shProtR","shTension",
+    "armAbdL","armAbdR","armFlexL","armFlexR","armRotL","armRotR","elbowL","elbowR","pronL","pronR","wristL","wristR","handCurlL","handCurlR",
+    "hipFlexL","hipFlexR","hipAbdL","hipAbdR","hipRotL","hipRotR","kneeFlexL","kneeFlexR","ankleFlexL","ankleFlexR","ankleTiltL","ankleTiltR","toesL","toesR","ground"]);
+}
+
+export { fr, SL, LAY, ALIAS, SLK, POSEKEYS, num, applyParams };

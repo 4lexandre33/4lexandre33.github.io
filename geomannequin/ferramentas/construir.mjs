@@ -1,0 +1,36 @@
+/* Gera a versão em ARQUIVO ÚNICO a partir das pastas (src/ + css/ + index.html):
+   - dist/geomannequin.html          página completa: abre com dois cliques, sem servidor
+   - dist/geomannequin-fragmento.html  mesmo conteúdo sem <html>/<head>/<body> (para artifacts do Claude)
+   Uso: npm install && npm run construir */
+import { build } from "esbuild";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const html = readFileSync(join(ROOT, "index.html"), "utf8");
+
+/* JavaScript: todos os módulos num script só (mesma ordem de execução dos módulos) */
+const r = await build({
+  entryPoints: [join(ROOT, "src", "main.js")], bundle: true, format: "iife", write: false,
+  target: "es2020", charset: "utf8", legalComments: "none", logLevel: "warning"
+});
+const js = r.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
+
+/* CSS: os arquivos na ordem em que a página os carrega */
+const css = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(m => readFileSync(join(ROOT, m[1]), "utf8")).join("\n");
+
+let page = html
+  .replace(/<link rel="stylesheet" href="[^"]+">\n?/g, "")
+  .replace(/<script type="module" src="[^"]+"><\/script>\n?/, "")
+  .replace("</head>", `<style>\n${css}</style>\n</head>`)
+  .replace("</body>", `<script>\n${js}</script>\n</body>`);
+mkdirSync(join(ROOT, "dist"), { recursive: true });
+writeFileSync(join(ROOT, "dist", "geomannequin.html"), page);
+
+/* fragmento: o conteúdo do <head> (menos charset/viewport) + o do <body> */
+const head = /<head>([\s\S]*?)<\/head>/.exec(page)[1]
+  .replace(/<meta charset[^>]*>\n?/, "").replace(/<meta name="viewport"[^>]*>\n?/, "");
+const body = /<body>([\s\S]*?)<\/body>/.exec(page)[1];
+writeFileSync(join(ROOT, "dist", "geomannequin-fragmento.html"), head.trim() + "\n" + body.trim() + "\n");
+console.log("dist/geomannequin.html", Math.round(page.length / 1024), "KB");

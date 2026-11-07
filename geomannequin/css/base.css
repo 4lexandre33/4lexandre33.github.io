@@ -1,0 +1,26 @@
+/* GeoMannequin — Base: página, cabeçalho, botões e foco */
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45;
+  padding-block:14px 24px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:-.02em;margin:0;line-height:1}
+.brand h1 span{color:var(--coral)}
+.brand p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px 18px}
+.group{display:flex;flex-wrap:wrap;gap:6px}
+button{
+  font:inherit;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--rule);
+  border-radius:6px;padding:7px 12px;cursor:pointer;
+}
+button:hover{border-color:var(--cobalt)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+:root[data-theme="dark"] button.primary{color:#0E141B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#0E141B}}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--cobalt);outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){button{transition:border-color .15s,background .15s}}

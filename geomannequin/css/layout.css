@@ -1,0 +1,23 @@
+/* GeoMannequin — Layout: prancheta com camadas à esquerda, palco no centro, parâmetros à direita */
+main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"stage" "commands" "params" "layers" "export"}
+@media (min-width:1040px){
+  main{grid-template-columns:220px minmax(0,1fr) 310px;
+    grid-template-areas:"layers stage params" "layers commands params" "layers export params";align-items:start}
+  #params,#layers,.stage{position:sticky;top:10px}
+  #params,#layers{max-height:calc(100vh - 20px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+}
+@media (max-width:1039px){#params{max-height:60vh;overflow-y:auto;overscroll-behavior:contain}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px;min-width:0}
+.panel h2{font-family:var(--font-mono);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}
+.panel h2:not(:first-child){margin-top:18px}
+#layers{grid-area:layers}
+#stagebox{grid-area:stage;display:flex;flex-direction:column;gap:8px;min-width:0}
+#params{grid-area:params}
+#export{grid-area:export}
+.stage{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;touch-action:none;cursor:grab}
+.stage:active{cursor:grabbing}
+.stage svg{display:block;width:100%;height:auto;max-height:82vh;user-select:none}
+.readout{display:flex;flex-wrap:wrap;gap:4px 18px;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.readout b{color:var(--ink);font-weight:500}
+.hint{font-size:12px;color:var(--muted);margin:0}

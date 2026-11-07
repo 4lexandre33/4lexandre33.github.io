@@ -1,0 +1,21 @@
+{
+ "modulos": [
+  "ambiente.js",
+  "paletas.js",
+  "parametros.js",
+  "modelo.js",
+  "tema.js",
+  "modos.js",
+  "estado.js",
+  "enquadrar.js",
+  "poses.js",
+  "comandos.js",
+  "ajuda.js"
+ ],
+ "iniciar": [
+  "iniciarModelo",
+  "iniciarModos",
+  "iniciarParametros",
+  "iniciarAjuda"
+ ]
+}

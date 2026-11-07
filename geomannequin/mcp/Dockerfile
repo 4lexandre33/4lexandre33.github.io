@@ -3,7 +3,9 @@
 #   docker run -p 8787:8787 -e GM_TOKEN=uma-senha geomannequin-mcp
 FROM node:22-slim
 WORKDIR /app
-COPY index.html ./index.html
+COPY package.json ./package.json
+COPY src/ ./src/
+COPY css/temas.css ./css/temas.css
 COPY mcp/package.json mcp/package-lock.json ./mcp/
 RUN cd mcp && npm ci --omit=dev
 COPY mcp/ ./mcp/

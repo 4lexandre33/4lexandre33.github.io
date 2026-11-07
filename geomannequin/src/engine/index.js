@@ -1,0 +1,33 @@
+/* GeoMannequin — motor de desenho: reúne os módulos e prepara os buffers de desenho */
+import { iniciarMontagem } from "./montagem.js";
+import { iniciarZbuffer } from "./zbuffer.js";
+import { iniciarCampos } from "./campos.js";
+import { iniciarSombra } from "./sombra.js";
+import { iniciarContornos } from "./contornos.js";
+export * from "./matematica.js";
+export * from "./padroes.js";
+export * from "./camera.js";
+export * from "./cabeca.js";
+export * from "./corpo.js";
+export * from "./musculos.js";
+export * from "./tronco.js";
+export * from "./malhas.js";
+export * from "./bracos.js";
+export * from "./maos.js";
+export * from "./pernas.js";
+export * from "./cadeia.js";
+export * from "./colisao.js";
+export * from "./montagem.js";
+export * from "./projecao.js";
+export * from "./zbuffer.js";
+export * from "./campos.js";
+export * from "./sombra.js";
+export * from "./contornos.js";
+export * from "./desenho.js";
+export * from "./cena.js";
+
+iniciarMontagem();
+iniciarZbuffer();
+iniciarCampos();
+iniciarSombra();
+iniciarContornos();

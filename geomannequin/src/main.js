@@ -1,0 +1,29 @@
+/* GeoMannequin — ponto de entrada da página: prepara a cena, liga a interface e desenha */
+import "./scene/index.js";
+import { definirGanchos } from "./scene/ambiente.js";
+import { iniciarPainelCena } from "./ui/painel-cena.js";
+import { iniciarTema } from "./ui/tema.js";
+import { iniciarPersistencia } from "./ui/persistencia.js";
+import { iniciarPalco } from "./ui/palco.js";
+import { iniciarExportar } from "./ui/exportar.js";
+import { iniciarControles } from "./ui/controles.js";
+import { iniciarArrastar } from "./ui/arrastar.js";
+import { iniciarEditor } from "./ui/editor.js";
+import { iniciarLink } from "./ui/link.js";
+import { iniciarInicio } from "./ui/inicio.js";
+import { refreshScene } from "./ui/painel-cena.js";
+import { syncControls } from "./ui/controles.js";
+import { render } from "./ui/palco.js";
+import { updateModeButtons } from "./ui/modos.js";
+
+definirGanchos({ refreshScene, syncControls, render, updateModeButtons });
+iniciarPainelCena();
+iniciarTema();
+iniciarPersistencia();
+iniciarPalco();
+iniciarExportar();
+iniciarControles();
+iniciarArrastar();
+iniciarEditor();
+iniciarLink();
+iniciarInicio();

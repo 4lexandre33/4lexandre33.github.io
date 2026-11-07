@@ -1,0 +1,16 @@
+{
+  "name": "geomannequin",
+  "version": "2.0.0",
+  "description": "Manequim anatômico paramétrico para referência de desenho (app web em módulos).",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "servir": "node ferramentas/servir.mjs",
+    "construir": "node ferramentas/construir.mjs",
+    "testar": "node testes/motor.mjs && node testes/cenas.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

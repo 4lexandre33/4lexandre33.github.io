@@ -3,7 +3,7 @@
 Servidor MCP que deixa o **Claude**, o **ChatGPT** e o **Gemini** montarem cenas do GeoMannequin conversando: adicionar manequins, posar, posicionar em perspectiva, mudar câmera, lente e luz, ligar sombras e horizonte, e devolver a **imagem** da cena e um **link** que abre a mesma cena no app:
 <https://4lexandre33.github.io/geomannequin/>
 
-O servidor usa o próprio app (`../index.html`) como motor de desenho, então qualquer melhoria no app vale também para o MCP.
+O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), então qualquer melhoria no app vale também para o MCP.
 
 ## Ferramentas
 
@@ -30,7 +30,7 @@ Medidas: **R** = raio da cabeça; o manequim tem cerca de **16 R** de altura. No
 
 Precisa só do [Node.js](https://nodejs.org) 18 ou mais novo. O servidor já vem pronto em `mcp/dist/server.mjs`, **sem `npm install`**.
 
-1. Baixe este repositório (botão **Code → Download ZIP** no GitHub) e descompacte. O que importa é a pasta `geomannequin` (ela precisa do `index.html` ao lado da pasta `mcp`).
+1. Baixe este repositório (botão **Code → Download ZIP** no GitHub) e descompacte. O servidor pronto é a pasta `geomannequin/mcp/dist` (ela já traz tudo o que precisa).
 2. **Claude Desktop**: abra o arquivo de configuração (Configurações → Desenvolvedor → Editar configuração) e adicione:
    ```json
    {
@@ -156,6 +156,6 @@ npm run test:dist # testa o dist/
 npm start         # servidor HTTP em http://localhost:8787/mcp
 ```
 
-Depois de mudar o código em `lib/` ou o app, rode `npm run build` e envie o `dist/` junto.
+Depois de mudar o código em `lib/`, em `../src/engine` ou em `../src/scene`, rode `npm run build` e envie o `dist/` junto.
 
 As imagens PNG são geradas com o resvg em WebAssembly (funciona em qualquer sistema). A fonte DejaVu Sans (em `fonts/`) é usada nos textos das imagens; licença em `fonts/LICENSE-DejaVu.txt`.

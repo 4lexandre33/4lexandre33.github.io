@@ -92,7 +92,7 @@ if (!httpMode) {
   }
   setInterval(evict, 60e3).unref();
 
-  app.get("/", (req, res) => res.json({ nome: "GeoMannequin MCP", versao: VERSION, mcp: "/mcp", sse_legado: "/sse", app: APP_URL, sessoes: sessions.size, codigo_liberado: opts.allowCode, protegido_por_token: !!TOKEN, motor: appMeta() && { bytes: appMeta().bytes } }));
+  app.get("/", (req, res) => res.json({ nome: "GeoMannequin MCP", versao: VERSION, mcp: "/mcp", sse_legado: "/sse", app: APP_URL, sessoes: sessions.size, codigo_liberado: opts.allowCode, protegido_por_token: !!TOKEN, motor: appMeta() }));
   app.get("/healthz", (req, res) => res.send("ok"));
 
   /* Streamable HTTP */

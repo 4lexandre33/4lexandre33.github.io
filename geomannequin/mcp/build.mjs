@@ -16,5 +16,8 @@ await build({
 cpSync(require.resolve("@resvg/resvg-wasm/index_bg.wasm"), "dist/resvg.wasm");
 cpSync("fonts", "dist/fonts", { recursive: true });
 cpSync("widget", "dist/widget", { recursive: true });
+/* módulos da cena (cada conversa recebe uma cópia própria) e cores dos temas */
+cpSync("../src/scene", "dist/scene", { recursive: true });
+cpSync("../css/temas.css", "dist/temas.css");
 writeFileSync("dist/package.json", JSON.stringify({ type: "module", private: true }) + "\n");
 console.log("dist/ pronto");
