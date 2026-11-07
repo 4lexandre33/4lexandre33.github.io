@@ -16,7 +16,7 @@ const text = r => (r.content || []).filter(c => c.type === "text").map(c => c.te
 async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
-  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes"].every(t => tools.includes(t)), "18 ferramentas: " + tools.length);
+  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos"].every(t => tools.includes(t)), "20 ferramentas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
   const bad = [];
@@ -70,6 +70,21 @@ async function suite(client, tag) {
   r = await call("colisoes", { acao: "corrigir", solucao: "auto" });
   check(!r.isError && nCol > 0 && r.structuredContent.colisoes.length === 0, `colisoes: ${nCol} encontrada(s) e corrigida(s)`);
   r = await call("remover_manequim", { manequim: "Perto" });
+  /* esqueleto, cena por código e descrição em português (estado salvo e restaurado no fim) */
+  const salvo = (await call("exportar_cena")).content[0].text;
+  r = await call("descrever_cena", { texto: "manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta", limpar: true });
+  check(!r.isError && r.structuredContent.manequins.length === 3 && r.structuredContent.feito.length >= 6, "descrever_cena: " + (r.structuredContent && r.structuredContent.feito || []).length + " ações");
+  r = await call("objetos", { acao: "adicionar", tipo: "cadeira", x: -6, nome: "Cadeira" });
+  check(!r.isError && r.structuredContent.objetos[0].tipo === "cadeira", "objetos: adicionar");
+  r = await call("editar_manequim", { manequim: "1", sentar: "Cadeira", olhar: "câmera", gesto: { lado: "direita", nome: "joinha" }, articulacoes: [{ nome: "cotovelo esquerdo", dobrar: 200 }, { nome: "pescoço", girar: 20 }] });
+  check(!r.isError && /limite/.test((r.structuredContent.avisos || []).join(" ")), "editar_manequim: sentar, olhar, gesto e articulações com limite");
+  r = await call("editar_manequim", { manequim: "2", deitar: { tipo: "brucos", eixo: "-z" }, espelhar: true });
+  check(!r.isError, "editar_manequim: deitar de bruços e espelhar");
+  r = await call("camera", { eixo: "-x", elevacao: "baixa" });
+  check(!r.isError, "camera: eixo e elevação");
+  r = await call("renderizar", {});
+  check(!r.isError, "renderizar a cena montada");
+  await call("carregar_cena", { cena: salvo });
   t0 = Date.now(); r = await call("camadas_da_cena", { foto: "0", incluir_svg: true });
   const fotoImg = (r.content || []).find(c => c.type === "image"), svgC = (r.content || []).find(c => c.resource && /cena-em-camadas/.test(c.resource.uri));
   check(!r.isError && fotoImg && svgC && /inkscape:groupmode="layer"/.test(svgC.resource.text) && r.structuredContent.camadas.some(c => c.congelado), `camadas_da_cena: foto + SVG em camadas (${Date.now() - t0} ms)`);

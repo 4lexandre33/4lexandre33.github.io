@@ -164,6 +164,18 @@
         <button type="button" data-bpose="lateral">Inclinação lateral</button>
       </div>
       <p class="hint">Arraste o punho, o tornozelo ou a cabeça no desenho para mover o braço, a perna ou a cabeça; arraste em outro ponto para girar a vista.</p>
+      <h2>Esqueleto e articulações</h2>
+      <div class="sel-linha"><label for="poseLib">Biblioteca de poses</label><select id="poseLib"></select></div>
+      <div class="sel-linha"><label for="poseLado">Lado que faz o gesto</label><select id="poseLado"><option value="esq">esquerdo</option><option value="dir">direito</option></select></div>
+      <div class="group poses" role="group" aria-label="Esqueleto">
+        <button type="button" id="artOssos" aria-pressed="false">Mostrar ossos</button>
+        <button type="button" id="artEspelhar">Espelhar pose</button>
+        <button type="button" id="artCopiar">Copiar pose</button>
+        <button type="button" id="artColar" disabled>Colar pose</button>
+      </div>
+      <div class="sel-linha"><label for="gestoE">Mão esquerda</label><select id="gestoE"></select></div>
+      <div class="sel-linha"><label for="gestoD">Mão direita</label><select id="gestoD"></select></div>
+      <div id="artSel" class="art-sel"><p class="hint">Ligue “Mostrar ossos” e clique numa articulação (círculo coral) para ver só os controles dela; arraste a articulação para girá-la — na horizontal move o primeiro controle, na vertical o segundo. Os limites são os do corpo humano.</p></div>
       <h2>Coluna e pelve</h2>
       <div id="slSpine"></div>
       <h2>Pescoço e cabeça</h2>

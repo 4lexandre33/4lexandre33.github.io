@@ -11,9 +11,11 @@ O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), ent
 |---|---|
 | `nova_cena` | Começa do zero (tema claro/escuro, modo manequim/construção) |
 | `adicionar_manequim` | Novo manequim com nome, posição `x`/`z`, giro, corpo, pose e cor (cores nunca se repetem) |
-| `editar_manequim` | Muda posição, giro, pose, corpo, cor ou nome |
+| `editar_manequim` | Muda posição, giro, pose, corpo, cor ou nome; orientar por eixo, deitar, sentar/subir/encostar, saltar, olhar, apontar, mão/pé num ponto, gestos, articulações pelo nome (com limites anatômicos), espelhar, copiar pose |
+| `descrever_cena` | Monta a cena a partir de uma frase: “manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta” |
+| `objetos` | Banco, cadeira, caixa, degrau, mesa e parede para os manequins se apoiarem |
 | `copiar_manequim` / `remover_manequim` | Copia ou remove |
-| `camera` | Perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar |
+| `camera` | Eixo (x, −x, z, −z, de cima), elevação (alta, média, olhos, baixa), plano, perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar |
 | `luz` | Direção e altura da luz |
 | `aparencia_cena` | Tema noturno, modo, estilo, sombras, horizonte e pontos de fuga, atmosfera, camadas |
 | `renderizar` | Desenha e devolve PNG + link do app (no ChatGPT aparece num quadro com botão “Abrir no GeoMannequin”) |
@@ -147,6 +149,7 @@ Cada conversa tem a sua cena. Para continuar uma cena outro dia, peça o link (o
 - “Crie três manequins em fila se afastando, câmera na altura dos olhos com lente de 35 mm, com horizonte e sombras, e me mostre.”
 - “Coloque a Ana agachada de costas para a câmera, vista de baixo, em modo noturno.”
 - “Troque a lente para 135 mm e compare com 24 mm.”
+- “Manequim 1 sentado numa cadeira olhando para a câmera, manequim 2 deitado de bruços ao longo do eixo z, manequim 3 saltando, câmera no eixo x em contra-plongée.”
 
 ## Desenvolvimento
 

@@ -27,6 +27,8 @@ export * from "./desenho.js";
 export * from "./cena.js";
 export * from "./camadas.js";
 export * from "./colisao-cena.js";
+export * from "./esqueleto.js";
+export * from "./objetos.js";
 
 iniciarMontagem();
 iniciarZbuffer();

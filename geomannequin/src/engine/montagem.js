@@ -3,7 +3,7 @@ import { buildEar, buildHead } from "./cabeca.js";
 import { buildBust } from "./tronco.js";
 import { buildArm, buildDelt, buildElbow, buildForearm } from "./bracos.js";
 import { buildAnkle, buildCalf, buildFoot, buildKnee, buildThigh, buildToes } from "./pernas.js";
-import { buildFingers, buildPalm } from "./maos.js";
+import { buildFingers, buildPalm, dedosChave } from "./maos.js";
 import { D, mv, rotM } from "./matematica.js";
 import { bustFrame, bustZc } from "./corpo.js";
 import { makeXf } from "./camera.js";
@@ -29,21 +29,22 @@ function getMeshes(p,S){
     [["R",-1],["L",1]].forEach(([n,s])=>{C.meshes["thigh"+n]=buildThigh(p,s);C.meshes["calf"+n]=buildCalf(p,s);C.meshes["ankle"+n]=buildAnkle(p,s);C.meshes["foot"+n]=buildFoot(p,s)})}
   [["R",-1,p.toesR],["L",1,p.toesL]].forEach(([n,s,t],i)=>{const tk=lk+"|"+t;if(tk!==C.toeKey[i]){C.toeKey[i]=tk;C.meshes["toes"+n]=buildToes(p,s,t)}});
   [-1,1].forEach((s,i)=>{
-    const c=s>0?p.handCurlL:p.handCurlR,hk=ak+"|"+c;
+    const c=s>0?p.handCurlL:p.handCurlR,hk=ak+"|"+c+"|"+dedosChave(p,s);
     if(hk!==C.handKey[i]){C.handKey[i]=hk;C.meshes["hand"+i]=[buildPalm(p,s)].concat(buildFingers(p,s,c))}
   });
   return C.meshes;
 }
 /* cadeia cervical: a base do pescoço dobra uma parte do movimento, o resto gira em torno da base do crânio */
 function poseSetup(p,S){
-  const ya=p.headYaw*D,pa=p.headPitch*D,ra=p.headRoll*D;
+  const ya=p.headYaw*D,pa=p.headPitch*D,ra=p.headRoll*D,nt=(p.neckTwist||0)*D,nf=(p.neckFlex||0)*D,ns=(p.neckSide||0)*D;
   const F=bustFrame(p,S),yb=F.yJ+0.15,B=[0,yb,bustZc(yb,F)],Hs=[0,-0.55,-0.22];
   const kb=[0.4,0.45,0.45];
-  const Rb=rotM(ya*kb[0],pa*kb[1],ra*kb[2]);
+  /* cervical: parte da rotação da cabeça + o ajuste próprio do pescoço (neckFlex/Side/Twist) acontece na base do pescoço */
+  const Rb=rotM(ya*kb[0]+nt,pa*kb[1]+nf,ra*kb[2]+ns);
   const bh=mv(Rb,[Hs[0]-B[0],Hs[1]-B[1],Hs[2]-B[2]]);
   const H1=[B[0]+bh[0],B[1]+bh[1],B[2]+bh[2]];
   const aff=t=>{
-    const R1=rotM(ya*kb[0]*t,pa*kb[1]*t,ra*kb[2]*t);
+    const R1=rotM((ya*kb[0]+nt)*t,(pa*kb[1]+nf)*t,(ra*kb[2]+ns)*t);
     const t2=t*t,R2=rotM(ya*(1-kb[0])*t2,pa*(1-kb[1])*t2,ra*(1-kb[2])*t2);
     const M=[];for(let i=0;i<3;i++)for(let j=0;j<3;j++)M.push(R2[i*3]*R1[j]+R2[i*3+1]*R1[3+j]+R2[i*3+2]*R1[6+j]);
     const b1=mv(R1,B),d=[B[0]-b1[0]-H1[0],B[1]-b1[1]-H1[1],B[2]-b1[2]-H1[2]],r2=mv(R2,d);

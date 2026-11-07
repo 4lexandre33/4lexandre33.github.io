@@ -60,7 +60,8 @@ return {
   instColors, isDark, DEF, POSEKEYS,
   cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas,
   COL, colisoesDaCena, listaColisoes, resolverPar, resolverTodas, desfazerColisao, permitirContato, setModoColisao, setPreferir,
-  composicaoDaCena, ajustarComposicao, setComposicao
+  composicaoDaCena, ajustarComposicao, setComposicao,
+  todasPoses, GESTOS, TIPOS_OBJETO, ARTICULACOES
 };`;
   const make = new Function("E", src);
   FACTORY = () => make(ENGINE);

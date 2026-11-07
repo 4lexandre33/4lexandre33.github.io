@@ -5,7 +5,7 @@
    "bloquear" (ao arrastar, o manequim/mão para na superfície do outro). Sem depender da página (o MCP usa). */
 import { SCN, setP, P, sceneList } from "./modelo.js";
 import { guardArms } from "./poses.js";
-import { MEMBRO, PARTES, capsulas, telaDoMundo, clamp, contatosEntre, doMundo, ikArm, paraMundo, restGround, segSeg, shape, chainSetup, armPose, comp, applyA } from "../engine/index.js";
+import { MEMBRO, PARTES, capsulas, capsulasObjeto, TIPOS_OBJETO, telaDoMundo, clamp, contatosEntre, doMundo, ikArm, paraMundo, restGround, segSeg, shape, chainSetup, armPose, comp, applyA } from "../engine/index.js";
 
 /* 1 R (unidade do manequim) ≈ 11,4 cm num corpo de 1,75 m */
 const CM = 11.4;
@@ -20,7 +20,10 @@ function pMundo(it, params) {
 }
 const contatoPermitido = (a, b) => (a.contato || []).includes(b.id) || (b.contato || []).includes(a.id);
 function visiveis() { return SCN.list.filter(it => !it.oculto); }
-function capsOutros(it) { return visiveis().filter(o => o !== it && !contatoPermitido(it, o)).map(o => capsulas(pMundo(o))); }
+function chao() { return restGround(SCN.list[0].params); }
+/* objetos da cena como cápsulas; o objeto em que o manequim está sentado/apoiado não conta */
+function capsObjetos(it) { return SCN.objetos.filter(o => !it || it.apoioEm !== o.id).map(o => capsulasObjeto(o, chao())); }
+function capsOutros(it) { return visiveis().filter(o => o !== it && !contatoPermitido(it, o)).map(o => capsulas(pMundo(o))).concat(capsObjetos(it)); }
 function penet(it, params, outros) { const A = capsulas(pMundo(it, params)); let s = 0; for (const B of outros) for (const c of contatosEntre(A, B)) s += c.prof; return s; }
 
 /* ===== detectar ===== */
@@ -37,11 +40,27 @@ function colisoesDaCena() {
     out.push({ a, b, prof: c0.prof, contatos: cs,
       texto: PARTES[pa] + " de " + na + " entra em " + PARTES[pb] + " de " + nb + " (" + Math.max(1, Math.round(c0.prof * CM)) + " cm)" + (cs.length > 1 ? " · mais " + (cs.length - 1) + " ponto" + (cs.length > 2 ? "s" : "") : "") });
   }
+  /* manequim × objeto (banco, parede…) */
+  vis.forEach((it, i) => SCN.objetos.forEach((o, k) => {
+    if (it.apoioEm === o.id) return;
+    const cs = contatosEntre(C[i], capsulasObjeto(o, chao())); if (!cs.length) return;
+    const a = SCN.list.indexOf(it), nomeO = o.nome || TIPOS_OBJETO[o.tipo].nome;
+    out.push({ a, b: -1, objeto: k, prof: cs[0].prof, contatos: cs, texto: PARTES[cs[0].pa] + " de " + it.name + " entra em " + nomeO + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" + (cs.length > 1 ? " · mais " + (cs.length - 1) + " ponto" + (cs.length > 2 ? "s" : "") : "") });
+  }));
   COL.ultima = out;
   return out;
 }
+/* corrige manequim × objeto: só o manequim muda */
+function resolverObjeto(a, k, metodo) {
+  metodo = metodo || COL.preferir; const it = SCN.list[a]; if (!it) throw new Error("Manequim não encontrado.");
+  guardarDesfazer([it]);
+  const outros = capsOutros(it), p0 = penet(it, it.params, outros); if (p0 <= 0) return ["Nada para corrigir."];
+  const r = metodo === "auto" ? solAuto(it, outros) : SOL[metodo](it, outros);
+  if (r.resto > 0.01 && r.resto >= 0.5 * p0) return [it.name + ": " + ({ giro: "girar", pose: "ajustar a pose", distancia: "afastar" }[metodo] || metodo) + " não resolve — tente Afastar ou Automático"];
+  aplicar(it, r.params); return [it.name + ": " + r.desc];
+}
 /* lista simples, em português (comandos e MCP) */
-function listaColisoes() { return colisoesDaCena().map(c => ({ a: SCN.list[c.a].name, b: SCN.list[c.b].name, cm: Math.round(c.prof * CM), descricao: c.texto, partes: c.contatos.map(x => PARTES[x.pa] + " × " + PARTES[x.pb]) })); }
+function listaColisoes() { return colisoesDaCena().map(c => ({ a: SCN.list[c.a].name, b: c.objeto !== undefined ? (SCN.objetos[c.objeto].nome || SCN.objetos[c.objeto].tipo) : SCN.list[c.b].name, cm: Math.round(c.prof * CM), descricao: c.texto, partes: c.contatos.map(x => PARTES[x.pa] + " × " + PARTES[x.pb]) })); }
 
 /* ===== soluções (cada uma devolve novos parâmetros e o "custo" da mudança, sem aplicar) ===== */
 /* 1) distância: empurra no chão pela soma das direções de saída, até não haver penetração */
@@ -173,6 +192,7 @@ function resolverPar(a, b, metodo, quem) {
 }
 /* quem deve mudar num par: quem tem o braço/perna entrando no outro (a pose dele resolve); senão o ativo; senão o mais novo */
 function quemMexer(c) {
+  if (c.objeto !== undefined) return "a";
   const k = c.contatos[0], la = !!MEMBRO[k.pa], lb = !!MEMBRO[k.pb];
   if (la && !lb) return "a"; if (lb && !la) return "b";
   return c.a === SCN.active ? "a" : "b";
@@ -184,7 +204,7 @@ function resolverTodas(metodo) {
     const cs = colisoesDaCena(); if (!cs.length) break;
     let mexeu = false;
     for (const c of cs) {
-      const quem = quemMexer(c), it = SCN.list[quem === "a" ? c.a : c.b];
+      const quem = quemMexer(c), it = SCN.list[quem === "a" || c.objeto !== undefined ? c.a : c.b];
       const outros = capsOutros(it), p0 = penet(it, it.params, outros); if (p0 <= 0) continue;
       const r = met === "auto" ? solAuto(it, outros) : SOL[met](it, outros);
       tentou.add(it);
@@ -280,6 +300,6 @@ function ajustarComposicao(k) {
 }
 function setComposicao(on) { COL.composicao = on !== false && on !== 0; }
 
-export { composicaoDaCena, ajustarComposicao, setComposicao, quemMexer };
+export { resolverObjeto, capsObjetos, composicaoDaCena, ajustarComposicao, setComposicao, quemMexer };
 export { CM, COL, setModoColisao, setPreferir, pMundo, colisoesDaCena, listaColisoes, solDistancia, solGiro, solPose, solAuto, resolverPar, resolverTodas,
   desfazerColisao, bloquearMovimento, bloquearAlvo, corrigirAtivo, permitirContato, contatoPermitido };

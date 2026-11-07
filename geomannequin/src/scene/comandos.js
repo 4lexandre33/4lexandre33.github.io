@@ -1,14 +1,16 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
 import { CAMK, P, SCN, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP } from "./modelo.js";
-import { applyParams, num } from "./parametros.js";
-import { BODIES, BPOSES, doBodyPose, guardArms } from "./poses.js";
+import { applyParams, num, POSEKEYS } from "./parametros.js";
+import { adicionarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
+import { descreverCena, montarCena } from "./descrever.js";
+import { BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
 import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -21,9 +23,9 @@ function apiFor(it){
     posicao(x,z){chk();it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
     girar(g){chk();let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;return m},
-    pose(o){chk();if(typeof o==="string")return m.poseRapida(o);applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);return m},
-    poseRapida(nome){chk();const k=String(nome).toLowerCase();const ok=Object.keys(BPOSES).concat(["cintura","cruzar","ombro"]);
-      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k));return m},
+    pose(o,opts){chk();if(typeof o==="string")return m.poseRapida(o,opts);applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);return m},
+    poseRapida(nome,opts){chk();const k=nomePose(nome);const ok=todasPoses();
+      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));return m},
     corpo(o){chk();if(typeof o==="string"){const k=o.toLowerCase();if(!BODIES[k])throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+Object.keys(BODIES).join(", ")+".");
         ["shW","neck"].forEach(q=>it.params[q]=DEF[q]);Object.assign(it.params,BODIES[k]);return m}
       applyParams(it,o,false).forEach(t=>LOG.push(["aviso",t]));return m},
@@ -41,6 +43,33 @@ function apiFor(it){
     tras(){chk();it.ordem=Math.max(-99,Math.min(0,...SCN.list.filter(o=>o!==it).map(o=>o.ordem||0))-1);return m},
     ordemAuto(){chk();it.ordem=0;return m},
     foto(opts){chk();return fotoSvg(SCN.list.indexOf(it),opts)},
+    /* ===== corpo inteiro no espaço ===== */
+    orientar(alvo){chk();orientar(it,alvo);return m},
+    deitar(tipo,eixo){chk();deitar(it,tipo,eixo);return m},
+    saltar(alt){chk();withInst(it,()=>doBodyPose("saltando"));if(alt!==undefined)it.params.bodyLift=clamp(num(alt,"altura"),0,30);return m},
+    altura(y){chk();it.params.bodyLift=clamp(num(y,"altura"),-2,30);return m},
+    inclinar(graus,rolar){chk();it.params.bodyPitch=clamp(num(graus,"graus"),-180,180);if(rolar!==undefined)it.params.bodyRoll=clamp(num(rolar,"rolar"),-180,180);return m},
+    apoio(on){chk();it.params.ground=on===false||on===0?0:1;return m},
+    sentar(obj){chk();const q=sentar(it,obj);return m},
+    subir(obj){chk();subirEm(it,obj);return m},
+    encostar(obj){chk();encostarEm(it,obj);return m},
+    olhar(alvo){chk();olharPara(it,alvo);return m},
+    olharPara(alvo){chk();olharPara(it,alvo);return m},
+    maoEm(lado,ponto){chk();const e=maoEm(it,ladoNum(lado),pontoMundo(ponto));if(e>0.4)LOG.push(["aviso","a mão não alcança o ponto (faltam "+Math.round(e*11.4)+" cm)"]);return m},
+    peEm(lado,ponto){chk();peEm(it,ladoNum(lado),pontoMundo(ponto));return m},
+    apontar(alvo,lado){chk();apontarPara(it,alvo,lado===undefined?-1:ladoNum(lado));return m},
+    /* ===== mãos ===== */
+    gesto(lado,nome){chk();if(nome===undefined){nome=lado;lado="ambas"}ladosDe(lado).forEach(t=>aplicarGesto(it.params,t,String(nome).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")));return m},
+    dedos(lado,o){chk();const D_={polegar:"Th",indicador:"In",medio:"Me","médio":"Me",anelar:"An",minimo:"Mi","mínimo":"Mi"};
+      ladosDe(lado).forEach(t=>{const L_=t>0?"L":"R";for(const [k,v] of Object.entries(o||{})){const kk=k.toLowerCase();
+        if(D_[kk])it.params["f"+D_[kk]+L_]=clamp(num(v,k),-1,1);else if(kk==="mao"||kk==="mão"||kk==="fechar")it.params["handCurl"+L_]=clamp(num(v,k),0,1);
+        else if(kk==="afastar"||kk==="abrir")it.params["fSpread"+L_]=clamp(num(v,k),0,1);else if(kk==="opor"||kk==="oposicao"||kk==="oposição")it.params["thumbOpp"+L_]=clamp(num(v,k),0,1);
+        else throw new Error("Dedo desconhecido: “"+k+"”. Use polegar, indicador, medio, anelar, minimo, mao, afastar, opor.")}});return m},
+    /* ===== articulações pelo nome: m.articulacao("cotovelo esquerdo", {dobrar: 90}) ===== */
+    articulacao(nome,valores){chk();const r=articParams(nome,valores);applyParams(it,r,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);return m},
+    espelhar(){chk();espelharPose(it.params);return m},
+    copiarPose(outro){chk();const o=typeof outro==="object"&&outro?SCN.list.find(x=>x.name===outro.nome):SCN.list.find(x=>x.name===outro);if(!o)throw new Error("Manequim “"+outro+"” não existe.");
+      POSEKEYS.forEach(k=>{if(o.params[k]!==undefined)it.params[k]=o.params[k]});return m},
     /* colisão: deixa encostar neste outro manequim sem contar como erro (abraço, aperto de mão) */
     permitirContato(outro,on){chk();const o=typeof outro==="object"&&outro?SCN.list.find(x=>x.name===outro.nome):typeof outro==="number"?SCN.list[outro]:SCN.list.find(x=>x.name===outro);
       if(!o)throw new Error("Manequim “"+outro+"” não existe.");permitirContato(SCN.list.indexOf(it),SCN.list.indexOf(o),on);return m},
@@ -49,6 +78,47 @@ function apiFor(it){
       if(colisoesDaCena().some(c=>(c.a===a&&c.b===j)||(c.a===j&&c.b===a)))r.push(...resolverPar(Math.min(a,j),Math.max(a,j),metodo,a<j?"a":"b"))});r.forEach(t=>LOG.push(["aviso",t]));return m}
   };
   return m;
+}
+/* lado: "esq"/"esquerda"/1 ou "dir"/"direita"/−1; "ambas" para as duas mãos */
+function ladoNum(l){const t=String(l===undefined?"dir":l).toLowerCase();if(l===1||/^esq|^l$|left/.test(t))return 1;if(l===-1||/^dir|^r$|right/.test(t))return -1;throw new Error("Lado: use \"esquerda\" ou \"direita\".")}
+function ladosDe(l){const t=String(l===undefined?"ambas":l).toLowerCase();return /amba|dois|duas|both/.test(t)?[1,-1]:[ladoNum(l)]}
+/* ponto do mundo: [x, y, z], {x, y, z}, ou o nome de um manequim/objeto (vai até o centro dele) */
+function pontoMundo(q){if(Array.isArray(q))return q.map((v,i)=>num(v,"xyz"[i]));if(q&&typeof q==="object"&&"x" in q)return [num(q.x,"x"),num(q.y??6,"y"),num(q.z??0,"z")];
+  const o=SCN.list.find(x=>x.name===q);if(o)return [o.params.wx,restGround(SCN.list[0].params)+4.5,o.params.wz];const b=acharObjeto(q);if(b)return [b.x,restGround(SCN.list[0].params)+b.alt,b.z];
+  throw new Error("Ponto: use [x, y, z] ou o nome de um manequim/objeto.")}
+/* articulações por nome em português e o que cada movimento muda */
+const ARTIC={cotovelo:{dobrar:"elbow",girar:"pron",virar:"pron"},ombro:{frente:"armFlex",abrir:"armAbd",girar:"armRot",subir:"shElev",avancar:"shProt"},braco:{frente:"armFlex",abrir:"armAbd",girar:"armRot"},
+  punho:{dobrar:"wrist",desvio:"wristDev",girar:"pron"},mao:{fechar:"handCurl"},quadril:{frente:"hipFlex",abrir:"hipAbd",girar:"hipRot"},coxa:{frente:"hipFlex",abrir:"hipAbd",girar:"hipRot"},
+  joelho:{dobrar:"kneeFlex"},tornozelo:{apontar:"ankleFlex",dobrar:"ankleFlex",virar:"ankleTilt",dedos:"toes"},pe:{apontar:"ankleFlex",virar:"ankleTilt",dedos:"toes"},
+  coluna:{frente:"spineFlex",lado:"spineSide",girar:"spineTwist"},lombar:{frente:"lumFlex",lado:"lumSide",girar:"lumTwist"},toracica:{frente:"thoFlex",lado:"thoSide",girar:"thoTwist"},
+  pescoco:{frente:"neckFlex",lado:"neckSide",girar:"neckTwist"},cabeca:{baixar:"headPitch",frente:"headPitch",girar:"headYaw",inclinar:"headRoll",lado:"headRoll"},
+  pelve:{inclinar:"pelvisTilt",frente:"pelvisTilt",lado:"pelvisSide",girar:"pelvisTwist"},corpo:{inclinar:"bodyPitch",rolar:"bodyRoll",altura:"bodyLift"}};
+const LADO_ART=new Set(["cotovelo","ombro","braco","punho","mao","quadril","coxa","joelho","tornozelo","pe"]);
+function articParams(nome,valores){
+  const t=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/([a-z])(esq|dir)\b/,"$1 $2").trim();
+  const base=Object.keys(ARTIC).sort((a,b)=>b.length-a.length).find(k=>t===k||t.startsWith(k+" "));if(!base)throw new Error("Articulação desconhecida: “"+nome+"”. Opções: "+Object.keys(ARTIC).join(", ")+".");
+  let suf="";if(LADO_ART.has(base)){if(/esq/.test(t))suf="L";else if(/dir/.test(t))suf="R";else throw new Error("Diga o lado: “"+base+" esquerdo” ou “"+base+" direito”.")}
+  const r={};for(const [k,v] of Object.entries(valores||{})){const kk=k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const q=ARTIC[base][kk];
+    if(!q)throw new Error("“"+k+"” não move "+base+". Use: "+Object.keys(ARTIC[base]).join(", ")+".");r[q+suf]=v}
+  return r;
+}
+/* espelha a pose (esquerda ↔ direita) */
+function espelharPose(Q){
+  const par={};Object.keys(Q).forEach(k=>{const m=/^(.*)([LR])$/.exec(k);if(m&&POSEKEYS.has(k))par[k]=m[1]+(m[2]==="L"?"R":"L")});
+  const c=Object.assign({},Q);Object.entries(par).forEach(([a,b])=>{Q[a]=c[b]});
+  ["spineSide","spineTwist","headYaw","headRoll","pelvisSide","pelvisTwist","neckSide","neckTwist","lumSide","lumTwist","thoSide","thoTwist","bodyRoll"].forEach(k=>{if(typeof Q[k]==="number")Q[k]=-Q[k]});
+}
+/* objeto da cena (banco, cadeira, caixa, degrau, mesa, parede) */
+function apiObjeto(q){
+  const chk=()=>{if(!SCN.objetos.includes(q))throw new Error("Este objeto foi removido da cena.")};
+  const o={get nome(){return q.nome||q.tipo},get tipo(){return q.tipo},
+    posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
+    girar(g){chk();editarObjeto(q,{giro:num(g,"graus")});return o},
+    medidas(m){chk();editarObjeto(q,m||{});return o},
+    renomear(n){chk();q.nome=String(n).slice(0,24);return o},
+    remover(){chk();removerObjeto(q);return null},
+    info(){chk();return {tipo:q.tipo,nome:q.nome||q.tipo,x:q.x,z:q.z,giro:q.giro,largura:q.larg,profundidade:q.prof,altura:q.alt}}};
+  return o;
 }
 const cena={
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
@@ -76,6 +146,14 @@ const cena={
   colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
   resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
   desfazerColisao(){return desfazerColisao()},
+  /* objetos: cena.objeto("banco", {x: 3, z: 0, giro: 90, altura: 4}) */
+  objeto(tipo,o){return apiObjeto(adicionarObjeto(tipo,o||{}))},
+  objetos(){return SCN.objetos.map(apiObjeto)},
+  removerObjeto(ref){const q=acharObjeto(ref);if(!q)throw new Error("Objeto não encontrado.");removerObjeto(q)},
+  /* monta a cena de uma vez a partir de uma lista (veja a Referência) */
+  montar(lista,opts){return montarCena(lista,opts,API)},
+  /* cena descrita em português: "manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta" */
+  descrever(texto){const r=descreverCena(String(texto||""),API);r.avisos.forEach(t=>LOG.push(["aviso",t]));return r.feito},
   /* composição 2D (opcional): tangências e cabeças escondidas atrás de outro manequim */
   composicao(on){if(on!==undefined)setComposicao(on);return composicaoDaCena().map(c=>c.texto)},
   ajustarComposicao(i){const r=ajustarComposicao(i||0);r.forEach(t=>LOG.push(["aviso",t]));return r}
@@ -99,8 +177,26 @@ const camera={
   alturaOlhos(h,inclinacao){num(h,"altura");const g0=restGround(SCN.list[0].params),pt=inclinacao===undefined?0:clamp(num(inclinacao,"inclinação"),-70,70);
     P.pitch=pt;P.ty=clamp(g0+h+Math.sin(pt*D)*Math.max(3,P.camDist),-20,20);return camera},
   luz(az,el){camSet("lightAz",az,-180,180,"azimute");if(el!==undefined)camSet("lightEl",el,10,80,"elevação");return camera},
-  enquadrar(){autoFit();return camera}
+  enquadrar(){autoFit();return camera},
+  /* câmera num eixo ("x", "-x", "z", "-z", "y" = de cima), mantendo distância e alvo */
+  eixo(a,opts){const t=String(a).toLowerCase().replace(/^eixo\s*/,"").replace("câmera","");const v={"x":[1,0,0],"+x":[1,0,0],"-x":[-1,0,0],"z":[0,0,1],"+z":[0,0,1],"-z":[0,0,-1],"y":[0,1,0],"+y":[0,1,0],"cima":[0,1,0],"-y":[0,-1,0]}[t];
+    if(!v)throw new Error("Eixo da câmera: use x, -x, z, -z ou y (de cima).");
+    const d=opts&&opts.distancia?clamp(num(opts.distancia,"distância"),4,200):Math.max(4,P.camDist||30);
+    if(v[1]>0){P.yaw=0;P.pitch=-70;P.roll=0;return camera}
+    if(v[1]<0){P.yaw=0;P.pitch=45;P.roll=0;return camera}
+    P.yaw=Math.round(Math.atan2(v[0],v[2])/D);P.roll=0;return camera},
+  /* elevação: "alta" (de cima, plongée), "média", "olhos" (nível dos olhos), "baixa" (de baixo, contra-plongée), ou graus acima do horizonte */
+  elevacao(e){const t=typeof e==="number"?e:{"muito alta":70,"de cima":70,"alta":45,"media":20,"média":20,"olhos":0,"nivel dos olhos":0,"nível dos olhos":0,"baixa":-18,"muito baixa":-35,"chao":-35,"chão":-35}[String(e).toLowerCase()];
+    if(t===undefined)throw new Error("Elevação: use \"alta\", \"média\", \"olhos\", \"baixa\" ou graus.");P.pitch=clamp(-t,-70,70);return camera},
+  /* planos clássicos */
+  plano(n){const t=String(n).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    if(/contra/.test(t))return camera.elevacao("baixa");if(/plongee|alto/.test(t))return camera.elevacao("alta");if(/cima|zenital|aereo/.test(t))return camera.elevacao("de cima");
+    if(/olho|nivel|normal/.test(t))return camera.elevacao("olhos");if(/baixo|chao|minhoca/.test(t))return camera.elevacao("muito baixa");
+    throw new Error("Plano: use plongée, contra-plongée, de cima, nível dos olhos ou de baixo.")}
 };
+/* o que descrever/montar usam (sem dependência circular) */
+const API={get cena(){return cena},get camera(){return camera},manequim(i){const it=SCN.list[i-1];if(!it)throw new Error("Manequim "+i+" não existe.");return apiFor(it)}};
+
 function tema(n){const i=THEMES.findIndex(t=>t[0]===String(n).toLowerCase());if(i<0)throw new Error("Tema desconhecido: use 'claro', 'escuro' ou 'sistema'.");applyTheme(i)}
 
-export { withInst, LOG, apiFor, cena, camSet, camera, tema };
+export { espelharPose as espelharPoseP, withInst, LOG, apiFor, cena, camSet, camera, tema };

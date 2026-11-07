@@ -2,7 +2,7 @@
    (automática, afastar, girar, ajustar a pose ou permitir o contato), para cada colisão ou para todas */
 import { $ } from "../scene/ambiente.js";
 import { SCN, setActive } from "../scene/modelo.js";
-import { COL, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
+import { COL, resolverObjeto, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
 import { render } from "./palco.js";
 import { refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
@@ -30,7 +30,9 @@ function atualizarColisoes(lista) {
   let h = "";
   if (!cs.length) h += '<p class="col-ok">' + (vis > 1 ? "Nenhum manequim atravessa outro." : "Com 2 ou mais manequins, as colisões aparecem aqui.") + "</p>";
   cs.slice(0, 8).forEach((c, k) => {
-    const A = SCN.list[c.a], B = SCN.list[c.b], padrao = quemMexer(c);
+    const A = SCN.list[c.a], B = c.objeto !== undefined ? null : SCN.list[c.b], padrao = quemMexer(c);
+    if (!B) { h += '<div class="col-item" data-k="' + k + '"><p>' + esc(c.texto) + '</p><div class="linha"><select data-quem hidden><option value="a">a</option></select>' +
+      '<button type="button" data-m="auto">Automático</button><button type="button" data-m="distancia">Afastar</button><button type="button" data-m="giro">Girar</button><button type="button" data-m="pose">Ajustar pose</button><button type="button" data-m="ver">Ver</button></div></div>'; return; }
     h += '<div class="col-item" data-k="' + k + '"><p>' + esc(c.texto) + "</p>" +
       '<div class="linha"><label>Mexer em <select data-quem>' +
       '<option value="a"' + (padrao === "a" ? " selected" : "") + ">" + esc(A.name) + "</option>" +
@@ -65,6 +67,7 @@ export function iniciarColisoes() {
       const box = b.closest(".col-item"), c = el._cs && el._cs[+box.dataset.k]; if (!c) return;
       const m = b.dataset.m, quem = box.querySelector("[data-quem]").value;
       if (m === "ver") { setActive(quem === "a" ? c.a : c.b); return; }
+      if (c.objeto !== undefined && m !== "ver") { depois(resolverObjeto(c.a, c.objeto, m)); return; }
       if (m === "contato") { permitirContato(c.a, c.b, true); assinatura = ""; depois([SCN.list[c.a].name + " e " + SCN.list[c.b].name + " podem encostar (sem aviso)."]); return; }
       depois(resolverPar(c.a, c.b, m, quem));
     } catch (err) { msg(err.message, true); }

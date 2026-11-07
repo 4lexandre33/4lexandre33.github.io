@@ -80,7 +80,8 @@ function armPose(p,F,s){
   const Mb=mmul(M,rotM(0,-el*D,0)),Mf=mmul(Mb,rotM(s*pr*D,0,0));
   const fore={M:Mf,T:[G[0]+e[0],G[1]+e[1],G[2]+e[2]]},elbow={M:mmul(M,rotM(0,-el*0.5*D,0)),T:fore.T};
   const w=mv(Mf,[0,-A.L2,0]);
-  const Mh=mmul(Mf,rotM(0,0,-s*wf*D));
+  /* punho: estender/flexionar e desvio radial (para o polegar, +) / ulnar (−) */
+  const wd=(L?p.wristDevL:p.wristDevR)||0,Mh=mmul(Mf,mmul(rotM(0,0,-s*wf*D),rotM(0,wd*D,0)));
   const hand={M:Mh,T:[fore.T[0]+w[0],fore.T[1]+w[1],fore.T[2]+w[2]]};
   return {arm:{M,T:G},fore,hand,elbow,G,Mb,pr:s*pr*D};
 }

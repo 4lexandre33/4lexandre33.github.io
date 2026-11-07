@@ -6,9 +6,10 @@ import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
 
 let P;
 /* ===== Cena: vários manequins, câmera comum, cores exclusivas ===== */
-let UID=0;
+let UID=0,OBJID=1000;
+function novoIdObjeto(){return ++OBJID}
 /* exato: todos num z-buffer comum (mais lento); sem ele, cada manequim vira uma camada (foto .svg) guardada em cache */
-const SCN={list:[],active:0,exato:false};
+const SCN={list:[],active:0,exato:false,objetos:[]};
 const CAMK=["yaw","pitch","roll","zoom","panX","panY","lightAz","lightEl","tx","ty","tz","persp","camDist","lens","atmo"];
 const WORLDK=["wx","wy","wz","wRot"];
 function newInst(params,name){UID++;return {id:UID,name:name||("Manequim "+UID),params:Object.assign({},DEF,params||{}),cache:newCache(),hue:null,col:null,congelado:false,oculto:false,ordem:0}}
@@ -48,8 +49,12 @@ function cssHex(v){
 function sceneList(exp){
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const bg=exp?"#ffffff":cssHex("var(--paper)");
-  return SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
+  const lst=SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
     return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
+  /* objetos da cena (banco, cadeira, parede…), o chão e as cores neutras deles */
+  lst.objetos=SCN.objetos.slice();lst.chao=g0;
+  const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
+  return lst;
 }
 function sceneBB(only){
   const lst=sceneList();lst.forEach(o=>Object.assign(o.p,{zoom:1,panX:0,panY:0,atmo:0}));
@@ -107,4 +112,4 @@ export function iniciarModelo(){
 /* alteração de variáveis deste módulo por outros módulos */
 export function setP(v){return P=v}
 
-export { P, UID, SCN, CAMK, WORLDK, newInst, isDark, hsl2hex, hex2rgb, mixHex, colDist, hueColors, nextHue, instColors, palOf, cssHex, sceneList, sceneBB, setActive, MAXM, addInst, dupInst, delInst, setColor };
+export { novoIdObjeto, P, UID, SCN, CAMK, WORLDK, newInst, isDark, hsl2hex, hex2rgb, mixHex, colDist, hueColors, nextHue, instColors, palOf, cssHex, sceneList, sceneBB, setActive, MAXM, addInst, dupInst, delInst, setColor };

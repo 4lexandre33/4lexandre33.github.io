@@ -11,6 +11,8 @@
   "poses.js",
   "camadas-cena.js",
   "colisoes.js",
+  "cenario.js",
+  "descrever.js",
   "comandos.js",
   "ajuda.js"
  ],

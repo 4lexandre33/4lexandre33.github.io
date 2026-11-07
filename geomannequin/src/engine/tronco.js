@@ -1,5 +1,5 @@
 /* GeoMannequin — tronco: relevo da pele, ombros, clavícula, deformação e malha do busto */
-import { D, clamp, gauss, lerp, rotAbout, sstep } from "./matematica.js";
+import { D, clamp, gauss, lerp, mv, rotAbout, rotM, sstep } from "./matematica.js";
 import { muscleBump, sdPoly } from "./musculos.js";
 import { bustFrame, bustR, bustZc, scapTri, segDist } from "./corpo.js";
 import { relevoTronco } from "./atlas/tronco.js";
@@ -73,7 +73,9 @@ function bustBump(x,y,th,p,F){
 function shoulderAngles(p,s){
   const el=s>0?p.shElevL:p.shElevR,pr=s>0?p.shProtL:p.shProtR;
   const ab=s>0?p.armAbdL:p.armAbdR,fl=s>0?p.armFlexL:p.armFlexR;
-  const e=(el>0?el*28:el*10)+(p.shTension-0.3)*8+Math.max(0,ab-60)*0.22+Math.max(0,fl-90)*0.18;
+  /* ritmo escápulo-umeral: acima de ~30° de elevação do braço, a escápula gira e sobe junto (≈ 1° para cada 2–3°) */
+  const ro=s>0?p.armRotL:p.armRotR,dir=mv(rotM(s*ro*D,-fl*D,s*ab*D),[0,-1,0]),elev=Math.acos(clamp(-dir[1],-1,1))/D;
+  const e=(el>0?el*28:el*10)+(p.shTension-0.3)*8+Math.max(0,elev-30)*0.2;
   return [e*D,(pr*22+Math.max(0,fl-30)*0.08)*D];
 }
 function shoulderWarp(v,p,F){

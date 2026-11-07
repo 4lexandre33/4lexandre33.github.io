@@ -20,7 +20,9 @@ const num = (d) => z.number().describe(d);
 /* Esquemas sem uniões e sem objetos livres: o Gemini (e alguns clientes) rejeitam esses formatos.
    Cada parâmetro de pose/corpo vira uma propriedade explícita, com a faixa anatômica na descrição. */
 const Ref = z.string().optional().describe("Manequim: nome (ex.: \"Ana\") ou índice (\"0\", \"1\"…). Vazio = o manequim ativo.");
-let Pose, Medidas, Camadas, TIPOS, POSES_RAPIDAS;
+let Pose, Medidas, Camadas, TIPOS, POSES_RAPIDAS, GESTOS_E, OBJ_E;
+const Dir = z.string().describe("Direção: \"+x\", \"-x\", \"+z\", \"-z\", \"câmera\", \"direita\", \"esquerda\", \"frente\", \"trás\", graus (\"90\") ou o nome de outro manequim/objeto.");
+const dirV = d => /^-?\d+(\.\d+)?$/.test(String(d)) ? +d : d;
 function buildSchemas(w) {
   if (Pose) return;
   const field = (alias, k) => { const d = w.SL.find(x => x.k === k); return z.number().optional().describe(d ? `${d.label} (${d.min} a ${d.max}${d.u.trim() ? " " + d.u.trim() : ""})` : k); };
@@ -31,7 +33,9 @@ function buildSchemas(w) {
   const cam = {}; for (const l of w.LAY) cam[l.k] = z.boolean().optional().describe(l.label);
   Camadas = z.object(cam).describe("Liga (true) ou desliga (false) camadas de desenho.");
   TIPOS = z.enum(Object.keys(w.BODIES)).describe("Tipo corporal pronto.");
-  POSES_RAPIDAS = z.enum(Object.keys(w.BPOSES).concat(["cintura", "cruzar", "ombro"])).describe("Pose pronta.");
+  POSES_RAPIDAS = z.enum(w.todasPoses()).describe("Pose pronta (em pé, sentado, deitado, saltando, correndo, ajoelhado, parada de mão…).");
+  GESTOS_E = z.enum(Object.keys(w.GESTOS)).describe("Gesto da mão.");
+  OBJ_E = z.enum(Object.keys(w.TIPOS_OBJETO)).describe("Tipo de objeto.");
 }
 
 /* executa uma ação na cena, colhendo avisos (valores ajustados ao limite etc.) */
@@ -136,7 +140,23 @@ export function registerAll(server, getWorld, opts = {}) {
       ativar: z.boolean().optional().describe("Torna este o manequim ativo."),
       congelar: z.boolean().optional().describe("true = a foto (camada) deste manequim fica fixa: não é refeita, nem quando a câmera muda; false = volta a acompanhar."),
       ocultar: z.boolean().optional().describe("true = some da cena (não é desenhado nem exportado); false = volta."),
-      ordem: z.enum(["frente", "tras", "auto"]).optional().describe("Ordem na pilha de camadas: por cima de todos, por baixo de todos, ou automática (pela distância).")
+      ordem: z.enum(["frente", "tras", "auto"]).optional().describe("Ordem na pilha de camadas: por cima de todos, por baixo de todos, ou automática (pela distância)."),
+      orientar: Dir.optional().describe("Vira a frente do corpo para esta direção (no chão). Ex.: \"+x\", \"câmera\", \"Ana\"."),
+      deitar: z.object({ tipo: z.enum(["costas", "brucos", "lado", "lado direito"]).optional(), eixo: Dir.optional().describe("Para onde aponta a cabeça.") }).optional().describe("Deita o manequim (de costas, de bruços ou de lado) com a cabeça apontando para o eixo."),
+      sentar: z.string().optional().describe("Senta: nome/tipo de um objeto da cena (\"banco\", \"cadeira\") ou \"\" para criar um banco do tamanho certo."),
+      subir: z.string().optional().describe("Fica em pé em cima deste objeto (caixa, degrau, mesa)."),
+      encostar: z.string().optional().describe("Encosta as costas neste objeto (parede)."),
+      altura: num("Altura do corpo acima do apoio, em R (salto). 0 = no chão.").optional(),
+      inclinarCorpo: num("Inclina o corpo inteiro para frente/trás, em graus (−90 = deitado de costas, 90 = de bruços, 180 = de cabeça para baixo).").optional(),
+      rolarCorpo: num("Rola o corpo inteiro para o lado, em graus (90 = deitado de lado).").optional(),
+      olhar: z.string().optional().describe("Para onde olhar: \"baixo\", \"cima\", \"frente\", \"esquerda\", \"direita\", \"câmera\" ou o nome de outro manequim."),
+      apontar: z.object({ alvo: Dir, lado: z.enum(["esquerda", "direita"]).optional() }).optional().describe("Aponta com o braço esticado."),
+      maoEm: z.object({ lado: z.enum(["esquerda", "direita"]), x: z.number(), y: z.number(), z: z.number() }).optional().describe("Leva a mão até um ponto do mundo (cinemática inversa)."),
+      peEm: z.object({ lado: z.enum(["esquerda", "direita"]), x: z.number(), y: z.number(), z: z.number() }).optional().describe("Leva o pé até um ponto do mundo."),
+      gesto: z.object({ lado: z.enum(["esquerda", "direita", "ambas"]).optional(), nome: GESTOS_E }).optional().describe("Gesto pronto da mão: punho, apontar, pinça, joinha, paz, ok, acenar…"),
+      articulacoes: z.array(z.object({ nome: z.string().describe("Ex.: \"cotovelo esquerdo\", \"joelho direito\", \"pescoço\", \"coluna\", \"lombar\", \"quadril esquerdo\"."), dobrar: z.number().optional(), frente: z.number().optional(), abrir: z.number().optional(), girar: z.number().optional(), lado: z.number().optional(), inclinar: z.number().optional(), desvio: z.number().optional(), apontar: z.number().optional(), virar: z.number().optional() })).optional().describe("Move articulações pelo nome anatômico, em graus; os limites do corpo humano são respeitados."),
+      espelhar: z.boolean().optional().describe("true = espelha a pose (esquerda ↔ direita)."),
+      copiarPoseDe: z.string().optional().describe("Copia a pose de outro manequim (nome).")
     },
     annotations: RW
   }, guard((a) => {
@@ -156,6 +176,21 @@ export function registerAll(server, getWorld, opts = {}) {
       if (a.congelar !== undefined) m.congelar(a.congelar);
       if (a.ocultar !== undefined) m.ocultar(a.ocultar);
       if (a.ordem === "frente") m.frente(); else if (a.ordem === "tras") m.tras(); else if (a.ordem === "auto") m.ordemAuto();
+      if (a.copiarPoseDe) m.copiarPose(a.copiarPoseDe);
+      if (a.deitar) m.deitar(a.deitar.tipo === "brucos" ? "bruços" : a.deitar.tipo, a.deitar.eixo !== undefined ? dirV(a.deitar.eixo) : undefined);
+      if (a.sentar !== undefined) m.sentar(a.sentar === "" ? undefined : a.sentar);
+      if (a.subir) m.subir(a.subir);
+      if (a.encostar) m.encostar(a.encostar);
+      if (a.orientar !== undefined) m.orientar(dirV(a.orientar));
+      if (a.inclinarCorpo !== undefined || a.rolarCorpo !== undefined) m.inclinar(a.inclinarCorpo ?? it.params.bodyPitch, a.rolarCorpo);
+      if (a.altura !== undefined) m.altura(a.altura);
+      if (a.articulacoes) a.articulacoes.forEach(j => { const { nome, ...v } = j; m.articulacao(nome, v); });
+      if (a.maoEm) m.maoEm(a.maoEm.lado, [a.maoEm.x, a.maoEm.y, a.maoEm.z]);
+      if (a.peEm) m.peEm(a.peEm.lado, [a.peEm.x, a.peEm.y, a.peEm.z]);
+      if (a.apontar) m.apontar(dirV(a.apontar.alvo), a.apontar.lado);
+      if (a.gesto) m.gesto(a.gesto.lado || "ambas", a.gesto.nome);
+      if (a.olhar) m.olhar(a.olhar);
+      if (a.espelhar) m.espelhar();
     });
     return ok(w, `Manequim “${it.name}” atualizado.`, avisos);
   }));
@@ -203,11 +238,17 @@ export function registerAll(server, getWorld, opts = {}) {
       altura_olhos: num("Altura da câmera acima do chão, em R.").optional(),
       inclinacao: num("Com altura_olhos: inclinação em graus (0 = horizonte reto).").optional(),
       zoom: num("Tamanho na tela (1 = padrão). Em perspectiva aproxima/afasta a câmera.").optional(),
+      eixo: z.enum(["x", "-x", "z", "-z", "y"]).optional().describe("Câmera sobre um eixo do mundo, olhando para o centro (y = de cima)."),
+      elevacao: z.string().optional().describe("\"alta\" (de cima, plongée), \"muito alta\", \"média\", \"olhos\", \"baixa\" (contra-plongée), \"muito baixa\", ou graus acima do horizonte (\"30\")."),
+      plano: z.enum(["plongée", "contra-plongée", "de cima", "nível dos olhos", "de baixo"]).optional(),
       enquadrar: z.boolean().optional().describe("Ajusta a distância para todos caberem (padrão: sim).")
     },
     annotations: RW
   }, guard((a) => {
     const w = W(), c = w.camera;
+    if (a.eixo) c.eixo(a.eixo);
+    if (a.elevacao !== undefined) c.elevacao(/^-?\d+(\.\d+)?$/.test(a.elevacao) ? +a.elevacao : a.elevacao);
+    if (a.plano) c.plano(a.plano);
     if (a.perspectiva !== undefined) c.perspectiva(a.perspectiva);
     if (a.mirar) c.mirar(a.mirar.x, a.mirar.y, a.mirar.z);
     if (a.posicao) c.posicao(a.posicao.x, a.posicao.y, a.posicao.z);
@@ -219,6 +260,45 @@ export function registerAll(server, getWorld, opts = {}) {
     if (fit) w.autoFit();
     if (a.altura_olhos !== undefined) { c.alturaOlhos(a.altura_olhos, a.inclinacao); if (fit) w.autoFit(); }
     return ok(w, "Câmera ajustada.");
+  }));
+
+  server.registerTool("descrever_cena", {
+    title: "Descrever cena",
+    description: "Monta a cena a partir de uma frase em português, por exemplo: \"manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta\". Entende poses (sentado, deitado de costas/bruços/lado, saltando, correndo, ajoelhado, de cócoras, parada de mão, acenando, apontando…), orientação (orientado/virado para o eixo x, para a câmera, para o manequim 2), olhar (olhando para baixo/cima/câmera/manequim N), posição (x = 3, à direita do manequim 1, atrás do 2), objetos (sentado na cadeira, em cima da caixa, encostado na parede) e câmera (no eixo x/z/-x, elevação alta/média/baixa, de cima, contra-plongée, lente 85). Cria os manequins que faltarem e afasta quem colidir.",
+    inputSchema: { texto: z.string().min(3).max(2000).describe("A descrição da cena."), limpar: z.boolean().optional().describe("true = começa uma cena nova antes.") },
+    annotations: RW
+  }, guard((a) => {
+    const w = W();
+    if (a.limpar) w.cena.limpar();
+    const { r, avisos } = run(w, () => w.cena.descrever(a.texto));
+    return ok(w, "Cena montada:\n- " + (r.length ? r.join("\n- ") : "(nada reconhecido; veja a referência)"), avisos, { feito: r });
+  }));
+
+  server.registerTool("objetos", {
+    title: "Objetos da cena",
+    description: "Adiciona, move ou remove objetos de apoio (banco, cadeira, caixa, degrau, mesa, parede). Os manequins podem sentar, subir ou encostar neles (editar_manequim: sentar/subir/encostar). Medidas em R (1 R ≈ 11,4 cm).",
+    inputSchema: {
+      acao: z.enum(["adicionar", "editar", "remover", "listar"]),
+      tipo: OBJ_E.optional(),
+      nome: z.string().optional().describe("Nome do objeto (para editar/remover; também dá nome ao novo)."),
+      x: z.number().optional(), z: z.number().optional(), giro: z.number().optional().describe("Graus."),
+      largura: z.number().optional(), profundidade: z.number().optional(), altura: z.number().optional()
+    },
+    annotations: RW
+  }, guard((a) => {
+    const w = W();
+    const med = {}; if (a.largura !== undefined) med.larg = a.largura; if (a.profundidade !== undefined) med.prof = a.profundidade; if (a.altura !== undefined) med.alt = a.altura;
+    const { r, avisos } = run(w, () => {
+      if (a.acao === "listar") return w.cena.objetos().map(o => o.info());
+      if (a.acao === "adicionar") { if (!a.tipo) throw new Error("Diga o tipo do objeto."); const o = w.cena.objeto(a.tipo, Object.assign({ x: a.x ?? 0, z: a.z ?? 0, giro: a.giro ?? 0 }, med)); if (a.nome) o.renomear(a.nome); return [o.info()]; }
+      const o = w.cena.objetos().find(q => q.nome === (a.nome || a.tipo) || q.tipo === (a.nome || a.tipo)); if (!o) throw new Error("Objeto não encontrado.");
+      if (a.acao === "remover") { o.remover(); return []; }
+      if (a.x !== undefined || a.z !== undefined) o.posicao(a.x ?? o.info().x, a.z ?? o.info().z);
+      if (a.giro !== undefined) o.girar(a.giro);
+      if (Object.keys(med).length) o.medidas(med);
+      return [o.info()];
+    });
+    return ok(w, a.acao === "listar" ? "Objetos: " + (r.length ? r.map(o => `${o.nome} (${o.tipo}) em x=${o.x}, z=${o.z}`).join("; ") : "nenhum") : "Objeto " + (a.acao === "remover" ? "removido." : "pronto."), avisos, { objetos: r });
   }));
 
   server.registerTool("luz", {

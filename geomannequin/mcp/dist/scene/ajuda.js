@@ -1,5 +1,5 @@
 /* GeoMannequin — exemplos de código e referência da API */
-import { BODIES, BPOSES } from "./poses.js";
+import { BODIES, BPOSES, todasPoses } from "./poses.js";
 import { ALIAS } from "./parametros.js";
 
 const EXAMPLES={
@@ -53,6 +53,29 @@ cena.enquadrar();
 log(cena.colisoes().map(c => c.descricao));
 // corrigir mudando o mínimo (troque por "distancia", "giro" ou "pose"):
 // cena.resolverColisoes({ preferir: "auto" });`,
+  "Cena descrita em português":`// uma frase só: poses, eixos, olhar e câmera
+cena.limpar();
+cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta");`,
+  "Cena por código: eixos e apoios":`cena.limpar();
+const cadeira = cena.objeto("cadeira", {x: -5, giro: 30});
+const a = cena.ativo.renomear("Ana").sentar("cadeira");
+const b = cena.adicionar({nome: "Beto", x: 3}).deitar("bruços", "-z");
+a.olhar("Beto");
+const c = cena.adicionar({nome: "Caio", x: 9}).saltar(4).orientar("câmera").olhar("baixo");
+c.articulacao("ombro esquerdo", {abrir: 170}).gesto("direita", "joinha");
+camera.eixo("z").elevacao("média");
+cena.enquadrar();`,
+  "Articulações uma a uma":`const m = cena.ativo;
+m.poseRapida("empe");
+m.articulacao("ombro direito", {frente: 90});
+m.articulacao("cotovelo direito", {dobrar: 120});
+m.articulacao("punho direito", {dobrar: -40});
+m.articulacao("quadril esquerdo", {frente: 70});
+m.articulacao("joelho esquerdo", {dobrar: 90});
+m.articulacao("coluna", {lado: 10, girar: -15});
+m.articulacao("pescoço", {girar: 30});
+m.dedos("direita", {indicador: -0.2, mao: 0.8});
+cena.modo("manequim");`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -82,9 +105,23 @@ export function iniciarAjuda(){
   cena.colisao("avisar" | "corrigir" | "bloquear" | "desligado", "auto" | "distancia" | "giro" | "pose")
   m.resolverColisoes("pose") — só este muda · m.permitirContato(outro, true) — abraço, aperto de mão
   cena.composicao(true) → avisa tangências e cabeças escondidas (só na tela) · cena.ajustarComposicao(0)
+  Esqueleto e articulações (limites do corpo humano; acima do limite, ajusta e avisa):
+  m.articulacao("cotovelo esquerdo", {dobrar: 90}) — nomes: ombro, cotovelo, punho, mao, quadril, joelho, tornozelo (+ esquerdo/direito),
+    coluna, lombar, toracica, pescoco, cabeca, pelve, corpo; movimentos: dobrar, frente, abrir, girar, lado, inclinar, desvio, apontar, virar, subir
+  m.gesto("direita" | "esquerda" | "ambas", "punho" | "apontar" | "pinca" | "joinha" | "paz" | "ok" | "garra" | "acenar" | …)
+  m.dedos("esquerda", {polegar, indicador, medio, anelar, minimo, mao, afastar, opor}) · m.espelhar() · m.copiarPose(outro)
+  Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
+  m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)
+  m.saltar(altura R) · m.altura(R) · m.inclinar(graus, rolar?) — corpo inteiro (−90 costas, 90 bruços, 180 de cabeça para baixo)
+  m.sentar(objeto?) · m.subir(objeto) · m.encostar(objeto) · m.olhar("baixo" | "cima" | "câmera" | "Ana" | [x,y,z])
+  m.maoEm("esquerda", [x, y, z]) · m.peEm("direita", [x, y, z]) · m.apontar(alvo, "direita")
+  cena.objeto("banco" | "cadeira" | "caixa" | "degrau" | "mesa" | "parede", {x, z, giro, largura, profundidade, altura}) → o.posicao/girar/medidas/remover
+  cena.montar([{pose: "sentado"}, {deitar: {tipo: "costas", eixo: "x"}}, {pose: "saltando", altura: 4, olhar: "baixo"}], {camera: {eixo: "z", elevacao: "alta"}})
+  cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta")
+  camera.eixo("x" | "-x" | "z" | "-z" | "y") · camera.elevacao("alta" | "muito alta" | "média" | "olhos" | "baixa" | "muito baixa" | graus) · camera.plano("plongée" | "contra-plongée" | "de cima")
   tema("claro" | "escuro" | "sistema") · log(...)
   
-  Poses rápidas: ${Object.keys(BPOSES).concat(["cintura","cruzar","ombro"]).join(", ")}
+  Poses rápidas: ${todasPoses().join(", ")}
   Tipos corporais: ${Object.keys(BODIES).join(", ")}
   Parâmetros de pose e corpo: ${Object.keys(ALIAS).join(", ")}
   (também valem os nomes internos, como kneeFlexL)`;

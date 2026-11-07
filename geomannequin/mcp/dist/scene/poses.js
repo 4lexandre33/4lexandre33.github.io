@@ -1,11 +1,24 @@
 /* GeoMannequin — poses rápidas, tipos corporais, rostos, posturas e proteção dos braços */
 import { P } from "./modelo.js";
-import { applyA, armClear, bodyProxies, chainSetup, flatAnkle, handOnHip, ikArm, legClear, minAbd, pushOut, shape } from "../engine/index.js";
+import { aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, legClear, legDims, legPose, minAbd, pushOut, shape } from "../engine/index.js";
 
 /* o braço e a mão não atravessam a cabeça nem o tronco */
 const GUARD=/^(armAbd|armFlex|armRot|elbow|pron|wrist|spine|pelvis|shElev|shProt|head|hip|knee|ankle|toes)/;
+/* limites que dependem de outra articulação (como no corpo real); devolve avisos */
+function limitesAcoplados(Q){
+  const av=[];
+  [["L","esquerda"],["R","direita"]].forEach(([L_,n])=>{
+    /* isquiotibiais: com o joelho esticado a coxa sobe menos (≈ 90°); com o joelho dobrado vai até ~125° */
+    const mx=Math.round(90+35*Math.min(1,Math.max(0,Q["kneeFlex"+L_])/90));
+    if(Q["hipFlex"+L_]>mx){Q["hipFlex"+L_]=mx;av.push("coxa "+n+": com o joelho quase esticado sobe só até "+mx+"° (músculos de trás da coxa)")}
+    /* braço acima da cabeça pela lateral: o úmero precisa girar para fora (rotação externa) */
+    if(Q["armAbd"+L_]>120&&Q["armRot"+L_]<-20){Q["armRot"+L_]=-20;av.push("braço "+(n==="esquerda"?"esquerdo":"direito")+": acima de 120° pela lateral o braço gira para fora")}
+  });
+  return av;
+}
 function guardArms(){
   let ch=false;const sh=shape(P);
+  if(limitesAcoplados(P).length)ch=true;
   const lc=legClear(P,sh);if(lc){P.hipAbdL=Math.round(lc.abdL);P.hipAbdR=Math.round(lc.abdR);ch=true}
   [1,-1].forEach(s=>{const L_=s>0?"L":"R",mn=Math.round(minAbd(P["armFlex"+L_]));if(P["armAbd"+L_]<mn){P["armAbd"+L_]=mn;ch=true}
     const f=armClear(P,sh,s);if(!f)return;ch=true;
@@ -35,7 +48,9 @@ const BODIES={
 };
 const POSE0={spineFlex:0,spineSide:0,spineTwist:0,pelvisTilt:0,pelvisSide:0,pelvisTwist:0,hipFlexL:0,hipFlexR:0,hipAbdL:3,hipAbdR:3,hipRotL:0,hipRotR:0,kneeFlexL:0,kneeFlexR:0,ankleFlexL:0,ankleFlexR:0,ankleTiltL:0,ankleTiltR:0,toesL:0,toesR:0,
   armAbdL:12,armAbdR:12,armFlexL:0,armFlexR:0,armRotL:0,armRotR:0,elbowL:0,elbowR:0,pronL:0,pronR:0,wristL:0,wristR:0,handCurlL:0.3,handCurlR:0.3,
-  headYaw:0,headPitch:0,headRoll:0,shElevL:0,shElevR:0,shProtL:0,shProtR:0};
+  headYaw:0,headPitch:0,headRoll:0,shElevL:0,shElevR:0,shProtL:0,shProtR:0,
+  bodyPitch:0,bodyRoll:0,bodyLift:0,ground:1,lumFlex:0,lumSide:0,lumTwist:0,thoFlex:0,thoSide:0,thoTwist:0,neckFlex:0,neckSide:0,neckTwist:0,
+  wristDevL:0,wristDevR:0,fThL:0,fInL:0,fMeL:0,fAnL:0,fMiL:0,fThR:0,fInR:0,fMeR:0,fAnR:0,fMiR:0,fSpreadL:0.4,fSpreadR:0.4,thumbOppL:0,thumbOppR:0};
 const BPOSES={
   empe:{},
   contrapposto:{pelvisSide:7,spineSide:-9,hipAbdL:7,hipAbdR:-2,hipFlexR:12,shElevL:-0.2,shElevR:0.25,headRoll:5,armAbdL:10,armAbdR:6,elbowR:15},
@@ -50,7 +65,67 @@ const BPOSES={
   lateral:{spineSide:22,pelvisSide:-6,armAbdL:150,armFlexL:10,elbowL:35,armAbdR:14,elbowR:15,headRoll:-8},
   agachar:{hipFlexL:62,hipFlexR:62,kneeFlexL:88,kneeFlexR:88,hipAbdL:12,hipAbdR:12,hipRotL:8,hipRotR:8,spineFlex:22,headPitch:-14,armFlexL:55,armFlexR:55,elbowL:25,elbowR:25,flat:[1,-1]}
 };
-function doBodyPose(k){
+/* mão (s) num ponto do próprio corpo, por cinemática inversa; onde(ch, legs) devolve o ponto em coordenadas do corpo */
+function maoNoCorpo(Q,s,onde,extra){
+  const S=shape(Q),ch=chainSetup(Q,S),pernas={};[-1,1].forEach(t=>{const lp=legPose(Q,ch.F,ch,t);pernas[t]={Th:comp(ch.Pel,lp.thigh),Cf:comp(ch.Pel,lp.calf),A:legDims(Q)}});
+  const alvo=onde(ch,pernas),r=ikArm(Q,S,s,alvo),L_=s>0?"L":"R";
+  Object.assign(Q,{["armAbd"+L_]:r.abd,["armFlex"+L_]:r.flex,["armRot"+L_]:r.rot,["elbow"+L_]:r.elbow},extra||{});
+}
+/* ===== Biblioteca de poses humanas (usa o esqueleto: corpo inteiro, apoio no chão, mãos) =====
+   Cada pose escreve só os ângulos; o apoio no chão assenta o corpo pela parte mais baixa.
+   lado: 1 = o lado esquerdo faz o movimento principal, −1 = o direito. */
+const lad=(s,k)=>k+(s>0?"L":"R"),opo=(s,k)=>k+(s>0?"R":"L");
+const POSES_CORPO={
+  sentado:(Q,s)=>{Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:88,kneeFlexR:84,hipAbdL:6,hipAbdR:8,ankleFlexL:2,ankleFlexR:4,spineFlex:6,pronL:-40,pronR:-40,handCurlL:0.35,handCurlR:0.35,headPitch:4});
+    [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[t].Th,[0,-pe[t].A.L1*0.62,0.62*pe[t].A.k])))},
+  sentadoChao:(Q,s)=>Object.assign(Q,{hipFlexL:80,hipFlexR:80,hipAbdL:42,hipAbdR:42,hipRotL:-40,hipRotR:-40,kneeFlexL:140,kneeFlexR:135,ankleFlexL:20,ankleFlexR:20,ankleTiltL:20,ankleTiltR:20,spineFlex:14,armFlexL:40,armFlexR:40,elbowL:35,elbowR:35,armAbdL:16,armAbdR:16,handCurlL:0.4,handCurlR:0.4,headPitch:6}),
+  pernasEsticadas:(Q,s)=>Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:0,kneeFlexR:0,ankleFlexL:18,ankleFlexR:18,spineFlex:-12,armFlexL:-45,armFlexR:-45,armAbdL:18,armAbdR:18,elbowL:0,elbowR:0,wristL:-70,wristR:-70,handCurlL:0.05,handCurlR:0.05,headPitch:-6}),
+  abracandoJoelhos:(Q,s)=>{Object.assign(Q,{hipFlexL:118,hipFlexR:118,kneeFlexL:140,kneeFlexR:140,ankleFlexL:10,ankleFlexR:10,hipAbdL:4,hipAbdR:4,spineFlex:30,headPitch:14,handCurlL:0.55,handCurlR:0.55});
+    [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[-t].Cf,[t*0.35,-pe[-t].A.L2*0.3,0.55*pe[-t].A.k]),{["pron"+(t>0?"L":"R")]:60}))},
+  deitadoCostas:(Q,s)=>Object.assign(Q,{bodyPitch:-90,armAbdL:14,armAbdR:14,handCurlL:0.35,handCurlR:0.35,ankleFlexL:25,ankleFlexR:25,hipRotL:12,hipRotR:12}),
+  deitadoLado:(Q,s)=>Object.assign(Q,{bodyRoll:s*88,[lad(s,"hipFlex")]:35,[lad(s,"kneeFlex")]:55,[opo(s,"hipFlex")]:45,[opo(s,"kneeFlex")]:70,[lad(s,"armAbd")]:150,[lad(s,"elbow")]:110,[opo(s,"armFlex")]:45,[opo(s,"elbow")]:30,[opo(s,"armAbd")]:-10,headRoll:s*-12,spineFlex:12,ankleFlexL:20,ankleFlexR:20}),
+  deBrucos:(Q,s)=>Object.assign(Q,{bodyPitch:90,armAbdL:95,armAbdR:95,elbowL:95,elbowR:95,armRotL:-50,armRotR:-50,pronL:-60,pronR:-60,headYaw:s*70,ankleFlexL:45,ankleFlexR:45,handCurlL:0.2,handCurlR:0.2}),
+  apoiadoCotovelos:(Q,s)=>Object.assign(Q,{bodyPitch:75,spineFlex:-28,headPitch:-28,armFlexL:95,armFlexR:95,elbowL:95,elbowR:95,armAbdL:4,armAbdR:4,pronL:-70,pronR:-70,ankleFlexL:45,ankleFlexR:45,[lad(s,"kneeFlex")]:70}),
+  ajoelhado:(Q,s)=>Object.assign(Q,{kneeFlexL:90,kneeFlexR:90,hipFlexL:2,hipFlexR:2,ankleFlexL:40,ankleFlexR:40,toesL:-20,toesR:-20,armAbdL:12,armAbdR:12,elbowL:15,elbowR:15}),
+  sentadoCalcanhares:(Q,s)=>Object.assign(Q,{kneeFlexL:150,kneeFlexR:150,hipFlexL:30,hipFlexR:30,ankleFlexL:48,ankleFlexR:48,spineFlex:-4,armFlexL:30,armFlexR:30,elbowL:55,elbowR:55,handCurlL:0.3,handCurlR:0.3}),
+  umJoelho:(Q,s)=>Object.assign(Q,{[lad(s,"hipFlex")]:88,[lad(s,"kneeFlex")]:92,[lad(s,"ankleFlex")]:-4,[opo(s,"hipFlex")]:-6,[opo(s,"kneeFlex")]:92,[opo(s,"ankleFlex")]:10,[opo(s,"toes")]:-55,spineFlex:6,[lad(s,"armFlex")]:30,[lad(s,"elbow")]:60,[opo(s,"armAbd")]:10,[opo(s,"elbow")]:15,handCurlL:0.35,handCurlR:0.35}),
+  cocoras:(Q,s)=>Object.assign(Q,{hipFlexL:112,hipFlexR:112,kneeFlexL:150,kneeFlexR:150,hipAbdL:28,hipAbdR:28,hipRotL:-12,hipRotR:-12,ankleFlexL:-20,ankleFlexR:-20,spineFlex:18,headPitch:-14,armFlexL:55,armFlexR:55,elbowL:35,elbowR:35,armAbdL:-6,armAbdR:-6}),
+  correndo:(Q,s)=>Object.assign(Q,{[lad(s,"hipFlex")]:62,[lad(s,"kneeFlex")]:95,[lad(s,"ankleFlex")]:10,[opo(s,"hipFlex")]:-25,[opo(s,"kneeFlex")]:45,[opo(s,"ankleFlex")]:30,[opo(s,"toes")]:-35,spineFlex:12,[lad(s,"armFlex")]:-45,[lad(s,"elbow")]:95,[opo(s,"armFlex")]:55,[opo(s,"elbow")]:90,armAbdL:10,armAbdR:10,handCurlL:0.6,handCurlR:0.6,headPitch:-6,spineTwist:s*-8,pelvisTwist:s*8}),
+  impulso:(Q,s)=>Object.assign(Q,{hipFlexL:70,hipFlexR:70,kneeFlexL:85,kneeFlexR:85,ankleFlexL:-12,ankleFlexR:-12,spineFlex:32,armFlexL:-55,armFlexR:-55,elbowL:10,elbowR:10,headPitch:-20}),
+  saltando:(Q,s)=>Object.assign(Q,{hipFlexL:35,hipFlexR:28,kneeFlexL:70,kneeFlexR:62,ankleFlexL:35,ankleFlexR:35,toesL:10,toesR:10,armAbdL:150,armAbdR:150,armFlexL:20,armFlexR:20,elbowL:10,elbowR:10,spineFlex:-10,headPitch:-12,handCurlL:0.1,handCurlR:0.1,bodyLift:3.5}),
+  aterrissando:(Q,s)=>Object.assign(Q,{hipFlexL:60,hipFlexR:60,kneeFlexL:80,kneeFlexR:80,ankleFlexL:-10,ankleFlexR:-10,spineFlex:25,armFlexL:60,armFlexR:60,armAbdL:30,armAbdR:30,elbowL:20,elbowR:20,headPitch:-10}),
+  chutando:(Q,s)=>Object.assign(Q,{[lad(s,"hipFlex")]:88,[lad(s,"kneeFlex")]:8,[lad(s,"ankleFlex")]:35,[opo(s,"kneeFlex")]:14,[opo(s,"hipFlex")]:8,spineFlex:-14,armAbdL:50,armAbdR:50,armFlexL:20,armFlexR:-10,elbowL:30,elbowR:30,handCurlL:0.7,handCurlR:0.7}),
+  socando:(Q,s)=>{Object.assign(Q,{[opo(s,"armFlex")]:88,[opo(s,"armAbd")]:-6,[opo(s,"elbow")]:0,[opo(s,"pron")]:80,[lad(s,"armFlex")]:55,[lad(s,"elbow")]:125,[lad(s,"armAbd")]:-10,[lad(s,"pron")]:60,spineTwist:s*22,pelvisTwist:s*-8,[lad(s,"hipFlex")]:22,[lad(s,"kneeFlex")]:20,[opo(s,"hipFlex")]:-12,[opo(s,"kneeFlex")]:10,headPitch:4});aplicarGesto(Q,1,"punho");aplicarGesto(Q,-1,"punho")},
+  alongando:(Q,s)=>Object.assign(Q,{armAbdL:172,armAbdR:172,elbowL:0,elbowR:0,armRotL:40,armRotR:40,spineFlex:-12,headPitch:-22,ankleFlexL:38,ankleFlexR:38,toesL:-45,toesR:-45,handCurlL:0.1,handCurlR:0.1}),
+  paradaDeMao:(Q,s)=>{Object.assign(Q,{bodyPitch:180,armFlexL:175,armFlexR:175,armAbdL:12,armAbdR:12,elbowL:0,elbowR:0,wristL:-80,wristR:-80,spineFlex:-8,headPitch:-30,ankleFlexL:40,ankleFlexR:40,hipAbdL:6,hipAbdR:6});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");Q.wristL=-70;Q.wristR=-70},
+  engatinhando:(Q,s)=>{Object.assign(Q,{bodyPitch:90,armFlexL:92,armFlexR:92,elbowL:0,elbowR:0,wristL:-75,wristR:-75,hipFlexL:92,hipFlexR:92,kneeFlexL:92,kneeFlexR:92,ankleFlexL:40,ankleFlexR:40,headPitch:-40,[lad(s,"hipFlex")]:105,[opo(s,"armFlex")]:105});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");Q.wristL=-70;Q.wristR=-70},
+  apontando:(Q,s)=>{Object.assign(Q,{[opo(s,"armFlex")]:85,[opo(s,"armAbd")]:12,[opo(s,"elbow")]:5,[opo(s,"pron")]:70,spineTwist:s*-6,headYaw:s*-12});aplicarGesto(Q,-s,"apontar")},
+  acenando:(Q,s)=>{Object.assign(Q,{[opo(s,"armAbd")]:110,[opo(s,"armFlex")]:30,[opo(s,"elbow")]:85,[opo(s,"armRot")]:60,[opo(s,"wrist")]:-10,headRoll:s*6});aplicarGesto(Q,-s,"acenar")},
+  carregando:(Q,s)=>{Object.assign(Q,{armFlexL:52,armFlexR:52,elbowL:78,elbowR:78,armAbdL:8,armAbdR:8,pronL:-10,pronR:-10,wristL:-10,wristR:-10,spineFlex:-6,hipFlexL:6,hipFlexR:-4,kneeFlexL:8,kneeFlexR:6});aplicarGesto(Q,1,"segurar");aplicarGesto(Q,-1,"segurar")},
+  empurrando:(Q,s)=>{Object.assign(Q,{spineFlex:22,armFlexL:85,armFlexR:85,elbowL:28,elbowR:28,wristL:-70,wristR:-70,pronL:-80,pronR:-80,[lad(s,"hipFlex")]:45,[lad(s,"kneeFlex")]:40,[opo(s,"hipFlex")]:-28,[opo(s,"kneeFlex")]:6,[opo(s,"ankleFlex")]:-18,[opo(s,"toes")]:-40,headPitch:-14});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada")},
+  pensando:(Q,s)=>Object.assign(Q,{[opo(s,"armFlex")]:48,[opo(s,"armAbd")]:-18,[opo(s,"elbow")]:145,[opo(s,"pron")]:75,[opo(s,"wrist")]:10,[opo(s,"handCurl")]:0.55,[lad(s,"armFlex")]:30,[lad(s,"armAbd")]:-25,[lad(s,"elbow")]:95,[lad(s,"pron")]:70,headPitch:14,headRoll:s*-6,spineFlex:8,pelvisSide:s*5,[lad(s,"hipFlex")]:8,[opo(s,"hipAbd")]:6}),
+  maosNaCintura:(Q,s)=>Object.assign(Q,{}),
+  encostado:(Q,s)=>Object.assign(Q,{bodyPitch:-8,[lad(s,"hipFlex")]:30,[lad(s,"kneeFlex")]:55,[lad(s,"hipRot")]:30,[lad(s,"ankleFlex")]:20,armFlexL:-15,armFlexR:-15,elbowL:20,elbowR:20,headPitch:-4,spineFlex:-4}),
+  caindo:(Q,s)=>Object.assign(Q,{bodyPitch:-35,bodyLift:2,armAbdL:120,armAbdR:110,elbowL:40,elbowR:30,armFlexL:30,hipFlexL:55,kneeFlexL:70,hipFlexR:25,kneeFlexR:40,headPitch:-25,handCurlL:0.1,handCurlR:0.1}),
+  meditando:(Q,s)=>{POSES_CORPO.sentadoChao(Q,s);Object.assign(Q,{spineFlex:0,headPitch:4,pronL:-70,pronR:-70,wristL:-15,wristR:-15});
+    [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>{const k=pe[t].Cf.T;return [k[0],k[1]+0.75,k[2]]}));aplicarGesto(Q,1,"ok");aplicarGesto(Q,-1,"ok")}
+};
+/* nomes alternativos (o que alguém escreveria) */
+const POSE_ALIAS={"sentada":"sentado","sentado no chão":"sentadoChao","pernas cruzadas":"sentadoChao","deitado":"deitadoCostas","deitado de costas":"deitadoCostas","de costas":"deitadoCostas",
+  "deitado de lado":"deitadoLado","de lado":"deitadoLado","de bruços":"deBrucos","bruços":"deBrucos","ajoelhada":"ajoelhado","de joelhos":"ajoelhado","um joelho":"umJoelho","agachado":"agachar",
+  "de cócoras":"cocoras","cócoras":"cocoras","correndo":"correndo","correr":"correndo","saltando":"saltando","pulando":"saltando","salto":"saltando","pulo":"saltando","chutando":"chutando","chute":"chutando",
+  "socando":"socando","soco":"socando","alongando":"alongando","parada de mão":"paradaDeMao","de cabeça para baixo":"paradaDeMao","engatinhando":"engatinhando","de quatro":"engatinhando",
+  "apontando":"apontando","acenando":"acenando","carregando":"carregando","empurrando":"empurrando","pensando":"pensando","encostado":"encostado","caindo":"caindo","meditando":"meditando",
+  "em pé":"empe","de pé":"empe","caminhando":"caminhando","andando":"caminhando","abraçando os joelhos":"abracandoJoelhos","sentado nos calcanhares":"sentadoCalcanhares","apoiado nos cotovelos":"apoiadoCotovelos"};
+function nomePose(k){const t=String(k||"").trim();if(POSES_CORPO[t]||BPOSES[t]||["cintura","cruzar","ombro"].includes(t))return t;const a=POSE_ALIAS[t.toLowerCase()];return a||t}
+function todasPoses(){return Object.keys(BPOSES).concat(["cintura","cruzar","ombro"],Object.keys(POSES_CORPO).filter(k=>k!=="maosNaCintura"))}
+function doBodyPose(k,opts){
+    k=nomePose(k);
+    const s=opts&&(opts.lado==="dir"||opts.lado==="direito"||opts.lado===-1)?-1:1;
+    if(POSES_CORPO[k]){Object.assign(P,POSE0);POSES_CORPO[k](P,s);limitesAcoplados(P);guardArms();return}
+    doBodyPoseBase(k);
+}
+function doBodyPoseBase(k){
     Object.assign(P,POSE0);
     {
     if(k==="cintura"){
@@ -72,4 +147,4 @@ function doBodyPose(k){
     }
 }
 
-export { GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose };
+export { limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };

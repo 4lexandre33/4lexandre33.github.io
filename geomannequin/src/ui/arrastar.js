@@ -5,6 +5,7 @@ import { P, SCN, sceneList, setActive } from "../scene/modelo.js";
 import { moveMode, refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
 import { guardArms } from "../scene/poses.js";
+import { arrastarJunta, pegarJunta } from "./articulacoes.js";
 import { COL, bloquearAlvo, bloquearMovimento, corrigirAtivo } from "../scene/colisoes.js";
 import { D, H, W, bodyProxies, clamp, effScale, ikArm, ikLeg, makeMat, pickAt, ptW, pushOut, shape } from "../engine/index.js";
 
@@ -27,6 +28,8 @@ export function iniciarArrastar(){
     const q=svgPt(e);let best=null,bd=18;
     if(lastInfo&&lastInfo.handles)lastInfo.handles.forEach(h=>{if(h.k==="elbow"||h.k==="knee")return;const d=Math.hypot(h.x-q[0],h.y-q[1]);if(d<bd){bd=d;best=h}});
     const wP=v=>{try{const w=ptW(Object.assign({},P,{wy:sceneList()[SCN.active].p.wy}),v);return isFinite(w)&&w>0?w:1}catch(err){return 1}};
+    /* esqueleto visível: a articulação clicada gira (cinemática direta) */
+    const jd=pegarJunta(q);if(jd){drag=jd;try{stage.setPointerCapture(e.pointerId)}catch(err){}return}
     if(best)drag={mode:best.k,s:best.s,P0:best.P.slice(),q0:q,hy:P.headYaw,hp:P.headPitch,w:wP(best.P)};
     else{
       const id=SCN.list.length>1?pickAt(q[0],q[1]):-1;
@@ -48,6 +51,7 @@ export function iniciarArrastar(){
       /* arrastar a tela: só desloca o desenho pronto; redesenha ao soltar */
       const q=svgPt(e),Sx=effScale(P);P.panX=drag.px+(q[0]-drag.q0[0])/Sx;P.panY=drag.py-(q[1]-drag.q0[1])/Sx;
       previa();return;
+    }else if(drag.mode==="junta"){arrastarJunta(drag,svgPt(e));return
     }else if(drag.mode==="move"){
       const q=svgPt(e),Sx=effScale(P)*drag.w,x1=(q[0]-drag.q0[0])/Sx,z1=(q[1]-drag.q0[1])/Sx/Math.max(0.35,Math.abs(Math.sin(P.pitch*D))||0.35);
       const yw=P.yaw*D;P.wx=clamp(drag.wx+x1*Math.cos(yw)-z1*Math.sin(yw),-30,30);P.wz=clamp(drag.wz+x1*Math.sin(yw)+z1*Math.cos(yw),-30,30);

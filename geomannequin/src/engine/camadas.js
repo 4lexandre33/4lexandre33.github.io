@@ -19,6 +19,7 @@ import { chainSetup, legPose } from "./cadeia.js";
 import { armPose } from "./bracos.js";
 import { legDims } from "./pernas.js";
 import { figDepth, floorSvg, vanishSvg } from "./cena.js";
+import { TIPOS_OBJETO, desenharObjeto } from "./objetos.js";
 
 /* contadores (para testes e para a bancada de desempenho) */
 const ESTAT = { camadas: 0, grupos: 0, composicoes: 0 };
@@ -194,6 +195,12 @@ function comporCamadas(plan, opts) {
     const prof = g.res.info.depth, ordem = list0[g.membros[0]].p._ordem || 0;
     return { g, res: g.res, prof, ordem };
   });
+  /* objetos da cena (banco, cadeira, parede…): uma camada cada, desenhada na hora (é barato) */
+  const objs = list0.objetos || [];
+  if (objs.length && list0.length) {
+    const pc = list0[0].p, palO = list0.palObjetos || list0[0].pal, g0 = list0.chao !== undefined ? list0.chao : (list0[0].gy || 0);
+    objs.forEach((o, k) => { const res = desenharObjeto(o, pc, palO, g0, L); cams.push({ g: { membros: [], obj: k, lanc: [], velho: false, congelado: false }, res, prof: res.info.depth, ordem: o.ordem || 0, objeto: o }); });
+  }
   cams.sort((a, b) => a.ordem - b.ordem || a.prof - b.prof);
   /* atmosfera: quem está mais longe se aproxima da cor do fundo */
   const p0 = list0[plan.idx.length ? plan.idx[0] : 0].p, at = p0.persp ? (p0.atmo || 0) : 0, bg = p0.bg;
@@ -205,6 +212,11 @@ function comporCamadas(plan, opts) {
     const M = mascaraEscondida(c, outros);
     let attrs = "";
     if (M) { defs += '<clipPath id="' + uid + 'r' + k + '"><path clip-rule="evenodd" d="' + caminhoRecorte(c.res.z, M) + '"/></clipPath>'; attrs += ' clip-path="url(#' + uid + 'r' + k + ')"'; }
+    if (c.objeto) {
+      const nome = c.objeto.nome || TIPOS_OBJETO[c.objeto.tipo].nome, id = "objeto-" + (c.g.obj + 1);
+      corpo += '<g id="' + id + '" data-camada="' + escAttr(nome) + '"' + (opts.inkscape ? ' inkscape:label="' + escAttr(nome) + '"' + ink : "") + attrs + ">" + c.res.svg + "</g>";
+      sombras += c.res.sombra || ""; return;
+    }
     if (at > 0 && bg) {
       const zc = figDepth(list0[c.g.membros[0]].p), t = at * clamp((zn - zc) / 28, 0, 0.8), f = filtroAtmo(uid + "a" + k, t, bg);
       if (f) { defs += f; attrs += ' filter="url(#' + uid + 'a' + k + ')"'; }
@@ -215,14 +227,14 @@ function comporCamadas(plan, opts) {
     sombras += c.res.sombra || "";
   });
   const hidden = { hidden: true, handles: [], bb: null, fit: null }, infos = list0.map(() => hidden);
-  cams.forEach(c => infos[c.g.membros[0]] = c.res.info);
+  cams.forEach(c => { if (!c.objeto) infos[c.g.membros[0]] = c.res.info; });
   let floorStr = "";
   if (plan.floor && list0.length) { let R = plan.floor; list0.forEach(o => R = Math.max(R, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2))); floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R, 80)); }
   const guias = L.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) : "";
   const lay = (id, nome, s) => opts.inkscape ? '<g id="' + id + '" inkscape:label="' + nome + '"' + ink + ">" + s + "</g>" : (s ? '<g id="' + id + '">' + s + "</g>" : "");
   const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias);
-  if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.g.membros })) });
-  return { svg, infos, chao: floorStr, guias, camadas: cams.map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
+  if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros })) });
+  return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
 }
 /* qual manequim está no ponto (x, y) da tela: o mais perto entre as camadas */
 function pickCamadas(x, y) {

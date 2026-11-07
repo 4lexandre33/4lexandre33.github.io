@@ -10,6 +10,7 @@ import { armDims, armJoint, armPose, armRadius, foreR } from "./bracos.js";
 import { bandMesh } from "./malhas.js";
 import { atlasPerna } from "./atlas/pernas.js";
 import { suave } from "./atlas/util.js";
+import { ossosDoCorpo } from "./esqueleto.js";
 import { SMN, SMO, hid, hz, raster, rasterH, rasterS, setSMO, setSMS, sm, visAt, zb } from "./zbuffer.js";
 import { restGround } from "./cena.js";
 import { FS, FSRaw, shadowMesh } from "./sombra.js";
@@ -597,6 +598,21 @@ function scene(p,L,pal,fast,mode){
   }
 
   out.push('</g>');
+  /* ossos: o esqueleto por cima (raio X) — vértebras, costelas, pelve, membros, mãos e pés */
+  let juntasTela=null;
+  if(L.ossos&&mode!=="depth"){
+    const E=ossosDoCorpo(p),sp=v=>{const q=xv(v);return [CX+S*q[0],CY-S*q[1],q[2]]},g=[];
+    const ord=E.ossos.map(o=>({o,a:sp(o.a),b:sp(o.b)})).sort((x,y)=>(x.a[2]+x.b[2])-(y.a[2]+y.b[2]));
+    for(const {o,a,b} of ord){
+      if(o.tipo==="cranio"){const r=o.r*S;g.push('<circle cx="'+f1(a[0])+'" cy="'+f1(a[1])+'" r="'+f1(r)+'" style="fill:'+pal.fill+';fill-opacity:.55;stroke:'+pal.ink+';stroke-width:1.1"/>');continue}
+      const w=Math.max(1.2,2*o.r*S),d='M'+f1(a[0])+' '+f1(a[1])+'L'+f1(b[0])+' '+f1(b[1]);
+      g.push('<path d="'+d+'" style="fill:none;stroke:'+pal.ink+';stroke-width:'+f1(w+1.6)+';stroke-linecap:round;opacity:.85"/>');
+      g.push('<path d="'+d+'" style="fill:none;stroke:'+pal.fill+';stroke-width:'+f1(w)+';stroke-linecap:round"/>');
+    }
+    juntasTela=E.juntas.filter(j=>!j.menor).map(j=>{const q=sp(j.P);return {nome:j.nome,k:j.k,s:j.s,x:q[0],y:q[1]}});
+    juntasTela.forEach(j=>g.push('<circle cx="'+f1(j.x)+'" cy="'+f1(j.y)+'" r="3.2" style="fill:'+pal.coral+';stroke:'+pal.fill+';stroke-width:1"/>'));
+    out.push('<g id="ossos">'+g.join("")+'</g>');
+  }
   /* medidas e equações */
   const axes=fn=>{
     let mx=0,mn=1e9,ang=0;
@@ -608,7 +624,7 @@ function scene(p,L,pal,fast,mode){
     let th=ang/D;th=((th%180)+180)%180;if(th>90)th-=180;
     return {a:mx*S,b:mn*S,th};
   };
-  const info={handles,S,t,chinY,eyeY,fit,bb,depth:PAN[2],shadow,
+  const info={handles,S,t,chinY,eyeY,fit,bb,depth:PAN[2],shadow,juntas:juntasTela,
     brow:axes(a=>[p.skull*Math.sin(a),0,Math.cos(a)]),
     mer:axes(a=>[0,Math.sin(a),Math.cos(a)])};
   return {svg:out.join(""),info};

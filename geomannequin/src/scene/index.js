@@ -15,6 +15,8 @@ export * from "./enquadrar.js";
 export * from "./poses.js";
 export * from "./camadas-cena.js";
 export * from "./colisoes.js";
+export * from "./cenario.js";
+export * from "./descrever.js";
 export * from "./comandos.js";
 export * from "./ajuda.js";
 

@@ -10,6 +10,8 @@ Manequim anatômico paramétrico para referência de desenho.
 
 **Colisões entre manequins:** cada corpo vira um conjunto de cápsulas; quando um manequim atravessa outro (mão no quadril do vizinho, braços cruzando), a tela marca o ponto e o painel "Colisões" lista o conflito. Você escolhe a correção de cada um — automática (muda o mínimo), afastar no chão, girar, ajustar só o braço/perna, ou permitir o contato (abraço) — e pode deixar o app só avisar, corrigir ao soltar ou bloquear ao arrastar.
 
+**Esqueleto e cena por código:** o manequim tem ossos com nome anatômico (vértebras L5–C1, crânio, pelve, esterno, costelas, clavículas, escápulas, úmero, rádio/ulna, metacarpos e falanges, fêmur, patela, tíbia/fíbula, tálus, calcâneo, metatarsos) e articulações com os limites do corpo humano (amplitude clínica, limites acoplados como isquiotibiais e rotação do ombro, ritmo escápulo-umeral). Ligue “Mostrar ossos”, clique numa articulação e arraste para girá-la; a coluna é dividida em lombar, torácica e cervical, cada dedo dobra sozinho e o polegar faz oposição. O corpo inteiro pode deitar (costas, bruços, lado), ficar de cabeça para baixo ou saltar, sempre apoiado no chão ou num objeto (banco, cadeira, caixa, degrau, mesa, parede). Por código: `m.orientar("+x")`, `m.deitar("costas", "x")`, `m.olhar("baixo")`, `m.articulacao("cotovelo esquerdo", {dobrar: 90})`, `camera.eixo("z").elevacao("alta")`, ou uma frase só: `cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta")`.
+
 Recursos: três modos de desenho — **Manequim**, **Construção** e **Écorché** (anatomia limpa no estilo Bridgman/Loomis, com linhas de músculo em hierarquia de traço, tons planos e fibras opcionais); poses com limites anatômicos e cinemática inversa, vários manequins na mesma cena com cores exclusivas, perspectiva (lente, altura dos olhos, horizonte e pontos de fuga, sombras no chão, perspectiva atmosférica), modo noturno, editor de comandos em português, exportação SVG/JSON e link de cena.
 
 ## Organização
@@ -52,6 +54,8 @@ geomannequin/
 │  │  ├─ desenho.js      desenha um manequim (gera o SVG)
 │  │  ├─ cena.js         vários manequins, chão, horizonte, pontos de fuga
 │  │  ├─ colisao-cena.js colisão entre manequins: corpo em cápsulas, distância segmento–segmento, profundidade e direção de saída
+│  │  ├─ esqueleto.js    ossos com nome anatômico e articulações (o que cada uma move)
+│  │  ├─ objetos.js      objetos de apoio (banco, cadeira, caixa, degrau, mesa, parede): caixas, cápsulas e desenho
 │  │  ├─ camadas.js      cena em camadas: cada manequim é uma "foto" .svg guardada (cache), compositor com recorte por profundidade
 │  │  ├─ trabalhador.js  Web Worker: desenha camadas em paralelo, fora da thread da página
 │  │  └─ atlas/          ATLAS MUSCULAR (écorché): cada músculo como forma na pele → volume + linhas
@@ -67,6 +71,8 @@ geomannequin/
 │  │  ├─ modelo.js       manequins da cena, cores exclusivas
 │  │  ├─ tema.js, modos.js, estado.js, enquadrar.js, poses.js
 │  │  ├─ colisoes.js     detectar e corrigir colisões (afastar, girar, ajustar a pose, automático), modos avisar/corrigir/bloquear
+│  │  ├─ cenario.js      objetos, orientar por eixo, deitar, olhar, mão/pé num ponto, apontar, sentar/subir/encostar
+│  │  ├─ descrever.js    cena descrita em português e cena montada por lista
 │  │  ├─ camadas-cena.js foto de um manequim, cena em camadas nomeadas, arquivos para remontar a cena
 │  │  ├─ comandos.js     API em português: cena, camera, tema
 │  │  ├─ ajuda.js        exemplos e referência da API
@@ -78,6 +84,7 @@ geomannequin/
 │     ├─ painel-cena.js  lista de manequins e cores
 │     ├─ editor.js       editor de comandos
 │     ├─ trabalhadores.js fila de Web Workers (um por núcleo, até 4); sem suporte, desenha na página
+│     ├─ articulacoes.js clicar e girar articulações, biblioteca de poses, gestos, espelhar/copiar/colar pose
 │     ├─ colisoes.js     painel "Colisões": escolher a correção de cada colisão
 │     ├─ zip.js          .zip simples para baixar as camadas
 │     ├─ exportar.js, link.js, tema.js, modos.js, estilo.js, persistencia.js, inicio.js
