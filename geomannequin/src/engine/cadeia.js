@@ -63,7 +63,7 @@ function pontoMaisBaixo(p,F,tab,Pel,tilt){
   const ve=(q,r)=>{if(q[1]-r<mn)mn=q[1]-r};
   [-1,1].forEach(s=>{
     const lp=legPose(p,F,{tilt},s),Af=comp(Pel,lp.foot),Ac=comp(Pel,lp.calf);
-    const c=(s>0?p.toesL:p.toesR)*D,tip=[-s*0.29*f,-0.47*f-0.48*f*Math.sin(c)-0.11*f,1.36*f+0.48*f*Math.cos(c)];
+    const c=((s>0?p.toesL:p.toesR)+((s>0?p.halluxL:p.halluxR)||0))*D,tip=[-s*0.29*f,-0.47*f-0.48*f*Math.sin(c)-0.11*f,1.36*f+0.48*f*Math.cos(c)];
     [[0,-A.hA,-0.42*f],[-s*0.42*f,-A.hA,1.25*f],[s*0.4*f,-A.hA,1.12*f],tip].forEach(v=>ve(applyA(Af,v),0));
     ve(Ac.T,0.42*A.k);ve(applyA(Ac,[0,-A.L2*0.5,0]),0.38*A.k);ve(applyA(comp(Pel,lp.thigh),[0,-A.L1*0.5,0]),0.6*A.k);
     ve(Af.T,0.3);
@@ -88,10 +88,14 @@ function legPose(p,F,ch,s){
      dobrado, "abrir" afasta os joelhos (sentar de pernas cruzadas, cócoras) em vez de girar a coxa sobre si mesma */
   const M=mmul(rotM(0,-fl*D,0),mmul(rotM(0,0,(s*ab-p.pelvisSide)*D),rotM(s*ro*D,0,0)));
   const e=mv(M,[0,-A.L1,0]),K=[J[0]+e[0],J[1]+e[1],J[2]+e[2]];
-  const Mc=mmul(M,rotM(0,kf*D,0));
+  /* rotação da tíbia: só existe com o joelho dobrado (estendido, os ligamentos travam) */
+  const tr=(L?p.tibiaRotL:p.tibiaRotR)||0,trw=Math.sin(Math.min(kf,90)*D);
+  const Mc=mmul(M,mmul(rotM(0,kf*D,0),rotM(s*tr*trw*D,0,0)));
   const calf={M:Mc,T:K},knee={M:mmul(M,rotM(0,kf*0.5*D,0)),T:K};
   const w=mv(Mc,[0,-A.L2,0]);
-  const Mf=mmul(Mc,mmul(rotM(0,af*D,0),rotM(0,0,-s*at*D)));
+  /* antepé: aduzir (+, ponta para dentro) / abduzir (−) — gira o pé em volta do eixo da perna depois do tornozelo */
+  const fa=(L?p.footAddL:p.footAddR)||0;
+  const Mf=mmul(Mc,mmul(rotM(-s*fa*D,0,0),mmul(rotM(0,af*D,0),rotM(0,0,-s*at*D))));
   const foot={M:Mf,T:[K[0]+w[0],K[1]+w[1],K[2]+w[2]]};
   return {thigh:{M,T:J},knee,calf,foot};
 }

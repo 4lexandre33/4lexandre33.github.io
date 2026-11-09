@@ -11,12 +11,13 @@ O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), ent
 |---|---|
 | `nova_cena` | Começa do zero (tema claro/escuro, modo manequim/construção) |
 | `adicionar_manequim` | Novo manequim com nome, posição `x`/`z`, giro, corpo, pose e cor (cores nunca se repetem) |
-| `editar_manequim` | Muda posição, giro, pose, corpo, cor ou nome; orientar por eixo, deitar, sentar/subir/encostar, saltar, olhar, apontar, mão/pé num ponto, gestos, articulações pelo nome (com limites anatômicos), espelhar, copiar pose |
+| `editar_manequim` | Muda posição, giro, pose, corpo, cor ou nome; orientar por eixo, deitar, sentar/subir/encostar, saltar, olhar, apontar, mão/pé num ponto, gestos, articulações pelo nome (com limites anatômicos), espelhar, copiar pose, expressão do rosto, olhar, boca, cada falange dos dedos (via `articulacoes`), `validar` (partes atravessando / limites acoplados) |
 | `descrever_cena` | Monta a cena a partir de uma frase: “manequim 1 sentado, manequim 2 deitado ao longo do eixo x, manequim 3 saltando olhando para baixo, câmera no eixo z, elevação alta” |
 | `planta_da_cena` | Vista de cima e lateral da composição (blocking), com profundidade e % da altura da foto de cada manequim |
 | `objetos` | Banco, cadeira, caixa, degrau, mesa e parede para os manequins se apoiarem |
 | `copiar_manequim` / `remover_manequim` | Copia ou remove |
-| `camera` | Eixo (x, −x, z, −z, de cima), elevação (alta, média, olhos, baixa), plano, perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar |
+| `camera` | Eixo (x, −x, z, −z, de cima), elevação (alta, média, olhos, baixa), plano, perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar, **órbita** em volta de um pivô (manequim, grupo, objeto, ponto ou cena: `orbitar: {alvo, azimute: "3/4 esquerda", elevacao}`) e `pivo` |
+| `roteiro_quadros` | Storyboard por código (`#cena`, `#quadro 1 — título`, `#orbita "Ana" 8`, `#ficha "Ana"`): imagem de cada quadro, página de mangá e referências — contorno, OpenPose completo (BODY_25 + mãos + rosto, estilo DWPose) ou só corpo, profundidade, normais, máscara, partes do corpo, canny |
 | `luz` | Direção e altura da luz |
 | `aparencia_cena` | Tema noturno, modo, estilo, sombras, horizonte e pontos de fuga, atmosfera, camadas |
 | `renderizar` | Desenha e devolve PNG + link do app (no ChatGPT aparece num quadro com botão “Abrir no GeoMannequin”) |

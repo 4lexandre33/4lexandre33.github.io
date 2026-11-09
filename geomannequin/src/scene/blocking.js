@@ -5,6 +5,7 @@
 import { P, SCN, instColors, corObjeto, atualizarApoios } from "./modelo.js";
 import { COL, bloquearMovimento, colisoesDaCena, pMundo, separarObjeto } from "./colisoes.js";
 import { apoioSob, editarObjeto } from "./cenario.js";
+import { resolverAlvo } from "./orbita.js";
 import { D, M_R, TIPOS_OBJETO, ehCilindro, cameraNoMundo, caixasDoObjeto, capsulas, clamp, restGround, tamanhoNaFoto } from "../engine/index.js";
 
 const chaoBlk = () => restGround(SCN.list[0].params);
@@ -23,7 +24,9 @@ function leituraBlocking() {
   const alturaPessoa = 1.0 - restGround(SCN.list[0].params);
   let colisoes = [];
   try { colisoes = colisoesDaCena().flatMap(c => (c.contatos || []).map(k => k.ponto)).filter(Boolean); } catch (e) { }
-  return { camera: C, chao: g0, manequins, objetos, alturaPessoa, colisoes };
+  /* pivô da órbita (se houver): nome; a câmera gira em volta do alvo, que é o centro dele */
+  let pivo = null; if (SCN.pivo !== undefined && SCN.pivo !== null) { try { const A = resolverAlvo(SCN.pivo); pivo = { nome: A.nome, tipo: A.tipo }; } catch (e) { pivo = null; } }
+  return { camera: C, chao: g0, manequins, objetos, alturaPessoa, colisoes, pivo };
 }
 const achar = id => SCN.list.find(it => it.id === id);
 const r2 = v => Math.round(v * 20) / 20;
@@ -51,7 +54,7 @@ function aplicarCameraBlk(pos, alvo) {
 }
 function moverCamera(x, y, z) { const C = cameraNoMundo(P); aplicarCameraBlk([x, y === undefined ? C.pos[1] : y, z], C.alvo); }
 /* mover o alvo (a retícula): a câmera fica onde está e passa a apontar para o novo alvo */
-function moverAlvo(x, y, z) { const C = cameraNoMundo(P); aplicarCameraBlk(C.pos, [x, y === undefined ? C.alvo[1] : y, z]); }
+function moverAlvo(x, y, z) { SCN.pivo = null; const C = cameraNoMundo(P); aplicarCameraBlk(C.pos, [x, y === undefined ? C.alvo[1] : y, z]); }
 /* abertura do campo de visão: ângulo horizontal → lente (filme de 36 mm) */
 function abrirCone(grausH) { P.lens = Math.round(clamp(18 / Math.tan(clamp(grausH, 5, 120) / 2 * D), 18, 200)); if (!P.persp) P.persp = 1; }
 function perspectivaBlk(on) { P.persp = on ? 1 : 0; }

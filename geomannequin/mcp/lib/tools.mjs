@@ -154,11 +154,15 @@ export function registerAll(server, getWorld, opts = {}) {
       maoEm: z.object({ lado: z.enum(["esquerda", "direita"]), x: z.number(), y: z.number(), z: z.number() }).optional().describe("Leva a mão até um ponto do mundo (cinemática inversa)."),
       peEm: z.object({ lado: z.enum(["esquerda", "direita"]), x: z.number(), y: z.number(), z: z.number() }).optional().describe("Leva o pé até um ponto do mundo."),
       gesto: z.object({ lado: z.enum(["esquerda", "direita", "ambas"]).optional(), nome: GESTOS_E }).optional().describe("Gesto pronto da mão: punho, apontar, pinça, joinha, paz, ok, acenar…"),
-      articulacoes: z.array(z.object({ nome: z.string().describe("Ex.: \"cotovelo esquerdo\", \"joelho direito\", \"pescoço\", \"coluna\", \"lombar\", \"quadril esquerdo\"."), dobrar: z.number().optional(), frente: z.number().optional(), abrir: z.number().optional(), girar: z.number().optional(), lado: z.number().optional(), inclinar: z.number().optional(), desvio: z.number().optional(), apontar: z.number().optional(), virar: z.number().optional() })).optional().describe("Move articulações pelo nome anatômico, em graus; os limites do corpo humano são respeitados."),
+      articulacoes: z.array(z.object({ nome: z.string().describe("Ex.: \"cotovelo esquerdo\", \"joelho direito\", \"pescoço\", \"coluna\", \"lombar\", \"quadril esquerdo\"."), dobrar: z.number().optional(), frente: z.number().optional(), abrir: z.number().optional(), girar: z.number().optional(), lado: z.number().optional(), inclinar: z.number().optional(), desvio: z.number().optional(), apontar: z.number().optional(), virar: z.number().optional() }).catchall(z.number())).optional().describe("Move articulações pelo nome anatômico, em graus; os limites do corpo humano são respeitados. Também: dedos de cada falange (\"indicador esquerdo\": {base, ponta, afastar}; \"polegar direito\": {base, ponta, afastar, opor} — de −1 a 1), \"dedão esquerdo\": {dobrar} (graus), \"canela direita\": {girar}, \"escápula esquerda\": {subir, avancar, girar, tensao}, \"mandíbula\": {abrir, lado}, \"olhos\": {lado, cima, fechar}, \"sobrancelhas\": {subir, franzir}, \"boca\": {abrir, sorrir}."),
       espelhar: z.boolean().optional().describe("true = espelha a pose (esquerda ↔ direita)."),
       flexibilidade: z.enum(["normal", "atleta", "ginasta", "contorcionista"]).optional().describe("Perfil de amplitude das articulações. Ponte, espacate, arabesque e parada com abertura pedem \"ginasta\"."),
       apoiar: z.string().optional().describe("Vários pontos no chão ao mesmo tempo: \"maos pes\", \"maos\", \"maos joelhos\", \"mao esquerda pe direito\" (ponte, parada de mão, prancha)."),
-      copiarPoseDe: z.string().optional().describe("Copia a pose de outro manequim (nome).")
+      copiarPoseDe: z.string().optional().describe("Copia a pose de outro manequim (nome)."),
+      expressao: z.enum(["neutra", "alegria", "surpresa", "raiva", "tristeza", "medo", "grito", "sono", "desconfianca", "piscando"]).optional().describe("Expressão do rosto (mandíbula, sorriso, pálpebras, sobrancelhas)."),
+      olhos: z.object({ x: z.number().describe("−1 a 1; + = para a esquerda do manequim."), y: z.number().optional().describe("−1 a 1; + = para cima.") }).optional().describe("Olhar para um lado sem mexer a cabeça."),
+      boca: z.object({ abrir: z.number().describe("0 a 1."), sorriso: z.number().optional().describe("−1 (triste) a 1.") }).optional(),
+      validar: z.boolean().optional().describe("true = devolve se alguma parte do corpo atravessa outra e quais limites acoplados corrigiriam a pose.")
     },
     annotations: RW
   }, guard((a) => {
@@ -195,7 +199,11 @@ export function registerAll(server, getWorld, opts = {}) {
       if (a.olhar) m.olhar(a.olhar);
       if (a.espelhar) m.espelhar();
       if (a.apoiar) m.apoiar(a.apoiar);
+      if (a.expressao) m.expressao(a.expressao);
+      if (a.olhos) m.olhos(a.olhos.x, a.olhos.y);
+      if (a.boca) m.boca(a.boca.abrir, a.boca.sorriso);
     });
+    if (a.validar) { const v = m.validarPose(); return ok(w, `Manequim “${it.name}” atualizado. ` + (v.ok ? "Pose válida: nada atravessa e nenhum limite acoplado foi passado." : "Atenção: " + v.atravessa.map(x => x.partes.join(" × ") + " (" + x.profundidade + " R)").concat(v.limites).join("; ") + "."), avisos, { validacao: v }); }
     return ok(w, `Manequim “${it.name}” atualizado.`, avisos);
   }));
 
@@ -247,7 +255,12 @@ export function registerAll(server, getWorld, opts = {}) {
       eixo: z.enum(["x", "-x", "z", "-z", "y"]).optional().describe("Câmera sobre um eixo do mundo, olhando para o centro (y = de cima)."),
       elevacao: z.string().optional().describe("\"alta\" (de cima, plongée), \"muito alta\", \"média\", \"olhos\", \"baixa\" (contra-plongée), \"muito baixa\", ou graus acima do horizonte (\"30\")."),
       plano: z.enum(["plongée", "contra-plongée", "de cima", "nível dos olhos", "de baixo"]).optional(),
-      enquadrar: z.boolean().optional().describe("Ajusta a distância para todos caberem (padrão: sim).")
+      enquadrar: z.boolean().optional().describe("Ajusta a distância para todos caberem (padrão: sim)."),
+      orbitar: z.object({ alvo: z.string().optional().describe("Pivô: nome de manequim, vários nomes separados por vírgula (\"Ana, Leo\"), objeto (nome ou tipo), \"cena\" ou um ponto \"x, y, z\". Padrão: o manequim ativo."),
+        azimute: z.string().optional().describe("A partir da FRENTE do pivô: \"frente\", \"3/4 esquerda\", \"esquerda\", \"3/4 costas esquerda\", \"costas\", \"3/4 costas direita\", \"direita\", \"3/4 direita\" ou graus (+ = lado esquerdo dele)."),
+        elevacao: z.string().optional().describe("Graus acima do horizonte (−70 a 70) ou olhos, média, alta, de cima, baixa."),
+        distancia: z.number().optional().describe("Distância ao pivô em R (sem ela, enquadra o pivô).") }).optional().describe("Gira a câmera em volta de um pivô (manequim, grupo, objeto, ponto ou a cena)."),
+      pivo: z.string().optional().describe("Só troca o pivô (centro de giro) mantendo direção e distância.")
     },
     annotations: RW
   }, guard((a) => {
@@ -264,12 +277,17 @@ export function registerAll(server, getWorld, opts = {}) {
     if (a.zoom !== undefined) c.zoom(a.zoom);
     if (a.zoom_lente !== undefined) c.zoomLente(a.zoom_lente);
     if (a.campo_graus !== undefined) c.campo(a.campo_graus);
+    const alvoDe = t => { if (t === undefined) return undefined; const p = String(t).split(",").map(x => x.trim()).filter(Boolean); if (p.length === 3 && p.every(x => /^-?\d+(\.\d+)?$/.test(x))) return p.map(Number); return p.length > 1 ? p : p[0]; };
+    const numOu = v => v === undefined ? undefined : /^-?\d+(\.\d+)?$/.test(String(v).trim()) ? +v : v;
+    if (a.pivo !== undefined) c.pivo(alvoDe(a.pivo));
+    if (a.orbitar) c.orbitar(alvoDe(a.orbitar.alvo), { azimute: numOu(a.orbitar.azimute), elevacao: numOu(a.orbitar.elevacao), distancia: a.orbitar.distancia });
     const parada = a.zoom_lente !== undefined || a.campo_graus !== undefined;
-    const fit = a.enquadrar !== undefined ? a.enquadrar : !(a.distancia !== undefined || a.zoom !== undefined || a.posicao || parada);
+    const fit = a.enquadrar !== undefined ? a.enquadrar : !(a.distancia !== undefined || a.zoom !== undefined || a.posicao || parada || a.orbitar || a.pivo !== undefined);
     if (fit) w.autoFit();
     if (a.altura_olhos !== undefined) { c.alturaOlhos(a.altura_olhos, a.inclinacao); if (fit) w.autoFit(); }
     const li = c.lenteInfo();
-    return ok(w, "Câmera ajustada" + (li.perspectiva ? " — lente " + li.lente + " mm, " + li.campoGraus + "°, " + li.faixa : "") + ".", [], { lente: li });
+    const vs = c.vista();
+    return ok(w, "Câmera ajustada" + (li.perspectiva ? " — lente " + li.lente + " mm, " + li.campoGraus + "°, " + li.faixa : "") + (a.orbitar || a.pivo !== undefined ? " — pivô " + vs.pivo + ", vista " + w.nomeVista(vs.azimute) + ", " + Math.round(vs.elevacao) + "° de elevação" : "") + ".", [], { lente: li, vista: vs });
   }));
 
   server.registerTool("descrever_cena", {
@@ -404,7 +422,7 @@ export function registerAll(server, getWorld, opts = {}) {
     inputSchema: {
       roteiro: z.string().min(3).max(60000).describe("O roteiro: #cena … #quadro 1 … #quadro 2 …"),
       quadros: z.array(z.number().int()).optional().describe("Só estes quadros (números do roteiro). Padrão: todos (até 12 imagens por chamada)."),
-      referencias: z.array(z.enum(["openpose", "profundidade", "mascara", "contorno"])).optional().describe("Passes de referência a devolver junto de cada quadro."),
+      referencias: z.array(z.enum(["contorno", "openpose", "openpose_corpo", "profundidade", "normal", "mascara", "partes", "canny"])).optional().describe("Passes de referência (ControlNet) a devolver junto de cada quadro: contorno (lineart), openpose (corpo BODY_25 + mãos 21 + rosto 70, estilo DWPose), openpose_corpo (só o corpo), profundidade, normal, mascara (um item por cor), partes (segmentação por partes do corpo), canny."),
       pagina: z.boolean().optional().describe("Também monta a página de mangá com os quadros (balões das falas)."),
       grade: z.string().optional().describe("Grade da página: 1, 2, 2h, 3, 3b, 4, 5, 6, 6b, 8 (padrão: automática)."),
       leitura: z.enum(["ocidental", "japonesa"]).optional(),
@@ -419,7 +437,7 @@ export function registerAll(server, getWorld, opts = {}) {
     const txt0 = X.quadros.length + " quadro(s)." + (erros.length ? " Erros: " + erros.map(q => "quadro " + q.n + (q.linha_do_erro ? " (linha " + q.linha_do_erro + ")" : "") + ": " + q.erro).join("; ") + "." : " Sem erros.") + (X.avisos.length ? " Avisos: " + X.avisos.join(" ") : "");
     if (a.validar || !X.quadros.length) return { content: [{ type: "text", text: txt0 + "\n\nAbrir no app (com o roteiro): " + link }], structuredContent: { total: X.quadros.length, quadros: resumo, link } };
     const sel = X.quadros.filter(q => !a.quadros || a.quadros.includes(q.n)).slice(0, 12), larg = a.largura || 600, refs = new Set(a.referencias || []);
-    const passes = { contorno: refs.has("contorno"), openpose: refs.has("openpose"), profundidade: refs.has("profundidade"), mascara: refs.has("mascara") };
+    const ORDEM_REF = ["contorno", "openpose", "openpose_corpo", "profundidade", "normal", "mascara", "partes", "canny"], passes = Object.fromEntries(w.PASSES_QUADRO.map(k => [k, refs.has(k)])); if (refs.has("openpose_corpo")) passes.openpose = true;
     const content = [], fotos = [], openpose = {};
     for (const q of sel) {
       const f = w.renderizarQuadro(q, { passes: refs.size ? passes : false });
@@ -427,12 +445,13 @@ export function registerAll(server, getWorld, opts = {}) {
       content.push({ type: "text", text: "Quadro " + q.n + (q.titulo ? " — " + q.titulo : "") + (q.erro ? " (erro: " + q.erro + ")" : "") });
       content.push({ type: "image", data: (await toPng(f.svg, larg)).toString("base64"), mimeType: "image/png" });
       if (f.contorno) content.push({ type: "image", data: (await toPng(f.contorno, larg)).toString("base64"), mimeType: "image/png" });
-      if (f.openpose) { content.push({ type: "image", data: (await toPng(f.openpose.svg, larg)).toString("base64"), mimeType: "image/png" }); openpose[q.n] = f.openpose.json; }
-      if (f.profundidade) content.push({ type: "image", data: rgbaToPng(f.profundidade, larg).toString("base64"), mimeType: "image/png" });
-      if (f.mascara) content.push({ type: "image", data: rgbaToPng(f.mascara, larg).toString("base64"), mimeType: "image/png" });
+      if (f.openpose) openpose[q.n] = f.openpose.json;
+      for (const k of ORDEM_REF.slice(1)) { if (!refs.has(k)) continue;
+        if (k === "openpose" || k === "openpose_corpo") content.push({ type: "image", data: (await toPng(k === "openpose" ? f.openpose.svg : f.openpose.svgCorpo, larg)).toString("base64"), mimeType: "image/png" });
+        else if (f[k]) content.push({ type: "image", data: rgbaToPng(f[k], larg).toString("base64"), mimeType: "image/png" }); }
     }
     if (a.pagina && fotos.length) for (const pg of w.paginaQuadros(fotos, { grade: a.grade, leitura: a.leitura, preparar: s => sanitizeSvg(s).replace(/ filter="url\(#[^)]+\)"/g, "") })) content.push({ type: "image", data: (await toPng(pg, 1000)).toString("base64"), mimeType: "image/png" });
-    content.push({ type: "text", text: txt0 + (sel.length < X.quadros.length ? " Mostrando " + sel.length + "." : "") + (refs.size ? " Ordem das imagens de cada quadro: quadro" + ["contorno", "openpose", "profundidade", "mascara"].filter(k => refs.has(k)).map(k => ", " + k).join("") + "." : "") + "\n\nAbrir no app (com o roteiro, para renderizar e baixar tudo em .zip): " + link });
+    content.push({ type: "text", text: txt0 + (sel.length < X.quadros.length ? " Mostrando " + sel.length + "." : "") + (refs.size ? " Ordem das imagens de cada quadro: quadro" + ORDEM_REF.filter(k => refs.has(k)).map(k => ", " + k).join("") + "." : "") + "\n\nAbrir no app (com o roteiro, para renderizar e baixar tudo em .zip): " + link });
     return { content, structuredContent: { total: X.quadros.length, quadros: resumo, openpose, link } };
   }));
 

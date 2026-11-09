@@ -37,7 +37,7 @@ const ok = (c, t) => { if (!c) falhou = true; console.log((c ? "  ok  " : "  FAL
   const X = w.executarRoteiro("#cena\ncena.limpar();\ncena.ativo.renomear(\"Ana\").posicao(-4, 0);\ncena.adicionar({ nome: \"Leo\", x: 4 }).poseRapida(\"acenando\");\ncamera.perspectiva(true).girar(20, -10).enquadrar();\n#quadro 1\n#quadro 2 16:9\ncamera.enquadramento(\"americano\", \"Leo\");");
   for (const q of X.quadros) {
     const f = w.renderizarQuadro(q), M = f.mascara, rc = f.recorte;
-    const corDe = (x, y) => { const cx = Math.floor((x - rc.x + (rc.x % 2)) / 2), cy = Math.floor((y - rc.y + (rc.y % 2)) / 2); if (cx < 0 || cy < 0 || cx >= M.w || cy >= M.h) return null; const o = (cy * M.w + cx) * 4; return "#" + [0, 1, 2].map(k => M.rgba[o + k].toString(16).padStart(2, "0")).join(""); };
+    const E = M.escala, corDe = (x, y) => { const cx = Math.floor((x - Math.floor(rc.x)) / E), cy = Math.floor((y - Math.floor(rc.y)) / E); if (cx < 0 || cy < 0 || cx >= M.w || cy >= M.h) return null; const o = (cy * M.w + cx) * 4; return "#" + [0, 1, 2].map(k => M.rgba[o + k].toString(16).padStart(2, "0")).join(""); };
     let dentro = 0, tot = 0;
     f.openpose.json.people.forEach((pp, i) => { const cor = M.legenda.find(l => l.nome === pp.nome).cor; [1, 2, 5, 8, 11].forEach(k => { const x = pp.pose_keypoints_2d[k * 3] + rc.x, y = pp.pose_keypoints_2d[k * 3 + 1] + rc.y, c = pp.pose_keypoints_2d[k * 3 + 2]; if (!c) return; tot++;
       const vz = [[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2], [3, 3], [-3, -3]].some(([dx, dy]) => corDe(x + dx, y + dy) === cor); if (vz) dentro++; }); });

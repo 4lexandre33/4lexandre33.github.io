@@ -56,7 +56,15 @@ function headPt(y,th,p,S,off){
   let z=r[1]+r[2]*Math.cos(th);
   z+=bumps(y,x,p,S)*Math.max(0,Math.cos(th));
   off=off||0;
-  return [x*(1+off*1.5),y,z+off*Math.cos(th)];
+  return mandibula([x*(1+off*1.5),y,z+off*Math.cos(th)],p,S);
+}
+/* mandíbula: abaixo da linha da boca, o queixo gira em volta da articulação temporomandibular (perto da orelha);
+   jawOpen 0–1 (até ~26°), jawSide −1 a 1 (desvio lateral). A faixa logo abaixo do lábio superior estica e vira a boca aberta. */
+function mandibula(v,p,S){
+  const jo=p.jawOpen||0,js=p.jawSide||0;if(!jo&&!js)return v;
+  const my=S.mouthY,w=sstep((my-0.002-v[1])/0.035);if(w<=0)return v;
+  const a=jo*26*D*w,hy=-S.t*0.5,hz=-0.12,dy=v[1]-hy,dz=v[2]-hz,c=Math.cos(a),sn=Math.sin(a);
+  return [v[0]+js*0.09*w,hy+dy*c-dz*sn,hz+dy*sn+dz*c];
 }
 const mapTh=u=>u-0.7*Math.sin(u);
 function buildHead(p,S){
@@ -102,4 +110,4 @@ function buildEar(p,S,s){
   return {V,rows,cols,flip:-s,fb:[s,0,0]};
 }
 
-export { shape, ringAt, bumps, headPt, mapTh, buildHead, earSurf, buildEar };
+export { mandibula, shape, ringAt, bumps, headPt, mapTh, buildHead, earSurf, buildEar };

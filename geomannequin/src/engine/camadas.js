@@ -11,7 +11,7 @@
    Este módulo não usa a página: roda no navegador, em Web Workers e no Node (MCP). */
 import { scene, setCasters } from "./desenho.js";
 import { setCUR_ID, setMULTI } from "./projecao.js";
-import { zb } from "./zbuffer.js";
+import { zb, zp, FINO } from "./zbuffer.js";
 import { D, H, W, applyA, clamp, comp } from "./matematica.js";
 import { makeXf } from "./camera.js";
 import { shape } from "./cabeca.js";
@@ -38,7 +38,12 @@ function capturarZ() {
     for (let dy = 0; dy < C && py + dy < H; dy++) for (let dx = 0; dx < C && px + dx < W; dx++) { const v = zb[(py + dy) * W + px + dx]; if (v > m) m = v; }
     z[cy * cw + cx] = m;
   }
-  return { x0: cx0, y0: cy0, w: cw, h: chh, z };
+  /* captura fina (1 px, com a parte do corpo de cada pixel): só quando pedida — passes de ControlNet dos quadros */
+  let fino = null;
+  if (FINO) { const fw = x1 - x0 + 1, fh = y1 - y0 + 1, fz = new Float32Array(fw * fh), fp = new Uint8Array(fw * fh);
+    for (let y = 0; y < fh; y++) { const o = (y0 + y) * W + x0; fz.set(zb.subarray(o, o + fw), y * fw); fp.set(zp.subarray(o, o + fw), y * fw); }
+    fino = { x0, y0, w: fw, h: fh, z: fz, parte: fp }; }
+  return { x0: cx0, y0: cy0, w: cw, h: chh, z, fino };
 }
 
 /* ===== desenhar um manequim sozinho; "lanc" = manequins que projetam sombra nele (entram só no mapa de sombra) ===== */

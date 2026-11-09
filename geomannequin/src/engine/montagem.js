@@ -13,9 +13,9 @@ function newCache(){return {meshKey:"",bustKey:"",armKey:"",legKey:"",handKey:["
 let GCACHE;
 function getMeshes(p,S){
   const C=p._cache||GCACHE;
-  const key=[p.skull,p.jaw,p.chin,p.face,p.chinProj,p.brow,p.nose,p.lips,p.earSize,p.earFlare].join("|");
+  const key=[p.skull,p.jaw,p.chin,p.face,p.chinProj,p.brow,p.nose,p.lips,p.earSize,p.earFlare,Math.round((p.jawOpen||0)*50),Math.round((p.jawSide||0)*50)].join("|");
   if(key!==C.meshKey){C.meshKey=key;C.meshes.head=buildHead(p,S);C.meshes.earL=buildEar(p,S,-1);C.meshes.earR=buildEar(p,S,1)}
-  const bk=[p.face,p.neck,p.neckLen,p.shW,p.shDrop,p.chestF,p.adam,p.shElevL,p.shElevR,p.shProtL,p.shProtR,p.shTension,p.armAbdL,p.armAbdR,p.armFlexL,p.armFlexR,p.muscle,p.fat,p.fem,p.waist,p.hips,Math.round(p.spineSide),Math.round(p.spineFlex)].join("|");
+  const bk=[p.face,p.neck,p.neckLen,p.shW,p.shDrop,p.chestF,p.adam,p.shElevL,p.shElevR,p.shProtL,p.shProtR,p.shTension,p.shTensL||0,p.shTensR||0,p.scapRotL||0,p.scapRotR||0,p.armAbdL,p.armAbdR,p.armFlexL,p.armFlexR,p.muscle,p.fat,p.fem,p.waist,p.hips,Math.round(p.spineSide),Math.round(p.spineFlex)].join("|");
   if(bk!==C.bustKey){C.bustKey=bk;C.meshes.bust=buildBust(p,S)}
   const ak=[p.armLen,p.armThick,p.muscle,p.fat,p.fem].join("|");
   if(ak!==C.armKey){C.armKey=ak;C.jointKey={};[["R",-1],["L",1]].forEach(([n,s])=>{C.meshes["fore"+n]=buildForearm(p,s);C.meshes["delt"+n]=buildDelt(p,s)});C.handKey=["",""]}
@@ -27,7 +27,7 @@ function getMeshes(p,S){
   const lk=[p.legLen,p.thighThick,p.muscle,p.fat,p.fem,p.hips].join("|");
   if(lk!==C.legKey){C.legKey=lk;C.toeKey=["",""];
     [["R",-1],["L",1]].forEach(([n,s])=>{C.meshes["thigh"+n]=buildThigh(p,s);C.meshes["calf"+n]=buildCalf(p,s);C.meshes["ankle"+n]=buildAnkle(p,s);C.meshes["foot"+n]=buildFoot(p,s)})}
-  [["R",-1,p.toesR],["L",1,p.toesL]].forEach(([n,s,t],i)=>{const tk=lk+"|"+t;if(tk!==C.toeKey[i]){C.toeKey[i]=tk;C.meshes["toes"+n]=buildToes(p,s,t)}});
+  [["R",-1,p.toesR,p.halluxR],["L",1,p.toesL,p.halluxL]].forEach(([n,s,t,h],i)=>{const tk=lk+"|"+t+"|"+(h||0);if(tk!==C.toeKey[i]){C.toeKey[i]=tk;C.meshes["toes"+n]=buildToes(p,s,t,h||0)}});
   [-1,1].forEach((s,i)=>{
     const c=s>0?p.handCurlL:p.handCurlR,hk=ak+"|"+c+"|"+dedosChave(p,s);
     if(hk!==C.handKey[i]){C.handKey[i]=hk;C.meshes["hand"+i]=[buildPalm(p,s)].concat(buildFingers(p,s,c))}

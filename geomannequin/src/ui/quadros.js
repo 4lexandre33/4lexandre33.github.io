@@ -190,7 +190,10 @@ async function baixarZip(so) {
     if (modo !== "referencias") { t(d + "quadro.png", await svgParaPng(fo.svg, escala)); t(d + "quadro.svg", fo.svg); }
     if (modo !== "imagens") {
       if (fo.contorno) t(d + "contorno.png", await svgParaPng(fo.contorno, escala));
-      if (fo.openpose) { t(d + "openpose.png", await svgParaPng(fo.openpose.svg, escala)); t(d + "openpose.json", JSON.stringify(fo.openpose.json)); }
+      if (fo.openpose) { t(d + "openpose.png", await svgParaPng(fo.openpose.svg, escala)); t(d + "openpose-corpo.png", await svgParaPng(fo.openpose.svgCorpo, escala)); t(d + "openpose.json", JSON.stringify(fo.openpose.json)); }
+      if (fo.normal) t(d + "normal.png", await rgbaParaPng(fo.normal, larg, true));
+      if (fo.partes) { t(d + "partes.png", await rgbaParaPng(fo.partes, larg, false)); t(d + "partes.json", JSON.stringify(fo.partes.legenda, null, 1)); }
+      if (fo.canny) t(d + "canny.png", await rgbaParaPng(fo.canny, larg, false));
       if (fo.profundidade) t(d + "profundidade.png", await rgbaParaPng(fo.profundidade, larg, true));
       if (fo.mascara) { t(d + "mascara.png", await rgbaParaPng(fo.mascara, larg, false)); t(d + "mascara.json", JSON.stringify(fo.mascara.legenda, null, 1)); }
       t(d + "cena.json", JSON.stringify({ quadro: f.q.n, titulo: f.q.titulo, formato: f.q.formato, falas: f.q.falas, notas: f.q.notas, camera: fo.cena.camera, manequins: fo.cena.manequins, objetos: fo.cena.objetos, estado: f.q.estado }, null, 1));
@@ -239,7 +242,7 @@ function fecharExterna(ja) { if (!externa) return; const el = document.adoptNode
 export function iniciarQuadros() {
   if (typeof document === "undefined") return;
   const area = document.createElement("section"); area.id = "qdArea"; area.className = "qd-area"; area.hidden = true; area.setAttribute("role", "dialog"); area.setAttribute("aria-label", "Roteiro de quadros");
-  const passes = [["contorno", "Contorno"], ["openpose", "OpenPose"], ["profundidade", "Profundidade"], ["mascara", "Máscara"]];
+  const passes = [["contorno", "Contorno"], ["openpose", "OpenPose (corpo, mãos, rosto)"], ["profundidade", "Profundidade"], ["normal", "Normais"], ["mascara", "Máscara"], ["partes", "Partes do corpo"], ["canny", "Bordas (canny)"]];
   area.innerHTML =
     '<header class="qd-cab"><h2>Roteiro de quadros</h2><select data-q="modelos" aria-label="Modelos"><option value="">Modelos…</option>' + Object.keys(MODELOS_ROTEIRO).map(k => '<option>' + esc(k) + "</option>").join("") + '</select><select data-q="versoes" aria-label="Versões salvas"></select>' +
     '<button type="button" data-q="abrirArq">Abrir…</button><input type="file" accept=".gmroteiro,.txt,text/plain" data-q="arquivo" hidden><button type="button" data-q="salvarArq">Salvar</button><button type="button" data-q="ajuda">Ajuda</button><button type="button" data-q="janela">⇱ Janela</button><button type="button" data-q="min" title="Minimizar">–</button><button type="button" data-q="fechar" title="Fechar (Esc)" aria-label="Fechar">✕</button></header>' +

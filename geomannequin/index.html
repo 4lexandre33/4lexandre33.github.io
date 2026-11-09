@@ -221,12 +221,46 @@
         <button type="button" data-hand="1">Punho fechado</button>
       </div>
       <div id="slHand"></div>
+      <details class="fino"><summary>Dedos: cada falange (controle fino)</summary><div id="slFingers"></div></details>
       <h2>Pernas</h2>
       <div id="slLeg"></div>
+      <h2>Rosto e expressão</h2>
+      <div class="group poses" role="group" aria-label="Expressões">
+        <button type="button" data-expr="neutra">Neutra</button>
+        <button type="button" data-expr="alegria">Alegria</button>
+        <button type="button" data-expr="surpresa">Surpresa</button>
+        <button type="button" data-expr="raiva">Raiva</button>
+        <button type="button" data-expr="tristeza">Tristeza</button>
+        <button type="button" data-expr="medo">Medo</button>
+        <button type="button" data-expr="grito">Grito</button>
+        <button type="button" data-expr="sono">Sono</button>
+      </div>
+      <div id="slFace"></div>
       <h2>Vista (câmera)</h2>
+      <div class="orb" id="orbPainel">
+        <label class="orb-pivo">Girar em volta de <select id="orbPivo" aria-label="Pivô da órbita"></select></label>
+        <div class="group poses orb-vistas" role="group" aria-label="Vistas em volta do pivô">
+          <button type="button" data-vista="0">Frente</button>
+          <button type="button" data-vista="45">3/4 esq.</button>
+          <button type="button" data-vista="90">Esquerda</button>
+          <button type="button" data-vista="135">3/4 costas esq.</button>
+          <button type="button" data-vista="180">Costas</button>
+          <button type="button" data-vista="-135">3/4 costas dir.</button>
+          <button type="button" data-vista="-90">Direita</button>
+          <button type="button" data-vista="-45">3/4 dir.</button>
+        </div>
+        <div class="group orb-passo" role="group" aria-label="Girar a câmera em volta do pivô">
+          <button type="button" data-orb="15,0" title="Girar 15° para a esquerda do pivô">⟲ 15°</button>
+          <button type="button" data-orb="-15,0" title="Girar 15° para a direita do pivô">⟳ 15°</button>
+          <button type="button" data-orb="0,10" title="Subir a câmera 10°">↑ 10°</button>
+          <button type="button" data-orb="0,-10" title="Descer a câmera 10°">↓ 10°</button>
+          <label><input type="checkbox" id="orbEnq" checked> enquadrar</label>
+        </div>
+        <output id="orbInfo" class="hint"></output>
+      </div>
       <div id="slOrient"></div>
       <div id="slCam"></div>
-      <p class="hint">Arraste no vazio para orbitar, Shift + arrastar para deslocar, roda do mouse para aproximar. Clique num manequim para escolhê-lo.</p>
+      <p class="hint">Arraste no vazio para orbitar (em volta do pivô escolhido acima), Shift + arrastar para deslocar, roda do mouse para aproximar. Clique num manequim para escolhê-lo.</p>
       <h2>Proporções</h2>
       <div id="slProp"></div>
       <h2>Feições</h2>

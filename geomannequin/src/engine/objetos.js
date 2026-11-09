@@ -5,6 +5,7 @@
 import { CX, CY, D, H, W, clamp, f1 } from "./matematica.js";
 import { makeXf } from "./camera.js";
 import { effScale } from "./projecao.js";
+import { FINO } from "./zbuffer.js";
 
 /* medidas padrão (R): largura (x), profundidade (z), altura (y) */
 const TIPOS_OBJETO = {
@@ -197,7 +198,7 @@ function desenharObjeto(o, p, pal0, g0, L) {
     /* silhueta do cilindro (a projeção de um cilindro é convexa), logo depois das faces dele */
     if (g.cil) { const h = cascaConvexa(g.cil.pts); if (h.length > 2) svg += '<path d="M' + h.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>'; }
   }
-  return { svg, sombra, z: zDasFaces(faces), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [], ordemPartes: ordem.map(g => grupos.indexOf(g)) } };
+  return { svg, sombra, z: (() => { const z = zDasFaces(faces); if (z && FINO) z.fino = zDasFaces(faces, 1); return z; })(), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [], ordemPartes: ordem.map(g => grupos.indexOf(g)) } };
 }
 /* ===== ordem de desenho entre as peças de um objeto =====
    Cada peça (caixa ou cilindro em pé) é convexa e as peças só se tocam; então entre duas peças sempre há um plano que as
@@ -320,8 +321,8 @@ function cascaConvexa(P) {
   return lo.slice(0, -1).concat(up.slice(0, -1));
 }
 /* profundidade por célula de 2 px (como as fotos dos manequins), para o recorte entre camadas */
-function zDasFaces(faces) {
-  const C = 2; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+function zDasFaces(faces, Cf) {
+  const C = Cf || 2; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   faces.forEach(f => f.pts.forEach(q => { x0 = Math.min(x0, q[0]); y0 = Math.min(y0, q[1]); x1 = Math.max(x1, q[0]); y1 = Math.max(y1, q[1]); }));
   x0 = Math.max(0, Math.floor(x0 / C)); y0 = Math.max(0, Math.floor(y0 / C)); x1 = Math.min(Math.ceil(W / C) - 1, Math.floor(x1 / C)); y1 = Math.min(Math.ceil(H / C) - 1, Math.floor(y1 / C));
   if (x1 < x0 || y1 < y0) return null;
@@ -331,7 +332,7 @@ function zDasFaces(faces) {
     const by0 = Math.max(y0, Math.floor(Math.min(a[1], b[1], c[1]) / C)), by1 = Math.min(y1, Math.ceil(Math.max(a[1], b[1], c[1]) / C));
     const den = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]); if (Math.abs(den) < 1e-9) return;
     for (let cy = by0; cy <= by1; cy++) for (let cx = bx0; cx <= bx1; cx++) {
-      const px = cx * C + 1, py = cy * C + 1;
+      const px = cx * C + C / 2, py = cy * C + C / 2;
       const l1 = ((b[1] - c[1]) * (px - c[0]) + (c[0] - b[0]) * (py - c[1])) / den, l2 = ((c[1] - a[1]) * (px - c[0]) + (a[0] - c[0]) * (py - c[1])) / den, l3 = 1 - l1 - l2;
       if (l1 < -0.02 || l2 < -0.02 || l3 < -0.02) continue;
       const zz = l1 * a[2] + l2 * b[2] + l3 * c[2], k = (cy - y0) * w + cx - x0; if (zz > z[k]) z[k] = zz;

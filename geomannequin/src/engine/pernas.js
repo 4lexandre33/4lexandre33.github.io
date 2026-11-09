@@ -97,20 +97,23 @@ function dobraDedos(A,toes,v,zz){
   const w=sstep((zz-1.04)/0.16),a=toes*D*w,C=eixoDedos(A),dy=v[1]-C[1],dz=v[2]-C[2],c=Math.cos(a),sn=Math.sin(a);
   return [v[0],C[1]+dy*c-dz*sn,C[2]+dy*sn+dz*c];
 }
-function buildToes(p,s,toes){
-  const A=legDims(p),rows=22,cols=44,V=new Float32Array(rows*cols*3);
+/* quanto um ponto da caixa dos dedos pertence ao dedão (lado de dentro, depois da linha de divisão): 0 a 1 */
+function pesoDedao(A,s,zz,x){const c=secaoPe(A,s,zz);return sstep((-s*(x-c.cx)-0.1*A.f)/(0.12*A.f))}
+/* hal: dedão além dos outros dedos (graus; + dobra, − levanta) */
+function buildToes(p,s,toes,hal){
+  const A=legDims(p),rows=22,cols=44,V=new Float32Array(rows*cols*3);hal=hal||0;
   for(let r=0;r<rows;r++){const zz=lerp(1.02,1.5,r/(rows-1));
-    for(let j=0;j<cols;j++){const q=(r*cols+j)*3,v=dobraDedos(A,toes,pontoPe(A,s,zz,j/cols*2*Math.PI,true,false),zz);V[q]=v[0];V[q+1]=v[1];V[q+2]=v[2]}}
+    for(let j=0;j<cols;j++){const q=(r*cols+j)*3,v0=pontoPe(A,s,zz,j/cols*2*Math.PI,true,false),v=dobraDedos(A,toes+(hal?hal*pesoDedao(A,s,zz,v0[0]):0),v0,zz);V[q]=v[0];V[q+1]=v[1];V[q+2]=v[2]}}
   const m={V,rows,cols,flip:1,fb:null,open:true};
   return [m];
 }
 /* divisão do dedão: linha sobre a caixa dos dedos (no lado de cima), da bola até a ponta */
-function linhaDedao(p,s,toes){
+function linhaDedao(p,s,toes,hal){hal=hal||0;
   const A=legDims(p),c0=secaoPe(A,s,1.3),out=[];
   for(let i=0;i<=10;i++){
     const zz=lerp(1.18,1.47,i/10),c=secaoPe(A,s,zz),xr=c.cx-s*0.17*A.f,ex=clamp((xr-c.cx)/(c.w*c.ef),-0.98,0.98);
     const sn=Math.sign(ex)*Math.pow(Math.abs(ex),PE_N/2),th=Math.asin(sn);
-    out.push(dobraDedos(A,toes,pontoPe(A,s,zz,th,true,false),zz).map((v,k)=>k===1?v+0.035:v));
+    out.push(dobraDedos(A,toes+hal*0.5,pontoPe(A,s,zz,th,true,false),zz).map((v,k)=>k===1?v+0.035:v));
   }
   return out;
 }

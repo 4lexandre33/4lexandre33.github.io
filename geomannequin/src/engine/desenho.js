@@ -93,6 +93,10 @@ function scene(p,L,pal,fast,mode){
   const fit={zoom:+(Sfit/BASE).toFixed(3),panX:+(-cXr).toFixed(3),panY:+(((CY-H/2)/Sfit)-cYr).toFixed(3)};
   if(mode!=="draw"){
     if(!MULTI){zb.fill(-1e6);hid.fill(-1)}
+    /* parte do corpo de cada malha (segmentação por partes): 1 cabeça, 2 tronco, braço/antebraço/mão, coxa/perna/pé — esquerda 3–5 e 9–11, direita 6–8 e 12–14 */
+    head.parte=1;ears.forEach(e=>e.parte=1);if(bust)bust.parte=2;
+    arms.forEach(o=>{const b=o.s>0?3:6;o.a.parte=o.d.parte=o.el.parte=b;o.pec.parte=o.lat.parte=2;o.f.parte=b+1;o.hs.forEach(h=>h.parte=b+2)});
+    legs.forEach(o=>{const b=o.s>0?9:12;o.t.parte=o.kn.parte=b;o.c.parte=o.an.parte=b+1;o.ft.parte=b+2;o.toes.forEach(m=>m.parte=b+2)});
     all.forEach(m=>raster(m));
   }
   const bb=[bbX0-SPAN[0],bbX1-SPAN[0],bbY0-SPAN[1],bbY1-SPAN[1]];
@@ -452,7 +456,7 @@ function scene(p,L,pal,fast,mode){
       /* joelho dobrado: tendão patelar (da ponta da patela à tuberosidade da tíbia) salta na frente */
       if(kf>20){const fk=clamp((kf-20)/60,0,1);[-1,1].forEach(q=>lineT("mus",arr(u=>{const th=q*(0.2+0.04*u),r=calfR(u*0.32*A.L2,th,A,s)+0.012+0.03*fk*Math.sin(Math.PI*u);return [r*Math.sin(th),-u*0.32*A.L2,r*Math.cos(th)]},0,1,10).map(Xc),v=>v))}
       /* pé em cunha: só a divisão do dedão aparece na caixa dos dedos */
-      {const Xf=v=>xv(applyA(o.Aft,v));lineT("divisao",linhaDedao(p,s,s>0?p.toesL:p.toesR).map(Xf),v=>v)}
+      {const Xf=v=>xv(applyA(o.Aft,v));lineT("divisao",linhaDedao(p,s,s>0?p.toesL:p.toesR,(s>0?p.halluxL:p.halluxR)||0).map(Xf),v=>v)}
       /* trocânter maior: o relevo ósseo do lado de fora, logo abaixo do quadril */
       lineT("mus",arr(a=>{const u=A.L1*(0.07+0.05*Math.sin(a)),th=s*(Math.PI/2+0.25*Math.cos(a)),r=thighR(u,th,A,s)+0.012;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.3,Math.PI*2-0.3,14).map(Xt),v=>v);
       /* dobra do glúteo: um "sorriso" sob cada nádega, da fenda para fora (some quando a coxa sobe) */
@@ -478,8 +482,10 @@ function scene(p,L,pal,fast,mode){
   const surfX=(y,x)=>Math.asin(clamp(x/ringAt(y,p,sh)[0],-0.99,0.99));
   if(L.feat){
     [-1,1].forEach(s=>{
+      /* sobrancelhas: subir (+) / baixar (−); franzir (+, a ponta de dentro desce: raiva) / aflição (−, a ponta de dentro sobe) */
+      const bU=p.browUp||0,bI=p.browIn||0;
       const browPt=(u,dy)=>{
-        const y=0.10+0.045*Math.sin(Math.PI*Math.pow(u,0.8))-0.04*u+dy;
+        const y=0.10+0.045*Math.sin(Math.PI*Math.pow(u,0.8))-0.04*u+dy+0.035*bU-0.035*bI*Math.pow(1-u,1.5);
         return hp(y,s*(10+36*u)*D,0.01);
       };
       if(p.browW>0.002){
@@ -511,29 +517,35 @@ function scene(p,L,pal,fast,mode){
       fillP(arr(a=>{const y=-0.955*t+0.012*Math.sin(a);return hp(y,surfX(y,s*(0.066+0.034*Math.cos(a))),0.011)},0,2*Math.PI,14),pal.shade3);
       curve("feat",arr(k=>{const y=lerp(-0.80*t,-0.96*t,k),x=s*(0.12+0.05*Math.sin(Math.PI*k));return hp(y,surfX(y,x),0.01)},0,1,12));
     });
-    /* boca: lábio superior e inferior preenchidos, sombra sob o lábio */
+    /* boca: lábio superior e inferior preenchidos, sombra sob o lábio; sorriso (cantos) e boca aberta (mandíbula) */
     {
-      const mY=x=>mouthY+0.016*Math.pow(x/0.2,2);
-      const top=x=>mouthY+0.034*(1-Math.pow(Math.abs(x)/0.2,1.3))*(1-0.35*gauss(x,0,0.035))+0.016*Math.pow(x/0.2,2);
+      const sm=p.smile||0,jo=p.jawOpen||0,ab=jo>0.02?0.036:0;
+      const mY=x=>mouthY+0.016*Math.pow(x/0.2,2)+sm*0.028*Math.pow(x/0.2,2);
+      const top=x=>mY(x)+0.034*(1-Math.pow(Math.abs(x)/0.2,1.3))*(1-0.35*gauss(x,0,0.035));
       const bot=x=>mouthY-0.07-0.02*(1-Math.pow(x/0.13,2));
       const H=(x,y,o)=>hp(y,surfX(y,x),o||0.008);
       fillP(arr(x=>H(x,top(x)),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)),0.2,-0.2,24)),pal.shade3);
-      fillP(arr(x=>H(x,mY(x)),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)-0.055*Math.max(0,1-Math.pow(x/0.2,2))-0.004),0.2,-0.2,24)),pal.shade1);
+      /* boca aberta: o vão entre o lábio de cima e o de baixo */
+      if(ab)fillP(arr(x=>H(x,mY(x)),-0.19,0.19,24).concat(arr(x=>H(x,mY(x)-ab*(0.25+0.75*(1-Math.pow(x/0.19,2)))),0.19,-0.19,24)),pal.ink,0.82);
+      fillP(arr(x=>H(x,mY(x)-ab),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)-ab-0.055*Math.max(0,1-Math.pow(x/0.2,2))-0.004),0.2,-0.2,24)),pal.shade1);
       fillP(arr(x=>H(x,bot(x)-0.005,0.006),-0.13,0.13,16).concat(arr(x=>H(x,bot(x)-0.05*(1-Math.pow(x/0.13,2)),0.006),0.13,-0.13,16)),pal.shade2,0.8);
+      curve("feat",arr(x=>H(x,mY(x)),-0.2,0.2,30));
+      if(ab)curve("feat",arr(x=>H(x,mY(x)-ab),-0.19,0.19,30));
+      curve("feat",arr(x=>H(x,top(x)),-0.2,0.2,40));
+      curve("feat",arr(x=>H(x,bot(x)),-0.13,0.13,24));
     }
     const wing=[[0.105,-0.76],[0.14,-0.85],[0.17,-0.93],[0.14,-0.985],[0.07,-1.0],[0,-1.0]];
     const half=wing.map(w=>[w[0],w[1]*t]);
     const poly2=half.slice().reverse().map(w=>[-w[0],w[1]]).concat(half.slice(1));
     curve("feat",poly2.map(w=>hp(w[1],surfX(w[1],w[0]),0.008)));
-    curve("feat",arr(x=>{const y=mouthY+0.016*Math.pow(x/0.2,2);return hp(y,surfX(y,x),0.008)},-0.2,0.2,30));
-    curve("feat",arr(x=>{const y=mouthY+0.034*(1-Math.pow(Math.abs(x)/0.2,1.3))*(1-0.35*gauss(x,0,0.035))+0.016*Math.pow(x/0.2,2);return hp(y,surfX(y,x),0.008)},-0.2,0.2,40));
-    curve("feat",arr(x=>{const y=mouthY-0.07-0.02*(1-Math.pow(x/0.13,2));return hp(y,surfX(y,x),0.008)},-0.13,0.13,24));
   }
   out.push('</g>');
   out.push('<g id="olhos">');
   /* olhos 2D: sombra da órbita, amêndoa preenchida, íris recortada (opcional), pálpebras e prega */
   if(L.eyes){
-    const w=0.30*p.eyeSize,hu=0.062*p.eyeSize*p.eyeOpen,hl=0.036*p.eyeSize*p.eyeOpen;
+    /* pálpebras: eyeLid 0 = abertas, 1 = fechadas (a de cima desce mais); olhar: eyeYaw (− direita / + esquerda do manequim) e eyePitch (+ cima) */
+    const lid=Math.max(0,Math.min(1,p.eyeLid||0)),gY=p.eyeYaw||0,gP=p.eyePitch||0;
+    const w=0.30*p.eyeSize,hu=0.062*p.eyeSize*p.eyeOpen*(1-0.92*lid)*(1+0.18*Math.max(0,p.browUp||0)),hl=0.036*p.eyeSize*p.eyeOpen*(1-0.6*lid);
     const tilt=q=>0.034*(q-0.45);
     const up=q=>{q=clamp(q,0,1);return hu*Math.sin(Math.PI*Math.pow(q,0.75))+tilt(q)};
     const lo=q=>{q=clamp(q,0,1);return -hl*Math.sin(Math.PI*Math.pow(q,1.15))+tilt(q)};
@@ -567,16 +579,17 @@ function scene(p,L,pal,fast,mode){
       fillP(sh1.concat(sh2),pal.shade1,0.9);
       /* íris */
       if(p.eyeStyle>=0.5){
-        const ri=0.066*p.eyeSize;
+        const ri=0.066*p.eyeSize,gx=s*gY*0.085*p.eyeSize,gy=gP*0.03*p.eyeSize;
         const ip=[];
         for(let i=0;i<48;i++){
-          const a=i/48*2*Math.PI,ex=ri*Math.cos(a),ey=ri*Math.sin(a),q=clamp(ex/w+0.5,0,1);
+          const a=i/48*2*Math.PI,ex=ri*Math.cos(a)+gx,ey=ri*Math.sin(a)+gy,q=clamp(ex/w+0.5,0,1);
           ip.push(E(ex,clamp(ey,lo(q)*0.98,up(q)*0.98),0.012));
         }
         fillP(ip,pal.shade2);
-        const pp=arr(a=>E(0.024*p.eyeSize*Math.cos(a),0.024*p.eyeSize*Math.sin(a),0.013),0,2*Math.PI,16);
+        if(lid<0.8){const pc=q=>[clamp(gx+0.024*p.eyeSize*Math.cos(q),X(0.08),X(0.92)),clamp(gy+0.024*p.eyeSize*Math.sin(q),lo(clamp(gx/w+0.5,0,1))*0.9,up(clamp(gx/w+0.5,0,1))*0.9)];
+        const pp=arr(a=>{const c=pc(a);return E(c[0],c[1],0.013)},0,2*Math.PI,16);
         fillP(pp,pal.ink);
-        fillP(arr(a=>E(0.012*p.eyeSize+0.007*Math.cos(a),0.02*p.eyeSize+0.007*Math.sin(a),0.014),0,2*Math.PI,10),"#fff");
+        fillP(arr(a=>E(gx+0.012*p.eyeSize+0.007*Math.cos(a),gy+0.02*p.eyeSize+0.007*Math.sin(a),0.014),0,2*Math.PI,10),"#fff");}
       }
       /* linhas: pálpebra superior grossa, inferior fina, prega, cantos */
       curve("eyeU",arr(q=>E(X(q),up(q)),-0.04,1.02,32));

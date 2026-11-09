@@ -18,13 +18,14 @@ const ARTICULACOES = {
   toracica: { nome: "coluna torácica", params: ["spineFlex", "spineSide", "spineTwist", "thoFlex", "thoSide", "thoTwist"] },
   cervical: { nome: "pescoço (cervical)", params: ["neckFlex", "neckSide", "neckTwist", "headPitch", "headYaw", "headRoll"] },
   cabeca: { nome: "cabeça", params: ["headPitch", "headYaw", "headRoll"] },
-  ombro: { nome: "ombro", lado: true, params: ["armFlex", "armAbd", "armRot", "shElev", "shProt"] },
+  ombro: { nome: "ombro", lado: true, params: ["armFlex", "armAbd", "armRot", "shElev", "shProt", "shTens", "scapRot"] },
   cotovelo: { nome: "cotovelo", lado: true, params: ["elbow", "pron"] },
   punho: { nome: "punho", lado: true, params: ["wrist", "wristDev", "pron", "handCurl"] },
-  mao: { nome: "mão e dedos", lado: true, params: ["handCurl", "fTh", "fIn", "fMe", "fAn", "fMi", "fSpread", "thumbOpp"] },
+  mao: { nome: "mão e dedos", lado: true, params: ["handCurl", "fTh", "fIn", "fMe", "fAn", "fMi", "fSpread", "thumbOpp", "fThMcp", "fThIp", "fThAbd", "fInMcp", "fInIp", "fInAbd", "fMeMcp", "fMeIp", "fMeAbd", "fAnMcp", "fAnIp", "fAnAbd", "fMiMcp", "fMiIp", "fMiAbd"] },
   quadril: { nome: "quadril", lado: true, params: ["hipFlex", "hipAbd", "hipRot"] },
-  joelho: { nome: "joelho", lado: true, params: ["kneeFlex"] },
-  tornozelo: { nome: "tornozelo", lado: true, params: ["ankleFlex", "ankleTilt", "toes"] }
+  joelho: { nome: "joelho", lado: true, params: ["kneeFlex", "tibiaRot"] },
+  tornozelo: { nome: "tornozelo", lado: true, params: ["ankleFlex", "ankleTilt", "footAdd", "toes", "hallux"] },
+  rosto: { nome: "rosto (mandíbula, olhos e sobrancelhas)", params: ["jawOpen", "jawSide", "smile", "eyeYaw", "eyePitch", "eyeLid", "browUp", "browIn"] }
 };
 function paramsDaArticulacao(k, s) {
   const a = ARTICULACOES[k]; if (!a) return [];
@@ -51,6 +52,7 @@ function ossosDoCorpo(p) {
   osso("mandíbula", applyA(A3, [-0.62, -0.35, 0.1]), applyA(A3, [0, -0.95, 0.85]), 0.1, "fino");
   osso("mandíbula", applyA(A3, [0.62, -0.35, 0.1]), applyA(A3, [0, -0.95, 0.85]), 0.1, "fino");
   junta("cabeça (atlas)", applyA(A3, [0, -0.55, -0.3]), "cabeca", 0);
+  junta("rosto", applyA(A3, [0, -0.62, 0.85]), "rosto", 0);
   junta("pescoço", T(0, F.yJ + 0.35, -0.62), "cervical", 0);
   junta("coluna torácica", vert[11][1], "toracica", 0);
   junta("coluna lombar", vert[2][1], "lombar", 0);

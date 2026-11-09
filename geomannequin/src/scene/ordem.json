@@ -13,6 +13,7 @@
   "colisoes.js",
   "cenario.js",
   "blocking.js",
+  "orbita.js",
   "descrever.js",
   "comandos.js",
   "ajuda.js",

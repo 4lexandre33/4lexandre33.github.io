@@ -8,8 +8,9 @@
   "scripts": {
     "servir": "node ferramentas/servir.mjs",
     "construir": "node ferramentas/construir.mjs",
-    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs && node testes/objetos.mjs && node testes/camera-objetos.mjs && node testes/quadros.mjs",
-    "desempenho": "node testes/desempenho.mjs"
+    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs && node testes/objetos.mjs && node testes/camera-objetos.mjs && node testes/quadros.mjs && node testes/rig.mjs",
+    "desempenho": "node testes/desempenho.mjs",
+    "estimar-poses": "node ferramentas/estimar-poses.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

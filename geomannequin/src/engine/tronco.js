@@ -13,7 +13,7 @@ function bustBump(x,y,th,p,F){
     if(y<yS0+0.05&&y>yS1-0.08){
       const u=clamp((yS0-y)/(yS0-yS1),0,1),thS=lerp(112,16,u)*D;
       const a=Math.abs(Math.atan2(Math.sin(th),Math.cos(th)));
-      dz+=(0.03+0.035*mu+0.03*p.shTension)*gauss(a,thS,0.19)*sstep(u*4)*sstep((1.08-u)*8);
+      dz+=(0.03+0.035*mu+0.03*(p.shTension+0.5*((s>0?p.shTensL:p.shTensR)||0)))*gauss(a,thS,0.19)*sstep(u*4)*sstep((1.08-u)*8);
     }
     dz+=p.adam*0.045*gauss(y,F.yJ+0.62,0.07)*gauss(x,0,0.09)*cf;
     dz-=0.05*gauss(y,F.yJ+0.03,0.05)*gauss(x,0,0.09)*cf;
@@ -61,7 +61,7 @@ function bustBump(x,y,th,p,F){
     dz+=cb*gl*gauss(ax,0.55,0.36)*gauss(y,F.yHip-0.6,0.42)*(1-0.75*gauss(x,0,0.055));
     dz+=(0.4+0.6*cb)*0.35*gl*gauss(Math.abs(Math.atan2(Math.sin(th),cs)),1.75,0.35)*gauss(y,F.yHip+0.05,0.3);
   }
-  dz+=p.shTension*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);
+  dz+=(p.shTension+0.5*((s>0?p.shTensL:p.shTensR)||0))*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);
   dz+=muscleBump(x,y,th,p,F)+relevoTronco(x,y,th,p,F);
   {
     const sb=(p.spineSide||0)/30,sf=(p.spineFlex||0)/40,gw=gauss(y,F.yWst-0.15,0.55),side=Math.abs(Math.sin(th));
@@ -75,7 +75,9 @@ function shoulderAngles(p,s){
   const ab=s>0?p.armAbdL:p.armAbdR,fl=s>0?p.armFlexL:p.armFlexR;
   /* ritmo escápulo-umeral: acima de ~30° de elevação do braço, a escápula gira e sobe junto (≈ 1° para cada 2–3°) */
   const ro=s>0?p.armRotL:p.armRotR,dir=mv(rotM(s*ro*D,-fl*D,s*ab*D),[0,-1,0]),elev=Math.acos(clamp(-dir[1],-1,1))/D;
-  const e=(el>0?el*28:el*10)+(p.shTension-0.3)*8+Math.max(0,elev-30)*0.2;
+  /* tensão do trapézio: a comum (shTension) + o ajuste do lado (shTensL/R); a rotação da escápula (scapRot) também sobe o acrômio */
+  const tens=p.shTension+0.5*((s>0?p.shTensL:p.shTensR)||0),sr=(s>0?p.scapRotL:p.scapRotR)||0;
+  const e=(el>0?el*28:el*10)+(tens-0.3)*8+Math.max(0,elev-30)*0.2+sr*6;
   return [e*D,(pr*22+Math.max(0,fl-30)*0.08)*D];
 }
 function shoulderWarp(v,p,F){

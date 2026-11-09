@@ -3,7 +3,8 @@ import { H, W } from "./matematica.js";
 import { CUR_ID } from "./projecao.js";
 
 /* z-buffer em resolução total: decide o que fica visível nas linhas */
-let zb;
+let zb,zp,PT=0,FINO=false;
+function setFino(v){FINO=!!v}
 function tri(x0,y0,z0,x1,y1,z1,x2,y2,z2){
   const minx=Math.max(0,Math.floor(Math.min(x0,x1,x2))),maxx=Math.min(W-1,Math.ceil(Math.max(x0,x1,x2)));
   const miny=Math.max(0,Math.floor(Math.min(y0,y1,y2))),maxy=Math.min(H-1,Math.ceil(Math.max(y0,y1,y2)));
@@ -19,13 +20,13 @@ function tri(x0,y0,z0,x1,y1,z1,x2,y2,z2){
       const l2=1-l0-l1;
       if(l0<-1e-4||l1<-1e-4||l2<-1e-4)continue;
       const z=l0*z0+l1*z1+l2*z2,i=y*W+x;
-      if(z>zb[i])zb[i]=z;
+      if(z>zb[i]){zb[i]=z;zp[i]=PT}
     }
   }
 }
 function backQ(m,a,b,d){return m.open&&((m.X[d]-m.X[a])*(m.Y[b]-m.Y[a])-(m.Y[d]-m.Y[a])*(m.X[b]-m.X[a])<=0)}
 function raster(m){
-  const {rows,cols,SX,SY,Z}=m;
+  const {rows,cols,SX,SY,Z}=m;PT=m.parte||0;
   for(let r=0;r<rows-1;r++)for(let c=0;c<cols;c++){
     const c1=(c+1)%cols,a=r*cols+c,b=r*cols+c1,d=(r+1)*cols+c,e=(r+1)*cols+c1;
     if(backQ(m,a,b,d))continue;
@@ -115,7 +116,7 @@ function rasterS(m){
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarZbuffer(){
-  zb=new Float32Array(W*H);
+  zb=new Float32Array(W*H);zp=new Uint8Array(W*H);
   RS=1.5;
   HW=Math.ceil(W/RS);
   HH=Math.ceil(H/RS);
@@ -133,4 +134,4 @@ export function iniciarZbuffer(){
 export function setSMO(v){return SMO=v}
 export function setSMS(v){return SMS=v}
 
-export { zb, tri, backQ, raster, visAt, RS, HW, HH, HN, hid, hz, hnl, hlx, hly, hld, triH, rasterH, SMN, SMO, SMS, sm, triS, rasterS };
+export { zb, zp, FINO, setFino, tri, backQ, raster, visAt, RS, HW, HH, HN, hid, hz, hnl, hlx, hly, hld, triH, rasterH, SMN, SMO, SMS, sm, triS, rasterS };

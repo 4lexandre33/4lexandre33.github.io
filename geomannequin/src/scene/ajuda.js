@@ -100,6 +100,22 @@ cena.objeto("cilindro", {x: -8, raio: 2, altura: 5});
 mesa.mover(1, 0);            // o copo vai junto
 log(cena.colisoes().map(c => c.descricao).join("\\n") || "nada atravessa nada");
 cena.blocking.abrir();`,
+  "Giro em volta da Ana (órbita)":`// a câmera gira em volta de um pivô; o azimute conta a partir da frente dele
+cena.limpar();
+const ana = cena.ativo.renomear("Ana").posicao(3, 0).girar(40).poseRapida("acenando");
+cena.objeto("mesa", { x: -5, z: 0 });
+camera.perspectiva(true).orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 12 });
+log(camera.vista());
+// outras: camera.orbitar("mesa", "costas") · camera.orbitar("cena", {azimute: 30, elevacao: 30})`,
+  "Mãos, dedos e rosto":`// cada falange, o dedão do pé, a mandíbula, o olhar e as expressões
+cena.limpar();
+const m = cena.ativo;
+m.poseRapida("acenando").gesto("esquerda", "vulcano");
+m.articulacao("indicador direito", { base: 1, ponta: 0.2 }).articulacao("polegar direito", { opor: 1, base: 0.6 });
+m.expressao("surpresa").olhos(0.6, 0.1);
+m.articulacao("dedão esquerdo", { dobrar: -25 });
+log(m.validarPose());
+camera.enquadramento("primeiro plano");`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -147,8 +163,21 @@ export function iniciarAjuda(){
   Quadros de mangá/quadrinhos: camera.enquadramento("detalhe" | "close" | "primeiro plano" | "medio" | "americano" | "inteiro" | "geral", "Ana" | ["Ana","Leo"] | "todos", {tercos: "esquerda"})
   camera.angulo("normal" | "plongée" | "contra-plongée" | "zenital" | "nadir" | "holandês", graus) · cena.estado() / cena.restaurar(estado)
   Roteiro de quadros (botão "Quadros"): #cena (preparação) · #quadro 1 — título · #quadro 2 novo 16:9 · // fala: Ana: Oi! — cada quadro continua do anterior;
-    Renderizar monta e fotografa cada quadro, a fila guarda em ordem e "Baixar tudo" gera um .zip (quadro, contorno, OpenPose, profundidade, máscara, cena.json)
+    Renderizar monta e fotografa cada quadro, a fila guarda em ordem e "Baixar tudo" gera um .zip (quadro, contorno, OpenPose, profundidade, normais, máscara, partes, canny, cena.json)
     cena.quadros.abrir() · .texto("#quadro 1 …") · .renderizar() · .fila() · .baixar()
+    No roteiro: #orbita "Ana" 8 elevacao 10 16:9 — 8 quadros girando em volta (turntable) · #ficha "Ana" [completa] [orto] — frente, 3/4, perfil e costas
+    Passes de cada quadro (ControlNet): contorno, OpenPose completo (BODY_25 + mãos 21 + rosto 70, confiança 0,5 = escondido; openpose-corpo.png só o corpo),
+    profundidade, normais, máscara por item, partes do corpo (14 cores + legenda) e bordas (canny) — profundidade/máscara/partes em 1 px
+  Órbita (a câmera gira em volta de um pivô: manequim, grupo, objeto, ponto ou a cena):
+  camera.orbitar("Ana", {azimute: "frente" | "3/4 esquerda" | "esquerda" | "3/4 costas esquerda" | "costas" | "3/4 costas direita" | "direita" | "3/4 direita" | graus, elevacao: graus | "olhos" | "alta", distancia?})
+  camera.orbitar(["Ana","Leo"], "costas") · camera.orbitar("mesa", 45) · camera.orbitar("cena", {azimute: 30, elevacao: 25}) · camera.orbitar([0, -7, 0], 90)
+  camera.pivo("Ana") — só troca o centro do giro (arrastar no palco gira em volta dele) · camera.girarEmVolta(15, 0) · camera.vista() → {pivo, azimute, elevacao} · camera.giro(8) → azimutes
+  Rig fino: m.articulacao("indicador esquerdo", {base: 0.8, ponta: 0.5, afastar: -0.3}) · ("polegar direito", {base, ponta, afastar, opor}) — de −1 a 1
+    ("dedão esquerdo", {dobrar: 30}) · ("canela direita", {girar: 20}) · ("pé esquerdo", {aduzir: 10}) · ("escápula esquerda", {girar: 0.5, tensao: 1})
+    ("mandíbula", {abrir: 0.5, lado: 0.2}) · ("olhos", {lado: 0.6, cima: -0.2, fechar: 0.3}) · ("sobrancelhas", {subir: 0.5, franzir: 0.4})
+  m.expressao("neutra" | "alegria" | "surpresa" | "raiva" | "tristeza" | "medo" | "grito" | "sono" | "desconfianca" | "piscando") · m.olhos(x, y) · m.boca(abrir, sorriso)
+  m.validarPose() → {ok, atravessa: [{partes, profundidade}], limites: [...]} — partes do corpo atravessando umas às outras e limites acoplados
+  Gestos novos: chifres, telefone, gancho, mesa, vulcano, figa, cruzados
   cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")
   Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
   m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)

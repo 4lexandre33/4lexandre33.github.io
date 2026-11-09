@@ -64,7 +64,8 @@ return {
   todasPoses, GESTOS, TIPOS_OBJETO, ARTICULACOES,
   leituraBlocking, svgPlanta, svgPerfil, encaixar, eixoPerfil, moverManequim, girarManequim, apontarManequim, alturaManequim, moverCamera, moverAlvo, abrirCone, cameraNoMundo, M_R, comFundo,
   moverObjeto, girarObjeto, medidasObjeto, selecionarObjeto, corObjeto, pegadaNoChao, distEscala, faixaLente,
-  lerRoteiro, executarRoteiro, renderizarQuadro, manifestoQuadros, pastaQuadro, paginaQuadros, folhaDeContato, MODELOS_ROTEIRO, recorteQuadro, OP_NOMES
+  lerRoteiro, executarRoteiro, renderizarQuadro, manifestoQuadros, pastaQuadro, paginaQuadros, folhaDeContato, MODELOS_ROTEIRO, recorteQuadro, OP_NOMES, PARTES_SEG, PASSES_QUADRO, openPoseJson,
+  faixa, limitesAcoplados, ajustarAoPerfil, EXPRESSOES, resolverAlvo, orbitarCamera, pivoCamera, vistaAtual, azimutesGiro, nomeVista, VISTAS_8
 };`;
   const make = new Function("E", src);
   FACTORY = () => make(ENGINE);

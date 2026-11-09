@@ -2,7 +2,7 @@
 import { LAY, SL, POSEKEYS, faixa, ajustarAoPerfil } from "../scene/parametros.js";
 import { $ } from "../scene/ambiente.js";
 import { P, WORLDK } from "../scene/modelo.js";
-import { BODIES, FACES, GUARD, POSTURES, doBodyPose, guardArms } from "../scene/poses.js";
+import { BODIES, FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES } from "../scene/poses.js";
 import { fmt } from "./exportar.js";
 import { render, setQuick, setSettle, settle } from "./palco.js";
 import { L, setMode, setPreset } from "../scene/modos.js";
@@ -50,6 +50,9 @@ export function iniciarControles(){
   });
   document.querySelectorAll("[data-bpose]").forEach(b=>{
     b.addEventListener("click",()=>{doBodyPose(b.dataset.bpose);syncControls();render()});
+  });
+  document.querySelectorAll("[data-expr]").forEach(b=>{
+    b.addEventListener("click",()=>{Object.assign(P,EXPRESSOES[b.dataset.expr]);syncControls();render()});
   });
   document.querySelectorAll("[data-hand]").forEach(b=>{
     b.addEventListener("click",()=>{P.handCurlL=P.handCurlR=parseFloat(b.dataset.hand);syncControls();render()});

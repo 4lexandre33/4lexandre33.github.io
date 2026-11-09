@@ -13,7 +13,15 @@ function limitesAcoplados(Q){
     if(Q["hipFlex"+L_]>mx){Q["hipFlex"+L_]=mx;av.push("coxa "+n+": com o joelho quase esticado sobe só até "+mx+"° (músculos de trás da coxa"+(fx<2?"; perfil “ginasta” vai mais longe":"")+")")}
     /* braço acima da cabeça pela lateral: o úmero precisa girar para fora (rotação externa) */
     if(Q["armAbd"+L_]>120&&Q["armRot"+L_]<-20){Q["armRot"+L_]=-20;av.push("braço "+(n==="esquerda"?"esquerdo":"direito")+": acima de 120° pela lateral o braço gira para fora")}
+    /* dedos: com a base (MCF) dobrada, o dedo quase não abre para os lados (ligamentos colaterais esticam) */
+    ["Th","In","Me","An","Mi"].forEach(f=>{const mc=Q["f"+f+"Mcp"+L_]||0,ab=Q["f"+f+"Abd"+L_]||0,lim=Math.max(0.25,1-Math.max(0,mc));if(Math.abs(ab)>lim+1e-6){Q["f"+f+"Abd"+L_]=Math.sign(ab)*Math.round(lim*100)/100;av.push("mão "+n+": com a base do dedo dobrada, ele abre no máximo "+Math.round(lim*100)+"%")}});
+    /* dedão + dedos do pé: juntos não passam de 60° para cima nem para baixo */
+    {const t=(Q["toes"+L_]||0)+(Q["hallux"+L_]||0);if(Math.abs(t)>60){Q["hallux"+L_]=Math.sign(t)*60-(Q["toes"+L_]||0);av.push("pé "+n+": dedão e dedos juntos vão até 60°")}}
+    /* a canela só gira com o joelho dobrado (esticado, os ligamentos travam) */
+    {const tr=Q["tibiaRot"+L_]||0,lim=Math.round(5+Math.max(0,Q["kneeFlex"+L_]||0)*0.45);if(Math.abs(tr)>lim){Q["tibiaRot"+L_]=Math.sign(tr)*lim;av.push("canela "+n+": com o joelho a "+Math.round(Q["kneeFlex"+L_]||0)+"° gira só até "+lim+"°")}}
   });
+  /* mandíbula: aberta, desvia menos para o lado */
+  {const lim=Math.round((1-0.5*Math.max(0,Q.jawOpen||0))*100)/100;if(Math.abs(Q.jawSide||0)>lim){Q.jawSide=Math.sign(Q.jawSide)*lim;av.push("mandíbula: aberta, desvia para o lado só até "+Math.round(lim*100)+"%")}}
   return av;
 }
 function guardArms(){
@@ -39,6 +47,19 @@ const POSTURES={
   curvado:{shElevL:-0.3,shElevR:-0.3,shProtL:0.85,shProtR:0.85,shTension:0.1,headPitch:14},
   assimetrico:{shElevL:0.7,shElevR:-0.5,shProtL:0.2,shProtR:-0.2,shTension:0.4,headRoll:-12}
 };
+/* expressões do rosto (mandíbula, boca, olhos, pálpebras e sobrancelhas) */
+const EXPRESSOES={
+  neutra:{jawOpen:0,jawSide:0,smile:0,eyeLid:0,browUp:0,browIn:0},
+  alegria:{jawOpen:0.12,jawSide:0,smile:0.9,eyeLid:0.28,browUp:0.2,browIn:-0.1},
+  surpresa:{jawOpen:0.55,jawSide:0,smile:0,eyeLid:0,browUp:1,browIn:-0.2},
+  raiva:{jawOpen:0.1,jawSide:0,smile:-0.6,eyeLid:0.25,browUp:-0.5,browIn:1},
+  tristeza:{jawOpen:0,jawSide:0,smile:-0.8,eyeLid:0.35,browUp:0.1,browIn:-0.9},
+  medo:{jawOpen:0.35,jawSide:0,smile:-0.4,eyeLid:0,browUp:0.8,browIn:-0.7},
+  grito:{jawOpen:1,jawSide:0,smile:-0.2,eyeLid:0.2,browUp:-0.2,browIn:0.9},
+  sono:{jawOpen:0.05,jawSide:0,smile:0,eyeLid:0.95,browUp:-0.1,browIn:0},
+  desconfianca:{jawOpen:0,jawSide:0.3,smile:-0.3,eyeLid:0.45,browUp:-0.2,browIn:0.5},
+  piscando:{jawOpen:0,jawSide:0,smile:0.6,eyeLid:0,browUp:0.1,browIn:0}
+};
 const BODIES={
   magro:{muscle:0.15,fat:0,waist:0.86,thighThick:0.92,armThick:0.95},
   medio:{muscle:0.4,fat:0.2,waist:0.93,thighThick:1,armThick:1},
@@ -50,7 +71,9 @@ const POSE0={spineFlex:0,spineSide:0,spineTwist:0,pelvisTilt:0,pelvisSide:0,pelv
   armAbdL:12,armAbdR:12,armFlexL:0,armFlexR:0,armRotL:0,armRotR:0,elbowL:0,elbowR:0,pronL:0,pronR:0,wristL:0,wristR:0,handCurlL:0.3,handCurlR:0.3,
   headYaw:0,headPitch:0,headRoll:0,shElevL:0,shElevR:0,shProtL:0,shProtR:0,
   bodyPitch:0,bodyRoll:0,bodyLift:0,ground:1,lumFlex:0,lumSide:0,lumTwist:0,thoFlex:0,thoSide:0,thoTwist:0,neckFlex:0,neckSide:0,neckTwist:0,
-  wristDevL:0,wristDevR:0,fThL:0,fInL:0,fMeL:0,fAnL:0,fMiL:0,fThR:0,fInR:0,fMeR:0,fAnR:0,fMiR:0,fSpreadL:0.4,fSpreadR:0.4,thumbOppL:0,thumbOppR:0};
+  wristDevL:0,wristDevR:0,fThL:0,fInL:0,fMeL:0,fAnL:0,fMiL:0,fThR:0,fInR:0,fMeR:0,fAnR:0,fMiR:0,fSpreadL:0.4,fSpreadR:0.4,thumbOppL:0,thumbOppR:0,
+  halluxL:0,halluxR:0,footAddL:0,footAddR:0,tibiaRotL:0,tibiaRotR:0,shTensL:0,shTensR:0,scapRotL:0,scapRotR:0,
+  fThMcpL:0,fThIpL:0,fThAbdL:0,fInMcpL:0,fInIpL:0,fInAbdL:0,fMeMcpL:0,fMeIpL:0,fMeAbdL:0,fAnMcpL:0,fAnIpL:0,fAnAbdL:0,fMiMcpL:0,fMiIpL:0,fMiAbdL:0,fThMcpR:0,fThIpR:0,fThAbdR:0,fInMcpR:0,fInIpR:0,fInAbdR:0,fMeMcpR:0,fMeIpR:0,fMeAbdR:0,fAnMcpR:0,fAnIpR:0,fAnAbdR:0,fMiMcpR:0,fMiIpR:0,fMiAbdR:0};
 const BPOSES={
   empe:{},
   contrapposto:{pelvisSide:7,spineSide:-9,hipAbdL:7,hipAbdR:-2,hipFlexR:12,shElevL:-0.2,shElevR:0.25,headRoll:5,armAbdL:10,armAbdR:6,elbowR:15},
@@ -168,4 +191,4 @@ function doBodyPoseBase(k){
     }
 }
 
-export { limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };
+export { EXPRESSOES, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };
