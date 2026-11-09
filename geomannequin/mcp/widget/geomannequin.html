@@ -1,32 +1,109 @@
 <div id="gm-root">
   <style>
-    #gm-root{--fg:#1d2430;--muted:#5d6878;--card:#ffffff;--rule:#dde3ea;--accent:#2f5fb3;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg)}
-    @media (prefers-color-scheme: dark){#gm-root{--fg:#e5ecf4;--muted:#93a1b3;--card:#151d27;--rule:#2a3644;--accent:#8db0e2}}
+    #gm-root{--fg:#1d2430;--muted:#5d6878;--card:#ffffff;--soft:#f2f5f8;--rule:#dde3ea;--accent:#2f5fb3;--accent-fg:#fff;--coral:#d4583a;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg)}
+    @media (prefers-color-scheme: dark){#gm-root:not([data-theme="light"]){--fg:#e5ecf4;--muted:#93a1b3;--card:#151d27;--soft:#1c2633;--rule:#2a3644;--accent:#8db0e2;--accent-fg:#0d1520;--coral:#f08a6c}}
+    #gm-root[data-theme="dark"]{--fg:#e5ecf4;--muted:#93a1b3;--card:#151d27;--soft:#1c2633;--rule:#2a3644;--accent:#8db0e2;--accent-fg:#0d1520;--coral:#f08a6c}
+    #gm-root *{box-sizing:border-box}
+    #gm-root [hidden]{display:none!important}
     #gm-root .card{background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
-    #gm-root img{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:#fff}
-    #gm-root .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border-top:1px solid var(--rule)}
+    #gm-root .top{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+    #gm-root .top h3{flex:1;margin:0;font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #gm-root .ver{position:relative;background:#fff}
+    #gm-root .ver img{display:block;width:100%;height:auto;max-height:68vh;object-fit:contain;background:#fff}
+    #gm-root .seta{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;padding:0;background:rgba(20,28,40,.55);color:#fff;font-size:18px;line-height:34px}
+    #gm-root .seta.e{left:8px}#gm-root .seta.d{right:8px}
+    #gm-root .abas,#gm-root .tiras,#gm-root .orb{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;border-top:1px solid var(--rule)}
+    #gm-root .tiras{flex-wrap:nowrap;overflow-x:auto}
+    #gm-root .tira{flex:0 0 auto;width:86px;padding:0;border:2px solid transparent;border-radius:8px;background:var(--soft);overflow:hidden;cursor:pointer;text-align:left}
+    #gm-root .tira img{display:block;width:100%;height:64px;object-fit:cover;background:#fff}
+    #gm-root .tira span{display:block;font-size:11px;padding:2px 5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #gm-root .tira.on{border-color:var(--accent)}
+    #gm-root button{font:inherit;border:1px solid var(--rule);border-radius:8px;padding:5px 10px;background:var(--soft);color:var(--fg);cursor:pointer}
+    #gm-root button.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+    #gm-root button.prim{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+    #gm-root button:disabled{opacity:.5;cursor:default}
+    #gm-root .orb{align-items:center}
+    #gm-root .orb .rot{font-size:12px;color:var(--muted);margin-right:4px}
+    #gm-root .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--rule)}
     #gm-root .meta{color:var(--muted);font-size:12.5px;min-width:0}
-    #gm-root button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff;cursor:pointer}
+    #gm-root .leg{display:flex;flex-wrap:wrap;gap:4px 10px;padding:6px 12px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--rule)}
+    #gm-root .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+    #gm-root .pags img{display:block;width:100%;height:auto;border-top:1px solid var(--rule);background:#fff}
     #gm-root .empty{padding:24px;color:var(--muted);text-align:center}
+    #gm-root .falas{padding:4px 12px 8px;font-size:12.5px;color:var(--muted)}
   </style>
   <div class="card">
-    <div id="gm-img" class="empty">Desenhando a cena…</div>
-    <div class="bar"><span class="meta" id="gm-meta"></span><button type="button" id="gm-open">Abrir no GeoMannequin</button></div>
+    <div class="top"><h3 id="gm-tit">GeoMannequin</h3><button type="button" id="gm-full" title="Tela cheia">⤢</button></div>
+    <div class="ver"><div id="gm-img" class="empty">Desenhando a cena…</div><button type="button" class="seta e" id="gm-ant" hidden aria-label="Anterior">‹</button><button type="button" class="seta d" id="gm-prox" hidden aria-label="Próximo">›</button></div>
+    <div class="falas" id="gm-falas" hidden></div>
+    <div class="abas" id="gm-abas" hidden></div>
+    <div class="leg" id="gm-leg" hidden></div>
+    <div class="tiras" id="gm-tiras" hidden></div>
+    <div class="orb" id="gm-orb" hidden></div>
+    <div class="pags" id="gm-pags"></div>
+    <div class="bar"><span class="meta" id="gm-meta"></span><button type="button" class="prim" id="gm-open">Abrir no GeoMannequin</button></div>
   </div>
 </div>
 <script>
 (function(){
-  var root=document.getElementById("gm-root");
-  function data(){var o=window.openai||{};return {meta:o.toolResponseMetadata||{},out:o.toolOutput||{}}}
-  function draw(){
-    var d=data(),img=d.meta.imagem,link=d.meta.link||d.out.link,box=document.getElementById("gm-img");
-    if(img){box.className="";box.innerHTML="";var el=document.createElement("img");el.alt="Cena de manequins do GeoMannequin";el.src=img;box.appendChild(el)}
-    var m=(d.out.manequins||[]).length,c=d.out.camera||{};
-    document.getElementById("gm-meta").textContent=m?(m+" manequim"+(m>1?"s":"")+(c.perspectiva?" · lente "+c.lente_mm+" mm · olhos a "+c.altura_olhos+" R":"")):"";
-    var b=document.getElementById("gm-open");b.disabled=!link;
-    b.onclick=function(){if(!link)return;if(window.openai&&window.openai.openExternal)window.openai.openExternal({href:link});else window.open(link,"_blank","noopener")};
+  var $=function(id){return document.getElementById(id)},O=function(){return window.openai||{}};
+  var VISTAS=[["Frente",0],["3/4 esq.",45],["Esquerda",90],["3/4 costas esq.",135],["Costas",180],["3/4 costas dir.",-135],["Direita",-90],["3/4 dir.",-45]];
+  var est={item:0,passe:"quadro"},local=null,ocupado=false;
+  function dados(){
+    var o=O(),m=o.toolResponseMetadata||{},out=o.toolOutput||{},g=local||m.gm||null;
+    if(!g&&m.imagem)g={tipo:"imagem",imagem:m.imagem,link:m.link};
+    return {g:g,out:out,link:(g&&g.link)||m.link||out.link};
   }
-  draw();
-  window.addEventListener("openai:set_globals",draw);
+  function el(t,a,txt){var e=document.createElement(t);if(a)for(var k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e}
+  function tema(){var t=O().theme;if(t==="dark"||t==="light")$("gm-root").setAttribute("data-theme",t)}
+  function guardar(){try{if(O().setWidgetState)O().setWidgetState({item:est.item,passe:est.passe})}catch(e){}}
+  function itens(g){if(!g)return[];if(g.tipo==="imagem")return[{titulo:"Cena",imagens:[{nome:"Cena",passe:"quadro",src:g.imagem}]}];return g.itens||[]}
+  function desenhar(){
+    tema();var d=dados(),g=d.g,its=itens(g),box=$("gm-img");
+    $("gm-tit").textContent=g&&g.titulo?g.titulo:"GeoMannequin";
+    if(!its.length){box.className="empty";box.textContent=g?"Nada para mostrar.":"Desenhando a cena…"}
+    else{
+      if(est.item>=its.length)est.item=0;var it=its[est.item],ims=it.imagens||[],im=ims.filter(function(x){return x.passe===est.passe})[0]||ims[0];
+      box.className="";box.innerHTML="";if(im){var img=el("img",{alt:(it.titulo||"")+" — "+(im.nome||"")});img.src=im.src;box.appendChild(img)}
+      /* abas dos passes */
+      var ab=$("gm-abas");ab.innerHTML="";ab.hidden=ims.length<2;
+      ims.forEach(function(x){var b=el("button",{type:"button"},x.nome);if(im&&x.passe===im.passe)b.className="on";b.onclick=function(){est.passe=x.passe;guardar();desenhar()};ab.appendChild(b)});
+      /* legenda (partes, máscara) */
+      var lg=$("gm-leg"),L=im&&d.out.legendas?(im.passe==="partes"?d.out.legendas.partes:im.passe==="mascara"?d.out.legendas.mascara:null):null;lg.innerHTML="";lg.hidden=!L;
+      (L||[]).forEach(function(l){var s=el("span"),i=el("i");i.style.background=l.cor;s.appendChild(i);s.appendChild(document.createTextNode(l.nome));lg.appendChild(s)});
+      /* falas do quadro */
+      var fl=$("gm-falas"),F=it.falas||[];fl.hidden=!F.length;fl.textContent=F.map(function(f){return(f.quem?f.quem+": ":"")+f.texto}).join(" · ");
+      /* tiras dos quadros */
+      var ti=$("gm-tiras");ti.innerHTML="";ti.hidden=its.length<2;
+      its.forEach(function(x,i){var b=el("button",{type:"button","class":"tira"+(i===est.item?" on":""),title:x.titulo||""}),p=(x.imagens||[])[0];if(p){var m=el("img",{alt:""});m.src=p.src;b.appendChild(m)}b.appendChild(el("span",null,(x.titulo||"Quadro "+(i+1))+(x.erro?" ⚠":"")));b.onclick=function(){est.item=i;guardar();desenhar()};ti.appendChild(b)});
+      $("gm-ant").hidden=$("gm-prox").hidden=its.length<2;
+    }
+    /* páginas / folha de contato */
+    var pg=$("gm-pags");pg.innerHTML="";((g&&g.paginas)||[]).forEach(function(src,i){var m=el("img",{alt:"Página "+(i+1)});m.src=src;pg.appendChild(m)});
+    /* órbita: só na imagem da cena, quando o ChatGPT deixa o widget chamar ferramentas */
+    var ob=$("gm-orb");ob.innerHTML="";var pode=!!(O().callTool)&&g&&g.tipo==="imagem";ob.hidden=!pode;
+    if(pode){ob.appendChild(el("span",{"class":"rot"},"Girar em volta:"));
+      VISTAS.forEach(function(v){var b=el("button",{type:"button"},v[0]);var az=g.vista&&typeof g.vista.azimute==="number"?g.vista.azimute:null;if(az!==null&&Math.abs(((v[1]-az+540)%360)-180)<1)b.className="on";b.onclick=function(){orbitar(v[1],null)};ob.appendChild(b)});
+      [["⟲ 15°",15,0],["⟳ 15°",-15,0],["↑ 10°",0,10],["↓ 10°",0,-10]].forEach(function(p){var b=el("button",{type:"button"},p[0]);b.onclick=function(){var v=(g.vista||{});orbitar((v.azimute||0)+p[1],p[2]?(v.elevacao||0)+p[2]:null)};ob.appendChild(b)});
+      Array.prototype.forEach.call(ob.querySelectorAll("button"),function(b){b.disabled=ocupado})}
+    var o=d.out,n=(o.manequins||[]).length,c=o.camera||{},v=g&&g.vista;
+    $("gm-meta").textContent=ocupado?"Girando a câmera…":(n?n+" manequim"+(n>1?"s":""):"")+(c.perspectiva?" · lente "+c.lente_mm+" mm":"")+(v&&v.pivo&&v.pivo!=="alvo da câmera"?" · pivô "+v.pivo+(v.nome?" ("+v.nome+")":""):"")+(o.total?" · "+o.total+" quadro(s)":"");
+    var b=$("gm-open");b.disabled=!d.link;b.onclick=function(){if(!d.link)return;if(O().openExternal)O().openExternal({href:d.link});else window.open(d.link,"_blank","noopener")};
+  }
+  function orbitar(az,elev){
+    var d=dados(),g=d.g;if(ocupado||!O().callTool)return;ocupado=true;desenhar();
+    var v=(g&&g.vista)||{},orb={azimute:String(Math.round(((az+540)%360)-180))};if(elev!==null)orb.elevacao=String(Math.max(-70,Math.min(70,elev)));
+    if(v.pivo&&v.pivo!=="alvo da câmera")orb.alvo=v.pivo.replace(/ \+ /g,", ");
+    O().callTool("camera",{orbitar:orb,desenhar:true}).then(function(r){
+      var sc=(r&&(r.structuredContent||r.result&&r.result.structuredContent))||{},meta=(r&&(r._meta||r.meta))||{},src=sc.imagem_widget||(meta.gm&&meta.gm.imagem)||meta.imagem;
+      if(src)local={tipo:"imagem",titulo:"GeoMannequin",imagem:src,vista:sc.vista||(meta.gm&&meta.gm.vista),link:sc.link||d.link};
+    }).catch(function(){$("gm-meta").textContent="Não foi possível girar a câmera aqui."}).then(function(){ocupado=false;desenhar()});
+  }
+  $("gm-ant").onclick=function(){var n=itens(dados().g).length;est.item=(est.item-1+n)%n;guardar();desenhar()};
+  $("gm-prox").onclick=function(){var n=itens(dados().g).length;est.item=(est.item+1)%n;guardar();desenhar()};
+  $("gm-full").onclick=function(){try{if(O().requestDisplayMode)O().requestDisplayMode({mode:"fullscreen"})}catch(e){}};
+  try{var ws=O().widgetState;if(ws){est.item=ws.item||0;est.passe=ws.passe||"quadro"}}catch(e){}
+  desenhar();
+  window.addEventListener("openai:set_globals",function(){desenhar()});
 })();
 </script>

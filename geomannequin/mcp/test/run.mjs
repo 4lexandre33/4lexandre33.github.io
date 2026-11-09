@@ -16,6 +16,7 @@ const text = r => (r.content || []).filter(c => c.type === "text").map(c => c.te
 async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
+  check(["referencias_controlnet", "vistas_em_volta", "estimar_poses"].every(n => tools.includes(n)), "ferramentas novas: referencias_controlnet, vistas_em_volta, estimar_poses");
   check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos", "planta_da_cena"].every(t => tools.includes(t)), "21 ferramentas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
@@ -149,7 +150,44 @@ async function suite(client, tag) {
   const wr = await client.readResource({ uri: "ui://widget/geomannequin.html" });
   check(wr.contents[0].mimeType === "text/html+skybridge", "widget skybridge");
   const prompts = (await client.listPrompts()).prompts.map(p => p.name);
-  check(prompts.includes("cena_de_referencia"), "prompts");
+  check(["cena_de_referencia", "storyboard_manga", "ficha_de_personagem", "referencias_controlnet", "expressoes_e_maos"].every(p => prompts.includes(p)), "prompts (" + prompts.length + ")");
+  /* ---- ChatGPT: metadados, widget e ferramentas novas ---- */
+  const defs = (await client.listTools()).tools, def = n => defs.find(t => t.name === n) || {};
+  check(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"].every(n => (def(n)._meta || {})["openai/outputTemplate"] === "ui://widget/geomannequin.html"), "ferramentas visuais abrem o widget do ChatGPT");
+  check(defs.every(t => t._meta && t._meta["openai/toolInvocation/invoking"]) && def("camera")._meta["openai/widgetAccessible"] === true, "todas com texto de andamento; camera chamável pelo widget");
+  check(/callTool/.test(wr.contents[0].text) && /requestDisplayMode/.test(wr.contents[0].text), "widget interativo (órbita e tela cheia)");
+  r = await call("nova_cena", {});
+  r = await call("editar_manequim", { renomear: "Ana", expressao: "alegria", gesto: { lado: "direita", nome: "vulcano" }, validar: true });
+  check(!r.isError && r.structuredContent.validacao && r.structuredContent.validacao.ok, "editar_manequim: expressão, gesto novo e validar");
+  r = await call("camera", { perspectiva: true, angulo: "plongée", enquadramento: "close", quem: "Ana", tercos: "esquerda" });
+  check(!r.isError && /plano close/.test(text(r)) && /ângulo plongée/.test(text(r)), "camera: enquadramento close + ângulo plongée + terços");
+  r = await call("camera", { orbitar: { alvo: "Ana", azimute: "3/4 esquerda", elevacao: "10" }, desenhar: true });
+  check(!r.isError && r.structuredContent.vista.azimute === 45 && /^data:image\/png/.test(r.structuredContent.imagem_widget) && (r.content || []).some(c => c.type === "image"), "camera.orbitar com desenhar (o que o widget usa)");
+  t0 = Date.now();
+  r = await call("referencias_controlnet", { formato: "1:1", enquadrar: true, passes: ["openpose", "partes", "canny"], largura: 512 });
+  const ims = (r.content || []).filter(c => c.type === "image"), pp = r.structuredContent && r.structuredContent.openpose && r.structuredContent.openpose.people[0];
+  check(!r.isError && ims.length === 4 && pp && pp.pose_keypoints_2d.length === 75 && pp.face_keypoints_2d.length === 210 && r._meta.gm.itens[0].imagens.length === 4, `referencias_controlnet: quadro + 3 passes + JSON (${Date.now() - t0} ms)`);
+  if (ims[1]) writeFileSync(join(OUT, tag + "_openpose.png"), Buffer.from(ims[1].data, "base64"));
+  r = await call("referencias_controlnet", { formato: "7:5" });
+  check(r.isError && /Formato/.test(text(r)), "formato desconhecido explica as opções");
+  t0 = Date.now();
+  r = await call("vistas_em_volta", { modo: "ficha", largura: 300 });
+  check(!r.isError && r._meta.gm.itens.length === 4 && r._meta.gm.paginas.length === 1 && r.structuredContent.orto === true && /#ficha/.test(r.structuredContent.linha_do_roteiro), `vistas_em_volta: ficha (4 vistas + folha, ${Date.now() - t0} ms)`);
+  if (r._meta.gm.paginas[0]) writeFileSync(join(OUT, tag + "_ficha.png"), Buffer.from(r._meta.gm.paginas[0].split(",")[1], "base64"));
+  r = await call("vistas_em_volta", { alvo: "Ana", vistas: 6, elevacao: "alta", folha: false, largura: 240 });
+  check(!r.isError && r._meta.gm.itens.length === 6 && r.structuredContent.elevacao === 35, "vistas_em_volta: giro de 6 vistas, elevação \"alta\"");
+  r = await call("estimar_poses", { amostras: 400 });
+  check(!r.isError && r.structuredContent.fracao_valida > 0 && /10\^/.test(r.structuredContent.poses_validas_5graus), "estimar_poses: " + (r.structuredContent || {}).poses_validas_5graus);
+  r = await call("roteiro_quadros", { roteiro: "#cena\ncena.limpar();\ncena.ativo.renomear(\"Ana\");\n#orbita \"Ana\" 4 1:1", largura: 240 });
+  check(!r.isError && r._meta.gm.tipo === "galeria" && r._meta.gm.itens.length === 4, "roteiro_quadros: #orbita vira 4 quadros na galeria do widget");
+  r = await call("planta_da_cena", {});
+  check(!r.isError && r._meta.gm.itens[0].imagens.length === 2, "planta_da_cena no widget");
+  r = await call("search", { query: "openpose maos rosto" });
+  check(JSON.parse(text(r)).results.some(x => x.id === "controlnet"), "search acha a documentação de ControlNet");
+  r = await call("fetch", { id: "camera-orbita" });
+  check(/3\/4 esquerda/.test(JSON.parse(text(r)).text), "fetch da órbita");
+  r = await call("referencia", { assunto: "rig" });
+  check(/vulcano/.test(text(r)) && /desconfianca/.test(text(r)), "referencia rig: gestos e expressões");
   return link;
 }
 

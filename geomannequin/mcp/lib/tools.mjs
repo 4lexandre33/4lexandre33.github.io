@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { summary, summaryText, renderSvg, sceneLink, loadInto, pick, APP_URL, rgbaToPng, sanitizeSvg } from "./scene.mjs";
 import { toPng } from "./png.mjs";
 import { asset } from "./assets.mjs";
+import { estimarPoses } from "./estimativa.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -55,6 +56,48 @@ function fail(e) {
 }
 const guard = (fn) => async (args, extra) => { try { return await fn(args || {}, extra); } catch (e) { return fail(e); } };
 
+/* textos de referência das partes novas (usados por referencia, search/fetch e o recurso geomannequin://referencia) */
+function docRig(w) {
+  return "RIG FINO (m.articulacao(nome, {verbo: valor}); no MCP: editar_manequim.articulacoes)\n" +
+    "- Dedos, cada um (−1 a 1): \"indicador esquerdo\" {base (MCF), ponta (IFP+IFD), afastar}, também medio, anelar, minimo; \"polegar direito\" {base, ponta (IF), afastar, opor}; \"dedos esquerdos\" {afastar, fechar}\n" +
+    "- Pé: \"dedão esquerdo\" {dobrar: graus, − levanta} · \"pé direito\" {aduzir: graus} · \"canela esquerda\" {girar: graus (só com o joelho dobrado)}\n" +
+    "- Escápula: \"escápula esquerda\" {subir, avancar, girar (−1 a 1), tensao (−1 a 1)}\n" +
+    "- Rosto: \"mandíbula\" {abrir 0–1, lado −1 a 1} · \"boca\" {abrir, sorrir −1 a 1} · \"olhos\" {lado, cima, fechar 0–1} · \"sobrancelhas\" {subir, franzir}\n" +
+    "- Atalhos: m.expressao(nome) · m.olhos(x, y) · m.boca(abrir, sorriso) · m.gesto(lado, nome) · m.validarPose()\n" +
+    "EXPRESSÕES: " + Object.keys(w.EXPRESSOES).join(", ") + "\n" +
+    "GESTOS DA MÃO: " + Object.keys(w.GESTOS).join(", ") + "\n" +
+    "LIMITES ACOPLADOS: coxa alta só com o joelho dobrado (isquiotibiais); braço acima de 120° pela lateral gira para fora; dedo dobrado na base quase não abre; dedão + dedos do pé até ±60°; canela gira até 5° + 0,45 × flexão do joelho; mandíbula aberta desvia no máximo metade.\n" +
+    "AUTOCOLISÃO: m.validarPose() → {ok, atravessa: [{partes, profundidade}], limites}. Cápsulas não vizinhas entrando > 0,5 R contam (encostar fica abaixo disso).\n" +
+    "QUANTAS POSES: ferramenta estimar_poses (Monte Carlo). Perfil normal, só o corpo: 61 articulações, ≈ 10^72 combinações em passos de 5°, ≈ 18% válidas → ≈ 10^71,7 poses; com mãos e rosto ≈ 10^139,6.";
+}
+function docCamera(w) {
+  return "CÂMERA EM ÓRBITA (ferramenta camera: orbitar / pivo; no código camera.orbitar(alvo, {azimute, elevacao, distancia}))\n" +
+    "- Pivô: manequim (nome/índice/\"ativo\"), grupo (\"Ana, Leo\"), objeto (nome ou tipo), \"cena\" ou ponto \"x, y, z\". O alvo da câmera vai para o centro do pivô, que fica no meio da foto.\n" +
+    "- Azimute a partir da FRENTE do pivô (positivo = para o lado esquerdo dele): " + w.VISTAS_8.map(v => v[0] + " (" + v[1] + "°)").join(", ") + ". Elevação: graus (−70 a 70) ou olhos, média, alta, de cima, baixa.\n" +
+    "- Sem distância, o pivô é enquadrado do mesmo tamanho em qualquer azimute (o giro não pulsa). camera.vista() → {pivo, azimute, elevacao}.\n" +
+    "- Giro 360° e ficha: ferramenta vistas_em_volta; no roteiro, #orbita \"Ana\" 8 elevacao 10 16:9 e #ficha \"Ana\" [completa] [orto].\n" +
+    "PLANOS (camera.enquadramento): detalhe, close, primeiro plano, medio, americano, inteiro, geral — com quem (\"Ana\", \"Ana, Leo\", \"todos\") e tercos (esquerda/direita).\n" +
+    "ÂNGULOS (camera.angulo): normal, plongée, contra-plongée, zenital, nadir, holandês (+ graus).\n" +
+    "LENTE: lente (mm, mantém o tamanho), zoom_lente (mm ou \"2x\", câmera parada), campo_graus (abre/fecha o cone).";
+}
+function docControlNet(w) {
+  return "REFERÊNCIAS PARA CONTROLNET (ferramentas referencias_controlnet, vistas_em_volta e roteiro_quadros)\n" +
+    "- contorno: line art preto no branco\n" +
+    "- openpose: corpo BODY_25 (" + w.OP_NOMES.length + " pontos: " + w.OP_NOMES.join(", ") + "), mãos 21 + 21 (punho + 4 por dedo, do polegar ao mínimo) e rosto 70 (68 iBUG + 2 pupilas); desenho estilo DWPose (membros em elipse, mãos em arco-íris, rosto em pontos brancos). openpose_corpo = só o corpo e os pés.\n" +
+    "- JSON no formato do OpenPose: people[].pose_keypoints_2d (75), pose_keypoints_2d_coco18 (54), hand_left/right_keypoints_2d (63), face_keypoints_2d (210); [x, y, c] em pixels do recorte; c = 1 visível, 0,5 escondido atrás de outra parte ou item, 0 fora da foto.\n" +
+    "- profundidade: cinza, perto = claro (1 px) · normal: R = direita, G = cima, B = para a câmera, fundo preto\n" +
+    "- mascara: uma cor sólida por manequim/objeto (legenda) · partes: " + w.PARTES_SEG.filter(Boolean).map(p => p[0]).join(", ") + " (cores fixas, legenda)\n" +
+    "- canny: bordas de silhueta, sobreposição, troca de parte e dobras (geométricas, 1 px)\n" +
+    "- formato do recorte: 16:9, 4:3, 3:2, 2:1, 21:9, 1:1, 3:4, 2:3, 9:16, horizontal, vertical, quadrado, palco (600 × 700).\n" +
+    "No app, \"Baixar tudo\" do roteiro de quadros gera um .zip com uma pasta por quadro (quadro.png/.svg, contorno, openpose.png/openpose-corpo.png/openpose.json, profundidade, normal, mascara(+json), partes(+json), canny, cena.json).";
+}
+function docRoteiro() {
+  return "ROTEIRO DE QUADROS (ferramenta roteiro_quadros; no app, botão Quadros)\n" +
+    "#cena — preparação comum (roda antes do quadro 1 e de todo quadro \"novo\")\n#quadro 1 — título · # frame 2 · #quadro 3 novo 16:9 — opções: novo, formato (16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal)\n" +
+    "Cada quadro CONTINUA do anterior (só se escreve o que muda). // fala: Ana: Oi! vira balão; // nota: … fica no manifesto.\n" +
+    "Geradores: #orbita \"Ana\" 8 elevacao 10 [horario] [formato] — N quadros girando em volta; #ficha \"Ana\" [completa] [orto] [formato] — frente, 3/4, perfil e costas.\n" +
+    "Página de mangá: grade 1, 2, 2h, 3, 3b, 4, 5, 6, 6b, 8; leitura ocidental ou japonesa.";
+}
 /* documentos pesquisáveis (ferramentas search/fetch usadas pelo ChatGPT) */
 function docs(w) {
   const d = [];
@@ -64,11 +107,84 @@ function docs(w) {
   for (const k of ["cintura", "cruzar", "ombro"]) d.push({ id: "pose/" + k, title: "Pose rápida: " + k, text: `poseRapida("${k}") — calculada por cinemática inversa (mão na ${k === "cintura" ? "cintura" : k === "cruzar" ? "frente do peito" : "no ombro oposto"}).` });
   for (const [k, v] of Object.entries(w.BODIES)) d.push({ id: "corpo/" + k, title: "Tipo corporal: " + k, text: `corpo("${k}")\nValores: ${JSON.stringify(v)}` });
   for (const [k, v] of Object.entries(w.EXAMPLES)) d.push({ id: "exemplo/" + k, title: "Exemplo de código: " + k, text: v });
+  d.push({ id: "rig", title: "Rig fino: dedos, rosto, pés, escápula, expressões, gestos e limites", text: docRig(w) });
+  d.push({ id: "camera-orbita", title: "Câmera em órbita, planos de quadrinhos e ângulos", text: docCamera(w) });
+  d.push({ id: "controlnet", title: "Referências para ControlNet: OpenPose (corpo, mãos, rosto), profundidade, normais, máscara, partes, canny", text: docControlNet(w) });
+  d.push({ id: "roteiro", title: "Roteiro de quadros (storyboard de mangá): sintaxe, #orbita e #ficha", text: docRoteiro() });
+  for (const [k, v] of Object.entries(w.EXPRESSOES)) d.push({ id: "expressao/" + k, title: "Expressão do rosto: " + k, text: `m.expressao("${k}") — editar_manequim {expressao: "${k}"}\nValores: ${JSON.stringify(v)}` });
+  for (const [k, v] of Object.entries(w.GESTOS)) d.push({ id: "gesto/" + k, title: "Gesto da mão: " + k, text: `m.gesto("direita", "${k}") — editar_manequim {gesto: {lado: "direita", nome: "${k}"}}\nValores: ${JSON.stringify(v)}` });
+  d.push({ id: "objetos", title: "Objetos da cena (caixas e cilindros)", text: "Tipos: " + Object.keys(w.TIPOS_OBJETO).join(", ") + ". Ferramenta objetos (adicionar, editar, copiar, remover, listar): x, z, giro, largura, profundidade, altura, raio, cor exclusiva, sobre (um objeto em cima de outro). Manequins: editar_manequim {sentar, subir, encostar}. Colisões objeto × objeto e manequim × objeto aparecem em colisoes." });
   d.push({ id: "perspectiva", title: "Perspectiva na cena", text: "Com perspectiva ligada, quem está mais longe (z mais negativo, no ângulo padrão) fica menor, sobe em direção ao horizonte, tem traço mais fino e, com atmosfera, cor mais clara. A lente (18–200 mm) controla o exagero: 24 mm dramático, 50 normal, 135 achatado. A altura dos olhos define onde fica o horizonte: com alturaOlhos(14.5) e sem inclinação o horizonte passa pelas cabeças (o manequim tem ≈ 16 R; R = raio da cabeça). A sombra no chão segue a luz." });
   return d;
 }
 
+/* ---------- quadros e passes de ControlNet → imagens (para o modelo) e itens do widget do ChatGPT ---------- */
+const ORDEM_REF = ["contorno", "openpose", "openpose_corpo", "profundidade", "normal", "mascara", "partes", "canny"];
+const NOME_REF = { quadro: "Quadro", contorno: "Contorno", openpose: "OpenPose", openpose_corpo: "OpenPose (corpo)", profundidade: "Profundidade", normal: "Normais", mascara: "Máscara", partes: "Partes", canny: "Bordas" };
+const RefE = z.array(z.enum(ORDEM_REF));
+const FORMATOS = ["16:9", "4:3", "3:2", "2:1", "21:9", "1:1", "3:4", "2:3", "9:16", "horizontal", "paisagem", "vertical", "retrato", "quadrado", "pagina", "página", "palco"];
+function passesDe(w, refs) { const p = Object.fromEntries(w.PASSES_QUADRO.map(k => [k, refs.has(k)])); if (refs.has("openpose_corpo")) p.openpose = true; return p; }
+async function pngDoPasse(f, k, larg) {
+  if (k === "quadro") return toPng(f.svg, larg);
+  if (k === "contorno") return f.contorno ? toPng(f.contorno, larg) : null;
+  if (k === "openpose" || k === "openpose_corpo") return f.openpose ? toPng(k === "openpose" ? f.openpose.svg : f.openpose.svgCorpo, larg) : null;
+  return f[k] ? rgbaToPng(f[k], larg) : null;
+}
+/* fotografa os quadros; devolve conteúdo MCP, itens do widget, JSON do OpenPose e as fotos (para página/folha) */
+async function fotografar(w, quadros, refs, larg, opts = {}) {
+  const content = [], itens = [], openpose = {}, fotos = [], legendas = {};
+  for (const q of quadros) {
+    const f = w.renderizarQuadro(q, { passes: refs.size ? passesDe(w, refs) : false });
+    fotos.push({ svg: f.svg, falas: q.falas || [], titulo: q.titulo });
+    const titulo = (opts.semNumero ? "" : "Quadro " + q.n) + (q.titulo ? (opts.semNumero ? "" : " — ") + q.titulo : "");
+    if (!opts.semTexto) content.push({ type: "text", text: titulo + (q.erro ? " (erro: " + q.erro + ")" : "") });
+    const imagens = [];
+    for (const k of ["quadro"].concat(ORDEM_REF.filter(k => refs.has(k)))) {
+      const png = await pngDoPasse(f, k, larg); if (!png) continue;
+      const b64 = png.toString("base64");
+      if (!opts.soWidget) content.push({ type: "image", data: b64, mimeType: "image/png" });
+      imagens.push({ nome: NOME_REF[k], passe: k, src: "data:image/png;base64," + b64 });
+    }
+    if (f.openpose) openpose[q.n] = f.openpose.json;
+    if (f.partes) legendas.partes = f.partes.legenda; if (f.mascara) legendas.mascara = f.mascara.legenda;
+    itens.push({ n: q.n, titulo: titulo || "Quadro " + q.n, formato: q.formato, erro: q.erro || null, falas: q.falas || [], imagens });
+  }
+  return { content, itens, openpose, fotos, legendas };
+}
+/* folha de contato a partir das fotos já em PNG (cada vista fica dentro da própria célula) */
+function folhaPng(itens, rc, cols) {
+  const cw = 300, ih = Math.round(cw * rc.h / rc.w), ch = ih + 34, lin = Math.ceil(itens.length / cols), W0 = cols * cw, H0 = lin * ch, esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  let s = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ' + W0 + " " + H0 + '" width="' + W0 + '" height="' + H0 + '"><rect width="' + W0 + '" height="' + H0 + '" fill="#fff"/>';
+  itens.forEach((it, i) => { const x = (i % cols) * cw, y = Math.floor(i / cols) * ch, src = (it.imagens[0] || {}).src; if (!src) return;
+    s += '<image x="' + (x + 6) + '" y="' + (y + 6) + '" width="' + (cw - 12) + '" height="' + (ih - 12) + '" preserveAspectRatio="xMidYMid meet" xlink:href="' + src + '"/><rect x="' + (x + 6) + '" y="' + (y + 6) + '" width="' + (cw - 12) + '" height="' + (ih - 12) + '" fill="none" stroke="#c8ced6"/>' +
+      '<text x="' + (x + 8) + '" y="' + (y + ih + 16) + '" font-family="sans-serif" font-size="14" fill="#111">' + (i + 1) + ". " + esc(String(it.titulo || "").slice(0, 34)) + "</text>"; });
+  return s + "</svg>";
+}
+const prepararPagina = s => sanitizeSvg(s).replace(/ filter="url\(#[^)]+\)"/g, "");
+/* dados do widget do ChatGPT (vão só em _meta: o modelo não recebe as imagens duas vezes) */
+function metaWidget(w, tipo, extra) { return { gm: Object.assign({ tipo, link: sceneLink(w), app: APP_URL }, extra) }; }
+
+/* metadados do ChatGPT (Apps SDK): texto enquanto a ferramenta roda e quando termina; as visuais abrem o widget */
+const INVOCA = {
+  nova_cena: ["Limpando a cena…", "Cena nova"], adicionar_manequim: ["Adicionando manequim…", "Manequim adicionado"], editar_manequim: ["Ajustando o manequim…", "Manequim ajustado"],
+  copiar_manequim: ["Copiando…", "Copiado"], remover_manequim: ["Removendo…", "Removido"], camera: ["Movendo a câmera…", "Câmera ajustada"], descrever_cena: ["Montando a cena…", "Cena montada"],
+  objetos: ["Arrumando os objetos…", "Objetos prontos"], luz: ["Ajustando a luz…", "Luz ajustada"], aparencia_cena: ["Mudando a aparência…", "Aparência ajustada"], listar_cena: ["Lendo a cena…", "Cena lida"],
+  renderizar: ["Desenhando a cena…", "Cena desenhada"], roteiro_quadros: ["Montando os quadros…", "Quadros prontos"], referencias_controlnet: ["Gerando as referências…", "Referências prontas"],
+  vistas_em_volta: ["Girando em volta…", "Vistas prontas"], estimar_poses: ["Sorteando poses…", "Estimativa pronta"], planta_da_cena: ["Desenhando a planta…", "Planta pronta"],
+  camadas_da_cena: ["Separando as camadas…", "Camadas prontas"], colisoes: ["Procurando colisões…", "Colisões verificadas"], exportar_cena: ["Exportando…", "Cena exportada"],
+  carregar_cena: ["Carregando…", "Cena carregada"], referencia: ["Abrindo a referência…", "Referência"], executar_codigo: ["Rodando o código…", "Código executado"], search: ["Pesquisando…", "Pesquisa pronta"], fetch: ["Abrindo…", "Documento aberto"]
+};
+const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera"]);
+function metaChatGPT(nome) {
+  const m = {}, t = INVOCA[nome]; if (t) { m["openai/toolInvocation/invoking"] = t[0]; m["openai/toolInvocation/invoked"] = t[1]; }
+  if (VISUAIS.has(nome)) m["openai/outputTemplate"] = WIDGET_URI;
+  m["openai/widgetAccessible"] = DO_WIDGET.has(nome);
+  return m;
+}
 export function registerAll(server, getWorld, opts = {}) {
+  /* todas as ferramentas recebem os metadados do ChatGPT (os que a ferramenta declarar têm prioridade) */
+  const registrar = server.registerTool.bind(server);
+  server.registerTool = (nome, cfg, fn) => registrar(nome, Object.assign({}, cfg, { _meta: Object.assign(metaChatGPT(nome), cfg._meta || {}) }), fn);
   const W = () => getWorld();
   buildSchemas(W());
 
@@ -260,10 +376,16 @@ export function registerAll(server, getWorld, opts = {}) {
         azimute: z.string().optional().describe("A partir da FRENTE do pivô: \"frente\", \"3/4 esquerda\", \"esquerda\", \"3/4 costas esquerda\", \"costas\", \"3/4 costas direita\", \"direita\", \"3/4 direita\" ou graus (+ = lado esquerdo dele)."),
         elevacao: z.string().optional().describe("Graus acima do horizonte (−70 a 70) ou olhos, média, alta, de cima, baixa."),
         distancia: z.number().optional().describe("Distância ao pivô em R (sem ela, enquadra o pivô).") }).optional().describe("Gira a câmera em volta de um pivô (manequim, grupo, objeto, ponto ou a cena)."),
-      pivo: z.string().optional().describe("Só troca o pivô (centro de giro) mantendo direção e distância.")
+      pivo: z.string().optional().describe("Só troca o pivô (centro de giro) mantendo direção e distância."),
+      angulo: z.enum(["normal", "plongée", "contra-plongée", "zenital", "nadir", "holandês"]).optional().describe("Ângulo de câmera dos quadrinhos: normal (nível dos olhos), plongée (de cima), contra-plongée (de baixo), zenital (bem de cima), nadir (do chão), holandês (inclinado)."),
+      angulo_graus: z.number().optional().describe("Com angulo: graus da inclinação (holandês) ou da elevação (plongée/contra-plongée/normal)."),
+      enquadramento: z.enum(["detalhe", "close", "primeiro plano", "medio", "americano", "inteiro", "geral"]).optional().describe("Tamanho do plano (quadrinhos/cinema): detalhe (rosto), close, primeiro plano (até o peito), médio (cintura), americano (coxa), inteiro, geral (todos com folga). Mantém o ângulo; muda alvo, distância e, se preciso, a lente."),
+      quem: z.string().optional().describe("Com enquadramento: nome do manequim, vários separados por vírgula ou \"todos\" (padrão: o ativo; geral = todos)."),
+      tercos: z.enum(["esquerda", "direita"]).optional().describe("Com enquadramento: põe o personagem numa linha vertical dos terços."),
+      desenhar: z.boolean().optional().describe("true = também devolve a imagem da cena depois do ajuste (usado pelo widget do ChatGPT para girar a câmera ali mesmo).")
     },
     annotations: RW
-  }, guard((a) => {
+  }, guard(async (a) => {
     const w = W(), c = w.camera;
     if (a.eixo) c.eixo(a.eixo);
     if (a.elevacao !== undefined) c.elevacao(/^-?\d+(\.\d+)?$/.test(a.elevacao) ? +a.elevacao : a.elevacao);
@@ -281,13 +403,19 @@ export function registerAll(server, getWorld, opts = {}) {
     const numOu = v => v === undefined ? undefined : /^-?\d+(\.\d+)?$/.test(String(v).trim()) ? +v : v;
     if (a.pivo !== undefined) c.pivo(alvoDe(a.pivo));
     if (a.orbitar) c.orbitar(alvoDe(a.orbitar.alvo), { azimute: numOu(a.orbitar.azimute), elevacao: numOu(a.orbitar.elevacao), distancia: a.orbitar.distancia });
+    if (a.angulo) c.angulo(a.angulo, a.angulo_graus);
+    const quem = a.quem === undefined ? undefined : /^todos$/i.test(a.quem.trim()) ? "todos" : (p => p.length > 1 ? p : p[0])(a.quem.split(",").map(x => x.trim()).filter(Boolean));
+    if (a.enquadramento) c.enquadramento(a.enquadramento, quem, a.tercos ? { tercos: a.tercos } : undefined);
     const parada = a.zoom_lente !== undefined || a.campo_graus !== undefined;
-    const fit = a.enquadrar !== undefined ? a.enquadrar : !(a.distancia !== undefined || a.zoom !== undefined || a.posicao || parada || a.orbitar || a.pivo !== undefined);
+    const fit = a.enquadrar !== undefined ? a.enquadrar : !(a.distancia !== undefined || a.zoom !== undefined || a.posicao || parada || a.orbitar || a.pivo !== undefined || a.enquadramento);
     if (fit) w.autoFit();
     if (a.altura_olhos !== undefined) { c.alturaOlhos(a.altura_olhos, a.inclinacao); if (fit) w.autoFit(); }
     const li = c.lenteInfo();
     const vs = c.vista();
-    return ok(w, "Câmera ajustada" + (li.perspectiva ? " — lente " + li.lente + " mm, " + li.campoGraus + "°, " + li.faixa : "") + (a.orbitar || a.pivo !== undefined ? " — pivô " + vs.pivo + ", vista " + w.nomeVista(vs.azimute) + ", " + Math.round(vs.elevacao) + "° de elevação" : "") + ".", [], { lente: li, vista: vs });
+    const res = ok(w, "Câmera ajustada" + (li.perspectiva ? " — lente " + li.lente + " mm, " + li.campoGraus + "°, " + li.faixa : "") + (a.orbitar || a.pivo !== undefined ? " — pivô " + vs.pivo + ", vista " + w.nomeVista(vs.azimute) + ", " + Math.round(vs.elevacao) + "° de elevação" : "") + (a.enquadramento ? " — plano " + a.enquadramento : "") + (a.angulo ? " — ângulo " + a.angulo : "") + ".", [], { lente: li, vista: Object.assign({ nome: w.nomeVista(vs.azimute) }, vs) });
+    if (a.desenhar) { const png = await toPng(renderSvg(w, {}).svg, 900), src = "data:image/png;base64," + png.toString("base64");
+      res.content.unshift({ type: "image", data: png.toString("base64"), mimeType: "image/png" }); res._meta = metaWidget(w, "imagem", { imagem: src, vista: res.structuredContent.vista }); res._meta.imagem = src; res.structuredContent.imagem_widget = src; }
+    return res;
   }));
 
   server.registerTool("descrever_cena", {
@@ -396,7 +524,7 @@ export function registerAll(server, getWorld, opts = {}) {
       "openai/outputTemplate": WIDGET_URI,
       "openai/toolInvocation/invoking": "Desenhando a cena…",
       "openai/toolInvocation/invoked": "Cena desenhada",
-      "openai/widgetAccessible": false
+      "openai/widgetAccessible": true
     }
   }, guard(async (a) => {
     const w = W();
@@ -412,17 +540,17 @@ export function registerAll(server, getWorld, opts = {}) {
     return {
       content,
       structuredContent: Object.assign({ link }, s),
-      _meta: { imagem: "data:image/png;base64," + png.toString("base64"), link, app: APP_URL }
+      _meta: Object.assign(metaWidget(w, "imagem", { imagem: "data:image/png;base64," + png.toString("base64"), vista: w.camera.vista() }), { imagem: "data:image/png;base64," + png.toString("base64"), link, app: APP_URL })
     };
   }));
 
   server.registerTool("roteiro_quadros", {
     title: "Roteiro de quadros (storyboard)",
-    description: "Monta uma sequência de quadros (storyboard de mangá/quadrinhos) a partir de um roteiro em código e devolve a imagem de cada quadro. Formato: um bloco \"#cena\" (preparação comum) e blocos \"#quadro 1 — título\", \"#quadro 2\"… (ou \"# frame 1\"); cada quadro CONTINUA do anterior (só se escreve o que muda), a não ser que o marcador diga \"novo\". Formato do quadro no marcador: 16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal. Linhas \"// fala: Ana: Oi!\" viram balões na página. O código é JavaScript com a API do app (cena, camera, tema, log): cena.adicionar({nome, x, z}), cena.obter(\"Ana\").poseRapida(\"acenando\").olhar(\"Leo\").articulacao(\"cotovelo esquerdo\", {dobrar: 90}).gesto(\"punho\").girar(90).posicao(x, z), cena.objeto(\"mesa\", {x, z}), camera.enquadramento(\"detalhe\"|\"close\"|\"primeiro plano\"|\"medio\"|\"americano\"|\"inteiro\"|\"geral\", \"Ana\"), camera.angulo(\"normal\"|\"plongée\"|\"contra-plongée\"|\"zenital\"|\"nadir\"|\"holandês\"), camera.eixo(\"z\"), camera.elevacao(\"olhos\"), camera.lente(50), camera.enquadrar(). Referências opcionais para gerar a imagem final do personagem na mesma pose (ControlNet): openpose (esqueleto + JSON), profundidade, mascara (uma cor por personagem/objeto), contorno (line art). validar = só confere o roteiro, sem desenhar.",
+    description: "Monta uma sequência de quadros (storyboard de mangá/quadrinhos) a partir de um roteiro em código e devolve a imagem de cada quadro. Formato: um bloco \"#cena\" (preparação comum) e blocos \"#quadro 1 — título\", \"#quadro 2\"… (ou \"# frame 1\"); cada quadro CONTINUA do anterior (só se escreve o que muda), a não ser que o marcador diga \"novo\". Formato do quadro no marcador: 16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal. Linhas \"// fala: Ana: Oi!\" viram balões na página. O código é JavaScript com a API do app (cena, camera, tema, log): cena.adicionar({nome, x, z}), cena.obter(\"Ana\").poseRapida(\"acenando\").olhar(\"Leo\").articulacao(\"cotovelo esquerdo\", {dobrar: 90}).gesto(\"punho\").girar(90).posicao(x, z), cena.objeto(\"mesa\", {x, z}), camera.enquadramento(\"detalhe\"|\"close\"|\"primeiro plano\"|\"medio\"|\"americano\"|\"inteiro\"|\"geral\", \"Ana\"), camera.angulo(\"normal\"|\"plongée\"|\"contra-plongée\"|\"zenital\"|\"nadir\"|\"holandês\"), camera.eixo(\"z\"), camera.elevacao(\"olhos\"), camera.lente(50), camera.enquadrar(). Geradores: #orbita 'Ana' 8 elevacao 10 (giro 360°) e #ficha 'Ana' orto (frente, 3/4, perfil, costas). Rosto e mãos: .expressao(\"surpresa\"), .olhos(x, y), .articulacao(\"indicador direito\", {base: 1}), camera.orbitar(\"Ana\", {azimute: \"3/4 esquerda\"}). Referências opcionais para gerar a imagem final na mesma pose (ControlNet): contorno, openpose (corpo + mãos + rosto, JSON com confiança) ou openpose_corpo, profundidade, normal, mascara, partes, canny. validar = só confere o roteiro, sem desenhar.",
     inputSchema: {
       roteiro: z.string().min(3).max(60000).describe("O roteiro: #cena … #quadro 1 … #quadro 2 …"),
       quadros: z.array(z.number().int()).optional().describe("Só estes quadros (números do roteiro). Padrão: todos (até 12 imagens por chamada)."),
-      referencias: z.array(z.enum(["contorno", "openpose", "openpose_corpo", "profundidade", "normal", "mascara", "partes", "canny"])).optional().describe("Passes de referência (ControlNet) a devolver junto de cada quadro: contorno (lineart), openpose (corpo BODY_25 + mãos 21 + rosto 70, estilo DWPose), openpose_corpo (só o corpo), profundidade, normal, mascara (um item por cor), partes (segmentação por partes do corpo), canny."),
+      referencias: RefE.optional().describe("Passes de referência (ControlNet) a devolver junto de cada quadro: contorno (lineart), openpose (corpo BODY_25 + mãos 21 + rosto 70, estilo DWPose), openpose_corpo (só o corpo), profundidade, normal, mascara (um item por cor), partes (segmentação por partes do corpo), canny."),
       pagina: z.boolean().optional().describe("Também monta a página de mangá com os quadros (balões das falas)."),
       grade: z.string().optional().describe("Grade da página: 1, 2, 2h, 3, 3b, 4, 5, 6, 6b, 8 (padrão: automática)."),
       leitura: z.enum(["ocidental", "japonesa"]).optional(),
@@ -437,22 +565,88 @@ export function registerAll(server, getWorld, opts = {}) {
     const txt0 = X.quadros.length + " quadro(s)." + (erros.length ? " Erros: " + erros.map(q => "quadro " + q.n + (q.linha_do_erro ? " (linha " + q.linha_do_erro + ")" : "") + ": " + q.erro).join("; ") + "." : " Sem erros.") + (X.avisos.length ? " Avisos: " + X.avisos.join(" ") : "");
     if (a.validar || !X.quadros.length) return { content: [{ type: "text", text: txt0 + "\n\nAbrir no app (com o roteiro): " + link }], structuredContent: { total: X.quadros.length, quadros: resumo, link } };
     const sel = X.quadros.filter(q => !a.quadros || a.quadros.includes(q.n)).slice(0, 12), larg = a.largura || 600, refs = new Set(a.referencias || []);
-    const ORDEM_REF = ["contorno", "openpose", "openpose_corpo", "profundidade", "normal", "mascara", "partes", "canny"], passes = Object.fromEntries(w.PASSES_QUADRO.map(k => [k, refs.has(k)])); if (refs.has("openpose_corpo")) passes.openpose = true;
-    const content = [], fotos = [], openpose = {};
-    for (const q of sel) {
-      const f = w.renderizarQuadro(q, { passes: refs.size ? passes : false });
-      fotos.push({ svg: f.svg, falas: q.falas, titulo: q.titulo });
-      content.push({ type: "text", text: "Quadro " + q.n + (q.titulo ? " — " + q.titulo : "") + (q.erro ? " (erro: " + q.erro + ")" : "") });
-      content.push({ type: "image", data: (await toPng(f.svg, larg)).toString("base64"), mimeType: "image/png" });
-      if (f.contorno) content.push({ type: "image", data: (await toPng(f.contorno, larg)).toString("base64"), mimeType: "image/png" });
-      if (f.openpose) openpose[q.n] = f.openpose.json;
-      for (const k of ORDEM_REF.slice(1)) { if (!refs.has(k)) continue;
-        if (k === "openpose" || k === "openpose_corpo") content.push({ type: "image", data: (await toPng(k === "openpose" ? f.openpose.svg : f.openpose.svgCorpo, larg)).toString("base64"), mimeType: "image/png" });
-        else if (f[k]) content.push({ type: "image", data: rgbaToPng(f[k], larg).toString("base64"), mimeType: "image/png" }); }
-    }
-    if (a.pagina && fotos.length) for (const pg of w.paginaQuadros(fotos, { grade: a.grade, leitura: a.leitura, preparar: s => sanitizeSvg(s).replace(/ filter="url\(#[^)]+\)"/g, "") })) content.push({ type: "image", data: (await toPng(pg, 1000)).toString("base64"), mimeType: "image/png" });
+    const F = await fotografar(w, sel, refs, larg), content = F.content, paginas = [];
+    if (a.pagina && F.fotos.length) for (const pg of w.paginaQuadros(F.fotos, { grade: a.grade, leitura: a.leitura, preparar: prepararPagina })) { const b64 = (await toPng(pg, 1000)).toString("base64"); content.push({ type: "image", data: b64, mimeType: "image/png" }); paginas.push("data:image/png;base64," + b64); }
     content.push({ type: "text", text: txt0 + (sel.length < X.quadros.length ? " Mostrando " + sel.length + "." : "") + (refs.size ? " Ordem das imagens de cada quadro: quadro" + ORDEM_REF.filter(k => refs.has(k)).map(k => ", " + k).join("") + "." : "") + "\n\nAbrir no app (com o roteiro, para renderizar e baixar tudo em .zip): " + link });
-    return { content, structuredContent: { total: X.quadros.length, quadros: resumo, openpose, link } };
+    return { content, structuredContent: { total: X.quadros.length, quadros: resumo, openpose: F.openpose, legendas: F.legendas, link }, _meta: metaWidget(w, "galeria", { titulo: "Roteiro de quadros", itens: F.itens, paginas, link }) };
+  }));
+
+  server.registerTool("referencias_controlnet", {
+    title: "Referências para ControlNet (cena atual)",
+    description: "Tira a foto da cena aberta e os passes de referência para gerar a imagem final com IA (ControlNet, IP-Adapter e afins), sem precisar de roteiro: contorno (line art), OpenPose completo (corpo BODY_25 + mãos 21 + rosto 70, desenho estilo DWPose; confiança 0,5 = ponto escondido atrás de algo) ou só do corpo, profundidade, normais, máscara (uma cor por manequim/objeto), segmentação por partes do corpo (14 cores com legenda) e bordas (canny). Devolve também o JSON do OpenPose. formato recorta a foto (16:9, 4:3, 1:1, 9:16, vertical…); enquadrar ajusta a câmera ao formato antes.",
+    inputSchema: {
+      passes: RefE.optional().describe("Quais passes (padrão: todos). A foto do quadro sempre vem primeiro."),
+      formato: z.string().optional().describe("Formato do recorte: palco (padrão), 16:9, 4:3, 3:2, 2:1, 21:9, 1:1, 3:4, 2:3, 9:16, horizontal, vertical, quadrado."),
+      enquadrar: z.boolean().optional().describe("Enquadrar todos no formato antes de fotografar (padrão: não; mantém a câmera como está)."),
+      largura: z.number().int().min(256).max(1600).optional().describe("Largura das imagens (padrão 768).")
+    },
+    annotations: RO
+  }, guard(async (a) => {
+    const w = W(), fmt = a.formato && a.formato !== "palco" ? a.formato : "";
+    if (fmt && !FORMATOS.includes(fmt.toLowerCase())) throw new Error("Formato desconhecido: use 16:9, 4:3, 3:2, 2:1, 21:9, 1:1, 3:4, 2:3, 9:16, horizontal, vertical ou quadrado.");
+    const q = w.executarRoteiro("#quadro 1 " + fmt + " — Cena\n" + (a.enquadrar ? "camera.enquadrar();" : "")).quadros[0];
+    const refs = new Set(a.passes && a.passes.length ? a.passes : ORDEM_REF), F = await fotografar(w, [q], refs, a.largura || 768, { semTexto: true, semNumero: true });
+    const op = F.openpose[q.n], pessoas = op ? op.people.map(p => { const vis = v => { let n1 = 0, n5 = 0; for (let i = 2; i < v.length; i += 3) { if (v[i] === 1) n1++; else if (v[i] === 0.5) n5++; } return n1 + " visíveis, " + n5 + " escondidos"; };
+      return p.nome + ": corpo " + vis(p.pose_keypoints_2d) + "; mão E " + vis(p.hand_left_keypoints_2d) + "; mão D " + vis(p.hand_right_keypoints_2d) + "; rosto " + vis(p.face_keypoints_2d); }) : [];
+    const ordem = ["quadro"].concat(ORDEM_REF.filter(k => refs.has(k)));
+    const txt = "Referências da cena (" + (fmt || "palco") + ", " + (a.largura || 768) + " px). Ordem das imagens: " + ordem.map(k => NOME_REF[k]).join(", ") + "." + (pessoas.length ? "\nOpenPose — " + pessoas.join(" · ") : "") +
+      (F.legendas.partes ? "\nPartes: " + F.legendas.partes.map(l => l.nome + " " + l.cor).join(", ") : "") + "\n\nAbrir no app: " + sceneLink(w);
+    return { content: F.content.concat([{ type: "text", text: txt }]), structuredContent: { formato: fmt || "palco", passes: ordem, openpose: op || null, legendas: F.legendas, link: sceneLink(w) },
+      _meta: metaWidget(w, "galeria", { titulo: "Referências para ControlNet", itens: F.itens }) };
+  }));
+
+  server.registerTool("vistas_em_volta", {
+    title: "Giro 360° e ficha do personagem",
+    description: "Fotografa a cena em volta de um pivô (manequim, grupo, objeto, ponto ou a cena inteira): modo \"giro\" = N vistas igualmente espaçadas (turntable); modo \"ficha\" = ficha do personagem (frente, 3/4, perfil e costas; completa = 8 vistas), de preferência sem perspectiva (orto). O azimute conta a partir da frente do pivô. Não muda a cena aberta. Pode trazer passes de ControlNet de cada vista e uma folha de contato com todas.",
+    inputSchema: {
+      alvo: z.string().optional().describe("Pivô: nome do manequim (padrão: o ativo), vários nomes separados por vírgula, objeto, \"cena\" ou um ponto \"x, y, z\"."),
+      modo: z.enum(["giro", "ficha"]).optional().describe("giro (padrão) ou ficha."),
+      vistas: z.number().int().min(2).max(24).optional().describe("Giro: quantas vistas (padrão 8). Ficha: 4 ou 8."),
+      elevacao: z.string().optional().describe("Graus acima do horizonte (−70 a 70) ou olhos, média, alta, de cima, baixa. Padrão: giro mantém a da câmera; ficha usa 0."),
+      sentido: z.enum(["anti-horario", "horario"]).optional().describe("Giro visto de cima (padrão anti-horário: para a esquerda do pivô)."),
+      orto: z.boolean().optional().describe("Sem perspectiva (padrão: ficha sim, giro não)."),
+      formato: z.string().optional().describe("Formato de cada vista: 1:1, 3:4, vertical, 16:9… (padrão: ficha vertical, giro 1:1)."),
+      referencias: RefE.optional().describe("Passes de ControlNet de cada vista."),
+      folha: z.boolean().optional().describe("Também uma folha de contato com todas as vistas (padrão: sim)."),
+      largura: z.number().int().min(200).max(1200).optional().describe("Largura de cada imagem (padrão 480).")
+    },
+    annotations: RO
+  }, guard(async (a) => {
+    const w = W(), modo = a.modo || "giro", ficha = modo === "ficha", partes = String(a.alvo || "").split(",").map(x => x.trim()).filter(Boolean);
+    const alvo = !partes.length ? JSON.stringify(w.SCN.list[w.SCN.active].name) : partes.length === 3 && partes.every(x => /^-?\d+(\.\d+)?$/.test(x)) ? "[" + partes.join(",") + "]" : partes.length > 1 ? JSON.stringify(partes) : JSON.stringify(partes[0]);
+    w.resolverAlvo(JSON.parse(alvo));
+    const el = a.elevacao === undefined ? null : w.elevacaoDe(/^-?\d+(\.\d+)?$/.test(a.elevacao) ? +a.elevacao : a.elevacao), fmt = a.formato || (ficha ? "vertical" : "1:1");
+    if (!FORMATOS.includes(String(fmt).toLowerCase())) throw new Error("Formato desconhecido: use 16:9, 4:3, 3:2, 2:1, 21:9, 1:1, 3:4, 2:3, 9:16, horizontal, vertical ou quadrado.");
+    const orto = a.orto === undefined ? ficha : a.orto, n = ficha ? ((a.vistas || 4) >= 8 ? 8 : 4) : (a.vistas || 8);
+    const marca = (ficha ? "#ficha " + alvo + (n === 8 ? " completa" : "") : "#orbita " + alvo + " " + n + (a.sentido === "horario" ? " horario" : "")) + (el !== null ? " elevacao " + el : "") + " " + fmt;
+    const pre = orto ? "#cena\ncamera.perspectiva(false);\n" : "";
+    const X = w.executarRoteiro(pre + marca + " — " + (ficha ? "Ficha" : "Giro")), erros = X.quadros.filter(q => q.erro);
+    if (erros.length) throw new Error(erros[0].erro);
+    const refs = new Set(a.referencias || []), larg = a.largura || 480, F = await fotografar(w, X.quadros, refs, larg, { semNumero: true });
+    let folha = null; const content = F.content;
+    if (a.folha !== false) { const b64 = (await toPng(folhaPng(F.itens, w.recorteQuadro(fmt), ficha ? n : Math.min(4, n)), Math.min(1600, 320 * (ficha ? n : Math.min(4, n))))).toString("base64"); folha = "data:image/png;base64," + b64; content.push({ type: "image", data: b64, mimeType: "image/png" }); }
+    content.push({ type: "text", text: (ficha ? "Ficha" : "Giro") + " de " + n + " vistas em volta de " + w.resolverAlvo(JSON.parse(alvo)).nome + (el !== null ? ", elevação " + el + "°" : "") + (orto ? ", sem perspectiva" : "") + ", formato " + fmt + "." + (folha ? " A última imagem é a folha de contato." : "") + "\n\nNo roteiro de quadros: " + marca.replace(/\n/g, " ") + "\nAbrir no app: " + sceneLink(w) });
+    return { content, structuredContent: { modo, vistas: X.quadros.map(q => q.titulo), elevacao: el, orto, formato: fmt, linha_do_roteiro: marca, openpose: F.openpose, link: sceneLink(w) },
+      _meta: metaWidget(w, "galeria", { titulo: ficha ? "Ficha do personagem" : "Giro 360°", itens: F.itens, paginas: folha ? [folha] : [] }) };
+  }));
+
+  server.registerTool("estimar_poses", {
+    title: "Quantas poses o manequim consegue fazer",
+    description: "Estimativa por Monte Carlo: conta as combinações das articulações da pose (passos de 5°) e sorteia poses ao acaso; válida = nenhuma parte do corpo atravessa outra e nenhum limite acoplado (anatomia) precisa corrigir. Mostra a fração válida, o número estimado de poses válidas (com intervalo de 95%) e as colisões mais comuns.",
+    inputSchema: {
+      amostras: z.number().int().min(200).max(20000).optional().describe("Quantas poses sortear (padrão 3000; 20 000 leva ~10 s)."),
+      perfil: z.enum(["normal", "atleta", "ginasta", "contorcionista"]).optional().describe("Flexibilidade (faixas das articulações)."),
+      conjunto: z.enum(["corpo", "todos"]).optional().describe("corpo (padrão: só as articulações do corpo) ou todos (corpo + dedos + rosto).")
+    },
+    annotations: RO
+  }, guard((a) => {
+    const w = W(), R = estimarPoses(w, { amostras: a.amostras || 3000, perfil: a.perfil, grupo: a.conjunto === "todos" ? "todos" : "corpo" });
+    const txt = "Estimativa (" + R.conjunto + ", perfil " + R.perfil + ", " + R.amostras + " poses sorteadas em " + R.segundos + " s):\n" +
+      "- " + R.parametros + " regulagens; " + R.combinacoes_5graus + " combinações em passos de 5° (" + R.combinacoes_sliders + " na resolução dos controles)\n" +
+      "- " + (100 * R.fracao_valida).toFixed(1) + "% válidas (IC 95%: " + (100 * R.ic95[0]).toFixed(1) + "–" + (100 * R.ic95[1]).toFixed(1) + "%): " + (100 * R.fracao_sem_atravessar).toFixed(1) + "% sem partes atravessando, " + (100 * R.fracao_sem_limite_acoplado).toFixed(1) + "% sem limite acoplado\n" +
+      "- ≈ " + R.poses_validas_5graus + " poses válidas (passos de 5°), ≈ " + R.poses_validas_sliders + " na resolução dos controles\n" +
+      (R.colisoes_mais_comuns.length ? "- colisões mais comuns: " + R.colisoes_mais_comuns.join("; ") : "");
+    return { content: [{ type: "text", text: txt }], structuredContent: R };
   }));
 
   server.registerTool("planta_da_cena", {
@@ -477,7 +671,8 @@ export function registerAll(server, getWorld, opts = {}) {
       objetos: d.objetos.map(o => ({ nome: o.nome, tipo: o.tipo, cor: o.cor.fill, x_m: m(o.x), z_m: m(o.z), giro: o.giro, sobre: o.sobre ? (d.objetos.find(q => q.id === o.sobre) || {}).nome || null : null }))
     };
     const txt = "Câmera em (" + info.camera.posicao_m.join(", ") + ") m, " + (C.persp ? info.camera.lente_mm + " mm" : "sem perspectiva") + ".\n" + info.manequins.map(q => "- " + q.nome + ": (" + q.x_m + ", " + q.z_m + ") m, a " + q.profundidade_m + " m da câmera, " + q.altura_na_foto + " da altura da foto (" + q.na_foto + ")").join("\n");
-    return { content: [{ type: "image", data: cima.toString("base64"), mimeType: "image/png" }, { type: "image", data: lado.toString("base64"), mimeType: "image/png" }, { type: "text", text: txt }], structuredContent: info };
+    return { content: [{ type: "image", data: cima.toString("base64"), mimeType: "image/png" }, { type: "image", data: lado.toString("base64"), mimeType: "image/png" }, { type: "text", text: txt }], structuredContent: info,
+      _meta: metaWidget(w, "galeria", { titulo: "Planta e perfil", itens: [{ titulo: "Blocking", imagens: [{ nome: "Vista de cima", passe: "cima", src: "data:image/png;base64," + cima.toString("base64") }, { nome: "Vista lateral", passe: "lado", src: "data:image/png;base64," + lado.toString("base64") }] }] }) };
   }));
 
   server.registerTool("camadas_da_cena", {
@@ -555,15 +750,18 @@ export function registerAll(server, getWorld, opts = {}) {
   server.registerTool("referencia", {
     title: "Referência",
     description: "Lista poses rápidas, tipos corporais, parâmetros de pose/corpo com limites e a API de comandos em português.",
-    inputSchema: { assunto: z.enum(["tudo", "poses", "corpos", "parametros", "comandos", "exemplos"]).optional() },
+    inputSchema: { assunto: z.enum(["tudo", "poses", "corpos", "parametros", "comandos", "exemplos", "rig", "camera", "controlnet"]).optional().describe("rig = expressões, gestos e articulações finas (dedos, rosto, pés, escápula); camera = vistas da órbita, enquadramentos e ângulos; controlnet = passes e formato do OpenPose.") },
     annotations: RO
   }, guard((a) => {
     const w = W(), t = a.assunto || "tudo", out = [];
-    if (t === "tudo" || t === "poses") out.push("POSES RÁPIDAS: " + Object.keys(w.BPOSES).concat(["cintura", "cruzar", "ombro"]).join(", "));
+    if (t === "tudo" || t === "poses") out.push("POSES RÁPIDAS: " + w.todasPoses().join(", "));
     if (t === "tudo" || t === "corpos") out.push("TIPOS CORPORAIS: " + Object.keys(w.BODIES).join(", "));
     if (t === "tudo" || t === "parametros") out.push("PARÂMETROS (nome: interno, faixa):\n" + Object.entries(w.ALIAS).map(([k, v]) => { const s = w.SL.find(x => x.k === v); return `${k}: ${v}${s ? ` (${s.min} a ${s.max}${s.u})` : ""}`; }).join("\n"));
     if (t === "tudo" || t === "comandos") out.push(w.REF);
     if (t === "tudo" || t === "exemplos") out.push("EXEMPLOS:\n" + Object.entries(w.EXAMPLES).map(([k, v]) => `--- ${k}\n${v}`).join("\n\n"));
+    if (t === "tudo" || t === "rig") out.push(docRig(w));
+    if (t === "tudo" || t === "camera") out.push(docCamera(w));
+    if (t === "tudo" || t === "controlnet") out.push(docControlNet(w));
     return { content: [{ type: "text", text: out.join("\n\n") }] };
   }));
 
@@ -641,4 +839,33 @@ export function registerAll(server, getWorld, opts = {}) {
   }, ({ lente }) => ({
     messages: [{ role: "user", content: { type: "text", text: `Monte um estudo de perspectiva no GeoMannequin: 5 manequins em fila se afastando (z de 0 a −28), alternando x entre −3 e 3, poses variadas; câmera com perspectiva, lente ${lente || 35} mm, altura_olhos 14.5; horizonte, sombras e atmosfera 0.6 ligados. Depois renderize e explique onde estão o horizonte e os pontos de fuga.` } }]
   }));
+  server.registerPrompt("storyboard_manga", {
+    title: "Storyboard de mangá",
+    description: "Escreve um roteiro de quadros a partir de uma cena descrita, desenha os quadros e monta a página de mangá.",
+    argsSchema: { historia: z.string().describe("O que acontece, ex.: 'Ana encontra Leo no parque, eles discutem e Leo vai embora'."), quadros: z.string().optional().describe("Quantos quadros (padrão 4).") }
+  }, ({ historia, quadros }) => ({
+    messages: [{ role: "user", content: { type: "text", text: `Monte um storyboard de mangá no GeoMannequin para: ${historia}\n\n1) Escreva um roteiro com #cena (personagens, objetos, câmera) e ${quadros || 4} blocos #quadro — cada quadro só muda o necessário (pose, expressão, olhar, posição), varie planos (camera.enquadramento) e ângulos (camera.angulo), e ponha as falas como // fala: Nome: texto. 2) Confira com roteiro_quadros {validar: true} e corrija erros. 3) Desenhe com roteiro_quadros {pagina: true, leitura: "japonesa"}. 4) Comente cada quadro em uma linha e dê o link para abrir no app e baixar o .zip.` } }]
+  }));
+  server.registerPrompt("ficha_de_personagem", {
+    title: "Ficha de personagem e giro 360°",
+    description: "Cria o personagem, faz a ficha (frente, 3/4, perfil, costas) e o giro em volta dele.",
+    argsSchema: { personagem: z.string().describe("Como é o personagem, ex.: 'mulher atlética, postura confiante, sorrindo'.") }
+  }, ({ personagem }) => ({
+    messages: [{ role: "user", content: { type: "text", text: `No GeoMannequin, crie este personagem: ${personagem}. 1) nova_cena; 2) editar_manequim com nome, corpo/medidas, pose em pé coerente, expressão e gesto; 3) vistas_em_volta {modo: "ficha", orto: true}; 4) vistas_em_volta {modo: "giro", vistas: 8, elevacao: "10"}; 5) diga o que ajustar se algo parecer estranho.` } }]
+  }));
+  server.registerPrompt("referencias_controlnet", {
+    title: "Referências para gerar a imagem com IA (ControlNet)",
+    description: "Monta a pose pedida e entrega OpenPose (corpo, mãos, rosto), profundidade, normais, máscara, partes e canny.",
+    argsSchema: { pose: z.string().describe("A pose e o enquadramento, ex.: 'homem sentado no banco, olhando para a esquerda, close de 3/4'."), formato: z.string().optional().describe("16:9, 1:1, 9:16, vertical… (padrão 1:1).") }
+  }, ({ pose, formato }) => ({
+    messages: [{ role: "user", content: { type: "text", text: `No GeoMannequin, monte: ${pose}. Use editar_manequim (pose, expressão, olhos, gestos, articulações dos dedos se a mão aparecer, validar: true) e camera (orbitar, enquadramento, angulo). Depois chame referencias_controlnet {formato: "${formato || "1:1"}", enquadrar: true} e explique qual passe usar em cada ControlNet (openpose/dwpose, depth, normal, seg, canny, lineart).` } }]
+  }));
+  server.registerPrompt("expressoes_e_maos", {
+    title: "Estudo de expressões e mãos",
+    description: "Uma folha com o mesmo personagem em várias expressões e gestos de mão, em close.",
+    argsSchema: { expressoes: z.string().optional().describe("Lista, ex.: 'alegria, raiva, surpresa, medo'.") }
+  }, ({ expressoes }) => ({
+    messages: [{ role: "user", content: { type: "text", text: `Use roteiro_quadros para um estudo de expressões e mãos: #cena com um manequim em primeiro plano (camera.enquadramento("primeiro plano"), camera.orbitar com azimute "3/4 esquerda"); um #quadro para cada expressão (${expressoes || "alegria, raiva, surpresa, tristeza, medo, desconfianca"}) com .expressao(nome) e um gesto de mão diferente, levantando a mão até o rosto quando fizer sentido; pagina: true, grade "6".` } }]
+  }));
+
 }

@@ -16,11 +16,14 @@ O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), ent
 | `planta_da_cena` | Vista de cima e lateral da composição (blocking), com profundidade e % da altura da foto de cada manequim |
 | `objetos` | Banco, cadeira, caixa, degrau, mesa e parede para os manequins se apoiarem |
 | `copiar_manequim` / `remover_manequim` | Copia ou remove |
-| `camera` | Eixo (x, −x, z, −z, de cima), elevação (alta, média, olhos, baixa), plano, perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar, **órbita** em volta de um pivô (manequim, grupo, objeto, ponto ou cena: `orbitar: {alvo, azimute: "3/4 esquerda", elevacao}`) e `pivo` |
+| `camera` | Eixo (x, −x, z, −z, de cima), elevação (alta, média, olhos, baixa), plano, perspectiva, lente (18–200 mm), distância, giro, alvo, posição, altura dos olhos, enquadrar, **órbita** em volta de um pivô (manequim, grupo, objeto, ponto ou cena: `orbitar: {alvo, azimute: "3/4 esquerda", elevacao}`) e `pivo`; planos de quadrinhos (`enquadramento`: detalhe, close, primeiro plano, médio, americano, inteiro, geral, com `quem` e `tercos`) e `angulo` (plongée, contra-plongée, zenital, nadir, holandês); `desenhar` devolve a imagem junto |
 | `roteiro_quadros` | Storyboard por código (`#cena`, `#quadro 1 — título`, `#orbita "Ana" 8`, `#ficha "Ana"`): imagem de cada quadro, página de mangá e referências — contorno, OpenPose completo (BODY_25 + mãos + rosto, estilo DWPose) ou só corpo, profundidade, normais, máscara, partes do corpo, canny |
+| `referencias_controlnet` | Passes da cena aberta, sem roteiro: contorno, OpenPose completo (corpo BODY_25 + mãos 21 + rosto 70, confiança 0,5 = escondido; estilo DWPose) ou só corpo, profundidade, normais, máscara, partes do corpo (com legenda) e canny, no formato pedido (16:9, 1:1, vertical…), com o JSON do OpenPose |
+| `vistas_em_volta` | Giro 360° (N vistas) ou ficha do personagem (frente, 3/4, perfil, costas; completa = 8) em volta de manequim, grupo, objeto, ponto ou cena; elevação, orto, passes por vista e folha de contato |
+| `estimar_poses` | Quantas poses o manequim consegue fazer (Monte Carlo): combinações, fração válida (sem partes atravessando nem limites acoplados), poses válidas com intervalo de 95% |
 | `luz` | Direção e altura da luz |
 | `aparencia_cena` | Tema noturno, modo, estilo, sombras, horizonte e pontos de fuga, atmosfera, camadas |
-| `renderizar` | Desenha e devolve PNG + link do app (no ChatGPT aparece num quadro com botão “Abrir no GeoMannequin”) |
+| `renderizar` | Desenha e devolve PNG + link do app. No ChatGPT abre o widget com botões para **girar a câmera em volta do pivô** (8 vistas, ±15°, ±10°) ali mesmo, tela cheia e “Abrir no GeoMannequin” |
 | `camadas_da_cena` | Cena em camadas: ordem (de trás para a frente), congelados/ocultos, quem faz sombra em quem; SVG com uma camada por manequim e foto .svg/.png de um manequim só |
 | `colisoes` | Lista quem atravessa quem e corrige (auto, distancia, giro, pose), permite contato proposital ou desfaz |
 | `listar_cena`, `exportar_cena`, `carregar_cena` | Ver, salvar (JSON) e recarregar (JSON ou link) |
@@ -28,7 +31,9 @@ O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), ent
 | `executar_codigo` | Roda o mesmo código do editor do app (`cena.adicionar(...)`, `camera.lente(35)`…). Ligado no modo local; desligado no servidor público |
 | `search`, `fetch` | Pesquisa na documentação (exigidas pelo ChatGPT) |
 
-Também há recursos (`geomannequin://referencia`, `geomannequin://cena/atual`) e prompts prontos (“Montar cena de referência para desenho”, “Estudo de perspectiva”).
+Também há recursos (`geomannequin://referencia`, `geomannequin://cena/atual`) e prompts prontos: “Montar cena de referência para desenho”, “Estudo de perspectiva”, “Storyboard de mangá”, “Ficha de personagem e giro 360°”, “Referências para gerar a imagem com IA (ControlNet)” e “Estudo de expressões e mãos”. A `referencia` tem os assuntos `rig` (expressões, gestos, dedos, rosto, pés, limites), `camera` (órbita, planos, ângulos) e `controlnet` (passes e formato do OpenPose); o `search`/`fetch` do ChatGPT acha tudo isso.
+
+**No ChatGPT:** as ferramentas visuais (`renderizar`, `roteiro_quadros`, `referencias_controlnet`, `vistas_em_volta`, `planta_da_cena`) abrem o widget do GeoMannequin: galeria dos quadros/vistas com abas para cada passe (OpenPose, profundidade, normais, máscara, partes com legenda, bordas), falas do quadro, página de mangá ou folha de contato, tela cheia e “Abrir no GeoMannequin”. Na imagem da cena, os botões de órbita giram a câmera e redesenham sem sair do chat (o widget chama `camera` com `desenhar`). Todas as ferramentas mostram o que estão fazendo enquanto rodam. O ChatGPT não deixa o widget baixar arquivos: o .zip completo (todos os passes de todos os quadros) é baixado no app pelo link.
 
 Medidas: **R** = raio da cabeça; o manequim tem cerca de **16 R** de altura. No chão, `x` vai para os lados e `z` para frente (+) e para trás (−).
 
