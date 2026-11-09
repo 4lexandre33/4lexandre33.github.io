@@ -14,8 +14,9 @@ function restGround(p){const S=shape(p),F=bustFrame(p,S),A=legDims(p);return hip
 /* enquadramento em perspectiva: o tamanho na tela vem da distância da câmera (dolly), não do zoom */
 function zoomToDist(p,z){return (W/2)*(p.lens||50)/(18*BASE*Math.max(0.05,z))}
 function distToZoom(p){return (W/2)*(p.lens||50)/(18*BASE*Math.max(3,p.camDist||30))}
-function fitFromBB(bb){
-  const MX=40,MY=26,w=Math.max(0.05,bb[1]-bb[0]),h=Math.max(0.05,bb[3]-bb[2]),S=Math.min((W-2*MX)/w,(H-2*MY)/h)*0.96;
+/* area (opcional): recorte central {w, h} do quadro (roteiro de quadros com formato 16:9, 1:1…) — cabe nele em vez do palco inteiro */
+function fitFromBB(bb,area){
+  const AW=area?area.w:W,AH=area?area.h:H,MX=area?AW*0.067:40,MY=area?AH*0.037:26,w=Math.max(0.05,bb[1]-bb[0]),h=Math.max(0.05,bb[3]-bb[2]),S=Math.min((AW-2*MX)/w,(AH-2*MY)/h)*0.96;
   return {zoom:+(S/BASE).toFixed(3),panX:+(-(bb[0]+bb[1])/2).toFixed(3),panY:+(((CY-H/2)/S)-(bb[2]+bb[3])/2).toFixed(3)};
 }
 /* chão: grade no plano y = gy (coordenadas do mundo), vista pela câmera da cena */

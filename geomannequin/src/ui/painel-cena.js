@@ -90,4 +90,4 @@ export function iniciarPainelCena(){
   $("mAuto").addEventListener("click",()=>{const it=SCN.list[SCN.active];it.col=null;it.hue=it===SCN.list[0]?null:nextHue(it);refreshScene();render()});
 }
 
-export { sceneMsg, refreshScene, moveMode, onColor, statusCamadas };
+export { sceneMsg, refreshScene, moveMode, onColor, statusCamadas, baixar };

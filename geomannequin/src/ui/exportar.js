@@ -1,5 +1,5 @@
 /* GeoMannequin — exportar SVG/JSON, abas e cópia */
-import { P, SCN, sceneList } from "../scene/modelo.js";
+import { P, SCN, UIH, sceneList } from "../scene/modelo.js";
 import { L } from "../scene/modos.js";
 import { styleName } from "../scene/paletas.js";
 import { draw, lastInfo } from "./palco.js";
@@ -20,7 +20,7 @@ function wrapStyle(svg){
   if(styleName!=="lapis")return svg;
   return '<defs><filter id="gmPencil" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter></defs><g filter="url(#gmPencil)">'+svg+'</g>';
 }
-function exportJson(){return JSON.stringify({app:"GeoMannequin",version:8,scene:sceneState(),layers:L,style:styleName,code:$("code")?$("code").value:""},null,2)}
+function exportJson(){return JSON.stringify({app:"GeoMannequin",version:8,scene:sceneState(),layers:L,style:styleName,code:$("code")?$("code").value:"",roteiro:UIH.quadros?UIH.quadros.texto():""},null,2)}
 let tab="svg";
 /* a caixa de exportação só é atualizada quando está à vista (gerar o SVG de exportação também custa) */
 let outVisivel=true,outSujo=false;
@@ -62,7 +62,7 @@ export function iniciarExportar(){
     catch(e){fallback()}
   });
   $("applyJson").addEventListener("click",()=>{
-    try{applyState(JSON.parse($("out").value));syncControls();updateModeButtons();draw();setTab("json");say("Modelo carregado.","ok")}
+    try{const js=JSON.parse($("out").value);applyState(js);if(js.roteiro&&UIH.quadros)UIH.quadros.texto(js.roteiro);syncControls();updateModeButtons();draw();setTab("json");say("Modelo carregado.","ok")}
     catch(e){say("JSON inválido: "+e.message,"err")}
   });
 }

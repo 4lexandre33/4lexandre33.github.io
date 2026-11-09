@@ -10,11 +10,11 @@ function autoFit(only){
   /* em perspectiva o contorno muda com a distância: repete até estabilizar */
   for(let it=0;it<(P.persp?3:1);it++){
     const bb=sceneBB(only);if(!(bb[1]>bb[0]))return;
-    const fit=fitFromBB(bb);
+    const fit=fitFromBB(bb,SCN.recorte||undefined);
     if(!fit||!isFinite(fit.zoom))return;
     setZoomEff(fit.zoom);P.panX=fit.panX;P.panY=fit.panY;
     /* poses compactas (agachado, sentado) pediriam a câmera a ~1 m: a perspectiva deforma demais. Mantém ≥ 13 R (≈ 1,5 m) e recentra */
-    if(P.persp&&P.camDist<13){P.camDist=13;const b2=sceneBB(only);if(b2[1]>b2[0]){const f2=fitFromBB(b2);P.panX=f2.panX;P.panY=f2.panY}break}
+    if(P.persp&&P.camDist<13){P.camDist=13;const b2=sceneBB(only);if(b2[1]>b2[0]){const f2=fitFromBB(b2,SCN.recorte||undefined);P.panX=f2.panX;P.panY=f2.panY}break}
   }
 }
 /* altura dos olhos (câmera) acima do chão, em R */

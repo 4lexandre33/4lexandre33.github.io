@@ -1,5 +1,5 @@
 /* Operações de cena usadas pelas ferramentas MCP: resumo, desenho (SVG/PNG) e link para o app */
-import { deflateRawSync, inflateRawSync } from "node:zlib";
+import { deflateRawSync, inflateRawSync, deflateSync } from "node:zlib";
 import { readFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
@@ -31,8 +31,18 @@ export function payload(w) {
   if (w.theme !== "sistema") o.tema = w.theme;
   return o;
 }
-export function sceneLink(w) {
-  return APP_URL + "#cena=z" + b64u(deflateRawSync(Buffer.from(JSON.stringify(payload(w)))));
+export function sceneLink(w, extra) {
+  return APP_URL + "#cena=z" + b64u(deflateRawSync(Buffer.from(JSON.stringify(Object.assign(payload(w), extra || {})))));
+}
+/* PNG a partir de RGBA (profundidade e máscara do roteiro de quadros), ampliado sem suavizar */
+export function rgbaToPng(r, largura) {
+  const k = Math.max(1, Math.round((largura || r.w * r.escala) / r.w)), W = r.w * k, H = r.h * k, raw = Buffer.alloc((W * 4 + 1) * H);
+  for (let y = 0; y < H; y++) { raw[y * (W * 4 + 1)] = 0; for (let x = 0; x < W; x++) { const s = (((y / k) | 0) * r.w + ((x / k) | 0)) * 4, d = y * (W * 4 + 1) + 1 + x * 4; raw[d] = r.rgba[s]; raw[d + 1] = r.rgba[s + 1]; raw[d + 2] = r.rgba[s + 2]; raw[d + 3] = r.rgba[s + 3]; } }
+  const crcT = []; for (let n = 0; n < 256; n++) { let c = n; for (let j = 0; j < 8; j++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; crcT[n] = c >>> 0; }
+  const crc = b => { let c = 0xFFFFFFFF; for (const v of b) c = crcT[(c ^ v) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  const chunk = (t, d) => { const len = Buffer.alloc(4); len.writeUInt32BE(d.length); const td = Buffer.concat([Buffer.from(t), d]), c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([len, td, c]); };
+  const ih = Buffer.alloc(13); ih.writeUInt32BE(W, 0); ih.writeUInt32BE(H, 4); ih[8] = 8; ih[9] = 6; ih[10] = 0; ih[11] = 0; ih[12] = 0;
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ih), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
 }
 export function decodeLink(s) {
   const m = /#cena=([zj])([A-Za-z0-9_-]+)/.exec(String(s));
@@ -113,8 +123,9 @@ function pathBox(d) {
   }
   return x0 <= x1 ? [x0, y0, x1, y1] : null;
 }
-export function sanitizeSvg(svg, W = 600, H = 700, pad = 4) {
-  const out = (b) => b && (b[2] < -pad || b[0] > W + pad || b[3] < -pad || b[1] > H + pad);
+export function sanitizeSvg(svg, W = 600, H = 700, pad = 4, X0 = 0, Y0 = 0) {
+  if (typeof W !== "number") { W = 600; H = 700; }
+  const out = (b) => b && (b[2] < X0 - pad || b[0] > W + pad || b[3] < Y0 - pad || b[1] > H + pad);
   return svg
     .replace(/<path\b[^>]*?\bd="([^"]*)"[^>]*\/>/g, (el, d) => out(pathBox(d)) ? "" : el)
     .replace(/<circle\b[^>]*?\bcx="([-\d.e]+)"[^>]*?\bcy="([-\d.e]+)"[^>]*?\br="([-\d.e]+)"[^>]*\/>/g, (el, x, y, r) => { x = +x; y = +y; r = +r; return out([x - r, y - r, x + r, y + r]) ? "" : el; })
@@ -122,9 +133,16 @@ export function sanitizeSvg(svg, W = 600, H = 700, pad = 4) {
 }
 export async function svgToPng(svg, largura = 900) {
   await ready();
-  svg = sanitizeSvg(svg);
-  const r = new Resvg(svg, { fitTo: { mode: "width", value: Math.max(200, Math.min(2400, largura | 0)) }, font: { fontBuffers: FONTS, defaultFontFamily: "DejaVu Sans", sansSerifFamily: "DejaVu Sans" } });
-  return r.render().asPng();
+  /* limpa pelo tamanho do próprio desenho (o palco é 600 × 700; páginas e folhas de contato são maiores) */
+  const vb = /viewBox="\s*([-\d.e]+)[\s,]+([-\d.e]+)[\s,]+([-\d.e]+)[\s,]+([-\d.e]+)/.exec(svg);
+  svg = vb ? sanitizeSvg(svg, +vb[1] + +vb[3], +vb[2] + +vb[4], 4, +vb[1], +vb[2]) : sanitizeSvg(svg);
+  const opts = { fitTo: { mode: "width", value: Math.max(200, Math.min(2400, largura | 0)) }, font: { fontBuffers: FONTS, defaultFontFamily: "DejaVu Sans", sansSerifFamily: "DejaVu Sans" } };
+  try { return new Resvg(svg, opts).render().asPng(); }
+  catch (e) {
+    /* o resvg cai com filtro (perspectiva atmosférica) num grupo que ficou todo fora de um quadro recortado: tenta sem os filtros */
+    if (!/filter="url\(/.test(svg)) throw e;
+    return new Resvg(svg.replace(/ filter="url\(#[^)]+\)"/g, ""), opts).render().asPng();
+  }
 }
 
 /* encontra um manequim por índice ou nome; sem argumento, o ativo */

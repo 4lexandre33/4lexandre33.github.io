@@ -15,7 +15,8 @@
   "blocking.js",
   "descrever.js",
   "comandos.js",
-  "ajuda.js"
+  "ajuda.js",
+  "quadros.js"
  ],
  "iniciar": [
   "iniciarModelo",

@@ -138,6 +138,8 @@ function renderGrupoLocal(plan, g) {
 /* ===== compositor ===== */
 let ULTIMA = null; /* camadas da última composição, para escolher o manequim com o mouse */
 function setUltima(v) { return ULTIMA = v; }
+/* a última composição (por função: quem importa por cópia — o MCP — vê sempre a atual) */
+function ultimaComposicao() { return ULTIMA; }
 function zEm(z, cx, cy) { const x = cx - z.x0, y = cy - z.y0; return x < 0 || y < 0 || x >= z.w || y >= z.h ? -1e6 : z.z[y * z.w + x]; }
 /* células onde a camada "j" fica escondida por outra camada que está na frente dela */
 function mascaraEscondida(j, outros) {
@@ -233,7 +235,7 @@ function comporCamadas(plan, opts) {
   const guias = L.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) + (L.pfObjetos !== false ? pfObjetosSvg(list0[0].p, list0[0].pal, list0.objetos, list0.chao !== undefined ? list0.chao : (list0[0].gy || 0)) : "") : "";
   const lay = (id, nome, s) => opts.inkscape ? '<g id="' + id + '" inkscape:label="' + nome + '"' + ink + ">" + s + "</g>" : (s ? '<g id="' + id + '">' + s + "</g>" : "");
   const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias);
-  if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros })) });
+  if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros, obj: c.objeto ? c.g.obj : undefined })) });
   return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
 }
 /* qual manequim está no ponto (x, y) da tela: o mais perto entre as camadas */
@@ -263,4 +265,4 @@ function fotoManequim(list0, i, L, opts) {
 }
 
 export { ESTAT, zerarEstat, capturarZ, renderIsolado, renderJob, esqueleto, fazSombra, chaveL, chaveMembro, prepararCamadas, guardarCamada,
-  renderGrupoLocal, comporCamadas, pickCamadas, renderCamadas, fotoManequim, ULTIMA, setUltima, filtroAtmo, caminhoRecorte, mascaraEscondida };
+  renderGrupoLocal, comporCamadas, pickCamadas, renderCamadas, fotoManequim, ULTIMA, setUltima, ultimaComposicao, filtroAtmo, caminhoRecorte, mascaraEscondida };

@@ -4,7 +4,7 @@ import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { summary, summaryText, renderSvg, sceneLink, loadInto, pick, APP_URL } from "./scene.mjs";
+import { summary, summaryText, renderSvg, sceneLink, loadInto, pick, APP_URL, rgbaToPng, sanitizeSvg } from "./scene.mjs";
 import { toPng } from "./png.mjs";
 import { asset } from "./assets.mjs";
 
@@ -396,6 +396,44 @@ export function registerAll(server, getWorld, opts = {}) {
       structuredContent: Object.assign({ link }, s),
       _meta: { imagem: "data:image/png;base64," + png.toString("base64"), link, app: APP_URL }
     };
+  }));
+
+  server.registerTool("roteiro_quadros", {
+    title: "Roteiro de quadros (storyboard)",
+    description: "Monta uma sequência de quadros (storyboard de mangá/quadrinhos) a partir de um roteiro em código e devolve a imagem de cada quadro. Formato: um bloco \"#cena\" (preparação comum) e blocos \"#quadro 1 — título\", \"#quadro 2\"… (ou \"# frame 1\"); cada quadro CONTINUA do anterior (só se escreve o que muda), a não ser que o marcador diga \"novo\". Formato do quadro no marcador: 16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal. Linhas \"// fala: Ana: Oi!\" viram balões na página. O código é JavaScript com a API do app (cena, camera, tema, log): cena.adicionar({nome, x, z}), cena.obter(\"Ana\").poseRapida(\"acenando\").olhar(\"Leo\").articulacao(\"cotovelo esquerdo\", {dobrar: 90}).gesto(\"punho\").girar(90).posicao(x, z), cena.objeto(\"mesa\", {x, z}), camera.enquadramento(\"detalhe\"|\"close\"|\"primeiro plano\"|\"medio\"|\"americano\"|\"inteiro\"|\"geral\", \"Ana\"), camera.angulo(\"normal\"|\"plongée\"|\"contra-plongée\"|\"zenital\"|\"nadir\"|\"holandês\"), camera.eixo(\"z\"), camera.elevacao(\"olhos\"), camera.lente(50), camera.enquadrar(). Referências opcionais para gerar a imagem final do personagem na mesma pose (ControlNet): openpose (esqueleto + JSON), profundidade, mascara (uma cor por personagem/objeto), contorno (line art). validar = só confere o roteiro, sem desenhar.",
+    inputSchema: {
+      roteiro: z.string().min(3).max(60000).describe("O roteiro: #cena … #quadro 1 … #quadro 2 …"),
+      quadros: z.array(z.number().int()).optional().describe("Só estes quadros (números do roteiro). Padrão: todos (até 12 imagens por chamada)."),
+      referencias: z.array(z.enum(["openpose", "profundidade", "mascara", "contorno"])).optional().describe("Passes de referência a devolver junto de cada quadro."),
+      pagina: z.boolean().optional().describe("Também monta a página de mangá com os quadros (balões das falas)."),
+      grade: z.string().optional().describe("Grade da página: 1, 2, 2h, 3, 3b, 4, 5, 6, 6b, 8 (padrão: automática)."),
+      leitura: z.enum(["ocidental", "japonesa"]).optional(),
+      largura: z.number().int().min(200).max(1600).optional().describe("Largura de cada imagem em px (padrão 600)."),
+      validar: z.boolean().optional().describe("true = só confere o roteiro (erros com a linha), sem desenhar.")
+    },
+    annotations: RO
+  }, guard(async (a) => {
+    const w = W(), X = w.executarRoteiro(a.roteiro);
+    const resumo = X.quadros.map(q => ({ n: q.n, titulo: q.titulo, formato: q.formato, novo: q.novo, falas: q.falas, notas: q.notas, erro: q.erro, linha_do_erro: q.linhaErro, avisos: q.avisos }));
+    const erros = resumo.filter(q => q.erro), link = sceneLink(w, a.roteiro.length < 20000 ? { roteiro: a.roteiro } : {});
+    const txt0 = X.quadros.length + " quadro(s)." + (erros.length ? " Erros: " + erros.map(q => "quadro " + q.n + (q.linha_do_erro ? " (linha " + q.linha_do_erro + ")" : "") + ": " + q.erro).join("; ") + "." : " Sem erros.") + (X.avisos.length ? " Avisos: " + X.avisos.join(" ") : "");
+    if (a.validar || !X.quadros.length) return { content: [{ type: "text", text: txt0 + "\n\nAbrir no app (com o roteiro): " + link }], structuredContent: { total: X.quadros.length, quadros: resumo, link } };
+    const sel = X.quadros.filter(q => !a.quadros || a.quadros.includes(q.n)).slice(0, 12), larg = a.largura || 600, refs = new Set(a.referencias || []);
+    const passes = { contorno: refs.has("contorno"), openpose: refs.has("openpose"), profundidade: refs.has("profundidade"), mascara: refs.has("mascara") };
+    const content = [], fotos = [], openpose = {};
+    for (const q of sel) {
+      const f = w.renderizarQuadro(q, { passes: refs.size ? passes : false });
+      fotos.push({ svg: f.svg, falas: q.falas, titulo: q.titulo });
+      content.push({ type: "text", text: "Quadro " + q.n + (q.titulo ? " — " + q.titulo : "") + (q.erro ? " (erro: " + q.erro + ")" : "") });
+      content.push({ type: "image", data: (await toPng(f.svg, larg)).toString("base64"), mimeType: "image/png" });
+      if (f.contorno) content.push({ type: "image", data: (await toPng(f.contorno, larg)).toString("base64"), mimeType: "image/png" });
+      if (f.openpose) { content.push({ type: "image", data: (await toPng(f.openpose.svg, larg)).toString("base64"), mimeType: "image/png" }); openpose[q.n] = f.openpose.json; }
+      if (f.profundidade) content.push({ type: "image", data: rgbaToPng(f.profundidade, larg).toString("base64"), mimeType: "image/png" });
+      if (f.mascara) content.push({ type: "image", data: rgbaToPng(f.mascara, larg).toString("base64"), mimeType: "image/png" });
+    }
+    if (a.pagina && fotos.length) for (const pg of w.paginaQuadros(fotos, { grade: a.grade, leitura: a.leitura, preparar: s => sanitizeSvg(s).replace(/ filter="url\(#[^)]+\)"/g, "") })) content.push({ type: "image", data: (await toPng(pg, 1000)).toString("base64"), mimeType: "image/png" });
+    content.push({ type: "text", text: txt0 + (sel.length < X.quadros.length ? " Mostrando " + sel.length + "." : "") + (refs.size ? " Ordem das imagens de cada quadro: quadro" + ["contorno", "openpose", "profundidade", "mascara"].filter(k => refs.has(k)).map(k => ", " + k).join("") + "." : "") + "\n\nAbrir no app (com o roteiro, para renderizar e baixar tudo em .zip): " + link });
+    return { content, structuredContent: { total: X.quadros.length, quadros: resumo, openpose, link } };
   }));
 
   server.registerTool("planta_da_cena", {

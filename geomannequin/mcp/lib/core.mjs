@@ -63,7 +63,8 @@ return {
   composicaoDaCena, ajustarComposicao, setComposicao,
   todasPoses, GESTOS, TIPOS_OBJETO, ARTICULACOES,
   leituraBlocking, svgPlanta, svgPerfil, encaixar, eixoPerfil, moverManequim, girarManequim, apontarManequim, alturaManequim, moverCamera, moverAlvo, abrirCone, cameraNoMundo, M_R, comFundo,
-  moverObjeto, girarObjeto, medidasObjeto, selecionarObjeto, corObjeto, pegadaNoChao, distEscala, faixaLente
+  moverObjeto, girarObjeto, medidasObjeto, selecionarObjeto, corObjeto, pegadaNoChao, distEscala, faixaLente,
+  lerRoteiro, executarRoteiro, renderizarQuadro, manifestoQuadros, pastaQuadro, paginaQuadros, folhaDeContato, MODELOS_ROTEIRO, recorteQuadro, OP_NOMES
 };`;
   const make = new Function("E", src);
   FACTORY = () => make(ENGINE);

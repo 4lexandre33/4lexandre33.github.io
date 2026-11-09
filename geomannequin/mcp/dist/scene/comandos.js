@@ -3,6 +3,7 @@ import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextH
 import { applyParams, num, POSEKEYS } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
+import { loadScene, sceneState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
@@ -10,8 +11,8 @@ import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
-import { COL, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
@@ -136,6 +137,7 @@ function apiObjeto(q){
   return o;
 }
 /* blocking por código: cena.blocking() lê a composição (em metros); os métodos mexem no painel da página */
+function painelQd(acao,arg){const h=UIH.quadros;if(!h)return {aviso:"Sem página: o roteiro de quadros só existe no app (no MCP use a ferramenta roteiro_quadros)."};return h[acao](arg)}
 function painelBlk(acao,arg){const h=UIH.blocking;if(!h)return {aviso:"Sem página: o painel de blocking só existe no app."};return h[acao](arg)}
 function blockingApi(){const d=leituraBlocking(),m=v=>Math.round(v*0.114*100)/100,C=d.camera;
   return {camera:{posicao:C.pos.map((v,i)=>m(i===1?v-d.chao:v)),alvo:C.alvo.map((v,i)=>m(i===1?v-d.chao:v)),lente:Math.round(C.lente),campoGraus:Math.round(C.fovH),perspectiva:C.persp},
@@ -152,6 +154,11 @@ const cena={
   lista(){return SCN.list.map(apiFor)},
   obter(q){const it=typeof q==="number"?SCN.list[q]:SCN.list.find(x=>x.name===q);if(!it)throw new Error("Manequim “"+q+"” não existe.");return apiFor(it)},
   get ativo(){return apiFor(SCN.list[SCN.active])},
+  /* roteiro de quadros (na página): cena.quadros.abrir(), .texto("#quadro 1 …"), .renderizar(), .fila(), .baixar() */
+  quadros:{abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),renderizar:()=>painelQd("renderizar"),fila:()=>painelQd("fila"),baixar:()=>painelQd("baixar")},
+  /* estado completo da cena (posições, poses, objetos, câmera) e voltar a ele — o roteiro de quadros usa para "gravar" um ajuste feito no palco */
+  estado(){return JSON.parse(JSON.stringify(sceneState()))},
+  restaurar(e){if(!e||!e.list)throw new Error("restaurar: passe o objeto devolvido por cena.estado().");loadScene(JSON.parse(JSON.stringify(e)));return apiFor(SCN.list[SCN.active])},
   get total(){return SCN.list.length},
   enquadrar(){autoFit()},
   horizonte(on){L.horizon=on!==false&&on!==0;setMode(null);updateModeButtons()},
@@ -238,6 +245,47 @@ const camera={
   /* elevação: "alta" (de cima, plongée), "média", "olhos" (nível dos olhos), "baixa" (de baixo, contra-plongée), ou graus acima do horizonte */
   elevacao(e){const t=typeof e==="number"?e:{"muito alta":70,"de cima":70,"alta":45,"media":20,"média":20,"olhos":0,"nivel dos olhos":0,"nível dos olhos":0,"baixa":-18,"muito baixa":-35,"chao":-35,"chão":-35}[String(e).toLowerCase()];
     if(t===undefined)throw new Error("Elevação: use \"alta\", \"média\", \"olhos\", \"baixa\" ou graus.");P.pitch=clamp(-t,-70,70);return camera},
+  /* tamanho do plano (quadrinhos/cinema), em volta de um manequim (nome, índice ou o ativo) ou de vários (lista ou "todos"):
+     "detalhe" (rosto), "close", "primeiro plano" (até o peito), "medio" (cintura), "americano" (coxa), "inteiro", "geral" (todos com folga).
+     Mantém o ângulo da câmera; muda alvo, distância (e, se preciso, a lente) e zera o deslocamento. */
+  enquadramento(tipo,quem,opts){
+    const t=String(tipo||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[-_]/g," ").trim();
+    const FR={detalhe:0.15,rosto:0.15,"close up":0.22,close:0.22,"primeiro plano":0.32,"plano proximo":0.32,"meio corpo":0.5,medio:0.5,"plano medio":0.5,americano:0.72,"plano americano":0.72,inteiro:1,"corpo inteiro":1,"plano inteiro":1,geral:-1,"plano geral":-1,conjunto:-1,"grande plano geral":-2};
+    const f=FR[t];if(f===undefined)throw new Error("Enquadramento: use detalhe, close, primeiro plano, medio, americano, inteiro ou geral.");
+    let alvos;if(quem===undefined)alvos=f<0?SCN.list.filter(x=>!x.oculto):[SCN.list[SCN.active]];
+    else if(quem==="todos")alvos=SCN.list.filter(x=>!x.oculto);
+    else alvos=[].concat(quem).map(q=>{const it=typeof q==="number"?SCN.list[q]:typeof q==="object"&&q?SCN.list.find(x=>x.name===q.nome):SCN.list.find(x=>x.name===q);if(!it)throw new Error("Enquadramento: manequim “"+(q&&q.nome||q)+"” não existe.");return it});
+    if(f<0||alvos.length>1||f>=1){
+      /* plano geral/inteiro: o enquadramento automático só com esses manequins, com folga no geral */
+      const ocultos=SCN.list.map(x=>x.oculto);SCN.list.forEach(x=>{x.oculto=!alvos.includes(x)});
+      try{autoFit()}finally{SCN.list.forEach((x,i)=>{x.oculto=ocultos[i]})}
+      if(f<0){const k=f===-2?0.45:0.7;if(P.persp)P.camDist=+clamp(P.camDist/k,4,200).toFixed(2);else P.zoom=+clamp(P.zoom*k,0.05,3).toFixed(3);P.panX*=k;P.panY*=k}
+      return camera}
+    const it=alvos[0],po=pMundo(it),os=ossosDoCorpo(po),M=paraMundo(po),cr=os.ossos.find(x=>x.nome==="crânio"),cab=M(cr.a),pel=M(os.juntas.find(x=>x.nome==="pelve").P);
+    const Hs=1.0-restGround(SCN.list[0].params),hreg=f*Hs,topo=cab[1]+cr.r*1.05,b=Math.min(1,Math.max(0,(f-0.3)/0.7));
+    /* centro: perto da cabeça nos planos fechados; no meio do corpo nos abertos */
+    const c=[cab[0]+(pel[0]-cab[0])*b,topo-hreg/2,cab[2]+(pel[2]-cab[2])*b];
+    P.tx=clamp(c[0],-30,30);P.ty=clamp(c[1],-20,20);P.tz=clamp(c[2],-30,30);
+    const S=(SCN.recorte?SCN.recorte.h:H)*0.86/(hreg*1.08);
+    if(P.persp){let d=(W/2)*(P.lens||50)/(18*S);if(d<6){d=6;P.lens=Math.round(clamp(18*S*d/(W/2),18,200))}P.camDist=+clamp(d,4,200).toFixed(2)}
+    else P.zoom=+clamp(S/effScale(Object.assign({},P,{persp:0,zoom:1})),0.05,3).toFixed(3);
+    /* o alvo fica no centro da foto (o centro de projeção do palco fica acima do meio) */
+    const Sx=effScale(P);P.panX=(W/2-CX)/Sx;P.panY=(CY-H/2)/Sx;
+    /* regra dos terços: opts.tercos = "esquerda" | "direita" põe o personagem numa das linhas verticais */
+    if(opts&&opts.tercos){const sg=/dir/.test(String(opts.tercos))?1:-1;P.panX+=sg*((SCN.recorte?SCN.recorte.w:W)/6)/Sx}
+    return camera},
+  /* ângulo de câmera dos quadrinhos: "normal", "plongée" (de cima), "contra-plongée" (de baixo), "zenital", "holandês" (inclinado), "nadir";
+     graus opcionais (inclinação do holandês ou elevação) */
+  angulo(nome,graus){const t=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    if(/holand|dutch|inclinad/.test(t)){P.roll=clamp(graus===undefined?18:num(graus,"graus"),-45,45);return camera}
+    P.roll=0;
+    if(/normal|olho|nivel|frontal/.test(t))P.pitch=graus===undefined?0:-num(graus,"graus");
+    else if(/contra|baixo/.test(t))P.pitch=graus===undefined?22:Math.abs(num(graus,"graus"));
+    else if(/zenit|aereo|cima de tudo|vista de cima/.test(t))P.pitch=-70;
+    else if(/nadir|minhoca/.test(t))P.pitch=55;
+    else if(/plongee|alto|de cima/.test(t))P.pitch=graus===undefined?-38:-Math.abs(num(graus,"graus"));
+    else throw new Error("Ângulo: use normal, plongée, contra-plongée, zenital, nadir ou holandês.");
+    P.pitch=clamp(P.pitch,-70,70);return camera},
   /* planos clássicos */
   plano(n){const t=String(n).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     if(/contra/.test(t))return camera.elevacao("baixa");if(/plongee|alto/.test(t))return camera.elevacao("alta");if(/cima|zenital|aereo/.test(t))return camera.elevacao("de cima");

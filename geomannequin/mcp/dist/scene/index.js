@@ -20,6 +20,7 @@ export * from "./descrever.js";
 export * from "./blocking.js";
 export * from "./comandos.js";
 export * from "./ajuda.js";
+export * from "./quadros.js";
 
 iniciarModelo();
 iniciarModos();

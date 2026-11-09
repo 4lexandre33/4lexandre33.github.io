@@ -144,6 +144,11 @@ export function iniciarAjuda(){
   Zoom óptico (a câmera fica parada): camera.zoomLente(85) · camera.zoomLente("2x") · camera.campo(60) (graus) · camera.lenteInfo() — no painel: −/+, roda sobre o cone, teclas + e −; no palco: Alt + roda
   camera.lente(mm) muda a lente e afasta/aproxima para manter o tamanho; camera.lente(mm, false) = zoomLente
   cena.pontosDeFugaObjetos(true) — guias das arestas dos objetos até os pontos de fuga deles (objetos girados têm os próprios; com a câmera inclinada, o terceiro ponto)
+  Quadros de mangá/quadrinhos: camera.enquadramento("detalhe" | "close" | "primeiro plano" | "medio" | "americano" | "inteiro" | "geral", "Ana" | ["Ana","Leo"] | "todos", {tercos: "esquerda"})
+  camera.angulo("normal" | "plongée" | "contra-plongée" | "zenital" | "nadir" | "holandês", graus) · cena.estado() / cena.restaurar(estado)
+  Roteiro de quadros (botão "Quadros"): #cena (preparação) · #quadro 1 — título · #quadro 2 novo 16:9 · // fala: Ana: Oi! — cada quadro continua do anterior;
+    Renderizar monta e fotografa cada quadro, a fila guarda em ordem e "Baixar tudo" gera um .zip (quadro, contorno, OpenPose, profundidade, máscara, cena.json)
+    cena.quadros.abrir() · .texto("#quadro 1 …") · .renderizar() · .fila() · .baixar()
   cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")
   Cena por código (eixos do mundo: x = lado, y = altura, z = profundidade; a câmera padrão olha de +z):
   m.orientar("+x" | "-z" | "câmera" | graus | "Ana") · m.deitar("costas" | "bruços" | "lado", eixo da cabeça)

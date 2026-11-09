@@ -1,5 +1,6 @@
 /* GeoMannequin — link da cena (#cena=…): gerar, copiar e abrir */
 import { applyState, sceneState } from "../scene/estado.js";
+import { UIH } from "../scene/modelo.js";
 import { L } from "../scene/modos.js";
 import { styleName } from "../scene/paletas.js";
 import { THEMES, applyTheme, themeIdx } from "../scene/tema.js";
@@ -15,7 +16,7 @@ import { draw } from "./palco.js";
 function b64u(bytes){let b="";for(let i=0;i<bytes.length;i+=0x8000)b+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
 function unb64u(t){const b=atob(t.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((t.length+3)%4));const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
 async function pipeBytes(bytes,stream){return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer())}
-function linkPayload(){const o={v:1,scene:sceneState(),layers:L,style:styleName};const t=THEMES[themeIdx][0];if(t!=="sistema")o.tema=t;return o}
+function linkPayload(){const o={v:1,scene:sceneState(),layers:L,style:styleName};const rt=UIH.quadros?UIH.quadros.texto():"";if(rt&&rt.length<20000)o.roteiro=rt;const t=THEMES[themeIdx][0];if(t!=="sistema")o.tema=t;return o}
 async function encodeScene(o){
   const raw=new TextEncoder().encode(JSON.stringify(o));
   if(typeof CompressionStream==="function"){try{return "z"+b64u(await pipeBytes(raw,new CompressionStream("deflate-raw")))}catch(e){}}
@@ -33,6 +34,7 @@ async function loadFromHash(){
   try{const o=await decodeScene(m[1]);
     applyState({scene:o.scene,layers:o.layers,style:o.style});applyStyle(styleName);
     if(o.tema){const i=THEMES.findIndex(t=>t[0]===o.tema);if(i>=0)applyTheme(i)}
+    if(o.roteiro&&UIH.quadros)UIH.quadros.texto(o.roteiro);
     refreshScene();syncControls();updateModeButtons();draw();sceneMsg("Cena carregada do link.");return true}
   catch(e){sceneMsg("Não foi possível abrir a cena do link: "+e.message,true);return false}
 }
