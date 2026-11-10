@@ -12,8 +12,8 @@ flowchart TD
     P2 --> P4["P4 — Reposicionar linhas e colisões"]
     P3 --> P4
     P4 --> P5["P5 — Testes geométricos"]
-    P5 --> P6["P6 — Revisar imagens/poses"]
-    P6 --> P7["P7 — Integrar e revisar"]
+    P5 --> P6["P6 — Revisar imagens/poses (pendente)"]
+    P5 --> P7["P7 — Integrar no GitHub Pages (concluído)"]
 ```
 
 ## Tarefas e critérios de aceite
@@ -27,7 +27,7 @@ flowchart TD
 | P4 | Adaptar traços inguinais e cápsula de colisão ao volume | `src/engine/tronco.js`, `src/engine/colisao-cena.js` | Traços e colisão seguem a nova pelve | Concluído |
 | P5 | Garantir regressão de cintura, pelve, simetria e parâmetros | `testes/cintura.mjs`, `testes/pelve.mjs`, `package.json` | Testes geométricos passam | Concluído em validação V8 |
 | P6 | Conferir vistas frontal, 3/4, perfil, costas, sentado, agachado e torção | `testes/corpo.mjs` | Gerar recortes PNG e revisar artefatos | Preparado; renderização e inspeção visual pendentes |
-| P7 | Publicar a alteração para avaliação no GitHub Pages | branch / PR | Merge após revisão de código e regressão geométrica | A integrar |
+| P7 | Publicar a alteração para avaliação no GitHub Pages | PR #2 / `main` | Merge após revisão de código e regressão geométrica | Concluído no PR #2 |
 
 ## Verificações executadas
 
@@ -35,6 +35,7 @@ flowchart TD
 - **Manequim padrão:** largura da cintura acompanha a mudança em aproximadamente **3,7%**, preservando a diferenciação das regiões.
 - Perfis geométricos revisados em diversas alturas, tipos corporais e ângulos.
 - Ambos os testes geométricos `testes/cintura.mjs` e `testes/pelve.mjs` executados em V8 com o código real dos módulos: **passaram**.
+- A correção foi integrada na branch `main` via [PR #2](https://github.com/4lexandre33/4lexandre33.github.io/pull/2).
 - A **suíte Node completa e a inspeção visual dos PNGs** dependem de execução em um ambiente com o projeto e suas dependências e não devem ser dadas como concluídas apenas por essas verificações.
 
 ## Execução local
