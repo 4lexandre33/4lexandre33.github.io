@@ -6,7 +6,7 @@ import {clamp,gauss,smooth} from "./anatomy.js";
 import {compileMicroAtlasV3,sampleMicroV3} from "../head-v3/microfields.js";
 const bell=(x,y,cx,cy,sx,sy)=>gauss(x,cx,sx)*gauss(y,cy,sy);
 const eyeMask=(u,v,s)=>Math.hypot((u-s*.335)/.205,(v-.535)/.042);
-export function facialReliefV4(u,v,p,S){
+export function facialReliefV4(u,v,p,S,atlas=compileMicroAtlasV3(p,S)){
  const detail=clamp(p.v4Detail??.85,0,1.5),orb=clamp(p.v4OrbitalDepth??1,.4,1.8);
  const malar=clamp(p.v4MalarPlane??.9,.4,1.8);
  const jaw=clamp(p.v4JawPlane??.85,.35,1.7);
@@ -18,7 +18,6 @@ export function facialReliefV4(u,v,p,S){
  let f=0,side=0,back=0;
  /* As peças pequenas da V3 permanecem no processo matemático, mas têm
   * peso reduzido para evitar órbitas fundas e bocas pontiagudas. */
- const atlas=compileMicroAtlasV3(p,S);
  f+=.36*sampleMicroV3(atlas,u,v,"front");
  side+=.35*sampleMicroV3(atlas,u,v,"side");
  back+=.55*sampleMicroV3(atlas,u,v,"back");
