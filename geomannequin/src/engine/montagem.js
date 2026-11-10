@@ -14,7 +14,7 @@ function newCache(){return {meshKey:"",bustKey:"",armKey:"",legKey:"",handKey:["
 let GCACHE;
 function getMeshes(p,S){
   const C=p._cache||GCACHE;
-  const key=[p.headModel||"v1",p.headDetail===undefined?1:p.headDetail,p.skull,p.jaw,p.chin,p.face,p.chinProj,p.cranialDepth||1,p.headScale||1,p.sidePlaneDepth,p.sidePlaneRadius,p.sidePlaneCenterY,p.sidePlaneCenterZ,p.sidePlaneBevel,p.microDensity,p.microStrength,p.v4Detail,p.v4TemporalPlane,p.v4OrbitalDepth,p.v4MalarPlane,p.v4JawPlane,p.v4NasalBridge,p.v4Mouth,p.brow,p.nose,p.lips,p.earSize,p.earFlare,p.muscle,p.fat,p.fem,Math.round((p.jawOpen||0)*50),Math.round((p.jawSide||0)*50),Math.round((p.smile||0)*50),Math.round((p.eyeLid||0)*40),Math.round((p.browUp||0)*40),Math.round((p.browIn||0)*40)].join("|");
+  const key=[p.headModel||"v1",p.headDetail===undefined?1:p.headDetail,p.skull,p.jaw,p.chin,p.face,p.chinProj,p.cranialDepth||1,p.headScale||1,p.sidePlaneDepth,p.sidePlaneRadius,p.sidePlaneCenterY,p.sidePlaneCenterZ,p.sidePlaneBevel,p.microDensity,p.microStrength,p.v4Detail,p.v4TemporalPlane,p.v4OrbitalDepth,p.v4MalarPlane,p.v4JawPlane,p.v4NasalBridge,p.v4Mouth,p.v41OccipitalReduction,p.v41CranialCompactness,p.v41PosteriorArcTightness,p.v41MandibleConvergence,p.v41ChinTaper,p.v41ChinPointedness,p.v41EarSetback,p.v41EarRelief,p.v41EarTilt,p.brow,p.nose,p.lips,p.earSize,p.earFlare,p.muscle,p.fat,p.fem,Math.round((p.jawOpen||0)*50),Math.round((p.jawSide||0)*50),Math.round((p.smile||0)*50),Math.round((p.eyeLid||0)*40),Math.round((p.browUp||0)*40),Math.round((p.browIn||0)*40)].join("|");
   if(key!==C.meshKey){
     C.meshKey=key;
     C.meshes.head=buildHead(p,S);C.meshes.earL=buildEar(p,S,-1);C.meshes.earR=buildEar(p,S,1);
