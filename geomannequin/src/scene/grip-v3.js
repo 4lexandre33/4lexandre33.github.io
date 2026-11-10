@@ -2,7 +2,7 @@
  * Wobj = Wmao × grip.relative. O ponto pode estar no encosto da cadeira.
  * Suporta segunda mão como vínculo de observação, sem solver bilateral global.
  */
-import {shape,chainSetup,armPose,armDims,comp,applyA,paraMundo,restGround} from "../engine/index.js";
+import {shape,chainSetup,armPose,armDims,comp,applyA,paraMundo,restGround,partesDoObjeto} from "../engine/index.js";
 import {rigidFrame,rigidCompose,rigidInverse,rigidPoint,objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {gripSites,gripSite,gripSiteWorld,closestGripSite} from "../engine/grip-sites.js";
 import {fecharDedos} from "./preensao-v2.js";
@@ -19,6 +19,27 @@ function handFrameV3(it,side,ground){
 function gripSiteSelection(o,frame,ground,site){
  if(site!==undefined&&site!==null&&site!=="auto")return gripSiteWorld(o,site,ground);
  return closestGripSite(o,frame.T,ground);
+}
+/* Pousar 6DOF: encontra o ponto mais baixo das caixas/cilindros orientados.
+ * Não simula gravidade; evita que a cadeira inclinada atravesse o chão. */
+function pousarObjetoRigido(o,ground,{endireitar=false}={}){
+ if(!Number.isFinite(ground))throw Error("Solo inválido.");
+ if(endireitar)delete o.rot3;
+ const parts=partesDoObjeto(o,ground);
+ if(!parts.length)throw Error("Objeto sem partes físicas.");
+ const minY=Math.min(...parts.map(b=>{
+   const ext=b.cil?Math.abs(b.e[1][1])*b.hh+
+     Math.hypot(b.e[0][1],b.e[2][1])*b.r:
+     b.h.reduce((sum,v,i)=>sum+Math.abs(b.e[i][1])*v,0);
+   return b.c[1]-ext;
+ }));
+ if(!Number.isFinite(minY))throw Error("Altura de apoio inválida.");
+ const deslocamento=ground-minY;
+ o.base=(o.base||0)+deslocamento;
+ if(endireitar){o.base=0;delete o.rot3;o.emAr=false}
+ else o.emAr=true; // pose 6DOF inclinada precisa preservar a altura do pivô
+ delete o.sobre;delete o.sobreRel;
+ return {apoiado:true,deslocamento};
 }
 function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,objetos=[]}={}){
  if(!it||!o||!(side===1||side===-1))throw Error("Manequim, objeto ou mão inválidos.");
@@ -37,13 +58,10 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
    return {objeto:o.nome||o.tipo,mao:side===1?"esquerda":"direita",ponto:selected.id,
      secundaria:true,distancia:distance,modo:"acompanhamento secundário (IK bilateral pendente)"};
  }
- // Preservar não desloca o objeto na captura. Encaixar alinha o ponto à palma:
- // translação apenas, o usuário pode optar por aproximar a mão antes.
- let objPose=old;
- if(modo==="encaixar"){
-   const offset=selected.mundo.map((v,i)=>H.T[i]-v);
-   objPose={M:old.M,T:old.T.map((v,i)=>v+offset[i])};
- }
+ // Encaixar desloca a mão por IK (camada de comandos), não o objeto.
+ const objPose=old;
+ if(modo==="encaixar"&&distance>.35)
+   throw Error("A mão precisa alcançar o ponto antes de encaixar; use cena.segurarObjeto({modo:'encaixar'}).");
  const rel=rigidCompose(rigidInverse(H),objPose);
  // Captura os objetos apoiados ANTES de movimentar o pai no mundo.
  // Cada filho guarda uma pose relativa à cadeira (sem depender do chão).
@@ -66,7 +84,7 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
  if(o.sobre)delete o.sobre;
  o.gripV3={version:3,mannequinId:it.id,side,siteId:selected.id,relative:rel};
  o.emAr=true;
- if(modo==="encaixar")setRigidObjectPose(o,objPose,ground);
+
  const dedos=fechar?fecharDedos(it,o,side,ground):null;
  return {objeto:o.nome||o.tipo,mao:side===1?"esquerda":"direita",ponto:selected.id,
    distancia:distance,modo,versao:3,dedos};
@@ -96,7 +114,7 @@ function inspectRigidGrip(it,o,ground){
 function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
  const g=o.gripV3;if(!g)return false;
  if(it&&g.mannequinId!==it.id)throw Error("Este manequim não segura o objeto.");
- if(!["manter","chao","pousar"].includes(modo))throw Error("Soltura V3: 'manter', 'chao' ou 'pousar'.");
+ if(!["manter","chao","pousar","queda"].includes(modo))throw Error("Soltura V3: 'manter', 'chao', 'pousar' ou 'queda'.");
  const side=mao===undefined?null:mao===1||mao==="esquerda"?1:mao===-1||mao==="direita"?-1:null;
  if(mao!==undefined&&side===null)throw Error("Mão deve ser esquerda ou direita.");
  updateRigidGrip(it,o,ground);
@@ -109,11 +127,10 @@ function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
    delete g.secundaria;return {solto:false,restante:g.side===1?"esquerda":"direita"};
  }
  delete o.gripV3;
- if(modo==="chao"||modo==="pousar"){
-   // Primeiro marco de pouso CINEMÁTICO: mantém a inclinação e aproxima o sólido
-   // pelo menor Y de suas partes; nenhuma dinâmica ou gravidade é simulada.
-   o.base=0;o.emAr=false;o.rot3=undefined;
+ if(modo==="chao"||modo==="pousar"||modo==="queda"){
+   // Queda = aterrissagem instantânea cinemática, sem dinâmica ou atrito.
+   pousarObjetoRigido(o,ground,{endireitar:modo==="chao"});
  }else{o.emAr=true;}
  return {solto:true,modo};
 }
-export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip};
+export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido};
