@@ -1,0 +1,58 @@
+name: GeoMannequin V4.2 - folha anatomica real
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/engine/head-v4/**'
+      - 'geomannequin/src/engine/padroes.js'
+      - 'geomannequin/src/engine/montagem.js'
+      - 'geomannequin/src/ui/head-study.js'
+      - 'geomannequin/src/scene/parametros.js'
+      - 'geomannequin/src/ui/controles.js'
+      - 'geomannequin/src/main.js'
+      - 'geomannequin/css/head-study.css'
+      - 'geomannequin/index.html'
+      - 'geomannequin/testes/folha-cabeca-v4-2.mjs'
+      - 'geomannequin/testes/cabeca-v4-2-geometria.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+jobs:
+  anatomia-e-sheet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: geomannequin/package-lock.json
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Sintaxe dos modulos de estudo
+        run: |
+          node --check src/engine/head-v4/study-sheet.js
+          node --check src/ui/head-study.js
+      - name: Anatomia V4.2
+        run: npm run testar:cabeca-v4-2
+      - name: Compatibilidade V4.1/V3/V2
+        run: |
+          npm run testar:cabeca-v4
+          npm run testar:cabeca-v3
+          npm run testar:cabeca-v2
+      - name: SVG multiperspectiva real
+        run: npm run atlas:cabeca-v4-2
+      - name: Build web/HTML unico
+        run: npm run construir
+      - name: Folha vetorial para revisao
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geomannequin-v42-estudo-anatomico
+          path: geomannequin/testes/saida/cabeca-v4-2/
+          if-no-files-found: warn
+          retention-days: 14
