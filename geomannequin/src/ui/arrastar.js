@@ -22,7 +22,7 @@ const endDrag=()=>{if(drag){const m=drag.mode;
     limitarPropostaV2(SCN.list[SCN.active],drag.safeParams);
   drag=null;
   /* modo "corrigir ao soltar": depois de mexer no manequim (pose ou posição), corrige as colisões dele */
-  if(COL.modo==="corrigir"&&m!=="view"&&m!=="pan"){const f=corrigirAtivo();if(f.length){const el=$("colMsg");if(el){el.textContent=f.join(" · ");el.className="msg ok"}const b=$("colDesfazer");if(b)b.disabled=false;refreshScene();syncControls()}}
+  if(COL.modo==="corrigir"&&!CONTATO_V2.enabled&&m!=="view"&&m!=="pan"){const f=corrigirAtivo();if(f.length){const el=$("colMsg");if(el){el.textContent=f.join(" · ");el.className="msg ok"}const b=$("colDesfazer");if(b)b.disabled=false;refreshScene();syncControls()}}
   render()}};
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
