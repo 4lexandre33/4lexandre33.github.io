@@ -4,6 +4,7 @@ import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
+import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { EXPRESSOES, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
@@ -221,7 +222,26 @@ const cena={
   obter(q){const it=typeof q==="number"?SCN.list[q]:SCN.list.find(x=>x.name===q);if(!it)throw new Error("Manequim “"+q+"” não existe.");return apiFor(it)},
   get ativo(){return apiFor(SCN.list[SCN.active])},
   /* roteiro de quadros (na página): cena.quadros.abrir(), .texto("#quadro 1 …"), .renderizar(), .fila(), .baixar() */
-  quadros:{abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),renderizar:()=>painelQd("renderizar"),fila:()=>painelQd("fila"),baixar:()=>painelQd("baixar")},
+  quadros:{
+    abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),
+    renderizar:()=>painelQd("renderizar"),fila:()=>painelQd("fila"),baixar:()=>painelQd("baixar"),
+    duplicar:i=>painelQd("duplicar",i),remover:i=>painelQd("remover",i),
+    mover:(de,para)=>painelQd("mover",{de,para}),comparar:(i,j)=>painelQd("comparar",{i,j}),
+    renderizarUm:i=>painelQd("renderizarUm",i),cancelar:()=>painelQd("cancelar"),
+    pagina:()=>painelQd("pagina")
+  },
+  /* Roteiro/gerador também funciona sem navegador: mantém o motor unificado. */
+  lerRoteiro(texto){return lerRoteiro(String(texto))},
+  executarRoteiro(texto,opts){return executarRoteiro(String(texto),opts)},
+  renderizarQuadros(texto,opts={}){return executarRoteiro(String(texto)).quadros.map(q=>renderizarQuadro(q,opts))},
+  paginasDeRoteiro(texto,opts={}){
+    const fs=executarRoteiro(String(texto)).quadros.map(q=>{const f=renderizarQuadro(q,{passes:false});return {...f,falas:q.falas}});
+    return paginaQuadros(fs,opts);
+  },
+  folhaDeContato(texto,opts={}){
+    const fs=executarRoteiro(String(texto)).quadros.map(q=>({...renderizarQuadro(q,{passes:false}),titulo:q.titulo}));
+    return folhaDeContato(fs,opts.colunas||4);
+  },
   /* estado completo da cena (posições, poses, objetos, câmera) e voltar a ele — o roteiro de quadros usa para "gravar" um ajuste feito no palco */
   estado(){return JSON.parse(JSON.stringify(sceneState()))},
   restaurar(e){if(!e||!e.list)throw new Error("restaurar: passe o objeto devolvido por cena.estado().");loadScene(JSON.parse(JSON.stringify(e)));return apiFor(SCN.list[SCN.active])},
