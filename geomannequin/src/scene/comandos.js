@@ -13,6 +13,8 @@ import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
+import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
+import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
@@ -87,6 +89,14 @@ function apiFor(it){
         if(D_[kk])it.params["f"+D_[kk]+L_]=clamp(num(v,k),-1,1);else if(kk==="mao"||kk==="mão"||kk==="fechar")it.params["handCurl"+L_]=clamp(num(v,k),0,1);
         else if(kk==="afastar"||kk==="abrir")it.params["fSpread"+L_]=clamp(num(v,k),0,1);else if(kk==="opor"||kk==="oposicao"||kk==="oposição")it.params["thumbOpp"+L_]=clamp(num(v,k),0,1);
         else throw new Error("Dedo desconhecido: “"+k+"”. Use polegar, indicador, medio, anelar, minimo, mao, afastar, opor.")}});return m},
+    /* ===== Contato anatômico V2 ===== */
+    contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
+    segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
+      atualizarApoios();beginGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),opts);return m},
+    soltar(ref){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id):[acharObjeto(ref)];
+      let ok=false;for(const o of targets){if(o&&o.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
+      if(!ok)throw Error("Nenhum objeto encontrado segurado por este manequim.");
+      atualizarApoios();return m},
     /* ===== articulações pelo nome: m.articulacao("cotovelo esquerdo", {dobrar: 90}) ===== */
     /* confere a pose: partes do corpo atravessando umas às outras (não vizinhas, mais de 0,5 R) e limites acoplados que corrigiriam algo */
     validarPose(opts){chk();const tol=opts&&opts.tolerancia!==undefined?num(opts.tolerancia,"tolerância"):0.5,a=autoColisoes(pMundo(it),tol),l=limitesAcoplados(Object.assign({},it.params));
@@ -216,6 +226,13 @@ const cena={
   exportarCamadas(opts){return cenaCamadasSvg(opts)},
   /* colisões entre manequins */
   colisoes(){return listaColisoes()},
+  contatoV2(opts){return setContatoV2(opts)},
+  contatosFisicos(opts){return consultarContatosV2(opts)},
+  segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
+    const it=manequim===undefined?SCN.list[SCN.active]:typeof manequim==="number"?SCN.list[manequim]:SCN.list.find(q=>q.name===manequim);
+    const o=acharObjeto(objeto);if(!it||!o)throw Error("Manequim/objeto não encontrado.");
+    atualizarApoios();return beginGrip(it,o,ladoNum(mao),restGround(SCN.list[0].params),opts)},
+  soltarObjeto(objeto){const o=acharObjeto(objeto);if(!o||!releaseGrip(o))throw Error("O objeto não está segurado.");atualizarApoios();return true},
   colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
   resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
   desfazerColisao(){return desfazerColisao()},
