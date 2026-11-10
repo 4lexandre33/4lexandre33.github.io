@@ -40,7 +40,7 @@ export function iniciarControles(){
         ["v1","Cabeça V1 — estável"],
         ["v2","Cabeça V2 — experimental"],
         ["v3_microgeometry","Cabeça V3 — microgeometria anatômica"],
-        ["v4_anatomical","Cabeça V4 — anatomia por planos (experimental)"]
+        ["v4_anatomical","Cabeça V4.1 — crânio compacto e queixo em V (experimental)"]
       ];
       for(const [value,label] of modelos){
         if(!Array.from(q.options).some(o=>o.value===value))q.add(new Option(label,value));
