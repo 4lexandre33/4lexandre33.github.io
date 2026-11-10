@@ -41,18 +41,34 @@ function pousarObjetoRigido(o,ground,{endireitar=false}={}){
  delete o.sobre;delete o.sobreRel;
  return {apoiado:true,deslocamento};
 }
+/* IK do punho + refinamento do deslocamento até o CENTRO DA PALMA.
+ * O ikArm legado persegue o punho; Grip V3 precisa atingir a palma. */
+function alinharPalmaV3(it,side,target,ground){
+ if(!Array.isArray(target)||target.length!==3||!target.every(Number.isFinite))
+   throw Error("Alvo da palma precisa ser um ponto 3D finito.");
+ const p=it.params,ext=side===1?"L":"R",halfHand=.5*armDims(p).LH;
+ let residual=Infinity;
+ for(let attempt=0;attempt<5;attempt++){
+   const frame=handFrameV3(it,side,ground);
+   // A palma está a -LH/2 do punho no eixo Y local da mão.
+   const wristTarget=target.map((v,i)=>v+halfHand*frame.M[i*3+1]);
+   const local=doMundo({...p,wy:ground-restGround(p)})(wristTarget);
+   const r=ikArm(p,shape(p),side,local);
+   Object.assign(p,{["armAbd"+ext]:r.abd,["armFlex"+ext]:r.flex,
+     ["armRot"+ext]:r.rot,["elbow"+ext]:r.elbow});
+   const H=handFrameV3(it,side,ground);
+   residual=Math.hypot(...target.map((v,i)=>v-H.T[i]));
+   if(residual<=.035)break;
+ }
+ return residual;
+}
 /* A mão secundária acompanha o GripSite por IK; a primária permanece dona
  * da pose do objeto. Retorna desvio real para não ocultar extrapolação. */
 function sincronizarMaoSecundaria(it,o,ground){
  const s=o.gripV3?.secundaria;
  if(!s)return null;
- const target=gripSiteWorld(o,s.siteId,ground).mundo,p=it.params;
- const local=doMundo({...p,wy:ground-restGround(p)})(target);
- const r=ikArm(p,shape(p),s.side,local),ext=s.side===1?"L":"R";
- Object.assign(p,{["armAbd"+ext]:r.abd,["armFlex"+ext]:r.flex,
-   ["armRot"+ext]:r.rot,["elbow"+ext]:r.elbow});
- const H=handFrameV3(it,s.side,ground);
- const deviation=Math.hypot(...target.map((v,i)=>v-H.T[i]));
+ const target=gripSiteWorld(o,s.siteId,ground).mundo;
+ const deviation=alinharPalmaV3(it,s.side,target,ground);
  s.desvio=deviation;s.alcancavel=deviation<=.35;
  return deviation;
 }
@@ -162,4 +178,4 @@ function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
  }else{o.emAr=true;}
  return {solto:true,modo};
 }
-export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido,sincronizarMaoSecundaria};
+export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido,sincronizarMaoSecundaria,alinharPalmaV3};
