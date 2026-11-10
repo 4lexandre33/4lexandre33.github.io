@@ -239,6 +239,13 @@
       <h2>Vista (câmera)</h2>
       <div class="orb" id="orbPainel">
         <label class="orb-pivo">Girar em volta de <select id="orbPivo" aria-label="Pivô da órbita"></select></label>
+        <label class="orb-pivo">Região do alvo <select id="orbArea" aria-label="Área de foco do alvo">
+          <option value="">Alvo inteiro</option>
+        </select></label>
+        <label class="orb-pivo">Elevação <input id="orbElev" type="number" min="-70" max="70" step="1" value="0" aria-label="Elevação da órbita em graus" style="width:5.5rem"> °</label>
+        <label class="orb-pivo">Enquadramento <select id="orbFolga" aria-label="Folga do foco">
+          <option value="0.9">Bem próximo</option><option value="1.08" selected>Próximo</option><option value="1.4">Com folga</option>
+        </select></label>
         <div class="group poses orb-vistas" role="group" aria-label="Vistas em volta do pivô">
           <button type="button" data-vista="0">Frente</button>
           <button type="button" data-vista="45">3/4 esq.</button>
