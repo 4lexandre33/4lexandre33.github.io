@@ -1,7 +1,9 @@
 /* GeoMannequin — sliders, camadas e botões de poses, corpos, rostos e enquadramentos */
 import { LAY, SL, POSEKEYS, faixa, ajustarAoPerfil } from "../scene/parametros.js";
 import { $ } from "../scene/ambiente.js";
-import { P, WORLDK } from "../scene/modelo.js";
+import { P, WORLDK, SCN } from "../scene/modelo.js";
+import {COL} from "../scene/colisoes.js";
+import {CONTATO_V2,limitarPropostaV2} from "../scene/contato-v2.js";
 import { FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES } from "../scene/poses.js";
 import { aplicarBiotipo, transitarSexo } from "../scene/biotipos.js";
 import { fmt } from "./exportar.js";
@@ -59,7 +61,12 @@ export function iniciarControles(){
       '<input type="range" id="sl_'+d.k+'" min="'+d.min+'" max="'+d.max+'" step="'+d.step+'">';
     $(d.g).appendChild(wrap);
     const inp=wrap.querySelector("input");
-    inp.addEventListener("input",()=>{const v=parseFloat(inp.value);if(d.k==="fem"){transitarSexo(P,v);syncControls()}else P[d.k]=v;if(d.k==="flex"){ajustarAoPerfil(P);syncControls()}if(GUARD.test(d.k)&&guardArms())syncControls();$("ov_"+d.k).textContent=fmt(d,P[d.k]);setQuick(true);clearTimeout(settle);setSettle(setTimeout(()=>{setQuick(false);render()},260));render()});
+    inp.addEventListener("input",()=>{const old={...P};const v=parseFloat(inp.value);if(d.k==="fem"){transitarSexo(P,v);syncControls()}else P[d.k]=v;if(d.k==="flex"){ajustarAoPerfil(P);syncControls()}if(GUARD.test(d.k)&&guardArms())syncControls();
+      if(CONTATO_V2.enabled&&(COL.modo==="bloquear"||COL.modo==="corrigir")&&
+        (POSEKEYS.has(d.k)||/^(?:head|neck|arm|elbow|hand|fTh|fIn|fMe|fAn|fMi|fSpread|thumbOpp|hip|knee|ankle|toe|body|spine|pelvis|lum|tho)/.test(d.k))){
+        limitarPropostaV2(SCN.list[SCN.active],old);inp.value=P[d.k];
+      }
+      $("ov_"+d.k).textContent=fmt(d,P[d.k]);setQuick(true);clearTimeout(settle);setSettle(setTimeout(()=>{setQuick(false);render()},260));render()});
   });
   LAY.forEach(l=>{
     const lab=document.createElement("label");lab.className="layer";
