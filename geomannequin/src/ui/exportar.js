@@ -7,7 +7,7 @@ import { applyState, sceneState } from "../scene/estado.js";
 import { $ } from "../scene/ambiente.js";
 import { syncControls } from "./controles.js";
 import { updateModeButtons } from "./modos.js";
-import { FLEX_NOMES, H, W, renderScene, shape, watertightMeshV3, meshTopologyV3, exportObjV3 } from "../engine/index.js";
+import { FLEX_NOMES, H, W, renderScene, shape, watertightMeshV3, meshTopologyV3, exportObjV3, watertightMeshV4, meshTopologyV4, exportObjV4 } from "../engine/index.js";
 
 /* exportação */
 function exportSvg(){
@@ -64,6 +64,19 @@ export function iniciarExportar(){
       setTimeout(()=>URL.revokeObjectURL(url),2000);
       say("Cabeça V3 exportada: "+mesh.vertexCount+" vértices, "+mesh.triangleCount+" triângulos.","ok");
     }catch(e){say("Falha ao exportar OBJ: "+e.message,"err")}
+  });
+  $("downloadHeadV4").addEventListener("click",()=>{
+    if(P.headModel!=="v4_anatomical"){say("Selecione a Cabeça V4 antes de exportar OBJ.","err");return}
+    try{
+      const mesh=watertightMeshV4(P,shape(P)),check=meshTopologyV4(mesh);
+      if(check.invalid||check.boundary||check.nonmanifold||check.degenerate)
+        throw Error("Malha V4 inválida: "+JSON.stringify(check));
+      const blob=new Blob([exportObjV4(mesh)],{type:"text/plain;charset=utf-8"});
+      const url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download="geomannequin-cabeca-v4.obj";document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+      say("Cabeça V4 exportada: "+mesh.vertexCount+" vértices / "+mesh.triangleCount+" faces.","ok");
+    }catch(e){say("Erro no OBJ da V4: "+e.message,"err")}
   });
   $("tabSvg").addEventListener("click",()=>setTab("svg"));
   $("tabJson").addEventListener("click",()=>setTab("json"));

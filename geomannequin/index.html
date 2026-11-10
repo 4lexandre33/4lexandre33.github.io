@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="css/controles.css">
 <link rel="stylesheet" href="css/cena.css">
 <link rel="stylesheet" href="css/editor.css">
-<script type="module" src="src/main.js?v=20261110-v3-anatomia-cervical"></script>
+<script type="module" src="src/main.js?v=20261110-head-v4-foundation"></script>
 </head>
 <body>
 <div class="wrap">
@@ -275,6 +275,7 @@
           <option value="v1">Cabeça V1 — estável</option>
           <option value="v2">Cabeça V2 — experimental</option>
           <option value="v3_microgeometry">Cabeça V3 — microgeometria anatômica</option>
+          <option value="v4_anatomical">Cabeça V4 — anatomia por planos (experimental)</option>
         </select>
         <small class="hint" id="headModelHint">V3: microformas 2D fundidas em malha 3D.</small>
       </div>
@@ -293,6 +294,7 @@
         <span class="spacer"></span>
         <button type="button" id="applyJson" hidden>Aplicar JSON</button>
         <button type="button" id="downloadHeadV3" title="Baixar malha fechada da Cabeça V3 em OBJ">Cabeça V3 (.obj)</button>
+        <button type="button" id="downloadHeadV4" title="Baixar a malha experimental da Cabeça V4 em OBJ">Cabeça V4 (.obj)</button>
         <button type="button" id="copy" class="primary">Copiar</button>
       </div>
       <textarea id="out" spellcheck="false" readonly aria-label="Conteúdo exportado"></textarea>

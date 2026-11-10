@@ -2,6 +2,7 @@
 import { D, clamp, gauss, lerp, sstep } from "./matematica.js";
 import {headV2Enabled,ringV2,pointV2,buildHeadV2,earPointV2,buildEarV2,jawPoseV2} from "./head/index.js";
 import {headV3Enabled,ringV3,pointV3,buildHeadV3,earPointV3,buildEarV3} from "./head-v3/index.js";
+import {headV4Enabled,ringV4,pointV4,buildHeadV4,earPointV4,buildEarV4} from "./head-v4/index.js";
 
 function shape(p){
   const t=Math.sin(p.face*D),chinY=-2*t;
@@ -11,6 +12,7 @@ function shape(p){
 }
 /* Seção horizontal da cabeça na altura y: meia-largura a, centro c0 e meia-profundidade d (frente bf, trás bb) */
 function ringAt(y,p,S){
+  if(headV4Enabled(p))return ringV4(y,p,S);
   if(headV3Enabled(p))return ringV3(y,p,S);
   if(headV2Enabled(p))return ringV2(y,p,S);
   const rs=Math.sqrt(Math.max(0,1-y*y));
@@ -107,6 +109,7 @@ function bumps(y,x,p,S){
   return dz;
 }
 function headPt(y,th,p,S,off){
+  if(headV4Enabled(p))return pointV4(y,th,p,S,off||0);
   if(headV3Enabled(p))return pointV3(y,th,p,S,off||0);
   if(headV2Enabled(p))return pointV2(y,th,p,S,off||0);
   const r=ringAt(y,p,S);
@@ -141,6 +144,7 @@ function mandibula(v,p,S){
 }
 const mapTh=u=>u-0.7*Math.sin(u);
 function buildHead(p,S){
+  if(headV4Enabled(p))return buildHeadV4(p,S);
   if(headV3Enabled(p))return buildHeadV3(p,S);
   if(headV2Enabled(p))return buildHeadV2(p,S);
   const cols=128,ys=[];
@@ -168,6 +172,7 @@ function buildHead(p,S){
 /* pescoço: largo, com os dois músculos esternocleidomastoideos e base abrindo para os ombros */
 /* orelha: superfície em coordenadas (u,v) de -1 a 1; u>0 é o lado do rosto */
 function earSurf(p,S,s,u,v){
+  if(headV4Enabled(p))return earPointV4(p,S,s,u,v);
   if(headV3Enabled(p))return earPointV3(p,S,s,u,v);
   if(headV2Enabled(p))return earPointV2(p,S,s,u,v);
   /* Implantação junto à ATM e ao processo mastoideu: altura do pavilhão
@@ -185,6 +190,7 @@ function earSurf(p,S,s,u,v){
   return [x,S.chinY+(y-S.chinY)*k,z];
 }
 function buildEar(p,S,s){
+  if(headV4Enabled(p))return buildEarV4(p,S,s);
   if(headV3Enabled(p))return buildEarV3(p,S,s);
   if(headV2Enabled(p))return buildEarV2(p,S,s);
   const rows=12,cols=40;
