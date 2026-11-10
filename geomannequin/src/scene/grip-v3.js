@@ -20,7 +20,7 @@ function gripSiteSelection(o,frame,ground,site){
  if(site!==undefined&&site!==null&&site!=="auto")return gripSiteWorld(o,site,ground);
  return closestGripSite(o,frame.T,ground);
 }
-function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false}={}){
+function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,objetos=[]}={}){
  if(!it||!o||!(side===1||side===-1))throw Error("Manequim, objeto ou mão inválidos.");
  if(!Number.isFinite(reach)||reach<0||reach>100)throw Error("Alcance precisa estar entre 0 e 100 R.");
  if(o.gripV3&&!segunda)throw Error("Objeto já está segurado; use segunda:true para adicionar outra mão.");
@@ -47,10 +47,19 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
  const rel=rigidCompose(rigidInverse(H),objPose);
  // Captura os objetos apoiados ANTES de movimentar o pai no mundo.
  // Cada filho guarda uma pose relativa à cadeira (sem depender do chão).
- if(Array.isArray(arguments[4]?.objetos)){
-   const all=arguments[4].objetos;
-   for(const child of all){
-     if(child.sobre===o.id)child.sobreRel=rigidCompose(rigidInverse(old),objectRigidPose(child,ground));
+ if(Array.isArray(objetos)){
+   const byId=new Map(objetos.map(x=>[x.id,x]));
+   for(const child of objetos){
+     if(child===o)continue;
+     let parent=byId.get(child.sobre),found=false,seen=new Set([child.id]);
+     while(parent&&!seen.has(parent.id)){
+       if(parent.id===o.id){found=true;break}
+       seen.add(parent.id);parent=byId.get(parent.sobre);
+     }
+     if(!found)continue;
+     // Guarda a relação IMEDIATA com o pai, antes de mover a cadeira.
+     const direct=byId.get(child.sobre);
+     if(direct)child.sobreRel=rigidCompose(rigidInverse(objectRigidPose(direct,ground)),objectRigidPose(child,ground));
    }
  }
  // Só depois de validar e calcular o vínculo, alterar o objeto.
