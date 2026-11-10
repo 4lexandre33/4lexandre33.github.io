@@ -11,7 +11,7 @@ let P;
 let UID=0,OBJID=1000;
 function novoIdObjeto(){return ++OBJID}
 /* exato: todos num z-buffer comum (mais lento); sem ele, cada manequim vira uma camada (foto .svg) guardada em cache */
-const SCN={list:[],active:0,exato:false,objetos:[],objSel:null,seguirCamera:null};
+const SCN={list:[],active:0,exato:false,objetos:[],objSel:null,seguirCamera:null,ultimaVistaOrientada:null};
 /* ganchos da interface (o código chama a página sem depender dela; no MCP ficam vazios) */
 const UIH={};
 const CAMK=["yaw","pitch","roll","zoom","panX","panY","lightAz","lightEl","tx","ty","tz","persp","camDist","lens","atmo"];
