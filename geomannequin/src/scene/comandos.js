@@ -103,6 +103,15 @@ function apiFor(it){
     olhar(alvo){chk();olharPara(it,alvo);return m},
     olharPara(alvo){chk();olharPara(it,alvo);return m},
     maoEm(lado,ponto){chk();const antes={...it.params};const e=maoEm(it,ladoNum(lado),pontoMundo(ponto));if(e>0.4)LOG.push(["aviso","a mão não alcança o ponto (faltam "+Math.round(e*11.4)+" cm)"]);guardarContatoV2(it,antes);return m},
+    maoEmSite(ref,ponto,{mao="direita"}={}){
+      chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
+      atualizarApoios();const ground=restGround(SCN.list[0].params);
+      const site=gripSiteWorld(o,ponto,ground),before={...it.params};
+      const residual=maoEm(it,ladoNum(mao),site.mundo);
+      guardarContatoV2(it,before);
+      return {objeto:o.nome||o.tipo,ponto:site.id,distanciaResidual:residual,
+        alcançou:residual<=.3,mao};
+    },
     peEm(lado,ponto){chk();peEm(it,ladoNum(lado),pontoMundo(ponto));return m},
     apontar(alvo,lado){chk();apontarPara(it,alvo,lado===undefined?-1:ladoNum(lado));return m},
     /* ===== mãos ===== */
@@ -419,9 +428,24 @@ const cena={
   contatoV2(opts){return setContatoV2(opts)},
   contatosFisicos(opts){return consultarContatosV2(opts)},
   segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
+    // modo: 'aproximarMao' usa IK antes da captura. Sem deslocar a cadeira.
+
     const it=manequim===undefined?SCN.list[SCN.active]:typeof manequim==="number"?SCN.list[manequim]:SCN.list.find(q=>q.name===manequim);
     const o=acharObjeto(objeto);if(!it||!o)throw Error("Manequim/objeto não encontrado.");
     atualizarApoios();const ground=restGround(SCN.list[0].params);
+    const previous={...it.params};
+    if(opts.modo==="aproximarMao"){
+      const H=handFrameV3(it,ladoNum(mao),ground);
+      const sites=o&&gripSites(o).map(s=>gripSiteWorld(o,s.id,ground));
+      const site=opts.ponto&&opts.ponto!=="auto"?gripSiteWorld(o,opts.ponto,ground):
+        sites.sort((a,b)=>Math.hypot(...a.mundo.map((v,i)=>v-H.T[i]))-
+                        Math.hypot(...b.mundo.map((v,i)=>v-H.T[i])))[0];
+      try{
+        const residual=maoEm(it,ladoNum(mao),site.mundo);
+        if(residual>.35)throw Error("A mão não conseguiu alcançar "+site.nome+". Desvio residual "+residual.toFixed(2)+" R.");
+        return beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,modo:"preservar",ponto:site.id,objetos:SCN.objetos});
+      }catch(e){Object.assign(it.params,previous);throw e}
+    }
     return opts.motor==="v2"?beginGrip(it,o,ladoNum(mao),ground,opts):
       beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,objetos:SCN.objetos});
   },
