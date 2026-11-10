@@ -20,7 +20,7 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
-import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3} from "./grip-v3.js";
+import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -137,6 +137,13 @@ function apiFor(it){
       if(!ok)throw Error("Nenhum objeto encontrado segurado por este manequim.");
       atualizarApoios();return m},
     objetosSegurados(){chk();return SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id).map(o=>o.nome||o.tipo)},
+    trocarMaoPrincipal(ref,mao){
+      chk();const o=acharObjeto(ref);
+      if(!o||o.gripV3?.mannequinId!==it.id)throw Error("Este objeto não está segurado pelo manequim.");
+      atualizarApoios();
+      const r=transferirMaoPrincipalV3(it,o,restGround(SCN.list[0].params),ladoNum(mao));
+      atualizarApoios();return r;
+    },
     /* ===== articulações pelo nome: m.articulacao("cotovelo esquerdo", {dobrar: 90}) ===== */
     /* confere a pose: partes do corpo atravessando umas às outras (não vizinhas, mais de 0,5 R) e limites acoplados que corrigiriam algo */
     validarPose(opts){chk();const tol=opts&&opts.tolerancia!==undefined?num(opts.tolerancia,"tolerância"):0.5,a=autoColisoes(pMundo(it),tol),l=limitesAcoplados(Object.assign({},it.params));
@@ -264,6 +271,7 @@ function apiObjeto(q){
         segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
     segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
     soltar(opts={}){chk();cena.soltarObjeto(q.id,opts);return o},
+    trocarMaoPrincipal(mao){chk();cena.transferirMaoPrincipal(q.id,{mao});return o},
     cair(opts={}){chk();if(q.gripV3||q.grip)throw Error("Solte o objeto antes de iniciar a queda.");
       atualizarApoios();iniciarQuedaObjeto(q,restGround(SCN.list[0].params),opts);
       return o},
@@ -427,7 +435,7 @@ const cena={
     {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
     {id:"preensaoV3",estado:"experimental",api:["m.segurar","m.soltar","m.maoEmSite",
        "cena.segurarObjeto","cena.soltarObjeto","cena.vinculos","cena.inspecionarPreensao",
-       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe","obj.pousar","obj.cair","obj.fisica","obj.pararQueda","cena.avancarFisica","cena.simularQueda"],
+       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe","obj.pousar","obj.cair","obj.fisica","obj.pararQueda","cena.avancarFisica","cena.simularQueda","cena.transferirMaoPrincipal","m.trocarMaoPrincipal","obj.trocarMaoPrincipal"],
       limite:"Attachment 6DOF com mão primária, IK auxiliar da segunda mão (sem solver bilateral exato) e física aproximada por etapas (sem dinâmica de corpos rígidos completos)."},
     {id:"editor",estado:"parcial",api:["cena.marcarEstado","cena.desfazer","cena.refazer","cena.historico"],limite:"histórico explícito/de execução; mudanças externas não são interceptadas automaticamente"},
     {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
@@ -544,6 +552,15 @@ const cena={
   vinculos(){atualizarApoios();return SCN.objetos.map(o=>({o,g:o.gripV3||o.grip})).filter(x=>x.g).map(({o,g})=>
     ({objeto:o.nome||o.tipo,versao:o.gripV3?3:1,manequim:SCN.list.find(x=>x.id===g.mannequinId)?.name||null,
      mao:g.side===1?"esquerda":"direita",ponto:g.siteId||null,segundaMao:g.secundaria?.side===1?"esquerda":g.secundaria?.side===-1?"direita":null}))},
+  transferirMaoPrincipal(objeto,{mao="esquerda"}={}){
+    const o=acharObjeto(objeto);
+    if(!o?.gripV3)throw Error("O objeto precisa estar segurado com preensão V3.");
+    const it=SCN.list.find(x=>x.id===o.gripV3.mannequinId);
+    if(!it)throw Error("Proprietário do vínculo não encontrado.");
+    atualizarApoios();
+    const resultado=transferirMaoPrincipalV3(it,o,restGround(SCN.list[0].params),ladoNum(mao));
+    atualizarApoios();return resultado;
+  },
   inspecionarPreensao(){atualizarApoios();const ground=restGround(SCN.list[0].params);
     return SCN.objetos.filter(o=>o.gripV3).map(o=>{const it=SCN.list.find(x=>x.id===o.gripV3.mannequinId);
       return it?inspectRigidGrip(it,o,ground):{ativo:false,objeto:o.nome||o.tipo}})},
