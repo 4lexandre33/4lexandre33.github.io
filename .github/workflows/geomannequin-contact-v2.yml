@@ -1,0 +1,42 @@
+name: GeoMannequin - Anatomical Contact V2
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/**'
+      - '.github/workflows/geomannequin-contact-v2.yml'
+  workflow_dispatch:
+jobs:
+  contact-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependencias web e MCP
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Sintaxe de módulos críticos
+        run: |
+          node --check src/engine/contact-v2.js
+          node --check src/scene/contato-v2.js
+          node --check src/scene/preensao-v2.js
+          node --check src/scene/comandos.js
+          node --check src/scene/estado.js
+          node --check src/ui/colisoes.js
+          node --check src/ui/arrastar.js
+      - name: Contato V2, dedos, OBB, autocolisão e preensão
+        run: npm run testar:contato-v2
+      - name: Compatibilidade de colisões legado
+        run: node testes/colisoes.mjs
+      - name: Simulação de cenas, objetos, esqueleto
+        run: |
+          node testes/objetos.mjs
+          node testes/rig.mjs
+      - name: Construção do aplicativo HTML
+        run: npm run construir
