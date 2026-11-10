@@ -8,14 +8,16 @@
   "scripts": {
     "servir": "node ferramentas/servir.mjs",
     "construir": "node ferramentas/construir.mjs",
-    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs && node testes/objetos.mjs && node testes/camera-objetos.mjs && node testes/biotipos.mjs && node testes/anatomia-integral.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/quadros.mjs && node testes/rig.mjs",
+    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs && node testes/objetos.mjs && node testes/camera-objetos.mjs && node testes/biotipos.mjs && node testes/anatomia-integral.mjs && node testes/cabeca-referencia.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/quadros.mjs && node testes/rig.mjs",
     "desempenho": "node testes/desempenho.mjs",
     "estimar-poses": "node ferramentas/estimar-poses.mjs",
-    "testar:anatomia": "node testes/biotipos.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/anatomia-integral.mjs",
+    "testar:anatomia": "node testes/biotipos.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/anatomia-integral.mjs && node testes/cabeca-referencia.mjs",
     "testar:matriz": "node testes/matriz-anatomica.mjs --svg",
     "testar:matriz:rapida": "node testes/matriz-anatomica.mjs --rapido",
     "testar:face": "node testes/matriz-facial.mjs --svg",
-    "testar:face:rapida": "node testes/matriz-facial.mjs --rapido"
+    "testar:face:rapida": "node testes/matriz-facial.mjs --rapido",
+    "testar:cranio": "node testes/cabeca-referencia.mjs",
+    "atlas:cranio": "node testes/atlas-cranio.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
