@@ -14,6 +14,7 @@
     "colisoes.js",
     "cenario.js",
     "blocking.js",
+    "regioes-orbita.js",
     "orbita.js",
     "descrever.js",
     "comandos.js",
