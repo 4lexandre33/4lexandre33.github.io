@@ -89,6 +89,7 @@ export function iniciarOrbita(){
  sel.addEventListener("change",()=>{
   const alvo=pivoDoValor(sel.value);
   try{
+    pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;if($("orbSeguir"))$("orbSeguir").checked=false;
     if(alvo===null){SCN.pivo=null;SCN.orbitaArea=null;pararSeguimentoCamera();}
     else pivoCamera(alvo,{area:null,enquadrar:$("orbEnq").checked,folga:folgaOrbita()});
     encherAreas();feitoOrbita();
