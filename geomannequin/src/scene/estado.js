@@ -54,7 +54,7 @@ function sceneState(){
 }
 function loadScene(sc){
   if(!sc||!Array.isArray(sc.list)||!sc.list.length)throw new Error("JSON da cena sem manequins.");
-  SCN.list.length=0;
+  SCN.list.length=0;SCN.seguirCamera=null;
   sc.list.slice(0,MAXM).forEach(o=>{const it=newInst(null,o.name);SL.forEach(d=>{const v=o.params&&o.params[d.k];if(typeof v==="number"&&isFinite(v))it.params[d.k]=clamp(v,d.min,d.max)});
     if(o.params&&NOMES_BIOTIPOS.includes(o.params._biotipo))it.params._biotipo=o.params._biotipo;it.params.headModel=modeloCabecaEstadoOrb(o.params&&o.params.headModel);
     it.hue=typeof o.hue==="number"?o.hue:null;it.col=o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink)?o.col:null;
@@ -64,8 +64,12 @@ function loadScene(sc){
   SCN.objetos.length=0;SCN.objSel=null;
   if(Array.isArray(sc.objetos))sc.objetos.slice(0,40).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo);["x","z","giro","larg","prof","alt","encosto","cabeceira","raio"].forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],k==="giro"?-180:k==="raio"?0.1:-40,k==="giro"?180:k==="raio"?20:40)});
     if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);q.id=novoIdObjeto();
-    q.hue=typeof o.hue==="number"&&isFinite(o.hue)?o.hue:null;if(o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink))q.col={fill:o.col.fill,ink:o.col.ink};if(Number.isInteger(o.sobre))q._sobre=o.sobre;
+    q.hue=typeof o.hue==="number"&&isFinite(o.hue)?o.hue:null;
+    if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
+    if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();if(o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink))q.col={fill:o.col.fill,ink:o.col.ink};if(Number.isInteger(o.sobre))q._sobre=o.sobre;
     if(o.grip&&Number.isInteger(o.grip.mannequinIndex))q._grip={...o.grip};
+    if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
+    if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();
     if(Array.isArray(o.frenteLocal))q.frenteLocal=o.frenteLocal.slice();
     if(Array.isArray(o.cimaLocal))q.cimaLocal=o.cimaLocal.slice();
     SCN.objetos.push(q)}else SCN.objetos.push(null)}catch(e){SCN.objetos.push(null)}});
@@ -93,6 +97,11 @@ function loadScene(sc){
   /* Restaura o alvo e a região de foco. IDs de objetos mudam no JSON,
      então persistimos seu índice e recuperamos o novo ID aqui. */
   SCN.pivo=null;SCN.orbitaArea=null;
+  if(sc.seguirCamera&&typeof sc.seguirCamera==="object"){
+    const q=sc.seguirCamera,items=q.tipo==="objeto"?SCN.objetos:q.tipo==="manequim"?SCN.list:[];
+    const it=Number.isInteger(q.indice)?items[q.indice]:null;
+    if(it&&q.opts&&typeof q.opts==="object")SCN.seguirCamera={uid:it.id,tipo:q.tipo,opts:{...q.opts}};
+  }
   if(sc.orbita&&typeof sc.orbita==="object"){
     let alvo=sc.orbita.alvo;
     if(alvo&&typeof alvo==="object"&&!Array.isArray(alvo)&&alvo.tipo==="objeto"){
