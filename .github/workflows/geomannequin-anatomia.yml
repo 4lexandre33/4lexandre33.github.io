@@ -1,12 +1,8 @@
 name: GeoMannequin — matriz anatômica
+# Execução manual: o repositório não disponibilizou runner na tentativa inicial.
+# Não disparar automaticamente em todo commit até que a execução esteja habilitada.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feature/geomannequin-10-biotipos-harmonia
-    paths:
-      - 'geomannequin/**'
-      - '.github/workflows/geomannequin-anatomia.yml'
 jobs:
   anatomia:
     runs-on: ubuntu-latest
