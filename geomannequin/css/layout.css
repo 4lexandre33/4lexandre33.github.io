@@ -11,6 +11,17 @@ main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
 .panel{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px;min-width:0}
 .panel h2{font-family:var(--font-mono);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}
 .panel h2:not(:first-child){margin-top:18px}
+/* Área de colisões acessível por atalho no cabeçalho e URL ?painel=colisoes */
+#colSecao{scroll-margin-top:12px;padding:9px 7px;margin:13px -7px 0;border:1px solid transparent;border-radius:8px;outline:none}
+#colSecao:focus-visible{outline:2px solid var(--cobalt);outline-offset:2px}
+#colSecao h2:first-child{margin-top:0}
+#colSecao.col-secao-destaque{animation:colSecaoPulse 2.4s ease-out 1}
+@keyframes colSecaoPulse{
+  0%,35%{border-color:var(--cobalt);background:var(--field)}
+  100%{border-color:transparent;background:transparent}
+}
+@media(prefers-reduced-motion:reduce){#colSecao.col-secao-destaque{animation:none;border-color:var(--cobalt)}}
+
 #layers{grid-area:layers}
 #stagebox{grid-area:stage;display:flex;flex-direction:column;gap:8px;min-width:0}
 #params{grid-area:params}
