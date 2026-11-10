@@ -341,3 +341,13 @@ A implementação experimental V2 ganhou **círculos laterais planos maiores** (
 - [Task graph completo de 19 etapas, critérios e testes](docs/task-graph-cabeca-v2-perfil-loomis-20261110.md)
 - Regressões: `npm run testar:planos-loomis`; atlas 3×3: `npm run atlas:planos-loomis -- masculino medio`
 - A geometria precisa de revisão estética comparando as vistas geradas às referências. Testes geométricos isolados não equivalem a essa aprovação.
+
+### Cabeça V3 experimental — microgeometria anatômica (10/11/2026)
+
+A V3 cria uma nova cabeça a partir de seções anatômicas por spline e **mais de 2.000 microformas 2D sobrepostas**, convertidas em um único campo de relevo e malha 3D. As formas permanecem ocultas no modo manequim, mas podem ser inspecionadas no modo construção. No seletor **Geometria da cabeça**, escolha **Cabeça V3 — microgeometria anatômica** (V1/V2 continuam disponíveis). A nova exportação **Cabeça V3 (.obj)** gera uma malha fechada com normais.
+
+- [Arquitetura, task graph de 42 tarefas, comandos e limites](docs/head-v3-microgeometry.md)
+- Testes: `npm run testar:cabeca-v3`
+- Atlas de nove vistas: `node testes/atlas-cabeca-v3.mjs masculino medio`
+
+**Estado:** implementação funcional experimental; resultados da suíte integrada/CI, revisão estética e comparação com referência ainda precisam ser aprovados antes de chamar o modelo de anatomicamente fiel.
