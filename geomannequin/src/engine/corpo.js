@@ -8,7 +8,7 @@ function bodyEff(p){
   return {
     /* ombros: clavículas longas e acrômios afastados (tronco em V); músculo alarga mais */
     W:p.shW+0.10+0.22*m-0.29*w+0.07*f,
-    neck:p.neck*(1+0.18*m+0.18*f-0.15*w),
+    neck:p.headModel==="v3_microgeometry"?Math.min(p.neck*(1+0.18*m+0.18*f-0.15*w)*.80,(p.jaw??.60)*.77):p.neck*(1+0.18*m+0.18*f-0.15*w),
     /* caixa torácica grande (bem maior que o abdômen); chest0 é a medida antiga, usada só para a cintura */
     chest:(0.58*p.shW+0.42)*(1+0.12*m+0.13*f-0.14*w),
     chest0:(0.45*p.shW+0.35)*(1+0.1*m+0.13*f-0.07*w),
@@ -32,7 +32,7 @@ function bustFrame(p,S){
      abrir para os trapézios. Antes a rampa do ombro começava quase na
      altura do queixo, fazendo o pescoço desaparecer na vista frontal. */
   const yTr=yAc+clamp(p.shDrop*0.67,0.34,0.59);
-  return {B,yJ,W,yAc,yTr,zT:-0.47,yTop:-0.42,yC7:yJ+0.42,chestW:B.chest,
+  return {B,yJ,W,yAc,yTr,zT:-0.47,yTop:-0.42,v3Head:p.headModel==="v3_microgeometry",yC7:yJ+0.42,chestW:B.chest,
     yUB:yJ-1.7,yWst:yJ-3.05,yNav:yJ-3.35,yHip:yJ-4.85,yCr:yJ-5.85,yB:yJ-6.08};
 }
 /* perfil vertical do tronco: [y, meia-largura, frente, trás, centro z, expoente] interpolado por Catmull-Rom */
@@ -83,7 +83,7 @@ function crInterp(P,y,k){
   return (2*t3-3*t2+1)*b+(t3-2*t2+t)*h*m1+(-2*t3+3*t2)*c+(t3-t2)*h*m2;
 }
 function bustZc(y,F){
-  if(y>F.yJ)return lerp(-0.16,F.zT,clamp((F.yTop-y)/(F.yTop-F.yJ),0,1));
+  if(y>F.yJ)return lerp(F.v3Head?.17:-.16,F.zT,clamp((F.yTop-y)/(F.yTop-F.yJ),0,1));
   if(y>F.yAc)return F.zT;
   return crInterp(torsoProfile(F),y,4);
 }

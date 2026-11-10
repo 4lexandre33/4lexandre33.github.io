@@ -1,0 +1,48 @@
+name: GeoMannequin - V3 cranioface e nuca
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/engine/head-v3/**'
+      - 'geomannequin/src/engine/corpo.js'
+      - 'geomannequin/src/engine/montagem.js'
+      - 'geomannequin/src/engine/desenho.js'
+      - 'geomannequin/testes/cabeca-v3-correcao-anatomica.mjs'
+      - 'geomannequin/testes/atlas-cabeca-v3-reconstrucao.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+jobs:
+  anatomia-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependências
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Anatomia V3 (10 biotipos e seções)
+        run: npm run testar:cabeca-v3-anatomia
+      - name: V3 (superfície, normais e OBJ)
+        run: npm run testar:cabeca-v3
+      - name: V2 inalterada
+        run: npm run testar:cabeca-v2
+      - name: Build modular e HTML único
+        run: npm run construir
+      - name: Atlas nove vistas masculino
+        run: npm run atlas:cabeca-v3-anatomia -- masculino medio
+      - name: Atlas nove vistas feminino
+        run: npm run atlas:cabeca-v3-anatomia -- feminino medio
+      - name: Folhas SVG para revisão estética
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cranio-face-pescoco-v3-3x3
+          path: geomannequin/testes/saida/cabeca-v3-reconstrucao/
+          retention-days: 14
+          if-no-files-found: warn

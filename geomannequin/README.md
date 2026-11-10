@@ -371,3 +371,15 @@ No roteiro: `#orbita "Ana" 8 area "mao esquerda" elevacao 25`. A escolha do piv�
 - `node testes/atlas-camera-foco-regional.mjs` — folha visual 3×3 com nove enquadramentos.
 
 **Portões de aceitação:** comparação visual das nove vistas, build do projeto e regressões antigas ainda precisam ser confirmadas; implementação de código isoladamente não garante aprovação visual do foco.
+
+
+### Cabeça V3 — correção craniofacial e junção cervical (10/11/2026)
+
+A geometria da **Cabeça V3** foi refinada a partir das oito vistas fornecidas: calota sem afunilamento temporal, testa com trecho quase reto, depressão orbital reduzida, nariz e região oral menos projetados, mento mais firme, occipital curvo e pescoço mais estreito implantado sob a calota. O modelo continua sendo **uma malha gerada por microformas 2D** — as curvas Loomis/Asaro são guias 3D sobre a superfície e não sólidos adicionais. A V1 e a V2 foram preservadas.
+
+- [Task graph técnico de 62 tarefas, arquivos exatos, dependências, fórmulas e portões de aceite](docs/task-graph-v3-reconstrucao-anatomica-20261110.md).
+- `npm run testar:cabeca-v3-anatomia` — verificação das proporções de testa, temporal, nuca, perfil facial e pescoço em 10 biotipos.
+- `npm run testar:cabeca-v3` — inclui todos os testes da malha V3 e regressões de topologia/OBJ.
+- `node testes/atlas-cabeca-v3-reconstrucao.mjs masculino medio` e `... feminino medio` — atlas de 9 vistas com **pescoço e linhas construtivas**.
+
+**Situação:** as mudanças matemáticas e os testes foram adicionados ao código. Não declarar anatomia aprovada até executar testes integrados, inspecionar as 18 vistas renderizadas e compará-las visualmente às imagens de referência. A malha cervical continua separada da malha da cabeça e é escondida sob a calota por sobreposição projetada, não por união volumétrica em uma peça só.

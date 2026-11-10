@@ -2,6 +2,7 @@
  * microformas 2D sobrepostos. A superfície final é UMA grade 3D contínua. */
 import {clamp,smooth,normalizedHeight,yAt,sectionV3} from './anatomy.js';
 import {compileMicroAtlasV3,sampleMicroV3} from './microfields.js';
+import {anatomicalCurvesV3 as _anatomicalCurvesV3,landmarksV3 as _landmarksV3} from './landmarks.js';
 export {sectionV3,normalizedHeight,yAt} from './anatomy.js';
 export {microformsV3,compileMicroAtlasV3} from './microfields.js';
 const TAU=2*Math.PI;
@@ -13,11 +14,18 @@ export function ringV3(y,p,S){
 export function pointV3(y,theta,p,S,offset=0){
  const v=normalizedHeight(y,S),s=sectionV3(v,p,S),sin=Math.sin(theta),cos=Math.cos(theta),a=compileMicroAtlasV3(p,S);
  const u=sin,frontWeight=smooth((cos+.10)/.62),backWeight=smooth((-cos+.10)/.62);
- let x=s.width*sin;
+ /* Suaviza a transição do crânio frontal ao plano lateral temporal.
+  * Disco de Loomis não é um sólido separado; o achatamento nasce da seção. */
+ const at=Math.abs(sin);let sideProfile=at;
+ if(at>.87){
+   const t=clamp((at-.87)/.13,0,1),t2=t*t,t3=t2*t;
+   sideProfile=(2*t3-3*t2+1)*.87+(t3-2*t2+t)*.13+(-2*t3+3*t2)*.962;
+ }
+ let x=s.width*Math.sign(sin)*sideProfile;
  /* Superelipse frontal moderada: faz planos faciais, não uma esfera global. */
  const frontalCos=Math.sign(cos)*Math.pow(Math.abs(cos),cos>0?.77:1);
  let z=(s.front+s.back)/2+(s.front-s.back)/2*frontalCos;
- z+=frontWeight*sampleMicroV3(a,u,v,'front');
+ z+=frontWeight*clamp(sampleMicroV3(a,u,v,'front'),-.085,.23);
  z+=backWeight*sampleMicroV3(a,u,v,'back');
  x+=Math.sign(sin)*Math.pow(Math.abs(sin),3)*sampleMicroV3(a,u,v,'side');
  if(offset){x+=offset*sin;z+=offset*cos;}
@@ -64,6 +72,8 @@ export function buildEarV3(p,S,sign){
  }
  return {V,rows,cols,flip:-sign,fb:[sign,0,0]};
 }
+export const anatomicalCurvesV3=(p,S)=>_anatomicalCurvesV3(p,S,pointV3);
+export const landmarksV3=(p,S)=>_landmarksV3(p,S,pointV3);
 export function isoCurvesV3(p,S,{meridians=16,parallels=13,resolution=96}={}){
  const result=[];
  if(meridians>0)for(let i=0;i<meridians;i++){

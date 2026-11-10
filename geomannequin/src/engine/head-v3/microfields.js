@@ -23,35 +23,37 @@ export function microformsV3(p){
  add('testa', 'front',[-.9,.9,.17,.49],11,8,(u,v)=>.016*bell(u,v,0,.33,.73,.24));
  for(const side of [-1,1]){
   add('orbita-'+side,'front',[side<0?-.68:.12,side<0?-.12:.68,.445,.625],11,10,
-    (u,v)=>-.155*bell(u,v,side*.35,.533,.195,.047));
+    (u,v)=>-.068*bell(u,v,side*.35,.533,.175,.045));
   add('arco-supraorbital-'+side,'front',[side<0?-.74:.08,side<0?-.08:.74,.40,.53],9,7,
-    (u,v)=>(.06+.033*brow)*bell(u,v,side*.36,.474,.245,.043));
+    (u,v)=>(.048+.022*brow)*bell(u,v,side*.36,.474,.225,.041));
   add('palpebra-'+side,'front',[side<0?-.65:.12,side<0?-.12:.65,.52,.60],9,6,
-    (u,v)=>.037*bell(u,v,side*.35,.572,.19,.027));
+    (u,v)=>.027*bell(u,v,side*.35,.572,.18,.026));
   add('zigoma-'+side,'front',[side<0?-.95:.14,side<0?-.14:.95,.57,.76],11,9,
-    (u,v)=>(.09+.025*fat)*bell(u,v,side*.60,.643,.23,.086));
+    (u,v)=>(.085+.02*fat)*bell(u,v,side*.59,.639,.225,.075));
   add('maxilar-'+side,'front',[side<0?-.7:.06,side<0?-.06:.7,.64,.86],9,8,
-    (u,v)=>(.043+.023*fat)*bell(u,v,side*.36,.744,.24,.085));
+    (u,v)=>(.032+.016*fat)*bell(u,v,side*.36,.742,.23,.081));
   add('masseter-'+side,'front',[side<0?-.88:.20,side<0?-.20:.88,.75,.97],9,8,
     (u,v)=>(.035+.028*(p.muscle||0))*bell(u,v,side*.57,.84,.24,.10));
   add('temporais-'+side,'side',[side<0?-.99:.55,side<0?-.55:.99,.24,.65],9,10,
-    (u,v)=>-.07*bell(u,v,side*.84,.47,.16,.15));
+    (u,v)=>-.015*bell(u,v,side*.84,.47,.14,.14));
   add('angulos-mandibulares-'+side,'side',[side<0?-.98:.51,side<0?-.51:.98,.73,.97],8,7,
     (u,v)=>.055*bell(u,v,side*.76,.86,.17,.10));
  }
- add('glabela','front',[-.24,.24,.42,.58],7,9,(u,v)=>.057*brow*bell(u,v,0,.48,.12,.055));
- add('raiz-nasal','front',[-.23,.23,.50,.67],9,10,(u,v)=>.10*nose*bell(u,v,0,.604,.11,.066));
- add('dorso-nasal','front',[-.19,.19,.58,.75],9,11,(u,v)=>.18*nose*bell(u,v,0,.68,.082,.072));
- add('ponta-nasal','front',[-.23,.23,.67,.81],9,9,(u,v)=>.255*nose*bell(u,v,0,.744,.125,.040));
+ add('glabela','front',[-.24,.24,.42,.58],7,9,(u,v)=>.046*brow*bell(u,v,0,.48,.11,.052));
+ add('raiz-nasal','front',[-.23,.23,.50,.67],9,10,(u,v)=>.075*nose*bell(u,v,0,.604,.10,.063));
+ add('dorso-nasal','front',[-.19,.19,.58,.75],9,11,(u,v)=>.145*nose*bell(u,v,0,.68,.081,.074));
+ add('ponta-nasal','front',[-.23,.23,.67,.81],9,9,(u,v)=>.185*nose*bell(u,v,0,.744,.124,.039));
  for(const side of [-1,1])add('asa-nasal-'+side,'front',[-.29,.29,.705,.805],7,8,
-   (u,v)=>.09*nose*bell(u,v,side*.16,.76,.065,.027));
+   (u,v)=>.07*nose*bell(u,v,side*.16,.76,.064,.026));
  add('filtro','front',[-.25,.25,.77,.87],9,6,(u,v)=>.031*bell(u,v,0,.819,.10,.025));
- add('labio-superior','front',[-.4,.4,.81,.89],11,7,(u,v)=>.051*lips*bell(u,v,0,.854,.22,.017));
- add('labio-inferior','front',[-.4,.4,.85,.94],11,7,(u,v)=>.060*lips*bell(u,v,0,.885,.22,.023));
- add('mento','front',[-.56,.56,.875,1],9,8,(u,v)=>.09*bell(u,v,0,.944,.28,.065));
+ add('labio-superior','front',[-.4,.4,.81,.89],11,7,(u,v)=>.035*lips*bell(u,v,0,.854,.20,.017));
+ add('labio-inferior','front',[-.4,.4,.85,.94],11,7,(u,v)=>.039*lips*bell(u,v,0,.885,.21,.024));
+ add('cilindro-bucal','front',[-.43,.43,.78,.89],9,9,(u,v)=>.020*bell(u,v,0,.830,.30,.058));
+ add('mento','front',[-.56,.56,.875,1],9,8,(u,v)=>.055*bell(u,v,0,.937,.275,.058));
+ add('submento','front',[-.48,.48,.93,1],9,8,(u,v)=>-.022*bell(u,v,0,.973,.25,.037));
  add('sulco-labial','front',[-.4,.4,.86,.94],9,6,(u,v)=>-.026*bell(u,v,0,.910,.22,.012));
- add('occipital','back',[-.95,.95,.17,.68],11,12,(u,v)=>-.055*bell(u,v,0,.41,.77,.20));
- add('nuca-occipital','back',[-.9,.9,.55,.85],9,9,(u,v)=>.022*bell(u,v,0,.73,.6,.12));
+ add('occipital','back',[-.95,.95,.17,.68],11,12,(u,v)=>-.022*bell(u,v,0,.41,.77,.20));
+ add('nuca-occipital','back',[-.9,.9,.55,.85],9,9,(u,v)=>.015*bell(u,v,0,.73,.6,.12));
  if(smile>.01)for(const side of [-1,1])add('sorriso-'+side,'front',[-.7,.7,.7,.9],7,6,
    (u,v)=>.024*smile*bell(u,v,side*.4,.82,.14,.05));
  return pieces;
