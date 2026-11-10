@@ -8,10 +8,10 @@ import {newCache} from "../montagem.js";
 import {DEF} from "../padroes.js";
 export const STUDY_SIZE={width:1400,height:1050};
 export const STUDY_TOKENS=Object.freeze({
- paper:"#fffcfd",grid:"#e9e9ef",gridMajor:"#d9dfe8",
- ink:"#85485f",detail:"#b3778f",fill:"#f7dfe9",
- shade1:"#edc4d4",shade2:"#dca4b8",shade3:"#b77a92",
- red:"#e5a0b3",blue:"#b3c9dd",pale:"#faf0f4"
+ paper:"#fafbfd",grid:"#e6ecf3",gridMajor:"#d9e2eb",
+ ink:"#81465d",detail:"#b3778f",fill:"#f4dbe8",
+ shade1:"#edc8d8",shade2:"#dca5ba",shade3:"#b77a92",
+ red:"#e6a4b8",blue:"#b3c9dd",pale:"#faf0f4"
 });
 const escapeXml=v=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
  .replace(/"/g,"&quot;").replace(/'/g,"&apos;");
@@ -39,8 +39,8 @@ function modelForView(model,v){
   camDist:30,lens:50,yaw:v.yaw,pitch:v.pitch,roll:v.roll,zoom:v.zoom,
   panX:0,panY:v.panY,tx:0,ty:0,tz:0,wx:0,wy:0,wz:0,wRot:0,
   headYaw:0,headPitch:0,headRoll:0,neckTwist:0,neckFlex:0,neckSide:0,
-  bodyRoll:0,bodyPitch:0,jawOpen:0,lightAz:-42,lightEl:54,
-  bg:"#fffcfd",_cache:newCache(),_oculto:false});
+  bodyRoll:0,bodyPitch:0,jawOpen:.08,lightAz:-42,lightEl:54,
+  bg:"#fafbfd",_cache:newCache(),_oculto:false});
  return p;
 }
 function viewRender(model,view,renderer,wire,cache){
