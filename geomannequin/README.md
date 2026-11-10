@@ -420,3 +420,29 @@ npm run construir
 - A comparação gera `testes/saida/cabeca-v4-1/comparativo-cranio-queixo-v4-v41.svg` com o mesmo ângulo/zoom da V4 antiga e V4.1. **A orelha do atlas comparativo já usa a versão nova nas duas linhas; a comparação isola sobretudo as proporções craniofaciais.**
 
 **Status:** verificações isoladas de macroforma, convergência V, orelhas e dez biotipos foram positivas; a fidelidade visual aos 14 anexos não está comprovada até o atlas ser renderizado e inspecionado. A união da cabeça com o pescoço ainda utiliza sobreposição de malhas, não uma superfície manifold única.
+
+
+### Estudo Anatômico V4.2 — folha técnica com o render 3D real (10/11/2026)
+
+Com base no estudo de cabeça aprovado pelo usuário, foi criado um **modo de folha vetorial** que renderiza a **mesma Cabeça V4.2** com cinco câmeras. O resultado reúne perfil esquerdo principal, vistas 3/4 e frontal, três ampliações (occipital/nuca, orelha e órbita), linhas de proporção, caixa de notas e sequência inferior, sob papel técnico de grade suave com preenchimento rosado e malha de construção avermelhada. A folha é SVG editável, **não** uma fotografia substituindo a malha.
+
+**Abrir diretamente:** `https://4lexandre33.github.io/geomannequin/?study=v42`. No editor, use o botão **Estudo V4.2**, depois **Baixar SVG** ou **Voltar ao editor**. O botão **Malha construtiva** permite remover meridianos e paralelos. A V4.2 utiliza o ID interno `v4_anatomical`; V1–V3 continuam disponíveis.
+
+A geometria V4.2 também ganhou três ajustes com sliders independentes: arredondamento occipital–nuca, profundidade da cavidade orbital e projeção auricular. Todos entram na chave de cache.
+
+Arquivos centrais:
+- `src/engine/head-v4/study-sheet.js` — compositor geométrico/visual com 5 câmeras e dimensões 1400×1050.
+- `src/ui/head-study.js` — interface, entrada por URL, exportação SVG e volta ao editor.
+- `css/head-study.css` — visual responsivo e impressão.
+- [Task graph de 92 tarefas e critérios de aceite](docs/head-v4-2-task-graph.md).
+- `testes/folha-cabeca-v4-2.mjs` e `testes/cabeca-v4-2-geometria.mjs` — regressões geométricas e de composição.
+
+Comandos:
+```bash
+cd geomannequin
+npm run testar:cabeca-v4-2
+npm run atlas:cabeca-v4-2
+npm run construir
+```
+
+**Nota de honestidade:** a semelhança exata com a imagem aprovada **exige inspeção do SVG real no navegador e comparação visual**. O modo implementa a composição e matemática, mas eventuais diferenças de projeção, sombreamento e microanatomia devem ser corrigidas após os testes de screenshot. A V4.2 ainda é experimental até passar esses critérios.
