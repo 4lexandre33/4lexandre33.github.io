@@ -53,6 +53,7 @@ const o=w.SCN.objetos.find(q=>q.nome==="copo teste");
 const hand0=getHandAnchor(it,-1,g0);
 const held=w.cena.segurarObjeto("copo teste",{mao:"direita",reach:30});
 assert.equal(held.mao,"direita");
+assert.equal(held.dedos?.length,5,"Preensão precisa avaliar os cinco dedos");
 assert.ok(o.grip?.mannequinId===it.id);
 const pos0=[o.x,o.z];
 it.params.wx+=2;
