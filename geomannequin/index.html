@@ -137,6 +137,10 @@
       <label class="sel-linha">Solução preferida
         <select id="colPref"><option value="auto">Automática (muda o mínimo)</option><option value="distancia">Afastar no chão</option><option value="giro">Girar no chão</option><option value="pose">Ajustar a pose</option></select></label>
       <label class="check-linha"><input type="checkbox" id="colComp"> Avisar composição: tangências e cabeça escondida</label>
+      <label class="check-linha"><input type="checkbox" id="colV2"> Colisão anatômica detalhada V2 (dedos + autocolisão, experimental)</label>
+      <p class="hint camadas-dica">No modo Bloquear, a V2 limita o movimento em 3D; o contato permitido não desativa os sólidos. Esta fase ainda usa aproximações geométricas e não simula forças físicas.</p>
+      <button type="button" id="colV2Consultar">Inspecionar contatos 3D detalhados</button>
+      <p class="hint" id="colV2Status" aria-live="polite"></p>
       <div id="colLista" class="col-lista"></div>
       <div class="group poses">
         <button type="button" id="colTodas">Corrigir todas</button>
