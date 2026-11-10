@@ -3,6 +3,7 @@ import { PAL_EXPORT, PAL_SCREEN, STYLES, styleName } from "./paletas.js";
 import { L } from "./modos.js";
 import { refreshScene, render, syncControls } from "./ambiente.js";
 import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
+import { atualizarFocoOrbita } from "./orbita.js";
 
 let P;
 /* ===== Cena: vários manequins, câmera comum, cores exclusivas ===== */
@@ -81,6 +82,7 @@ function atualizarApoios(){
 }
 function sceneList(exp){
   atualizarApoios();
+  atualizarFocoOrbita();
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const bg=exp?"#ffffff":cssHex("var(--paper)");
   const lst=SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
