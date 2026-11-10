@@ -7,7 +7,7 @@ import {pMundo,COL} from "./colisoes.js";
 import {colliderRig,colliderObject,manifoldCaps,manifoldObject,manifoldSelf} from "../engine/contact-v2.js";
 import {restGround} from "../engine/index.js";
 const CONTATO_V2={enabled:false,level:"fine",tol:.07,last:null,blocked:0};
-const MOTION=/^(?:wx|wy|wz|wRot|arm|elbow|pron|wrist|handCurl|f(?:Th|In|Me|An|Mi)|thumbOpp|hip|knee|ankle|foot|toes|hallux|head|neck|spine|lum|tho|pelvis|body|shElev|shProt|scap)/;
+const MOTION=/^(?:wx|wy|wz|wRot|arm|elbow|pron|wrist|handCurl|f(?:Th|In|Me|An|Mi|Spread)|thumbOpp|hip|knee|ankle|foot|toes|hallux|head|neck|spine|lum|tho|pelvis|body|shElev|shProt|scap)/;
 function setContatoV2(opts={}){
  if(typeof opts==="boolean")opts={enabled:opts};
  if(opts.enabled!==undefined)CONTATO_V2.enabled=!!opts.enabled;
