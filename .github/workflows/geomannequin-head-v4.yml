@@ -1,0 +1,56 @@
+name: GeoMannequin - Head V4 foundation
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/engine/head-v4/**'
+      - 'geomannequin/src/engine/cabeca.js'
+      - 'geomannequin/src/engine/desenho.js'
+      - 'geomannequin/src/engine/corpo.js'
+      - 'geomannequin/src/engine/index.js'
+      - 'geomannequin/src/engine/montagem.js'
+      - 'geomannequin/src/ui/controles.js'
+      - 'geomannequin/src/ui/exportar.js'
+      - 'geomannequin/src/scene/estado.js'
+      - 'geomannequin/src/scene/comandos.js'
+      - 'geomannequin/src/scene/parametros.js'
+      - 'geomannequin/index.html'
+      - 'geomannequin/testes/cabeca-v4-anatomia.mjs'
+      - 'geomannequin/testes/atlas-cabeca-v4.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+jobs:
+  v4-geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependências da aplicação e do MCP
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Geometria V4 em dez biotipos e três níveis de detalhe
+        run: npm run testar:cabeca-v4
+      - name: Teste de regressão da V3
+        run: npm run testar:cabeca-v3
+      - name: Compatibilidade V2
+        run: npm run testar:cabeca-v2
+      - name: Compilar aplicação
+        run: npm run construir
+      - name: Atlas V4 masculino
+        run: npm run atlas:cabeca-v4 -- masculino medio
+      - name: Atlas V4 feminino
+        run: npm run atlas:cabeca-v4 -- feminino medio
+      - name: Arquivos para comparação visual
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: head-v4-multiview-reference-atlas
+          path: geomannequin/testes/saida/cabeca-v4/
+          retention-days: 14
+          if-no-files-found: warn
