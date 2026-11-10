@@ -4,6 +4,7 @@ import {DEF} from "../src/engine/padroes.js";
 import {shape,buildHead,headPt,earSurf,ringAt} from "../src/engine/cabeca.js";
 import {sectionV3,normalizedHeight,compileMicroAtlasV3,inspectHeadV3,isoCurvesV3,pointV3} from "../src/engine/head-v3/index.js";
 import {NOMES_BIOTIPOS,aplicarBiotipo} from "../src/scene/biotipos.js";
+import {watertightMeshV3,meshTopologyV3,exportObjV3} from "../src/engine/head-v3/mesh-export.js";
 const near=(a,b,tol=1e-4)=>assert.ok(Math.abs(a-b)<=tol,"Diferença "+a+" ≠ "+b);
 let count=0,patches=0;
 for(const fem of [0,1])for(const tipo of NOMES_BIOTIPOS){
@@ -40,6 +41,10 @@ for(const fem of [0,1])for(const tipo of NOMES_BIOTIPOS){
  const head=pointV3(S.eyeY,Math.PI,p,S),test={...p,jawOpen:1};
  const occ=pointV3(S.eyeY,Math.PI,test,S);
  near(head[1],occ[1]);near(head[2],occ[2]);
+ const whole=watertightMeshV3(p,S),topo=meshTopologyV3(whole);
+ assert.equal(topo.invalid,0);assert.equal(topo.degenerate,0);
+ assert.equal(topo.boundary,0);assert.equal(topo.nonmanifold,0);
+ assert.ok(exportObjV3(whole).includes("f 1//1"),"Exportador OBJ inválido");
  assert.ok(buildHead({...p,headModel:"v1"},S).V.length>10000);
  assert.ok(buildHead({...p,headModel:"v2"},S).V.length>10000);
 }
