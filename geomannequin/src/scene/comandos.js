@@ -421,8 +421,8 @@ const cena={
     {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
     {id:"preensaoV3",estado:"experimental",api:["m.segurar","m.soltar","m.maoEmSite",
        "cena.segurarObjeto","cena.soltarObjeto","cena.vinculos","cena.inspecionarPreensao",
-       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe"],
-      limite:"Attachment 6DOF com mão primária; segunda mão sem solver simultâneo, quedas sem física."},
+       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe","obj.pousar"],
+      limite:"Attachment 6DOF com mão primária, IK auxiliar da segunda mão (sem solver bilateral exato) e queda instantânea sem física."},
     {id:"editor",estado:"parcial",api:["cena.marcarEstado","cena.desfazer","cena.refazer","cena.historico"],limite:"histórico explícito/de execução; mudanças externas não são interceptadas automaticamente"},
     {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
   ]},
