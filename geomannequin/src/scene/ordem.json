@@ -15,6 +15,7 @@
     "cenario.js",
     "blocking.js",
     "regioes-orbita.js",
+    "orientacao-frames.js",
     "orbita.js",
     "descrever.js",
     "comandos.js",
