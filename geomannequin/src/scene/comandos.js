@@ -20,7 +20,7 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
-import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3} from "./grip-v3.js";
+import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido} from "./grip-v3.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -263,6 +263,11 @@ function apiObjeto(q){
         segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
     segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
     soltar(opts={}){chk();cena.soltarObjeto(q.id,opts);return o},
+    pousar({endireitar=false}={}){chk();if(q.gripV3||q.grip)
+        throw Error("Solte o objeto antes de pousá-lo diretamente.");
+      atualizarApoios();
+      pousarObjetoRigido(q,restGround(SCN.list[0].params),{endireitar});
+      atualizarApoios();return o},
     medidas(m){chk();editarObjeto(q,m||{});return o},
     /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
     cor(c,contorno){chk();editarObjeto(q,{cor:c===undefined?"auto":c,contorno});return o},
@@ -465,7 +470,7 @@ const cena={
     const o=acharObjeto(objeto);if(!it||!o)throw Error("Manequim/objeto não encontrado.");
     atualizarApoios();const ground=restGround(SCN.list[0].params);
     const previous={...it.params};
-    if(opts.modo==="aproximarMao"){
+    if(opts.modo==="aproximarMao"||opts.modo==="encaixar"){
       const H=handFrameV3(it,ladoNum(mao),ground);
       const sites=o&&gripSites(o).map(s=>gripSiteWorld(o,s.id,ground));
       const site=opts.ponto&&opts.ponto!=="auto"?gripSiteWorld(o,opts.ponto,ground):
@@ -479,7 +484,7 @@ const cena={
         if(residual>.35||finalError>.35)
           throw Error("A mão não conseguiu alcançar "+site.nome+
             ". Desvio residual "+Math.max(residual,finalError).toFixed(2)+" R.");
-        return beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,modo:"preservar",ponto:site.id,objetos:SCN.objetos});
+        return beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,modo:opts.modo==="encaixar"?"encaixar":"preservar",ponto:site.id,objetos:SCN.objetos});
       }catch(e){Object.assign(it.params,previous);throw e}
     }
     return opts.motor==="v2"?beginGrip(it,o,ladoNum(mao),ground,opts):
