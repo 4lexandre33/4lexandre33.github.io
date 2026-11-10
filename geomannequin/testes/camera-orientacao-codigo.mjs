@@ -62,6 +62,8 @@ assert.equal(w.camera.seguimento().ativo,false);
 const obj=w.cena.objeto("cubo",{nome:"Cubo referência",x:5,giro:45});
 assert.throws(()=>w.camera.costas("Cubo referência"),/simétrico/i);
 obj.orientacao({frenteLocal:[0,0,1],cimaLocal:[0,1,0]});
+assert.throws(()=>obj.orientacao({frenteLocal:[0,2,0],cimaLocal:[0,1,0]}),/independentes/);
+assert.equal(obj.orientacao().definida,true);
 back("Cubo referência");
 const objSaved=w.cena.estado();
 w.cena.restaurar(objSaved);
@@ -95,6 +97,12 @@ reverse.camera.costas(rm.nome,{referencia:"tronco",precisao:"estrita"});
 const camR=reverse.cameraNoMundo(reverse.P);
 assert.ok(dot(unit(sub(camR.pos,camR.alvo)),fR.frente)<-.9999,"Vista invertida também deve ser traseira");
 assert.ok(dot(camR.cima,fR.cima)>.99,"Vista invertida deve respeitar roll anatômico");
+
+const grp=createWorld(),g0=grp.cena.ativo.nome,g1=grp.cena.adicionar({nome:"Vizinho"}).nome;
+assert.throws(()=>grp.camera.ver([g0,g1],{lado:"costas"}),/l[ií]der/);
+const groupView=grp.camera.vistaExata([g0,g1],{lado:"costas",lider:g0,elevacao:90});
+assert.equal(groupView.lider,g0);assert.ok(!groupView.limitado);
+assert.equal(grp.camera.orientacaoDoAlvo(g0).definida,true);
 
 const base=dirname(fileURLToPath(import.meta.url));
 const html=readFileSync(join(base,"..","index.html"),"utf8");
