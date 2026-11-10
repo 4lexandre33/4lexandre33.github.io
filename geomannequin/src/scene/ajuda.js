@@ -151,6 +151,22 @@ log("Capacidades:",cena.capacidades());`,
 await cena.baixar("minha-cena.svg",svg,"image/svg+xml");
 const png=await cena.exportarPNG({escala:2});
 await cena.baixar("minha-cena.png",png,"image/png");`,
+  "Grupo orientado por um líder":`const ana=cena.ativo.renomear("Ana");
+const bruno=cena.adicionar({nome:"Bruno",x:5,giro:180});
+camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas",elevacao:10,enquadrar:true});
+log(camera.vista());`,
+  "Oito vistas em SVG sem alterar a cena":`const ana=cena.ativo.renomear("Ana");
+const fotos=camera.capturarVistas("Ana",{referencia:"cabeca",area:"cabeca"});
+log(fotos.map(f=>f.azimute));
+await cena.baixar("nuca.svg",fotos.find(f=>f.azimute===180).svg,"image/svg+xml");`,
+  "ZIP com camadas via código":`const zip=cena.exportarZIP();
+await cena.baixar("geomannequin-camadas.zip",zip,"application/zip");
+log(zip.length,"bytes");`,
+  "Parâmetros individuais":`const m=cena.ativo;
+m.parametro("headYaw",45).parametro("eyeYaw",0.3);
+camera.parametro("lens",85);
+log("Parâmetros da cabeça:",m.parametro("headYaw"));
+log("Controles disponíveis:",cena.parametros());`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -176,6 +192,10 @@ export function iniciarAjuda(){
   Camadas: cena.camadasVisuais() · cena.camadaVisual("grid",false) · cena.camadaVisual("eyes",true)
   Arquivos: cena.exportarSVG() · cena.exportarOBJ({modelo:"v4"}) · cena.exportarJSON() · cena.importarJSON(json)
   Exportação navegador: await cena.exportarPNG({escala:2}); await cena.baixar("cena.png",png,"image/png")
+  Parâmetros: m.parametro("headYaw",45) · m.parametros() · camera.parametro("lens",85) · camera.parametros()
+  Câmera sem alterar a ativa: camera.capturar("Ana",{lado:"costas"}) · camera.capturarVistas("Ana")
+  Grupo: camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas"}) (sem orientação média inventada)
+  Arquivo ZIP: const zip=cena.exportarZIP(); await cena.baixar("camadas.zip",zip,"application/zip")
   Folha V4.2: cena.estudoAnatomico.svg() · cena.estudoAnatomico.abrir() · .atualizar() · .fechar()
   Descoberta: cena.comandos() · cena.capacidades() · cena.parametros()
   Histórico: cena.marcarEstado() · cena.desfazer() · cena.refazer() · cena.historico()
