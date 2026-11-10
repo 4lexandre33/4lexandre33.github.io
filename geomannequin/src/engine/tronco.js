@@ -43,9 +43,9 @@ function bustBump(x,y,th,p,F){
     dz-=0.045*cf*gauss(ax,0,0.035)*gauss(y,F.yNav,0.04);
     dz+=cf*B.belly*gauss(ax,0,0.55)*gauss(y,F.yNav-0.2,0.5);
     /* linha inguinal em "V" e crista ilíaca */
-    const d=segDist(ax,y,0.92,F.yHip+0.45,0.05,F.yCr+0.12);
+    const d=segDist(ax,y,0.78*B.hip,F.yHip+0.45,0.05,F.yCr+0.12);
     dz-=0.024*cf*gauss(d,0,0.04);
-    dz+=0.02*gauss(ax,0.86,0.12)*gauss(y,F.yJ-4.3,0.12)*(0.4+0.6*cf)*(1-B.fat);
+    dz+=0.02*gauss(ax,0.72*B.hip,0.12)*gauss(y,F.yJ-4.3,0.12)*(0.4+0.6*cf)*(1-B.fat);
   }
   /* costas: escápulas, dorsais, coluna, covinhas sacrais, glúteos */
   if(cb>0){

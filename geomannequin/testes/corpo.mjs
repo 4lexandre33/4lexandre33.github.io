@@ -12,6 +12,12 @@ const CASOS = [
   ["peito-34", -55, 0, [0, -2.8, 0], 6, {}], ["peito-perfil", -85, 0, [0, -2.8, 0], 6, {}],
   ["pelve-frente", 0, 0, [0, -6.6, 0], 8, {}], ["pelve-costas", 180, 0, [0, -6.6, 0], 8, {}],
   ["pelve-perfil", -90, 0, [0, -6.6, 0], 8, { p: { armFlexL: 80, armFlexR: 80 } }], ["pelve-34", -40, -5, [0, -6.6, 0], 8, {}],
+  /* Inspeção dedicada à abertura da crista ilíaca e à ligação bacia → coxa. */
+  ["bacia-frente", 0, 0, [0, -5.25, 0], 7, {}], ["bacia-34", -40, -4, [0, -5.25, 0], 7, {}],
+  ["bacia-perfil", -90, 0, [0, -5.25, 0], 7, {}], ["bacia-costas", 180, 0, [0, -5.25, 0], 7, {}],
+  ["bacia-sentado", -35, -7, [0, -5.25, 0], 8.5, { rapida: "sentado" }],
+  ["bacia-agachar", -45, -8, [0, -5.25, 0], 9, { rapida: "agachar" }],
+  ["bacia-torcao", -35, -4, [0, -5.25, 0], 7, { p: { spineTwist: 25, spineSide: 10, pelvisTwist: 15 } }],
   /* Bancada específica para comparar cintura, flancos, oblíquos e crista ilíaca. */
   ["cintura-frente", 0, 0, [0, -4.25, 0], 5.7, {}], ["cintura-34", -40, 0, [0, -4.25, 0], 5.7, {}],
   ["cintura-perfil", -90, 0, [0, -4.25, 0], 5.7, {}], ["cintura-costas", 180, 0, [0, -4.25, 0], 5.7, {}],
