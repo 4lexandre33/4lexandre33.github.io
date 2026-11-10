@@ -70,6 +70,10 @@ function loadScene(sc){
   if(Array.isArray(sc.objetos))sc.objetos.slice(0,40).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo);["x","z","giro","larg","prof","alt","encosto","cabeceira","raio"].forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],k==="giro"?-180:k==="raio"?0.1:-40,k==="giro"?180:k==="raio"?20:40)});
     if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);q.id=novoIdObjeto();
     if(Array.isArray(o.rot3)&&o.rot3.length===9&&o.rot3.every(Number.isFinite))q.rot3=o.rot3.slice();
+    if(Array.isArray(o.sitesExtras))q.sitesExtras=o.sitesExtras.slice(0,30).filter(s=>s&&
+      typeof s.id==="string"&&s.id.length<=40&&Array.isArray(s.local)&&s.local.length===3&&
+      s.local.every(Number.isFinite)&&Array.isArray(s.normal)&&s.normal.length===3&&s.normal.every(Number.isFinite))
+      .map(s=>({id:s.id,nome:String(s.nome||s.id),local:s.local.slice(),normal:s.normal.slice()}));
     if(o.emAr===true&&Number.isFinite(o.base)){q.emAr=true;q.base=o.base}
     if(o.sobreRel&&Array.isArray(o.sobreRel.M)&&o.sobreRel.M.length===9&&o.sobreRel.M.every(Number.isFinite)&&
       Array.isArray(o.sobreRel.T)&&o.sobreRel.T.length===3&&o.sobreRel.T.every(Number.isFinite))
