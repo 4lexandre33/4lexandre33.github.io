@@ -2,7 +2,7 @@
  * Wobj = Wmao × grip.relative. O ponto pode estar no encosto da cadeira.
  * Suporta segunda mão como vínculo de observação, sem solver bilateral global.
  */
-import {shape,chainSetup,armPose,armDims,comp,applyA,paraMundo,restGround,partesDoObjeto} from "../engine/index.js";
+import {shape,chainSetup,armPose,armDims,comp,applyA,paraMundo,doMundo,ikArm,restGround,partesDoObjeto} from "../engine/index.js";
 import {rigidFrame,rigidCompose,rigidInverse,rigidPoint,objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {gripSites,gripSite,gripSiteWorld,closestGripSite} from "../engine/grip-sites.js";
 import {fecharDedos} from "./preensao-v2.js";
@@ -41,12 +41,32 @@ function pousarObjetoRigido(o,ground,{endireitar=false}={}){
  delete o.sobre;delete o.sobreRel;
  return {apoiado:true,deslocamento};
 }
+/* A mão secundária acompanha o GripSite por IK; a primária permanece dona
+ * da pose do objeto. Retorna desvio real para não ocultar extrapolação. */
+function sincronizarMaoSecundaria(it,o,ground){
+ const s=o.gripV3?.secundaria;
+ if(!s)return null;
+ const target=gripSiteWorld(o,s.siteId,ground).mundo,p=it.params;
+ const local=doMundo({...p,wy:ground-restGround(p)})(target);
+ const r=ikArm(p,shape(p),s.side,local),ext=s.side===1?"L":"R";
+ Object.assign(p,{["armAbd"+ext]:r.abd,["armFlex"+ext]:r.flex,
+   ["armRot"+ext]:r.rot,["elbow"+ext]:r.elbow});
+ const H=handFrameV3(it,s.side,ground);
+ const deviation=Math.hypot(...target.map((v,i)=>v-H.T[i]));
+ s.desvio=deviation;s.alcancavel=deviation<=.35;
+ return deviation;
+}
 function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,objetos=[]}={}){
  if(!it||!o||!(side===1||side===-1))throw Error("Manequim, objeto ou mão inválidos.");
  if(!Number.isFinite(reach)||reach<0||reach>100)throw Error("Alcance precisa estar entre 0 e 100 R.");
  if(o.gripV3&&!segunda)throw Error("Objeto já está segurado; use segunda:true para adicionar outra mão.");
+ if(segunda&&!o.gripV3)throw Error("A segunda mão requer um vínculo primário.");
  if(o.gripV3&&o.gripV3.mannequinId!==it.id)throw Error("Objeto segurado por outro manequim.");
  if(o.grip&&!o.gripV3)throw Error("Objeto com vínculo V2. Solte-o antes de usar preensão V3.");
+ if(Array.isArray(objetos)&&objetos.some(q=>q!==o&&
+   ((q.gripV3?.mannequinId===it.id&&(q.gripV3.side===side||q.gripV3.secundaria?.side===side))||
+     (q.grip?.mannequinId===it.id&&q.grip.side===side))))
+   throw Error("Esta mão já segura outro objeto. Solte-o antes de agarrar outro.");
  const H=handFrameV3(it,side,ground),selected=gripSiteSelection(o,H,ground,ponto??site),
        distance=Math.hypot(...selected.mundo.map((v,i)=>v-H.T[i]));
  if(distance>reach)throw Error("Ponto "+selected.nome+" fora de alcance ("+(distance*11.4).toFixed(1)+" cm). Aproxime a palma.");
@@ -54,9 +74,17 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
  const old=objectRigidPose(o,ground);
  if(o.gripV3){
    if(o.gripV3.side===side||o.gripV3.secundaria?.side===side)throw Error("Esta mão já está vinculada.");
+   const prev={...it.params};
    o.gripV3.secundaria={side,siteId:selected.id,relative:rigidCompose(rigidInverse(H),old)};
+   let residual;
+   try{residual=sincronizarMaoSecundaria(it,o,ground)}
+   catch(e){Object.assign(it.params,prev);delete o.gripV3.secundaria;throw e}
+   if(residual>.35){
+     Object.assign(it.params,prev);delete o.gripV3.secundaria;
+     throw Error("A segunda mão não consegue agarrar o ponto ("+residual.toFixed(2)+" R).");
+   }
    return {objeto:o.nome||o.tipo,mao:side===1?"esquerda":"direita",ponto:selected.id,
-     secundaria:true,distancia:distance,modo:"acompanhamento secundário (IK bilateral pendente)"};
+     secundaria:true,distancia:distance,modo:"IK secundária",desvio:residual,versao:3};
  }
  // Encaixar desloca a mão por IK (camada de comandos), não o objeto.
  const objPose=old;
@@ -89,12 +117,13 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
  return {objeto:o.nome||o.tipo,mao:side===1?"esquerda":"direita",ponto:selected.id,
    distancia:distance,modo,versao:3,dedos};
 }
-function updateRigidGrip(it,o,ground){
+function updateRigidGrip(it,o,ground,{ajustarSegundaMao=true}={}){
  const g=o.gripV3;
  if(!g||!it)return false;
  const H=handFrameV3(it,g.side,ground);
  setRigidObjectPose(o,rigidCompose(H,g.relative),ground);
  o.emAr=true;
+ if(ajustarSegundaMao&&g.secundaria)sincronizarMaoSecundaria(it,o,ground);
  return true;
 }
 function inspectRigidGrip(it,o,ground){
@@ -104,8 +133,8 @@ function inspectRigidGrip(it,o,ground){
  let secondaryError=null;
  if(g.secundaria){
    const h2=handFrameV3(it,g.secundaria.side,ground);
-   const expected=rigidCompose(h2,g.secundaria.relative);
-   secondaryError=Math.hypot(...want.T.map((v,i)=>v-expected.T[i]));
+   const site=gripSiteWorld(o,g.secundaria.siteId,ground);
+   secondaryError=Math.hypot(...site.mundo.map((v,i)=>v-h2.T[i]));
  }
  return {ativo:true,objeto:o.nome||o.tipo,manequim:it.name,mao:g.side===1?"esquerda":"direita",
    ponto:g.siteId,segundaMao:g.secundaria?(g.secundaria.side===1?"esquerda":"direita"):null,
@@ -133,4 +162,4 @@ function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
  }else{o.emAr=true;}
  return {solto:true,modo};
 }
-export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido};
+export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido,sincronizarMaoSecundaria};
