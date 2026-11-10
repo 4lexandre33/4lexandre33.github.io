@@ -126,7 +126,7 @@ function linhaDedao(p,s,toes,hal){hal=hal||0;
    criar um "degrau" lateral: compensar apenas o excesso do raio superior. */
 function hipJoint(F,s){
   const B=F.B,ideal=B.hip*0.5/1.1,topoCoxa=0.68*B.thighK;
-  const x=Math.max(0.28*B.hip,Math.min(ideal,1.06*B.hip-topoCoxa));
+  const x=Math.max(0.28*B.hip,Math.min(ideal,(1.06-0.02*B.fem*B.fat)*B.hip-topoCoxa*(1+0.04*B.fem*B.fat)));
   return [s*x,F.yHip-0.3,-0.48];
 }
 /* glúteo: volume redondo atrás da articulação do quadril, achatado por dentro (fenda), mais cheio embaixo */
