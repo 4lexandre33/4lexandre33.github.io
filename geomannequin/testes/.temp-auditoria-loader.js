@@ -29,5 +29,5 @@ function criarMotorAuditavel(sources) {
   }
   const scene=load("engine/cena.js"),padroes=load("engine/padroes.js");
   for(const [mod,fn]of [["engine/montagem.js","iniciarMontagem"],["engine/zbuffer.js","iniciarZbuffer"],["engine/campos.js","iniciarCampos"],["engine/sombra.js","iniciarSombra"],["engine/contornos.js","iniciarContornos"]])load(mod)[fn]();
-  return {scene,padroes,montagem:load("engine/montagem.js"),loaded};
+  return {scene,padroes,montagem:load("engine/montagem.js"),loaded,load};
 }
