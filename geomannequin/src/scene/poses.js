@@ -37,8 +37,8 @@ function guardArms(){
 const FACES={
   neutro:{},
   /* Rosto não redefine ombros, pescoço nem tecido corporal: isso é do biotipo. */
-  feminino:{skull:0.78,jaw:0.56,chin:0.24,chinProj:0.76,brow:0.045,nose:0.2,lips:0.06,eyeSize:1.3,browW:0.04,earSize:0.9,adam:0,neckLen:0.9},
-  masculino:{skull:0.86,jaw:0.68,chin:0.34,chinProj:0.84,brow:0.09,nose:0.27,lips:0.04,eyeSize:1.1,browW:0.056,earSize:1.05,adam:1,neckLen:0.8},
+  feminino:{skull:0.78,jaw:0.56,chin:0.24,chinProj:0.76,brow:0.045,nose:0.2,lips:0.06,eyeSize:1.3,browW:0.04,earSize:0.9,adam:0},
+  masculino:{skull:0.86,jaw:0.68,chin:0.34,chinProj:0.84,brow:0.09,nose:0.27,lips:0.04,eyeSize:1.1,browW:0.056,earSize:1.05,adam:1},
   infantil:{skull:0.88,jaw:0.5,chin:0.22,face:34,chinProj:0.72,neck:0.34,brow:0.03,nose:0.16,lips:0.05,eyeSize:1.5,browW:0.03,shW:1.25,earSize:1.1,chestF:0,adam:0,neckLen:0.8}
 };
 const POSTURES={
