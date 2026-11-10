@@ -6,6 +6,7 @@ import {shape,chainSetup,armPose,armDims,comp,applyA,paraMundo,doMundo,ikArm,res
 import {rigidFrame,rigidCompose,rigidInverse,rigidPoint,objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {gripSites,gripSite,gripSiteWorld,closestGripSite} from "../engine/grip-sites.js";
 import {fecharDedos} from "./preensao-v2.js";
+import {iniciarQuedaObjeto,cancelarQuedaObjeto} from "../engine/grip-dynamics.js";
 function handFrameV3(it,side,ground){
  if(!it||!(side===1||side===-1))throw Error("Selecione uma mão esquerda ou direita.");
  const p=it.params,S=shape(p),ch=chainSetup(p,S),A=armDims(p),
@@ -23,6 +24,7 @@ function gripSiteSelection(o,frame,ground,site){
 /* Pousar 6DOF: encontra o ponto mais baixo das caixas/cilindros orientados.
  * Não simula gravidade; evita que a cadeira inclinada atravesse o chão. */
 function pousarObjetoRigido(o,ground,{endireitar=false}={}){
+ cancelarQuedaObjeto(o);
  if(!Number.isFinite(ground))throw Error("Solo inválido.");
  if(endireitar)delete o.rot3;
  const parts=partesDoObjeto(o,ground);
@@ -126,6 +128,7 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
    }
  }
  // Só depois de validar e calcular o vínculo, alterar o objeto.
+ cancelarQuedaObjeto(o);
  if(o.sobre)delete o.sobre;
  o.gripV3={version:3,mannequinId:it.id,side,siteId:selected.id,relative:rel};
  o.emAr=true;
@@ -157,7 +160,7 @@ function inspectRigidGrip(it,o,ground){
    ponto:g.siteId,segundaMao:g.secundaria?(g.secundaria.side===1?"esquerda":"direita"):null,
    desvio:positionError,desvioSegundaMao:secondaryError,segundaMaoAlcancavel:secondaryError===null?null:secondaryError<=.35,versao:3};
 }
-function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
+function releaseRigidGrip(it,o,ground,{mao,modo="manter",gravidade,restituicao,atrito,velocidade,angular}={}){
  const g=o.gripV3;if(!g)return false;
  if(it&&g.mannequinId!==it.id)throw Error("Este manequim não segura o objeto.");
  if(!["manter","chao","pousar","queda"].includes(modo))throw Error("Soltura V3: 'manter', 'chao', 'pousar' ou 'queda'.");
@@ -173,8 +176,9 @@ function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
    delete g.secundaria;return {solto:false,restante:g.side===1?"esquerda":"direita"};
  }
  delete o.gripV3;
- if(modo==="chao"||modo==="pousar"||modo==="queda"){
-   // Queda = aterrissagem instantânea cinemática, sem dinâmica ou atrito.
+ if(modo==="queda"){
+   iniciarQuedaObjeto(o,ground,{gravidade,restituicao,atrito,velocidade,angular});
+ }else if(modo==="chao"||modo==="pousar"){
    pousarObjetoRigido(o,ground,{endireitar:modo==="chao"});
  }else{o.emAr=true;}
  return {solto:true,modo};
