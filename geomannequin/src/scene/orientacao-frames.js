@@ -6,26 +6,26 @@ import {SCN} from "./modelo.js";
 import {pMundo} from "./colisoes.js";
 import {shape,chainSetup,paraMundo,applyA,comp,armPose,armDims,legPose,legDims} from "../engine/index.js";
 
-const rad=Math.PI/180;
-const sub=(a,b)=>a.map((x,i)=>x-b[i]);
-const add=(a,b)=>a.map((x,i)=>x+b[i]);
-const mul=(a,t)=>a.map(x=>x*t);
-const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
-const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
-function norm(v){const n=Math.hypot(...v);if(!(n>1e-8)||!Number.isFinite(n))throw Error("Eixo de orientação nulo ou inválido.");return v.map(x=>x/n)}
-function basis(origin,front,up,extra={}){
- const F=norm(front),U=norm(sub(up,mul(F,dot(up,F)))),L=norm(cross(U,F));
- return {origem:origin.map(Number),frente:F,costas:mul(F,-1),cima:U,
-  baixo:mul(U,-1),esquerda:L,direita:mul(L,-1),...extra};
+const orfRad=Math.PI/180;
+const orfSub=(a,b)=>a.map((x,i)=>x-b[i]);
+const orfAdd=(a,b)=>a.map((x,i)=>x+b[i]);
+const orfMul=(a,t)=>a.map(x=>x*t);
+const orfDot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
+const orfCross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+function orfNorm(v){const n=Math.hypot(...v);if(!(n>1e-8)||!Number.isFinite(n))throw Error("Eixo de orientação nulo ou inválido.");return v.map(x=>x/n)}
+function orfBasis(origin,front,up,extra={}){
+ const F=orfNorm(front),U=orfNorm(orfSub(up,orfMul(F,orfDot(up,F)))),L=orfNorm(orfCross(U,F));
+ return {origem:origin.map(Number),frente:F,costas:orfMul(F,-1),cima:U,
+  baixo:orfMul(U,-1),esquerda:L,direita:orfMul(L,-1),...extra};
 }
-function localAxis(frame,local,transform){
+function orfLocalAxis(frame,local,transform){
  const o=transform(applyA(frame,[0,0,0]));
  const q=transform(applyA(frame,local));
- return sub(q,o);
+ return orfSub(q,o);
 }
-const plain=t=>String(t??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[-_]/g," ").trim();
+const orfPlain=t=>String(t??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[-_]/g," ").trim();
 function regiaoMan(t){
- const r=plain(t||"tronco");
+ const r=orfPlain(t||"tronco");
  if(/^(cabeca|cranio|rosto|face|olhar|eyes|gaze)$/.test(r))return r==="olhar"||r==="eyes"||r==="gaze"?"olhar":"cabeca";
  if(/^(pelve|quadril|bacia)$/.test(r))return "pelve";
  if(/^(mao|palma) (esquerda|esq)$/.test(r))return "mao esquerda";
@@ -47,23 +47,23 @@ function frameManequim(it,referencia="tronco"){
    const side=name.endsWith("esquerdo")?1:-1;
    A=comp(ch.Pel,legPose(p,ch.F,ch,side).foot);
  }
- const origin=M(applyA(A,[0,0,0])),F=localAxis(A,[0,0,1],M),U=localAxis(A,[0,1,0],M);
- let base=basis(origin,F,U,{tipo:"manequim",nome:it.name,referencia:name,definida:true});
+ const origin=M(applyA(A,[0,0,0])),F=orfLocalAxis(A,[0,0,1],M),U=orfLocalAxis(A,[0,1,0],M);
+ let base=orfBasis(origin,F,U,{tipo:"manequim",nome:it.name,referencia:name,definida:true});
  if(name==="olhar"){
    // Os controles oculares são diferentes do eixo da cabeça.
-   const angY=(p.eyeYaw||0)*30*rad,angX=(p.eyePitch||0)*25*rad;
-   const f=add(add(mul(base.frente,Math.cos(angY)*Math.cos(angX)),mul(base.esquerda,Math.sin(angY)*Math.cos(angX))),mul(base.cima,Math.sin(angX)));
-   base=basis(origin,f,base.cima,{tipo:"manequim",nome:it.name,referencia:name,definida:true});
+   const angY=(p.eyeYaw||0)*30*orfRad,angX=(p.eyePitch||0)*25*orfRad;
+   const f=orfAdd(orfAdd(orfMul(base.frente,Math.cos(angY)*Math.cos(angX)),orfMul(base.esquerda,Math.sin(angY)*Math.cos(angX))),orfMul(base.cima,Math.sin(angX)));
+   base=orfBasis(origin,f,base.cima,{tipo:"manequim",nome:it.name,referencia:name,definida:true});
  }
  return base;
 }
 function objectRef(o,ref="objeto"){
- const angle=(o.giro||0)*rad,local=o.frenteLocal||[0,0,1],top=o.cimaLocal||[0,1,0];
+ const angle=(o.giro||0)*orfRad,local=o.frenteLocal||[0,0,1],top=o.cimaLocal||[0,1,0];
  if(!Array.isArray(local)||local.length!==3||local.some(x=>!Number.isFinite(x)))throw Error("Objeto com frenteLocal inválido.");
  if(!Array.isArray(top)||top.length!==3||top.some(x=>!Number.isFinite(x)))throw Error("Objeto com cimaLocal inválido.");
  const rot=v=>[Math.cos(angle)*v[0]+Math.sin(angle)*v[2],v[1],-Math.sin(angle)*v[0]+Math.cos(angle)*v[2]];
  const ambiguous=/^(cubo|caixa|cilindro|copo|barril|coluna|mesaRedonda|mesa)$/i.test(o.tipo)&&!o.frenteLocal;
- return basis([o.x||0,(o.base||0)+(o.alt||0)/2,o.z||0],rot(local),rot(top),
+ return orfBasis([o.x||0,(o.base||0)+(o.alt||0)/2,o.z||0],rot(local),rot(top),
  {tipo:"objeto",nome:o.nome||o.tipo,referencia:ref,definida:!ambiguous,
  motivo:ambiguous?"Objeto simétrico: orientação convencional +Z, não frente anatômica. Defina frenteLocal para torná-la explícita.":null});
 }
@@ -75,9 +75,9 @@ function encontrarAlvoOrientacao(ref){
    const m=SCN.list.find(x=>x.id===ref.id);if(m)return {tipo:"manequim",alvo:m};}
   if(ref.nome!==undefined)ref=ref.nome;
  }
- const v=plain(ref),m=SCN.list.find(x=>plain(x.name)===v);
+ const v=orfPlain(ref),m=SCN.list.find(x=>orfPlain(x.name)===v);
  if(m)return {tipo:"manequim",alvo:m};
- const o=SCN.objetos.find(x=>plain(x.nome||x.tipo)===v||plain(x.tipo)===v);
+ const o=SCN.objetos.find(x=>orfPlain(x.nome||x.tipo)===v||orfPlain(x.tipo)===v);
  if(o)return {tipo:"objeto",alvo:o};
  throw Error("Alvo de orientação não encontrado: "+ref);
 }
@@ -87,4 +87,4 @@ function orientacaoAlvo(ref,referencia="tronco",opts={}){
  if(opts.exigirFrente&&v.definida===false)throw Error(v.motivo);
  return v;
 }
-export {basis,frameManequim,objectRef,orientacaoAlvo,encontrarAlvoOrientacao,regiaoMan};
+export {orfBasis as basis,frameManequim,objectRef,orientacaoAlvo,encontrarAlvoOrientacao,regiaoMan};
