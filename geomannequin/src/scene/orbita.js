@@ -92,6 +92,7 @@ function vistaAtual(A) { const wr = A && A.frente ? Math.atan2(A.frente[0], A.fr
 /* camera.pivo(alvo): o alvo da câmera passa a ser o centro do pivô (a câmera mantém direção e distância) */
 function mesmaChaveOrb(a,b){return JSON.stringify(a)===JSON.stringify(b);}
 function pivoCamera(alvo,opts={}) {
+  opts=opts||{};
   if(alvo===undefined||alvo===null)alvo="ativo";
   const explicito=Object.prototype.hasOwnProperty.call(opts,"area")||Object.prototype.hasOwnProperty.call(opts,"regiao");
   const area=explicito?(Object.prototype.hasOwnProperty.call(opts,"area")?opts.area:opts.regiao):
