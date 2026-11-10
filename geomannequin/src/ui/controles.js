@@ -17,7 +17,7 @@ function syncControls(){
   /* a faixa dos sliders de pose acompanha o perfil de flexibilidade */
   SL.forEach(d=>{const el=$("sl_"+d.k);if(POSEKEYS.has(d.k)){const [a,b]=faixa(d.k,P.flex);if(+el.min!==a)el.min=a;if(+el.max!==b)el.max=b}el.value=P[d.k];$("ov_"+d.k).textContent=fmt(d,P[d.k])});
   LAY.forEach(l=>{$("ly_"+l.k).checked=!!L[l.k]});
-  {const q=$("headModelSelect");if(q)q.value=["v1","v2","v3_microgeometry"].includes(P.headModel)?P.headModel:"v1"}
+  {const q=$("headModelSelect");if(q)q.value=["v1","v2","v3_microgeometry","v4_anatomical"].includes(P.headModel)?P.headModel:"v1"}
   {const o=$("ocultas");if(o){const v=Math.round(100*(L.ocultas===undefined?0.5:L.ocultas));o.value=v;$("ov_ocultas").textContent=v+"%"}}
 }
 
@@ -39,7 +39,8 @@ export function iniciarControles(){
       const modelos=[
         ["v1","Cabeça V1 — estável"],
         ["v2","Cabeça V2 — experimental"],
-        ["v3_microgeometry","Cabeça V3 — microgeometria anatômica"]
+        ["v3_microgeometry","Cabeça V3 — microgeometria anatômica"],
+        ["v4_anatomical","Cabeça V4 — anatomia por planos (experimental)"]
       ];
       for(const [value,label] of modelos){
         if(!Array.from(q.options).some(o=>o.value===value))q.add(new Option(label,value));
