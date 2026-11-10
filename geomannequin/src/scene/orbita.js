@@ -128,6 +128,7 @@ function atualizarFocoOrbita(){
 }
 /* camera.orbitar(alvo, {azimute, elevacao, distancia, enquadrar, relativo, rolagem}) */
 function orbitarCamera(alvo, opts) {
+  SCN.ultimaVistaOrientada=null;
   opts = opts || {}; const A = pivoCamera(alvo,Object.assign({},opts,{enquadrar:false}));
   const az = opts.azimute === undefined ? vistaAtual(A).azimute : azimuteDe(opts.azimute), el = elevacaoDe(opts.elevacao), elev = el === null ? -(P.pitch || 0) : el;
   const base = opts.relativo === false || !A.frente ? 0 : Math.atan2(A.frente[0], A.frente[1]) / D;
@@ -177,6 +178,7 @@ function verOrientadaCamera(alvo,opts={},interno=false){
   }else if(opts.enquadrar!==false)enquadrarPivo(A,-P.pitch,opts.folga);
   centrarPivo();
   if(!interno)SCN.seguirCamera=null;
+  SCN.ultimaVistaOrientada={azimute:azimuteDe(lado),elevacao:elev/D,referencia:frame.referencia,vertical:space,limitado:Math.abs(pitchReal)>70+1e-6};
   return {pivo:A.nome,referencia:frame.referencia,lado:lado,
     frente:frame.frente,vetorCamera:dir,azimute:azimuteDe(lado),elevacao:elev/D,
     vertical:space,yaw:P.yaw,pitch:P.pitch,limitado:Math.abs(pitchReal)>70+1e-6,
