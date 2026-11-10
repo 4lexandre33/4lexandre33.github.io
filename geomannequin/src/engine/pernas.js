@@ -7,7 +7,7 @@ import { blobMesh, fingerMesh, tubeMesh } from "./malhas.js";
 /* medidas: coxa e perna em proporção de figura de ~7,5 cabeças; pé com ~1 cabeça de comprimento */
 function legDims(p){
   const B=bodyEff(p),L=p.legLen;
-  return {L1:3.85*L,L2:3.7*L,k:B.thighK,mus:B.mus,fat:B.fat,glute:B.glute,f:L*(1+0.04*B.fat)*(0.97+0.06*(1-B.fem)),hA:0.62*L};
+  return {L1:3.85*L,L2:3.7*L,k:B.thighK,mus:B.mus,fat:B.fat,fem:B.fem,glute:B.glute,f:L*(1+0.04*B.fat)*(0.97+0.06*(1-B.fem)),hA:0.62*L};
 }
 /* coxa: quadríceps na frente, vasto medial (gota) acima do joelho por dentro, isquiotibiais atrás, adutores no alto por dentro */
 function thighR(u,th,A,s){
@@ -22,6 +22,11 @@ function thighR(u,th,A,s){
   /* parte de baixo do glúteo, terminando suave na dobra */
   {const tf=0.2-0.06*Math.pow(lat,1.4),g=t<tf?gauss(t,0.08,0.11):gauss(tf,0.08,0.11)*Math.exp(-Math.pow((t-tf)/0.06,2));
    r*=1+(0.06+0.7*(A.glute||0.15))*g*Math.pow(bk,1.2)*(0.55+0.45*lat+0.2*med);}
+  /* Massa alta da coxa se mistura suavemente ao trocânter e ao glúteo médio,
+     sem criar uma esfera independente na articulação coxofemoral. */
+  const proximal=gauss(t,0.13,0.19),female=A.fem||0;
+  r*=1+proximal*((0.045+0.045*female+0.02*A.fat)*lat+
+                 (0.028+0.025*female+0.015*A.fat)*med);
   return r*(1-0.05*sn*sn*(1-t));
 }
 function buildThigh(p,s){const A=legDims(p);return tubeMesh(46,48,-0.74*A.k,A.L1+0.36*A.k,(u,th)=>thighR(u,th,A,s))}
