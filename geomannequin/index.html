@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="css/controles.css">
 <link rel="stylesheet" href="css/cena.css">
 <link rel="stylesheet" href="css/editor.css">
-<script type="module" src="src/main.js"></script>
+<script type="module" src="src/main.js?v=20261110-head-v3"></script>
 </head>
 <body>
 <div class="wrap">
@@ -262,6 +262,15 @@
       <div id="slCam"></div>
       <p class="hint">Arraste no vazio para orbitar (em volta do pivô escolhido acima), Shift + arrastar para deslocar, roda do mouse para aproximar. Clique num manequim para escolhê-lo.</p>
       <h2>Proporções</h2>
+      <div class="slider" id="headModelWrap">
+        <label for="headModelSelect">Geometria da cabeça</label>
+        <select id="headModelSelect" aria-label="Geometria da cabeça">
+          <option value="v1">Cabeça V1 — estável</option>
+          <option value="v2">Cabeça V2 — experimental</option>
+          <option value="v3_microgeometry">Cabeça V3 — microgeometria anatômica</option>
+        </select>
+        <small class="hint" id="headModelHint">V3: microformas 2D fundidas em malha 3D.</small>
+      </div>
       <div id="slProp"></div>
       <h2>Feições</h2>
       <div id="slFeat"></div>
