@@ -1,12 +1,22 @@
 # GeoMannequin — Task Graph de implementação da Cabeça V2
 
-**Estado:** especificação técnica para implementação; **a Cabeça V2 ainda NÃO foi desenvolvida**.  
+**Estado:** especificação técnica original; **já existe um protótipo experimental de Cabeça V2, mas a qualidade estética e a topologia Loomis ainda não foram aprovadas**. Consulte [registro real da V2](head-v2-implementacao.md) e [task graph obrigatório dos planos circulares laterais](task-graph-cabeca-v2-planos-laterais-loomis.md).  
 **Referência visual primária:** imagem anexada pelo usuário em 10/11/2026, intitulada *MATHEMATICAL MANEQUIN HEAD: 3x3 GEOGEBRA-STYLE CURVATURE & TOPOGRAPHY REFERENCE*.  
 **Abrangência:** crânio, face, órbitas, olhos, sobrancelhas, nariz, zigoma, maxila, mandíbula/ATM, lábios, cavidade oral, dentes, língua, orelhas, nuca e pescoço, em **10 biotipos** e vistas múltiplas.  
 **Repositório:** `4lexandre33/4lexandre33.github.io` → `geomannequin/`.  
 **Princípio de execução:** construir um motor anatômico **paramétrico paralelo**, testar e só depois habilitar. Não substituir o sistema v1 com ajustes superficiais sucessivos.
 
 > Este é um **plano executável**, não um relatório de tarefas já concluídas. Todos os estados listados abaixo são **PENDENTE** até que existam código, testes e revisão visual correspondentes. A ilustração é uma referência de desenho técnico e topologia aparente, não uma malha 3D calibrada ou uma fonte de medidas clínicas.
+
+---
+
+## Extensão estrutural prioritária — LP-00 a LP-28
+
+**Obrigatório antes da aprovação estética e antes do rollout definitivo da Cabeça V2:** implementar dois planos circulares laterais **geometricamente planos**, integrados à abóbada craniana conforme Loomis. O achatamento leve atual em `cranial-surface.js` **não satisfaz esse requisito**.
+
+**[Abrir Task Graph completo da construção Loomis (29 tarefas, fórmulas, testes e sete ondas)](task-graph-cabeca-v2-planos-laterais-loomis.md).**
+
+Os estados da tabela H2 abaixo continuam sendo **itens do plano original**, não certificados de implementação. Consulte o relatório de implementação para os estados reais e pendências.
 
 ---
 
