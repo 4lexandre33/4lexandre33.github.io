@@ -20,7 +20,7 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
-import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido} from "./grip-v3.js";
+import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3} from "./grip-v3.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -109,7 +109,7 @@ function apiFor(it){
       chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
       atualizarApoios();const ground=restGround(SCN.list[0].params);
       const site=gripSiteWorld(o,ponto,ground),before={...it.params};
-      const residual=maoEm(it,ladoNum(mao),site.mundo);
+      const residual=alinharPalmaV3(it,ladoNum(mao),site.mundo,ground);
       guardarContatoV2(it,before);
       return {objeto:o.nome||o.tipo,ponto:site.id,distanciaResidual:residual,
         alcançou:residual<=.3,mao};
@@ -477,7 +477,7 @@ const cena={
         sites.sort((a,b)=>Math.hypot(...a.mundo.map((v,i)=>v-H.T[i]))-
                         Math.hypot(...b.mundo.map((v,i)=>v-H.T[i])))[0];
       try{
-        const residual=maoEm(it,ladoNum(mao),site.mundo);
+        const residual=alinharPalmaV3(it,ladoNum(mao),site.mundo,ground);
         guardarContatoV2(it,previous);
         const actual=handFrameV3(it,ladoNum(mao),ground);
         const finalError=Math.hypot(...actual.T.map((v,i)=>v-site.mundo[i]));
