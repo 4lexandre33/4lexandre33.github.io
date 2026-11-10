@@ -16,7 +16,7 @@ import {STYLES,styleName,setStyleName,setPAL_EXPORT} from "./paletas.js";
 import {LAY,SL} from "./parametros.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
-import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
+import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {tocarV2} from "./toque-v2.js";
@@ -29,12 +29,14 @@ function guardarContatoV2(it,antes){
 }
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
 const LOG=[];
+const HIST_COMANDOS={undo:[],redo:[],max:30};
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
     orientacao(referencia="tronco"){chk();return orientacaoAlvo({id:it.id},referencia)},
+    exportarOBJ(opts={}){chk();return cena.exportarOBJ({...opts,alvo:it.name})},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
@@ -285,7 +287,58 @@ const cena={
   exportarJSON(){return JSON.stringify({app:"GeoMannequin",version:9,scene:sceneState(),layers:{...L},style:styleName})},
   importarJSON(dados){const v=typeof dados==="string"?JSON.parse(dados):dados;if(v?.scene)applyState(v);else loadScene(v);return cena.estado()},
   estadoCompleto(){return {scene:sceneState(),layers:{...L},style:styleName}},
-  restaurarCompleto(valor){if(!valor?.scene)throw Error("Estado completo inválido.");applyState(JSON.parse(JSON.stringify(valor)));return cena.estadoCompleto()},
+  restaurarCompleto(valor){if(!valor?.scene)throw Error("Estado completo inválido.");
+    applyState(JSON.parse(JSON.stringify(valor)));
+    if(valor.style&&STYLES[valor.style])cena.estilo(valor.style);
+    return cena.estadoCompleto();
+  },
+  marcarEstado(){HIST_COMANDOS.undo.push(cena.estadoCompleto());if(HIST_COMANDOS.undo.length>HIST_COMANDOS.max)HIST_COMANDOS.undo.shift();HIST_COMANDOS.redo.length=0;return HIST_COMANDOS.undo.length},
+  desfazer(){const last=HIST_COMANDOS.undo.pop();if(!last)return false;
+    HIST_COMANDOS.redo.push(cena.estadoCompleto());cena.restaurarCompleto(last);return true},
+  refazer(){const next=HIST_COMANDOS.redo.pop();if(!next)return false;
+    HIST_COMANDOS.undo.push(cena.estadoCompleto());cena.restaurarCompleto(next);return true},
+  historico(){return {desfazer:HIST_COMANDOS.undo.length,refazer:HIST_COMANDOS.redo.length,max:HIST_COMANDOS.max}},
+  /* Descoberta da API a partir dos métodos realmente expostos nesta versão. */
+  comandos(){
+    const meth=o=>Object.keys(o).filter(k=>typeof Object.getOwnPropertyDescriptor(o,k)?.value==="function").sort();
+    return {cena:meth(cena),camera:meth(camera),manequim:meth(apiFor(SCN.list[SCN.active])),
+      objeto:SCN.objetos.length?meth(apiObjeto(SCN.objetos[0])):[],estilos:Object.keys(STYLES),
+      camadas:LAY.map(l=>l.k)};
+  },
+  parametros(){return SL.map(x=>({chave:x.k,nome:x.label,min:x.min,max:x.max,passo:x.step}))},
+  capacidades(){return [
+    {id:"camera3d",estado:"implementado",api:["camera.ver","camera.costas","camera.frente","camera.seguir","camera.pararSeguir","camera.orientacaoDoAlvo"],limite:"pitch do renderizador até 70°"},
+    {id:"camadas",estado:"implementado",api:["cena.camadaVisual","cena.camadasVisuais"]},
+    {id:"estilos",estado:"implementado",api:["cena.estilo","cena.estilos"]},
+    {id:"exportacao",estado:"parcial",api:["cena.exportarSVG","cena.exportarOBJ","cena.exportarJSON","cena.exportarPNG","cena.baixar"]},
+    {id:"headstudy",estado:"implementado",api:["cena.estudoAnatomico.svg","cena.estudoAnatomico.abrir","cena.estudoAnatomico.fechar"]},
+    {id:"quadros",estado:"parcial",api:["cena.quadros.abrir","cena.quadros.texto","cena.quadros.renderizar","cena.quadros.fila","cena.quadros.baixar"]},
+    {id:"blocking",estado:"parcial",api:["cena.blocking","cena.blocking.abrir","cena.blocking.estado"]},
+    {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar","m.segurar"]},
+    {id:"editor",estado:"parcial",api:["cena.marcarEstado","cena.desfazer","cena.refazer","cena.historico"],limite:"histórico explícito/de execução; mudanças externas não são interceptadas automaticamente"},
+    {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
+  ]},
+  arquivosCamadas(){return arquivosCamadas(cena.exportarJSON())},
+  async baixar(nome,dados,mime="text/plain;charset=utf-8"){
+    if(!UIH.baixar)throw Error("Download exige navegador. Use exportarSVG/exportarOBJ para obter os dados em execução headless.");
+    return await UIH.baixar(String(nome),dados,mime);
+  },
+  async link(){if(!UIH.link)throw Error("Link compartilhável exige ambiente do navegador.");return await UIH.link();},
+  async exportarPNG({escala=2,transparente=false}={}){
+    if(typeof Image==="undefined"||typeof Blob==="undefined"||typeof URL==="undefined"||typeof document==="undefined"||!document.createElement)
+      throw Error("PNG depende de Canvas/Imagem e não está disponível no headless. Use exportarSVG().");
+    const factor=Number(escala);
+    if(!Number.isFinite(factor)||factor<.25||factor>6)throw Error("Escala PNG deve ficar entre 0.25 e 6.");
+    const svg=cena.exportarSVG({transparente}),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
+    try{
+      const img=new Image();
+      await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("SVG não pode ser convertido em PNG."));img.src=url});
+      const cv=document.createElement("canvas");cv.width=Math.round(W*factor);cv.height=Math.round(H*factor);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      const blob=await new Promise((resolve,reject)=>cv.toBlob(b=>b?resolve(b):reject(Error("PNG não gerado.")),"image/png"));
+      return blob;
+    }finally{URL.revokeObjectURL(url)}
+  },
   estudoAnatomico:{
     svg(opts={}){const it=opts.alvo===undefined?SCN.list[SCN.active]:typeof opts.alvo==="number"?SCN.list[opts.alvo]:SCN.list.find(x=>x.name===opts.alvo);
       if(!it)throw Error("Manequim para estudo não encontrado.");
