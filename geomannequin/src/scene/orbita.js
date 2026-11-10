@@ -139,6 +139,20 @@ function orbitarCamera(alvo, opts) {
   centrarPivo();
   return {pivo:A.nome,tipo:A.tipo,area:A.area,azimute:az,elevacao:elev,yaw:P.yaw,pitch:P.pitch,distancia:P.camDist,centro:A.c};
 }
+/* Elevação anatômica sem o antigo limite da câmera de órbita horizontal.
+ * Preserva elevacaoDe() para scripts legados.
+ */
+function elevacaoRelativaDe(v){
+ if(v===undefined||v===null)return 0;
+ if(typeof v==="number"){if(!Number.isFinite(v))throw Error("Elevação não finita.");return clamp(v,-90,90)}
+ const t=semAcentoOrb(v);
+ if(t==="zenital"||t==="de cima exato")return 90;
+ if(t==="nadir"||t==="de baixo exato")return -90;
+ if(t in ELEV_NOMES)return ELEV_NOMES[t];
+ const n=Number(t.replace(",","."));
+ if(Number.isFinite(n))return clamp(n,-90,90);
+ throw Error("Elevação inválida. Use graus de -90 a 90, zenital, nadir ou 'alta'.");
+}
 /* Versão matricial: orienta pelo eixo do próprio alvo/parte, e não pelos olhos.
  * Quando `vertical` = 'anatomico', a elevação acompanha inclusive atores deitados.
  * O renderizador legado limita pitch a 70°: se a orientação exigir ângulo maior,
@@ -148,7 +162,10 @@ function verOrientadaCamera(alvo,opts={},interno=false){
   opts=opts||{};
   const lado=opts.lado??opts.azimute??"frente",a=azimuteDe(lado)*D;
   const referencia=opts.referencia??"tronco";
-  const frame=orientacaoAlvo(alvo,referencia,{exigirFrente:opts.exigirFrente!==false});
+  const multi=Array.isArray(alvo)&&!(alvo.length===3&&alvo.every(Number.isFinite))||
+    typeof alvo==="string"&&/^(cena|todos|tudo)$/.test(semAcentoOrb(alvo));
+  if(multi&&!opts.lider)throw Error("Um grupo não tem frente única. Informe {lider:'Nome do manequim'}.");
+  const frame=orientacaoAlvo(multi?opts.lider:alvo,referencia,{exigirFrente:opts.exigirFrente!==false});
   const space=opts.vertical??"anatomico";
   if(space!=="anatomico"&&space!=="mundo")throw Error("Vertical: use 'anatomico' ou 'mundo'.");
   const up=space==="mundo"?[0,1,0]:frame.cima;
@@ -158,14 +175,14 @@ function verOrientadaCamera(alvo,opts={},interno=false){
     if(horiz<1e-6)throw Error("Frente do alvo é vertical: escolha vertical:'anatomico' para vistas de frente/costas.");
     F=[F[0]/horiz,0,F[2]/horiz];L=[F[2],0,-F[0]];
   }
-  const elev=elevacaoDe(opts.elevacao??0)*D;
+  const elev=elevacaoRelativaDe(opts.elevacao??0)*D;
   const h=[0,1,2].map(i=>Math.cos(a)*F[i]+Math.sin(a)*L[i]);
   const v=[0,1,2].map(i=>Math.cos(elev)*h[i]+Math.sin(elev)*up[i]);
   const n=Math.hypot(...v);if(n<1e-8)throw Error("Orientação orbital degenerada.");
   const dir=v.map(x=>x/n);
   const pitchReal=-Math.atan2(dir[1],Math.hypot(dir[0],dir[2]))/D;
   if(!Number.isFinite(pitchReal))throw Error("Pitch anatômico inválido.");
-  const A=pivoCamera(alvo,{area:opts.area??opts.regiao??null,enquadrar:false});
+  const A=pivoCamera(alvo,{area:multi?null:opts.area??opts.regiao??null,enquadrar:false});
   const dist=opts.distancia;
   const yawReal=-Math.atan2(dir[0],dir[2])/D;
   P.yaw=+(((yawReal+540)%360)-180).toFixed(4);
@@ -189,7 +206,7 @@ function verOrientadaCamera(alvo,opts={},interno=false){
   centrarPivo();
   if(!interno)SCN.seguirCamera=null;
   SCN.ultimaVistaOrientada={azimute:azimuteDe(lado),elevacao:elev/D,referencia:frame.referencia,vertical:space,limitado:false};
-  return {pivo:A.nome,referencia:frame.referencia,lado:lado,
+  return {pivo:A.nome,lider:multi?opts.lider:null,referencia:frame.referencia,lado:lado,
     frente:frame.frente,vetorCamera:dir,azimute:azimuteDe(lado),elevacao:elev/D,
     vertical:space,yaw:P.yaw,pitch:P.pitch,limitado:Math.abs(pitchReal)>70+1e-6,
     pitchSolicitado:+pitchReal.toFixed(4),centro:A.c,distancia:P.camDist};
@@ -216,4 +233,4 @@ function azimutesGiro(n, opts) { n = Math.max(2, Math.min(72, Math.round(n || 8)
   return Array.from({ length: n }, (_, i) => { let a = a0 + s * 360 * i / n; a = ((a + 540) % 360) - 180; return Math.round(a * 100) / 100; }); }
 function nomeVista(a) { const v = VISTAS_8.find(x => Math.abs(((x[1] - a + 540) % 360) - 180) < 0.5); return v ? v[0] : Math.round(a) + "°"; }
 
-export { AZIMUTES, VISTAS_8, azimuteDe, elevacaoDe, resolverAlvo, enquadrarPivo, vistaAtual, pivoCamera, orbitarCamera, atualizarFocoOrbita, passoOrbita, azimutesGiro, nomeVista, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera };
+export { AZIMUTES, VISTAS_8, azimuteDe, elevacaoDe, elevacaoRelativaDe, resolverAlvo, enquadrarPivo, vistaAtual, pivoCamera, orbitarCamera, atualizarFocoOrbita, passoOrbita, azimutesGiro, nomeVista, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera };
