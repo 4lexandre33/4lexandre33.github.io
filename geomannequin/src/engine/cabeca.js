@@ -104,7 +104,10 @@ function mandibula(v,p,S){
      do sulco interlabial com transição suave, evitando a faixa vertical
      estreita que deformava o queixo quando a boca abria. */
   const abertura=clamp(jo,0,1),my=S.mouthY;
-  const w=sstep((my+0.014-v[1])/0.175);
+  /* A mandíbula só participa da metade anterior da cabeça. O occipital
+     e a nuca NÃO podem girar junto com o queixo ao abrir a boca. */
+  const frente=sstep((v[2]+0.50)/0.70);
+  const w=sstep((my+0.014-v[1])/0.175)*frente;
   if(w<=0)return v;
   const a=abertura*23*D*w,hy=-S.t*0.50,hz=-0.19;
   const dy=v[1]-hy,dz=v[2]-hz,c=Math.cos(a),sn=Math.sin(a);
@@ -128,7 +131,9 @@ function buildHead(p,S){
     const r=ys.length+k-1;
     for(let j=0;j<cols;j++){
       const q=headPt(S.chinY,ths[j],p,S);const o=(r*cols+j)*3;
-      V[o]=q[0]*cf;V[o+1]=S.chinY-0.04*sf;V[o+2]=c0+(q[2]-c0)*cf;
+      /* O tampo inferior acompanha a mandíbula deformada: evita a fenda
+         junto ao pescoço quando a cabeça muda de expressão. */
+      V[o]=q[0]*cf;V[o+1]=q[1]-0.04*sf;V[o+2]=c0+(q[2]-c0)*cf;
     }
   }
   return {V,rows,cols,flip:1,fb:null};
