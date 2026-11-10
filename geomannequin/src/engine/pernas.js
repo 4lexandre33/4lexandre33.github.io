@@ -119,7 +119,13 @@ function linhaDedao(p,s,toes,hal){hal=hal||0;
 }
 function hipJoint(F,s){return [s*0.5*F.B.hip/1.1,F.yHip-0.3,-0.48]}
 /* glúteo: volume redondo atrás da articulação do quadril, achatado por dentro (fenda), mais cheio embaixo */
-function gluteDims(p){const B=bodyEff(p),g=0.78+1.8*B.glute,h=p.hips/1.08;return {g,h,rx:0.62*g*h,ry:0.62*g,rz:0.52*g}}
+function gluteDims(p){
+  const B=bodyEff(p),g=0.78+1.8*B.glute;
+  /* A largura do glúteo acompanha parcialmente a pelve, sem escalar as coxas.
+     Mistura linear estável inclusive nos limites do parâmetro hips. */
+  const h=(0.82*p.hips+0.18*B.hip)/1.08;
+  return {g,h,rx:0.62*g*h,ry:0.62*g,rz:0.52*g};
+}
 function buildGlute(p,s){
   const G=gluteDims(p);
   return blobMesh(22,36,(ph,th)=>{
@@ -129,7 +135,7 @@ function buildGlute(p,s){
 }
 function glutePose(p,F,ch,s){
   const G=gluteDims(p),J=hipJoint(F,s),fl=s>0?p.hipFlexL:p.hipFlexR;
-  const C=[s*(0.5*F.B.hip/1.1+0.06),F.yHip-0.5,-0.48-0.58*G.g];
+  const C=[J[0]+s*0.06,F.yHip-0.5,-0.48-0.58*G.g];
   const R=rotP(rotM(0,-(fl>0?0.42*fl:0.25*fl)*D,0),J);
   return comp(ch.Pel,comp(R,{M:[1,0,0,0,1,0,0,0,1],T:C}));
 }
