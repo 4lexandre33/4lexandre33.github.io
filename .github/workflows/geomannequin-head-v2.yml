@@ -1,0 +1,44 @@
+name: GeoMannequin — cabeça V2 (verificação manual)
+on:
+  workflow_dispatch:
+    inputs:
+      matrix:
+        description: "Matriz visual"
+        type: choice
+        required: true
+        default: rapida
+        options:
+          - rapida
+          - completa
+jobs:
+  head-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: geomannequin/package-lock.json
+      - name: Instalar dependências
+        run: npm ci && npm ci --prefix mcp
+      - name: Testar geometria, cenas, rollback e modo V1
+        run: npm run testar:cabeca-v2
+      - name: Renderizar matriz curta (60 vistas)
+        if: ${{ inputs.matrix == 'rapida' }}
+        run: npm run matriz:cabeca-v2:rapida
+      - name: Renderizar matriz completa (1350 vistas)
+        if: ${{ inputs.matrix == 'completa' }}
+        run: npm run matriz:cabeca-v2
+      - name: Guardar amostras para revisão anatômica
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geomannequin-head-v2
+          path: geomannequin/testes/saida/cabeca-v2
+          if-no-files-found: warn
+          retention-days: 14

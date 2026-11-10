@@ -17,7 +17,10 @@
     "testar:face": "node testes/matriz-facial.mjs --svg",
     "testar:face:rapida": "node testes/matriz-facial.mjs --rapido",
     "testar:cranio": "node testes/cabeca-referencia.mjs",
-    "atlas:cranio": "node testes/atlas-cranio.mjs"
+    "atlas:cranio": "node testes/atlas-cranio.mjs",
+    "testar:cabeca-v2": "node testes/cabeca-v2-geometria.mjs && node testes/cabeca-v2-compatibilidade.mjs",
+    "matriz:cabeca-v2:rapida": "node testes/matriz-cabeca-v2.mjs --rapido --svg",
+    "matriz:cabeca-v2": "node testes/matriz-cabeca-v2.mjs --svg"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
