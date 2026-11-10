@@ -21,7 +21,7 @@
     "testar:cabeca-v2": "node testes/cabeca-v2-geometria.mjs && node testes/cabeca-v2-compatibilidade.mjs && node testes/cabeca-v2-planos.mjs",
     "matriz:cabeca-v2:rapida": "node testes/matriz-cabeca-v2.mjs --rapido --svg",
     "matriz:cabeca-v2": "node testes/matriz-cabeca-v2.mjs --svg",
-    "testar:planos-loomis": "node testes/cabeca-v2-planos.mjs",
+    "testar:planos-loomis": "node testes/cabeca-v2-planos.mjs && node testes/cabeca-v2-perfil-loomis.mjs",
     "atlas:planos-loomis": "node testes/atlas-planos-loomis.mjs"
   },
   "devDependencies": {

@@ -12,7 +12,7 @@ const SL=[
   {k:"headScale",g:"slProp",label:"Escala anatômica da cabeça",min:0.9,max:1.1,step:0.005,u:"×"},
   {k:"headDetail",g:"slProp",label:"Detalhe da cabeça V2 (0 baixo, 1 normal, 2 close)",min:0,max:2,step:1,u:""},
   {k:"sidePlaneDepth",g:"slProp",label:"Loomis: profundidade do corte lateral",min:0.61,max:0.83,step:0.005,u:"×"},
-  {k:"sidePlaneRadius",g:"slProp",label:"Loomis: raio dos dois círculos",min:0.37,max:0.52,step:0.005,u:" R"},
+  {k:"sidePlaneRadius",g:"slProp",label:"Loomis: raio dos dois círculos",min:0.37,max:0.79,step:0.005,u:" R"},
   {k:"sidePlaneCenterY",g:"slProp",label:"Loomis: altura dos planos",min:-0.05,max:0.27,step:0.005,u:" R"},
   {k:"sidePlaneCenterZ",g:"slProp",label:"Loomis: posição anterior/posterior",min:-0.10,max:0.10,step:0.005,u:" R"},
   {k:"sidePlaneBevel",g:"slProp",label:"Loomis: suavidade do contorno",min:0.025,max:0.16,step:0.005,u:" R"},
