@@ -5,7 +5,7 @@
 import {SCN} from "./modelo.js";
 import {pMundo,COL} from "./colisoes.js";
 import {colliderRig,colliderObject,manifoldCaps,manifoldObject,manifoldSelf} from "../engine/contact-v2.js";
-import {restGround,colisaoEntreObjetos,partesLocais} from "../engine/index.js";
+import {restGround,colisaoEntreObjetos,partesLocais,gripSiteWorld} from "../engine/index.js";
 import {updateRigidGrip} from "./grip-v3.js";
 const CONTATO_V2={enabled:false,level:"fine",tol:.07,last:null,blocked:0};
 const MOTION=/^(?:wx|wy|wz|wRot|arm|elbow|pron|wrist|handCurl|f(?:Th|In|Me|An|Mi|Spread)|thumbOpp|hip|knee|ankle|foot|toes|hallux|head|neck|spine|lum|tho|pelvis|body|shElev|shProt|scap)/;
@@ -58,8 +58,25 @@ function contacts(it,params,ctx,{incluirAuto=true,margin=.025,max=32}={}){
      Só o ponto de suporte da própria mão deixa de bloquear essa peça. */
   const held=o.obj.gripV3||o.obj.grip;
   if(held&&held.mannequinId===it.id){
-    const side=held.side===1?"E":"D";
-    if(c.pa==="mao"+side||(!o.obj.gripV3&&c.pa.startsWith("dedo")&&c.pa.endsWith(side)))continue;
+    if(o.obj.gripV3){
+      // Só suprimir o contato da palma ao redor do seu GripSite,
+      // nunca a mão inteira (ou os dedos distantes da pega).
+      const poseCandidata=carried.get(o.obj.id)?.obj||o.obj;
+      const suporta=[held,{...held.secundaria}].filter(h=>(h.side===1||h.side===-1)&&h.siteId);
+      let validSupport=false;
+      for(const h of suporta){
+        if(c.pa!=="mao"+(h.side===1?"E":"D"))continue;
+        try{
+          const site=gripSiteWorld(poseCandidata,h.siteId,worldGround());
+          const distance=Math.hypot(...site.mundo.map((v,i)=>v-c.ponto[i]));
+          if(distance<=.65){validSupport=true;break}
+        }catch(e){/* site inválido não isenta a colisão */}
+      }
+      if(validSupport)continue;
+    }else{
+      const side=held.side===1?"E":"D";
+      if(c.pa==="mao"+side||(c.pa.startsWith("dedo")&&c.pa.endsWith(side)))continue;
+    }
   }
   out.push({...c,tipo:"objeto",a:it.id,b:o.obj.id,alvo:o.obj.nome||o.obj.tipo});
  }
