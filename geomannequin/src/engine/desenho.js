@@ -3,6 +3,7 @@ import { LD, LWK, MULTI, PAN, PERSP, SPAN, camPt, camQ, effScale, proj, setLWK, 
 import { makeXf } from "./camera.js";
 import { getMeshes, makeMat } from "./montagem.js";
 import { earSurf, headPt, ringAt, shape } from "./cabeca.js";
+import { bocaForma, arcadas } from "./boca.js";
 import { chainSetup, legPose } from "./cadeia.js";
 import { BASE, CX, CY, D, H, W, applyA, clamp, comp, f1, gauss, lerp, mmul, mv, rotM } from "./matematica.js";
 import { contourPath, fillPath, silhouette } from "./contornos.js";
@@ -527,41 +528,46 @@ function scene(p,L,pal,fast,mode){
     });
     /* boca: lábio superior e inferior preenchidos, sombra sob o lábio; sorriso (cantos) e boca aberta (mandíbula) */
     {
-      const sm=p.smile||0,jo=clamp(p.jawOpen||0,0,1),ab=jo>0.02?Math.min(0.28,0.02+0.23*jo):0;
-      const mY=x=>mouthY+0.016*Math.pow(x/0.2,2)+sm*0.028*Math.pow(x/0.2,2);
-      const top=x=>mY(x)+0.034*(1-Math.pow(Math.abs(x)/0.2,1.3))*(1-0.35*gauss(x,0,0.035));
-      const bot=x=>mouthY-0.07-0.02*(1-Math.pow(x/0.13,2));
-      const H=(x,y,o)=>hp(y,surfX(y,x),o||0.008);
-      fillP(arr(x=>H(x,top(x)),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)),0.2,-0.2,24)),pal.shade3);
-      /* Vão oral que cresce conforme a abertura, com língua e arcadas dentárias
-         projetadas na superfície do rosto em perspectiva. */
-      if(ab){
-        const interior=x=>mY(x)-ab*(0.23+0.77*Math.max(0,1-Math.pow(x/0.19,2)));
-        fillP(arr(x=>H(x,mY(x)-0.005,0.026),-0.185,0.185,32)
-          .concat(arr(x=>H(x,interior(x),0.027),0.185,-0.185,32)),pal.ink,0.94);
-        if(jo>0.14)fillP(arr(x=>H(x,interior(x)+0.02+0.025*Math.max(0,1-(x/0.13)**2),0.032),-0.13,0.13,22)
-          .concat(arr(x=>H(x,interior(x)+0.008,0.031),0.13,-0.13,22)),pal.coral,0.68);
-        const nDentes=8,step=0.30/nDentes;
-        for(let i=0;i<nDentes;i++){
-          const x0=-0.15+i*step+0.002,x1=x0+step-0.004,xc=(x0+x1)/2;
-          const profundidade=Math.min(ab*0.36,0.036)*(0.7+0.3*Math.cos(xc*8));
-          fillP([H(x0,mY(x0)-0.009,0.033),H(x1,mY(x1)-0.009,0.033),
-                 H(x1,mY(x1)-0.009-profundidade,0.033),
-                 H(x0,mY(x0)-0.009-profundidade,0.033)],"#F2EDE3");
-          if(jo>0.42){
-            const base=x=>interior(x)+0.014;
-            fillP([H(x0,base(x0),0.034),H(x1,base(x1),0.034),
-                   H(x1,base(x1)+Math.min(0.026,ab*0.18),0.034),
-                   H(x0,base(x0)+Math.min(0.026,ab*0.18),0.034)],"#E9E1D6");
-          }
+      const M=bocaForma(p,sh),sm=M.sorriso,jo=M.aberto,ab=M.altura;
+      const H=(x,y,off=0.015)=>hp(y,surfX(y,x),off);
+      const w=M.width, xs=(f,a=1)=>arr(x=>H(x,f(x),0.028),-w*a,w*a,36);
+      const upper=xs(M.labioSup),upperBase=xs(M.cima);
+      /* Lábio superior fixo na maxila; contorno curvo, mais largo que alto.
+         A abertura não é uma faixa vertical desenhada sobre a cabeça. */
+      fillP(upper.concat(upperBase.slice().reverse()),pal.shade3,0.96);
+      if(jo>0.035){
+        const roof=arr(x=>H(x,M.cima(x)-0.003,0.043),-w,w,48);
+        const floor=arr(x=>H(x,M.baixo(x),0.047),w,-w,48);
+        /* Cavidade oval: bordas se encontram naturalmente nos cantos. */
+        fillP(roof.concat(floor),pal.ink,0.97);
+        /* Língua curva e parcialmente oculta, apoiada no assoalho da boca. */
+        if(jo>0.15){
+          const tWidth=w*0.68;
+          fillP(arr(x=>H(x,M.linguaSup(x),0.052),-tWidth,tWidth,28)
+            .concat(arr(x=>H(x,M.linguaInf(x),0.054),tWidth,-tWidth,28)),pal.coral,0.70);
+          curve("fibra",arr(x=>H(x,M.linguaSup(x),0.054),-tWidth*0.62,tWidth*0.62,22));
         }
+        /* Arcadas incisiva/canina com forma contínua arqueada. As coroas são
+           curtas e arredondadas, evitando as barras pretas dos prints. */
+        const dSup=arcadas(M,false);
+        for(const crown of dSup)fillP(crown.pontos.map(([x,y])=>H(x,y,0.054)),"#F1EBDE",0.96);
+        if(jo>0.62)for(const crown of arcadas(M,true))
+          fillP(crown.pontos.map(([x,y])=>H(x,y,0.054)),"#E7DDD0",0.90);
       }
-      fillP(arr(x=>H(x,mY(x)-ab),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)-ab-0.055*Math.max(0,1-Math.pow(x/0.2,2))-0.004),0.2,-0.2,24)),pal.shade1);
-      fillP(arr(x=>H(x,bot(x)-0.005,0.006),-0.13,0.13,16).concat(arr(x=>H(x,bot(x)-0.05*(1-Math.pow(x/0.13,2)),0.006),0.13,-0.13,16)),pal.shade2,0.8);
-      curve("feat",arr(x=>H(x,mY(x)),-0.2,0.2,30));
-      if(ab)curve("feat",arr(x=>H(x,mY(x)-ab),-0.19,0.19,30));
-      curve("feat",arr(x=>H(x,top(x)),-0.2,0.2,40));
-      curve("feat",arr(x=>H(x,bot(x)),-0.13,0.13,24));
+      /* Lábio inferior ligado ao queixo que gira na ATM. */
+      const lower=arr(x=>H(x,M.baixo(x),0.031),-w,w,36);
+      const lowerOuter=arr(x=>H(x,M.labioInf(x),0.033),w,-w,36);
+      fillP(lower.concat(lowerOuter),pal.shade1,0.96);
+      if(jo<0.04)curve("feat",xs(M.cima));
+      else{
+        curve("feat",xs(M.cima));
+        curve("feat",arr(x=>H(x,M.baixo(x),0.031),-w,w,32));
+      }
+      curve("feat",xs(M.labioSup));
+      curve("feat",arr(x=>H(x,M.labioInf(x),0.033),-w,w,30));
+      /* O sulco mentolabial acompanha o terço inferior, sem uma placa
+         vertical sombreando o pescoço quando a mandíbula se desloca. */
+      curve("fibra",arr(x=>H(x,M.labioInf(x)-0.055*M.curva(x),0.012),-0.14,0.14,20));
       /* Sulcos nasolabiais e zigomáticos aparecem apenas durante o sorriso. */
       if(sm>0.06)[-1,1].forEach(side=>{
         curve("divisao",arr(u=>{

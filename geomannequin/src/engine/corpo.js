@@ -28,7 +28,11 @@ function bodyEff(p){
 }
 function bustFrame(p,S){
   const B=bodyEff(p),yJ=S.chinY-1.05*p.neckLen,W=B.W,yAc=yJ+0.02;
-  return {B,yJ,W,yAc,yTr:yAc+p.shDrop,zT:-0.47,yTop:-0.42,yC7:yJ+0.42,chestW:B.chest,
+  /* O trecho cilíndrico do pescoço continua abaixo da mandíbula antes de
+     abrir para os trapézios. Antes a rampa do ombro começava quase na
+     altura do queixo, fazendo o pescoço desaparecer na vista frontal. */
+  const yTr=yAc+clamp(p.shDrop*0.67,0.34,0.59);
+  return {B,yJ,W,yAc,yTr,zT:-0.47,yTop:-0.42,yC7:yJ+0.42,chestW:B.chest,
     yUB:yJ-1.7,yWst:yJ-3.05,yNav:yJ-3.35,yHip:yJ-4.85,yCr:yJ-5.85,yB:yJ-6.08};
 }
 /* perfil vertical do tronco: [y, meia-largura, frente, trás, centro z, expoente] interpolado por Catmull-Rom */

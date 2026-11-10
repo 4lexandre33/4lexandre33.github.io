@@ -221,3 +221,36 @@ O [task graph detalhado](docs/task-graph-reconstrucao-anatomica.md) registra
 TG-00 a TG-27, evidências e pendências. As 1.200 renderizações da matriz,
 revisão visual humana, atualização das referências históricas e reconstrução
 do `dist/geomannequin.html` precisam ser executadas/aprovadas separadamente.
+
+## Reconstrução da cabeça pela referência anatômica 3×3 (10/11/2026)
+
+A cabeça foi revisada a partir da referência de modelagem do usuário com
+ênfase na vista de perfil: crânio mais ovalado, caixa parietal ampla,
+têmpora/frontal menos esféricos e massa occipital posterior.
+A **mandíbula gira na ATM** e a **nuca permanece fixa**; o pescoço fica
+visível antes de se abrir para ombros e clavículas. Orelhas foram reposicionadas.
+
+A boca deixa de usar uma grade frontal: a abertura segue um contorno
+curvo, com lábios articulados, arcadas dentárias e língua desenhadas de
+acordo com o parâmetro `jawOpen`. A malha do rosto ganha um rebaixo
+suave no interior oral.
+
+**Novo controle:** `cranialDepth` (0,90 a 1,12) ajusta o comprimento
+posterior do crânio independentemente da largura `skull`, escala
+`headScale` e extensão da face `face`. Cada um dos 10 biotipos possui
+um valor próprio de profundidade.
+
+Veja as folhas de 9 vistas:
+[masculino médio](testes/visuais-cranio-3x3/masculino-medio.svg) e
+[feminino médio](testes/visuais-cranio-3x3/feminino-medio.svg).
+
+```bash
+npm run testar:cranio
+npm run atlas:cranio -- masculino medio
+npm run atlas:cranio -- feminino medio
+```
+
+O [task graph de reconstrução craniana](docs/task-graph-cranio-referencia-3x3.md)
+documenta as tarefas, 48 renderizações amostrais verificadas, regressões e
+limitações. Os dentes e a língua **ainda não são malhas internas completas**
+como em um modelo odontológico; a inspeção estética das vistas permanece necessária.
