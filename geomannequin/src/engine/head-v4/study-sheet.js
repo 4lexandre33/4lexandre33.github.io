@@ -22,7 +22,7 @@ const layers=(wire=true)=>({
  horizon:0,fibras:0,cel:0,ossos:0,ocultas:0
 });
 export const STUDY_VIEWS=[
- {id:"profile",yaw:-90,pitch:0,roll:0,zoom:2.16,panY:-.51},
+ {id:"profile",yaw:-90,pitch:0,roll:0,zoom:2.16,panX:.22,panY:-.51},
  {id:"threequarter",yaw:-40,pitch:3,roll:0,zoom:1.65,panY:-.46},
  {id:"front",yaw:0,pitch:0,roll:0,zoom:1.59,panY:-.44},
  {id:"back",yaw:145,pitch:4,roll:0,zoom:1.48,panY:-.49},
@@ -37,7 +37,7 @@ function modelForView(model,v){
  const p={...DEF,...model};
  Object.assign(p,{headModel:"v4_anatomical",headDetail:1,persp:0,atmo:0,
   camDist:30,lens:50,yaw:v.yaw,pitch:v.pitch,roll:v.roll,zoom:v.zoom,
-  panX:0,panY:v.panY,tx:0,ty:0,tz:0,wx:0,wy:0,wz:0,wRot:0,
+  panX:v.panX??0,panY:v.panY,tx:0,ty:0,tz:0,wx:0,wy:0,wz:0,wRot:0,
   headYaw:0,headPitch:0,headRoll:0,neckTwist:0,neckFlex:0,neckSide:0,
   bodyRoll:0,bodyPitch:0,jawOpen:.08,lightAz:-42,lightEl:54,
   bg:"#fafbfd",_cache:newCache(),_oculto:false});
@@ -149,9 +149,9 @@ export function buildHeadStudySvg(model={},opts={}){
   renderWindow(cache.threequarter,704,80,344,397),
   renderWindow(cache.front,1064,79,309,398),
   measures(),
-  annotationCard(715,582,187,174,cache.profile,"1. ROUNDED","OCCIPITAL–NAPE","315 110 240 280"),
-  annotationCard(936,582,187,174,cache.profile,"2. RESTORED EAR","HEIGHT + TILT","230 190 215 300"),
-  annotationCard(1156,582,187,174,cache.threequarter,"3. EYE SOCKET","SUBTLE BROW RIDGE","125 185 245 280"),
+  annotationCard(715,582,187,174,cache.profile,"1. ROUNDED","OCCIPITAL–NAPE","365 270 235 325"),
+  annotationCard(936,582,187,174,cache.profile,"2. RESTORED EAR","HEIGHT + TILT","258 302 225 310"),
+  annotationCard(1156,582,187,174,cache.threequarter,"3. EYE SOCKET","SUBTLE BROW RIDGE","55 275 250 290"),
   notes(),timeline(cache),
   '</g></svg>'
  ].join("");
