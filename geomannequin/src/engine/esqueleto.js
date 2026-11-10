@@ -4,7 +4,7 @@
    Hierarquia: pelve → lombar (L5–L1) → torácica (T12–T1) → cervical (C7–C1) → crânio; esterno → clavícula → escápula
    → úmero → rádio/ulna → carpo → metacarpos → falanges; pelve → fêmur → patela/tíbia/fíbula → tálus/calcâneo → metatarsos → falanges. */
 import { applyA, clamp, comp, mv } from "./matematica.js";
-import { shape } from "./cabeca.js";
+import { shape, mandibula } from "./cabeca.js";
 import { chainSetup, legPose } from "./cadeia.js";
 import { armDims, armJoint, armPose } from "./bracos.js";
 import { hipJoint, legDims } from "./pernas.js";
@@ -49,8 +49,13 @@ function ossosDoCorpo(p) {
   /* crânio e mandíbula */
   const cr = applyA(A3, [0, 0.15, 0.05]);
   ossos.push({ nome: "crânio", a: cr, b: cr, r: 0.95 * (p.skull || 0.82) / 0.82, tipo: "cranio" });
-  osso("mandíbula", applyA(A3, [-0.62, -0.35, 0.1]), applyA(A3, [0, -0.95, 0.85]), 0.1, "fino");
-  osso("mandíbula", applyA(A3, [0.62, -0.35, 0.1]), applyA(A3, [0, -0.95, 0.85]), 0.1, "fino");
+  /* Mandíbula e dentes usam a mesma ATM da malha facial. O ramo proximal
+     permanece junto à orelha; o mento acompanha a abertura inferior. */
+  [-1,1].forEach(s=>{
+    const condilo=mandibula([s*0.62,-0.35,0.10],p,S);
+    const mento=mandibula([0,-0.95,0.85],p,S);
+    osso("mandíbula",applyA(A3,condilo),applyA(A3,mento),0.1,"fino");
+  });
   junta("cabeça (atlas)", applyA(A3, [0, -0.55, -0.3]), "cabeca", 0);
   junta("rosto", applyA(A3, [0, -0.62, 0.85]), "rosto", 0);
   junta("pescoço", T(0, F.yJ + 0.35, -0.62), "cervical", 0);
