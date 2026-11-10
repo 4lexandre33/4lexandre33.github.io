@@ -7,7 +7,7 @@ function bodyEff(p){
   const m=p.muscle,f=p.fat,w=p.fem;
   return {
     /* ombros: clavículas longas e acrômios afastados (tronco em V); músculo alarga mais */
-    W:p.shW+0.12+0.26*m-0.32*w+0.08*f,
+    W:p.shW+0.10+0.22*m-0.29*w+0.07*f,
     neck:p.neck*(1+0.18*m+0.18*f-0.15*w),
     /* caixa torácica grande (bem maior que o abdômen); chest0 é a medida antiga, usada só para a cintura */
     chest:(0.58*p.shW+0.42)*(1+0.12*m+0.13*f-0.14*w),
