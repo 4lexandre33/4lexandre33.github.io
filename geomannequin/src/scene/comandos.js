@@ -292,7 +292,11 @@ const cena={
     if(valor.style&&STYLES[valor.style])cena.estilo(valor.style);
     return cena.estadoCompleto();
   },
-  marcarEstado(){HIST_COMANDOS.undo.push(cena.estadoCompleto());if(HIST_COMANDOS.undo.length>HIST_COMANDOS.max)HIST_COMANDOS.undo.shift();HIST_COMANDOS.redo.length=0;return HIST_COMANDOS.undo.length},
+  marcarEstado(snapshot){const valor=snapshot===undefined?cena.estadoCompleto():snapshot;
+    if(!valor?.scene)throw Error("Snapshot de histórico inválido.");
+    HIST_COMANDOS.undo.push(JSON.parse(JSON.stringify(valor)));
+    if(HIST_COMANDOS.undo.length>HIST_COMANDOS.max)HIST_COMANDOS.undo.shift();
+    HIST_COMANDOS.redo.length=0;return HIST_COMANDOS.undo.length},
   desfazer(){const last=HIST_COMANDOS.undo.pop();if(!last)return false;
     HIST_COMANDOS.redo.push(cena.estadoCompleto());cena.restaurarCompleto(last);return true},
   refazer(){const next=HIST_COMANDOS.redo.pop();if(!next)return false;
