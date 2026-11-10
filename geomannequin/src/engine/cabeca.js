@@ -1,5 +1,6 @@
 /* GeoMannequin — cabeça e orelhas: formato, planos do rosto, mandíbula e malha */
 import { D, clamp, gauss, lerp, sstep } from "./matematica.js";
+import {headV2Enabled,ringV2,pointV2,buildHeadV2,earPointV2,buildEarV2,jawPoseV2} from "./head/index.js";
 
 function shape(p){
   const t=Math.sin(p.face*D),chinY=-2*t;
@@ -9,6 +10,7 @@ function shape(p){
 }
 /* Seção horizontal da cabeça na altura y: meia-largura a, centro c0 e meia-profundidade d (frente bf, trás bb) */
 function ringAt(y,p,S){
+  if(headV2Enabled(p))return ringV2(y,p,S);
   const rs=Math.sqrt(Math.max(0,1-y*y));
   /* Tecido adiposo arredonda a face; desenvolvimento muscular fortalece
      a região mandibular; diferenças médias de sexo são suaves e editáveis. */
@@ -103,6 +105,7 @@ function bumps(y,x,p,S){
   return dz;
 }
 function headPt(y,th,p,S,off){
+  if(headV2Enabled(p))return pointV2(y,th,p,S,off||0);
   const r=ringAt(y,p,S);
   const x=r[0]*Math.sin(th);
   let z=r[1]+r[2]*Math.cos(th);
@@ -117,6 +120,7 @@ function headPt(y,th,p,S,off){
 /* mandíbula: abaixo da linha da boca, o queixo gira em volta da articulação temporomandibular (perto da orelha);
    jawOpen 0–1 (até ~26°), jawSide −1 a 1 (desvio lateral). A faixa logo abaixo do lábio superior estica e vira a boca aberta. */
 function mandibula(v,p,S){
+  if(headV2Enabled(p))return jawPoseV2(v,p,S);
   const jo=p.jawOpen||0,js=p.jawSide||0;if(!jo&&!js)return v;
   /* ATM: a maxila superior fica imóvel; o ramo mandibular move-se abaixo
      do sulco interlabial com transição suave, evitando a faixa vertical
@@ -134,6 +138,7 @@ function mandibula(v,p,S){
 }
 const mapTh=u=>u-0.7*Math.sin(u);
 function buildHead(p,S){
+  if(headV2Enabled(p))return buildHeadV2(p,S);
   const cols=128,ys=[];
   for(let i=0;i<20;i++)ys.push(1-0.65*i/20);
   for(let i=0;i<=140;i++)ys.push(0.35+(S.chinY-0.35)*i/140);
@@ -159,6 +164,7 @@ function buildHead(p,S){
 /* pescoço: largo, com os dois músculos esternocleidomastoideos e base abrindo para os ombros */
 /* orelha: superfície em coordenadas (u,v) de -1 a 1; u>0 é o lado do rosto */
 function earSurf(p,S,s,u,v){
+  if(headV2Enabled(p))return earPointV2(p,S,s,u,v);
   /* Implantação junto à ATM e ao processo mastoideu: altura do pavilhão
      entre arco supraciliar e base nasal, com inclinação posterior discreta.
      Orelha não deve flutuar em frente ao rosto nem atravessar a mandíbula. */
@@ -174,6 +180,7 @@ function earSurf(p,S,s,u,v){
   return [x,S.chinY+(y-S.chinY)*k,z];
 }
 function buildEar(p,S,s){
+  if(headV2Enabled(p))return buildEarV2(p,S,s);
   const rows=12,cols=40;
   const V=new Float32Array(rows*cols*3);
   for(let i=0;i<rows;i++)for(let j=0;j<cols;j++){

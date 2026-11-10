@@ -24,6 +24,7 @@ function apiFor(it){
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
+    cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(v!=="v1"&&v!=="v2")throw new Error("Modelo da cabeça: use v1 ou v2.");it.params.headModel=v;return m},
     posicao(x,z){chk();it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
     girar(g){chk();let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;return m},

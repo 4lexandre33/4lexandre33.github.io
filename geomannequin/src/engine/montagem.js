@@ -1,5 +1,6 @@
 /* GeoMannequin — montagem: cache de malhas, rotações e pose de cada parte */
 import { buildEar, buildHead } from "./cabeca.js";
+import {oralMeshV2,toothMeshesV2,tongueMeshV2,orbitMeshesV2} from "./head/index.js";
 import { buildBust } from "./tronco.js";
 import { buildArm, buildDelt, buildElbow, buildForearm } from "./bracos.js";
 import { buildAnkle, buildCalf, buildFoot, buildKnee, buildThigh, buildToes } from "./pernas.js";
@@ -13,8 +14,22 @@ function newCache(){return {meshKey:"",bustKey:"",armKey:"",legKey:"",handKey:["
 let GCACHE;
 function getMeshes(p,S){
   const C=p._cache||GCACHE;
-  const key=[p.skull,p.jaw,p.chin,p.face,p.chinProj,p.cranialDepth||1,p.headScale||1,p.brow,p.nose,p.lips,p.earSize,p.earFlare,p.muscle,p.fat,p.fem,Math.round((p.jawOpen||0)*50),Math.round((p.jawSide||0)*50),Math.round((p.smile||0)*50),Math.round((p.eyeLid||0)*40),Math.round((p.browUp||0)*40),Math.round((p.browIn||0)*40)].join("|");
-  if(key!==C.meshKey){C.meshKey=key;C.meshes.head=buildHead(p,S);C.meshes.earL=buildEar(p,S,-1);C.meshes.earR=buildEar(p,S,1)}
+  const key=[p.headModel||"v1",p.skull,p.jaw,p.chin,p.face,p.chinProj,p.cranialDepth||1,p.headScale||1,p.brow,p.nose,p.lips,p.earSize,p.earFlare,p.muscle,p.fat,p.fem,Math.round((p.jawOpen||0)*50),Math.round((p.jawSide||0)*50),Math.round((p.smile||0)*50),Math.round((p.eyeLid||0)*40),Math.round((p.browUp||0)*40),Math.round((p.browIn||0)*40)].join("|");
+  if(key!==C.meshKey){
+    C.meshKey=key;
+    C.meshes.head=buildHead(p,S);C.meshes.earL=buildEar(p,S,-1);C.meshes.earR=buildEar(p,S,1);
+    /* V2: volumes reais adicionais; nunca são construídos no caminho V1. */
+    if(p.headModel==="v2"){
+      const teeth=toothMeshesV2(p,S);
+      C.meshes.headV2Parts=[
+        {mesh:oralMeshV2(p,S),kind:"cavity"},
+        {mesh:tongueMeshV2(p,S),kind:"tongue"},
+        ...teeth.upper.map(mesh=>({mesh,kind:"tooth"})),
+        ...teeth.lower.map(mesh=>({mesh,kind:"tooth"})),
+        ...orbitMeshesV2(p,S).map(mesh=>({mesh,kind:"eye"}))
+      ].filter(q=>q.mesh);
+    }else C.meshes.headV2Parts=[];
+  }
   const bk=[p.face,p.neck,p.neckLen,p.shW,p.shDrop,p.chestF,p.adam,p.shElevL,p.shElevR,p.shProtL,p.shProtR,p.shTension,p.shTensL||0,p.shTensR||0,p.scapRotL||0,p.scapRotR||0,p.armAbdL,p.armAbdR,p.armFlexL,p.armFlexR,p.muscle,p.fat,p.fem,p.waist,p.hips,p.gluteVol,Math.round(p.spineSide),Math.round(p.spineFlex)].join("|");
   if(bk!==C.bustKey){C.bustKey=bk;C.meshes.bust=buildBust(p,S)}
   const ak=[p.armLen,p.armThick,p.muscle,p.fat,p.fem].join("|");

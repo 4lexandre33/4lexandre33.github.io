@@ -25,6 +25,7 @@ import { scapTri } from "./corpo.js";
 import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
 import { atlasBraco } from "./atlas/bracos.js";
 import { atlasRosto } from "./atlas/rosto.js";
+import { isoCurvesV2, lipCurvesV2 } from "./head/index.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -85,7 +86,10 @@ function scene(p,L,pal,fast,mode){
   });
   {const hc=xv(applyA(A3,[0,0,0]));handles.push({k:"head",s:0,P:applyA(A3,[0,0,0]),x:CX+S*hc[0],y:CY-S*hc[1]})}
   const ears=L.ears?[proj(M.earL,Mx,S),proj(M.earR,Mx,S)]:[];
-  const all=[head];if(bust)all.push(bust);arms.forEach(o=>{all.push(o.a,o.f,o.el,o.d,o.pec,o.lat);o.hs.forEach(h=>all.push(h))});legs.forEach(o=>{all.push(o.t,o.kn,o.c,o.an,o.ft);o.toes.forEach(m=>all.push(m))});ears.forEach(e=>all.push(e));
+  const v2Extra=p.headModel==="v2"?(M.headV2Parts||[]).map(q=>{
+    q.mesh.tf=[A3];return {kind:q.kind,mesh:proj(q.mesh,Mx,S)};
+  }):[];
+  const all=[head,...v2Extra.map(q=>q.mesh)];if(bust)all.push(bust);arms.forEach(o=>{all.push(o.a,o.f,o.el,o.d,o.pec,o.lat);o.hs.forEach(h=>all.push(h))});legs.forEach(o=>{all.push(o.t,o.kn,o.c,o.an,o.ft);o.toes.forEach(m=>all.push(m))});ears.forEach(e=>all.push(e));
   /* só as malhas projetadas: este manequim vai apenas fazer sombra na camada de outro */
   if(mode==="malhas")return {all};
   const lanc=mode==="camada"?CASTERS:[];
@@ -99,7 +103,7 @@ function scene(p,L,pal,fast,mode){
   if(mode!=="draw"){
     if(!MULTI){zb.fill(-1e6);hid.fill(-1)}
     /* parte do corpo de cada malha (segmentação por partes): 1 cabeça, 2 tronco, braço/antebraço/mão, coxa/perna/pé — esquerda 3–5 e 9–11, direita 6–8 e 12–14 */
-    head.parte=1;ears.forEach(e=>e.parte=1);if(bust)bust.parte=2;
+    head.parte=1;v2Extra.forEach(o=>o.mesh.parte=1);ears.forEach(e=>e.parte=1);if(bust)bust.parte=2;
     arms.forEach(o=>{const b=o.s>0?3:6;o.a.parte=o.d.parte=o.el.parte=b;o.pec.parte=o.lat.parte=2;o.f.parte=b+1;o.hs.forEach(h=>h.parte=b+2)});
     legs.forEach(o=>{const b=o.s>0?9:12;o.t.parte=o.kn.parte=b;o.c.parte=o.an.parte=b+1;o.ft.parte=b+2;o.toes.forEach(m=>m.parte=b+2)});
     all.forEach(m=>raster(m));
@@ -263,6 +267,20 @@ function scene(p,L,pal,fast,mode){
   }
 
   out.push('</g>');
+  /* V2: cavidade, dentes, língua e globos oculares são volumes
+     projetados pelo motor, com cores próprias sobre a malha do rosto. */
+  if(v2Extra.length&&mode!=="draw"&&mode!=="camada"){
+    out.push('<g id="volumes-cabeca-v2">');
+    for(const q of v2Extra){
+      const d=fillPath(silhouette(q.mesh),q.mesh);
+      if(d){
+        const color=q.kind==="cavity"?pal.ink:q.kind==="tongue"?"#AE747C":
+          q.kind==="tooth"?"#EFECE6":"#F3F2EB";
+        out.push('<path d="'+d+'" style="fill:'+color+';stroke:none;opacity:'+ (q.kind==="cavity"?.96:1)+'"/>');
+      }
+    }
+    out.push('</g>');
+  }
   /* guias de construção: grupo separado, mais leve, para não competir com a anatomia */
   out.push('<g id="construction-guides" style="opacity:'+(L.cel?0.45:0.8)+'">');
   /* esfera guia */
@@ -282,8 +300,15 @@ function scene(p,L,pal,fast,mode){
       curve("plane",pts);
     });
   }
+  /* Topografia 3D real, para a referência matemática 3x3. */
+  if(p.headModel==="v2"&&(L.rings||L.merid)){
+    isoCurvesV2(p,sh,{meridians:L.merid?16:0,parallels:L.rings?13:2,resolution:104}).forEach(l=>{
+      if((l.kind==="meridiano"&&L.merid)||(l.kind==="paralelo"&&L.rings))
+        curve("ring",l.pts,xf);
+    });
+  }
   /* contornos transversais */
-  if(L.rings){
+  if(L.rings&&p.headModel!=="v2"){
     const full=y=>arr(th=>hp(y,th,0.004),0,2*Math.PI,140);
     const part_=y=>arr(th=>hp(y,th,0.004),-110*D,110*D,90);
     curve("ring",full(t));
@@ -293,7 +318,7 @@ function scene(p,L,pal,fast,mode){
     curve("ring",part_(mouthY));
   }
   /* linhas de proporção estendidas, com marcas nas pontas */
-  if(L.rings){
+  if(L.rings&&p.headModel!=="v2"){
     [0.11,eyeY,-t].forEach(y=>{
       const r=ringAt(y,p,sh),xe=r[0]+0.3;
       curve("ext",arr(x=>[x,y,r[1]],-xe,xe,40));
@@ -301,7 +326,7 @@ function scene(p,L,pal,fast,mode){
     });
   }
   /* meridianos: eixo central na frente (segue o perfil) e atrás, mais os planos do rosto */
-  if(L.merid){
+  if(L.merid&&p.headModel!=="v2"){
     curve("axis",arr(i=>hp(i,0,0.004),1,chinY+0.015,110));
     curve("ring",arr(i=>hp(i,Math.PI,0),1,-0.85,60));
     [-1,1].forEach(s=>curve("ring",arr(i=>hp(i,s*38*D,0.004),t,-t,50)));
