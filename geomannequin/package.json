@@ -40,7 +40,7 @@
     "testar:camera-anatomica": "node testes/camera-orientacao-codigo.mjs",
     "testar:paridade-comandos": "node testes/paridade-editor-codigo.mjs",
     "testar:headless-modulos": "node testes/headless-modulos-integracao.mjs",
-    "testar:grip-v3": "node testes/grip-v3-se3.mjs && node testes/grip-v3-cadeira.mjs && node testes/grip-v3-regressoes.mjs && node testes/grip-v3-fisica.mjs"
+    "testar:grip-v3": "node testes/grip-v3-se3.mjs && node testes/grip-v3-cadeira.mjs && node testes/grip-v3-regressoes.mjs && node testes/grip-v3-fisica.mjs && node testes/grip-v3-duas-maos.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
