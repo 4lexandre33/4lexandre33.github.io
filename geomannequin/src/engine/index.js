@@ -41,6 +41,7 @@ export * from "./curvas.js";
 export * from "./planta.js";
 export * from "./pose2d.js";
 export * from "./autocolisao.js";
+export * from "./contact-v2.js";
 
 iniciarMontagem();
 iniciarZbuffer();
