@@ -1,7 +1,7 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
 import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
 import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
-import { applyParams, num, POSEKEYS } from "./parametros.js";
+import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
@@ -37,6 +37,15 @@ function apiFor(it){
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
     orientacao(referencia="tronco"){chk();return orientacaoAlvo({tipo:"manequim",id:it.id},referencia)},
+    parametro(chave,valor){
+      chk();const k=ALIAS[chave]||chave,d=SLK[k];
+      if(!d||CAMK.includes(k)||WORLDK.includes(k))throw Error("Parâmetro do manequim desconhecido: "+chave);
+      if(valor===undefined)return it.params[k];
+      const before={...it.params};applyParams(it,{[k]:valor},POSEKEYS.has(k));
+      if(POSEKEYS.has(k))withInst(it,guardArms);
+      guardarContatoV2(it,before);return m;
+    },
+    parametros(){chk();return Object.fromEntries(SL.filter(q=>!CAMK.includes(q.k)&&!WORLDK.includes(q.k)).map(q=>[q.k,it.params[q.k]]))},
     exportarOBJ(opts={}){chk();return cena.exportarOBJ({...opts,alvo:it.name})},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
@@ -178,6 +187,12 @@ function apiObjeto(q){
     posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
     mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
     girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
+    parametro(chave,valor){
+      chk();if(valor===undefined)return q[chave];
+      const permitidos=new Set(["x","z","giro","larg","prof","alt","raio","encosto","cabeceira"]);
+      if(!permitidos.has(chave))throw Error("Parâmetro de objeto desconhecido ou somente leitura: "+chave);
+      editarObjeto(q,{[chave]:num(valor,chave)});return o;
+    },
     orientacao(config){
       chk();if(config===undefined)return orientacaoAlvo({tipo:"objeto",id:q.id},"objeto");
       if(!config||typeof config!=="object")throw Error("Orientação: objeto {frenteLocal:[x,y,z],cimaLocal:[x,y,z]}.");
@@ -557,6 +572,14 @@ const camera={
   /* gira em volta do pivô atual: graus no chão (positivo = para a esquerda do pivô) e na elevação */
   girarEmVolta(graus,elev){passoOrbita(num(graus,"graus"),elev===undefined?0:num(elev,"elevação"));return camera},
   /* vista atual em relação ao pivô: {pivo, azimute, elevacao} */
+  parametro(chave,valor){
+    const d=SLK[chave];
+    if(!d||!CAMK.includes(chave))throw Error("Parâmetro de câmera desconhecido: "+chave);
+    if(valor===undefined)return P[chave];
+    pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;
+    const n=num(valor,chave);P[chave]=clamp(n,d.min,d.max);return camera;
+  },
+  parametros(){return Object.fromEntries(CAMK.map(k=>[k,P[k]]))},
   vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo,{area:SCN.orbitaArea})}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera",area:A?A.area:null},SCN.ultimaVistaOrientada||vistaAtual(A))},
   /* azimutes de um giro de n vistas (para laços): camera.giro(8) → [0, 45, 90, …] */
   giro(n,opts){return azimutesGiro(n,opts)},
