@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="css/cena.css">
 <link rel="stylesheet" href="css/head-study.css">
 <link rel="stylesheet" href="css/editor.css">
-<script type="module" src="src/main.js?v=20261110-contact-v2-experimental"></script>
+<script type="module" src="src/main.js?v=20261110-collision-panel-shortcut"></script>
 </head>
 <body>
 <div class="wrap">
@@ -57,6 +57,7 @@
         <button type="button" id="reset">Restaurar</button>
       </div>
       <div class="group" role="group" aria-label="Blocking">
+        <button type="button" id="colisoesAtalho" aria-controls="colSecao" title="Abrir diretamente a seção Colisões do painel Parâmetros">Colisões</button>
         <button type="button" id="headStudyOpen" title="Abrir a folha anatômica V4.2 com perfil, frontal, 3/4, anotações e SVG vetorial">Estudo V4.2</button>
         <button type="button" id="quadrosBtn" aria-pressed="false" title="Roteiro de quadros: escreva quadros em código (#quadro 1, #quadro 2…), renderize e baixe tudo junto">Quadros</button>
         <button type="button" id="blockingBtn" aria-pressed="false" title="Mostrar ou esconder o painel de blocking (vista de cima e lateral, inserir manequins e objetos)">Blocking</button>
@@ -130,7 +131,8 @@
       </div>
       <label class="check-linha"><input type="checkbox" id="cExato"> Modo exato (todos juntos, mais lento)</label>
       <p class="hint camadas-status" id="cStatus" aria-live="polite"></p>
-      <h2>Colisões</h2>
+      <section id="colSecao" class="col-secao" aria-labelledby="colSecaoTitulo" tabindex="-1">
+      <h2 id="colSecaoTitulo">Colisões e contato 3D</h2>
       <p class="hint camadas-dica">Quando um manequim atravessa outro (mão no quadril do vizinho, braços cruzando), escolha como corrigir: afastar, girar, ajustar a pose ou automático.</p>
       <label class="sel-linha">Quando houver colisão
         <select id="colModo"><option value="avisar">Só avisar</option><option value="corrigir">Corrigir ao soltar</option><option value="bloquear">Bloquear ao arrastar</option><option value="desligado">Desligado</option></select></label>
@@ -153,6 +155,7 @@
         <button type="button" id="colDesfazer" disabled>Desfazer correção</button>
       </div>
       <p class="msg" id="colMsg" aria-live="polite"></p>
+      </section>
       <div id="slScene"></div>
       <h2>Tipo corporal</h2>
       <div class="group poses" role="group" aria-label="Tipo corporal">
