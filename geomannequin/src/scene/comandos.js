@@ -27,7 +27,7 @@ import {rotM} from "../engine/matematica.js";
 import {iniciarQuedaObjeto,cancelarQuedaObjeto,avancarDinamicaObjetos} from "../engine/grip-dynamics.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, colliderRig, colliderObject, manifoldObject, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function guardarContatoV2(it,antes){
@@ -471,7 +471,22 @@ const cena={
   contatosFisicos(opts){return consultarContatosV2(opts)},
   avancarFisica(segundos=1/60){
     atualizarApoios();
-    const report=avancarDinamicaObjetos(SCN.objetos,restGround(SCN.list[0].params),segundos);
+    const ground=restGround(SCN.list[0].params);
+    // Os atores são colisores estáticos durante o passo de queda.
+    // O dono inicial é excluído para não bloquear a liberação dentro da palma.
+    const atores=SCN.list.filter(it=>!it.oculto).map(it=>({
+      nome:it.name,body:colliderRig(pMundo(it),{level:"coarse"})
+    }));
+    const colisaoHumano=o=>{
+      const partes=colliderObject(o,ground);
+      for(const it of atores){
+        if(it.nome===o.dinamica?.ignorarDono)continue;
+        if(manifoldObject(it.body,partes,{tol:.02,margin:0,max:1}).length)
+          return {tipo:"manequim",nome:it.nome};
+      }
+      return null;
+    };
+    const report=avancarDinamicaObjetos(SCN.objetos,ground,segundos,{colisaoHumano});
     atualizarApoios();return report;
   },
   simularQueda({duracao=3,passo=1/60,trajetoria=false}={}){
