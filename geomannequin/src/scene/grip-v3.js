@@ -72,7 +72,7 @@ function sincronizarMaoSecundaria(it,o,ground){
  s.desvio=deviation;s.alcancavel=deviation<=.35;
  return deviation;
 }
-function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,objetos=[]}={}){
+function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,exigirContato=false,objetos=[]}={}){
  if(!it||!o||!(side===1||side===-1))throw Error("Manequim, objeto ou mão inválidos.");
  if(!Number.isFinite(reach)||reach<0||reach>100)throw Error("Alcance precisa estar entre 0 e 100 R.");
  if(o.gripV3&&!segunda)throw Error("Objeto já está segurado; use segunda:true para adicionar outra mão.");
@@ -95,12 +95,13 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
    let residual;
    try{residual=sincronizarMaoSecundaria(it,o,ground)}
    catch(e){Object.assign(it.params,prev);delete o.gripV3.secundaria;throw e}
-   if(residual>.35){
+   if(residual>.35&&exigirContato){
      Object.assign(it.params,prev);delete o.gripV3.secundaria;
-     throw Error("A segunda mão não consegue agarrar o ponto ("+residual.toFixed(2)+" R).");
+     throw Error("A segunda mão não alcança este ponto ("+residual.toFixed(2)+" R).");
    }
    return {objeto:o.nome||o.tipo,mao:side===1?"esquerda":"direita",ponto:selected.id,
-     secundaria:true,distancia:distance,modo:"IK secundária",desvio:residual,versao:3};
+     secundaria:true,distancia:distance,modo:"IK secundária",desvio:residual,
+     alcancavel:residual<=.35,versao:3};
  }
  // Encaixar desloca a mão por IK (camada de comandos), não o objeto.
  const objPose=old;
@@ -154,7 +155,7 @@ function inspectRigidGrip(it,o,ground){
  }
  return {ativo:true,objeto:o.nome||o.tipo,manequim:it.name,mao:g.side===1?"esquerda":"direita",
    ponto:g.siteId,segundaMao:g.secundaria?(g.secundaria.side===1?"esquerda":"direita"):null,
-   desvio:positionError,desvioSegundaMao:secondaryError,versao:3};
+   desvio:positionError,desvioSegundaMao:secondaryError,segundaMaoAlcancavel:secondaryError===null?null:secondaryError<=.35,versao:3};
 }
 function releaseRigidGrip(it,o,ground,{mao,modo="manter"}={}){
  const g=o.gripV3;if(!g)return false;
