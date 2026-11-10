@@ -27,7 +27,7 @@ import { atlasBraco } from "./atlas/bracos.js";
 import { atlasRosto } from "./atlas/rosto.js";
 import { isoCurvesV2, lipCurvesV2, sideBorderV2 } from "./head/index.js";
 import { isoCurvesV3, constructionCurvesV3, anatomicalCurvesV3, earPointV3 } from "./head-v3/index.js";
-import { isoCurvesV4, constructionCurvesV4, anatomicalCurvesV4, earPointV4 } from "./head-v4/index.js";
+import { isoCurvesV4, constructionCurvesV4, anatomicalCurvesV4, earPointV4, earCurvesV41 } from "./head-v4/index.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -317,7 +317,7 @@ function scene(p,L,pal,fast,mode){
   }
   if(p.headModel==="v4_anatomical"&&(L.planes||L.anat||L.jaw||L.feat)){
     anatomicalCurvesV4(p,sh).forEach(g=>{
-      const jaw=g.kind==="mandibular-angle",micro=["upper-eyelid","lower-eyelid","nasal-alar",
+      const jaw=["mandibular-angle","facial-v-plane","chin-wedge"].includes(g.kind),micro=["upper-eyelid","lower-eyelid","nasal-alar",
         "nasolabial","mouth-corner","nose-bridge","philtrum","upper-lip","lower-lip"].includes(g.kind);
       if(jaw&&!(L.jaw||L.anat))return;
       if(micro&&!(L.feat||L.anat))return;
@@ -743,12 +743,19 @@ function scene(p,L,pal,fast,mode){
     [-1,1].forEach(s=>{
       const E=(u,v)=>earSurf(p,sh,s,u,v);
       if(s*xfd([1,0,0])[2]>0.05)fillP(arr(a=>E(0.12+0.34*Math.cos(a),-0.05+0.36*Math.sin(a)),0,2*Math.PI,28),pal.shade2,0.9);
-      curve("ear",arr(a=>E(Math.cos(a),Math.sin(a)),0,2*Math.PI,64));
-      curve("ear",arr(a=>E(0.8*Math.cos(a)-0.02,0.84*Math.sin(a)),35*D,335*D,52));
-      curve("ear",arr(k=>E(-0.07-0.38*Math.sin(Math.PI*k),0.62-1.12*k),0,1,22));
-      curve("ear",arr(k=>E(lerp(0.25,-0.1,k),lerp(0.78,0.5,k)),0,1,8));
-      curve("ear",arr(a=>E(0.8+0.1*Math.cos(a),-0.18+0.16*Math.sin(a)),-80*D,100*D,12));
-      curve("ear",arr(k=>E(lerp(-0.5,0.45,k),-0.74+0.06*Math.sin(Math.PI*k)),0,1,14));
+      if(p.headModel==="v4_anatomical"){
+        /* A V4.1 usa os contornos da orelha recalculada no espaço da
+           própria malha. Ocultação do z-buffer permanece no emit(). */
+        earCurvesV41(p,sh,s).forEach(g=>
+          curve(g.name==="helix"?"ear":"divisao",g.pts));
+      }else{
+        curve("ear",arr(a=>E(Math.cos(a),Math.sin(a)),0,2*Math.PI,64));
+        curve("ear",arr(a=>E(0.8*Math.cos(a)-0.02,0.84*Math.sin(a)),35*D,335*D,52));
+        curve("ear",arr(k=>E(-0.07-0.38*Math.sin(Math.PI*k),0.62-1.12*k),0,1,22));
+        curve("ear",arr(k=>E(lerp(0.25,-0.1,k),lerp(0.78,0.5,k)),0,1,8));
+        curve("ear",arr(a=>E(0.8+0.1*Math.cos(a),-0.18+0.16*Math.sin(a)),-80*D,100*D,12));
+        curve("ear",arr(k=>E(lerp(-0.5,0.45,k),-0.74+0.06*Math.sin(Math.PI*k)),0,1,14));
+      }
     });
   }
   out.push('</g>');
