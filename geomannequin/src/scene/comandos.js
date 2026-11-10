@@ -34,7 +34,7 @@ function apiFor(it){
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
-    orientacao(referencia="tronco"){chk();return orientacaoAlvo(it.name,referencia)},
+    orientacao(referencia="tronco"){chk();return orientacaoAlvo({id:it.id},referencia)},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
@@ -431,7 +431,7 @@ const camera={
   areas(alvo){const p=alvo===undefined?"ativo":alvo;const it=encontrarAlvoOrientacao(p);return regioesDisponiveisOrbita(it.tipo).map(([id,nome])=>({id,nome}))},
   vistaExata(alvo,opts={}){return verOrientadaCamera(alvo,opts)},
   /* pivô da órbita (o alvo da câmera vai para o centro dele; a câmera mantém direção e distância). A arrastada na tela gira em volta dele. */
-  pivo(alvo,opts){pivoCamera(alvo,opts);return camera},
+  pivo(alvo,opts){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;pivoCamera(alvo,opts);return camera},
   /* Define uma região do pivô ATUAL sem mudar azimute/elevacao:
      camera.area("cabeca"), camera.area("mao esquerda"), camera.area("superior"). */
   area(regiao,opts){
