@@ -155,8 +155,8 @@ function elevacaoRelativaDe(v){
 }
 /* Versão matricial: orienta pelo eixo do próprio alvo/parte, e não pelos olhos.
  * Quando `vertical` = 'anatomico', a elevação acompanha inclusive atores deitados.
- * O renderizador legado limita pitch a 70°: se a orientação exigir ângulo maior,
- * retornamos limitado=true e o desvio em vez de afirmar precisão inexistente.
+ * Para vistas anatômicas suporta pitch de ±90° com rolagem compensada,
+ * mantendo as antigas restrições de sliders/órbita legadas.
  */
 function verOrientadaCamera(alvo,opts={},interno=false){
   opts=opts||{};
@@ -208,7 +208,7 @@ function verOrientadaCamera(alvo,opts={},interno=false){
   SCN.ultimaVistaOrientada={azimute:azimuteDe(lado),elevacao:elev/D,referencia:frame.referencia,vertical:space,limitado:false};
   return {pivo:A.nome,lider:multi?opts.lider:null,referencia:frame.referencia,lado:lado,
     frente:frame.frente,vetorCamera:dir,azimute:azimuteDe(lado),elevacao:elev/D,
-    vertical:space,yaw:P.yaw,pitch:P.pitch,limitado:Math.abs(pitchReal)>70+1e-6,
+    vertical:space,yaw:P.yaw,pitch:P.pitch,limitado:false,
     pitchSolicitado:+pitchReal.toFixed(4),centro:A.c,distancia:P.camDist};
 }
 function seguirOrientacaoCamera(alvo,opts={}){
