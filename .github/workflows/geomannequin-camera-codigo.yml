@@ -28,6 +28,8 @@ jobs:
         run: npm run testar:camera-anatomica
       - name: Paridade API e editor assincrono
         run: npm run testar:paridade-comandos
+      - name: Carga de modulos na fabrica MCP headless
+        run: npm run testar:headless-modulos
       - name: Cameras e quadros anteriores
         run: |
           node testes/camera-foco-regional.mjs
