@@ -164,21 +164,31 @@ function verOrientadaCamera(alvo,opts={},interno=false){
   const n=Math.hypot(...v);if(n<1e-8)throw Error("Orientação orbital degenerada.");
   const dir=v.map(x=>x/n);
   const pitchReal=-Math.atan2(dir[1],Math.hypot(dir[0],dir[2]))/D;
-  if(opts.precisao==="estrita"&&Math.abs(pitchReal)>70+1e-6)
-    throw Error("O renderizador atual limita pitch a ±70°. Esta vista tridimensional requer "+Math.abs(pitchReal).toFixed(1)+"°. Desative precisao:'estrita' para usar aproximação.");
+  if(!Number.isFinite(pitchReal))throw Error("Pitch anatômico inválido.");
   const A=pivoCamera(alvo,{area:opts.area??opts.regiao??null,enquadrar:false});
   const dist=opts.distancia;
   const yawReal=-Math.atan2(dir[0],dir[2])/D;
   P.yaw=+(((yawReal+540)%360)-180).toFixed(4);
-  P.pitch=clamp(pitchReal,-70,70);
-  P.roll=opts.rolagem===undefined?0:clamp(+opts.rolagem||0,-45,45);
+  // O renderizador usa matrizes trigonométricas e aceita visão vertical exata ±90°.
+  P.pitch=clamp(pitchReal,-90,90);
+  // Compensa o horizonte inclinado quando o ator se deita, vira de lado
+  // ou fica invertido: o "cima" semântico da parte fica para cima na imagem.
+  const desiredUp=space==="anatomico"?frame.cima:[0,1,0];
+  const yw=P.yaw*D,pt=P.pitch*D;
+  const xx=desiredUp[0]*Math.cos(yw)+desiredUp[2]*Math.sin(yw);
+  const zz=-desiredUp[0]*Math.sin(yw)+desiredUp[2]*Math.cos(yw);
+  const yy=desiredUp[1]*Math.cos(pt)+zz*Math.sin(pt);
+  const autoRoll=Math.atan2(xx,yy)/D;
+  const extra=opts.rolagem===undefined?0:Number(opts.rolagem);
+  if(!Number.isFinite(extra))throw Error("Rolagem deve ser um número finito.");
+  P.roll=((autoRoll+extra+540)%360)-180;
   if(dist!==undefined){
     const d=Number(dist);if(!Number.isFinite(d)||d<=0)throw Error("Distância deve ser positiva e finita (R).");
     if(P.persp)P.camDist=clamp(d,4,200);else P.zoom=clamp(6.2/d,.05,3);
   }else if(opts.enquadrar!==false)enquadrarPivo(A,-P.pitch,opts.folga);
   centrarPivo();
   if(!interno)SCN.seguirCamera=null;
-  SCN.ultimaVistaOrientada={azimute:azimuteDe(lado),elevacao:elev/D,referencia:frame.referencia,vertical:space,limitado:Math.abs(pitchReal)>70+1e-6};
+  SCN.ultimaVistaOrientada={azimute:azimuteDe(lado),elevacao:elev/D,referencia:frame.referencia,vertical:space,limitado:false};
   return {pivo:A.nome,referencia:frame.referencia,lado:lado,
     frente:frame.frente,vetorCamera:dir,azimute:azimuteDe(lado),elevacao:elev/D,
     vertical:space,yaw:P.yaw,pitch:P.pitch,limitado:Math.abs(pitchReal)>70+1e-6,
