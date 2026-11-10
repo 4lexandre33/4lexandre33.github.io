@@ -17,3 +17,6 @@ export {isoCurvesV2} from "./iso-curves.js";
 export {inspectHeadV2} from "./diagnostics.js";
 export {meshFromGrid,ellipsoid,triangleQuality} from "./mesh.js";
 export {headV2Enabled} from "./compatibility.js";
+export {sidePlanesV2,planeAtV2,sideBorderV2,sideGridV2} from "./side-planes.js";
+export {flattenCraniumV2,planeResidualV2} from "./mesh-clipping.js";
+export {inspectSideSeamV2} from "./mesh-stitch.js";

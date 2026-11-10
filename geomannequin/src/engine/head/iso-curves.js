@@ -1,5 +1,6 @@
 import {PI2} from "./constants.js";
 import {pointV2} from "./cranial-surface.js";
+import {sideBorderV2} from "./side-planes.js";
 /* Curvas amostradas SOBRE a superfície verdadeira; a oclusão é do raster. */
 export function isoCurvesV2(p,S,opt={}){
  const meridians=Math.max(4,Math.min(48,opt.meridians||16)),
@@ -15,5 +16,7 @@ export function isoCurvesV2(p,S,opt={}){
    const pts=Array.from({length:resolution+1},(_,j)=>pointV2(y,j/resolution*PI2,p,S,.007));
    out.push({kind:"paralelo",index:k,pts});
  }
+ if(opt.sidePlanes)for(const side of [-1,1])
+   out.push({kind:"plano-lateral",index:side,pts:sideBorderV2(p,S,side,resolution,.008)});
  return out;
 }
