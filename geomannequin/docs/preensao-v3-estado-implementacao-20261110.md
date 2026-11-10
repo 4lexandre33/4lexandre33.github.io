@@ -1,90 +1,125 @@
-# GeoMannequin — Grip V3: implementação e pendências
+# GeoMannequin — Preensão V3: implementação, comandos, testes e limites
 
-**Data:** 10/11/2026  
-**Branch de revisão:** `feat/geomannequin-grip-v3-hardening-20261110`  
-**Plano de referência:** [Task Graph original, 239 tarefas](./task-graph-preensao-rigida-cadeira-objetos-v3-20261110.md).
+**Atualização:** 10/11/2026. **Branch:** `feat/geomannequin-grip-v3-hardening-20261110`.
+**DAG original:** [239 tarefas / 20 fases](./task-graph-preensao-rigida-cadeira-objetos-v3-20261110.md).
 
-## Já presente em `main` antes desta revisão
+## Já existente no main antes desta revisão
 
-- Pose 6DOF por matriz de rotação 3×3 e posição, com composição/inversão;
-- Frame mundial da palma e GripSites nomeados na cadeira, caixa, copo e outros objetos;
-- Grip V3 primário, seguindo braço e punho com pose rígida;
-- Segundo vínculo observacional, serialização JSON e objetos apoiados sobre a cadeira;
-- Contato V2 experimental, com aproximações de cápsulas e sólidos;
-- `cena.segurarObjeto`, `cena.soltarObjeto`, `m.segurar`, `m.soltar`,
-  `obj.pontosDeAgarre`, `cena.vinculos`, `cena.inspecionarPreensao`.
+- Ancoragem rígida 6DOF (`T_WO = T_WH × T_HO`) com matrizes de rotação e translação;
+- GripSites nomeados em cadeiras (encosto, lados, assento), caixas e cilindros;
+- Atualização ao mover ombro, cotovelo, punho ou raiz do manequim;
+- API `m.segurar`, `m.soltar`, `cena.segurarObjeto`, `cena.soltarObjeto`;
+- Segunda mão como observação, suporte a filhos `sobreRel`, serialização JSON;
+- Contact V2 experimental e testes iniciais de Grip V3.
 
-## Alterado nesta branch
+## Implementado nesta PR
 
-1. `modo:"encaixar"` não translada mais a cadeira: aproxima a palma ao GripSite por IK.
-   A captura falha, com restauração dos parâmetros, se o ponto for inacessível.
-2. O refinamento IK passa a visar o centro da palma, corrigindo o desvio do alvo
-   do solver legado que mirava no punho.
-3. Para duas mãos, a primária determina a transformação do objeto; a secundária
-   tenta seguir o seu GripSite por IK. O desvio fica disponível em
-   `cena.inspecionarPreensao()`. Se `exigirContato:true`, a adição da
-   segunda mão falha e desfaz a tentativa caso não alcance a tolerância de 0,35 R.
-4. Uma mão não pode segurar simultaneamente dois objetos diferentes.
-5. `modo:"pousar"` preserva a rotação 3D e coloca a menor altura da geometria
-   transformada no piso. `modo:"chao"` endireita. `modo:"queda"`
-   é uma aterrissagem cinemática INSTANTÂNEA, não um simulador de gravidade.
-6. `obj.pousar({endireitar:false})` pousa um objeto já solto.
-7. A verificação hipotética de colisões evita modificar os ângulos da mão
-   secundária ao atualizar o objeto candidato.
-8. Painel visual passou a usar a mesma API do editor; ganhou opção de
-   captura e todos os modos de soltura.
-9. Regressões em `testes/grip-v3-regressoes.mjs` foram adicionadas ao
-   `npm run testar:grip-v3` e à workflow existente.
+| Área | Alteração | Limite atual |
+|---|---|---|
+| Encaixar | `modo:"encaixar"` move a **palma** por IK até GripSite, sem teleportar a cadeira | IK geométrica aproximada; falha se inalcançável |
+| Vínculo primário | Posição/rotação completas do objeto seguem o quadro 3D da mão | Sem resistência física à massa |
+| Duas mãos | A secundária segue o GripSite; `exigirContato:true` rejeita pega inviável | Não há solução bilateral exata de seis restrições |
+| Transferência | `cena.transferirMaoPrincipal` troca braço controlador sem salto | Apenas um braço governa a pose por vez |
+| Exclusividade | Uma mão não pode conduzir dois objetos ao mesmo tempo | Vínculos entre múltiplos manequins ainda não suportados |
+| Apoio | `pousar` preserva inclinação; `chao` endireita conforme geometria | Contato geométrico, sem solver de torque |
+| Queda | `modo:"queda"` inicia gravidade com passo explícito ou animação pela UI | Física discreta aproximada, não Rapier/rigid body real |
+| Colisões | Chão, objetos OBB/cilindros conservadores e outros manequins (proxy) | CCD discreta com subpassos, não malha exata |
+| Transporte | Varredura Contact V2 mais densa para cadeiras grandes e giro de ±180° | Contact V2 precisa estar ativado em modo bloquear/corrigir |
+| Suporte | Descendentes `sobreRel` seguem o pai; não colidem internamente com ele | Filhos apoiados são tratados como presos, não deslizam |
+| Persistência | Estado de queda e pose 6DOF salvos/restaurados em JSON | Velocidades de outros motores físicos não são importadas |
+| Interface | Captura, troca de mão principal, soltar, pousar e animar queda | Interface utiliza callbacks de animação do navegador |
+| Testes | Arquivos `grip-v3-se3`, `grip-v3-cadeira`, `grip-v3-regressoes`, `grip-v3-fisica` e `grip-v3-duas-maos` | CI da PR ainda sem execução válida |
+| Visual | `testes/atlas-grip-v3.mjs` gera atlas SVG 3×3 do motor real | Geração e revisão visual dependem de execução local |
 
-## Exemplo de uso no editor
+### Unidades e comportamento da física
+
+- Distância: `R`, aproximadamente 11,4 cm por unidade.
+- Tempo: segundos. `gravidade=86` em `R/s²`, aproximadamente `9,8 m/s²`.
+- Parâmetros `restituicao` e `atrito`: de 0 a 1.
+- Velocidade linear: vetor `[vx,vy,vz]` em `R/s`.
+- Velocidade angular: vetor em graus/segundo, aplicado como rotação local.
+- Atualização por subpassos adaptativos: não equivale a dinâmica contínua de corpo rígido.
+- Após `soltar(...,{modo:"queda"})`, use `cena.avancarFisica(dt)` ou o botão **Animar queda com gravidade**. A animação de UI usa `requestAnimationFrame`.
+- O manequim que soltou o objeto é ignorado no teste de colisão da queda para evitar falso bloqueio imediato na palma. Colisões com outros manequins continuam sendo verificadas.
+
+## Exemplo: agarrar, transferir, levantar e deixar cair
 
 ```js
-const boneco = cena.ativo;
-const cadeira = cena.objeto("cadeira",{nome:"Cadeira 1",x:0,z:0});
+const m = cena.ativo;
+const cadeira = cena.objeto("cadeira", {nome:"Cadeira 1",x:0,z:0});
 log(cadeira.pontosDeAgarre());
 
-// Coloque a mão no encosto (sem mover o objeto).
-const retorno = cena.segurarObjeto("Cadeira 1",{
+cena.segurarObjeto("Cadeira 1", {
   mao:"direita",ponto:"encostoTopo",modo:"encaixar",reach:5
 });
-boneco.parametro("armFlexR",35);
-boneco.parametro("elbowR",70);
+m.parametro("armFlexR",45);
+m.parametro("elbowR",70);
 
-// Para inspecionar a transformação e a restrição da mão secundária:
+// Opcional: pegar a mesma cadeira com a outra mão:
+cena.segurarObjeto("Cadeira 1", {
+  mao:"esquerda",ponto:"encostoEsquerdo",
+  segunda:true,reach:5,exigirContato:true
+});
+// Transferir condução para a mão esquerda:
+cena.transferirMaoPrincipal("Cadeira 1",{mao:"esquerda"});
 log(cena.inspecionarPreensao());
-// Liberação mantendo altura/rotação:
-cena.soltarObjeto("Cadeira 1",{modo:"manter"});
-// Ou pousar o sólido inclinado:
-cadeira.pousar({endireitar:false});
+
+// Soltar todas as mãos e simular gravidade:
+cena.soltarObjeto("Cadeira 1",{modo:"queda",restituicao:0.15});
+const resultado=cena.simularQueda({duracao:3,passo:1/60});
+log(resultado.ultimo);
+log(cadeira.pose3D());
 ```
 
-Observação: esse exemplo depende da cadeira estar ao alcance do braço do
-manequim. O IK falha explicitamente quando não alcança o GripSite.
+O modo de encaixe e a segunda mão podem falhar, corretamente, se não alcançarem o
+GripSite. Recomenda-se posicionar a cadeira ao alcance real do corpo antes da captura.
 
-## Ainda não considerado concluído no DAG de 239 tarefas
+### Comandos complementares
 
-- Solução de restrições bilateral **exata** de duas mãos com ajuste da mão
-  primária e secundária e rollback global em todas as operações de pose;
-- Colisões contínuas (CCD analítica/exata) de cadeiras transportadas;
-- Contato de dedos com todas as superfícies reais de preensão;
-- Simulação dinâmica de peso, gravidade, atrito, torque e impacto;
-- Colisões perfeitas de malha (o sistema atual usa proxies);
-- Dois manequins carregando o mesmo objeto com restrições compartilhadas;
-- Manipulação dinâmica de cadeiras, corpos sentados e suportes não rígidos;
-- Interpolação física da soltura, quique, rotação e atrito ao tocar o chão;
-- Benchmark completo, cobertura visual de todo o DAG e liberação de produção.
+```js
+cena.vinculos();                         // vínculos ativos
+cena.inspecionarPreensao();             // desvio de preensão
+cadeira.pontosDeAgarre();              // lista locais reais de pega
+cadeira.pousar({endireitar:false});     // objeto livre: pousar inclinado
+cadeira.cair({velocidade:[0,3,0]});     // objeto livre: iniciar queda
+cena.avancarFisica(1/60);              // avançar um quadro por código
+cadeira.fisica();                       // estado de movimento/contato
+cadeira.pararQueda();                  // desativar dinâmica
+```
 
-**Estado de validação:** CI da PR foi acionada, porém o GitHub Actions
-registrou falha antes de apresentar passos/logs úteis. Não há teste executado
-confirmado nesta revisão. Para testar num checkout com Node 22:
+## O que permanece pendente no DAG de 239 tarefas
 
-```bash
+1. Solver bilateral exato, incluindo orientação completa de ambas as palmas,
+   limites anatômicos conjuntos e resposta com força/torque.
+2. Solucionador físico contínuo com gravidade/atrito/torque, quique e repouso
+   estável sob múltiplos contatos simultâneos.
+3. CCD analítica e colisão detalhada de malhas para todos os pares, sem tunneling.
+4. Dois ou mais manequins portando o mesmo móvel com sincronização entre corpos.
+5. Dedos realmente abraçando a superfície com forças e contato detalhado.
+6. Objetos apoiados que podem escorregar ou cair individualmente enquanto
+   a cadeira é movida, e pessoas sentadas acompanhando suporte dinâmico.
+7. Validação da performance, atlas visual renderizado e revisado, testes
+   automatizados executados no projeto e cobertura total das 239 tarefas.
+
+## Validação desta revisão
+
+- Sintaxe dos módulos JavaScript alterados conferida por análise em V8.
+- A lógica do novo motor de queda foi executada em teste isolado com dependências
+  simplificadas: chão, bloqueio de mesa, bloqueio de outro manequim e limites.
+- **A execução nativa integrada ainda não foi confirmada.** Os workflows
+  do GitHub Actions retornaram `failure` muito rapidamente, sem etapas ou
+  logs úteis disponíveis; outras workflows da mesma PR apresentaram o mesmo padrão.
+- Não mesclar a PR na `main` sem executar o conjunto abaixo em Node 22:
+
+```sh
 cd geomannequin
 npm ci
 npm ci --prefix mcp
 npm run testar:grip-v3
 npm run construir
+node testes/atlas-grip-v3.mjs
 ```
 
-Esta implementação amplia a preensão cinemática V3; não deve ser descrita como
-execução de todas as 239 tarefas do plano nem como física realista completa.
+Esta PR amplia substancialmente a preensão geométrica e adiciona dinâmica
+determinística aproximada, mas **não conclui as 239 tarefas nem equivale a um
+motor de física completo**.
