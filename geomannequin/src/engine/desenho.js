@@ -26,6 +26,7 @@ import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
 import { atlasBraco } from "./atlas/bracos.js";
 import { atlasRosto } from "./atlas/rosto.js";
 import { isoCurvesV2, lipCurvesV2, sideBorderV2 } from "./head/index.js";
+import { isoCurvesV3, constructionCurvesV3 } from "./head-v3/index.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -284,7 +285,7 @@ function scene(p,L,pal,fast,mode){
   /* guias de construção: grupo separado, mais leve, para não competir com a anatomia */
   out.push('<g id="construction-guides" style="opacity:'+(L.cel?0.45:0.8)+'">');
   /* esfera guia */
-  if(L.sphere){
+  if(L.sphere&&p.headModel!=="v3_microgeometry"){
     const c0=xf([0,0,0]),cx0=CX+S*c0[0],cy0=CY-S*c0[1];
     out.push('<circle cx="'+f1(cx0)+'" cy="'+f1(cy0)+'" r="'+f1(S)+'" style="'+style("sphere",false)+'"/>');
     out.push('<path d="M'+f1(cx0-6)+' '+f1(cy0)+'H'+f1(cx0+6)+'M'+f1(cx0)+' '+f1(cy0-6)+'V'+f1(cy0+6)+'" style="'+style("sphere",false)+'"/>');
@@ -292,7 +293,8 @@ function scene(p,L,pal,fast,mode){
   /* A V2 obtém a circunferência da superfície 3D plana de Loomis.
      Nada de círculo decorativo desenhado sobre uma esfera arredondada. */
   if(L.planes){
-    if(p.headModel==="v2")[-1,1].forEach(s=>
+    if(p.headModel==="v3_microgeometry")constructionCurvesV3(p,sh,64).forEach(g=>curve("plane",g.pts));
+    else if(p.headModel==="v2")[-1,1].forEach(s=>
       curve("plane",sideBorderV2(p,sh,s,128,.008)));
     else [-1,1].forEach(s=>{
       const pts=arr(a=>{
@@ -304,6 +306,9 @@ function scene(p,L,pal,fast,mode){
     });
   }
   /* Topografia 3D real, para a referência matemática 3x3. */
+  if(p.headModel==="v3_microgeometry"&&(L.rings||L.merid)){
+    isoCurvesV3(p,sh,{meridians:L.merid?16:0,parallels:L.rings?13:0,resolution:104}).forEach(g=>curve("ring",g.pts));
+  }
   if(p.headModel==="v2"&&(L.rings||L.merid)){
     isoCurvesV2(p,sh,{meridians:L.merid?16:0,parallels:L.rings?13:2,resolution:104}).forEach(l=>{
       if((l.kind==="meridiano"&&L.merid)||(l.kind==="paralelo"&&L.rings))
@@ -311,7 +316,7 @@ function scene(p,L,pal,fast,mode){
     });
   }
   /* contornos transversais */
-  if(L.rings&&p.headModel!=="v2"){
+  if(L.rings&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"){
     const full=y=>arr(th=>hp(y,th,0.004),0,2*Math.PI,140);
     const part_=y=>arr(th=>hp(y,th,0.004),-110*D,110*D,90);
     curve("ring",full(t));
@@ -321,7 +326,7 @@ function scene(p,L,pal,fast,mode){
     curve("ring",part_(mouthY));
   }
   /* linhas de proporção estendidas, com marcas nas pontas */
-  if(L.rings&&p.headModel!=="v2"){
+  if(L.rings&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"){
     [0.11,eyeY,-t].forEach(y=>{
       const r=ringAt(y,p,sh),xe=r[0]+0.3;
       curve("ext",arr(x=>[x,y,r[1]],-xe,xe,40));
@@ -329,7 +334,7 @@ function scene(p,L,pal,fast,mode){
     });
   }
   /* meridianos: eixo central na frente (segue o perfil) e atrás, mais os planos do rosto */
-  if(L.merid&&p.headModel!=="v2"){
+  if(L.merid&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"){
     curve("axis",arr(i=>hp(i,0,0.004),1,chinY+0.015,110));
     curve("ring",arr(i=>hp(i,Math.PI,0),1,-0.85,60));
     [-1,1].forEach(s=>curve("ring",arr(i=>hp(i,s*38*D,0.004),t,-t,50)));
