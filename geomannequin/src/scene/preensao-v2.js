@@ -1,7 +1,7 @@
 /* GeoMannequin · Preensão V2, versão CINEMÁTICA de vínculo de objeto.
  * Segurar cria uma âncora relativa ao punho/palma, sem teleporte: o objeto
- * só pode ser anexado se estiver alcançável. Não simula força nem fechamento
- * de cada dedo; o módulo de contatos verifica os sólidos separadamente.
+ * só pode ser anexado se estiver alcançável. O fechamento incremental das
+ * falanges é geométrico; não simula força, torque ou atrito reais.
  */
 import {restGround,shape,chainSetup,armPose,armDims,comp,applyA,paraMundo,clamp} from "../engine/index.js";
 import {colliderRig,colliderObject,capsuleSolidContact} from "../engine/contact-v2.js";
