@@ -64,6 +64,22 @@ function contacts(it,params,ctx,{incluirAuto=true,margin=.025,max=32}={}){
   out.push({...c,tipo:"objeto",a:it.id,b:o.obj.id,alvo:o.obj.nome||o.obj.tipo});
  }
  for(const entry of carried.values()){
+   // Bloqueio de piso do objeto CARREGADO: usa o ponto inferior das peças
+   // transformadas, não só a altura do pivô da cadeira.
+   const ground=worldGround();
+   let minY=Infinity;
+   for(const {shape:b} of entry.parts){
+     const ext=b.cil?Math.abs(b.e[1][1])*b.hh+
+       Math.hypot(b.e[0][1],b.e[2][1])*b.r:
+       b.h.reduce((a,h,i)=>a+Math.abs(b.e[i][1])*h,0);
+     minY=Math.min(minY,b.c[1]-ext);
+   }
+   if(minY<ground){
+     const depth=ground-minY;
+     out.push({tipo:"carregado-chao",a:it.id,b:"chao",idA:"carregado:"+entry.obj.id,idB:"chao",
+       distancia:-depth,prof:depth,n:[0,1,0],pa:entry.obj.nome||entry.obj.tipo,
+       pb:"piso",alvo:"chão",ponto:[entry.obj.x,ground,entry.obj.z]});
+   }
    // Cadeira carregada × outro manequim.
    for(const other of ctx.outros)for(const c of manifoldObject(other.body,entry.parts,opts))
      out.push({...c,tipo:"carregado-manequim",a:it.id,b:other.it.id,
