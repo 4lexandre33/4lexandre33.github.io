@@ -70,6 +70,24 @@ function loadScene(sc){
   if(Array.isArray(sc.objetos))sc.objetos.slice(0,40).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo);["x","z","giro","larg","prof","alt","encosto","cabeceira","raio"].forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],k==="giro"?-180:k==="raio"?0.1:-40,k==="giro"?180:k==="raio"?20:40)});
     if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);q.id=novoIdObjeto();
     if(Array.isArray(o.rot3)&&o.rot3.length===9&&o.rot3.every(Number.isFinite))q.rot3=o.rot3.slice();
+    // Dinâmica V3 é persistida apenas com valores finitos (sem reexecutar a queda na carga).
+    if(o.dinamica&&o.dinamica.versao===1&&
+       ["gravidade","restituicao","atrito","tempo"].every(k=>Number.isFinite(o.dinamica[k]))&&
+       o.dinamica.gravidade>0&&o.dinamica.gravidade<=1000&&
+       o.dinamica.restituicao>=0&&o.dinamica.restituicao<=1&&
+       o.dinamica.atrito>=0&&o.dinamica.atrito<=1&&
+       [o.dinamica.velocidade,o.dinamica.angular].every(v=>
+         Array.isArray(v)&&v.length===3&&v.every(Number.isFinite))){
+      q.dinamica={versao:1,ativo:!!o.dinamica.ativo,
+        gravidade:o.dinamica.gravidade,restituicao:o.dinamica.restituicao,
+        atrito:o.dinamica.atrito,tempo:Math.max(0,o.dinamica.tempo),
+        velocidade:o.dinamica.velocidade.slice(),angular:o.dinamica.angular.slice(),
+        contato:o.dinamica.contato&&typeof o.dinamica.contato==="object"?
+          {tipo:String(o.dinamica.contato.tipo||""),nome:String(o.dinamica.contato.nome||"").slice(0,60)}:null,
+        impactos:Number.isInteger(o.dinamica.impactos)?Math.max(0,o.dinamica.impactos):0};
+      q.emAr=true;
+      if(Number.isFinite(o.base))q.base=o.base;
+    }
     if(Array.isArray(o.sitesExtras))q.sitesExtras=o.sitesExtras.slice(0,30).filter(s=>s&&
       typeof s.id==="string"&&s.id.length<=40&&Array.isArray(s.local)&&s.local.length===3&&
       s.local.every(Number.isFinite)&&Array.isArray(s.normal)&&s.normal.length===3&&s.normal.every(Number.isFinite))
