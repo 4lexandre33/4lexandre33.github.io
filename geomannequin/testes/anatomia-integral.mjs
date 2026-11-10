@@ -67,10 +67,11 @@ assert.equal(testados,10);
 assert.equal(aberturas,10);
 
 /* Alterações faciais e de escala devem invalidar o mesh cache. */
-const p={...DEF,_cache:newCache()},S=shape(p),old=getMeshes(p,S).head;
+const p={...DEF,_cache:newCache()},S=shape(p);let old=getMeshes(p,S).head;
 for(const [key,value]of [["headScale",1.04],["smile",0.8],["eyeLid",0.8],["jawOpen",0.8],["muscle",0.8]]){
   p[key]=value;
   const fresh=getMeshes(p,shape(p)).head;
   assert.notEqual(old,fresh,`Cache facial não invalidado: ${key}`);
+  old=fresh;
 }
 console.log("  ok  anatomia: 10 biotipos, crânio, mandíbula, boca, músculos faciais, ombro, pelve e cache");
