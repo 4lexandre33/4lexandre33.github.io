@@ -71,10 +71,17 @@ function lado(p, F, s) {
   const Mu = muscleDefs(F), pec = Mu.pec, c = F.chestW, ms = F.B.breast < 0.35;
   const fy = Q => Q.map(([x, yy]) => [x, Y(yy)]);
   if (ms) linha("peitoral_borda_inferior", "dobra", fr, fy([[0.2, -1.36], [0.45, -1.33], [0.72 * c, -1.18], [0.92 * c, -0.92], [0.98 * c, -0.62]]), 7);
+  else {
+    /* Sulco inframamário discreto, com início gradual junto ao esterno e
+       término lateral antes da axila: não duplicar o peitoral masculino. */
+    linha("sulco_inframamario", "divisao", fr, fy([[0.16,-1.50],[0.32,-1.57],[0.48,-1.61],[0.64*c,-1.52],[0.82*c,-1.33]]), 8, 0.15);
+  }
   /* sulco deltopeitoral: do terço lateral da clavícula descendo entre o deltoide anterior e o peitoral até a axila */
   linha("sulco_deltopeitoral", "divisao", fr, fy([[W - 0.62, 0.03], [W - 0.66, -0.3], [0.93 * c, -0.62]]), 6, 0.06);
-  linha("peitoral_esterno", "divisao", fr, fy([[0.06, -0.18], [0.07, -0.7], [0.06, -1.3]]), 6, 0.08);
-  linha("peitoral_clavicular", "fibra", fr, fy([[0.12, -0.36], [0.45, -0.42], [0.85 * c, -0.48]]), 6, 0.3);
+  if (ms){
+    linha("peitoral_esterno", "divisao", fr, fy([[0.06, -0.18], [0.07, -0.7], [0.06, -1.3]]), 6, 0.08);
+    linha("peitoral_clavicular", "fibra", fr, fy([[0.12, -0.36], [0.45, -0.42], [0.85 * c, -0.48]]), 6, 0.3);
+  }
   const ab = Mu.abs, aw = Mu.aw;
   linha("linha_alba", "divisao", fr, fy([[0.0, -1.55], [0.0, -2.6], [0.0, F.yNav - yJ + 0.06]]), 8);
   ab.forEach((P, i) => { if (i < 3) linha("abdomen_intersecao_" + (i + 1), "divisao", fr, fy([[0.035, P[3][1] + 0.02], [P[3][0] * 0.55, P[3][1] + 0.0], [P[3][0] + 0.01, P[3][1] - 0.03]]), 5, 0.16); });
@@ -85,7 +92,7 @@ function lado(p, F, s) {
   /* fibras (camada opcional): direção das fibras no trapézio, grande dorsal e peitoral */
   for (let i = 1; i <= 5; i++) { const t = i / 6; linha("fibra_trapezio_" + i, "fibra", back, [[0.04, Y(0.6 - 3.0 * t * t)], [0.3 + 0.15 * t, Y(0.35 - 1.6 * t * t)], spAt(1 - 0.85 * t)], 4, 0.3); }
   for (let i = 1; i <= 5; i++) { const t = i / 6; linha("fibra_dorsal_" + i, "fibra", ang, [aY(100 + 4 * t, -1.1 - 0.4 * t), aY(125 + 25 * t, -1.9 - 1.2 * t), aY(150 + 22 * t, -2.6 - 1.4 * t)], 4, 0.3); }
-  for (let i = 1; i <= 5; i++) { const t = i / 6; linha("fibra_peitoral_" + i, "fibra", fr, fy([[0.09, -0.3 - 0.95 * t], [0.5, -0.5 - 0.55 * t], [0.88 * c, -0.62 - 0.12 * t]]), 4, 0.3); }
+  if(ms)for (let i = 1; i <= 5; i++) { const t = i / 6; linha("fibra_peitoral_" + i, "fibra", fr, fy([[0.09, -0.3 - 0.95 * t], [0.5, -0.5 - 0.55 * t], [0.88 * c, -0.62 - 0.12 * t]]), 4, 0.3); }
   /* pescoço: esternocleidomastoideo em V até a fúrcula */
   linha("esternocleidomastoideo", "divisao", ang, [aY(108, 0.62), aY(70, 0.4), aY(36, 0.2), aY(12, 0.03)], 7);
   return { formas, linhas };
