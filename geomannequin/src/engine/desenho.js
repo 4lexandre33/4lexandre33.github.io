@@ -552,7 +552,17 @@ function scene(p,L,pal,fast,mode){
       curve("feat",arr(k=>{const y=lerp(-0.80*t,-0.96*t,k),x=s*(0.12+0.05*Math.sin(Math.PI*k));return hp(y,surfX(y,x),0.01)},0,1,12));
     });
     /* boca: lábio superior e inferior preenchidos, sombra sob o lábio; sorriso (cantos) e boca aberta (mandíbula) */
-    {
+    if(p.headModel==="v2"){
+      /* Um único conjunto de curvas labiais sobre a superfície v2.
+         Não sobrepor os polígonos da boca legada aos volumes dentários. */
+      const lip=lipCurvesV2(p,sh);
+      curve("feat",lip.upper);
+      curve("feat",lip.lower);
+      if((p.jawOpen||0)>.03){
+        curve("feat",lip.top);
+        curve("feat",lip.bottom);
+      }
+    }else{
       const M=bocaForma(p,sh),sm=M.sorriso,jo=M.aberto,ab=M.altura;
       const H=(x,y,off=0.015)=>hp(y,surfX(y,x),off);
       const w=M.width, xs=(f,a=1)=>arr(x=>H(x,f(x),0.028),-w*a,w*a,36);
