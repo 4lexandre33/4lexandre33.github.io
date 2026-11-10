@@ -1,0 +1,46 @@
+name: GeoMannequin — matriz anatômica
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/geomannequin-10-biotipos-harmonia
+    paths:
+      - 'geomannequin/**'
+      - '.github/workflows/geomannequin-anatomia.yml'
+jobs:
+  anatomia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: geomannequin/package-lock.json
+      - name: Instalar dependências do app
+        run: npm ci
+      - name: Instalar dependências MCP (renderizador PNG)
+        run: npm ci --prefix mcp
+      - name: Validar os 10 biotipos e articulações
+        run: npm run testar:anatomia
+      - name: Validar 900 renderizações e exportar 20 referências SVG
+        run: npm run testar:matriz
+      - name: Preparar recortes visuais de pelve, cintura e ombros
+        run: node testes/corpo.mjs 'pelve-|cintura-|bacia-'
+      - name: Guardar relatórios e imagens para revisão
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geomannequin-auditoria-anatomica
+          path: |
+            geomannequin/testes/saida/biotipos
+            geomannequin/testes/saida/corpo-*.png
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Avisar sobre snapshots históricos (não regravar sem revisão)
+        continue-on-error: true
+        run: node testes/cenas.mjs
