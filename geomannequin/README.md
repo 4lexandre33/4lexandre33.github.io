@@ -175,3 +175,49 @@ Leia `docs/task-graph-harmonia-10-biotipos.md` para os critérios e o estado das
 É esperado que a geometria remodelada altere essas assinaturas. Não regenere os hashes
 automaticamente antes de conferir os desenhos; use `node testes/cenas.mjs --gravar`
 depois da inspeção visual e então execute `npm run testar`.
+
+## Reconstrução anatômica de cabeça, ombros e pelve (novembro de 2026)
+
+A auditoria das nove imagens de referência trouxe alterações nos dez biotipos.
+A cabeça tem regiões parietal, frontal, temporal e occipital mais diferenciadas,
+uma escala sutil por biotipo (`headScale`), relevo do masseter e zigomático,
+linha mandibular no perfil, movimentos faciais associados a sorriso e pálpebras
+e **atlas esquemático de 32 traçados musculares faciais** no modo écorché.
+A boca aberta mostra cavidade escura, representação de dentes e língua.
+
+Também foram corrigidos o salto geométrico na junção do deltoide, as pontes
+peitoral/dorsal → axila, a suavidade da clavícula e das linhas das costas,
+a forma e implantação dos seios femininos, a curva cintura–quadril–glúteos e
+a transição da coxa proximal em diferentes biotipos. Pescoço e comprimento
+de braços e pernas acompanham os dez presets.
+
+**Precisão dos detalhes:** dentes e língua são projetados na superfície visível,
+e a musculatura da face é um atlas gráfico. Não representam malhas volumétricas
+internas de boca, dentes e músculos individuais.
+
+### Inspeção visual de quatro cenas geradas pelo motor
+
+- [Masculino musculoso — frente](testes/visuais-reconstrucao/masculino-musculoso-frente.svg)
+- [Feminino médio — frente](testes/visuais-reconstrucao/feminino-medio-frente.svg)
+- [Feminino cheio — costas em 3/4](testes/visuais-reconstrucao/feminino-cheio-costas-34.svg)
+- [Masculino atlético — perfil e boca aberta](testes/visuais-reconstrucao/masculino-atletico-perfil-boca.svg)
+
+A execução direta do motor gerou SVGs válidos para os dez biotipos e cenas
+adicionais de braços elevados, flexão e perfil. Os testes geométricos das
+dez famílias, da cintura, da pelve e da cabeça passaram. Isso não significa
+aprovação estética em todas as poses.
+
+```bash
+cd geomannequin
+npm ci
+npm ci --prefix mcp
+npm run testar:anatomia
+npm run testar:face:rapida
+npm run testar:face        # 300 casos, vistas e expressões
+npm run testar:matriz      # 900 casos corporais
+```
+
+O [task graph detalhado](docs/task-graph-reconstrucao-anatomica.md) registra
+TG-00 a TG-27, evidências e pendências. As 1.200 renderizações da matriz,
+revisão visual humana, atualização das referências históricas e reconstrução
+do `dist/geomannequin.html` precisam ser executadas/aprovadas separadamente.
