@@ -57,9 +57,10 @@ for(const fem of [0,1])for(const tipo of NOMES_BIOTIPOS){
   aberturas++;
   if(fem===1&&p.chestF>0.05){
     const y=F.yJ-1.25-0.06*p.fat;
-    const antes=bustLocal(y,0,{...p,chestF:0},bustFrame({...p,chestF:0},S));
-    const depois=bustLocal(y,0,p,F);
-    assert.ok(depois[2]>antes[2]+0.04,tipo+": projeção mamária insuficiente");
+    /* Medir na massa lateral da mama, não no sulco medial do esterno. */
+    const antes=bustLocal(y,0.48,{...p,chestF:0},bustFrame({...p,chestF:0},S));
+    const depois=bustLocal(y,0.48,p,F);
+    assert.ok(depois[2]>antes[2]+0.06,tipo+": projeção mamária insuficiente");
   }
   testados++;
 }
