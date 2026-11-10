@@ -30,7 +30,7 @@ function getMeshes(p,S){
       ].filter(q=>q.mesh);
     }else C.meshes.headV2Parts=[];
   }
-  const bk=[p.face,p.neck,p.neckLen,p.shW,p.shDrop,p.chestF,p.adam,p.shElevL,p.shElevR,p.shProtL,p.shProtR,p.shTension,p.shTensL||0,p.shTensR||0,p.scapRotL||0,p.scapRotR||0,p.armAbdL,p.armAbdR,p.armFlexL,p.armFlexR,p.muscle,p.fat,p.fem,p.waist,p.hips,p.gluteVol,Math.round(p.spineSide),Math.round(p.spineFlex)].join("|");
+  const bk=[p.headModel||"v1",p.jaw,p.face,p.neck,p.neckLen,p.shW,p.shDrop,p.chestF,p.adam,p.shElevL,p.shElevR,p.shProtL,p.shProtR,p.shTension,p.shTensL||0,p.shTensR||0,p.scapRotL||0,p.scapRotR||0,p.armAbdL,p.armAbdR,p.armFlexL,p.armFlexR,p.muscle,p.fat,p.fem,p.waist,p.hips,p.gluteVol,Math.round(p.spineSide),Math.round(p.spineFlex)].join("|");
   if(bk!==C.bustKey){C.bustKey=bk;C.meshes.bust=buildBust(p,S)}
   const ak=[p.armLen,p.armThick,p.muscle,p.fat,p.fem].join("|");
   if(ak!==C.armKey){C.armKey=ak;C.jointKey={};[["R",-1],["L",1]].forEach(([n,s])=>{C.meshes["fore"+n]=buildForearm(p,s);C.meshes["delt"+n]=buildDelt(p,s)});C.handKey=["",""]}
