@@ -27,7 +27,9 @@ jobs:
       - name: Geometria e ancoragem SE3
         run: node testes/grip-v3-se3.mjs
       - name: Cenário cadeira, duas mãos, filhos e JSON
-        run: node testes/grip-v3-cadeira.mjs
+        run: |
+          node testes/grip-v3-cadeira.mjs
+          node testes/grip-v3-regressoes.mjs
       - name: Regressao legada Contact V2
         run: node testes/contato-v2.mjs
       - name: Carregamento headless e roteiro
