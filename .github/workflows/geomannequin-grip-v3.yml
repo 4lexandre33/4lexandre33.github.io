@@ -1,0 +1,38 @@
+name: GeoMannequin - Grip V3 Cadeiras
+on:
+  pull_request:
+    paths:
+      - "geomannequin/**"
+      - ".github/workflows/geomannequin-grip-v3.yml"
+  workflow_dispatch:
+jobs:
+  rigid-grip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Verificar sintaxe
+        run: |
+          for f in src/engine/rigid-transform.js src/engine/grip-sites.js src/engine/objetos.js src/scene/grip-v3.js src/scene/contato-v2.js src/scene/modelo.js src/scene/estado.js src/scene/comandos.js src/ui/colisoes.js; do node --check "$f"; done
+      - name: Geometria e ancoragem SE3
+        run: node testes/grip-v3-se3.mjs
+      - name: Cenário cadeira, duas mãos, filhos e JSON
+        run: node testes/grip-v3-cadeira.mjs
+      - name: Regressao legada Contact V2
+        run: node testes/contato-v2.mjs
+      - name: Carregamento headless e roteiro
+        run: |
+          node testes/headless-modulos-integracao.mjs
+          node testes/paridade-editor-codigo.mjs
+      - name: Build da aplicacao
+        run: npm run construir
