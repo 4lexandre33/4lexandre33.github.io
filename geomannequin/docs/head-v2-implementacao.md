@@ -56,6 +56,25 @@
 | H2-25 | Implementado | Feature flag V2, com rollback à V1 |
 | H2-26 | Pendente | Build standalone, teste completo Node, MCP e verificação visual GitHub Pages |
 
+## Nova exigência estética obrigatória — discos planos de Loomis
+
+A comparação entre o modelo publicado e a referência revelou um desvio estrutural:
+o achatamento lateral em `cranial-surface.js` altera apenas o relevo de `z`;
+**não produz dois discos circulares realmente planos com normal `±x`**. Essa exigência
+passa a ser um bloqueio de aceitação final da V2.
+
+**Task graph novo:** [LP-00 a LP-28 — recorte bilateral circular da caixa craniana](task-graph-cabeca-v2-planos-laterais-loomis.md).
+
+Critérios mínimos: plano esquerdo/direito geométrico, círculo fechado, simetria,
+costura de malha, orelhas/temporal/occipital/nuca corretamente encaixados,
+movimento de mandíbula sem alterar os planos, testes nos dez biotipos
+e revisão visual da matriz completa.
+
+**Estado: PLANEJADO, NÃO IMPLEMENTADO.** Esta atualização documental não
+altera os módulos do motor nem o site GitHub Pages.
+
+---
+
 ## Riscos restantes
 
 1. As superfícies de mandíbula e cabeça ainda compartilham a malha externa;
