@@ -1,0 +1,48 @@
+name: GeoMannequin - Head V3 microgeometry
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/engine/head-v3/**'
+      - 'geomannequin/src/engine/cabeca.js'
+      - 'geomannequin/src/engine/montagem.js'
+      - 'geomannequin/src/engine/desenho.js'
+      - 'geomannequin/src/ui/controles.js'
+      - 'geomannequin/src/ui/exportar.js'
+      - 'geomannequin/testes/cabeca-v3-microgeometria.mjs'
+      - 'geomannequin/testes/atlas-cabeca-v3.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+jobs:
+  geometria-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependências
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Teste geométrico e malha fechada
+        run: npm run testar:cabeca-v3
+      - name: Regressão dos modelos anteriores
+        run: npm run testar:cranio
+      - name: Compilar aplicação completa
+        run: npm run construir
+      - name: Gerar atlas real masculino 3x3
+        run: node testes/atlas-cabeca-v3.mjs masculino medio
+      - name: Gerar atlas real feminino 3x3
+        run: node testes/atlas-cabeca-v3.mjs feminino medio
+      - name: Registrar folhas SVG
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geomannequin-head-v3-atlas
+          path: geomannequin/testes/saida/cabeca-v3/
+          retention-days: 14
+          if-no-files-found: warn
