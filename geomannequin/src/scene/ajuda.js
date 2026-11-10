@@ -107,6 +107,14 @@ cena.objeto("mesa", { x: -5, z: 0 });
 camera.perspectiva(true).orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 12 });
 log(camera.vista());
 // outras: camera.orbitar("mesa", "costas") · camera.orbitar("cena", {azimute: 30, elevacao: 30})`,
+  "Órbita detalhada: cabeça, mãos e objeto":`// A região é o pivô; ângulo e elevação permanecem independentes.
+cena.limpar();
+cena.ativo.renomear("Ana").poseRapida("acenando");
+cena.objeto("caixa", {nome:"Caixa", x:5, altura:4});
+camera.orbitar("Ana", {area:"cabeca", azimute:"3/4 esquerda", elevacao:25});
+log(camera.vista());
+camera.area("mao esquerda"); // ajusta o foco preservando o ângulo
+camera.focar("Caixa", "superior", {azimute:45, elevacao:60, folga:0.9});`,
   "Mãos, dedos e rosto":`// cada falange, o dedão do pé, a mandíbula, o olhar e as expressões
 cena.limpar();
 const m = cena.ativo;
@@ -171,7 +179,11 @@ export function iniciarAjuda(){
   Órbita (a câmera gira em volta de um pivô: manequim, grupo, objeto, ponto ou a cena):
   camera.orbitar("Ana", {azimute: "frente" | "3/4 esquerda" | "esquerda" | "3/4 costas esquerda" | "costas" | "3/4 costas direita" | "direita" | "3/4 direita" | graus, elevacao: graus | "olhos" | "alta", distancia?})
   camera.orbitar(["Ana","Leo"], "costas") · camera.orbitar("mesa", 45) · camera.orbitar("cena", {azimute: 30, elevacao: 25}) · camera.orbitar([0, -7, 0], 90)
-  camera.pivo("Ana") — só troca o centro do giro (arrastar no palco gira em volta dele) · camera.girarEmVolta(15, 0) · camera.vista() → {pivo, azimute, elevacao} · camera.giro(8) → azimutes
+  Foco local: camera.orbitar("Ana", {area:"cabeca", azimute:45, elevacao:20, folga:0.9}) · camera.orbitar("Ana", {area:"mao direita", azimute:-45, elevacao:10})
+  Objetos: camera.focar("mesa", "superior", {azimute:60, elevacao:40}) · camera.focar("caixa", "inferior") · camera.area("torso")
+  No roteiro: #orbita "Ana" 8 area "mao esquerda" elevacao 25 — oito ângulos, mesma região focal
+  camera.pivo("Ana", {area:"cabeca", enquadrar:true}) — a cabeça é o centro da órbita · camera.vista() → {pivo, area, azimute, elevacao}
+  camera.girarEmVolta(15, 0) · camera.giro(8) → azimutes; o alvo mantém o foco ao mudar de posição ou pose
   Rig fino: m.articulacao("indicador esquerdo", {base: 0.8, ponta: 0.5, afastar: -0.3}) · ("polegar direito", {base, ponta, afastar, opor}) — de −1 a 1
     ("dedão esquerdo", {dobrar: 30}) · ("canela direita", {girar: 20}) · ("pé esquerdo", {aduzir: 10}) · ("escápula esquerda", {girar: 0.5, tensao: 1})
     ("mandíbula", {abrir: 0.5, lado: 0.2}) · ("olhos", {lado: 0.6, cima: -0.2, fechar: 0.3}) · ("sobrancelhas", {subir: 0.5, franzir: 0.4})
