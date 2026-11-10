@@ -133,7 +133,10 @@ function apiFor(it){
       let ok=false;const ground=restGround(SCN.list[0].params);
       atualizarApoios();
       for(const o of targets){if(o?.gripV3?.mannequinId===it.id){releaseRigidGrip(it,o,ground,opts);ok=true}
-        else if(o?.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
+        else if(o?.grip?.mannequinId===it.id){
+          releaseGrip(o);
+          if(opts.modo==="queda")iniciarQuedaObjeto(o,ground,opts);
+          ok=true}}
       if(!ok)throw Error("Nenhum objeto encontrado segurado por este manequim.");
       atualizarApoios();return m},
     objetosSegurados(){chk();return SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id).map(o=>o.nome||o.tipo)},
@@ -551,6 +554,7 @@ const cena={
       if(!it)throw Error("Proprietário não encontrado.");const r=releaseRigidGrip(it,o,restGround(SCN.list[0].params),opts);
       atualizarApoios();return r.solto;}
     if(!releaseGrip(o))throw Error("O objeto não está segurado.");
+    if(opts.modo==="queda")iniciarQuedaObjeto(o,restGround(SCN.list[0].params),opts);
     atualizarApoios();return true;
   },
   vinculos(){atualizarApoios();return SCN.objetos.map(o=>({o,g:o.gripV3||o.grip})).filter(x=>x.g).map(({o,g})=>
