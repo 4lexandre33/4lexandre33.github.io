@@ -29,7 +29,7 @@ assert.ok(svg.startsWith('<svg')&&svg.endsWith('</svg>'));
 for(const t of ["LEFT PROFILE","THREE-QUARTER VIEW","FRONT VIEW",
   "OCCIPITAL–NAPE","RESTORED EAR","EYE SOCKET","PROPORTIONS / NOTES"])
   assert.ok(svg.includes(t),"Componente ausente: "+t);
-assert.ok(calls.every(c=>c.fill==="#f7dfe9"),"Preenchimento rosado ausente");
+assert.ok(calls.every(c=>c.fill==="#f4dbe8"),"Preenchimento rosado ausente");
 for(const t of ["gm42Minor","gm42Major"])
   assert.ok(svg.includes(t),"Cor ou grid ausente: "+t);
 assert.ok(!/NaN|Infinity|undefined/.test(svg));
