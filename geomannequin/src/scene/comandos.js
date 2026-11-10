@@ -125,9 +125,7 @@ function apiFor(it){
     contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
     tocar(alvo,opts={}){chk();const r=tocarV2(it,alvo,opts);if(r.distanciaResidual>.3)LOG.push(["aviso","A mão não alcança precisamente o alvo."]);return r},
     segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
-      atualizarApoios();if(opts.motor==="v2")beginGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),opts);
-      else beginRigidGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),
-        {...opts,objetos:SCN.objetos});return m},
+      cena.segurarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)});return m},
     soltar(ref,opts={}){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id):[acharObjeto(ref)];
       let ok=false;const ground=restGround(SCN.list[0].params);
       atualizarApoios();
