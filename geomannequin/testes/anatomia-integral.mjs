@@ -69,7 +69,7 @@ assert.equal(aberturas,10);
 
 /* Alterações faciais e de escala devem invalidar o mesh cache. */
 const p={...DEF,_cache:newCache()},S=shape(p);let old=getMeshes(p,S).head;
-for(const [key,value]of [["headScale",1.04],["smile",0.8],["eyeLid",0.8],["jawOpen",0.8],["muscle",0.8]]){
+for(const [key,value]of [["headScale",1.04],["cranialDepth",1.06],["smile",0.8],["eyeLid",0.8],["jawOpen",0.8],["muscle",0.8]]){
   p[key]=value;
   const fresh=getMeshes(p,shape(p)).head;
   assert.notEqual(old,fresh,`Cache facial não invalidado: ${key}`);
