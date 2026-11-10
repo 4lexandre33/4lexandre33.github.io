@@ -4,6 +4,7 @@ on:
     paths:
       - 'geomannequin/src/engine/head-v3/**'
       - 'geomannequin/src/engine/corpo.js'
+      - 'geomannequin/src/engine/montagem.js'
       - 'geomannequin/src/engine/desenho.js'
       - 'geomannequin/testes/cabeca-v3-correcao-anatomica.mjs'
       - 'geomannequin/testes/atlas-cabeca-v3-reconstrucao.mjs'
