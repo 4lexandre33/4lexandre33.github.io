@@ -80,6 +80,22 @@ const json=w.cena.exportarJSON();
 assert.equal(JSON.parse(json).style,"azul");
 w.cena.importarJSON(json);
 assert.ok(typeof w.cena.estudoAnatomico.svg==="function");
+/* Corpo deitado: costas da CABEÇA significa dorso anatômico, não -Z do mundo. */
+const lying=createWorld(),lm=lying.cena.ativo;
+lm.deitar("costas");
+const fL=lm.orientacao("cabeca");
+lying.camera.costas(lm.nome,{referencia:"cabeca",area:"cabeca",precisao:"estrita"});
+const camL=lying.cameraNoMundo(lying.P);
+assert.ok(dot(unit(sub(camL.pos,camL.alvo)),fL.frente)<-.9999,"Costas do crânio deitado devem ser exatas");
+assert.ok(dot(camL.cima,fL.cima)>.99,"A vista do crânio deitado deve manter o alto anatômico");
+const reverse=createWorld(),rm=reverse.cena.ativo;
+rm.inclinar(180,180);
+const fR=rm.orientacao("tronco");
+reverse.camera.costas(rm.nome,{referencia:"tronco",precisao:"estrita"});
+const camR=reverse.cameraNoMundo(reverse.P);
+assert.ok(dot(unit(sub(camR.pos,camR.alvo)),fR.frente)<-.9999,"Vista invertida também deve ser traseira");
+assert.ok(dot(camR.cima,fR.cima)>.99,"Vista invertida deve respeitar roll anatômico");
+
 const base=dirname(fileURLToPath(import.meta.url));
 const html=readFileSync(join(base,"..","index.html"),"utf8");
 for(const k of ["orbReferencia","orbVertical","orbSeguir","orbPivo","orbArea"])
