@@ -32,7 +32,8 @@ export function posteriorReductionV41(v,p){
  const reduction=clamp(p.v41OccipitalReduction??.82,0,1);
  const compact=clamp(p.v41CranialCompactness??.28,0,1);
  const arc=clamp(p.v41PosteriorArcTightness??.55,0,1);
- const window=smooth((v-.04)/.16)*(1-smooth((v-.70)/.14));
+ /* Rampas largas removem o ombro artificial no dorso alto do crânio. */
+ const window=smooth((v-.005)/.29)*(1-smooth((v-.66)/.30));
  return clamp((.34*reduction+.09*compact+.035*arc*gauss(v,.42,.18))*window,0,.47);
 }
 export function mandibleTaperV41(v,p){
@@ -60,7 +61,10 @@ export function sectionV4(v,p,S){
  const front=spline(F,v)*scale*(1+.012*fat)+
    (v>.88?((p.chinProj??.8)-.8)*.45*smooth((v-.88)/.12):0);
  const backOriginal=spline(B,v)*scale*(v<.79?clamp(p.cranialDepth??1,.90,1.12):1);
- const back=backOriginal<0?backOriginal*(1-posteriorReductionV41(v,p)):backOriginal;
+ const round=clamp(p.v42NapeRoundness??.85,0,1);
+ /* Derivada contínua na base occipital, sem quina onde começa a nuca. */
+ const back=backOriginal<0?backOriginal*(1-posteriorReductionV41(v,p))+
+   .055*round*gauss(v,.735,.115):backOriginal;
  return {width,front,back};
 }
 export const profileV4=(y,p,S)=>sectionV4(normalizedHeight(y,S),p,S);
