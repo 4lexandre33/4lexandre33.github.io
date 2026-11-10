@@ -302,3 +302,34 @@ combinações ainda não foi aprovada. O objetivo artístico da referência
 anexada não deve ser tratado como já alcançado.
 Veja [registro de implementação](docs/head-v2-implementacao.md) e
 [task graph planejado](docs/task-graph-cabeca-v2-topologia-matematica.md).
+
+## Planos laterais de Loomis na Cabeça V2 (10/11/2026)
+
+Os dois círculos laterais foram incorporados à **malha craniana V2**, não
+apenas às linhas do SVG. Cada lado possui um disco geométrico plano
+(`x=±d`) com borda circular e faixa de transição suave com o crânio.
+
+Controles no painel de proporções: **profundidade do corte, raio, altura,
+posição anterior/posterior e suavidade da borda**. Eles atuam nos dois
+lados de forma simétrica. Ocorre junto com ajustes da testa, do occipital,
+da nuca, das orelhas e do pivô da ATM; a V1 continua disponível sem mudanças.
+
+Folhas de nove vistas renderizadas pelo motor:
+
+- [Masculino médio — Loomis 3×3](testes/visuais-loomis/masculino-medio-3x3.svg)
+- [Feminino médio — Loomis 3×3](testes/visuais-loomis/feminino-medio-3x3.svg)
+
+```bash
+cd geomannequin
+npm run testar:planos-loomis
+npm run atlas:planos-loomis -- masculino medio
+npm run atlas:planos-loomis -- feminino medio
+```
+
+O [relatório técnico](docs/relatorio-execucao-planos-loomis.md) documenta
+30 malhas testadas (10 biotipos × 3 LOD), 41.084 pontos planos nas
+malhas, zero triângulos degenerados nas amostras e 18 vistas SVG.
+**Isso não constitui aprovação estética**: falta executar em Node,
+revisar visualmente os dez biotipos, verificar exportações e completar
+a matriz de 1.350 renderizações. O workflow do Actions terminou antes
+de fornecer etapas ou logs; não foi contado como teste aprovado.
