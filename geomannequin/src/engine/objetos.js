@@ -104,7 +104,29 @@ function capsulasObjeto(o, g0) {
 }
 /* ===== colisão entre objetos: todos ficam em pé (giram só no chão), então o teste é exato:
    separação no plano do chão (retângulo × retângulo, círculo × retângulo, círculo × círculo) e intervalo de altura ===== */
+/* SAT 3D para móveis inclinados. Cilindros são OBBs conservadoras.
+ * 15 eixos: 3 faces A, 3 faces B, 9 produtos vetoriais das arestas.
+ */
+function sobrepoePartes3D(A,B){
+ const axes=[],sub=[B.c[0]-A.c[0],B.c[1]-A.c[1],B.c[2]-A.c[2]];
+ for(const E of [...A.e,...B.e])axes.push(E);
+ for(const a of A.e)for(const b of B.e){
+  const v=[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  if(Math.hypot(...v)>1e-7)axes.push(v);
+ }
+ let min=Infinity,n=[0,1,0];
+ for(const v of axes){
+  const len=Math.hypot(...v),ax=v.map(x=>x/len),dist=sub.reduce((z,x,i)=>z+x*ax[i],0);
+  const radius=E=>E.e.reduce((z,e,i)=>z+E.h[i]*Math.abs(e.reduce((t,x,k)=>t+x*ax[k],0)),0);
+  const overlap=radius(A)+radius(B)-Math.abs(dist);
+  if(overlap<=0)return null;
+  if(overlap<min){min=overlap;n=ax.map(x=>x*(dist>0?-1:1))}
+ }
+ return {prof:min,plano:min,ponto:A.c.map((v,i)=>(v+B.c[i])/2),n};
+}
 function sobrepoePartes(A, B) {
+  if([A,B].some(q=>Math.abs(q.e[1][0])>1e-5||Math.abs(q.e[1][2])>1e-5))
+    return sobrepoePartes3D(A,B);
   const yA = [A.c[1] - A.h[1], A.c[1] + A.h[1]], yB = [B.c[1] - B.h[1], B.c[1] + B.h[1]], oy = Math.min(yA[1], yB[1]) - Math.max(yA[0], yB[0]);
   if (oy <= 0) return null;
   const dx = B.c[0] - A.c[0], dz = B.c[2] - A.c[2];
