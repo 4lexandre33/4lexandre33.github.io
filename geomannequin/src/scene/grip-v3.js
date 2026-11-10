@@ -177,7 +177,7 @@ function releaseRigidGrip(it,o,ground,{mao,modo="manter",gravidade,restituicao,a
  }
  delete o.gripV3;
  if(modo==="queda"){
-   iniciarQuedaObjeto(o,ground,{gravidade,restituicao,atrito,velocidade,angular});
+   iniciarQuedaObjeto(o,ground,{gravidade,restituicao,atrito,velocidade,angular,ignorarDono:it?.name||null});
  }else if(modo==="chao"||modo==="pousar"){
    pousarObjetoRigido(o,ground,{endireitar:modo==="chao"});
  }else{o.emAr=true;}
