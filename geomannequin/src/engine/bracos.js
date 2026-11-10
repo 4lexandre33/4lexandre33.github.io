@@ -46,8 +46,10 @@ function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.62);return 0.55+0.75*
 function deltR(v,th,A,s){
   const thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc)),Rc=0.55*A.k*(1-0.1*Math.max(0,-Math.cos(th)));
   const vmax=deltV(phi)*A.L1/2.9,inner=sstep((Math.abs(phi)-95*D)/(45*D));
-  /* lado de dentro (voltado para a axila): o topo encolhe para não formar uma bola na axila quando o braço sobe */
-  if(v<0){const Ri=Rc*(1-0.45*inner);return Math.sqrt(Math.max(0,Ri*Ri-v*v/0.72))}
+  /* Continuidade na seção v=0 (C0): antes o raio interno saltava de 0,30k para
+     0,41k, criando um bico na axila e uma costura no deltoide. */
+  const ri0=lerp(Rc,armRadius(0,th,A,s)-0.06*A.k,inner);
+  if(v<0)return Math.sqrt(Math.max(0,ri0*ri0-v*v/0.72));
   /* topo achatado (não é uma bola) e corpo em gota: cheio em cima, afinando até a inserção */
   const t2=v/vmax,ra=armRadius(v,th,A,s),outer=lerp(Rc*(1+0.03*Math.sin(Math.PI*Math.min(1,t2*2))),ra-0.015*A.k,sstep(Math.min(1,t2*1.1)));
   return lerp(outer,ra-0.06*A.k,inner);

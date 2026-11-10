@@ -35,7 +35,7 @@ function muscleBump(x,y,th,p,F){
   const cs=Math.cos(th),cf=Math.max(0,cs),ax=Math.abs(x),B=F.B,mu=B.mus,fat=B.fat,fem=B.fem,yy=y-F.yJ,Mu=muscleDefs(F);
   let dz=0;
   if(cf>0.02&&yy<0.05&&yy>-1.7){
-    const h=(0.09+0.19*mu)*(1-0.55*fem)*(1-0.3*fat);
+    const h=(0.09+0.19*mu)*(1-0.92*fem)*(1-0.3*fat);
     const d=sdPoly(ax,yy,Mu.pec);
     if(d>-0.16){
       /* massa do peitoral: mais cheia embaixo e por fora (projeta para a frente e aparece no contorno em 3/4) */

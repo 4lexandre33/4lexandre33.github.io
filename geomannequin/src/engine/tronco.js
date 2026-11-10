@@ -28,10 +28,17 @@ function bustBump(x,y,th,p,F){
     dz+=cf*(0.06*gauss(y,yc,0.035)-0.065*gauss(y,yc+0.15,0.065)*gauss(s01,0.42,0.28)-0.03*gauss(y,yc-0.12,0.05)*gauss(s01,0.75,0.2))*sstep(s01*5)*sstep((1-s01)*6);
   }
   if(y>F.yJ-2.6){
-    /* seios esféricos */
+    /* Mamas com base aderida à parede torácica, prolongamento axilar,
+       projeção lateral e polo inferior mais cheio (não esferas soltas). */
     if(B.breast>0.01){
-      const yb=F.yJ-1.28,dy=y-yb,sg=dy>0?0.36:0.2;
-      dz+=B.breast*(0.56+0.14*B.fat)*cf*cf*gauss(ax,0.56,0.27)*gauss(dy,0,sg);
+      const vol=B.breast,yb=F.yJ-1.25-0.06*B.fat,dy=y-yb;
+      const cx=0.42+0.09*F.chestW,sx=0.27+0.065*B.fat;
+      const sig=dy>0?0.35:0.31+0.11*B.fat;
+      const main=gauss(ax,cx,sx)*gauss(dy,0,sig);
+      const tail=gauss(ax,cx+0.16,0.24)*gauss(dy,0.17,0.28);
+      dz+=Math.pow(cf,1.4)*vol*((0.44+0.16*B.fat)*main+0.10*tail);
+      /* Sulco inferior muito sutil: acompanha gravidade e volume. */
+      dz-=cf*vol*0.027*gauss(ax,cx,sx)*gauss(y,yb-0.36-0.04*B.fat,0.07);
     }
     dz-=0.022*cf*gauss(x,0,0.05)*clamp((F.yJ-0.15-y)/0.3,0,1);
   }
@@ -61,7 +68,10 @@ function bustBump(x,y,th,p,F){
     /* Massa glútea acompanha a largura real da pelve e a espessura dos tecidos. */
     const centroGluteo=0.46*B.hip,larguraGluteo=0.3+0.06*B.fem+0.025*B.fat;
     dz+=cb*gl*gauss(ax,centroGluteo,larguraGluteo)*gauss(y,F.yHip-0.58,0.44)*(1-0.75*gauss(x,0,0.055));
-    dz+=(0.4+0.6*cb)*0.35*gl*gauss(Math.abs(Math.atan2(Math.sin(th),cs)),1.75,0.35)*gauss(y,F.yHip+0.05,0.3);
+    const sideHip=Math.abs(Math.atan2(Math.sin(th),cs));
+    dz+=(0.4+0.6*cb)*0.35*gl*gauss(sideHip,1.72+0.05*B.fem,0.39+0.055*B.fem)*gauss(y,F.yHip+0.07,0.36);
+    /* Glúteo médio se perde gradualmente na crista ilíaca e no tensor da fáscia lata. */
+    dz+=0.027*B.fem*(0.5+0.5*B.glute)*gauss(sideHip,1.55,0.32)*gauss(y,F.yHip+0.20,0.44);
   }
   dz+=(p.shTension+0.5*((s>0?p.shTensL:p.shTensR)||0))*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);
   dz+=muscleBump(x,y,th,p,F)+relevoTronco(x,y,th,p,F);

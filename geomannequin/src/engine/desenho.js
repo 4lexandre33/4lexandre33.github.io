@@ -23,6 +23,7 @@ import { muscleDefs } from "./musculos.js";
 import { scapTri } from "./corpo.js";
 import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
 import { atlasBraco } from "./atlas/bracos.js";
+import { atlasRosto } from "./atlas/rosto.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -60,8 +61,11 @@ function scene(p,L,pal,fast,mode){
     /* músculo esticado fica mais fino */
     const thin=(P,Q,L0)=>Math.pow(clamp(L0/Math.hypot(P[0]-Q[0],P[1]-Q[1],P[2]-Q[2]),0.45,1),0.8);
     const tp=thin(pa,pb,1.3),tl=thin(la,lb,1.25);
-    const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.02)),0.36*k*tp,0.2*k*tp,fw,0.2),Mx,S);
-    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.4*k*tl,0.3*k*tl,fw,0.2),Mx,S);
+    /* Pontes axilares estreitas e tangentes suaves: desaparecem os recortes
+       triangulares artificiais sob o deltoide em poses de braço elevado. */
+    const soft=1-0.12*(p.fem||0);
+    const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.02)),0.29*k*tp*soft,0.17*k*tp*soft,fw,0.2),Mx,S);
+    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.32*k*tl*soft,0.23*k*tl*soft,fw,0.2),Mx,S);
     arms.push({s,a,f,el,d,ap,Aa,Af,Ah,Ae,hs,pec,lat});
     const wp=Ah.T,ws=xv(wp),ep=Af.T,es=xv(ep);
     handles.push({k:"wrist",s,P:wp,x:CX+S*ws[0],y:CY-S*ws[1]});
@@ -195,7 +199,7 @@ function scene(p,L,pal,fast,mode){
     for(let i=0;i<n;i++){const q=X(pts[i]);sx[i]=CX+S*q[0];sy[i]=CY-S*q[1];sz[i]=q[2]}
     emit(k,sx,sy,sz,n,showHid);
   }
-  function lineT(k,pts,X){
+  function lineT(k,pts,X,intensidade=1){
     X=X||xf;const n=pts.length;if(n<2)return;
     const paths=["","",""],W3=[0.4,0.7,1];
     let prevC=-1,prevEnd=-1;
@@ -207,7 +211,7 @@ function scene(p,L,pal,fast,mode){
       if(c!==prevC||prevEnd!==i)paths[c]+="M"+f1(ax)+" "+f1(ay);
       paths[c]+="L"+f1(bx)+" "+f1(by);prevC=c;prevEnd=i+1;
     }
-    paths.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,W3[c])+'"/>')});
+    paths.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,W3[c])+(intensidade<0.999?";opacity:"+f1(intensidade):"")+'"/>')});
   }
   const GQ=M.bust.tq;
   const xb=v=>{const w=bustTw(v[0],v[1],F),A=tab[Math.round(clamp(w,0,3)*64)];let r=applyA(A,v);
@@ -302,12 +306,14 @@ function scene(p,L,pal,fast,mode){
     [-1,1].forEach(s=>curve("ring",arr(i=>hp(i,s*38*D,0.004),t,-t,50)));
   }
   /* linha da mandíbula: da orelha ao queixo, sobre a superfície */
-  if(L.jaw){
+  /* Ângulo mandibular visível também no modo anatômico, inclusive em perfil. */
+  if(L.jaw||L.anat){
     [-1,1].forEach(s=>{
-      curve("jaw",arr(k=>{
-        const y=lerp(-0.5,chinY+0.01,k);
-        return hp(y,s*lerp(92,0,Math.pow(k,1.3))*D,0.004);
-      },0,1,50));
+      curve(L.jaw?"jaw":"divisao",arr(k=>{
+        const y=lerp(-0.48,chinY+0.07,k);
+        const a=k<0.38?lerp(102,87,k/0.38):lerp(87,0,Math.pow((k-0.38)/0.62,0.86));
+        return hp(y,s*a*D,0.011);
+      },0,1,46));
     });
   }
   /* guias do busto: cilindro do pescoço, cintura escapular, deltoides, linha central e coluna */
@@ -398,25 +404,27 @@ function scene(p,L,pal,fast,mode){
        const rm=Math.hypot(...raio(Wm).d),rn=Math.hypot(...raio(Wn).d);
        lineT("divisao",arr(u=>{const P=[0,1,2].map(i=>lerp(Wm[i],Wn[i],u)),q=raio(P),l=Math.hypot(...q.d)||1,r=lerp(rm,rn,u)*(1+0.1*Math.sin(Math.PI*u))+0.025;
          return xv([q.c[0]+q.d[0]/l*r,q.c[1]+q.d[1]/l*r,q.c[2]+q.d[2]/l*r])},0.08,0.97,26),v=>v);}
-      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.18)),yc=F.yJ+0.0+0.2*q*q+0.03*Math.sin(Math.PI*q)-0.05*Math.sin(2*Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.1,0.86,30),xb);
+      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.28)),yc=F.yJ+0.015+0.12*Math.sin(Math.PI*q)-0.025*q;return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.08,0.88,30),xb);
     });
     /* músculos do tronco: linhas do atlas muscular (mesmas formas que geram o relevo) */
     {const at=atlasTronco(p,F),B=F.B,def=clamp(B.mus*(1-B.fat)*(1-0.75*B.fem),0,2);
      [1,-1].forEach(s=>at[s].linhas.forEach(l=>{
        if(l.tipo==="fibra"&&!L.fibras)return;
        if(def<(l.min||0))return;
-       lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb);
+       const strength=L.cel?1:clamp(0.42+0.35*B.mus-0.32*B.fat-0.10*B.fem,0.3,0.93);
+       lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb,strength);
      }));
     }
     lineT("anat",arr(x=>{const y=F.yJ+0.05+3*x*x;return bp(y,bustTh(y,x,true,p,F),0.012)},-0.11,0.11,10),xb);
     /* sulco da coluna e processos espinhosos */
-    lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb);
-    for(let y=F.yC7-0.05;y>F.yHip+0.1;y-=0.3)lineT("fibra",arr(x=>bp(y,Math.PI+x,0.012),-0.05,0.05,4),xb);
+    lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb,L.cel?0.9:0.48);
+    if(L.fibras||L.cel)for(let y=F.yC7-0.05;y>F.yHip+0.1;y-=0.3)
+      lineT("fibra",arr(x=>bp(y,Math.PI+x,0.012),-0.05,0.05,4),xb,0.65);
     /* umbigo, linha inguinal, glúteos */
     lineT("anat",arr(a=>{const x=0.03*Math.cos(a),y=F.yNav+0.035*Math.sin(a);return bp(y,bustTh(y,x,true,p,F),0.01)},0,2*Math.PI,12),xb);
     [-1,1].forEach(s=>{
       /* linha da "calcinha": abertura da perna na frente (do quadril até a virilha) e o "V" do sacro atrás */
-      lineT("dobra",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb);
+      lineT("dobra",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb,L.cel?0.85:0.58);
       lineT("divisao",arr(k=>{const ax=lerp(0.26,0.02,k),y=lerp(F.yHip+0.32,F.yHip-0.3,Math.pow(k,1.1));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,16),xb);
     });
     /* fenda entre os glúteos */
@@ -424,8 +432,8 @@ function scene(p,L,pal,fast,mode){
     /* glúteo máximo: borda de fora (do sacro, descendo em diagonal para fora até o trocânter) e glúteo médio acima, no lado */
     {const gk=clamp(F.B.glute/0.21,0,2.5),hw=F.B.hip;
      if(gk>0.25)[-1,1].forEach(s=>{
-       lineT("divisao",arr(k=>{const y=lerp(F.yHip-0.02,F.yJ-5.45,k),ax=lerp(0.1,0.74*hw,Math.pow(k,0.75))-0.04*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb);
-       lineT("fibra",arr(k=>{const y=lerp(F.yHip+0.42,F.yHip-0.25,k),ax=lerp(0.62*hw,0.88*hw,Math.pow(k,0.8));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,12),xb);
+       lineT("divisao",arr(k=>{const y=lerp(F.yHip+0.02,F.yJ-5.40,k)-0.055*Math.sin(Math.PI*k),ax=lerp(0.12,0.72*hw,k*k*(3-2*k))-0.045*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb,L.cel?0.90:0.52);
+       if(L.cel||L.fibras)lineT("fibra",arr(k=>{const y=lerp(F.yHip+0.42,F.yHip-0.25,k),ax=lerp(0.62*hw,0.88*hw,Math.pow(k,0.8));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,12),xb,0.65);
      });
     }
     /* braços: borda do deltoide, bíceps, tríceps e braquiorradial (com a torção do antebraço) */
@@ -519,25 +527,67 @@ function scene(p,L,pal,fast,mode){
     });
     /* boca: lábio superior e inferior preenchidos, sombra sob o lábio; sorriso (cantos) e boca aberta (mandíbula) */
     {
-      const sm=p.smile||0,jo=p.jawOpen||0,ab=jo>0.02?0.036:0;
+      const sm=p.smile||0,jo=clamp(p.jawOpen||0,0,1),ab=jo>0.02?Math.min(0.28,0.02+0.23*jo):0;
       const mY=x=>mouthY+0.016*Math.pow(x/0.2,2)+sm*0.028*Math.pow(x/0.2,2);
       const top=x=>mY(x)+0.034*(1-Math.pow(Math.abs(x)/0.2,1.3))*(1-0.35*gauss(x,0,0.035));
       const bot=x=>mouthY-0.07-0.02*(1-Math.pow(x/0.13,2));
       const H=(x,y,o)=>hp(y,surfX(y,x),o||0.008);
       fillP(arr(x=>H(x,top(x)),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)),0.2,-0.2,24)),pal.shade3);
-      /* boca aberta: o vão entre o lábio de cima e o de baixo */
-      if(ab)fillP(arr(x=>H(x,mY(x)),-0.19,0.19,24).concat(arr(x=>H(x,mY(x)-ab*(0.25+0.75*(1-Math.pow(x/0.19,2)))),0.19,-0.19,24)),pal.ink,0.82);
+      /* Vão oral que cresce conforme a abertura, com língua e arcadas dentárias
+         projetadas na superfície do rosto em perspectiva. */
+      if(ab){
+        const interior=x=>mY(x)-ab*(0.23+0.77*Math.max(0,1-Math.pow(x/0.19,2)));
+        fillP(arr(x=>H(x,mY(x)-0.005,0.026),-0.185,0.185,32)
+          .concat(arr(x=>H(x,interior(x),0.027),0.185,-0.185,32)),pal.ink,0.94);
+        if(jo>0.14)fillP(arr(x=>H(x,interior(x)+0.02+0.025*Math.max(0,1-(x/0.13)**2),0.032),-0.13,0.13,22)
+          .concat(arr(x=>H(x,interior(x)+0.008,0.031),0.13,-0.13,22)),pal.coral,0.68);
+        const nDentes=8,step=0.30/nDentes;
+        for(let i=0;i<nDentes;i++){
+          const x0=-0.15+i*step+0.002,x1=x0+step-0.004,xc=(x0+x1)/2;
+          const profundidade=Math.min(ab*0.36,0.036)*(0.7+0.3*Math.cos(xc*8));
+          fillP([H(x0,mY(x0)-0.009,0.033),H(x1,mY(x1)-0.009,0.033),
+                 H(x1,mY(x1)-0.009-profundidade,0.033),
+                 H(x0,mY(x0)-0.009-profundidade,0.033)],"#F2EDE3");
+          if(jo>0.42){
+            const base=x=>interior(x)+0.014;
+            fillP([H(x0,base(x0),0.034),H(x1,base(x1),0.034),
+                   H(x1,base(x1)+Math.min(0.026,ab*0.18),0.034),
+                   H(x0,base(x0)+Math.min(0.026,ab*0.18),0.034)],"#E9E1D6");
+          }
+        }
+      }
       fillP(arr(x=>H(x,mY(x)-ab),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)-ab-0.055*Math.max(0,1-Math.pow(x/0.2,2))-0.004),0.2,-0.2,24)),pal.shade1);
       fillP(arr(x=>H(x,bot(x)-0.005,0.006),-0.13,0.13,16).concat(arr(x=>H(x,bot(x)-0.05*(1-Math.pow(x/0.13,2)),0.006),0.13,-0.13,16)),pal.shade2,0.8);
       curve("feat",arr(x=>H(x,mY(x)),-0.2,0.2,30));
       if(ab)curve("feat",arr(x=>H(x,mY(x)-ab),-0.19,0.19,30));
       curve("feat",arr(x=>H(x,top(x)),-0.2,0.2,40));
       curve("feat",arr(x=>H(x,bot(x)),-0.13,0.13,24));
+      /* Sulcos nasolabiais e zigomáticos aparecem apenas durante o sorriso. */
+      if(sm>0.06)[-1,1].forEach(side=>{
+        curve("divisao",arr(u=>{
+          const x=side*(0.145+0.115*Math.sin(Math.PI*u*0.8));
+          const y=lerp(-0.96*t,mouthY+0.07*sm,u);
+          return H(x,y,0.017);
+        },0,1,18));
+        if(sm>0.45)curve("fibra",arr(u=>H(side*(0.29+0.06*u),eyeY-0.17-0.05*u,0.013),0,1,12));
+      });
     }
     const wing=[[0.105,-0.76],[0.14,-0.85],[0.17,-0.93],[0.14,-0.985],[0.07,-1.0],[0,-1.0]];
     const half=wing.map(w=>[w[0],w[1]*t]);
     const poly2=half.slice().reverse().map(w=>[-w[0],w[1]]).concat(half.slice(1));
     curve("feat",poly2.map(w=>hp(w[1],surfX(w[1],w[0]),0.008)));
+  }
+  /* Anatomia facial esquemática: 16 grupos musculares superficiais em
+     cada hemiface, exibidos no écorché. Nada é pintado permanentemente
+     sobre o modo de pele/contorno comum. */
+  if(L.feat&&L.cel){
+    const pt=([x,y])=>{
+      const r=Math.max(0.015,ringAt(y,p,sh)[0]);
+      return hp(y,Math.asin(clamp(x/r,-0.98,0.98)),0.016);
+    };
+    const def=clamp(0.55+0.30*(p.muscle||0)-0.15*(p.fat||0),0.40,0.88);
+    for(const mus of atlasRosto(p,sh))
+      lineT(mus.tipo,suave(mus.pts,5).map(pt),xf,def);
   }
   out.push('</g>');
   out.push('<g id="olhos">');
@@ -597,6 +647,13 @@ function scene(p,L,pal,fast,mode){
       curve("feat",arr(q=>{const r=0.1+0.8*q;return E(X(r),up(r)+0.026*p.eyeSize+0.01*Math.sin(Math.PI*q),0.01)},0,1,20));
       curve("feat",arr(k=>E(X(1)+0.012*k,up(1)-0.004+0.005*k),0,1,4));
       curve("feat",arr(a=>E(X(0)+0.012*Math.cos(a)+0.012,lo(0)+0.012*Math.sin(a)+0.006),-0.5,2.8,10));
+      /* Orbicular dos olhos, pálpebras e pregas laterais coordenados. */
+      const contr=clamp(0.65*Math.max(0,p.smile||0)+0.35*lid+0.2*Math.max(0,p.browIn||0),0,1);
+      if(contr>0.16){
+        curve("divisao",arr(q=>E(X(q),lo(q)-0.025-0.018*contr*Math.sin(Math.PI*q),0.012),0.13,0.88,22));
+        if(contr>0.4)for(const d of [-0.025,0.007])curve("fibra",
+          arr(u=>E(X(1)+0.015+0.06*u,0.025+d-0.025*u,0.015),0,1,9));
+      }
     });
   }
   out.push('</g>');

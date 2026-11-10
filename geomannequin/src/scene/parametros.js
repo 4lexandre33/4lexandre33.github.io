@@ -8,6 +8,7 @@ const SL=[
   {k:"pitch",g:"slOrient",label:"Inclinação vertical",min:-70,max:70,step:1,u:"°"},
   {k:"roll",g:"slOrient",label:"Inclinação lateral",min:-45,max:45,step:1,u:"°"},
   {k:"skull",g:"slProp",label:"Largura do crânio",min:0.6,max:0.95,step:0.01,u:" R"},
+  {k:"headScale",g:"slProp",label:"Escala anatômica da cabeça",min:0.9,max:1.1,step:0.005,u:"×"},
   {k:"jaw",g:"slProp",label:"Largura da mandíbula",min:0.40,max:0.85,step:0.01,u:" R"},
   {k:"chin",g:"slProp",label:"Largura do queixo",min:0.10,max:0.45,step:0.01,u:" R"},
   {k:"face",g:"slProp",label:"Linha do cabelo",min:26,max:50,step:1,u:"°"},

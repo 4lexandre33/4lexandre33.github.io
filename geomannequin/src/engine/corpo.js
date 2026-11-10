@@ -7,7 +7,7 @@ function bodyEff(p){
   const m=p.muscle,f=p.fat,w=p.fem;
   return {
     /* ombros: clavículas longas e acrômios afastados (tronco em V); músculo alarga mais */
-    W:p.shW+0.12+0.26*m-0.32*w+0.08*f,
+    W:p.shW+0.10+0.22*m-0.29*w+0.07*f,
     neck:p.neck*(1+0.18*m+0.18*f-0.15*w),
     /* caixa torácica grande (bem maior que o abdômen); chest0 é a medida antiga, usada só para a cintura */
     chest:(0.58*p.shW+0.42)*(1+0.12*m+0.13*f-0.14*w),
@@ -47,12 +47,12 @@ function torsoProfile(F){
     /* Flanco aberto e transição progressiva: costelas inferiores → cintura → crista ilíaca. */
     [F.yWst,lerp(cintura*0.96,Math.max(c0*0.90,B.hip*0.90),mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
     [F.yNav,lerp(cintura,Math.max(c0*0.91,B.hip*0.94),mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
-    [yJ-4.1,lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf),0.84+0.2*f,0.82,-0.45,2.3],
+    [yJ-4.1,lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf)*(1+0.027*B.fem),0.84+0.2*f,0.82,-0.45,2.3],
     /* Crista ilíaca com abertura própria, acima da articulação do fêmur.
        O perfil se fecha gradualmente na virilha e mantém volume em 3/4 e perfil. */
-    [F.yHip+0.38,B.hip*(1.03-0.02*B.fem),0.85+0.12*f,0.90+0.18*gk,-0.47,2.35],
+    [F.yHip+0.38,B.hip*(1.03+0.012*B.fem),0.85+0.12*f,0.90+0.18*gk,-0.47,2.35],
     [F.yHip,B.hip*(1.00-0.015*B.fem),0.85+0.10*f,0.98+0.22*gk,-0.48,2.3],
-    [yJ-5.4,B.hip*(0.70+0.06*gk),0.68,0.82+0.28*gk,-0.50,2.2],
+    [yJ-5.4,B.hip*(0.70+0.06*gk+0.03*B.fem),0.68,0.82+0.28*gk,-0.50,2.2],
     [F.yCr,0.3+0.12*gk,0.4,0.42+0.22*gk,-0.46,2.1],
     [F.yB,0.02,0.02,0.02,-0.46,2]
   ];

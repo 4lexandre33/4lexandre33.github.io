@@ -82,7 +82,7 @@ export function iniciarControles(){
       const face=b.dataset.face;
       if(face==="masculino"||face==="feminino")transitarSexo(P,face==="feminino"?1:0);
       /* Restaurar só os traços faciais, sem apagar o biotipo nem os ajustes de cintura/quadril. */
-      ["skull","jaw","chin","face","chinProj","brow","nose","lips","eyeSize","browW","earSize","adam","neckLen"].forEach(k=>P[k]=DEF[k]);
+      ["skull","jaw","chin","face","chinProj","brow","nose","lips","eyeSize","browW","earSize","adam"].forEach(k=>P[k]=DEF[k]);
       Object.assign(P,FACES[face]);syncControls();render();
     });
   });
