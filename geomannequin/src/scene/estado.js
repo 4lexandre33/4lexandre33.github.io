@@ -82,6 +82,7 @@ function loadScene(sc){
         gravidade:o.dinamica.gravidade,restituicao:o.dinamica.restituicao,
         atrito:o.dinamica.atrito,tempo:Math.max(0,o.dinamica.tempo),
         velocidade:o.dinamica.velocidade.slice(),angular:o.dinamica.angular.slice(),
+        ignorarDono:typeof o.dinamica.ignorarDono==="string"?o.dinamica.ignorarDono.slice(0,100):null,
         contato:o.dinamica.contato&&typeof o.dinamica.contato==="object"?
           {tipo:String(o.dinamica.contato.tipo||""),nome:String(o.dinamica.contato.nome||"").slice(0,60)}:null,
         impactos:Number.isInteger(o.dinamica.impactos)?Math.max(0,o.dinamica.impactos):0};
