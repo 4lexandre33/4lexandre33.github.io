@@ -20,6 +20,10 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
+import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3} from "./grip-v3.js";
+import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
+import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
+import {rotM} from "../engine/matematica.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
@@ -101,6 +105,15 @@ function apiFor(it){
     olhar(alvo){chk();olharPara(it,alvo);return m},
     olharPara(alvo){chk();olharPara(it,alvo);return m},
     maoEm(lado,ponto){chk();const antes={...it.params};const e=maoEm(it,ladoNum(lado),pontoMundo(ponto));if(e>0.4)LOG.push(["aviso","a mão não alcança o ponto (faltam "+Math.round(e*11.4)+" cm)"]);guardarContatoV2(it,antes);return m},
+    maoEmSite(ref,ponto,{mao="direita"}={}){
+      chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
+      atualizarApoios();const ground=restGround(SCN.list[0].params);
+      const site=gripSiteWorld(o,ponto,ground),before={...it.params};
+      const residual=maoEm(it,ladoNum(mao),site.mundo);
+      guardarContatoV2(it,before);
+      return {objeto:o.nome||o.tipo,ponto:site.id,distanciaResidual:residual,
+        alcançou:residual<=.3,mao};
+    },
     peEm(lado,ponto){chk();peEm(it,ladoNum(lado),pontoMundo(ponto));return m},
     apontar(alvo,lado){chk();apontarPara(it,alvo,lado===undefined?-1:ladoNum(lado));return m},
     /* ===== mãos ===== */
@@ -114,11 +127,15 @@ function apiFor(it){
     contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
     tocar(alvo,opts={}){chk();const r=tocarV2(it,alvo,opts);if(r.distanciaResidual>.3)LOG.push(["aviso","A mão não alcança precisamente o alvo."]);return r},
     segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
-      atualizarApoios();beginGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),opts);return m},
-    soltar(ref){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id):[acharObjeto(ref)];
-      let ok=false;for(const o of targets){if(o&&o.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
+      cena.segurarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)});return m},
+    soltar(ref,opts={}){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id):[acharObjeto(ref)];
+      let ok=false;const ground=restGround(SCN.list[0].params);
+      atualizarApoios();
+      for(const o of targets){if(o?.gripV3?.mannequinId===it.id){releaseRigidGrip(it,o,ground,opts);ok=true}
+        else if(o?.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
       if(!ok)throw Error("Nenhum objeto encontrado segurado por este manequim.");
       atualizarApoios();return m},
+    objetosSegurados(){chk();return SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id).map(o=>o.nome||o.tipo)},
     /* ===== articulações pelo nome: m.articulacao("cotovelo esquerdo", {dobrar: 90}) ===== */
     /* confere a pose: partes do corpo atravessando umas às outras (não vizinhas, mais de 0,5 R) e limites acoplados que corrigiriam algo */
     validarPose(opts){chk();const tol=opts&&opts.tolerancia!==undefined?num(opts.tolerancia,"tolerância"):0.5,a=autoColisoes(pMundo(it),tol),l=limitesAcoplados(Object.assign({},it.params));
@@ -187,6 +204,33 @@ function apiObjeto(q){
     posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
     mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
     girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
+    posicao3D(x,y,z){
+      chk();if(q.gripV3)throw Error("Objeto segurado: mova a mão para transportá-lo.");
+      const ground=restGround(SCN.list[0].params),frame=objectRigidPose(q,ground);
+      if(![x,y,z].every(Number.isFinite))throw Error("A posição 3D exige três números finitos.");
+      if(q.sobre)delete q.sobre;delete q.sobreRel;
+      setRigidObjectPose(q,{M:frame.M,T:[x,y,z]},ground);q.emAr=true;return o;
+    },
+    rotacao3D(yaw,pitch=0,roll=0){
+      chk();if(q.gripV3)throw Error("Objeto segurado: gire a mão, não a cadeira.");
+      const a=[yaw,pitch,roll].map((v,i)=>num(v,["yaw","pitch","roll"][i]));
+      const ground=restGround(SCN.list[0].params),frame=objectRigidPose(q,ground);
+      if(q.sobre)delete q.sobre;delete q.sobreRel;
+      setRigidObjectPose(q,{M:rotM(...a.map(v=>v*Math.PI/180)),T:frame.T},ground);
+      q.emAr=true;return o;
+    },
+    pose3D(){chk();atualizarApoios();const v=objectRigidPose(q,restGround(SCN.list[0].params));
+      return {posicao:v.T,matriz:v.M,giro:q.giro,emAr:!!q.emAr};
+    },
+    criarPontoAgarre(id,local,normal=[0,0,1]){
+      chk();if(typeof id!=="string"||!id.trim()||id.length>40||
+        !Array.isArray(local)||local.length!==3||!local.every(Number.isFinite)||
+        !Array.isArray(normal)||normal.length!==3||!normal.every(Number.isFinite)||Math.hypot(...normal)<1e-6)
+        throw Error("Ponto: nome, [x,y,z] e normal com três números válidos.");
+      if(gripSites(q).some(s=>s.id===id))throw Error("Ponto de agarre duplicado: "+id);
+      if(!Array.isArray(q.sitesExtras))q.sitesExtras=[];
+      q.sitesExtras.push({id,nome:id,local:local.slice(),normal:normal.slice()});return o;
+    },
     parametro(chave,valor){
       chk();if(valor===undefined)return q[chave];
       const permitidos=new Set(["x","z","giro","larg","prof","alt","raio","encosto","cabeceira"]);
@@ -210,6 +254,15 @@ function apiObjeto(q){
         if(prevU===undefined)delete q.cimaLocal;else q.cimaLocal=prevU;throw e}
       return o;
     },
+    pontosDeAgarre(){chk();atualizarApoios();return gripSites(q).map(s=>gripSiteWorld(q,s.id,restGround(SCN.list[0].params)))},
+    pontoDeAgarre(id){chk();atualizarApoios();return gripSiteWorld(q,id,restGround(SCN.list[0].params))},
+    emPosseDe(){chk();atualizarApoios();const g=q.gripV3||q.grip;if(!g)return null;
+      const owner=SCN.list.find(m=>m.id===g.mannequinId);
+      return {manequim:owner?.name||null,mao:g.side===1?"esquerda":"direita",
+        versao:q.gripV3?3:1,ponto:q.gripV3?.siteId||null,
+        segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
+    segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
+    soltar(opts={}){chk();cena.soltarObjeto(q.id,opts);return o},
     medidas(m){chk();editarObjeto(q,m||{});return o},
     /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
     cor(c,contorno){chk();editarObjeto(q,{cor:c===undefined?"auto":c,contorno});return o},
@@ -360,7 +413,11 @@ const cena={
     {id:"headstudy",estado:"implementado",api:["cena.estudoAnatomico.svg","cena.estudoAnatomico.abrir","cena.estudoAnatomico.fechar"]},
     {id:"quadros",estado:"parcial",api:["cena.quadros.abrir","cena.quadros.texto","cena.quadros.renderizar","cena.quadros.fila","cena.quadros.baixar"]},
     {id:"blocking",estado:"parcial",api:["cena.blocking","cena.blocking.abrir","cena.blocking.estado"]},
-    {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar","m.segurar"]},
+    {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
+    {id:"preensaoV3",estado:"experimental",api:["m.segurar","m.soltar","m.maoEmSite",
+       "cena.segurarObjeto","cena.soltarObjeto","cena.vinculos","cena.inspecionarPreensao",
+       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe"],
+      limite:"Attachment 6DOF com mão primária; segunda mão sem solver simultâneo, quedas sem física."},
     {id:"editor",estado:"parcial",api:["cena.marcarEstado","cena.desfazer","cena.refazer","cena.historico"],limite:"histórico explícito/de execução; mudanças externas não são interceptadas automaticamente"},
     {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
   ]},
@@ -402,10 +459,47 @@ const cena={
   contatoV2(opts){return setContatoV2(opts)},
   contatosFisicos(opts){return consultarContatosV2(opts)},
   segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
+    // modo: 'aproximarMao' usa IK antes da captura. Sem deslocar a cadeira.
+
     const it=manequim===undefined?SCN.list[SCN.active]:typeof manequim==="number"?SCN.list[manequim]:SCN.list.find(q=>q.name===manequim);
     const o=acharObjeto(objeto);if(!it||!o)throw Error("Manequim/objeto não encontrado.");
-    atualizarApoios();return beginGrip(it,o,ladoNum(mao),restGround(SCN.list[0].params),opts)},
-  soltarObjeto(objeto){const o=acharObjeto(objeto);if(!o||!releaseGrip(o))throw Error("O objeto não está segurado.");atualizarApoios();return true},
+    atualizarApoios();const ground=restGround(SCN.list[0].params);
+    const previous={...it.params};
+    if(opts.modo==="aproximarMao"){
+      const H=handFrameV3(it,ladoNum(mao),ground);
+      const sites=o&&gripSites(o).map(s=>gripSiteWorld(o,s.id,ground));
+      const site=opts.ponto&&opts.ponto!=="auto"?gripSiteWorld(o,opts.ponto,ground):
+        sites.sort((a,b)=>Math.hypot(...a.mundo.map((v,i)=>v-H.T[i]))-
+                        Math.hypot(...b.mundo.map((v,i)=>v-H.T[i])))[0];
+      try{
+        const residual=maoEm(it,ladoNum(mao),site.mundo);
+        guardarContatoV2(it,previous);
+        const actual=handFrameV3(it,ladoNum(mao),ground);
+        const finalError=Math.hypot(...actual.T.map((v,i)=>v-site.mundo[i]));
+        if(residual>.35||finalError>.35)
+          throw Error("A mão não conseguiu alcançar "+site.nome+
+            ". Desvio residual "+Math.max(residual,finalError).toFixed(2)+" R.");
+        return beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,modo:"preservar",ponto:site.id,objetos:SCN.objetos});
+      }catch(e){Object.assign(it.params,previous);throw e}
+    }
+    return opts.motor==="v2"?beginGrip(it,o,ladoNum(mao),ground,opts):
+      beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,objetos:SCN.objetos});
+  },
+  soltarObjeto(objeto,opts={}){const o=acharObjeto(objeto);
+    if(!o)throw Error("Objeto não encontrado.");atualizarApoios();
+    if(o.gripV3){const it=SCN.list.find(x=>x.id===o.gripV3.mannequinId);
+      if(!it)throw Error("Proprietário não encontrado.");const r=releaseRigidGrip(it,o,restGround(SCN.list[0].params),opts);
+      atualizarApoios();return r.solto;}
+    if(!releaseGrip(o))throw Error("O objeto não está segurado.");
+    atualizarApoios();return true;
+  },
+  vinculos(){atualizarApoios();return SCN.objetos.map(o=>({o,g:o.gripV3||o.grip})).filter(x=>x.g).map(({o,g})=>
+    ({objeto:o.nome||o.tipo,versao:o.gripV3?3:1,manequim:SCN.list.find(x=>x.id===g.mannequinId)?.name||null,
+     mao:g.side===1?"esquerda":"direita",ponto:g.siteId||null,segundaMao:g.secundaria?.side===1?"esquerda":g.secundaria?.side===-1?"direita":null}))},
+  inspecionarPreensao(){atualizarApoios();const ground=restGround(SCN.list[0].params);
+    return SCN.objetos.filter(o=>o.gripV3).map(o=>{const it=SCN.list.find(x=>x.id===o.gripV3.mannequinId);
+      return it?inspectRigidGrip(it,o,ground):{ativo:false,objeto:o.nome||o.tipo}})},
+
   colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
   resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
   desfazerColisao(){return desfazerColisao()},

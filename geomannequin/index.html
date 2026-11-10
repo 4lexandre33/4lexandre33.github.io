@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="css/cena.css">
 <link rel="stylesheet" href="css/head-study.css">
 <link rel="stylesheet" href="css/editor.css">
-<script type="module" src="src/main.js?v=20261110-camera-orientation-api"></script>
+<script type="module" src="src/main.js?v=20261110-grip-v3-rigid-chair"></script>
 </head>
 <body>
 <div class="wrap">
@@ -145,9 +145,16 @@
       <div class="group poses" role="group" aria-label="Preensão cinemática de objeto selecionado">
         <label for="colV2Mao">Mão</label>
         <select id="colV2Mao"><option value="direita">Direita</option><option value="esquerda">Esquerda</option></select>
-        <button type="button" id="colV2Segurar">Segurar objeto selecionado</button>
+        <label for="colV3Ponto">Local de agarre</label>
+        <select id="colV3Ponto" aria-label="Ponto anatômico do objeto"><option value="auto">Mais próximo da palma</option></select>
+        <label for="colV3Reach">Alcance (R)</label>
+        <input id="colV3Reach" type="number" min="0.2" max="40" step="0.5" value="5" style="max-width:75px">
+        <button type="button" id="colV2Segurar">Segurar objeto selecionado (V3)</button>
+        <label for="colV3Soltar">Ao soltar</label>
+        <select id="colV3Soltar"><option value="manter">Manter onde está</option><option value="chao">Colocar no chão (aproximação)</option></select>
         <button type="button" id="colV2Soltar">Soltar objeto selecionado</button>
       </div>
+      <p class="hint">Preensão V3: o objeto acompanha posição e rotação da palma. Segurar não simula peso ou força; selecione encosto/assento da cadeira como ponto de pega. Use o editor para mover ombro e cotovelo.</p>
       <p class="hint" id="colV2Status" aria-live="polite"></p>
       <div id="colLista" class="col-lista"></div>
       <div class="group poses">

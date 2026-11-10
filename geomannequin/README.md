@@ -538,3 +538,33 @@ await cena.baixar("camadas.zip",arquivoZip,"application/zip");
 **Validação:** sintaxe JS e casos geométricos isolados (câmera de costas, cabeça girada, corpo deitado/invertido, grupo com líder) foram verificados. Os workflows de GitHub Actions ainda falham antes de disponibilizar logs de execução e **não é possível declarar as suítes integradas ou o navegador aprovados**.
 
 Teste adicional: `npm run testar:headless-modulos`. O restante das 196 tarefas permanece no [task graph](docs/task-graph-orientacao-camera-api-total.md).
+
+### Preensão rígida Grip V3 (experimental — cadeira e outros objetos)
+
+A opção **Segurar objeto** na seção **Colisões** passou a utilizar vínculo rígido 3D: assento, encosto e pernas da cadeira movem e inclinam junto com a palma. Selecione objeto/mão e o local da pega (ex.: **Topo do encosto**) e use **Segurar**. Depois, arraste o braço ou altere `armFlexR`/`elbowR` no editor. **Soltar → Manter onde está** preserva a cadeira suspensa, sem simulação de queda.
+
+```js
+const a=cena.ativo.renomear("Ana");
+const cadeira=cena.objeto("cadeira",{nome:"Cadeira",x:2,z:0});
+log(cadeira.pontosDeAgarre()); 
+cena.segurarObjeto("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:10});
+a.parametro("armFlexR",45).parametro("elbowR",80);
+log(cena.inspecionarPreensao());
+a.soltar("Cadeira",{modo:"manter"});
+```
+
+Para a preensão antiga (compatibilidade): `cena.segurarObjeto("Copo",{motor:"v2",mao:"direita"})`.
+
+**Testes:** `npm run testar:grip-v3`. O mecanismo continua **experimental**: segunda mão sem solver bilateral completo, colisão aproximada, nenhuma física de massa/torque e sem garantia de execução integral no browser até a validação de CI. Veja o [task graph completo de 239 tarefas e os limites atuais](docs/task-graph-preensao-rigida-cadeira-objetos-v3-20261110.md).
+
+#### Editar a cadeira diretamente em 3D (sem estar segurando)
+
+```js
+const cadeira=cena.objeto("cadeira",{nome:"Cadeira 3D",x:2,z:0});
+cadeira.rotacao3D(30,25,-10); // yaw, pitch, roll em graus
+cadeira.posicao3D(2,8,0);    // x,y,z no mundo
+cadeira.criarPontoAgarre("meuPonto",[0,8,-2],[0,0,-1]);
+log(cadeira.pose3D(),cadeira.pontosDeAgarre());
+```
+
+Enquanto estiver segurada, a **mão** é quem controla posição e rotação. A aplicação bloqueia edição direta da cadeira que romperia o vínculo. Para selecionar visualmente um ponto de agarre use a seção **Colisões → Local de agarre**.

@@ -4,6 +4,8 @@ import { $ } from "../scene/ambiente.js";
 import { SCN, setActive } from "../scene/modelo.js";
 import {CONTATO_V2,setContatoV2,consultarContatosV2} from "../scene/contato-v2.js";
 import {beginGrip,releaseGrip} from "../scene/preensao-v2.js";
+import {beginRigidGrip,releaseRigidGrip} from "../scene/grip-v3.js";
+import {gripSites} from "../engine/grip-sites.js";
 import {atualizarApoios} from "../scene/modelo.js";
 import {restGround} from "../engine/index.js";
 import { COL, resolverObjetos, resolverObjeto, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
@@ -82,6 +84,17 @@ export function iniciarColisoes() {
   }
   $("colModo").value = COL.modo; $("colPref").value = COL.preferir;
   const v2=$("colV2"),status=$("colV2Status");
+  const gripChoice=$("colV3Ponto");
+  let previousGripObj=null;
+  function refreshGripSites(){
+    if(!gripChoice)return;
+    const o=SCN.objetos.find(x=>x.id===SCN.objSel),id=o?.id??null;
+    if(id===previousGripObj)return;
+    previousGripObj=id;gripChoice.replaceChildren();
+    gripChoice.add(new Option("Mais próximo da palma","auto"));
+    if(o)for(const s of gripSites(o))gripChoice.add(new Option(s.nome,s.id));
+  }
+  refreshGripSites();
   if(v2){v2.checked=CONTATO_V2.enabled;v2.addEventListener("change",()=>{
     setContatoV2({enabled:v2.checked});status.textContent=v2.checked?
       "Geometria de contato V2 ativa: bloqueio 3D detalhado ao arrastar.":"Motor detalhado desativado.";render();
@@ -90,15 +103,24 @@ export function iniciarColisoes() {
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel),it=SCN.list[SCN.active];
     if(!obj){status.textContent="Selecione um objeto no painel de cena antes de segurar.";return}
     try{atualizarApoios();const lado=$("colV2Mao").value==="esquerda"?1:-1;
-      const r=beginGrip(it,obj,lado,restGround(SCN.list[0].params));
-      const nc=r.dedos?.filter(d=>d.contato).length??0;
-      status.textContent="Vínculo cinemático: "+r.objeto+" na mão "+r.mao+". Dedos em contato: "+nc+"/5"+(nc===0?" (preensão apenas posicionada, sem contato digital).":".");refreshScene();render();
-    }catch(e){status.textContent=e.message}
+      const reach=Number($("colV3Reach")?.value??5);
+      const r=beginRigidGrip(it,obj,lado,restGround(SCN.list[0].params),{
+        ponto:gripChoice?.value||"auto",reach,modo:"preservar",objetos:SCN.objetos,
+        segunda:!!obj.gripV3});
+      status.textContent="Preensão rígida V3: "+r.objeto+" pela "+r.mao+" no ponto "+r.ponto+
+        " ("+(r.distancia*11.4).toFixed(1)+" cm). Ao mover o braço, a cadeira acompanha a mão em 3D.";
+      refreshScene();render();
+    }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
   $("colV2Soltar")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
-    if(!obj||!releaseGrip(obj)){status.textContent="Selecione um objeto que esteja segurado.";return}
-    atualizarApoios();status.textContent="Objeto solto no chão (sem simulação de queda).";refreshScene();render();
+    if(!obj||(!obj.gripV3&&!obj.grip)){status.textContent="Selecione um objeto que esteja segurado.";return}
+    const m=SCN.list.find(x=>x.id===obj.gripV3?.mannequinId);
+    if(obj.gripV3&&m){
+      const r=releaseRigidGrip(m,obj,restGround(SCN.list[0].params),{modo:$("colV3Soltar")?.value||"manter"});
+      status.textContent=r.solto?"Objeto solto: "+r.modo+". Não há gravidade dinâmica.":"Uma mão soltou; a outra continua segurando.";
+    }else{releaseGrip(obj);status.textContent="Objeto V2 liberado sobre o apoio."}
+    atualizarApoios();refreshScene();render();
   });
   $("colV2Consultar")?.addEventListener("click",()=>{
     try{const hits=consultarContatosV2({max:60}),fatal=hits.filter(c=>c.prof>CONTATO_V2.tol);
@@ -126,6 +148,6 @@ export function iniciarColisoes() {
   });
   $("colTodas").addEventListener("click", () => { try { depois(resolverTodas($("colPref").value)); } catch (err) { msg(err.message, true); } });
   $("colDesfazer").addEventListener("click", () => { if (desfazerColisao()) depois(["Correção desfeita."]); $("colDesfazer").disabled = true; });
-  if (typeof window !== "undefined") window.addEventListener("gm:desenhou", () => { $("colModo").value = COL.modo; $("colPref").value = COL.preferir; $("colComp").checked = !!COL.composicao; if($("colV2"))$("colV2").checked=CONTATO_V2.enabled; atualizarColisoes(); });
+  if (typeof window !== "undefined") window.addEventListener("gm:desenhou", () => { $("colModo").value = COL.modo; $("colPref").value = COL.preferir; $("colComp").checked = !!COL.composicao; if($("colV2"))$("colV2").checked=CONTATO_V2.enabled; atualizarColisoes();refreshGripSites(); });
 }
 export { atualizarColisoes };

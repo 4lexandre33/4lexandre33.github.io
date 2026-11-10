@@ -603,3 +603,54 @@ As trilhas DUAL, TREE, DROP, UI e PERF podem prosseguir em paralelo após suas d
 A implementação deve entregar primeiro a solução simples e robusta — attachment 6DOF — e acrescentar as demais camadas sem comprometer a aderência básica.
 
 **Status final do documento:** task graph construído e auditoria do código atual realizada; **Grip V3 ainda não implementado**. Não marcar tarefas nem testes como aprovados nesta etapa.
+
+---
+
+## Implementação incremental Grip V3 — 10/11/2026
+
+**Status real:** núcleo cinemático 6DOF e primeiros controles foram implementados na branch de desenvolvimento. O task graph integral de 239 tarefas **não foi concluído**.
+
+### Implementado em código (execução integrada ainda exige gate de CI/browser)
+
+| Área | Evidência | O que já funciona em código |
+|---|---|---|
+| SE3 | `src/engine/rigid-transform.js` | Matrizes rígidas, composição/inversa, pose mundial de objeto |
+| HAND | `src/scene/grip-v3.js` | `handFrameV3` usa palma/punho e cadeia do braço para obter quadro de mundo 3D |
+| SITE | `src/engine/grip-sites.js` | Cadeira: encostoTopo, encostoEsquerdo, encostoDireito, assentoFrente e laterais; outros objetos têm sites |
+| LINK | `src/scene/grip-v3.js` | Captura de transformação relativa mão→objeto, movimento sem salto, rotação do objeto ao torcer braço |
+| OBJ | `src/engine/objetos.js` | Caixas, assento, pernas, encosto e cilindros usam a matriz 3D na projeção, colisores e sombras |
+| COL | `src/scene/contato-v2.js`, `engine/objetos.js` | Cadeira carregada é incluída na colisão por pose candidata e SAT 3D aproximada |
+| TREE | `src/scene/grip-v3.js`, `modelo.js` | Filhos apoiados armazenam transformação relativa e acompanham o objeto transportado |
+| DUAL | `src/scene/grip-v3.js` | Segunda mão registrável e troca sem salto, **sem solver simultâneo de ambas mãos** |
+| DROP | `src/scene/grip-v3.js` | Soltura `manter` sem snap no chão; modo `chao` reposiciona sem física |
+| API | `src/scene/comandos.js` | `m.segurar`, `m.soltar`, `m.maoEmSite`, `cena.segurarObjeto`, `cena.vinculos`, `obj.pontosDeAgarre` |
+| UI | `index.html`, `src/ui/colisoes.js` | Pontos de agarrar e opção de soltar visíveis na seção Colisões |
+| SAVE | `src/scene/estado.js` | `rot3`, `emAr`, `sobreRel`, `gripV3` por índice de manequim |
+| TST | `testes/grip-v3-se3.mjs`, `testes/grip-v3-cadeira.mjs` | Cenários automatizados escritos; execução integrada aguardando CI verde |
+| REL | `.github/workflows/geomannequin-grip-v3.yml` | Workflow integrado para novo motor e regressão Contact V2 |
+
+**Validação independente realizada:** SE3 com 20 rotações e erros máximos de ordem `2.2×10^-16`, sete locais de agarre da cadeira, cenário isolado de mudança de braço e corpo seguido de atualização rígida exata (`erro 0`). **Isso não equivale a aprovação do navegador nem dos testes completos Node.**
+
+### Exemplo novo — pegar a cadeira pelo encosto
+
+```js
+const m = cena.ativo.renomear("Ana");
+const cadeira = cena.objeto("cadeira", {nome:"Cadeira",x:2,z:0});
+log(cadeira.pontosDeAgarre().map(p=>p.id));
+cena.segurarObjeto("Cadeira",{
+  manequim:"Ana", mao:"direita",
+  ponto:"encostoTopo", reach:10, modo:"preservar"
+});
+m.parametro("armFlexR",45);
+m.parametro("elbowR",80);
+log(cena.vinculos(),cena.inspecionarPreensao());
+m.soltar("Cadeira",{modo:"manter"}); // sem snap ao chão
+```
+
+### Limites ainda abertos
+
+- Não há simulação de peso, torque, gravidade, arremesso e atrito real; soltar em modo `chao` apenas aproxima o apoio de maneira discreta.
+- A segunda mão pode ser registrada, mas ainda falta solucionador bilateral IK + restrição rígida simultânea; a primária conduz o objeto.
+- CCD é aproximada por amostragem, contatos usam cápsulas e OBB; não é garantia de zero interpenetração para todas as superfícies.
+- A projeção de objetos inclinados usa ordenação por profundidade aproximada; melhorar oclusão interpeças em todas as vistas exige QA visual.
+- Exige testes reais em Node e navegador antes de aprovação de produção. Não prometer 100% das 239 tarefas como finalizadas.

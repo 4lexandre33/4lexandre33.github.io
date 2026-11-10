@@ -6,6 +6,7 @@ import { CX, CY, D, H, W, clamp, f1 } from "./matematica.js";
 import { makeXf } from "./camera.js";
 import { effScale } from "./projecao.js";
 import { FINO } from "./zbuffer.js";
+import {objectRigidPose,rigidPoint,rigidDirection} from "./rigid-transform.js";
 
 /* medidas padrão (R): largura (x), profundidade (z), altura (y) */
 const TIPOS_OBJETO = {
@@ -63,9 +64,13 @@ function caixasLocais(o) { return partesLocais(o).filter(b => !b.cil); }
 function baseY(o, g0) { return g0 + (o.base || 0); }
 /* partes no mundo: centro, eixos (girados pelo "giro" do objeto) e medidas */
 function partesDoObjeto(o, g0) {
-  const r = (o.giro || 0) * D, c = Math.cos(r), s = Math.sin(r), y0 = baseY(o, g0);
-  const eixos = [[c, 0, -s], [0, 1, 0], [s, 0, c]];
-  return partesLocais(o).map(b => Object.assign({}, b, { c: [o.x + b.c[0] * c + b.c[2] * s, y0 + b.c[1], o.z - b.c[0] * s + b.c[2] * c], e: eixos }, b.cil ? { h: [b.r, b.hh, b.r] } : {}));
+  const pose=objectRigidPose(o,g0);
+  const eixos=[[pose.M[0],pose.M[3],pose.M[6]],
+               [pose.M[1],pose.M[4],pose.M[7]],
+               [pose.M[2],pose.M[5],pose.M[8]]];
+  return partesLocais(o).map(b => Object.assign({}, b,
+    {c:rigidPoint(pose,b.c),e:eixos},
+    b.cil?{h:[b.r,b.hh,b.r]}:{}));
 }
 function caixasDoObjeto(o, g0) { return partesDoObjeto(o, g0); }
 /* topo de apoio (para sentar/subir ou pôr um objeto em cima): altura no mundo */
@@ -77,10 +82,12 @@ function capsulasObjeto(o, g0) {
   for (const b of partesDoObjeto(o, g0)) {
     if (b.cil) {
       /* cilindro em pé: alto → uma cápsula vertical; baixo e largo (tampo, copo largo) → cordas horizontais */
-      if (b.hh >= b.r * 0.9) { const l = Math.max(0, b.hh - b.r); caps.push({ nome: o.tipo, a: [b.c[0], b.c[1] - l, b.c[2]], b: [b.c[0], b.c[1] + l, b.c[2]], r: b.r }); }
+      if (b.hh >= b.r * 0.9) { const l = Math.max(0, b.hh - b.r),u=b.e[1]; caps.push({ nome: o.tipo, a: b.c.map((v,i)=>v-u[i]*l), b: b.c.map((v,i)=>v+u[i]*l), r: b.r }); }
       else { const n = Math.max(1, Math.ceil(b.r / Math.max(0.05, b.hh * 0.9)));
         for (let k = 0; k < n; k++) { const off = n === 1 ? 0 : -b.r + b.hh + (2 * b.r - 2 * b.hh) * k / (n - 1), w = Math.sqrt(Math.max(0, b.r * b.r - off * off)), len = Math.max(0, w - b.hh);
-          caps.push({ nome: o.tipo, a: [b.c[0] - len, b.c[1], b.c[2] + off], b: [b.c[0] + len, b.c[1], b.c[2] + off], r: b.hh }); } }
+          caps.push({ nome: o.tipo,
+            a:b.c.map((v,i)=>v-b.e[0][i]*len+b.e[2][i]*off),
+            b:b.c.map((v,i)=>v+b.e[0][i]*len+b.e[2][i]*off),r:b.hh }); } }
       continue;
     }
     const idx = [0, 1, 2].sort((i, j) => b.h[i] - b.h[j]), [a0, a1, a2] = idx, r = b.h[a0];
@@ -97,7 +104,29 @@ function capsulasObjeto(o, g0) {
 }
 /* ===== colisão entre objetos: todos ficam em pé (giram só no chão), então o teste é exato:
    separação no plano do chão (retângulo × retângulo, círculo × retângulo, círculo × círculo) e intervalo de altura ===== */
+/* SAT 3D para móveis inclinados. Cilindros são OBBs conservadoras.
+ * 15 eixos: 3 faces A, 3 faces B, 9 produtos vetoriais das arestas.
+ */
+function sobrepoePartes3D(A,B){
+ const axes=[],sub=[B.c[0]-A.c[0],B.c[1]-A.c[1],B.c[2]-A.c[2]];
+ for(const E of [...A.e,...B.e])axes.push(E);
+ for(const a of A.e)for(const b of B.e){
+  const v=[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  if(Math.hypot(...v)>1e-7)axes.push(v);
+ }
+ let min=Infinity,n=[0,1,0];
+ for(const v of axes){
+  const len=Math.hypot(...v),ax=v.map(x=>x/len),dist=sub.reduce((z,x,i)=>z+x*ax[i],0);
+  const radius=E=>E.e.reduce((z,e,i)=>z+E.h[i]*Math.abs(e.reduce((t,x,k)=>t+x*ax[k],0)),0);
+  const overlap=radius(A)+radius(B)-Math.abs(dist);
+  if(overlap<=0)return null;
+  if(overlap<min){min=overlap;n=ax.map(x=>x*(dist>0?-1:1))}
+ }
+ return {prof:min,plano:min,ponto:A.c.map((v,i)=>(v+B.c[i])/2),n};
+}
 function sobrepoePartes(A, B) {
+  if([A,B].some(q=>Math.abs(q.e[1][0])>1e-5||Math.abs(q.e[1][2])>1e-5))
+    return sobrepoePartes3D(A,B);
   const yA = [A.c[1] - A.h[1], A.c[1] + A.h[1]], yB = [B.c[1] - B.h[1], B.c[1] + B.h[1]], oy = Math.min(yA[1], yB[1]) - Math.max(yA[0], yB[0]);
   if (oy <= 0) return null;
   const dx = B.c[0] - A.c[0], dz = B.c[2] - A.c[2];
@@ -235,6 +264,10 @@ function planoSeparador(a, b) {
 function ordenarPartes(grupos, ci, p) {
   const n = grupos.length; if (n < 2) return grupos;
   const O = olhoNoMundo(ci, p), prof = g => g.fs.length ? g.fs.reduce((s, f) => s + f.z, 0) / g.fs.length : -1e9;
+  // Para volumes inclinados, a antiga separação por planos horizontais não vale:
+  // usar ordem de profundidade aproximada (z-buffer resolve interseções do agregado).
+  if(grupos.some(g=>Math.abs(g.b.e[1][0])>.0001||Math.abs(g.b.e[1][2])>.0001))
+    return grupos.slice().sort((a,b)=>prof(a)-prof(b));
   /* antes[j] = peças que precisam ir antes de j */
   const antes = grupos.map(() => new Set());
   for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
@@ -287,7 +320,10 @@ function pfObjetosSvg(p, pal, objs, g0) {
 const NCIL = 40;
 function cilPontos(b) {
   const out = [];
-  for (const sy of [-1, 1]) for (let i = 0; i < NCIL; i++) { const a = i / NCIL * 2 * Math.PI; out.push([b.c[0] + Math.cos(a) * b.r, b.c[1] + sy * b.hh, b.c[2] + Math.sin(a) * b.r]); }
+  for (const sy of [-1, 1]) for (let i = 0; i < NCIL; i++) {
+    const a = i / NCIL * 2 * Math.PI,ca=Math.cos(a),sa=Math.sin(a);
+    out.push(b.c.map((v,j)=>v+ca*b.r*b.e[0][j]+sy*b.hh*b.e[1][j]+sa*b.r*b.e[2][j]));
+  }
   return out;
 }
 /* faces do cilindro: quadriláteros da lateral (só os voltados para a câmera) e as tampas visíveis */
@@ -296,12 +332,12 @@ function cilindroFaces(b, ci, LD, faces) { /* faces: lista onde as faces visíve
   const cen = ci.cs(b.c);
   for (let i = 0; i < NCIL; i++) {
     const j = (i + 1) % NCIL, q = [i, j, NCIL + j, NCIL + i], m = [0, 1, 2].map(k => (Cc[i][k] + Cc[j][k] + Cc[NCIL + i][k] + Cc[NCIL + j][k]) / 4);
-    const a = (i + 0.5) / NCIL * 2 * Math.PI, nw = [Math.cos(a), 0, Math.sin(a)], nc0 = ci.cs([b.c[0] + nw[0], b.c[1], b.c[2] + nw[2]]), n = [nc0[0] - cen[0], nc0[1] - cen[1], nc0[2] - cen[2]];
+    const a = (i + 0.5) / NCIL * 2 * Math.PI, nw = b.c.map((_,j)=>Math.cos(a)*b.e[0][j]+Math.sin(a)*b.e[2][j]), nc0 = ci.cs(b.c.map((v,j)=>v+nw[j])), n = [nc0[0] - cen[0], nc0[1] - cen[1], nc0[2] - cen[2]];
     const e = olho(m); if (n[0] * e[0] + n[1] * e[1] + n[2] * e[2] <= 0) continue;
     faces.push({ pts: q.map(k => T[k]), z: m[2], lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], lado: true });
   }
   for (const sy of [-1, 1]) {
-    const ids = [...Array(NCIL).keys()].map(i => i + (sy > 0 ? NCIL : 0)), m = ci.cs([b.c[0], b.c[1] + sy * b.hh, b.c[2]]), up = ci.cs([b.c[0], b.c[1] + sy * (b.hh + 1), b.c[2]]);
+    const ids = [...Array(NCIL).keys()].map(i => i + (sy > 0 ? NCIL : 0)), m = ci.cs(b.c.map((v,j)=>v+sy*b.hh*b.e[1][j])), up = ci.cs(b.c.map((v,j)=>v+sy*(b.hh+1)*b.e[1][j]));
     const n = [up[0] - m[0], up[1] - m[1], up[2] - m[2]], e = olho(m); if (n[0] * e[0] + n[1] * e[1] + n[2] * e[2] <= 0) continue;
     /* tampa como leque de quadriláteros (para o recorte por profundidade) e um polígono só para o desenho */
     faces.push({ pts: ids.map(k => T[k]), z: m[2] + 0.001, lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], tampa: true });

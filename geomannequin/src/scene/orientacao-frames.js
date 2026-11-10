@@ -5,6 +5,7 @@
 import {SCN} from "./modelo.js";
 import {pMundo} from "./colisoes.js";
 import {shape,chainSetup,paraMundo,applyA,comp,armPose,armDims,legPose,legDims} from "../engine/index.js";
+import {objectRigidPose,rigidPoint,rigidDirection} from "../engine/rigid-transform.js";
 
 const orfRad=Math.PI/180;
 const orfSub=(a,b)=>a.map((x,i)=>x-b[i]);
@@ -61,9 +62,10 @@ function objectRef(o,ref="objeto"){
  const angle=(o.giro||0)*orfRad,local=o.frenteLocal||[0,0,1],top=o.cimaLocal||[0,1,0];
  if(!Array.isArray(local)||local.length!==3||local.some(x=>!Number.isFinite(x)))throw Error("Objeto com frenteLocal inválido.");
  if(!Array.isArray(top)||top.length!==3||top.some(x=>!Number.isFinite(x)))throw Error("Objeto com cimaLocal inválido.");
- const rot=v=>[Math.cos(angle)*v[0]+Math.sin(angle)*v[2],v[1],-Math.sin(angle)*v[0]+Math.cos(angle)*v[2]];
+ const pose=objectRigidPose(o,0);
+ const rot=v=>rigidDirection(pose,v);
  const ambiguous=/^(cubo|caixa|cilindro|copo|barril|coluna|mesaRedonda|mesa)$/i.test(o.tipo)&&!o.frenteLocal;
- return orfBasis([o.x||0,(o.base||0)+(o.alt||0)/2,o.z||0],rot(local),rot(top),
+ return orfBasis(rigidPoint(pose,[0,(o.alt||0)/2,0]),rot(local),rot(top),
  {tipo:"objeto",nome:o.nome||o.tipo,referencia:ref,definida:!ambiguous,
  motivo:ambiguous?"Objeto simétrico: orientação convencional +Z, não frente anatômica. Defina frenteLocal para torná-la explícita.":null});
 }

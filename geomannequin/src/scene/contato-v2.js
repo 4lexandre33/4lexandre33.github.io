@@ -5,7 +5,8 @@
 import {SCN} from "./modelo.js";
 import {pMundo,COL} from "./colisoes.js";
 import {colliderRig,colliderObject,manifoldCaps,manifoldObject,manifoldSelf} from "../engine/contact-v2.js";
-import {restGround} from "../engine/index.js";
+import {restGround,colisaoEntreObjetos} from "../engine/index.js";
+import {updateRigidGrip} from "./grip-v3.js";
 const CONTATO_V2={enabled:false,level:"fine",tol:.07,last:null,blocked:0};
 const MOTION=/^(?:wx|wy|wz|wRot|arm|elbow|pron|wrist|handCurl|f(?:Th|In|Me|An|Mi|Spread)|thumbOpp|hip|knee|ankle|foot|toes|hallux|head|neck|spine|lum|tho|pelvis|body|shElev|shProt|scap)/;
 function setContatoV2(opts={}){
@@ -39,21 +40,61 @@ function contacts(it,params,ctx,{incluirAuto=true,margin=.025,max=32}={}){
  if(!it||!params)return [];
  const body=rig(it,params,ctx.level),out=[];
  const opts={tol:0,margin,max};
+ // Usar o sólido da cadeira na pose CANDIDATA durante a varredura do gesto.
+ const carried=new Map();
+ for(const entry of ctx.objetos)if(entry.obj.gripV3?.mannequinId===it.id){
+   const obj={...entry.obj},ground=worldGround();
+   if(updateRigidGrip({...it,params},obj,ground))
+     carried.set(entry.obj.id,{obj,parts:colliderObject(obj,ground)});
+ }
  if(incluirAuto)for(const c of manifoldCaps(body,body,{...opts,self:true})){
   out.push({...c,tipo:"auto",a:it.id,b:it.id,alvo:"próprio corpo"});
  }
  for(const other of ctx.outros)for(const c of manifoldCaps(body,other.body,opts)){
   out.push({...c,tipo:"manequim",a:it.id,b:other.it.id,alvo:other.it.name});
  }
- for(const o of ctx.objetos)for(const c of manifoldObject(body,o.parts,opts)){
+ for(const o of ctx.objetos)for(const c of manifoldObject(body,carried.get(o.obj.id)?.parts||o.parts,opts)){
   /* O objeto preso à mão permanece sólido para TODO o resto do corpo.
      Só o ponto de suporte da própria mão deixa de bloquear essa peça. */
-  const held=o.obj.grip;
+  const held=o.obj.gripV3||o.obj.grip;
   if(held&&held.mannequinId===it.id){
     const side=held.side===1?"E":"D";
-    if(c.pa==="mao"+side||(c.pa.startsWith("dedo")&&c.pa.endsWith(side)))continue;
+    if(c.pa==="mao"+side||(!o.obj.gripV3&&c.pa.startsWith("dedo")&&c.pa.endsWith(side)))continue;
   }
   out.push({...c,tipo:"objeto",a:it.id,b:o.obj.id,alvo:o.obj.nome||o.obj.tipo});
+ }
+ for(const entry of carried.values()){
+   // Bloqueio de piso do objeto CARREGADO: usa o ponto inferior das peças
+   // transformadas, não só a altura do pivô da cadeira.
+   const ground=worldGround();
+   let minY=Infinity;
+   for(const {shape:b} of entry.parts){
+     const ext=b.cil?Math.abs(b.e[1][1])*b.hh+
+       Math.hypot(b.e[0][1],b.e[2][1])*b.r:
+       b.h.reduce((a,h,i)=>a+Math.abs(b.e[i][1])*h,0);
+     minY=Math.min(minY,b.c[1]-ext);
+   }
+   if(minY<ground){
+     const depth=ground-minY;
+     out.push({tipo:"carregado-chao",a:it.id,b:"chao",idA:"carregado:"+entry.obj.id,idB:"chao",
+       distancia:-depth,prof:depth,n:[0,1,0],pa:entry.obj.nome||entry.obj.tipo,
+       pb:"piso",alvo:"chão",ponto:[entry.obj.x,ground,entry.obj.z]});
+   }
+   // Cadeira carregada × outro manequim.
+   for(const other of ctx.outros)for(const c of manifoldObject(other.body,entry.parts,opts))
+     out.push({...c,tipo:"carregado-manequim",a:it.id,b:other.it.id,
+       idA:"carregado:"+entry.obj.id+":"+c.idB,idB:"manequim:"+other.it.id+":"+c.idA,
+       alvo:other.it.name,pa:entry.obj.nome||entry.obj.tipo,pb:c.pa});
+   // Cadeira carregada × objetos sólidos, com exclusão de acessórios filhos.
+   for(const other of ctx.objetos){
+     if(other.obj.id===entry.obj.id||other.obj.sobre===entry.obj.id||
+        entry.obj.sobre===other.obj.id)continue;
+     for(const c of colisaoEntreObjetos(entry.obj,other.obj,worldGround(),0))
+       out.push({...c,tipo:"carregado-objeto",a:it.id,b:other.obj.id,
+         idA:"carregado:"+entry.obj.id,idB:"objeto:"+other.obj.id,
+         distancia:-c.prof,alvo:other.obj.nome||other.obj.tipo,
+         pa:entry.obj.nome||entry.obj.tipo,pb:other.obj.nome||other.obj.tipo});
+   }
  }
  out.sort((a,b)=>a.distancia-b.distancia);
  return out.slice(0,max);
