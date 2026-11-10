@@ -4,9 +4,11 @@
 import {clamp,smooth,gauss,sectionV4,normalizedHeight,yAt} from "./anatomy.js";
 import {facialReliefV4} from "./facial-relief.js";
 import {compileMicroAtlasV3} from "../head-v3/microfields.js";
+import {earPointV41,buildEarV41,earCurvesV41,earMetricsV41} from "./ear-anatomy.js";
 import {anatomicalCurvesV3 as inheritedCurves,landmarksV3 as inheritedLandmarks} from "../head-v3/landmarks.js";
 export {sectionV4,normalizedHeight,yAt,V4_SECTION_KNOTS} from "./anatomy.js";
 export {facialReliefV4} from "./facial-relief.js";
+export {earCurvesV41,earMetricsV41} from "./ear-anatomy.js";
 const TAU=2*Math.PI;
 export const headV4Enabled=p=>p?.headModel==="v4_anatomical";
 export function ringV4(y,p,S){
@@ -27,6 +29,15 @@ export function pointV4(y,theta,p,S,offset=0,atlas=compileMicroAtlasV3(p,S)){
  const rel=facialReliefV4(sin,v,p,S,atlas);
  z+=frontal*rel.front+posterior*rel.back;
  x+=Math.sign(sin)*Math.pow(abs,3)*rel.side;
+ /* V facial geométrico: a cunha começa sob as órbitas; em 3/4 a
+    superfície lateral recua de modo contínuo até as faces do mento.
+    Em perfil/crânio posterior permanece sem essa deformação. */
+ const convergence=clamp(p.v41MandibleConvergence??.85,0,1);
+ const pointed=clamp(p.v41ChinPointedness??.80,0,1);
+ const faceT=smooth((v-.57)/.37)*frontal;
+ const sidePlane=smooth((abs-.18)/.75);
+ z-=.063*convergence*faceT*sidePlane;
+ z+=.022*pointed*smooth((v-.90)/.10)*frontal*(1-sidePlane);
  if(offset){x+=offset*sin;z+=offset*cos;}
  /* A mandíbula desloca-se somente no hemisfério anterior inferior. */
  const opening=clamp(p.jawOpen??0,0,1),lateral=clamp(p.jawSide??0,-1,1);
@@ -51,32 +62,9 @@ export function buildHeadV4(p,S){
  }
  return {V,rows,cols,flip:1,fb:null};
 }
-export function earPointV4(p,S,sign,u,v){
- const size=clamp(p.earSize??1,.75,1.35)*(p.headScale??1);
- const y=S.eyeY-.14+.305*size*v,s=sectionV4(normalizedHeight(y,S),p,S);
- const center=(s.front+s.back)/2,depth=Math.max(.15,(s.front-s.back)/2);
- const z=center+.085+.145*size*u-.036*v;
- const cs=clamp((z-center)/depth,-.94,.94);
- const shell=s.width*Math.sqrt(Math.max(0,1-cs*cs));
- const rad=Math.hypot(u,v);
- const helix=.060*gauss(rad,.89,.13);
- const antiHelix=.027*gauss(rad,.57,.17);
- const concha=.045*gauss(rad,.25,.21);
- const tragus=.026*gauss(u,.55,.19)*gauss(v,-.33,.25);
- const lobe=1-.15*smooth((-.58-v)/.4);
- const x=sign*(shell+.029+.025*(p.earFlare??1)*lobe+
-    size*(helix+antiHelix-concha+tragus));
- return [x,y,z];
-}
-export function buildEarV4(p,S,sign){
- const rows=20,cols=56,V=new Float32Array(rows*cols*3);
- for(let i=0;i<rows;i++)for(let j=0;j<cols;j++){
-  const r=i/(rows-1),a=TAU*j/cols;
-  const pt=earPointV4(p,S,sign,r*Math.cos(a),r*Math.sin(a)),k=3*(i*cols+j);
-  V[k]=pt[0];V[k+1]=pt[1];V[k+2]=pt[2];
- }
- return {V,rows,cols,flip:-sign,fb:[sign,0,0]};
-}
+/* Compatibilidade: o resto do motor continua chamando as assinaturas V4. */
+export const earPointV4=earPointV41;
+export const buildEarV4=buildEarV41;
 const path=(name,pts)=>({kind:name,pts});
 const line=(count,fn)=>Array.from({length:count+1},(_,i)=>fn(i/count));
 export function anatomicalCurvesV4(p,S){
@@ -120,6 +108,18 @@ export function anatomicalCurvesV4(p,S){
   const u=(t-.5)*.53,v=.89+.006*Math.cos(2*Math.PI*t);
   return pt(v,u);
  })));
+ /* Faixas do V inferior em ambas as faces: traçadas sobre a V4.1,
+    sem desenhar um triângulo 2D à frente do modelo. */
+ for(const sign of [-1,1]){
+  result.push(path("facial-v-plane",line(44,t=>{
+   const v=.604+.370*t,th=sign*(1.08-.91*smooth(t));
+   return pointV4(yAt(v,S),th,p,S,.012,atlas);
+  })));
+  result.push(path("chin-wedge",line(27,t=>{
+   const v=.92+.062*t,th=sign*(.43-.34*t);
+   return pointV4(yAt(v,S),th,p,S,.013,atlas);
+  })));
+ }
  result.push(path("chin-facet",line(30,t=>{
   const u=(t-.5)*.66,v=.942+.015*smooth(Math.abs(u)/.33);
   return pt(v,u);
