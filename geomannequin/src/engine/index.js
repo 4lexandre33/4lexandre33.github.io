@@ -50,3 +50,6 @@ iniciarZbuffer();
 iniciarCampos();
 iniciarSombra();
 iniciarContornos();
+
+export * from "./rigid-transform.js";
+export * from "./grip-sites.js";
