@@ -2,6 +2,10 @@
    (automática, afastar, girar, ajustar a pose ou permitir o contato), para cada colisão ou para todas */
 import { $ } from "../scene/ambiente.js";
 import { SCN, setActive } from "../scene/modelo.js";
+import {CONTATO_V2,setContatoV2,consultarContatosV2} from "../scene/contato-v2.js";
+import {beginGrip,releaseGrip} from "../scene/preensao-v2.js";
+import {atualizarApoios} from "../scene/modelo.js";
+import {restGround} from "../engine/index.js";
 import { COL, resolverObjetos, resolverObjeto, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
 import { render } from "./palco.js";
 import { refreshScene } from "./painel-cena.js";
@@ -58,6 +62,31 @@ function atualizarColisoes(lista) {
 export function iniciarColisoes() {
   const el = $("colLista"); if (!el) return;
   $("colModo").value = COL.modo; $("colPref").value = COL.preferir;
+  const v2=$("colV2"),status=$("colV2Status");
+  if(v2){v2.checked=CONTATO_V2.enabled;v2.addEventListener("change",()=>{
+    setContatoV2({enabled:v2.checked});status.textContent=v2.checked?
+      "Geometria de contato V2 ativa: bloqueio 3D detalhado ao arrastar.":"Motor detalhado desativado.";render();
+  })}
+  $("colV2Segurar")?.addEventListener("click",()=>{
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel),it=SCN.list[SCN.active];
+    if(!obj){status.textContent="Selecione um objeto no painel de cena antes de segurar.";return}
+    try{atualizarApoios();const lado=$("colV2Mao").value==="esquerda"?1:-1;
+      const r=beginGrip(it,obj,lado,restGround(SCN.list[0].params));
+      const nc=r.dedos?.filter(d=>d.contato).length??0;
+      status.textContent="Vínculo cinemático: "+r.objeto+" na mão "+r.mao+". Dedos em contato: "+nc+"/5"+(nc===0?" (preensão apenas posicionada, sem contato digital).":".");refreshScene();render();
+    }catch(e){status.textContent=e.message}
+  });
+  $("colV2Soltar")?.addEventListener("click",()=>{
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    if(!obj||!releaseGrip(obj)){status.textContent="Selecione um objeto que esteja segurado.";return}
+    atualizarApoios();status.textContent="Objeto solto no chão (sem simulação de queda).";refreshScene();render();
+  });
+  $("colV2Consultar")?.addEventListener("click",()=>{
+    try{const hits=consultarContatosV2({max:60}),fatal=hits.filter(c=>c.prof>CONTATO_V2.tol);
+      status.textContent=hits.length?`${hits.length} contato(s) em 3D; ${fatal.length} acima da tolerância. Mais profundo: ${hits[0].pa} × ${hits[0].pb} (${(hits[0].prof*11.4).toFixed(1)} cm em proxy).`:
+      "Sem interpenetração detectada nos colisores 3D nesta cena.";
+    }catch(e){status.textContent="Falha na inspeção: "+e.message}
+  });
   $("colModo").addEventListener("change", () => { setModoColisao($("colModo").value); assinatura = ""; msg(""); render(); });
   $("colPref").addEventListener("change", () => setPreferir($("colPref").value));
   $("colComp").checked = !!COL.composicao;
@@ -78,6 +107,6 @@ export function iniciarColisoes() {
   });
   $("colTodas").addEventListener("click", () => { try { depois(resolverTodas($("colPref").value)); } catch (err) { msg(err.message, true); } });
   $("colDesfazer").addEventListener("click", () => { if (desfazerColisao()) depois(["Correção desfeita."]); $("colDesfazer").disabled = true; });
-  if (typeof window !== "undefined") window.addEventListener("gm:desenhou", () => { $("colModo").value = COL.modo; $("colPref").value = COL.preferir; $("colComp").checked = !!COL.composicao; atualizarColisoes(); });
+  if (typeof window !== "undefined") window.addEventListener("gm:desenhou", () => { $("colModo").value = COL.modo; $("colPref").value = COL.preferir; $("colComp").checked = !!COL.composicao; if($("colV2"))$("colV2").checked=CONTATO_V2.enabled; atualizarColisoes(); });
 }
 export { atualizarColisoes };

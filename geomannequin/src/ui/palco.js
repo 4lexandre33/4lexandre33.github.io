@@ -11,6 +11,7 @@ import { styleName } from "../scene/paletas.js";
 import { CX, CY, H, W, comporCamadas, effScale, f1, guardarCamada, prepararCamadas, renderGrupoLocal, renderScene } from "../engine/index.js";
 import { paraleloAtivo, pedirCamada } from "./trabalhadores.js";
 import { COL, colisoesDaCena, composicaoDaCena } from "../scene/colisoes.js";
+import {CONTATO_V2,context as contextoV2,contacts as contatosV2} from "../scene/contato-v2.js";
 import { telaDoMundo } from "../engine/index.js";
 
 /* grade da tela */
@@ -76,14 +77,25 @@ function draw(){
 }
 /* colisões: círculo nos pontos onde um manequim entra no outro (só na tela; não sai na exportação) */
 function marcasColisao(lst){
-  if(COL.modo==="desligado"||SCN.list.filter(it=>!it.oculto).length+SCN.objetos.length<2){COL.ultima=[];return ""}
-  const cs=colisoesDaCena(),cp=COL.composicao?composicaoDaCena():(COL.ultimaComp=[]);if(!cs.length&&!cp.length)return "";
+  if(COL.modo==="desligado"||(SCN.list.filter(it=>!it.oculto).length+SCN.objetos.length<2&&!CONTATO_V2.enabled)){COL.ultima=[];return ""}
+  const cs=colisoesDaCena(),cp=COL.composicao?composicaoDaCena():(COL.ultimaComp=[]);
+  let fine=[];
+  if(CONTATO_V2.enabled){try{
+    // Só o ativo para manter o custo proporcional ao movimento, não N² malhas.
+    const it=SCN.list[SCN.active];
+    if(it&&!it.oculto)fine=contatosV2(it,it.params,contextoV2(it),{max:20}).filter(c=>c.prof>CONTATO_V2.tol).slice(0,8);
+  }catch(e){fine=[]}}
+  if(!cs.length&&!cp.length&&!fine.length)return "";
   const p0=lst[0].p;let g='<g id="gm-colisoes" pointer-events="none">';
   /* composição: círculo tracejado (não é erro, é aviso de desenho) */
   cp.forEach(c=>{if(c.pt&&isFinite(c.pt[0]))g+='<circle cx="'+f1(c.pt[0])+'" cy="'+f1(c.pt[1])+'" r="11" style="fill:none;stroke:var(--cobalt);stroke-width:1.6;stroke-dasharray:4 3"/>'});
   cs.forEach(c=>c.contatos.slice(0,3).forEach((k,i)=>{const q=telaDoMundo(p0,k.ponto);if(!isFinite(q[0])||!isFinite(q[1]))return;
     const r=i?6:9;g+='<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="'+r+'" style="fill:var(--coral);fill-opacity:.18;stroke:var(--coral);stroke-width:1.8"/>';
     if(!i)g+='<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="2" style="fill:var(--coral)"/>'}));
+  fine.forEach(c=>{const q=telaDoMundo(p0,c.ponto);if(!isFinite(q[0])||!isFinite(q[1]))return;
+    const color=c.tipo==="auto"?"var(--cobalt)":"var(--coral)";
+    g+='<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="5" style="fill:none;stroke:'+color+';stroke-width:1.5;stroke-dasharray:2 2"/>';
+  });
   return g+"</g>";
 }
 /* prévia instantânea para arrastar a tela e dar zoom: só transforma o desenho que já está na tela (não redesenha);

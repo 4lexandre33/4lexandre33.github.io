@@ -13,10 +13,16 @@ import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
+import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
+import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
+import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
+function guardarContatoV2(it,antes){
+  if(CONTATO_V2.enabled&&(COL.modo==="bloquear"||COL.modo==="corrigir"))limitarPropostaV2(it,antes);
+}
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
 const LOG=[];
 function apiFor(it){
@@ -25,12 +31,12 @@ function apiFor(it){
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
-    posicao(x,z){chk();it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);return m},
+    posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
-    girar(g){chk();let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;return m},
-    pose(o,opts){chk();if(typeof o==="string")return m.poseRapida(o,opts);applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);return m},
-    poseRapida(nome,opts){chk();const k=nomePose(nome);const ok=todasPoses();
-      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));return m},
+    girar(g){chk();const antes={...it.params};let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;guardarContatoV2(it,antes);return m},
+    pose(o,opts){chk();if(typeof o==="string")return m.poseRapida(o,opts);const antes={...it.params};applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);guardarContatoV2(it,antes);return m},
+    poseRapida(nome,opts){chk();const antes={...it.params},k=nomePose(nome);const ok=todasPoses();
+      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
         const k=o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
         const part=k.match(/^(masculino|feminino)[\s_-]+(magro|medio|atletico|musculoso|cheio)$/);
@@ -77,21 +83,30 @@ function apiFor(it){
     encostar(obj){chk();encostarEm(it,obj);return m},
     olhar(alvo){chk();olharPara(it,alvo);return m},
     olharPara(alvo){chk();olharPara(it,alvo);return m},
-    maoEm(lado,ponto){chk();const e=maoEm(it,ladoNum(lado),pontoMundo(ponto));if(e>0.4)LOG.push(["aviso","a mão não alcança o ponto (faltam "+Math.round(e*11.4)+" cm)"]);return m},
+    maoEm(lado,ponto){chk();const antes={...it.params};const e=maoEm(it,ladoNum(lado),pontoMundo(ponto));if(e>0.4)LOG.push(["aviso","a mão não alcança o ponto (faltam "+Math.round(e*11.4)+" cm)"]);guardarContatoV2(it,antes);return m},
     peEm(lado,ponto){chk();peEm(it,ladoNum(lado),pontoMundo(ponto));return m},
     apontar(alvo,lado){chk();apontarPara(it,alvo,lado===undefined?-1:ladoNum(lado));return m},
     /* ===== mãos ===== */
-    gesto(lado,nome){chk();if(nome===undefined){nome=lado;lado="ambas"}ladosDe(lado).forEach(t=>aplicarGesto(it.params,t,String(nome).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")));return m},
-    dedos(lado,o){chk();const D_={polegar:"Th",indicador:"In",medio:"Me","médio":"Me",anelar:"An",minimo:"Mi","mínimo":"Mi"};
+    gesto(lado,nome){chk();const antes={...it.params};if(nome===undefined){nome=lado;lado="ambas"}ladosDe(lado).forEach(t=>aplicarGesto(it.params,t,String(nome).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")));guardarContatoV2(it,antes);return m},
+    dedos(lado,o){chk();const antes={...it.params};const D_={polegar:"Th",indicador:"In",medio:"Me","médio":"Me",anelar:"An",minimo:"Mi","mínimo":"Mi"};
       ladosDe(lado).forEach(t=>{const L_=t>0?"L":"R";for(const [k,v] of Object.entries(o||{})){const kk=k.toLowerCase();
         if(D_[kk])it.params["f"+D_[kk]+L_]=clamp(num(v,k),-1,1);else if(kk==="mao"||kk==="mão"||kk==="fechar")it.params["handCurl"+L_]=clamp(num(v,k),0,1);
         else if(kk==="afastar"||kk==="abrir")it.params["fSpread"+L_]=clamp(num(v,k),0,1);else if(kk==="opor"||kk==="oposicao"||kk==="oposição")it.params["thumbOpp"+L_]=clamp(num(v,k),0,1);
-        else throw new Error("Dedo desconhecido: “"+k+"”. Use polegar, indicador, medio, anelar, minimo, mao, afastar, opor.")}});return m},
+        else throw new Error("Dedo desconhecido: “"+k+"”. Use polegar, indicador, medio, anelar, minimo, mao, afastar, opor.")}});guardarContatoV2(it,antes);return m},
+    /* ===== Contato anatômico V2 ===== */
+    contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
+    tocar(alvo,opts={}){chk();const r=tocarV2(it,alvo,opts);if(r.distanciaResidual>.3)LOG.push(["aviso","A mão não alcança precisamente o alvo."]);return r},
+    segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
+      atualizarApoios();beginGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),opts);return m},
+    soltar(ref){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id):[acharObjeto(ref)];
+      let ok=false;for(const o of targets){if(o&&o.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
+      if(!ok)throw Error("Nenhum objeto encontrado segurado por este manequim.");
+      atualizarApoios();return m},
     /* ===== articulações pelo nome: m.articulacao("cotovelo esquerdo", {dobrar: 90}) ===== */
     /* confere a pose: partes do corpo atravessando umas às outras (não vizinhas, mais de 0,5 R) e limites acoplados que corrigiriam algo */
     validarPose(opts){chk();const tol=opts&&opts.tolerancia!==undefined?num(opts.tolerancia,"tolerância"):0.5,a=autoColisoes(pMundo(it),tol),l=limitesAcoplados(Object.assign({},it.params));
       return {ok:!a.length&&!l.length,atravessa:a.map(x=>({partes:[x.a,x.b],profundidade:x.prof})),limites:l}},
-    articulacao(nome,valores){chk();const r=articParams(nome,valores);applyParams(it,r,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);return m},
+    articulacao(nome,valores){chk();const antes={...it.params},r=articParams(nome,valores);applyParams(it,r,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);guardarContatoV2(it,antes);return m},
     espelhar(){chk();espelharPose(it.params);return m},
     /* rosto: m.expressao("alegria" | "surpresa" | "raiva" | "tristeza" | "medo" | "grito" | "sono" | "desconfianca" | "piscando" | "neutra") */
     expressao(nome){chk();const k=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const e=EXPRESSOES[k];if(!e)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+".");Object.assign(it.params,e);if(k==="piscando")it.params.eyeLid=0;return m},
@@ -216,6 +231,13 @@ const cena={
   exportarCamadas(opts){return cenaCamadasSvg(opts)},
   /* colisões entre manequins */
   colisoes(){return listaColisoes()},
+  contatoV2(opts){return setContatoV2(opts)},
+  contatosFisicos(opts){return consultarContatosV2(opts)},
+  segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
+    const it=manequim===undefined?SCN.list[SCN.active]:typeof manequim==="number"?SCN.list[manequim]:SCN.list.find(q=>q.name===manequim);
+    const o=acharObjeto(objeto);if(!it||!o)throw Error("Manequim/objeto não encontrado.");
+    atualizarApoios();return beginGrip(it,o,ladoNum(mao),restGround(SCN.list[0].params),opts)},
+  soltarObjeto(objeto){const o=acharObjeto(objeto);if(!o||!releaseGrip(o))throw Error("O objeto não está segurado.");atualizarApoios();return true},
   colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
   resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
   desfazerColisao(){return desfazerColisao()},
