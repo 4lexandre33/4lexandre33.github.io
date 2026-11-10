@@ -45,6 +45,14 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
    objPose={M:old.M,T:old.T.map((v,i)=>v+offset[i])};
  }
  const rel=rigidCompose(rigidInverse(H),objPose);
+ // Captura os objetos apoiados ANTES de movimentar o pai no mundo.
+ // Cada filho guarda uma pose relativa à cadeira (sem depender do chão).
+ if(Array.isArray(arguments[4]?.objetos)){
+   const all=arguments[4].objetos;
+   for(const child of all){
+     if(child.sobre===o.id)child.sobreRel=rigidCompose(rigidInverse(old),objectRigidPose(child,ground));
+   }
+ }
  // Só depois de validar e calcular o vínculo, alterar o objeto.
  if(o.sobre)delete o.sobre;
  o.gripV3={version:3,mannequinId:it.id,side,siteId:selected.id,relative:rel};
