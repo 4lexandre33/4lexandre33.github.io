@@ -161,6 +161,13 @@ z = (F+B)/2 + (F-B)/2 * sign(cos θ) * |cos θ|^0.77
 - **Relação transversal:** `neckHalf < 0.90*jawHalf` na seção mandibular de referência.
 - **Linha Asaro:** cada amostra é `pointV3(yAt(v), θ, p, S)`, com transformações do rig da cabeça. É linha construtiva, não borda de uma peça independente.
 
+## Invariante de cache da malha cervical
+
+`src/engine/montagem.js` deve incluir `p.headModel` e `p.jaw` em `bustKey`.
+Se o usuário trocar de V1/V2 para V3 sem essa invalidação, o algoritmo calculará a largura nova, mas o renderizador reutilizará o pescoço largo anterior. O teste `cabeca-v3-correcao-anatomica.mjs` compara a identidade e geometria das duas malhas antes/depois da troca.
+
+**Status do CI no PR:** a execução `GeoMannequin - V3 cranioface e nuca` retornou `failure`, mas o serviço não expôs etapas nem logs. Consequentemente, R09 e I02–I05 continuam pendentes, ainda que a avaliação matemática local dos 10 biotipos/30 malhas tenha passado.
+
 ## Dependências principais
 
 ```text
