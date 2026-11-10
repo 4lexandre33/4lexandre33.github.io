@@ -1,5 +1,6 @@
 /* GeoMannequin — músculos do tronco como formas na pele (peitoral, abdômen, oblíquos, serrátil) */
 import { clamp, gauss, sstep } from "./matematica.js";
+import { torsoProfile } from "./corpo.js";
 
 /* ===== Músculos do tronco como formas na pele: cada forma gera o relevo e as linhas de borda ===== */
 /* polígonos em (|x|, y - yJ) do lado da frente (f) ou de trás (b) */
@@ -17,7 +18,8 @@ function sdPoly(px,py,P){
 function plate(d,e){return d<=0?0:sstep(d/e)*(0.72+0.28*sstep(d/(3.2*e)))}
 function muscleDefs(F){
   if(F._mus)return F._mus;
-  const B=F.B,c=F.chestW,w=B.waist,yN=F.yNav-F.yJ;
+  /* Os oblíquos acompanham o novo perfil lateral da cintura. */
+  const B=F.B,c=F.chestW,w=torsoProfile(F)[5][1],yN=F.yNav-F.yJ;
   /* peitoral: da clavícula e esterno até a axila, borda de baixo em curva */
   const pec=[[0.06,-0.18],[0.3,-0.12],[0.62,-0.13],[0.88*c,-0.3],[0.98*c,-0.62],[0.92*c,-0.92],[0.72*c,-1.18],[0.45,-1.33],[0.2,-1.36],[0.06,-1.3]];
   /* gomos do abdômen: 3 pares acima do umbigo e a parte baixa */
@@ -25,7 +27,7 @@ function muscleDefs(F){
   const rows=[[r0,r0-0.5],[r0-0.55,r0-1.02],[r0-1.07,yN-0.02],[yN-0.08,F.yCr-F.yJ+0.55]];
   rows.forEach(([a,b],i)=>{const x1=aw*(1-0.08*i)+(i===3?-0.04:0);abs.push([[0.035,a],[x1,a-0.02],[x1+0.02,(a+b)/2],[x1-(i===3?0.08:0),b],[0.035,b+0.03]])});
   /* oblíquo externo: do arco das costelas até a crista ilíaca e a virilha */
-  const obl=[[aw+0.06,-1.95],[0.86*c,-1.7],[0.97*w+0.05,yN],[0.93*B.hip,F.yHip-F.yJ+0.55],[0.62,F.yHip-F.yJ+0.12],[aw+0.02,yN-0.6]];
+  const obl=[[aw+0.06,-1.95],[0.86*c,-1.7],[0.93*w+0.04,yN],[0.93*B.hip,F.yHip-F.yJ+0.55],[0.62,F.yHip-F.yJ+0.12],[aw+0.02,yN-0.6]];
   F._mus={pec,abs,obl,aw};
   return F._mus;
 }
