@@ -446,3 +446,25 @@ npm run construir
 ```
 
 **Nota de honestidade:** a semelhança exata com a imagem aprovada **exige inspeção do SVG real no navegador e comparação visual**. O modo implementa a composição e matemática, mas eventuais diferenças de projeção, sombreamento e microanatomia devem ser corrigidas após os testes de screenshot. A V4.2 ainda é experimental até passar esses critérios.
+
+
+### Motor de contatos anatômicos V2 (experimental, 10/11/2026)
+
+A aplicação agora possui um protótipo de detecção **física 3D local** com autocolisão, **30 colisores de falanges** e aproximação geométrica para caixa/cilindro, além do motor antigo de cápsulas. Há um solucionador inicial que limita o movimento candidato antes de criar nova interpenetração e um vínculo **cinemático** de objeto à palma. O sistema V2 é **opt-in e fica desligado por padrão**, preservando o comportamento das versões anteriores.
+
+Na seção **Colisões**, marque **Colisão anatômica detalhada V2**, selecione **Bloquear ao arrastar** e verifique pontos de contato no palco ou pelo botão **Inspecionar contatos 3D detalhados**. Um objeto selecionado pode ser segurado pela mão direita/esquerda e solto pela interface, desde que esteja próximo. A quantidade de dedos efetivamente tocando o objeto é reportada.
+
+No editor de comandos:
+
+```js
+cena.contatoV2({enabled:true,level:"fine",tol:.07});
+cena.colisao("bloquear");
+const contatos=cena.contatosFisicos({auto:true,max:50});
+const toque=cena.ativo.tocar("Manequim 2",{mao:"direita",parte:"torax"});
+const grip=cena.segurarObjeto("Copo 1",{mao:"direita"});
+cena.soltarObjeto("Copo 1");
+```
+
+A situação real **não equivale** à conclusão do sistema de física sofisticada: ainda faltam solver multiconstraint global (abraço), dinâmica de forças, CCD analítica plena, correspondência exata proxy-malha e validação visual/CI verde. Leia [o detalhamento de implementação e suas limitações](docs/contato-v2-implementacao.md) e [o task graph integral de 177 tarefas](docs/task-graph-colisoes-interacoes-v2.md).
+
+Para os testes: `npm run testar:contato-v2`; para build: `npm run construir`.
