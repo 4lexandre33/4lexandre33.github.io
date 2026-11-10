@@ -1,43 +1,113 @@
-/* GeoMannequin — painel de órbita: escolher o pivô (cena, manequim, objeto), as 8 vistas e girar em passos */
+/* GeoMannequin — órbita focal: alvo, região, azimute, elevação
+ * e proximidade independentes. Os controles não alteram a pose. */
 import { $ } from "../scene/ambiente.js";
 import { P, SCN } from "../scene/modelo.js";
 import { orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, nomeVista } from "../scene/orbita.js";
+import { regioesDisponiveisOrbita } from "../scene/regioes-orbita.js";
 import { render } from "./palco.js";
 import { syncControls } from "./controles.js";
 
-const escO = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-/* valor do select ↔ pivô: "" = alvo livre, "cena", "m:<nome>", "o:<id>" */
-function pivoDoValor(v) { if (!v) return null; if (v === "cena") return "cena"; if (v.startsWith("m:")) return v.slice(2); if (v.startsWith("o:")) { const o = SCN.objetos.find(x => String(x.id) === v.slice(2)); return o ? (o.nome || { id: o.id }) : null; } return null; }
-function valorDoPivo() { const p = SCN.pivo; if (p === undefined || p === null) return ""; if (p === "cena" || p === "todos") return "cena";
-  if (typeof p === "string") { if (SCN.list.some(x => x.name === p)) return "m:" + p; const o = SCN.objetos.find(x => x.nome === p); return o ? "o:" + o.id : ""; }
-  if (typeof p === "object" && p && p.id !== undefined) return "o:" + p.id; return ""; }
-function encherPivos() {
-  const sel = $("orbPivo"); if (!sel) return; const v = valorDoPivo();
-  sel.innerHTML = '<option value="">alvo livre da câmera</option><option value="cena">a cena inteira</option>' +
-    (SCN.list.length ? '<optgroup label="Manequins">' + SCN.list.map(it => '<option value="m:' + escO(it.name) + '">' + escO(it.name) + "</option>").join("") + "</optgroup>" : "") +
-    (SCN.objetos.length ? '<optgroup label="Objetos">' + SCN.objetos.map(o => '<option value="o:' + o.id + '">' + escO(o.nome || o.tipo) + "</option>").join("") + "</optgroup>" : "");
-  sel.value = v;
+const escO=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* seleção por ID estável para objetos; manequins mantêm nomes da API. */
+function pivoDoValor(v){
+ if(!v)return null;
+ if(v==="cena")return "cena";
+ if(v.startsWith("m:"))return v.slice(2);
+ if(v.startsWith("o:")){
+  const o=SCN.objetos.find(x=>String(x.id)===v.slice(2));
+  return o?{id:o.id}:null;
+ }
+ return null;
 }
-function info() {
-  const out = $("orbInfo"); if (!out) return; let A = null; try { if (SCN.pivo !== undefined && SCN.pivo !== null) A = resolverAlvo(SCN.pivo); } catch (e) { A = null; }
-  const v = vistaAtual(A); out.textContent = A ? "Pivô: " + A.nome + " · vista " + nomeVista(v.azimute) + " · " + Math.round(v.elevacao) + "° de elevação" : "Sem pivô: a câmera gira em volta do próprio alvo.";
-  document.querySelectorAll("#orbPainel [data-vista]").forEach(b => b.classList.toggle("on", !!A && Math.abs(((+b.dataset.vista - v.azimute + 540) % 360) - 180) < 1));
+function valorDoPivo(){
+ const p=SCN.pivo;if(p===undefined||p===null)return "";
+ if(p==="cena"||p==="todos")return "cena";
+ if(typeof p==="number")return SCN.list[p]?"m:"+SCN.list[p].name:"";
+ if(typeof p==="string"){
+  if(SCN.list.some(x=>x.name===p))return "m:"+p;
+  const o=SCN.objetos.find(x=>x.nome===p||x.tipo===p);
+  return o?"o:"+o.id:"";
+ }
+ if(typeof p==="object"&&p.id!==undefined)return "o:"+p.id;
+ return "";
 }
-function log(t) { const o = $("orbInfo"); if (o) o.textContent = t; }
-function feito() { syncControls(); render(); info(); }
-export function atualizarOrbita() { encherPivos(); info(); }
-export function iniciarOrbita() {
-  const sel = $("orbPivo"); if (!sel) return;
-  encherPivos(); info();
-  /* a lista acompanha a cena (novos manequins e objetos) */
-  sel.addEventListener("pointerdown", encherPivos); sel.addEventListener("focus", encherPivos);
-  sel.addEventListener("change", () => { const p = pivoDoValor(sel.value);
-    try { if (p === null) SCN.pivo = null; else pivoCamera(p, { enquadrar: $("orbEnq").checked }); feito(); } catch (e) { log(e.message, "err"); } });
-  const alvo = () => { const p = pivoDoValor(sel.value); return p === null ? "ativo" : p; };
-  document.querySelectorAll("#orbPainel [data-vista]").forEach(b => b.addEventListener("click", () => {
-    try { if (!sel.value) { sel.value = "m:" + SCN.list[SCN.active].name; }
-      orbitarCamera(alvo(), { azimute: +b.dataset.vista, enquadrar: $("orbEnq").checked }); feito(); } catch (e) { log(e.message, "err"); } }));
-  document.querySelectorAll("#orbPainel [data-orb]").forEach(b => b.addEventListener("click", () => { const [a, e] = b.dataset.orb.split(",").map(Number); passoOrbita(a, e); feito(); }));
-  /* depois de arrastar no palco, a vista mostrada muda */
-  document.addEventListener("pointerup", () => setTimeout(info, 0));
+function encherPivos(){
+ const sel=$("orbPivo");if(!sel)return;
+ const v=valorDoPivo();
+ sel.innerHTML='<option value="">alvo livre da câmera</option><option value="cena">a cena inteira</option>'+
+   (SCN.list.length?'<optgroup label="Manequins">'+SCN.list.map(it=>'<option value="m:'+escO(it.name)+'">'+escO(it.name)+'</option>').join("")+'</optgroup>':"")+
+   (SCN.objetos.length?'<optgroup label="Objetos">'+SCN.objetos.map(o=>'<option value="o:'+o.id+'">'+escO(o.nome||o.tipo)+'</option>').join("")+'</optgroup>':"");
+ sel.value=v;
+}
+function encherAreas(){
+ const target=$("orbPivo"),areas=$("orbArea");if(!target||!areas)return;
+ const tipo=target.value.startsWith("o:")?"objeto":target.value==="cena"?"cena":"manequim";
+ const lista=tipo==="cena"?[["","Cena inteira"]]:regioesDisponiveisOrbita(tipo);
+ const atual=SCN.orbitaArea||"";
+ areas.innerHTML="";
+ for(const [value,label]of lista){const opt=document.createElement("option");opt.value=value;opt.textContent=label;areas.add(opt);}
+ areas.value=lista.some(([v])=>v===atual)?atual:"";
+ areas.disabled=tipo==="cena";
+}
+function informacaoOrbita(){
+ const out=$("orbInfo");if(!out)return;
+ let A=null;try{if(SCN.pivo!==undefined&&SCN.pivo!==null)A=resolverAlvo(SCN.pivo,{area:SCN.orbitaArea});}catch(e){A=null;}
+ const v=vistaAtual(A),area=A&&A.area?(" · região "+A.area.replace(/_/g," ")):"";
+ out.textContent=A?"Pivô: "+A.nome+area+" · vista "+nomeVista(v.azimute)+" · "+Math.round(v.elevacao)+"° de elevação":
+  "Sem pivô: a câmera gira em volta do próprio alvo.";
+ const campo=$("orbElev");if(campo&&document.activeElement!==campo)campo.value=Math.round(v.elevacao);
+ document.querySelectorAll("#orbPainel [data-vista]").forEach(b=>b.classList.toggle("on",!!A&&Math.abs(((+b.dataset.vista-v.azimute+540)%360)-180)<1));
+}
+function logOrbita(t){const out=$("orbInfo");if(out)out.textContent=t;}
+function feitoOrbita(){syncControls();render();informacaoOrbita();}
+function folgaOrbita(){const f=Number($("orbFolga")?.value);return Number.isFinite(f)&&f>0?f:1.08;}
+function elevOrbita(){const v=Number($("orbElev")?.value);if(!Number.isFinite(v)||v< -70||v>70)throw Error("Elevação: valor entre -70° e 70°.");return v;}
+function alvoOrbita(){return pivoDoValor($("orbPivo")?.value)||"ativo";}
+function aplicarAreaOrbita(){
+ const sel=$("orbPivo");if(!sel.value)sel.value="m:"+SCN.list[SCN.active].name;
+ const t=alvoOrbita(),area=$("orbArea").value||null,A=resolverAlvo(t),
+   az=vistaAtual(A).azimute;
+ orbitarCamera(t,{area,azimute:az,elevacao:elevOrbita(),folga:folgaOrbita(),enquadrar:$("orbEnq").checked});
+ feitoOrbita();
+}
+export function atualizarOrbita(){encherPivos();encherAreas();informacaoOrbita();}
+export function iniciarOrbita(){
+ const sel=$("orbPivo");if(!sel)return;
+ encherPivos();encherAreas();informacaoOrbita();
+ sel.addEventListener("pointerdown",()=>{encherPivos();encherAreas();});
+ sel.addEventListener("focus",()=>{encherPivos();encherAreas();});
+ sel.addEventListener("change",()=>{
+  const alvo=pivoDoValor(sel.value);
+  try{
+    if(alvo===null){SCN.pivo=null;SCN.orbitaArea=null;}
+    else pivoCamera(alvo,{area:null,enquadrar:$("orbEnq").checked,folga:folgaOrbita()});
+    encherAreas();feitoOrbita();
+  }catch(e){logOrbita(e.message);}
+ });
+ $("orbArea").addEventListener("change",()=>{
+  try{aplicarAreaOrbita();}catch(e){logOrbita(e.message);}
+ });
+ $("orbElev").addEventListener("change",()=>{
+  try{aplicarAreaOrbita();}catch(e){logOrbita(e.message);}
+ });
+ $("orbFolga").addEventListener("change",()=>{
+  try{aplicarAreaOrbita();}catch(e){logOrbita(e.message);}
+ });
+ $("orbEnq").addEventListener("change",()=>{
+  if(SCN.pivo!==null&&SCN.pivo!==undefined)
+   try{aplicarAreaOrbita();}catch(e){logOrbita(e.message);}
+ });
+ document.querySelectorAll("#orbPainel [data-vista]").forEach(b=>b.addEventListener("click",()=>{
+  try{
+   if(!sel.value)sel.value="m:"+SCN.list[SCN.active].name;
+   const area=$("orbArea").value||null;
+   orbitarCamera(alvoOrbita(),{area,azimute:+b.dataset.vista,elevacao:elevOrbita(),enquadrar:$("orbEnq").checked,folga:folgaOrbita()});
+   feitoOrbita();
+  }catch(e){logOrbita(e.message);}
+ }));
+ document.querySelectorAll("#orbPainel [data-orb]").forEach(b=>b.addEventListener("click",()=>{
+  const [a,e]=b.dataset.orb.split(",").map(Number);
+  passoOrbita(a,e);feitoOrbita();
+ }));
+ document.addEventListener("pointerup",()=>setTimeout(informacaoOrbita,0));
 }

@@ -1,0 +1,49 @@
+name: GeoMannequin - camera orbital por regiao
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/scene/orbita.js'
+      - 'geomannequin/src/scene/regioes-orbita.js'
+      - 'geomannequin/src/scene/modelo.js'
+      - 'geomannequin/src/scene/estado.js'
+      - 'geomannequin/src/scene/comandos.js'
+      - 'geomannequin/src/scene/quadros.js'
+      - 'geomannequin/src/scene/ajuda.js'
+      - 'geomannequin/src/ui/orbita.js'
+      - 'geomannequin/index.html'
+      - 'geomannequin/testes/camera-foco-regional.mjs'
+      - 'geomannequin/testes/atlas-camera-foco-regional.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+jobs:
+  foco:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependências
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Validar foco regional
+        run: npm run testar:camera-foco
+      - name: Preservar câmeras e objetos existentes
+        run: node testes/camera-objetos.mjs
+      - name: Compilar aplicação
+        run: npm run construir
+      - name: Gerar nove enquadramentos
+        run: node testes/atlas-camera-foco-regional.mjs
+      - name: Publicar SVGs de revisão
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: foco-regional-3x3
+          path: geomannequin/testes/saida/camera-foco-regional/
+          retention-days: 14
+          if-no-files-found: warn

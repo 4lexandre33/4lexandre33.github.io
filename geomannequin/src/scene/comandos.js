@@ -24,7 +24,7 @@ function apiFor(it){
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
-    cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(v!=="v1"&&v!=="v2")throw new Error("Modelo da cabeça: use v1 ou v2.");it.params.headModel=v;return m},
+    cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry"].includes(v))throw new Error("Modelo da cabeça: use v1, v2 ou v3.");it.params.headModel=v==="v3"?"v3_microgeometry":v;return m},
     posicao(x,z){chk();it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
     girar(g){chk();let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;return m},
@@ -324,14 +324,32 @@ const camera={
   /* órbita: a câmera gira em volta de um pivô — manequim ("Ana", índice, "ativo"), grupo (["Ana","Leo"]), objeto ("mesa"),
      ponto [x, y, z] ou "cena". azimute a partir da FRENTE do pivô: "frente", "3/4 esquerda", "esquerda", "costas", "3/4 direita"… ou graus
      (positivo = para o lado esquerdo dele); elevacao em graus acima do horizonte ou "olhos", "alta", "baixa"; distancia em R (sem ela, enquadra o pivô).
-     Ex.: camera.orbitar("Ana", {azimute: "3/4 esquerda", elevacao: 15}) */
+     Ex.: camera.orbitar("Ana", {area: "cabeca", azimute: "3/4 esquerda", elevacao: 15}) */
   orbitar(alvo,opts){if(typeof opts==="string"||typeof opts==="number")opts={azimute:opts};orbitarCamera(alvo,opts||{});return camera},
   /* pivô da órbita (o alvo da câmera vai para o centro dele; a câmera mantém direção e distância). A arrastada na tela gira em volta dele. */
   pivo(alvo,opts){pivoCamera(alvo,opts);return camera},
+  /* Define uma região do pivô ATUAL sem mudar azimute/elevacao:
+     camera.area("cabeca"), camera.area("mao esquerda"), camera.area("superior"). */
+  area(regiao,opts){
+    opts=opts||{};const alvo=SCN.pivo===undefined||SCN.pivo===null?"ativo":SCN.pivo,
+      A=resolverAlvo(alvo),az=vistaAtual(A).azimute;
+    orbitarCamera(alvo,Object.assign({azimute:az,elevacao:-(P.pitch||0),enquadrar:true},opts,{area:regiao}));
+    return camera;
+  },
+  /* Comando direto para plano próximo de qualquer alvo/região.
+     camera.focar("Ana","cabeca",{azimute:45,elevacao:25});
+     camera.focar("Mesa","superior",{azimute:-30,elevacao:60}); */
+  focar(alvo,area,opts){
+    if(area&&typeof area==="object"){opts=area;area=opts.area??opts.regiao;}
+    opts=opts||{};const A=resolverAlvo(alvo),az=vistaAtual(A).azimute;
+    const arg=Object.assign({azimute:az,elevacao:-(P.pitch||0),enquadrar:true},opts);
+    arg.area=area===undefined?arg.area:area;
+    orbitarCamera(alvo,arg);return camera;
+  },
   /* gira em volta do pivô atual: graus no chão (positivo = para a esquerda do pivô) e na elevação */
   girarEmVolta(graus,elev){passoOrbita(num(graus,"graus"),elev===undefined?0:num(elev,"elevação"));return camera},
   /* vista atual em relação ao pivô: {pivo, azimute, elevacao} */
-  vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo)}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera"},vistaAtual(A))},
+  vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo,{area:SCN.orbitaArea})}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera",area:A?A.area:null},vistaAtual(A))},
   /* azimutes de um giro de n vistas (para laços): camera.giro(8) → [0, 45, 90, …] */
   giro(n,opts){return azimutesGiro(n,opts)},
   vistas(){return VISTAS_8.map(v=>v[0])},
