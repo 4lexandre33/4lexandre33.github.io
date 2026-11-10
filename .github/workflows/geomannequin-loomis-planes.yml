@@ -1,0 +1,54 @@
+name: GeoMannequin - validacao geometrica Loomis
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/engine/head/**'
+      - 'geomannequin/src/engine/cabeca.js'
+      - 'geomannequin/src/engine/desenho.js'
+      - 'geomannequin/src/engine/montagem.js'
+      - 'geomannequin/src/engine/padroes.js'
+      - 'geomannequin/src/scene/parametros.js'
+      - 'geomannequin/testes/cabeca-v2-planos.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+    inputs:
+      atlas:
+        description: 'Gerar folhas 3x3 de frente, perfil e tres quartos?'
+        type: boolean
+        required: false
+        default: true
+jobs:
+  geometria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: geomannequin/package-lock.json
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Planaridade, bilateralidade, LODs e 10 biotipos
+        run: npm run testar:planos-loomis
+      - name: Validar geometria preexistente da cabeca
+        run: npm run testar:cranio
+      - name: Gerar referencia masculina e feminina
+        if: ${{ github.event_name == 'pull_request' || inputs.atlas }}
+        run: |
+          npm run atlas:planos-loomis -- masculino medio
+          npm run atlas:planos-loomis -- feminino medio
+      - name: Guardar folhas SVG para avaliacao estetica
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-cranio-loomis
+          path: geomannequin/testes/saida/cabeca-v2-planos
+          if-no-files-found: warn
+          retention-days: 14

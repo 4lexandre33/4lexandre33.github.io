@@ -1,12 +1,22 @@
 import {clamp,gauss,PI2} from "./constants.js";
 import {ringV2} from "./sections.js";
+import {planeAtV2} from "./side-planes.js";
 export function earPointV2(p,S,sign,u,v){
-  const size=p.earSize||1,k=S.scale||1,ey=S.eyeY-.10;
-  const ry=.35*size*k,depth=.15*size*k,y=ey+ry*v;
-  const [w,center]=ringV2(y,p,S);
-  const r=Math.hypot(u,v),lobe=1-.23*clamp((-v-.53)/.47,0,1);
-  const relief=.02+.09*gauss(r,.85,.13)-.042*gauss(r,.25,.24);
-  return [sign*(w+.03+.06*(p.earFlare||1)*lobe+relief),y,center-.07+depth*u-.04*v];
+  /* A orelha nasce sobre a parte anteroinferior do disco Loomis. */
+  const plane=planeAtV2(p,S,sign),scale=S.scale||1,size=p.earSize||1;
+  const ey=S.eyeY-.09,ry=.30*size*scale,rz=.145*size*scale;
+  const y=ey+ry*v,z=plane.center[2]+.105*scale+rz*u-.042*scale*v;
+  const radial=Math.hypot(y-plane.center[1],z-plane.center[2]);
+  const [w,cz,depth]=ringV2(y,p,S);
+  const q=clamp((z-cz)/(depth||1),-.999,.999);
+  const shellX=w*Math.sqrt(Math.max(0,1-q*q));
+  const blend=clamp((radial-plane.radius)/plane.fillet,0,1);
+  const t=blend*blend*(3-2*blend);
+  const base=plane.distance+(shellX-plane.distance)*t;
+  const rho=Math.hypot(u,v),helix=.066*gauss(rho,.82,.15)*size;
+  const concha=-.025*gauss(rho,.23,.20)*size;
+  const lobe=v<-.54?1-.28*clamp((-.54-v)/.46,0,1):1;
+  return [sign*(base+.028*scale+.026*(p.earFlare||1)*lobe+helix+concha),y,z];
 }
 export function buildEarV2(p,S,sign){
   const rows=14,cols=48,V=new Float32Array(rows*cols*3);

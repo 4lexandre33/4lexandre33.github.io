@@ -2,6 +2,7 @@ import {clamp,gauss,PI2,smooth} from "./constants.js";
 import {ringV2} from "./sections.js";
 import {facialRelief} from "./face-fields.js";
 import {jawPoseV2} from "./jaw-rig.js";
+import {flattenCraniumV2} from "./mesh-clipping.js";
 export function pointV2(y,theta,p,S,offset=0){
   const [w,cz,depth]=ringV2(y,p,S),sn=Math.sin(theta),cs=Math.cos(theta);
   const x=w*sn;
@@ -15,7 +16,9 @@ export function pointV2(y,theta,p,S,offset=0){
     const rr=(x/.23)**2+((y-cy)/(.034+.45*gap))**2;
     z-=.095*jo*front*smooth((1-rr)/.42);
   }
-  return jawPoseV2([x+offset*sn,y,z+offset*cs],p,S);
+  /* Um ÚNICO envoltório de cabeça com dois discos geométricos inseridos
+     na carta (y,z). A ATM só deforma região inferior anterior. */
+  return jawPoseV2(flattenCraniumV2([x+offset*sn,y,z+offset*cs],p,S,offset),p,S);
 }
 export function buildHeadV2(p,S,level=0){
   /* LOD estável pela configuração do usuário, não pela câmera:

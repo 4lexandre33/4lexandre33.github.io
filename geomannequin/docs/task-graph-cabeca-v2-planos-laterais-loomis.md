@@ -3,7 +3,7 @@
 **Data da especificação:** 10/11/2026  
 **Projeto:** GeoMannequin — Cabeça V2  
 **Prioridade:** **P0, requisito anatômico/visual obrigatório**  
-**Estado deste documento:** planejamento técnico **criado**; **nenhuma tarefa deste grafo deve ser considerada implementada por esta documentação**.  
+**Estado deste documento:** especificação original com execução parcial em uma branch experimental. Consulte o **[relatório real da implementação](relatorio-execucao-planos-loomis.md)** para estados tarefa a tarefa, testes realizados e bloqueios de aprovação. A documentação, isoladamente, não comprova sucesso.  
 **Referências visuais:** imagens de construção de cabeça estilo Loomis/GeoGebra enviadas na conversa; a imagem anexada não é uma malha 3D mensurável e ainda não está versionada como arquivo independente no repositório.
 
 ## 1. Objetivo visual obrigatório
