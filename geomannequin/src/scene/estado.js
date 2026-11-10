@@ -8,7 +8,7 @@ import { CAMK, MAXM, P, SCN, hex2rgb, newInst, nextHue, novoIdObjeto, setP, atua
 import { DEF, TIPOS_OBJETO, clamp, objetoPadrao, zoomToDist } from "../engine/index.js";
 import { COL, setModoColisao, setPreferir } from "./colisoes.js";
 
-function modeloCabecaEstadoOrb(v){return ["v1","v2","v3_microgeometry"].includes(v)?v:"v1";}
+function modeloCabecaEstadoOrb(v){return ["v1","v2","v3_microgeometry","v4_anatomical"].includes(v)?v:"v1";}
 function salvarPivoOrbita(){
  const p=SCN.pivo;
  if(p===undefined||p===null)return null;
