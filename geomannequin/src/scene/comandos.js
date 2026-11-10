@@ -453,7 +453,7 @@ const camera={
   /* gira em volta do pivô atual: graus no chão (positivo = para a esquerda do pivô) e na elevação */
   girarEmVolta(graus,elev){passoOrbita(num(graus,"graus"),elev===undefined?0:num(elev,"elevação"));return camera},
   /* vista atual em relação ao pivô: {pivo, azimute, elevacao} */
-  vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo,{area:SCN.orbitaArea})}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera",area:A?A.area:null},vistaAtual(A))},
+  vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo,{area:SCN.orbitaArea})}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera",area:A?A.area:null},SCN.ultimaVistaOrientada||vistaAtual(A))},
   /* azimutes de um giro de n vistas (para laços): camera.giro(8) → [0, 45, 90, …] */
   giro(n,opts){return azimutesGiro(n,opts)},
   vistas(){return VISTAS_8.map(v=>v[0])},
