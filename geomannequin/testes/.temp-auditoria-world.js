@@ -34,7 +34,7 @@ return {
   get L(){return L},setPreset:n=>{if(!PRESETS[n])throw new Error("Modo desconhecido");setPreset(n)},
   get mode(){return mode},get style(){return styleName},
   get theme(){return THEMES[themeIdx][0]},
-  autoFit,sceneState,loadScene,applyState,renderScene,sceneList,
+  autoFit,sceneState,loadScene,applyState,renderScene,sceneList,executarRoteiro,lerRoteiro,
   W,H,PRESETS,STYLES,BODIES,BPOSES,POSTURES,FACES,ALIAS,SL,LAY,
   instColors,isDark,DEF,POSEKEYS
 };`;
