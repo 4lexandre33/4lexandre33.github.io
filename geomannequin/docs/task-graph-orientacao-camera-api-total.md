@@ -1,7 +1,7 @@
 # GeoMannequin — Task Graph: orientação da câmera + comando para toda função da aplicação
 
 **Data:** 10/11/2026 · **Escopo:** auditoria estática do repositório e especificação de implementação.  
-**Total:** **196 tarefas detalhadas em 17 frentes**. **Não é implementação**: esta entrega registra o que já existe, o que é parcial e o que precisa de código novo.
+**Total:** **196 tarefas detalhadas em 17 frentes**. **Planejamento inicial com execução incremental em 10/11/2026**: as entregas listadas no anexo de progresso ao final estão implementadas em código. Muitas tarefas permanecem pendentes ou sem validação integral.
 
 ## Resposta resumida da auditoria
 
@@ -556,4 +556,63 @@ O gate de cobertura precisa ser automático: se um botão de UI novo for introdu
 
 Executar **INV → SEM → RIG → CAM → FLW → API → TST** primeiro: isso entrega a função prioritária de enquadrar costas de tronco/cabeça, inclusive em posturas difíceis. Em paralelo realizar **COV → VIS/OUT/PAN → RUN** para completar a cobertura de comandos. Só marcar a entrega 'tudo por código' como concluída depois que o inventário UI↔API estiver 100% mapeado, testado e documentado.
 
-**Este documento é análise e plano de execução. Nenhuma API nova descrita foi implantada por este task graph.**
+**A atualização de 10/11/2026 implementou parte das APIs e o núcleo de câmera 3D.** O restante deste DAG continua como backlog, e a conclusão integral depende dos gates de CI, navegador e paridade.
+
+
+---
+
+## 9. Registro de execução — câmera 3D e comandos (10/11/2026)
+
+**Implementação incremental, não conclusão de todas as 196 tarefas.** Os métodos abaixo já receberam código na branch de implementação; seu nível de validação é especificado separadamente.
+
+| Frente | Estado | Evidência em arquivo | O que foi implementado |
+|---|---|---|---|
+| SEM/RIG | Código implementado; suíte integral pendente | `src/scene/orientacao-frames.js` | Bases locais 3D por tronco, pelve, crânio, olhar, mãos e pés; independentes de olhos visíveis |
+| OBJ | Parcial | `src/scene/orientacao-frames.js`, `src/scene/comandos.js`, `src/scene/estado.js` | Frente explícita para objetos; tipo simétrico sem frente definida exige configuração |
+| CAM | Código implementado; suíte integral pendente | `src/scene/orbita.js`, `src/scene/parametros.js` | `camera.ver/costas/frente/perfilEsquerdo/perfilDireito`, perspectiva por eixos, pitch ±90°, roll anatômico automático |
+| FLW | Parcial | `src/scene/orbita.js`, `src/scene/modelo.js`, `src/scene/estado.js` | `camera.seguir/pararSeguir/seguimento`, atualização no render e remapeamento dos IDs JSON; suavização avançada pendente |
+| API | Código inicial implementado | `src/scene/comandos.js` | Referencial, áreas e alvos; orientação de objeto; comandos encadeáveis |
+| AUI | Código implementado; QA visual pendente | `src/ui/orbita.js`, `index.html` | Seleção de tronco/cabeça/olhar/pelve/mãos/pés, vertical anatômica/mundo, seguir rotação |
+| VIS | Parcial | `src/scene/comandos.js` | `cena.estilo/estilos/estiloAtual`, `camadaVisual/camadasVisuais` |
+| OUT | Parcial | `src/scene/comandos.js`, `src/ui/link.js`, `src/ui/painel-cena.js` | SVG/OBJ/JSON, PNG via Canvas browser, link da cena, download com `await` |
+| PAN | Parcial | `src/scene/comandos.js`, `src/ui/quadros.js`, `src/ui/head-study.js` | Folha anatômica por código; editar Quadros; roteiro, página de mangá, folha de contato e passes no motor |
+| RUN | Parcial | `src/ui/editor.js`, `src/scene/comandos.js` | `await` no editor, rollback de cena/camadas/estilo, histórico de execução e snapshot explícito |
+| DOC | Parcial | `src/scene/ajuda.js`, `README.md` | Exemplos de câmera, objeto, estilo, exportação assíncrona |
+| TST/REL | **Testes escritos e compilação sintática isolada; integração pendente** | `testes/camera-orientacao-codigo.mjs`, `testes/paridade-editor-codigo.mjs`, workflow GitHub | Cobertura especificada e CI cadastrado; não marcar como aprovado sem execução verde |
+
+### Verificação feita neste desenvolvimento
+
+- Compilação sintática isolada de 11 módulos JS alterados com `new Function` após remover os imports/exports: **OK**.
+- Verificação matemática do algoritmo real em harness isolado: corpo normal, deitado, invertido — vetor da câmera oposto ao eixo da frente (**dot = -1**) e eixo anatômico superior projetado para o alto da imagem (**upY = 1**): **OK**.
+- Verificação isolada de câmera atrás de cabeça girada e seguimento de giro horizontal: **OK**.
+- **Não foi executada uma bateria Node integrada em ambiente local**, pois o runtime desta execução não dispõe do repositório clonado nem de acesso à rede. O workflow GitHub foi registrado, mas seus resultados não podem ser antecipados.
+- **Não há aprovação visual do navegador em dispositivos e poses reais**. Esses gates permanecem pendentes.
+
+### APIs efetivamente adicionadas
+
+```js
+// Câmera atrás da nuca — mesmo se o tronco estiver apontando em outra direção
+camera.costas("Ana",{referencia:"cabeca",area:"cabeca",elevacao:0});
+// Acompanhar rotação (por coordenadas mundiais de cada parte)
+camera.seguir("Ana",{lado:"costas",referencia:"tronco",elevacao:0});
+camera.pararSeguir();
+
+// Objetos simétricos exigem convenção declarada
+cena.obterObjeto("Cubo").orientacao({frenteLocal:[0,0,1],cimaLocal:[0,1,0]});
+camera.costas("Cubo",{area:"superior"});
+
+// Controle e exportação
+cena.estilo("lapis");
+cena.camadaVisual("eyes",false);
+const svg=cena.exportarSVG();
+await cena.baixar("cena.svg",svg,"image/svg+xml");
+const png=await cena.exportarPNG({escala:2});
+
+// Roteiros sem abrir o painel
+const quadros=cena.renderizarQuadros("#quadro 1\\ncamera.costas('Ana');",{passes:false});
+const pagina=cena.paginasDeRoteiro("#quadro 1\\ncamera.costas('Ana');");
+```
+
+### Lacunas ainda NÃO entregues
+
+O contrato **OrientationProvider** para criaturas não humanas; orientações semânticas de subpeças para todos os tipos de objetos; grupos com orientação designada e resolução de conflitos; câmera com amortecimento, interpolação e controle de oclusão; editor seguro em sandbox para scripts não confiáveis; todos os downloads em ambiente headless; redo/undo automático de toda interação na interface; manipulação de todas as propriedades do Blocking; exportação completa de passes e formatos por API; matriz automática **100%** de paridade UI↔código. Permanecem no DAG original e não devem ser anunciados como concluídos.
