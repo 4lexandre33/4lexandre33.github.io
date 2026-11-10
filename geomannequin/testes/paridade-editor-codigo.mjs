@@ -14,6 +14,17 @@ for(const c of ["camadasVisuais","camadaVisual","estilos","estilo","exportarSVG"
  assert.ok(catalog.cena.includes(c),"Comando ausente: cena."+c);
 assert.ok(catalog.manequim.includes("orientacao"));
 assert.ok(catalog.manequim.includes("exportarOBJ"));
+assert.ok(catalog.manequim.includes("parametro"));
+assert.ok(catalog.camera.includes("capturar")&&catalog.camera.includes("capturarVistas"));
+const headOld=w.cena.ativo.parametro("headYaw");
+w.cena.ativo.parametro("headYaw",31);
+assert.equal(w.cena.ativo.parametro("headYaw"),31);
+w.cena.ativo.parametro("headYaw",headOld);
+assert.throws(()=>w.cena.ativo.parametro("parametroInexistente",10),/desconhecido/);
+const pitchOld=w.camera.parametro("pitch");w.camera.parametro("pitch",22);
+assert.equal(w.camera.parametro("pitch"),22);w.camera.parametro("pitch",pitchOld);
+const zip=w.cena.exportarZIP();
+assert.ok(zip instanceof Uint8Array&&zip[0]===0x50&&zip[1]===0x4b,"ZIP não possui cabeçalho PK");
 assert.ok(w.cena.capacidades().some(c=>c.id==="camera3d"));
 const original=w.cena.ativo.info().x;
 w.cena.marcarEstado();w.cena.ativo.posicao(8,0);
