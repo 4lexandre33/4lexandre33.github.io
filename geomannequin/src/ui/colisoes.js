@@ -148,7 +148,7 @@ export function iniciarColisoes() {
       });
       status.textContent="Grip V3: "+r.objeto+" / "+r.mao+" / "+r.ponto+
         " ("+(r.distancia*11.4).toFixed(1)+" cm)."+
-        (r.secundaria?" Segunda mão vinculada.":" O objeto acompanha a palma em 3D.");
+        (r.secundaria?(r.alcancavel?" Segunda mão vinculada por IK.":" Segunda mão registrada, mas sem alcance preciso."): " O objeto acompanha a palma em 3D.");
       refreshScene();syncControls();render();
     }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
@@ -169,7 +169,7 @@ export function iniciarColisoes() {
     try{
       const modo=$("colV3Soltar")?.value||"manter";
       const soltou=cena.soltarObjeto(obj.id,{modo});
-      status.textContent=soltou?"Objeto liberado ("+modo+"). Queda e pouso são cinemáticos.":
+      status.textContent=soltou?"Objeto liberado ("+modo+"). Queda aproximada: gravidade por etapas; pouso geométrico.":
         "Uma das mãos continua segurando o objeto.";
       atualizarApoios();refreshScene();syncControls();render();
       if(modo==="queda"&&soltou)animarQueda();
