@@ -115,11 +115,11 @@ function atualizarFocoOrbita(){
 }
 /* camera.orbitar(alvo, {azimute, elevacao, distancia, enquadrar, relativo, rolagem}) */
 function orbitarCamera(alvo, opts) {
-  opts = opts || {}; const A = pivoCamera(alvo,opts);
+  opts = opts || {}; const A = pivoCamera(alvo,Object.assign({},opts,{enquadrar:false}));
   const az = opts.azimute === undefined ? vistaAtual(A).azimute : azimuteDe(opts.azimute), el = elevacaoDe(opts.elevacao), elev = el === null ? -(P.pitch || 0) : el;
   const base = opts.relativo === false || !A.frente ? 0 : Math.atan2(A.frente[0], A.frente[1]) / D;
   let yaw = -(base + az); yaw = ((yaw + 540) % 360) - 180;
-  P.yaw = Math.round(yaw * 10) / 10; P.pitch = clamp(-elev, -70, 70); P.roll = opts.rolagem === undefined ? 0 : clamp(+opts.rolagem || 0, -45, 45);
+  P.yaw = Math.round(yaw * 10) / 10; P.pitch = clamp(-elev, -70, 70); P.roll = opts.rolagem === undefined ? (A.area ? P.roll : 0) : clamp(+opts.rolagem || 0, -45, 45);
   if (opts.distancia !== undefined) { const d = +opts.distancia; if (!(d > 0)) throw new Error("Distância da órbita: um número em R."); if (P.persp) P.camDist = clamp(d, 4, 200); else P.zoom = clamp(6.2 / d, 0.05, 3); }
   else if (opts.enquadrar !== false) enquadrarPivo(A, elev, opts.folga);
   centrarPivo();
