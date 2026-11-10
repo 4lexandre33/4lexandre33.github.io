@@ -615,4 +615,18 @@ const pagina=cena.paginasDeRoteiro("#quadro 1\\ncamera.costas('Ana');");
 
 ### Lacunas ainda NÃO entregues
 
-O contrato **OrientationProvider** para criaturas não humanas; orientações semânticas de subpeças para todos os tipos de objetos; grupos com orientação designada e resolução de conflitos; câmera com amortecimento, interpolação e controle de oclusão; editor seguro em sandbox para scripts não confiáveis; todos os downloads em ambiente headless; redo/undo automático de toda interação na interface; manipulação de todas as propriedades do Blocking; exportação completa de passes e formatos por API; matriz automática **100%** de paridade UI↔código. Permanecem no DAG original e não devem ser anunciados como concluídos.
+O contrato **OrientationProvider** para criaturas não humanas; orientações semânticas de subpeças para todos os tipos de objetos; seguimento de grupos e regras mais ricas de resolução de conflitos (a orientação de um grupo por **líder explicitamente escolhido** já foi acrescentada); câmera com amortecimento, interpolação e controle de oclusão; editor seguro em sandbox para scripts não confiáveis; todos os downloads em ambiente headless; redo/undo automático de toda interação na interface; manipulação de todas as propriedades do Blocking; exportação completa de passes e formatos por API; matriz automática **100%** de paridade UI↔código. Permanecem no DAG original e não devem ser anunciados como concluídos.
+
+
+### Continuação da implementação: integração e paridade ampliada
+
+- Orientação traseira de **grupos com líder explícito** por `camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas"})`; sem líder a API informa ambiguidade.
+- Elevação **±90°**, incluindo zenital/nadir, e compensação de rolagem anatômica. `elevacaoDe()` legado permanece inalterado para compatibilidade.
+- Captura SVG de câmera **transacional**, sem modificar câmera ativa: `camera.capturar()` e `camera.capturarVistas()`.
+- Edição validada de parâmetros individuais: `m.parametro()`, `m.parametros()`, `camera.parametro()`, `camera.parametros()`, `obj.parametro()`.
+- Exportação `cena.exportarZIP()` agora retorna `Uint8Array` também no headless; motor ZIP compartilhado entre navegador e MCP.
+- Carregador da fábrica headless atualizado para incluir todos os módulos de colisão, preensão e toque que já eram referenciados por `comandos.js`.
+- Teste novo `testes/headless-modulos-integracao.mjs` para validar a montagem real do mundo e suas chamadas; **aguardando execução verde**.
+- Isoladamente foram testadas costas do crânio/torso, orientação invertida, elevação zenital e líder de grupo. Não representam a validação end-to-end de renderização/navegador.
+
+Status: integração do código feita na branch de desenvolvimento; os **gates de CI e QA visual continuam pendentes**. A cobertura integral do task graph e a segurança de scripts não confiáveis continuam em aberto.
