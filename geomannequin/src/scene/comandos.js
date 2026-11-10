@@ -24,6 +24,7 @@ import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjet
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
+import {iniciarQuedaObjeto,cancelarQuedaObjeto,avancarDinamicaObjetos} from "../engine/grip-dynamics.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
@@ -263,6 +264,11 @@ function apiObjeto(q){
         segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
     segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
     soltar(opts={}){chk();cena.soltarObjeto(q.id,opts);return o},
+    cair(opts={}){chk();if(q.gripV3||q.grip)throw Error("Solte o objeto antes de iniciar a queda.");
+      atualizarApoios();iniciarQuedaObjeto(q,restGround(SCN.list[0].params),opts);
+      return o},
+    pararQueda(){chk();cancelarQuedaObjeto(q);return o},
+    fisica(){chk();return q.dinamica?JSON.parse(JSON.stringify(q.dinamica)):null},
     pousar({endireitar=false}={}){chk();if(q.gripV3||q.grip)
         throw Error("Solte o objeto antes de pousá-lo diretamente.");
       atualizarApoios();
@@ -421,8 +427,8 @@ const cena={
     {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
     {id:"preensaoV3",estado:"experimental",api:["m.segurar","m.soltar","m.maoEmSite",
        "cena.segurarObjeto","cena.soltarObjeto","cena.vinculos","cena.inspecionarPreensao",
-       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe","obj.pousar"],
-      limite:"Attachment 6DOF com mão primária, IK auxiliar da segunda mão (sem solver bilateral exato) e queda instantânea sem física."},
+       "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe","obj.pousar","obj.cair","obj.fisica","obj.pararQueda","cena.avancarFisica","cena.simularQueda"],
+      limite:"Attachment 6DOF com mão primária, IK auxiliar da segunda mão (sem solver bilateral exato) e física aproximada por etapas (sem dinâmica de corpos rígidos completos)."},
     {id:"editor",estado:"parcial",api:["cena.marcarEstado","cena.desfazer","cena.refazer","cena.historico"],limite:"histórico explícito/de execução; mudanças externas não são interceptadas automaticamente"},
     {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
   ]},
@@ -463,6 +469,28 @@ const cena={
   colisoes(){return listaColisoes()},
   contatoV2(opts){return setContatoV2(opts)},
   contatosFisicos(opts){return consultarContatosV2(opts)},
+  avancarFisica(segundos=1/60){
+    atualizarApoios();
+    const report=avancarDinamicaObjetos(SCN.objetos,restGround(SCN.list[0].params),segundos);
+    atualizarApoios();return report;
+  },
+  simularQueda({duracao=3,passo=1/60,trajetoria=false}={}){
+    if(!Number.isFinite(duracao)||duracao<0||duracao>30||
+      !Number.isFinite(passo)||passo<1/240||passo>.25)
+      throw Error("simularQueda: duração de 0 a 30 s e passo de 1/240 a 0,25 s.");
+    const frames=[],iterations=Math.ceil(duracao/passo);
+    let r={ativos:SCN.objetos.filter(o=>o.dinamica?.ativo).length,passos:0,contatos:[]};
+    for(let i=0;i<iterations;i++){
+      r=cena.avancarFisica(Math.min(passo,duracao-i*passo));
+      if(trajetoria)frames.push({
+        tempo:+Math.min(duracao,(i+1)*passo).toFixed(5),
+        objetos:SCN.objetos.filter(o=>o.dinamica).map(o=>({
+          nome:o.nome||o.tipo,x:o.x,y:o.base,z:o.z,ativo:!!o.dinamica?.ativo}))
+      });
+      if(!r.ativos)break;
+    }
+    return {ultimo:r,frames:trajetoria?frames:undefined};
+  },
   segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
     // modo: 'aproximarMao' usa IK antes da captura. Sem deslocar a cadeira.
 
