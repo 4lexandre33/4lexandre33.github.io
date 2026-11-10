@@ -1,0 +1,57 @@
+name: GeoMannequin V4.1 - occipital, V e orelhas
+on:
+  pull_request:
+    paths:
+      - 'geomannequin/src/engine/head-v4/**'
+      - 'geomannequin/src/engine/desenho.js'
+      - 'geomannequin/src/engine/montagem.js'
+      - 'geomannequin/src/engine/padroes.js'
+      - 'geomannequin/src/scene/parametros.js'
+      - 'geomannequin/src/ui/controles.js'
+      - 'geomannequin/index.html'
+      - 'geomannequin/testes/cabeca-v4-1-anatomia.mjs'
+      - 'geomannequin/testes/atlas-cabeca-v4-1-comparar.mjs'
+      - 'geomannequin/package.json'
+  workflow_dispatch:
+jobs:
+  v41-regressao:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: geomannequin/package-lock.json
+      - name: Preparar dependências
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Regressão V4.1 — 10 biotipos x 3 LOD
+        run: npm run testar:cabeca-v4-1
+      - name: V4 e V3 não devem regredir
+        run: |
+          npm run testar:cabeca-v4
+          npm run testar:cabeca-v3
+      - name: Compilar HTML modular e único
+        run: npm run construir
+      - name: Atlas antes/depois em enquadramentos idênticos
+        run: npm run comparar:cabeca-v4-1
+      - name: Atlas V4.1 masculino e feminino
+        run: |
+          npm run atlas:cabeca-v4-1 -- masculino medio
+          npm run atlas:cabeca-v4-1 -- feminino medio
+      - name: Evidências visuais para revisão humana
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cabeca-v41-v-compacta-orelhas
+          path: |
+            geomannequin/testes/saida/cabeca-v4/
+            geomannequin/testes/saida/cabeca-v4-1/
+          retention-days: 14
+          if-no-files-found: warn
