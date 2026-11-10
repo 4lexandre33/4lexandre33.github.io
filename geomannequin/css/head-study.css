@@ -30,7 +30,7 @@ body.gm42-open{overflow:hidden}
 #gm42Close:hover{background:#6d4057}
 .gm42-viewport{flex:1;min-height:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:12px 14px 32px}
 .gm42-sheet{
- width:min(100%,1440px);background:#fffcfd;
+ width:min(100%,1440px);background:#fafbfd;
  border:1px solid #e2cfdb;box-shadow:0 16px 50px #75536a24;
  box-sizing:border-box;aspect-ratio:4/3;display:flex;align-items:stretch;
 }
