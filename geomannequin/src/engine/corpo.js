@@ -13,8 +13,9 @@ function bodyEff(p){
     chest:(0.58*p.shW+0.42)*(1+0.12*m+0.13*f-0.14*w),
     chest0:(0.45*p.shW+0.35)*(1+0.1*m+0.13*f-0.07*w),
     waist:p.waist*(1+0.52*f+0.06*m-0.24*w),
-    /* quadril: masculino mais estreito que o tórax (écorché), feminino mais largo; w=0.5 mantém a medida antiga */
-    hip:p.hips*(1.16+0.26*f+0.5*(w-0.5)),
+    /* Pelve óssea: base masculina mais ampla, preservando o dimorfismo e o parâmetro hips.
+       A mesma largura alimenta superfície, ilíacos, articulações dos fêmures e glúteos. */
+    hip:p.hips*(1.25+0.26*f+0.45*(w-0.5)),
     belly:0.02+0.36*f*f,
     mus:0.25+1.0*m*(1-0.5*f),
     fat:f,fem:w,
@@ -47,9 +48,11 @@ function torsoProfile(F){
     [F.yWst,lerp(cintura*0.96,Math.max(c0*0.90,B.hip*0.90),mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
     [F.yNav,lerp(cintura,Math.max(c0*0.91,B.hip*0.94),mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
     [yJ-4.1,lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf),0.84+0.2*f,0.82,-0.45,2.3],
-    /* A pelve sustenta o abdômen; glúteo e virilha mantêm o skinning original. */
-    [F.yHip,B.hip*0.96,0.8+0.1*f,0.94+0.22*gk,-0.48,2.3],
-    [yJ-5.4,B.hip*(0.6+0.08*gk),0.66,0.8+0.3*gk,-0.5,2.2],
+    /* Crista ilíaca com abertura própria, acima da articulação do fêmur.
+       O perfil se fecha gradualmente na virilha e mantém volume em 3/4 e perfil. */
+    [F.yHip+0.38,B.hip*(1.03-0.02*B.fem),0.85+0.12*f,0.90+0.18*gk,-0.47,2.35],
+    [F.yHip,B.hip*(1.00-0.015*B.fem),0.85+0.10*f,0.98+0.22*gk,-0.48,2.3],
+    [yJ-5.4,B.hip*(0.70+0.06*gk),0.68,0.82+0.28*gk,-0.50,2.2],
     [F.yCr,0.3+0.12*gk,0.4,0.42+0.22*gk,-0.46,2.1],
     [F.yB,0.02,0.02,0.02,-0.46,2]
   ];
