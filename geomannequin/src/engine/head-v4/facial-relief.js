@@ -63,7 +63,9 @@ export function facialReliefV4(u,v,p,S,atlas=compileMicroAtlasV3(p,S)){
  /* Plano inferior do queixo suavemente recuado. */
  f-=detail*.029*jaw*bell(u,v,0,.982,.28,.033);
  return {
-  front:clamp(f,-.13,.30),
+  /* A antiga saturação -0.13 apagava a diferença entre profundidades
+     orbitais em determinados biotipos. Limite novo preserva a cavidade. */
+  front:clamp(f,-.34,.30),
   side:clamp(side,-.06,.11),
   back:clamp(back,-.08,.06)
  };
