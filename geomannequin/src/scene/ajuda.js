@@ -124,6 +124,33 @@ m.expressao("surpresa").olhos(0.6, 0.1);
 m.articulacao("dedão esquerdo", { dobrar: -25 });
 log(m.validarPose());
 camera.enquadramento("primeiro plano");`,
+  "Câmera atrás do tronco":`const m=cena.ativo.renomear("Ana");
+m.girar(75);
+camera.costas("Ana",{referencia:"tronco",elevacao:0,enquadrar:true});
+log(camera.vista());`,
+  "Nuca da cabeça mesmo com pescoço girado":`const m=cena.ativo.renomear("Ana");
+m.pose({headYaw:60,neckTwist:20});
+camera.costas("Ana",{referencia:"cabeca",area:"cabeca",elevacao:5});
+log("Eixos da cabeça:",camera.orientacaoDoAlvo("Ana","cabeca"));`,
+  "Câmera segue a rotação":`const ana=cena.ativo.renomear("Ana");
+camera.seguir("Ana",{lado:"costas",referencia:"tronco",elevacao:0});
+ana.girar(95).mover(3,2);
+log(camera.seguimento());
+camera.pararSeguir();`,
+  "Objetos: definir a frente":`const cubo=cena.objeto("cubo",{nome:"Cubo para orientar",x:6,giro:40});
+cubo.orientacao({frenteLocal:[0,0,1],cimaLocal:[0,1,0]});
+camera.costas("Cubo para orientar",{area:"superior",elevacao:15});`,
+  "Somente comandos: estilos, camadas, arquivos":`cena.estilo("lapis");
+cena.camadaVisual("grid",false);
+cena.camadaVisual("eyes",true);
+const svg=cena.exportarSVG();
+log("SVG:",svg.length,"caracteres");
+log("Comandos disponíveis:",cena.comandos().camera);
+log("Capacidades:",cena.capacidades());`,
+  "Download com await (navegador)":`const svg=cena.exportarSVG();
+await cena.baixar("minha-cena.svg",svg,"image/svg+xml");
+const png=await cena.exportarPNG({escala:2});
+await cena.baixar("minha-cena.png",png,"image/png");`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -139,6 +166,20 @@ export function iniciarAjuda(){
   m.pose({joelhoEsq: 60, ...}) · m.poseRapida("caminhando") · m.corpo("musculoso" | {musculo: 0.8})
   m.cor("#preenchimento", "#contorno") · m.cor() = automática · m.copiar() · m.remover() · m.info()
   
+  NOVO: camera.costas("Ana",{referencia:"tronco",area:"cabeca",elevacao:0}) — vista das costas do tronco
+  camera.costas("Ana",{referencia:"cabeca",area:"cabeca"}) — nuca orientada pela cabeça, não pela presença de olhos
+  camera.ver("Ana",{lado:"3/4 esquerda",referencia:"cabeca",vertical:"anatomico"})
+  camera.seguir("Ana",{lado:"costas",referencia:"tronco"}) · camera.pararSeguir() · camera.seguimento()
+  camera.orientacaoDoAlvo("Ana","cabeca") · camera.alvos() · camera.areas("Ana") · camera.vista()
+  Objetos: cena.obterObjeto("cubo").orientacao({frenteLocal:[0,0,1],cimaLocal:[0,1,0]})
+  Estilo: cena.estilos() · cena.estilo("lapis") · cena.estiloAtual()
+  Camadas: cena.camadasVisuais() · cena.camadaVisual("grid",false) · cena.camadaVisual("eyes",true)
+  Arquivos: cena.exportarSVG() · cena.exportarOBJ({modelo:"v4"}) · cena.exportarJSON() · cena.importarJSON(json)
+  Exportação navegador: await cena.exportarPNG({escala:2}); await cena.baixar("cena.png",png,"image/png")
+  Folha V4.2: cena.estudoAnatomico.svg() · cena.estudoAnatomico.abrir() · .atualizar() · .fechar()
+  Descoberta: cena.comandos() · cena.capacidades() · cena.parametros()
+  Histórico: cena.marcarEstado() · cena.desfazer() · cena.refazer() · cena.historico()
+  Observação: o executor aceita await, mas não é um sandbox de segurança; execute scripts confiáveis.
   camera.posicao(x, y, z) · camera.mirar(x, y, z) · camera.girar(yaw, pitch, roll)
   camera.zoom(z) · camera.perspectiva(true, distância) · camera.distancia(R) · camera.luz(azimute, elevação) · camera.enquadrar()
   camera.lente(mm) — 18–35 grande-angular, 50 normal, 85–200 tele · camera.alturaOlhos(R acima do chão, inclinação?) — manequim ≈ 16 R
