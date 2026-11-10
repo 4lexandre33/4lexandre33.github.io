@@ -23,12 +23,15 @@ function ringAt(y,p,S){
   const lateral=yy=>sx*Math.sqrt(Math.max(0,1-yy*yy))*
     (1+0.088*gauss(yy,0.22,0.32)-0.055*gauss(yy,0.78,0.20));
   let a;
-  if(y>=y0)a=lateral(y);
-  else if(y>=Jy)a=lerp(lateral(y0),jw,sstep((y0-y)/(y0-Jy)));
-  else{
-    const u=clamp((Jy-y)/(Jy-chinY),0,1),pw=lerp(1.65,2.65,clamp((cw-0.1)/0.35,0,1));
-    a=jw*Math.pow(Math.max(0,1-Math.pow(u,pw)),1/pw);
-  }
+  const jawWidth=yy=>{
+    if(yy>=Jy)return lerp(lateral(y0),jw,sstep((y0-yy)/(y0-Jy)));
+    const u=clamp((Jy-yy)/(Jy-chinY),0,1),pw=lerp(1.65,2.65,clamp((cw-0.1)/0.35,0,1));
+    return jw*Math.pow(Math.max(0,1-Math.pow(u,pw)),1/pw);
+  };
+  /* Curvatura C1: suavizar a transição da caixa craniana para zigoma e
+     masseter sem produzir uma quina horizontal em frente/3/4/perfil. */
+  const tL=sstep((y0+0.11-y)/0.22);
+  a=lerp(lateral(y),jawWidth(y),tL);
   /* Plano frontal mais compacto do que o occipital no perfil: o volume do
      neurocrânio existe ATRÁS da máscara facial, não ao redor dela como bola. */
   const front=yy=>{
@@ -37,16 +40,18 @@ function ringAt(y,p,S){
   };
   const orbital=-t*0.68;
   let bf;
-  if(y>=orbital)bf=front(y);
-  else bf=lerp(front(orbital),p.chinProj*(1-0.025*fem),sstep((orbital-y)/(orbital-chinY)));
+  const faceProjection=yy=>lerp(front(orbital),p.chinProj*(1-0.025*fem),
+    sstep((orbital-yy)/(orbital-chinY)));
+  bf=lerp(front(y),faceProjection(y),sstep((orbital+0.12-y)/0.24));
   /* A massa occipital recua bastante na zona parietal; abaixo do processo
      mastoideu afunila até a mandíbula, deixando o pescoço legível. */
   const occipital=yy=>Math.sqrt(Math.max(0,1-yy*yy))*
     (1.085+0.18*gauss(yy,0.21,0.37));
   const nucaY=-0.46;
   let bb;
-  if(y>=nucaY)bb=occipital(y);
-  else bb=lerp(occipital(nucaY),0.26+0.07*fat,sstep((nucaY-y)/(nucaY-chinY)));
+  const backTaper=yy=>lerp(occipital(nucaY),0.26+0.07*fat,
+    sstep((nucaY-yy)/(nucaY-chinY)));
+  bb=lerp(occipital(y),backTaper(y),sstep((nucaY+0.13-y)/0.26));
   const k=S.scale||1;
   return [Math.max(0,a)*k,(bf-bb)*k/2,(bf+bb)*k/2];
 }
