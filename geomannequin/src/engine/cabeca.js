@@ -52,6 +52,9 @@ function ringAt(y,p,S){
   const backTaper=yy=>lerp(occipital(nucaY),0.26+0.07*fat,
     sstep((nucaY-yy)/(nucaY-chinY)));
   bb=lerp(occipital(y),backTaper(y),sstep((nucaY+0.13-y)/0.26));
+  /* Profundidade crânio-caudal independente da largura: controla a massa
+     occipital no perfil, sem deslocar olhos, nariz ou maxila anterior. */
+  bb*=clamp(Number.isFinite(p.cranialDepth)?p.cranialDepth:1,0.90,1.12);
   const k=S.scale||1;
   return [Math.max(0,a)*k,(bf-bb)*k/2,(bf+bb)*k/2];
 }
