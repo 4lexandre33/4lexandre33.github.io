@@ -167,6 +167,39 @@ m.parametro("headYaw",45).parametro("eyeYaw",0.3);
 camera.parametro("lens",85);
 log("Parâmetros da cabeça:",m.parametro("headYaw"));
 log("Controles disponíveis:",cena.parametros());`,
+  "Segurar cadeira pelo encosto (V3)":`// Cadeira segue o braço em posição e rotação 3D.
+const ana=cena.ativo.renomear("Ana");
+const cadeira=cena.objeto("cadeira",{nome:"Cadeira 1",x:2,z:0});
+log(cadeira.pontosDeAgarre().map(p=>p.id));
+// Posicione a mão perto do encosto. Para teste, alcance amplo:
+const grip=cena.segurarObjeto("Cadeira 1",{
+  manequim:"Ana",mao:"direita",ponto:"encostoTopo",reach:20
+});
+log(grip);
+ana.parametro("armFlexR",55);
+ana.parametro("elbowR",70);
+log(cena.inspecionarPreensao());`,
+  "Aproximar mão e agarrar":`const ana=cena.ativo.renomear("Ana");
+cena.objeto("cadeira",{nome:"Cadeira",x:2,z:0});
+const resultado=ana.maoEmSite("Cadeira","encostoTopo",{mao:"direita"});
+log(resultado);
+if(resultado.alcançou){
+  ana.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:1});
+}`,
+  "Segurar e soltar cadeira sem teleporte":`const ana=cena.ativo.renomear("Ana");
+cena.objeto("cadeira",{nome:"Cadeira",x:2,z:0});
+ana.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:20});
+ana.parametro("armFlexR",40);
+ana.soltar("Cadeira",{modo:"manter"});
+log(cena.obterObjeto("Cadeira").info());`,
+  "Segurar cadeira com duas mãos":`const a=cena.ativo.renomear("Ana");
+cena.objeto("cadeira",{nome:"Cadeira",x:1,z:0});
+cena.segurarObjeto("Cadeira",{mao:"direita",ponto:"encostoDireito",reach:20});
+cena.segurarObjeto("Cadeira",{mao:"esquerda",ponto:"encostoEsquerdo",reach:20,segunda:true});
+log(cena.vinculos());
+// Enquanto não existe solver bilateral, a mão primária conduz o objeto.
+cena.soltarObjeto("Cadeira",{mao:"direita"});
+log(cena.vinculos());`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -195,6 +228,13 @@ export function iniciarAjuda(){
   Parâmetros: m.parametro("headYaw",45) · m.parametros() · camera.parametro("lens",85) · camera.parametros()
   Câmera sem alterar a ativa: camera.capturar("Ana",{lado:"costas"}) · camera.capturarVistas("Ana")
   Grupo: camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas"}) (sem orientação média inventada)
+  Preensão V3: m.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:5}) — mão move cadeira em 3D
+  m.maoEmSite("Cadeira","encostoTopo",{mao:"direita"}) — aproximar usando IK
+  m.soltar("Cadeira",{modo:"manter"}) — deixar onde está, sem simular gravidade
+  cena.vinculos() · cena.inspecionarPreensao() · obj.pontosDeAgarre() · obj.emPosseDe()
+  Objetos: pontos 'encostoTopo', 'encostoEsquerdo', 'encostoDireito', 'assentoFrente'
+  Compatibilidade: cena.segurarObjeto("Copo",{motor:"v2",mao:"direita"}) ativa a preensão antiga
+  Duas mãos: segunda:true adiciona âncora auxiliar; solver bilateral exato continua pendente
   Arquivo ZIP: const zip=cena.exportarZIP(); await cena.baixar("camadas.zip",zip,"application/zip")
   Folha V4.2: cena.estudoAnatomico.svg() · cena.estudoAnatomico.abrir() · .atualizar() · .fechar()
   Descoberta: cena.comandos() · cena.capacidades() · cena.parametros()
