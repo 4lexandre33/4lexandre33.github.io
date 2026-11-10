@@ -46,6 +46,13 @@ function contacts(it,params,ctx,{incluirAuto=true,margin=.025,max=32}={}){
   out.push({...c,tipo:"manequim",a:it.id,b:other.it.id,alvo:other.it.name});
  }
  for(const o of ctx.objetos)for(const c of manifoldObject(body,o.parts,opts)){
+  /* O objeto preso à mão permanece sólido para TODO o resto do corpo.
+     Só o ponto de suporte da própria mão deixa de bloquear essa peça. */
+  const held=o.obj.grip;
+  if(held&&held.mannequinId===it.id){
+    const side=held.side===1?"E":"D";
+    if(c.pa==="mao"+side||(c.pa.startsWith("dedo")&&c.pa.endsWith(side)))continue;
+  }
   out.push({...c,tipo:"objeto",a:it.id,b:o.obj.id,alvo:o.obj.nome||o.obj.tipo});
  }
  out.sort((a,b)=>a.distancia-b.distancia);
