@@ -1,5 +1,5 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
-import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
+import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
 import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
