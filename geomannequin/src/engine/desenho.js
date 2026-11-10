@@ -23,6 +23,7 @@ import { muscleDefs } from "./musculos.js";
 import { scapTri } from "./corpo.js";
 import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
 import { atlasBraco } from "./atlas/bracos.js";
+import { atlasRosto } from "./atlas/rosto.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -575,6 +576,18 @@ function scene(p,L,pal,fast,mode){
     const half=wing.map(w=>[w[0],w[1]*t]);
     const poly2=half.slice().reverse().map(w=>[-w[0],w[1]]).concat(half.slice(1));
     curve("feat",poly2.map(w=>hp(w[1],surfX(w[1],w[0]),0.008)));
+  }
+  /* Anatomia facial esquemática: 16 grupos musculares superficiais em
+     cada hemiface, exibidos no écorché. Nada é pintado permanentemente
+     sobre o modo de pele/contorno comum. */
+  if(L.feat&&L.cel){
+    const pt=([x,y])=>{
+      const r=Math.max(0.015,ringAt(y,p,sh)[0]);
+      return hp(y,Math.asin(clamp(x/r,-0.98,0.98)),0.016);
+    };
+    const def=clamp(0.55+0.30*(p.muscle||0)-0.15*(p.fat||0),0.40,0.88);
+    for(const mus of atlasRosto(p,sh))
+      lineT(mus.tipo,suave(mus.pts,5).map(pt),xf,def);
   }
   out.push('</g>');
   out.push('<g id="olhos">');
