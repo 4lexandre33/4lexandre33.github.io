@@ -389,12 +389,12 @@ const cena={
 function camSet(k,v,min,max,nome){P[k]=clamp(num(v,nome),min,max)}
 const camera={
   /* posição da câmera em relação ao alvo: define direção, distância e zoom */
-  posicao(x,y,z){num(x,"x");num(y,"y");num(z,"z");
+  posicao(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;num(x,"x");num(y,"y");num(z,"z");
     const dx=x-P.tx,dy=y-P.ty,dz=z-P.tz,d=Math.hypot(dx,dy,dz);if(d<0.5)throw new Error("A câmera está colada no alvo; afaste-a.");
     P.yaw=Math.round(-Math.atan2(dx,dz)/D*10)/10;P.pitch=clamp(Math.round(-Math.atan2(dy,Math.hypot(dx,dz))/D*10)/10,-70,70);P.roll=0;
     P.camDist=clamp(d,4,200);P.zoom=clamp(6.2/d,0.05,3);P.panX=0;P.panY=0;return camera},
-  mirar(x,y,z){SCN.pivo=null;camSet("tx",x,-30,30,"x");camSet("ty",y,-20,20,"y");camSet("tz",z,-30,30,"z");P.panX=0;P.panY=0;return camera},
-  girar(yaw,pitch,roll){camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
+  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-30,30,"x");camSet("ty",y,-20,20,"y");camSet("tz",z,-30,30,"z");P.panX=0;P.panY=0;return camera},
+  girar(yaw,pitch,roll){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
   zoom(z){setZoomEff(num(z,"zoom"));return camera},
   perspectiva(on,dist){P.persp=on===false||on===0?0:1;if(dist!==undefined)camSet("camDist",dist,4,200,"distância");return camera},
   distancia(d){camSet("camDist",d,4,200,"distância");return camera},
@@ -415,22 +415,22 @@ const camera={
   /* posição da câmera no mundo (em R), calculada do alvo, da direção e da distância */
   posicaoMundo(){return cameraNoMundo(P).pos.map(v=>Math.round(v*100)/100)},
   /* põe a câmera num ponto do mundo mantendo o alvo (como arrastar a câmera na vista de cima) */
-  colocar(x,y,z){moverCamera(num(x,"x"),num(y,"y"),num(z,"z"));return camera},
+  colocar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;moverCamera(num(x,"x"),num(y,"y"),num(z,"z"));return camera},
   /* câmera num eixo ("x", "-x", "z", "-z", "y" = de cima), mantendo distância e alvo */
-  eixo(a,opts){const t=String(a).toLowerCase().replace(/^eixo\s*/,"").replace("câmera","");const v={"x":[1,0,0],"+x":[1,0,0],"-x":[-1,0,0],"z":[0,0,1],"+z":[0,0,1],"-z":[0,0,-1],"y":[0,1,0],"+y":[0,1,0],"cima":[0,1,0],"-y":[0,-1,0]}[t];
+  eixo(a,opts){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;const t=String(a).toLowerCase().replace(/^eixo\s*/,"").replace("câmera","");const v={"x":[1,0,0],"+x":[1,0,0],"-x":[-1,0,0],"z":[0,0,1],"+z":[0,0,1],"-z":[0,0,-1],"y":[0,1,0],"+y":[0,1,0],"cima":[0,1,0],"-y":[0,-1,0]}[t];
     if(!v)throw new Error("Eixo da câmera: use x, -x, z, -z ou y (de cima).");
     const d=opts&&opts.distancia?clamp(num(opts.distancia,"distância"),4,200):Math.max(4,P.camDist||30);
     if(v[1]>0){P.yaw=0;P.pitch=-70;P.roll=0;return camera}
     if(v[1]<0){P.yaw=0;P.pitch=45;P.roll=0;return camera}
     P.yaw=Math.round(Math.atan2(v[0],v[2])/D);P.roll=0;return camera},
   /* elevação: "alta" (de cima, plongée), "média", "olhos" (nível dos olhos), "baixa" (de baixo, contra-plongée), ou graus acima do horizonte */
-  elevacao(e){const t=typeof e==="number"?e:{"muito alta":70,"de cima":70,"alta":45,"media":20,"média":20,"olhos":0,"nivel dos olhos":0,"nível dos olhos":0,"baixa":-18,"muito baixa":-35,"chao":-35,"chão":-35}[String(e).toLowerCase()];
+  elevacao(e){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;const t=typeof e==="number"?e:{"muito alta":70,"de cima":70,"alta":45,"media":20,"média":20,"olhos":0,"nivel dos olhos":0,"nível dos olhos":0,"baixa":-18,"muito baixa":-35,"chao":-35,"chão":-35}[String(e).toLowerCase()];
     if(t===undefined)throw new Error("Elevação: use \"alta\", \"média\", \"olhos\", \"baixa\" ou graus.");P.pitch=clamp(-t,-70,70);return camera},
   /* tamanho do plano (quadrinhos/cinema), em volta de um manequim (nome, índice ou o ativo) ou de vários (lista ou "todos"):
      "detalhe" (rosto), "close", "primeiro plano" (até o peito), "medio" (cintura), "americano" (coxa), "inteiro", "geral" (todos com folga).
      Mantém o ângulo da câmera; muda alvo, distância (e, se preciso, a lente) e zera o deslocamento. */
   enquadramento(tipo,quem,opts){
-    SCN.pivo=null;
+    pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;
     const t=String(tipo||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[-_]/g," ").trim();
     const FR={detalhe:0.15,rosto:0.15,"close up":0.22,close:0.22,"primeiro plano":0.32,"plano proximo":0.32,"meio corpo":0.5,medio:0.5,"plano medio":0.5,americano:0.72,"plano americano":0.72,inteiro:1,"corpo inteiro":1,"plano inteiro":1,geral:-1,"plano geral":-1,conjunto:-1,"grande plano geral":-2};
     const f=FR[t];if(f===undefined)throw new Error("Enquadramento: use detalhe, close, primeiro plano, medio, americano, inteiro ou geral.");
@@ -458,7 +458,7 @@ const camera={
     return camera},
   /* ângulo de câmera dos quadrinhos: "normal", "plongée" (de cima), "contra-plongée" (de baixo), "zenital", "holandês" (inclinado), "nadir";
      graus opcionais (inclinação do holandês ou elevação) */
-  angulo(nome,graus){const t=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  angulo(nome,graus){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;const t=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     if(/holand|dutch|inclinad/.test(t)){P.roll=clamp(graus===undefined?18:num(graus,"graus"),-45,45);return camera}
     P.roll=0;
     if(/normal|olho|nivel|frontal/.test(t))P.pitch=graus===undefined?0:-num(graus,"graus");
