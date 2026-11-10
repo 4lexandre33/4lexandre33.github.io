@@ -12,6 +12,20 @@ import { refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
 
 let assinatura = "";
+/** Atalho também funciona em telas estreitas, onde o painel fica abaixo do palco.
+ * scrollIntoView desloca o documento e o container #params de modo conjunto. */
+function abrirSecaoColisoes({imediato=false}={}){
+  const target=$("colSecao");
+  if(!target)return false;
+  const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  target.scrollIntoView({behavior:imediato||reduced?"instant":"smooth",block:"start"});
+  target.focus({preventScroll:true});
+  target.classList.remove("col-secao-destaque");
+  void target.offsetWidth;
+  target.classList.add("col-secao-destaque");
+  return true;
+}
+
 function msg(t, err) { const m = $("colMsg"); if (m) { m.textContent = t || ""; m.className = "msg" + (err ? " err" : t ? " ok" : ""); } }
 function depois(feitos) {
   $("colDesfazer").disabled = !COL.desfazer;
@@ -61,6 +75,11 @@ function atualizarColisoes(lista) {
 }
 export function iniciarColisoes() {
   const el = $("colLista"); if (!el) return;
+  $("colisoesAtalho")?.addEventListener("click",()=>abrirSecaoColisoes());
+  if(new URLSearchParams(window.location.search).get("painel")==="colisoes"){
+    // O DOM já existe; aguarda o início do layout para centralizar o painel.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>abrirSecaoColisoes({imediato:true})));
+  }
   $("colModo").value = COL.modo; $("colPref").value = COL.preferir;
   const v2=$("colV2"),status=$("colV2Status");
   if(v2){v2.checked=CONTATO_V2.enabled;v2.addEventListener("change",()=>{
