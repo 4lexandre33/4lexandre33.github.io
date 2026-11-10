@@ -8,7 +8,9 @@ import { loadScene, sceneState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { EXPRESSOES, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
-import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual } from "./orbita.js";
+import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
+import {orientacaoAlvo,encontrarAlvoOrientacao} from "./orientacao-frames.js";
+import {regioesDisponiveisOrbita} from "./regioes-orbita.js";
 import { L, setMode, setPreset } from "./modos.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
@@ -30,6 +32,7 @@ function apiFor(it){
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
+    orientacao(referencia="tronco"){chk();return orientacaoAlvo(it.name,referencia)},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
@@ -170,6 +173,16 @@ function apiObjeto(q){
     posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
     mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
     girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
+    orientacao(config){
+      chk();if(config===undefined)return orientacaoAlvo({id:q.id},"objeto");
+      if(!config||typeof config!=="object")throw Error("Orientação: objeto {frenteLocal:[x,y,z],cimaLocal:[x,y,z]}.");
+      const f=config.frenteLocal??config.frente,up=config.cimaLocal??config.cima??[0,1,0];
+      if(!Array.isArray(f)||!Array.isArray(up)||f.length!==3||up.length!==3||
+        !f.every(Number.isFinite)||!up.every(Number.isFinite)||Math.hypot(...f)<1e-6)
+        throw Error("Os eixos do objeto devem conter três números finitos (frente não nula).");
+      q.frenteLocal=f.slice();q.cimaLocal=up.slice();
+      orientacaoAlvo({id:q.id},"objeto");return o;
+    },
     medidas(m){chk();editarObjeto(q,m||{});return o},
     /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
     cor(c,contorno){chk();editarObjeto(q,{cor:c===undefined?"auto":c,contorno});return o},
@@ -347,7 +360,21 @@ const camera={
      ponto [x, y, z] ou "cena". azimute a partir da FRENTE do pivô: "frente", "3/4 esquerda", "esquerda", "costas", "3/4 direita"… ou graus
      (positivo = para o lado esquerdo dele); elevacao em graus acima do horizonte ou "olhos", "alta", "baixa"; distancia em R (sem ela, enquadra o pivô).
      Ex.: camera.orbitar("Ana", {area: "cabeca", azimute: "3/4 esquerda", elevacao: 15}) */
-  orbitar(alvo,opts){if(typeof opts==="string"||typeof opts==="number")opts={azimute:opts};orbitarCamera(alvo,opts||{});return camera},
+  orbitar(alvo,opts){if(typeof opts==="string"||typeof opts==="number")opts={azimute:opts};pararSeguimentoCamera();orbitarCamera(alvo,opts||{});return camera},
+  /* Novas vistas anatômicas: frente/costas de tronco, crânio ou extremidade.
+   * Retorno encadeável; consultar .orientacaoDoAlvo() ou .vistaExata() para diagnóstico. */
+  ver(alvo,opts={}){verOrientadaCamera(alvo,opts);return camera},
+  costas(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"costas"})},
+  frente(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"frente"})},
+  perfilEsquerdo(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"esquerda"})},
+  perfilDireito(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"direita"})},
+  seguir(alvo,opts={}){seguirOrientacaoCamera(alvo,opts);return camera},
+  pararSeguir(){pararSeguimentoCamera();return camera},
+  seguimento(){return estadoSeguimentoCamera()},
+  orientacaoDoAlvo(alvo,parte="tronco"){return orientacaoAlvo(alvo,parte)},
+  alvos(){return [...SCN.list.map(x=>({tipo:"manequim",nome:x.name})),...SCN.objetos.map(x=>({tipo:"objeto",nome:x.nome||x.tipo,id:x.id}))]},
+  areas(alvo){const p=alvo===undefined?"ativo":alvo;const it=encontrarAlvoOrientacao(p);return regioesDisponiveisOrbita(it.tipo).map(([id,nome])=>({id,nome}))},
+  vistaExata(alvo,opts={}){return verOrientadaCamera(alvo,opts)},
   /* pivô da órbita (o alvo da câmera vai para o centro dele; a câmera mantém direção e distância). A arrastada na tela gira em volta dele. */
   pivo(alvo,opts){pivoCamera(alvo,opts);return camera},
   /* Define uma região do pivô ATUAL sem mudar azimute/elevacao:
