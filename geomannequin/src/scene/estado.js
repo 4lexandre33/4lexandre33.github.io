@@ -48,7 +48,7 @@ function sceneState(){
     if(ix>=0)seguir={tipo:q.tipo,indice:ix,opts:{...q.opts}};
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
-  return {active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;delete q.base;
+  return {active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;delete q.base;
     if(o.grip){const j=SCN.list.findIndex(m=>m.id===o.grip.mannequinId);
       q.grip=j<0?undefined:{...o.grip,mannequinIndex:j};if(q.grip)delete q.grip.mannequinId;}if(o.sobre){const j=SCN.objetos.findIndex(x=>x.id===o.sobre);if(j>=0)q.sobre=j;else delete q.sobre}else delete q.sobre;return q})};
 }
@@ -97,6 +97,12 @@ function loadScene(sc){
   /* Restaura o alvo e a região de foco. IDs de objetos mudam no JSON,
      então persistimos seu índice e recuperamos o novo ID aqui. */
   SCN.pivo=null;SCN.orbitaArea=null;
+  if(sc.vistaOrientada&&typeof sc.vistaOrientada==="object"){
+    const v=sc.vistaOrientada;
+    if(Number.isFinite(v.azimute)&&Number.isFinite(v.elevacao)&&typeof v.referencia==="string"&&
+      ["anatomico","mundo"].includes(v.vertical))
+      SCN.ultimaVistaOrientada={azimute:v.azimute,elevacao:v.elevacao,referencia:v.referencia,vertical:v.vertical,limitado:!!v.limitado};
+  }
   if(sc.seguirCamera&&typeof sc.seguirCamera==="object"){
     const q=sc.seguirCamera,items=q.tipo==="objeto"?SCN.objetos:q.tipo==="manequim"?SCN.list:[];
     const it=Number.isInteger(q.indice)?items[q.indice]:null;
