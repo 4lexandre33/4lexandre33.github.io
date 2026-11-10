@@ -8,7 +8,12 @@
 import {clamp,mix,smoother,PI2} from "./constants.js";
 import {ringV2} from "./sections.js";
 const finite=(x,fallback)=>Number.isFinite(x)?x:fallback;
+const CACHE=new WeakMap();
 export function sidePlanesV2(p,S){
+  const key=[p.skull,p.face,p.headScale,p.fem,p.muscle,p.fat,p.cranialDepth,
+    p.sidePlaneDepth,p.sidePlaneRadius,p.sidePlaneCenterY,p.sidePlaneCenterZ,p.sidePlaneBevel].join("|");
+  const memo=CACHE.get(S);
+  if(memo&&memo.key===key)return memo.planes;
   const scale=clamp(finite(p.headScale,1),.90,1.10);
   const y=clamp(finite(p.sidePlaneCenterY,.10),-.05,.27);
   const r=ringV2(y,p,S);
@@ -32,6 +37,7 @@ export function sidePlanesV2(p,S){
     border:phi=>[sign*distance,y+radius*Math.sin(phi),z+radius*Math.cos(phi)],
     ring:(rr,phi)=>[sign*distance,y+rr*Math.sin(phi),z+rr*Math.cos(phi)]
   }));
+  CACHE.set(S,{key,planes});
   return planes;
 }
 export function planeAtV2(p,S,side){
