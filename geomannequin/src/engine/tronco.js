@@ -58,7 +58,9 @@ function bustBump(x,y,th,p,F){
     /* glúteo: curva suave e baixa da lombar até a dobra; fenda no meio */
     /* glúteo máximo: massa mais cheia embaixo e por fora; glúteo médio no alto do lado; fenda no meio */
     const gl=0.04+0.85*B.glute;
-    dz+=cb*gl*gauss(ax,0.55,0.36)*gauss(y,F.yHip-0.6,0.42)*(1-0.75*gauss(x,0,0.055));
+    /* Massa glútea acompanha a largura real da pelve e a espessura dos tecidos. */
+    const centroGluteo=0.46*B.hip,larguraGluteo=0.3+0.06*B.fem+0.025*B.fat;
+    dz+=cb*gl*gauss(ax,centroGluteo,larguraGluteo)*gauss(y,F.yHip-0.58,0.44)*(1-0.75*gauss(x,0,0.055));
     dz+=(0.4+0.6*cb)*0.35*gl*gauss(Math.abs(Math.atan2(Math.sin(th),cs)),1.75,0.35)*gauss(y,F.yHip+0.05,0.3);
   }
   dz+=(p.shTension+0.5*((s>0?p.shTensL:p.shTensR)||0))*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);

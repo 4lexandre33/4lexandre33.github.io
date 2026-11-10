@@ -1,28 +1,29 @@
 {
- "modulos": [
-  "ambiente.js",
-  "paletas.js",
-  "parametros.js",
-  "modelo.js",
-  "tema.js",
-  "modos.js",
-  "estado.js",
-  "enquadrar.js",
-  "poses.js",
-  "camadas-cena.js",
-  "colisoes.js",
-  "cenario.js",
-  "blocking.js",
-  "orbita.js",
-  "descrever.js",
-  "comandos.js",
-  "ajuda.js",
-  "quadros.js"
- ],
- "iniciar": [
-  "iniciarModelo",
-  "iniciarModos",
-  "iniciarParametros",
-  "iniciarAjuda"
- ]
+  "modulos": [
+    "ambiente.js",
+    "paletas.js",
+    "parametros.js",
+    "modelo.js",
+    "tema.js",
+    "modos.js",
+    "estado.js",
+    "enquadrar.js",
+    "biotipos.js",
+    "poses.js",
+    "camadas-cena.js",
+    "colisoes.js",
+    "cenario.js",
+    "blocking.js",
+    "orbita.js",
+    "descrever.js",
+    "comandos.js",
+    "ajuda.js",
+    "quadros.js"
+  ],
+  "iniciar": [
+    "iniciarModelo",
+    "iniciarModos",
+    "iniciarParametros",
+    "iniciarAjuda"
+  ]
 }

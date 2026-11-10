@@ -2,7 +2,8 @@
 import { LAY, SL, POSEKEYS, faixa, ajustarAoPerfil } from "../scene/parametros.js";
 import { $ } from "../scene/ambiente.js";
 import { P, WORLDK } from "../scene/modelo.js";
-import { BODIES, FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES } from "../scene/poses.js";
+import { FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES } from "../scene/poses.js";
+import { aplicarBiotipo, transitarSexo } from "../scene/biotipos.js";
 import { fmt } from "./exportar.js";
 import { render, setQuick, setSettle, settle } from "./palco.js";
 import { L, setMode, setPreset } from "../scene/modos.js";
@@ -27,7 +28,7 @@ export function iniciarControles(){
       '<input type="range" id="sl_'+d.k+'" min="'+d.min+'" max="'+d.max+'" step="'+d.step+'">';
     $(d.g).appendChild(wrap);
     const inp=wrap.querySelector("input");
-    inp.addEventListener("input",()=>{P[d.k]=parseFloat(inp.value);if(d.k==="flex"){ajustarAoPerfil(P);syncControls()}if(GUARD.test(d.k)&&guardArms())syncControls();$("ov_"+d.k).textContent=fmt(d,P[d.k]);setQuick(true);clearTimeout(settle);setSettle(setTimeout(()=>{setQuick(false);render()},260));render()});
+    inp.addEventListener("input",()=>{const v=parseFloat(inp.value);if(d.k==="fem"){transitarSexo(P,v);syncControls()}else P[d.k]=v;if(d.k==="flex"){ajustarAoPerfil(P);syncControls()}if(GUARD.test(d.k)&&guardArms())syncControls();$("ov_"+d.k).textContent=fmt(d,P[d.k]);setQuick(true);clearTimeout(settle);setSettle(setTimeout(()=>{setQuick(false);render()},260));render()});
   });
   LAY.forEach(l=>{
     const lab=document.createElement("label");lab.className="layer";
@@ -46,7 +47,7 @@ export function iniciarControles(){
     b.addEventListener("click",()=>{Object.assign(P,{headPitch:P.headPitch,headRoll:P.headRoll},POSTURES[b.dataset.posture]);syncControls();render()});
   });
   document.querySelectorAll("[data-body]").forEach(b=>{
-    b.addEventListener("click",()=>{["shW","neck"].forEach(k=>P[k]=DEF[k]);Object.assign(P,BODIES[b.dataset.body]);syncControls();render()});
+    b.addEventListener("click",()=>{aplicarBiotipo(P,b.dataset.body,P.fem);syncControls();render()});
   });
   document.querySelectorAll("[data-bpose]").forEach(b=>{
     b.addEventListener("click",()=>{doBodyPose(b.dataset.bpose);syncControls();render()});
@@ -78,8 +79,11 @@ export function iniciarControles(){
   });
   document.querySelectorAll("[data-face]").forEach(b=>{
     b.addEventListener("click",()=>{
-      ["skull","jaw","chin","face","chinProj","neck","brow","nose","lips","eyeSize","browW","shW","earSize","chestF","adam","neckLen"].forEach(k=>P[k]=DEF[k]);
-      Object.assign(P,FACES[b.dataset.face]);syncControls();render();
+      const face=b.dataset.face;
+      if(face==="masculino"||face==="feminino")transitarSexo(P,face==="feminino"?1:0);
+      /* Restaurar só os traços faciais, sem apagar o biotipo nem os ajustes de cintura/quadril. */
+      ["skull","jaw","chin","face","chinProj","brow","nose","lips","eyeSize","browW","earSize","adam","neckLen"].forEach(k=>P[k]=DEF[k]);
+      Object.assign(P,FACES[face]);syncControls();render();
     });
   });
   document.querySelectorAll("[data-pose]").forEach(b=>{

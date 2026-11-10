@@ -1,6 +1,7 @@
 /* GeoMannequin — colisão: braços e pernas não atravessam o corpo */
 import { chainSetup, legPose, quadroTronco } from "./cadeia.js";
 import { legDims } from "./pernas.js";
+import { bustR } from "./corpo.js";
 import { applyA, clamp, comp, mT, mv } from "./matematica.js";
 import { armDims, armPose } from "./bracos.js";
 
@@ -28,7 +29,7 @@ function bodyProxies(p,S){
   return [
     {A:ch.A3,c:[0,0.05,0.12],r:[1.0*p.skull/0.82,1.15,1.05]},
     {A:ch.A2,c:[0,F.yJ-1.45,F.zT+0.05],r:[B.chest*0.86,1.25,0.8]},
-    {A:quadroTronco(ch,F.yNav+0.1),c:[0,F.yNav+0.1,F.zT+0.08],r:[B.waist*0.82,1.0,0.68]}
+    {A:quadroTronco(ch,F.yNav+0.1),c:[0,F.yNav+0.1,F.zT+0.08],r:[bustR(F.yNav+0.1,Math.PI/2,p,F)*0.88,1.0,0.68]}
   ];
 }
 /* o quanto pontos do mundo entram nos volumes (0 = livre), com folga "pad" */

@@ -130,3 +130,48 @@ node testes/vistas.mjs ecorche atletico   # 6 vistas + comparação lado a lado 
 ```
 
 Depois de mudar o código: rode `npm run testar`. Se o desenho mudou de propósito, confira no navegador e grave a nova referência com `node testes/cenas.mjs --gravar`. Depois rode `npm run construir` e, se mexeu em `src/scene` ou `src/engine`, também `npm run build` dentro de `mcp/` (pacote usado pela extensão do Gemini).
+
+## Biotipos anatômicos — masculino e feminino (novembro de 2026)
+
+Há **10 presets adultos**: `magro`, `medio`, `atletico`, `musculoso`, `cheio` para cada sexo.
+Cada combinação tem ombros, cintura, pelve, espessura de braços/coxas, volume de glúteos,
+pescoço, musculatura e gordura calibrados independentemente em `src/scene/biotipos.js`.
+O modelo inicial é **masculino médio** (`DEF.fem = 0`, `DEF._biotipo = "medio"`).
+
+A troca de rosto masculino/feminino da interface também altera a morfologia corporal,
+sem apagar ajustes manuais relativos. O controle contínuo de sexo (`fem`) interpola
+entre os dois grupos. Os botões de biotipo selecionam o perfil completo correspondente
+ao sexo atual e mantêm independentes a pose, a câmera e os parâmetros faciais.
+
+Pela API de cenas / editor de frames:
+
+```js
+cena.ativo.corpo("masculino medio");
+cena.ativo.corpo("feminino atletico");
+cena.ativo.corpo("musculoso");        // conserva o sexo atual
+cena.ativo.corpo({feminino: 0.5});   // transição morfológica contínua
+cena.ativo.corpo({quadril: 1.1});    // personalização manual
+```
+
+O `_biotipo` escolhido é preservado na serialização JSON e nos quadros do storyboard,
+para que a troca posterior de sexo não aplique medidas do perfil errado. A geometria-base
+usa interpolação Hermite monotônica em alturas não uniformes, com continuidade C1 na
+passagem de caixa torácica, cintura, crista ilíaca, pelve e virilha. Glúteos, quadris
+e colisões seguem as medidas efetivas; o cache de malhas inclui `gluteVol`.
+
+### Testes da anatomia
+
+```bash
+npm run testar:anatomia       # 10 biotipos, simetria, curvas, articulações, JSON e storyboard
+npm run testar:matriz:rapida  # 10 × 6 vistas × 1 pose × 3 modos = 180 SVGs
+npm run testar:matriz         # 10 × 6 vistas × 5 poses × 3 modos = 900 SVGs
+```
+
+A matriz completa também pode ser iniciada manualmente em **Actions → GeoMannequin — matriz anatômica**,
+quando houver runner disponível na conta; exporta 20 referências SVG e recortes PNG.
+Leia `docs/task-graph-harmonia-10-biotipos.md` para os critérios e o estado das verificações.
+
+**Referências antigas:** `testes/referencia.json` contém hashes visuais anteriores.
+É esperado que a geometria remodelada altere essas assinaturas. Não regenere os hashes
+automaticamente antes de conferir os desenhos; use `node testes/cenas.mjs --gravar`
+depois da inspeção visual e então execute `npm run testar`.

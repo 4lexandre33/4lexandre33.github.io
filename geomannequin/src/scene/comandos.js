@@ -1,5 +1,6 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
 import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
+import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
@@ -29,9 +30,22 @@ function apiFor(it){
     pose(o,opts){chk();if(typeof o==="string")return m.poseRapida(o,opts);applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);return m},
     poseRapida(nome,opts){chk();const k=nomePose(nome);const ok=todasPoses();
       if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));return m},
-    corpo(o){chk();if(typeof o==="string"){const k=o.toLowerCase();if(!BODIES[k])throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+Object.keys(BODIES).join(", ")+".");
-        ["shW","neck"].forEach(q=>it.params[q]=DEF[q]);Object.assign(it.params,BODIES[k]);return m}
-      applyParams(it,o,false).forEach(t=>LOG.push(["aviso",t]));return m},
+    corpo(o){chk();if(typeof o==="string"){
+        const k=o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+        const part=k.match(/^(masculino|feminino)[\s_-]+(magro|medio|atletico|musculoso|cheio)$/);
+        const tipo=part?part[2]:k,sexo=part?(part[1]==="feminino"?1:0):it.params.fem;
+        if(!NOMES_BIOTIPOS.includes(tipo))throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+NOMES_BIOTIPOS.join(", ")+", ou 'feminino medio'.");
+        aplicarBiotipo(it.params,tipo,sexo);return m
+      }
+      /* Troca de sexo recalibra o mesmo perfil, preservando correções manuais. */
+      if(o&&typeof o==="object"&&(o.feminino!==undefined||o.fem!==undefined)){
+        const sexo=o.feminino!==undefined?o.feminino:o.fem;
+        if(typeof sexo!=="number"||!Number.isFinite(sexo))throw new Error("feminino/fem deve ser numérico (0 a 1).");
+        transitarSexo(it.params,sexo);
+        const resto={...o};delete resto.feminino;delete resto.fem;
+        if(Object.keys(resto).length)applyParams(it,resto,false).forEach(t=>LOG.push(["aviso",t]));
+      }else applyParams(it,o,false).forEach(t=>LOG.push(["aviso",t]));
+      return m},
     cor(fill,ink){chk();if(fill===undefined){it.col=null;it.hue=it===SCN.list[0]?null:nextHue(it);return m}setColor(it,fill,ink===undefined?mixHex(fill,"#000000",0.7):ink);return m},
     copiar(){chk();return apiFor(dupInst(it,true))},
     remover(){chk();delInst(it);return null},

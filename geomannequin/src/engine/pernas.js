@@ -117,7 +117,13 @@ function linhaDedao(p,s,toes,hal){hal=hal||0;
   }
   return out;
 }
-function hipJoint(F,s){return [s*0.5*F.B.hip/1.1,F.yHip-0.3,-0.48]}
+/* As cabeças femorais ficam dentro da pelve, mas a coxa musculosa não deve
+   criar um "degrau" lateral: compensar apenas o excesso do raio superior. */
+function hipJoint(F,s){
+  const B=F.B,ideal=B.hip*0.5/1.1,topoCoxa=0.68*B.thighK;
+  const x=Math.max(0.28*B.hip,Math.min(ideal,1.06*B.hip-topoCoxa));
+  return [s*x,F.yHip-0.3,-0.48];
+}
 /* glúteo: volume redondo atrás da articulação do quadril, achatado por dentro (fenda), mais cheio embaixo */
 function gluteDims(p){
   const B=bodyEff(p),g=0.78+1.8*B.glute;
