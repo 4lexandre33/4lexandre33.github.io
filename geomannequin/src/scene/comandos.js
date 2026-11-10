@@ -338,7 +338,7 @@ const cena={
   },
   parametros(){return SL.map(x=>({chave:x.k,nome:x.label,min:x.min,max:x.max,passo:x.step}))},
   capacidades(){return [
-    {id:"camera3d",estado:"implementado",api:["camera.ver","camera.costas","camera.frente","camera.seguir","camera.pararSeguir","camera.orientacaoDoAlvo"],limite:"nova orientação anatômica até ±90°, enquadramento antigo mantém seus limites"},
+    {id:"camera3d",estado:"implementado",api:["camera.ver","camera.costas","camera.frente","camera.seguir","camera.pararSeguir","camera.orientacaoDoAlvo","camera.capturar","camera.capturarVistas"],limite:"nova orientação anatômica até ±90°, enquadramento antigo mantém seus limites"},
     {id:"camadas",estado:"implementado",api:["cena.camadaVisual","cena.camadasVisuais"]},
     {id:"estilos",estado:"implementado",api:["cena.estilo","cena.estilos"]},
     {id:"exportacao",estado:"parcial",api:["cena.exportarSVG","cena.exportarOBJ","cena.exportarJSON","cena.exportarPNG","cena.baixar"]},
@@ -514,6 +514,26 @@ const camera={
   alvos(){return [...SCN.list.map(x=>({tipo:"manequim",nome:x.name})),...SCN.objetos.map(x=>({tipo:"objeto",nome:x.nome||x.tipo,id:x.id}))]},
   areas(alvo){const p=alvo===undefined?"ativo":alvo;const it=encontrarAlvoOrientacao(p);return regioesDisponiveisOrbita(it.tipo).map(([id,nome])=>({id,nome}))},
   vistaExata(alvo,opts={}){return verOrientadaCamera(alvo,opts)},
+  /* Captura a vista indicada SEM sobrescrever a câmera/pose do editor.
+   * Restauro local: não usar loadScene(), pois remapearia IDs de objetos.
+   */
+  capturar(alvo,opts={}){
+    const before={...P},backup={pivo:SCN.pivo,area:SCN.orbitaArea,
+      seguir:SCN.seguirCamera,vista:SCN.ultimaVistaOrientada};
+    try{
+      verOrientadaCamera(alvo,{lado:"frente",...opts});
+      return cenaCamadasSvg({transparente:opts.transparente!==false});
+    }finally{
+      Object.assign(P,before);SCN.pivo=backup.pivo;SCN.orbitaArea=backup.area;
+      SCN.seguirCamera=backup.seguir;SCN.ultimaVistaOrientada=backup.vista;
+    }
+  },
+  capturarVistas(alvo,opts={}){
+    const angles=opts.angulos??VISTAS_8.map(x=>x[1]);
+    if(!Array.isArray(angles)||angles.length>16||angles.some(x=>!Number.isFinite(x)))
+      throw Error("Forneça de 0 a 16 ângulos numéricos.");
+    return angles.map(a=>({azimute:a,svg:camera.capturar(alvo,{...opts,angulos:undefined,lado:a})}));
+  },
   /* pivô da órbita (o alvo da câmera vai para o centro dele; a câmera mantém direção e distância). A arrastada na tela gira em volta dele. */
   pivo(alvo,opts){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;pivoCamera(alvo,opts);return camera},
   /* Define uma região do pivô ATUAL sem mudar azimute/elevacao:
