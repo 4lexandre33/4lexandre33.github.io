@@ -13,11 +13,12 @@ const entre = (valor, min, max, nome) => assert.ok(valor >= min && valor <= max,
   `${nome}: valor ${valor.toFixed(3)} fora de [${min}, ${max}]`);
 
 const padrao = perfil(configurar());
-entre(padrao.cintura / padrao.bacia, 0.94, 1.04, "cintura/bacia no padrão");
-entre(padrao.umbigo / padrao.bacia, 0.94, 1.05, "umbigo/bacia no padrão");
+/* A bacia deve ser mais aberta que a cintura no manequim padrão (após a correção de pelve). */
+entre(padrao.cintura / padrao.bacia, 0.84, 0.94, "cintura/bacia no padrão");
+entre(padrao.umbigo / padrao.bacia, 0.88, 1.02, "umbigo/bacia no padrão");
 
 const feminino = perfil(configurar({ fem: 1, fat: 0.2, muscle: 0.35 }));
-entre(feminino.cintura / feminino.bacia, 0.68, 0.84, "cintura/bacia no corpo feminino");
+entre(feminino.cintura / feminino.bacia, 0.62, 0.78, "cintura/bacia no corpo feminino");
 
 /* Mesmo raio frontal e dorsal nos ângulos espelhados: cintura não desloca o eixo do corpo. */
 for (const [nome, p] of [
