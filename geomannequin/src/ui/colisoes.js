@@ -106,6 +106,6 @@ export function iniciarColisoes() {
   });
   $("colTodas").addEventListener("click", () => { try { depois(resolverTodas($("colPref").value)); } catch (err) { msg(err.message, true); } });
   $("colDesfazer").addEventListener("click", () => { if (desfazerColisao()) depois(["Correção desfeita."]); $("colDesfazer").disabled = true; });
-  if (typeof window !== "undefined") window.addEventListener("gm:desenhou", () => { $("colModo").value = COL.modo; $("colPref").value = COL.preferir; $("colComp").checked = !!COL.composicao; atualizarColisoes(); });
+  if (typeof window !== "undefined") window.addEventListener("gm:desenhou", () => { $("colModo").value = COL.modo; $("colPref").value = COL.preferir; $("colComp").checked = !!COL.composicao; if($("colV2"))$("colV2").checked=CONTATO_V2.enabled; atualizarColisoes(); });
 }
 export { atualizarColisoes };
