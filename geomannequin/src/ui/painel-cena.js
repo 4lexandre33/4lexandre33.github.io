@@ -1,6 +1,6 @@
 /* GeoMannequin — painel da cena: lista de manequins, botões e cores */
 import { $ } from "../scene/ambiente.js";
-import { SCN, addInst, delInst, dupInst, instColors, nextHue, setActive, setColor } from "../scene/modelo.js";
+import { SCN, UIH, addInst, delInst, dupInst, instColors, nextHue, setActive, setColor } from "../scene/modelo.js";
 import { fr } from "../scene/parametros.js";
 import { syncControls } from "./controles.js";
 import { render } from "./palco.js";
@@ -61,6 +61,7 @@ const onColor=()=>{try{setColor(SCN.list[SCN.active],$("mFill").value,$("mInk").
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarPainelCena(){
+  UIH.baixar=baixar;
   $("mAdd").addEventListener("click",()=>{try{addInst();sceneMsg("Manequim adicionado.")}catch(e){sceneMsg(e.message,true)}});
   $("mDup").addEventListener("click",()=>{try{dupInst(SCN.list[SCN.active]);sceneMsg("Cópia criada ao lado.")}catch(e){sceneMsg(e.message,true)}});
   $("mDel").addEventListener("click",()=>{try{delInst(SCN.list[SCN.active]);refreshScene();syncControls();render();sceneMsg("Manequim removido.")}catch(e){sceneMsg(e.message,true)}});
