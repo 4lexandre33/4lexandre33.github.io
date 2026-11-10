@@ -4,6 +4,7 @@ import { L } from "./modos.js";
 import { refreshScene, render, syncControls } from "./ambiente.js";
 import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
 import { atualizarFocoOrbita } from "./orbita.js";
+import {updateGrip} from "./preensao-v2.js";
 
 let P;
 /* ===== Cena: vários manequins, câmera comum, cores exclusivas ===== */
@@ -78,7 +79,15 @@ function cssHex(v){
 function atualizarApoios(){
   const por=new Map(SCN.objetos.map(o=>[o.id,o]));
   const topo=(o,vis)=>{if(!o.sobre||!por.has(o.sobre)||vis.has(o.id)){o.sobre=o.sobre&&por.has(o.sobre)?o.sobre:null;return 0}vis.add(o.id);const s=por.get(o.sobre);return topo(s,vis)+s.alt};
-  SCN.objetos.forEach(o=>{o.base=Math.round(topo(o,new Set())*1000)/1000});
+  const ground=SCN.list.length?restGround(SCN.list[0].params):0;
+  SCN.objetos.forEach(o=>{
+    if(o.grip){
+      const it=SCN.list.find(m=>m.id===o.grip.mannequinId);
+      if(it&&updateGrip(it,o,ground))return;
+      delete o.grip; // o manequim foi removido; liberação segura
+    }
+    o.base=Math.round(topo(o,new Set())*1000)/1000;
+  });
 }
 function sceneList(exp){
   atualizarApoios();
