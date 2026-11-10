@@ -7,7 +7,7 @@ import { applyState, sceneState } from "../scene/estado.js";
 import { $ } from "../scene/ambiente.js";
 import { syncControls } from "./controles.js";
 import { updateModeButtons } from "./modos.js";
-import { FLEX_NOMES, H, W, renderScene } from "../engine/index.js";
+import { FLEX_NOMES, H, W, renderScene, shape, watertightMeshV3, meshTopologyV3, exportObjV3 } from "../engine/index.js";
 
 /* exportação */
 function exportSvg(){
@@ -53,6 +53,18 @@ function fmt(d,v){
 export function iniciarExportar(){
   try{if(typeof IntersectionObserver!=="undefined"){outVisivel=false;new IntersectionObserver(es=>{outVisivel=es.some(e=>e.isIntersecting);if(outVisivel&&outSujo)refreshOut()}).observe($("out"))}}catch(e){outVisivel=true}
   window.gmState=()=>({info:lastInfo,P});
+  $("downloadHeadV3").addEventListener("click",()=>{
+    if(P.headModel!=="v3_microgeometry"){say("Selecione a Cabeça V3 no painel de proporções para exportar OBJ.","err");return}
+    try{
+      const mesh=watertightMeshV3(P,shape(P)),check=meshTopologyV3(mesh);
+      if(check.invalid||check.boundary||check.nonmanifold||check.degenerate)throw Error("Malha não-manifold: "+JSON.stringify(check));
+      const blob=new Blob([exportObjV3(mesh)],{type:"text/plain;charset=utf-8"});
+      const url=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=url;a.download="geomannequin-cabeca-v3.obj";document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+      say("Cabeça V3 exportada: "+mesh.vertexCount+" vértices, "+mesh.triangleCount+" triângulos.","ok");
+    }catch(e){say("Falha ao exportar OBJ: "+e.message,"err")}
+  });
   $("tabSvg").addEventListener("click",()=>setTab("svg"));
   $("tabJson").addEventListener("click",()=>setTab("json"));
   $("copy").addEventListener("click",()=>{
