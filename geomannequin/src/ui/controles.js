@@ -23,8 +23,34 @@ function syncControls(){
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarControles(){
-  /* Seletor reversível, independente dos sliders numéricos. */
-  {const wrap=document.createElement("div");wrap.className="slider";wrap.innerHTML='<label for="headModelSelect">Geometria da cabeça</label><select id="headModelSelect"><option value="v1">Cabeça V1 — estável</option><option value="v2">Cabeça V2 — experimental</option><option value="v3_microgeometry">Cabeça V3 — microgeometria anatômica</option></select>';const panel=$("slProp");if(panel){panel.appendChild(wrap);wrap.querySelector("select").addEventListener("change",e=>{P.headModel=["v1","v2","v3_microgeometry"].includes(e.target.value)?e.target.value:"v1";render()})}}
+  /* O seletor V1/V2/V3 fica no HTML para ser visível imediatamente.
+     A criação dinâmica é apenas fallback de documentos antigos. */
+  {
+    let q=$("headModelSelect");
+    if(!q){
+      const panel=$("slProp");
+      if(panel){
+        const wrap=document.createElement("div");wrap.className="slider";
+        wrap.innerHTML='<label for="headModelSelect">Geometria da cabeça</label><select id="headModelSelect"></select>';
+        panel.prepend(wrap);q=wrap.querySelector("select");
+      }
+    }
+    if(q){
+      const modelos=[
+        ["v1","Cabeça V1 — estável"],
+        ["v2","Cabeça V2 — experimental"],
+        ["v3_microgeometry","Cabeça V3 — microgeometria anatômica"]
+      ];
+      for(const [value,label] of modelos){
+        if(!Array.from(q.options).some(o=>o.value===value))q.add(new Option(label,value));
+      }
+      q.value=modelos.some(([value])=>value===P.headModel)?P.headModel:"v1";
+      q.addEventListener("change",e=>{
+        P.headModel=modelos.some(([value])=>value===e.target.value)?e.target.value:"v1";
+        render();
+      });
+    }
+  }
 
   SL.forEach(d=>{
     const wrap=document.createElement("div");wrap.className="slider";

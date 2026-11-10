@@ -23,7 +23,8 @@
     "matriz:cabeca-v2": "node testes/matriz-cabeca-v2.mjs --svg",
     "testar:planos-loomis": "node testes/cabeca-v2-planos.mjs && node testes/cabeca-v2-perfil-loomis.mjs",
     "atlas:planos-loomis": "node testes/atlas-planos-loomis.mjs",
-    "testar:cabeca-v3": "node testes/cabeca-v3-microgeometria.mjs"
+    "testar:cabeca-v3": "node testes/cabeca-v3-microgeometria.mjs",
+    "testar:seletor-cabeca-v3": "node testes/seletor-cabeca-v3.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
