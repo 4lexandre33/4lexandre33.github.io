@@ -23,10 +23,16 @@ export function earPointV41(p,S,sign,u,v){
  const ut=u*Math.cos(m.tilt)-v*Math.sin(m.tilt);
  const vt=u*Math.sin(m.tilt)+v*Math.cos(m.tilt);
  const vv=clamp(vt,-1.12,1.12),uu=clamp(ut,-1.12,1.12);
- const y=m.cy+m.ry*vv;
+ /* Contorno auricular não é uma elipse perfeita:
+  * borda helicoidal superior ligeiramente deslocada para trás,
+  * recorte anterossuperior e lóbulo mais estreito. */
+ const rimBack=.065*gaussian2(uu,vv,-.72,.64,.34,.30);
+ const upperNotch=.12*gaussian2(uu,vv,.85,.63,.23,.30);
+ const lowerTaper=1-.20*smooth((-.48-vv)/.52);
+ const y=m.cy+m.ry*(vv+.025*rimBack-.018*gaussian2(uu,vv,.70,-.78,.30,.20));
  const sec=sectionV4(normalizedHeight(y,S),p,S),mid=(sec.front+sec.back)/2;
  const setback=clamp(p.v41EarSetback??.015,-.20,.20);
- const z=mid+setback+m.rz*uu*(1-.15*smooth((-.4-vv)/.6))-.020*vv;
+ const z=mid+setback+m.rz*(uu*lowerTaper+rimBack-upperNotch)-.020*vv;
  const depth=Math.max(.18,(sec.front-sec.back)/2);
  const cz=clamp((z-mid)/depth,-.985,.985);
  const shell=sec.width*Math.sqrt(Math.max(0,1-cz*cz));
