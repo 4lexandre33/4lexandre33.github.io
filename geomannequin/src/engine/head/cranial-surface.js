@@ -18,7 +18,10 @@ export function pointV2(y,theta,p,S,offset=0){
   return jawPoseV2([x+offset*sn,y,z+offset*cs],p,S);
 }
 export function buildHeadV2(p,S,level=0){
-  const cols=level>0?72:144,rows=level>0?96:184,total=rows*cols,V=new Float32Array(total*3);
+  /* LOD estável pela configuração do usuário, não pela câmera:
+     0=baixo, 1=normal, 2=alta definição para close. */
+  const density=Math.max(0,Math.min(2,Math.round(p.headDetail===undefined?1:p.headDetail)));
+  const cols=[68,112,152][density],rows=[90,142,194][density],total=rows*cols,V=new Float32Array(total*3);
   for(let i=0;i<rows;i++){
     const q=i/(rows-1),y=1+(S.chinY-.015-1)*q;
     for(let j=0;j<cols;j++){
