@@ -302,12 +302,14 @@ function scene(p,L,pal,fast,mode){
     [-1,1].forEach(s=>curve("ring",arr(i=>hp(i,s*38*D,0.004),t,-t,50)));
   }
   /* linha da mandíbula: da orelha ao queixo, sobre a superfície */
-  if(L.jaw){
+  /* Ângulo mandibular visível também no modo anatômico, inclusive em perfil. */
+  if(L.jaw||L.anat){
     [-1,1].forEach(s=>{
-      curve("jaw",arr(k=>{
-        const y=lerp(-0.5,chinY+0.01,k);
-        return hp(y,s*lerp(92,0,Math.pow(k,1.3))*D,0.004);
-      },0,1,50));
+      curve(L.jaw?"jaw":"divisao",arr(k=>{
+        const y=lerp(-0.48,chinY+0.07,k);
+        const a=k<0.38?lerp(102,87,k/0.38):lerp(87,0,Math.pow((k-0.38)/0.62,0.86));
+        return hp(y,s*a*D,0.011);
+      },0,1,46));
     });
   }
   /* guias do busto: cilindro do pescoço, cintura escapular, deltoides, linha central e coluna */
@@ -519,14 +521,35 @@ function scene(p,L,pal,fast,mode){
     });
     /* boca: lábio superior e inferior preenchidos, sombra sob o lábio; sorriso (cantos) e boca aberta (mandíbula) */
     {
-      const sm=p.smile||0,jo=p.jawOpen||0,ab=jo>0.02?0.036:0;
+      const sm=p.smile||0,jo=clamp(p.jawOpen||0,0,1),ab=jo>0.02?Math.min(0.28,0.02+0.23*jo):0;
       const mY=x=>mouthY+0.016*Math.pow(x/0.2,2)+sm*0.028*Math.pow(x/0.2,2);
       const top=x=>mY(x)+0.034*(1-Math.pow(Math.abs(x)/0.2,1.3))*(1-0.35*gauss(x,0,0.035));
       const bot=x=>mouthY-0.07-0.02*(1-Math.pow(x/0.13,2));
       const H=(x,y,o)=>hp(y,surfX(y,x),o||0.008);
       fillP(arr(x=>H(x,top(x)),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)),0.2,-0.2,24)),pal.shade3);
-      /* boca aberta: o vão entre o lábio de cima e o de baixo */
-      if(ab)fillP(arr(x=>H(x,mY(x)),-0.19,0.19,24).concat(arr(x=>H(x,mY(x)-ab*(0.25+0.75*(1-Math.pow(x/0.19,2)))),0.19,-0.19,24)),pal.ink,0.82);
+      /* Vão oral que cresce conforme a abertura, com língua e arcadas dentárias
+         projetadas na superfície do rosto em perspectiva. */
+      if(ab){
+        const interior=x=>mY(x)-ab*(0.23+0.77*Math.max(0,1-Math.pow(x/0.19,2)));
+        fillP(arr(x=>H(x,mY(x)-0.005,0.026),-0.185,0.185,32)
+          .concat(arr(x=>H(x,interior(x),0.027),0.185,-0.185,32)),pal.ink,0.94);
+        if(jo>0.14)fillP(arr(x=>H(x,interior(x)+0.02+0.025*Math.max(0,1-(x/0.13)**2),0.032),-0.13,0.13,22)
+          .concat(arr(x=>H(x,interior(x)+0.008,0.031),0.13,-0.13,22)),pal.coral,0.68);
+        const nDentes=8,step=0.30/nDentes;
+        for(let i=0;i<nDentes;i++){
+          const x0=-0.15+i*step+0.002,x1=x0+step-0.004,xc=(x0+x1)/2;
+          const profundidade=Math.min(ab*0.36,0.036)*(0.7+0.3*Math.cos(xc*8));
+          fillP([H(x0,mY(x0)-0.009,0.033),H(x1,mY(x1)-0.009,0.033),
+                 H(x1,mY(x1)-0.009-profundidade,0.033),
+                 H(x0,mY(x0)-0.009-profundidade,0.033)],"#F2EDE3");
+          if(jo>0.42){
+            const base=x=>interior(x)+0.014;
+            fillP([H(x0,base(x0),0.034),H(x1,base(x1),0.034),
+                   H(x1,base(x1)+Math.min(0.026,ab*0.18),0.034),
+                   H(x0,base(x0)+Math.min(0.026,ab*0.18),0.034)],"#E9E1D6");
+          }
+        }
+      }
       fillP(arr(x=>H(x,mY(x)-ab),-0.2,0.2,24).concat(arr(x=>H(x,mY(x)-ab-0.055*Math.max(0,1-Math.pow(x/0.2,2))-0.004),0.2,-0.2,24)),pal.shade1);
       fillP(arr(x=>H(x,bot(x)-0.005,0.006),-0.13,0.13,16).concat(arr(x=>H(x,bot(x)-0.05*(1-Math.pow(x/0.13,2)),0.006),0.13,-0.13,16)),pal.shade2,0.8);
       curve("feat",arr(x=>H(x,mY(x)),-0.2,0.2,30));
