@@ -17,14 +17,14 @@ function syncControls(){
   /* a faixa dos sliders de pose acompanha o perfil de flexibilidade */
   SL.forEach(d=>{const el=$("sl_"+d.k);if(POSEKEYS.has(d.k)){const [a,b]=faixa(d.k,P.flex);if(+el.min!==a)el.min=a;if(+el.max!==b)el.max=b}el.value=P[d.k];$("ov_"+d.k).textContent=fmt(d,P[d.k])});
   LAY.forEach(l=>{$("ly_"+l.k).checked=!!L[l.k]});
-  {const q=$("headModelSelect");if(q)q.value=P.headModel==="v2"?"v2":"v1"}
+  {const q=$("headModelSelect");if(q)q.value=["v1","v2","v3_microgeometry"].includes(P.headModel)?P.headModel:"v1"}
   {const o=$("ocultas");if(o){const v=Math.round(100*(L.ocultas===undefined?0.5:L.ocultas));o.value=v;$("ov_ocultas").textContent=v+"%"}}
 }
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarControles(){
   /* Seletor reversível, independente dos sliders numéricos. */
-  {const wrap=document.createElement("div");wrap.className="slider";wrap.innerHTML='<label for="headModelSelect">Geometria da cabeça</label><select id="headModelSelect"><option value="v1">Cabeça V1 — estável</option><option value="v2">Cabeça V2 — experimental</option></select>';const panel=$("slProp");if(panel){panel.appendChild(wrap);wrap.querySelector("select").addEventListener("change",e=>{P.headModel=e.target.value==="v2"?"v2":"v1";render()})}}
+  {const wrap=document.createElement("div");wrap.className="slider";wrap.innerHTML='<label for="headModelSelect">Geometria da cabeça</label><select id="headModelSelect"><option value="v1">Cabeça V1 — estável</option><option value="v2">Cabeça V2 — experimental</option><option value="v3_microgeometry">Cabeça V3 — microgeometria anatômica</option></select>';const panel=$("slProp");if(panel){panel.appendChild(wrap);wrap.querySelector("select").addEventListener("change",e=>{P.headModel=["v1","v2","v3_microgeometry"].includes(e.target.value)?e.target.value:"v1";render()})}}
 
   SL.forEach(d=>{
     const wrap=document.createElement("div");wrap.className="slider";

@@ -9,6 +9,8 @@ export * from "./padroes.js";
 export * from "./camera.js";
 export * from "./cabeca.js";
 export * from "./head/index.js";
+export * from "./head-v3/index.js";
+export * from "./head-v3/mesh-export.js";
 export * from "./boca.js";
 export * from "./corpo.js";
 export * from "./musculos.js";
