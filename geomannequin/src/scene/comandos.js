@@ -20,6 +20,8 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
+import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3} from "./grip-v3.js";
+import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
@@ -114,11 +116,17 @@ function apiFor(it){
     contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
     tocar(alvo,opts={}){chk();const r=tocarV2(it,alvo,opts);if(r.distanciaResidual>.3)LOG.push(["aviso","A mão não alcança precisamente o alvo."]);return r},
     segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
-      atualizarApoios();beginGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),opts);return m},
-    soltar(ref){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id):[acharObjeto(ref)];
-      let ok=false;for(const o of targets){if(o&&o.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
+      atualizarApoios();if(opts.motor==="v2")beginGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),opts);
+      else beginRigidGrip(it,o,ladoNum(opts.mao||"direita"),restGround(SCN.list[0].params),
+        {...opts,objetos:SCN.objetos});return m},
+    soltar(ref,opts={}){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id):[acharObjeto(ref)];
+      let ok=false;const ground=restGround(SCN.list[0].params);
+      atualizarApoios();
+      for(const o of targets){if(o?.gripV3?.mannequinId===it.id){releaseRigidGrip(it,o,ground,opts);ok=true}
+        else if(o?.grip?.mannequinId===it.id){releaseGrip(o);ok=true}}
       if(!ok)throw Error("Nenhum objeto encontrado segurado por este manequim.");
       atualizarApoios();return m},
+    objetosSegurados(){chk();return SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id).map(o=>o.nome||o.tipo)},
     /* ===== articulações pelo nome: m.articulacao("cotovelo esquerdo", {dobrar: 90}) ===== */
     /* confere a pose: partes do corpo atravessando umas às outras (não vizinhas, mais de 0,5 R) e limites acoplados que corrigiriam algo */
     validarPose(opts){chk();const tol=opts&&opts.tolerancia!==undefined?num(opts.tolerancia,"tolerância"):0.5,a=autoColisoes(pMundo(it),tol),l=limitesAcoplados(Object.assign({},it.params));
@@ -210,6 +218,15 @@ function apiObjeto(q){
         if(prevU===undefined)delete q.cimaLocal;else q.cimaLocal=prevU;throw e}
       return o;
     },
+    pontosDeAgarre(){chk();atualizarApoios();return gripSites(q).map(s=>gripSiteWorld(q,s.id,restGround(SCN.list[0].params)))},
+    pontoDeAgarre(id){chk();atualizarApoios();return gripSiteWorld(q,id,restGround(SCN.list[0].params))},
+    emPosseDe(){chk();atualizarApoios();const g=q.gripV3||q.grip;if(!g)return null;
+      const owner=SCN.list.find(m=>m.id===g.mannequinId);
+      return {manequim:owner?.name||null,mao:g.side===1?"esquerda":"direita",
+        versao:q.gripV3?3:1,ponto:q.gripV3?.siteId||null,
+        segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
+    segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
+    soltar(opts={}){chk();cena.soltarObjeto(q.id,opts);return o},
     medidas(m){chk();editarObjeto(q,m||{});return o},
     /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
     cor(c,contorno){chk();editarObjeto(q,{cor:c===undefined?"auto":c,contorno});return o},
@@ -404,8 +421,25 @@ const cena={
   segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
     const it=manequim===undefined?SCN.list[SCN.active]:typeof manequim==="number"?SCN.list[manequim]:SCN.list.find(q=>q.name===manequim);
     const o=acharObjeto(objeto);if(!it||!o)throw Error("Manequim/objeto não encontrado.");
-    atualizarApoios();return beginGrip(it,o,ladoNum(mao),restGround(SCN.list[0].params),opts)},
-  soltarObjeto(objeto){const o=acharObjeto(objeto);if(!o||!releaseGrip(o))throw Error("O objeto não está segurado.");atualizarApoios();return true},
+    atualizarApoios();const ground=restGround(SCN.list[0].params);
+    return opts.motor==="v2"?beginGrip(it,o,ladoNum(mao),ground,opts):
+      beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,objetos:SCN.objetos});
+  },
+  soltarObjeto(objeto,opts={}){const o=acharObjeto(objeto);
+    if(!o)throw Error("Objeto não encontrado.");atualizarApoios();
+    if(o.gripV3){const it=SCN.list.find(x=>x.id===o.gripV3.mannequinId);
+      if(!it)throw Error("Proprietário não encontrado.");const r=releaseRigidGrip(it,o,restGround(SCN.list[0].params),opts);
+      atualizarApoios();return r.solto;}
+    if(!releaseGrip(o))throw Error("O objeto não está segurado.");
+    atualizarApoios();return true;
+  },
+  vinculos(){atualizarApoios();return SCN.objetos.map(o=>({o,g:o.gripV3||o.grip})).filter(x=>x.g).map(({o,g})=>
+    ({objeto:o.nome||o.tipo,versao:o.gripV3?3:1,manequim:SCN.list.find(x=>x.id===g.mannequinId)?.name||null,
+     mao:g.side===1?"esquerda":"direita",ponto:g.siteId||null,segundaMao:g.secundaria?.side===1?"esquerda":g.secundaria?.side===-1?"direita":null}))},
+  inspecionarPreensao(){atualizarApoios();const ground=restGround(SCN.list[0].params);
+    return SCN.objetos.filter(o=>o.gripV3).map(o=>{const it=SCN.list.find(x=>x.id===o.gripV3.mannequinId);
+      return it?inspectRigidGrip(it,o,ground):{ativo:false,objeto:o.nome||o.tipo}})},
+
   colisao(modo,preferir){if(modo!==undefined)setModoColisao(String(modo).toLowerCase());if(preferir!==undefined)setPreferir(String(preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""));return {modo:COL.modo,preferir:COL.preferir}},
   resolverColisoes(o){const met=o&&o.preferir?String(o.preferir).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""):undefined;if(met)setPreferir(met);const r=resolverTodas(met);r.forEach(t=>LOG.push(["aviso",t]));return r},
   desfazerColisao(){return desfazerColisao()},
