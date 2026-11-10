@@ -137,7 +137,7 @@ flowchart TD
   ARC --> DYN
   SOL --> TMP
   NAR --> TMP
-  DYN --> TMP
+  DYN -.->|integração opcional| TMP
   GRP --> UIX
   SOC --> UIX
   TMP --> UIX
@@ -369,12 +369,12 @@ Estados iniciais: **AUDITADO** para os achados de código já verificados; **PEN
 
 ### TMP — Tempo, CCD e sequências
 
-**Dependências de fase:** `SOL`, `NAR`, `DYN`.  
+**Dependências de fase:** `SOL`, `NAR` (extensões opcionais de `DYN`).  
 **Entrega:** tempo, ccd e sequências concluída sem quebrar a aplicação existente.
 
 | Tarefa | Dependência imediata | Ação | Evidência/aceitação |
 |---|---|---|---|
-| **TMP-01** | SOL-12, NAR-12, DYN-10 | Definir prevPose, desiredPose, solvedPose por entidade | Estados independentes sem sobrescrever origem |
+| **TMP-01** | SOL-12, NAR-12 | Definir prevPose, desiredPose, solvedPose por entidade | Estados independentes sem sobrescrever origem |
 | **TMP-02** | TMP-01 | Fixar timestep de resolução e interpolação visual | Subpassos previsíveis na edição contínua |
 | **TMP-03** | TMP-02 | Adicionar sweep ou shape-casting para membros rápidos | Não atravessar entre dois frames |
 | **TMP-04** | TMP-03 | Aplicar CCD seletivo a mão, cabeça e objetos rápidos | Prioridade por velocidade e tamanho |
@@ -598,6 +598,6 @@ testes/contato-*.mjs
 
 ## 12. Conclusão
 
-**Implementar na ordem AUD → ARC → GEO → BRO → NAR → SEL → SOL → SUP → GRP → SOC, com DYN/TMP conforme necessidade, depois UIX/API/TST/REL.** O primeiro marco útil não é um abraço: é uma mão apoiada no próprio tronco sem penetrá-lo, preservando pose, IK e câmera. A segunda prova é uma mão segurando um copo com cinco dedos reconhecidos como colisores. A terceira é um abraço com contatos múltiplos e sem mascarar a colisão dos tórax.
+**Implementar na ordem AUD → ARC → GEO → BRO → NAR → SEL → SOL → SUP → GRP → SOC, com TMP obrigatório e DYN opcional, conforme necessidade, depois UIX/API/TST/REL.** O primeiro marco útil não é um abraço: é uma mão apoiada no próprio tronco sem penetrá-lo, preservando pose, IK e câmera. A segunda prova é uma mão segurando um copo com cinco dedos reconhecidos como colisores. A terceira é um abraço com contatos múltiplos e sem mascarar a colisão dos tórax.
 
 O código existente é uma fundação aproveitável. O trabalho principal é substituir a correção **depois** do conflito por solução **durante** a pose, com contato intencional e não interpenetração como restrições simultâneas.
