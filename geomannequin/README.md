@@ -333,3 +333,11 @@ malhas, zero triângulos degenerados nas amostras e 18 vistas SVG.
 revisar visualmente os dez biotipos, verificar exportações e completar
 a matriz de 1.350 renderizações. O workflow do Actions terminou antes
 de fornecer etapas ou logs; não foi contado como teste aprovado.
+
+### Cabeça V2 — Loomis estendido, testa tangente e nuca em arco (10/11/2026)
+
+A implementação experimental V2 ganhou **círculos laterais planos maiores** (raio padrão 0,73), uma calota superior menos esférica, **trecho frontal aproximadamente reto com continuidade de tangente** e um **perfil occipital circular/oval no corte sagital** que se liga à nuca por Hermite C1. O motor V1 foi preservado.
+
+- [Task graph completo de 19 etapas, critérios e testes](docs/task-graph-cabeca-v2-perfil-loomis-20261110.md)
+- Regressões: `npm run testar:planos-loomis`; atlas 3×3: `npm run atlas:planos-loomis -- masculino medio`
+- A geometria precisa de revisão estética comparando as vistas geradas às referências. Testes geométricos isolados não equivalem a essa aprovação.
