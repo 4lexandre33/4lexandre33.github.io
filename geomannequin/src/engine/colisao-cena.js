@@ -43,8 +43,10 @@ function capsulas(p) {
   cap("torax", applyA(ch.A2, [-cw, F.yJ - 1.1, zc]), applyA(ch.A2, [cw, F.yJ - 1.1, zc]), 0.9);
   cap("torax", applyA(ch.A2, [-cw * 0.7, F.yJ - 2.0, zc + 0.05]), applyA(ch.A2, [cw * 0.7, F.yJ - 2.0, zc + 0.05]), 0.85);
   cap("abdomen", applyA(ch.A2, [0, F.yJ - 2.5, zc + 0.05]), applyA(ch.Pel, [0, F.yHip + 0.55, -0.45]), Math.max(0.55, B.waist * 0.72));
-  const hw = Math.max(0.2, B.hip * 0.42);
-  cap("pelve", applyA(ch.Pel, [-hw, F.yHip - 0.1, -0.48]), applyA(ch.Pel, [hw, F.yHip - 0.1, -0.48]), 0.8);
+  /* A cápsula lateral da pelve acompanha seu novo volume, em vez de usar raio fixo:
+     melhora a detecção entre personagens sem confundir a bacia com uma cintura fina. */
+  const hw = Math.max(0.2, B.hip * 0.42), raioPelve = Math.max(0.6, B.hip * 0.56);
+  cap("pelve", applyA(ch.Pel, [-hw, F.yHip - 0.1, -0.48]), applyA(ch.Pel, [hw, F.yHip - 0.1, -0.48]), raioPelve);
   const Aarm = armDims(p), Aleg = legDims(p);
   [1, -1].forEach(s => {
     const L = s > 0 ? "E" : "D", ap = armPose(p, F, s), Aa = comp(ch.A2, ap.arm), Af = comp(ch.A2, ap.fore), Ah = comp(ch.A2, ap.hand), k = Aarm.k;
