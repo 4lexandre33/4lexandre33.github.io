@@ -70,8 +70,7 @@ function loadScene(sc){
     if(o.grip&&Number.isInteger(o.grip.mannequinIndex))q._grip={...o.grip};
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
     if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();
-    if(Array.isArray(o.frenteLocal))q.frenteLocal=o.frenteLocal.slice();
-    if(Array.isArray(o.cimaLocal))q.cimaLocal=o.cimaLocal.slice();
+
     SCN.objetos.push(q)}else SCN.objetos.push(null)}catch(e){SCN.objetos.push(null)}});
   /* apoio de objeto em objeto (guardado pelo índice) e cores que faltarem */
   {const arr=SCN.objetos.slice();SCN.objetos.length=0;arr.forEach(q=>{if(q)SCN.objetos.push(q)});
