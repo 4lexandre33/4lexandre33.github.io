@@ -84,7 +84,13 @@ function duplicarObjeto(q) {
   const o = Object.assign({}, q); delete o.id; delete o.hue; delete o.col; delete o.base;
   delete o.grip;delete o.gripV3;delete o.sobreRel;
   const c = adicionarObjeto(q.tipo, Object.assign(o, { x: q.x + Math.max(2, q.larg + 1), nome: q.nome ? (q.nome + " (cópia)").slice(0, 24) : undefined, sobre: undefined }));
-  c.sobre = q.sobre; atualizarApoios(); return c;
+  c.sobre = q.sobre;
+  if(Array.isArray(q.rot3)&&q.rot3.length===9)c.rot3=q.rot3.slice();
+  if(q.emAr){c.base=q.base;c.emAr=true;c.sobre=null}
+  if(Array.isArray(q.sitesExtras))c.sitesExtras=q.sitesExtras.map(s=>({
+    ...s,local:s.local.slice(),normal:(s.normal||[0,0,1]).slice()
+  }));
+  atualizarApoios(); return c;
 }
 function acharObjeto(ref) {
   if (ref && typeof ref === "object" && ref.id) return SCN.objetos.find(o => o.id === ref.id) || null;
