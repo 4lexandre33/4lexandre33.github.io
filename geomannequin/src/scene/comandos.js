@@ -22,7 +22,7 @@ import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./c
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function guardarContatoV2(it,antes){
@@ -365,6 +365,7 @@ const cena={
     {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
   ]},
   arquivosCamadas(){return arquivosCamadas(cena.exportarJSON())},
+  exportarZIP(){return criarZip(cena.arquivosCamadas())},
   async baixar(nome,dados,mime="text/plain;charset=utf-8"){
     if(!UIH.baixar)throw Error("Download exige navegador. Use exportarSVG/exportarOBJ para obter os dados em execução headless.");
     return await UIH.baixar(String(nome),dados,mime);
