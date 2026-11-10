@@ -34,17 +34,21 @@ function bustFrame(p,S){
 function torsoProfile(F){
   if(F._prof)return F._prof;
   const B=F.B,f=B.fat,yJ=F.yJ,c=F.chestW,c0=B.chest0,mf=clamp(1-1.4*B.fem,0,1)*0.85,gk=clamp(B.glute/0.21,0,2.5);
+  /* A cintura acompanha a base óssea da bacia, sem anular o ajuste manual de cintura.
+     O mesmo valor em ambos os lados evita assimetria na pose neutra. */
+  const apoioBacia=B.hip*(0.95-0.15*B.fem);
+  const cintura=B.waist+0.72*Math.max(0,apoioBacia-B.waist);
   F._prof=[
     [F.yAc,F.W-0.05,0.75,0.8,-0.47,2.4],
     [F.yAc-0.75,c,1.06,0.95,-0.47,2.4],
     [F.yUB,c*1.0,1.04+0.1*f,0.95,-0.46,2.35],
     [yJ-2.4,lerp(c0*0.97,c*0.9,0.5+0.5*mf),0.95+0.15*f,0.88+0.05*f,-0.45,2.3],
-    /* cintura: no corpo masculino a caixa torácica e os oblíquos enchem o flanco (sem "ampulheta"); no feminino a cintura afina */
-    [F.yWst,lerp(B.waist*0.9,c0*0.82,mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
-    [F.yNav,lerp(B.waist*0.94,c0*0.83,mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
-    [yJ-4.1,lerp((B.waist+B.hip)/2,Math.max(c0*0.84,B.hip*0.9),mf),0.84+0.2*f,0.82,-0.45,2.3],
-    /* glúteo máximo: a parte de trás da pelve sai para trás (perfil redondo), mais cheia na altura da virilha */
-    [F.yHip,B.hip*0.93,0.8+0.1*f,0.94+0.22*gk,-0.48,2.3],
+    /* Flanco aberto e transição progressiva: costelas inferiores → cintura → crista ilíaca. */
+    [F.yWst,lerp(cintura*0.96,Math.max(c0*0.90,B.hip*0.90),mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
+    [F.yNav,lerp(cintura,Math.max(c0*0.91,B.hip*0.94),mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
+    [yJ-4.1,lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf),0.84+0.2*f,0.82,-0.45,2.3],
+    /* A pelve sustenta o abdômen; glúteo e virilha mantêm o skinning original. */
+    [F.yHip,B.hip*0.96,0.8+0.1*f,0.94+0.22*gk,-0.48,2.3],
     [yJ-5.4,B.hip*(0.6+0.08*gk),0.66,0.8+0.3*gk,-0.5,2.2],
     [F.yCr,0.3+0.12*gk,0.4,0.42+0.22*gk,-0.46,2.1],
     [F.yB,0.02,0.02,0.02,-0.46,2]
