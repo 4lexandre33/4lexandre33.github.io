@@ -15,6 +15,7 @@ export function facialReliefV4(u,v,p,S,atlas=compileMicroAtlasV3(p,S)){
  const fat=clamp(p.fat??0,0,1),mus=clamp(p.muscle??0,0,1);
  const brow=clamp((p.brow??.06)/.06,0,2),nose=clamp((p.nose??.24)/.24,.4,1.9);
  const lips=clamp((p.lips??.045)/.045,.4,1.8);
+ const cavity=clamp(p.v42OrbitalCavity??.95,0,1.6);
  let f=0,side=0,back=0;
  /* As peças pequenas da V3 permanecem no processo matemático, mas têm
   * peso reduzido para evitar órbitas fundas e bocas pontiagudas. */
@@ -28,7 +29,9 @@ export function facialReliefV4(u,v,p,S,atlas=compileMicroAtlasV3(p,S)){
    const center=s*.335,r=eyeMask(u,v,s);
    /* A cavidade recua, mas é limitada por rebordos. Em perfil a depressão
       interna não deve perfurar a silhueta lateral. */
-   f-=detail*.074*orb*bell(u,v,center,.535,.184,.046);
+   f-=detail*(.074*orb+.068*cavity)*bell(u,v,center,.535,.184,.050);
+   /* Borda inferior contínua: o olho se aloja numa bacia rasa, com aro. */
+   f+=detail*.020*cavity*gauss((u-center)/.19,0,1)*gauss(v,.602,.022);
    f+=detail*.047*brow*bell(u,v,center,.465,.228,.039);
    f+=detail*.022*gauss(r,1,.23)*gauss(v,.535,.090);
    f+=detail*.021*bell(u,v,center,.582,.21,.032);
