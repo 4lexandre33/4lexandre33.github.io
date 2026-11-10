@@ -5,7 +5,7 @@
 import {SCN} from "./modelo.js";
 import {pMundo,COL} from "./colisoes.js";
 import {colliderRig,colliderObject,manifoldCaps,manifoldObject,manifoldSelf} from "../engine/contact-v2.js";
-import {restGround,colisaoEntreObjetos} from "../engine/index.js";
+import {restGround,colisaoEntreObjetos,partesLocais} from "../engine/index.js";
 import {updateRigidGrip} from "./grip-v3.js";
 const CONTATO_V2={enabled:false,level:"fine",tol:.07,last:null,blocked:0};
 const MOTION=/^(?:wx|wy|wz|wRot|arm|elbow|pron|wrist|handCurl|f(?:Th|In|Me|An|Mi|Spread)|thumbOpp|hip|knee|ankle|foot|toes|hallux|head|neck|spine|lum|tho|pelvis|body|shElev|shProt|scap)/;
@@ -138,15 +138,38 @@ function interpolate(start,end,t){
  for(const k of Object.keys(end)){
   if(!MOTION.test(k))continue;
   const a=start[k],b=end[k];
-  if(Number.isFinite(a)&&Number.isFinite(b))q[k]=a+(b-a)*t;
+  if(Number.isFinite(a)&&Number.isFinite(b)){
+   if(k==="wRot"){
+     // Arco curto ao atravessar +180/-180 graus.
+     const diff=((b-a+540)%360)-180;
+     q[k]=((a+diff*t+540)%360)-180;
+   }else q[k]=a+(b-a)*t;
+  }
  }
  return q;
 }
-function maxMovement(a,b){
- let m=0;for(const k in b)if(MOTION.test(k)&&Number.isFinite(a[k])&&Number.isFinite(b[k])){
-  const delta=Math.abs(b[k]-a[k]);m=Math.max(m,/^(wx|wy|wz)/.test(k)?delta*28:delta);
+function maxMovement(a,b,it){
+ let scaled=0,rootSq=0;
+ for(const k in b)if(MOTION.test(k)&&Number.isFinite(a[k])&&Number.isFinite(b[k])){
+   const diff=k==="wRot"?Math.abs(((b[k]-a[k]+540)%360)-180):Math.abs(b[k]-a[k]);
+   if(/^(wx|wy|wz)$/.test(k)){rootSq+=diff*diff;scaled=Math.max(scaled,diff*28)}
+   else scaled=Math.max(scaled,diff);
  }
- return m;
+ if(!it)return scaled;
+ const carried=SCN.objetos.filter(o=>o.gripV3?.mannequinId===it.id);
+ if(!carried.length)return scaled;
+ let radius=0;
+ for(const o of carried)for(const p of partesLocais(o)){
+   const h=p.cil?[p.r,p.hh,p.r]:p.h;
+   radius=Math.max(radius,Math.hypot(...p.c)+Math.hypot(...h));
+ }
+ radius=Math.max(radius,2);
+ const rootYaw=Math.abs(((b.wRot-a.wRot+540)%360)-180)*Math.PI/180;
+ const angular=Object.keys(b).filter(k=>/^(arm|elbow|pron|wrist|shElev|shProt|scap|spine|body)/.test(k)&&
+     Number.isFinite(a[k])&&Number.isFinite(b[k]))
+    .reduce((sum,k)=>sum+Math.abs(b[k]-a[k])*Math.PI/180,0);
+ const arc=Math.sqrt(rootSq)+radius*(rootYaw+angular);
+ return Math.max(scaled,arc*32);
 }
 /* CCD incremental aproximado: amostra o caminho articulado e bisecta o primeiro
  * bloqueio. NÃO é CCD analítica para todas as geometrias deformáveis.
@@ -159,9 +182,12 @@ function limitarPropostaV2(it,before,{samples,includeSelf=true}={}){
   const q=interpolate(before,desired,t);
   return intrusion(contacts(it,q,ctx,{incluirAuto:includeSelf,max:500}),base,tol);
  };
- const total=maxMovement(before,desired);
+ const total=maxMovement(before,desired,it);
  if(total<=1e-8)return {ok:true,enabled:true,fraction:1};
- let stepCount=samples??Math.min(24,Math.max(5,Math.ceil(total/12)));
+ // CCD discreta por proxies: móvel grande exige mais amostras do arco varrido.
+ let stepCount=samples===undefined?
+   Math.min(256,Math.max(5,Math.ceil(total/8))):
+   Math.min(256,Math.max(2,Math.ceil(samples)));
  let safe=0,unsafe=null,last={ok:true,worst:0};
  for(let i=1;i<=stepCount;i++){
   const t=i/stepCount,r=evaluate(t);
