@@ -44,7 +44,7 @@ function contacts(it,params,ctx,{incluirAuto=true,margin=.025,max=32}={}){
  const carried=new Map();
  for(const entry of ctx.objetos)if(entry.obj.gripV3?.mannequinId===it.id){
    const obj={...entry.obj},ground=worldGround();
-   if(updateRigidGrip({...it,params},obj,ground))
+   if(updateRigidGrip({...it,params},obj,ground,{ajustarSegundaMao:false}))
      carried.set(entry.obj.id,{obj,parts:colliderObject(obj,ground)});
  }
  if(incluirAuto)for(const c of manifoldCaps(body,body,{...opts,self:true})){
