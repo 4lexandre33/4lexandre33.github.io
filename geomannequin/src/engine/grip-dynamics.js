@@ -41,8 +41,17 @@ function iniciarQuedaObjeto(o,ground,{
 }
 function cancelarQuedaObjeto(o){if(!o?.dinamica)return false;delete o.dinamica;return true;}
 function obstaculoDaQueda(o,objetos,ground,colisaoHumano){
+ const byId=new Map((objetos||[]).map(x=>[x.id,x]));
+ const abaixoDe=(obj,id)=>{
+   const seen=new Set([obj.id]);let atual=obj;
+   while(atual?.sobre&&!seen.has(atual.sobre)){
+     if(atual.sobre===id)return true;
+     seen.add(atual.sobre);atual=byId.get(atual.sobre);
+   }
+   return false;
+ };
  for(const p of objetos||[]){
-  if(p===o||p.id===o.id||p.sobre===o.id||o.sobre===p.id)continue;
+  if(p===o||p.id===o.id||abaixoDe(p,o.id)||abaixoDe(o,p.id))continue;
   // Objetos carregados ou estáticos mantêm a sua pose atual.
   if(colisaoEntreObjetos(o,p,ground,0.001).length)return p;
  }
