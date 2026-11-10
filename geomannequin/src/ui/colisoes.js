@@ -3,8 +3,7 @@
 import { $ } from "../scene/ambiente.js";
 import { SCN, setActive } from "../scene/modelo.js";
 import {CONTATO_V2,setContatoV2,consultarContatosV2} from "../scene/contato-v2.js";
-import {beginGrip,releaseGrip} from "../scene/preensao-v2.js";
-import {beginRigidGrip,releaseRigidGrip} from "../scene/grip-v3.js";
+import {cena} from "../scene/comandos.js";
 import {gripSites} from "../engine/grip-sites.js";
 import {atualizarApoios} from "../scene/modelo.js";
 import {restGround} from "../engine/index.js";
@@ -100,27 +99,30 @@ export function iniciarColisoes() {
       "Geometria de contato V2 ativa: bloqueio 3D detalhado ao arrastar.":"Motor detalhado desativado.";render();
   })}
   $("colV2Segurar")?.addEventListener("click",()=>{
-    const obj=SCN.objetos.find(o=>o.id===SCN.objSel),it=SCN.list[SCN.active];
-    if(!obj){status.textContent="Selecione um objeto no painel de cena antes de segurar.";return}
-    try{atualizarApoios();const lado=$("colV2Mao").value==="esquerda"?1:-1;
-      const reach=Number($("colV3Reach")?.value??5);
-      const r=beginRigidGrip(it,obj,lado,restGround(SCN.list[0].params),{
-        ponto:gripChoice?.value||"auto",reach,modo:"preservar",objetos:SCN.objetos,
-        segunda:!!obj.gripV3});
-      status.textContent="Preensão rígida V3: "+r.objeto+" pela "+r.mao+" no ponto "+r.ponto+
-        " ("+(r.distancia*11.4).toFixed(1)+" cm). Ao mover o braço, a cadeira acompanha a mão em 3D.";
-      refreshScene();render();
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    if(!obj){status.textContent="Selecione um objeto antes de segurar.";return}
+    try{
+      const mao=$("colV2Mao").value,reach=Number($("colV3Reach")?.value??5);
+      const r=cena.segurarObjeto(obj.id,{
+        manequim:SCN.active,mao,reach,ponto:gripChoice?.value||"auto",
+        modo:$("colV3Modo")?.value||"preservar",segunda:!!obj.gripV3
+      });
+      status.textContent="Grip V3: "+r.objeto+" / "+r.mao+" / "+r.ponto+
+        " ("+(r.distancia*11.4).toFixed(1)+" cm)."+
+        (r.secundaria?" Segunda mão vinculada.":" O objeto acompanha a palma em 3D.");
+      refreshScene();syncControls();render();
     }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
   $("colV2Soltar")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
-    if(!obj||(!obj.gripV3&&!obj.grip)){status.textContent="Selecione um objeto que esteja segurado.";return}
-    const m=SCN.list.find(x=>x.id===obj.gripV3?.mannequinId);
-    if(obj.gripV3&&m){
-      const r=releaseRigidGrip(m,obj,restGround(SCN.list[0].params),{modo:$("colV3Soltar")?.value||"manter"});
-      status.textContent=r.solto?"Objeto solto: "+r.modo+". Não há gravidade dinâmica.":"Uma mão soltou; a outra continua segurando.";
-    }else{releaseGrip(obj);status.textContent="Objeto V2 liberado sobre o apoio."}
-    atualizarApoios();refreshScene();render();
+    if(!obj||(!obj.gripV3&&!obj.grip)){status.textContent="Selecione um objeto segurado.";return}
+    try{
+      const modo=$("colV3Soltar")?.value||"manter";
+      const soltou=cena.soltarObjeto(obj.id,{modo});
+      status.textContent=soltou?"Objeto liberado ("+modo+"). Queda e pouso são cinemáticos.":
+        "Uma das mãos continua segurando o objeto.";
+      atualizarApoios();refreshScene();syncControls();render();
+    }catch(e){status.textContent="Erro ao soltar: "+e.message}
   });
   $("colV2Consultar")?.addEventListener("click",()=>{
     try{const hits=consultarContatosV2({max:60}),fatal=hits.filter(c=>c.prof>CONTATO_V2.tol);
