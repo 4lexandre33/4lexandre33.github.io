@@ -383,3 +383,16 @@ A geometria da **Cabeça V3** foi refinada a partir das oito vistas fornecidas: 
 - `node testes/atlas-cabeca-v3-reconstrucao.mjs masculino medio` e `... feminino medio` — atlas de 9 vistas com **pescoço e linhas construtivas**.
 
 **Situação:** as mudanças matemáticas e os testes foram adicionados ao código. Não declarar anatomia aprovada até executar testes integrados, inspecionar as 18 vistas renderizadas e compará-las visualmente às imagens de referência. A malha cervical continua separada da malha da cabeça e é escondida sob a calota por sobreposição projetada, não por união volumétrica em uma peça só.
+
+
+### Cabeça V4 — anatomia por planos (fundação experimental, 10/11/2026)
+
+Nova cabeça paramétrica independente da V3, criada a partir de seções 2D do crânio, campos de microgeometria para órbitas, pálpebras, nariz, zigomas, lábios e mento, com orelhas V4 e 25 landmarks. Mantém conexão ao corpo e poses existentes. As linhas Loomis/Asaro são projetadas sobre a superfície final, em vez de serem objetos decorativos.
+
+**Como experimentar:** na lista **Geometria da cabeça**, selecione **Cabeça V4 — anatomia por planos (experimental)**. Na seção de detalhes estão os controles V4 (detalhe facial, plano temporal, profundidade orbital, zigoma, mandíbula, dorso nasal e boca). O botão **Cabeça V4 (.obj)** exporta a malha fechada em OBJ depois de verificações topológicas.
+
+- [Task graph de 97 tarefas com dependências, status, caminhos e critérios de aceite](docs/head-v4-task-graph.md)
+- `npm run testar:cabeca-v4` — geometria básica nos 10 biotipos × 3 LOD e exportação OBJ.
+- `npm run atlas:cabeca-v4 -- masculino medio` — nove vistas em SVG, com pescoço e linhas construtivas.
+
+**Estado:** a arquitetura V4 e os testes geométricos isolados foram implementados. A equivalência estética com as referências enviadas **ainda não foi validada**. Os presets específicos de line art limpa, planos monocromáticos e sombreamento azul, a união anatômica mais refinada cabeça-pescoço e a calibração por erro multivista são etapas futuras registradas no task graph. V1, V2 e V3 permanecem disponíveis.
