@@ -556,6 +556,15 @@ function scene(p,L,pal,fast,mode){
       if(ab)curve("feat",arr(x=>H(x,mY(x)-ab),-0.19,0.19,30));
       curve("feat",arr(x=>H(x,top(x)),-0.2,0.2,40));
       curve("feat",arr(x=>H(x,bot(x)),-0.13,0.13,24));
+      /* Sulcos nasolabiais e zigomáticos aparecem apenas durante o sorriso. */
+      if(sm>0.06)[-1,1].forEach(side=>{
+        curve("divisao",arr(u=>{
+          const x=side*(0.145+0.115*Math.sin(Math.PI*u*0.8));
+          const y=lerp(-0.96*t,mouthY+0.07*sm,u);
+          return H(x,y,0.017);
+        },0,1,18));
+        if(sm>0.45)curve("fibra",arr(u=>H(side*(0.29+0.06*u),eyeY-0.17-0.05*u,0.013),0,1,12));
+      });
     }
     const wing=[[0.105,-0.76],[0.14,-0.85],[0.17,-0.93],[0.14,-0.985],[0.07,-1.0],[0,-1.0]];
     const half=wing.map(w=>[w[0],w[1]*t]);
@@ -620,6 +629,13 @@ function scene(p,L,pal,fast,mode){
       curve("feat",arr(q=>{const r=0.1+0.8*q;return E(X(r),up(r)+0.026*p.eyeSize+0.01*Math.sin(Math.PI*q),0.01)},0,1,20));
       curve("feat",arr(k=>E(X(1)+0.012*k,up(1)-0.004+0.005*k),0,1,4));
       curve("feat",arr(a=>E(X(0)+0.012*Math.cos(a)+0.012,lo(0)+0.012*Math.sin(a)+0.006),-0.5,2.8,10));
+      /* Orbicular dos olhos, pálpebras e pregas laterais coordenados. */
+      const contr=clamp(0.65*Math.max(0,p.smile||0)+0.35*lid+0.2*Math.max(0,p.browIn||0),0,1);
+      if(contr>0.16){
+        curve("divisao",arr(q=>E(X(q),lo(q)-0.025-0.018*contr*Math.sin(Math.PI*q),0.012),0.13,0.88,22));
+        if(contr>0.4)for(const d of [-0.025,0.007])curve("fibra",
+          arr(u=>E(X(1)+0.015+0.06*u,0.025+d-0.025*u,0.015),0,1,9));
+      }
     });
   }
   out.push('</g>');
