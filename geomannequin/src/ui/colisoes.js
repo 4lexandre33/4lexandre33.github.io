@@ -98,6 +98,45 @@ export function iniciarColisoes() {
     setContatoV2({enabled:v2.checked});status.textContent=v2.checked?
       "Geometria de contato V2 ativa: bloqueio 3D detalhado ao arrastar.":"Motor detalhado desativado.";render();
   })}
+  let animacaoFisica=false;
+  function animarQueda(){
+    if(animacaoFisica)return;
+    animacaoFisica=true;
+    const botao=$("colV3Animar");
+    if(botao)botao.disabled=true;
+    let anterior=null,frames=0;
+    const tick=(agora)=>{
+      try{
+        const dt=anterior===null?1/60:Math.min(.05,Math.max(0,(agora-anterior)/1000));
+        anterior=agora;
+        const r=cena.avancarFisica(dt);
+        render();frames++;
+        if(r.ativos&&frames<1200){
+          requestAnimationFrame(tick);
+        }else{
+          animacaoFisica=false;
+          if(botao)botao.disabled=false;
+          status.textContent=r.ativos?"Animação interrompida pelo limite de segurança.":
+            "Queda concluída. O objeto parou no contato detectado.";
+          refreshScene();
+        }
+      }catch(e){
+        animacaoFisica=false;
+        if(botao)botao.disabled=false;
+        status.textContent="Falha na animação: "+e.message;
+      }
+    };
+    requestAnimationFrame(tick);
+  }
+  $("colV3Animar")?.addEventListener("click",()=>{
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    if(!obj){status.textContent="Selecione o objeto antes de animar sua queda.";return}
+    try{
+      if(obj.gripV3||obj.grip)cena.soltarObjeto(obj.id,{modo:"queda"});
+      else if(!obj.dinamica?.ativo)cena.obterObjeto(obj.id).cair();
+      animarQueda();
+    }catch(e){status.textContent="Não foi possível animar: "+e.message}
+  });
   $("colV2Segurar")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
     if(!obj){status.textContent="Selecione um objeto antes de segurar.";return}
@@ -122,6 +161,7 @@ export function iniciarColisoes() {
       status.textContent=soltou?"Objeto liberado ("+modo+"). Queda e pouso são cinemáticos.":
         "Uma das mãos continua segurando o objeto.";
       atualizarApoios();refreshScene();syncControls();render();
+      if(modo==="queda"&&soltou)animarQueda();
     }catch(e){status.textContent="Erro ao soltar: "+e.message}
   });
   $("colV2Consultar")?.addEventListener("click",()=>{
