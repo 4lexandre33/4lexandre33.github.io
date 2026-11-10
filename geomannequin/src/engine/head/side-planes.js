@@ -15,24 +15,26 @@ export function sidePlanesV2(p,S){
   const memo=CACHE.get(S);
   if(memo&&memo.key===key)return memo.planes;
   const scale=clamp(finite(p.headScale,1),.90,1.10);
-  const y=clamp(finite(p.sidePlaneCenterY,.10),-.05,.27);
+  const y=clamp(finite(p.sidePlaneCenterY,.10),-.05,.25);
   const r=ringV2(y,p,S);
   const z=r[1]+clamp(finite(p.sidePlaneCenterZ,0),-.10,.10)*scale;
-  const radius=clamp(finite(p.sidePlaneRadius,.47),.37,.52)*scale;
+  /* Região lateral ampliada até o parietal alto e o temporal inferior. */
+  const radius=clamp(finite(p.sidePlaneRadius,.73),.37,.79)*scale;
   const fillet=clamp(finite(p.sidePlaneBevel,.075),.025,.16)*scale;
   /* d é proporcional à seção craniana e limitado pelo envelope da cabeça
      no círculo inteiro. Isso evita transformar uma cavidade em saliência. */
   const depthRatio=clamp(finite(p.sidePlaneDepth,.72),.61,.83);
   let safe=Infinity;
-  for(let j=0;j<96;j++){
-    const phi=j/96*PI2,yy=y+radius*Math.sin(phi),zz=z+radius*Math.cos(phi);
+  for(let j=0;j<192;j++){
+    const phi=j/192*PI2,yy=y+radius*Math.sin(phi),zz=z+radius*Math.cos(phi);
     const [w,c,dz]=ringV2(yy,p,S),q=clamp((zz-c)/(dz||1),-.999999,.999999);
     safe=Math.min(safe,w*Math.sqrt(Math.max(0,1-q*q)));
   }
-  const distance=clamp(Math.min(r[0]*depthRatio,safe-.025*scale),.30*scale,.74*scale);
+  /* Limite calculado na circunferência; não empurrar o disco para fora. */
+  const distance=Math.max(.18*scale,Math.min(r[0]*depthRatio,safe-.023*scale));
   const planes=[-1,1].map(sign=>({
     side:sign,center:[sign*distance,y,z],normal:[sign,0,0],
-    distance,radius,fillet,
+    distance,radius,fillet,safeEnvelope:safe,
     /* Os três perfis são concêntricos e simétricos. */
     border:phi=>[sign*distance,y+radius*Math.sin(phi),z+radius*Math.cos(phi)],
     ring:(rr,phi)=>[sign*distance,y+rr*Math.sin(phi),z+rr*Math.cos(phi)]
