@@ -25,10 +25,16 @@ jobs:
         run: npm run testar:anatomia
       - name: Validar crânio, mandíbula, ombros e conexão pélvica
         run: node testes/anatomia-integral.mjs
+      - name: Validar crânio 3×3, ATM, língua, arcadas, orelhas e pescoço
+        run: npm run testar:cranio
       - name: Validar 300 renderizações de expressões faciais
         run: npm run testar:face
       - name: Validar 900 renderizações e exportar 20 referências SVG
         run: npm run testar:matriz
+      - name: Gerar folhas 3×3 cranianas de masculino e feminino médio
+        run: |
+          npm run atlas:cranio -- masculino medio
+          npm run atlas:cranio -- feminino medio
       - name: Preparar recortes visuais de pelve, cintura e ombros
         run: node testes/corpo.mjs 'pelve-|cintura-|bacia-'
       - name: Guardar relatórios e imagens para revisão
@@ -39,6 +45,7 @@ jobs:
           path: |
             geomannequin/testes/saida/biotipos
             geomannequin/testes/saida/face
+            geomannequin/testes/saida/atlas-cranio
             geomannequin/testes/saida/corpo-*.png
           if-no-files-found: warn
           retention-days: 14
