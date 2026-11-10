@@ -30,7 +30,9 @@
     "atlas:cabeca-v3-anatomia": "node testes/atlas-cabeca-v3-reconstrucao.mjs",
     "testar:cabeca-v4": "node testes/cabeca-v4-anatomia.mjs && node testes/cabeca-v4-1-anatomia.mjs",
     "atlas:cabeca-v4": "node testes/atlas-cabeca-v4.mjs",
-    "testar:cabeca-v4-1": "node testes/cabeca-v4-1-anatomia.mjs"
+    "testar:cabeca-v4-1": "node testes/cabeca-v4-1-anatomia.mjs",
+    "atlas:cabeca-v4-1": "node testes/atlas-cabeca-v4.mjs",
+    "comparar:cabeca-v4-1": "node testes/atlas-cabeca-v4-1-comparar.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
