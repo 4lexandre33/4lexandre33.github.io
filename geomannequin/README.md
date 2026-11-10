@@ -351,3 +351,23 @@ A V3 cria uma nova cabeça a partir de seções anatômicas por spline e **mais 
 - Atlas de nove vistas: `node testes/atlas-cabeca-v3.mjs masculino medio`
 
 **Estado:** implementação funcional experimental; resultados da suíte integrada/CI, revisão estética e comparação com referência ainda precisam ser aprovados antes de chamar o modelo de anatomicamente fiel.
+
+
+### Órbita focal por região anatômica e partes de objetos (10/11/2026)
+
+A câmera continua orbitando cena, grupo, manequim, objeto ou ponto. Também pode escolher **qual parte do alvo** deve ser o pivô: cabeça, rosto, torso, braços, antebraços, mãos, pernas, coxas, canelas e pés (inclusive lado esquerdo/direito), ou superior/centro/inferior/topo/base de objetos. O alvo acompanha a pose e a posição do personagem. O painel **Vista (câmera)** oferece seletores de **Região do alvo**, **Elevação** e **Enquadramento**; os botões de ângulo e o arraste preservam a região.
+
+```js
+camera.orbitar("Ana", {area:"cabeca", azimute:"3/4 esquerda", elevacao:25, enquadrar:true});
+camera.area("mao esquerda");
+camera.focar("Caixa", "superior", {azimute:45, elevacao:60});
+camera.orbitar(["Ana","Leo"], {area:"cabeca", azimute:90, elevacao:15});
+```
+
+No roteiro: `#orbita "Ana" 8 area "mao esquerda" elevacao 25`. A escolha do pivô e da região é salva no JSON da cena. **Criaturas com rigs não humanos exigem integração futura**: atualmente o motor dispõe de manequins humanos e objetos.
+
+- [Task graph completo de 42 nós, arquivos, critérios e comandos](docs/task-graph-orbita-foco-regional-20261110.md).
+- `npm run testar:camera-foco` — testes automatizados do motor.
+- `node testes/atlas-camera-foco-regional.mjs` — folha visual 3×3 com nove enquadramentos.
+
+**Portões de aceitação:** comparação visual das nove vistas, build do projeto e regressões antigas ainda precisam ser confirmadas; implementação de código isoladamente não garante aprovação visual do foco.
