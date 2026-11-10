@@ -331,7 +331,7 @@ const cena={
   },
   parametros(){return SL.map(x=>({chave:x.k,nome:x.label,min:x.min,max:x.max,passo:x.step}))},
   capacidades(){return [
-    {id:"camera3d",estado:"implementado",api:["camera.ver","camera.costas","camera.frente","camera.seguir","camera.pararSeguir","camera.orientacaoDoAlvo"],limite:"pitch do renderizador até 70°"},
+    {id:"camera3d",estado:"implementado",api:["camera.ver","camera.costas","camera.frente","camera.seguir","camera.pararSeguir","camera.orientacaoDoAlvo"],limite:"nova orientação anatômica até ±90°, enquadramento antigo mantém seus limites"},
     {id:"camadas",estado:"implementado",api:["cena.camadaVisual","cena.camadasVisuais"]},
     {id:"estilos",estado:"implementado",api:["cena.estilo","cena.estilos"]},
     {id:"exportacao",estado:"parcial",api:["cena.exportarSVG","cena.exportarOBJ","cena.exportarJSON","cena.exportarPNG","cena.baixar"]},
