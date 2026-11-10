@@ -423,7 +423,7 @@ function scene(p,L,pal,fast,mode){
     lineT("anat",arr(a=>{const x=0.03*Math.cos(a),y=F.yNav+0.035*Math.sin(a);return bp(y,bustTh(y,x,true,p,F),0.01)},0,2*Math.PI,12),xb);
     [-1,1].forEach(s=>{
       /* linha da "calcinha": abertura da perna na frente (do quadril até a virilha) e o "V" do sacro atrás */
-      lineT("dobra",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb);
+      lineT("dobra",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb,L.cel?0.85:0.58);
       lineT("divisao",arr(k=>{const ax=lerp(0.26,0.02,k),y=lerp(F.yHip+0.32,F.yHip-0.3,Math.pow(k,1.1));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,16),xb);
     });
     /* fenda entre os glúteos */
@@ -431,8 +431,8 @@ function scene(p,L,pal,fast,mode){
     /* glúteo máximo: borda de fora (do sacro, descendo em diagonal para fora até o trocânter) e glúteo médio acima, no lado */
     {const gk=clamp(F.B.glute/0.21,0,2.5),hw=F.B.hip;
      if(gk>0.25)[-1,1].forEach(s=>{
-       lineT("divisao",arr(k=>{const y=lerp(F.yHip-0.02,F.yJ-5.45,k),ax=lerp(0.1,0.74*hw,Math.pow(k,0.75))-0.04*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb);
-       lineT("fibra",arr(k=>{const y=lerp(F.yHip+0.42,F.yHip-0.25,k),ax=lerp(0.62*hw,0.88*hw,Math.pow(k,0.8));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,12),xb);
+       lineT("divisao",arr(k=>{const y=lerp(F.yHip+0.02,F.yJ-5.40,k)-0.055*Math.sin(Math.PI*k),ax=lerp(0.12,0.72*hw,k*k*(3-2*k))-0.045*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb,L.cel?0.90:0.52);
+       if(L.cel||L.fibras)lineT("fibra",arr(k=>{const y=lerp(F.yHip+0.42,F.yHip-0.25,k),ax=lerp(0.62*hw,0.88*hw,Math.pow(k,0.8));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,12),xb,0.65);
      });
     }
     /* braços: borda do deltoide, bíceps, tríceps e braquiorradial (com a torção do antebraço) */
