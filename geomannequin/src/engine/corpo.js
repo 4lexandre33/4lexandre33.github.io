@@ -12,10 +12,10 @@ function bodyEff(p){
     /* caixa torácica grande (bem maior que o abdômen); chest0 é a medida antiga, usada só para a cintura */
     chest:(0.58*p.shW+0.42)*(1+0.12*m+0.13*f-0.14*w),
     chest0:(0.45*p.shW+0.35)*(1+0.1*m+0.13*f-0.07*w),
-    waist:p.waist*(1+0.52*f+0.06*m-0.24*w),
+    waist:p.waist*(1+0.45*f+0.065*m-0.18*w),
     /* Pelve óssea: base masculina mais ampla, preservando o dimorfismo e o parâmetro hips.
        A mesma largura alimenta superfície, ilíacos, articulações dos fêmures e glúteos. */
-    hip:p.hips*(1.25+0.26*f+0.45*(w-0.5)),
+    hip:p.hips*(1.24+0.24*f+0.35*(w-0.5)),
     belly:0.02+0.36*f*f,
     mus:0.25+1.0*m*(1-0.5*f),
     fat:f,fem:w,
@@ -58,12 +58,25 @@ function torsoProfile(F){
   ];
   return F._prof;
 }
+/* Hermite monotônico para seções em alturas NÃO uniformes. Compartilhar a
+   derivada em cada nó garante continuidade C1, sem os espinhos do Catmull-Rom
+   uniforme na saída da bacia; também preserva máximos e mínimos anatômicos. */
 function crInterp(P,y,k){
   let i=0;while(i<P.length-2&&y<P[i+1][0])i++;
-  const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];
-  const t=clamp((p1[0]-y)/(p1[0]-p2[0]),0,1),t2=t*t,t3=t2*t;
-  const a=p0[k],b=p1[k],c=p2[k],d=p3[k];
-  return 0.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);
+  const x1=P[i][0],x2=P[i+1][0],h=x2-x1;
+  const t=clamp((y-x1)/h,0,1),t2=t*t,t3=t2*t;
+  const deriv=j=>{
+    if(j<=0)return (P[1][k]-P[0][k])/(P[1][0]-P[0][0]);
+    if(j>=P.length-1){const n=P.length-1;return (P[n][k]-P[n-1][k])/(P[n][0]-P[n-1][0]);}
+    const h0=P[j-1][0]-P[j][0],h1=P[j][0]-P[j+1][0],
+      a=(P[j][k]-P[j-1][k])/(P[j][0]-P[j-1][0]),
+      b=(P[j+1][k]-P[j][k])/(P[j+1][0]-P[j][0]);
+    if(a*b<=0)return 0;
+    const w0=2*h1+h0,w1=h1+2*h0;
+    return (w0+w1)/(w0/a+w1/b);
+  };
+  const b=P[i][k],c=P[i+1][k],m1=deriv(i),m2=deriv(i+1);
+  return (2*t3-3*t2+1)*b+(t3-2*t2+t)*h*m1+(-2*t3+3*t2)*c+(t3-t2)*h*m2;
 }
 function bustZc(y,F){
   if(y>F.yJ)return lerp(-0.16,F.zT,clamp((F.yTop-y)/(F.yTop-F.yJ),0,1));
