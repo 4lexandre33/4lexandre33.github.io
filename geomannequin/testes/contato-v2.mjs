@@ -51,7 +51,7 @@ assert.ok(Array.isArray(w.cena.contatosFisicos({max:10})));
 const obj=w.cena.objeto("copo",{nome:"copo teste",x:0,z:0});
 const o=w.SCN.objetos.find(q=>q.nome==="copo teste");
 const hand0=getHandAnchor(it,-1,g0);
-const held=w.cena.segurarObjeto("copo teste",{mao:"direita",reach:30});
+const held=w.cena.segurarObjeto("copo teste",{motor:"v2",mao:"direita",reach:30});
 assert.equal(held.mao,"direita");
 assert.equal(held.dedos?.length,5,"Preensão precisa avaliar os cinco dedos");
 assert.ok(o.grip?.mannequinId===it.id);
