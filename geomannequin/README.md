@@ -556,3 +556,15 @@ a.soltar("Cadeira",{modo:"manter"});
 Para a preensão antiga (compatibilidade): `cena.segurarObjeto("Copo",{motor:"v2",mao:"direita"})`.
 
 **Testes:** `npm run testar:grip-v3`. O mecanismo continua **experimental**: segunda mão sem solver bilateral completo, colisão aproximada, nenhuma física de massa/torque e sem garantia de execução integral no browser até a validação de CI. Veja o [task graph completo de 239 tarefas e os limites atuais](docs/task-graph-preensao-rigida-cadeira-objetos-v3-20261110.md).
+
+#### Editar a cadeira diretamente em 3D (sem estar segurando)
+
+```js
+const cadeira=cena.objeto("cadeira",{nome:"Cadeira 3D",x:2,z:0});
+cadeira.rotacao3D(30,25,-10); // yaw, pitch, roll em graus
+cadeira.posicao3D(2,8,0);    // x,y,z no mundo
+cadeira.criarPontoAgarre("meuPonto",[0,8,-2],[0,0,-1]);
+log(cadeira.pose3D(),cadeira.pontosDeAgarre());
+```
+
+Enquanto estiver segurada, a **mão** é quem controla posição e rotação. A aplicação bloqueia edição direta da cadeira que romperia o vínculo. Para selecionar visualmente um ponto de agarre use a seção **Colisões → Local de agarre**.
