@@ -68,7 +68,10 @@ function bustBump(x,y,th,p,F){
     /* Massa glútea acompanha a largura real da pelve e a espessura dos tecidos. */
     const centroGluteo=0.46*B.hip,larguraGluteo=0.3+0.06*B.fem+0.025*B.fat;
     dz+=cb*gl*gauss(ax,centroGluteo,larguraGluteo)*gauss(y,F.yHip-0.58,0.44)*(1-0.75*gauss(x,0,0.055));
-    dz+=(0.4+0.6*cb)*0.35*gl*gauss(Math.abs(Math.atan2(Math.sin(th),cs)),1.75,0.35)*gauss(y,F.yHip+0.05,0.3);
+    const sideHip=Math.abs(Math.atan2(Math.sin(th),cs));
+    dz+=(0.4+0.6*cb)*0.35*gl*gauss(sideHip,1.72+0.05*B.fem,0.39+0.055*B.fem)*gauss(y,F.yHip+0.07,0.36);
+    /* Glúteo médio se perde gradualmente na crista ilíaca e no tensor da fáscia lata. */
+    dz+=0.027*B.fem*(0.5+0.5*B.glute)*gauss(sideHip,1.55,0.32)*gauss(y,F.yHip+0.20,0.44);
   }
   dz+=(p.shTension+0.5*((s>0?p.shTensL:p.shTensR)||0))*0.045*gauss(y,F.yTr-0.12,0.14)*gauss(ax,0.72,0.3);
   dz+=muscleBump(x,y,th,p,F)+relevoTronco(x,y,th,p,F);
