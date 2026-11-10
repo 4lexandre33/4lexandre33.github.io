@@ -60,8 +60,11 @@ function scene(p,L,pal,fast,mode){
     /* músculo esticado fica mais fino */
     const thin=(P,Q,L0)=>Math.pow(clamp(L0/Math.hypot(P[0]-Q[0],P[1]-Q[1],P[2]-Q[2]),0.45,1),0.8);
     const tp=thin(pa,pb,1.3),tl=thin(la,lb,1.25);
-    const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.02)),0.36*k*tp,0.2*k*tp,fw,0.2),Mx,S);
-    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.4*k*tl,0.3*k*tl,fw,0.2),Mx,S);
+    /* Pontes axilares estreitas e tangentes suaves: desaparecem os recortes
+       triangulares artificiais sob o deltoide em poses de braço elevado. */
+    const soft=1-0.12*(p.fem||0);
+    const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.02)),0.29*k*tp*soft,0.17*k*tp*soft,fw,0.2),Mx,S);
+    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.32*k*tl*soft,0.23*k*tl*soft,fw,0.2),Mx,S);
     arms.push({s,a,f,el,d,ap,Aa,Af,Ah,Ae,hs,pec,lat});
     const wp=Ah.T,ws=xv(wp),ep=Af.T,es=xv(ep);
     handles.push({k:"wrist",s,P:wp,x:CX+S*ws[0],y:CY-S*ws[1]});
@@ -195,7 +198,7 @@ function scene(p,L,pal,fast,mode){
     for(let i=0;i<n;i++){const q=X(pts[i]);sx[i]=CX+S*q[0];sy[i]=CY-S*q[1];sz[i]=q[2]}
     emit(k,sx,sy,sz,n,showHid);
   }
-  function lineT(k,pts,X){
+  function lineT(k,pts,X,intensidade=1){
     X=X||xf;const n=pts.length;if(n<2)return;
     const paths=["","",""],W3=[0.4,0.7,1];
     let prevC=-1,prevEnd=-1;
@@ -207,7 +210,7 @@ function scene(p,L,pal,fast,mode){
       if(c!==prevC||prevEnd!==i)paths[c]+="M"+f1(ax)+" "+f1(ay);
       paths[c]+="L"+f1(bx)+" "+f1(by);prevC=c;prevEnd=i+1;
     }
-    paths.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,W3[c])+'"/>')});
+    paths.forEach((d,c)=>{if(d)out.push('<path d="'+d+'" style="'+style(k,false,W3[c])+(intensidade<0.999?";opacity:"+f1(intensidade):"")+'"/>')});
   }
   const GQ=M.bust.tq;
   const xb=v=>{const w=bustTw(v[0],v[1],F),A=tab[Math.round(clamp(w,0,3)*64)];let r=applyA(A,v);
@@ -400,20 +403,22 @@ function scene(p,L,pal,fast,mode){
        const rm=Math.hypot(...raio(Wm).d),rn=Math.hypot(...raio(Wn).d);
        lineT("divisao",arr(u=>{const P=[0,1,2].map(i=>lerp(Wm[i],Wn[i],u)),q=raio(P),l=Math.hypot(...q.d)||1,r=lerp(rm,rn,u)*(1+0.1*Math.sin(Math.PI*u))+0.025;
          return xv([q.c[0]+q.d[0]/l*r,q.c[1]+q.d[1]/l*r,q.c[2]+q.d[2]/l*r])},0.08,0.97,26),v=>v);}
-      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.18)),yc=F.yJ+0.0+0.2*q*q+0.03*Math.sin(Math.PI*q)-0.05*Math.sin(2*Math.PI*q);return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.1,0.86,30),xb);
+      lineT("divisao",arr(q=>{const x=s*(0.1+q*(F.W-0.28)),yc=F.yJ+0.015+0.12*Math.sin(Math.PI*q)-0.025*q;return bp(yc,bustTh(yc,x,true,p,F),0.012)},0.08,0.88,30),xb);
     });
     /* músculos do tronco: linhas do atlas muscular (mesmas formas que geram o relevo) */
     {const at=atlasTronco(p,F),B=F.B,def=clamp(B.mus*(1-B.fat)*(1-0.75*B.fem),0,2);
      [1,-1].forEach(s=>at[s].linhas.forEach(l=>{
        if(l.tipo==="fibra"&&!L.fibras)return;
        if(def<(l.min||0))return;
-       lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb);
+       const strength=L.cel?1:clamp(0.42+0.35*B.mus-0.32*B.fat-0.10*B.fem,0.3,0.93);
+       lineT(l.tipo,l.pts.map(q=>{const yt=linhaParaPele(l,q,bustTh,p,F);return bp(yt[0],yt[1],0.012)}),xb,strength);
      }));
     }
     lineT("anat",arr(x=>{const y=F.yJ+0.05+3*x*x;return bp(y,bustTh(y,x,true,p,F),0.012)},-0.11,0.11,10),xb);
     /* sulco da coluna e processos espinhosos */
-    lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb);
-    for(let y=F.yC7-0.05;y>F.yHip+0.1;y-=0.3)lineT("fibra",arr(x=>bp(y,Math.PI+x,0.012),-0.05,0.05,4),xb);
+    lineT("divisao",arr(y=>bp(y,Math.PI,0.012),F.yC7-0.15,F.yHip-0.25,40),xb,L.cel?0.9:0.48);
+    if(L.fibras||L.cel)for(let y=F.yC7-0.05;y>F.yHip+0.1;y-=0.3)
+      lineT("fibra",arr(x=>bp(y,Math.PI+x,0.012),-0.05,0.05,4),xb,0.65);
     /* umbigo, linha inguinal, glúteos */
     lineT("anat",arr(a=>{const x=0.03*Math.cos(a),y=F.yNav+0.035*Math.sin(a);return bp(y,bustTh(y,x,true,p,F),0.01)},0,2*Math.PI,12),xb);
     [-1,1].forEach(s=>{
