@@ -5,6 +5,8 @@ import { refreshScene, render, syncControls } from "./ambiente.js";
 import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
 import { atualizarFocoOrbita } from "./orbita.js";
 import {updateGrip} from "./preensao-v2.js";
+import {updateRigidGrip} from "./grip-v3.js";
+import {rigidCompose,objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 
 let P;
 /* ===== Cena: vários manequins, câmera comum, cores exclusivas ===== */
@@ -80,14 +82,36 @@ function atualizarApoios(){
   const por=new Map(SCN.objetos.map(o=>[o.id,o]));
   const topo=(o,vis)=>{if(!o.sobre||!por.has(o.sobre)||vis.has(o.id)){o.sobre=o.sobre&&por.has(o.sobre)?o.sobre:null;return 0}vis.add(o.id);const s=por.get(o.sobre);return topo(s,vis)+s.alt};
   const ground=SCN.list.length?restGround(SCN.list[0].params):0;
+  // 1) Resolver posições dos objetos agarrados ANTES de colisão/renderização.
   SCN.objetos.forEach(o=>{
-    if(o.grip){
+    if(o.gripV3){
+      const it=SCN.list.find(m=>m.id===o.gripV3.mannequinId);
+      if(it&&updateRigidGrip(it,o,ground))return;
+      delete o.gripV3;o.emAr=true; // dono excluído: preservar última posição
+    }else if(o.grip){
       const it=SCN.list.find(m=>m.id===o.grip.mannequinId);
       if(it&&updateGrip(it,o,ground))return;
-      delete o.grip; // o manequim foi removido; liberação segura
+      delete o.grip;
     }
-    o.base=Math.round(topo(o,new Set())*1000)/1000;
+    if(!o.emAr&&!o.sobreRel)o.base=Math.round(topo(o,new Set())*1000)/1000;
   });
+  // 2) Propagar pose rígida de apoios sobre cadeira/mesa carregada.
+  const done=new Set(),working=new Set();
+  function moveChild(o){
+    if(done.has(o))return;
+    if(working.has(o)){delete o.sobreRel;return}
+    working.add(o);
+    if(o.sobreRel&&o.sobre){
+      const parent=por.get(o.sobre);
+      if(parent&&parent!==o){
+        moveChild(parent);
+        setRigidObjectPose(o,rigidCompose(objectRigidPose(parent,ground),o.sobreRel),ground);
+        o.emAr=true;
+      }else {delete o.sobreRel;delete o.sobre;}
+    }
+    working.delete(o);done.add(o);
+  }
+  SCN.objetos.forEach(moveChild);
 }
 function sceneList(exp){
   atualizarApoios();
