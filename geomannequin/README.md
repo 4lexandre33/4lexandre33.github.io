@@ -510,3 +510,31 @@ O editor passou a aguardar `await` e a restaurar o estado completo (cena, camada
 Comandos adicionais incluem `cena.estilos()`, `cena.camadasVisuais()`, `cena.exportarOBJ()` (cabeça V3/V4), `cena.exportarJSON()`, `cena.importarJSON()`, `cena.exportarPNG()` (no navegador), `cena.estudoAnatomico.svg()`, `cena.renderizarQuadros()`, `cena.paginasDeRoteiro()`, `cena.folhaDeContato()` e `cena.capacidades()`.
 
 **Testes novos:** `npm run testar:camera-anatomica` e `npm run testar:paridade-comandos`. O código foi verificado sintaticamente e o núcleo matemático foi testado isoladamente; as suites completas e os screenshots ainda exigem confirmação após integração. A tarefa mais ampla de paridade 100% continua registrada no [task graph de 196 tarefas](docs/task-graph-orientacao-camera-api-total.md).
+
+
+### Ampliação dos comandos e integração headless (10/11/2026)
+
+A câmera também aceita um **grupo** com líder explicitamente declarado (o grupo não recebe uma frente arbitrária) e a elevação anatômica de até **±90°**, inclusive com o manequim deitado:
+
+```js
+camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas",elevacao:10});
+// Gera SVG sem alterar permanentemente a câmera selecionada:
+const svgTraseiro=camera.capturar("Ana",{lado:"costas",referencia:"cabeca",area:"cabeca"});
+const oitoVistas=camera.capturarVistas("Ana",{referencia:"tronco"});
+```
+
+Novos controles individuais funcionam com as mesmas faixas numéricas dos sliders:
+
+```js
+cena.ativo.parametro("headYaw",35);
+camera.parametro("lens",85);
+cena.obterObjeto("Copo").parametro("alt",1.4);
+const arquivoZip=cena.exportarZIP();
+await cena.baixar("camadas.zip",arquivoZip,"application/zip");
+```
+
+**Integração headless:** `src/scene/ordem.json` foi corrigido para carregar `contato-v2.js`, `preensao-v2.js` e `toque-v2.js`, que já eram referenciados pelo motor de comandos e não estavam na ordem de montagem da fábrica MCP. A geração ZIP foi movida para o motor compartilhado.
+
+**Validação:** sintaxe JS e casos geométricos isolados (câmera de costas, cabeça girada, corpo deitado/invertido, grupo com líder) foram verificados. Os workflows de GitHub Actions ainda falham antes de disponibilizar logs de execução e **não é possível declarar as suítes integradas ou o navegador aprovados**.
+
+Teste adicional: `npm run testar:headless-modulos`. O restante das 196 tarefas permanece no [task graph](docs/task-graph-orientacao-camera-api-total.md).
