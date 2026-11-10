@@ -87,6 +87,16 @@ function bumps(y,x,p,S){
   dz-=0.022*gauss(y,my-0.14,0.03)*gauss(x,0,0.22);
   dz-=0.014*gauss(x,0,0.022)*gauss(y,(-t+my+0.03)/2,0.05);
   dz+=0.025*gauss(y,S.chinY+0.1,0.07)*gauss(x,0,0.18);
+  /* Pequena depressão volumétrica da cavidade oral sobre a própria malha
+     facial: elimina a sensação de adesivo preto em cima da pele. A
+     abertura profunda segue a mandíbula, sem alcançar a glabela/nariz. */
+  const jo=clamp(p.jawOpen||0,0,1);
+  if(jo>0.035){
+    const gap=0.162*Math.pow(jo,0.85),cy=my-gap*0.48;
+    const radial=Math.pow(x/(0.245*(S.scale||1)),2)+
+      Math.pow((y-cy)/(0.018+gap*0.65),2);
+    dz-=0.080*jo*sstep((1-radial)/0.38);
+  }
   return dz;
 }
 function headPt(y,th,p,S,off){
