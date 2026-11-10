@@ -468,3 +468,45 @@ cena.soltarObjeto("Copo 1");
 A situação real **não equivale** à conclusão do sistema de física sofisticada: ainda faltam solver multiconstraint global (abraço), dinâmica de forças, CCD analítica plena, correspondência exata proxy-malha e validação visual/CI verde. Leia [o detalhamento de implementação e suas limitações](docs/contato-v2-implementacao.md) e [o task graph integral de 177 tarefas](docs/task-graph-colisoes-interacoes-v2.md).
 
 Para os testes: `npm run testar:contato-v2`; para build: `npm run construir`.
+
+
+### Câmera anatômica 3D e editor orientado a código — implementação incremental (10/11/2026)
+
+O alvo agora possui **eixos 3D semânticos**, independentes da existência de olhos ou marcas faciais: corpo, pelve, cabeça, olhar, mãos e pés. Ao solicitar **costas**, a câmera é posicionada em direção oposta ao eixo frontal da região selecionada. O novo solucionador suporta inclinação vertical de até ±90° e ajusta a rolagem para manter o alto anatômico na parte superior do desenho, inclusive com personagem deitado ou invertido. A câmera também pode seguir a rotação do manequim, e o vínculo é salvo na cena.
+
+```js
+const ana=cena.ativo.renomear("Ana");
+ana.girar(40).pose({headYaw:55});
+
+// Atrás do tronco e depois atrás da nuca (as duas orientações podem divergir).
+camera.costas("Ana",{referencia:"tronco",area:"cabeca",elevacao:0});
+camera.costas("Ana",{referencia:"cabeca",area:"cabeca",elevacao:0});
+
+// Mantém a câmera atrás do alvo durante rotações e deslocamentos.
+camera.seguir("Ana",{lado:"costas",referencia:"tronco"});
+ana.girar(120).mover(3,0);
+camera.pararSeguir();
+
+// Cor, camadas, exportação e inspeção pelo mesmo editor.
+cena.estilo("lapis");
+cena.camadaVisual("grid",false);
+log(camera.orientacaoDoAlvo("Ana","cabeca"));
+log(cena.comandos());
+const svg=cena.exportarSVG();
+await cena.baixar("cena.svg",svg,"image/svg+xml");
+```
+
+**Objetos simétricos** como cubos/cilindros não têm necessariamente uma frente intrínseca. Para usar a orientação traseira sem ambiguidade, declare-a:
+
+```js
+cena.objeto("cubo",{nome:"Objeto de teste",x:4}).orientacao({
+  frenteLocal:[0,0,1],cimaLocal:[0,1,0]
+});
+camera.costas("Objeto de teste",{area:"superior"});
+```
+
+O editor passou a aguardar `await` e a restaurar o estado completo (cena, camadas e estilo) ao falhar. `cena.marcarEstado()`, `cena.desfazer()` e `cena.refazer()` fornecem histórico explícito para comandos; isso **não** constitui desfazer automático de toda interação feita com mouse. **Não execute código de terceiros sem revisar:** `new Function` não fornece isolamento seguro.
+
+Comandos adicionais incluem `cena.estilos()`, `cena.camadasVisuais()`, `cena.exportarOBJ()` (cabeça V3/V4), `cena.exportarJSON()`, `cena.importarJSON()`, `cena.exportarPNG()` (no navegador), `cena.estudoAnatomico.svg()`, `cena.renderizarQuadros()`, `cena.paginasDeRoteiro()`, `cena.folhaDeContato()` e `cena.capacidades()`.
+
+**Testes novos:** `npm run testar:camera-anatomica` e `npm run testar:paridade-comandos`. O código foi verificado sintaticamente e o núcleo matemático foi testado isoladamente; as suites completas e os screenshots ainda exigem confirmação após integração. A tarefa mais ampla de paridade 100% continua registrada no [task graph de 196 tarefas](docs/task-graph-orientacao-camera-api-total.md).
