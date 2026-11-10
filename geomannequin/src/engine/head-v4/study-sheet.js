@@ -43,8 +43,9 @@ function modelForView(model,v){
   bg:"#fffcfd",_cache:newCache(),_oculto:false});
  return p;
 }
-function viewRender(model,view,renderer,wire){
+function viewRender(model,view,renderer,wire,cache){
  const p=modelForView(model,view);
+ p._cache=cache;
  const r=renderer([{p,pal:makePalette(),gy:0}],layers(wire),false,0,{exato:true});
  if(!r||typeof r.svg!=="string"||!r.svg.length||/NaN|Infinity|undefined/.test(r.svg))
    throw new Error("Falha de desenho na vista "+view.id);
@@ -138,8 +139,8 @@ function timeline(cache){
 export function buildHeadStudySvg(model={},opts={}){
  const render=opts.renderer||renderScene;
  const wire=opts.wire!==false;
- const cache={};
- for(const view of STUDY_VIEWS)cache[view.id]=viewRender(model,view,render,wire);
+ const cache={},sharedGeometryCache=newCache();
+ for(const view of STUDY_VIEWS)cache[view.id]=viewRender(model,view,render,wire,sharedGeometryCache);
  const svg=[
   '<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1050" viewBox="0 0 1400 1050" role="img" aria-label="Estudo anatômico vetorial da Cabeça V4.2">',
   '<title>GeoMannequin — Anatomical Head Study V4.2</title>',
