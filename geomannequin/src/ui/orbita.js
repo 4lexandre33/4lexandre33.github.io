@@ -65,7 +65,6 @@ function elevOrbita(){const v=Number($("orbElev")?.value);if(!Number.isFinite(v)
 function alvoOrbita(){return pivoDoValor($("orbPivo")?.value)||"ativo";}
 function aplicarAreaOrbita(){
  const sel=$("orbPivo");if(!sel.value)sel.value="m:"+SCN.list[SCN.active].name;
- encherAreas();
  const t=alvoOrbita(),area=$("orbArea").value||null,A=resolverAlvo(t),
    az=vistaAtual(A).azimute;
  orbitarCamera(t,{area,azimute:az,elevacao:elevOrbita(),folga:folgaOrbita(),enquadrar:$("orbEnq").checked});
