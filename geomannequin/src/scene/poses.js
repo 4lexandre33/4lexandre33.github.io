@@ -1,5 +1,6 @@
 /* GeoMannequin — poses rápidas, tipos corporais, rostos, posturas e proteção dos braços */
 import { P } from "./modelo.js";
+import { BODIES } from "./biotipos.js";
 import { ISQUIO, ampliar, nivelFlex, apoiarContatos, aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, legClear, legDims, legPose, minAbd, pushOut, shape } from "../engine/index.js";
 
 /* o braço e a mão não atravessam a cabeça nem o tronco */
@@ -35,8 +36,9 @@ function guardArms(){
 }
 const FACES={
   neutro:{},
-  feminino:{skull:0.78,jaw:0.56,chin:0.24,chinProj:0.76,neck:0.46,brow:0.045,nose:0.2,lips:0.06,eyeSize:1.3,browW:0.04,shW:1.6,earSize:0.9,chestF:0.6,adam:0,neckLen:0.9},
-  masculino:{skull:0.86,jaw:0.68,chin:0.34,chinProj:0.84,neck:0.6,brow:0.09,nose:0.27,lips:0.04,eyeSize:1.1,browW:0.056,shW:1.92,earSize:1.05,chestF:0,adam:1,neckLen:0.8},
+  /* Rosto não redefine ombros, pescoço nem tecido corporal: isso é do biotipo. */
+  feminino:{skull:0.78,jaw:0.56,chin:0.24,chinProj:0.76,brow:0.045,nose:0.2,lips:0.06,eyeSize:1.3,browW:0.04,earSize:0.9,adam:0,neckLen:0.9},
+  masculino:{skull:0.86,jaw:0.68,chin:0.34,chinProj:0.84,brow:0.09,nose:0.27,lips:0.04,eyeSize:1.1,browW:0.056,earSize:1.05,adam:1,neckLen:0.8},
   infantil:{skull:0.88,jaw:0.5,chin:0.22,face:34,chinProj:0.72,neck:0.34,brow:0.03,nose:0.16,lips:0.05,eyeSize:1.5,browW:0.03,shW:1.25,earSize:1.1,chestF:0,adam:0,neckLen:0.8}
 };
 const POSTURES={
@@ -59,13 +61,6 @@ const EXPRESSOES={
   sono:{jawOpen:0.05,jawSide:0,smile:0,eyeLid:0.95,browUp:-0.1,browIn:0},
   desconfianca:{jawOpen:0,jawSide:0.3,smile:-0.3,eyeLid:0.45,browUp:-0.2,browIn:0.5},
   piscando:{jawOpen:0,jawSide:0,smile:0.6,eyeLid:0,browUp:0.1,browIn:0}
-};
-const BODIES={
-  magro:{muscle:0.15,fat:0,waist:0.86,thighThick:0.92,armThick:0.95},
-  medio:{muscle:0.4,fat:0.2,waist:0.93,thighThick:1,armThick:1},
-  atletico:{muscle:0.75,fat:0.12,waist:0.92,thighThick:1.05,armThick:1.05},
-  musculoso:{muscle:1,fat:0.08,waist:0.98,thighThick:1.12,armThick:1.15,shW:1.9,neck:0.64},
-  cheio:{muscle:0.3,fat:0.8,waist:1.0,thighThick:1.1,armThick:1.05}
 };
 const POSE0={spineFlex:0,spineSide:0,spineTwist:0,pelvisTilt:0,pelvisSide:0,pelvisTwist:0,hipFlexL:0,hipFlexR:0,hipAbdL:3,hipAbdR:3,hipRotL:0,hipRotR:0,kneeFlexL:0,kneeFlexR:0,ankleFlexL:0,ankleFlexR:0,ankleTiltL:0,ankleTiltR:0,toesL:0,toesR:0,
   armAbdL:12,armAbdR:12,armFlexL:0,armFlexR:0,armRotL:0,armRotR:0,elbowL:0,elbowR:0,pronL:0,pronR:0,wristL:0,wristR:0,handCurlL:0.3,handCurlR:0.3,
