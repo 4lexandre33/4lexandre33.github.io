@@ -6,7 +6,7 @@ on:
 jobs:
   anatomia:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 180
     defaults:
       run:
         working-directory: geomannequin
@@ -23,6 +23,10 @@ jobs:
         run: npm ci --prefix mcp
       - name: Validar os 10 biotipos e articulações
         run: npm run testar:anatomia
+      - name: Validar crânio, mandíbula, ombros e conexão pélvica
+        run: node testes/anatomia-integral.mjs
+      - name: Validar 300 renderizações de expressões faciais
+        run: npm run testar:face
       - name: Validar 900 renderizações e exportar 20 referências SVG
         run: npm run testar:matriz
       - name: Preparar recortes visuais de pelve, cintura e ombros
@@ -34,6 +38,7 @@ jobs:
           name: geomannequin-auditoria-anatomica
           path: |
             geomannequin/testes/saida/biotipos
+            geomannequin/testes/saida/face
             geomannequin/testes/saida/corpo-*.png
           if-no-files-found: warn
           retention-days: 14
