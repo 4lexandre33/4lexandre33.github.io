@@ -36,7 +36,7 @@ function apiFor(it){
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
-    orientacao(referencia="tronco"){chk();return orientacaoAlvo({id:it.id},referencia)},
+    orientacao(referencia="tronco"){chk();return orientacaoAlvo({tipo:"manequim",id:it.id},referencia)},
     exportarOBJ(opts={}){chk();return cena.exportarOBJ({...opts,alvo:it.name})},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
@@ -179,14 +179,21 @@ function apiObjeto(q){
     mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
     girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
     orientacao(config){
-      chk();if(config===undefined)return orientacaoAlvo({id:q.id},"objeto");
+      chk();if(config===undefined)return orientacaoAlvo({tipo:"objeto",id:q.id},"objeto");
       if(!config||typeof config!=="object")throw Error("Orientação: objeto {frenteLocal:[x,y,z],cimaLocal:[x,y,z]}.");
       const f=config.frenteLocal??config.frente,up=config.cimaLocal??config.cima??[0,1,0];
       if(!Array.isArray(f)||!Array.isArray(up)||f.length!==3||up.length!==3||
         !f.every(Number.isFinite)||!up.every(Number.isFinite)||Math.hypot(...f)<1e-6)
         throw Error("Os eixos do objeto devem conter três números finitos (frente não nula).");
-      q.frenteLocal=f.slice();q.cimaLocal=up.slice();
-      orientacaoAlvo({id:q.id},"objeto");return o;
+      const length=Math.hypot(...f),uLength=Math.hypot(...up);
+      if(uLength<1e-6||!Number.isFinite(uLength))throw Error("O eixo cimaLocal deve ser não nulo.");
+      const dot=f.reduce((s,x,i)=>s+x*up[i],0)/(length*uLength);
+      if(Math.abs(dot)>.99999)throw Error("frenteLocal e cimaLocal precisam ser independentes.");
+      const prevF=q.frenteLocal,prevU=q.cimaLocal;
+      try{q.frenteLocal=f.slice();q.cimaLocal=up.slice();orientacaoAlvo({tipo:"objeto",id:q.id},"objeto")}
+      catch(e){if(prevF===undefined)delete q.frenteLocal;else q.frenteLocal=prevF;
+        if(prevU===undefined)delete q.cimaLocal;else q.cimaLocal=prevU;throw e}
+      return o;
     },
     medidas(m){chk();editarObjeto(q,m||{});return o},
     /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
