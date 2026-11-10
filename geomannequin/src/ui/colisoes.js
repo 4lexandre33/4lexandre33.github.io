@@ -152,6 +152,17 @@ export function iniciarColisoes() {
       refreshScene();syncControls();render();
     }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
+  $("colV3Transferir")?.addEventListener("click",()=>{
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    if(!obj){status.textContent="Selecione uma cadeira já segurada com as duas mãos.";return}
+    try{
+      const r=cena.transferirMaoPrincipal(obj.id,{mao:$("colV2Mao").value});
+      status.textContent=r.alterado?"Mão principal: "+r.mao+
+        ". A outra mão passa a acompanhar o objeto por IK.":
+        "Esta mão já é a principal.";
+      refreshScene();syncControls();render();
+    }catch(e){status.textContent="Não foi possível transferir: "+e.message}
+  });
   $("colV2Soltar")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
     if(!obj||(!obj.gripV3&&!obj.grip)){status.textContent="Selecione um objeto segurado.";return}
