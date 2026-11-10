@@ -444,7 +444,12 @@ const cena={
                         Math.hypot(...b.mundo.map((v,i)=>v-H.T[i])))[0];
       try{
         const residual=maoEm(it,ladoNum(mao),site.mundo);
-        if(residual>.35)throw Error("A mão não conseguiu alcançar "+site.nome+". Desvio residual "+residual.toFixed(2)+" R.");
+        guardarContatoV2(it,previous);
+        const actual=handFrameV3(it,ladoNum(mao),ground);
+        const finalError=Math.hypot(...actual.T.map((v,i)=>v-site.mundo[i]));
+        if(residual>.35||finalError>.35)
+          throw Error("A mão não conseguiu alcançar "+site.nome+
+            ". Desvio residual "+Math.max(residual,finalError).toFixed(2)+" R.");
         return beginRigidGrip(it,o,ladoNum(mao),ground,{...opts,modo:"preservar",ponto:site.id,objetos:SCN.objetos});
       }catch(e){Object.assign(it.params,previous);throw e}
     }
