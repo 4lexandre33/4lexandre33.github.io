@@ -160,6 +160,30 @@ function inspectRigidGrip(it,o,ground){
    ponto:g.siteId,segundaMao:g.secundaria?(g.secundaria.side===1?"esquerda":"direita"):null,
    desvio:positionError,desvioSegundaMao:secondaryError,segundaMaoAlcancavel:secondaryError===null?null:secondaryError<=.35,versao:3};
 }
+/* A mão principal pode ser trocada durante o transporte sem salto na pose:
+ * captura a mesma T_mundoObjeto na palma nova e troca a secundária de lugar.
+ * O braço que não dirige passa a seguir a peça por IK, quando alcançável. */
+function transferirMaoPrincipalV3(it,o,ground,side){
+ const g=o?.gripV3;
+ if(!g||!it||g.mannequinId!==it.id)throw Error("Manequim não possui esta preensão V3.");
+ if(side!==1&&side!==-1)throw Error("Escolha a mão esquerda (1) ou direita (-1).");
+ if(g.side===side)return {alterado:false,mao:side===1?"esquerda":"direita"};
+ if(!g.secundaria||g.secundaria.side!==side)
+   throw Error("Para transferir a mão principal, segure o objeto também com a outra mão.");
+ updateRigidGrip(it,o,ground);
+ const pose=objectRigidPose(o,ground);
+ const oldSide=g.side,oldSite=g.siteId,otherSite=g.secundaria.siteId;
+ const newFrame=handFrameV3(it,side,ground);
+ const oldFrame=handFrameV3(it,oldSide,ground);
+ // Calcula tudo antes de mudar vínculo.
+ const relPrimary=rigidCompose(rigidInverse(newFrame),pose);
+ const relSecondary=rigidCompose(rigidInverse(oldFrame),pose);
+ g.side=side;g.siteId=otherSite;g.relative=relPrimary;
+ g.secundaria={side:oldSide,siteId:oldSite,relative:relSecondary};
+ sincronizarMaoSecundaria(it,o,ground);
+ return {alterado:true,mao:side===1?"esquerda":"direita",
+   secundaria:oldSide===1?"esquerda":"direita",objeto:o.nome||o.tipo};
+}
 function releaseRigidGrip(it,o,ground,{mao,modo="manter",gravidade,restituicao,atrito,velocidade,angular}={}){
  const g=o.gripV3;if(!g)return false;
  if(it&&g.mannequinId!==it.id)throw Error("Este manequim não segura o objeto.");
@@ -183,4 +207,4 @@ function releaseRigidGrip(it,o,ground,{mao,modo="manter",gravidade,restituicao,a
  }else{o.emAr=true;}
  return {solto:true,modo};
 }
-export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido,sincronizarMaoSecundaria,alinharPalmaV3};
+export {handFrameV3,beginRigidGrip,updateRigidGrip,releaseRigidGrip,inspectRigidGrip,pousarObjetoRigido,sincronizarMaoSecundaria,alinharPalmaV3,transferirMaoPrincipalV3};
