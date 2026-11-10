@@ -14,7 +14,7 @@ const calls=[],shared=[];
 const params={...DEF,headModel:"v4_anatomical",yaw:20,headDetail:0};
 const renderer=(list,L)=>{
  calls.push({yaw:list[0].p.yaw,pitch:list[0].p.pitch,zoom:list[0].p.zoom,
-  wire:L.rings,headModel:list[0].p.headModel});
+  wire:L.rings,headModel:list[0].p.headModel,fill:list[0].pal.fill});
  shared.push(list[0].p._cache);
  return {svg:'<path d="M 10 20 L 30 40" />'};
 };
@@ -29,7 +29,8 @@ assert.ok(svg.startsWith('<svg')&&svg.endsWith('</svg>'));
 for(const t of ["LEFT PROFILE","THREE-QUARTER VIEW","FRONT VIEW",
   "OCCIPITAL–NAPE","RESTORED EAR","EYE SOCKET","PROPORTIONS / NOTES"])
   assert.ok(svg.includes(t),"Componente ausente: "+t);
-for(const t of ["gm42Minor","gm42Major","#f7dfe9"])
+assert.ok(calls.every(c=>c.fill==="#f7dfe9"),"Preenchimento rosado ausente");
+for(const t of ["gm42Minor","gm42Major"])
   assert.ok(svg.includes(t),"Cor ou grid ausente: "+t);
 assert.ok(!/NaN|Infinity|undefined/.test(svg));
 const wireCalls=[];
