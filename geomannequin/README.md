@@ -254,3 +254,51 @@ O [task graph de reconstrução craniana](docs/task-graph-cranio-referencia-3x3.
 documenta as tarefas, 48 renderizações amostrais verificadas, regressões e
 limitações. Os dentes e a língua **ainda não são malhas internas completas**
 como em um modelo odontológico; a inspeção estética das vistas permanece necessária.
+
+## Cabeça V2 experimental — topologia matemática (novembro de 2026)
+
+Foi criada uma segunda implementação anatômica em
+[`src/engine/head/`](src/engine/head/), paralela à cabeça V1. Ela usa
+seções cranianas paramétricas, perfil sagital, campos de relevo,
+mandíbula articulada, orelhas 3D, globos oculares, representação
+volumétrica de cavidade oral, dentes e língua, linhas topográficas sobre
+a malha, dez biotipos e três níveis de resolução.
+
+**Como testar:** na aplicação, no painel de proporções, escolha
+**Geometria da cabeça → Cabeça V2 — experimental**. Volte para V1
+a qualquer momento. No editor de quadros ou no código:
+
+```js
+const m = cena.adicionar("Modelo V2");
+m.cabeca("v2");
+m.corpo("feminino medio");
+m.boca(0.7, 0.4);
+```
+
+A escolha da geometria é salva no JSON e preservada por quadro.
+A V1 continua sendo o **padrão**, inclusive para arquivos antigos.
+`headDetail` controla LOD 0 (rápido), 1 (normal) e 2 (close).
+Não modificar a geometria usando apenas a câmera não regenera a malha.
+
+**Referências SVG geradas pelo motor:**
+[masculino médio, 3 vistas](testes/visuais-cabeca-v2/masculino-medio-3-vistas.svg)
+e [feminino médio, 3 vistas](testes/visuais-cabeca-v2/feminino-medio-3-vistas.svg).
+
+```bash
+cd geomannequin
+npm ci
+npm ci --prefix mcp
+npm run testar:cabeca-v2
+npm run matriz:cabeca-v2:rapida
+# Matriz longa de 1350 cenas, somente quando houver runner
+npm run matriz:cabeca-v2
+```
+
+**Limites reais:** esta V2 é um protótipo anatômico 3D integrado;
+a mandíbula ainda usa uma deformação de pele parametrizada, os
+dentes são aproximações volumétricas, as órbitas/orelhas/colo ainda
+precisam de refinamento topológico e a revisão visual completa em 1350
+combinações ainda não foi aprovada. O objetivo artístico da referência
+anexada não deve ser tratado como já alcançado.
+Veja [registro de implementação](docs/head-v2-implementacao.md) e
+[task graph planejado](docs/task-graph-cabeca-v2-topologia-matematica.md).

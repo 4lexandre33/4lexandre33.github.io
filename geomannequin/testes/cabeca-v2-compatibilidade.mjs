@@ -1,0 +1,23 @@
+/* Validação integral em Node: modelo V1 preservado, cena V2 persistida e renderizada. */
+import assert from "node:assert/strict";
+import {createWorld} from "../mcp/lib/core.mjs";
+const w=createWorld();
+assert.equal(w.P.headModel,"v1");
+const origem=JSON.stringify(w.sceneState());
+const ativo=w.cena.ativo;
+ativo.cabeca("v2");
+assert.equal(w.P.headModel,"v2");
+ativo.boca(.72,.2);
+const novo=w.sceneState();
+assert.equal(novo.list[novo.active].params.headModel,"v2");
+const cam={...w.P};
+const resultado=w.renderScene(w.sceneList(true),{...w.L,grid:false,shadow:false,floor:false},false,0);
+assert.ok(resultado.svg.length>20000);
+assert.ok(!/NaN|Infinity|undefined/.test(resultado.svg));
+w.loadScene(novo);
+assert.equal(w.P.headModel,"v2");
+w.loadScene(JSON.parse(origem));
+assert.equal(w.P.headModel,"v1");
+const legado=w.renderScene(w.sceneList(true),{...w.L,grid:false,shadow:false,floor:false},false,0);
+assert.ok(legado.svg.length>20000);
+console.log("Head V2: JSON v1/v2, API de cenas, renderização e rollback — OK");

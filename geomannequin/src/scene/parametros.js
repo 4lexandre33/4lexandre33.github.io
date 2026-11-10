@@ -10,6 +10,7 @@ const SL=[
   {k:"skull",g:"slProp",label:"Largura do crânio",min:0.6,max:0.95,step:0.01,u:" R"},
   {k:"cranialDepth",g:"slProp",label:"Comprimento do crânio (occipital)",min:0.90,max:1.12,step:0.005,u:"×"},
   {k:"headScale",g:"slProp",label:"Escala anatômica da cabeça",min:0.9,max:1.1,step:0.005,u:"×"},
+  {k:"headDetail",g:"slProp",label:"Detalhe da cabeça V2 (0 baixo, 1 normal, 2 close)",min:0,max:2,step:1,u:""},
   {k:"jaw",g:"slProp",label:"Largura da mandíbula",min:0.40,max:0.85,step:0.01,u:" R"},
   {k:"chin",g:"slProp",label:"Largura do queixo",min:0.10,max:0.45,step:0.01,u:" R"},
   {k:"face",g:"slProp",label:"Linha do cabelo",min:26,max:50,step:1,u:"°"},

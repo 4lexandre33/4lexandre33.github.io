@@ -8,6 +8,7 @@ export * from "./matematica.js";
 export * from "./padroes.js";
 export * from "./camera.js";
 export * from "./cabeca.js";
+export * from "./head/index.js";
 export * from "./boca.js";
 export * from "./corpo.js";
 export * from "./musculos.js";
