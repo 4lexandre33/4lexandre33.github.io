@@ -140,7 +140,7 @@ const SL=[
   {k:"fMiIpR",g:"slFingers",label:"Mão direita, mínimo: meio e ponta (IFP/IFD) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fMiAbdR",g:"slFingers",label:"Mão direita, mínimo: afastar + / juntar −",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"ground",g:"slLeg",label:"Apoio no chão (0 = solto, 1 = a parte mais baixa encosta no chão)",min:0,max:1,step:1,u:""},
-  {k:"zoom",g:"slOrient",label:"Zoom (sem perspectiva)",min:0.05,max:3,step:0.01,u:"×"},
+  {k:"zoom",g:"slOrient",label:"Zoom (sem perspectiva)",min:0.05,max:12,step:0.01,u:"×"},
   {k:"panY",g:"slOrient",label:"Deslocar na vertical",min:-12,max:24,step:0.05,u:" R"},
   {k:"panX",g:"slOrient",label:"Deslocar na horizontal",min:-24,max:24,step:0.05,u:" R"},
   {k:"tx",g:"slCam",label:"Alvo da câmera: X",min:-30,max:30,step:0.1,u:" R"},
