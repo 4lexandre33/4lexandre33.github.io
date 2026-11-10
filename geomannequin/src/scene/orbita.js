@@ -114,7 +114,7 @@ function atualizarFocoOrbita(){
     else {const o=SCN.objetos.find(x=>x.id===q.uid);ref=o?{id:o.id}:null}
     if(ref){
       try{
-        verOrientadaCamera(ref,{...q.opts,distancia:q.opts.distancia??P.camDist,enquadrar:false},true);
+        verOrientadaCamera(ref,{...q.opts,enquadrar:false},true);
         return resolverAlvo(ref,{area:q.opts.area||null});
       }catch(e){SCN.seguirCamera=null;}
     }else SCN.seguirCamera=null;
@@ -200,7 +200,7 @@ function estadoSeguimentoCamera(){
  return {ativo:!!it,alvo:it?.name||it?.nome||it?.tipo||null,tipo:q.tipo,...q.opts};
 }
 /* um passo de órbita (arrastar, teclas, botões ←/→): gira em volta do alvo atual */
-function passoOrbita(dAz, dEl) { if (dAz) { let y = (P.yaw || 0) - dAz; y = ((y + 540) % 360) - 180; P.yaw = Math.round(y * 10) / 10; } if (dEl) P.pitch = clamp((P.pitch || 0) - dEl, -70, 70); }
+function passoOrbita(dAz, dEl) { SCN.seguirCamera=null;SCN.ultimaVistaOrientada=null; if (dAz) { let y = (P.yaw || 0) - dAz; y = ((y + 540) % 360) - 180; P.yaw = Math.round(y * 10) / 10; } if (dEl) P.pitch = clamp((P.pitch || 0) - dEl, -70, 70); }
 /* azimutes de um giro de n vistas (começando na frente; sentido "horario" visto de cima = para a direita do pivô) */
 function azimutesGiro(n, opts) { n = Math.max(2, Math.min(72, Math.round(n || 8))); const s = opts && /hor/.test(String(opts.sentido || "")) ? -1 : 1, a0 = opts && opts.inicio !== undefined ? azimuteDe(opts.inicio) : 0;
   return Array.from({ length: n }, (_, i) => { let a = a0 + s * 360 * i / n; a = ((a + 540) % 360) - 180; return Math.round(a * 100) / 100; }); }
