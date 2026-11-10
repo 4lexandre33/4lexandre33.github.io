@@ -4,7 +4,7 @@ import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
-import { loadScene, sceneState } from "./estado.js";
+import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { EXPRESSOES, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
@@ -12,6 +12,8 @@ import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolve
 import {orientacaoAlvo,encontrarAlvoOrientacao} from "./orientacao-frames.js";
 import {regioesDisponiveisOrbita} from "./regioes-orbita.js";
 import { L, setMode, setPreset } from "./modos.js";
+import {STYLES,styleName,setStyleName,setPAL_EXPORT} from "./paletas.js";
+import {LAY,SL} from "./parametros.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
@@ -19,7 +21,7 @@ import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./c
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function guardarContatoV2(it,antes){
@@ -240,6 +242,59 @@ const cena={
   fibras(on){L.fibras=on!==false&&on!==0;setMode(null);updateModeButtons()},
   /* cena em camadas (padrão) ou exata (todos num z-buffer comum, mais lento) */
   exato(on){SCN.exato=on!==false&&on!==0},
+  /* Controle programático de cada camada da interface, sem acoplar ao DOM. */
+  camadaVisual(nome,valor){
+    const k=String(nome||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const item=LAY.find(q=>q.k.toLowerCase()===k||q.label.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()===k);
+    if(!item)throw Error("Camada visual desconhecida: "+nome+". Consulte cena.camadasVisuais().");
+    if(valor===undefined)return !!L[item.k];
+    L[item.k]=valor!==false&&valor!==0;setMode(null);return !!L[item.k];
+  },
+  camadasVisuais(){return LAY.map(x=>({chave:x.k,nome:x.label,ativo:!!L[x.k]}))},
+  estilos(){return Object.keys(STYLES)},
+  estiloAtual(){return styleName},
+  estilo(nome){
+    if(nome===undefined)return styleName;
+    const k=String(nome).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    if(!STYLES[k])throw Error("Estilo desconhecido: "+nome+". Escolha: "+Object.keys(STYLES).join(", "));
+    setStyleName(k);setPAL_EXPORT(STYLES[k]);
+    if(typeof document!=="undefined"&&typeof document.querySelectorAll==="function"){
+      const e=document.getElementById("svg");
+      if(e&&e.style){
+        const vars={cobalt:"--g-blue",coral:"--g-red",ink:"--m-ink",fill:"--fill",shade1:"--shade1",shade2:"--shade2",shade3:"--shade3"};
+        for(const [c,v]of Object.entries(vars)){
+          if(k==="creme")e.style.removeProperty(v);else e.style.setProperty(v,STYLES[k][c]);
+        }
+      }
+      document.querySelectorAll("[data-style]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.style===k)));
+    }
+    return k;
+  },
+  /* Dados de exportação disponíveis tanto no editor quanto no MCP headless. */
+  exportarSVG(opts={}){return cenaCamadasSvg(opts)},
+  exportarOBJ({alvo,modelo}={}){
+    const it=alvo===undefined?SCN.list[SCN.active]:typeof alvo==="number"?SCN.list[alvo]:SCN.list.find(x=>x.name===alvo||x.id===alvo);
+    if(!it)throw Error("Manequim não encontrado para OBJ.");
+    const m=String(modelo||it.params.headModel).toLowerCase(),v3=/^v3/.test(m),v4=/^v4/.test(m);
+    if(!v3&&!v4)throw Error("Exportação OBJ disponível para cabeça V3 e V4.");
+    const mesh=v3?watertightMeshV3(it.params,shape(it.params)):watertightMeshV4(it.params,shape(it.params));
+    const topo=v3?meshTopologyV3(mesh):meshTopologyV4(mesh);
+    if(topo.invalid||topo.boundary||topo.nonmanifold||topo.degenerate)throw Error("Malha de cabeça inválida: "+JSON.stringify(topo));
+    return v3?exportObjV3(mesh):exportObjV4(mesh);
+  },
+  exportarJSON(){return JSON.stringify({app:"GeoMannequin",version:9,scene:sceneState(),layers:{...L},style:styleName})},
+  importarJSON(dados){const v=typeof dados==="string"?JSON.parse(dados):dados;if(v?.scene)applyState(v);else loadScene(v);return cena.estado()},
+  estadoCompleto(){return {scene:sceneState(),layers:{...L},style:styleName}},
+  restaurarCompleto(valor){if(!valor?.scene)throw Error("Estado completo inválido.");applyState(JSON.parse(JSON.stringify(valor)));return cena.estadoCompleto()},
+  estudoAnatomico:{
+    svg(opts={}){const it=opts.alvo===undefined?SCN.list[SCN.active]:typeof opts.alvo==="number"?SCN.list[opts.alvo]:SCN.list.find(x=>x.name===opts.alvo);
+      if(!it)throw Error("Manequim para estudo não encontrado.");
+      return buildHeadStudySvg({...it.params,headModel:"v4_anatomical"},opts);
+    },
+    abrir(){if(!UIH.headStudy)return {disponivel:false,motivo:"Interface não está disponível neste ambiente."};UIH.headStudy.open();return {disponivel:true}},
+    fechar(){if(!UIH.headStudy)return {disponivel:false};UIH.headStudy.close();return {disponivel:true}},
+    atualizar(){if(!UIH.headStudy)return {disponivel:false};UIH.headStudy.refresh();return {disponivel:true}}
+  },
   camadas(){return listaCamadas()},
   exportarCamadas(opts){return cenaCamadasSvg(opts)},
   /* colisões entre manequins */
