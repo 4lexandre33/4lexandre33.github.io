@@ -37,7 +37,7 @@ function regiaoMan(t){
 }
 function frameManequim(it,referencia="tronco"){
  const name=regiaoMan(referencia),p=pMundo(it),S=shape(p),ch=chainSetup(p,S),M=paraMundo(p);
- let A=ch.A2,fix=null;
+ let A=ch.A2;
  if(name==="pelve")A=ch.Pel;
  if(name==="cabeca"||name==="olhar")A=ch.A3;
  if(name.startsWith("mao")){
@@ -71,8 +71,14 @@ function encontrarAlvoOrientacao(ref){
  if(ref===undefined||ref===null||ref==="ativo")return {tipo:"manequim",alvo:SCN.list[SCN.active]};
  if(typeof ref==="number"){const m=SCN.list[ref];if(!m)throw Error("Manequim não encontrado no índice "+ref);return {tipo:"manequim",alvo:m}}
  if(ref&&typeof ref==="object"){
-  if(ref.id!==undefined){const o=SCN.objetos.find(x=>x.id===ref.id);if(o)return {tipo:"objeto",alvo:o};
-   const m=SCN.list.find(x=>x.id===ref.id);if(m)return {tipo:"manequim",alvo:m};}
+  if(ref.id!==undefined){
+   const m=SCN.list.find(x=>x.id===ref.id),o=SCN.objetos.find(x=>x.id===ref.id);
+   if(ref.tipo==="manequim"&&m)return {tipo:"manequim",alvo:m};
+   if(ref.tipo==="objeto"&&o)return {tipo:"objeto",alvo:o};
+   if(o&&!m)return {tipo:"objeto",alvo:o};
+   if(m&&!o)return {tipo:"manequim",alvo:m};
+   if(m&&o)throw Error("ID pertence a manequim e objeto. Use {id,tipo:'manequim'} ou {id,tipo:'objeto'}.");
+  }
   if(ref.nome!==undefined)ref=ref.nome;
  }
  const v=orfPlain(ref),m=SCN.list.find(x=>orfPlain(x.name)===v);
