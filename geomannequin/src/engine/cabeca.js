@@ -10,7 +10,12 @@ function shape(p){
 /* Seção horizontal da cabeça na altura y: meia-largura a, centro c0 e meia-profundidade d (frente bf, trás bb) */
 function ringAt(y,p,S){
   const rs=Math.sqrt(Math.max(0,1-y*y));
-  const sx=p.skull,jw=p.jaw,cw=p.chin,t=S.t,chinY=S.chinY;
+  /* Tecido adiposo arredonda a face; desenvolvimento muscular fortalece
+     a região mandibular; diferenças médias de sexo são suaves e editáveis. */
+  const fat=clamp(p.fat||0,0,1),mus=clamp(p.muscle||0,0,1),fem=clamp(p.fem||0,0,1);
+  const sx=p.skull*(1+0.035*fat-0.015*fem+0.007*mus),
+    jw=p.jaw*(1+0.04*mus+0.045*fat-0.055*fem),
+    cw=p.chin,t=S.t,chinY=S.chinY;
   const y0=-0.15,Jy=-t*0.9;
   let a;
   /* Frontal, temporais e parietais não compartilham um raio esférico constante:
