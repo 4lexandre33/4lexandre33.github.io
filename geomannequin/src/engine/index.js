@@ -11,6 +11,8 @@ export * from "./cabeca.js";
 export * from "./head/index.js";
 export * from "./head-v3/index.js";
 export * from "./head-v4/index.js";
+export * from "./head-v4/study-sheet.js";
+export * from "./zip.js";
 export * from "./head-v4/mesh-export.js";
 export * from "./head-v3/mesh-export.js";
 export * from "./boca.js";

@@ -1,0 +1,39 @@
+name: GeoMannequin - Camera 3D e Comandos
+on:
+  pull_request:
+    paths:
+      - "geomannequin/**"
+      - ".github/workflows/geomannequin-camera-codigo.yml"
+  workflow_dispatch:
+jobs:
+  camera-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: geomannequin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          npm ci --prefix mcp
+      - name: Sintaxe de camera, API e interface
+        run: |
+          for f in src/scene/orientacao-frames.js src/scene/orbita.js src/scene/comandos.js src/scene/estado.js src/ui/orbita.js src/ui/editor.js src/ui/quadros.js; do node --check "$f"; done
+      - name: Regressao da camera anatomica
+        run: npm run testar:camera-anatomica
+      - name: Paridade API e editor assincrono
+        run: npm run testar:paridade-comandos
+      - name: Carga de modulos na fabrica MCP headless
+        run: npm run testar:headless-modulos
+      - name: Cameras e quadros anteriores
+        run: |
+          node testes/camera-foco-regional.mjs
+          node testes/camera-objetos.mjs
+          node testes/quadros.mjs
+      - name: Build da aplicacao
+        run: npm run construir

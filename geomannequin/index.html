@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="css/cena.css">
 <link rel="stylesheet" href="css/head-study.css">
 <link rel="stylesheet" href="css/editor.css">
-<script type="module" src="src/main.js?v=20261110-collision-panel-shortcut"></script>
+<script type="module" src="src/main.js?v=20261110-camera-orientation-api"></script>
 </head>
 <body>
 <div class="wrap">
@@ -257,7 +257,22 @@
         <label class="orb-pivo">Região do alvo <select id="orbArea" aria-label="Área de foco do alvo">
           <option value="">Alvo inteiro</option>
         </select></label>
-        <label class="orb-pivo">Elevação <input id="orbElev" type="number" min="-70" max="70" step="1" value="0" aria-label="Elevação da órbita em graus" style="width:5.5rem"> °</label>
+        <label class="orb-pivo">Orientação do alvo <select id="orbReferencia" aria-label="Referencial anatômico da câmera">
+          <option value="tronco">Tronco / frente do corpo</option>
+          <option value="cabeca">Cabeça / frente do crânio</option>
+          <option value="olhar">Direção do olhar</option>
+          <option value="pelve">Pelve</option>
+          <option value="mao esquerda">Mão esquerda</option>
+          <option value="mao direita">Mão direita</option>
+          <option value="pe esquerdo">Pé esquerdo</option>
+          <option value="pe direito">Pé direito</option>
+        </select></label>
+        <label class="orb-pivo">Elevação relativa <select id="orbVertical" aria-label="Tipo de elevação">
+          <option value="anatomico">Anatomia (inclui corpo deitado)</option>
+          <option value="mundo">Mundo / horizonte</option>
+        </select></label>
+        <label class="orb-pivo"><input type="checkbox" id="orbSeguir"> Manter a câmera atrás/à frente quando o alvo girar</label>
+        <label class="orb-pivo">Elevação <input id="orbElev" type="number" min="-90" max="90" step="1" value="0" aria-label="Elevação da órbita em graus" style="width:5.5rem"> °</label>
         <label class="orb-pivo">Enquadramento <select id="orbFolga" aria-label="Folga do foco">
           <option value="0.9">Bem próximo</option><option value="1.08" selected>Próximo</option><option value="1.4">Com folga</option>
         </select></label>

@@ -1,7 +1,7 @@
 /* Interface do modo de folha anatômica V4.2.
  * Somente monta uma folha com os renders reais do mesmo manequim; não altera
  * câmera/cor/pose do editor, e volta exatamente ao editor anterior. */
-import {P} from "../scene/modelo.js";
+import {P,UIH} from "../scene/modelo.js";
 import {syncControls} from "./controles.js";
 import {draw} from "./palco.js";
 import {buildHeadStudySvg} from "../engine/head-v4/study-sheet.js";
@@ -85,6 +85,7 @@ function buildPanel(){
 }
 export function iniciarHeadStudy(){
  buildPanel();
+ UIH.headStudy={open:openSheet,close:closeSheet,refresh:updateSheet,svg:()=>lastSvg||buildHeadStudySvg(P)};
  const open=document.getElementById("headStudyOpen");
  if(open)open.addEventListener("click",openSheet);
  const params=new URLSearchParams(location.search);

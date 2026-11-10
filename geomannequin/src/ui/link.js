@@ -41,6 +41,7 @@ async function loadFromHash(){
 
 /* execução inicial deste módulo (na mesma ordem do app original) */
 export function iniciarLink(){
+  UIH.link=sceneLink;
   $("mLink").addEventListener("click",async()=>{
     try{const url=await sceneLink();let ok=false;
       try{await navigator.clipboard.writeText(url);ok=true}catch(e){}

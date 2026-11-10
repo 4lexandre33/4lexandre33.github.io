@@ -13,25 +13,35 @@ function gutter(){const n=codeEl.value.split("\n").length;let t="";for(let i=1;i
 function outLine(t,cls){const s=document.createElement("span");if(cls)s.className=cls;s.textContent=t+"\n";outEl.appendChild(s);outEl.scrollTop=outEl.scrollHeight}
 let HIST=[];
 function refreshHist(){const h=$("history");h.innerHTML='<option value="">Histórico…</option>';HIST.forEach((c,i)=>{const o=document.createElement("option");o.value=i;o.textContent=(i+1)+". "+c.split("\n")[0].slice(0,40);h.appendChild(o)})}
-function runCode(){
-  const code=codeEl.value;if(!code.trim())return;
+let execRodando=false;
+async function runCode(){
+  const code=codeEl.value;if(!code.trim()||execRodando)return;
+  execRodando=true;const botao=$("runCode");if(botao)botao.disabled=true;
   outEl.textContent="";LOG.length=0;
   const log=(...a)=>LOG.push(["log",a.map(x=>typeof x==="object"?JSON.stringify(x):String(x)).join(" ")]);
-  const snapshot=JSON.stringify(sceneState());
+  const snapshot=cena.estadoCompleto();
   try{
-    const fn=new Function("cena","camera","tema","log",'"use strict";\n'+code);
-    fn(cena,camera,tema,log);
+    // Executa scripts síncronos antigos e scripts com await na mesma API.
+    // Não é sandbox de segurança: só execute código que você conhece.
+    const fn=new Function("cena","camera","tema","log",'"use strict";return (async()=>{\n'+code+'\n})();');
+    await fn(cena,camera,tema,log);
+    if(!/cena\.(?:desfazer|refazer|marcarEstado)\s*\(/.test(code))cena.marcarEstado(snapshot);
     LOG.forEach(([k,t])=>outLine((k==="aviso"?"⚠ ":"")+t,k==="aviso"?"err":""));
-    outLine("✓ Executado: "+SCN.list.length+" manequim(ns) na cena.","ok");
-    HIST=[code].concat(HIST.filter(c=>c!==code)).slice(0,15);try{localStorage.setItem("geomannequin.hist",JSON.stringify(HIST))}catch(e){}refreshHist();
+    outLine("✓ Executado: "+SCN.list.length+" manequim(ns). Comandos com await finalizados.","ok");
+    HIST=[code].concat(HIST.filter(c=>c!==code)).slice(0,15);
+    try{localStorage.setItem("geomannequin.hist",JSON.stringify(HIST))}catch(e){}
+    refreshHist();
   }catch(err){
     LOG.forEach(([k,t])=>outLine(t));
-    const m=/<anonymous>:(\d+):(\d+)/.exec(err.stack||"");const ln=m?" (linha "+(Number(m[1])-3)+")":"";
+    const m=/<anonymous>:(\d+):(\d+)/.exec(err.stack||"");
+    const ln=m?" (linha aproximada "+Math.max(1,Number(m[1])-4)+")":"";
     outLine("✗ Erro"+ln+": "+(err.message||String(err)),"err");
-    try{loadScene(JSON.parse(snapshot))}catch(e){}
-    outLine("A cena voltou ao estado anterior.","err");
+    try{cena.restaurarCompleto(snapshot)}catch(e){outLine("Falha ao restaurar: "+e.message,"err")}
+    outLine("A cena, as camadas visuais e o estilo voltaram ao estado anterior.","err");
+  }finally{
+    execRodando=false;if(botao)botao.disabled=false;
+    refreshScene();syncControls();render();
   }
-  refreshScene();syncControls();render();
 }
 
 /* execução inicial deste módulo (na mesma ordem do app original) */

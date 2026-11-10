@@ -298,5 +298,16 @@ export function iniciarQuadros() {
   E.fila.addEventListener("drop", e => { const li = e.target.closest("[data-i]"); if (li && arr >= 0) { e.preventDefault(); moverQuadro(arr, +li.dataset.i); } arr = -1; });
   const btn = document.getElementById("quadrosBtn"); if (btn) btn.addEventListener("click", () => E.area.hidden ? abrir() : fechar());
   /* ganchos para o código e para o link da cena */
-  UIH.quadros = { abrir, fechar, renderizar: () => renderizar("todos"), texto: v => { if (v === undefined) return E.code.value; E.code.value = String(v); numerar(); salvarTexto(); FILA = []; fila(); pedirPrevia(); return true; }, fila: () => FILA.map(f => ({ n: f.q.n, titulo: f.q.titulo, pronto: !!f.foto && !f.velho, erro: f.q.erro })), baixar: () => baixarZip() };
+  UIH.quadros = {
+    abrir,fechar,renderizar:()=>renderizar("todos"),
+    texto:v=>{if(v===undefined)return E.code.value;E.code.value=String(v);numerar();salvarTexto();FILA=[];fila();pedirPrevia();return true},
+    fila:()=>FILA.map(f=>({n:f.q.n,titulo:f.q.titulo,pronto:!!f.foto&&!f.velho,erro:f.q.erro})),
+    baixar:()=>baixarZip(),
+    duplicar:i=>{acaoFila(i,"dup");return true},remover:i=>{acaoFila(i,"del");return true},
+    mover:({de,para})=>{moverQuadro(de,para);return true},
+    comparar:({i,j})=>{selComp=[i,j];comparar();return true},
+    renderizarUm:i=>renderizarUm(i),
+    cancelar:()=>{if(rodando){rodando.cancelar=true;return true}return false},
+    pagina:()=>pagina(false)
+  };
 }

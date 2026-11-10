@@ -2,7 +2,7 @@
  * e proximidade independentes. Os controles não alteram a pose. */
 import { $ } from "../scene/ambiente.js";
 import { P, SCN } from "../scene/modelo.js";
-import { orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, nomeVista } from "../scene/orbita.js";
+import { orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, nomeVista, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "../scene/orbita.js";
 import { regioesDisponiveisOrbita } from "../scene/regioes-orbita.js";
 import { render } from "./palco.js";
 import { syncControls } from "./controles.js";
@@ -52,8 +52,8 @@ function encherAreas(){
 function informacaoOrbita(){
  const out=$("orbInfo");if(!out)return;
  let A=null;try{if(SCN.pivo!==undefined&&SCN.pivo!==null)A=resolverAlvo(SCN.pivo,{area:SCN.orbitaArea});}catch(e){A=null;}
- const v=vistaAtual(A),area=A&&A.area?(" · região "+A.area.replace(/_/g," ")):"";
- out.textContent=A?"Pivô: "+A.nome+area+" · vista "+nomeVista(v.azimute)+" · "+Math.round(v.elevacao)+"° de elevação":
+ const v=SCN.ultimaVistaOrientada||vistaAtual(A),area=A&&A.area?(" · região "+A.area.replace(/_/g," ")):"";
+ out.textContent=A?"Pivô: "+A.nome+area+" · vista "+nomeVista(v.azimute)+" · "+Math.round(v.elevacao)+"° de elevação"+(v.referencia?" · eixo "+v.referencia:"")+(estadoSeguimentoCamera().ativo?" · acompanhando rotação":"")+(v.limitado?" · ⚠ limite vertical do renderizador":""):
   "Sem pivô: a câmera gira em volta do próprio alvo.";
  const campo=$("orbElev");if(campo&&document.activeElement!==campo)campo.value=Math.round(v.elevacao);
  document.querySelectorAll("#orbPainel [data-vista]").forEach(b=>b.classList.toggle("on",!!A&&Math.abs(((+b.dataset.vista-v.azimute+540)%360)-180)<1));
@@ -63,14 +63,24 @@ function feitoOrbita(){syncControls();render();informacaoOrbita();}
 function folgaOrbita(){const f=Number($("orbFolga")?.value);return Number.isFinite(f)&&f>0?f:1.08;}
 function elevOrbita(){const v=Number($("orbElev")?.value);if(!Number.isFinite(v)||v< -70||v>70)throw Error("Elevação: valor entre -70° e 70°.");return v;}
 function alvoOrbita(){return pivoDoValor($("orbPivo")?.value)||"ativo";}
+function opcoesAnatomicas(lado){return {
+ lado,referencia:$("orbReferencia")?.value||"tronco",vertical:$("orbVertical")?.value||"anatomico",
+ area:$("orbArea").value||null,elevacao:elevOrbita(),folga:folgaOrbita(),enquadrar:$("orbEnq").checked,
+ exigirFrente:true};}
+function vistaAnatomica(lado){
+ const target=alvoOrbita(),opts=opcoesAnatomicas(lado);
+ if(target==="cena"){pararSeguimentoCamera();orbitarCamera(target,{...opts,azimute:lado});}
+ else if($("orbSeguir")?.checked)seguirOrientacaoCamera(target,opts);
+ else verOrientadaCamera(target,opts);
+ feitoOrbita();
+}
 function aplicarAreaOrbita(){
  const sel=$("orbPivo");if(!sel.value)sel.value="m:"+SCN.list[SCN.active].name;
  const t=alvoOrbita(),area=$("orbArea").value||null,A=resolverAlvo(t),
-   az=vistaAtual(A).azimute;
- orbitarCamera(t,{area,azimute:az,elevacao:elevOrbita(),folga:folgaOrbita(),enquadrar:$("orbEnq").checked});
- feitoOrbita();
+   az=SCN.ultimaVistaOrientada?.azimute??vistaAtual(A).azimute;
+ vistaAnatomica(az);
 }
-export function atualizarOrbita(){encherPivos();encherAreas();informacaoOrbita();}
+export function atualizarOrbita(){encherPivos();encherAreas();informacaoOrbita();if($("orbSeguir"))$("orbSeguir").checked=estadoSeguimentoCamera().ativo;}
 export function iniciarOrbita(){
  const sel=$("orbPivo");if(!sel)return;
  encherPivos();encherAreas();informacaoOrbita();
@@ -79,7 +89,8 @@ export function iniciarOrbita(){
  sel.addEventListener("change",()=>{
   const alvo=pivoDoValor(sel.value);
   try{
-    if(alvo===null){SCN.pivo=null;SCN.orbitaArea=null;}
+    pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;if($("orbSeguir"))$("orbSeguir").checked=false;
+    if(alvo===null){SCN.pivo=null;SCN.orbitaArea=null;pararSeguimentoCamera();}
     else pivoCamera(alvo,{area:null,enquadrar:$("orbEnq").checked,folga:folgaOrbita()});
     encherAreas();feitoOrbita();
   }catch(e){logOrbita(e.message);}
@@ -100,14 +111,23 @@ export function iniciarOrbita(){
  document.querySelectorAll("#orbPainel [data-vista]").forEach(b=>b.addEventListener("click",()=>{
   try{
    if(!sel.value)sel.value="m:"+SCN.list[SCN.active].name;
-   const area=$("orbArea").value||null;
-   orbitarCamera(alvoOrbita(),{area,azimute:+b.dataset.vista,elevacao:elevOrbita(),enquadrar:$("orbEnq").checked,folga:folgaOrbita()});
-   feitoOrbita();
+   vistaAnatomica(+b.dataset.vista);
   }catch(e){logOrbita(e.message);}
  }));
  document.querySelectorAll("#orbPainel [data-orb]").forEach(b=>b.addEventListener("click",()=>{
   const [a,e]=b.dataset.orb.split(",").map(Number);
+  pararSeguimentoCamera();if($("orbSeguir"))$("orbSeguir").checked=false;
   passoOrbita(a,e);feitoOrbita();
  }));
+ for(const id of ["orbReferencia","orbVertical"]){
+   $(id)?.addEventListener("change",()=>{try{
+     const A=resolverAlvo(alvoOrbita());
+     vistaAnatomica(SCN.ultimaVistaOrientada?.azimute??vistaAtual(A).azimute);
+   }catch(e){logOrbita(e.message)}});
+ }
+ $("orbSeguir")?.addEventListener("change",()=>{try{
+   const A=resolverAlvo(alvoOrbita()),az=SCN.ultimaVistaOrientada?.azimute??vistaAtual(A).azimute;
+   vistaAnatomica(az);
+ }catch(e){$("orbSeguir").checked=false;logOrbita(e.message)}});
  document.addEventListener("pointerup",()=>setTimeout(informacaoOrbita,0));
 }

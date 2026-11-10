@@ -1,23 +1,28 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
-import { CAMK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
+import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
 import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
-import { applyParams, num, POSEKEYS } from "./parametros.js";
+import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
-import { loadScene, sceneState } from "./estado.js";
+import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
+import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { EXPRESSOES, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
-import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual } from "./orbita.js";
+import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
+import {orientacaoAlvo,encontrarAlvoOrientacao} from "./orientacao-frames.js";
+import {regioesDisponiveisOrbita} from "./regioes-orbita.js";
 import { L, setMode, setPreset } from "./modos.js";
+import {STYLES,styleName,setStyleName,setPAL_EXPORT} from "./paletas.js";
+import {LAY,SL} from "./parametros.js";
 import { updateModeButtons } from "./ambiente.js";
 import { THEMES, applyTheme } from "./tema.js";
-import { cenaCamadasSvg, fotoSvg, listaCamadas } from "./camadas-cena.js";
+import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function guardarContatoV2(it,antes){
@@ -25,11 +30,23 @@ function guardarContatoV2(it,antes){
 }
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
 const LOG=[];
+const HIST_COMANDOS={undo:[],redo:[],max:30};
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
   const m={
     get nome(){return it.name},
     renomear(n){chk();it.name=String(n).slice(0,24);return m},
+    orientacao(referencia="tronco"){chk();return orientacaoAlvo({tipo:"manequim",id:it.id},referencia)},
+    parametro(chave,valor){
+      chk();const k=ALIAS[chave]||chave,d=SLK[k];
+      if(!d||CAMK.includes(k)||WORLDK.includes(k))throw Error("Parâmetro do manequim desconhecido: "+chave);
+      if(valor===undefined)return it.params[k];
+      const before={...it.params};applyParams(it,{[k]:valor},POSEKEYS.has(k));
+      if(POSEKEYS.has(k))withInst(it,guardArms);
+      guardarContatoV2(it,before);return m;
+    },
+    parametros(){chk();return Object.fromEntries(SL.filter(q=>!CAMK.includes(q.k)&&!WORLDK.includes(q.k)).map(q=>[q.k,it.params[q.k]]))},
+    exportarOBJ(opts={}){chk();return cena.exportarOBJ({...opts,alvo:it.name})},
     cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
@@ -170,6 +187,29 @@ function apiObjeto(q){
     posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
     mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
     girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
+    parametro(chave,valor){
+      chk();if(valor===undefined)return q[chave];
+      const permitidos=new Set(["x","z","giro","larg","prof","alt","raio","encosto","cabeceira"]);
+      if(!permitidos.has(chave))throw Error("Parâmetro de objeto desconhecido ou somente leitura: "+chave);
+      editarObjeto(q,{[chave]:num(valor,chave)});return o;
+    },
+    orientacao(config){
+      chk();if(config===undefined)return orientacaoAlvo({tipo:"objeto",id:q.id},"objeto");
+      if(!config||typeof config!=="object")throw Error("Orientação: objeto {frenteLocal:[x,y,z],cimaLocal:[x,y,z]}.");
+      const f=config.frenteLocal??config.frente,up=config.cimaLocal??config.cima??[0,1,0];
+      if(!Array.isArray(f)||!Array.isArray(up)||f.length!==3||up.length!==3||
+        !f.every(Number.isFinite)||!up.every(Number.isFinite)||Math.hypot(...f)<1e-6)
+        throw Error("Os eixos do objeto devem conter três números finitos (frente não nula).");
+      const length=Math.hypot(...f),uLength=Math.hypot(...up);
+      if(uLength<1e-6||!Number.isFinite(uLength))throw Error("O eixo cimaLocal deve ser não nulo.");
+      const dot=f.reduce((s,x,i)=>s+x*up[i],0)/(length*uLength);
+      if(Math.abs(dot)>.99999)throw Error("frenteLocal e cimaLocal precisam ser independentes.");
+      const prevF=q.frenteLocal,prevU=q.cimaLocal;
+      try{q.frenteLocal=f.slice();q.cimaLocal=up.slice();orientacaoAlvo({tipo:"objeto",id:q.id},"objeto")}
+      catch(e){if(prevF===undefined)delete q.frenteLocal;else q.frenteLocal=prevF;
+        if(prevU===undefined)delete q.cimaLocal;else q.cimaLocal=prevU;throw e}
+      return o;
+    },
     medidas(m){chk();editarObjeto(q,m||{});return o},
     /* cor exclusiva: "#RRGGBB" (não pode repetir a de outro objeto ou manequim) ou "auto" */
     cor(c,contorno){chk();editarObjeto(q,{cor:c===undefined?"auto":c,contorno});return o},
@@ -204,7 +244,26 @@ const cena={
   obter(q){const it=typeof q==="number"?SCN.list[q]:SCN.list.find(x=>x.name===q);if(!it)throw new Error("Manequim “"+q+"” não existe.");return apiFor(it)},
   get ativo(){return apiFor(SCN.list[SCN.active])},
   /* roteiro de quadros (na página): cena.quadros.abrir(), .texto("#quadro 1 …"), .renderizar(), .fila(), .baixar() */
-  quadros:{abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),renderizar:()=>painelQd("renderizar"),fila:()=>painelQd("fila"),baixar:()=>painelQd("baixar")},
+  quadros:{
+    abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),
+    renderizar:()=>painelQd("renderizar"),fila:()=>painelQd("fila"),baixar:()=>painelQd("baixar"),
+    duplicar:i=>painelQd("duplicar",i),remover:i=>painelQd("remover",i),
+    mover:(de,para)=>painelQd("mover",{de,para}),comparar:(i,j)=>painelQd("comparar",{i,j}),
+    renderizarUm:i=>painelQd("renderizarUm",i),cancelar:()=>painelQd("cancelar"),
+    pagina:()=>painelQd("pagina")
+  },
+  /* Roteiro/gerador também funciona sem navegador: mantém o motor unificado. */
+  lerRoteiro(texto){return lerRoteiro(String(texto))},
+  executarRoteiro(texto,opts){return executarRoteiro(String(texto),opts)},
+  renderizarQuadros(texto,opts={}){return executarRoteiro(String(texto)).quadros.map(q=>renderizarQuadro(q,opts))},
+  paginasDeRoteiro(texto,opts={}){
+    const fs=executarRoteiro(String(texto)).quadros.map(q=>{const f=renderizarQuadro(q,{passes:false});return {...f,falas:q.falas}});
+    return paginaQuadros(fs,opts);
+  },
+  folhaDeContato(texto,opts={}){
+    const fs=executarRoteiro(String(texto)).quadros.map(q=>({...renderizarQuadro(q,{passes:false}),titulo:q.titulo}));
+    return folhaDeContato(fs,opts.colunas||4);
+  },
   /* estado completo da cena (posições, poses, objetos, câmera) e voltar a ele — o roteiro de quadros usa para "gravar" um ajuste feito no palco */
   estado(){return JSON.parse(JSON.stringify(sceneState()))},
   restaurar(e){if(!e||!e.list)throw new Error("restaurar: passe o objeto devolvido por cena.estado().");loadScene(JSON.parse(JSON.stringify(e)));return apiFor(SCN.list[SCN.active])},
@@ -227,6 +286,115 @@ const cena={
   fibras(on){L.fibras=on!==false&&on!==0;setMode(null);updateModeButtons()},
   /* cena em camadas (padrão) ou exata (todos num z-buffer comum, mais lento) */
   exato(on){SCN.exato=on!==false&&on!==0},
+  /* Controle programático de cada camada da interface, sem acoplar ao DOM. */
+  camadaVisual(nome,valor){
+    const k=String(nome||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const item=LAY.find(q=>q.k.toLowerCase()===k||q.label.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()===k);
+    if(!item)throw Error("Camada visual desconhecida: "+nome+". Consulte cena.camadasVisuais().");
+    if(valor===undefined)return !!L[item.k];
+    L[item.k]=valor!==false&&valor!==0;setMode(null);return !!L[item.k];
+  },
+  camadasVisuais(){return LAY.map(x=>({chave:x.k,nome:x.label,ativo:!!L[x.k]}))},
+  estilos(){return Object.keys(STYLES)},
+  estiloAtual(){return styleName},
+  estilo(nome){
+    if(nome===undefined)return styleName;
+    const k=String(nome).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    if(!STYLES[k])throw Error("Estilo desconhecido: "+nome+". Escolha: "+Object.keys(STYLES).join(", "));
+    setStyleName(k);setPAL_EXPORT(STYLES[k]);
+    if(typeof document!=="undefined"&&typeof document.querySelectorAll==="function"){
+      const e=document.getElementById("svg");
+      if(e&&e.style){
+        const vars={cobalt:"--g-blue",coral:"--g-red",ink:"--m-ink",fill:"--fill",shade1:"--shade1",shade2:"--shade2",shade3:"--shade3"};
+        for(const [c,v]of Object.entries(vars)){
+          if(k==="creme")e.style.removeProperty(v);else e.style.setProperty(v,STYLES[k][c]);
+        }
+      }
+      document.querySelectorAll("[data-style]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.style===k)));
+    }
+    return k;
+  },
+  /* Dados de exportação disponíveis tanto no editor quanto no MCP headless. */
+  exportarSVG(opts={}){return cenaCamadasSvg(opts)},
+  exportarOBJ({alvo,modelo}={}){
+    const it=alvo===undefined?SCN.list[SCN.active]:typeof alvo==="number"?SCN.list[alvo]:SCN.list.find(x=>x.name===alvo||x.id===alvo);
+    if(!it)throw Error("Manequim não encontrado para OBJ.");
+    const m=String(modelo||it.params.headModel).toLowerCase(),v3=/^v3/.test(m),v4=/^v4/.test(m);
+    if(!v3&&!v4)throw Error("Exportação OBJ disponível para cabeça V3 e V4.");
+    const mesh=v3?watertightMeshV3(it.params,shape(it.params)):watertightMeshV4(it.params,shape(it.params));
+    const topo=v3?meshTopologyV3(mesh):meshTopologyV4(mesh);
+    if(topo.invalid||topo.boundary||topo.nonmanifold||topo.degenerate)throw Error("Malha de cabeça inválida: "+JSON.stringify(topo));
+    return v3?exportObjV3(mesh):exportObjV4(mesh);
+  },
+  exportarJSON(){return JSON.stringify({app:"GeoMannequin",version:9,scene:sceneState(),layers:{...L},style:styleName})},
+  importarJSON(dados){const v=typeof dados==="string"?JSON.parse(dados):dados;if(v?.scene)applyState(v);else loadScene(v);return cena.estado()},
+  estadoCompleto(){return {scene:sceneState(),layers:{...L},style:styleName}},
+  restaurarCompleto(valor){if(!valor?.scene)throw Error("Estado completo inválido.");
+    applyState(JSON.parse(JSON.stringify(valor)));
+    if(valor.style&&STYLES[valor.style])cena.estilo(valor.style);
+    return cena.estadoCompleto();
+  },
+  marcarEstado(snapshot){const valor=snapshot===undefined?cena.estadoCompleto():snapshot;
+    if(!valor?.scene)throw Error("Snapshot de histórico inválido.");
+    HIST_COMANDOS.undo.push(JSON.parse(JSON.stringify(valor)));
+    if(HIST_COMANDOS.undo.length>HIST_COMANDOS.max)HIST_COMANDOS.undo.shift();
+    HIST_COMANDOS.redo.length=0;return HIST_COMANDOS.undo.length},
+  desfazer(){const last=HIST_COMANDOS.undo.pop();if(!last)return false;
+    HIST_COMANDOS.redo.push(cena.estadoCompleto());cena.restaurarCompleto(last);return true},
+  refazer(){const next=HIST_COMANDOS.redo.pop();if(!next)return false;
+    HIST_COMANDOS.undo.push(cena.estadoCompleto());cena.restaurarCompleto(next);return true},
+  historico(){return {desfazer:HIST_COMANDOS.undo.length,refazer:HIST_COMANDOS.redo.length,max:HIST_COMANDOS.max}},
+  /* Descoberta da API a partir dos métodos realmente expostos nesta versão. */
+  comandos(){
+    const meth=o=>Object.keys(o).filter(k=>typeof Object.getOwnPropertyDescriptor(o,k)?.value==="function").sort();
+    return {cena:meth(cena),camera:meth(camera),manequim:meth(apiFor(SCN.list[SCN.active])),
+      objeto:SCN.objetos.length?meth(apiObjeto(SCN.objetos[0])):[],estilos:Object.keys(STYLES),
+      camadas:LAY.map(l=>l.k)};
+  },
+  parametros(){return SL.map(x=>({chave:x.k,nome:x.label,min:x.min,max:x.max,passo:x.step}))},
+  capacidades(){return [
+    {id:"camera3d",estado:"implementado",api:["camera.ver","camera.costas","camera.frente","camera.seguir","camera.pararSeguir","camera.orientacaoDoAlvo","camera.capturar","camera.capturarVistas"],limite:"nova orientação anatômica até ±90°, enquadramento antigo mantém seus limites"},
+    {id:"camadas",estado:"implementado",api:["cena.camadaVisual","cena.camadasVisuais"]},
+    {id:"estilos",estado:"implementado",api:["cena.estilo","cena.estilos"]},
+    {id:"exportacao",estado:"parcial",api:["cena.exportarSVG","cena.exportarOBJ","cena.exportarJSON","cena.exportarPNG","cena.baixar"]},
+    {id:"headstudy",estado:"implementado",api:["cena.estudoAnatomico.svg","cena.estudoAnatomico.abrir","cena.estudoAnatomico.fechar"]},
+    {id:"quadros",estado:"parcial",api:["cena.quadros.abrir","cena.quadros.texto","cena.quadros.renderizar","cena.quadros.fila","cena.quadros.baixar"]},
+    {id:"blocking",estado:"parcial",api:["cena.blocking","cena.blocking.abrir","cena.blocking.estado"]},
+    {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar","m.segurar"]},
+    {id:"editor",estado:"parcial",api:["cena.marcarEstado","cena.desfazer","cena.refazer","cena.historico"],limite:"histórico explícito/de execução; mudanças externas não são interceptadas automaticamente"},
+    {id:"importacao",estado:"implementado",api:["cena.importarJSON","cena.restaurarCompleto"]}
+  ]},
+  arquivosCamadas(){return arquivosCamadas(cena.exportarJSON())},
+  exportarZIP(){return criarZip(cena.arquivosCamadas())},
+  async baixar(nome,dados,mime="text/plain;charset=utf-8"){
+    if(!UIH.baixar)throw Error("Download exige navegador. Use exportarSVG/exportarOBJ para obter os dados em execução headless.");
+    return await UIH.baixar(String(nome),dados,mime);
+  },
+  async link(){if(!UIH.link)throw Error("Link compartilhável exige ambiente do navegador.");return await UIH.link();},
+  async exportarPNG({escala=2,transparente=false}={}){
+    if(typeof Image==="undefined"||typeof Blob==="undefined"||typeof URL==="undefined"||typeof document==="undefined"||!document.createElement)
+      throw Error("PNG depende de Canvas/Imagem e não está disponível no headless. Use exportarSVG().");
+    const factor=Number(escala);
+    if(!Number.isFinite(factor)||factor<.25||factor>6)throw Error("Escala PNG deve ficar entre 0.25 e 6.");
+    const svg=cena.exportarSVG({transparente}),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
+    try{
+      const img=new Image();
+      await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("SVG não pode ser convertido em PNG."));img.src=url});
+      const cv=document.createElement("canvas");cv.width=Math.round(W*factor);cv.height=Math.round(H*factor);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      const blob=await new Promise((resolve,reject)=>cv.toBlob(b=>b?resolve(b):reject(Error("PNG não gerado.")),"image/png"));
+      return blob;
+    }finally{URL.revokeObjectURL(url)}
+  },
+  estudoAnatomico:{
+    svg(opts={}){const it=opts.alvo===undefined?SCN.list[SCN.active]:typeof opts.alvo==="number"?SCN.list[opts.alvo]:SCN.list.find(x=>x.name===opts.alvo);
+      if(!it)throw Error("Manequim para estudo não encontrado.");
+      return buildHeadStudySvg({...it.params,headModel:"v4_anatomical"},opts);
+    },
+    abrir(){if(!UIH.headStudy)return {disponivel:false,motivo:"Interface não está disponível neste ambiente."};UIH.headStudy.open();return {disponivel:true}},
+    fechar(){if(!UIH.headStudy)return {disponivel:false};UIH.headStudy.close();return {disponivel:true}},
+    atualizar(){if(!UIH.headStudy)return {disponivel:false};UIH.headStudy.refresh();return {disponivel:true}}
+  },
   camadas(){return listaCamadas()},
   exportarCamadas(opts){return cenaCamadasSvg(opts)},
   /* colisões entre manequins */
@@ -264,12 +432,12 @@ const cena={
 function camSet(k,v,min,max,nome){P[k]=clamp(num(v,nome),min,max)}
 const camera={
   /* posição da câmera em relação ao alvo: define direção, distância e zoom */
-  posicao(x,y,z){num(x,"x");num(y,"y");num(z,"z");
+  posicao(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;num(x,"x");num(y,"y");num(z,"z");
     const dx=x-P.tx,dy=y-P.ty,dz=z-P.tz,d=Math.hypot(dx,dy,dz);if(d<0.5)throw new Error("A câmera está colada no alvo; afaste-a.");
     P.yaw=Math.round(-Math.atan2(dx,dz)/D*10)/10;P.pitch=clamp(Math.round(-Math.atan2(dy,Math.hypot(dx,dz))/D*10)/10,-70,70);P.roll=0;
     P.camDist=clamp(d,4,200);P.zoom=clamp(6.2/d,0.05,3);P.panX=0;P.panY=0;return camera},
-  mirar(x,y,z){SCN.pivo=null;camSet("tx",x,-30,30,"x");camSet("ty",y,-20,20,"y");camSet("tz",z,-30,30,"z");P.panX=0;P.panY=0;return camera},
-  girar(yaw,pitch,roll){camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
+  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-30,30,"x");camSet("ty",y,-20,20,"y");camSet("tz",z,-30,30,"z");P.panX=0;P.panY=0;return camera},
+  girar(yaw,pitch,roll){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
   zoom(z){setZoomEff(num(z,"zoom"));return camera},
   perspectiva(on,dist){P.persp=on===false||on===0?0:1;if(dist!==undefined)camSet("camDist",dist,4,200,"distância");return camera},
   distancia(d){camSet("camDist",d,4,200,"distância");return camera},
@@ -290,22 +458,22 @@ const camera={
   /* posição da câmera no mundo (em R), calculada do alvo, da direção e da distância */
   posicaoMundo(){return cameraNoMundo(P).pos.map(v=>Math.round(v*100)/100)},
   /* põe a câmera num ponto do mundo mantendo o alvo (como arrastar a câmera na vista de cima) */
-  colocar(x,y,z){moverCamera(num(x,"x"),num(y,"y"),num(z,"z"));return camera},
+  colocar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;moverCamera(num(x,"x"),num(y,"y"),num(z,"z"));return camera},
   /* câmera num eixo ("x", "-x", "z", "-z", "y" = de cima), mantendo distância e alvo */
-  eixo(a,opts){const t=String(a).toLowerCase().replace(/^eixo\s*/,"").replace("câmera","");const v={"x":[1,0,0],"+x":[1,0,0],"-x":[-1,0,0],"z":[0,0,1],"+z":[0,0,1],"-z":[0,0,-1],"y":[0,1,0],"+y":[0,1,0],"cima":[0,1,0],"-y":[0,-1,0]}[t];
+  eixo(a,opts){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;const t=String(a).toLowerCase().replace(/^eixo\s*/,"").replace("câmera","");const v={"x":[1,0,0],"+x":[1,0,0],"-x":[-1,0,0],"z":[0,0,1],"+z":[0,0,1],"-z":[0,0,-1],"y":[0,1,0],"+y":[0,1,0],"cima":[0,1,0],"-y":[0,-1,0]}[t];
     if(!v)throw new Error("Eixo da câmera: use x, -x, z, -z ou y (de cima).");
     const d=opts&&opts.distancia?clamp(num(opts.distancia,"distância"),4,200):Math.max(4,P.camDist||30);
     if(v[1]>0){P.yaw=0;P.pitch=-70;P.roll=0;return camera}
     if(v[1]<0){P.yaw=0;P.pitch=45;P.roll=0;return camera}
     P.yaw=Math.round(Math.atan2(v[0],v[2])/D);P.roll=0;return camera},
   /* elevação: "alta" (de cima, plongée), "média", "olhos" (nível dos olhos), "baixa" (de baixo, contra-plongée), ou graus acima do horizonte */
-  elevacao(e){const t=typeof e==="number"?e:{"muito alta":70,"de cima":70,"alta":45,"media":20,"média":20,"olhos":0,"nivel dos olhos":0,"nível dos olhos":0,"baixa":-18,"muito baixa":-35,"chao":-35,"chão":-35}[String(e).toLowerCase()];
+  elevacao(e){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;const t=typeof e==="number"?e:{"muito alta":70,"de cima":70,"alta":45,"media":20,"média":20,"olhos":0,"nivel dos olhos":0,"nível dos olhos":0,"baixa":-18,"muito baixa":-35,"chao":-35,"chão":-35}[String(e).toLowerCase()];
     if(t===undefined)throw new Error("Elevação: use \"alta\", \"média\", \"olhos\", \"baixa\" ou graus.");P.pitch=clamp(-t,-70,70);return camera},
   /* tamanho do plano (quadrinhos/cinema), em volta de um manequim (nome, índice ou o ativo) ou de vários (lista ou "todos"):
      "detalhe" (rosto), "close", "primeiro plano" (até o peito), "medio" (cintura), "americano" (coxa), "inteiro", "geral" (todos com folga).
      Mantém o ângulo da câmera; muda alvo, distância (e, se preciso, a lente) e zera o deslocamento. */
   enquadramento(tipo,quem,opts){
-    SCN.pivo=null;
+    pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;
     const t=String(tipo||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[-_]/g," ").trim();
     const FR={detalhe:0.15,rosto:0.15,"close up":0.22,close:0.22,"primeiro plano":0.32,"plano proximo":0.32,"meio corpo":0.5,medio:0.5,"plano medio":0.5,americano:0.72,"plano americano":0.72,inteiro:1,"corpo inteiro":1,"plano inteiro":1,geral:-1,"plano geral":-1,conjunto:-1,"grande plano geral":-2};
     const f=FR[t];if(f===undefined)throw new Error("Enquadramento: use detalhe, close, primeiro plano, medio, americano, inteiro ou geral.");
@@ -333,7 +501,7 @@ const camera={
     return camera},
   /* ângulo de câmera dos quadrinhos: "normal", "plongée" (de cima), "contra-plongée" (de baixo), "zenital", "holandês" (inclinado), "nadir";
      graus opcionais (inclinação do holandês ou elevação) */
-  angulo(nome,graus){const t=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  angulo(nome,graus){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;const t=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     if(/holand|dutch|inclinad/.test(t)){P.roll=clamp(graus===undefined?18:num(graus,"graus"),-45,45);return camera}
     P.roll=0;
     if(/normal|olho|nivel|frontal/.test(t))P.pitch=graus===undefined?0:-num(graus,"graus");
@@ -347,9 +515,43 @@ const camera={
      ponto [x, y, z] ou "cena". azimute a partir da FRENTE do pivô: "frente", "3/4 esquerda", "esquerda", "costas", "3/4 direita"… ou graus
      (positivo = para o lado esquerdo dele); elevacao em graus acima do horizonte ou "olhos", "alta", "baixa"; distancia em R (sem ela, enquadra o pivô).
      Ex.: camera.orbitar("Ana", {area: "cabeca", azimute: "3/4 esquerda", elevacao: 15}) */
-  orbitar(alvo,opts){if(typeof opts==="string"||typeof opts==="number")opts={azimute:opts};orbitarCamera(alvo,opts||{});return camera},
+  orbitar(alvo,opts){if(typeof opts==="string"||typeof opts==="number")opts={azimute:opts};pararSeguimentoCamera();orbitarCamera(alvo,opts||{});return camera},
+  /* Novas vistas anatômicas: frente/costas de tronco, crânio ou extremidade.
+   * Retorno encadeável; consultar .orientacaoDoAlvo() ou .vistaExata() para diagnóstico. */
+  ver(alvo,opts={}){verOrientadaCamera(alvo,opts);return camera},
+  costas(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"costas"})},
+  frente(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"frente"})},
+  perfilEsquerdo(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"esquerda"})},
+  perfilDireito(alvo,opts={}){return camera.ver(alvo,{...opts,lado:"direita"})},
+  seguir(alvo,opts={}){seguirOrientacaoCamera(alvo,opts);return camera},
+  pararSeguir(){pararSeguimentoCamera();return camera},
+  seguimento(){return estadoSeguimentoCamera()},
+  orientacaoDoAlvo(alvo,parte="tronco"){return orientacaoAlvo(alvo,parte)},
+  alvos(){return [...SCN.list.map(x=>({tipo:"manequim",nome:x.name})),...SCN.objetos.map(x=>({tipo:"objeto",nome:x.nome||x.tipo,id:x.id}))]},
+  areas(alvo){const p=alvo===undefined?"ativo":alvo;const it=encontrarAlvoOrientacao(p);return regioesDisponiveisOrbita(it.tipo).map(([id,nome])=>({id,nome}))},
+  vistaExata(alvo,opts={}){return verOrientadaCamera(alvo,opts)},
+  /* Captura a vista indicada SEM sobrescrever a câmera/pose do editor.
+   * Restauro local: não usar loadScene(), pois remapearia IDs de objetos.
+   */
+  capturar(alvo,opts={}){
+    const before={...P},backup={pivo:SCN.pivo,area:SCN.orbitaArea,
+      seguir:SCN.seguirCamera,vista:SCN.ultimaVistaOrientada};
+    try{
+      verOrientadaCamera(alvo,{lado:"frente",...opts});
+      return cenaCamadasSvg({transparente:opts.transparente!==false});
+    }finally{
+      Object.assign(P,before);SCN.pivo=backup.pivo;SCN.orbitaArea=backup.area;
+      SCN.seguirCamera=backup.seguir;SCN.ultimaVistaOrientada=backup.vista;
+    }
+  },
+  capturarVistas(alvo,opts={}){
+    const angles=opts.angulos??VISTAS_8.map(x=>x[1]);
+    if(!Array.isArray(angles)||angles.length>16||angles.some(x=>!Number.isFinite(x)))
+      throw Error("Forneça de 0 a 16 ângulos numéricos.");
+    return angles.map(a=>({azimute:a,svg:camera.capturar(alvo,{...opts,angulos:undefined,lado:a})}));
+  },
   /* pivô da órbita (o alvo da câmera vai para o centro dele; a câmera mantém direção e distância). A arrastada na tela gira em volta dele. */
-  pivo(alvo,opts){pivoCamera(alvo,opts);return camera},
+  pivo(alvo,opts){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;pivoCamera(alvo,opts);return camera},
   /* Define uma região do pivô ATUAL sem mudar azimute/elevacao:
      camera.area("cabeca"), camera.area("mao esquerda"), camera.area("superior"). */
   area(regiao,opts){
@@ -371,7 +573,15 @@ const camera={
   /* gira em volta do pivô atual: graus no chão (positivo = para a esquerda do pivô) e na elevação */
   girarEmVolta(graus,elev){passoOrbita(num(graus,"graus"),elev===undefined?0:num(elev,"elevação"));return camera},
   /* vista atual em relação ao pivô: {pivo, azimute, elevacao} */
-  vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo,{area:SCN.orbitaArea})}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera",area:A?A.area:null},vistaAtual(A))},
+  parametro(chave,valor){
+    const d=SLK[chave];
+    if(!d||!CAMK.includes(chave))throw Error("Parâmetro de câmera desconhecido: "+chave);
+    if(valor===undefined)return P[chave];
+    pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;
+    const n=num(valor,chave);P[chave]=clamp(n,d.min,d.max);return camera;
+  },
+  parametros(){return Object.fromEntries(CAMK.map(k=>[k,P[k]]))},
+  vista(){const A=SCN.pivo!==undefined&&SCN.pivo!==null?(()=>{try{return resolverAlvo(SCN.pivo,{area:SCN.orbitaArea})}catch(e){return null}})():null;return Object.assign({pivo:A?A.nome:"alvo da câmera",area:A?A.area:null},SCN.ultimaVistaOrientada||vistaAtual(A))},
   /* azimutes de um giro de n vistas (para laços): camera.giro(8) → [0, 45, 90, …] */
   giro(n,opts){return azimutesGiro(n,opts)},
   vistas(){return VISTAS_8.map(v=>v[0])},
