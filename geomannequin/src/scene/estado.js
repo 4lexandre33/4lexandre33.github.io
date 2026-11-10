@@ -49,6 +49,11 @@ function sceneState(){
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
   return {active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;delete q.base;
+    if(o.gripV3){
+      const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
+      q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
+      if(q.gripV3)delete q.gripV3.mannequinId;
+    }
     if(o.grip){const j=SCN.list.findIndex(m=>m.id===o.grip.mannequinId);
       q.grip=j<0?undefined:{...o.grip,mannequinIndex:j};if(q.grip)delete q.grip.mannequinId;}if(o.sobre){const j=SCN.objetos.findIndex(x=>x.id===o.sobre);if(j>=0)q.sobre=j;else delete q.sobre}else delete q.sobre;return q})};
 }
@@ -64,10 +69,16 @@ function loadScene(sc){
   SCN.objetos.length=0;SCN.objSel=null;
   if(Array.isArray(sc.objetos))sc.objetos.slice(0,40).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo);["x","z","giro","larg","prof","alt","encosto","cabeceira","raio"].forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],k==="giro"?-180:k==="raio"?0.1:-40,k==="giro"?180:k==="raio"?20:40)});
     if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);q.id=novoIdObjeto();
+    if(Array.isArray(o.rot3)&&o.rot3.length===9&&o.rot3.every(Number.isFinite))q.rot3=o.rot3.slice();
+    if(o.emAr===true&&Number.isFinite(o.base)){q.emAr=true;q.base=o.base}
+    if(o.sobreRel&&Array.isArray(o.sobreRel.M)&&o.sobreRel.M.length===9&&o.sobreRel.M.every(Number.isFinite)&&
+      Array.isArray(o.sobreRel.T)&&o.sobreRel.T.length===3&&o.sobreRel.T.every(Number.isFinite))
+      q.sobreRel={M:o.sobreRel.M.slice(),T:o.sobreRel.T.slice()};
     q.hue=typeof o.hue==="number"&&isFinite(o.hue)?o.hue:null;
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
     if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();if(o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink))q.col={fill:o.col.fill,ink:o.col.ink};if(Number.isInteger(o.sobre))q._sobre=o.sobre;
     if(o.grip&&Number.isInteger(o.grip.mannequinIndex))q._grip={...o.grip};
+    if(o.gripV3&&Number.isInteger(o.gripV3.mannequinIndex))q._gripV3={...o.gripV3};
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
     if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();
 
@@ -82,6 +93,21 @@ function loadScene(sc){
       o.grip={version:1,mannequinId:m.id,side:g.side,offset:g.offset.slice(),yawOffset:Number.isFinite(g.yawOffset)?g.yawOffset:0};
     delete o._grip;
   }});
+  /* Grip V3: restaurar somente matrizes finitas e o novo ID do proprietário. */
+  const validRigid=t=>t&&Array.isArray(t.M)&&t.M.length===9&&t.M.every(Number.isFinite)&&
+    Array.isArray(t.T)&&t.T.length===3&&t.T.every(Number.isFinite);
+  SCN.objetos.forEach(o=>{const g=o._gripV3;
+    if(g){
+      const owner=SCN.list[g.mannequinIndex];
+      if(owner&&(g.side===1||g.side===-1)&&validRigid(g.relative))
+        o.gripV3={version:3,mannequinId:owner.id,side:g.side,siteId:String(g.siteId||"auto"),
+          relative:{M:g.relative.M.slice(),T:g.relative.T.slice()},
+          ...(g.secundaria&&(g.secundaria.side===1||g.secundaria.side===-1)&&validRigid(g.secundaria.relative)?
+            {secundaria:{side:g.secundaria.side,siteId:String(g.secundaria.siteId||"auto"),
+               relative:{M:g.secundaria.relative.M.slice(),T:g.secundaria.relative.T.slice()}}}:{})};
+      delete o._gripV3;
+    }
+  });
   /* apoio (sentado em um objeto) guardado pelo índice do objeto */
   sc.list.slice(0,MAXM).forEach((o,i)=>{if(Number.isInteger(o.apoioEm)&&SCN.objetos[o.apoioEm])SCN.list[i].apoioEm=SCN.objetos[o.apoioEm].id});
   /* contatos permitidos (abraço, aperto de mão): guardados como índices na lista */
