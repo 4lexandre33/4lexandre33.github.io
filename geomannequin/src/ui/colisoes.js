@@ -2,6 +2,7 @@
    (automática, afastar, girar, ajustar a pose ou permitir o contato), para cada colisão ou para todas */
 import { $ } from "../scene/ambiente.js";
 import { SCN, setActive } from "../scene/modelo.js";
+import {CONTATO_V2,setContatoV2,consultarContatosV2} from "../scene/contato-v2.js";
 import { COL, resolverObjetos, resolverObjeto, quemMexer, ajustarComposicao, colisoesDaCena, desfazerColisao, permitirContato, resolverPar, resolverTodas, setComposicao, setModoColisao, setPreferir } from "../scene/colisoes.js";
 import { render } from "./palco.js";
 import { refreshScene } from "./painel-cena.js";
@@ -58,6 +59,17 @@ function atualizarColisoes(lista) {
 export function iniciarColisoes() {
   const el = $("colLista"); if (!el) return;
   $("colModo").value = COL.modo; $("colPref").value = COL.preferir;
+  const v2=$("colV2"),status=$("colV2Status");
+  if(v2){v2.checked=CONTATO_V2.enabled;v2.addEventListener("change",()=>{
+    setContatoV2({enabled:v2.checked});status.textContent=v2.checked?
+      "Geometria de contato V2 ativa: bloqueio 3D detalhado ao arrastar.":"Motor detalhado desativado.";render();
+  })}
+  $("colV2Consultar")?.addEventListener("click",()=>{
+    try{const hits=consultarContatosV2({max:60}),fatal=hits.filter(c=>c.prof>CONTATO_V2.tol);
+      status.textContent=hits.length?`${hits.length} contato(s) em 3D; ${fatal.length} acima da tolerância. Mais profundo: ${hits[0].pa} × ${hits[0].pb} (${(hits[0].prof*11.4).toFixed(1)} cm em proxy).`:
+      "Sem interpenetração detectada nos colisores 3D nesta cena.";
+    }catch(e){status.textContent="Falha na inspeção: "+e.message}
+  });
   $("colModo").addEventListener("change", () => { setModoColisao($("colModo").value); assinatura = ""; msg(""); render(); });
   $("colPref").addEventListener("change", () => setPreferir($("colPref").value));
   $("colComp").checked = !!COL.composicao;
