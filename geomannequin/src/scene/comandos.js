@@ -478,7 +478,11 @@ const cena={
   contatoV2(opts){return setContatoV2(opts)},
   contatosFisicos(opts){return consultarContatosV2(opts)},
   avancarFisica(segundos=1/60){
+    if(!Number.isFinite(segundos)||segundos<0||segundos>3)
+      throw Error("avancarFisica: tempo entre 0 e 3 segundos.");
     atualizarApoios();
+    if(!SCN.objetos.some(o=>o.dinamica?.ativo&&!o.grip&&!o.gripV3))
+      return {ativos:0,passos:0,contatos:[]};
     const ground=restGround(SCN.list[0].params);
     // Os atores são colisores estáticos durante o passo de queda.
     // O dono inicial é excluído para não bloquear a liberação dentro da palma.
