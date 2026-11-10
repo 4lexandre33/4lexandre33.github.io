@@ -5,8 +5,8 @@ import { FLEX_NOMES, ampliar, clamp } from "../engine/index.js";
 const fr=(x,d)=>x.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const SL=[
   {k:"yaw",g:"slOrient",label:"Rotação horizontal",min:-180,max:180,step:1,u:"°"},
-  {k:"pitch",g:"slOrient",label:"Inclinação vertical",min:-70,max:70,step:1,u:"°"},
-  {k:"roll",g:"slOrient",label:"Inclinação lateral",min:-45,max:45,step:1,u:"°"},
+  {k:"pitch",g:"slOrient",label:"Inclinação vertical",min:-90,max:90,step:1,u:"°"},
+  {k:"roll",g:"slOrient",label:"Inclinação lateral",min:-180,max:180,step:1,u:"°"},
   {k:"skull",g:"slProp",label:"Largura do crânio",min:0.6,max:0.95,step:0.01,u:" R"},
   {k:"cranialDepth",g:"slProp",label:"Comprimento do crânio (occipital)",min:0.90,max:1.12,step:0.005,u:"×"},
   {k:"headScale",g:"slProp",label:"Escala anatômica da cabeça",min:0.9,max:1.1,step:0.005,u:"×"},
