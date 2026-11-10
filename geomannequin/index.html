@@ -140,6 +140,12 @@
       <label class="check-linha"><input type="checkbox" id="colV2"> Colisão anatômica detalhada V2 (dedos + autocolisão, experimental)</label>
       <p class="hint camadas-dica">No modo Bloquear, a V2 limita o movimento em 3D; o contato permitido não desativa os sólidos. Esta fase ainda usa aproximações geométricas e não simula forças físicas.</p>
       <button type="button" id="colV2Consultar">Inspecionar contatos 3D detalhados</button>
+      <div class="group poses" role="group" aria-label="Preensão cinemática de objeto selecionado">
+        <label for="colV2Mao">Mão</label>
+        <select id="colV2Mao"><option value="direita">Direita</option><option value="esquerda">Esquerda</option></select>
+        <button type="button" id="colV2Segurar">Segurar objeto selecionado</button>
+        <button type="button" id="colV2Soltar">Soltar objeto selecionado</button>
+      </div>
       <p class="hint" id="colV2Status" aria-live="polite"></p>
       <div id="colLista" class="col-lista"></div>
       <div class="group poses">
