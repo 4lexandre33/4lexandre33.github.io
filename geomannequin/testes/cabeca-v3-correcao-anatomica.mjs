@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import {DEF} from "../src/engine/padroes.js";
 import {shape,buildHead,headPt} from "../src/engine/cabeca.js";
+import {getMeshes,newCache} from "../src/engine/montagem.js";
 import {bustFrame,bustR,bustZc} from "../src/engine/corpo.js";
 import {sectionV3,normalizedHeight,yAt,pointV3,anatomicalCurvesV3,landmarksV3,inspectHeadV3} from "../src/engine/head-v3/index.js";
 import {watertightMeshV3,meshTopologyV3} from "../src/engine/head-v3/mesh-export.js";
@@ -68,6 +69,16 @@ for(const fem of [0,1])for(const biotipo of NOMES_BIOTIPOS){
  assert.equal(topo.invalid,0);
  variants++;
  reference+=guides.length;
+}
+/* A escolha da V3 deve reconstruir o pescoço, não reaproveitar
+ * a malha cervical larga que estava em cache na V1/V2. */
+{
+ const p={...DEF,headModel:"v1",_cache:newCache()},s=shape(p);
+ const antes=getMeshes(p,s).bust;
+ p.headModel="v3_microgeometry";
+ const depois=getMeshes(p,s).bust;
+ assert.notStrictEqual(antes,depois,"O cache impediu a atualização cervical V3.");
+ assert.notEqual(antes.V[0],depois.V[0],"Sem alteração real na malha cervical.");
 }
 assert.equal(variants,NOMES_BIOTIPOS.length*2);
 assert.equal(meshes,variants*3);
