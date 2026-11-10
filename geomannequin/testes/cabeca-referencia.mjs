@@ -20,6 +20,10 @@ for(const [sexo,fem] of faces)for(const tipo of NOMES_BIOTIPOS){
   const parietal=ringAt(0.2,p,S),vertex=ringAt(0.8,p,S),front=parietal[1]+parietal[2],back=parietal[2]-parietal[1];
   assert.ok(parietal[0]>vertex[0]*1.25,`${sexo}/${tipo}: abóbada lateral não oval`);
   assert.ok(back>front*1.12,`${sexo}/${tipo}: occipital sem profundidade`);
+  const profundo={...p,cranialDepth:1.10},raso={...p,cranialDepth:0.92};
+  const aP=ringAt(0.2,profundo,S),aR=ringAt(0.2,raso,S);
+  assert.ok(aP[2]-aP[1]>aR[2]-aR[1]+0.10,"comprimento craniano não altera o occipital");
+  near(aP[1]+aP[2],aR[1]+aR[2],1e-6);
   /* Espaçamento anatomicamente plausível de orelha entre sobrancelha e nariz. */
   const orelhaTopo=earSurf(p,S,1,0,1),orelhaBase=earSurf(p,S,1,0,-1);
   finite3(orelhaTopo);finite3(orelhaBase);
