@@ -22,6 +22,8 @@ import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./c
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3} from "./grip-v3.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
+import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
+import {rotM} from "../engine/matematica.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
@@ -202,6 +204,33 @@ function apiObjeto(q){
     posicao(x,z){chk();editarObjeto(q,{x:num(x,"x"),z:z===undefined?q.z:num(z,"z")});return o},
     mover(dx,dz){chk();return o.posicao(q.x+num(dx,"dx"),q.z+num(dz||0,"dz"))},
     girar(g){chk();editarObjeto(q,{giro:((num(g,"graus")%360)+540)%360-180});return o},
+    posicao3D(x,y,z){
+      chk();if(q.gripV3)throw Error("Objeto segurado: mova a mão para transportá-lo.");
+      const ground=restGround(SCN.list[0].params),frame=objectRigidPose(q,ground);
+      if(![x,y,z].every(Number.isFinite))throw Error("A posição 3D exige três números finitos.");
+      if(q.sobre)delete q.sobre;delete q.sobreRel;
+      setRigidObjectPose(q,{M:frame.M,T:[x,y,z]},ground);q.emAr=true;return o;
+    },
+    rotacao3D(yaw,pitch=0,roll=0){
+      chk();if(q.gripV3)throw Error("Objeto segurado: gire a mão, não a cadeira.");
+      const a=[yaw,pitch,roll].map((v,i)=>num(v,["yaw","pitch","roll"][i]));
+      const ground=restGround(SCN.list[0].params),frame=objectRigidPose(q,ground);
+      if(q.sobre)delete q.sobre;delete q.sobreRel;
+      setRigidObjectPose(q,{M:rotM(...a.map(v=>v*Math.PI/180)),T:frame.T},ground);
+      q.emAr=true;return o;
+    },
+    pose3D(){chk();atualizarApoios();const v=objectRigidPose(q,restGround(SCN.list[0].params));
+      return {posicao:v.T,matriz:v.M,giro:q.giro,emAr:!!q.emAr};
+    },
+    criarPontoAgarre(id,local,normal=[0,0,1]){
+      chk();if(typeof id!=="string"||!id.trim()||id.length>40||
+        !Array.isArray(local)||local.length!==3||!local.every(Number.isFinite)||
+        !Array.isArray(normal)||normal.length!==3||!normal.every(Number.isFinite)||Math.hypot(...normal)<1e-6)
+        throw Error("Ponto: nome, [x,y,z] e normal com três números válidos.");
+      if(gripSites(q).some(s=>s.id===id))throw Error("Ponto de agarre duplicado: "+id);
+      if(!Array.isArray(q.sitesExtras))q.sitesExtras=[];
+      q.sitesExtras.push({id,nome:id,local:local.slice(),normal:normal.slice()});return o;
+    },
     parametro(chave,valor){
       chk();if(valor===undefined)return q[chave];
       const permitidos=new Set(["x","z","giro","larg","prof","alt","raio","encosto","cabeceira"]);
