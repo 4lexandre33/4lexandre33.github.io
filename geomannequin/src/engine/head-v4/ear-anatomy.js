@@ -49,7 +49,10 @@ export function earPointV41(p,S,sign,u,v){
  /* Lóbulo arredondado sem disco inflado. Uma orelha achatada/achatável
     mantém sua região medial dentro da superfície do crânio. */
  const lobe=-.019*gaussian2(uu,vv,.15,-.79,.50,.21);
- const base=.022+.034*flare*(.86+.14*(-uu));
+ /* Profundidade lateral real: a concha fica à frente do z-buffer craniano,
+    restaurando o desenho mesmo quando a cabeça está em perfil. */
+ const projection=clamp(p.v42EarProjection??.085,.025,.19);
+ const base=.022+.034*flare*(.86+.14*(-uu))+projection;
  const x=sign*(shell+base+m.size*relief*
    (helix+antiHelix+concha+tragus+antitragus+superiorCrus+scapha+lobe));
  return [x,y,z];

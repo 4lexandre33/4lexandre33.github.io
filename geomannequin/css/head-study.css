@@ -1,0 +1,52 @@
+/* GeoMannequin — modo de estudo anatômico V4.2 (folha técnica vetorial).
+ * Responsivo, acessível e isolado do palco/editor existentes. */
+.gm42-shell[hidden]{display:none!important}
+.gm42-shell{
+ position:fixed;inset:0;z-index:10020;display:flex;flex-direction:column;
+ background:#f7f2f5;color:#583f4f;font-family:Arial,Helvetica,sans-serif;
+}
+body.gm42-open{overflow:hidden}
+.gm42-bar{
+ min-height:60px;box-sizing:border-box;padding:9px 17px;
+ display:flex;align-items:center;justify-content:space-between;gap:14px;
+ flex-wrap:wrap;background:#fffafd;border-bottom:1px solid #e9cad5;
+ box-shadow:0 2px 14px #71465b0b;position:relative;z-index:1;
+}
+.gm42-heading{display:flex;flex-direction:column;gap:3px}
+.gm42-heading strong{font-size:15px;letter-spacing:.018em;color:#794b61}
+.gm42-heading small{font-size:11px;color:#987789}
+.gm42-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.gm42-actions label{display:inline-flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap}
+.gm42-actions label input{accent-color:#965a73}
+.gm42-actions button{
+ cursor:pointer;font:600 12px Arial,Helvetica,sans-serif;letter-spacing:.01em;
+ padding:8px 11px;border:1px solid #b9879d;border-radius:7px;
+ background:#fff;color:#75475c;min-height:34px;
+}
+.gm42-actions button:hover{background:#fbeaf1}
+.gm42-actions button:focus-visible{outline:2px solid #85485f;outline-offset:3px}
+.gm42-actions button:disabled{opacity:.45;cursor:wait}
+#gm42Close{background:#86516a;color:white;border-color:#86516a}
+#gm42Close:hover{background:#6d4057}
+.gm42-viewport{flex:1;min-height:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:12px 14px 32px}
+.gm42-sheet{
+ width:min(100%,1440px);background:#fafbfd;
+ border:1px solid #e2cfdb;box-shadow:0 16px 50px #75536a24;
+ box-sizing:border-box;aspect-ratio:4/3;display:flex;align-items:stretch;
+}
+.gm42-sheet>svg{display:block;width:100%;height:auto;aspect-ratio:4/3}
+.gm42-loading{margin:auto;text-align:center;padding:28px;font-size:15px;color:#835d70}
+@media(max-width:800px){
+ .gm42-bar{padding:8px 10px;gap:7px;align-items:flex-start}
+ .gm42-actions{gap:6px}
+ .gm42-actions button{padding:6px 8px}
+ .gm42-viewport{padding:6px;justify-content:flex-start}
+ .gm42-sheet{min-width:760px}
+}
+@media print{
+ .gm42-shell{position:static;display:block}
+ .gm42-bar{display:none}
+ .gm42-viewport{padding:0;overflow:visible}
+ .gm42-sheet{border:0;box-shadow:none;width:100%;min-width:0}
+ body.gm42-open>header,body.gm42-open>main,body.gm42-open>footer{display:none!important}
+}

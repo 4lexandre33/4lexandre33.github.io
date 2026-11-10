@@ -8,7 +8,7 @@
   "scripts": {
     "servir": "node ferramentas/servir.mjs",
     "construir": "node ferramentas/construir.mjs",
-    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs && node testes/objetos.mjs && node testes/camera-objetos.mjs && node testes/biotipos.mjs && node testes/anatomia-integral.mjs && node testes/cabeca-referencia.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/quadros.mjs && node testes/rig.mjs && node testes/cabeca-v3-microgeometria.mjs && node testes/camera-foco-regional.mjs && node testes/cabeca-v3-correcao-anatomica.mjs && node testes/cabeca-v4-anatomia.mjs && node testes/cabeca-v4-1-anatomia.mjs",
+    "testar": "node testes/motor.mjs && node testes/cenas.mjs && node testes/camadas.mjs && node testes/colisoes.mjs && node testes/esqueleto.mjs && node testes/blocking.mjs && node testes/objetos.mjs && node testes/camera-objetos.mjs && node testes/biotipos.mjs && node testes/anatomia-integral.mjs && node testes/cabeca-referencia.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/quadros.mjs && node testes/rig.mjs && node testes/cabeca-v3-microgeometria.mjs && node testes/camera-foco-regional.mjs && node testes/cabeca-v3-correcao-anatomica.mjs && node testes/cabeca-v4-anatomia.mjs && node testes/cabeca-v4-1-anatomia.mjs && node testes/cabeca-v4-2-geometria.mjs && node testes/folha-cabeca-v4-2.mjs && node testes/folha-cabeca-v4-2-integracao.mjs",
     "desempenho": "node testes/desempenho.mjs",
     "estimar-poses": "node ferramentas/estimar-poses.mjs",
     "testar:anatomia": "node testes/biotipos.mjs && node testes/biotipos-cenas.mjs && node testes/cintura.mjs && node testes/pelve.mjs && node testes/anatomia-integral.mjs && node testes/cabeca-referencia.mjs",
@@ -32,7 +32,9 @@
     "atlas:cabeca-v4": "node testes/atlas-cabeca-v4.mjs",
     "testar:cabeca-v4-1": "node testes/cabeca-v4-1-anatomia.mjs",
     "atlas:cabeca-v4-1": "node testes/atlas-cabeca-v4.mjs",
-    "comparar:cabeca-v4-1": "node testes/atlas-cabeca-v4-1-comparar.mjs"
+    "comparar:cabeca-v4-1": "node testes/atlas-cabeca-v4-1-comparar.mjs",
+    "testar:cabeca-v4-2": "node testes/cabeca-v4-2-geometria.mjs && node testes/folha-cabeca-v4-2.mjs && node testes/folha-cabeca-v4-2-integracao.mjs",
+    "atlas:cabeca-v4-2": "node testes/folha-cabeca-v4-2.mjs --svg"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
