@@ -25,7 +25,7 @@ import { scapTri } from "./corpo.js";
 import { atlasTronco, linhaParaPele } from "./atlas/tronco.js";
 import { atlasBraco } from "./atlas/bracos.js";
 import { atlasRosto } from "./atlas/rosto.js";
-import { isoCurvesV2, lipCurvesV2 } from "./head/index.js";
+import { isoCurvesV2, lipCurvesV2, sideBorderV2 } from "./head/index.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -289,9 +289,12 @@ function scene(p,L,pal,fast,mode){
     out.push('<circle cx="'+f1(cx0)+'" cy="'+f1(cy0)+'" r="'+f1(S)+'" style="'+style("sphere",false)+'"/>');
     out.push('<path d="M'+f1(cx0-6)+' '+f1(cy0)+'H'+f1(cx0+6)+'M'+f1(cx0)+' '+f1(cy0-6)+'V'+f1(cy0+6)+'" style="'+style("sphere",false)+'"/>');
   }
-  /* planos laterais: círculo de corte desenhado sobre a superfície */
+  /* A V2 obtém a circunferência da superfície 3D plana de Loomis.
+     Nada de círculo decorativo desenhado sobre uma esfera arredondada. */
   if(L.planes){
-    [-1,1].forEach(s=>{
+    if(p.headModel==="v2")[-1,1].forEach(s=>
+      curve("plane",sideBorderV2(p,sh,s,128,.008)));
+    else [-1,1].forEach(s=>{
       const pts=arr(a=>{
         const y=0.05+0.56*Math.sin(a),z=0.56*Math.cos(a);
         const r=ringAt(y,p,sh),cs=clamp((z-r[1])/r[2],-1,1);
