@@ -16,29 +16,39 @@ function ringAt(y,p,S){
   const sx=p.skull*(1+0.035*fat-0.015*fem+0.007*mus),
     jw=p.jaw*(1+0.04*mus+0.045*fat-0.055*fem),
     cw=p.chin,t=S.t,chinY=S.chinY;
-  const y0=-0.15,Jy=-t*0.9;
+  /* Referência 3×3: abóbada lateral em "roda" oval, temporal discretamente
+     achatada, frontal quase vertical e occipital posterior arredondado.
+     São seções de uma forma crânio-facial, NÃO de uma esfera de raio único. */
+  const y0=-0.21,Jy=-t*0.91;
+  const lateral=yy=>sx*Math.sqrt(Math.max(0,1-yy*yy))*
+    (1+0.088*gauss(yy,0.22,0.32)-0.055*gauss(yy,0.78,0.20));
   let a;
-  /* Frontal, temporais e parietais não compartilham um raio esférico constante:
-     têmporas discretamente estreitas, máxima largura no parietal médio e
-     arredondamento superior com redução no início do vértex. */
-  if(y>=y0)a=sx*rs*(1+0.075*gauss(y,0.32,0.24)-0.085*gauss(y,0.82,0.2));
-  else if(y>=Jy)a=lerp(sx*Math.sqrt(1-y0*y0),jw,sstep((y0-y)/(y0-Jy)));
+  if(y>=y0)a=lateral(y);
+  else if(y>=Jy)a=lerp(lateral(y0),jw,sstep((y0-y)/(y0-Jy)));
   else{
-    const u=Math.min(1,(Jy-y)/(Jy-chinY)),pw=lerp(1.4,3,clamp((cw-0.1)/0.35,0,1));
+    const u=clamp((Jy-y)/(Jy-chinY),0,1),pw=lerp(1.65,2.65,clamp((cw-0.1)/0.35,0,1));
     a=jw*Math.pow(Math.max(0,1-Math.pow(u,pw)),1/pw);
   }
-  /* o plano do rosto é mais vertical que a esfera: empurra a frente para fora abaixo da arcada */
-  const flat=yy=>{const r=Math.sqrt(Math.max(0,1-yy*yy));return yy>=0?r:r+0.5*(1-r)};
+  /* Plano frontal mais compacto do que o occipital no perfil: o volume do
+     neurocrânio existe ATRÁS da máscara facial, não ao redor dela como bola. */
+  const front=yy=>{
+    const r=Math.sqrt(Math.max(0,1-yy*yy));
+    return r*(0.96-0.115*gauss(yy,0.50,0.29)+0.075*gauss(yy,-0.10,0.22));
+  };
+  const orbital=-t*0.68;
   let bf;
-  if(y>=-t)bf=flat(y)*(1-0.075*gauss(y,0.58,0.3));
-  else bf=lerp(flat(-t),p.chinProj,sstep((-t-y)/(-t-chinY)));
-  /* Occipital discreto na parte de trás: rosto mais plano, crânio mais profundo
-     no terço posterior do que uma esfera homogênea. */
-  let bb;const yb0=-0.55;
-  if(y>=yb0)bb=rs*(1+0.12*gauss(y,0.08,0.35));
-  else bb=lerp(Math.sqrt(1-yb0*yb0),0.42,sstep((yb0-y)/(yb0-chinY)));
+  if(y>=orbital)bf=front(y);
+  else bf=lerp(front(orbital),p.chinProj*(1-0.025*fem),sstep((orbital-y)/(orbital-chinY)));
+  /* A massa occipital recua bastante na zona parietal; abaixo do processo
+     mastoideu afunila até a mandíbula, deixando o pescoço legível. */
+  const occipital=yy=>Math.sqrt(Math.max(0,1-yy*yy))*
+    (1.085+0.18*gauss(yy,0.21,0.37));
+  const nucaY=-0.46;
+  let bb;
+  if(y>=nucaY)bb=occipital(y);
+  else bb=lerp(occipital(nucaY),0.26+0.07*fat,sstep((nucaY-y)/(nucaY-chinY)));
   const k=S.scale||1;
-  return [a*k,(bf-bb)*k/2,(bf+bb)*k/2];
+  return [Math.max(0,a)*k,(bf-bb)*k/2,(bf+bb)*k/2];
 }
 /* Relevos do perfil e do rosto: arcada, órbitas, malares, nariz, lábios e queixo */
 function bumps(y,x,p,S){
@@ -90,9 +100,16 @@ function headPt(y,th,p,S,off){
    jawOpen 0–1 (até ~26°), jawSide −1 a 1 (desvio lateral). A faixa logo abaixo do lábio superior estica e vira a boca aberta. */
 function mandibula(v,p,S){
   const jo=p.jawOpen||0,js=p.jawSide||0;if(!jo&&!js)return v;
-  const my=S.mouthY,w=sstep((my-0.002-v[1])/0.035);if(w<=0)return v;
-  const a=jo*26*D*w,hy=-S.t*0.5,hz=-0.12,dy=v[1]-hy,dz=v[2]-hz,c=Math.cos(a),sn=Math.sin(a);
-  return [v[0]+js*0.09*w,hy+dy*c-dz*sn,hz+dy*sn+dz*c];
+  /* ATM: a maxila superior fica imóvel; o ramo mandibular move-se abaixo
+     do sulco interlabial com transição suave, evitando a faixa vertical
+     estreita que deformava o queixo quando a boca abria. */
+  const abertura=clamp(jo,0,1),my=S.mouthY;
+  const w=sstep((my+0.014-v[1])/0.175);
+  if(w<=0)return v;
+  const a=abertura*23*D*w,hy=-S.t*0.50,hz=-0.19;
+  const dy=v[1]-hy,dz=v[2]-hz,c=Math.cos(a),sn=Math.sin(a);
+  return [v[0]+js*0.06*w,hy+dy*c-dz*sn-0.012*abertura*w,
+    hz+dy*sn+dz*c+0.018*abertura*w];
 }
 const mapTh=u=>u-0.7*Math.sin(u);
 function buildHead(p,S){
@@ -119,15 +136,19 @@ function buildHead(p,S){
 /* pescoço: largo, com os dois músculos esternocleidomastoideos e base abrindo para os ombros */
 /* orelha: superfície em coordenadas (u,v) de -1 a 1; u>0 é o lado do rosto */
 function earSurf(p,S,s,u,v){
-  const ey=-S.t*0.5,rz=0.17*p.earSize,ry=0.3*p.earSize,thE=98*D;
-  const rho=Math.hypot(u,v),eu=u*(0.88+0.12*v);
+  /* Implantação junto à ATM e ao processo mastoideu: altura do pavilhão
+     entre arco supraciliar e base nasal, com inclinação posterior discreta.
+     Orelha não deve flutuar em frente ao rosto nem atravessar a mandíbula. */
+  const k=S.scale||1,ey=S.eyeY-0.13,sz=p.earSize;
+  const ry=0.34*sz,rz=0.115*sz;
+  const rho=Math.hypot(u,v),eu=u*(0.90+0.10*v);
   const y=ey+ry*v,r=ringAt(y,p,S),r0=ringAt(ey,p,S);
-  const z=r0[1]+r0[2]*Math.cos(thE)+rz*eu-0.05*v;
-  const lobe=v<-0.55?lerp(1,0.45,clamp((-0.55-v)/0.4,0,1)):1;
-  const flare=0.15*p.earFlare*lobe*(1-(eu+1)/2);
-  const lift=(0.014+0.04*gauss(rho,0.55,0.14)+0.05*gauss(rho,0.95,0.07)-0.016*gauss(rho,0.25,0.22))*p.earSize;
-  const k=S.scale||1;
-  return [s*(r[0]+(0.02+flare+lift)*k),S.chinY+(y-S.chinY)*k,z+rz*eu*(k-1)];
+  const lobe=v< -0.58?lerp(1,0.63,clamp((-0.58-v)/0.42,0,1)):1;
+  const flare=(0.025+0.045*p.earFlare*(1-(u+1)/2))*lobe;
+  const helix=0.038*gauss(rho,0.91,0.10)*sz;
+  const x=s*(r[0]+(0.016+flare+helix)*k);
+  const z=r0[1]-0.035*k+rz*eu*k-0.035*v*k;
+  return [x,S.chinY+(y-S.chinY)*k,z];
 }
 function buildEar(p,S,s){
   const rows=12,cols=40;
