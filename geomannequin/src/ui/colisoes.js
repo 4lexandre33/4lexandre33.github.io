@@ -72,7 +72,8 @@ export function iniciarColisoes() {
     if(!obj){status.textContent="Selecione um objeto no painel de cena antes de segurar.";return}
     try{atualizarApoios();const lado=$("colV2Mao").value==="esquerda"?1:-1;
       const r=beginGrip(it,obj,lado,restGround(SCN.list[0].params));
-      status.textContent="Vínculo cinemático: "+r.objeto+" na mão "+r.mao+".";refreshScene();render();
+      const nc=r.dedos?.filter(d=>d.contato).length??0;
+      status.textContent="Vínculo cinemático: "+r.objeto+" na mão "+r.mao+". Dedos em contato: "+nc+"/5"+(nc===0?" (preensão apenas posicionada, sem contato digital).":".");refreshScene();render();
     }catch(e){status.textContent=e.message}
   });
   $("colV2Soltar")?.addEventListener("click",()=>{
