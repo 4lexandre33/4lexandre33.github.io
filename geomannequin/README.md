@@ -396,3 +396,27 @@ Nova cabeça paramétrica independente da V3, criada a partir de seções 2D do 
 - `npm run atlas:cabeca-v4 -- masculino medio` — nove vistas em SVG, com pescoço e linhas construtivas.
 
 **Estado:** a arquitetura V4 e os testes geométricos isolados foram implementados. A equivalência estética com as referências enviadas **ainda não foi validada**. Os presets específicos de line art limpa, planos monocromáticos e sombreamento azul, a união anatômica mais refinada cabeça-pescoço e a calibração por erro multivista são etapas futuras registradas no task graph. V1, V2 e V3 permanecem disponíveis.
+
+
+### Cabeça V4.1 — crânio compacto, queixo em V e aurículas corrigidas (10/11/2026)
+
+Refinamento **do modelo `v4_anatomical`**: a V4 passa a aparecer no seletor como **Cabeça V4.1 — crânio compacto e queixo em V (experimental)**. V1, V2 e V3 não foram alteradas. A redução de profundidade posterior é aplicada à calota occipital sem mover testa/órbitas; a face começa a afinar abaixo dos olhos, convergindo em **X e Z** para um mento quase pontudo, porém com seção 3D de largura positiva. As aurículas agora são geradas por um módulo separado, com borda helicoidal assimétrica, anti-hélice, concha, trago/antitrago e lóbulo, alinhadas aproximadamente do arco superciliar à base nasal.
+
+**Novos controles:** encurtamento do occipital, compactação posterior, curvatura da nuca, convergência mandibular, afilamento do queixo, pontualidade mentoniana, posição/inclinação/relevo das orelhas. As malhas são reconstruídas quando esses parâmetros mudam; o OBJ V4 usa o novo formato.
+
+**Validação e atlas:**
+
+```bash
+cd geomannequin
+npm run testar:cabeca-v4-1
+npm run testar:cabeca-v4
+npm run comparar:cabeca-v4-1
+npm run atlas:cabeca-v4-1 -- masculino medio
+npm run atlas:cabeca-v4-1 -- feminino medio
+npm run construir
+```
+
+- [Task graph completo: 55 tarefas, dependências, fórmulas e critérios de aceite](docs/head-v4-1-task-graph.md).
+- A comparação gera `testes/saida/cabeca-v4-1/comparativo-cranio-queixo-v4-v41.svg` com o mesmo ângulo/zoom da V4 antiga e V4.1. **A orelha do atlas comparativo já usa a versão nova nas duas linhas; a comparação isola sobretudo as proporções craniofaciais.**
+
+**Status:** verificações isoladas de macroforma, convergência V, orelhas e dez biotipos foram positivas; a fidelidade visual aos 14 anexos não está comprovada até o atlas ser renderizado e inspecionado. A união da cabeça com o pescoço ainda utiliza sobreposição de malhas, não uma superfície manifold única.
