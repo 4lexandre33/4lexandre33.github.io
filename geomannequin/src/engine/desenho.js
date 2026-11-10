@@ -27,6 +27,7 @@ import { atlasBraco } from "./atlas/bracos.js";
 import { atlasRosto } from "./atlas/rosto.js";
 import { isoCurvesV2, lipCurvesV2, sideBorderV2 } from "./head/index.js";
 import { isoCurvesV3, constructionCurvesV3, anatomicalCurvesV3, earPointV3 } from "./head-v3/index.js";
+import { isoCurvesV4, constructionCurvesV4, anatomicalCurvesV4, earPointV4 } from "./head-v4/index.js";
 
 /* malhas de outros manequins que fazem sombra neste (cena em camadas): entram só no mapa de sombra */
 let CASTERS=[];
@@ -285,7 +286,7 @@ function scene(p,L,pal,fast,mode){
   /* guias de construção: grupo separado, mais leve, para não competir com a anatomia */
   out.push('<g id="construction-guides" style="opacity:'+(L.cel?0.45:0.8)+'">');
   /* esfera guia */
-  if(L.sphere&&p.headModel!=="v3_microgeometry"){
+  if(L.sphere&&p.headModel!=="v3_microgeometry"&&p.headModel!=="v4_anatomical"){
     const c0=xf([0,0,0]),cx0=CX+S*c0[0],cy0=CY-S*c0[1];
     out.push('<circle cx="'+f1(cx0)+'" cy="'+f1(cy0)+'" r="'+f1(S)+'" style="'+style("sphere",false)+'"/>');
     out.push('<path d="M'+f1(cx0-6)+' '+f1(cy0)+'H'+f1(cx0+6)+'M'+f1(cx0)+' '+f1(cy0-6)+'V'+f1(cy0+6)+'" style="'+style("sphere",false)+'"/>');
@@ -293,7 +294,8 @@ function scene(p,L,pal,fast,mode){
   /* A V2 obtém a circunferência da superfície 3D plana de Loomis.
      Nada de círculo decorativo desenhado sobre uma esfera arredondada. */
   if(L.planes){
-    if(p.headModel==="v3_microgeometry")constructionCurvesV3(p,sh,64).forEach(g=>curve("plane",g.pts));
+    if(p.headModel==="v4_anatomical")constructionCurvesV4(p,sh,48).forEach(g=>curve("plane",g.pts));
+    else if(p.headModel==="v3_microgeometry")constructionCurvesV3(p,sh,64).forEach(g=>curve("plane",g.pts));
     else if(p.headModel==="v2")[-1,1].forEach(s=>
       curve("plane",sideBorderV2(p,sh,s,128,.008)));
     else [-1,1].forEach(s=>{
@@ -308,6 +310,20 @@ function scene(p,L,pal,fast,mode){
   /* Topografia 3D real, para a referência matemática 3x3. */
   if(p.headModel==="v3_microgeometry"&&(L.rings||L.merid)){
     isoCurvesV3(p,sh,{meridians:L.merid?16:0,parallels:L.rings?13:0,resolution:104}).forEach(g=>curve("ring",g.pts));
+  }
+  if(p.headModel==="v4_anatomical"&&(L.rings||L.merid)){
+    isoCurvesV4(p,sh,{meridians:L.merid?16:0,parallels:L.rings?13:0,resolution:104})
+      .forEach(g=>curve("ring",g.pts));
+  }
+  if(p.headModel==="v4_anatomical"&&(L.planes||L.anat||L.jaw||L.feat)){
+    anatomicalCurvesV4(p,sh).forEach(g=>{
+      const jaw=g.kind==="mandibular-angle",micro=["upper-eyelid","lower-eyelid","nasal-alar",
+        "nasolabial","mouth-corner","nose-bridge","philtrum","upper-lip","lower-lip"].includes(g.kind);
+      if(jaw&&!(L.jaw||L.anat))return;
+      if(micro&&!(L.feat||L.anat))return;
+      if(!micro&&!jaw&&!(L.planes||L.anat))return;
+      curve(jaw?"jaw":micro?"divisao":"plane",g.pts);
+    });
   }
   /* Marcos Loomis/Asaro acompanham VÉRTICES da cabeça V3 e não uma
      esfera auxiliar: linha temporal, arco supraorbital, zigoma, gônio,
@@ -329,7 +345,7 @@ function scene(p,L,pal,fast,mode){
     });
   }
   /* contornos transversais */
-  if(L.rings&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"){
+  if(L.rings&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"&&p.headModel!=="v4_anatomical"){
     const full=y=>arr(th=>hp(y,th,0.004),0,2*Math.PI,140);
     const part_=y=>arr(th=>hp(y,th,0.004),-110*D,110*D,90);
     curve("ring",full(t));
@@ -339,7 +355,7 @@ function scene(p,L,pal,fast,mode){
     curve("ring",part_(mouthY));
   }
   /* linhas de proporção estendidas, com marcas nas pontas */
-  if(L.rings&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"){
+  if(L.rings&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"&&p.headModel!=="v4_anatomical"){
     [0.11,eyeY,-t].forEach(y=>{
       const r=ringAt(y,p,sh),xe=r[0]+0.3;
       curve("ext",arr(x=>[x,y,r[1]],-xe,xe,40));
@@ -347,14 +363,14 @@ function scene(p,L,pal,fast,mode){
     });
   }
   /* meridianos: eixo central na frente (segue o perfil) e atrás, mais os planos do rosto */
-  if(L.merid&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"){
+  if(L.merid&&p.headModel!=="v2"&&p.headModel!=="v3_microgeometry"&&p.headModel!=="v4_anatomical"){
     curve("axis",arr(i=>hp(i,0,0.004),1,chinY+0.015,110));
     curve("ring",arr(i=>hp(i,Math.PI,0),1,-0.85,60));
     [-1,1].forEach(s=>curve("ring",arr(i=>hp(i,s*38*D,0.004),t,-t,50)));
   }
   /* linha da mandíbula: da orelha ao queixo, sobre a superfície */
   /* Ângulo mandibular visível também no modo anatômico, inclusive em perfil. */
-  if((L.jaw||L.anat)&&p.headModel!=="v3_microgeometry"){
+  if((L.jaw||L.anat)&&p.headModel!=="v3_microgeometry"&&p.headModel!=="v4_anatomical"){
     [-1,1].forEach(s=>{
       curve(L.jaw?"jaw":"divisao",arr(k=>{
         const y=lerp(-0.48,chinY+0.07,k);
@@ -445,8 +461,8 @@ function scene(p,L,pal,fast,mode){
       /* esternocleidomastoideo: do processo mastoide (atrás da orelha, gira com a cabeça) até a fúrcula esternal (fixa no
          tórax); a linha é apoiada na superfície do pescoço e estica/curva quando a cabeça gira ou inclina */
       {const WT=v=>applyA(tab[Math.round(clamp(bustTw(v[0],v[1],F),0,3)*64)],v);
-       const mastoid=p.headModel==="v3_microgeometry"?earPointV3(p,sh,s,-.85,-.55):[s*.68,-.62,-.30];
-       if(p.headModel==="v3_microgeometry")mastoid[2]-=.12;
+       const mastoid=p.headModel==="v4_anatomical"?earPointV4(p,sh,s,-.85,-.55):p.headModel==="v3_microgeometry"?earPointV3(p,sh,s,-.85,-.55):[s*.68,-.62,-.30];
+       if(p.headModel==="v3_microgeometry"||p.headModel==="v4_anatomical")mastoid[2]-=.12;
        const Wm=applyA(A3,mastoid),Wn=WT(bp(F.yJ+0.04,s*0.09,0.0)),C0=WT([0,F.yJ+0.12,-0.28]),C1=applyA(A3,[0,-0.62,-0.2]);
        const ax=[C1[0]-C0[0],C1[1]-C0[1],C1[2]-C0[2]],al=ax[0]*ax[0]+ax[1]*ax[1]+ax[2]*ax[2]||1;
        const raio=P=>{const t=clamp(((P[0]-C0[0])*ax[0]+(P[1]-C0[1])*ax[1]+(P[2]-C0[2])*ax[2])/al,0,1),c=[C0[0]+ax[0]*t,C0[1]+ax[1]*t,C0[2]+ax[2]*t];return {c,d:[P[0]-c[0],P[1]-c[1],P[2]-c[2]]}};
