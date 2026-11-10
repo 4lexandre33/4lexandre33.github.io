@@ -3,7 +3,9 @@ import { D, clamp, gauss, lerp, sstep } from "./matematica.js";
 
 function shape(p){
   const t=Math.sin(p.face*D),chinY=-2*t;
-  return {t,chinY,eyeY:(1+chinY)/2,mouthY:-t+(chinY+t)/3,nb:Math.sqrt(1-t*t)};
+  /* Ampliação leve, com base mandibular ancorada na coluna cervical. */
+  const scale=clamp(Number.isFinite(p.headScale)?p.headScale:1,0.9,1.1);
+  return {t,chinY,eyeY:(1+chinY)/2,mouthY:-t+(chinY+t)/3,nb:Math.sqrt(1-t*t),scale};
 }
 /* Seção horizontal da cabeça na altura y: meia-largura a, centro c0 e meia-profundidade d (frente bf, trás bb) */
 function ringAt(y,p,S){
@@ -11,7 +13,10 @@ function ringAt(y,p,S){
   const sx=p.skull,jw=p.jaw,cw=p.chin,t=S.t,chinY=S.chinY;
   const y0=-0.15,Jy=-t*0.9;
   let a;
-  if(y>=y0)a=sx*rs;
+  /* Frontal, temporais e parietais não compartilham um raio esférico constante:
+     têmporas discretamente estreitas, máxima largura no parietal médio e
+     arredondamento superior com redução no início do vértex. */
+  if(y>=y0)a=sx*rs*(1+0.075*gauss(y,0.32,0.24)-0.085*gauss(y,0.82,0.2));
   else if(y>=Jy)a=lerp(sx*Math.sqrt(1-y0*y0),jw,sstep((y0-y)/(y0-Jy)));
   else{
     const u=Math.min(1,(Jy-y)/(Jy-chinY)),pw=lerp(1.4,3,clamp((cw-0.1)/0.35,0,1));
@@ -20,10 +25,15 @@ function ringAt(y,p,S){
   /* o plano do rosto é mais vertical que a esfera: empurra a frente para fora abaixo da arcada */
   const flat=yy=>{const r=Math.sqrt(Math.max(0,1-yy*yy));return yy>=0?r:r+0.5*(1-r)};
   let bf;
-  if(y>=-t)bf=flat(y);else bf=lerp(flat(-t),p.chinProj,sstep((-t-y)/(-t-chinY)));
+  if(y>=-t)bf=flat(y)*(1-0.075*gauss(y,0.58,0.3));
+  else bf=lerp(flat(-t),p.chinProj,sstep((-t-y)/(-t-chinY)));
+  /* Occipital discreto na parte de trás: rosto mais plano, crânio mais profundo
+     no terço posterior do que uma esfera homogênea. */
   let bb;const yb0=-0.55;
-  if(y>=yb0)bb=rs;else bb=lerp(Math.sqrt(1-yb0*yb0),0.42,sstep((yb0-y)/(yb0-chinY)));
-  return [a,(bf-bb)/2,(bf+bb)/2];
+  if(y>=yb0)bb=rs*(1+0.12*gauss(y,0.08,0.35));
+  else bb=lerp(Math.sqrt(1-yb0*yb0),0.42,sstep((yb0-y)/(yb0-chinY)));
+  const k=S.scale||1;
+  return [a*k,(bf-bb)*k/2,(bf+bb)*k/2];
 }
 /* Relevos do perfil e do rosto: arcada, órbitas, malares, nariz, lábios e queixo */
 function bumps(y,x,p,S){
@@ -32,10 +42,19 @@ function bumps(y,x,p,S){
   const yb=0.11+0.04*Math.sin(Math.PI*Math.pow(bu,0.8))-0.04*bu;
   let dz=p.brow*0.6*gauss(y,0.02,0.11)*gauss(x,0,0.45);
   dz+=p.brow*0.9*gauss(y,yb,0.05)*gauss(ax,0.42,0.2);
-  dz-=0.035*gauss(y,S.eyeY+0.005,0.085)*gauss(ax,0.32,0.19);
-  dz+=0.03*gauss(y,S.eyeY,0.05)*gauss(ax,0.32,0.1);
+  /* Orbicular dos olhos: anel periorbital, pálpebras e compressão ao sorrir. */
+  const smile=clamp(p.smile||0,-1,1),lid=clamp(p.eyeLid||0,0,1);
+  dz-=0.034*gauss(y,S.eyeY+0.005,0.085)*gauss(ax,0.32,0.19);
+  dz+=(0.025+0.015*lid)*gauss(y,S.eyeY,0.05)*gauss(ax,0.32,0.1);
+  dz+=(0.019+0.022*Math.max(0,smile))*gauss(y,S.eyeY-0.13,0.10)*gauss(ax,0.43,0.16);
   dz-=0.045*gauss(y,S.eyeY+0.03,0.07)*gauss(x,0,0.26);
-  dz+=0.03*gauss(y,S.eyeY-0.22,0.1)*gauss(ax,0.5,0.17);
+  /* Zigomático e sulco nasolabial se movem com o sorriso; masseter define o
+     ângulo mandibular no perfil (sem esculpir uma linha falsa sobre a pele). */
+  const bodyFat=clamp(p.fat||0,0,1),fem=clamp(p.fem||0,0,1);
+  dz+=(0.027+0.015*bodyFat+0.023*Math.max(0,smile))*gauss(y,S.eyeY-0.22,0.14)*gauss(ax,0.49,0.18);
+  dz+=(0.016+0.021*(1-fem)+0.016*(p.muscle||0))*gauss(y,S.mouthY-0.18,0.24)*gauss(ax,0.55,0.20);
+  dz-=0.016*Math.max(0,smile)*gauss(y,S.mouthY+0.085,0.115)*gauss(ax,0.25,0.055);
+  dz+=0.017*gauss(y,S.chinY+0.22,0.11)*gauss(ax,0.29,0.19);
   const ytip=-0.76*t,ynb=-1.0*t;
   let n=0,sig=0.05;
   if(y<=0&&y>ytip){const s=y/ytip;n=p.nose*Math.pow(s,1.4);sig=lerp(0.05,0.1,s)}
@@ -56,7 +75,11 @@ function headPt(y,th,p,S,off){
   let z=r[1]+r[2]*Math.cos(th);
   z+=bumps(y,x,p,S)*Math.max(0,Math.cos(th));
   off=off||0;
-  return mandibula([x*(1+off*1.5),y,z+off*Math.cos(th)],p,S);
+  const q=mandibula([x*(1+off*1.5),y,z+off*Math.cos(th)],p,S);
+  /* Altura relativa ao queixo e base do pescoço; as proporções mudam sem
+     deixar a mandíbula desacoplada da coluna cervical. */
+  q[1]=S.chinY+(q[1]-S.chinY)*(S.scale||1);
+  return q;
 }
 /* mandíbula: abaixo da linha da boca, o queixo gira em volta da articulação temporomandibular (perto da orelha);
    jawOpen 0–1 (até ~26°), jawSide −1 a 1 (desvio lateral). A faixa logo abaixo do lábio superior estica e vira a boca aberta. */
@@ -98,7 +121,8 @@ function earSurf(p,S,s,u,v){
   const lobe=v<-0.55?lerp(1,0.45,clamp((-0.55-v)/0.4,0,1)):1;
   const flare=0.15*p.earFlare*lobe*(1-(eu+1)/2);
   const lift=(0.014+0.04*gauss(rho,0.55,0.14)+0.05*gauss(rho,0.95,0.07)-0.016*gauss(rho,0.25,0.22))*p.earSize;
-  return [s*(r[0]+0.02+flare+lift),y,z];
+  const k=S.scale||1;
+  return [s*(r[0]+(0.02+flare+lift)*k),S.chinY+(y-S.chinY)*k,z+rz*eu*(k-1)];
 }
 function buildEar(p,S,s){
   const rows=12,cols=40;
