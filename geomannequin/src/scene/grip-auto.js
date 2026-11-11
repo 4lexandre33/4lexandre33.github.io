@@ -485,20 +485,23 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
      motivo:"Duas regiões distintas e sem sobreposição palmar não foram encontradas."});
  }
  if(chosen&&opt.verificarTrajetoria){
-   const pose={...chosen.params};
-   if(chosen.secundaria){
-     const suffix=chosen.secundaria.lado>0?"L":"R";
-     for(const [k,v] of Object.entries(chosen.secundaria.params))
-       if(k.endsWith(suffix)&&/^(?:arm|elbow|wrist|pron|handCurl|thumbOpp|fSpread|f(?:Th|In|Me|An|Mi))/.test(k))
-         pose[k]=v;
-   }
-   const route=validarAproximacaoAutoGrip(it,o,ground,it.params,pose,scene,opt);
-   if(!route.livre){
-     failures.push({mao:route.mao,ponto:chosen.ponto,motivo:route.motivo+
+   const proposals=opt.mao==="ambas"?[chosen]:raw.slice(0,3);
+   chosen=null;
+   for(const candidate of proposals){
+     const pose={...candidate.params};
+     if(candidate.secundaria){
+       const suffix=candidate.secundaria.lado>0?"L":"R";
+       for(const [k,v] of Object.entries(candidate.secundaria.params))
+         if(k.endsWith(suffix)&&/^(?:arm|elbow|wrist|pron|handCurl|thumbOpp|fSpread|f(?:Th|In|Me|An|Mi))/.test(k))
+           pose[k]=v;
+     }
+     const route=validarAproximacaoAutoGrip(it,o,ground,it.params,pose,scene,
+       {...opt,mao:candidate.secundaria?"ambas":candidate.mao});
+     if(route.livre){chosen={...candidate,trajetoria:route};break}
+     failures.push({mao:route.mao,ponto:candidate.ponto,motivo:route.motivo+
        " Passo "+route.passo+"/"+route.total+
        ", penetração "+route.penetracao.toFixed(3)+" R."});
-     chosen=null;
-   }else chosen.trajetoria=route;
+   }
  }
  return {ok:!!chosen,status:chosen?"planejado":"inviavel",
    melhor:chosen||null,candidatos:raw.map(x=>({mao:x.mao,ponto:x.ponto,pegada:x.pegada,
