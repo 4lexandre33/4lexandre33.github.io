@@ -196,7 +196,7 @@ const INVOCA = {
   roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
   aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"]
 };
-const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera"]);
+const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
 function metaChatGPT(nome) {
   const m = {}, t = INVOCA[nome]; if (t) { m["openai/toolInvocation/invoking"] = t[0]; m["openai/toolInvocation/invoked"] = t[1]; }
   if (VISUAIS.has(nome)) m["openai/outputTemplate"] = WIDGET_URI;
