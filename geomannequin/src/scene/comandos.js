@@ -560,10 +560,14 @@ const cena={
   /* AutoGrip: plano puro seguido de confirmação atômica do vínculo Grip V3. */
   planejarEncaixe(objeto,opts={}){
     atualizarApoios();
-    const o=acharObjeto(objeto),it=donoAuto(opts.manequim);
+    const o=acharObjeto(objeto);
+    const owner=SCN.list.find(m=>m.id===(o?.gripV3?.mannequinId??o?.grip?.mannequinId));
+    const it=donoAuto(opts.manequim??owner?.name);
     if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
+    if(owner&&it.id!==owner.id)throw Error("Objeto segurado por outro manequim.");
     const options=validarOpcoes(opts),ground=restGround(SCN.list[0].params);
-    const r=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
+    const detached=o.gripV3||o.grip?{...o,gripV3:undefined,grip:undefined}:o;
+    const r=planejarAutoGrip(it,detached,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
     return {...resumirAutoGrip(r),objeto:o.nome||o.tipo,manequim:it.name,
       opcoes:options,revisao:revisaoAutoGrip(it,o)};
   },
@@ -578,15 +582,25 @@ const cena={
   },
   autoEncaixarObjeto(objeto,opts={}){
     atualizarApoios();
-    const o=acharObjeto(objeto),it=donoAuto(opts.manequim);
+    const o=acharObjeto(objeto);
+    const owner=SCN.list.find(m=>m.id===(o?.gripV3?.mannequinId??o?.grip?.mannequinId));
+    const it=donoAuto(opts.manequim??owner?.name);
     if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
+    if(owner&&it.id!==owner.id)throw Error("Objeto segurado por outro manequim.");
     const options=validarOpcoes(opts);
     const before=cena.estadoCompleto(),beforeParams={...it.params},ground=restGround(SCN.list[0].params);
-    const found=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
-    if(!found.ok)throw Error("Encaixe inviável: "+found.rejeitados.slice(0,4)
-      .map(x=>x.ponto+" — "+x.motivo).join("; "));
-    const best=found.melhor;
+    const reencaixado=!!(o.gripV3||o.grip);
+    let found,best;
     try{
+      if(reencaixado){
+        // O objeto já foi sincronizado por atualizarApoios(): a pose 6DOF
+        // permanece no lugar; o vínculo é refeito somente após a otimização.
+        delete o.gripV3;delete o.grip;o.emAr=true;
+      }
+      found=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
+      if(!found.ok)throw Error("Encaixe inviável: "+found.rejeitados.slice(0,4)
+        .map(x=>x.ponto+" — "+x.motivo).join("; "));
+      best=found.melhor;
       Object.assign(it.params,best.params);
       if(best.secundaria){
         const side=best.secundaria.lado===1?"L":"R";
@@ -638,7 +652,7 @@ const cena={
         validacaoFinal:check,validacaoCena:checkedScene,
         segunda:best.secundaria?{mao:best.secundaria.mao,site:best.secundaria.ponto,validacaoFinal:secondCheck}:null};
       atualizarApoios();cena.marcarEstado(before);
-      return {status:"aplicado",objeto:o.nome||o.tipo,manequim:it.name,
+      return {status:"aplicado",reencaixado,objeto:o.nome||o.tipo,manequim:it.name,
         mao:best.mao,pegada:best.pegada,ponto:best.ponto,segundaMao:best.secundaria?.mao||null,
         qualidade:resumirAutoGrip(found).escolha,grip:g,validacaoFinal:check,validacaoCena:checkedScene,
         aviso:"Encaixe geométrico aproximado: sem forças nem trajetória livre de obstáculos garantida."};
