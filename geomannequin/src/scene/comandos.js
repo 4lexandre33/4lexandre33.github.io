@@ -550,7 +550,7 @@ const cena={
     const o=acharObjeto(objeto),it=donoAuto(opts.manequim);
     if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
     const options=validarOpcoes(opts),ground=restGround(SCN.list[0].params);
-    const r=planejarAutoGrip(it,o,ground,options);
+    const r=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos});
     return {...resumirAutoGrip(r),objeto:o.nome||o.tipo,manequim:it.name,
       opcoes:options,revisao:revisaoAutoGrip(it,o)};
   },
@@ -569,7 +569,7 @@ const cena={
     if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
     const options=validarOpcoes(opts);
     const before=cena.estadoCompleto(),ground=restGround(SCN.list[0].params);
-    const found=planejarAutoGrip(it,o,ground,options);
+    const found=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos});
     if(!found.ok)throw Error("Encaixe inviável: "+found.rejeitados.slice(0,4)
       .map(x=>x.ponto+" — "+x.motivo).join("; "));
     const best=found.melhor;
