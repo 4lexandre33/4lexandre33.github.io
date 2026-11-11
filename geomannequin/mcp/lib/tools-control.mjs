@@ -113,10 +113,11 @@ export function registerControlTools(s,W){
      maxTempoMs:a.maxTempoMs};
    if(a.acao==="planejar")return w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
    if(a.acao==="aplicar"){
-     const preview=w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
-     if(!a.revisao||a.revisao!==preview.revisao)
-       throw Error("A prévia expirou ou a revisão não confere. Replaneje.");
-     return safe(w,()=>w.cena.aplicarEncaixe(preview));
+     if(!a.revisao)throw Error("Informe revisao devolvida por preensao:planejar.");
+     return safe(w,()=>w.cena.aplicarEncaixe({
+       objeto:req(a.objeto,"objeto"),manequim:a.manequim,
+       revisao:a.revisao,opcoes:autoOpts
+     }));
    }
    if(a.acao==="reencaixar")return safe(w,()=>w.cena.reajustarEncaixe(req(a.objeto,"objeto"),autoOpts));
    if(a.acao==="auto_encaixar")return safe(w,()=>
