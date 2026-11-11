@@ -7,7 +7,7 @@ import {handFrameV3} from "../src/scene/grip-v3.js";
 import {registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip} from "../src/scene/grip-auto.js";
 import {gripSiteWorld} from "../src/engine/grip-sites.js";
 import {rigidDirection,objectRigidPose} from "../src/engine/rigid-transform.js";
-import {restGround,objetoPadrao,colliderRig} from "../src/engine/index.js";
+import {restGround,objetoPadrao,colliderRig,aplicarGesto,juntasDedos} from "../src/engine/index.js";
 
 const w=createWorld();
 const mannequin=w.SCN.list[0];
@@ -33,6 +33,18 @@ assert.ok(findFinger(fineB).r>findFinger(fineA).r,
   "Cápsula de falange precisa crescer com a geometria renderizada");
 const start=handFrameV3(mannequin,-1,ground);
 assert.ok(start.T.every(Number.isFinite),"Frame de palma deve ser finito");
+// A aproximação palmar usa o eixo em que os dedos realmente fecham (-side*X).
+for(const side of [-1,1]){
+ const example={...mannequin.params};
+ aplicarGesto(example,side,"segurar");
+ const index=juntasDedos(example,side)[1];
+ const dx=index.pts[3][0]-index.pts[0][0];
+ assert.ok(Math.abs(dx)>.15*example.armLen,
+   "A flexão do indicador deve ter deslocamento lateral verificável");
+ assert.ok(dx*(-side)>0,
+   "O fechamento dos dedos deve apontar no eixo local -side*X");
+}
+
 w.cena.objeto("cadeira",{nome:"Cadeira AutoGrip",x:start.T[0],z:start.T[2]+3});
 const obj=w.SCN.objetos.find(o=>o.nome==="Cadeira AutoGrip");
 assert.ok(obj);
