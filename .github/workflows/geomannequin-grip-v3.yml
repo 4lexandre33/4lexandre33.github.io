@@ -40,3 +40,18 @@ jobs:
           node testes/paridade-editor-codigo.mjs
       - name: Build da aplicacao
         run: npm run construir
+      - name: Verificar sintaxe dos módulos MCP
+        run: |
+          for f in mcp/server.mjs mcp/lib/tools.mjs mcp/lib/tools-control.mjs mcp/lib/tools-storyboard.mjs mcp/scripts/source-fingerprint.mjs mcp/scripts/verify-dist.mjs mcp/test/control.mjs; do node --check "$f"; done
+      - name: MCP source - stdio, HTTP, roteiros e controles V3
+        run: |
+          cd mcp
+          npm test
+      - name: Gerar e verificar distribuição MCP
+        run: |
+          cd mcp
+          npm run build
+          npm run verify:dist
+          npm run test:dist
+      - name: Bloquear dist desatualizado no Git
+        run: git diff --exit-code -- mcp/dist
