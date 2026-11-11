@@ -45,6 +45,11 @@ async function scenario(client,remote){
    mao:"direita",ponto:"encostoTopo",reach:100});
  assert.ok(!r.isError,JSON.stringify(r.content));
  assert.equal(r.structuredContent.resultado.versao,3);
+ const inspect=await call(client,"preensao",{acao:"verificar",objeto:"Cadeira MCP"});
+ assert.ok(!inspect.isError,JSON.stringify(inspect.content));
+ assert.equal(inspect.structuredContent.resultado.necessitaAjuste,true,
+   "O grip V3 antigo precisa ser identificado como não certificado pelo AutoGrip");
+ assert.equal(inspect.structuredContent.resultado.versao,3);
  r=await call(client,"rig_parametro",{acao:"definir",chave:"armFlexR",valor:35});
  assert.ok(!r.isError);
  assert.equal(r.structuredContent.resultado.valor,35);
