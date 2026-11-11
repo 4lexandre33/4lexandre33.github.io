@@ -167,8 +167,11 @@ function inspectRigidGrip(it,o,ground){
  let secondaryError=null;
  if(g.secundaria){
    const h2=handFrameV3(it,g.secundaria.side,ground);
-   const site=gripSiteWorld(o,g.secundaria.siteId,ground);
-   secondaryError=Math.hypot(...site.mundo.map((v,i)=>v-h2.T[i]));
+   const palm=g.secundaria.palmLocal;
+   const target=Array.isArray(palm)&&palm.length===3&&palm.every(Number.isFinite)?
+     rigidPoint(objectRigidPose(o,ground),palm):
+     gripSiteWorld(o,g.secundaria.siteId,ground).mundo;
+   secondaryError=Math.hypot(...target.map((v,i)=>v-h2.T[i]));
  }
  return {ativo:true,objeto:o.nome||o.tipo,manequim:it.name,mao:g.side===1?"esquerda":"direita",
    ponto:g.siteId,segundaMao:g.secundaria?(g.secundaria.side===1?"esquerda":"direita"):null,
@@ -192,8 +195,19 @@ function transferirMaoPrincipalV3(it,o,ground,side){
  // Calcula tudo antes de mudar vínculo.
  const relPrimary=rigidCompose(rigidInverse(newFrame),pose);
  const relSecondary=rigidCompose(rigidInverse(oldFrame),pose);
+ const auto=!!g.autoGrip;
+ const palmLocal=rigidPoint(rigidInverse(pose),oldFrame.T);
  g.side=side;g.siteId=otherSite;g.relative=relPrimary;
- g.secundaria={side:oldSide,siteId:oldSite,relative:relSecondary};
+ g.secundaria={side:oldSide,siteId:oldSite,relative:relSecondary,
+   ...(auto?{palmLocal}:{})};
+ if(auto&&g.autoGrip.segunda){
+   const previous={mao:oldSide>0?"esquerda":"direita",site:oldSite,
+     siteOriginal:g.autoGrip.siteOriginal,pegada:g.autoGrip.pegada};
+   g.autoGrip.pegada=g.autoGrip.segunda.pegada||g.autoGrip.pegada;
+   g.autoGrip.site=otherSite;
+   g.autoGrip.siteOriginal=g.autoGrip.segunda.siteOriginal;
+   g.autoGrip.segunda=previous;
+ }
  sincronizarMaoSecundaria(it,o,ground);
  return {alterado:true,mao:side===1?"esquerda":"direita",
    secundaria:oldSide===1?"esquerda":"direita",objeto:o.nome||o.tipo};
