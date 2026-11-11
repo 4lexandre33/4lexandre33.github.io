@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="css/cena.css">
 <link rel="stylesheet" href="css/head-study.css">
 <link rel="stylesheet" href="css/editor.css">
-<script type="module" src="src/main.js?v=20261110-grip-v3-rigid-chair"></script>
+<script type="module" src="src/main.js?v=20261111-autogrip"></script>
 </head>
 <body>
 <div class="wrap">
@@ -152,6 +152,14 @@
         <label for="colV3Modo">Ao segurar</label>
         <select id="colV3Modo" aria-label="Modo de captura"><option value="preservar">Preservar objeto no lugar</option><option value="encaixar">Aproximar a palma (IK)</option></select>
         <button type="button" id="colV2Segurar">Segurar objeto selecionado (V3)</button>
+        <div class="group poses" role="group" aria-label="Encaixe anatômico automático">
+          <label for="colAutoMao">AutoGrip: mão</label>
+          <select id="colAutoMao"><option value="auto">Escolha automática</option><option value="direita">Direita</option><option value="esquerda">Esquerda</option><option value="ambas">Duas mãos</option></select>
+          <label for="colAutoPegada">Tipo de pegada</label>
+          <select id="colAutoPegada"><option value="auto">Escolher automaticamente</option><option value="pinca">Pinça</option><option value="potencia">Potência</option><option value="gancho">Gancho</option><option value="tripode">Tripode</option><option value="lateral">Lateral</option><option value="apoio">Apoio palmar</option></select>
+          <button type="button" id="colAutoPrever" title="Calcular encaixe sem modificar a cena">Prévia do encaixe</button>
+          <button type="button" id="colAutoEncaixar" title="Ajustar o braço, o punho e os cinco dedos para evitar atravessar o objeto">Autoencaixar e segurar</button>
+        </div>
         <button type="button" id="colV3Transferir">Definir mão principal selecionada</button>
         <label for="colV3Soltar">Ao soltar</label>
         <select id="colV3Soltar"><option value="manter">Manter onde está</option><option value="chao">Colocar no chão e endireitar</option><option value="pousar">Pousar preservando inclinação</option><option value="queda">Queda com gravidade (acionar animação)</option></select>
