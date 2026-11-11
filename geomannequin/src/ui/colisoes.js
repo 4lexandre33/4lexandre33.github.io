@@ -145,7 +145,7 @@ export function iniciarColisoes() {
     return {manequim:owner<0?SCN.active:owner,mao:$("colAutoMao")?.value||"auto",
       pegada:$("colAutoPegada")?.value||"auto",
       ponto:gripChoice?.value||"auto",reach:Math.max(12,Number($("colV3Reach")?.value||5)),
-      preservarObjeto:true,exigirContato:true};
+      preservarObjeto:true,exigirContato:true,maxTempoMs:1400};
   }
   function resumoAutoGrip(r){
     const q=r.escolha||r.qualidade;
