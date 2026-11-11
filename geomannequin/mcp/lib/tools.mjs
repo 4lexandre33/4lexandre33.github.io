@@ -115,6 +115,14 @@ function docs(w) {
   d.push({ id: "roteiro", title: "Roteiro de quadros (storyboard de mangá): sintaxe, #orbita e #ficha", text: docRoteiro() });
   for (const [k, v] of Object.entries(w.EXPRESSOES)) d.push({ id: "expressao/" + k, title: "Expressão do rosto: " + k, text: `m.expressao("${k}") — editar_manequim {expressao: "${k}"}\nValores: ${JSON.stringify(v)}` });
   for (const [k, v] of Object.entries(w.GESTOS)) d.push({ id: "gesto/" + k, title: "Gesto da mão: " + k, text: `m.gesto("direita", "${k}") — editar_manequim {gesto: {lado: "direita", nome: "${k}"}}\nValores: ${JSON.stringify(v)}` });
+  d.push({ id: "mcp-controle", title: "MCP tipado V3: preensão, física, câmera e segurança", text:
+    "Ferramentas adicionais: capacidades_mcp, rig_parametro, objeto_3d, grip_sites, preensao, fisica, camera_anatomica, historico_mcp, contato_fisico, artefatos_mcp, roteiro_declarativo. " +
+    "Fluxo: objetos adicionar cadeira; grip_sites listar; preensao segurar por encostoTopo com modo encaixar, mao direita e reach; rig_parametro definir armFlexR; preensao soltar modo queda; fisica simular duracao e passo. " +
+    "Segunda mão exige tolerância de alcance; transferência de mão principal não move o objeto instantaneamente. " +
+    "Camera_anatomica usa frente, costas, perfis, area da cabeca/tronco/mao. " +
+    "A física é aproximada, não um solver exato. Roteiro_declarativo aceita ações tipadas e não executa JavaScript. " +
+    "No HTTP executar_codigo e roteiro_quadros JavaScript legado são bloqueados. Em stdio local código é confiável por escolha do usuário. " +
+    "O pacote dist precisa ser reconstruído e testado; execute npm run build, npm run verify:dist e npm run test:dist." });
   d.push({ id: "objetos", title: "Objetos da cena (caixas e cilindros)", text: "Tipos: " + Object.keys(w.TIPOS_OBJETO).join(", ") + ". Ferramenta objetos (adicionar, editar, copiar, remover, listar): x, z, giro, largura, profundidade, altura, raio, cor exclusiva, sobre (um objeto em cima de outro). Manequins: editar_manequim {sentar, subir, encostar}. Colisões objeto × objeto e manequim × objeto aparecem em colisoes." });
   d.push({ id: "perspectiva", title: "Perspectiva na cena", text: "Com perspectiva ligada, quem está mais longe (z mais negativo, no ângulo padrão) fica menor, sobe em direção ao horizonte, tem traço mais fino e, com atmosfera, cor mais clara. A lente (18–200 mm) controla o exagero: 24 mm dramático, 50 normal, 135 achatado. A altura dos olhos define onde fica o horizonte: com alturaOlhos(14.5) e sem inclinação o horizonte passa pelas cabeças (o manequim tem ≈ 16 R; R = raio da cabeça). A sombra no chão segue a luz." });
   return d;
@@ -174,7 +182,17 @@ const INVOCA = {
   renderizar: ["Desenhando a cena…", "Cena desenhada"], roteiro_quadros: ["Montando os quadros…", "Quadros prontos"], referencias_controlnet: ["Gerando as referências…", "Referências prontas"],
   vistas_em_volta: ["Girando em volta…", "Vistas prontas"], estimar_poses: ["Sorteando poses…", "Estimativa pronta"], planta_da_cena: ["Desenhando a planta…", "Planta pronta"],
   camadas_da_cena: ["Separando as camadas…", "Camadas prontas"], colisoes: ["Procurando colisões…", "Colisões verificadas"], exportar_cena: ["Exportando…", "Cena exportada"],
-  carregar_cena: ["Carregando…", "Cena carregada"], referencia: ["Abrindo a referência…", "Referência"], executar_codigo: ["Rodando o código…", "Código executado"], search: ["Pesquisando…", "Pesquisa pronta"], fetch: ["Abrindo…", "Documento aberto"]
+  carregar_cena: ["Carregando…", "Cena carregada"], referencia: ["Abrindo a referência…", "Referência"], executar_codigo: ["Rodando o código…", "Código executado"], search: ["Pesquisando…", "Pesquisa pronta"], fetch: ["Abrindo…", "Documento aberto"], capacidades_mcp: ["Consultando capacidades…","Capacidades consultadas"],
+  rig_parametro: ["Ajustando o rig…","Rig processado"],
+  objeto_3d: ["Processando transformação 3D…","Objeto processado"],
+  grip_sites: ["Consultando pontos de agarre…","GripSites prontos"],
+  preensao: ["Controlando preensão…","Preensão processada"],
+  fisica: ["Atualizando física…","Física atualizada"],
+  camera_anatomica: ["Orientando câmera…","Câmera posicionada"],
+  historico_mcp: ["Consultando histórico…","Histórico processado"],
+  contato_fisico: ["Analisando contatos…","Contatos processados"],
+  artefatos_mcp: ["Gerando arquivo…","Arquivo gerado"],
+  roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"]
 };
 const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera"]);
 function metaChatGPT(nome) {
@@ -755,7 +773,7 @@ export function registerAll(server, getWorld, opts = {}) {
   server.registerTool("referencia", {
     title: "Referência",
     description: "Lista poses rápidas, tipos corporais, parâmetros de pose/corpo com limites e a API de comandos em português.",
-    inputSchema: { assunto: z.enum(["tudo", "poses", "corpos", "parametros", "comandos", "exemplos", "rig", "camera", "controlnet"]).optional().describe("rig = expressões, gestos e articulações finas (dedos, rosto, pés, escápula); camera = vistas da órbita, enquadramentos e ângulos; controlnet = passes e formato do OpenPose.") },
+    inputSchema: { assunto: z.enum(["tudo", "poses", "corpos", "parametros", "comandos", "exemplos", "rig", "camera", "controlnet", "mcp"]).optional().describe("rig = expressões, gestos e articulações finas (dedos, rosto, pés, escápula); camera = vistas da órbita, enquadramentos e ângulos; controlnet = passes e formato do OpenPose.") },
     annotations: RO
   }, guard((a) => {
     const w = W(), t = a.assunto || "tudo", out = [];
@@ -767,6 +785,7 @@ export function registerAll(server, getWorld, opts = {}) {
     if (t === "tudo" || t === "rig") out.push(docRig(w));
     if (t === "tudo" || t === "camera") out.push(docCamera(w));
     if (t === "tudo" || t === "controlnet") out.push(docControlNet(w));
+    if (t === "tudo" || t === "mcp") out.push(docs(w).find(d => d.id === "mcp-controle").text);
     return { content: [{ type: "text", text: out.join("\n\n") }] };
   }));
 
