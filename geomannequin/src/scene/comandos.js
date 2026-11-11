@@ -593,12 +593,24 @@ const cena={
           reach:reach2,segunda:true,exigirContato:true,fechar:false,objetos:SCN.objetos});
         if(!g2.alcancavel)throw Error("A segunda mão não alcança a pegada.");
       }
+      const checarPegada=(report,tipo)=>{
+        const n=Object.values(report.contatosPorDedo).filter(Boolean).length;
+        const needed=({pinca:2,tripode:3,gancho:2,potencia:2,lateral:2,apoio:0})[tipo]??2;
+        const two=["pinca","tripode","lateral"].includes(tipo);
+        const thumbs=report.contatosPorDedo.polegar&&report.contatosPorDedo.indicador;
+        if(tipo==="apoio"&&!report.palmaContato)
+          throw Error("A palma perdeu o contato de apoio após vincular o objeto.");
+        if(tipo!=="apoio"&&(n<needed||(two&&!thumbs)))
+          throw Error("Contatos anatômicos perdidos após vínculo: "+n+" de "+needed+" dedos.");
+      };
       const check=validarContatoAutoGrip(it,o,best.lado,ground,options);
       if(!check.ok)throw Error("Penetração confirmada após vínculo: "+check.maxPenetracao.toFixed(3)+" R.");
+      if(options.exigirContato)checarPegada(check,best.pegada);
       let secondCheck=null;
       if(best.secundaria){
         secondCheck=validarContatoAutoGrip(it,o,best.secundaria.lado,ground,options);
         if(!secondCheck.ok)throw Error("Penetração após IK bilateral: "+secondCheck.maxPenetracao.toFixed(3)+" R.");
+        if(options.exigirContato)checarPegada(secondCheck,best.secundaria.pegada);
       }
       o.gripV3.autoGrip={version:1,pegada:best.pegada,site:best.ponto,
         score:best.score,penetracao:best.penetracao,desvioPalma:best.desvioPalma,
