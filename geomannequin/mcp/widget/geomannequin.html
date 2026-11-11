@@ -48,7 +48,10 @@
       <label>Mão <select id="gm-grip-mao"><option value="direita">Direita</option><option value="esquerda">Esquerda</option></select></label>
       <label>Ponto <input id="gm-grip-site" type="text" value="encostoTopo" aria-label="GripSite"/></label>
       <label><input id="gm-grip-segunda" type="checkbox"/> 2ª mão</label>
-      <button type="button" id="gm-grip-pegar">Segurar</button>
+      <label>AutoGrip <select id="gm-auto-mao"><option value="auto">Mão automática</option><option value="direita">Direita</option><option value="esquerda">Esquerda</option><option value="ambas">Duas mãos</option></select></label>
+      <label>Pegada <select id="gm-auto-estilo"><option value="auto">Automática</option><option value="pinca">Pinça</option><option value="gancho">Gancho</option><option value="potencia">Potência</option><option value="tripode">Tripode</option><option value="lateral">Lateral</option><option value="apoio">Apoio</option></select></label>
+      <button type="button" class="prim" id="gm-auto-encaixar" title="Ajusta palma, braço e dedos antes de prender o objeto">Autoencaixar</button>
+      <button type="button" id="gm-grip-pegar">Segurar (manual)</button>
       <button type="button" id="gm-grip-trocar">Trocar mão principal</button>
       <label>Soltar <select id="gm-grip-modo"><option value="manter">Manter</option><option value="pousar">Pousar</option><option value="chao">Chão</option><option value="queda">Queda</option></select></label>
       <button type="button" id="gm-grip-soltar">Soltar</button>
@@ -120,6 +123,10 @@
     feedback="";ocupado=true;desenhar();
     var linkAnterior=dados().link;
     O().callTool(tool,args).then(function(res){
+      var data=res&&(res.structuredContent||res.result&&res.result.structuredContent)||{};
+      var q=data.resultado&&data.resultado.qualidade||data.resultado&&data.resultado.escolha;
+      if(q)feedback="AutoGrip: "+q.pegada+" / "+q.mao+" / "+
+        (q.contatosAtivos||0)+" contatos / penetração "+q.penetracao+" R";
       if(res&&res.isError)throw Error((res.content||[]).filter(function(x){return x.type==="text"}).map(function(x){return x.text}).join("; ")||"Operação recusada");
       return O().callTool("renderizar",{enquadrar:false});
     }).then(function(res){
@@ -133,6 +140,13 @@
   }
   function camposGrip(){return {objeto:$("gm-grip-nome").value.trim(),
     mao:$("gm-grip-mao").value,ponto:$("gm-grip-site").value.trim()||"auto"}}
+  $("gm-auto-encaixar").onclick=function(){
+    var a=camposGrip();
+    if(!a.objeto){feedback="Informe o nome do objeto.";desenhar();return}
+    executarGrip("preensao",{acao:"auto_encaixar",objeto:a.objeto,
+      mao:$("gm-auto-mao").value,pegada:$("gm-auto-estilo").value,
+      ponto:"auto",reach:12,preservarObjeto:true});
+  };
   $("gm-grip-pegar").onclick=function(){
     var a=camposGrip();if(!a.objeto){$("gm-meta").textContent="Informe o objeto.";return}
     a.acao="segurar";a.segunda=$("gm-grip-segunda").checked;a.modo="encaixar";a.reach=8;
