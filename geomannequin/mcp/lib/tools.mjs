@@ -8,6 +8,7 @@ import { summary, summaryText, renderSvg, sceneLink, loadInto, pick, APP_URL, rg
 import { toPng } from "./png.mjs";
 import { asset } from "./assets.mjs";
 import { estimarPoses } from "./estimativa.mjs";
+import { registerControlTools } from "./tools-control.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -818,6 +819,9 @@ export function registerAll(server, getWorld, opts = {}) {
     const o = { id: d.id, title: d.title, text: d.text, url: APP_URL + "#doc-" + encodeURIComponent(d.id), metadata: { fonte: "GeoMannequin" } };
     return { content: [{ type: "text", text: JSON.stringify(o) }], structuredContent: o };
   }));
+
+  /* ---------- ferramentas MCP por domínio ---------- */
+  registerControlTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },
