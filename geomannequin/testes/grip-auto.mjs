@@ -54,6 +54,38 @@ if(preview.status==="planejado"){
  assert.equal(JSON.stringify(w.cena.estadoCompleto()),before,
    "Encaixe impossível não deve mutar estado");
 }
+// Reencaixar também deve funcionar quando o objeto JÁ ESTÁ vinculado à mão.
+const held=createWorld();
+held.cena.objeto("cadeira",{nome:"Cadeira Vinculada",x:0,z:0});
+const heldObj=held.SCN.objetos.find(q=>q.nome==="Cadeira Vinculada");
+const oldGrip=held.cena.segurarObjeto("Cadeira Vinculada",
+  {mao:"direita",ponto:"encostoTopo",reach:100});
+assert.equal(oldGrip.versao,3);
+const oldState=JSON.stringify(held.cena.estadoCompleto());
+const replOptions={mao:"direita",pegada:"gancho",reach:100,maxSites:1,maxIteracoes:1};
+const replan=held.cena.planejarEncaixe("Cadeira Vinculada",replOptions);
+assert.ok(["planejado","inviavel"].includes(replan.status),
+  "A prévia de um vínculo existente deve ser permitida");
+assert.equal(JSON.stringify(held.cena.estadoCompleto()),oldState,
+  "Prévia de objeto segurado não pode soltar nem alterar o vínculo");
+if(replan.status==="planejado"){
+  try{
+    const next=held.cena.autoEncaixarObjeto("Cadeira Vinculada",replOptions);
+    assert.equal(next.status,"aplicado");
+    assert.equal(next.reencaixado,true);
+    assert.equal(heldObj.gripV3?.autoGrip?.version,1);
+  }catch(e){
+    assert.match(e.message,/AutoGrip revertido/i);
+    assert.equal(JSON.stringify(held.cena.estadoCompleto()),oldState,
+      "Uma tentativa rejeitada deve devolver o objeto e a mão à pose antiga");
+  }
+}else{
+  assert.throws(()=>held.cena.autoEncaixarObjeto("Cadeira Vinculada",replOptions),
+    /AutoGrip revertido/i);
+  assert.equal(JSON.stringify(held.cena.estadoCompleto()),oldState,
+    "Sem encaixe viável, vínculo original deve sobreviver à operação");
+}
+
 assert.throws(()=>w.cena.autoEncaixarObjeto("Inexistente",options),/não encontrado/i);
 assert.throws(()=>w.cena.planejarEncaixe(obj.id,{...options,permitirMoverObjeto:true}),/não suportado/i);
 const extra=createWorld();
