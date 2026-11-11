@@ -1,0 +1,1402 @@
+{
+  "schema_version": 1,
+  "project": "GeoMannequin",
+  "branch": "feat/geomannequin-grip-v3-hardening-20261110",
+  "part": "A",
+  "source": "auditoria-mcp-capacidades-20261111.md",
+  "gate_semantics": "Gate GNN depends on MCP-NN.10; each task 10 depends on tasks 02-09, each task 02-09 depends on task 01.",
+  "groups": [
+    {
+      "id": "G00",
+      "title": "Inventário executável e definição de paridade",
+      "priority": "P0",
+      "depends_on": [],
+      "tasks": [
+        {
+          "id": "MCP-00.01",
+          "priority": "P0",
+          "title": "Mapear métodos públicos de cena, câmera, manequim e objeto",
+          "acceptance": "Registro reproduzível inclui todos os métodos retornados por cena.comandos().",
+          "depends_on": []
+        },
+        {
+          "id": "MCP-00.02",
+          "priority": "P0",
+          "title": "Registrar operações das 25 ferramentas MCP atuais",
+          "acceptance": "Cada ferramenta possui contrato, versão e ligação à API do motor.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.03",
+          "priority": "P0",
+          "title": "Percorrer controles do DOM e handlers da interface",
+          "acceptance": "Cada controle acionável aparece na matriz de cobertura ou como exceção justificada.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.04",
+          "priority": "P0",
+          "title": "Catalogar parâmetros anatômicos, unidades, limites e aliases",
+          "acceptance": "Fonte única registra nomes, domínio, precisão e valores padrão.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.05",
+          "priority": "P0",
+          "title": "Distinguir capacidades completas, parciais, experimentais e ausentes",
+          "acceptance": "Catálogo não anuncia solver/física inexistentes como prontos.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.06",
+          "priority": "P0",
+          "title": "Inventariar recursos de navegador e headless não equivalentes",
+          "acceptance": "Cada dependência de DOM/Canvas/download tem alternativa MCP ou limitação formal.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.07",
+          "priority": "P0",
+          "title": "Conferir modelo de objetos, GripSites e versões de cena",
+          "acceptance": "Mapa de tipos e migrações é consistente com serialização atual.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.08",
+          "priority": "P0",
+          "title": "Registrar vínculos entre métodos, UI, MCP e testes",
+          "acceptance": "Matriz exportável contém origem e caso de teste para cada operação.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.09",
+          "priority": "P0",
+          "title": "Adicionar detector de deriva do inventário",
+          "acceptance": "CI reprova método novo sem contrato de capacidade e cobertura.",
+          "depends_on": [
+            "MCP-00.01"
+          ]
+        },
+        {
+          "id": "MCP-00.10",
+          "priority": "P0",
+          "title": "Auditar cobertura inicial e aprovar gate de inventário",
+          "acceptance": "Relatório lista 100% das operações atuais sem classificações indefinidas.",
+          "depends_on": [
+            "MCP-00.02",
+            "MCP-00.03",
+            "MCP-00.04",
+            "MCP-00.05",
+            "MCP-00.06",
+            "MCP-00.07",
+            "MCP-00.08",
+            "MCP-00.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G00",
+        "depends_on": [
+          "MCP-00.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G01",
+      "title": "Segurança: ameaça, isolamento e políticas",
+      "priority": "P0",
+      "depends_on": [
+        "G00"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-01.01",
+          "priority": "P0",
+          "title": "Modelar ameaças de MCP HTTP, stdio, links e roteiros",
+          "acceptance": "Documento contempla execução arbitrária, DoS, SSRF, vazamento e sessões.",
+          "depends_on": [
+            "G00"
+          ]
+        },
+        {
+          "id": "MCP-01.02",
+          "priority": "P0",
+          "title": "Neutralizar caminho inseguro de new Function em roteiros remotos",
+          "acceptance": "Entrada HTTP não confiável jamais alcança JavaScript arbitrário no processo do servidor.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.03",
+          "priority": "P0",
+          "title": "Revisar vm de executar_codigo e acesso a objetos do host",
+          "acceptance": "Execução confiável local é explicitamente separada de execução remota.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.04",
+          "priority": "P0",
+          "title": "Criar autorização por ação e perfil de usuário",
+          "acceptance": "Operações read/write/destructive/code possuem política testada e padrão restritivo.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.05",
+          "priority": "P0",
+          "title": "Fechar publicação anônima por padrão",
+          "acceptance": "Servidor HTTP de produção recusa chamadas não autenticadas.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.06",
+          "priority": "P0",
+          "title": "Proteger token, URLs, logs e resumos",
+          "acceptance": "Segredos não aparecem em links exportados, respostas, exceções nem telemetria.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.07",
+          "priority": "P0",
+          "title": "Estabelecer limites de CPU, memória, tempo, payload e imagens",
+          "acceptance": "Excesso de recurso resulta em erro controlado e não derruba serviço.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.08",
+          "priority": "P0",
+          "title": "Definir governança de importação de JSON e SVG",
+          "acceptance": "Arquivos malformados, recursivos ou gigantes são rejeitados.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.09",
+          "priority": "P0",
+          "title": "Criar trilha de eventos sem dados secretos",
+          "acceptance": "Logs de auditoria contêm identidade, operação, duração e resultado redigidos.",
+          "depends_on": [
+            "MCP-01.01"
+          ]
+        },
+        {
+          "id": "MCP-01.10",
+          "priority": "P0",
+          "title": "Aplicar testes negativos e autorizar gate de segurança",
+          "acceptance": "Suite prova bloqueio de scripts, acesso não autorizado e abuso de recursos.",
+          "depends_on": [
+            "MCP-01.02",
+            "MCP-01.03",
+            "MCP-01.04",
+            "MCP-01.05",
+            "MCP-01.06",
+            "MCP-01.07",
+            "MCP-01.08",
+            "MCP-01.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G01",
+        "depends_on": [
+          "MCP-01.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G02",
+      "title": "Linguagem declarativa de operações e roteiros",
+      "priority": "P0",
+      "depends_on": [
+        "G01"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-02.01",
+          "priority": "P0",
+          "title": "Especificar AST/IR declarativa versionada para controle da cena",
+          "acceptance": "Documento formal define tipos, comandos, valores e ordenação sem eval.",
+          "depends_on": [
+            "G01"
+          ]
+        },
+        {
+          "id": "MCP-02.02",
+          "priority": "P0",
+          "title": "Construir parser e validador de AST JSON",
+          "acceptance": "Comandos inválidos retornam caminho do campo e erro padronizado.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.03",
+          "priority": "P0",
+          "title": "Implementar interpretador baseado em allowlist de operações",
+          "acceptance": "Nenhuma entrada de cliente vira código JavaScript.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.04",
+          "priority": "P0",
+          "title": "Definir expressões seguras para parâmetros numéricos",
+          "acceptance": "Apenas operações aritméticas previstas são permitidas e limitadas.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.05",
+          "priority": "P0",
+          "title": "Suportar variáveis de cena e referências estáveis",
+          "acceptance": "Etapas podem referenciar objetos criados sem executar scripts.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.06",
+          "priority": "P0",
+          "title": "Introduzir sequências e loops limitados declarativamente",
+          "acceptance": "Quantidade máxima de iterações e passos é aplicada antes de executar.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.07",
+          "priority": "P0",
+          "title": "Migrar marcadores #cena, #quadro, #orbita e #ficha",
+          "acceptance": "Roteiros legítimos têm equivalentes declarativos sem perda de semântica.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.08",
+          "priority": "P0",
+          "title": "Manter modo JavaScript apenas em ambiente explicitamente confiável",
+          "acceptance": "Modo legado local tem aviso e isolamento de processo/limite documentado.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.09",
+          "priority": "P0",
+          "title": "Criar migrações e conversores de roteiros existentes",
+          "acceptance": "Conversão preserva quadros suportados ou aponta instruções incompatíveis.",
+          "depends_on": [
+            "MCP-02.01"
+          ]
+        },
+        {
+          "id": "MCP-02.10",
+          "priority": "P0",
+          "title": "Aprovar paridade sem eval e testes de scripts adversariais",
+          "acceptance": "Roteiro remoto não alcança globals e exemplos antigos continuam equivalentes.",
+          "depends_on": [
+            "MCP-02.02",
+            "MCP-02.03",
+            "MCP-02.04",
+            "MCP-02.05",
+            "MCP-02.06",
+            "MCP-02.07",
+            "MCP-02.08",
+            "MCP-02.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G02",
+        "depends_on": [
+          "MCP-02.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G03",
+      "title": "Camada de domínio única, estado e transações",
+      "priority": "P0",
+      "depends_on": [
+        "G02"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-03.01",
+          "priority": "P0",
+          "title": "Definir DomainController como único ponto de mutação da cena",
+          "acceptance": "Editor, MCP e widget usam as mesmas operações em vez de lógica duplicada.",
+          "depends_on": [
+            "G02"
+          ]
+        },
+        {
+          "id": "MCP-03.02",
+          "priority": "P0",
+          "title": "Padronizar identidades, caminhos, nomes e referências de entidades",
+          "acceptance": "IDs estáveis sobrevivem a edição, cópia, remoção e JSON.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.03",
+          "priority": "P0",
+          "title": "Implementar validação transacional antes do commit",
+          "acceptance": "Mutação inválida não altera nenhum objeto, postura ou câmera.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.04",
+          "priority": "P0",
+          "title": "Implementar snapshots e rollback atômico",
+          "acceptance": "Erro intermediário reverte estado, vínculos, parâmetros e dinâmica.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.05",
+          "priority": "P0",
+          "title": "Definir leitura isolada e mutações com revisão do estado",
+          "acceptance": "Leituras não alteram cena; revisão impede sobrescrita concorrente.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.06",
+          "priority": "P0",
+          "title": "Adicionar operações em lote com prévia e confirmação",
+          "acceptance": "Dry-run informa alterações e lote real é tudo-ou-nada.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.07",
+          "priority": "P0",
+          "title": "Estabelecer idempotência para ferramentas com repetição",
+          "acceptance": "Mesmo request-id não duplica manequins, objetos ou ações.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.08",
+          "priority": "P0",
+          "title": "Serializar operações concorrentes por sessão",
+          "acceptance": "Duas chamadas simultâneas não corrompem estados ou histórico.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.09",
+          "priority": "P0",
+          "title": "Propagar eventos de domínio para renderização e widget",
+          "acceptance": "Modificação gera evento tipado com IDs e versão nova.",
+          "depends_on": [
+            "MCP-03.01"
+          ]
+        },
+        {
+          "id": "MCP-03.10",
+          "priority": "P0",
+          "title": "Provar transações e identidade em casos de falha",
+          "acceptance": "Testes concorrentes e de rollback cobrem todos os tipos de entidade.",
+          "depends_on": [
+            "MCP-03.02",
+            "MCP-03.03",
+            "MCP-03.04",
+            "MCP-03.05",
+            "MCP-03.06",
+            "MCP-03.07",
+            "MCP-03.08",
+            "MCP-03.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G03",
+        "depends_on": [
+          "MCP-03.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G04",
+      "title": "Registro de comandos, contratos MCP e descoberta",
+      "priority": "P0",
+      "depends_on": [
+        "G03"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-04.01",
+          "priority": "P0",
+          "title": "Definir fonte única de metadados das operações públicas",
+          "acceptance": "Cada operação tem ID, nome, entrada, saída, status, unidade e erro.",
+          "depends_on": [
+            "G03"
+          ]
+        },
+        {
+          "id": "MCP-04.02",
+          "priority": "P0",
+          "title": "Gerar JSON Schema estrito de parâmetros e retornos",
+          "acceptance": "Sem any/union indevida em esquemas de ferramentas interoperáveis.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.03",
+          "priority": "P0",
+          "title": "Produzir descrições MCP em português sem ambiguidade",
+          "acceptance": "Cada campo identifica limites, valores padrão e efeitos colaterais.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.04",
+          "priority": "P0",
+          "title": "Mapear permissões e impactos de cada operação",
+          "acceptance": "Cliente identifica leitura, escrita, exclusão e processamento pesado.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.05",
+          "priority": "P0",
+          "title": "Separar ferramentas de domínio de métodos internos",
+          "acceptance": "API pública não expõe funções internas perigosas ou temporárias.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.06",
+          "priority": "P0",
+          "title": "Padronizar envelopes de resultado, avisos e códigos de erro",
+          "acceptance": "Respostas têm success, errors, diagnostics e revision estruturados.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.07",
+          "priority": "P0",
+          "title": "Implementar ferramenta de descoberta de operações e capacidades",
+          "acceptance": "Inventário indica recursos suportados e limitações atuais.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.08",
+          "priority": "P0",
+          "title": "Gerar documentação e referência a partir do registro",
+          "acceptance": "Não há descrições divergentes entre editor, MCP e README.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.09",
+          "priority": "P0",
+          "title": "Manter aliases estáveis e política de descontinuação",
+          "acceptance": "Mudança de nome produz aviso e período de compatibilidade testado.",
+          "depends_on": [
+            "MCP-04.01"
+          ]
+        },
+        {
+          "id": "MCP-04.10",
+          "priority": "P0",
+          "title": "Bloquear registro incompleto por teste de contrato",
+          "acceptance": "CI falha se existir operação não documentada, não validada ou não testada.",
+          "depends_on": [
+            "MCP-04.02",
+            "MCP-04.03",
+            "MCP-04.04",
+            "MCP-04.05",
+            "MCP-04.06",
+            "MCP-04.07",
+            "MCP-04.08",
+            "MCP-04.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G04",
+        "depends_on": [
+          "MCP-04.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G05",
+      "title": "Servidor MCP, sessões e autorização",
+      "priority": "P0",
+      "depends_on": [
+        "G01",
+        "G03",
+        "G04"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-05.01",
+          "priority": "P0",
+          "title": "Consolidar transporte stdio e Streamable HTTP",
+          "acceptance": "Ambos expõem contratos equivalentes respeitando permissões.",
+          "depends_on": [
+            "G01",
+            "G03",
+            "G04"
+          ]
+        },
+        {
+          "id": "MCP-05.02",
+          "priority": "P0",
+          "title": "Obrigar autenticação no HTTP de produção",
+          "acceptance": "Ausência de credencial resulta em rejeição inclusive de SSE legado.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.03",
+          "priority": "P0",
+          "title": "Isolar sessões, cenas e estado por usuário",
+          "acceptance": "Sessão A não consegue ler, editar ou prever IDs da sessão B.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.04",
+          "priority": "P0",
+          "title": "Aplicar expiração, limitação e fechamento de sessões",
+          "acceptance": "TTL, limite e encerramento liberam recursos de forma segura.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.05",
+          "priority": "P0",
+          "title": "Implementar proteção contra repetição e concorrência",
+          "acceptance": "Escritas conflitantes recebem erro de revisão e não corrompem a cena.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.06",
+          "priority": "P0",
+          "title": "Revisar CORS, origens e uso de token na query",
+          "acceptance": "Política restrita e migração para cabeçalhos sem exposição de segredo.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.07",
+          "priority": "P0",
+          "title": "Padronizar cancelamento e timeouts de operações longas",
+          "acceptance": "Renderizações interrompidas soltam recursos e informam cancelamento.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.08",
+          "priority": "P0",
+          "title": "Adicionar health, versão do motor e manifesto de capacidades",
+          "acceptance": "Endpoint anuncia build-hash, schemas e módulos efetivamente carregados.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.09",
+          "priority": "P0",
+          "title": "Limitar tamanho, frequência e custo de solicitações",
+          "acceptance": "Requisições excessivas recebem erro conhecido com limites documentados.",
+          "depends_on": [
+            "MCP-05.01"
+          ]
+        },
+        {
+          "id": "MCP-05.10",
+          "priority": "P0",
+          "title": "Executar integração HTTP/stdio e autorizar gate de servidor",
+          "acceptance": "Autenticação, isolamento, expiração e concorrência passam sob teste.",
+          "depends_on": [
+            "MCP-05.02",
+            "MCP-05.03",
+            "MCP-05.04",
+            "MCP-05.05",
+            "MCP-05.06",
+            "MCP-05.07",
+            "MCP-05.08",
+            "MCP-05.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G05",
+        "depends_on": [
+          "MCP-05.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G06",
+      "title": "Empacotamento, compilação e paridade do dist",
+      "priority": "P0",
+      "depends_on": [
+        "G03",
+        "G04"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-06.01",
+          "priority": "P0",
+          "title": "Definir manifest único de módulos carregados pelo headless",
+          "acceptance": "Nenhuma lista paralela manual diverge de src/scene/ordem.json.",
+          "depends_on": [
+            "G03",
+            "G04"
+          ]
+        },
+        {
+          "id": "MCP-06.02",
+          "priority": "P0",
+          "title": "Reconstruir dist/server.mjs a partir de fonte atual",
+          "acceptance": "Pacote inclui os 25 módulos atuais e as APIs da PR.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.03",
+          "priority": "P0",
+          "title": "Sincronizar engine, scene, widget, fontes e WASM",
+          "acceptance": "Arquivos distribuídos têm hash e referências válidas.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.04",
+          "priority": "P0",
+          "title": "Introduzir verificador de hashes src versus dist",
+          "acceptance": "Qualquer alteração sem rebuild provoca falha explícita no CI.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.05",
+          "priority": "P0",
+          "title": "Testar start local sem node_modules no artefato final",
+          "acceptance": "Servidor empacotado inicia apenas com Node suportado.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.06",
+          "priority": "P0",
+          "title": "Verificar Node suportado e arquitetura Linux/Windows/macOS",
+          "acceptance": "Smoke tests passam nas plataformas da matriz declarada.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.07",
+          "priority": "P0",
+          "title": "Publicar versão semântica e build-hash consultáveis",
+          "acceptance": "Resposta do MCP identifica revisão exata do motor.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.08",
+          "priority": "P0",
+          "title": "Gerar artefato de release reproduzível e verificável",
+          "acceptance": "Duas compilações do mesmo commit produzem conteúdo equivalente.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.09",
+          "priority": "P0",
+          "title": "Bloquear deploy quando teste do dist falhar",
+          "acceptance": "Publicação exige lint, segurança, contrato e smoke dist.",
+          "depends_on": [
+            "MCP-06.01"
+          ]
+        },
+        {
+          "id": "MCP-06.10",
+          "priority": "P0",
+          "title": "Conferir paridade binária antes de fechar gate",
+          "acceptance": "dist não omite ferramentas, métodos, schemas, módulos ou testes críticos.",
+          "depends_on": [
+            "MCP-06.02",
+            "MCP-06.03",
+            "MCP-06.04",
+            "MCP-06.05",
+            "MCP-06.06",
+            "MCP-06.07",
+            "MCP-06.08",
+            "MCP-06.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G06",
+        "depends_on": [
+          "MCP-06.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G07",
+      "title": "Harness automatizado e contratos mínimos",
+      "priority": "P0",
+      "depends_on": [
+        "G01",
+        "G03",
+        "G04",
+        "G05",
+        "G06"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-07.01",
+          "priority": "P0",
+          "title": "Preparar fixtures determinísticas de cena e manequins",
+          "acceptance": "Testes iniciam com mesma geometria, câmera e IDs previsíveis.",
+          "depends_on": [
+            "G01",
+            "G03",
+            "G04",
+            "G05",
+            "G06"
+          ]
+        },
+        {
+          "id": "MCP-07.02",
+          "priority": "P0",
+          "title": "Criar driver MCP real para stdio e HTTP",
+          "acceptance": "Testes chamam tools/list e tools/call como clientes externos.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.03",
+          "priority": "P0",
+          "title": "Conferir contratos de todas as ferramentas legadas",
+          "acceptance": "25 ferramentas iniciais preservam casos de uso conhecidos.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.04",
+          "priority": "P0",
+          "title": "Executar comparação de resultado editor versus MCP",
+          "acceptance": "Mesma operação produz estado normalizado equivalente.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.05",
+          "priority": "P0",
+          "title": "Testar erros de parâmetros, limites e sugestões",
+          "acceptance": "Entradas inválidas não geram NaN nem mutações parciais.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.06",
+          "priority": "P0",
+          "title": "Cobrir serialização, importação e idempotência",
+          "acceptance": "Round-trip mantém entidades e repetição não duplica efeitos.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.07",
+          "priority": "P0",
+          "title": "Cobrir isolamento, timeout e payload malicioso",
+          "acceptance": "Casos adversariais não executam código nem derrubam processo.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.08",
+          "priority": "P0",
+          "title": "Criar fixtures visuais SVG/PNG e tolerâncias explícitas",
+          "acceptance": "Artefatos são comparados por geometria e regressão visual.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.09",
+          "priority": "P0",
+          "title": "Medir tempo, memória e limites por operação",
+          "acceptance": "Benchmarks geram relatórios com thresholds configuráveis.",
+          "depends_on": [
+            "MCP-07.01"
+          ]
+        },
+        {
+          "id": "MCP-07.10",
+          "priority": "P0",
+          "title": "Estabelecer gate central de testes executáveis",
+          "acceptance": "CI reporta PASS/FAIL por contrato em source, dist, stdio e HTTP.",
+          "depends_on": [
+            "MCP-07.02",
+            "MCP-07.03",
+            "MCP-07.04",
+            "MCP-07.05",
+            "MCP-07.06",
+            "MCP-07.07",
+            "MCP-07.08",
+            "MCP-07.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G07",
+        "depends_on": [
+          "MCP-07.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G08",
+      "title": "Cena, entidades, referências e histórico",
+      "priority": "P1",
+      "depends_on": [
+        "G04",
+        "G07"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-08.01",
+          "priority": "P1",
+          "title": "Expor ferramenta tipada de gerenciamento da cena",
+          "acceptance": "Reset, lista, seleção, resumo e estado têm respostas estruturadas.",
+          "depends_on": [
+            "G04",
+            "G07"
+          ]
+        },
+        {
+          "id": "MCP-08.02",
+          "priority": "P1",
+          "title": "Expor adicionar/editar/copiar/remover manequim com IDs estáveis",
+          "acceptance": "Todos os fluxos usam validação de entidade e undo.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.03",
+          "priority": "P1",
+          "title": "Padronizar rename, filtros, busca e resolução de referência",
+          "acceptance": "Nome, ID e índice obedecem semântica única e erros claros.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.04",
+          "priority": "P1",
+          "title": "Expor estado completo, snapshot e revisão",
+          "acceptance": "MCP retorna resumo e snapshot sem dados de outros usuários.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.05",
+          "priority": "P1",
+          "title": "Expor undo, redo e marcar estado com grupo transacional",
+          "acceptance": "Histórico reverte também objetos segurados e física.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.06",
+          "priority": "P1",
+          "title": "Expor diff e dry-run de mutações",
+          "acceptance": "Usuário vê quais campos mudariam sem executar.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.07",
+          "priority": "P1",
+          "title": "Expor importação de cena e restauração confiáveis",
+          "acceptance": "JSON antigo é migrado ou rejeitado com diagnóstico.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.08",
+          "priority": "P1",
+          "title": "Expor configuração global, unidades e coordenadas",
+          "acceptance": "Cliente recupera e ajusta apenas campos permitidos.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.09",
+          "priority": "P1",
+          "title": "Mapear operações visuais de seleção, arraste e duplicação",
+          "acceptance": "Há comando correspondente ou exclusão documentada por natureza do navegador.",
+          "depends_on": [
+            "MCP-08.01"
+          ]
+        },
+        {
+          "id": "MCP-08.10",
+          "priority": "P1",
+          "title": "Validar round-trip, IDs, histórico e paridade de cena",
+          "acceptance": "Todos os fluxos da cena passam de editor para MCP e vice-versa.",
+          "depends_on": [
+            "MCP-08.02",
+            "MCP-08.03",
+            "MCP-08.04",
+            "MCP-08.05",
+            "MCP-08.06",
+            "MCP-08.07",
+            "MCP-08.08",
+            "MCP-08.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G08",
+        "depends_on": [
+          "MCP-08.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G09",
+      "title": "Corpos, poses, cinemática e limites",
+      "priority": "P1",
+      "depends_on": [
+        "G08"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-09.01",
+          "priority": "P1",
+          "title": "Expor tipos corporais e presets anatômicos",
+          "acceptance": "Lista e aplicação retornam parâmetros efetivamente usados.",
+          "depends_on": [
+            "G08"
+          ]
+        },
+        {
+          "id": "MCP-09.02",
+          "priority": "P1",
+          "title": "Expor parâmetros individuais e alterações por lote",
+          "acceptance": "Leitura, min/max, passos e escrita validada cobrem corpo e pose.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.03",
+          "priority": "P1",
+          "title": "Expor ações posturais e poses rápidas",
+          "acceptance": "Sentar, deitar, ajoelhar, correr e demais presets têm controle tipado.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.04",
+          "priority": "P1",
+          "title": "Expor articulação individual por nome ou chave",
+          "acceptance": "Cliente consulta eixo, limite e mutação efetiva sem ambiguidade.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.05",
+          "priority": "P1",
+          "title": "Expor IK de mão e pé até ponto 3D",
+          "acceptance": "Resultado informa erro residual e alcance possível.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.06",
+          "priority": "P1",
+          "title": "Expor translação/rotação do corpo e raiz",
+          "acceptance": "Alterações respeitam convenção do mundo e limites conhecidos.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.07",
+          "priority": "P1",
+          "title": "Expor espelhar, copiar pose e perfis de flexibilidade",
+          "acceptance": "Operações mantêm anatomia e lado coerentes.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.08",
+          "priority": "P1",
+          "title": "Expor validar pose e acoplamentos anatômicos",
+          "acceptance": "Diagnóstico identifica colisões, restrições e correções sugeridas.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.09",
+          "priority": "P1",
+          "title": "Adicionar inspeção de juntas e frames mundiais",
+          "acceptance": "Cliente consegue consultar posição/orientação de cada alvo suportado.",
+          "depends_on": [
+            "MCP-09.01"
+          ]
+        },
+        {
+          "id": "MCP-09.10",
+          "priority": "P1",
+          "title": "Executar matriz de poses e regressões dos limites",
+          "acceptance": "Cenários comuns e extremos concordam com motor e editor.",
+          "depends_on": [
+            "MCP-09.02",
+            "MCP-09.03",
+            "MCP-09.04",
+            "MCP-09.05",
+            "MCP-09.06",
+            "MCP-09.07",
+            "MCP-09.08",
+            "MCP-09.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G09",
+        "depends_on": [
+          "MCP-09.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G10",
+      "title": "Anatomia fina, cabeça Loomis e expressão",
+      "priority": "P1",
+      "depends_on": [
+        "G09"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-10.01",
+          "priority": "P1",
+          "title": "Expor configurações do modelo de cabeça e detalhe",
+          "acceptance": "Modelo V4 e variantes existentes são enumerados sem inventar novos.",
+          "depends_on": [
+            "G09"
+          ]
+        },
+        {
+          "id": "MCP-10.02",
+          "priority": "P1",
+          "title": "Expor landmarks anatômicos de crânio, mandíbula e face",
+          "acceptance": "Pontos válidos retornam coordenadas e frames locais.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.03",
+          "priority": "P1",
+          "title": "Expor planos laterais Loomis e parâmetros cranianos reais",
+          "acceptance": "Ajustes aceitos reproduzem cortes laterais e dimensões do motor.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.04",
+          "priority": "P1",
+          "title": "Expor orientação independente da cabeça e tronco",
+          "acceptance": "Rotacionar pescoço não muda a noção de frente do tronco.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.05",
+          "priority": "P1",
+          "title": "Expor olhar, pálpebras, sobrancelhas, boca e mandíbula",
+          "acceptance": "Cada propriedade usa faixas documentadas do rig.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.06",
+          "priority": "P1",
+          "title": "Expor dedos por falange, abertura e oposição de polegar",
+          "acceptance": "Ambas as mãos retornam status de cinco dedos quando representados.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.07",
+          "priority": "P1",
+          "title": "Expor pés, dedos dos pés, canela e escápulas",
+          "acceptance": "Campos anatômicos finos possuem comandos e validação.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.08",
+          "priority": "P1",
+          "title": "Expor gestos, expressões e personalização do biotipo",
+          "acceptance": "Presets e alterações finas convivem sem reset indevido.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.09",
+          "priority": "P1",
+          "title": "Expor estudo anatômico e exportação de vistas por região",
+          "acceptance": "Geração headless produz geometria/arquivo ou erro documentado.",
+          "depends_on": [
+            "MCP-10.01"
+          ]
+        },
+        {
+          "id": "MCP-10.10",
+          "priority": "P1",
+          "title": "Testar atlas de cabeça, mãos, perfil e costas",
+          "acceptance": "Comparação 3×3 e restrições anatômicas passam sem regressões.",
+          "depends_on": [
+            "MCP-10.02",
+            "MCP-10.03",
+            "MCP-10.04",
+            "MCP-10.05",
+            "MCP-10.06",
+            "MCP-10.07",
+            "MCP-10.08",
+            "MCP-10.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G10",
+        "depends_on": [
+          "MCP-10.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    },
+    {
+      "id": "G11",
+      "title": "Objetos 3D, hierarquias, apoio e geometria",
+      "priority": "P1",
+      "depends_on": [
+        "G08"
+      ],
+      "tasks": [
+        {
+          "id": "MCP-11.01",
+          "priority": "P1",
+          "title": "Expor inventário de tipos e geometrias disponíveis",
+          "acceptance": "Tipos, medidas e suporte a cilindro/cadeira são retornados pelo motor.",
+          "depends_on": [
+            "G08"
+          ]
+        },
+        {
+          "id": "MCP-11.02",
+          "priority": "P1",
+          "title": "Expor CRUD e identificação estável de objetos",
+          "acceptance": "Adicionar, copiar, remover, renomear e listar preservam IDs.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.03",
+          "priority": "P1",
+          "title": "Expor posição 3D, quaternion/matriz e giro por eixo",
+          "acceptance": "Transformação validada retorna posição e rotação atuais.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.04",
+          "priority": "P1",
+          "title": "Expor medidas, escala, cor, estilo e visibilidade",
+          "acceptance": "Mudanças têm limites e não corrompem partes geométricas.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.05",
+          "priority": "P1",
+          "title": "Expor pivôs, frames locais e orientação frente/costas",
+          "acceptance": "Referenciais do objeto independem de aparência de olhos.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.06",
+          "priority": "P1",
+          "title": "Expor hierarquia sobre, filhos e offsets rígidos",
+          "acceptance": "Móvel pai move filhos com transformações consistentes.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.07",
+          "priority": "P1",
+          "title": "Expor pontos de ancoragem e superfícies elegíveis",
+          "acceptance": "GripSites, apoios e assentos têm IDs e localizações mundiais.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.08",
+          "priority": "P1",
+          "title": "Expor colisores e dados de geometria disponíveis",
+          "acceptance": "Consulta distingue mesh real de proxy OBB/cilindro.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.09",
+          "priority": "P1",
+          "title": "Expor duplicação em lote, agrupamento e seleção",
+          "acceptance": "Operações preservam identidade e não criam ciclos em hierarquia.",
+          "depends_on": [
+            "MCP-11.01"
+          ]
+        },
+        {
+          "id": "MCP-11.10",
+          "priority": "P1",
+          "title": "Validar matrizes, apoios e invariantes de objeto",
+          "acceptance": "Testes cobrem rotação inclinada, pai/filho, remoção e JSON.",
+          "depends_on": [
+            "MCP-11.02",
+            "MCP-11.03",
+            "MCP-11.04",
+            "MCP-11.05",
+            "MCP-11.06",
+            "MCP-11.07",
+            "MCP-11.08",
+            "MCP-11.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "G11",
+        "depends_on": [
+          "MCP-11.10"
+        ],
+        "kind": "gate",
+        "status": "planned"
+      }
+    }
+  ]
+}
