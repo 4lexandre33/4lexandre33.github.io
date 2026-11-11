@@ -43,12 +43,25 @@ function donoAuto(ref){
  return typeof ref==="string"?SCN.list.find(m=>m.name===ref||String(m.id)===ref):null;
 }
 function revisaoAutoGrip(it,o){
- const data=JSON.stringify([it.id,it.params,o.id,o.tipo,o.x,o.z,o.giro,o.rot3,o.base,
-  o.larg,o.prof,o.alt,o.raio,o.encosto,o.sitesExtras,
-  SCN.objetos.map(q=>[q.id,q.x,q.z,q.base,q.giro,q.rot3]),
-  SCN.list.map(q=>[q.id,q.params.wx,q.params.wz,q.params.wRot])]);
- let h=2166136261;for(let i=0;i<data.length;i++)h=Math.imul(h^data.charCodeAt(i),16777619);
- return (h>>>0).toString(16);
+  // A revisão deve cobrir todo o contexto geométrico que o solver consulta,
+  // incluindo dedos de terceiros e transformações de objetos obstáculos.
+  // Nunca usar caches de render ou IDs efêmeros de planos antigos.
+  const context={
+    target:{id:it.id,params:it.params},
+    object:o.id,
+    actors:SCN.list.map(m=>({id:m.id,params:m.params,oculto:m.oculto})),
+    objects:SCN.objetos.map(q=>({
+      id:q.id,tipo:q.tipo,nome:q.nome,x:q.x,z:q.z,base:q.base,
+      giro:q.giro,rot3:q.rot3,larg:q.larg,prof:q.prof,alt:q.alt,
+      raio:q.raio,encosto:q.encosto,cabeceira:q.cabeceira,
+      sobre:q.sobre,sobreRel:q.sobreRel,sitesExtras:q.sitesExtras,
+      grip:q.grip,gripV3:q.gripV3,dinamica:q.dinamica
+    }))
+  };
+  const data=JSON.stringify(context);
+  let hash=2166136261;
+  for(let i=0;i<data.length;i++)hash=Math.imul(hash^data.charCodeAt(i),16777619);
+  return (hash>>>0).toString(16);
 }
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
