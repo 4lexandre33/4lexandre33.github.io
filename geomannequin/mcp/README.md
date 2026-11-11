@@ -26,6 +26,53 @@ O código-fonte desta branch registra 14 ferramentas tipadas adicionais às 25 a
 | anatomia_mcp | Cabeça, expressão, dedos, articulações e estudo anatômico |
 | aparencia_mcp | Camadas, estilo, modo, luz ambiente e visibilidade |
 
+### AutoGrip — encaixe automático geométrico (experimental)
+
+O motor agora expõe `cena.autoEncaixarObjeto`, `cena.planejarEncaixe`,
+`cena.aplicarEncaixe`, `m.autoSegurar` e `obj.autoEncaixarPor`.
+A ferramenta MCP `preensao` aceita as ações `planejar`, `auto_encaixar` e
+`aplicar`; esta última exige `revisao` devolvida pelo planejamento.
+O novo comando também está disponível nas operações declarativas `auto_encaixar`.
+
+Planejamento sem modificar a cena:
+
+```json
+{"acao":"planejar","objeto":"Cadeira 1","manequim":"Manequim 1","mao":"auto","pegada":"auto","ponto":"auto","reach":12}
+```
+
+Autoencaixe em uma chamada:
+
+```json
+{"acao":"auto_encaixar","objeto":"Cadeira 1","manequim":"Manequim 1","mao":"auto","pegada":"auto","ponto":"auto","preservarObjeto":true,"reach":12}
+```
+
+Pode escolher `mao=esquerda|direita|auto|ambas` e
+`pegada=pinca|gancho|potencia|tripode|lateral|apoio|auto`.
+As respostas contêm score, ajustes anatômicos, contatos por dedo, desvio da
+palma e profundidade residual; uma solução inviável é relatada sem captura
+do objeto. O botão **Autoencaixar e segurar** fica no painel de colisões do
+aplicativo e **Autoencaixar** também está no widget ChatGPT.
+
+**Limitações:** esta versão utiliza o IK e os colisores procedurais atuais.
+Trata-se de encaixe geométrico aproximado, não solver físico de forças e
+atrito; o percurso animado completo ainda não tem detecção contínua exata.
+O objeto é preservado por padrão. A opção de deslocá-lo automaticamente
+é rejeitada até que o caminho e os suportes sejam validados com segurança.
+Uma pegada que não passar nos testes de contato final retorna erro.
+
+```sh
+cd geomannequin
+npm run testar:autogrip
+cd mcp
+npm test
+npm run build
+npm run verify:dist
+npm run test:dist
+```
+
+A implementação na branch não substitui o bundle `mcp/dist` sem
+recompilação e os testes de integração ainda precisam ter sucesso no CI.
+
 ### Exemplo de preensão via ferramentas
 
 - objetos: adicionar cadeira com nome Cadeira 1;
