@@ -150,6 +150,12 @@ async function suite(client, tag) {
   check(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"].every(n => (def(n)._meta || {})["openai/outputTemplate"] === "ui://widget/geomannequin.html"), "ferramentas visuais abrem o widget do ChatGPT");
   check(defs.every(t => t._meta && t._meta["openai/toolInvocation/invoking"]) && def("camera")._meta["openai/widgetAccessible"] === true, "todas com texto de andamento; camera chamável pelo widget");
   check(/callTool/.test(wr.contents[0].text) && /requestDisplayMode/.test(wr.contents[0].text), "widget interativo (órbita e tela cheia)");
+  check(/gm-grip-pegar/.test(wr.contents[0].text) &&
+    /executarGrip\("preensao"/.test(wr.contents[0].text) &&
+    /executarGrip\("fisica"/.test(wr.contents[0].text),
+    "widget interativo: preensão, duas mãos e gravidade");
+  check(["preensao","fisica"].every(n=>def(n)._meta["openai/widgetAccessible"]===true),
+    "preensão e física acessíveis via widget ChatGPT");
   r = await call("nova_cena", {});
   r = await call("editar_manequim", { renomear: "Ana", expressao: "alegria", gesto: { lado: "direita", nome: "vulcano" }, validar: true });
   check(!r.isError && r.structuredContent.validacao && r.structuredContent.validacao.ok, "editar_manequim: expressão, gesto novo e validar");
