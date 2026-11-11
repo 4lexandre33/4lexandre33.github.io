@@ -6,13 +6,14 @@
  */
 import {armDims,aplicarGesto,restGround} from "../engine/index.js";
 import {juntasDedos} from "../engine/maos.js";
+import {colisaoEntreObjetos} from "../engine/objetos.js";
 import {colliderObject,colliderRig,pointSolid,capsuleSolidContact,capsuleBox,overlaps,manifoldCaps} from "../engine/contact-v2.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {rigidDirection,objectRigidPose,rigidPoint,rigidInverse} from "../engine/rigid-transform.js";
 import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
 
 // Isolamento lexical: o headless concatena os arquivos de cena num único escopo.
-const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip}=(()=>{
+const {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip}=(()=>{
 const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
 const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
@@ -39,9 +40,15 @@ function validarOpcoes(opts={}){
    throw Error("A animação de aproximação ainda não está implementada: use encaixe instantâneo validado.");
  if(opts.segunda===true&&mao!=="ambas")
    throw Error("Para autoencaixe de duas mãos, use mao:'ambas'.");
- if(opts.permitirMoverObjeto||opts.preservarObjeto===false)
-   throw Error("O movimento automático do objeto ainda não é suportado com validação robusta. Mantenha preservarObjeto=true.");
- return {mao,pegada,ponto,reach:scalar(opts.reach,"reach",0.1,100,12),
+ const permitirMoverObjeto=opts.permitirMoverObjeto===true;
+ if(permitirMoverObjeto&&opts.preservarObjeto!==false)
+   throw Error("Para permitir microajuste do objeto, selecione também preservarObjeto:false.");
+ if(!permitirMoverObjeto&&opts.preservarObjeto===false)
+   throw Error("preservarObjeto:false requer permitirMoverObjeto:true.");
+ return {mao,pegada,ponto,permitirMoverObjeto,
+   preservarObjeto:!permitirMoverObjeto,
+   maxDeslocamento:scalar(opts.maxDeslocamento,"maxDeslocamento",0.05,0.6,0.24),
+   reach:scalar(opts.reach,"reach",0.1,100,12),
    tolerancia:scalar(opts.tolerancia,"tolerancia",0.005,0.25,.055),
    limitePenetracao:scalar(opts.limitePenetracao,"limitePenetracao",0.005,0.14,.06),
    exigirContato:opts.exigirContato!==false,maxSites:Math.trunc(scalar(opts.maxSites,"maxSites",1,12,5)),
@@ -438,6 +445,58 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
    limitacoes:["Geometria de caixas/cilindros e colisores aproximados.",
      "A validação considera a pose final; trajetória contínua e força de agarre não são resolvidas."]};
 }
+/* Microajuste opcional, conservador e somente horizontal. Não movimenta
+ * objeto de fato no planejamento; testa cópias deslocadas em X/Z.
+ * Rejeita objetos apoiados, segurados, com filhos ou em colisão com móveis.
+ * Não equivale a uma solução 6DOF nem a planejador de caminho contínuo.
+ */
+function planejarAutoGripComAjuste(it,o,ground,opts={},scene={}){
+ const opt=validarOpcoes(opts),since=Date.now();
+ const baseOptions={...opt,permitirMoverObjeto:false,preservarObjeto:true,
+   maxTempoMs:opt.permitirMoverObjeto?Math.max(200,Math.round(opt.maxTempoMs*.5)):opt.maxTempoMs};
+ const initial=planejarAutoGrip(it,o,ground,baseOptions,scene);
+ initial.opcoes=opt;
+ if(initial.ok||!opt.permitirMoverObjeto)return initial;
+ const real=(scene.objetos||[]).find(q=>q.id===o.id)||o;
+ if(real.gripV3||real.grip||o.sobre||scene.objetos?.some(q=>q.sobre===o.id))
+   throw Error("Microajuste não pode mover objeto segurado, apoiado ou com filhos.");
+ if(o.dinamica?.ativo)throw Error("Interrompa a queda antes de microajustar um objeto.");
+ const trials=[
+   [1,0],[-1,0],[0,1],[0,-1],
+   [.7,.7],[.7,-.7],[-.7,.7],[-.7,-.7]
+ ];
+ const rejected=[],fallback=[];
+ const deadline=since+opt.maxTempoMs;
+ for(const [dx,dz] of trials){
+   const rem=deadline-Date.now();if(rem<200)break;
+   const shift={dx:dx*opt.maxDeslocamento,dz:dz*opt.maxDeslocamento};
+   if(Math.abs(o.x+shift.dx)>40||Math.abs(o.z+shift.dz)>40)continue;
+   const moved={...o,x:o.x+shift.dx,z:o.z+shift.dz};
+   const collisions=(scene.objetos||[]).filter(q=>q.id!==o.id);
+   if(collisions.some(q=>colisaoEntreObjetos(moved,q,ground,.03).length)){
+     rejected.push({deslocamento:shift,motivo:"Colisão com outro objeto."});continue;
+   }
+   const outcome=planejarAutoGrip(it,moved,ground,{
+     ...baseOptions,maxSites:Math.min(baseOptions.maxSites,3),
+     maxTempoMs:Math.max(200,Math.min(550,rem))
+   },scene);
+   if(outcome.ok){
+     const p=outcome.melhor;
+     const penalty=Math.hypot(shift.dx,shift.dz)*.3;
+     fallback.push({...outcome,melhor:{...p,ajusteObjeto:shift,score:p.score+penalty}});
+   }else rejected.push({deslocamento:shift,motivo:outcome.rejeitados?.[0]?.motivo||"Sem pegada viável."});
+ }
+ if(!fallback.length){
+   initial.rejeitados.push(...rejected.slice(0,6));
+   return initial;
+ }
+ fallback.sort((a,b)=>a.melhor.score-b.melhor.score);
+ const selected=fallback[0];
+ selected.opcoes=opt;
+ selected.avaliados+=initial.avaliados;
+ selected.limitacoes.push("Microajuste horizontal com deslocamento limitado: não planeja trajetórias.");
+ return selected;
+}
 function resumirAutoGrip(result){
  if(!result.ok)return {status:"inviavel",avaliados:result.avaliados,
    rejeitados:result.rejeitados,limitacoes:result.limitacoes,
@@ -446,7 +505,7 @@ function resumirAutoGrip(result){
  const format=v=>({mao:v.mao,ponto:v.ponto,pegada:v.pegada,
    score:+v.score.toFixed(4),desvioPalma:+v.desvioPalma.toFixed(4),
    penetracao:+v.penetracao.toFixed(4),contatosAtivos:v.contatosAtivos,
-   ajustes:v.ajustes,
+   ajustes:v.ajustes,ajusteObjeto:v.ajusteObjeto??null,
    dedos:v.contatos.map(f=>({dedo:f.nome,contato:f.contato,
      distancia:Number.isFinite(f.distancia)?+f.distancia.toFixed(4):null}))});
  return {status:"planejado",avaliados:result.avaliados,
@@ -481,6 +540,6 @@ function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,toleranci
    palmaContato,contatos,contatosPorDedo:dedos};
 }
 
-return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
+return {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
 })();
-export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
+export {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
