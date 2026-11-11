@@ -37,6 +37,16 @@ async function scenario(client,remote){
  const planned=plan.structuredContent.resultado;
  assert.ok(["planejado","inviavel"].includes(planned.status));
  assert.ok(typeof planned.revisao==="string");
+ let optIn=await call(client,"preensao",{acao:"planejar",objeto:"Cadeira MCP",
+   permitirMoverObjeto:true,preservarObjeto:false,maxDeslocamento:.2,
+   mao:"direita",maxSites:1,maxIteracoes:1,maxTempoMs:600});
+ assert.ok(!optIn.isError,JSON.stringify(optIn.content));
+ assert.ok(["planejado","inviavel"].includes(optIn.structuredContent.resultado.status));
+ optIn=await call(client,"preensao",{acao:"planejar",objeto:"Cadeira MCP",
+   permitirMoverObjeto:true,preservarObjeto:true,mao:"direita"});
+ assert.ok(optIn.isError&&/preservarObjeto:false/.test(optIn.content[0].text),
+   "Microajuste exige autorização explícita para mover objeto");
+
  let stateAfter=(await call(client,"preensao",{acao:"listar"})).structuredContent.resultado;
  assert.deepEqual(stateAfter,stateBefore,"Planejamento AutoGrip não pode criar vínculo");
  if(planned.status==="planejado"){
