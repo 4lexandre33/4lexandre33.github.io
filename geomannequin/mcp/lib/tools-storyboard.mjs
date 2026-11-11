@@ -22,6 +22,7 @@ const command=z.object({
   pegada:z.enum(["auto","pinca","potencia","gancho","tripode","lateral","apoio"]).optional(),
   preservarObjeto:z.boolean().optional(),permitirMoverObjeto:z.boolean().optional(),
   maxDeslocamento:N.min(.05).max(.6).optional(),
+  verificarTrajetoria:z.boolean().optional(),passosTrajetoria:z.number().int().min(3).max(8).optional(),
   lado:z.enum(["frente","costas","esquerda","direita","3/4 esquerda","3/4 direita"]).optional(),
   area:z.string().max(80).optional(),
   ponto:z.string().max(40).optional(),
@@ -48,7 +49,8 @@ function apply(w,a){
    manequim:a.nome,mao:a.mao??"auto",pegada:a.pegada??"auto",
    ponto:a.ponto??"auto",reach:a.reach??12,preservarObjeto:a.preservarObjeto!==false,
    permitirMoverObjeto:!!a.permitirMoverObjeto,maxDeslocamento:a.maxDeslocamento,
-   maxTempoMs:750
+   maxTempoMs:750,verificarTrajetoria:!!a.verificarTrajetoria,
+   passosTrajetoria:a.passosTrajetoria
   });break;
  case "soltar":w.cena.soltarObjeto(req(a.alvo,"objeto"),{modo:a.modo??"manter"});break;
  case "avancar_fisica":w.cena.avancarFisica(a.segundos??1/60);break;
