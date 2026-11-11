@@ -69,12 +69,20 @@ function alinharPalmaV3(it,side,target,ground){
 function sincronizarMaoSecundaria(it,o,ground){
  const s=o.gripV3?.secundaria;
  if(!s)return null;
- const target=gripSiteWorld(o,s.siteId,ground).mundo;
- const deviation=alinharPalmaV3(it,s.side,target,ground);
+ // Para AutoGrip bilateral, seguir a mesma referência local da palma:
+ // não reencaixar no centro do GripSite a cada quadro, pois isso desfaz
+ // a solução fina de dedos e causa saltos quando a cadeira se move.
+ const target=Array.isArray(s.palmLocal)&&s.palmLocal.length===3&&
+   s.palmLocal.every(Number.isFinite)?
+   rigidPoint(objectRigidPose(o,ground),s.palmLocal):
+   gripSiteWorld(o,s.siteId,ground).mundo;
+ const current=handFrameV3(it,s.side,ground);
+ const initial=Math.hypot(...target.map((v,i)=>v-current.T[i]));
+ const deviation=initial<=.035?initial:alinharPalmaV3(it,s.side,target,ground);
  s.desvio=deviation;s.alcancavel=deviation<=.35;
  return deviation;
 }
-function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,exigirContato=false,objetos=[]}={}){
+function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",fechar=false,segunda=false,exigirContato=false,preservarPoseSecundaria=false,objetos=[]}={}){
  if(!it||!o||!(side===1||side===-1))throw Error("Manequim, objeto ou mão inválidos.");
  if(!Number.isFinite(reach)||reach<0||reach>100)throw Error("Alcance precisa estar entre 0 e 100 R.");
  if(o.gripV3&&!segunda)throw Error("Objeto já está segurado; use segunda:true para adicionar outra mão.");
@@ -93,10 +101,16 @@ function beginRigidGrip(it,o,side,ground,{ponto,site,reach=2.5,modo="preservar",
  if(o.gripV3){
    if(o.gripV3.side===side||o.gripV3.secundaria?.side===side)throw Error("Esta mão já está vinculada.");
    const prev={...it.params};
-   o.gripV3.secundaria={side,siteId:selected.id,relative:rigidCompose(rigidInverse(H),old)};
+   // A mão já foi resolvida pelo AutoGrip. Se preservarPoseSecundaria
+   // estiver ativo, não rodar outra IK imediatamente sobre uma pose validada.
+   const palmLocal=rigidPoint(rigidInverse(old),H.T);
+   o.gripV3.secundaria={side,siteId:selected.id,
+     relative:rigidCompose(rigidInverse(H),old),
+     ...(preservarPoseSecundaria?{palmLocal}:{} )};
    let residual;
-   try{residual=sincronizarMaoSecundaria(it,o,ground)}
-   catch(e){Object.assign(it.params,prev);delete o.gripV3.secundaria;throw e}
+   try{
+     residual=preservarPoseSecundaria?0:sincronizarMaoSecundaria(it,o,ground);
+   }catch(e){Object.assign(it.params,prev);delete o.gripV3.secundaria;throw e}
    if(residual>.35&&exigirContato){
      Object.assign(it.params,prev);delete o.gripV3.secundaria;
      throw Error("A segunda mão não alcança este ponto ("+residual.toFixed(2)+" R).");
