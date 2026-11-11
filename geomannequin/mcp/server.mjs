@@ -76,7 +76,6 @@ if (!httpMode) {
   const rateByIp=new Map();
   const app = express();
   app.disable("x-powered-by");
-  app.use(express.json({ limit: "2mb" }));
   app.use((req,res,next)=>{
     // Limite por IP antes de parsear/execução MCP; buckets de 1 minuto.
     const ip=String(req.socket.remoteAddress||"desconhecido");
@@ -92,6 +91,7 @@ if (!httpMode) {
     });
     next();
   });
+  app.use(express.json({ limit: "2mb" }));
   app.use((req, res, next) => {
     // Padrão sem CORS aberto. Clientes MCP servidor-servidor não precisam de ACAO.
     const origin=req.headers.origin;
