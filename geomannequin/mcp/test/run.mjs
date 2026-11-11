@@ -154,6 +154,10 @@ async function suite(client, tag) {
     /executarGrip\("preensao"/.test(wr.contents[0].text) &&
     /executarGrip\("fisica"/.test(wr.contents[0].text),
     "widget interativo: preensão, duas mãos e gravidade");
+  check(/gm-auto-encaixar/.test(wr.contents[0].text) &&
+    /acao:"auto_encaixar"/.test(wr.contents[0].text) &&
+    /gm-auto-estilo/.test(wr.contents[0].text),
+    "AutoGrip no widget: botão único e tipos de pegada");
   check(["preensao","fisica"].every(n=>def(n)._meta["openai/widgetAccessible"]===true),
     "preensão e física acessíveis via widget ChatGPT");
   r = await call("nova_cena", {});
