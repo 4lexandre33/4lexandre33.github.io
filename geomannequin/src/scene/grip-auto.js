@@ -111,9 +111,10 @@ function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
    ["armAbd"+L]:[-45,160],["armFlex"+L]:[-50,160],["elbow"+L]:[0,145]};
  const objective=()=>{
    const H=handFrameV3(clone,side,ground);
-   const curlDirection=[H.M[0],H.M[3],H.M[6]].map(x=>x*side);
-   // Curvatura: esquerda dobra no -X, direita dobra no +X.
-   // Portanto o eixo lateral da palma precisa apontar para fora, normal do objeto.
+   // dirsDedo() usa componente X = -side * sin(flexão):
+   // mão esquerda dobra em -X, direita dobra em +X no referencial local.
+   // Comparar a normal de aproximação com a direção REAL de fechamento.
+   const curlDirection=[H.M[0],H.M[3],H.M[6]].map(x=>-x*side);
    const normalError=1-clamp(dot(curlDirection,normal),-1,1);
    const pError=dist(H.T,target);
    return pError*4.5+normalError*.24;
