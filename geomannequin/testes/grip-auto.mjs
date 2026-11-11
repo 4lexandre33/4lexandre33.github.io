@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import {createWorld} from "../mcp/lib/core.mjs";
 import {handFrameV3} from "../src/scene/grip-v3.js";
-import {registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip} from "../src/scene/grip-auto.js";
+import {planejarAutoGrip,registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip} from "../src/scene/grip-auto.js";
 import {gripSiteWorld} from "../src/engine/grip-sites.js";
 import {rigidDirection,objectRigidPose} from "../src/engine/rigid-transform.js";
 import {restGround,objetoPadrao,colliderRig,aplicarGesto,juntasDedos} from "../src/engine/index.js";
@@ -66,6 +66,19 @@ assert.equal(rotated.sitesExtras.length,1);
 const originalSite=gripSiteWorld(rotated,"encostoTopo",ground);
 assert.ok(Math.hypot(...originalSite.mundo.map((v,i)=>v-attached.mundo[i]))>.1,
   "A regressão precisa distinguir ponto otimizado do GripSite nominal");
+
+// Regressão: avalia de verdade a SDF de falanges (A.LH) antes de usar o wrapper.
+// O planejador captura exceções de candidatos; testes que aceitam "inviavel"
+// isoladamente não detectam ReferenceError escondido nessas rejeições.
+const geometryProbe=planejarAutoGrip(mannequin,obj,ground,
+  {mao:"direita",ponto:"encostoTopo",pegada:"gancho",maxSites:1,
+    maxIteracoes:1,reach:100,maxTempoMs:3000},
+  {objetos:[obj],manequins:[mannequin]});
+assert.ok(geometryProbe.avaliados>=1,"SDF dos dedos precisa ser executada.");
+assert.ok(geometryProbe.candidatos.length>0||geometryProbe.rejeitados.some(q=>Number.isFinite(q.score)),
+  "O candidato precisa chegar à avaliação geométrica, sem erro de variável ausente.");
+assert.ok(geometryProbe.rejeitados.every(q=>!/ReferenceError|is not defined/.test(q.motivo||"")),
+  "O AutoGrip não pode transformar falha de execução em pegada inviável.");
 
 const options={manequim:"Manequim 1",mao:"auto",pegada:"auto",
   preservarObjeto:true,maxSites:2,maxIteracoes:1,reach:15};
@@ -167,6 +180,14 @@ const freePath=verificarMicroDeslocamentoAutoGrip(moving,
 assert.equal(freePath.livre,true);
 assert.equal(JSON.stringify(sweptScene),sweptBefore,
   "Verificação do caminho deve ser pura, sem movimentar a peça.");
+assert.throws(()=>verificarMicroDeslocamentoAutoGrip(moving,{dx:.2,dz:0},
+  ground,sweptScene,mannequin,{passo:0}),/Passo do microdeslocamento/,
+  "Passo zero não pode resultar em loop sem fim.");
+assert.throws(()=>verificarMicroDeslocamentoAutoGrip(moving,{dx:.2,dz:0},
+  ground,sweptScene,mannequin,{passo:1e-12}),/Passo do microdeslocamento/,
+  "Passo ínfimo não pode esgotar CPU no editor.");
+assert.throws(()=>verificarMicroDeslocamentoAutoGrip(moving,{dx:.2,dz:0},
+  ground,sweptScene,mannequin,{tolerancia:-.01}),/Tolerância do microdeslocamento/);
 
 // Validação do caminho ARTICULADO: a mesma pose deve ser livre quando o
 // objeto está distante. A rotina não pode modificar parâmetros do rig.
