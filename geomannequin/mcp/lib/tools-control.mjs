@@ -99,6 +99,7 @@ export function registerControlTools(s,W){
    limitePenetracao:N.min(.005).max(.14).optional(),
    maxSites:z.number().int().min(1).max(12).optional(),
    maxIteracoes:z.number().int().min(1).max(8).optional(),
+   maxTempoMs:z.number().int().min(200).max(10000).optional(),
    revisao:z.string().max(50).optional()
   },(w,a)=>{
    if(a.acao==="listar")return w.cena.vinculos();
@@ -107,7 +108,8 @@ export function registerControlTools(s,W){
      pegada:a.pegada??"auto",ponto:a.ponto??"auto",
      reach:a.reach,preservarObjeto:a.preservarObjeto,
      permitirMoverObjeto:a.permitirMoverObjeto,tolerancia:a.tolerancia,
-     limitePenetracao:a.limitePenetracao,maxSites:a.maxSites,maxIteracoes:a.maxIteracoes};
+     limitePenetracao:a.limitePenetracao,maxSites:a.maxSites,maxIteracoes:a.maxIteracoes,
+     maxTempoMs:a.maxTempoMs};
    if(a.acao==="planejar")return w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
    if(a.acao==="aplicar"){
      const preview=w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
