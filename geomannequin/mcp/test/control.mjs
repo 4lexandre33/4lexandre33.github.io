@@ -22,6 +22,11 @@ async function scenario(client,remote){
  assert.ok(!r.isError&&r.structuredContent.resultado.capacidades.some(x=>x.id==="preensaoV3"));
  r=await call(client,"objetos",{acao:"adicionar",tipo:"cadeira",nome:"Cadeira MCP",x:0,z:0});
  assert.ok(!r.isError);
+ r=await call(client,"preensao",{acao:"medidas_mao",mao:"ambas"});
+ assert.ok(!r.isError,JSON.stringify(r.content));
+ assert.equal(r.structuredContent.resultado.direita.dedos.length,5);
+ assert.equal(r.structuredContent.resultado.esquerda.dedos.length,5);
+ assert.ok(Number.isFinite(r.structuredContent.resultado.direita.aberturaPincaAberta));
  r=await call(client,"grip_sites",{acao:"listar",objeto:"Cadeira MCP"});
  assert.ok(!r.isError&&r.structuredContent.resultado.some(x=>x.id==="encostoTopo"));
  // AutoGrip MCP: primeiro planejar sem mutar, depois confirmar somente se possível.
