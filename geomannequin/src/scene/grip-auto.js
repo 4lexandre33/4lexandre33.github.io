@@ -8,11 +8,11 @@ import {armDims,aplicarGesto,restGround} from "../engine/index.js";
 import {juntasDedos} from "../engine/maos.js";
 import {colliderObject,colliderRig,pointSolid,capsuleSolidContact,capsuleBox,overlaps,manifoldCaps} from "../engine/contact-v2.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
-import {rigidDirection,objectRigidPose,rigidPoint} from "../engine/rigid-transform.js";
+import {rigidDirection,objectRigidPose,rigidPoint,rigidInverse} from "../engine/rigid-transform.js";
 import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
 
 // Isolamento lexical: o headless concatena os arquivos de cena num único escopo.
-const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip}=(()=>{
+const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip}=(()=>{
 const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
 const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
@@ -283,13 +283,33 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
     (style==="apoio"?" (palma sem apoio válido)":""));
  return {ok:valid,objeto:o.nome||o.tipo,manequim:it.name,mao:side>0?"esquerda":"direita",
    lado:side,ponto:site.id,pegada:style,contatos:contacts,medidas:metrics,
-   posicaoAlvo:target,normal,amostra:site.amostra??null,distanciaInicial:distance,desvioPalma:fit.residual,
+   posicaoAlvo:target,posicaoRegiao:site.mundo,normal,normalLocal:site.normal||[0,0,1],
+   amostra:site.amostra??null,distanciaInicial:distance,desvioPalma:fit.residual,
    penetracao:maxPen,contatosAtivos:fingerCount,geometria:geometric,score,
    ajustes:Object.fromEntries(Object.entries(p).filter(([k,v])=>
      (/^(?:arm|elbow|wrist|pron|handCurl|thumbOpp|fSpread|f(?:Th|In|Me|An|Mi))/.test(k))&&
      typeof v==="number"&&Math.abs(v-(src[k]??0))>1e-4)
      .map(([k,v])=>[k,{antes:src[k]??0,depois:v}])),
    avisos:reasons,params:p};
+}
+/* GripSite real, persistente, para o ponto escolhido numa amostra tangencial.
+ * O ponto usado pelo vínculo e pela IK secundária passa a ser o ponto
+ * otimizado, em vez de voltar silenciosamente ao centro do site original.
+ * Modifica somente o objeto em contexto de commit transacional do editor.
+ */
+function registrarRegiaoAutoGrip(o,candidato,side,ground){
+ if(!candidato?.amostra)return candidato.ponto;
+ if(!Array.isArray(candidato.posicaoRegiao)||candidato.posicaoRegiao.length!==3||
+   !candidato.posicaoRegiao.every(Number.isFinite))throw Error("Amostra de pegada inválida.");
+ const local=rigidPoint(rigidInverse(objectRigidPose(o,ground)),candidato.posicaoRegiao);
+ const normal=norm(candidato.normalLocal||[0,0,1]);
+ const id="__autogrip_"+(side>0?"E":"D");
+ const extras=(Array.isArray(o.sitesExtras)?o.sitesExtras:[])
+   .filter(s=>s?.id!==id);
+ if(extras.length>=30)throw Error("Máximo de 30 GripSites por objeto; exclua um ponto adicional.");
+ o.sitesExtras=extras.concat({id,nome:"AutoGrip "+(side>0?"esquerda":"direita"),
+   local,normal,prioridade:95});
+ return id;
 }
 /* Revalidação geométrica de toda a cena após combinar mãos e criar o
  * attachment. A base de autocolisões é a pose anterior à operação.
@@ -461,6 +481,6 @@ function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,toleranci
    palmaContato,contatos,contatosPorDedo:dedos};
 }
 
-return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip};
+return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
 })();
-export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip};
+export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
