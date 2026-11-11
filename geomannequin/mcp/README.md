@@ -30,14 +30,29 @@ O código-fonte desta branch registra 14 ferramentas tipadas adicionais às 25 a
 
 O motor agora expõe `cena.autoEncaixarObjeto`, `cena.planejarEncaixe`,
 `cena.aplicarEncaixe`, `m.autoSegurar` e `obj.autoEncaixarPor`.
-A ferramenta MCP `preensao` aceita as ações `planejar`, `auto_encaixar` e
-`aplicar`; esta última exige `revisao` devolvida pelo planejamento.
+A ferramenta MCP `preensao` aceita as ações `planejar`, `auto_encaixar`,
+`reencaixar`, `verificar` e `aplicar`; esta última exige `revisao`
+devolvida pelo planejamento. `reencaixar` funciona também sobre objetos já
+segurados; se a otimização falhar, a posição e o vínculo são restaurados.
+`verificar` diagnostica contatos da palma e dos dedos sem mexer na cena.
 O novo comando também está disponível nas operações declarativas `auto_encaixar`.
 
 Planejamento sem modificar a cena:
 
 ```json
 {"acao":"planejar","objeto":"Cadeira 1","manequim":"Manequim 1","mao":"auto","pegada":"auto","ponto":"auto","reach":12}
+```
+
+Verificar um objeto já segurado, após mover o braço:
+
+```json
+{"acao":"verificar","objeto":"Cadeira 1"}
+```
+
+Reencaixar a cadeira, inclusive se já estiver na mão:
+
+```json
+{"acao":"reencaixar","objeto":"Cadeira 1","mao":"auto","pegada":"auto","preservarObjeto":true}
 ```
 
 Autoencaixe em uma chamada:
