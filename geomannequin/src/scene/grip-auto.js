@@ -12,7 +12,7 @@ import {rigidDirection,objectRigidPose,rigidPoint} from "../engine/rigid-transfo
 import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
 
 // Isolamento lexical: o headless concatena os arquivos de cena num único escopo.
-const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes}=(()=>{
+const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip}=(()=>{
 const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
 const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
@@ -369,6 +369,33 @@ function resumirAutoGrip(result){
    escolha:format(q),segunda:q.secundaria?format(q.secundaria):null,
    alternativas:result.candidatos,limitacoes:result.limitacoes};
 }
-return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes};
+/** Checagem final após o vínculo Grip V3, especialmente após IK secundário.
+ * É independente da aproximação SDF usada na busca dos dedos.
+ */
+function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,tolerancia=.055}={}){
+ const geom=colliderRig({...it.params,wy:ground-restGround(it.params)},{level:"fine"});
+ const solids=colliderObject(o,ground),label=side>0?"E":"D";
+ const caps=geom.caps.filter(c=>(c.kind==="palm"||c.kind==="finger")&&c.side===label);
+ let maxPenetracao=0,palmaContato=false,contatos=0;
+ const dedos={polegar:false,indicador:false,"médio":false,anelar:false,"mínimo":false};
+ for(const cap of caps){
+   let best=Infinity;
+   for(const solid of solids){
+     if(!overlaps(capsuleBox(cap),solid.box,tolerancia))continue;
+     const hit=capsuleSolidContact(cap,solid.shape,solid.id);
+     best=Math.min(best,hit.distancia);
+   }
+   maxPenetracao=Math.max(maxPenetracao,Math.max(0,-best));
+   if(best<=tolerancia&&best>=-limitePenetracao){
+     contatos++;
+     if(cap.kind==="palm")palmaContato=true;
+     if(cap.finger&&Object.prototype.hasOwnProperty.call(dedos,cap.finger))dedos[cap.finger]=true;
+   }
+ }
+ return {ok:maxPenetracao<=limitePenetracao,maxPenetracao,
+   palmaContato,contatos,contatosPorDedo:dedos};
+}
+
+return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip};
 })();
-export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes};
+export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip};
