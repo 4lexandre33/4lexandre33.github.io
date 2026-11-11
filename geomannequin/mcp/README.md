@@ -55,6 +55,18 @@ Reencaixar a cadeira, inclusive se já estiver na mão:
 {"acao":"reencaixar","objeto":"Cadeira 1","mao":"auto","pegada":"auto","preservarObjeto":true}
 ```
 
+**Verificação opcional do percurso do braço:** `verificarTrajetoria:true`
+ativa a inspeção da pose inicial até a pegada por interpolação dos ângulos
+articulares em `passosTrajetoria` amostras (3 a 8; padrão 5). O motor
+avalia até três pegadas candidatas e recusa a que apresentar interpenetração
+nas amostras. O modo padrão permanece desativado até a validação de
+desempenho no motor real. **A detecção é discreta; não é CCD matematicamente
+exata, nem produz uma animação de aproximação.**
+
+```json
+{"acao":"planejar","objeto":"Cadeira 1","mao":"auto","pegada":"auto","verificarTrajetoria":true,"passosTrajetoria":5}
+```
+
 Exemplo com microajuste explicitamente autorizado:
 
 ```json
