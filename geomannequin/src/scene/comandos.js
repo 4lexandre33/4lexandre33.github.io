@@ -21,7 +21,7 @@ import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camada
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
-import {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip} from "./grip-auto.js";
+import {planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip} from "./grip-auto.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -615,7 +615,7 @@ const cena={
     if(owner&&it.id!==owner.id)throw Error("Objeto segurado por outro manequim.");
     const options=validarOpcoes(opts),ground=restGround(SCN.list[0].params);
     const detached=o.gripV3||o.grip?{...o,gripV3:undefined,grip:undefined}:o;
-    const r=planejarAutoGrip(it,detached,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
+    const r=planejarAutoGripComAjuste(it,detached,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
     return {...resumirAutoGrip(r),objeto:o.nome||o.tipo,manequim:it.name,
       opcoes:options,revisao:revisaoAutoGrip(it,o)};
   },
@@ -640,6 +640,8 @@ const cena={
     const options=validarOpcoes(opts);
     const before=cena.estadoCompleto(),beforeParams={...it.params},ground=restGround(SCN.list[0].params);
     const reencaixado=!!(o.gripV3||o.grip);
+    if(reencaixado&&options.permitirMoverObjeto)
+      throw Error("Solte o objeto antes de permitir microajuste da posição.");
     let found,best;
     try{
       if(reencaixado){
@@ -647,10 +649,14 @@ const cena={
         // permanece no lugar; o vínculo é refeito somente após a otimização.
         delete o.gripV3;delete o.grip;o.emAr=true;
       }
-      found=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
+      found=planejarAutoGripComAjuste(it,o,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
       if(!found.ok)throw Error("Encaixe inviável: "+found.rejeitados.slice(0,4)
         .map(x=>x.ponto+" — "+x.motivo).join("; "));
       best=found.melhor;
+      if(best.ajusteObjeto){
+        o.x+=best.ajusteObjeto.dx;
+        o.z+=best.ajusteObjeto.dz;
+      }
       Object.assign(it.params,best.params);
       if(best.secundaria){
         const side=best.secundaria.lado===1?"L":"R";
@@ -701,6 +707,7 @@ const cena={
         throw Error("O corpo, braço ou outra pessoa apresenta colisão após encaixar: "+
           checkedScene.maxPenetracao.toFixed(3)+" R.");
       o.gripV3.autoGrip={version:1,pegada:best.pegada,
+        ajusteObjeto:best.ajusteObjeto??null,
         site:pontoReal,siteOriginal:best.ponto,
         score:best.score,penetracao:best.penetracao,desvioPalma:best.desvioPalma,
         contatos:best.contatos.map(c=>({dedo:c.nome,contato:c.contato,distancia:c.distancia})),
@@ -710,7 +717,8 @@ const cena={
           site:o.gripV3.secundaria?.siteId,siteOriginal:best.secundaria.ponto,
           validacaoFinal:secondCheck}:null};
       atualizarApoios();cena.marcarEstado(before);
-      return {status:"aplicado",reencaixado,objeto:o.nome||o.tipo,manequim:it.name,
+      return {status:"aplicado",reencaixado,
+        ajusteObjeto:best.ajusteObjeto??null,objeto:o.nome||o.tipo,manequim:it.name,
         mao:best.mao,pegada:best.pegada,ponto:best.ponto,segundaMao:best.secundaria?.mao||null,
         qualidade:resumirAutoGrip(found).escolha,grip:g,validacaoFinal:check,validacaoCena:checkedScene,
         aviso:"Encaixe geométrico aproximado: sem forças nem trajetória livre de obstáculos garantida."};
