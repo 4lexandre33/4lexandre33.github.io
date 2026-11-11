@@ -581,7 +581,7 @@ const cena={
     const o=acharObjeto(objeto),it=donoAuto(opts.manequim);
     if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
     const options=validarOpcoes(opts);
-    const before=cena.estadoCompleto(),ground=restGround(SCN.list[0].params);
+    const before=cena.estadoCompleto(),beforeParams={...it.params},ground=restGround(SCN.list[0].params);
     const found=planejarAutoGrip(it,o,ground,options,{objetos:SCN.objetos,manequins:SCN.list});
     if(!found.ok)throw Error("Encaixe inviável: "+found.rejeitados.slice(0,4)
       .map(x=>x.ponto+" — "+x.motivo).join("; "));
@@ -627,7 +627,7 @@ const cena={
       }
       const checkedScene=validarCenaAutoGrip(it,o,ground,
         {objetos:SCN.objetos,manequins:SCN.list},
-        before.scene.list[SCN.list.indexOf(it)]?.params||it.params,
+        beforeParams,
         options,best.secundaria?[best.lado,best.secundaria.lado]:[best.lado]);
       if(!checkedScene.ok)
         throw Error("O corpo, braço ou outra pessoa apresenta colisão após encaixar: "+
