@@ -15,7 +15,7 @@ async function scenario(client,remote){
  const names=new Set((await client.listTools()).tools.map(x=>x.name));
  for(const name of ["capacidades_mcp","rig_parametro","objeto_3d","grip_sites","preensao",
    "fisica","camera_anatomica","historico_mcp","contato_fisico","artefatos_mcp",
-   "roteiro_declarativo"])assert.ok(names.has(name),"Faltou "+name);
+   "roteiro_declarativo","operacoes_lote","anatomia_mcp","aparencia_mcp"])assert.ok(names.has(name),"Faltou "+name);
  let r=await call(client,"nova_cena");
  assert.ok(!r.isError);
  r=await call(client,"capacidades_mcp",{categoria:"capacidades"});
@@ -49,6 +49,19 @@ async function scenario(client,remote){
  ]});
  assert.ok(!r.isError,JSON.stringify(r.content));
  assert.equal(r.structuredContent.quadros.length,2);
+ r=await call(client,"anatomia_mcp",{acao:"orientacao",manequim:"Manequim 1",referencia:"tronco"});
+ assert.ok(!r.isError,"Anatomia via MCP: "+JSON.stringify(r.content));
+ r=await call(client,"aparencia_mcp",{acao:"listar_camadas"});
+ assert.ok(!r.isError&&Array.isArray(r.structuredContent.resultado));
+ const before=(await call(client,"rig_parametro",{acao:"consultar",chave:"armFlexR"}))
+   .structuredContent.resultado.valor;
+ r=await call(client,"operacoes_lote",{prever:true,acoes:[
+   {acao:"parametro",alvo:"Manequim 1",chave:"armFlexR",valor:60},
+   {acao:"camera_ver",alvo:"Manequim 1",lado:"frente"}]});
+ assert.ok(!r.isError&&r.structuredContent.resultado.previsao);
+ const after=(await call(client,"rig_parametro",{acao:"consultar",chave:"armFlexR"}))
+   .structuredContent.resultado.valor;
+ assert.equal(after,before,"Dry-run não modifica cena");
  if(remote){
    r=await call(client,"roteiro_quadros",{roteiro:"#quadro 1\nprocess.exit(1);"});
    assert.ok(r.isError&&/desativado/.test(r.content[0].text));
