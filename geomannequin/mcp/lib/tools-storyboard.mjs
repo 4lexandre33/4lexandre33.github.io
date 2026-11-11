@@ -45,7 +45,8 @@ function apply(w,a){
    ponto:a.ponto??"auto",modo:a.modo??"preservar",reach:a.reach});break;
  case "auto_encaixar":w.cena.autoEncaixarObjeto(req(a.alvo,"objeto"),{
    manequim:a.nome,mao:a.mao??"auto",pegada:a.pegada??"auto",
-   ponto:a.ponto??"auto",reach:a.reach??12,preservarObjeto:a.preservarObjeto!==false
+   ponto:a.ponto??"auto",reach:a.reach??12,preservarObjeto:a.preservarObjeto!==false,
+   maxTempoMs:750
   });break;
  case "soltar":w.cena.soltarObjeto(req(a.alvo,"objeto"),{modo:a.modo??"manter"});break;
  case "avancar_fisica":w.cena.avancarFisica(a.segundos??1/60);break;
@@ -75,6 +76,8 @@ export function registerDeclarativeStoryboard(server,W){
        acoes:z.array(command).max(24)}).strict()).min(1).max(8),
      validar:z.boolean().optional(),largura:z.number().int().min(200).max(900).optional()
    }).strict().parse(raw||{});
+   const autoCount=args.quadros.reduce((n,q)=>n+q.acoes.filter(c=>c.acao==="auto_encaixar").length,0);
+   if(autoCount>4)throw Error("No máximo 4 autoencaixes por roteiro MCP.");
    const link=sceneLink(w);
    for(let i=0;i<args.quadros.length;i++){
      const q=args.quadros[i];
@@ -123,6 +126,8 @@ export function registerDeclarativeStoryboard(server,W){
   const w=W(),before=w.cena.estadoCompleto();
   try{
    const a=z.object({acoes:z.array(command).min(1).max(64),prever:z.boolean().optional()}).strict().parse(raw||{});
+   if(a.acoes.filter(c=>c.acao==="auto_encaixar").length>4)
+     throw Error("No máximo 4 autoencaixes por lote MCP.");
    for(let i=0;i<a.acoes.length;i++)try{apply(w,a.acoes[i])}
     catch(e){throw Error("Ação "+(i+1)+": "+e.message)}
    const summary={previsao:!!a.prever,executadas:a.acoes.length,
