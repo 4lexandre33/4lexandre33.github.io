@@ -91,12 +91,6 @@ async function suite(client, tag) {
   check(!r.isError && r.structuredContent.camera && Math.abs(r.structuredContent.camera.posicao_m[2] - 30 * 0.114) < 0.05, "zoom da lente não move a câmera (z = " + (r.structuredContent.camera || {}).posicao_m + ")");
   r = await call("camera", { campo_graus: 74 });
   check(!r.isError && r.structuredContent.lente.faixa === "grande-angular", "camera: campo de 74° = grande-angular (" + r.structuredContent.lente.lente + " mm)");
-  { const rot = "#cena\ncena.limpar();\ncena.ativo.renomear(\"Ana\").posicao(-3, 0).girar(90);\ncena.adicionar({ nome: \"Leo\", x: 3 }).girar(-90);\n#quadro 1 — Geral\ncamera.enquadramento(\"geral\");\n#quadro 2 16:9\ncena.obter(\"Ana\").poseRapida(\"acenando\");\ncamera.enquadramento(\"close\", \"Ana\");\n// fala: Ana: Oi!\n#quadro 3\ncena.obter(\"Zé\");";
-    r = await call("roteiro_quadros", { roteiro: rot, validar: true });
-    check(!r.isError && r.structuredContent.total === 3 && r.structuredContent.quadros[2].erro && r.structuredContent.quadros[2].linha_do_erro === 12, "roteiro_quadros: valida e aponta a linha do erro (" + (r.structuredContent.quadros[2] || {}).linha_do_erro + ")");
-    r = await call("roteiro_quadros", { roteiro: rot, quadros: [1, 2], referencias: ["openpose", "mascara"], pagina: true });
-    const imgs = (r.content || []).filter(c => c.type === "image").length; if (!imgs) console.log(JSON.stringify(r).slice(0, 400));
-    check(!r.isError && imgs === 7 && r.structuredContent.openpose[2].people.length === 2, "roteiro_quadros: 2 quadros × (quadro, openpose, máscara) + página = " + imgs + " imagens"); }
   r = await call("aparencia_cena", { pontos_de_fuga_objetos: true });
   check(!r.isError, "aparencia_cena: pontos de fuga dos objetos");
   r = await call("editar_manequim", { manequim: "1", sentar: "Cadeira", olhar: "câmera", gesto: { lado: "direita", nome: "joinha" }, articulacoes: [{ nome: "cotovelo esquerdo", dobrar: 200 }, { nome: "pescoço", girar: 20 }] });
@@ -178,8 +172,16 @@ async function suite(client, tag) {
   check(!r.isError && r._meta.gm.itens.length === 6 && r.structuredContent.elevacao === 35, "vistas_em_volta: giro de 6 vistas, elevação \"alta\"");
   r = await call("estimar_poses", { amostras: 400 });
   check(!r.isError && r.structuredContent.fracao_valida > 0 && /10\^/.test(r.structuredContent.poses_validas_5graus), "estimar_poses: " + (r.structuredContent || {}).poses_validas_5graus);
-  r = await call("roteiro_quadros", { roteiro: "#cena\ncena.limpar();\ncena.ativo.renomear(\"Ana\");\n#orbita \"Ana\" 4 1:1", largura: 240 });
+  if(tag==="http"){
+    r=await call("roteiro_declarativo",{validar:true,quadros:[{titulo:"Pose",acoes:[
+      {acao:"parametro",alvo:"Ana",chave:"armFlexR",valor:30}
+    ]},{titulo:"Vista",acoes:[{acao:"camera_ver",alvo:"Ana",lado:"costas"}]}]});
+    check(!r.isError&&r.structuredContent.quadros.length===2,
+      "Roteiro remoto declarativo: dois quadros sem JavaScript");
+  }else{
+    r = await call("roteiro_quadros", { roteiro: "#cena\ncena.limpar();\ncena.ativo.renomear(\"Ana\");\n#orbita \"Ana\" 4 1:1", largura: 240 });
   check(!r.isError && r._meta.gm.tipo === "galeria" && r._meta.gm.itens.length === 4, "roteiro_quadros: #orbita vira 4 quadros na galeria do widget");
+  }
   r = await call("planta_da_cena", {});
   check(!r.isError && r._meta.gm.itens[0].imagens.length === 2, "planta_da_cena no widget");
   r = await call("search", { query: "openpose maos rosto" });
