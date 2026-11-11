@@ -206,6 +206,9 @@ assert.throws(()=>verificarMicroDeslocamentoAutoGrip(moving,{dx:.2,dz:0},
   "Passo ínfimo não pode esgotar CPU no editor.");
 assert.throws(()=>verificarMicroDeslocamentoAutoGrip(moving,{dx:.2,dz:0},
   ground,sweptScene,mannequin,{tolerancia:-.01}),/Tolerância do microdeslocamento/);
+assert.throws(()=>verificarMicroDeslocamentoAutoGrip(moving,{dx:2,dz:0},
+  ground,sweptScene,mannequin),/excede 1 R/,
+  "Uma API pública não pode iniciar milhões de amostras de trajetória.");
 
 // Validação do caminho ARTICULADO: a mesma pose deve ser livre quando o
 // objeto está distante. A rotina não pode modificar parâmetros do rig.
