@@ -129,7 +129,10 @@ function loadScene(sc){
             {autoGrip:JSON.parse(JSON.stringify(g.autoGrip))}:{ }),
           ...(g.secundaria&&(g.secundaria.side===1||g.secundaria.side===-1)&&validRigid(g.secundaria.relative)?
             {secundaria:{side:g.secundaria.side,siteId:String(g.secundaria.siteId||"auto"),
-               relative:{M:g.secundaria.relative.M.slice(),T:g.secundaria.relative.T.slice()}}}:{})};
+               relative:{M:g.secundaria.relative.M.slice(),T:g.secundaria.relative.T.slice()},
+               ...(Array.isArray(g.secundaria.palmLocal)&&g.secundaria.palmLocal.length===3&&
+                 g.secundaria.palmLocal.every(Number.isFinite)?
+                 {palmLocal:g.secundaria.palmLocal.slice()}:{} )}}:{})};
       delete o._gripV3;
     }
   });
