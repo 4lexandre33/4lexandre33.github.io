@@ -3,6 +3,7 @@
 import { build } from "esbuild";
 import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { fingerprint } from "./scripts/source-fingerprint.mjs";
 const require = createRequire(import.meta.url);
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
@@ -20,4 +21,6 @@ cpSync("widget", "dist/widget", { recursive: true });
 cpSync("../src/scene", "dist/scene", { recursive: true });
 cpSync("../css/temas.css", "dist/temas.css");
 writeFileSync("dist/package.json", JSON.stringify({ type: "module", private: true }) + "\n");
+const manifest={schema_version:1,created_by:"mcp/build.mjs",...fingerprint()};
+writeFileSync("dist/source-manifest.json",JSON.stringify(manifest,null,2)+"\n");
 console.log("dist/ pronto");
