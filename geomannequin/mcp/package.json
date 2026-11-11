@@ -10,9 +10,11 @@
   "scripts": {
     "start": "node server.mjs --http",
     "stdio": "node server.mjs",
-    "test": "node test/run.mjs",
+    "test": "node test/run.mjs && node test/control.mjs",
     "build": "node build.mjs",
-    "test:dist": "GM_SERVER=dist/server.mjs node test/run.mjs"
+    "test:dist": "GM_SERVER=dist/server.mjs node test/run.mjs && GM_SERVER=dist/server.mjs node test/control.mjs",
+    "test:control": "node test/control.mjs",
+    "verify:dist": "node scripts/verify-dist.mjs"
   },
   "engines": {
     "node": ">=18.17"
