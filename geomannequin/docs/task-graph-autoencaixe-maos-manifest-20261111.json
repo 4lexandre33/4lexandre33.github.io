@@ -3968,7 +3968,14 @@
       "declarative_batch",
       "ui_buttons",
       "widget_grip_inspection",
-      "tests_added"
+      "tests_added",
+      "persistent_refined_gripsites",
+      "secondary_palm_local_reference",
+      "json_roundtrip_secondary_palm",
+      "bilateral_transfer_contact_reference",
+      "optional_horizontal_object_microadjust",
+      "microadjust_collision_filter",
+      "microadjust_optin_ui_widget_mcp"
     ],
     "verified": {
       "static_syntax": "passed_on_changed_modules",
@@ -3978,15 +3985,18 @@
       "real_mcp_stdio_http": "not_executed",
       "dist_rebuilt": "no",
       "merged": "no",
-      "deployed": "no"
+      "deployed": "no",
+      "isolated_gripsite_roundtrip": "passed_with_simulated_transforms",
+      "isolated_microadjust": "passed_with_simulated_colliders"
     },
     "remaining_priority": [
       "run_real_integration_tests",
       "fix_runner_unavailable",
       "rebuild_mcp_dist",
+      "verify_persistent_gripsite_and_secondary_palm_in_real_engine",
       "improve_true_joint_ik",
       "reliable_continuous_collision_avoidance",
-      "object_6dof_microadjustment",
+      "object_full_6dof_adjustment",
       "force_and_friction_simulation",
       "release_gates"
     ]
