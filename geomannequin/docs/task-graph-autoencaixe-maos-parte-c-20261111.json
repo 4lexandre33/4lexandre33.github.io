@@ -1,0 +1,1325 @@
+{
+  "schema_version": 1,
+  "project": "GeoMannequin AutoGrip",
+  "revision": "2026-11-11",
+  "part": "C",
+  "branch": "feat/geomannequin-grip-v3-hardening-20261110",
+  "groups": [
+    {
+      "id": "AG20",
+      "title": "Máquina de estados e sequência de pegar em uma ação",
+      "priority": "P1",
+      "depends_on": [
+        "AG15",
+        "AG17",
+        "AG19"
+      ],
+      "tasks": [
+        {
+          "id": "AG-20.01",
+          "title": "Definir estados idle, planejar, aproximar, abrir, tocar, fechar e segurar",
+          "acceptance": "Transição legal é registrada e cancelamento respeita estado atual.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG15",
+            "AG17",
+            "AG19"
+          ]
+        },
+        {
+          "id": "AG-20.02",
+          "title": "Implementar uma chamada planAutoGrip sem mutação global",
+          "acceptance": "Planejamento calcula alternativas e relatório de viabilidade.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.01"
+          ]
+        },
+        {
+          "id": "AG-20.03",
+          "title": "Implementar uma chamada aplicarAutoGrip atômica sobre solução aprovada",
+          "acceptance": "Commit sincroniza braço, palma, dedos e vínculo no mesmo snapshot.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.01"
+          ]
+        },
+        {
+          "id": "AG-20.04",
+          "title": "Adicionar progresso opcional e prévia de trajetórias",
+          "acceptance": "Usuário visualiza aproximação, fechamento e estado final.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.01"
+          ]
+        },
+        {
+          "id": "AG-20.05",
+          "title": "Aplicar abertura prévia dos dedos antes de mover a mão",
+          "acceptance": "Mão não tenta atravessar encosto fechada durante abordagem.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.01"
+          ]
+        },
+        {
+          "id": "AG-20.06",
+          "title": "Animar entrada da palma e fechamento coordenado dos dedos",
+          "acceptance": "Trajetória respeita limites e converge para contatos validados.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.02",
+            "AG-20.03"
+          ]
+        },
+        {
+          "id": "AG-20.07",
+          "title": "Confirmar vínculo rígido somente após validação final",
+          "acceptance": "Objeto nunca passa a seguir mão se contatos finais forem inválidos.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.04",
+            "AG-20.05"
+          ]
+        },
+        {
+          "id": "AG-20.08",
+          "title": "Adicionar tempo máximo, cancelamento e rollback",
+          "acceptance": "Cancelar em qualquer etapa recupera estado consistente sem pose fantasma.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.06",
+            "AG-20.07"
+          ]
+        },
+        {
+          "id": "AG-20.09",
+          "title": "Expor modo instantaneo apenas como commit de pose já validada",
+          "acceptance": "One-click pode ser instantâneo mas não teleporta através de sólidos para calcular solução.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.08"
+          ]
+        },
+        {
+          "id": "AG-20.10",
+          "title": "Validar sequências com objetos/parâmetros variados",
+          "acceptance": "O estado final coincide com a solução e erros não deixam vínculos órfãos.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-20.02",
+            "AG-20.03",
+            "AG-20.04",
+            "AG-20.05",
+            "AG-20.06",
+            "AG-20.07",
+            "AG-20.08",
+            "AG-20.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG20",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-20.10"
+        ]
+      }
+    },
+    {
+      "id": "AG21",
+      "title": "Transporte, reencaixe contínuo e soltura",
+      "priority": "P1",
+      "depends_on": [
+        "AG18",
+        "AG20"
+      ],
+      "tasks": [
+        {
+          "id": "AG-21.01",
+          "title": "Preservar transformações relativas otimizadas no Grip V3",
+          "acceptance": "Wobj acompanha Wmao sem recapturar offset errado após planejar.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG18",
+            "AG20"
+          ]
+        },
+        {
+          "id": "AG-21.02",
+          "title": "Integrar dedos autoajustados com movimento posterior do braço",
+          "acceptance": "Fechamento permanece coerente durante rotação e translação do móvel.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.01"
+          ]
+        },
+        {
+          "id": "AG-21.03",
+          "title": "Verificar colisão contínua de objeto transportado com ambiente",
+          "acceptance": "Movimentos proibidos não atravessam outra cadeira, corpo ou parede.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.01"
+          ]
+        },
+        {
+          "id": "AG-21.04",
+          "title": "Reavaliar contato dos dedos após grandes mudanças de orientação",
+          "acceptance": "Solver corrige dedos quando forma de contato varia ou relata deslizamento.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.01"
+          ]
+        },
+        {
+          "id": "AG-21.05",
+          "title": "Evitar oscilação de ajustes e flicker visual na pose",
+          "acceptance": "Histerese e warm-start preservam continuidade entre frames.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.01"
+          ]
+        },
+        {
+          "id": "AG-21.06",
+          "title": "Compatibilizar filhos apoiados, cadeiras, copos e hierarquias",
+          "acceptance": "Objetos filhos mantêm matriz relativa ou soltam segundo regra explícita.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.02",
+            "AG-21.03"
+          ]
+        },
+        {
+          "id": "AG-21.07",
+          "title": "Suportar troca de mão principal durante transporte bilateral",
+          "acceptance": "Transição mantém objeto no lugar e contatos alcançáveis.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.04",
+            "AG-21.05"
+          ]
+        },
+        {
+          "id": "AG-21.08",
+          "title": "Definir quando manter, relaxar ou soltar dedos automaticamente",
+          "acceptance": "Pousar/chão/queda limpam estados de pegada sem travar a mão.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.06",
+            "AG-21.07"
+          ]
+        },
+        {
+          "id": "AG-21.09",
+          "title": "Manter tempo de física consistente com vínculo ativo e soltura",
+          "acceptance": "Simulação não disputa controle do objeto com a mão que ainda segura.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.08"
+          ]
+        },
+        {
+          "id": "AG-21.10",
+          "title": "Validar transporte em 360 graus e mudança brusca de postura",
+          "acceptance": "Não há salto do objeto, penetração proibida ou drift acumulativo acima do limite.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-21.02",
+            "AG-21.03",
+            "AG-21.04",
+            "AG-21.05",
+            "AG-21.06",
+            "AG-21.07",
+            "AG-21.08",
+            "AG-21.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG21",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-21.10"
+        ]
+      }
+    },
+    {
+      "id": "AG22",
+      "title": "Persistência, versionamento, transações e undo",
+      "priority": "P0",
+      "depends_on": [
+        "AG20",
+        "AG21"
+      ],
+      "tasks": [
+        {
+          "id": "AG-22.01",
+          "title": "Definir schema AutoGripState versionado sobre cena atual",
+          "acceptance": "Vínculo armazena tipo, região, contatos, mãos, scores e parâmetros de solver.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG20",
+            "AG21"
+          ]
+        },
+        {
+          "id": "AG-22.02",
+          "title": "Persistir dimensões derivadas somente como cache validável",
+          "acceptance": "Mudanças de biotipo invalidam cache sem perder dados autoritativos.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.01"
+          ]
+        },
+        {
+          "id": "AG-22.03",
+          "title": "Persistir presets finos de dedos e offset SE(3) por mão",
+          "acceptance": "Salvar/carregar preserva pose final, dedos e orientação da cadeira.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.01"
+          ]
+        },
+        {
+          "id": "AG-22.04",
+          "title": "Resolver nomes/IDs estáveis e migração de cenas antigas",
+          "acceptance": "Projetos V2/V3 continuam carregando sem AutoGrip obrigatório.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.01"
+          ]
+        },
+        {
+          "id": "AG-22.05",
+          "title": "Aplicar transação total de mão, braço, objeto e GripState",
+          "acceptance": "Falha numérica reverte todos os parâmetros inclusive suporte e física.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.01"
+          ]
+        },
+        {
+          "id": "AG-22.06",
+          "title": "Implementar snapshots e undo/redo de encaixe completo",
+          "acceptance": "Desfazer one-click retorna exatamente a mão/objeto anteriores.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.02",
+            "AG-22.03"
+          ]
+        },
+        {
+          "id": "AG-22.07",
+          "title": "Adicionar revisão de estado, idempotência e controle concorrente",
+          "acceptance": "Duas chamadas MCP simultâneas não aplicam soluções sobre cena alterada.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.04",
+            "AG-22.05"
+          ]
+        },
+        {
+          "id": "AG-22.08",
+          "title": "Incluir hashes de geometria e revisão de solver no resultado",
+          "acceptance": "Solução de preview fica inválida se anatomia ou objeto mudarem.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.06",
+            "AG-22.07"
+          ]
+        },
+        {
+          "id": "AG-22.09",
+          "title": "Evitar JSON gigantes e ciclos no estado persistido",
+          "acceptance": "Limites de tamanho e serialização de contatos evitam estruturas recursivas.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.08"
+          ]
+        },
+        {
+          "id": "AG-22.10",
+          "title": "Validar round-trip e rollback em cem cenas fixture",
+          "acceptance": "Estado restaurado equivale aos parâmetros antes do erro e aos contatos após salvar.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-22.02",
+            "AG-22.03",
+            "AG-22.04",
+            "AG-22.05",
+            "AG-22.06",
+            "AG-22.07",
+            "AG-22.08",
+            "AG-22.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG22",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-22.10"
+        ]
+      }
+    },
+    {
+      "id": "AG23",
+      "title": "Botão único na aplicação e interação visual",
+      "priority": "P1",
+      "depends_on": [
+        "AG20",
+        "AG22"
+      ],
+      "tasks": [
+        {
+          "id": "AG-23.01",
+          "title": "Adicionar comando Autoencaixar nas ações da mão e do objeto",
+          "acceptance": "Botão é visível quando há manequim e objeto selecionados.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG20",
+            "AG22"
+          ]
+        },
+        {
+          "id": "AG-23.02",
+          "title": "Implementar escolha automática de mão e estilo de pegada",
+          "acceptance": "Sem preferências extras, ação usa modo auto com regras seguras.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.01"
+          ]
+        },
+        {
+          "id": "AG-23.03",
+          "title": "Adicionar opções avançadas preserva objeto, mover objeto e duas mãos",
+          "acceptance": "Configuração padrão não altera a cena fora do necessário.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.01"
+          ]
+        },
+        {
+          "id": "AG-23.04",
+          "title": "Exibir prévia opcional com rig, objeto e contatos-alvo",
+          "acceptance": "Usuário pode conferir resultado sem confirmar alterações.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.01"
+          ]
+        },
+        {
+          "id": "AG-23.05",
+          "title": "Exibir progresso, cancelamento e resultado da otimização",
+          "acceptance": "Interface nunca fica sem resposta em caso de timeout ou falha.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.01"
+          ]
+        },
+        {
+          "id": "AG-23.06",
+          "title": "Exibir erros por falta de alcance, dimensão ou obstáculo",
+          "acceptance": "Mensagens indicam alternativa (mover alvo, outra mão, outro site).",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.02",
+            "AG-23.03"
+          ]
+        },
+        {
+          "id": "AG-23.07",
+          "title": "Adicionar painel de qualidade da pegada e penetração",
+          "acceptance": "Mostra score, dedos em contato, alertas e principais restrições.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.04",
+            "AG-23.05"
+          ]
+        },
+        {
+          "id": "AG-23.08",
+          "title": "Adicionar guias de ponto de pegada e direção de aproximação",
+          "acceptance": "Guias não entram em PNG final a menos que solicitadas.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.06",
+            "AG-23.07"
+          ]
+        },
+        {
+          "id": "AG-23.09",
+          "title": "Manter atalhos de undo/redo e atualizar render automaticamente",
+          "acceptance": "Uma operação gera um snapshot e uma renderização coerente.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.08"
+          ]
+        },
+        {
+          "id": "AG-23.10",
+          "title": "Testar uso de teclado, touch, mouse e estados de erro",
+          "acceptance": "O botão funciona sem JS escrito pelo usuário e não duplica efeitos.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-23.02",
+            "AG-23.03",
+            "AG-23.04",
+            "AG-23.05",
+            "AG-23.06",
+            "AG-23.07",
+            "AG-23.08",
+            "AG-23.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG23",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-23.10"
+        ]
+      }
+    },
+    {
+      "id": "AG24",
+      "title": "API pública do editor para autoencaixe e simulação",
+      "priority": "P0",
+      "depends_on": [
+        "AG20",
+        "AG22"
+      ],
+      "tasks": [
+        {
+          "id": "AG-24.01",
+          "title": "Criar cena.autoEncaixarObjeto como fachada pública",
+          "acceptance": "Aceita referência de objeto, manequim, mão e opções com validação.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG20",
+            "AG22"
+          ]
+        },
+        {
+          "id": "AG-24.02",
+          "title": "Criar cena.planejarEncaixe que retorna alternativas e scores",
+          "acceptance": "Método somente leitura não muda parâmetros nem objeto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.01"
+          ]
+        },
+        {
+          "id": "AG-24.03",
+          "title": "Criar cena.aplicarEncaixe que confirma solução por revisão",
+          "acceptance": "Aplica candidato válido sem alterar estado se revisão expirou.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.01"
+          ]
+        },
+        {
+          "id": "AG-24.04",
+          "title": "Criar m.autoSegurar e obj.autoEncaixarPor",
+          "acceptance": "Métodos delegam ao mesmo solucionador do motor em vez de regras duplicadas.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.01"
+          ]
+        },
+        {
+          "id": "AG-24.05",
+          "title": "Permitir tipo auto, pinca, potencia, gancho, lateral, tripode e apoio",
+          "acceptance": "Todas as classes são verificadas por geometria antes do vínculo.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.01"
+          ]
+        },
+        {
+          "id": "AG-24.06",
+          "title": "Expor modo manterObjeto, moverObjeto, aproximarBraco e modo combinado",
+          "acceptance": "Mudanças de objeto e braço obedecem permissões e limites.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.02",
+            "AG-24.03"
+          ]
+        },
+        {
+          "id": "AG-24.07",
+          "title": "Expor relatório detalhado, score, contatos, fallbacks e trajetórias",
+          "acceptance": "Resultado usa dados estruturados sem necessidade de interpretar texto de logs.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.04",
+            "AG-24.05"
+          ]
+        },
+        {
+          "id": "AG-24.08",
+          "title": "Validar opções sem estado global escondido e com rollback",
+          "acceptance": "Chamada em código interrompida preserva cena e histórico.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.06",
+            "AG-24.07"
+          ]
+        },
+        {
+          "id": "AG-24.09",
+          "title": "Atualizar cena.comandos e cena.capacidades com estado experimental",
+          "acceptance": "Descoberta da API não anuncia perfeito/exato sem confirmação.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.08"
+          ]
+        },
+        {
+          "id": "AG-24.10",
+          "title": "Testar paridade scripts do editor e clique em botão",
+          "acceptance": "Mesma entrada gera mesmo resultado geométrico e mesmos erros.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-24.02",
+            "AG-24.03",
+            "AG-24.04",
+            "AG-24.05",
+            "AG-24.06",
+            "AG-24.07",
+            "AG-24.08",
+            "AG-24.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG24",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-24.10"
+        ]
+      }
+    },
+    {
+      "id": "AG25",
+      "title": "Ferramentas MCP tipadas e integração de agentes",
+      "priority": "P0",
+      "depends_on": [
+        "AG22",
+        "AG24"
+      ],
+      "tasks": [
+        {
+          "id": "AG-25.01",
+          "title": "Adicionar acao auto_encaixar em preensao MCP ou ferramenta dedicada",
+          "acceptance": "Cliente pode solicitar encaixe com nomes/IDs de manequim e objeto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG22",
+            "AG24"
+          ]
+        },
+        {
+          "id": "AG-25.02",
+          "title": "Adicionar operacao planejar e listar candidatos como read-only",
+          "acceptance": "Chamada remota obtém preview sem executar mutação.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.01"
+          ]
+        },
+        {
+          "id": "AG-25.03",
+          "title": "Adicionar acao aplicar por token de revisão da cena",
+          "acceptance": "Cliente não aplica solução para versão da cena alterada.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.01"
+          ]
+        },
+        {
+          "id": "AG-25.04",
+          "title": "Adicionar schema de estilo, mãos, prioridade e tolerâncias",
+          "acceptance": "Entradas usam enums, limites e estruturas seguras compatíveis com Gemini.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.01"
+          ]
+        },
+        {
+          "id": "AG-25.05",
+          "title": "Adicionar resposta de score e contatos por falange em JSON",
+          "acceptance": "Resposta indica quais dedos tocaram e profundidade residual.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.01"
+          ]
+        },
+        {
+          "id": "AG-25.06",
+          "title": "Integrar com operacoes_lote e roteiro_declarativo sem eval",
+          "acceptance": "Agente pode autoencaixar em quadros e batches apenas por ações tipadas.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.02",
+            "AG-25.03"
+          ]
+        },
+        {
+          "id": "AG-25.07",
+          "title": "Adicionar capacidades e exemplos na busca search/fetch",
+          "acceptance": "Um agente descobre operações disponíveis sem adivinhar nomes.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.04",
+            "AG-25.05"
+          ]
+        },
+        {
+          "id": "AG-25.08",
+          "title": "Adicionar autorização, limites de CPU, tempo e tamanho de resultados",
+          "acceptance": "HTTP não permite scripts, DoS por otimização nem estado vazado.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.06",
+            "AG-25.07"
+          ]
+        },
+        {
+          "id": "AG-25.09",
+          "title": "Testar stdio, Streamable HTTP e pacote dist com mesma geometria",
+          "acceptance": "Resultado comparado entre três distribuições, com resposta determinística.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.08"
+          ]
+        },
+        {
+          "id": "AG-25.10",
+          "title": "Aprovar fluxo MCP integrado com uma única solicitação de agente",
+          "acceptance": "Comando pega cadeira, encaixa dedos, move braço e renderiza relatório válido.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-25.02",
+            "AG-25.03",
+            "AG-25.04",
+            "AG-25.05",
+            "AG-25.06",
+            "AG-25.07",
+            "AG-25.08",
+            "AG-25.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG25",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-25.10"
+        ]
+      }
+    },
+    {
+      "id": "AG26",
+      "title": "Diagnósticos, visualização matemática e observabilidade",
+      "priority": "P1",
+      "depends_on": [
+        "AG19",
+        "AG23",
+        "AG25"
+      ],
+      "tasks": [
+        {
+          "id": "AG-26.01",
+          "title": "Criar visualização de palma, eixos e alvos dos dedos em 3D",
+          "acceptance": "Exibe normais, tangentes, pontos e frames por mão.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG19",
+            "AG23",
+            "AG25"
+          ]
+        },
+        {
+          "id": "AG-26.02",
+          "title": "Criar overlay de penetração por cor/intensidade",
+          "acceptance": "Regiões vermelhas correspondem a profundidade medida, não mero decalque.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.01"
+          ]
+        },
+        {
+          "id": "AG-26.03",
+          "title": "Criar render de contatos por falange e painel de scores",
+          "acceptance": "Cada dedo/objeto possui identidade e distância exibida.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.01"
+          ]
+        },
+        {
+          "id": "AG-26.04",
+          "title": "Mostrar candidatos descartados e seus motivos",
+          "acceptance": "Relatório explica reach, pinça estreita, obstáculo e falha IK.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.01"
+          ]
+        },
+        {
+          "id": "AG-26.05",
+          "title": "Mostrar trajetória de aproximação e envelopes de colisão",
+          "acceptance": "Pode navegar entre waypoints e visualizar primeiro bloqueio.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.01"
+          ]
+        },
+        {
+          "id": "AG-26.06",
+          "title": "Registrar iterações de otimização e convergência numérica",
+          "acceptance": "Logs têm resíduo/tempo e não revelam dados privados.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.02",
+            "AG-26.03"
+          ]
+        },
+        {
+          "id": "AG-26.07",
+          "title": "Exibir diffs de pose de ombro, cotovelo, punho e dedos",
+          "acceptance": "Antes/depois numérico se relaciona com o efeito visual.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.04",
+            "AG-26.05"
+          ]
+        },
+        {
+          "id": "AG-26.08",
+          "title": "Incluir exportação de relatório JSON e atlas de diagnóstico",
+          "acceptance": "Teste pode anexar fotos, métricas e dump reprodutível.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.06",
+            "AG-26.07"
+          ]
+        },
+        {
+          "id": "AG-26.09",
+          "title": "Separar overlays de debug do render de produção",
+          "acceptance": "Camadas de depuração são opcionais e não vazam para imagem normal.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.08"
+          ]
+        },
+        {
+          "id": "AG-26.10",
+          "title": "Validar interpretação visual dos indicadores e dos logs",
+          "acceptance": "Todos os dados de debug reproduzem o resultado do solver.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-26.02",
+            "AG-26.03",
+            "AG-26.04",
+            "AG-26.05",
+            "AG-26.06",
+            "AG-26.07",
+            "AG-26.08",
+            "AG-26.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG26",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-26.10"
+        ]
+      }
+    },
+    {
+      "id": "AG27",
+      "title": "Suíte automática de geometria, IK, encaixe e regressão",
+      "priority": "P0",
+      "depends_on": [
+        "AG10",
+        "AG15",
+        "AG22",
+        "AG25"
+      ],
+      "tasks": [
+        {
+          "id": "AG-27.01",
+          "title": "Criar testes unitários para HandMetrics, HandFK e frames locais",
+          "acceptance": "Ambos os lados e biotipos apresentam dimensões reproduzíveis.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG10",
+            "AG15",
+            "AG22",
+            "AG25"
+          ]
+        },
+        {
+          "id": "AG-27.02",
+          "title": "Criar testes para signed distance e interpenetração",
+          "acceptance": "Casos toque/folga/penetração têm sinais e normais corretos.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.01"
+          ]
+        },
+        {
+          "id": "AG-27.03",
+          "title": "Criar testes de alcance e limites de IK com várias sementes",
+          "acceptance": "Soluções que extrapolam braço são rejeitadas ou melhoradas sem NaN.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.01"
+          ]
+        },
+        {
+          "id": "AG-27.04",
+          "title": "Criar teste de pinça polegar-indicador em copo fino",
+          "acceptance": "Polpas tocam faces opostas com espessura real e sem penetrar.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.01"
+          ]
+        },
+        {
+          "id": "AG-27.05",
+          "title": "Criar teste de potência/gancho em encosto e caixa",
+          "acceptance": "Dedos distribuem ao redor da região sem falanges dentro do sólido.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.01"
+          ]
+        },
+        {
+          "id": "AG-27.06",
+          "title": "Criar testes de pegada bilateral e colisão entre braços",
+          "acceptance": "Manter duas mãos não atravessa torso nem desloca cadeira por salto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.02",
+            "AG-27.03"
+          ]
+        },
+        {
+          "id": "AG-27.07",
+          "title": "Criar teste de rollback, preview e persistência",
+          "acceptance": "Falhas/cancelamento não deixam marca no estado e round-trip mantém solução.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.04",
+            "AG-27.05"
+          ]
+        },
+        {
+          "id": "AG-27.08",
+          "title": "Criar testes de MCP, editor, UI e widget de autoencaixe",
+          "acceptance": "A mesma cena tem resultados equivalentes em todas as interfaces.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.06",
+            "AG-27.07"
+          ]
+        },
+        {
+          "id": "AG-27.09",
+          "title": "Adicionar testes adversariais e fuzz determinístico",
+          "acceptance": "Nan, objetos extremos e combinações impraticáveis retornam erros seguros.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.08"
+          ]
+        },
+        {
+          "id": "AG-27.10",
+          "title": "Exigir aprovação da matriz por integração contínua",
+          "acceptance": "Falha em qualquer classe bloqueia marcação dos gates do AutoGrip.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-27.02",
+            "AG-27.03",
+            "AG-27.04",
+            "AG-27.05",
+            "AG-27.06",
+            "AG-27.07",
+            "AG-27.08",
+            "AG-27.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG27",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-27.10"
+        ]
+      }
+    },
+    {
+      "id": "AG28",
+      "title": "Desempenho, robustez numérica e qualidade perceptual",
+      "priority": "P0",
+      "depends_on": [
+        "AG17",
+        "AG20",
+        "AG27"
+      ],
+      "tasks": [
+        {
+          "id": "AG-28.01",
+          "title": "Definir orçamento de tempo por clique, preview e frame",
+          "acceptance": "Benchmarks têm alvo de latência e limite duro explícitos por perfil.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG17",
+            "AG20",
+            "AG27"
+          ]
+        },
+        {
+          "id": "AG-28.02",
+          "title": "Medir custo da matriz por número de dedos, sites e objetos",
+          "acceptance": "Relatório identifica escalabilidade por N candidatos e M colisores.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.01"
+          ]
+        },
+        {
+          "id": "AG-28.03",
+          "title": "Implementar cache de geometria da mão, regiões e broadphase",
+          "acceptance": "Mudança de pose invalida apenas partes afetadas.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.01"
+          ]
+        },
+        {
+          "id": "AG-28.04",
+          "title": "Aplicar poda por alcance e dimensão antes de IK fino",
+          "acceptance": "Candidatos obviamente impossíveis são rejeitados com custo baixo.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.01"
+          ]
+        },
+        {
+          "id": "AG-28.05",
+          "title": "Aplicar warm-start e interrupção por qualidade mínima atingida",
+          "acceptance": "Encaixe simples usa orçamento curto sem sacrificar critério geométrico.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.01"
+          ]
+        },
+        {
+          "id": "AG-28.06",
+          "title": "Implementar processamento assíncrono cancelável sem UI bloqueada",
+          "acceptance": "Operação pesada tem progresso/cancelamento e nunca congela navegador.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.02",
+            "AG-28.03"
+          ]
+        },
+        {
+          "id": "AG-28.07",
+          "title": "Definir fallback hierárquico qualidade alta, média e falha",
+          "acceptance": "Nenhum modo falha silenciosamente ou declara encaixe perfeito sem contato.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.04",
+            "AG-28.05"
+          ]
+        },
+        {
+          "id": "AG-28.08",
+          "title": "Testar determinismo em Node e navegadores suportados",
+          "acceptance": "Diferenças de ponto flutuante não causam falhas ou escolhas instáveis.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.06",
+            "AG-28.07"
+          ]
+        },
+        {
+          "id": "AG-28.09",
+          "title": "Executar atlas visual de mão, dedos e objetos sob múltiplas câmeras",
+          "acceptance": "Nenhuma falha visual importante é ocultada por câmera frontal única.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.08"
+          ]
+        },
+        {
+          "id": "AG-28.10",
+          "title": "Validar limite de memória, tempo e qualidade em hardware modesto",
+          "acceptance": "Benchmarks/CI respeitam teto configurado e produzem relatório PASS/FAIL.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-28.02",
+            "AG-28.03",
+            "AG-28.04",
+            "AG-28.05",
+            "AG-28.06",
+            "AG-28.07",
+            "AG-28.08",
+            "AG-28.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG28",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-28.10"
+        ]
+      }
+    },
+    {
+      "id": "AG29",
+      "title": "Cenários finais, documentação e release controlado",
+      "priority": "P0",
+      "depends_on": [
+        "AG23",
+        "AG24",
+        "AG25",
+        "AG26",
+        "AG28"
+      ],
+      "tasks": [
+        {
+          "id": "AG-29.01",
+          "title": "Executar cenário ponta a ponta cadeira segurada pela mão direita",
+          "acceptance": "Um botão posiciona palma/5 dedos e braço e comprova ausência de interpenetração.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG23",
+            "AG24",
+            "AG25",
+            "AG26",
+            "AG28"
+          ]
+        },
+        {
+          "id": "AG-29.02",
+          "title": "Executar cenário caneta ou objeto fino segurado em pinça",
+          "acceptance": "Polegar-indicador tocam superfícies opostas sem cruzar falanges.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.01"
+          ]
+        },
+        {
+          "id": "AG-29.03",
+          "title": "Executar cenário copo com pegada de potência ou tripode",
+          "acceptance": "Diâmetro compatível produz contato estável geometrico e visual coerente.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.01"
+          ]
+        },
+        {
+          "id": "AG-29.04",
+          "title": "Executar cenário objeto largo demais ou fora de alcance",
+          "acceptance": "Sistema retorna inviavel sem distorcer mão ou teletransportar cadeira.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.01"
+          ]
+        },
+        {
+          "id": "AG-29.05",
+          "title": "Executar cenário duas mãos transportando cadeira e soltando",
+          "acceptance": "Vínculos preservam peça, troca de mão e queda com continuidade.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.01"
+          ]
+        },
+        {
+          "id": "AG-29.06",
+          "title": "Executar cenário objeto perto de peito, parede e mesa",
+          "acceptance": "Solução evita obstáculo ou falha justificadamente sem interpenetração.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.02",
+            "AG-29.03"
+          ]
+        },
+        {
+          "id": "AG-29.07",
+          "title": "Executar cenários com diferentes biotipos, tamanhos de mão e lados",
+          "acceptance": "Mesmos objetos exigem configuração de dedos derivada da anatomia individual.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.04",
+            "AG-29.05"
+          ]
+        },
+        {
+          "id": "AG-29.08",
+          "title": "Confirmar paridade entre botão, editor JS, MCP source/HTTP/dist",
+          "acceptance": "Saída, score, contatos, erro e JSON são semanticamente iguais.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.06",
+            "AG-29.07"
+          ]
+        },
+        {
+          "id": "AG-29.09",
+          "title": "Publicar docs, presets, exemplos e política de limitações",
+          "acceptance": "Usuário sabe usar e entende que não há forças reais garantidas.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.08"
+          ]
+        },
+        {
+          "id": "AG-29.10",
+          "title": "Aprovar gates de segurança, visual, performance e testes antes de merge",
+          "acceptance": "Feature flag é liberada apenas com os 29 gates anteriores aprovados.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-29.02",
+            "AG-29.03",
+            "AG-29.04",
+            "AG-29.05",
+            "AG-29.06",
+            "AG-29.07",
+            "AG-29.08",
+            "AG-29.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG29",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-29.10"
+        ]
+      }
+    }
+  ]
+}
