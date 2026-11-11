@@ -623,7 +623,9 @@ const cena={
     if(!plano||!plano.objeto||!plano.manequim||!plano.opcoes)
       throw Error("Passe o plano devolvido por cena.planejarEncaixe.");
     atualizarApoios();
-    const o=acharObjeto(plano.objeto),it=donoAuto(plano.manequim);
+    const o=acharObjeto(plano.objeto);
+    const owner=SCN.list.find(m=>m.id===(o?.gripV3?.mannequinId??o?.grip?.mannequinId));
+    const it=donoAuto(plano.manequim??owner?.name);
     if(!o||!it||revisaoAutoGrip(it,o)!==plano.revisao)
       throw Error("A cena mudou; planeje a pegada novamente.");
     return cena.autoEncaixarObjeto(o.id,{...plano.opcoes,manequim:it.name});
