@@ -3975,7 +3975,12 @@
       "bilateral_transfer_contact_reference",
       "optional_horizontal_object_microadjust",
       "microadjust_collision_filter",
-      "microadjust_optin_ui_widget_mcp"
+      "microadjust_optin_ui_widget_mcp",
+      "post_grip_thumb_index_opposed_normals",
+      "microadjust_discrete_swept_object_and_rig_checks",
+      "optional_arm_joint_path_interpolation",
+      "path_candidate_fallback",
+      "path_diagnostics_mcp_ui_widget"
     ],
     "verified": {
       "static_syntax": "passed_on_changed_modules",
@@ -3987,16 +3992,19 @@
       "merged": "no",
       "deployed": "no",
       "isolated_gripsite_roundtrip": "passed_with_simulated_transforms",
-      "isolated_microadjust": "passed_with_simulated_colliders"
+      "isolated_microadjust": "passed_with_simulated_colliders",
+      "isolated_swept_microadjust": "passed_with_mock_colliders",
+      "isolated_arm_path": "passed_with_mock_geometry",
+      "actual_engine_path_tests": "committed_not_executed"
     },
     "remaining_priority": [
       "run_real_integration_tests",
       "fix_runner_unavailable",
       "rebuild_mcp_dist",
-      "verify_persistent_gripsite_and_secondary_palm_in_real_engine",
+      "validate_trajectory_checks_in_real_rig",
       "improve_true_joint_ik",
-      "reliable_continuous_collision_avoidance",
-      "object_full_6dof_adjustment",
+      "CCD_exact_collision",
+      "full_6dof_object_adjustment",
       "force_and_friction_simulation",
       "release_gates"
     ]
