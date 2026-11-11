@@ -11,6 +11,8 @@ import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {rigidDirection,objectRigidPose,rigidPoint} from "../engine/rigid-transform.js";
 import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
 
+// Isolamento lexical: o headless concatena os arquivos de cena num único escopo.
+const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes}=(()=>{
 const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
 const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
@@ -273,4 +275,6 @@ function resumirAutoGrip(result){
    escolha:format(q),segunda:q.secundaria?format(q.secundaria):null,
    alternativas:result.candidatos,limitacoes:result.limitacoes};
 }
+return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes};
+})();
 export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes};
