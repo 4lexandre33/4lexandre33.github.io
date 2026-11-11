@@ -59,17 +59,18 @@ function validarOpcoes(opts={}){
    segunda:opts.segunda===true,animar:opts.animar===true,solucionador:"geometrico-v1"};
 }
 function medirMao(p,side){
- const A=armDims(p),LH=A.LH,k=A.k;
+ const A=armDims(p),k=A.k*.95*p.armLen;
+ const fingerRadius={polegar:.09,indicador:.075,"médio":.078,anelar:.073,"mínimo":.064};
  const digits=juntasDedos(p,side).map(d=>({nome:d.nome,
    comprimento:d.pts.slice(1).reduce((total,pt,j)=>total+dist(pt,d.pts[j]),0),
-   raio:(d.nome==="polegar"?.09:.078)*k}));
+   raio:fingerRadius[d.nome]*k}));
 
  // Medida empírica do vão polegar/indicador com a própria FK do manequim.
  const opened={...p},pinched={...p};
  aplicarGesto(opened,side,"aberta");aplicarGesto(pinched,side,"pinca");
  const span=q=>{const f=juntasDedos(q,side);
    return dist(f[0].pts[3],f[1].pts[3])};
- return {comprimentoPalma:LH,larguraPalma:.74*k,espessuraPalma:.47*k,
+ return {comprimentoPalma:.96*k,larguraPalma:.74*k,espessuraPalma:.26*k,
    alcanceBraco:A.L1+A.L2,aberturaEstimada:.74*k,escala:k,
    aberturaPincaAberta:span(opened),aberturaPincaFechada:span(pinched),
    dedos:digits};
@@ -137,7 +138,8 @@ function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
  return {residual:dist(H.T,target),cost:err,baseResidual:base,frame:H};
 }
 function pointContacts(p,side,H,solids,metric){
- const A=armDims(p),radius=.074*A.k;
+ const scale=armDims(p).k*.95*p.armLen;
+ const fingerRadii=[.09,.075,.078,.073,.064];
  const joints=juntasDedos(p,side);
  return joints.map((finger,i)=>{
    let best={distancia:Infinity,normal:[0,0,1],ponto:null,segmento:0};
@@ -150,7 +152,7 @@ function pointContacts(p,side,H,solids,metric){
        const world=rigidPoint(H,[local[0],local[1]+A.LH*.5,local[2]]);
        for(const solid of solids){
          const hit=pointSolid(world,solid.shape);
-         const ds=hit.d-radius*(1-.07*j);
+         const ds=hit.d-fingerRadii[i]*scale*(1-.10*(j-1));
          if(ds<best.distancia)best={distancia:ds,normal:hit.n,ponto:world,segmento:j};
          worstPen=Math.max(worstPen,-ds);
        }
@@ -259,7 +261,7 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
  const normal=norm(rigidDirection(objFrame,site.normal||[0,0,1]));
  // A mão é posicionada na superfície externa da região e não no interior
  // de uma caixa geométrica como a espessura do encosto da cadeira.
- const clearance=.27*A.k+(o.tipo==="cadeira"&&/^encosto/.test(site.id)?.18:0);
+ const clearance=.27*A.k*p.armLen+(o.tipo==="cadeira"&&/^encosto/.test(site.id)?.18:0);
  const target=add(site.mundo,normal,clearance);
  const old=handFrameV3(it,side,ground);
  const distance=dist(old.T,site.mundo);
