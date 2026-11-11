@@ -22,6 +22,9 @@
     #gm-root button.on{border-color:var(--accent);color:var(--accent);font-weight:600}
     #gm-root button.prim{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
     #gm-root button:disabled{opacity:.5;cursor:default}
+    #gm-root .grip{align-items:center}
+    #gm-root .grip input,#gm-root .grip select{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--rule);border-radius:7px;padding:5px 6px;max-width:140px}
+    #gm-root .grip label{font-size:12px;color:var(--muted)}
     #gm-root .orb{align-items:center}
     #gm-root .orb .rot{font-size:12px;color:var(--muted);margin-right:4px}
     #gm-root .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--rule)}
@@ -40,6 +43,17 @@
     <div class="leg" id="gm-leg" hidden></div>
     <div class="tiras" id="gm-tiras" hidden></div>
     <div class="orb" id="gm-orb" hidden></div>
+    <div class="orb grip" id="gm-grip" hidden>
+      <label>Objeto <input id="gm-grip-nome" type="text" placeholder="Cadeira 1" aria-label="Nome do objeto"/></label>
+      <label>Mão <select id="gm-grip-mao"><option value="direita">Direita</option><option value="esquerda">Esquerda</option></select></label>
+      <label>Ponto <input id="gm-grip-site" type="text" value="encostoTopo" aria-label="GripSite"/></label>
+      <label><input id="gm-grip-segunda" type="checkbox"/> 2ª mão</label>
+      <button type="button" id="gm-grip-pegar">Segurar</button>
+      <button type="button" id="gm-grip-trocar">Trocar mão principal</button>
+      <label>Soltar <select id="gm-grip-modo"><option value="manter">Manter</option><option value="pousar">Pousar</option><option value="chao">Chão</option><option value="queda">Queda</option></select></label>
+      <button type="button" id="gm-grip-soltar">Soltar</button>
+      <button type="button" id="gm-grip-simular">Simular 2 s</button>
+    </div>
     <div class="pags" id="gm-pags"></div>
     <div class="bar"><span class="meta" id="gm-meta"></span><button type="button" class="prim" id="gm-open">Abrir no GeoMannequin</button></div>
   </div>
@@ -82,6 +96,8 @@
     var pg=$("gm-pags");pg.innerHTML="";((g&&g.paginas)||[]).forEach(function(src,i){var m=el("img",{alt:"Página "+(i+1)});m.src=src;pg.appendChild(m)});
     /* órbita: só na imagem da cena, quando o ChatGPT deixa o widget chamar ferramentas */
     var ob=$("gm-orb");ob.innerHTML="";var pode=!!(O().callTool)&&g&&g.tipo==="imagem";ob.hidden=!pode;
+    $("gm-grip").hidden=!pode;
+    Array.prototype.forEach.call($("gm-grip").querySelectorAll("button"),function(b){b.disabled=ocupado});
     if(pode){ob.appendChild(el("span",{"class":"rot"},"Girar em volta:"));
       VISTAS.forEach(function(v){var b=el("button",{type:"button"},v[0]);var az=g.vista&&typeof g.vista.azimute==="number"?g.vista.azimute:null;if(az!==null&&Math.abs(((v[1]-az+540)%360)-180)<1)b.className="on";b.onclick=function(){orbitar(v[1],null)};ob.appendChild(b)});
       [["⟲ 15°",15,0],["⟳ 15°",-15,0],["↑ 10°",0,10],["↓ 10°",0,-10]].forEach(function(p){var b=el("button",{type:"button"},p[0]);b.onclick=function(){var v=(g.vista||{});orbitar((v.azimute||0)+p[1],p[2]?(v.elevacao||0)+p[2]:null)};ob.appendChild(b)});
@@ -99,6 +115,36 @@
       if(src)local={tipo:"imagem",titulo:"GeoMannequin",imagem:src,vista:sc.vista||(meta.gm&&meta.gm.vista),link:sc.link||d.link};
     }).catch(function(){$("gm-meta").textContent="Não foi possível girar a câmera aqui."}).then(function(){ocupado=false;desenhar()});
   }
+  function executarGrip(tool,args){
+    if(ocupado||!O().callTool)return;
+    ocupado=true;desenhar();
+    var linkAnterior=dados().link;
+    O().callTool(tool,args).then(function(res){
+      if(res&&res.isError)throw Error((res.content||[]).filter(function(x){return x.type==="text"}).map(function(x){return x.text}).join("; ")||"Operação recusada");
+      return O().callTool("renderizar",{enquadrar:false});
+    }).then(function(res){
+      var sc=(res&&(res.structuredContent||res.result&&res.result.structuredContent))||{};
+      var meta=(res&&(res._meta||res.meta))||{};
+      var src=sc.imagem_widget||(meta.gm&&meta.gm.imagem)||meta.imagem;
+      if(!src)throw Error("Renderizador não devolveu imagem.");
+      local={tipo:"imagem",titulo:"GeoMannequin",imagem:src,vista:meta.gm&&meta.gm.vista,link:sc.link||linkAnterior};
+    }).catch(function(err){$("gm-meta").textContent="Falha na ação: "+err.message})
+      .then(function(){ocupado=false;desenhar()});
+  }
+  function camposGrip(){return {objeto:$("gm-grip-nome").value.trim(),
+    mao:$("gm-grip-mao").value,ponto:$("gm-grip-site").value.trim()||"auto"}}
+  $("gm-grip-pegar").onclick=function(){
+    var a=camposGrip();if(!a.objeto){$("gm-meta").textContent="Informe o objeto.";return}
+    a.acao="segurar";a.segunda=$("gm-grip-segunda").checked;a.modo="encaixar";a.reach=8;
+    executarGrip("preensao",a);
+  };
+  $("gm-grip-trocar").onclick=function(){
+    var a=camposGrip();if(a.objeto)executarGrip("preensao",{acao:"transferir",objeto:a.objeto,mao:a.mao});
+  };
+  $("gm-grip-soltar").onclick=function(){
+    var a=camposGrip();if(a.objeto)executarGrip("preensao",{acao:"soltar",objeto:a.objeto,modo:$("gm-grip-modo").value});
+  };
+  $("gm-grip-simular").onclick=function(){executarGrip("fisica",{acao:"simular",duracao:2,passo:1/60})};
   $("gm-ant").onclick=function(){var n=itens(dados().g).length;est.item=(est.item-1+n)%n;guardar();desenhar()};
   $("gm-prox").onclick=function(){var n=itens(dados().g).length;est.item=(est.item+1)%n;guardar();desenhar()};
   $("gm-full").onclick=function(){try{if(O().requestDisplayMode)O().requestDisplayMode({mode:"fullscreen"})}catch(e){}};
