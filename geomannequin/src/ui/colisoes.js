@@ -147,7 +147,8 @@ export function iniciarColisoes() {
       ponto:gripChoice?.value||"auto",reach:Math.max(12,Number($("colV3Reach")?.value||5)),
       preservarObjeto:!$("colAutoMoverObjeto")?.checked,
       permitirMoverObjeto:!!$("colAutoMoverObjeto")?.checked,
-      maxDeslocamento:.24,exigirContato:true,maxTempoMs:1400};
+      maxDeslocamento:.24,exigirContato:true,maxTempoMs:1400,
+      verificarTrajetoria:!!$("colAutoTrajetoria")?.checked,passosTrajetoria:5};
   }
   function resumoAutoGrip(r){
     const q=r.escolha||r.qualidade;
