@@ -64,6 +64,14 @@ MCP, ferramenta \`preensao\` (campos de chamada, não comando JavaScript):
 {"acao":"reencaixar","objeto":"Cadeira 1","mao":"auto","pegada":"gancho"}
 \`\`\`
 
+## Etapa adicional: pinça e caminho de aproximação (11/11/2026)
+
+- A checagem **pós-vínculo** agora guarda o melhor contato por dedo e usa a normal das superfícies para confirmar que polegar e indicador permanecem em oposição geométrica nas pegadas `pinca`, `tripode` e `lateral`. O inspetor de pegada também exige essa condição.
+- O microajuste X/Z deixou de consultar apenas o destino. A função pura `verificarMicroDeslocamentoAutoGrip` testa passos intermediários contra móveis, outros manequins e o corpo protegido do proprietário. Retorna tipo de obstáculo, nome e primeiro passo bloqueado. Esse teste é discreto; pode não perceber um contato ocorrido exclusivamente entre amostras.
+- A função `validarAproximacaoAutoGrip` interpola uma pose articular inicial e final em 3 a 8 amostras, verifica interpenetração e pode reprovar candidatos. `verificarTrajetoria:true` é **opt-in** (padrão desligado). Não há animação nem caminho articulado com CCD exato.
+- Interfaces atualizadas: editor `cena.autoEncaixarObjeto(...,{verificarTrajetoria:true,passosTrajetoria:5})`; ferramenta MCP `preensao` em `planejar/auto_encaixar`; storyboard declarativo; checkboxes do painel e widget.
+- **Verificação feita apenas em testes isolados:** injeção simulada de obstáculo intermediário X/Z detectou bloqueio no passo 2/4 e liberou a direção contrária; trajetória articular simulada detectou bloqueio no passo 3/6 e liberou uma pose sem colisão. Testes com o motor real foram escritos em `testes/grip-auto.mjs` e `mcp/test/control.mjs`, mas **não executados** no CI.
+
 ## Validações feitas e o que NÃO foi comprovado
 
 - **APROVADO apenas em checagens isoladas:** parsing sintático por V8 de módulos alterados; execução do planejador em V8 com dependências simuladas para gesto gancho, seleção bilateral em sítios distintos, não mutação do modelo original, checagem simulada de colisão e rejeição de opções inválidas; parsing do JS do widget. Também foram executados testes isolados do round-trip de GripSites com rotação e do microajuste X/Z opt-in, usando colisores simulados; não substituem testes reais.
