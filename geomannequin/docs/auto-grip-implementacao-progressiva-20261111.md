@@ -72,6 +72,16 @@ MCP, ferramenta \`preensao\` (campos de chamada, não comando JavaScript):
 - Interfaces atualizadas: editor `cena.autoEncaixarObjeto(...,{verificarTrajetoria:true,passosTrajetoria:5})`; ferramenta MCP `preensao` em `planejar/auto_encaixar`; storyboard declarativo; checkboxes do painel e widget.
 - **Verificação feita apenas em testes isolados:** injeção simulada de obstáculo intermediário X/Z detectou bloqueio no passo 2/4 e liberou a direção contrária; trajetória articular simulada detectou bloqueio no passo 3/6 e liberou uma pose sem colisão. Testes com o motor real foram escritos em `testes/grip-auto.mjs` e `mcp/test/control.mjs`, mas **não executados** no CI.
 
+## Endurecimento adicional: importação, leitura pura e escala anatômica (11/11/2026)
+
+- **Exportações ESM:** corrigida a lista pública de `grip-auto.js`, que não exportava duas funções já existentes (`verificarMicroDeslocamentoAutoGrip` e `validarAproximacaoAutoGrip`). O teste novo `testes/autogrip-exports.mjs` importa realmente o módulo, o barrel e o MCP headless, confirma dez funções públicas, APIs da cena e operações somente leitura.
+- **Pureza da prévia:** `cena.planejarEncaixe`, `cena.inspecionarAutoGrip` e a verificação de revisão em `cena.aplicarEncaixe` não invocam mais `atualizarApoios()` durante consultas, para não movimentar objetos ou mãos sem autorização.
+- **Mão e falanges por biotipo:** os cálculos de largura, espessura, raios de dedos e encaixe agora usam a escala das próprias malhas `buildPalm/buildFingers` (incluindo `armLen`). `Contact V2` passou a usar essa escala para os colisores finos, com raios diferenciados por dedo. O teste de regressão verifica crescimento de dimensões e colisores entre dois comprimentos de braço.
+- **Orientação palmar:** corrigido o sinal da direção de fechamento (`-side*X` na FK real de `dirsDedo`) para não buscar contato pelo lado oposto. Teste de regressão de esquerda/direita adicionado.
+- **Desempenho:** `pointContacts` agora aceita um índice de dedo; o refinamento de uma falange não precisa recalcular o contato dos cinco dedos em cada iteração.
+
+Essas mudanças foram salvas no código-fonte, mas ainda **não tiveram execução integrada aprovada**. Testes reais foram adicionados e registrados no workflow, mas não se deve marcar gates concluídos com base apenas em parsing ou testes com stubs.
+
 ## Validações feitas e o que NÃO foi comprovado
 
 - **APROVADO apenas em checagens isoladas:** parsing sintático por V8 de módulos alterados; execução do planejador em V8 com dependências simuladas para gesto gancho, seleção bilateral em sítios distintos, não mutação do modelo original, checagem simulada de colisão e rejeição de opções inválidas; parsing do JS do widget. Também foram executados testes isolados do round-trip de GripSites com rotação e do microajuste X/Z opt-in, usando colisores simulados; não substituem testes reais.
