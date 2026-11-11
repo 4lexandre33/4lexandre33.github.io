@@ -20,7 +20,8 @@ const command=z.object({
   yaw:coord,pitch:coord,roll:coord,segundos:N.min(0).max(.25).optional(),
   mao:z.enum(["direita","esquerda","auto","ambas"]).optional(),
   pegada:z.enum(["auto","pinca","potencia","gancho","tripode","lateral","apoio"]).optional(),
-  preservarObjeto:z.boolean().optional(),
+  preservarObjeto:z.boolean().optional(),permitirMoverObjeto:z.boolean().optional(),
+  maxDeslocamento:N.min(.05).max(.6).optional(),
   lado:z.enum(["frente","costas","esquerda","direita","3/4 esquerda","3/4 direita"]).optional(),
   area:z.string().max(80).optional(),
   ponto:z.string().max(40).optional(),
@@ -46,6 +47,7 @@ function apply(w,a){
  case "auto_encaixar":w.cena.autoEncaixarObjeto(req(a.alvo,"objeto"),{
    manequim:a.nome,mao:a.mao??"auto",pegada:a.pegada??"auto",
    ponto:a.ponto??"auto",reach:a.reach??12,preservarObjeto:a.preservarObjeto!==false,
+   permitirMoverObjeto:!!a.permitirMoverObjeto,maxDeslocamento:a.maxDeslocamento,
    maxTempoMs:750
   });break;
  case "soltar":w.cena.soltarObjeto(req(a.alvo,"objeto"),{modo:a.modo??"manter"});break;
