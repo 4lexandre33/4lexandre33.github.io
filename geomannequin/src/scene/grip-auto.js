@@ -13,7 +13,7 @@ import {rigidDirection,objectRigidPose,rigidPoint,rigidInverse} from "../engine/
 import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
 
 // Isolamento lexical: o headless concatena os arquivos de cena num único escopo.
-const {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip}=(()=>{
+const {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip}=(()=>{
 const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
 const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
@@ -445,6 +445,42 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
    limitacoes:["Geometria de caixas/cilindros e colisores aproximados.",
      "A validação considera a pose final; trajetória contínua e força de agarre não são resolvidas."]};
 }
+/* Verifica deslocamento horizontal em pontos intermediários (amostragem
+ * conservadora). Função pura: não altera objeto, dono, filhos ou objetos da cena.
+ * Retorno detalhado pode ser registrado nos testes e na API de diagnóstico.
+ */
+function verificarMicroDeslocamentoAutoGrip(o,shift,ground,scene={},owner,{passo=.06,tolerancia=.03}={}){
+ if(!owner?.params||!o||![shift?.dx,shift?.dz].every(Number.isFinite))
+   throw Error("Microdeslocamento exige objeto, manequim e deslocamento finito.");
+ const obstructions=(scene.objetos||[]).filter(q=>q.id!==o.id);
+ const otherRigs=(scene.manequins||[]).filter(m=>m.id!==owner.id)
+   .map(m=>colliderRig({...m.params,wy:ground-restGround(m.params)},{level:"coarse"}));
+ const ownerTorso=colliderRig({...owner.params,wy:ground-restGround(owner.params)},{level:"coarse"});
+ const protectedCaps=ownerTorso.caps.filter(c=>!/^(mao|antebraco|braco|cotovelo)/.test(c.nome));
+ const bodies=[...otherRigs.map(r=>r.caps),protectedCaps];
+ const divisions=Math.max(4,Math.ceil(Math.hypot(shift.dx,shift.dz)/passo));
+ for(let step=1;step<=divisions;step++){
+   const alpha=step/divisions;
+   const intermediate={...o,x:o.x+shift.dx*alpha,z:o.z+shift.dz*alpha};
+   const collision=obstructions.find(q=>colisaoEntreObjetos(intermediate,q,ground,tolerancia).length);
+   if(collision)return {livre:false,tipo:"objeto",bloqueador:collision.nome||collision.tipo,
+     passo:step,total:divisions,motivo:"Trajetória atravessa o objeto "+(collision.nome||collision.tipo)+"."};
+   const solids=colliderObject(intermediate,ground);
+   for(let i=0;i<bodies.length;i++)for(const c of bodies[i]){
+     const box=capsuleBox(c);
+     for(const solid of solids){
+       if(!overlaps(box,solid.box,tolerancia))continue;
+       const hit=capsuleSolidContact(c,solid.shape,solid.id);
+       if(hit.prof>tolerancia)
+         return {livre:false,tipo:"manequim",bloqueador:i<otherRigs.length?
+             (scene.manequins||[]).filter(m=>m.id!==owner.id)[i].name:owner.name,
+           passo:step,total:divisions,penetracao:hit.prof,
+           motivo:"Trajetória atravessa um manequim."};
+     }
+   }
+ }
+ return {livre:true,passos:divisions,distancia:Math.hypot(shift.dx,shift.dz)};
+}
 /* Microajuste opcional, conservador e somente horizontal. Não movimenta
  * objeto de fato no planejamento; testa cópias deslocadas em X/Z.
  * Rejeita objetos apoiados, segurados, com filhos ou em colisão com móveis.
@@ -466,41 +502,16 @@ function planejarAutoGripComAjuste(it,o,ground,opts={},scene={}){
    [.7,.7],[.7,-.7],[-.7,.7],[-.7,-.7]
  ];
  const rejected=[],fallback=[];
- const obstacles=(scene.objetos||[]).filter(q=>q.id!==o.id);
- const otherRigs=(scene.manequins||[]).filter(m=>m.id!==it.id)
-   .map(m=>colliderRig({...m.params,wy:ground-restGround(m.params)},{level:"coarse"}));
- const ownerTorso=colliderRig({...it.params,wy:ground-restGround(it.params)},{level:"coarse"});
- const protectedCaps=ownerTorso.caps.filter(c=>
-   !/^(mao|antebraco|braco|cotovelo)/.test(c.nome));
- const bodies=[...otherRigs.map(r=>r.caps),protectedCaps];
- const blockedAlong=(shift)=>{
-   // Amostrar todo o caminho (e não só a posição final). É um swept test
-   // discreto conservador, NÃO CCD matematicamente exato.
-   const divisions=Math.max(4,Math.ceil(Math.hypot(shift.dx,shift.dz)/.06));
-   for(let step=1;step<=divisions;step++){
-     const alpha=step/divisions;
-     const intermediate={...o,x:o.x+shift.dx*alpha,z:o.z+shift.dz*alpha};
-     if(obstacles.some(q=>colisaoEntreObjetos(intermediate,q,ground,.03).length))
-       return "A trajetória atravessa outro objeto (passo "+step+"/"+divisions+").";
-     const solids=colliderObject(intermediate,ground);
-     for(const caps of bodies)for(const c of caps){
-       const box=capsuleBox(c);
-       for(const solid of solids){
-         if(!overlaps(box,solid.box,.03))continue;
-         if(capsuleSolidContact(c,solid.shape,solid.id).prof>.03)
-           return "A trajetória atravessa um manequim (passo "+step+"/"+divisions+").";
-       }
-     }
-   }
-   return null;
- };
  const deadline=since+opt.maxTempoMs;
  for(const [dx,dz] of trials){
    const rem=deadline-Date.now();if(rem<200)break;
    const shift={dx:dx*opt.maxDeslocamento,dz:dz*opt.maxDeslocamento};
    if(Math.abs(o.x+shift.dx)>40||Math.abs(o.z+shift.dz)>40)continue;
-   const blocked=blockedAlong(shift);
-   if(blocked){rejected.push({deslocamento:shift,motivo:blocked});continue}
+   const verificacao=verificarMicroDeslocamentoAutoGrip(o,shift,ground,scene,it);
+   if(!verificacao.livre){
+     rejected.push({deslocamento:shift,motivo:verificacao.motivo,
+       bloqueador:verificacao.bloqueador,passo:verificacao.passo});continue;
+   }
    const moved={...o,x:o.x+shift.dx,z:o.z+shift.dz};
    const outcome=planejarAutoGrip(it,moved,ground,{
      ...baseOptions,maxSites:Math.min(baseOptions.maxSites,3),
@@ -578,6 +589,6 @@ function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,toleranci
    palmaContato,contatos,contatosPorDedo:dedos,pontosDedo,oposicaoPinça};
 }
 
-return {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
+return {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip};
 })();
 export {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
