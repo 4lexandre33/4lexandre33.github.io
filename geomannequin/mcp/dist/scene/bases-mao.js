@@ -1,4 +1,4 @@
-import { aplicarGesto, armDims, juntasDedos, rigidCompose, rigidFrame, rigidInverse, setRigidObjectPose, restGround, normalizarPerfil, gripSite, colliderRig, colliderObject, manifoldObject, colisaoEntreObjetos, partesDoObjeto, rotM } from "../engine/index.js";
+import { aplicarGesto, armDims, juntasDedos, rigidCompose, rigidFrame, rigidInverse, rigidPoint, pointSolid, setRigidObjectPose, restGround, normalizarPerfil, gripSite, colliderRig, colliderObject, manifoldObject, colisaoEntreObjetos, partesDoObjeto, rotM } from "../engine/index.js";
 import { medirMao } from "./grip-auto.js";
 import { beginRigidGrip, handFrameV3 } from "./grip-v3.js";
 import { adicionarObjeto, removerObjeto } from "./cenario.js";
@@ -25,6 +25,65 @@ function medirBaseMao(params,side){
   }
   if(!(melhor.raio>0))throw Error("Sem espaço livre na mão para esta base.");
   return {...melhor,comprimento:medidas.larguraPalma,pose};
+}
+
+// Ajuste local com o braço imóvel. Avaliar as falanges na seção da pega
+// e rejeitar candidatos que introduzam penetração na peça inteira.
+function ajustarFalangesNaBase(it,side,o,ground){
+  const p=it.params,lado=side===1?"L":"R",H=handFrameV3(it,side,ground);
+  const altura=armDims(p).LH/2,local=gripSite(o,"baseMao").local;
+  const extensao=["cadeiraVazada","mesaComAlca"].includes(o.tipo)?o.larg:o.tipo==="espada"?1.4:o.alt;
+  const guia=partesDoObjeto({...o,_guiaPega:local,comprimentoPega:extensao},ground);
+  const corpo=partesDoObjeto(o,ground),metricas=medirMao(p,side);
+  const dist=(v,solidos)=>solidos.reduce((m,b)=>Math.min(m,pointSolid(v,b).d),Infinity);
+  const codigos=["Th","In","Me","An","Mi"],resultado=[];
+  for(let dedo=0;dedo<codigos.length;dedo++){
+    const raio=metricas.dedos[dedo].raio;
+    function avaliar(){
+      const ps=juntasDedos(p,side)[dedo].pts.map(q=>rigidPoint(H,[q[0],q[1]+altura,q[2]]));
+      let penetracao=0;
+      for(let j=1;j<4;j++)for(let a=0;a<=4;a++){
+        const q=ps[j].map((v,k)=>ps[j-1][k]+a/4*(v-ps[j-1][k]));
+        penetracao=Math.max(penetracao,raio*(1-.1*(j-1))-dist(q,corpo));
+      }
+      const folga=dist(ps[3],guia)-raio*.7;
+      return {folga,penetracao,custo:Math.abs(folga)+30*penetracao};
+    }
+    const antes=avaliar();
+    let melhor=antes;
+    const prefixo="f"+codigos[dedo];
+    const controles=dedo===0?["thumbOpp",prefixo+"Abd",prefixo+"Mcp",prefixo+"Ip",prefixo]:
+      [prefixo+"Mcp",prefixo+"Ip",prefixo];
+    if(dedo===0){
+      const keys=controles.map(k=>k+lado);
+      let escolhidos=keys.map(k=>p[k]);
+      for(const op of [0,.5,1])for(const abd of [-1,0,1])for(const mcp of [-1,0,1])
+        for(const ip of [-1,0,1])for(const curl of [-.6,0,.4]){
+          const valores=[op,abd,mcp,ip,curl];
+          keys.forEach((k,i)=>{p[k]=valores[i]});
+          const r=avaliar();
+          if(r.penetracao<=Math.max(antes.penetracao,.012*metricas.escala)&&r.custo<melhor.custo){
+            melhor=r;escolhidos=valores;
+          }
+        }
+      keys.forEach((k,i)=>{p[k]=escolhidos[i]});
+    }
+    for(const passo of [.5,.15,.05])for(const nome of controles){
+      const key=nome+lado,inicial=p[key]||0,min=nome==="thumbOpp"?0:-1;
+      let escolhido=inicial;
+      for(const delta of [-2,-1,1,2]){
+        p[key]=Math.min(1,Math.max(min,inicial+passo*delta));
+        const r=avaliar();
+        if(r.penetracao<=Math.max(antes.penetracao,.012*metricas.escala)&&r.custo<melhor.custo-1e-6){
+          escolhido=p[key];melhor=r;
+        }
+      }
+      p[key]=escolhido;
+    }
+    resultado.push({dedo:metricas.dedos[dedo].nome,folgaAntes:antes.folga,
+      folga:melhor.folga,penetracao:melhor.penetracao});
+  }
+  return resultado;
 }
 
 const modelosNaMao={
@@ -80,6 +139,7 @@ function gerarNaMao(it,side,modelo,opts){
       livre=corpos.every(rig=>!manifoldObject(rig,solidos,{tol:.045,max:1}).length);
     }
     if(!livre)throw Error("Sem espaço para o modelo. Afaste o braço do corpo ou dos obstáculos.");
+    o.ajusteBase=ajustarFalangesNaBase(it,side,o,ground);
     beginRigidGrip(it,o,side,ground,{ponto:"baseMao",reach:2,objetos:SCN.objetos});
     return o;
   }catch(e){Object.assign(it.params,anterior);removerObjeto(o);throw e}

@@ -79,3 +79,12 @@ for(const tema of ["claro","escuro"]){
   const {svg}=dark.renderizarQuadro(tomadas[0],{tema,passes:false});
   assert.ok(svg.includes('data-vfx="linhas"')&&!svg.includes('data-vfx="impacto"'));
 }
+for(const mao of ["esquerda","direita"]){
+  const w=createWorld(),o=w.cena.objetoNaMao("cadeira",{mao});
+  const contatos=o.medidasDaBase().contatosAoCriar;
+  assert.equal(contatos.length,5);
+  assert.ok(contatos[0].folga<.025&&contatos[0].folga<contatos[0].folgaAntes/10);
+  assert.ok(contatos.every(c=>c.penetracao<.015));
+  const v=createWorld();v.loadScene(w.sceneState());
+  assert.deepEqual(v.cena.objetos()[0].medidasDaBase().contatosAoCriar,contatos);
+}

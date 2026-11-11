@@ -4,6 +4,10 @@
 
 Na seção **Colisões e contato 3D**, escolha a mão, selecione **Cadeira com travessa** e clique em **Criar já encaixado**. **Inspecionar base / modelo inteiro** isola o segmento da travessa e mostra as dimensões em R e a área em R². A pose da cadeira continua vinculada à mão. **Desativar / reativar modelo** guarda a receita do objeto e libera a mão.
 
+![A guia, a cadeira e a cadeira após flexionar o cotovelo](encaixe-cadeira-mao.png)
+
+No teste padrão, o ajuste das falanges reduziu a distância da ponta do polegar à travessa de 0,500 para 0,011 R na mão direita e de 0,521 para 0,011 R na esquerda. Os valores usam os volumes simplificados das falanges. O comando `obj.medidasDaBase().contatosAoCriar` devolve a medição de cada dedo no instante da criação.
+
 No painel **Roupa, cabelo, vento e VFX**, o paletó, a calça e o cabelo podem ser combinados no mesmo personagem. Para desenhar tecido, marque pelo menos três pontos no corpo, escolha o tipo de apoio de cada vértice e finalize. Para desenhar cabelo, escolha um penteado, marque raízes sobre a cabeça e finalize. O ângulo da câmera determina a superfície visível.
 
 No editor de comandos, execute o exemplo em uma cena com a mão direita livre.

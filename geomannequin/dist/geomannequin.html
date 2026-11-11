@@ -13035,6 +13035,9 @@ log(cena.vinculos());`,
           if (o.perfilPega) q.perfilPega = normalizarPerfil(o.perfilPega);
           if (typeof o.modeloMao === "string" && o.modeloMao.length <= 16) q.modeloMao = o.modeloMao;
           if (o.gestoAnterior) q.gestoAnterior = Object.fromEntries(Object.entries(o.gestoAnterior).filter(([k, v]) => SLK[k] && /^(handCurl|thumbOpp|fSpread|fTh|fIn|fMe|fAn|fMi)/.test(k) && Number.isFinite(v)));
+          if (Array.isArray(o.ajusteBase) && o.ajusteBase.length === 5 && o.ajusteBase.every((a) => a && typeof a.dedo === "string" && [a.folgaAntes, a.folga, a.penetracao].every(Number.isFinite))) {
+            q.ajusteBase = o.ajusteBase.map(({ dedo, folgaAntes, folga, penetracao }) => ({ dedo: dedo.slice(0, 16), folgaAntes, folga, penetracao }));
+          }
           if (o.vistaPega === "guia") q.vistaPega = "guia";
           if (Number.isFinite(o.comprimentoPega) && o.comprimentoPega > 0) q.comprimentoPega = Math.min(o.comprimentoPega, 8);
           if (Number.isFinite(o.secaoPega) && o.secaoPega > 0) q.secaoPega = Math.min(o.secaoPega, 4);
@@ -15560,6 +15563,71 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     if (!(melhor.raio > 0)) throw Error("Sem espaço livre na mão para esta base.");
     return { ...melhor, comprimento: medidas.larguraPalma, pose };
   }
+  function ajustarFalangesNaBase(it, side, o, ground) {
+    const p = it.params, lado2 = side === 1 ? "L" : "R", H2 = handFrameV3(it, side, ground);
+    const altura = armDims(p).LH / 2, local = gripSite(o, "baseMao").local;
+    const extensao = ["cadeiraVazada", "mesaComAlca"].includes(o.tipo) ? o.larg : o.tipo === "espada" ? 1.4 : o.alt;
+    const guia = partesDoObjeto({ ...o, _guiaPega: local, comprimentoPega: extensao }, ground);
+    const corpo = partesDoObjeto(o, ground), metricas = medirMao(p, side);
+    const dist = (v, solidos) => solidos.reduce((m, b) => Math.min(m, pointSolid(v, b).d), Infinity);
+    const codigos = ["Th", "In", "Me", "An", "Mi"], resultado = [];
+    for (let dedo = 0; dedo < codigos.length; dedo++) {
+      let avaliar = function() {
+        const ps = juntasDedos(p, side)[dedo].pts.map((q) => rigidPoint(H2, [q[0], q[1] + altura, q[2]]));
+        let penetracao = 0;
+        for (let j = 1; j < 4; j++) for (let a = 0; a <= 4; a++) {
+          const q = ps[j].map((v, k) => ps[j - 1][k] + a / 4 * (v - ps[j - 1][k]));
+          penetracao = Math.max(penetracao, raio * (1 - 0.1 * (j - 1)) - dist(q, corpo));
+        }
+        const folga = dist(ps[3], guia) - raio * 0.7;
+        return { folga, penetracao, custo: Math.abs(folga) + 30 * penetracao };
+      };
+      const raio = metricas.dedos[dedo].raio;
+      const antes = avaliar();
+      let melhor = antes;
+      const prefixo = "f" + codigos[dedo];
+      const controles = dedo === 0 ? ["thumbOpp", prefixo + "Abd", prefixo + "Mcp", prefixo + "Ip", prefixo] : [prefixo + "Mcp", prefixo + "Ip", prefixo];
+      if (dedo === 0) {
+        const keys = controles.map((k) => k + lado2);
+        let escolhidos = keys.map((k) => p[k]);
+        for (const op of [0, 0.5, 1]) for (const abd of [-1, 0, 1]) for (const mcp of [-1, 0, 1])
+          for (const ip of [-1, 0, 1]) for (const curl of [-0.6, 0, 0.4]) {
+            const valores = [op, abd, mcp, ip, curl];
+            keys.forEach((k, i) => {
+              p[k] = valores[i];
+            });
+            const r = avaliar();
+            if (r.penetracao <= Math.max(antes.penetracao, 0.012 * metricas.escala) && r.custo < melhor.custo) {
+              melhor = r;
+              escolhidos = valores;
+            }
+          }
+        keys.forEach((k, i) => {
+          p[k] = escolhidos[i];
+        });
+      }
+      for (const passo of [0.5, 0.15, 0.05]) for (const nome of controles) {
+        const key2 = nome + lado2, inicial = p[key2] || 0, min = nome === "thumbOpp" ? 0 : -1;
+        let escolhido = inicial;
+        for (const delta of [-2, -1, 1, 2]) {
+          p[key2] = Math.min(1, Math.max(min, inicial + passo * delta));
+          const r = avaliar();
+          if (r.penetracao <= Math.max(antes.penetracao, 0.012 * metricas.escala) && r.custo < melhor.custo - 1e-6) {
+            escolhido = p[key2];
+            melhor = r;
+          }
+        }
+        p[key2] = escolhido;
+      }
+      resultado.push({
+        dedo: metricas.dedos[dedo].nome,
+        folgaAntes: antes.folga,
+        folga: melhor.folga,
+        penetracao: melhor.penetracao
+      });
+    }
+    return resultado;
+  }
   var modelosNaMao = {
     cadeira: "cadeiraVazada",
     mesa: "mesaComAlca",
@@ -15618,6 +15686,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         livre2 = corpos.every((rig2) => !manifoldObject(rig2, solidos, { tol: 0.045, max: 1 }).length);
       }
       if (!livre2) throw Error("Sem espaço para o modelo. Afaste o braço do corpo ou dos obstáculos.");
+      o.ajusteBase = ajustarFalangesNaBase(it, side, o, ground);
       beginRigidGrip(it, o, side, ground, { ponto: "baseMao", reach: 2, objetos: SCN.objetos });
       return o;
     } catch (e) {
@@ -16326,7 +16395,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       },
       medidasDaBase() {
         chk();
-        return medidasDaPega(q);
+        return { ...medidasDaPega(q), contatosAoCriar: structuredClone(q.ajusteBase || []) };
       },
       mostrarBase(modo) {
         chk();

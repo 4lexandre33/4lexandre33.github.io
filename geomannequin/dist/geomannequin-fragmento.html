@@ -13028,6 +13028,9 @@ log(cena.vinculos());`,
           if (o.perfilPega) q.perfilPega = normalizarPerfil(o.perfilPega);
           if (typeof o.modeloMao === "string" && o.modeloMao.length <= 16) q.modeloMao = o.modeloMao;
           if (o.gestoAnterior) q.gestoAnterior = Object.fromEntries(Object.entries(o.gestoAnterior).filter(([k, v]) => SLK[k] && /^(handCurl|thumbOpp|fSpread|fTh|fIn|fMe|fAn|fMi)/.test(k) && Number.isFinite(v)));
+          if (Array.isArray(o.ajusteBase) && o.ajusteBase.length === 5 && o.ajusteBase.every((a) => a && typeof a.dedo === "string" && [a.folgaAntes, a.folga, a.penetracao].every(Number.isFinite))) {
+            q.ajusteBase = o.ajusteBase.map(({ dedo, folgaAntes, folga, penetracao }) => ({ dedo: dedo.slice(0, 16), folgaAntes, folga, penetracao }));
+          }
           if (o.vistaPega === "guia") q.vistaPega = "guia";
           if (Number.isFinite(o.comprimentoPega) && o.comprimentoPega > 0) q.comprimentoPega = Math.min(o.comprimentoPega, 8);
           if (Number.isFinite(o.secaoPega) && o.secaoPega > 0) q.secaoPega = Math.min(o.secaoPega, 4);

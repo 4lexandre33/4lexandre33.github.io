@@ -300,7 +300,7 @@ function apiObjeto(q){
         if(prevU===undefined)delete q.cimaLocal;else q.cimaLocal=prevU;throw e}
       return o;
     },
-    medidasDaBase(){chk();return medidasDaPega(q)},
+    medidasDaBase(){chk();return {...medidasDaPega(q),contatosAoCriar:structuredClone(q.ajusteBase||[])}},
     mostrarBase(modo){
       chk();medidasDaPega(q);
       if(modo===undefined)return q.vistaPega||"modelo";
