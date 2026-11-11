@@ -3,7 +3,7 @@
   "project": "GeoMannequin AutoGrip — encaixe anatômico automático",
   "date": "2026-11-11",
   "base_branch": "feat/geomannequin-grip-v3-hardening-20261110",
-  "status": "planned",
+  "status": "implementation_in_progress",
   "task_prefix": "AG",
   "success_definition": "Contatos da mão e objeto geometricamente viáveis, sem interpenetração proibida, com restrições anatômicas; declarar inviável se necessário.",
   "metrics": {
@@ -3943,5 +3943,52 @@
         ]
       }
     }
-  ]
+  ],
+  "execution_state": {
+    "date": "2026-11-11",
+    "stage": "experimental_source_code_unvalidated",
+    "completed_gates": 0,
+    "implementation_report": "auto-grip-implementacao-progressiva-20261111.md",
+    "source_features": [
+      "hand_metrics",
+      "finger_fk_contact",
+      "grip_candidate_search",
+      "surface_neighbor_samples",
+      "arm_and_wrist_ik_refinement",
+      "per_finger_adjustment",
+      "body_and_object_penetration_checks",
+      "two_hand_candidate_pairing",
+      "post_grip_validation",
+      "one_click_api",
+      "regrip_held_object",
+      "save_load_grip_metadata",
+      "undo_redo",
+      "scene_revision_guard",
+      "mcp_preensao",
+      "declarative_batch",
+      "ui_buttons",
+      "widget_grip_inspection",
+      "tests_added"
+    ],
+    "verified": {
+      "static_syntax": "passed_on_changed_modules",
+      "isolated_solver_mocks": "passed",
+      "integrated_engine_tests": "not_executed",
+      "real_visual_atlas": "not_executed",
+      "real_mcp_stdio_http": "not_executed",
+      "dist_rebuilt": "no",
+      "merged": "no",
+      "deployed": "no"
+    },
+    "remaining_priority": [
+      "run_real_integration_tests",
+      "fix_runner_unavailable",
+      "rebuild_mcp_dist",
+      "improve_true_joint_ik",
+      "reliable_continuous_collision_avoidance",
+      "object_6dof_microadjustment",
+      "force_and_friction_simulation",
+      "release_gates"
+    ]
+  }
 }
