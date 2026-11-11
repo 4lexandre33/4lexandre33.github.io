@@ -12,7 +12,7 @@ import {rigidDirection,objectRigidPose,rigidPoint} from "../engine/rigid-transfo
 import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
 
 // Isolamento lexical: o headless concatena os arquivos de cena num único escopo.
-const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip}=(()=>{
+const {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip}=(()=>{
 const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
 const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
@@ -291,6 +291,33 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
      .map(([k,v])=>[k,{antes:src[k]??0,depois:v}])),
    avisos:reasons,params:p};
 }
+/* Revalidação geométrica de toda a cena após combinar mãos e criar o
+ * attachment. A base de autocolisões é a pose anterior à operação.
+ */
+function validarCenaAutoGrip(it,o,ground,scene={},beforeParams=it.params,opt={},sides=[-1]){
+ const baseline=colliderRig({...beforeParams,wy:ground-restGround(beforeParams)},{level:"fine"});
+ const environment={obstacles:[],actors:[],selfBaseline:new Map()};
+ for(const c of manifoldCaps(baseline,baseline,{tol:0,self:true,max:250})){
+   const key=[c.pa,c.pb].sort().join("|");
+   environment.selfBaseline.set(key,Math.max(environment.selfBaseline.get(key)||0,c.prof));
+ }
+ for(const other of scene.manequins||[]){
+   if(other.id===it.id)continue;
+   environment.actors.push(colliderRig({...other.params,
+     wy:ground-restGround(other.params)},{level:"fine"}));
+ }
+ for(const object of scene.objetos||[]){
+   if(object.id===o.id||object.sobre===o.id)continue;
+   environment.obstacles.push(colliderObject(object,ground));
+ }
+ const solids=colliderObject(o,ground);
+ const porMao=sides.map(side=>({mao:side>0?"esquerda":"direita",
+   ...geometryCheck(it.params,side,o,ground,solids,opt,environment)}));
+ const maxPenetracao=Math.max(0,...porMao.map(m=>Math.max(
+   m.maxHandPen,m.maxBodyPen,m.maxObstaclePen,m.maxThirdPen,m.maxSelfNewPen)));
+ return {ok:maxPenetracao<=(opt.limitePenetracao??.06),
+   maxPenetracao,porMao};
+}
 function planejarAutoGrip(it,o,ground,opts={},scene={}){
  if(!it||!o||!it.params)throw Error("Manequim ou objeto inválido no planejamento.");
  const opt=validarOpcoes(opts);
@@ -367,9 +394,21 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
  raw.sort((a,b)=>a.score-b.score||a.ponto.localeCompare(b.ponto));
  let chosen=raw[0];
  if(opt.mao==="ambas"){
-   const left=raw.find(q=>q.lado===1),right=raw.find(q=>q.lado===-1);
-   if(left&&right&&left.ponto!==right.ponto)chosen={...right,secundaria:left};
-   else chosen=null;
+   // Não selecionar cegamente a melhor mão de cada lado: as duas podem
+   // pedir a mesma região, ou palmas que se interpenetram.
+   const left=raw.filter(q=>q.lado===1),right=raw.filter(q=>q.lado===-1);
+   let pair=null,bestCost=Infinity;
+   for(const a of right)for(const b of left){
+     if(a.ponto===b.ponto)continue;
+     const gap=dist(a.posicaoAlvo,b.posicaoAlvo);
+     const clearance=Math.max(.36,.48*(a.medidas.larguraPalma+b.medidas.larguraPalma));
+     if(gap<clearance)continue;
+     const cost=a.score+b.score+Math.max(0,1-gap)*.15;
+     if(cost<bestCost){bestCost=cost;pair=[a,b]}
+   }
+   chosen=pair?{...pair[0],secundaria:pair[1],score:bestCost}:null;
+   if(!chosen)failures.push({mao:"ambas",ponto:"auto",
+     motivo:"Duas regiões distintas e sem sobreposição palmar não foram encontradas."});
  }
  return {ok:!!chosen,status:chosen?"planejado":"inviavel",
    melhor:chosen||null,candidatos:raw.map(x=>({mao:x.mao,ponto:x.ponto,pegada:x.pegada,
@@ -422,6 +461,6 @@ function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,toleranci
    palmaContato,contatos,contatosPorDedo:dedos};
 }
 
-return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip};
+return {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip};
 })();
-export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip};
+export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip};
