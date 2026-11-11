@@ -144,11 +144,11 @@
       <button id="mangaVisivel" type="button">Mostrar / ocultar</button><button id="mangaAmostra" type="button">Marcar rastro da mão direita</button><button id="mangaRemover" type="button">Remover</button>
       <div><button id="mangaDesenhar" type="button">Desenhar tecido no corpo</button>
       <label>Ponto <select id="mangaPonto"><option value="apoio">Sustentação</option><option value="pressao">Pressão</option><option value="livre">Livre</option></select></label>
-      <button id="mangaFechar" type="button">Fechar painel</button><button id="mangaCancelar" type="button">Cancelar desenho</button></div>
+      <label>Comprimento da mecha <input id="mangaMecha" type="number" value="1" min=".1" max="5" step=".1"></label><button id="mangaMarcarRaiz" type="button">Marcar raízes na cabeça</button><button id="mangaFechar" type="button">Finalizar desenho</button><button id="mangaCancelar" type="button">Cancelar desenho</button></div>
       <label>Vento X <input id="mangaVentoX" type="number" min="-4" max="4" step=".1" value="0"></label>
       <label>Vento Z <input id="mangaVentoZ" type="number" min="-4" max="4" step=".1" value="0"></label>
       <label>Rajada <input id="mangaRajada" type="range" min="0" max="1" step=".05" value="0"></label>
-      <button id="mangaAplicarVento" type="button">Aplicar vento</button>
+      <button id="mangaAplicarVento" type="button">Aplicar vento</button><button id="mangaVentoChave" type="button">Marcar vento neste quadro</button>
       <label>Quadro <input id="mangaTempo" type="number" min="0" max="100000" value="0"></label>
       <button id="mangaPlay" type="button">Simular</button><p id="mangaAviso" role="status"></p></details>
       <section id="colSecao" class="col-secao" aria-labelledby="colSecaoTitulo" tabindex="-1">
@@ -169,6 +169,7 @@
         <select id="modeloNaMao"><option value="cadeira">Cadeira com travessa</option><option value="mesa">Mesa com alça</option><option value="bastao">Bastão</option><option value="cajado">Cajado</option><option value="espada">Espada de cena</option><option value="retangular">Base retangular</option><option value="circular">Base circular</option><option value="eliptica">Base elíptica</option><option value="plana">Base plana</option><option value="personalizada">Perfil personalizado</option></select>
         <label>Contorno opcional [x,y] <input id="perfilMao" placeholder="[[-1,0],[0,1],[1,0],[0,-1]]"></label>
         <button type="button" id="criarNaMao">Criar já encaixado</button>
+        <button id="guiaNaMao" type="button">Inspecionar base / modelo inteiro</button>
         <button id="alternarNaMao" type="button">Desativar / reativar modelo</button>
         <select id="acaoMao" aria-label="Ação de contato"><option value="tocar">Tocar</option><option value="empurrar">Empurrar</option><option value="puxar">Puxar</option></select><button id="executarAcaoMao" type="button">Aplicar ao objeto selecionado</button>
         <label for="colV3Ponto">Local de agarre</label>

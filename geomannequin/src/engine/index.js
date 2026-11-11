@@ -55,3 +55,4 @@ export * from "./rigid-transform.js";
 export * from "./grip-sites.js";
 export * from "./grip-dynamics.js";
 export * from "./referencia-manga.js";
+export * from "./superficie-referencia.js";

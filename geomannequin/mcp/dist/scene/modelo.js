@@ -2,7 +2,7 @@
 import { PAL_EXPORT, PAL_SCREEN, STYLES, styleName } from "./paletas.js";
 import { L } from "./modos.js";
 import { refreshScene, render, syncControls } from "./ambiente.js";
-import { geometriaReferencia, DEF, newCache, renderScene, restGround } from "../engine/index.js";
+import { gripSite, ventoNoQuadro, geometriaReferencia, DEF, newCache, renderScene, restGround } from "../engine/index.js";
 import { atualizarFocoOrbita } from "./orbita.js";
 import {updateGrip} from "./preensao-v2.js";
 import {updateRigidGrip} from "./grip-v3.js";
@@ -124,7 +124,7 @@ function sceneList(exp){
   lst.forEach((o,i)=>{
     const refs=SCN.list[i].referencias;
     if(refs?.some(r=>r.ativo)&&!o.p._oculto){
-      const it=SCN.list[i],frame=SCN.frameManga||0,vento=SCN.vento||{x:0,z:0,rajada:0};
+      const it=SCN.list[i],frame=SCN.frameManga||0,vento=ventoNoQuadro(SCN.vento,SCN.chavesVento,frame);
       const pose=Object.entries(it.params).filter(([k])=>!CAMK.includes(k));
       const chave=JSON.stringify([pose,o.p.wy,refs,frame,vento,!!exp]);
       if(it.cache.chaveReferencia!==chave){
@@ -134,7 +134,11 @@ function sceneList(exp){
       o.referencia=it.cache.referencia;
     }
   });
-  lst.objetos=SCN.objetos.map(o=>Object.assign({},o,{_cor:corObjeto(o,exp)}));lst.chao=g0;
+  lst.objetos=SCN.objetos.map(o=>{
+    const copia={...o,_cor:corObjeto(o,exp)};
+    if(o.modeloMao&&o.vistaPega==="guia")copia._guiaPega=gripSite(o,"baseMao").local;
+    return copia;
+  });lst.chao=g0;
   const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
   return lst;
 }

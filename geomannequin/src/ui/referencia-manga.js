@@ -2,7 +2,7 @@ import {$} from "../scene/ambiente.js";
 import {SCN,sceneList} from "../scene/modelo.js";
 import {cena} from "../scene/comandos.js";
 import {render} from "./palco.js";
-import {ossosDoCorpo,paraMundo,doMundo,telaDoMundo,makeXf} from "../engine/index.js";
+import {marcarTecido,marcarRaiz} from "../engine/index.js";
 
 export function iniciarReferenciaManga(){
   const svg=$("svg"),lista=$("mangaLista"),msg=$("mangaAviso");
@@ -48,6 +48,8 @@ export function iniciarReferenciaManga(){
   $("mangaRemover").onclick=()=>acao(()=>cena.removerReferencia(Number(lista.value)));
   $("mangaAplicarVento").onclick=()=>acao(()=>cena.vento({x:Number($("mangaVentoX").value),
     z:Number($("mangaVentoZ").value),rajada:Number($("mangaRajada").value)}));
+  $("mangaVentoChave").onclick=()=>acao(()=>cena.ventoChave(cena.quadroSimulado(),{
+    x:Number($("mangaVentoX").value),z:Number($("mangaVentoZ").value),rajada:Number($("mangaRajada").value)}));
   $("mangaTempo").onchange=()=>acao(()=>cena.quadroSimulado(Number($("mangaTempo").value)));
   $("mangaPlay").onclick=()=>{
     rodando=!rodando;$("mangaPlay").textContent=rodando?"Pausar":"Simular";
@@ -66,27 +68,33 @@ export function iniciarReferenciaManga(){
     desenho={id:SCN.list[SCN.active].id,pontos:[]};
     msg.textContent="Clique no corpo para marcar os vértices do painel em ordem.";
   };
+  $("mangaMarcarRaiz").onclick=()=>{
+    desenho={id:SCN.list[SCN.active].id,cabelo:true,pontos:[]};
+    msg.textContent="Clique no couro cabeludo e finalize para aplicar as raízes.";
+  };
   $("mangaCancelar").onclick=()=>{desenho=null;msg.textContent=""};
   svg.addEventListener("pointerdown",e=>{
     if(!desenho)return;
     e.stopImmediatePropagation();e.preventDefault();
     if(desenho.id!==SCN.list[SCN.active].id){desenho=null;msg.textContent="Manequim alterado. Inicie outro painel.";return}
     if(desenho.pontos.length>=40)return;
-    const p=sceneList()[SCN.active].p,world=paraMundo(p),local=doMundo(p);
+    const p=sceneList()[SCN.active].p;
     const click=new DOMPoint(e.clientX,e.clientY).matrixTransform(svg.getScreenCTM().inverse());
-    const cam=makeXf({...p,wRot:0}),eixos=[[1,0,0],[0,1,0],[0,0,1]].map(cam);
-    const juntas=ossosDoCorpo(p).juntas.filter(j=>["pescoço","ombro","cotovelo","punho","quadril","joelho","tornozelo"].includes(j.nome));
-    const candidatos=juntas.map(j=>{const w=world(j.P),q=telaDoMundo(p,w);
-      return {j,w,q,dist:Math.hypot(q[0]-click.x,q[1]-click.y)}});
-    candidatos.sort((a,b)=>a.dist-b.dist);
-    const {j,w,q}=candidatos[0],dx=(click.x-q[0])/q[3],dy=(q[1]-click.y)/q[3];
-    const pt=local(w.map((v,i)=>v+dx*eixos[i][0]+dy*eixos[i][1]+.7*eixos[i][2]));
-    desenho.pontos.push({junta:j.nome,lado:j.s,offset:pt.map((v,i)=>v-j.P[i]),modo:$("mangaPonto").value});
-    msg.textContent=desenho.pontos.length+" pontos. Última junta: "+j.nome+".";
+    const ponto=desenho.cabelo?marcarRaiz(p,click.x,click.y,Number($("mangaMecha").value)):
+      marcarTecido(p,click.x,click.y,$("mangaPonto").value);
+    if(!ponto){msg.textContent=desenho.cabelo?"Clique na região do couro cabeludo.":"Clique sobre o manequim.";return}
+    desenho.pontos.push(ponto);
+    msg.textContent=desenho.pontos.length+(desenho.cabelo?" raízes marcadas.":" pontos no tecido.");
   },true);
   $("mangaFechar").onclick=()=>acao(()=>{
     if(!desenho||desenho.id!==SCN.list[SCN.active].id)throw Error("Inicie o desenho no manequim ativo.");
-    cena.referencia("painel",{pontos:desenho.pontos,cor:$("mangaCor").value});
-    desenho=null;msg.textContent="Painel vestido.";
+    if(desenho.cabelo){
+      const tipo=$("mangaTipo").value;
+      cena.referencia(["curto","longo","franja","preso"].includes(tipo)?tipo:"longo",{...ajustes(),raizes:desenho.pontos});
+      $("mangaRaizes").value=JSON.stringify(desenho.pontos);msg.textContent="Mechas aplicadas.";
+    }else{
+      cena.referencia("painel",{...ajustes(),pontos:desenho.pontos});msg.textContent="Painel vestido.";
+    }
+    desenho=null;
   });
 }

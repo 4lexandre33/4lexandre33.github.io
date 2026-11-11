@@ -9,7 +9,6 @@ import {colliderRig,capsuleContact,capsuleSolidContact,manifoldCaps,manifoldSelf
 import {restGround} from "../src/engine/index.js";
 import {createWorld} from "../mcp/lib/core.mjs";
 import {beginGrip,releaseGrip,getHandAnchor} from "../src/scene/preensao-v2.js";
-import {limitarPropostaV2,consultarContatosV2,setContatoV2} from "../src/scene/contato-v2.js";
 const eq=(a,b,eps=1e-6)=>Math.abs(a-b)<eps;
 const finite=c=>Number.isFinite(c.distancia)&&Number.isFinite(c.prof)&&c.n.every(Number.isFinite)&&
  c.a.every(Number.isFinite)&&c.b.every(Number.isFinite);
@@ -66,13 +65,16 @@ assert.ok(o2?.grip&&o2.grip.mannequinId===w2.SCN.list[0].id,"O vínculo não sob
 assert.equal(w2.cena.soltarObjeto("copo teste"),true);
 assert.equal(o2.grip,undefined);
 const w3=createWorld();
-w3.cena.adicionar({x:6,z:0,nome:"Vizinho"});
+w3.cena.adicionar({x:10,z:0,nome:"Vizinho"});
 w3.cena.contatoV2({enabled:true,level:"coarse",tol:.07});
-const pivot=w3.SCN.list[0],before={...pivot.params};
-pivot.params.wx=6;
-const solved=limitarPropostaV2(pivot,before,{samples:9});
-assert.ok(solved.fraction<1&&pivot.params.wx<6,"Arraste atravessou outro manequim");
-assert.ok(solved.fraction>=0&&Number.isFinite(solved.penetration));
+w3.cena.colisao("bloquear");
+// O mundo headless possui sua própria cena e seu próprio CONTATO_V2.
+// Exercitar a mesma entrada usada pelo editor para atravessar o vizinho.
+w3.cena.ativo.posicao(14,0);
+const xLimitado=w3.SCN.list[0].params.wx;
+assert.ok(xLimitado>0&&xLimitado<10,"O movimento deve começar e parar antes do vizinho.");
+w3.cena.contatoV2(false);
+w3.cena.ativo.posicao(14,0);
+assert.equal(w3.SCN.list[0].params.wx,14);
 console.log("Contato V2: duração do teste (não benchmark):",Math.round(performance.now()-t0),"ms");
-setContatoV2(false);
 console.log("CONTACT V2 PASS: 30 falanges, cápsulas, OBB, cilindro, autocolisão, API, vínculo persistente e bloqueio transacional.");

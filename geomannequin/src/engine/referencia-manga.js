@@ -46,6 +46,15 @@ function validarReferencia(r){
 function ventoManga(v={}){
   return {x:numeroManga(v.x??0,-4,4),z:numeroManga(v.z??0,-4,4),rajada:numeroManga(v.rajada??0,0,1)};
 }
+function ventoNoQuadro(base,chaves,frame){
+  let a={quadro:0,...(base||ventoManga())};
+  for(const b of chaves||[]){
+    if(b.quadro<=frame){a=b;continue}
+    const t=(frame-a.quadro)/(b.quadro-a.quadro);
+    return Object.fromEntries(["x","z","rajada"].map(k=>[k,a[k]+(b[k]-a[k])*t]));
+  }
+  return {x:a.x,z:a.z,rajada:a.rajada};
+}
 function linhasDeQuadro(ref,t){
   const impacto=ref.tipo==="impacto",n=impacto?54:24,x=ref.x*W,y=ref.y*H;
   let d="";
@@ -159,4 +168,4 @@ function geometriaReferencia(p,refs,frame,vento,exportacao=false){
   }
   return {grupos,tela:tela.join("")};
 }
-export {TIPOS_MANGA,validarReferencia,ventoManga,geometriaReferencia};
+export {TIPOS_MANGA,validarReferencia,ventoManga,ventoNoQuadro,geometriaReferencia};

@@ -207,6 +207,11 @@ export function iniciarColisoes() {
       refreshScene();syncControls();render();
     }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
+  $("guiaNaMao").onclick=()=>{try{
+    const obj=cena.obterObjeto(SCN.objSel),m=obj.medidasDaBase();
+    obj.mostrarBase(obj.mostrarBase()==="guia"?"modelo":"guia");render();
+    status.textContent="Seção da pega: "+m.largura.toFixed(3)+" × "+m.altura.toFixed(3)+" R. Área: "+m.area.toFixed(4)+" R².";
+  }catch(e){status.textContent=e.message}};
   $("alternarNaMao").onclick=()=>{try{
     const ligado=cena.alternarModeloNaMao({mao:$("colV2Mao").value});
     SCN.objSel=null;refreshScene();syncControls();render();status.textContent=ligado?"Modelo reativado.":"Modelo desativado.";

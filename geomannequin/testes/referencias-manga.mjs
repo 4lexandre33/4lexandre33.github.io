@@ -28,3 +28,48 @@ w.cena.quadroSimulado(20);assert.notEqual(w.cena.exportarSVG(),svg);
 w.cena.quadroSimulado(8);assert.equal(w.cena.exportarSVG(),svg);
 w.cena.referencia("impacto",{indice:5,ativo:false});assert.ok(!w.cena.exportarSVG().includes("data-vfx"));
 console.log("Referências PASS: sete modelos nas duas mãos, pose, JSON, soltura, roupa, cabelo, vento e VFX.");
+for(const modelo of ["eliptica","plana","personalizada"]){
+  const w=createWorld();
+  const perfil=modelo==="personalizada"?[[-1,0],[0,1],[1,0],[0,-1]]:undefined;
+  w.cena.objetoNaMao(modelo,{perfil});
+  assert.equal(w.cena.alternarModeloNaMao(),false);
+  const v=createWorld();v.loadScene(w.sceneState());
+  assert.equal(v.cena.alternarModeloNaMao(),true);
+  assert.ok(v.SCN.objetos[0].perfilPega.length>=3);
+}
+for(const acao of ["empurrar","puxar","tocar"]){
+  const w=createWorld(),obj=w.cena.objetoNaMao("mesa");
+  w.cena.soltarObjeto(obj.id,{modo:"manter"});
+  const r=w.cena.deslizarComMao(obj.id,acao,{distancia:.1});
+  assert.ok(Math.abs(r.distancia-(acao==="tocar"?0:.1))<1e-6);
+  assert.equal(w.SCN.objetos[0].gripV3,undefined);
+}
+w.cena.ventoChave(0,{x:-2,z:0});w.cena.ventoChave(40,{x:2,z:0});
+w.cena.quadroSimulado(20);assert.equal(w.cena.vento().x,0);
+const i=w.cena.amostrarRastro(null);w.SCN.list[0].params.armFlexR=50;
+w.cena.quadroSimulado(21);w.cena.amostrarRastro(i);
+assert.ok(w.cena.exportarSVG().includes('data-camada="rastro"'));
+w.cena.referencia("rastro",{indice:i,exportar:false});
+assert.ok(!w.cena.exportarSVG().includes('data-camada="rastro"'));
+const guia=createWorld(),obj=guia.cena.objetoNaMao("cadeira");
+const medidas=obj.medidasDaBase();
+assert.ok(medidas.comprimento>medidas.largura);
+assert.equal(medidas.area,medidas.largura*medidas.altura);
+const completa=guia.cena.exportarSVG();
+obj.mostrarBase("guia");const guiaSVG=guia.cena.exportarSVG();
+assert.notEqual(guiaSVG,completa);
+assert.equal(partesDoObjeto(guia.SCN.objetos[0],restGround(guia.P)).length,8);
+const recarga=createWorld();recarga.loadScene(guia.sceneState());
+assert.equal(recarga.cena.exportarSVG(),guiaSVG);
+obj.mostrarBase("modelo");assert.equal(guia.cena.exportarSVG(),completa);
+const {marcarRaiz,marcarTecido,shape,chainSetup,headPt,applyA,paraMundo,telaDoMundo}=await import("../src/engine/index.js");
+for(const yaw of [0,90,180,-45]){
+  const p={...guia.sceneList()[0].p,yaw};
+  const S=shape(p),h=.6,theta=-yaw*Math.PI/180;
+  const w=paraMundo(p)(applyA(chainSetup(p,S).A3,headPt(h,theta,p,S,.04)));
+  const [x,y]=telaDoMundo(p,w),raiz=marcarRaiz(p,x,y,1.5);
+  assert.ok(raiz&&Math.abs(raiz.altura-h)<.04);
+  assert.ok(marcarTecido(p,x,y,"apoio"));
+  assert.equal(marcarRaiz(p,-2000,-2000,1),null);
+  assert.equal(marcarTecido(p,-2000,-2000,"apoio"),null);
+}

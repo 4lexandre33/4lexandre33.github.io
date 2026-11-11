@@ -75,9 +75,35 @@ function extrudarPerfil(pontos,d,centro,comprimento,horizontal){
   }
   return out;
 }
+function medidasDaPega(o){
+  if(!o.modeloMao||!(o.secaoPega>0))throw Error("Selecione um modelo gerado na mão.");
+  const d=o.secaoPega,perfil=o.perfilPega;
+  const quadrada=["cadeiraVazada","mesaComAlca","baseRetangular"].includes(o.tipo);
+  let largura=d,altura=d,area=quadrada?d*d:Math.PI*d*d/4;
+  if(perfil){
+    const amplitude=eixo=>{
+      const valores=perfil.map(q=>q[eixo]);
+      return (Math.max(...valores)-Math.min(...valores))*d/2;
+    };
+    largura=amplitude(0);altura=amplitude(1);
+    const dobro=perfil.reduce((s,[x,y],i)=>{
+      const b=perfil[(i+1)%perfil.length];return s+x*b[1]-y*b[0];
+    },0);
+    area=Math.abs(dobro)*d*d/8;
+  }
+  return {largura,altura,area,comprimento:o.comprimentoPega??null};
+}
 function partesLocais(o) {
   const L = o.larg / 2, P = o.prof / 2, A = o.alt, out = [], perna = (x, z, alt) => out.push({ c: [x, alt / 2, z], h: [0.17, alt / 2, 0.17] });
   const d=o.secaoPega||.25;
+  if(o._guiaPega){
+    const centro=o._guiaPega,comprimento=o.comprimentoPega??Math.min(o.alt,.8);
+    const horizontal=["cadeiraVazada","mesaComAlca"].includes(o.tipo);
+    if(o.perfilPega)return extrudarPerfil(o.perfilPega,d,centro,comprimento,horizontal);
+    if(horizontal)return [{c:centro,h:[comprimento/2,d/2,d/2]}];
+    if(o.tipo==="baseRetangular")return [{c:centro,h:[d/2,comprimento/2,d/2]}];
+    return [{cil:true,c:centro,hh:comprimento/2,r:d/2}];
+  }
   if(o.tipo==="cadeiraVazada"||o.tipo==="mesaComAlca"){
     const cadeira=o.tipo==="cadeiraVazada";
     const corpo=partesLocais({...o,tipo:cadeira?"banco":"mesa"});
@@ -464,4 +490,4 @@ function zDasFaces(faces, Cf) {
   return { x0, y0, w, h, z };
 }
 
-export { normalizarPerfil, desenharReferencia, pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };
+export { medidasDaPega, normalizarPerfil, desenharReferencia, pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };

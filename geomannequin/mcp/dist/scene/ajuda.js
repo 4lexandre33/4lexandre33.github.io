@@ -228,9 +228,11 @@ export function iniciarAjuda(){
   Parâmetros: m.parametro("headYaw",45) · m.parametros() · camera.parametro("lens",85) · camera.parametros()
   Câmera sem alterar a ativa: camera.capturar("Ana",{lado:"costas"}) · camera.capturarVistas("Ana")
   Grupo: camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas"}) (sem orientação média inventada)
+  Seção da pega: obj.medidasDaBase() · obj.mostrarBase("guia") · obj.mostrarBase("modelo")
   Modelos na mão: cena.objetoNaMao("cadeira",{mao:"direita"}) · modelos mesa, bastao, cajado, espada, circular e retangular
   Roupa e cabelo: cena.referencia("paleto",{cor:"#354962"}) · cena.referencia("longo",{raizes:[{angulo:90,altura:.8,comprimento:2}]})
   Efeitos: cena.referencia("impacto",{inicio:8,duracao:12}) · cena.amostrarRastro(indice,{mao:"direita"})
+  Vento por quadro: cena.ventoChave(24,{x:1,z:0,rajada:.4}) · cena.ventoChave(48,{x:-1,z:0})
   Vento e tempo: cena.vento({x:1,z:0,rajada:.4}) · cena.quadroSimulado(12)
   Camadas de referência: cena.referencias() · cena.referencia("paleto",{indice:0,ativo:false}) · cena.removerReferencia(0)
   Preensão V3: m.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:5}) — mão move cadeira em 3D

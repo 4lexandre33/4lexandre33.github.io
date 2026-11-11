@@ -26,7 +26,8 @@ import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
 import {iniciarQuedaObjeto,cancelarQuedaObjeto,avancarDinamicaObjetos} from "../engine/grip-dynamics.js";
-import { validarReferencia, ventoManga } from "../engine/referencia-manga.js";
+import { validarReferencia, ventoNoQuadro, ventoManga } from "../engine/referencia-manga.js";
+import {medidasDaPega} from "../engine/objetos.js";
 import { gerarNaMao } from "./bases-mao.js";
 import {verificarMicroDeslocamentoAutoGrip} from "./grip-auto.js";
 import {targetSurface,tocarV2} from "./toque-v2.js";
@@ -297,6 +298,14 @@ function apiObjeto(q){
       try{q.frenteLocal=f.slice();q.cimaLocal=up.slice();orientacaoAlvo({tipo:"objeto",id:q.id},"objeto")}
       catch(e){if(prevF===undefined)delete q.frenteLocal;else q.frenteLocal=prevF;
         if(prevU===undefined)delete q.cimaLocal;else q.cimaLocal=prevU;throw e}
+      return o;
+    },
+    medidasDaBase(){chk();return medidasDaPega(q)},
+    mostrarBase(modo){
+      chk();medidasDaPega(q);
+      if(modo===undefined)return q.vistaPega||"modelo";
+      if(!["guia","modelo"].includes(modo))throw Error("Escolha guia ou modelo.");
+      if(modo!==(q.vistaPega||"modelo")){cena.marcarEstado();q.vistaPega=modo;}
       return o;
     },
     pontosDeAgarre(){chk();atualizarApoios();return gripSites(q).map(s=>gripSiteWorld(q,s.id,restGround(SCN.list[0].params)))},
@@ -823,8 +832,16 @@ const cena={
     if(!Number.isInteger(indice)||!it?.referencias?.[indice])throw Error("Referência ausente.");
     cena.marcarEstado();it.referencias.splice(indice,1);
   },
+  ventoChave(quadro,opts){
+    if(!Number.isInteger(quadro)||quadro<0||quadro>100000)throw Error("Quadro inválido.");
+    const chaves=(SCN.chavesVento||[]).filter(q=>q.quadro!==quadro);
+    if(opts!==null){if(chaves.length>=256)throw Error("Limite de 256 chaves de vento.");
+      chaves.push({quadro,...ventoManga(opts)});}
+    cena.marcarEstado();SCN.chavesVento=chaves.sort((a,b)=>a.quadro-b.quadro);
+    return structuredClone(SCN.chavesVento);
+  },
   vento(opts){if(opts!==undefined){const v=ventoManga(opts);cena.marcarEstado();SCN.vento=v}
-    return {...(SCN.vento||ventoManga())}},
+    return ventoNoQuadro(SCN.vento,SCN.chavesVento,SCN.frameManga||0)},
   quadroSimulado(n){
     if(n!==undefined){if(!Number.isInteger(n)||n<0||n>100000)throw Error("Quadro fora do intervalo.");SCN.frameManga=n}
     return SCN.frameManga||0;

@@ -48,6 +48,7 @@ function gerarNaMao(it,side,modelo,opts){
   const anterior={...it.params};
   try{
     o.secaoPega=diametro;
+    o.comprimentoPega=medida.comprimento;
     if(perfil)o.perfilPega=perfil;
     o.modeloMao=modelo;
     const sufixo=side===1?"L":"R";
