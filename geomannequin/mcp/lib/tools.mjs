@@ -559,6 +559,9 @@ export function registerAll(server, getWorld, opts = {}) {
     },
     annotations: RO
   }, guard(async (a) => {
+    // Roteiros JavaScript legados exigem stdio local confiável.
+    // Roteiro_declarativo é o único caminho remoto para instruções fornecidas pelo cliente.
+    if (!opts.trustedLocal) throw new Error("roteiro_quadros com JavaScript está desativado no HTTP. Use roteiro_declarativo (ações tipadas).");
     const w = W(), X = w.executarRoteiro(a.roteiro);
     const resumo = X.quadros.map(q => ({ n: q.n, titulo: q.titulo, formato: q.formato, novo: q.novo, falas: q.falas, notas: q.notas, erro: q.erro, linha_do_erro: q.linhaErro, avisos: q.avisos }));
     const erros = resumo.filter(q => q.erro), link = sceneLink(w, a.roteiro.length < 20000 ? { roteiro: a.roteiro } : {});
@@ -774,7 +777,7 @@ export function registerAll(server, getWorld, opts = {}) {
     inputSchema: { codigo: z.string().max(20000) },
     annotations: RW
   }, guard((a) => {
-    if (!opts.allowCode) throw new Error("A execução de código está desativada neste servidor. Use adicionar_manequim, editar_manequim, camera e aparencia_cena.");
+    if (!opts.allowCode || !opts.trustedLocal) throw new Error("JavaScript arbitrário só é permitido no MCP local confiável. Use ferramentas estruturadas no HTTP.");
     const w = W(), snap = JSON.stringify({ scene: w.sceneState(), layers: w.L, style: w.style }), logs = [];
     w.LOG.length = 0;
     const log = (...x) => logs.push(x.map(v => typeof v === "object" ? JSON.stringify(v) : String(v)).join(" "));
