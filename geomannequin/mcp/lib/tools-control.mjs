@@ -110,7 +110,7 @@ export function registerControlTools(s,W){
      reach:a.reach,preservarObjeto:a.preservarObjeto,
      permitirMoverObjeto:a.permitirMoverObjeto,tolerancia:a.tolerancia,
      limitePenetracao:a.limitePenetracao,maxSites:a.maxSites,maxIteracoes:a.maxIteracoes,
-     maxTempoMs:a.maxTempoMs};
+     maxTempoMs:Math.min(a.maxTempoMs??1500,1500)};
    if(a.acao==="planejar")return w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
    if(a.acao==="aplicar"){
      if(!a.revisao)throw Error("Informe revisao devolvida por preensao:planejar.");
