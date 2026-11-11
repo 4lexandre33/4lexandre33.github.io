@@ -589,7 +589,7 @@ const cena={
       const needed=({pinca:2,tripode:3,gancho:2,potencia:2,lateral:2})[style]??2;
       return digits>=needed&&
         (!["pinca","tripode","lateral"].includes(style)||
-          (c.contatosPorDedo.polegar&&c.contatosPorDedo.indicador));
+          (c.contatosPorDedo.polegar&&c.contatosPorDedo.indicador&&c.oposicaoPinça));
     };
     const ok=scene.ok&&contacts.every(c=>c.ok&&enough(c));
     const fingers=contacts.map(c=>({mao:c.mao,contatos:c.contatos,
@@ -685,6 +685,8 @@ const cena={
         const needed=({pinca:2,tripode:3,gancho:2,potencia:2,lateral:2,apoio:0})[tipo]??2;
         const two=["pinca","tripode","lateral"].includes(tipo);
         const thumbs=report.contatosPorDedo.polegar&&report.contatosPorDedo.indicador;
+        if(two&&!report.oposicaoPinça)
+          throw Error("Polegar e indicador não estão em superfícies opostas após criar o vínculo.");
         if(tipo==="apoio"&&!report.palmaContato)
           throw Error("A palma perdeu o contato de apoio após vincular o objeto.");
         if(tipo!=="apoio"&&(n<needed||(two&&!thumbs)))
