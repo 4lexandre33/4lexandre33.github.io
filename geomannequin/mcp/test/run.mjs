@@ -158,6 +158,9 @@ async function suite(client, tag) {
     /acao:"auto_encaixar"/.test(wr.contents[0].text) &&
     /gm-auto-estilo/.test(wr.contents[0].text),
     "AutoGrip no widget: botão único e tipos de pegada");
+  check(/gm-grip-verificar/.test(wr.contents[0].text) &&
+    /acao:"verificar"/.test(wr.contents[0].text),
+    "AutoGrip no widget: inspeção de contato existente");
   check(["preensao","fisica"].every(n=>def(n)._meta["openai/widgetAccessible"]===true),
     "preensão e física acessíveis via widget ChatGPT");
   r = await call("nova_cena", {});
