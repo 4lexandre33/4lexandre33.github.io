@@ -2,7 +2,7 @@
 /* GeoMannequin MCP
    node server.mjs           → stdio (Claude Desktop, Claude Code, outros clientes locais)
    node server.mjs --http    → HTTP remoto (claude.ai, ChatGPT): POST/GET/DELETE /mcp  (+ /sse legado)
-   Variáveis: PORT, GM_TOKEN (senha opcional), GM_ALLOW_CODE=1 (liga executar_codigo no modo HTTP),
+   Variáveis: PORT, GM_TOKEN (senha opcional), GM_ALLOW_CODE=1 (somente stdio local; nunca libera código HTTP),
               GM_APP_URL (endereço do app), GM_MAX_SESSIONS, GM_SESSION_TTL_MIN */
 import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -55,7 +55,7 @@ const httpMode = args.includes("--http") || !!process.env.PORT && !args.includes
 if (!httpMode) {
   /* local: uma cena por processo; código liberado (roda na máquina do próprio usuário) */
   const world = createWorld();
-  const server = makeServer(() => world, { allowCode: process.env.GM_ALLOW_CODE !== "0" });
+  const server = makeServer(() => world, { allowCode: process.env.GM_ALLOW_CODE !== "0", trustedLocal: true });
   await server.connect(new StdioServerTransport());
   process.stderr.write(`GeoMannequin MCP ${VERSION} (stdio) pronto. App: ${APP_URL}\n`);
 } else {
@@ -64,7 +64,9 @@ if (!httpMode) {
   const TOKEN = process.env.GM_TOKEN || "";
   const MAX = Number(process.env.GM_MAX_SESSIONS || 200);
   const TTL = Number(process.env.GM_SESSION_TTL_MIN || 45) * 60e3;
-  const opts = { allowCode: process.env.GM_ALLOW_CODE === "1" };
+  // HTTP é uma fronteira não confiável: GM_ALLOW_CODE nunca libera JavaScript remoto.
+  // Os controles remotos devem usar ferramentas MCP tipadas ou roteiros declarativos.
+  const opts = { allowCode: false, trustedLocal: false };
   const sessions = new Map(); // id → {transport, server, world, last}
 
   const app = express();
