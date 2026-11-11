@@ -620,7 +620,7 @@ const cena={
       opcoes:options,revisao:revisaoAutoGrip(it,o)};
   },
   aplicarEncaixe(plano){
-    if(!plano||!plano.objeto||!plano.manequim||!plano.opcoes)
+    if(!plano||plano.objeto===undefined||!plano.opcoes||typeof plano.revisao!=="string")
       throw Error("Passe o plano devolvido por cena.planejarEncaixe.");
     atualizarApoios();
     const o=acharObjeto(plano.objeto);
