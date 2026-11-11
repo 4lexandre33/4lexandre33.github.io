@@ -1,0 +1,1323 @@
+{
+  "schema_version": 1,
+  "project": "GeoMannequin AutoGrip",
+  "revision": "2026-11-11",
+  "part": "B",
+  "branch": "feat/geomannequin-grip-v3-hardening-20261110",
+  "groups": [
+    {
+      "id": "AG10",
+      "title": "Geração de candidatos de pegada SE(3)",
+      "priority": "P0",
+      "depends_on": [
+        "AG07",
+        "AG08",
+        "AG09"
+      ],
+      "tasks": [
+        {
+          "id": "AG-10.01",
+          "title": "Criar objeto GripCandidate com alvo, mão, região e pose 6DOF",
+          "acceptance": "Candidato carrega frames, dedos iniciais, score e razões de rejeição.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG07",
+            "AG08",
+            "AG09"
+          ]
+        },
+        {
+          "id": "AG-10.02",
+          "title": "Gerar orientação da palma a partir de normal e tangentes",
+          "acceptance": "Base da mão coincide com a direção de aproximação desejada sem espelhamento.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.01"
+          ]
+        },
+        {
+          "id": "AG-10.03",
+          "title": "Gerar offsets palmares a partir da espessura do objeto",
+          "acceptance": "O volume da palma não entra no material ao alinhar a superfície.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.01"
+          ]
+        },
+        {
+          "id": "AG-10.04",
+          "title": "Variar roll/pitch/yaw da mão em uma malha discreta controlada",
+          "acceptance": "Busca considera pegadas equivalentes e inclinações viáveis no mesmo site.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.01"
+          ]
+        },
+        {
+          "id": "AG-10.05",
+          "title": "Gerar candidatos de pinça com dois contatos antagônicos",
+          "acceptance": "Polegar e indicador miram superfícies opostas e alcançáveis.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.01"
+          ]
+        },
+        {
+          "id": "AG-10.06",
+          "title": "Gerar candidatos de potência, gancho, tripode e apoio",
+          "acceptance": "Cada classe define contatos exigidos e posição de palma correspondente.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.02",
+            "AG-10.03"
+          ]
+        },
+        {
+          "id": "AG-10.07",
+          "title": "Gerar candidatos com o objeto fixo e modo mover objeto opcional",
+          "acceptance": "O deslocamento proposto nunca excede a política de movimento.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.04",
+            "AG-10.05"
+          ]
+        },
+        {
+          "id": "AG-10.08",
+          "title": "Eliminar duplicatas por distância rotacional/translacional",
+          "acceptance": "Candidatos redundantes reduzem custo sem perder diversidade de pegada.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.06",
+            "AG-10.07"
+          ]
+        },
+        {
+          "id": "AG-10.09",
+          "title": "Rankear com heurística barata antes de executar IK",
+          "acceptance": "Os N melhores vão para refinamento e justificam cortes do restante.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.08"
+          ]
+        },
+        {
+          "id": "AG-10.10",
+          "title": "Validar geração em pares de mão e objetos com poses inclinadas",
+          "acceptance": "Há candidatos admissíveis nos casos simples e rejeição explícita nos inviáveis.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-10.02",
+            "AG-10.03",
+            "AG-10.04",
+            "AG-10.05",
+            "AG-10.06",
+            "AG-10.07",
+            "AG-10.08",
+            "AG-10.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG10",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-10.10"
+        ]
+      }
+    },
+    {
+      "id": "AG11",
+      "title": "IK 6DOF do braço, ombro e cotovelo",
+      "priority": "P0",
+      "depends_on": [
+        "AG03",
+        "AG07",
+        "AG10"
+      ],
+      "tasks": [
+        {
+          "id": "AG-11.01",
+          "title": "Formalizar graus de liberdade do braço e seus limites individuais",
+          "acceptance": "Jacobiano manipula armAbd, armFlex, armRot, elbow e demais DOFs disponíveis.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG03",
+            "AG07",
+            "AG10"
+          ]
+        },
+        {
+          "id": "AG-11.02",
+          "title": "Acoplar posição e orientação desejada da palma ao problema IK",
+          "acceptance": "Resultado devolve resíduos translacional e angular separados.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.01"
+          ]
+        },
+        {
+          "id": "AG-11.03",
+          "title": "Adicionar solver DLS ou otimização numérica com Jacobiano",
+          "acceptance": "Solução converge em testes de múltiplas sementes sem NaN.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.01"
+          ]
+        },
+        {
+          "id": "AG-11.04",
+          "title": "Resolver prioridades de cotovelo, clavícula e escápula quando existentes",
+          "acceptance": "Escolha minimiza desconforto e usa apenas parâmetros representados pelo rig.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.01"
+          ]
+        },
+        {
+          "id": "AG-11.05",
+          "title": "Respeitar limites anatômicos e acoplamentos aplicados em applyParams",
+          "acceptance": "Nenhuma solução final ultrapassa limites mesmo perto de singularidades.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.01"
+          ]
+        },
+        {
+          "id": "AG-11.06",
+          "title": "Adicionar penalidade para atravessar torso, cabeça e pernas",
+          "acceptance": "IK rejeita solução com mão no alvo mas antebraço dentro do corpo.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.02",
+            "AG-11.03"
+          ]
+        },
+        {
+          "id": "AG-11.07",
+          "title": "Procurar múltiplos polos de cotovelo e configurações de ombro",
+          "acceptance": "Casos com obstáculos encontram alternativa sem dobrar o braço ao contrário.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.04",
+            "AG-11.05"
+          ]
+        },
+        {
+          "id": "AG-11.08",
+          "title": "Evitar saltos entre configurações vizinhas e mudanças súbitas de sinal",
+          "acceptance": "Semente da pose atual preserva continuidade da articulação.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.06",
+            "AG-11.07"
+          ]
+        },
+        {
+          "id": "AG-11.09",
+          "title": "Retornar motivo fora de alcance e melhor pose parcial não aplicada",
+          "acceptance": "Distância residual não é mascarada por ampliação de limite ou teleporte.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.08"
+          ]
+        },
+        {
+          "id": "AG-11.10",
+          "title": "Validar IK em 3D para mãos dos dois lados e biotipos extremos",
+          "acceptance": "Erro final é medido em R/graus e respeita geometria corporal.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-11.02",
+            "AG-11.03",
+            "AG-11.04",
+            "AG-11.05",
+            "AG-11.06",
+            "AG-11.07",
+            "AG-11.08",
+            "AG-11.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG11",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-11.10"
+        ]
+      }
+    },
+    {
+      "id": "AG12",
+      "title": "Orientação de punho, pronação e alinhamento palmar",
+      "priority": "P0",
+      "depends_on": [
+        "AG04",
+        "AG11"
+      ],
+      "tasks": [
+        {
+          "id": "AG-12.01",
+          "title": "Extrair eixos reais de wrist, handFrameV3 e palma",
+          "acceptance": "Matriz local condiz com os eixos do gesto e do volume do objeto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG04",
+            "AG11"
+          ]
+        },
+        {
+          "id": "AG-12.02",
+          "title": "Modelar controles de pronação, supinação e flexão do punho",
+          "acceptance": "Apenas parâmetros existentes são usados, com limites e fallback documentado.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.01"
+          ]
+        },
+        {
+          "id": "AG-12.03",
+          "title": "Alinhar face útil da palma à região de contato selecionada",
+          "acceptance": "Normal palmar enfrenta superfície sem atravessá-la.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.01"
+          ]
+        },
+        {
+          "id": "AG-12.04",
+          "title": "Resolver torção angular que preserva posição da mão",
+          "acceptance": "Erro de orientação não é ocultado pelo ajuste apenas do punho ao ponto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.01"
+          ]
+        },
+        {
+          "id": "AG-12.05",
+          "title": "Desviar o punho quando houver colisão com borda ou encosto",
+          "acceptance": "Variantes de orientação mantêm folga do dorso e ombro alcançável.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.01"
+          ]
+        },
+        {
+          "id": "AG-12.06",
+          "title": "Compatibilizar esquerda/direita ao redor de cilindros e barras",
+          "acceptance": "Normais e sinais de torque não trocam lado ao espelhar.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.02",
+            "AG-12.03"
+          ]
+        },
+        {
+          "id": "AG-12.07",
+          "title": "Planejar superfície de dedos aberta durante aproximação",
+          "acceptance": "Mão começa com espaço livre para o objeto entrar entre os dedos.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.04",
+            "AG-12.05"
+          ]
+        },
+        {
+          "id": "AG-12.08",
+          "title": "Aplicar rotação incremental sem gimbal flip visível",
+          "acceptance": "Perturbações pequenas da câmera/cadeira produzem ajuste contínuo.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.06",
+            "AG-12.07"
+          ]
+        },
+        {
+          "id": "AG-12.09",
+          "title": "Inspecionar diferença orientação desejada/obtida em graus",
+          "acceptance": "Diagnóstico mostra erro real e prioridades contrariadas.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.08"
+          ]
+        },
+        {
+          "id": "AG-12.10",
+          "title": "Validar orientação em seis lados da cadeira e quatro vistas do copo",
+          "acceptance": "Wrist/palm não ficam do lado avesso do objeto nem atravessam a superfície.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-12.02",
+            "AG-12.03",
+            "AG-12.04",
+            "AG-12.05",
+            "AG-12.06",
+            "AG-12.07",
+            "AG-12.08",
+            "AG-12.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG12",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-12.10"
+        ]
+      }
+    },
+    {
+      "id": "AG13",
+      "title": "IK independente do polegar e oposição",
+      "priority": "P0",
+      "depends_on": [
+        "AG04",
+        "AG12"
+      ],
+      "tasks": [
+        {
+          "id": "AG-13.01",
+          "title": "Definir contatos possíveis da polpa, ponta e lateral do polegar",
+          "acceptance": "Ponta retorna centro, raio e normal da superfície de contato.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG04",
+            "AG12"
+          ]
+        },
+        {
+          "id": "AG-13.02",
+          "title": "Variar thumbOpp e CMC abdução como graus de liberdade reais",
+          "acceptance": "Solução usa thumbOpp e fThAbd no intervalo anatômico disponível.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.01"
+          ]
+        },
+        {
+          "id": "AG-13.03",
+          "title": "Resolver fThMcp e fThIp com alvo 3D de contato",
+          "acceptance": "Polegar aproxima superfície sem atravessar cilindro/encosto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.01"
+          ]
+        },
+        {
+          "id": "AG-13.04",
+          "title": "Manter coordenação do polegar com a direção da palma",
+          "acceptance": "Oposição é feita em direção aos dedos, não em direção aleatória.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.01"
+          ]
+        },
+        {
+          "id": "AG-13.05",
+          "title": "Suportar pinça polpa-a-polpa e ponta-a-ponta",
+          "acceptance": "Contato alcança indicador sem exigir colisão entre falanges.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.01"
+          ]
+        },
+        {
+          "id": "AG-13.06",
+          "title": "Suportar polegar sobre lateral da caixa ou barra",
+          "acceptance": "Osso proximal não penetra volume enquanto a polpa toca a peça.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.02",
+            "AG-13.03"
+          ]
+        },
+        {
+          "id": "AG-13.07",
+          "title": "Aplicar limitação de movimento e desconforto do polegar",
+          "acceptance": "Penalidades incluem hiperextensão e fechamento além do alcance.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.04",
+            "AG-13.05"
+          ]
+        },
+        {
+          "id": "AG-13.08",
+          "title": "Replanejar quando normal do contato for impossível",
+          "acceptance": "Solucionador escolhe outra superfície ou retorna inviável.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.06",
+            "AG-13.07"
+          ]
+        },
+        {
+          "id": "AG-13.09",
+          "title": "Emitir contato do polegar com erro normal, tangencial e penetração",
+          "acceptance": "Resultados podem ser inspecionados sem ver a renderização.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.08"
+          ]
+        },
+        {
+          "id": "AG-13.10",
+          "title": "Validar pinças de diâmetro pequeno, médio e impossível",
+          "acceptance": "Caso impossível nunca deforma polegar nem insere dedos na peça.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-13.02",
+            "AG-13.03",
+            "AG-13.04",
+            "AG-13.05",
+            "AG-13.06",
+            "AG-13.07",
+            "AG-13.08",
+            "AG-13.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG13",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-13.10"
+        ]
+      }
+    },
+    {
+      "id": "AG14",
+      "title": "IK dos quatro dedos e fechamento adaptativo",
+      "priority": "P0",
+      "depends_on": [
+        "AG04",
+        "AG13"
+      ],
+      "tasks": [
+        {
+          "id": "AG-14.01",
+          "title": "Criar solver individual de indicador, médio, anelar e mínimo",
+          "acceptance": "Cada dedo recebe alvo e pesos de contato independentes.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG04",
+            "AG13"
+          ]
+        },
+        {
+          "id": "AG-14.02",
+          "title": "Resolver flexões MCP, PIP e DIP compatíveis com rig atual",
+          "acceptance": "Solver usa f*Mcp, f*Ip e handCurl sem assumir DOFs inexistentes.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.01"
+          ]
+        },
+        {
+          "id": "AG-14.03",
+          "title": "Resolver abdução f*Abd e fSpread conforme largura do objeto",
+          "acceptance": "Dedos se distribuem ao redor de barras/arestas sem todos convergirem no mesmo ponto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.01"
+          ]
+        },
+        {
+          "id": "AG-14.04",
+          "title": "Fechar dedos até distância de contato e não até valor fixo",
+          "acceptance": "Primeiro contato válido interrompe compressão de cada falange.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.01"
+          ]
+        },
+        {
+          "id": "AG-14.05",
+          "title": "Adicionar refinamento multiarticular em vez de varrer só fXX",
+          "acceptance": "Ponta e meio do dedo alcançam região com menor interpenetração.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.01"
+          ]
+        },
+        {
+          "id": "AG-14.06",
+          "title": "Priorizar falanges e polpas relevantes por tipo de pegada",
+          "acceptance": "Gancho usa falange média, pinça usa polpa e potência usa vários contatos.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.02",
+            "AG-14.03"
+          ]
+        },
+        {
+          "id": "AG-14.07",
+          "title": "Preservar relaxamento de dedos que não participam da pega",
+          "acceptance": "Anelar e mínimo não fecham em pinças de precisão sem necessidade.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.04",
+            "AG-14.05"
+          ]
+        },
+        {
+          "id": "AG-14.08",
+          "title": "Checar entre dedos, palma, objeto e partes do próprio corpo",
+          "acceptance": "Não há cruzamento indevido ou colisão proibida após fechamento.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.06",
+            "AG-14.07"
+          ]
+        },
+        {
+          "id": "AG-14.09",
+          "title": "Reportar quais dedos fizeram contato e erros por dedo",
+          "acceptance": "Resposta inclui polegar, indicador, médio, anelar e mínimo individualmente.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.08"
+          ]
+        },
+        {
+          "id": "AG-14.10",
+          "title": "Validar mãos abertas, pinça, gancho, potência e tripode",
+          "acceptance": "Atlas por biotipo demonstra contatos certos sem atravessar o objeto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-14.02",
+            "AG-14.03",
+            "AG-14.04",
+            "AG-14.05",
+            "AG-14.06",
+            "AG-14.07",
+            "AG-14.08",
+            "AG-14.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG14",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-14.10"
+        ]
+      }
+    },
+    {
+      "id": "AG15",
+      "title": "Solucionador conjunto de braço, mão, objeto e contatos",
+      "priority": "P0",
+      "depends_on": [
+        "AG07",
+        "AG11",
+        "AG12",
+        "AG13",
+        "AG14"
+      ],
+      "tasks": [
+        {
+          "id": "AG-15.01",
+          "title": "Definir vetor de otimização com braço, punho, cinco dedos e objeto opcional",
+          "acceptance": "Estado tem graus de liberdade explícitos e bloqueios por política.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG07",
+            "AG11",
+            "AG12",
+            "AG13",
+            "AG14"
+          ]
+        },
+        {
+          "id": "AG-15.02",
+          "title": "Construir custo multiobjetivo com unidades e pesos calibrados",
+          "acceptance": "Mede erro de contato, profundidade, pose inicial, limites, conforto e movimento do objeto.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.01"
+          ]
+        },
+        {
+          "id": "AG-15.03",
+          "title": "Separar restrições duras de custos suaves",
+          "acceptance": "Limites anatômicos, interpenetração crítica e mão ocupada nunca são compensados por score.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.01"
+          ]
+        },
+        {
+          "id": "AG-15.04",
+          "title": "Usar múltiplas sementes, busca grossa e refinamento local",
+          "acceptance": "Busca escapa de mínimos locais típicos de cadeira sem custo explosivo.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.01"
+          ]
+        },
+        {
+          "id": "AG-15.05",
+          "title": "Permitir otimização coordenada por blocos e refinamento simultâneo",
+          "acceptance": "Solução alterna corpo/palma/dedos/objeto até convergir ou atingir orçamento.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.01"
+          ]
+        },
+        {
+          "id": "AG-15.06",
+          "title": "Tratar singularidades, impossibilidade e plateau numéricos",
+          "acceptance": "Motor interrompe com motivo preciso sem estados não finitos.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.02",
+            "AG-15.03"
+          ]
+        },
+        {
+          "id": "AG-15.07",
+          "title": "Comparar vários tipos de pega para o mesmo par mão-objeto",
+          "acceptance": "Modo auto escolhe solução com melhor score e requisitos cumpridos.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.04",
+            "AG-15.05"
+          ]
+        },
+        {
+          "id": "AG-15.08",
+          "title": "Aplicar checagem final de distância assinada em geometria fina",
+          "acceptance": "Mão toca regiões planejadas e não apresenta penetração proibida acima do limiar.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.06",
+            "AG-15.07"
+          ]
+        },
+        {
+          "id": "AG-15.09",
+          "title": "Emitir certificado de pegada com residual e margens por restrição",
+          "acceptance": "Relatório contém score, profundidade, folga, contatos, iterações e fallback.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.08"
+          ]
+        },
+        {
+          "id": "AG-15.10",
+          "title": "Validar otimização com objetos de escalas distintas e poses iniciais aleatórias",
+          "acceptance": "Testes reproduzíveis alcançam a meta declarada ou retornam inviável.",
+          "priority": "P0",
+          "status": "planned",
+          "depends_on": [
+            "AG-15.02",
+            "AG-15.03",
+            "AG-15.04",
+            "AG-15.05",
+            "AG-15.06",
+            "AG-15.07",
+            "AG-15.08",
+            "AG-15.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG15",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-15.10"
+        ]
+      }
+    },
+    {
+      "id": "AG16",
+      "title": "Correção automática controlada da pose do objeto",
+      "priority": "P1",
+      "depends_on": [
+        "AG11",
+        "AG15"
+      ],
+      "tasks": [
+        {
+          "id": "AG-16.01",
+          "title": "Definir prioridade preservarObjeto e penalidade de movimento de objeto",
+          "acceptance": "Modo padrão mantém cadeira fixa e ajusta braço/mão sempre que possível.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG11",
+            "AG15"
+          ]
+        },
+        {
+          "id": "AG-16.02",
+          "title": "Implementar opção moverObjeto com limites XYZ e angular",
+          "acceptance": "Rotação/translação propostas são finitas, limitadas e explícitas.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.01"
+          ]
+        },
+        {
+          "id": "AG-16.03",
+          "title": "Projetar correção 6DOF sem deslocar peças ligadas indevidamente",
+          "acceptance": "Mover cadeira preserva filhos por rigid transform e checa apoios.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.01"
+          ]
+        },
+        {
+          "id": "AG-16.04",
+          "title": "Escolher ponto de pivô útil para reduzir mudança visível",
+          "acceptance": "Correção de giro não cria salto arbitrário do centro de massa geométrico.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.01"
+          ]
+        },
+        {
+          "id": "AG-16.05",
+          "title": "Buscar microajuste de aproximação para limpar interpenetração palmar",
+          "acceptance": "Afastar objeto da mão não perde contatos necessários.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.01"
+          ]
+        },
+        {
+          "id": "AG-16.06",
+          "title": "Respeitar colisão com piso e outros objetos após a correção",
+          "acceptance": "Pose nova não atravessa mesa ou chão para encaixar dedos.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.02",
+            "AG-16.03"
+          ]
+        },
+        {
+          "id": "AG-16.07",
+          "title": "Evitar alterar dimensões da mão e do objeto como correção",
+          "acceptance": "Espessura e escala permanecem constantes durante a operação.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.04",
+            "AG-16.05"
+          ]
+        },
+        {
+          "id": "AG-16.08",
+          "title": "Combinar ajuste de objeto com IK do braço até limiar de solução",
+          "acceptance": "Não cria degrau entre poses da mão e do móvel.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.06",
+            "AG-16.07"
+          ]
+        },
+        {
+          "id": "AG-16.09",
+          "title": "Reportar deslocamento e rotação propostos antes do commit",
+          "acceptance": "Prévia exibe delta XYZ, ângulos e qualidade obtida.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.08"
+          ]
+        },
+        {
+          "id": "AG-16.10",
+          "title": "Validar cadeira inclinada, copo em mesa e caixa no chão",
+          "acceptance": "Modo preservar/mover/híbrido produz estados previstos ou falha justificada.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-16.02",
+            "AG-16.03",
+            "AG-16.04",
+            "AG-16.05",
+            "AG-16.06",
+            "AG-16.07",
+            "AG-16.08",
+            "AG-16.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG16",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-16.10"
+        ]
+      }
+    },
+    {
+      "id": "AG17",
+      "title": "Planejamento livre de obstáculos e aproximação gradual",
+      "priority": "P1",
+      "depends_on": [
+        "AG07",
+        "AG15",
+        "AG16"
+      ],
+      "tasks": [
+        {
+          "id": "AG-17.01",
+          "title": "Calcular pregrasp afastado da superfície pela normal do alvo",
+          "acceptance": "Posição inicial oferece espaço para dedos abertos antes do contato.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG07",
+            "AG15",
+            "AG16"
+          ]
+        },
+        {
+          "id": "AG-17.02",
+          "title": "Planejar trajetória do braço do estado inicial até pregrasp",
+          "acceptance": "Ombro, cotovelo e punho transitam sem atravessar tronco e móveis.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.01"
+          ]
+        },
+        {
+          "id": "AG-17.03",
+          "title": "Amostragem adaptativa e swept volumes no movimento da mão",
+          "acceptance": "Nenhuma amostra intermediária inclui penetração proibida acima da tolerância.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.01"
+          ]
+        },
+        {
+          "id": "AG-17.04",
+          "title": "Planejar aproximação final com velocidade angular e translacional limitada",
+          "acceptance": "Palma não teleporta através do encosto ou assento.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.01"
+          ]
+        },
+        {
+          "id": "AG-17.05",
+          "title": "Distinguir contato desejado no fim de colisão prematura no percurso",
+          "acceptance": "Superfície correta só é tocada no estágio de fechamento.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.01"
+          ]
+        },
+        {
+          "id": "AG-17.06",
+          "title": "Adicionar planejamento alternativo quando a rota direta for bloqueada",
+          "acceptance": "Altera polo do cotovelo ou usa caminho em segmentos.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.02",
+            "AG-17.03"
+          ]
+        },
+        {
+          "id": "AG-17.07",
+          "title": "Verificar obstáculos externos incluindo outro manequim",
+          "acceptance": "Planejador rejeita rota que toca terceiro sem autorização.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.04",
+            "AG-17.05"
+          ]
+        },
+        {
+          "id": "AG-17.08",
+          "title": "Emitir caminho temporal e relatório do primeiro bloqueio",
+          "acceptance": "Visualização exibe waypoints, etapa, segmento e colisores.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.06",
+            "AG-17.07"
+          ]
+        },
+        {
+          "id": "AG-17.09",
+          "title": "Permitir interromper e replanejar ao mover objeto/câmera/corpo",
+          "acceptance": "Trajetória cancelada não deixa mão ou cadeira em estado inválido.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.08"
+          ]
+        },
+        {
+          "id": "AG-17.10",
+          "title": "Validar cenários com cadeira atrás do corpo, parede e mesa",
+          "acceptance": "Rota viável desvia; rota impossível retorna causa sem teleporte.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-17.02",
+            "AG-17.03",
+            "AG-17.04",
+            "AG-17.05",
+            "AG-17.06",
+            "AG-17.07",
+            "AG-17.08",
+            "AG-17.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG17",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-17.10"
+        ]
+      }
+    },
+    {
+      "id": "AG18",
+      "title": "Duas mãos e solução simultânea bilateral",
+      "priority": "P1",
+      "depends_on": [
+        "AG15",
+        "AG17"
+      ],
+      "tasks": [
+        {
+          "id": "AG-18.01",
+          "title": "Gerar GripRegions para as duas mãos com zonas separadas",
+          "acceptance": "Encosto da cadeira admite duas pegadas sem selecionar o mesmo espaço inadequado.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG15",
+            "AG17"
+          ]
+        },
+        {
+          "id": "AG-18.02",
+          "title": "Estabelecer constraints simultâneas de ambas as palmas",
+          "acceptance": "Poses são resolvidas juntas em vez de IK secundária unilateral sem feedback.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.01"
+          ]
+        },
+        {
+          "id": "AG-18.03",
+          "title": "Resolver quatro níveis: dois braços, duas palmas, dez dedos e objeto",
+          "acceptance": "Estado acoplado preserva um único objeto e os dois contatos.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.01"
+          ]
+        },
+        {
+          "id": "AG-18.04",
+          "title": "Evitar braço esquerdo atravessar o direito ou tronco",
+          "acceptance": "Autocolisões interbraços entram como restrição dura.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.01"
+          ]
+        },
+        {
+          "id": "AG-18.05",
+          "title": "Compatibilizar orientações da peça e os dois caminhos de aproximação",
+          "acceptance": "Objeto mantém pose consistente sem uma mão empurrar a outra.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.01"
+          ]
+        },
+        {
+          "id": "AG-18.06",
+          "title": "Suportar pegada assimétrica e distribuição desigual dos dedos",
+          "acceptance": "Uma mão pode sustentar a base e outra estabilizar encosto.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.02",
+            "AG-18.03"
+          ]
+        },
+        {
+          "id": "AG-18.07",
+          "title": "Definir regra de mão principal e troca sem salto",
+          "acceptance": "Transferência recalcula referência mantendo pose e contato.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.04",
+            "AG-18.05"
+          ]
+        },
+        {
+          "id": "AG-18.08",
+          "title": "Definir fallback somente uma mão sem vínculo bilateral falso",
+          "acceptance": "Se segunda mão não alcança, falha ou oferece pegada de uma mão.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.06",
+            "AG-18.07"
+          ]
+        },
+        {
+          "id": "AG-18.09",
+          "title": "Validar força/torque apenas se modelo físico suportar",
+          "acceptance": "Nenhuma alegação de estabilidade física vem de vínculo geométrico sozinho.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.08"
+          ]
+        },
+        {
+          "id": "AG-18.10",
+          "title": "Validar bilateral em cadeira grande/pequena e diferentes biotipos",
+          "acceptance": "Ambas as mãos têm contato real e não há deslocamento visível do objeto.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-18.02",
+            "AG-18.03",
+            "AG-18.04",
+            "AG-18.05",
+            "AG-18.06",
+            "AG-18.07",
+            "AG-18.08",
+            "AG-18.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG18",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-18.10"
+        ]
+      }
+    },
+    {
+      "id": "AG19",
+      "title": "Qualidade da pegada e critérios de estabilidade geométrica",
+      "priority": "P1",
+      "depends_on": [
+        "AG14",
+        "AG15",
+        "AG18"
+      ],
+      "tasks": [
+        {
+          "id": "AG-19.01",
+          "title": "Medir erro de contato da polpa e palma em cada região",
+          "acceptance": "Distância, área e normal aparecem por dedo e por mão.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG14",
+            "AG15",
+            "AG18"
+          ]
+        },
+        {
+          "id": "AG-19.02",
+          "title": "Medir penetração máxima e total por tipo de colisão",
+          "acceptance": "Falhas registram partes, profundidades e limiar excedido.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.01"
+          ]
+        },
+        {
+          "id": "AG-19.03",
+          "title": "Medir qualidade geométrica de oposição de contatos",
+          "acceptance": "Pinça com normais não opostas é reprovada mesmo que pontas encostem.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.01"
+          ]
+        },
+        {
+          "id": "AG-19.04",
+          "title": "Medir margem de alcance e conforto articular",
+          "acceptance": "Pegadas no limite de extensão recebem pontuação inferior.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.01"
+          ]
+        },
+        {
+          "id": "AG-19.05",
+          "title": "Medir centragem do objeto em relação a contatos disponíveis",
+          "acceptance": "Cadeira pode ser estável geometricamente sem alegar equilíbrio dinâmico.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.01"
+          ]
+        },
+        {
+          "id": "AG-19.06",
+          "title": "Definir score legível de 0 a 100 com componentes independentes",
+          "acceptance": "Relatório detalha pesos e não oculta violações duras.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.02",
+            "AG-19.03"
+          ]
+        },
+        {
+          "id": "AG-19.07",
+          "title": "Calibrar tolerância de contato versus penetração por tipo de peça",
+          "acceptance": "Defaults têm testes e escalas em R, não pixels.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.04",
+            "AG-19.05"
+          ]
+        },
+        {
+          "id": "AG-19.08",
+          "title": "Distinguir qualidade visual e sustentação física não simulada",
+          "acceptance": "Estado geométrico válido não implica automaticamente resistência à gravidade.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.06",
+            "AG-19.07"
+          ]
+        },
+        {
+          "id": "AG-19.09",
+          "title": "Gerar justificativas de escolha, fallback e impossibilidade",
+          "acceptance": "Usuário vê por que pinça foi escolhida ou por que não serve.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.08"
+          ]
+        },
+        {
+          "id": "AG-19.10",
+          "title": "Validar score contra atlas de poses boas e ruins",
+          "acceptance": "Cenas obviamente atravessadas nunca recebem nota aprovada.",
+          "priority": "P1",
+          "status": "planned",
+          "depends_on": [
+            "AG-19.02",
+            "AG-19.03",
+            "AG-19.04",
+            "AG-19.05",
+            "AG-19.06",
+            "AG-19.07",
+            "AG-19.08",
+            "AG-19.09"
+          ]
+        }
+      ],
+      "gate": {
+        "id": "AG19",
+        "kind": "acceptance_gate",
+        "status": "planned",
+        "depends_on": [
+          "AG-19.10"
+        ]
+      }
+    }
+  ]
+}
