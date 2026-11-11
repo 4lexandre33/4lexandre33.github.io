@@ -4,7 +4,7 @@
 
 **Escopo:** projeto completo de uma função que, ao receber o manequim e o objeto, determina automaticamente uma pegada viável e movimenta **braço, ombro, cotovelo, punho, palma, polegar, indicador, médio, anelar e mínimo**, avalia colisões e confirma uma preensão rígida sem interpenetração proibida. Deve funcionar por **um botão**, **uma chamada de código no editor** e **uma ferramenta MCP tipada**.
 
-**Estado dos 300 itens abaixo: PLANEJADO, não implementado nem testado.** O que já existe no Grip V3 é a base; a nova geometria, busca e solução conjunta precisam ser construídas. Este grafo é adicional aos task graphs de 239 tarefas da preensão rígida V3 e de 240 tarefas da paridade MCP.
+**Estado: IMPLEMENTAÇÃO EXPERIMENTAL EM ANDAMENTO.** O código-fonte já cobre parcialmente vários grupos, mas **nenhum dos 30 gates está aprovado** e os 300 itens continuam sem `done` até haver testes integrados/visuais que satisfaçam seus critérios de aceite. Ver [relatório de implementação](./auto-grip-implementacao-progressiva-20261111.md). O que já existe no Grip V3 é a base; a nova geometria, busca e solução conjunta precisam ser construídas. Este grafo é adicional aos task graphs de 239 tarefas da preensão rígida V3 e de 240 tarefas da paridade MCP.
 
 ## Arquivos completos (300 tarefas verificáveis)
 
