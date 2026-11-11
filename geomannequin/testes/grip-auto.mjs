@@ -119,7 +119,7 @@ if(replan.status==="planejado"){
 }
 
 assert.throws(()=>w.cena.autoEncaixarObjeto("Inexistente",options),/não encontrado/i);
-assert.throws(()=>w.cena.planejarEncaixe(obj.id,{...options,permitirMoverObjeto:true}),/não suportado/i);
+assert.throws(()=>w.cena.planejarEncaixe(obj.id,{...options,permitirMoverObjeto:true}),/preservarObjeto:false/);
 // Microajuste horizontal: opt-in explícito, preview pura, limite finito e
 // rejeição quando o usuário não autorizou mover a peça.
 const adjustWorld=createWorld();
