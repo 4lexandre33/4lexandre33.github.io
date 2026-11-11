@@ -207,9 +207,18 @@ export function iniciarColisoes() {
       refreshScene();syncControls();render();
     }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
+  $("alternarNaMao").onclick=()=>{try{
+    const ligado=cena.alternarModeloNaMao({mao:$("colV2Mao").value});
+    SCN.objSel=null;refreshScene();syncControls();render();status.textContent=ligado?"Modelo reativado.":"Modelo desativado.";
+  }catch(e){status.textContent=e.message}};
+  $("executarAcaoMao").onclick=()=>{try{
+    const r=cena.deslizarComMao(SCN.objSel,$("acaoMao").value,{mao:$("colV2Mao").value});
+    refreshScene();syncControls();render();status.textContent=r.acao+" · "+r.distancia.toFixed(2)+" R";
+  }catch(e){status.textContent=e.message}};
   $("criarNaMao")?.addEventListener("click",()=>{
     try{
-      const obj=cena.objetoNaMao($("modeloNaMao").value,{mao:$("colV2Mao").value});
+      const perfil=$("perfilMao").value.trim();
+      const obj=cena.objetoNaMao($("modeloNaMao").value,{mao:$("colV2Mao").value,perfil:perfil?JSON.parse(perfil):undefined});
       SCN.objSel=obj.id;
       refreshScene();syncControls();render();
       status.textContent="Modelo encaixado na mão "+$("colV2Mao").value+".";

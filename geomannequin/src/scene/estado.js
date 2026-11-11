@@ -5,6 +5,7 @@ import { STYLES, setStyleName } from "./paletas.js";
 import { $ } from "./ambiente.js";
 import { L, setMode } from "./modos.js";
 import { CAMK, MAXM, P, SCN, hex2rgb, newInst, nextHue, novoIdObjeto, setP, atualizarApoios } from "./modelo.js";
+import {normalizarPerfil} from "../engine/objetos.js";
 import { validarReferencia, ventoManga, DEF, TIPOS_OBJETO, clamp, objetoPadrao, zoomToDist } from "../engine/index.js";
 import { COL, setModoColisao, setPreferir } from "./colisoes.js";
 import {CONTATO_V2,setContatoV2} from "./contato-v2.js";
@@ -48,7 +49,7 @@ function sceneState(){
     if(ix>=0)seguir={tipo:q.tipo,indice:ix,opts:{...q.opts}};
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
-  return {...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
+  return {...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
     if(o.gripV3){
       const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
       q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
@@ -66,12 +67,26 @@ function loadScene(sc){
   sc.list.slice(0,MAXM).forEach(o=>{const it=newInst(null,o.name);SL.forEach(d=>{const v=o.params&&o.params[d.k];if(typeof v==="number"&&isFinite(v))it.params[d.k]=clamp(v,d.min,d.max)});
     if(o.params&&NOMES_BIOTIPOS.includes(o.params._biotipo))it.params._biotipo=o.params._biotipo;it.params.headModel=modeloCabecaEstadoOrb(o.params&&o.params.headModel);
     it.hue=typeof o.hue==="number"?o.hue:null;it.col=o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink)?o.col:null;
+    if(o.modelosGuardados){
+      const validos=["cadeira","mesa","bastao","cajado","espada","retangular","circular","eliptica","plana","personalizada"];
+      it.modelosGuardados={};
+      for(const lado of ["direita","esquerda"]){
+        const v=o.modelosGuardados[lado];
+        if(v&&validos.includes(v.modelo))it.modelosGuardados[lado]={modelo:v.modelo,
+          nome:String(v.nome||v.modelo).slice(0,24),cor:/^#[0-9a-f]{6}$/i.test(v.cor)?v.cor:undefined,
+          perfil:v.perfil};
+      }
+    }
     if(refs[SCN.list.length].length)it.referencias=refs[SCN.list.length];
     it.congelado=!!o.congelado;it.oculto=!!o.oculto;it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
   SCN.exato=!!sc.exato;
   /* objetos da cena */
   SCN.objetos.length=0;SCN.objSel=null;
   if(Array.isArray(sc.objetos))sc.objetos.slice(0,40).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo);["x","z","giro","larg","prof","alt","encosto","cabeceira","raio"].forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],k==="giro"?-180:k==="raio"?0.1:-40,k==="giro"?180:k==="raio"?20:40)});
+    if(o.perfilPega)q.perfilPega=normalizarPerfil(o.perfilPega);
+    if(typeof o.modeloMao==="string"&&o.modeloMao.length<=16)q.modeloMao=o.modeloMao;
+    if(o.gestoAnterior)q.gestoAnterior=Object.fromEntries(Object.entries(o.gestoAnterior).filter(([k,v])=>
+      SLK[k]&&/^(handCurl|thumbOpp|fSpread|fTh|fIn|fMe|fAn|fMi)/.test(k)&&Number.isFinite(v)));
     if(Number.isFinite(o.secaoPega)&&o.secaoPega>0)q.secaoPega=Math.min(o.secaoPega,4);
     if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);q.id=novoIdObjeto();
     if(Array.isArray(o.rot3)&&o.rot3.length===9&&o.rot3.every(Number.isFinite))q.rot3=o.rot3.slice();

@@ -13,6 +13,7 @@ const TIPOS_OBJETO = {
   cadeiraVazada:{nome:"cadeira com travessa",larg:4,prof:4,alt:4,encosto:4.2},
   mesaComAlca:{nome:"mesa com alça",larg:7,prof:4,alt:5},
   baseRetangular:{nome:"base retangular",larg:.3,prof:.3,alt:.9},
+  basePerfil:{nome:"base de perfil",larg:.3,prof:.3,alt:.9},
   baseCircular:{nome:"base circular",larg:.3,prof:.3,alt:.9},
   bastao:{nome:"bastão",larg:.3,prof:.3,alt:7},
   cajado:{nome:"cajado",larg:.3,prof:.3,alt:13},
@@ -42,6 +43,38 @@ function objetoPadrao(tipo, o) {
 }
 /* partes do objeto em coordenadas locais (base no chão, centro em x/z):
    caixa {c, h:[meia largura, meia altura, meia prof.]} ou cilindro {cil:true, c, r, hh: meia altura} */
+// Extrusão de contornos personalizados por faixas. As mesmas caixas definem
+// o volume desenhado, o volume de colisão e a superfície de contato.
+function normalizarPerfil(vertices){
+  if(!Array.isArray(vertices)||vertices.length<3||vertices.length>24||
+    vertices.some(q=>!Array.isArray(q)||q.length!==2||!q.every(Number.isFinite)))
+    throw Error("Perfil: use de 3 a 24 vértices [x,y].");
+  const centro=[0,1].map(i=>(Math.min(...vertices.map(q=>q[i]))+Math.max(...vertices.map(q=>q[i])))/2);
+  const pontos=vertices.map(q=>q.map((v,i)=>v-centro[i]));
+  const raio=Math.max(...pontos.map(q=>Math.hypot(...q)));
+  if(!Number.isFinite(raio)||raio<1e-7)throw Error("Perfil sem extensão.");
+  const norm=pontos.map(q=>q.map(v=>v/raio));
+  const area=norm.reduce((s,[x,y],i)=>{const b=norm[(i+1)%norm.length];return s+x*b[1]-y*b[0]},0);
+  if(Math.abs(area)<.001)throw Error("Perfil sem área suficiente.");
+  return norm;
+}
+function extrudarPerfil(pontos,d,centro,comprimento,horizontal){
+  const out=[],min=Math.min(...pontos.map(q=>q[1])),max=Math.max(...pontos.map(q=>q[1])),passo=(max-min)/12;
+  for(let i=0;i<12;i++){
+    const y=min+(i+.5)*passo,xs=[];
+    pontos.forEach((a,j)=>{
+      const b=pontos[(j+1)%pontos.length];
+      if((a[1]>y)!==(b[1]>y))xs.push(a[0]+(b[0]-a[0])*(y-a[1])/(b[1]-a[1]));
+    });
+    xs.sort((a,b)=>a-b);
+    for(let j=1;j<xs.length;j+=2){
+      const x=(xs[j]+xs[j-1])*d/4,w=(xs[j]-xs[j-1])*d/4,h=passo*d/4;
+      const delta=horizontal?[0,y*d/2,x]:[x,0,y*d/2];
+      out.push({c:centro.map((v,k)=>v+delta[k]),h:horizontal?[comprimento/2,h,w]:[w,comprimento/2,h]});
+    }
+  }
+  return out;
+}
 function partesLocais(o) {
   const L = o.larg / 2, P = o.prof / 2, A = o.alt, out = [], perna = (x, z, alt) => out.push({ c: [x, alt / 2, z], h: [0.17, alt / 2, 0.17] });
   const d=o.secaoPega||.25;
@@ -55,13 +88,16 @@ function partesLocais(o) {
       corpo.push(cadeira?{c:[x,(A+y)/2,z],h:[.13,(y-A)/2,.13]}:
         {c:[x,y,(P+z)/2],h:[.13,.13,(z-P)/2+.18]});
     }
+    if(o.perfilPega)return corpo.concat(extrudarPerfil(o.perfilPega,d,[0,y,z],2*L,true));
     corpo.push({c:[0,y,z],h:[L,d/2,d/2]});
     return corpo;
   }
-  if(["baseRetangular","baseCircular","espada","cajado","bastao"].includes(o.tipo)){
-    if(o.tipo==="baseRetangular")return [{c:[0,A/2,0],h:[d/2,A/2,d/2]}];
+  if(["basePerfil","baseRetangular","baseCircular","espada","cajado","bastao"].includes(o.tipo)){
+    if(o.tipo==="basePerfil"&&!o.perfilPega)return [{c:[0,A/2,0],h:[d/2,A/2,d/2]}];
+    if(o.tipo==="baseRetangular"&&!o.perfilPega)return [{c:[0,A/2,0],h:[d/2,A/2,d/2]}];
     const cabo=o.tipo==="espada"?1.4:A;
-    out.push({cil:true,c:[0,cabo/2,0],hh:cabo/2,r:d/2});
+    if(o.perfilPega)out.push(...extrudarPerfil(o.perfilPega,d,[0,cabo/2,0],cabo,false));
+    else out.push({cil:true,c:[0,cabo/2,0],hh:cabo/2,r:d/2});
     if(o.tipo==="espada")out.push({c:[0,cabo,0],h:[.52,.08,.12]},
       {c:[0,(A+cabo)/2,0],h:[.18,(A-cabo)/2,.05]});
     if(o.tipo==="cajado")out.push({cil:true,c:[0,A-.2,0],hh:.2,r:d});
@@ -428,4 +464,4 @@ function zDasFaces(faces, Cf) {
   return { x0, y0, w, h, z };
 }
 
-export { desenharReferencia, pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };
+export { normalizarPerfil, desenharReferencia, pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };

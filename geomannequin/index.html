@@ -133,9 +133,15 @@
       <p class="hint camadas-status" id="cStatus" aria-live="polite"></p>
       <details id="mangaControles"><summary>Roupa, cabelo, vento e VFX</summary>
       <label>Modelo <select id="mangaTipo"><option value="paleto">Paletó</option><option value="camisa">Camisa</option><option value="calca">Calça</option><option value="curto">Cabelo curto</option><option value="longo">Cabelo longo</option><option value="preso">Cabelo preso</option><option value="franja">Franja</option><option value="impacto">Linhas radiais</option><option value="linhas">Linhas de velocidade</option><option value="chama">Chama na mão</option><option value="explosao">Explosão</option><option value="fumaca">Fumaça</option></select></label>
-      <label>Cor <input type="color" id="mangaCor" value="#486582"></label><button id="mangaAdicionar" type="button">Adicionar ao quadro</button>
+      <label>Cor <input type="color" id="mangaCor" value="#486582"></label><label>Incluir na prévia <input id="mangaPrevia" type="checkbox" checked></label>
+      <label>Incluir na exportação <input id="mangaSaida" type="checkbox" checked></label>
+      <label>Duração em quadros <input id="mangaDuracao" type="number" min="1" max="100001" value="100000"></label>
+      <label>Escala <input id="mangaEscala" type="number" min=".1" max="5" value="1" step=".1"></label>
+      <label>Raízes de cabelo (ângulo, altura e comprimento em JSON) <textarea id="mangaRaizes" rows="2" placeholder='[{"angulo":0,"altura":0.8,"comprimento":1}]'></textarea></label>
+      <button id="mangaEditar" type="button">Aplicar ajustes à referência</button>
+      <button id="mangaAdicionar" type="button">Adicionar ao quadro</button>
       <label>Referências do manequim <select id="mangaLista"></select></label>
-      <button id="mangaVisivel" type="button">Mostrar / ocultar</button><button id="mangaRemover" type="button">Remover</button>
+      <button id="mangaVisivel" type="button">Mostrar / ocultar</button><button id="mangaAmostra" type="button">Marcar rastro da mão direita</button><button id="mangaRemover" type="button">Remover</button>
       <div><button id="mangaDesenhar" type="button">Desenhar tecido no corpo</button>
       <label>Ponto <select id="mangaPonto"><option value="apoio">Sustentação</option><option value="pressao">Pressão</option><option value="livre">Livre</option></select></label>
       <button id="mangaFechar" type="button">Fechar painel</button><button id="mangaCancelar" type="button">Cancelar desenho</button></div>
@@ -160,8 +166,11 @@
         <label for="colV2Mao">Mão</label>
         <select id="colV2Mao"><option value="direita">Direita</option><option value="esquerda">Esquerda</option></select>
         <label for="modeloNaMao">Modelo na mão</label>
-        <select id="modeloNaMao"><option value="cadeira">Cadeira com travessa</option><option value="mesa">Mesa com alça</option><option value="bastao">Bastão</option><option value="cajado">Cajado</option><option value="espada">Espada de cena</option><option value="retangular">Base retangular</option><option value="circular">Base circular</option></select>
+        <select id="modeloNaMao"><option value="cadeira">Cadeira com travessa</option><option value="mesa">Mesa com alça</option><option value="bastao">Bastão</option><option value="cajado">Cajado</option><option value="espada">Espada de cena</option><option value="retangular">Base retangular</option><option value="circular">Base circular</option><option value="eliptica">Base elíptica</option><option value="plana">Base plana</option><option value="personalizada">Perfil personalizado</option></select>
+        <label>Contorno opcional [x,y] <input id="perfilMao" placeholder="[[-1,0],[0,1],[1,0],[0,-1]]"></label>
         <button type="button" id="criarNaMao">Criar já encaixado</button>
+        <button id="alternarNaMao" type="button">Desativar / reativar modelo</button>
+        <select id="acaoMao" aria-label="Ação de contato"><option value="tocar">Tocar</option><option value="empurrar">Empurrar</option><option value="puxar">Puxar</option></select><button id="executarAcaoMao" type="button">Aplicar ao objeto selecionado</button>
         <label for="colV3Ponto">Local de agarre</label>
         <select id="colV3Ponto" aria-label="Ponto anatômico do objeto"><option value="auto">Mais próximo da palma</option></select>
         <label for="colV3Reach">Alcance (R)</label>

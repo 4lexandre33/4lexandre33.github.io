@@ -28,7 +28,8 @@ import {rotM} from "../engine/matematica.js";
 import {iniciarQuedaObjeto,cancelarQuedaObjeto,avancarDinamicaObjetos} from "../engine/grip-dynamics.js";
 import { validarReferencia, ventoManga } from "../engine/referencia-manga.js";
 import { gerarNaMao } from "./bases-mao.js";
-import {tocarV2} from "./toque-v2.js";
+import {verificarMicroDeslocamentoAutoGrip} from "./grip-auto.js";
+import {targetSurface,tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, colliderRig, colliderObject, manifoldObject, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
 
@@ -473,6 +474,9 @@ const cena={
     {id:"quadros",estado:"parcial",api:["cena.quadros.abrir","cena.quadros.texto","cena.quadros.renderizar","cena.quadros.fila","cena.quadros.baixar"]},
     {id:"blocking",estado:"parcial",api:["cena.blocking","cena.blocking.abrir","cena.blocking.estado"]},
     {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
+    {id:"referenciasManga",estado:"experimental",api:["cena.objetoNaMao","cena.alternarModeloNaMao",
+      "cena.deslizarComMao","cena.referencia","cena.referencias","cena.removerReferencia","cena.amostrarRastro","cena.vento","cena.quadroSimulado"],
+      limite:"Tecido e cabelo usam guias e colisores corporais aproximados."},
     {id:"autoGrip",estado:"experimental",api:["cena.autoEncaixarObjeto","cena.planejarEncaixe","cena.reajustarEncaixe","cena.inspecionarAutoGrip",
       "cena.aplicarEncaixe","m.autoSegurar","m.medidasMao","obj.autoEncaixarPor"],
       limite:"Busca geométrica e IK de mão/dedos; sem forças, tecido ou trajetória CCD exata. Retorna inviável quando necessário."},
@@ -793,12 +797,23 @@ const cena={
   desfazerColisao(){return desfazerColisao()},
   /* objetos: cena.objeto("mesa", {x: 3, z: 0, giro: 90, altura: 6.5, cor: "#7FB3D5"}) · cena.objeto("copo", {sobre: "mesa"})
      cilindros: cena.objeto("cilindro", {raio: 2, altura: 4}) */
+  amostrarRastro(indice,opts={}){
+    const it=donoAuto(opts.manequim);
+    if(!it)throw Error("Manequim não encontrado.");
+    const atual=it.referencias?.[indice];
+    if(indice!=null&&atual?.tipo!=="rastro")throw Error("Escolha um rastro.");
+    const t=cena.quadroSimulado(),h=handFrameV3(it,ladoNum(opts.mao??"direita"),restGround(SCN.list[0].params));
+    const trajetoria=(atual?.trajetoria||[]).filter(q=>q[0]!==t).concat([[t,...h.T]]).slice(-64);
+    return cena.referencia("rastro",{...opts,indice:indice??undefined,trajetoria});
+  },
   referencias(manequim){const it=donoAuto(manequim);if(!it)throw Error("Manequim não encontrado.");
     return structuredClone(it.referencias||[])},
   referencia(tipo,opts={}){
     const it=donoAuto(opts.manequim);
     if(!it)throw Error("Manequim não encontrado.");
     const refs=it.referencias||[],i=opts.indice??refs.length;
+    if(["explosao","fumaca"].includes(tipo)&&!refs[i]&&!opts.posicao)
+      opts={...opts,posicao:handFrameV3(it,-1,restGround(SCN.list[0].params)).T};
     if(!Number.isInteger(i)||i<0||i>refs.length||i>=32)throw Error("Índice de referência inválido.");
     const ref=validarReferencia({cor:"#486582",...refs[i],...opts,tipo});
     cena.marcarEstado();it.referencias=refs;refs[i]=ref;return i;
@@ -813,6 +828,48 @@ const cena={
   quadroSimulado(n){
     if(n!==undefined){if(!Number.isInteger(n)||n<0||n>100000)throw Error("Quadro fora do intervalo.");SCN.frameManga=n}
     return SCN.frameManga||0;
+  },
+  deslizarComMao(objeto,acao,{mao="direita",manequim,distancia=.25}={}){
+    const it=donoAuto(manequim),side=ladoNum(mao),o=acharObjeto(objeto);
+    if(!it||!o)throw Error("Selecione o manequim e o objeto.");
+    if(o.grip||o.gripV3||o.sobre||o.dinamica?.ativo)throw Error("Escolha um objeto livre e parado.");
+    if(!["puxar","empurrar","tocar"].includes(acao)||!Number.isFinite(distancia)||distancia<=0||distancia>1)
+      throw Error("Use puxar, empurrar ou tocar e distância entre 0 e 1 R.");
+    const ground=restGround(SCN.list[0].params),h=handFrameV3(it,side,ground);
+    const contato=targetSurface(it,o,side),normal=contato.normal;
+    if(Math.hypot(...contato.point.map((v,i)=>v-h.T[i]))>2)throw Error("Aproxime primeiro a mão da superfície.");
+    const antes={...it.params},historico=cena.estadoCompleto();
+    const horizontal=Math.hypot(normal[0],normal[2]);
+    if(acao!=="tocar"&&horizontal<.15)throw Error("Escolha uma face lateral para o gesto.");
+    const fator=acao==="tocar"?0:(acao==="puxar"?1:-1)*distancia/horizontal;
+    const dx=normal[0]*fator,dz=normal[2]*fator;
+    if(acao!=="tocar"){
+      const rota=verificarMicroDeslocamentoAutoGrip(o,{dx,dz},ground,{objetos:SCN.objetos,manequins:SCN.list},it);
+      if(!rota.livre)throw Error("Um obstáculo bloqueia o deslocamento.");
+    }
+    try{
+      aplicarGesto(it.params,side,acao==="puxar"?"gancho":"espalmada");
+      const margem=medirMao(it.params,side).espessuraPalma/2;
+      for(let i=0;i<=4;i++){
+        const destino=contato.point.map((v,k)=>v+normal[k]*margem+(k===0?dx:k===2?dz:0)*i/4);
+        if(alinharPalmaV3(it,side,destino,ground)>.35)throw Error("O braço não alcança o contato durante o gesto.");
+      }
+      o.x+=dx;o.z+=dz;atualizarApoios();cena.marcarEstado(historico);
+      return {acao,distancia:Math.hypot(dx,dz),contato:contato.region};
+    }catch(e){Object.assign(it.params,antes);throw e}
+  },
+  alternarModeloNaMao(opts={}){
+    const it=donoAuto(opts.manequim),side=ladoNum(opts.mao??"direita"),mao=side===1?"esquerda":"direita";
+    if(!it)throw Error("Manequim não encontrado.");
+    const o=SCN.objetos.find(q=>q.modeloMao&&q.gripV3?.mannequinId===it.id&&q.gripV3.side===side);
+    if(o){
+      cena.marcarEstado();
+      (it.modelosGuardados??={})[mao]={modelo:o.modeloMao,nome:o.nome,cor:o.col?.fill,perfil:o.perfilPega};
+      Object.assign(it.params,o.gestoAnterior||{});removerObjeto(o);return false;
+    }
+    const salvo=it.modelosGuardados?.[mao];if(!salvo)throw Error("Nenhum modelo guardado nesta mão.");
+    cena.objetoNaMao(salvo.modelo,{...salvo,...opts,mao});
+    delete it.modelosGuardados[mao];return true;
   },
   objetoNaMao(modelo,opts={}){
     const it=donoAuto(opts.manequim),side=ladoNum(opts.mao??"direita");

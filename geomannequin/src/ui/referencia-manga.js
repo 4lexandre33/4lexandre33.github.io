@@ -18,14 +18,32 @@ export function iniciarReferenciaManga(){
   }
   $("mangaControles").addEventListener("toggle",sincronizar);
   lista.addEventListener("focus",sincronizar);
+  function ajustes(){
+    const raizes=$("mangaRaizes").value.trim();
+    return {cor:$("mangaCor").value,escala:Number($("mangaEscala").value),previa:$("mangaPrevia").checked,
+      exportar:$("mangaSaida").checked,duracao:Number($("mangaDuracao").value),...(raizes?{raizes:JSON.parse(raizes)}:{})};
+  }
+  lista.onchange=()=>{
+    const r=cena.referencias()[Number(lista.value)];if(!r)return;
+    $("mangaCor").value=r.cor;$("mangaEscala").value=r.escala;$("mangaDuracao").value=r.duracao;
+    $("mangaPrevia").checked=r.previa;$("mangaSaida").checked=r.exportar;$("mangaRaizes").value=r.raizes?JSON.stringify(r.raizes):"";
+  };
+  $("mangaEditar").onclick=()=>acao(()=>{
+    const i=Number(lista.value),r=cena.referencias()[i];if(!r)throw Error("Escolha uma referência.");
+    cena.referencia(r.tipo,{...ajustes(),indice:i});
+  });
   $("mangaAdicionar").onclick=()=>acao(()=>{
     const tipo=$("mangaTipo").value;
-    cena.referencia(tipo,{cor:$("mangaCor").value,inicio:cena.quadroSimulado()});
+    cena.referencia(tipo,{...ajustes(),inicio:cena.quadroSimulado()});
     lista.value="";msg.textContent="Referência criada.";
   });
   $("mangaVisivel").onclick=()=>acao(()=>{
     const i=Number(lista.value),r=cena.referencias()[i];if(!r)throw Error("Escolha uma referência.");
     cena.referencia(r.tipo,{indice:i,ativo:!r.ativo});
+  });
+  $("mangaAmostra").onclick=()=>acao(()=>{
+    const i=Number(lista.value),novo=cena.amostrarRastro(cena.referencias()[i]?.tipo==="rastro"?i:null,{cor:$("mangaCor").value});
+    sincronizar();lista.value=String(novo);msg.textContent="Posição da mão registrada neste quadro.";
   });
   $("mangaRemover").onclick=()=>acao(()=>cena.removerReferencia(Number(lista.value)));
   $("mangaAplicarVento").onclick=()=>acao(()=>cena.vento({x:Number($("mangaVentoX").value),

@@ -123,8 +123,16 @@ function sceneList(exp){
   /* objetos da cena (banco, cadeira, parede…), o chão e as cores neutras deles */
   lst.forEach((o,i)=>{
     const refs=SCN.list[i].referencias;
-    if(refs?.some(r=>r.ativo)&&!o.p._oculto)
-      o.referencia=geometriaReferencia(o.p,refs,SCN.frameManga||0,SCN.vento||{x:0,z:0,rajada:0});
+    if(refs?.some(r=>r.ativo)&&!o.p._oculto){
+      const it=SCN.list[i],frame=SCN.frameManga||0,vento=SCN.vento||{x:0,z:0,rajada:0};
+      const pose=Object.entries(it.params).filter(([k])=>!CAMK.includes(k));
+      const chave=JSON.stringify([pose,o.p.wy,refs,frame,vento,!!exp]);
+      if(it.cache.chaveReferencia!==chave){
+        it.cache.referencia=geometriaReferencia(o.p,refs,frame,vento,!!exp);
+        it.cache.chaveReferencia=chave;
+      }
+      o.referencia=it.cache.referencia;
+    }
   });
   lst.objetos=SCN.objetos.map(o=>Object.assign({},o,{_cor:corObjeto(o,exp)}));lst.chao=g0;
   const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
