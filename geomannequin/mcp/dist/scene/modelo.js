@@ -113,7 +113,7 @@ function atualizarApoios(){
   }
   SCN.objetos.forEach(moveChild);
 }
-function sceneList(exp){
+function sceneList(exp,exportarReferencias=!!exp){
   atualizarApoios();
   atualizarFocoOrbita();
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
@@ -126,9 +126,9 @@ function sceneList(exp){
     if(refs?.some(r=>r.ativo)&&!o.p._oculto){
       const it=SCN.list[i],frame=SCN.frameManga||0,vento=ventoNoQuadro(SCN.vento,SCN.chavesVento,frame);
       const pose=Object.entries(it.params).filter(([k])=>!CAMK.includes(k));
-      const chave=JSON.stringify([pose,o.p.wy,refs,frame,vento,!!exp]);
+      const chave=JSON.stringify([pose,o.p.wy,refs,frame,vento,exportarReferencias]);
       if(it.cache.chaveReferencia!==chave){
-        it.cache.referencia=geometriaReferencia(o.p,refs,frame,vento,!!exp);
+        it.cache.referencia=geometriaReferencia(o.p,refs,frame,vento,exportarReferencias);
         it.cache.chaveReferencia=chave;
       }
       o.referencia=it.cache.referencia;

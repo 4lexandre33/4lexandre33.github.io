@@ -73,3 +73,9 @@ for(const yaw of [0,90,180,-45]){
   assert.equal(marcarRaiz(p,-2000,-2000,1),null);
   assert.equal(marcarTecido(p,-2000,-2000,"apoio"),null);
 }
+const dark=createWorld();
+const tomadas=dark.executarRoteiro('#quadro 1\ncena.referencia("impacto",{previa:true,exportar:false});\ncena.referencia("linhas",{previa:false,exportar:true});').quadros;
+for(const tema of ["claro","escuro"]){
+  const {svg}=dark.renderizarQuadro(tomadas[0],{tema,passes:false});
+  assert.ok(svg.includes('data-vfx="linhas"')&&!svg.includes('data-vfx="impacto"'));
+}

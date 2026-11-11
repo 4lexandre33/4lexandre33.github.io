@@ -3,7 +3,8 @@
 import {ossosDoCorpo} from "./esqueleto.js";
 import {headPt,shape} from "./cabeca.js";
 import {chainSetup} from "./cadeia.js";
-import {applyA,H,W} from "./matematica.js";
+import {orientacaoTecido} from "./superficie-referencia.js";
+import {applyA,mv,H,W} from "./matematica.js";
 import {colliderRig} from "./contact-v2.js";
 import {paraMundo} from "./colisao-cena.js";
 
@@ -38,7 +39,7 @@ function validarReferencia(r){
     out.pontos=r.pontos.map(q=>{
       if(!juntasManga.includes(q.junta)||!(["pelve","pescoço"].includes(q.junta)?[0]:[-1,1]).includes(q.lado)||!["apoio","pressao","livre"].includes(q.modo)||!Array.isArray(q.offset)||q.offset.length!==3)
         throw Error("Ponto de tecido inválido.");
-      return {junta:q.junta,lado:q.lado,modo:q.modo,offset:q.offset.map(v=>numeroManga(v,-8,8))};
+      return {junta:q.junta,lado:q.lado,modo:q.modo,...(q.espaco==="junta"?{espaco:"junta"}:{}),offset:q.offset.map(v=>numeroManga(v,-8,8))};
     });
   }
   return out;
@@ -73,6 +74,15 @@ function geometriaReferencia(p,refs,frame,vento,exportacao=false){
   const grupos=[],tela=[];
   const ativos=refs.filter(r=>r.ativo&&(exportacao?r.exportar:r.previa)&&frame>=r.inicio&&frame<r.inicio+r.duracao);
   let rig,ch,S,colisores;
+  const matrizes=new Map();
+  function orientar(j,s,offset){
+    const key=j+s;
+    if(!matrizes.has(key)){
+      ch??=chainSetup(p,shape(p));
+      matrizes.set(key,orientacaoTecido(p,ch,j,s));
+    }
+    return mv(matrizes.get(key),offset);
+  }
   const foraDoCorpo=q=>{
     colisores??=colliderRig(p,{level:"coarse"}).caps;
     for(const c of colisores){
@@ -94,10 +104,10 @@ function geometriaReferencia(p,refs,frame,vento,exportacao=false){
     const ponto=(j,s,x,y,z,peso=0)=>deslocar(mundo(pontoJ(j,s).map((n,i)=>n+[x,y,z][i])),peso);
     const unir=(a,b)=>{for(let i=0;i<a.length;i++){const k=(i+1)%a.length;faces.push([a[i],a[k],b[k],b[i]])}};
     if(r.tipo==="painel"){
-      faces.push(r.pontos.map(q=>ponto(q.junta,q.lado,...q.offset,q.modo==="livre"?.55:q.modo==="pressao"?.025:0)));
+      faces.push(r.pontos.map(q=>ponto(q.junta,q.lado,...(q.espaco==="junta"?orientar(q.junta,q.lado,q.offset):q.offset),q.modo==="livre"?.55:q.modo==="pressao"?.025:0)));
     }else if(["camisa","calca","paleto"].includes(r.tipo)){
       const anel=(j,s,rx,rz,dy,livre)=>Array.from({length:10},(_,i)=>{
-        const a=i*Math.PI/5;return ponto(j,s,rx*Math.cos(a)*r.escala,dy,rz*Math.sin(a)*r.escala,livre)});
+        const a=i*Math.PI/5;return ponto(j,s,...orientar(j,s,[rx*Math.cos(a)*r.escala,dy,rz*Math.sin(a)*r.escala]),livre)});
       for(const s of [-1,1]){
         if(r.tipo==="calca"){
           const c=anel("quadril",s,.78,.87,.55,0),jo=anel("joelho",s,.62,.65,0,.03),pe=anel("tornozelo",s,.43,.5,0,.15);unir(c,jo);unir(jo,pe);

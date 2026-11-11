@@ -216,7 +216,7 @@ const PASSES_QUADRO = ["contorno", "openpose", "profundidade", "mascara", "norma
 function renderizarQuadro(q, opts) {
   opts = opts || {};
   return comEstado(q, () => {
-    const rc = recorteQuadro(q.formato), exp = opts.tema !== "escuro", list = sceneList(exp), Lr = Object.assign({}, L, { grid: false });
+    const rc = recorteQuadro(q.formato), exp = opts.tema !== "escuro", list = sceneList(exp,true), Lr = Object.assign({}, L, { grid: false });
     const r = renderScene(list, Lr, !!opts.rapido, Lr.floor ? 16 : 0, { canal: opts.rapido ? "quadros-previa" : "quadros" });
     const fundo = exp ? "#FFFFFF" : (list[0].p.bg || "#0F1620");
     const out = { n: q.n, titulo: q.titulo, formato: q.formato, recorte: rc, svg: svgRecortado(r.svg, rc, fundo) };

@@ -1,10 +1,11 @@
-import {CX,CY,applyA} from "./matematica.js";
+import {CX,CY,applyA,mmul,mT,mv} from "./matematica.js";
 import {makeXf} from "./camera.js";
 import {effScale} from "./projecao.js";
 import {colliderRig} from "./contact-v2.js";
 import {paraMundo,doMundo} from "./colisao-cena.js";
 import {shape,headPt} from "./cabeca.js";
-import {chainSetup} from "./cadeia.js";
+import {armPose} from "./bracos.js";
+import {legPose,chainSetup} from "./cadeia.js";
 import {ossosDoCorpo} from "./esqueleto.js";
 
 const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
@@ -18,6 +19,19 @@ function raioTela(p,x,y){
   const origem=p.persp?[0,0,d]:[u,v,200],direcao=p.persp?[u,v,-d]:[0,0,-1];
   return {origem:eixos.map((e,i)=>dot(e,origem)+alvo[i]),
     direcao:eixos.map(e=>dot(e,direcao)/Math.hypot(...direcao))};
+}
+function orientacaoTecido(p,ch,junta,lado){
+  if(["ombro","cotovelo","punho"].includes(junta)){
+    const braco=armPose(p,ch.F,lado);
+    const parte=junta==="ombro"?braco.arm:junta==="cotovelo"?braco.elbow:braco.fore;
+    return mmul(ch.A2.M,parte.M);
+  }
+  if(["quadril","joelho","tornozelo"].includes(junta)){
+    const perna=legPose(p,ch.F,ch,lado);
+    const parte=junta==="quadril"?perna.thigh:junta==="joelho"?perna.knee:perna.calf;
+    return mmul(ch.Pel.M,parte.M);
+  }
+  return junta==="pelve"?ch.Pel.M:ch.A2.M;
 }
 function marcarTecido(p,x,y,modo){
   const {origem,direcao}=raioTela(p,x,y);
@@ -37,7 +51,8 @@ function marcarTecido(p,x,y,modo){
       const local=doMundo(p)(q.map((n,k)=>n-.025*direcao[k]));
       const juntas=ossosDoCorpo(p).juntas.filter(j=>["pescoço","ombro","cotovelo","punho","quadril","joelho","tornozelo"].includes(j.nome));
       const j=juntas.reduce((a,b)=>Math.hypot(...sub(a.P,local))<=Math.hypot(...sub(b.P,local))?a:b);
-      return {junta:j.nome,lado:j.s,offset:sub(local,j.P),modo};
+      const rot=orientacaoTecido(p,chainSetup(p,shape(p)),j.nome,j.s);
+      return {junta:j.nome,lado:j.s,offset:mv(mT(rot),sub(local,j.P)),modo,espaco:"junta"};
     }
     t+=distancia;
   }
@@ -71,4 +86,4 @@ function marcarRaiz(p,x,y,comprimento){
   }
   return raiz;
 }
-export {marcarTecido,marcarRaiz};
+export {orientacaoTecido,marcarTecido,marcarRaiz};
