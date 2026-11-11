@@ -7,7 +7,7 @@ O servidor usa os mesmos módulos do app durante o desenvolvimento; o pacote dis
 
 ## Ferramentas MCP V3 na branch de desenvolvimento
 
-O código-fonte desta branch registra 11 ferramentas tipadas adicionais às 25 antigas. Elas não devem ser tratadas como disponíveis no pacote dist ou no serviço remoto antes de reconstruir, testar e publicar.
+O código-fonte desta branch registra 14 ferramentas tipadas adicionais às 25 antigas. Elas não devem ser tratadas como disponíveis no pacote dist ou no serviço remoto antes de reconstruir, testar e publicar.
 
 | Ferramenta | Ações e finalidade |
 |---|---|
@@ -22,6 +22,9 @@ O código-fonte desta branch registra 11 ferramentas tipadas adicionais às 25 a
 | contato_fisico | Detectar e resolver contatos aproximados |
 | artefatos_mcp | Exportar PNG, SVG, JSON, OBJ (cabeça) e ZIP |
 | roteiro_declarativo | Storyboard seguro por quadros e ações tipadas |
+| operacoes_lote | Executar até 64 ações com prévia e rollback |
+| anatomia_mcp | Cabeça, expressão, dedos, articulações e estudo anatômico |
+| aparencia_mcp | Camadas, estilo, modo, luz ambiente e visibilidade |
 
 ### Exemplo de preensão via ferramentas
 
