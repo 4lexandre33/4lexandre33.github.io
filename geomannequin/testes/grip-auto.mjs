@@ -4,6 +4,9 @@
 import assert from "node:assert/strict";
 import {createWorld} from "../mcp/lib/core.mjs";
 import {handFrameV3} from "../src/scene/grip-v3.js";
+import {registrarRegiaoAutoGrip} from "../src/scene/grip-auto.js";
+import {gripSiteWorld} from "../src/engine/grip-sites.js";
+import {rigidDirection,objectRigidPose} from "../src/engine/rigid-transform.js";
 import {restGround} from "../src/engine/index.js";
 
 const w=createWorld();
@@ -22,6 +25,25 @@ assert.ok(start.T.every(Number.isFinite),"Frame de palma deve ser finito");
 w.cena.objeto("cadeira",{nome:"Cadeira AutoGrip",x:start.T[0],z:start.T[2]+3});
 const obj=w.SCN.objetos.find(o=>o.nome==="Cadeira AutoGrip");
 assert.ok(obj);
+// Ponto amostrado deve voltar do referencial mundo para o local da cadeira,
+// mesmo com rotação yaw: não usar o centro do GripSite no vínculo.
+const rotated={...obj,giro:37,sitesExtras:[]};
+const anchor=gripSiteWorld(rotated,"encostoTopo",ground);
+const offset=rigidDirection(objectRigidPose(rotated,ground),[.22,0,0]);
+const worldSample=anchor.mundo.map((v,i)=>v+offset[i]);
+const newId=registrarRegiaoAutoGrip(rotated,{
+  ponto:"encostoTopo",posicaoRegiao:worldSample,normalLocal:anchor.normal,
+  amostra:{deslocamento:.22}
+},-1,ground);
+const attached=gripSiteWorld(rotated,newId,ground);
+assert.ok(Math.hypot(...attached.mundo.map((v,i)=>v-worldSample[i]))<1e-9,
+  "A amostra otimizada precisa ser o mesmo ponto no vínculo, mesmo após rotação");
+assert.ok(newId.startsWith("__autogrip_"));
+assert.equal(rotated.sitesExtras.length,1);
+const originalSite=gripSiteWorld(rotated,"encostoTopo",ground);
+assert.ok(Math.hypot(...originalSite.mundo.map((v,i)=>v-attached.mundo[i]))>.1,
+  "A regressão precisa distinguir ponto otimizado do GripSite nominal");
+
 const options={manequim:"Manequim 1",mao:"auto",pegada:"auto",
   preservarObjeto:true,maxSites:2,maxIteracoes:1,reach:15};
 const before=JSON.stringify(w.cena.estadoCompleto());
