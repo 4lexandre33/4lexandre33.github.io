@@ -137,11 +137,11 @@ function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
  const H=handFrameV3(clone,side,ground);
  return {residual:dist(H.T,target),cost:err,baseResidual:base,frame:H};
 }
-function pointContacts(p,side,H,solids,metric){
+function pointContacts(p,side,H,solids,metric,onlyIndex=null){
  const scale=armDims(p).k*.95*p.armLen;
  const fingerRadii=[.09,.075,.078,.073,.064];
  const joints=juntasDedos(p,side);
- return joints.map((finger,i)=>{
+ const sample=(finger,i)=>{
    let best={distancia:Infinity,normal:[0,0,1],ponto:null,segmento:0};
    let worstPen=0;
    for(let j=1;j<finger.pts.length;j++){
@@ -160,7 +160,12 @@ function pointContacts(p,side,H,solids,metric){
    }
    return {nome:NAMES[i],code:CODES[i],...best,penetracao:worstPen,
      contato:best.distancia<=metric.tolerancia&&best.distancia>=-metric.limitePenetracao};
- });
+ };
+ if(Number.isInteger(onlyIndex)){
+   if(onlyIndex<0||onlyIndex>=joints.length)throw Error("Índice do dedo inválido.");
+   return sample(joints[onlyIndex],onlyIndex);
+ }
+ return joints.map(sample);
 }
 function fitFingers(p,side,H,solids,style,opt){
  const L=side>0?"L":"R";
@@ -184,7 +189,7 @@ function fitFingers(p,side,H,solids,style,opt){
        for(const delta of [-step,0,step]){
          const lo=k.startsWith("thumbOpp")?0:-1,hi=1;
          p[k]=clamp(original+delta,lo,hi);
-         const info=pointContacts(p,side,H,solids,metrics)[i];
+         const info=pointContacts(p,side,H,solids,metrics,i);
          const distanceError=Math.abs(info.distancia-.02);
          const depth=Math.max(0,info.penetracao-opt.limitePenetracao);
          const value=distanceError+depth*12+Math.abs(p[k])*0.008;
