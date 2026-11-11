@@ -47,6 +47,9 @@ function adicionarObjeto(tipo, o) {
   atualizarApoios(); return q;
 }
 function editarObjeto(q, o) {
+  if(q.gripV3&&Object.keys(o||{}).some(k=>["x","z","giro","larg","prof","alt","encosto","cabeceira","raio","largura","profundidade","altura","diametro","sobre"].includes(k)))
+    throw Error("Objeto preso à mão: mova o braço, ou solte antes de editar o objeto diretamente.");
+  if(o&&(o.giro!==undefined)&&q.rot3)delete q.rot3;
   const n = (v, mn, mx) => typeof v === "number" && isFinite(v) ? clamp(v, mn, mx) : undefined, cil = ehCilindro(q);
   const sin = { larg: "largura", prof: "profundidade", alt: "altura", raio: "diametro" };
   const ox = q.x, oz = q.z;
@@ -79,8 +82,15 @@ function removerObjeto(q) {
 }
 function duplicarObjeto(q) {
   const o = Object.assign({}, q); delete o.id; delete o.hue; delete o.col; delete o.base;
+  delete o.grip;delete o.gripV3;delete o.sobreRel;
   const c = adicionarObjeto(q.tipo, Object.assign(o, { x: q.x + Math.max(2, q.larg + 1), nome: q.nome ? (q.nome + " (cópia)").slice(0, 24) : undefined, sobre: undefined }));
-  c.sobre = q.sobre; atualizarApoios(); return c;
+  c.sobre = q.sobre;
+  if(Array.isArray(q.rot3)&&q.rot3.length===9)c.rot3=q.rot3.slice();
+  if(q.emAr){c.base=q.base;c.emAr=true;c.sobre=null}
+  if(Array.isArray(q.sitesExtras))c.sitesExtras=q.sitesExtras.map(s=>({
+    ...s,local:s.local.slice(),normal:(s.normal||[0,0,1]).slice()
+  }));
+  atualizarApoios(); return c;
 }
 function acharObjeto(ref) {
   if (ref && typeof ref === "object" && ref.id) return SCN.objetos.find(o => o.id === ref.id) || null;

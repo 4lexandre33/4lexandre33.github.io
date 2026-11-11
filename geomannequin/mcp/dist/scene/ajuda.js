@@ -107,6 +107,14 @@ cena.objeto("mesa", { x: -5, z: 0 });
 camera.perspectiva(true).orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 12 });
 log(camera.vista());
 // outras: camera.orbitar("mesa", "costas") · camera.orbitar("cena", {azimute: 30, elevacao: 30})`,
+  "Órbita detalhada: cabeça, mãos e objeto":`// A região é o pivô; ângulo e elevação permanecem independentes.
+cena.limpar();
+cena.ativo.renomear("Ana").poseRapida("acenando");
+cena.objeto("caixa", {nome:"Caixa", x:5, altura:4});
+camera.orbitar("Ana", {area:"cabeca", azimute:"3/4 esquerda", elevacao:25});
+log(camera.vista());
+camera.area("mao esquerda"); // ajusta o foco preservando o ângulo
+camera.focar("Caixa", "superior", {azimute:45, elevacao:60, folga:0.9});`,
   "Mãos, dedos e rosto":`// cada falange, o dedão do pé, a mandíbula, o olhar e as expressões
 cena.limpar();
 const m = cena.ativo;
@@ -116,6 +124,82 @@ m.expressao("surpresa").olhos(0.6, 0.1);
 m.articulacao("dedão esquerdo", { dobrar: -25 });
 log(m.validarPose());
 camera.enquadramento("primeiro plano");`,
+  "Câmera atrás do tronco":`const m=cena.ativo.renomear("Ana");
+m.girar(75);
+camera.costas("Ana",{referencia:"tronco",elevacao:0,enquadrar:true});
+log(camera.vista());`,
+  "Nuca da cabeça mesmo com pescoço girado":`const m=cena.ativo.renomear("Ana");
+m.pose({headYaw:60,neckTwist:20});
+camera.costas("Ana",{referencia:"cabeca",area:"cabeca",elevacao:5});
+log("Eixos da cabeça:",camera.orientacaoDoAlvo("Ana","cabeca"));`,
+  "Câmera segue a rotação":`const ana=cena.ativo.renomear("Ana");
+camera.seguir("Ana",{lado:"costas",referencia:"tronco",elevacao:0});
+ana.girar(95).mover(3,2);
+log(camera.seguimento());
+camera.pararSeguir();`,
+  "Objetos: definir a frente":`const cubo=cena.objeto("cubo",{nome:"Cubo para orientar",x:6,giro:40});
+cubo.orientacao({frenteLocal:[0,0,1],cimaLocal:[0,1,0]});
+camera.costas("Cubo para orientar",{area:"superior",elevacao:15});`,
+  "Somente comandos: estilos, camadas, arquivos":`cena.estilo("lapis");
+cena.camadaVisual("grid",false);
+cena.camadaVisual("eyes",true);
+const svg=cena.exportarSVG();
+log("SVG:",svg.length,"caracteres");
+log("Comandos disponíveis:",cena.comandos().camera);
+log("Capacidades:",cena.capacidades());`,
+  "Download com await (navegador)":`const svg=cena.exportarSVG();
+await cena.baixar("minha-cena.svg",svg,"image/svg+xml");
+const png=await cena.exportarPNG({escala:2});
+await cena.baixar("minha-cena.png",png,"image/png");`,
+  "Grupo orientado por um líder":`const ana=cena.ativo.renomear("Ana");
+const bruno=cena.adicionar({nome:"Bruno",x:5,giro:180});
+camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas",elevacao:10,enquadrar:true});
+log(camera.vista());`,
+  "Oito vistas em SVG sem alterar a cena":`const ana=cena.ativo.renomear("Ana");
+const fotos=camera.capturarVistas("Ana",{referencia:"cabeca",area:"cabeca"});
+log(fotos.map(f=>f.azimute));
+await cena.baixar("nuca.svg",fotos.find(f=>f.azimute===180).svg,"image/svg+xml");`,
+  "ZIP com camadas via código":`const zip=cena.exportarZIP();
+await cena.baixar("geomannequin-camadas.zip",zip,"application/zip");
+log(zip.length,"bytes");`,
+  "Parâmetros individuais":`const m=cena.ativo;
+m.parametro("headYaw",45).parametro("eyeYaw",0.3);
+camera.parametro("lens",85);
+log("Parâmetros da cabeça:",m.parametro("headYaw"));
+log("Controles disponíveis:",cena.parametros());`,
+  "Segurar cadeira pelo encosto (V3)":`// Cadeira segue o braço em posição e rotação 3D.
+const ana=cena.ativo.renomear("Ana");
+const cadeira=cena.objeto("cadeira",{nome:"Cadeira 1",x:2,z:0});
+log(cadeira.pontosDeAgarre().map(p=>p.id));
+// Posicione a mão perto do encosto. Para teste, alcance amplo:
+const grip=cena.segurarObjeto("Cadeira 1",{
+  manequim:"Ana",mao:"direita",ponto:"encostoTopo",reach:20
+});
+log(grip);
+ana.parametro("armFlexR",55);
+ana.parametro("elbowR",70);
+log(cena.inspecionarPreensao());`,
+  "Aproximar mão e agarrar":`const ana=cena.ativo.renomear("Ana");
+cena.objeto("cadeira",{nome:"Cadeira",x:2,z:0});
+const resultado=ana.maoEmSite("Cadeira","encostoTopo",{mao:"direita"});
+log(resultado);
+if(resultado.alcançou){
+  ana.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:1});
+}`,
+  "Segurar e soltar cadeira sem teleporte":`const ana=cena.ativo.renomear("Ana");
+cena.objeto("cadeira",{nome:"Cadeira",x:2,z:0});
+ana.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:20});
+ana.parametro("armFlexR",40);
+ana.soltar("Cadeira",{modo:"manter"});
+log(cena.obterObjeto("Cadeira").info());`,
+  "Segurar cadeira com duas mãos":`const a=cena.ativo.renomear("Ana");
+cena.objeto("cadeira",{nome:"Cadeira",x:1,z:0});
+cena.segurarObjeto("Cadeira",{mao:"direita",ponto:"encostoDireito",reach:20});
+cena.segurarObjeto("Cadeira",{mao:"esquerda",ponto:"encostoEsquerdo",reach:20,segunda:true});
+log(cena.vinculos());
+// Enquanto não existe solver bilateral, a mão primária conduz o objeto.
+cena.soltarObjeto("Cadeira",{mao:"direita"});
+log(cena.vinculos());`,
   "Noite":`tema("escuro");`
 };
 let REF;
@@ -131,6 +215,36 @@ export function iniciarAjuda(){
   m.pose({joelhoEsq: 60, ...}) · m.poseRapida("caminhando") · m.corpo("musculoso" | {musculo: 0.8})
   m.cor("#preenchimento", "#contorno") · m.cor() = automática · m.copiar() · m.remover() · m.info()
   
+  NOVO: camera.costas("Ana",{referencia:"tronco",area:"cabeca",elevacao:0}) — vista das costas do tronco
+  camera.costas("Ana",{referencia:"cabeca",area:"cabeca"}) — nuca orientada pela cabeça, não pela presença de olhos
+  camera.ver("Ana",{lado:"3/4 esquerda",referencia:"cabeca",vertical:"anatomico"})
+  camera.seguir("Ana",{lado:"costas",referencia:"tronco"}) · camera.pararSeguir() · camera.seguimento()
+  camera.orientacaoDoAlvo("Ana","cabeca") · camera.alvos() · camera.areas("Ana") · camera.vista()
+  Objetos: cena.obterObjeto("cubo").orientacao({frenteLocal:[0,0,1],cimaLocal:[0,1,0]})
+  Estilo: cena.estilos() · cena.estilo("lapis") · cena.estiloAtual()
+  Camadas: cena.camadasVisuais() · cena.camadaVisual("grid",false) · cena.camadaVisual("eyes",true)
+  Arquivos: cena.exportarSVG() · cena.exportarOBJ({modelo:"v4"}) · cena.exportarJSON() · cena.importarJSON(json)
+  Exportação navegador: await cena.exportarPNG({escala:2}); await cena.baixar("cena.png",png,"image/png")
+  Parâmetros: m.parametro("headYaw",45) · m.parametros() · camera.parametro("lens",85) · camera.parametros()
+  Câmera sem alterar a ativa: camera.capturar("Ana",{lado:"costas"}) · camera.capturarVistas("Ana")
+  Grupo: camera.ver(["Ana","Bruno"],{lider:"Ana",lado:"costas"}) (sem orientação média inventada)
+  Modelos na mão: cena.objetoNaMao("cadeira",{mao:"direita"}) · modelos mesa, bastao, cajado, espada, circular e retangular
+  Roupa e cabelo: cena.referencia("paleto",{cor:"#354962"}) · cena.referencia("longo",{raizes:[{angulo:90,altura:.8,comprimento:2}]})
+  Efeitos: cena.referencia("impacto",{inicio:8,duracao:12}) · cena.amostrarRastro(indice,{mao:"direita"})
+  Vento e tempo: cena.vento({x:1,z:0,rajada:.4}) · cena.quadroSimulado(12)
+  Camadas de referência: cena.referencias() · cena.referencia("paleto",{indice:0,ativo:false}) · cena.removerReferencia(0)
+  Preensão V3: m.segurar("Cadeira",{mao:"direita",ponto:"encostoTopo",reach:5}) — mão move cadeira em 3D
+  m.maoEmSite("Cadeira","encostoTopo",{mao:"direita"}) — aproximar usando IK
+  m.soltar("Cadeira",{modo:"manter"}) — deixar onde está, sem simular gravidade
+  cena.vinculos() · cena.inspecionarPreensao() · obj.pontosDeAgarre() · obj.emPosseDe()
+  Objetos: pontos 'encostoTopo', 'encostoEsquerdo', 'encostoDireito', 'assentoFrente'
+  Compatibilidade: cena.segurarObjeto("Copo",{motor:"v2",mao:"direita"}) ativa a preensão antiga
+  Duas mãos: segunda:true adiciona âncora auxiliar; solver bilateral exato continua pendente
+  Arquivo ZIP: const zip=cena.exportarZIP(); await cena.baixar("camadas.zip",zip,"application/zip")
+  Folha V4.2: cena.estudoAnatomico.svg() · cena.estudoAnatomico.abrir() · .atualizar() · .fechar()
+  Descoberta: cena.comandos() · cena.capacidades() · cena.parametros()
+  Histórico: cena.marcarEstado() · cena.desfazer() · cena.refazer() · cena.historico()
+  Observação: o executor aceita await, mas não é um sandbox de segurança; execute scripts confiáveis.
   camera.posicao(x, y, z) · camera.mirar(x, y, z) · camera.girar(yaw, pitch, roll)
   camera.zoom(z) · camera.perspectiva(true, distância) · camera.distancia(R) · camera.luz(azimute, elevação) · camera.enquadrar()
   camera.lente(mm) — 18–35 grande-angular, 50 normal, 85–200 tele · camera.alturaOlhos(R acima do chão, inclinação?) — manequim ≈ 16 R
@@ -171,7 +285,11 @@ export function iniciarAjuda(){
   Órbita (a câmera gira em volta de um pivô: manequim, grupo, objeto, ponto ou a cena):
   camera.orbitar("Ana", {azimute: "frente" | "3/4 esquerda" | "esquerda" | "3/4 costas esquerda" | "costas" | "3/4 costas direita" | "direita" | "3/4 direita" | graus, elevacao: graus | "olhos" | "alta", distancia?})
   camera.orbitar(["Ana","Leo"], "costas") · camera.orbitar("mesa", 45) · camera.orbitar("cena", {azimute: 30, elevacao: 25}) · camera.orbitar([0, -7, 0], 90)
-  camera.pivo("Ana") — só troca o centro do giro (arrastar no palco gira em volta dele) · camera.girarEmVolta(15, 0) · camera.vista() → {pivo, azimute, elevacao} · camera.giro(8) → azimutes
+  Foco local: camera.orbitar("Ana", {area:"cabeca", azimute:45, elevacao:20, folga:0.9}) · camera.orbitar("Ana", {area:"mao direita", azimute:-45, elevacao:10})
+  Objetos: camera.focar("mesa", "superior", {azimute:60, elevacao:40}) · camera.focar("caixa", "inferior") · camera.area("torso")
+  No roteiro: #orbita "Ana" 8 area "mao esquerda" elevacao 25 — oito ângulos, mesma região focal
+  camera.pivo("Ana", {area:"cabeca", enquadrar:true}) — a cabeça é o centro da órbita · camera.vista() → {pivo, area, azimute, elevacao}
+  camera.girarEmVolta(15, 0) · camera.giro(8) → azimutes; o alvo mantém o foco ao mudar de posição ou pose
   Rig fino: m.articulacao("indicador esquerdo", {base: 0.8, ponta: 0.5, afastar: -0.3}) · ("polegar direito", {base, ponta, afastar, opor}) — de −1 a 1
     ("dedão esquerdo", {dobrar: 30}) · ("canela direita", {girar: 20}) · ("pé esquerdo", {aduzir: 10}) · ("escápula esquerda", {girar: 0.5, tensao: 1})
     ("mandíbula", {abrir: 0.5, lado: 0.2}) · ("olhos", {lado: 0.6, cima: -0.2, fechar: 0.3}) · ("sobrancelhas", {subir: 0.5, franzir: 0.4})

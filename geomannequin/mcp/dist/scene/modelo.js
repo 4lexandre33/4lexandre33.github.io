@@ -2,14 +2,18 @@
 import { PAL_EXPORT, PAL_SCREEN, STYLES, styleName } from "./paletas.js";
 import { L } from "./modos.js";
 import { refreshScene, render, syncControls } from "./ambiente.js";
-import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
+import { geometriaReferencia, DEF, newCache, renderScene, restGround } from "../engine/index.js";
+import { atualizarFocoOrbita } from "./orbita.js";
+import {updateGrip} from "./preensao-v2.js";
+import {updateRigidGrip} from "./grip-v3.js";
+import {rigidCompose,objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 
 let P;
 /* ===== Cena: vários manequins, câmera comum, cores exclusivas ===== */
 let UID=0,OBJID=1000;
 function novoIdObjeto(){return ++OBJID}
 /* exato: todos num z-buffer comum (mais lento); sem ele, cada manequim vira uma camada (foto .svg) guardada em cache */
-const SCN={list:[],active:0,exato:false,objetos:[],objSel:null};
+const SCN={list:[],active:0,exato:false,objetos:[],objSel:null,seguirCamera:null,ultimaVistaOrientada:null};
 /* ganchos da interface (o código chama a página sem depender dela; no MCP ficam vazios) */
 const UIH={};
 const CAMK=["yaw","pitch","roll","zoom","panX","panY","lightAz","lightEl","tx","ty","tz","persp","camDist","lens","atmo"];
@@ -77,15 +81,59 @@ function cssHex(v){
 function atualizarApoios(){
   const por=new Map(SCN.objetos.map(o=>[o.id,o]));
   const topo=(o,vis)=>{if(!o.sobre||!por.has(o.sobre)||vis.has(o.id)){o.sobre=o.sobre&&por.has(o.sobre)?o.sobre:null;return 0}vis.add(o.id);const s=por.get(o.sobre);return topo(s,vis)+s.alt};
-  SCN.objetos.forEach(o=>{o.base=Math.round(topo(o,new Set())*1000)/1000});
+  const ground=SCN.list.length?restGround(SCN.list[0].params):0;
+  // 1) Resolver posições dos objetos agarrados ANTES de colisão/renderização.
+  SCN.objetos.forEach(o=>{
+    if(o.gripV3){
+      const it=SCN.list.find(m=>m.id===o.gripV3.mannequinId);
+      if(it&&updateRigidGrip(it,o,ground))return;
+      delete o.gripV3;o.emAr=true; // dono excluído: preservar última posição
+    }else if(o.grip){
+      const it=SCN.list.find(m=>m.id===o.grip.mannequinId);
+      if(it&&updateGrip(it,o,ground))return;
+      delete o.grip;
+    }
+    if(!o.emAr&&!o.sobreRel)o.base=Math.round(topo(o,new Set())*1000)/1000;
+  });
+  // 2) Propagar pose rígida de apoios sobre cadeira/mesa carregada.
+  const done=new Set(),working=new Set();
+  function moveChild(o){
+    if(done.has(o))return;
+    if(working.has(o)){delete o.sobreRel;return}
+    working.add(o);
+    if(o.sobreRel&&o.sobre){
+      const parent=por.get(o.sobre);
+      if(parent&&parent!==o){
+        moveChild(parent);
+        setRigidObjectPose(o,rigidCompose(objectRigidPose(parent,ground),o.sobreRel),ground);
+        o.emAr=true;
+      }else {delete o.sobreRel;delete o.sobre;}
+    }
+    working.delete(o);done.add(o);
+  }
+  SCN.objetos.forEach(moveChild);
 }
 function sceneList(exp){
   atualizarApoios();
+  atualizarFocoOrbita();
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const bg=exp?"#ffffff":cssHex("var(--paper)");
   const lst=SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
     return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
   /* objetos da cena (banco, cadeira, parede…), o chão e as cores neutras deles */
+  lst.forEach((o,i)=>{
+    const refs=SCN.list[i].referencias;
+    if(refs?.some(r=>r.ativo)&&!o.p._oculto){
+      const it=SCN.list[i],frame=SCN.frameManga||0,vento=SCN.vento||{x:0,z:0,rajada:0};
+      const pose=Object.entries(it.params).filter(([k])=>!CAMK.includes(k));
+      const chave=JSON.stringify([pose,o.p.wy,refs,frame,vento,!!exp]);
+      if(it.cache.chaveReferencia!==chave){
+        it.cache.referencia=geometriaReferencia(o.p,refs,frame,vento,!!exp);
+        it.cache.chaveReferencia=chave;
+      }
+      o.referencia=it.cache.referencia;
+    }
+  });
   lst.objetos=SCN.objetos.map(o=>Object.assign({},o,{_cor:corObjeto(o,exp)}));lst.chao=g0;
   const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
   return lst;
@@ -116,6 +164,7 @@ function addInst(params,name,silent){
 }
 function dupInst(src,silent){
   const it=addInst(Object.assign({},src.params,{wx:src.params.wx+7.5,wz:src.params.wz}),src.name+" (cópia)",true);
+  if(src.referencias)it.referencias=structuredClone(src.referencias);
   if(!silent)setActive(SCN.list.indexOf(it));
   return it;
 }

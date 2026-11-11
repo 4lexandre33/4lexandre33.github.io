@@ -33,7 +33,11 @@ const RX_MARCA = /^\s*#\s*(cena|prepara[cç][aã]o|quadro|frame|painel|cena\s*ge
 function lerGerador(tipo, resto) {
   let alvo = "ativo"; const q = /^\s*(?:"([^"]+)"|'([^']+)'|\[([^\]]+)\]|(\S+))/.exec(resto);
   if (q && !/^\d+$/.test(q[4] || "") && !/^(novo|nova|completa|orto|ortografica|ortográfica|elev|eleva)/i.test(q[4] || "")) { alvo = q[1] || q[2] || (q[3] ? JSON.parse("[" + q[3] + "]") : q[4]); resto = resto.slice(q[0].length); }
-  const g = { alvo, n: /^fich/i.test(tipo) ? 4 : 8, elev: /^fich/i.test(tipo) ? 0 : null, orto: false, ficha: /^fich/i.test(tipo), sentido: "" };
+  const g = { alvo, n: /^fich/i.test(tipo) ? 4 : 8, elev: /^fich/i.test(tipo) ? 0 : null, area: null, orto: false, ficha: /^fich/i.test(tipo), sentido: "" };
+  /* '#orbita "Ana" 8 area cabeca elevacao 25' e area "mao esquerda" */
+  resto=resto.replace(/\b(?:area|regi[aã]o|foco)\s+(?:"([^"]+)"|'([^']+)'|(parte\s+(?:superior|inferior|central)|[\wÀ-ÿ-]+(?:\s+(?:esquerda|direita))?))/i,(m,a,b,c)=>{
+    g.area=(a||b||c).trim();return " ";
+  });
   resto = resto.replace(/\b(?:eleva[cç][aã]o|elev)\s*(-?\d+(?:[.,]\d+)?)/i, (m, v) => { g.elev = +v.replace(",", "."); return " "; })
     .replace(/\bcompleta\b/i, () => { g.n = 8; return " "; }).replace(/\b(orto|ortogr[aá]fica)\b/i, () => { g.orto = true; return " "; })
     .replace(/\b(hor[aá]rio|anti-?hor[aá]rio)\b/i, (m) => { g.sentido = /anti/i.test(m) ? "" : "horario"; return " "; });
@@ -63,9 +67,9 @@ function lerRoteiro(texto) {
       atual = { n: num, titulo, novo, formato, linha: i + 1, inicio: i + 2, codigo: [], falas: [], notas: [] };
       quadros.push(atual);
       if (gerador) { const G = gerador, azs = G.ficha ? (G.n >= 8 ? [0, 45, 90, 135, 180, -135, -90, -45] : [0, 45, 90, 180]) : azimutesGiro(G.n, { sentido: G.sentido }), base = titulo || (G.ficha ? "Ficha" : "Giro");
-        const chamada = a => (G.orto ? "camera.perspectiva(false);\n" : "") + "camera.orbitar(" + JSON.stringify(G.alvo) + ", { azimute: " + a + (G.elev !== null ? ", elevacao: " + G.elev : "") + " });";
+        const chamada = a => (G.orto ? "camera.perspectiva(false);\n" : "") + "camera.orbitar(" + JSON.stringify(G.alvo) + ", { azimute: " + a + (G.elev !== null ? ", elevacao: " + G.elev : "") + (G.area ? ", area: " + JSON.stringify(G.area) : "") + " });";
         azs.forEach((a, k) => { const q = k ? { n: ++auto, titulo: "", novo: false, formato, linha: i + 1, inicio: i + 1, codigo: [], falas: [], notas: [] } : atual;
-          q.titulo = base + " — " + nomeVista(a); q.gerado = { alvo: G.alvo, azimute: a, elevacao: G.elev, ficha: G.ficha }; q.posCodigo = chamada(a); if (k) quadros.push(q); }); }
+          q.titulo = base + " — " + nomeVista(a); q.gerado = { alvo: G.alvo, area: G.area, azimute: a, elevacao: G.elev, ficha: G.ficha }; q.posCodigo = chamada(a); if (k) quadros.push(q); }); }
       return;
     }
     if (!atual) { atual = prep; prep.linha = 1; }
