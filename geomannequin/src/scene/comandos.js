@@ -21,7 +21,7 @@ import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camada
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
-import {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes} from "./grip-auto.js";
+import {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip} from "./grip-auto.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -593,14 +593,22 @@ const cena={
           reach:reach2,segunda:true,exigirContato:true,fechar:false,objetos:SCN.objetos});
         if(!g2.alcancavel)throw Error("A segunda mão não alcança a pegada.");
       }
+      const check=validarContatoAutoGrip(it,o,best.lado,ground,options);
+      if(!check.ok)throw Error("Penetração confirmada após vínculo: "+check.maxPenetracao.toFixed(3)+" R.");
+      let secondCheck=null;
+      if(best.secundaria){
+        secondCheck=validarContatoAutoGrip(it,o,best.secundaria.lado,ground,options);
+        if(!secondCheck.ok)throw Error("Penetração após IK bilateral: "+secondCheck.maxPenetracao.toFixed(3)+" R.");
+      }
       o.gripV3.autoGrip={version:1,pegada:best.pegada,site:best.ponto,
         score:best.score,penetracao:best.penetracao,desvioPalma:best.desvioPalma,
         contatos:best.contatos.map(c=>({dedo:c.nome,contato:c.contato,distancia:c.distancia})),
-        segunda:best.secundaria?{mao:best.secundaria.mao,site:best.secundaria.ponto}:null};
+        validacaoFinal:check,
+        segunda:best.secundaria?{mao:best.secundaria.mao,site:best.secundaria.ponto,validacaoFinal:secondCheck}:null};
       atualizarApoios();cena.marcarEstado(before);
       return {status:"aplicado",objeto:o.nome||o.tipo,manequim:it.name,
         mao:best.mao,pegada:best.pegada,ponto:best.ponto,segundaMao:best.secundaria?.mao||null,
-        qualidade:resumirAutoGrip(found).escolha,grip:g,
+        qualidade:resumirAutoGrip(found).escolha,grip:g,validacaoFinal:check,
         aviso:"Encaixe geométrico aproximado: sem forças nem trajetória livre de obstáculos garantida."};
     }catch(e){cena.restaurarCompleto(before);throw Error("AutoGrip revertido: "+e.message)}
   },
