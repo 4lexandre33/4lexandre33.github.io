@@ -578,17 +578,29 @@ const cena={
     const sides=[g.side,...(g.secundaria?[g.secundaria.side]:[])];
     const contacts=sides.map(side=>({mao:side>0?"esquerda":"direita",
       ...validarContatoAutoGrip(it,o,side,ground,options)}));
+    const baseline={...it.params,...(o.gripV3.autoGrip?.poseReferencia||{})};
     const scene=validarCenaAutoGrip(it,o,ground,
-      {objetos:SCN.objetos,manequins:SCN.list},it.params,options,sides);
-    const ok=scene.ok&&contacts.every(c=>c.ok);
+      {objetos:SCN.objetos,manequins:SCN.list},baseline,options,sides);
+    const style=o.gripV3.autoGrip?.pegada??"manual";
+    const enough=c=>{
+      const digits=Object.values(c.contatosPorDedo).filter(Boolean).length;
+      if(style==="apoio")return c.palmaContato;
+      if(style==="manual")return false; // sem certificado de contato anatômico
+      const needed=({pinca:2,tripode:3,gancho:2,potencia:2,lateral:2})[style]??2;
+      return digits>=needed&&
+        (!["pinca","tripode","lateral"].includes(style)||
+          (c.contatosPorDedo.polegar&&c.contatosPorDedo.indicador));
+    };
+    const ok=scene.ok&&contacts.every(c=>c.ok&&enough(c));
     const fingers=contacts.map(c=>({mao:c.mao,contatos:c.contatos,
       dedos:c.contatosPorDedo,palma:c.palmaContato,penetracao:c.maxPenetracao}));
     return {status:ok?"contato_geometrico":"reajuste_necessario",
       objeto:o.nome||o.tipo,manequim:it.name,necessitaAjuste:!ok,
-      pegada:o.gripV3.autoGrip?.pegada??"manual",
+      pegada:style,
       ponto:g.siteId,versao:3,porMao:fingers,penetracaoCena:scene.maxPenetracao,
       limites:options,
-      aviso:"Contato nos colisores simplificados; forças de preensão não avaliadas."};
+      aviso:style==="manual"?"Vínculo anterior sem certificado AutoGrip: use Reencaixar para validar palma e dedos.":
+        "Contato nos colisores simplificados; forças de preensão não avaliadas."};
   },
   reajustarEncaixe(objeto,opts={}){
     return cena.autoEncaixarObjeto(objeto,opts);
@@ -686,6 +698,7 @@ const cena={
         score:best.score,penetracao:best.penetracao,desvioPalma:best.desvioPalma,
         contatos:best.contatos.map(c=>({dedo:c.nome,contato:c.contato,distancia:c.distancia})),
         validacaoFinal:check,validacaoCena:checkedScene,
+        poseReferencia:Object.fromEntries(SL.map(d=>[d.k,it.params[d.k]])),
         segunda:best.secundaria?{mao:best.secundaria.mao,site:best.secundaria.ponto,validacaoFinal:secondCheck}:null};
       atualizarApoios();cena.marcarEstado(before);
       return {status:"aplicado",reencaixado,objeto:o.nome||o.tipo,manequim:it.name,
