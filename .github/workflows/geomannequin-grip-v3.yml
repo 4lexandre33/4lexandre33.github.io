@@ -32,6 +32,8 @@ jobs:
           node testes/grip-v3-regressoes.mjs
           node testes/grip-v3-fisica.mjs
           node testes/grip-v3-duas-maos.mjs
+      - name: AutoGrip: geometria e contrato one-click
+        run: npm run testar:autogrip
       - name: Regressao legada Contact V2
         run: node testes/contato-v2.mjs
       - name: Carregamento headless e roteiro
