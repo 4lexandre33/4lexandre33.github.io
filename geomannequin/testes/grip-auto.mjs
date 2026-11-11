@@ -7,7 +7,7 @@ import {handFrameV3} from "../src/scene/grip-v3.js";
 import {registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip} from "../src/scene/grip-auto.js";
 import {gripSiteWorld} from "../src/engine/grip-sites.js";
 import {rigidDirection,objectRigidPose} from "../src/engine/rigid-transform.js";
-import {restGround,objetoPadrao} from "../src/engine/index.js";
+import {restGround,objetoPadrao,colliderRig} from "../src/engine/index.js";
 
 const w=createWorld();
 const mannequin=w.SCN.list[0];
@@ -20,6 +20,17 @@ assert.ok(Number.isFinite(hand.aberturaPincaAberta));
 const enlarged={...mannequin.params,armLen:mannequin.params.armLen*1.05};
 const larger=(await import("../src/scene/grip-auto.js")).medirMao(enlarged,-1);
 assert.ok(larger.comprimentoPalma>hand.comprimentoPalma,"Tamanho de mão deriva de armLen");
+assert.ok(larger.larguraPalma>hand.larguraPalma,
+  "Largura da palma cresce junto à malha da mão, não fica independente de armLen");
+assert.ok(larger.espessuraPalma>hand.espessuraPalma,
+  "Espessura também cresce com a anatomia individual");
+const fineA=colliderRig({...mannequin.params,
+  wy:ground-restGround(mannequin.params)},{level:"fine"});
+const fineB=colliderRig({...enlarged,wy:ground-restGround(enlarged)},{level:"fine"});
+const findFinger=rig=>rig.caps.find(c=>c.kind==="finger"&&c.side==="D"&&c.finger==="indicador");
+assert.ok(findFinger(fineA)&&findFinger(fineB));
+assert.ok(findFinger(fineB).r>findFinger(fineA).r,
+  "Cápsula de falange precisa crescer com a geometria renderizada");
 const start=handFrameV3(mannequin,-1,ground);
 assert.ok(start.T.every(Number.isFinite),"Frame de palma deve ser finito");
 w.cena.objeto("cadeira",{nome:"Cadeira AutoGrip",x:start.T[0],z:start.T[2]+3});
