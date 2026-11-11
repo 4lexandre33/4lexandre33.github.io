@@ -137,6 +137,43 @@ export function iniciarColisoes() {
       animarQueda();
     }catch(e){status.textContent="Não foi possível animar: "+e.message}
   });
+  // AutoGrip: os comandos de UI chamam exatamente a API usada pelo editor/MCP.
+  function opcoesAutoGrip(){
+    return {manequim:SCN.active,mao:$("colAutoMao")?.value||"auto",
+      pegada:$("colAutoPegada")?.value||"auto",
+      ponto:gripChoice?.value||"auto",reach:Math.max(12,Number($("colV3Reach")?.value||5)),
+      preservarObjeto:true,exigirContato:true};
+  }
+  function resumoAutoGrip(r){
+    const q=r.escolha||r.qualidade;
+    return q?"Pegada "+q.pegada+" / "+q.mao+" / "+q.ponto+
+      "; "+q.contatosAtivos+" contatos; desvio de palma "+q.desvioPalma+
+      " R; interpenetração "+q.penetracao+" R.":
+      (r.rejeitados||[]).slice(0,3).map(c=>c.motivo).join(" | ")||"Nenhuma pegada validada.";
+  }
+  let autoOcupado=false;
+  function executarAutoGrip(aplicar){
+    if(autoOcupado)return;
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    if(!obj){status.textContent="Selecione um objeto da cena para o AutoGrip.";return}
+    autoOcupado=true;
+    const a=$("colAutoEncaixar"),b=$("colAutoPrever");
+    if(a)a.disabled=true;if(b)b.disabled=true;
+    status.textContent=aplicar?"AutoGrip: procurando encaixe e contatos…":"AutoGrip: calculando prévia sem mover o objeto…";
+    requestAnimationFrame(()=>{
+      try{
+        const opts=opcoesAutoGrip();
+        const r=aplicar?cena.autoEncaixarObjeto(obj.id,opts):cena.planejarEncaixe(obj.id,opts);
+        status.textContent=r.status==="inviavel"?
+          "Não foi possível encaixar: "+resumoAutoGrip(r):
+          (aplicar?"AutoGrip aplicado. ":"Prévia geométrica; nada alterado. ")+resumoAutoGrip(r);
+        if(aplicar){refreshScene();syncControls();render()}
+      }catch(e){status.textContent="AutoGrip: "+e.message}
+      finally{autoOcupado=false;if(a)a.disabled=false;if(b)b.disabled=false}
+    });
+  }
+  $("colAutoPrever")?.addEventListener("click",()=>executarAutoGrip(false));
+  $("colAutoEncaixar")?.addEventListener("click",()=>executarAutoGrip(true));
   $("colV2Segurar")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
     if(!obj){status.textContent="Selecione um objeto antes de segurar.";return}
