@@ -19,6 +19,7 @@ export * from "./cenario.js";
 export * from "./contato-v2.js";
 export * from "./preensao-v2.js";
 export * from "./grip-v3.js";
+export * from "./grip-auto.js";
 export * from "./toque-v2.js";
 export * from "./descrever.js";
 export * from "./blocking.js";
