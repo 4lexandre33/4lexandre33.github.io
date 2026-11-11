@@ -101,6 +101,7 @@ export function registerControlTools(s,W){
    maxSites:z.number().int().min(1).max(12).optional(),
    maxIteracoes:z.number().int().min(1).max(8).optional(),
    maxTempoMs:z.number().int().min(200).max(10000).optional(),
+   verificarTrajetoria:z.boolean().optional(),passosTrajetoria:z.number().int().min(3).max(8).optional(),
    revisao:z.string().max(50).optional()
   },(w,a)=>{
    if(a.acao==="listar")return w.cena.vinculos();
@@ -118,7 +119,8 @@ export function registerControlTools(s,W){
      permitirMoverObjeto:a.permitirMoverObjeto,maxDeslocamento:a.maxDeslocamento,
      tolerancia:a.tolerancia,
      limitePenetracao:a.limitePenetracao,maxSites:a.maxSites,maxIteracoes:a.maxIteracoes,
-     maxTempoMs:Math.min(a.maxTempoMs??1500,1500)};
+     maxTempoMs:Math.min(a.maxTempoMs??1500,1500),
+     verificarTrajetoria:a.verificarTrajetoria,passosTrajetoria:a.passosTrajetoria};
    if(a.acao==="planejar")return w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
    if(a.acao==="aplicar"){
      if(!a.revisao)throw Error("Informe revisao devolvida por preensao:planejar.");
