@@ -630,7 +630,7 @@ const cena={
     return cena.autoEncaixarObjeto(o.id,{...plano.opcoes,manequim:it.name});
   },
   autoEncaixarObjeto(objeto,opts={}){
-    atualizarApoios();
+    // A sincronização precisa ocorrer depois de validar e registrar o snapshot.
     const o=acharObjeto(objeto);
     const owner=SCN.list.find(m=>m.id===(o?.gripV3?.mannequinId??o?.grip?.mannequinId));
     const it=donoAuto(opts.manequim??owner?.name);
@@ -643,6 +643,7 @@ const cena={
       throw Error("Solte o objeto antes de permitir microajuste da posição.");
     let found,best;
     try{
+      atualizarApoios();
       if(reencaixado){
         // O objeto já foi sincronizado por atualizarApoios(): a pose 6DOF
         // permanece no lugar; o vínculo é refeito somente após a otimização.
