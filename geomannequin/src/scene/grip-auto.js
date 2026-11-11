@@ -43,6 +43,7 @@ function validarOpcoes(opts={}){
    limitePenetracao:scalar(opts.limitePenetracao,"limitePenetracao",0.005,0.14,.06),
    exigirContato:opts.exigirContato!==false,maxSites:Math.trunc(scalar(opts.maxSites,"maxSites",1,12,5)),
    maxIteracoes:Math.trunc(scalar(opts.maxIteracoes,"maxIteracoes",1,8,4)),
+   maxTempoMs:Math.trunc(scalar(opts.maxTempoMs,"maxTempoMs",200,10000,3000)),
    segunda:opts.segunda===true,animar:opts.animar===true,solucionador:"geometrico-v1"};
 }
 function medirMao(p,side){
@@ -76,6 +77,15 @@ function siteCandidates(o,ground,requested,side,cur,maxSites){
     pontuacao:dist(site.mundo,cur.T)-.014*(site.prioridade||0)}))
     .sort((a,b)=>a.pontuacao-b.pontuacao||a.id.localeCompare(b.id))
     .slice(0,maxSites);
+}
+function surfaceSamples(site,o,ground,metrics){
+ const n=norm(site.normal||[0,0,1]),seed=Math.abs(n[1])<.8?[0,1,0]:[1,0,0];
+ const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+ const tangent=norm(cross(seed,n)),size=Math.min(.28,metrics.larguraPalma*.27);
+ const frame=objectRigidPose(o,ground),direction=rigidDirection(frame,tangent);
+ return [-1,1].map(sign=>({...site,
+   mundo:add(site.mundo,direction,sign*size),
+   amostra:{eixo:tangent,deslocamento:sign*size}}));
 }
 function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
  const clone={...it,params:p};
@@ -270,7 +280,7 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
     (style==="apoio"?" (palma sem apoio válido)":""));
  return {ok:valid,objeto:o.nome||o.tipo,manequim:it.name,mao:side>0?"esquerda":"direita",
    lado:side,ponto:site.id,pegada:style,contatos:contacts,medidas:metrics,
-   posicaoAlvo:target,normal,distanciaInicial:distance,desvioPalma:fit.residual,
+   posicaoAlvo:target,normal,amostra:site.amostra??null,distanciaInicial:distance,desvioPalma:fit.residual,
    penetracao:maxPen,contatosAtivos:fingerCount,geometria:geometric,score,
    avisos:reasons,params:p};
 }
@@ -297,17 +307,37 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
  if(!solids.length)throw Error("Objeto sem geometria sólida para contato.");
  const sides=opt.mao==="ambas"?[1,-1]:
    opt.mao==="auto"?[-1,1]:[SIDE[opt.mao]];
- const raw=[],failures=[];
- for(const side of sides){
+ const raw=[],failures=[],started=Date.now();
+ const candidatesBySide=sides.map(side=>{
    const frame=handFrameV3(it,side,ground);
-   const sites=siteCandidates(o,ground,opt.ponto,side,frame,opt.maxSites);
-   for(const site of sites){
-     try{
-       const result=evaluate(it,o,side,site,ground,solids,opt,environment);
-       if(result.ok)raw.push(result);
-       else failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,
-         score:result.score??null,motivo:result.avisos?.join("; ")||result.motivo});
-     }catch(e){failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,motivo:e.message})}
+   return {side,sites:siteCandidates(o,ground,opt.ponto,side,frame,opt.maxSites)};
+ });
+ let limitReached=false;
+ const test=(side,site)=>{
+   if(Date.now()-started>=opt.maxTempoMs){limitReached=true;return}
+   try{
+     const result=evaluate(it,o,side,site,ground,solids,opt,environment);
+     if(result.ok)raw.push(result);
+     else failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,
+       score:result.score??null,motivo:result.avisos?.join("; ")||result.motivo});
+   }catch(e){failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,motivo:e.message})}
+ };
+ // Primeiro testar os GripSites nomeados e priorizados.
+ for(const {side,sites} of candidatesBySide){
+   for(const site of sites){test(side,site);if(limitReached)break}
+   if(limitReached)break;
+ }
+ // Se falhar, procurar amostras na superfície próxima ao GripSite.
+ if(!raw.length&&!limitReached){
+   for(const {side,sites} of candidatesBySide){
+     const metric=medirMao(it.params,side);
+     for(const site of sites.slice(0,Math.min(3,opt.maxSites))){
+       for(const sample of surfaceSamples(site,o,ground,metric)){
+         test(side,sample);if(limitReached)break;
+       }
+       if(limitReached)break;
+     }
+     if(limitReached)break;
    }
  }
  raw.sort((a,b)=>a.score-b.score||a.ponto.localeCompare(b.ponto));
@@ -321,12 +351,14 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
    melhor:chosen||null,candidatos:raw.map(x=>({mao:x.mao,ponto:x.ponto,pegada:x.pegada,
      score:x.score,contatos:x.contatosAtivos,desvio:x.desvioPalma,penetracao:x.penetracao})),
    rejeitados:failures.slice(0,20),opcoes:opt,avaliados:raw.length+failures.length,
+   limiteTempoAtingido:limitReached,
    limitacoes:["Geometria de caixas/cilindros e colisores aproximados.",
      "A validação considera a pose final; trajetória contínua e força de agarre não são resolvidas."]};
 }
 function resumirAutoGrip(result){
  if(!result.ok)return {status:"inviavel",avaliados:result.avaliados,
-   rejeitados:result.rejeitados,limitacoes:result.limitacoes};
+   rejeitados:result.rejeitados,limitacoes:result.limitacoes,
+   limiteTempoAtingido:result.limiteTempoAtingido};
  const q=result.melhor;
  const format=v=>({mao:v.mao,ponto:v.ponto,pegada:v.pegada,
    score:+v.score.toFixed(4),desvioPalma:+v.desvioPalma.toFixed(4),
