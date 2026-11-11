@@ -10,6 +10,13 @@ import {objectRigidPose,rigidPoint,rigidDirection} from "./rigid-transform.js";
 
 /* medidas padrão (R): largura (x), profundidade (z), altura (y) */
 const TIPOS_OBJETO = {
+  cadeiraVazada:{nome:"cadeira com travessa",larg:4,prof:4,alt:4,encosto:4.2},
+  mesaComAlca:{nome:"mesa com alça",larg:7,prof:4,alt:5},
+  baseRetangular:{nome:"base retangular",larg:.3,prof:.3,alt:.9},
+  baseCircular:{nome:"base circular",larg:.3,prof:.3,alt:.9},
+  bastao:{nome:"bastão",larg:.3,prof:.3,alt:7},
+  cajado:{nome:"cajado",larg:.3,prof:.3,alt:13},
+  espada:{nome:"espada de cena",larg:.3,prof:.3,alt:6},
   banco: { nome: "banco", larg: 4.2, prof: 3.4, alt: 4.0 },
   cadeira: { nome: "cadeira", larg: 4.0, prof: 4.0, alt: 4.0, encosto: 4.2 },
   caixa: { nome: "caixa", larg: 4.0, prof: 4.0, alt: 4.0 },
@@ -37,6 +44,29 @@ function objetoPadrao(tipo, o) {
    caixa {c, h:[meia largura, meia altura, meia prof.]} ou cilindro {cil:true, c, r, hh: meia altura} */
 function partesLocais(o) {
   const L = o.larg / 2, P = o.prof / 2, A = o.alt, out = [], perna = (x, z, alt) => out.push({ c: [x, alt / 2, z], h: [0.17, alt / 2, 0.17] });
+  const d=o.secaoPega||.25;
+  if(o.tipo==="cadeiraVazada"||o.tipo==="mesaComAlca"){
+    const cadeira=o.tipo==="cadeiraVazada";
+    const corpo=partesLocais({...o,tipo:cadeira?"banco":"mesa"});
+    const y=cadeira?A+(o.encosto||4.2):A-.5;
+    const z=cadeira?-P+.18:P+.65;
+    for(const lado of [-1,1]){
+      const x=lado*(L-.17);
+      corpo.push(cadeira?{c:[x,(A+y)/2,z],h:[.13,(y-A)/2,.13]}:
+        {c:[x,y,(P+z)/2],h:[.13,.13,(z-P)/2+.18]});
+    }
+    corpo.push({c:[0,y,z],h:[L,d/2,d/2]});
+    return corpo;
+  }
+  if(["baseRetangular","baseCircular","espada","cajado","bastao"].includes(o.tipo)){
+    if(o.tipo==="baseRetangular")return [{c:[0,A/2,0],h:[d/2,A/2,d/2]}];
+    const cabo=o.tipo==="espada"?1.4:A;
+    out.push({cil:true,c:[0,cabo/2,0],hh:cabo/2,r:d/2});
+    if(o.tipo==="espada")out.push({c:[0,cabo,0],h:[.52,.08,.12]},
+      {c:[0,(A+cabo)/2,0],h:[.18,(A-cabo)/2,.05]});
+    if(o.tipo==="cajado")out.push({cil:true,c:[0,A-.2,0],hh:.2,r:d});
+    return out;
+  }
   if (o.tipo === "mesaRedonda") {
     const t = 0.3, b = 0.2; out.push({ cil: true, c: [0, A - t / 2, 0], r: o.raio, hh: t / 2 }); out.push({ cil: true, c: [0, (A - t + b) / 2, 0], r: Math.max(0.35, o.raio * 0.12), hh: (A - t - b) / 2 });
     out.push({ cil: true, c: [0, 0.1, 0], r: Math.max(0.9, o.raio * 0.45), hh: 0.1 }); return out;
@@ -179,6 +209,26 @@ function luzCam(p) { const A = (p.lightAz || 0) * D, E = (p.lightEl || 45) * D; 
 const FACES = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]];
 function cantos(b) { const out = []; for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) out.push([0, 1, 2].map(q => b.c[q] + b.e[0][q] * sx * b.h[0] + b.e[1][q] * sy * b.h[1] + b.e[2][q] * sz * b.h[2])); return out; }
 /* desenha o objeto: faces visíveis com tom pela luz, contorno e sombra no chão; devolve também a profundidade por célula */
+function desenharReferencia(grupo,p,pal,g0,L){
+  const ci=camInfo(p),ld=luzCam(p),faces=[];
+  for(const poligono of grupo.faces){
+    const cam=poligono.map(ci.cs);
+    if(ci.persp&&cam.some(q=>q[2]>ci.d*.85))continue;
+    const [a,b,c]=cam,u=b.map((v,i)=>v-a[i]),v=c.map((n,i)=>n-a[i]);
+    const normal=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+    const luz=Math.abs(normal.reduce((n,x,i)=>n+x*ld[i],0))/(Math.hypot(...normal)||1);
+    faces.push({pts:cam.map(ci.tela),z:cam.reduce((n,q)=>n+q[2],0)/cam.length,luz});
+  }
+  faces.sort((a,b)=>a.z-b.z);
+  const svg=faces.map(f=>'<path d="M'+f.pts.map(q=>f1(q[0])+" "+f1(q[1])).join("L")+
+    'Z" fill="'+(L.fill?mistura(grupo.cor,"#171820",L.shade?.3*(1-f.luz):0):"none")+
+    '" stroke="'+mistura(grupo.cor,"#171820",.45)+'" stroke-width=".7"/>').join("");
+  const z=zDasFaces(faces);
+  if(z&&FINO)z.fino=zDasFaces(faces,1);
+  const lw=[[1,0,0],[0,1,0],[0,0,1]].map(v=>ci.cam(v).reduce((n,k,i)=>n+k*ld[i],0));
+  const sombra=L.shadow&&lw[1]>.08?sombraPts(grupo.faces.flat(),lw,g0,ci,pal):"";
+  return {svg,z,sombra,info:{depth:faces.at(-1)?.z??-1e6}};
+}
 function desenharObjeto(o, p, pal0, g0, L) {
   const pal = paletaObjeto(o, pal0);
   const ci = camInfo(p), LD = luzCam(p), bs = partesDoObjeto(o, g0), faces = [], grupos = [];
@@ -378,4 +428,4 @@ function zDasFaces(faces, Cf) {
   return { x0, y0, w, h, z };
 }
 
-export { pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };
+export { desenharReferencia, pfObjetosSvg, colisaoEntreObjetos, sobrepoePartes, ehCilindro, partesLocais, partesDoObjeto, paletaObjeto, baseY, TIPOS_OBJETO, objetoPadrao, caixasLocais, caixasDoObjeto, alturaApoio, capsulasObjeto, desenharObjeto };

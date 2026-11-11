@@ -9,6 +9,7 @@
      (só no mapa de sombra). Mexer em quem projeta refaz a camada de quem recebe; o contrário não.
    - Manequim congelado: a foto não é refeita, nem quando a câmera muda, até descongelar.
    Este módulo não usa a página: roda no navegador, em Web Workers e no Node (MCP). */
+import {desenharReferencia} from "./objetos.js";
 import { scene, setCasters } from "./desenho.js";
 import { setCUR_ID, setMULTI } from "./projecao.js";
 import { zb, zp, FINO } from "./zbuffer.js";
@@ -208,6 +209,17 @@ function comporCamadas(plan, opts) {
     const pc = list0[0].p, palO = list0.palObjetos || list0[0].pal, g0 = list0.chao !== undefined ? list0.chao : (list0[0].gy || 0);
     objs.forEach((o, k) => { const res = desenharObjeto(o, pc, palO, g0, L); cams.push({ g: { membros: [], obj: k, lanc: [], velho: false, congelado: false }, res, prof: res.info.depth, ordem: o.ordem || 0, objeto: o }); });
   }
+  let efeitosQuadro="";
+  for(const i of plan.idx){
+    const ref=list0[i].referencia;
+    if(!ref)continue;
+    efeitosQuadro+=ref.tela;
+    ref.grupos.forEach((grupo,k)=>{
+      const res=desenharReferencia(grupo,list0[i].p,list0[i].pal,list0[i].gy,L);
+      cams.push({g:{membros:[i],lanc:[]},res,prof:res.info.depth,ordem:list0[i].p._ordem||0,
+        referencia:"referencia-"+i+"-"+k,nome:grupo.tipo});
+    });
+  }
   cams.sort((a, b) => a.ordem - b.ordem || a.prof - b.prof);
   /* atmosfera: quem está mais longe se aproxima da cor do fundo */
   const p0 = list0[plan.idx.length ? plan.idx[0] : 0].p, at = p0.persp ? (p0.atmo || 0) : 0, bg = p0.bg;
@@ -219,6 +231,11 @@ function comporCamadas(plan, opts) {
     const M = mascaraEscondida(c, outros);
     let attrs = "";
     if (M) { defs += '<clipPath id="' + uid + 'r' + k + '"><path clip-rule="evenodd" d="' + caminhoRecorte(c.res.z, M) + '"/></clipPath>'; attrs += ' clip-path="url(#' + uid + 'r' + k + ')"'; }
+    if(c.referencia){
+      corpo+='<g id="'+c.referencia+'" data-camada="'+c.nome+'"'+attrs+'>'+c.res.svg+'</g>';
+      sombras+=c.res.sombra;
+      return;
+    }
     if (c.objeto) {
       const nome = c.objeto.nome || TIPOS_OBJETO[c.objeto.tipo].nome, id = "objeto-" + (c.g.obj + 1);
       corpo += '<g id="' + id + '" data-camada="' + escAttr(nome) + '"' + (opts.inkscape ? ' inkscape:label="' + escAttr(nome) + '"' + ink : "") + attrs + ">" + c.res.svg + "</g>";
@@ -234,14 +251,14 @@ function comporCamadas(plan, opts) {
     sombras += c.res.sombra || "";
   });
   const hidden = { hidden: true, handles: [], bb: null, fit: null }, infos = list0.map(() => hidden);
-  cams.forEach(c => { if (!c.objeto) infos[c.g.membros[0]] = c.res.info; });
+  cams.forEach(c => { if (!c.objeto&&!c.referencia) infos[c.g.membros[0]] = c.res.info; });
   let floorStr = "";
   if (plan.floor && list0.length) { let R = plan.floor; list0.forEach(o => R = Math.max(R, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2))); floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R, 80)); }
   const guias = L.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) + (L.pfObjetos !== false ? pfObjetosSvg(list0[0].p, list0[0].pal, list0.objetos, list0.chao !== undefined ? list0.chao : (list0[0].gy || 0)) : "") : "";
   const lay = (id, nome, s) => opts.inkscape ? '<g id="' + id + '" inkscape:label="' + nome + '"' + ink + ">" + s + "</g>" : (s ? '<g id="' + id + '">' + s + "</g>" : "");
-  const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias);
+  const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias) + lay("vfx-quadro","VFX de quadro",efeitosQuadro);
   if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros, obj: c.objeto ? c.g.obj : undefined })) });
-  return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
+  return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto&&!c.referencia).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
 }
 /* qual manequim está no ponto (x, y) da tela: o mais perto entre as camadas */
 function pickCamadas(x, y) {
@@ -265,6 +282,11 @@ function fotoManequim(list0, i, L, opts) {
   opts = opts || {};
   const plan = prepararCamadas(list0, L, false, 0, opts), g = plan.grupos.find(x => x.membros[0] === i);
   if (!g) return null;
+  if(list0[i].referencia){
+    const solo=prepararCamadas([list0[i]],L,false,0,opts);
+    if(!solo.grupos[0].pronto)renderGrupoLocal(solo,solo.grupos[0]);
+    return comporCamadas(solo,{semUltima:true}).svg;
+  }
   if (!g.pronto) renderGrupoLocal(plan, g);
   return (opts.sombra !== false && g.res.sombra ? '<g id="sombra">' + g.res.sombra + "</g>" : "") + '<g id="manequim-' + (i + 1) + '">' + g.res.svg + "</g>";
 }

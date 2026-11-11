@@ -2,7 +2,7 @@
 import { PAL_EXPORT, PAL_SCREEN, STYLES, styleName } from "./paletas.js";
 import { L } from "./modos.js";
 import { refreshScene, render, syncControls } from "./ambiente.js";
-import { DEF, newCache, renderScene, restGround } from "../engine/index.js";
+import { geometriaReferencia, DEF, newCache, renderScene, restGround } from "../engine/index.js";
 import { atualizarFocoOrbita } from "./orbita.js";
 import {updateGrip} from "./preensao-v2.js";
 import {updateRigidGrip} from "./grip-v3.js";
@@ -121,6 +121,11 @@ function sceneList(exp){
   const lst=SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
     return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
   /* objetos da cena (banco, cadeira, parede…), o chão e as cores neutras deles */
+  lst.forEach((o,i)=>{
+    const refs=SCN.list[i].referencias;
+    if(refs?.some(r=>r.ativo)&&!o.p._oculto)
+      o.referencia=geometriaReferencia(o.p,refs,SCN.frameManga||0,SCN.vento||{x:0,z:0,rajada:0});
+  });
   lst.objetos=SCN.objetos.map(o=>Object.assign({},o,{_cor:corObjeto(o,exp)}));lst.chao=g0;
   const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
   return lst;
@@ -151,6 +156,7 @@ function addInst(params,name,silent){
 }
 function dupInst(src,silent){
   const it=addInst(Object.assign({},src.params,{wx:src.params.wx+7.5,wz:src.params.wz}),src.name+" (cópia)",true);
+  if(src.referencias)it.referencias=structuredClone(src.referencias);
   if(!silent)setActive(SCN.list.indexOf(it));
   return it;
 }

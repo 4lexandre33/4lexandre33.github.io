@@ -26,6 +26,8 @@ import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
 import {iniciarQuedaObjeto,cancelarQuedaObjeto,avancarDinamicaObjetos} from "../engine/grip-dynamics.js";
+import { validarReferencia, ventoManga } from "../engine/referencia-manga.js";
+import { gerarNaMao } from "./bases-mao.js";
 import {tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
 import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, colliderRig, colliderObject, manifoldObject, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
@@ -637,6 +639,8 @@ const cena={
     if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
     if(owner&&it.id!==owner.id)throw Error("Objeto segurado por outro manequim.");
     const options=validarOpcoes(opts);
+    const rollback=[...SCN.list.map(m=>m.params),...SCN.objetos].map(target=>
+      [target,structuredClone(target)]);
     const before=cena.estadoCompleto(),beforeParams={...it.params},ground=restGround(SCN.list[0].params);
     const reencaixado=!!(o.gripV3||o.grip);
     if(reencaixado&&options.permitirMoverObjeto)
@@ -724,7 +728,13 @@ const cena={
         mao:best.mao,pegada:best.pegada,ponto:best.ponto,segundaMao:best.secundaria?.mao||null,
         qualidade:resumirAutoGrip(found).escolha,grip:g,validacaoFinal:check,validacaoCena:checkedScene,
         aviso:"Encaixe geométrico aproximado: sem forças nem trajetória livre de obstáculos garantida."};
-    }catch(e){cena.restaurarCompleto(before);throw Error("AutoGrip revertido: "+e.message)}
+    }catch(e){
+      for(const [target,snapshot] of rollback){
+        for(const key of Object.keys(target))delete target[key];
+        Object.assign(target,snapshot);
+      }
+      throw Error("AutoGrip revertido: "+e.message);
+    }
   },
   segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
     // modo: 'aproximarMao' usa IK antes da captura. Sem deslocar a cadeira.
@@ -783,6 +793,35 @@ const cena={
   desfazerColisao(){return desfazerColisao()},
   /* objetos: cena.objeto("mesa", {x: 3, z: 0, giro: 90, altura: 6.5, cor: "#7FB3D5"}) · cena.objeto("copo", {sobre: "mesa"})
      cilindros: cena.objeto("cilindro", {raio: 2, altura: 4}) */
+  referencias(manequim){const it=donoAuto(manequim);if(!it)throw Error("Manequim não encontrado.");
+    return structuredClone(it.referencias||[])},
+  referencia(tipo,opts={}){
+    const it=donoAuto(opts.manequim);
+    if(!it)throw Error("Manequim não encontrado.");
+    const refs=it.referencias||[],i=opts.indice??refs.length;
+    if(!Number.isInteger(i)||i<0||i>refs.length||i>=32)throw Error("Índice de referência inválido.");
+    const ref=validarReferencia({cor:"#486582",...refs[i],...opts,tipo});
+    cena.marcarEstado();it.referencias=refs;refs[i]=ref;return i;
+  },
+  removerReferencia(indice,manequim){
+    const it=donoAuto(manequim);
+    if(!Number.isInteger(indice)||!it?.referencias?.[indice])throw Error("Referência ausente.");
+    cena.marcarEstado();it.referencias.splice(indice,1);
+  },
+  vento(opts){if(opts!==undefined){const v=ventoManga(opts);cena.marcarEstado();SCN.vento=v}
+    return {...(SCN.vento||ventoManga())}},
+  quadroSimulado(n){
+    if(n!==undefined){if(!Number.isInteger(n)||n<0||n>100000)throw Error("Quadro fora do intervalo.");SCN.frameManga=n}
+    return SCN.frameManga||0;
+  },
+  objetoNaMao(modelo,opts={}){
+    const it=donoAuto(opts.manequim),side=ladoNum(opts.mao??"direita");
+    if(!it)throw Error("Manequim não encontrado.");
+    const before=cena.estadoCompleto();
+    const objeto=gerarNaMao(it,side,modelo,opts);
+    cena.marcarEstado(before);
+    return apiObjeto(objeto);
+  },
   objeto(tipo,o){return apiObjeto(adicionarObjeto(tipo,o||{}))},
   objetos(){return SCN.objetos.map(apiObjeto)},
   obterObjeto(ref){const q=acharObjeto(ref);if(!q)throw new Error("Objeto “"+ref+"” não existe.");return apiObjeto(q)},

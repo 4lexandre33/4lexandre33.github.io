@@ -1,0 +1,124 @@
+// Referências leves para composição: painéis e mechas são superfícies abertas.
+// Cada ponto acompanha uma junta do rig ou uma raiz da superfície craniana.
+import {ossosDoCorpo} from "./esqueleto.js";
+import {headPt,shape} from "./cabeca.js";
+import {chainSetup} from "./cadeia.js";
+import {applyA,H,W} from "./matematica.js";
+import {paraMundo} from "./colisao-cena.js";
+
+const TIPOS_MANGA=["paleto","camisa","calca","painel","curto","longo","franja","preso","linhas","impacto","explosao","fumaca","chama"];
+const juntasManga=["ombro","cotovelo","punho","quadril","joelho","tornozelo","pescoço","pelve"];
+function numeroManga(v,min,max){
+  if(!Number.isFinite(v)||v<min||v>max)throw Error("Parâmetro de referência fora do intervalo.");
+  return v;
+}
+function validarReferencia(r){
+  if(!r||!TIPOS_MANGA.includes(r.tipo)||!/^#[\da-f]{6}$/i.test(r.cor))throw Error("Tipo ou cor de referência inválidos.");
+  const out={tipo:r.tipo,cor:r.cor,ativo:r.ativo!==false,inicio:numeroManga(r.inicio??0,0,100000),
+    duracao:numeroManga(r.duracao??100000,1,100001),escala:numeroManga(r.escala??1,.1,5),
+    semente:numeroManga(r.semente??1,0,10000),x:numeroManga(r.x??.5,0,1),y:numeroManga(r.y??.5,0,1)};
+  if(r.posicao!==undefined){
+    if(!Array.isArray(r.posicao)||r.posicao.length!==3)throw Error("Posição 3D inválida.");
+    out.posicao=r.posicao.map(v=>numeroManga(v,-100,100));
+  }
+  if(r.raizes!==undefined){
+    if(!Array.isArray(r.raizes)||!r.raizes.length||r.raizes.length>40)throw Error("Use de uma a 40 raízes.");
+    out.raizes=r.raizes.map(q=>({angulo:numeroManga(q.angulo,-180,180),altura:numeroManga(q.altura,.1,.95),comprimento:numeroManga(q.comprimento,.1,5)}));
+  }
+  if(r.tipo==="painel"){
+    if(!Array.isArray(r.pontos)||r.pontos.length<3||r.pontos.length>40)throw Error("Desenhe de 3 a 40 pontos.");
+    out.pontos=r.pontos.map(q=>{
+      if(!juntasManga.includes(q.junta)||![-1,0,1].includes(q.lado)||!["apoio","pressao","livre"].includes(q.modo)||!Array.isArray(q.offset)||q.offset.length!==3)
+        throw Error("Ponto de tecido inválido.");
+      return {junta:q.junta,lado:q.lado,modo:q.modo,offset:q.offset.map(v=>numeroManga(v,-8,8))};
+    });
+  }
+  return out;
+}
+function ventoManga(v={}){
+  return {x:numeroManga(v.x??0,-4,4),z:numeroManga(v.z??0,-4,4),rajada:numeroManga(v.rajada??0,0,1)};
+}
+function linhasDeQuadro(ref,t){
+  const impacto=ref.tipo==="impacto",n=impacto?54:24,x=ref.x*W,y=ref.y*H;
+  let d="";
+  for(let i=0;i<n;i++){
+    const a=i*2*Math.PI/n,onda=Math.sin(i*13+ref.semente+t*.09);
+    const k=(.18+.09*onda)/ref.escala;
+    const ax=impacto?x+Math.cos(a)*W*k:-W*.15;
+    const ay=impacto?y+Math.sin(a)*H*k:(i+.35*onda)*H/n;
+    const bx=impacto?x+Math.cos(a)*W:ax+W*(.24+.12*onda)*ref.escala;
+    const by=impacto?y+Math.sin(a)*H:ay-H*.08;
+    d+="M"+ax.toFixed(1)+" "+ay.toFixed(1)+"L"+bx.toFixed(1)+" "+by.toFixed(1);
+  }
+  return '<path data-vfx="'+ref.tipo+'" d="'+d+'" fill="none" stroke="'+ref.cor+'" stroke-width="1.6"/>';
+}
+function geometriaReferencia(p,refs,frame,vento){
+  const grupos=[],tela=[];
+  const ativos=refs.filter(r=>r.ativo&&frame>=r.inicio&&frame<r.inicio+r.duracao);
+  let rig,ch,S;
+  const mundo=paraMundo(p),angulo=(p.wRot||0)*Math.PI/180;
+  const pontoJ=(j,s)=>{rig??=ossosDoCorpo(p);const q=rig.juntas.find(k=>k.nome===j&&k.s===s);
+    if(!q)throw Error("Junta de referência ausente: "+j);return q.P;};
+  for(const r of ativos){
+    const t=frame-r.inicio;
+    if(["linhas","impacto"].includes(r.tipo)){tela.push(linhasDeQuadro(r,t));continue}
+    const faces=[],amp=1+vento.rajada*Math.sin(t*.13+r.semente);
+    const deslocar=(q,peso)=>[q[0]+vento.x*peso*amp,q[1]-.12*peso,q[2]+vento.z*peso*amp];
+    const ponto=(j,s,x,y,z,peso=0)=>deslocar(mundo(pontoJ(j,s).map((n,i)=>n+[x,y,z][i])),peso);
+    const unir=(a,b)=>{for(let i=0;i<a.length;i++){const k=(i+1)%a.length;faces.push([a[i],a[k],b[k],b[i]])}};
+    if(r.tipo==="painel"){
+      faces.push(r.pontos.map(q=>ponto(q.junta,q.lado,...q.offset,q.modo==="livre"?.55:0)));
+    }else if(["camisa","calca","paleto"].includes(r.tipo)){
+      const anel=(j,s,rx,rz,dy,livre)=>Array.from({length:10},(_,i)=>{
+        const a=i*Math.PI/5;return ponto(j,s,rx*Math.cos(a)*r.escala,dy,rz*Math.sin(a)*r.escala,livre)});
+      for(const s of [-1,1]){
+        if(r.tipo==="calca"){
+          const c=anel("quadril",s,.78,.87,.55,0),jo=anel("joelho",s,.62,.65,0,.03),pe=anel("tornozelo",s,.43,.5,0,.15);unir(c,jo);unir(jo,pe);
+        }else{
+          const om=anel("ombro",s,.65,.69,0,0),co=anel("cotovelo",s,.55,.55,.05,.04),
+          pu=anel("punho",s,.38,.4,.05,0);unir(om,co);unir(co,pu);
+        }
+      }
+      if(r.tipo!=="calca"){
+        const cintura=(pontoJ("quadril",1)[1]+pontoJ("quadril",-1)[1])/2;
+        const tronco=(baixo)=>Array.from({length:16},(_,i)=>{
+          const a=i*Math.PI/8,s=Math.cos(a)>=0?1:-1,j=pontoJ(baixo?"quadril":"ombro",s);
+          const pt=[Math.abs(j[0])*Math.cos(a)*(baixo?1.65:1.08),baixo?cintura-.8:j[1],
+            j[2]+Math.sin(a)*(baixo?1.18:1.27)*r.escala];
+          return deslocar(mundo(pt),baixo?.24:0);
+        });
+        unir(tronco(false),tronco(true));
+        if(r.tipo==="paleto")for(const s of [-1,1])faces.push([ponto("pescoço",0,.28*s,0,.86),
+          ponto("ombro",s,-.28*s,-.48,1),ponto("pescoço",0,.12*s,-2.4,1.22)]);
+      }
+    }else if(["curto","longo","preso","franja"].includes(r.tipo)){
+      S??=shape(p);ch??=chainSetup(p,S);
+      const raizes=r.raizes??Array.from({length:18},(_,i)=>({angulo:i*20-170,altura:.72,
+        comprimento:r.tipo==="curto"?.45:r.tipo==="franja"?.65:r.tipo==="preso"?1.5:2}));
+      for(const raiz of raizes){
+        const a=raiz.angulo*Math.PI/180;
+        if(r.tipo==="franja"&&Math.cos(a)<.35)continue;
+        const raizP=(h,da)=>mundo(applyA(ch.A3,headPt(h,da,p,S,.085)));
+        const h=raiz.altura*S.t, borda=Math.cos(a)>.55?.26*S.t:-.18*S.t;
+        const top=raizP(h,a),l=raizP(borda,a-.19),rr=raizP(borda,a+.19);
+        const comprimento=raiz.comprimento*r.escala*(Math.cos(a)>.55?.38:1);
+        const ponta=deslocar(raizP(borda,a),.35*comprimento);
+        ponta[1]-=comprimento;ponta[0]+=.13*Math.sin(a+angulo);ponta[2]+=.13*Math.cos(a+angulo);
+        if(r.tipo==="preso"&&Math.cos(a)<.4){const no=raizP(borda,Math.PI);ponta[0]=(ponta[0]+no[0])/2;ponta[2]=(ponta[2]+no[2])/2}
+        faces.push([raizP(.97*S.t,a),raizP(h,a-.18),raizP(h,a+.18)],[top,l,ponta,rr]);
+      }
+    }else{
+      const origem=r.posicao??ponto("punho",-1,0,0,0);
+      for(let i=0;i<14;i++){
+        const a=i*2*Math.PI/14,s=Math.sin(a),c=Math.cos(a),fase=(t%24)/24;
+        const raio=(r.tipo==="explosao"?1+2*fase:.4+.15*Math.sin(t*.2+i))*r.escala;
+        const base=[origem[0]+s*raio,origem[1]+(r.tipo==="fumaca"?fase*2:0),origem[2]+c*raio];
+        faces.push([base,[base[0]+.28*c,base[1]+.1,base[2]-.28*s],
+          [base[0]+s*raio*.55,base[1]+(.5+Math.abs(Math.sin(i+r.semente+t*.1)))*r.escala,base[2]+c*raio*.55]]);
+      }
+    }
+    if(faces.length)grupos.push({tipo:r.tipo,cor:r.cor,faces});
+  }
+  return {grupos,tela:tela.join("")};
+}
+export {TIPOS_MANGA,validarReferencia,ventoManga,geometriaReferencia};

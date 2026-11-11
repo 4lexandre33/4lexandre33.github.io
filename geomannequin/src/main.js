@@ -1,5 +1,6 @@
 /* GeoMannequin — ponto de entrada da página: prepara a cena, liga a interface e desenha */
 import "./scene/index.js";
+import {iniciarReferenciaManga} from "./ui/referencia-manga.js";
 import { definirGanchos } from "./scene/ambiente.js";
 import { iniciarPainelCena } from "./ui/painel-cena.js";
 import { iniciarTema } from "./ui/tema.js";
@@ -41,3 +42,5 @@ iniciarQuadros();
 iniciarOrbita();
 iniciarInicio();
 iniciarHeadStudy();
+
+iniciarReferenciaManga();

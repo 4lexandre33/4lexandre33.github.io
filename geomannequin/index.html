@@ -131,6 +131,20 @@
       </div>
       <label class="check-linha"><input type="checkbox" id="cExato"> Modo exato (todos juntos, mais lento)</label>
       <p class="hint camadas-status" id="cStatus" aria-live="polite"></p>
+      <details id="mangaControles"><summary>Roupa, cabelo, vento e VFX</summary>
+      <label>Modelo <select id="mangaTipo"><option value="paleto">Paletó</option><option value="camisa">Camisa</option><option value="calca">Calça</option><option value="curto">Cabelo curto</option><option value="longo">Cabelo longo</option><option value="preso">Cabelo preso</option><option value="franja">Franja</option><option value="impacto">Linhas radiais</option><option value="linhas">Linhas de velocidade</option><option value="chama">Chama na mão</option><option value="explosao">Explosão</option><option value="fumaca">Fumaça</option></select></label>
+      <label>Cor <input type="color" id="mangaCor" value="#486582"></label><button id="mangaAdicionar" type="button">Adicionar ao quadro</button>
+      <label>Referências do manequim <select id="mangaLista"></select></label>
+      <button id="mangaVisivel" type="button">Mostrar / ocultar</button><button id="mangaRemover" type="button">Remover</button>
+      <div><button id="mangaDesenhar" type="button">Desenhar tecido no corpo</button>
+      <label>Ponto <select id="mangaPonto"><option value="apoio">Sustentação</option><option value="pressao">Pressão</option><option value="livre">Livre</option></select></label>
+      <button id="mangaFechar" type="button">Fechar painel</button><button id="mangaCancelar" type="button">Cancelar desenho</button></div>
+      <label>Vento X <input id="mangaVentoX" type="number" min="-4" max="4" step=".1" value="0"></label>
+      <label>Vento Z <input id="mangaVentoZ" type="number" min="-4" max="4" step=".1" value="0"></label>
+      <label>Rajada <input id="mangaRajada" type="range" min="0" max="1" step=".05" value="0"></label>
+      <button id="mangaAplicarVento" type="button">Aplicar vento</button>
+      <label>Quadro <input id="mangaTempo" type="number" min="0" max="100000" value="0"></label>
+      <button id="mangaPlay" type="button">Simular</button><p id="mangaAviso" role="status"></p></details>
       <section id="colSecao" class="col-secao" aria-labelledby="colSecaoTitulo" tabindex="-1">
       <h2 id="colSecaoTitulo">Colisões e contato 3D</h2>
       <p class="hint camadas-dica">Quando um manequim atravessa outro (mão no quadril do vizinho, braços cruzando), escolha como corrigir: afastar, girar, ajustar a pose ou automático.</p>
@@ -145,6 +159,9 @@
       <div class="group poses" role="group" aria-label="Preensão cinemática de objeto selecionado">
         <label for="colV2Mao">Mão</label>
         <select id="colV2Mao"><option value="direita">Direita</option><option value="esquerda">Esquerda</option></select>
+        <label for="modeloNaMao">Modelo na mão</label>
+        <select id="modeloNaMao"><option value="cadeira">Cadeira com travessa</option><option value="mesa">Mesa com alça</option><option value="bastao">Bastão</option><option value="cajado">Cajado</option><option value="espada">Espada de cena</option><option value="retangular">Base retangular</option><option value="circular">Base circular</option></select>
+        <button type="button" id="criarNaMao">Criar já encaixado</button>
         <label for="colV3Ponto">Local de agarre</label>
         <select id="colV3Ponto" aria-label="Ponto anatômico do objeto"><option value="auto">Mais próximo da palma</option></select>
         <label for="colV3Reach">Alcance (R)</label>

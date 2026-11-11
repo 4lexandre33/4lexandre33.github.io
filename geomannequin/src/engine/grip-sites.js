@@ -9,7 +9,11 @@ function gripSites(o){
   // eixo normal do site informa aproximação; base alinhada à matriz do objeto.
   arr.push({id,nome,local:[x,y,z],normal,prioridade:priority});
  };
- if(o.tipo==="cadeira"){
+ if(["cadeiraVazada","mesaComAlca","baseCircular","baseRetangular","espada","bastao","cajado"].includes(o.tipo)){
+  const cadeira=o.tipo==="cadeiraVazada",mesa=o.tipo==="mesaComAlca";
+  const y=cadeira?A+(o.encosto||4.2):mesa?A-.5:o.tipo==="espada"?.7:A/2;
+  push("baseMao","Centro da base da mão",0,y,cadeira?-P+.18:mesa?P+.65:0,[1,0,0],100);
+ }else if(o.tipo==="cadeira"){
   const E=o.encosto||4.2,B=-P+0.18;
   push("encostoTopo","Topo do encosto",0,A+E,B,[0,0,-1],100);
   push("encostoEsquerdo","Encosto à esquerda",-L+.23,A+E*.75,B,[0,0,-1],90);

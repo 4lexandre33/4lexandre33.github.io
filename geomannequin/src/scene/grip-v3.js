@@ -195,11 +195,12 @@ function transferirMaoPrincipalV3(it,o,ground,side){
  // Calcula tudo antes de mudar vínculo.
  const relPrimary=rigidCompose(rigidInverse(newFrame),pose);
  const relSecondary=rigidCompose(rigidInverse(oldFrame),pose);
+ const preservePalm=Array.isArray(g.secundaria.palmLocal);
  const auto=!!g.autoGrip;
  const palmLocal=rigidPoint(rigidInverse(pose),oldFrame.T);
  g.side=side;g.siteId=otherSite;g.relative=relPrimary;
  g.secundaria={side:oldSide,siteId:oldSite,relative:relSecondary,
-   ...(auto?{palmLocal}:{})};
+   ...((auto||preservePalm)?{palmLocal}:{})};
  if(auto&&g.autoGrip.segunda){
    const previous={mao:oldSide>0?"esquerda":"direita",site:oldSite,
      siteOriginal:g.autoGrip.siteOriginal,pegada:g.autoGrip.pegada};

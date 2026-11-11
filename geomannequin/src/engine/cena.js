@@ -72,7 +72,7 @@ function figDepth(p){const cam=makeXf(Object.assign({},p,{wRot:0}));return cam([
 /* opts.exato: todos num z-buffer comum (modo antigo); sem ele, com 2 ou mais manequins visíveis, a cena é montada em camadas (camadas.js) */
 function renderScene(list0,L,fast,floor,opts){
   setUltima(null);
-  if((!(opts&&opts.exato)&&list0.filter(o=>!o.p._oculto).length>1)||(list0.objetos&&list0.objetos.length))return renderCamadas(list0,L,fast,floor,opts);
+  if(list0.some(o=>o.referencia)||(!(opts&&opts.exato)&&list0.filter(o=>!o.p._oculto).length>1)||(list0.objetos&&list0.objetos.length))return renderCamadas(list0,L,fast,floor,opts);
   let floorStr="";
   if(floor&&list0.length){let R=floor;list0.forEach(o=>R=Math.max(R,2*Math.ceil((Math.max(Math.abs(o.p.wx||0),Math.abs(o.p.wz||0))+5)/2)));floorStr=floorSvg(list0[0].p,list0[0].gy||0,list0[0].pal,Math.min(R,80))}
   /* quem está atrás da câmera (ou colado nela) não é desenhado */

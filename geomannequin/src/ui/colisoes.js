@@ -207,6 +207,14 @@ export function iniciarColisoes() {
       refreshScene();syncControls();render();
     }catch(e){status.textContent="Não foi possível segurar: "+e.message}
   });
+  $("criarNaMao")?.addEventListener("click",()=>{
+    try{
+      const obj=cena.objetoNaMao($("modeloNaMao").value,{mao:$("colV2Mao").value});
+      SCN.objSel=obj.id;
+      refreshScene();syncControls();render();
+      status.textContent="Modelo encaixado na mão "+$("colV2Mao").value+".";
+    }catch(e){status.textContent=e.message}
+  });
   $("colV3Transferir")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
     if(!obj){status.textContent="Selecione uma cadeira já segurada com as duas mãos.";return}
