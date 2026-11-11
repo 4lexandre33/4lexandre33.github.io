@@ -62,6 +62,9 @@ if (!httpMode) {
   const { default: express } = await import("express");
   const PORT = Number(process.env.PORT || 8787);
   const TOKEN = process.env.GM_TOKEN || "";
+  // Nunca publicar servidor HTTP anonimamente. Exceção somente loopback explícito.
+  const LOCAL_DEV = process.env.GM_HTTP_LOCAL_DEV === "1";
+  if(!TOKEN&&!LOCAL_DEV)throw Error("GM_TOKEN é obrigatório no HTTP. Use GM_HTTP_LOCAL_DEV=1 apenas em localhost.");
   const MAX = Number(process.env.GM_MAX_SESSIONS || 200);
   const TTL = Number(process.env.GM_SESSION_TTL_MIN || 45) * 60e3;
   // HTTP é uma fronteira não confiável: GM_ALLOW_CODE nunca libera JavaScript remoto.
@@ -73,7 +76,13 @@ if (!httpMode) {
   app.disable("x-powered-by");
   app.use(express.json({ limit: "2mb" }));
   app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    // Padrão sem CORS aberto. Clientes MCP servidor-servidor não precisam de ACAO.
+    const origin=req.headers.origin;
+    const allowed=(process.env.GM_ALLOWED_ORIGINS||"").split(",").map(x=>x.trim()).filter(Boolean);
+    if(origin&&allowed.includes(origin)){
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+    }
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID");
     res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
@@ -81,7 +90,7 @@ if (!httpMode) {
     next();
   });
   const authed = (req) => {
-    if (!TOKEN) return true;
+    if (!TOKEN) return LOCAL_DEV;
     const h = req.headers.authorization || "";
     return h === "Bearer " + TOKEN || req.query.token === TOKEN;
   };
@@ -152,5 +161,5 @@ if (!httpMode) {
     await t.handlePostMessage(req, res, req.body);
   });
 
-  app.listen(PORT, "0.0.0.0", () => console.log(`GeoMannequin MCP ${VERSION} (HTTP) em http://0.0.0.0:${PORT}/mcp — app ${APP_URL}${TOKEN ? " — com token" : ""}`));
+  app.listen(PORT, LOCAL_DEV?"127.0.0.1":"0.0.0.0", () => console.log(`GeoMannequin MCP ${VERSION} (HTTP) em http://0.0.0.0:${PORT}/mcp — app ${APP_URL}${TOKEN ? " — com token" : ""}`));
 }
