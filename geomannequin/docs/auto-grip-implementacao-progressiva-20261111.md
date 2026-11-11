@@ -120,3 +120,15 @@ npm run test:dist
 \`\`\`
 
 Antes de mesclar a PR, exigir todos os testes reais acima, inspeção do widget e revisão das falhas em amostras de mão/objeto. Até lá, manter o novo recurso **experimental** e **não liberado em produção**.
+
+## Correções da continuação — contato SDF, rollback e prevenção de loops (11/11/2026)
+
+- **Falha real corrigida no refinamento de dedos:** a função `pointContacts` consultava `A.LH` sem instanciar `A` em seu escopo. Isso lançava `ReferenceError` durante a avaliação dos contatos. A função agora obtém `A=armDims(p)` localmente, mantendo a mesma origem anatômica de palma e punho.
+- **Falhas internas distintas de inviabilidade:** um `ReferenceError` durante a busca de candidatos deixa de ser absorvido como simples pegada geometricamente inviável. A API propaga esse erro de programação para diagnóstico.
+- **Microdeslocamento protegido contra entrada patológica:** o verificador público exige passo finito entre 0,01 e 0,5 R, tolerância entre 0 e 0,14 R, solo/posições finitos e percurso horizontal total de no máximo 1 R. Isso evita um loop infinito quando `passo=0` e uma quantidade impraticável de amostras quando o passo é ínfimo.
+- **Atomicidade da confirmação:** em `cena.autoEncaixarObjeto`, `atualizarApoios()` foi movida para dentro do `try`, após o snapshot do estado e a validação das opções. Se o planejamento ou vínculo falhar, o rollback deve restaurar inclusive a posição anterior de objetos segurados que ainda não haviam sido sincronizados.
+- **Regressões adicionadas:** `testes/grip-auto.mjs` agora requer evidência de execução da geometria real no planejador (rejeição com score ou candidato viável), impede mascarar `ReferenceError`, verifica rejeição de passos/tolerâncias/caminhos inválidos e testa não mutação antes da confirmação e rollback após erro num GripSite inexistente.
+
+**Checagem executada nesta continuação:** parsing V8 das versões atuais de `src/scene/grip-auto.js`, `src/scene/comandos.js` e `testes/grip-auto.mjs`: **PASS** (com declarações `import/export` removidas somente para a análise sintática). **Não equivale a rodar os imports, o motor geométrico ou a suíte integrada.**
+
+**CI ainda bloqueado:** no novo commit as 10 verificações do GeoMannequin falharam novamente antes de expor steps. O job Grip V3 não retornou etapas, e a tentativa de buscar os logs terminou em erro de objeto de log inexistente (`BlobNotFound`). A causa raiz das falhas de inicialização não pôde ser confirmada por esse diagnóstico. **Nenhum gate integrado foi aprovado; não reconstruir/declarar atualizada a distribuição MCP nem mesclar sem validação real.**
