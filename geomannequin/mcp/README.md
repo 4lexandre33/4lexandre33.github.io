@@ -55,6 +55,12 @@ Reencaixar a cadeira, inclusive se já estiver na mão:
 {"acao":"reencaixar","objeto":"Cadeira 1","mao":"auto","pegada":"auto","preservarObjeto":true}
 ```
 
+Exemplo com microajuste explicitamente autorizado:
+
+```json
+{"acao":"auto_encaixar","objeto":"Copo 1","mao":"auto","pegada":"auto","preservarObjeto":false,"permitirMoverObjeto":true,"maxDeslocamento":0.24}
+```
+
 Autoencaixe em uma chamada:
 
 ```json
@@ -71,8 +77,14 @@ aplicativo e **Autoencaixar** também está no widget ChatGPT.
 **Limitações:** esta versão utiliza o IK e os colisores procedurais atuais.
 Trata-se de encaixe geométrico aproximado, não solver físico de forças e
 atrito; o percurso animado completo ainda não tem detecção contínua exata.
-O objeto é preservado por padrão. A opção de deslocá-lo automaticamente
-é rejeitada até que o caminho e os suportes sejam validados com segurança.
+O objeto é preservado por padrão. Existe um **microajuste horizontal
+experimental**, habilitado apenas por `permitirMoverObjeto:true` junto com
+`preservarObjeto:false`. Ele explora deslocamentos X/Z de no máximo
+`maxDeslocamento` (padrão 0,24 R; limite 0,6 R), recusa objetos apoiados,
+já segurados, com filhos ou em dinâmica ativa e rejeita candidatos que colidem
+com outros objetos. Não altera altura, escala, pitch ou roll; não garante
+que o trajeto contínuo esteja livre de obstáculos. Portanto não é um
+solucionador de transformação 6DOF completa.
 Uma pegada que não passar nos testes de contato final retorna erro.
 
 ```sh
