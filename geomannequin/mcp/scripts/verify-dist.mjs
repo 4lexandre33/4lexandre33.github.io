@@ -22,7 +22,7 @@ assert.equal(manifest.sha256,expected.sha256,
 assert.ok(manifest.sha256.length===64&&manifest.files===expected.files);
 const bundle=read("dist/server.mjs");
 for(const name of ["preensao","fisica","objeto_3d","grip_sites","camera_anatomica",
- "roteiro_declarativo","artefatos_mcp"]){
+ "roteiro_declarativo","artefatos_mcp","operacoes_lote","anatomia_mcp","aparencia_mcp"]){
  assert.ok(bundle.includes(name),"Ferramenta MCP ausente do bundle: "+name);
 }
 console.log("MCP DIST PARITY PASS:",source.modulos.length,"módulos,",
