@@ -139,7 +139,10 @@ export function iniciarColisoes() {
   });
   // AutoGrip: os comandos de UI chamam exatamente a API usada pelo editor/MCP.
   function opcoesAutoGrip(){
-    return {manequim:SCN.active,mao:$("colAutoMao")?.value||"auto",
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    const holder=obj?.gripV3?.mannequinId??obj?.grip?.mannequinId;
+    const owner=SCN.list.findIndex(m=>m.id===holder);
+    return {manequim:owner<0?SCN.active:owner,mao:$("colAutoMao")?.value||"auto",
       pegada:$("colAutoPegada")?.value||"auto",
       ponto:gripChoice?.value||"auto",reach:Math.max(12,Number($("colV3Reach")?.value||5)),
       preservarObjeto:true,exigirContato:true};
@@ -172,6 +175,18 @@ export function iniciarColisoes() {
       finally{autoOcupado=false;if(a)a.disabled=false;if(b)b.disabled=false}
     });
   }
+  $("colAutoVerificar")?.addEventListener("click",()=>{
+    const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+    if(!obj){status.textContent="Selecione um objeto para verificar a pegada.";return}
+    try{
+      const report=cena.inspecionarAutoGrip(obj.id);
+      status.textContent=report.status==="livre"?"Objeto ainda não está segurado.":
+        report.status==="vinculo_v2"?"Pegada antiga V2: use Autoencaixar para ajustar.":
+        (report.necessitaAjuste?"Pegada precisa de correção. ":"Pegada geometricamente válida. ")+
+        "Penetração máxima "+report.penetracaoCena.toFixed(3)+
+        " R; contatos por mão: "+report.porMao.map(x=>x.mao+" "+x.contatos).join(", ")+".";
+    }catch(e){status.textContent="Verificação AutoGrip: "+e.message}
+  });
   $("colAutoPrever")?.addEventListener("click",()=>executarAutoGrip(false));
   $("colAutoEncaixar")?.addEventListener("click",()=>executarAutoGrip(true));
   $("colV2Segurar")?.addEventListener("click",()=>{
