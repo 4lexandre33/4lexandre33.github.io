@@ -24,6 +24,23 @@ async function scenario(client,remote){
  assert.ok(!r.isError);
  r=await call(client,"grip_sites",{acao:"listar",objeto:"Cadeira MCP"});
  assert.ok(!r.isError&&r.structuredContent.resultado.some(x=>x.id==="encostoTopo"));
+ // AutoGrip MCP: primeiro planejar sem mutar, depois confirmar somente se possível.
+ const stateBefore=(await call(client,"preensao",{acao:"listar"})).structuredContent.resultado;
+ let plan=await call(client,"preensao",{acao:"planejar",objeto:"Cadeira MCP",mao:"auto",
+   pegada:"auto",reach:15,maxSites:1,maxIteracoes:1});
+ assert.ok(!plan.isError,JSON.stringify(plan.content));
+ const planned=plan.structuredContent.resultado;
+ assert.ok(["planejado","inviavel"].includes(planned.status));
+ assert.ok(typeof planned.revisao==="string");
+ let stateAfter=(await call(client,"preensao",{acao:"listar"})).structuredContent.resultado;
+ assert.deepEqual(stateAfter,stateBefore,"Planejamento AutoGrip não pode criar vínculo");
+ if(planned.status==="planejado"){
+   const applied=await call(client,"preensao",{acao:"aplicar",objeto:"Cadeira MCP",
+     revisao:planned.revisao,mao:"auto",pegada:"auto",reach:15,maxSites:1,maxIteracoes:1});
+   assert.ok(!applied.isError,JSON.stringify(applied.content));
+   assert.equal(applied.structuredContent.resultado.status,"aplicado");
+   await call(client,"preensao",{acao:"soltar",objeto:"Cadeira MCP",modo:"manter"});
+ }
  r=await call(client,"preensao",{acao:"segurar",objeto:"Cadeira MCP",
    mao:"direita",ponto:"encostoTopo",reach:100});
  assert.ok(!r.isError,JSON.stringify(r.content));
