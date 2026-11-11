@@ -37,6 +37,17 @@ async function scenario(client,remote){
  const planned=plan.structuredContent.resultado;
  assert.ok(["planejado","inviavel"].includes(planned.status));
  assert.ok(typeof planned.revisao==="string");
+ const armRoute=await call(client,"preensao",{acao:"planejar",objeto:"Cadeira MCP",
+   mao:"direita",pegada:"auto",reach:15,maxSites:1,maxIteracoes:1,
+   verificarTrajetoria:true,passosTrajetoria:3});
+ assert.ok(!armRoute.isError,JSON.stringify(armRoute.content));
+ assert.ok(["planejado","inviavel"].includes(armRoute.structuredContent.resultado.status));
+ assert.equal(armRoute.structuredContent.resultado.opcoes.verificarTrajetoria,true);
+ const invalidRoute=await call(client,"preensao",{acao:"planejar",
+   objeto:"Cadeira MCP",verificarTrajetoria:true,passosTrajetoria:20});
+ assert.ok(invalidRoute.isError&&/passosTrajetoria|too_big|<= 8/i.test(
+   invalidRoute.content[0].text),"MCP rejeita quantidade inválida de amostras");
+
  let optIn=await call(client,"preensao",{acao:"planejar",objeto:"Cadeira MCP",
    permitirMoverObjeto:true,preservarObjeto:false,maxDeslocamento:.2,
    mao:"direita",maxSites:1,maxIteracoes:1,maxTempoMs:600});
