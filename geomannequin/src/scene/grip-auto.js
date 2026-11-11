@@ -282,6 +282,10 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
    lado:side,ponto:site.id,pegada:style,contatos:contacts,medidas:metrics,
    posicaoAlvo:target,normal,amostra:site.amostra??null,distanciaInicial:distance,desvioPalma:fit.residual,
    penetracao:maxPen,contatosAtivos:fingerCount,geometria:geometric,score,
+   ajustes:Object.fromEntries(Object.entries(p).filter(([k,v])=>
+     (/^(?:arm|elbow|wrist|pron|handCurl|thumbOpp|fSpread|f(?:Th|In|Me|An|Mi))/.test(k))&&
+     typeof v==="number"&&Math.abs(v-(src[k]??0))>1e-4)
+     .map(([k,v])=>[k,{antes:src[k]??0,depois:v}])),
    avisos:reasons,params:p};
 }
 function planejarAutoGrip(it,o,ground,opts={},scene={}){
@@ -363,6 +367,7 @@ function resumirAutoGrip(result){
  const format=v=>({mao:v.mao,ponto:v.ponto,pegada:v.pegada,
    score:+v.score.toFixed(4),desvioPalma:+v.desvioPalma.toFixed(4),
    penetracao:+v.penetracao.toFixed(4),contatosAtivos:v.contatosAtivos,
+   ajustes:v.ajustes,
    dedos:v.contatos.map(f=>({dedo:f.nome,contato:f.contato,
      distancia:Number.isFinite(f.distancia)?+f.distancia.toFixed(4):null}))});
  return {status:"planejado",avaliados:result.avaliados,
