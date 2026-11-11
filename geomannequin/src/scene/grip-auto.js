@@ -658,4 +658,4 @@ function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,toleranci
 
 return {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip};
 })();
-export {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
+export {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip};
