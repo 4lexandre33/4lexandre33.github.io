@@ -139,7 +139,9 @@ function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
  return {residual:dist(H.T,target),cost:err,baseResidual:base,frame:H};
 }
 function pointContacts(p,side,H,solids,metric,onlyIndex=null){
- const scale=armDims(p).k*.95*p.armLen;
+ // A.LH converte falanges do punho para a origem da palma.
+ // A medida precisa ser local; antes causava ReferenceError em qualquer contato.
+ const A=armDims(p),scale=A.k*.95*p.armLen;
  const fingerRadii=[.09,.075,.078,.073,.064];
  const joints=juntasDedos(p,side);
  const sample=(finger,i)=>{
@@ -524,8 +526,13 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
  * Retorno detalhado pode ser registrado nos testes e na API de diagnóstico.
  */
 function verificarMicroDeslocamentoAutoGrip(o,shift,ground,scene={},owner,{passo=.06,tolerancia=.03}={}){
- if(!owner?.params||!o||![shift?.dx,shift?.dz].every(Number.isFinite))
-   throw Error("Microdeslocamento exige objeto, manequim e deslocamento finito.");
+ if(!owner?.params||!o||![shift?.dx,shift?.dz,o.x,o.z,ground].every(Number.isFinite))
+   throw Error("Microdeslocamento exige objeto, manequim, solo e coordenadas finitas.");
+ // Limitar discretização evita laços enormes ou infinitos em chamadas públicas.
+ if(!Number.isFinite(passo)||passo<.01||passo>.5)
+   throw Error("Passo do microdeslocamento deve estar entre 0.01 e 0.5 R.");
+ if(!Number.isFinite(tolerancia)||tolerancia<0||tolerancia>.14)
+   throw Error("Tolerância do microdeslocamento deve estar entre 0 e 0.14 R.");
  const obstructions=(scene.objetos||[]).filter(q=>q.id!==o.id);
  const otherRigs=(scene.manequins||[]).filter(m=>m.id!==owner.id)
    .map(m=>colliderRig({...m.params,wy:ground-restGround(m.params)},{level:"coarse"}));
