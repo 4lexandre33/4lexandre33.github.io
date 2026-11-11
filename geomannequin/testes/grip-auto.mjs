@@ -62,6 +62,12 @@ const oldGrip=held.cena.segurarObjeto("Cadeira Vinculada",
   {mao:"direita",ponto:"encostoTopo",reach:100});
 assert.equal(oldGrip.versao,3);
 const oldState=JSON.stringify(held.cena.estadoCompleto());
+const diagnosed=held.cena.inspecionarAutoGrip("Cadeira Vinculada");
+assert.equal(diagnosed.status,"reajuste_necessario",
+  "Pegada manual não deve ser apresentada como AutoGrip certificado");
+assert.equal(diagnosed.necessitaAjuste,true);
+assert.equal(JSON.stringify(held.cena.estadoCompleto()),oldState,
+  "Inspeção da pegada não pode modificar a cena");
 const replOptions={mao:"direita",pegada:"gancho",reach:100,maxSites:1,maxIteracoes:1};
 const replan=held.cena.planejarEncaixe("Cadeira Vinculada",replOptions);
 assert.ok(["planejado","inviavel"].includes(replan.status),
@@ -74,6 +80,10 @@ if(replan.status==="planejado"){
     assert.equal(next.status,"aplicado");
     assert.equal(next.reencaixado,true);
     assert.equal(heldObj.gripV3?.autoGrip?.version,1);
+    const inspected=held.cena.inspecionarAutoGrip("Cadeira Vinculada");
+    assert.equal(inspected.status,"contato_geometrico");
+    assert.equal(inspected.necessitaAjuste,false);
+    assert.ok(inspected.porMao.every(q=>Number.isFinite(q.penetracao)));
   }catch(e){
     assert.match(e.message,/AutoGrip revertido/i);
     assert.equal(JSON.stringify(held.cena.estadoCompleto()),oldState,
