@@ -62,7 +62,7 @@
 (function(){
   var $=function(id){return document.getElementById(id)},O=function(){return window.openai||{}};
   var VISTAS=[["Frente",0],["3/4 esq.",45],["Esquerda",90],["3/4 costas esq.",135],["Costas",180],["3/4 costas dir.",-135],["Direita",-90],["3/4 dir.",-45]];
-  var est={item:0,passe:"quadro"},local=null,ocupado=false;
+  var est={item:0,passe:"quadro"},local=null,ocupado=false,feedback="";
   function dados(){
     var o=O(),m=o.toolResponseMetadata||{},out=o.toolOutput||{},g=local||m.gm||null;
     if(!g&&m.imagem)g={tipo:"imagem",imagem:m.imagem,link:m.link};
@@ -103,7 +103,7 @@
       [["⟲ 15°",15,0],["⟳ 15°",-15,0],["↑ 10°",0,10],["↓ 10°",0,-10]].forEach(function(p){var b=el("button",{type:"button"},p[0]);b.onclick=function(){var v=(g.vista||{});orbitar((v.azimute||0)+p[1],p[2]?(v.elevacao||0)+p[2]:null)};ob.appendChild(b)});
       Array.prototype.forEach.call(ob.querySelectorAll("button"),function(b){b.disabled=ocupado})}
     var o=d.out,n=(o.manequins||[]).length,c=o.camera||{},v=g&&g.vista;
-    $("gm-meta").textContent=ocupado?"Girando a câmera…":(n?n+" manequim"+(n>1?"s":""):"")+(c.perspectiva?" · lente "+c.lente_mm+" mm":"")+(v&&v.pivo&&v.pivo!=="alvo da câmera"?" · pivô "+v.pivo+(v.nome?" ("+v.nome+")":""):"")+(o.total?" · "+o.total+" quadro(s)":"");
+    $("gm-meta").textContent=feedback|| (ocupado?"Processando comando…":(n?n+" manequim"+(n>1?"s":""):"")+(c.perspectiva?" · lente "+c.lente_mm+" mm":"")+(v&&v.pivo&&v.pivo!=="alvo da câmera"?" · pivô "+v.pivo+(v.nome?" ("+v.nome+")":""):"")+(o.total?" · "+o.total+" quadro(s)":""));
     var b=$("gm-open");b.disabled=!d.link;b.onclick=function(){if(!d.link)return;if(O().openExternal)O().openExternal({href:d.link});else window.open(d.link,"_blank","noopener")};
   }
   function orbitar(az,elev){
@@ -117,7 +117,7 @@
   }
   function executarGrip(tool,args){
     if(ocupado||!O().callTool)return;
-    ocupado=true;desenhar();
+    feedback="";ocupado=true;desenhar();
     var linkAnterior=dados().link;
     O().callTool(tool,args).then(function(res){
       if(res&&res.isError)throw Error((res.content||[]).filter(function(x){return x.type==="text"}).map(function(x){return x.text}).join("; ")||"Operação recusada");
@@ -128,7 +128,7 @@
       var src=sc.imagem_widget||(meta.gm&&meta.gm.imagem)||meta.imagem;
       if(!src)throw Error("Renderizador não devolveu imagem.");
       local={tipo:"imagem",titulo:"GeoMannequin",imagem:src,vista:meta.gm&&meta.gm.vista,link:sc.link||linkAnterior};
-    }).catch(function(err){$("gm-meta").textContent="Falha na ação: "+err.message})
+    }).catch(function(err){feedback="Falha na ação: "+err.message})
       .then(function(){ocupado=false;desenhar()});
   }
   function camposGrip(){return {objeto:$("gm-grip-nome").value.trim(),
