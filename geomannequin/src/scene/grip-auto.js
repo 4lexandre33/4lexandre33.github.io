@@ -199,7 +199,7 @@ function geometryCheck(p,side,o,ground,solids,opt,environment={}){
      maxBodyPen=Math.max(maxBodyPen,hit.prof);
    }
  }
- let maxObstaclePen=0,maxSelfNewPen=0;
+ let maxObstaclePen=0,maxSelfNewPen=0,maxThirdPen=0;
  // Verifica o braço e a mão também contra móveis diferentes do objeto-alvo.
  const limb=geom.caps.filter(c=>c.kind==="finger"&&c.side===letter||
    c.kind==="palm"&&c.side===letter||
@@ -214,13 +214,21 @@ function geometryCheck(p,side,o,ground,solids,opt,environment={}){
      }
    }
  }
+ // Outros manequins são obstáculos físicos, não pontos de apoio da pegada.
+ for(const other of environment.actors||[]){
+   const pairs=manifoldCaps(geom,other,{tol:0,max:160});
+   for(const hit of pairs){
+     const touching=limb.some(c=>c.id===hit.idA);
+     if(touching)maxThirdPen=Math.max(maxThirdPen,hit.prof);
+   }
+ }
  const self=manifoldCaps(geom,geom,{tol:0,self:true,max:250});
  for(const hit of self){
    const key=[hit.pa,hit.pb].sort().join("|");
    const previous=baseline.get(key)||0;
    if(hit.prof>previous+.04)maxSelfNewPen=Math.max(maxSelfNewPen,hit.prof-previous);
  }
- return {maxHandPen,maxBodyPen,maxObstaclePen,maxSelfNewPen,contactCount,details};
+ return {maxHandPen,maxBodyPen,maxObstaclePen,maxThirdPen,maxSelfNewPen,contactCount,details};
 }
 function evaluate(it,o,side,site,ground,solids,opt,environment){
  const src=it.params,p={...src},clone={...it,params:p},s=side>0?"L":"R",A=armDims(p);
@@ -249,7 +257,7 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
  const validFingers=!opt.exigirContato?true:
    (style==="apoio"?support:
      fingerCount>=required&&(!thumbIndex||polegarIndicadorOpostos));
- const maxPen=Math.max(geometric.maxHandPen,geometric.maxBodyPen,geometric.maxObstaclePen,geometric.maxSelfNewPen);
+ const maxPen=Math.max(geometric.maxHandPen,geometric.maxBodyPen,geometric.maxObstaclePen,geometric.maxThirdPen,geometric.maxSelfNewPen);
  const valid=maxPen<=opt.limitePenetracao&&fit.residual<=.38&&validFingers;
  const score=fit.cost+Math.max(0,maxPen-opt.limitePenetracao)*15+
     (validFingers?0:2)+(distance*.015)+Math.max(0,fingerCount-3)*(-.02);
@@ -267,11 +275,16 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
    avisos:reasons,params:p};
 }
 function planejarAutoGrip(it,o,ground,opts={},scene={}){
- const environment={obstacles:[],selfBaseline:new Map()};
+ const environment={obstacles:[],actors:[],selfBaseline:new Map()};
  const baseline=colliderRig({...it.params,wy:ground-restGround(it.params)},{level:"fine"});
  for(const c of manifoldCaps(baseline,baseline,{tol:0,self:true,max:250})){
    const key=[c.pa,c.pb].sort().join("|");
    environment.selfBaseline.set(key,Math.max(environment.selfBaseline.get(key)||0,c.prof));
+ }
+ for(const other of scene.manequins||[]){
+   if(other.id===it.id)continue;
+   try{environment.actors.push(colliderRig({...other.params,
+     wy:ground-restGround(other.params)},{level:"fine"}))}catch(e){/* rig ausente */}
  }
  for(const obstacle of scene.objetos||[]){
    if(obstacle.id===o.id||obstacle.sobre===o.id)continue;
