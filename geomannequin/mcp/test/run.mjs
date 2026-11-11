@@ -17,7 +17,7 @@ async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
   check(["referencias_controlnet", "vistas_em_volta", "estimar_poses"].every(n => tools.includes(n)), "ferramentas novas: referencias_controlnet, vistas_em_volta, estimar_poses");
-  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos", "planta_da_cena"].every(t => tools.includes(t)), "21 ferramentas: " + tools.length);
+  check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos", "planta_da_cena"].every(t => tools.includes(t)), "ferramentas registradas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
   const bad = [];
