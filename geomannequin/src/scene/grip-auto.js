@@ -23,7 +23,6 @@ const CODES=["Th","In","Me","An","Mi"];
 const NAMES=["polegar","indicador","médio","anelar","mínimo"];
 const VALID_STYLES=["auto","pinca","potencia","gancho","tripode","lateral","apoio"];
 const VALID_HANDS=["auto","direita","esquerda","ambas"];
-const MARGEM=.065;
 const hard=reason=>({ok:false,motivo:reason});
 const scalar=(v,name,lo,hi,def)=>{
  if(v===undefined)return def;
@@ -36,6 +35,10 @@ function validarOpcoes(opts={}){
  if(!VALID_HANDS.includes(mao))throw Error("Mão: auto, direita, esquerda ou ambas.");
  if(!VALID_STYLES.includes(pegada))throw Error("Pegada: "+VALID_STYLES.join(", "));
  const ponto=opts.ponto??"auto";if(typeof ponto!=="string"||ponto.length>60)throw Error("GripSite inválido.");
+ if(opts.animar)
+   throw Error("A animação de aproximação ainda não está implementada: use encaixe instantâneo validado.");
+ if(opts.segunda===true&&mao!=="ambas")
+   throw Error("Para autoencaixe de duas mãos, use mao:'ambas'.");
  if(opts.permitirMoverObjeto||opts.preservarObjeto===false)
    throw Error("O movimento automático do objeto ainda não é suportado com validação robusta. Mantenha preservarObjeto=true.");
  return {mao,pegada,ponto,reach:scalar(opts.reach,"reach",0.1,100,12),
@@ -106,7 +109,7 @@ function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
    return pError*4.5+normalError*.24;
  };
  let err=objective();
- for(const step of [18,8,3].slice(0,Math.min(3,iteracoes))){
+ for(const step of [24,15,8,4,2,1,.5,.25].slice(0,iteracoes)){
    for(let pass=0;pass<2;pass++){
      let improved=false;
      for(const k of keys){
@@ -163,7 +166,7 @@ function fitFingers(p,side,H,solids,style,opt){
    if(!target({nome:NAMES[i]}))continue;
    const vars=keys(CODES[i]);
    if(i===0)vars.push("thumbOpp"+L);
-   for(const step of [.4,.2,.08].slice(0,Math.min(3,opt.maxIteracoes))){
+   for(const step of [.45,.3,.18,.1,.06,.035,.018,.009].slice(0,opt.maxIteracoes)){
      for(const k of vars){
        let best=p[k]??0,err=Infinity;
        const original=p[k]??0;
@@ -289,6 +292,9 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
    avisos:reasons,params:p};
 }
 function planejarAutoGrip(it,o,ground,opts={},scene={}){
+ if(!it||!o||!it.params)throw Error("Manequim ou objeto inválido no planejamento.");
+ const opt=validarOpcoes(opts);
+ if(o.gripV3||o.grip)throw Error("Objeto já está segurado; solte antes de autoencaixar.");
  const environment={obstacles:[],actors:[],selfBaseline:new Map()};
  const baseline=colliderRig({...it.params,wy:ground-restGround(it.params)},{level:"fine"});
  for(const c of manifoldCaps(baseline,baseline,{tol:0,self:true,max:250})){
@@ -304,9 +310,6 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
    if(obstacle.id===o.id||obstacle.sobre===o.id)continue;
    try{environment.obstacles.push(colliderObject(obstacle,ground))}catch(e){/* objeto ainda não carregado */}
  }
- const opt=validarOpcoes(opts);
- if(o.gripV3||o.grip)throw Error("Objeto já está segurado; solte antes de autoencaixar.");
- if(!it||!o)throw Error("Selecione um manequim e um objeto.");
  const solids=colliderObject(o,ground);
  if(!solids.length)throw Error("Objeto sem geometria sólida para contato.");
  const sides=opt.mao==="ambas"?[1,-1]:
@@ -389,7 +392,8 @@ function resumirAutoGrip(result){
      distancia:Number.isFinite(f.distancia)?+f.distancia.toFixed(4):null}))});
  return {status:"planejado",avaliados:result.avaliados,
    escolha:format(q),segunda:q.secundaria?format(q.secundaria):null,
-   alternativas:result.candidatos,limitacoes:result.limitacoes};
+   alternativas:result.candidatos,limitacoes:result.limitacoes,
+   limiteTempoAtingido:result.limiteTempoAtingido};
 }
 /** Checagem final após o vínculo Grip V3, especialmente após IK secundário.
  * É independente da aproximação SDF usada na busca dos dedos.
