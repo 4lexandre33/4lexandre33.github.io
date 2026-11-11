@@ -84,6 +84,16 @@ async function scenario(client,remote){
  const after=(await call(client,"rig_parametro",{acao:"consultar",chave:"armFlexR"}))
    .structuredContent.resultado.valor;
  assert.equal(after,before,"Dry-run não modifica cena");
+ r=await call(client,"operacoes_lote",{prever:true,
+   acoes:Array.from({length:5},()=>({acao:"auto_encaixar",
+     alvo:"Cadeira MCP",mao:"auto",pegada:"auto"}))});
+ assert.ok(r.isError&&/máximo 4/i.test(r.content?.[0]?.text||""),
+   "Lote de AutoGrip deve rejeitar chamadas demais antes de alterar a cena");
+ r=await call(client,"roteiro_declarativo",{validar:true,
+   quadros:[{titulo:"Bloqueio de limite",acoes:Array.from({length:5},()=>({
+     acao:"auto_encaixar",alvo:"Cadeira MCP",mao:"auto"}))}]});
+ assert.ok(r.isError&&/máximo 4/i.test(r.content?.[0]?.text||""),
+   "Storyboard de AutoGrip deve respeitar o limite de custo");
  if(remote){
    r=await call(client,"roteiro_quadros",{roteiro:"#quadro 1\nprocess.exit(1);"});
    assert.ok(r.isError&&/desativado/.test(r.content[0].text));
