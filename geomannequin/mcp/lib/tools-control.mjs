@@ -95,6 +95,7 @@ export function registerControlTools(s,W){
    atrito:N.min(0).max(1).optional(),velocidade:V.optional(),angular:V.optional(),
    pegada:z.enum(["auto","pinca","potencia","gancho","tripode","lateral","apoio"]).optional(),
    preservarObjeto:z.boolean().optional(),permitirMoverObjeto:z.boolean().optional(),
+   maxDeslocamento:N.min(.05).max(.6).optional(),
    tolerancia:N.min(.005).max(.25).optional(),
    limitePenetracao:N.min(.005).max(.14).optional(),
    maxSites:z.number().int().min(1).max(12).optional(),
@@ -114,7 +115,8 @@ export function registerControlTools(s,W){
    const autoOpts={manequim:a.manequim,mao:a.mao??"auto",
      pegada:a.pegada??"auto",ponto:a.ponto??"auto",
      reach:a.reach,preservarObjeto:a.preservarObjeto,
-     permitirMoverObjeto:a.permitirMoverObjeto,tolerancia:a.tolerancia,
+     permitirMoverObjeto:a.permitirMoverObjeto,maxDeslocamento:a.maxDeslocamento,
+     tolerancia:a.tolerancia,
      limitePenetracao:a.limitePenetracao,maxSites:a.maxSites,maxIteracoes:a.maxIteracoes,
      maxTempoMs:Math.min(a.maxTempoMs??1500,1500)};
    if(a.acao==="planejar")return w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
