@@ -159,6 +159,24 @@ if(replan.status==="planejado"){
     "Sem encaixe viável, vínculo original deve sobreviver à operação");
 }
 
+// Atomicidade com vínculo desatualizado: a mão mudou sem sincronizar
+// a cadeira. Até uma chamada inválida deve manter posição e parâmetros.
+const atomicWorld=createWorld();
+atomicWorld.cena.objeto("cadeira",{nome:"Cadeira Atomicidade",x:0,z:0});
+atomicWorld.cena.segurarObjeto("Cadeira Atomicidade",
+  {mao:"direita",ponto:"encostoTopo",reach:100});
+const atomicActor=atomicWorld.SCN.list[0];
+atomicActor.params.armFlexR=(atomicActor.params.armFlexR??0)+12;
+const atomicBefore=JSON.stringify(atomicWorld.cena.estadoCompleto());
+assert.throws(()=>atomicWorld.cena.autoEncaixarObjeto("Cadeira Atomicidade",
+  {mao:"invalida"}),/Mão:/);
+assert.equal(JSON.stringify(atomicWorld.cena.estadoCompleto()),atomicBefore,
+  "Validação inválida não deve sincronizar/mover a cadeira.");
+assert.throws(()=>atomicWorld.cena.autoEncaixarObjeto("Cadeira Atomicidade",
+  {mao:"direita",ponto:"gripsite_que_nao_existe"}),/AutoGrip revertido/);
+assert.equal(JSON.stringify(atomicWorld.cena.estadoCompleto()),atomicBefore,
+  "Falha posterior à sincronização deve restaurar exatamente o snapshot.");
+
 assert.throws(()=>w.cena.autoEncaixarObjeto("Inexistente",options),/não encontrado/i);
 assert.throws(()=>w.cena.planejarEncaixe(obj.id,{...options,permitirMoverObjeto:true}),/preservarObjeto:false/);
 // Regressão real dos colisores de objeto: um obstáculo ENTRE a posição
