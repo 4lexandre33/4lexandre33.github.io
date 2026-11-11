@@ -3120,5 +3120,31 @@
         "status": "planned"
       }
     }
-  ]
+  ],
+  "execution_state": {
+    "date": "2026-11-11",
+    "stage": "partial_source_implementation_not_accepted",
+    "new_mcp_tools": 14,
+    "legacy_mcp_tools": 25,
+    "expected_source_total": 39,
+    "implemented_source_paths": [
+      "mcp/lib/tools-control.mjs",
+      "mcp/lib/tools-storyboard.mjs",
+      "mcp/lib/tools-anatomy.mjs",
+      "mcp/server.mjs",
+      "mcp/widget/geomannequin.html",
+      "mcp/scripts/source-fingerprint.mjs",
+      "mcp/scripts/verify-dist.mjs",
+      "mcp/test/control.mjs"
+    ],
+    "status_report": "implementacao-mcp-parcial-20261111.md",
+    "results": {
+      "syntax_parsing": "passed_for_changed_js_files",
+      "mock_wiring": "passed_for_11_tools",
+      "integrated_mcp_suite": "not_confirmed",
+      "compiled_dist": "not_rebuilt",
+      "production": "not_deployed"
+    },
+    "policy": "Não marcar as 240 tarefas como done até cumprir todos os critérios de aceite e executar suites reais."
+  }
 }
