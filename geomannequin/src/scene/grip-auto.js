@@ -1,0 +1,276 @@
+/* AutoGrip V1 — planejador de preensão geométrica com busca de região, pose
+ * do braço/punho, cinco dedos e avaliação de contatos. NÃO simula forças.
+ *
+ * Somente planejarAutoGrip() é puro: usa clones de params e nunca move o objeto.
+ * A captura do vínculo Grip V3 fica a cargo de cena.autoEncaixarObjeto().
+ */
+import {armDims,aplicarGesto,restGround} from "../engine/index.js";
+import {juntasDedos} from "../engine/maos.js";
+import {colliderObject,colliderRig,pointSolid,capsuleSolidContact} from "../engine/contact-v2.js";
+import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
+import {rigidDirection,objectRigidPose,rigidPoint} from "../engine/rigid-transform.js";
+import {handFrameV3,alinharPalmaV3} from "./grip-v3.js";
+
+const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
+const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
+const norm=v=>{const d=Math.hypot(...v);if(!(d>1e-9))throw Error("Normal de superfície inválida");return v.map(x=>x/d)};
+const add=(a,b,s=1)=>a.map((x,i)=>x+s*b[i]);
+const SIDE={direita:-1,esquerda:1};
+const CODES=["Th","In","Me","An","Mi"];
+const NAMES=["polegar","indicador","médio","anelar","mínimo"];
+const VALID_STYLES=["auto","pinca","potencia","gancho","tripode","lateral","apoio"];
+const VALID_HANDS=["auto","direita","esquerda","ambas"];
+const MARGEM=.065;
+const hard=reason=>({ok:false,motivo:reason});
+const scalar=(v,name,lo,hi,def)=>{
+ if(v===undefined)return def;
+ if(typeof v!=="number"||!Number.isFinite(v)||v<lo||v>hi)throw Error(name+" deve estar entre "+lo+" e "+hi+".");
+ return v;
+};
+function validarOpcoes(opts={}){
+ if(!opts||typeof opts!=="object"||Array.isArray(opts))throw Error("Opções AutoGrip inválidas.");
+ const mao=opts.mao??"auto",pegada=opts.pegada??"auto";
+ if(!VALID_HANDS.includes(mao))throw Error("Mão: auto, direita, esquerda ou ambas.");
+ if(!VALID_STYLES.includes(pegada))throw Error("Pegada: "+VALID_STYLES.join(", "));
+ const ponto=opts.ponto??"auto";if(typeof ponto!=="string"||ponto.length>60)throw Error("GripSite inválido.");
+ if(opts.permitirMoverObjeto||opts.preservarObjeto===false)
+   throw Error("O movimento automático do objeto ainda não é suportado com validação robusta. Mantenha preservarObjeto=true.");
+ return {mao,pegada,ponto,reach:scalar(opts.reach,"reach",0.1,100,12),
+   tolerancia:scalar(opts.tolerancia,"tolerancia",0.005,0.25,.055),
+   limitePenetracao:scalar(opts.limitePenetracao,"limitePenetracao",0.005,0.14,.06),
+   exigirContato:opts.exigirContato!==false,maxSites:Math.trunc(scalar(opts.maxSites,"maxSites",1,12,5)),
+   maxIteracoes:Math.trunc(scalar(opts.maxIteracoes,"maxIteracoes",1,8,4)),
+   segunda:opts.segunda===true,animar:opts.animar===true,solucionador:"geometrico-v1"};
+}
+function medirMao(p,side){
+ const A=armDims(p),LH=A.LH,k=A.k;
+ const digits=juntasDedos(p,side).map(d=>({nome:d.nome,
+   comprimento:d.pts.slice(1).reduce((total,pt,j)=>total+dist(pt,d.pts[j]),0),
+   raio:(d.nome==="polegar"?.09:.078)*k}));
+ return {comprimentoPalma:LH,larguraPalma:.74*k,espessuraPalma:.47*k,
+   alcanceBraco:A.L1+A.L2,aberturaEstimada:.74*k,escala:k,
+   dedos:digits};
+}
+function guessStyle(o,site,metrics,preferred){
+ if(preferred!=="auto")return preferred;
+ if(o.tipo==="cadeira")return /^encosto/.test(site.id)?"gancho":"apoio";
+ if(["copo","cilindro"].includes(o.tipo))return o.raio<metrics.larguraPalma*.5?"pinca":"potencia";
+ if(/topo|assento/.test(site.id))return "apoio";
+ if((o.larg||0)>metrics.larguraPalma*3)return "apoio";
+ return "potencia";
+}
+function siteCandidates(o,ground,requested,side,cur,maxSites){
+ const s=requested!=="auto"?[gripSiteWorld(o,requested,ground)]:
+   gripSites(o).map(v=>gripSiteWorld(o,v.id,ground));
+ return s.map(site=>({...site,proximidade:dist(site.mundo,cur.T),
+    pontuacao:dist(site.mundo,cur.T)-.014*(site.prioridade||0)}))
+    .sort((a,b)=>a.pontuacao-b.pontuacao||a.id.localeCompare(b.id))
+    .slice(0,maxSites);
+}
+function wristAndArmFit(p,it,side,target,normal,ground,iteracoes){
+ const clone={...it,params:p};
+ const base=alinharPalmaV3(clone,side,target,ground);
+ const L=side>0?"L":"R";
+ const keys=["pron"+L,"wrist"+L,"wristDev"+L,"armRot"+L,
+   "armAbd"+L,"armFlex"+L,"elbow"+L];
+ const bounds={["pron"+L]:[-80,90],["wrist"+L]:[-70,80],
+   ["wristDev"+L]:[-30,20],["armRot"+L]:[-70,90],
+   ["armAbd"+L]:[-45,160],["armFlex"+L]:[-50,160],["elbow"+L]:[0,145]};
+ const objective=()=>{
+   const H=handFrameV3(clone,side,ground);
+   const curlDirection=[H.M[0],H.M[3],H.M[6]].map(x=>x*side);
+   // Curvatura: esquerda dobra no -X, direita dobra no +X.
+   // Portanto o eixo lateral da palma precisa apontar para fora, normal do objeto.
+   const normalError=1-clamp(dot(curlDirection,normal),-1,1);
+   const pError=dist(H.T,target);
+   return pError*4.5+normalError*.24;
+ };
+ let err=objective();
+ for(const step of [18,8,3].slice(0,Math.min(3,iteracoes))){
+   for(let pass=0;pass<2;pass++){
+     let improved=false;
+     for(const k of keys){
+       const original=p[k]??0;let best=original,bestErr=err;
+       for(const d of [-step,step]){
+         p[k]=clamp(original+d,bounds[k][0],bounds[k][1]);
+         const score=objective();
+         if(score<bestErr-1e-6){bestErr=score;best=p[k]}
+       }
+       p[k]=best;if(best!==original){err=bestErr;improved=true}
+     }
+     if(!improved)break;
+   }
+ }
+ const H=handFrameV3(clone,side,ground);
+ return {residual:dist(H.T,target),cost:err,baseResidual:base,frame:H};
+}
+function pointContacts(p,side,H,solids,metric){
+ const A=armDims(p),radius=.074*A.k;
+ const joints=juntasDedos(p,side);
+ return joints.map((finger,i)=>{
+   let best={distancia:Infinity,normal:[0,0,1],ponto:null,segmento:0};
+   let worstPen=0;
+   for(let j=1;j<finger.pts.length;j++){
+     const v0=finger.pts[j-1],v1=finger.pts[j];
+     // Aproximação rápida por SDF: polpas/pontas e centros de falange.
+     for(const t of [.35,.75,1]){
+       const local=v0.map((x,k)=>x+(v1[k]-x)*t);
+       const world=rigidPoint(H,[local[0],local[1]+A.LH*.5,local[2]]);
+       for(const solid of solids){
+         const hit=pointSolid(world,solid.shape);
+         const ds=hit.d-radius*(1-.07*j);
+         if(ds<best.distancia)best={distancia:ds,normal:hit.n,ponto:world,segmento:j};
+         worstPen=Math.max(worstPen,-ds);
+       }
+     }
+   }
+   return {nome:NAMES[i],code:CODES[i],...best,penetracao:worstPen,
+     contato:best.distancia<=metric.tolerancia&&best.distancia>=-metric.limitePenetracao};
+ });
+}
+function fitFingers(p,side,H,solids,style,opt){
+ const L=side>0?"L":"R";
+ aplicarGesto(p,side,({pinca:"pinca",tripode:"pinca",gancho:"gancho",potencia:"segurar",
+   lateral:"pinca",apoio:"aberta"})[style]||"segurar");
+ const metrics={tolerancia:opt.tolerancia,limitePenetracao:opt.limitePenetracao};
+ const keys=(code)=>["f"+code+L,"f"+code+"Mcp"+L,"f"+code+"Ip"+L];
+ const target=(finger)=>style==="pinca"||style==="lateral"?["polegar","indicador"].includes(finger.nome):
+   style==="tripode"?["polegar","indicador","médio"].includes(finger.nome):
+   style==="gancho"?finger.nome!=="polegar":style==="apoio"?false:true;
+ // Coordinate descent por dedo usa FK real mas SDF rápido; não precisa
+ // gerar colliderRig completo em cada iteração.
+ for(let i=0;i<5;i++){
+   if(!target({nome:NAMES[i]}))continue;
+   const vars=keys(CODES[i]);
+   if(i===0)vars.push("thumbOpp"+L);
+   for(const step of [.4,.2,.08].slice(0,Math.min(3,opt.maxIteracoes))){
+     for(const k of vars){
+       let best=p[k]??0,err=Infinity;
+       const original=p[k]??0;
+       for(const delta of [-step,0,step]){
+         const lo=k.startsWith("thumbOpp")?0:-1,hi=1;
+         p[k]=clamp(original+delta,lo,hi);
+         const info=pointContacts(p,side,H,solids,metrics)[i];
+         const distanceError=Math.abs(info.distancia-.02);
+         const depth=Math.max(0,info.penetracao-opt.limitePenetracao);
+         const value=distanceError+depth*12+Math.abs(p[k])*0.008;
+         if(value<err){err=value;best=p[k]}
+       }
+       p[k]=best;
+     }
+   }
+ }
+ return pointContacts(p,side,H,solids,metrics);
+}
+function geometryCheck(p,side,o,ground,solids,opt){
+ const geom=colliderRig({...p,wy:ground-restGround(p)},{level:"fine"});
+ const letter=side>0?"E":"D";
+ const ours=geom.caps.filter(c=>(c.kind==="finger"||c.kind==="palm")&&c.side===letter);
+ const body=geom.caps.filter(c=>c.kind==="body");
+ let maxHandPen=0,maxBodyPen=0,contactCount=0;
+ const details=[];
+ for(const c of ours){
+   let best={distancia:Infinity,prof:0,kindA:c.kind,pa:c.nome};
+   for(const solid of solids){
+     const hit=capsuleSolidContact(c,solid.shape,solid.id);
+     if(hit.distancia<best.distancia)best=hit;
+   }
+   maxHandPen=Math.max(maxHandPen,best.prof);
+   if(best.distancia<=opt.tolerancia&&best.distancia>=-opt.limitePenetracao)contactCount++;
+   details.push({parte:c.nome,segmento:c.segment??null,distancia:best.distancia,penetracao:best.prof});
+ }
+ // Corpo/antebraço NUNCA herdam a permissão de toque dos dedos.
+ for(const c of body){
+   for(const solid of solids){
+     const hit=capsuleSolidContact(c,solid.shape,solid.id);
+     maxBodyPen=Math.max(maxBodyPen,hit.prof);
+   }
+ }
+ return {maxHandPen,maxBodyPen,contactCount,details};
+}
+function evaluate(it,o,side,site,ground,solids,opt){
+ const src=it.params,p={...src},clone={...it,params:p},s=side>0?"L":"R",A=armDims(p);
+ const metrics=medirMao(p,side),style=guessStyle(o,site,metrics,opt.pegada);
+ const objFrame=objectRigidPose(o,ground);
+ const normal=norm(rigidDirection(objFrame,site.normal||[0,0,1]));
+ // A mão é posicionada na superfície externa da região e não no interior
+ // de uma caixa geométrica como a espessura do encosto da cadeira.
+ const clearance=.27*A.k+(o.tipo==="cadeira"&&/^encosto/.test(site.id)?.18:0);
+ const target=add(site.mundo,normal,clearance);
+ const old=handFrameV3(it,side,ground);
+ const distance=dist(old.T,site.mundo);
+ if(distance>opt.reach)return hard("GripSite fora do alcance permitido: "+distance.toFixed(2)+" R.");
+ if(dist(target,[p.wx??0,ground+8,p.wz??0])>metrics.alcanceBraco+9)
+   return hard("Ponto fora do envelope aproximado de alcance do braço.");
+ const fit=wristAndArmFit(p,it,side,target,normal,ground,opt.maxIteracoes);
+ const contacts=fitFingers(p,side,fit.frame,solids,style,opt);
+ const geometric=geometryCheck(p,side,o,ground,solids,opt);
+ const fingerCount=contacts.filter(c=>c.contato).length;
+ const required=({pinca:2,tripode:3,gancho:2,potencia:2,lateral:2,apoio:0})[style];
+ const thumbIndex=style==="pinca"||style==="lateral"||style==="tripode";
+ const validFingers=(!opt.exigirContato||style==="apoio")?true:
+   fingerCount>=required&&(!thumbIndex||(contacts[0].contato&&contacts[1].contato));
+ const maxPen=Math.max(geometric.maxHandPen,geometric.maxBodyPen);
+ const valid=maxPen<=opt.limitePenetracao&&fit.residual<=.38&&validFingers;
+ const score=fit.cost+Math.max(0,maxPen-opt.limitePenetracao)*15+
+    (validFingers?0:2)+(distance*.015)+Math.max(0,fingerCount-3)*(-.02);
+ const reasons=[];
+ if(fit.residual>.38)reasons.push("Palma não alcança o alvo: "+fit.residual.toFixed(3)+" R");
+ if(maxPen>opt.limitePenetracao)reasons.push("Interpenetração "+maxPen.toFixed(3)+" R acima de "+opt.limitePenetracao+" R");
+ if(!validFingers)reasons.push("Contatos insuficientes para pegada "+style+": "+fingerCount+"/"+required);
+ return {ok:valid,objeto:o.nome||o.tipo,manequim:it.name,mao:side>0?"esquerda":"direita",
+   lado:side,ponto:site.id,pegada:style,contatos:contacts,medidas:metrics,
+   posicaoAlvo:target,normal,distanciaInicial:distance,desvioPalma:fit.residual,
+   penetracao:maxPen,contatosAtivos:fingerCount,geometria:geometric,score,
+   avisos:reasons,params:p};
+}
+function planejarAutoGrip(it,o,ground,opts={}){
+ const opt=validarOpcoes(opts);
+ if(o.gripV3||o.grip)throw Error("Objeto já está segurado; solte antes de autoencaixar.");
+ if(!it||!o)throw Error("Selecione um manequim e um objeto.");
+ const solids=colliderObject(o,ground);
+ if(!solids.length)throw Error("Objeto sem geometria sólida para contato.");
+ const sides=opt.mao==="ambas"?[1,-1]:
+   opt.mao==="auto"?[-1,1]:[SIDE[opt.mao]];
+ const raw=[],failures=[];
+ for(const side of sides){
+   const frame=handFrameV3(it,side,ground);
+   const sites=siteCandidates(o,ground,opt.ponto,side,frame,opt.maxSites);
+   for(const site of sites){
+     try{
+       const result=evaluate(it,o,side,site,ground,solids,opt);
+       if(result.ok)raw.push(result);
+       else failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,
+         score:result.score??null,motivo:result.avisos?.join("; ")||result.motivo});
+     }catch(e){failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,motivo:e.message})}
+   }
+ }
+ raw.sort((a,b)=>a.score-b.score||a.ponto.localeCompare(b.ponto));
+ let chosen=raw[0];
+ if(opt.mao==="ambas"){
+   const left=raw.find(q=>q.lado===1),right=raw.find(q=>q.lado===-1);
+   if(left&&right&&left.ponto!==right.ponto)chosen={...right,secundaria:left};
+   else chosen=null;
+ }
+ return {ok:!!chosen,status:chosen?"planejado":"inviavel",
+   melhor:chosen||null,candidatos:raw.map(x=>({mao:x.mao,ponto:x.ponto,pegada:x.pegada,
+     score:x.score,contatos:x.contatosAtivos,desvio:x.desvioPalma,penetracao:x.penetracao})),
+   rejeitados:failures.slice(0,20),opcoes:opt,avaliados:raw.length+failures.length,
+   limitacoes:["Geometria de caixas/cilindros e colisores aproximados.",
+     "A validação considera a pose final; trajetória contínua e força de agarre não são resolvidas."]};
+}
+function resumirAutoGrip(result){
+ if(!result.ok)return {status:"inviavel",avaliados:result.avaliados,
+   rejeitados:result.rejeitados,limitacoes:result.limitacoes};
+ const q=result.melhor;
+ const format=v=>({mao:v.mao,ponto:v.ponto,pegada:v.pegada,
+   score:+v.score.toFixed(4),desvioPalma:+v.desvioPalma.toFixed(4),
+   penetracao:+v.penetracao.toFixed(4),contatosAtivos:v.contatosAtivos,
+   dedos:v.contatos.map(f=>({dedo:f.nome,contato:f.contato,
+     distancia:Number.isFinite(f.distancia)?+f.distancia.toFixed(4):null}))});
+ return {status:"planejado",avaliados:result.avaliados,
+   escolha:format(q),segunda:q.secundaria?format(q.secundaria):null,
+   alternativas:result.candidatos,limitacoes:result.limitacoes};
+}
+export {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes};
