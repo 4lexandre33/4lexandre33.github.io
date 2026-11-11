@@ -120,6 +120,31 @@ if(replan.status==="planejado"){
 
 assert.throws(()=>w.cena.autoEncaixarObjeto("Inexistente",options),/não encontrado/i);
 assert.throws(()=>w.cena.planejarEncaixe(obj.id,{...options,permitirMoverObjeto:true}),/não suportado/i);
+// Microajuste horizontal: opt-in explícito, preview pura, limite finito e
+// rejeição quando o usuário não autorizou mover a peça.
+const adjustWorld=createWorld();
+adjustWorld.cena.objeto("copo",{nome:"Micro Ajuste",x:1,z:1});
+const adjustable=adjustWorld.SCN.objetos.find(o=>o.nome==="Micro Ajuste");
+const beforeMicro=JSON.stringify(adjustWorld.cena.estadoCompleto());
+const moveOptions={mao:"direita",pegada:"auto",permitirMoverObjeto:true,
+  preservarObjeto:false,maxDeslocamento:.20,maxSites:1,maxIteracoes:1,maxTempoMs:600};
+const movePreview=adjustWorld.cena.planejarEncaixe(adjustable.id,moveOptions);
+assert.ok(["planejado","inviavel"].includes(movePreview.status));
+assert.equal(JSON.stringify(adjustWorld.cena.estadoCompleto()),beforeMicro,
+  "Microajuste opcional não deve mover o objeto durante a prévia");
+assert.equal(movePreview.opcoes.maxDeslocamento,.2);
+assert.throws(()=>adjustWorld.cena.planejarEncaixe(adjustable.id,{
+  ...moveOptions,preservarObjeto:true
+}),/preservarObjeto:false/);
+assert.throws(()=>adjustWorld.cena.planejarEncaixe(adjustable.id,{
+  ...moveOptions,maxDeslocamento:2
+}),/maxDeslocamento/);
+if(movePreview.status==="planejado"&&movePreview.escolha?.ajusteObjeto){
+  const shift=movePreview.escolha.ajusteObjeto;
+  assert.ok(Math.hypot(shift.dx,shift.dz)<=.29,
+    "Microajuste deve respeitar a extensão diagonal máxima da busca");
+}
+
 const extra=createWorld();
 extra.cena.objeto("copo",{nome:"Distante",x:50,z:50});
 const impossibleBefore=JSON.stringify(extra.cena.estadoCompleto());
