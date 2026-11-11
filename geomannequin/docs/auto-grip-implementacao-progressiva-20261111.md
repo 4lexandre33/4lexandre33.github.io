@@ -24,8 +24,10 @@ Foi implementada uma versão **experimental/geométrica** do AutoGrip, orientada
 1. **Objeto livre:** usuário escolhe manequim e objeto, planeja ou aperta Autoencaixar; o motor analisa os locais e gera candidatos; o melhor candidato geométrico passa pelo IK dos braços, pelos cinco dedos, por contatos e verificações de colisão; somente então cria Grip V3.
 2. **Objeto já preso (Grip V2/V3):** a inspeção indica se o vínculo anterior tem certificado anatômico; ao reencaixar o motor sincroniza e preserva a pose atual, remove temporariamente o vínculo antigo e tenta uma nova pegada. Qualquer falha reverte tudo.
 3. **Duas mãos:** busca pares de pontos distintos com espaçamento suficiente; combina os parâmetros de ambos os lados, vincula a segunda mão e revalida contatos e colisões da cena.
+   - Refinamento posterior: os pontos escolhidos fora do centro de um GripSite são salvos no espaço local da cadeira; a segunda mão preserva referência local durante transporte e transferência, inclusive após JSON.
 4. **Prévia sem commit:** entrega candidato, contato por dedo, score, desvio da palma, penetração, alterações de parâmetros, alternativas e revisão; aplicar exige revisão coerente com cena.
 5. **Após movimentar o braço:** \`inspecionarAutoGrip\` permite verificar novamente o vínculo e solicitar \`reajustarEncaixe\` quando necessário.
+6. **Microajuste autorizado:** a opção `permitirMoverObjeto:true` junto com `preservarObjeto:false` permite testar cópias deslocadas em X/Z. Prévia e falha não alteram a peça; o commit aplica com rollback. Sem força ou CCD.
 
 ### Exemplos de API (código implementado na branch)
 
@@ -64,7 +66,7 @@ MCP, ferramenta \`preensao\` (campos de chamada, não comando JavaScript):
 
 ## Validações feitas e o que NÃO foi comprovado
 
-- **APROVADO apenas em checagens isoladas:** parsing sintático por V8 de módulos alterados; execução do planejador em V8 com dependências simuladas para gesto gancho, seleção bilateral em sítios distintos, não mutação do modelo original, checagem simulada de colisão e rejeição de opções inválidas; parsing do JS do widget.
+- **APROVADO apenas em checagens isoladas:** parsing sintático por V8 de módulos alterados; execução do planejador em V8 com dependências simuladas para gesto gancho, seleção bilateral em sítios distintos, não mutação do modelo original, checagem simulada de colisão e rejeição de opções inválidas; parsing do JS do widget. Também foram executados testes isolados do round-trip de GripSites com rotação e do microajuste X/Z opt-in, usando colisores simulados; não substituem testes reais.
 - **TESTES REAIS ADICIONADOS, NÃO CONFIRMADOS:** \`npm run testar:autogrip\`, \`npm test\` e \`npm run test:dist\`. O CI GitHub não forneceu logs de etapas executadas nos jobs investigados. Foi corrigido um nome de etapa YAML com dois-pontos sem aspas; o job passou a ter nome válido, mas ainda terminou em falha sem steps no momento da verificação.
 - **MCP DISTRIBUÍDO AINDA ANTIGO:** \`mcp/dist\` não foi reconstruído e verificado neste ambiente. Não considerar as ações novas disponíveis no servidor publicado.
 - **SEM ATLAS VISUAL REAL:** não foi executada validação integrada renderizando cadeiras/canecas/corpos em todos os ângulos.
@@ -76,7 +78,7 @@ MCP, ferramenta \`preensao\` (campos de chamada, não comando JavaScript):
 - Captura e contato a partir da malha visual exata em qualquer objeto arbitrário: os sólidos atuais são aproximações de caixas/cilindros, com suporte a sítios e amostras simples.
 - Planejamento contínuo de aproximação com CCD/swept collision ao longo de todos os frames (atualmente valida principalmente pose final).
 - Simulação dinâmica de força, peso, pressão, atrito, estabilidade, tecido e deformação da mão.
-- **Movimento automático do objeto:** a API recusa \`permitirMoverObjeto:true\` ou \`preservarObjeto:false\` até existir verificação robusta do deslocamento, piso e móveis. O padrão mantém a cadeira no lugar.
+- **Microajuste do objeto:** existe microajuste horizontal opt-in de até 0,6 R (padrão 0,24 R), com checagem de colisão entre objetos. Continua pendente o ajuste **6DOF completo**, incluindo rotação, altura, inclinação, contato com piso e trajetória livre de obstáculos. O padrão não move a cadeira.
 - Compatibilidade total de \`mcp/dist\`/servidor publicado e execução dos gates do master task graph.
 - Testes de estresse e desempenho em navegador/hardware real, além de instrumentação de convergência e atlas visual.
 - Verificação da continuidade de duas mãos após mudanças rápidas de pose: o Grip V3 usa IK secundária aproximada.
