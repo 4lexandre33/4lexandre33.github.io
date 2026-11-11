@@ -4,10 +4,10 @@
 import assert from "node:assert/strict";
 import {createWorld} from "../mcp/lib/core.mjs";
 import {handFrameV3} from "../src/scene/grip-v3.js";
-import {registrarRegiaoAutoGrip} from "../src/scene/grip-auto.js";
+import {registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip} from "../src/scene/grip-auto.js";
 import {gripSiteWorld} from "../src/engine/grip-sites.js";
 import {rigidDirection,objectRigidPose} from "../src/engine/rigid-transform.js";
-import {restGround} from "../src/engine/index.js";
+import {restGround,objetoPadrao} from "../src/engine/index.js";
 
 const w=createWorld();
 const mannequin=w.SCN.list[0];
@@ -120,6 +120,26 @@ if(replan.status==="planejado"){
 
 assert.throws(()=>w.cena.autoEncaixarObjeto("Inexistente",options),/não encontrado/i);
 assert.throws(()=>w.cena.planejarEncaixe(obj.id,{...options,permitirMoverObjeto:true}),/preservarObjeto:false/);
+// Regressão real dos colisores de objeto: um obstáculo ENTRE a posição
+// inicial e a final bloqueia o microdeslocamento, mesmo que o destino esteja livre.
+const moving=objetoPadrao("cubo",{id:60001,nome:"Peça micro",x:20,z:20,
+  larg:.08,prof:.08,alt:.2});
+const crossing=objetoPadrao("cubo",{id:60002,nome:"Obstáculo entre pontos",
+  x:20.12,z:20,larg:.04,prof:.04,alt:.2});
+const sweptScene={objetos:[moving,crossing],manequins:[mannequin]};
+const sweptBefore=JSON.stringify(sweptScene);
+const blockedPath=verificarMicroDeslocamentoAutoGrip(moving,
+  {dx:.24,dz:0},ground,sweptScene,mannequin);
+assert.equal(blockedPath.livre,false,
+  "Não é permitido atravessar objeto intermediário apenas porque o destino está livre.");
+assert.equal(blockedPath.tipo,"objeto");
+assert.ok(blockedPath.passo<blockedPath.total);
+const freePath=verificarMicroDeslocamentoAutoGrip(moving,
+  {dx:-.24,dz:0},ground,sweptScene,mannequin);
+assert.equal(freePath.livre,true);
+assert.equal(JSON.stringify(sweptScene),sweptBefore,
+  "Verificação do caminho deve ser pura, sem movimentar a peça.");
+
 // Microajuste horizontal: opt-in explícito, preview pura, limite finito e
 // rejeição quando o usuário não autorizou mover a peça.
 const adjustWorld=createWorld();
