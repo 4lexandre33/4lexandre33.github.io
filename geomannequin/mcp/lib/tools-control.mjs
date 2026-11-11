@@ -6,7 +6,7 @@ import {toPng} from "./png.mjs";
 const RO={readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false};
 const RW={readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:false};
 const N=z.number().finite(),V=z.array(N).length(3);
-const side=z.enum(["esquerda","direita"]),ref=z.string().min(1).max(120);
+const side=z.enum(["esquerda","direita","auto","ambas"]),ref=z.string().min(1).max(120);
 const req=(x,k)=>{if(x===undefined||x===null||x==="")throw Error("Falta "+k);return x};
 const opts=(a,keys)=>Object.fromEntries(keys.filter(k=>a[k]!==undefined).map(k=>[k,a[k]]));
 const dynKeys=["gravidade","restituicao","atrito","velocidade","angular"];
@@ -85,17 +85,38 @@ export function registerControlTools(s,W){
 
  register(s,W,"preensao","Preensão V2/V3 em objetos",
   "Segurar com uma ou duas mãos, transferir controle, soltar e diagnosticar vínculo rígido 6DOF.",{
-   acao:z.enum(["segurar","soltar","transferir","listar","inspecionar"]),
+   acao:z.enum(["segurar","soltar","transferir","listar","inspecionar","planejar","auto_encaixar","aplicar"]),
    objeto:ref.optional(),manequim:z.string().max(80).optional(),
    mao:side.optional(),ponto:z.string().max(40).optional(),
    motor:z.enum(["v2","v3"]).optional(),
    modo:z.enum(["preservar","encaixar","aproximarMao","manter","chao","pousar","queda"]).optional(),
    reach:N.min(0).max(200).optional(),segunda:z.boolean().optional(),exigirContato:z.boolean().optional(),
    gravidade:N.min(.001).max(1000).optional(),restituicao:N.min(0).max(1).optional(),
-   atrito:N.min(0).max(1).optional(),velocidade:V.optional(),angular:V.optional()
+   atrito:N.min(0).max(1).optional(),velocidade:V.optional(),angular:V.optional(),
+   pegada:z.enum(["auto","pinca","potencia","gancho","tripode","lateral","apoio"]).optional(),
+   preservarObjeto:z.boolean().optional(),permitirMoverObjeto:z.boolean().optional(),
+   tolerancia:N.min(.005).max(.25).optional(),
+   limitePenetracao:N.min(.005).max(.14).optional(),
+   maxSites:z.number().int().min(1).max(12).optional(),
+   maxIteracoes:z.number().int().min(1).max(8).optional(),
+   revisao:z.string().max(50).optional()
   },(w,a)=>{
    if(a.acao==="listar")return w.cena.vinculos();
    if(a.acao==="inspecionar")return w.cena.inspecionarPreensao().filter(v=>!a.objeto||v.objeto===a.objeto);
+   const autoOpts={manequim:a.manequim,mao:a.mao??"auto",
+     pegada:a.pegada??"auto",ponto:a.ponto??"auto",
+     reach:a.reach,preservarObjeto:a.preservarObjeto,
+     permitirMoverObjeto:a.permitirMoverObjeto,tolerancia:a.tolerancia,
+     limitePenetracao:a.limitePenetracao,maxSites:a.maxSites,maxIteracoes:a.maxIteracoes};
+   if(a.acao==="planejar")return w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
+   if(a.acao==="aplicar"){
+     const preview=w.cena.planejarEncaixe(req(a.objeto,"objeto"),autoOpts);
+     if(!a.revisao||a.revisao!==preview.revisao)
+       throw Error("A prévia expirou ou a revisão não confere. Replaneje.");
+     return safe(w,()=>w.cena.aplicarEncaixe(preview));
+   }
+   if(a.acao==="auto_encaixar")return safe(w,()=>
+     w.cena.autoEncaixarObjeto(req(a.objeto,"objeto"),autoOpts));
    return safe(w,()=>{
     const target=req(a.objeto,"objeto");
     if(a.acao==="segurar")return w.cena.segurarObjeto(target,{manequim:a.manequim,...opts(a,gripKeys)});
