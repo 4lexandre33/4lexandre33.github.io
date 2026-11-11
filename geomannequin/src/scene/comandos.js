@@ -563,7 +563,7 @@ const cena={
   /* A inspeção de um vínculo existente não move dedos nem objetos.
    * Pode ser chamada após mover o braço para detectar penetrações novas. */
   inspecionarAutoGrip(objeto){
-    atualizarApoios();
+    // Leitura pura: não sincronizar o vínculo ou modificar pose durante a inspeção.
     const o=acharObjeto(objeto);
     if(!o)throw Error("Objeto não encontrado.");
     const g=o.gripV3||o.grip;
@@ -607,7 +607,7 @@ const cena={
   },
   /* AutoGrip: plano puro seguido de confirmação atômica do vínculo Grip V3. */
   planejarEncaixe(objeto,opts={}){
-    atualizarApoios();
+    // Preview não altera o mundo; operações de movimento sincronizam vínculos.
     const o=acharObjeto(objeto);
     const owner=SCN.list.find(m=>m.id===(o?.gripV3?.mannequinId??o?.grip?.mannequinId));
     const it=donoAuto(opts.manequim??owner?.name);
@@ -622,7 +622,6 @@ const cena={
   aplicarEncaixe(plano){
     if(!plano||plano.objeto===undefined||!plano.opcoes||typeof plano.revisao!=="string")
       throw Error("Passe o plano devolvido por cena.planejarEncaixe.");
-    atualizarApoios();
     const o=acharObjeto(plano.objeto);
     const owner=SCN.list.find(m=>m.id===(o?.gripV3?.mannequinId??o?.grip?.mannequinId));
     const it=donoAuto(plano.manequim??owner?.name);
