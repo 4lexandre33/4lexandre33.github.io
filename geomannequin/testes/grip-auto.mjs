@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import {createWorld} from "../mcp/lib/core.mjs";
 import {handFrameV3} from "../src/scene/grip-v3.js";
-import {registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip} from "../src/scene/grip-auto.js";
+import {registrarRegiaoAutoGrip,verificarMicroDeslocamentoAutoGrip,validarAproximacaoAutoGrip} from "../src/scene/grip-auto.js";
 import {gripSiteWorld} from "../src/engine/grip-sites.js";
 import {rigidDirection,objectRigidPose} from "../src/engine/rigid-transform.js";
 import {restGround,objetoPadrao} from "../src/engine/index.js";
@@ -48,6 +48,11 @@ const options={manequim:"Manequim 1",mao:"auto",pegada:"auto",
   preservarObjeto:true,maxSites:2,maxIteracoes:1,reach:15};
 const before=JSON.stringify(w.cena.estadoCompleto());
 const preview=w.cena.planejarEncaixe(obj.id,options);
+const trajectoryPreview=w.cena.planejarEncaixe(obj.id,{
+  ...options,maxSites:1,maxIteracoes:1,verificarTrajetoria:true,passosTrajetoria:3});
+assert.ok(["planejado","inviavel"].includes(trajectoryPreview.status));
+assert.equal(trajectoryPreview.opcoes.verificarTrajetoria,true);
+
 assert.ok(["planejado","inviavel"].includes(preview.status),
  "O planejador deve devolver resultado ou inviabilidade, sem corromper estado");
 assert.equal(JSON.stringify(w.cena.estadoCompleto()),before,
@@ -139,6 +144,24 @@ const freePath=verificarMicroDeslocamentoAutoGrip(moving,
 assert.equal(freePath.livre,true);
 assert.equal(JSON.stringify(sweptScene),sweptBefore,
   "Verificação do caminho deve ser pura, sem movimentar a peça.");
+
+// Validação do caminho ARTICULADO: a mesma pose deve ser livre quando o
+// objeto está distante. A rotina não pode modificar parâmetros do rig.
+const distantFixture=objetoPadrao("cubo",{
+  id:60003,nome:"Destino da rota",x:29,z:29,larg:.3,prof:.3,alt:.3});
+const actorBefore=JSON.stringify(mannequin.params);
+const route=validarAproximacaoAutoGrip(mannequin,distantFixture,ground,
+  mannequin.params,{...mannequin.params},
+  {objetos:[distantFixture],manequins:[mannequin]},
+  {mao:"direita",passosTrajetoria:5,limitePenetracao:.06});
+assert.equal(route.livre,true);
+assert.equal(route.passos,5);
+assert.equal(JSON.stringify(mannequin.params),actorBefore,
+  "Verificação do percurso é somente leitura");
+assert.throws(()=>validarAproximacaoAutoGrip(mannequin,distantFixture,
+  ground,mannequin.params,mannequin.params,
+  {objetos:[distantFixture],manequins:[mannequin]},
+  {mao:"direita",passosTrajetoria:20}),/passosTrajetoria/);
 
 // Microajuste horizontal: opt-in explícito, preview pura, limite finito e
 // rejeição quando o usuário não autorizou mover a peça.
