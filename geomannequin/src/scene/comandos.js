@@ -21,7 +21,7 @@ import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camada
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
-import {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip} from "./grip-auto.js";
+import {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip} from "./grip-auto.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -658,16 +658,20 @@ const cena={
           if(k.endsWith(side)&&/^(?:handCurl|thumbOpp|fSpread|f(?:Th|In|Me|An|Mi)|arm|elbow|pron|wrist)/.test(k))
             it.params[k]=v;
       }
-      const site=gripSiteWorld(o,best.ponto,ground),H=handFrameV3(it,best.lado,ground);
+      const pontoReal=registrarRegiaoAutoGrip(o,best,best.lado,ground);
+      const site=gripSiteWorld(o,pontoReal,ground),H=handFrameV3(it,best.lado,ground);
       const reach=Math.max(.8,Math.hypot(...H.T.map((v,i)=>v-site.mundo[i]))+.15);
-      const g=beginRigidGrip(it,o,best.lado,ground,{ponto:best.ponto,reach,
+      const g=beginRigidGrip(it,o,best.lado,ground,{ponto:pontoReal,reach,
         modo:"preservar",fechar:false,exigirContato:true,objetos:SCN.objetos});
       if(best.secundaria){
-        const secondary=best.secundaria,site2=gripSiteWorld(o,secondary.ponto,ground);
+        const secondary=best.secundaria;
+        const pontoSecundario=registrarRegiaoAutoGrip(o,secondary,secondary.lado,ground);
+        const site2=gripSiteWorld(o,pontoSecundario,ground);
         const H2=handFrameV3(it,secondary.lado,ground);
         const reach2=Math.max(1,Math.hypot(...H2.T.map((v,i)=>v-site2.mundo[i]))+.25);
-        const g2=beginRigidGrip(it,o,secondary.lado,ground,{ponto:secondary.ponto,
-          reach:reach2,segunda:true,exigirContato:true,fechar:false,objetos:SCN.objetos});
+        const g2=beginRigidGrip(it,o,secondary.lado,ground,{ponto:pontoSecundario,
+          reach:reach2,segunda:true,exigirContato:true,fechar:false,
+          preservarPoseSecundaria:true,objetos:SCN.objetos});
         if(!g2.alcancavel)throw Error("A segunda mão não alcança a pegada.");
       }
       const checarPegada=(report,tipo)=>{
@@ -696,12 +700,15 @@ const cena={
       if(!checkedScene.ok)
         throw Error("O corpo, braço ou outra pessoa apresenta colisão após encaixar: "+
           checkedScene.maxPenetracao.toFixed(3)+" R.");
-      o.gripV3.autoGrip={version:1,pegada:best.pegada,site:best.ponto,
+      o.gripV3.autoGrip={version:1,pegada:best.pegada,
+        site:pontoReal,siteOriginal:best.ponto,
         score:best.score,penetracao:best.penetracao,desvioPalma:best.desvioPalma,
         contatos:best.contatos.map(c=>({dedo:c.nome,contato:c.contato,distancia:c.distancia})),
         validacaoFinal:check,validacaoCena:checkedScene,
         poseReferencia:Object.fromEntries(SL.map(d=>[d.k,it.params[d.k]])),
-        segunda:best.secundaria?{mao:best.secundaria.mao,site:best.secundaria.ponto,validacaoFinal:secondCheck}:null};
+        segunda:best.secundaria?{mao:best.secundaria.mao,
+          site:o.gripV3.secundaria?.siteId,siteOriginal:best.secundaria.ponto,
+          validacaoFinal:secondCheck}:null};
       atualizarApoios();cena.marcarEstado(before);
       return {status:"aplicado",reencaixado,objeto:o.nome||o.tipo,manequim:it.name,
         mao:best.mao,pegada:best.pegada,ponto:best.ponto,segundaMao:best.secundaria?.mao||null,
