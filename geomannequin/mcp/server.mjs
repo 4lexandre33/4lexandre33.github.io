@@ -72,9 +72,26 @@ if (!httpMode) {
   const opts = { allowCode: false, trustedLocal: false };
   const sessions = new Map(); // id → {transport, server, world, last}
 
+  const RATE_LIMIT=Math.max(30,Math.min(1200,Number(process.env.GM_RATE_LIMIT_PER_MIN||300)||300));
+  const rateByIp=new Map();
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json({ limit: "2mb" }));
+  app.use((req,res,next)=>{
+    // Limite por IP antes de parsear/execução MCP; buckets de 1 minuto.
+    const ip=String(req.socket.remoteAddress||"desconhecido");
+    const now=Date.now(),last=rateByIp.get(ip);
+    const bucket=!last||now-last.since>=60000?{since:now,count:0}:last;
+    bucket.count++;rateByIp.set(ip,bucket);
+    if(rateByIp.size>2048){
+      for(const [k,v] of rateByIp)if(now-v.since>=60000)rateByIp.delete(k);
+      if(rateByIp.size>2048)rateByIp.clear();
+    }
+    if(bucket.count>RATE_LIMIT)return res.status(429).json({
+      jsonrpc:"2.0",error:{code:-32029,message:"Limite de requisições por minuto excedido."},id:null
+    });
+    next();
+  });
   app.use((req, res, next) => {
     // Padrão sem CORS aberto. Clientes MCP servidor-servidor não precisam de ACAO.
     const origin=req.headers.origin;
@@ -145,6 +162,7 @@ if (!httpMode) {
   /* SSE legado (clientes antigos) */
   const sse = new Map();
   app.get("/sse", async (req, res) => {
+    if(process.env.GM_ALLOW_SSE_LEGACY!=="1")return res.status(410).send("SSE legado desabilitado. Use /mcp.");
     if (!authed(req)) return deny(res);
     evict();
     const world = createWorld();
@@ -155,6 +173,7 @@ if (!httpMode) {
     await server.connect(transport);
   });
   app.post("/messages", async (req, res) => {
+    if(process.env.GM_ALLOW_SSE_LEGACY!=="1")return res.status(410).send("SSE legado desabilitado.");
     if (!authed(req)) return deny(res);
     const t = sse.get(String(req.query.sessionId || ""));
     if (!t) return res.status(404).send("Sessão SSE não encontrada.");
