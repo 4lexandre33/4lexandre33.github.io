@@ -17,7 +17,8 @@
           "priority": "P0",
           "title": "Mapear métodos públicos de cena, câmera, manequim e objeto",
           "acceptance": "Registro reproduzível inclui todos os métodos retornados por cena.comandos().",
-          "depends_on": []
+          "depends_on": [],
+          "status": "planned"
         },
         {
           "id": "MCP-00.02",
@@ -26,7 +27,8 @@
           "acceptance": "Cada ferramenta possui contrato, versão e ligação à API do motor.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.03",
@@ -35,7 +37,8 @@
           "acceptance": "Cada controle acionável aparece na matriz de cobertura ou como exceção justificada.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.04",
@@ -44,7 +47,8 @@
           "acceptance": "Fonte única registra nomes, domínio, precisão e valores padrão.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.05",
@@ -53,7 +57,8 @@
           "acceptance": "Catálogo não anuncia solver/física inexistentes como prontos.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.06",
@@ -62,7 +67,8 @@
           "acceptance": "Cada dependência de DOM/Canvas/download tem alternativa MCP ou limitação formal.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.07",
@@ -71,7 +77,8 @@
           "acceptance": "Mapa de tipos e migrações é consistente com serialização atual.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.08",
@@ -80,7 +87,8 @@
           "acceptance": "Matriz exportável contém origem e caso de teste para cada operação.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.09",
@@ -89,7 +97,8 @@
           "acceptance": "CI reprova método novo sem contrato de capacidade e cobertura.",
           "depends_on": [
             "MCP-00.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-00.10",
@@ -105,15 +114,16 @@
             "MCP-00.07",
             "MCP-00.08",
             "MCP-00.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G00",
+        "kind": "gate",
         "depends_on": [
           "MCP-00.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -132,7 +142,8 @@
           "acceptance": "Documento contempla execução arbitrária, DoS, SSRF, vazamento e sessões.",
           "depends_on": [
             "G00"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.02",
@@ -141,7 +152,8 @@
           "acceptance": "Entrada HTTP não confiável jamais alcança JavaScript arbitrário no processo do servidor.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.03",
@@ -150,7 +162,8 @@
           "acceptance": "Execução confiável local é explicitamente separada de execução remota.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.04",
@@ -159,7 +172,8 @@
           "acceptance": "Operações read/write/destructive/code possuem política testada e padrão restritivo.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.05",
@@ -168,7 +182,8 @@
           "acceptance": "Servidor HTTP de produção recusa chamadas não autenticadas.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.06",
@@ -177,7 +192,8 @@
           "acceptance": "Segredos não aparecem em links exportados, respostas, exceções nem telemetria.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.07",
@@ -186,7 +202,8 @@
           "acceptance": "Excesso de recurso resulta em erro controlado e não derruba serviço.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.08",
@@ -195,7 +212,8 @@
           "acceptance": "Arquivos malformados, recursivos ou gigantes são rejeitados.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.09",
@@ -204,7 +222,8 @@
           "acceptance": "Logs de auditoria contêm identidade, operação, duração e resultado redigidos.",
           "depends_on": [
             "MCP-01.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-01.10",
@@ -220,15 +239,16 @@
             "MCP-01.07",
             "MCP-01.08",
             "MCP-01.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G01",
+        "kind": "gate",
         "depends_on": [
           "MCP-01.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -247,7 +267,8 @@
           "acceptance": "Documento formal define tipos, comandos, valores e ordenação sem eval.",
           "depends_on": [
             "G01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.02",
@@ -256,7 +277,8 @@
           "acceptance": "Comandos inválidos retornam caminho do campo e erro padronizado.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.03",
@@ -265,7 +287,8 @@
           "acceptance": "Nenhuma entrada de cliente vira código JavaScript.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.04",
@@ -274,7 +297,8 @@
           "acceptance": "Apenas operações aritméticas previstas são permitidas e limitadas.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.05",
@@ -283,7 +307,8 @@
           "acceptance": "Etapas podem referenciar objetos criados sem executar scripts.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.06",
@@ -292,7 +317,8 @@
           "acceptance": "Quantidade máxima de iterações e passos é aplicada antes de executar.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.07",
@@ -301,7 +327,8 @@
           "acceptance": "Roteiros legítimos têm equivalentes declarativos sem perda de semântica.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.08",
@@ -310,7 +337,8 @@
           "acceptance": "Modo legado local tem aviso e isolamento de processo/limite documentado.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.09",
@@ -319,7 +347,8 @@
           "acceptance": "Conversão preserva quadros suportados ou aponta instruções incompatíveis.",
           "depends_on": [
             "MCP-02.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-02.10",
@@ -335,15 +364,16 @@
             "MCP-02.07",
             "MCP-02.08",
             "MCP-02.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G02",
+        "kind": "gate",
         "depends_on": [
           "MCP-02.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -362,7 +392,8 @@
           "acceptance": "Editor, MCP e widget usam as mesmas operações em vez de lógica duplicada.",
           "depends_on": [
             "G02"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.02",
@@ -371,7 +402,8 @@
           "acceptance": "IDs estáveis sobrevivem a edição, cópia, remoção e JSON.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.03",
@@ -380,7 +412,8 @@
           "acceptance": "Mutação inválida não altera nenhum objeto, postura ou câmera.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.04",
@@ -389,7 +422,8 @@
           "acceptance": "Erro intermediário reverte estado, vínculos, parâmetros e dinâmica.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.05",
@@ -398,7 +432,8 @@
           "acceptance": "Leituras não alteram cena; revisão impede sobrescrita concorrente.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.06",
@@ -407,7 +442,8 @@
           "acceptance": "Dry-run informa alterações e lote real é tudo-ou-nada.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.07",
@@ -416,7 +452,8 @@
           "acceptance": "Mesmo request-id não duplica manequins, objetos ou ações.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.08",
@@ -425,7 +462,8 @@
           "acceptance": "Duas chamadas simultâneas não corrompem estados ou histórico.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.09",
@@ -434,7 +472,8 @@
           "acceptance": "Modificação gera evento tipado com IDs e versão nova.",
           "depends_on": [
             "MCP-03.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-03.10",
@@ -450,15 +489,16 @@
             "MCP-03.07",
             "MCP-03.08",
             "MCP-03.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G03",
+        "kind": "gate",
         "depends_on": [
           "MCP-03.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -477,7 +517,8 @@
           "acceptance": "Cada operação tem ID, nome, entrada, saída, status, unidade e erro.",
           "depends_on": [
             "G03"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.02",
@@ -486,7 +527,8 @@
           "acceptance": "Sem any/union indevida em esquemas de ferramentas interoperáveis.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.03",
@@ -495,7 +537,8 @@
           "acceptance": "Cada campo identifica limites, valores padrão e efeitos colaterais.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.04",
@@ -504,7 +547,8 @@
           "acceptance": "Cliente identifica leitura, escrita, exclusão e processamento pesado.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.05",
@@ -513,7 +557,8 @@
           "acceptance": "API pública não expõe funções internas perigosas ou temporárias.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.06",
@@ -522,7 +567,8 @@
           "acceptance": "Respostas têm success, errors, diagnostics e revision estruturados.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.07",
@@ -531,7 +577,8 @@
           "acceptance": "Inventário indica recursos suportados e limitações atuais.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.08",
@@ -540,7 +587,8 @@
           "acceptance": "Não há descrições divergentes entre editor, MCP e README.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.09",
@@ -549,7 +597,8 @@
           "acceptance": "Mudança de nome produz aviso e período de compatibilidade testado.",
           "depends_on": [
             "MCP-04.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-04.10",
@@ -565,15 +614,16 @@
             "MCP-04.07",
             "MCP-04.08",
             "MCP-04.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G04",
+        "kind": "gate",
         "depends_on": [
           "MCP-04.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -596,7 +646,8 @@
             "G01",
             "G03",
             "G04"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.02",
@@ -605,7 +656,8 @@
           "acceptance": "Ausência de credencial resulta em rejeição inclusive de SSE legado.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.03",
@@ -614,7 +666,8 @@
           "acceptance": "Sessão A não consegue ler, editar ou prever IDs da sessão B.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.04",
@@ -623,7 +676,8 @@
           "acceptance": "TTL, limite e encerramento liberam recursos de forma segura.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.05",
@@ -632,7 +686,8 @@
           "acceptance": "Escritas conflitantes recebem erro de revisão e não corrompem a cena.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.06",
@@ -641,7 +696,8 @@
           "acceptance": "Política restrita e migração para cabeçalhos sem exposição de segredo.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.07",
@@ -650,7 +706,8 @@
           "acceptance": "Renderizações interrompidas soltam recursos e informam cancelamento.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.08",
@@ -659,7 +716,8 @@
           "acceptance": "Endpoint anuncia build-hash, schemas e módulos efetivamente carregados.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.09",
@@ -668,7 +726,8 @@
           "acceptance": "Requisições excessivas recebem erro conhecido com limites documentados.",
           "depends_on": [
             "MCP-05.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-05.10",
@@ -684,15 +743,16 @@
             "MCP-05.07",
             "MCP-05.08",
             "MCP-05.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G05",
+        "kind": "gate",
         "depends_on": [
           "MCP-05.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -713,7 +773,8 @@
           "depends_on": [
             "G03",
             "G04"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.02",
@@ -722,7 +783,8 @@
           "acceptance": "Pacote inclui os 25 módulos atuais e as APIs da PR.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.03",
@@ -731,7 +793,8 @@
           "acceptance": "Arquivos distribuídos têm hash e referências válidas.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.04",
@@ -740,7 +803,8 @@
           "acceptance": "Qualquer alteração sem rebuild provoca falha explícita no CI.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.05",
@@ -749,7 +813,8 @@
           "acceptance": "Servidor empacotado inicia apenas com Node suportado.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.06",
@@ -758,7 +823,8 @@
           "acceptance": "Smoke tests passam nas plataformas da matriz declarada.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.07",
@@ -767,7 +833,8 @@
           "acceptance": "Resposta do MCP identifica revisão exata do motor.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.08",
@@ -776,7 +843,8 @@
           "acceptance": "Duas compilações do mesmo commit produzem conteúdo equivalente.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.09",
@@ -785,7 +853,8 @@
           "acceptance": "Publicação exige lint, segurança, contrato e smoke dist.",
           "depends_on": [
             "MCP-06.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-06.10",
@@ -801,15 +870,16 @@
             "MCP-06.07",
             "MCP-06.08",
             "MCP-06.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G06",
+        "kind": "gate",
         "depends_on": [
           "MCP-06.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -836,7 +906,8 @@
             "G04",
             "G05",
             "G06"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.02",
@@ -845,7 +916,8 @@
           "acceptance": "Testes chamam tools/list e tools/call como clientes externos.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.03",
@@ -854,7 +926,8 @@
           "acceptance": "25 ferramentas iniciais preservam casos de uso conhecidos.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.04",
@@ -863,7 +936,8 @@
           "acceptance": "Mesma operação produz estado normalizado equivalente.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.05",
@@ -872,7 +946,8 @@
           "acceptance": "Entradas inválidas não geram NaN nem mutações parciais.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.06",
@@ -881,7 +956,8 @@
           "acceptance": "Round-trip mantém entidades e repetição não duplica efeitos.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.07",
@@ -890,7 +966,8 @@
           "acceptance": "Casos adversariais não executam código nem derrubam processo.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.08",
@@ -899,7 +976,8 @@
           "acceptance": "Artefatos são comparados por geometria e regressão visual.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.09",
@@ -908,7 +986,8 @@
           "acceptance": "Benchmarks geram relatórios com thresholds configuráveis.",
           "depends_on": [
             "MCP-07.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-07.10",
@@ -924,15 +1003,16 @@
             "MCP-07.07",
             "MCP-07.08",
             "MCP-07.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G07",
+        "kind": "gate",
         "depends_on": [
           "MCP-07.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -953,7 +1033,8 @@
           "depends_on": [
             "G04",
             "G07"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.02",
@@ -962,7 +1043,8 @@
           "acceptance": "Todos os fluxos usam validação de entidade e undo.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.03",
@@ -971,7 +1053,8 @@
           "acceptance": "Nome, ID e índice obedecem semântica única e erros claros.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.04",
@@ -980,7 +1063,8 @@
           "acceptance": "MCP retorna resumo e snapshot sem dados de outros usuários.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.05",
@@ -989,7 +1073,8 @@
           "acceptance": "Histórico reverte também objetos segurados e física.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.06",
@@ -998,7 +1083,8 @@
           "acceptance": "Usuário vê quais campos mudariam sem executar.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.07",
@@ -1007,7 +1093,8 @@
           "acceptance": "JSON antigo é migrado ou rejeitado com diagnóstico.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.08",
@@ -1016,7 +1103,8 @@
           "acceptance": "Cliente recupera e ajusta apenas campos permitidos.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.09",
@@ -1025,7 +1113,8 @@
           "acceptance": "Há comando correspondente ou exclusão documentada por natureza do navegador.",
           "depends_on": [
             "MCP-08.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-08.10",
@@ -1041,15 +1130,16 @@
             "MCP-08.07",
             "MCP-08.08",
             "MCP-08.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G08",
+        "kind": "gate",
         "depends_on": [
           "MCP-08.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -1068,7 +1158,8 @@
           "acceptance": "Lista e aplicação retornam parâmetros efetivamente usados.",
           "depends_on": [
             "G08"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.02",
@@ -1077,7 +1168,8 @@
           "acceptance": "Leitura, min/max, passos e escrita validada cobrem corpo e pose.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.03",
@@ -1086,7 +1178,8 @@
           "acceptance": "Sentar, deitar, ajoelhar, correr e demais presets têm controle tipado.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.04",
@@ -1095,7 +1188,8 @@
           "acceptance": "Cliente consulta eixo, limite e mutação efetiva sem ambiguidade.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.05",
@@ -1104,7 +1198,8 @@
           "acceptance": "Resultado informa erro residual e alcance possível.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.06",
@@ -1113,7 +1208,8 @@
           "acceptance": "Alterações respeitam convenção do mundo e limites conhecidos.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.07",
@@ -1122,7 +1218,8 @@
           "acceptance": "Operações mantêm anatomia e lado coerentes.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.08",
@@ -1131,7 +1228,8 @@
           "acceptance": "Diagnóstico identifica colisões, restrições e correções sugeridas.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.09",
@@ -1140,7 +1238,8 @@
           "acceptance": "Cliente consegue consultar posição/orientação de cada alvo suportado.",
           "depends_on": [
             "MCP-09.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-09.10",
@@ -1156,15 +1255,16 @@
             "MCP-09.07",
             "MCP-09.08",
             "MCP-09.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G09",
+        "kind": "gate",
         "depends_on": [
           "MCP-09.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -1183,7 +1283,8 @@
           "acceptance": "Modelo V4 e variantes existentes são enumerados sem inventar novos.",
           "depends_on": [
             "G09"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.02",
@@ -1192,7 +1293,8 @@
           "acceptance": "Pontos válidos retornam coordenadas e frames locais.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.03",
@@ -1201,7 +1303,8 @@
           "acceptance": "Ajustes aceitos reproduzem cortes laterais e dimensões do motor.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.04",
@@ -1210,7 +1313,8 @@
           "acceptance": "Rotacionar pescoço não muda a noção de frente do tronco.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.05",
@@ -1219,7 +1323,8 @@
           "acceptance": "Cada propriedade usa faixas documentadas do rig.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.06",
@@ -1228,7 +1333,8 @@
           "acceptance": "Ambas as mãos retornam status de cinco dedos quando representados.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.07",
@@ -1237,7 +1343,8 @@
           "acceptance": "Campos anatômicos finos possuem comandos e validação.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.08",
@@ -1246,7 +1353,8 @@
           "acceptance": "Presets e alterações finas convivem sem reset indevido.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.09",
@@ -1255,7 +1363,8 @@
           "acceptance": "Geração headless produz geometria/arquivo ou erro documentado.",
           "depends_on": [
             "MCP-10.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-10.10",
@@ -1271,15 +1380,16 @@
             "MCP-10.07",
             "MCP-10.08",
             "MCP-10.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G10",
+        "kind": "gate",
         "depends_on": [
           "MCP-10.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     },
@@ -1298,7 +1408,8 @@
           "acceptance": "Tipos, medidas e suporte a cilindro/cadeira são retornados pelo motor.",
           "depends_on": [
             "G08"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.02",
@@ -1307,7 +1418,8 @@
           "acceptance": "Adicionar, copiar, remover, renomear e listar preservam IDs.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.03",
@@ -1316,7 +1428,8 @@
           "acceptance": "Transformação validada retorna posição e rotação atuais.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.04",
@@ -1325,7 +1438,8 @@
           "acceptance": "Mudanças têm limites e não corrompem partes geométricas.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.05",
@@ -1334,7 +1448,8 @@
           "acceptance": "Referenciais do objeto independem de aparência de olhos.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.06",
@@ -1343,7 +1458,8 @@
           "acceptance": "Móvel pai move filhos com transformações consistentes.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.07",
@@ -1352,7 +1468,8 @@
           "acceptance": "GripSites, apoios e assentos têm IDs e localizações mundiais.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.08",
@@ -1361,7 +1478,8 @@
           "acceptance": "Consulta distingue mesh real de proxy OBB/cilindro.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.09",
@@ -1370,7 +1488,8 @@
           "acceptance": "Operações preservam identidade e não criam ciclos em hierarquia.",
           "depends_on": [
             "MCP-11.01"
-          ]
+          ],
+          "status": "planned"
         },
         {
           "id": "MCP-11.10",
@@ -1386,15 +1505,16 @@
             "MCP-11.07",
             "MCP-11.08",
             "MCP-11.09"
-          ]
+          ],
+          "status": "planned"
         }
       ],
       "gate": {
         "id": "G11",
+        "kind": "gate",
         "depends_on": [
           "MCP-11.10"
         ],
-        "kind": "gate",
         "status": "planned"
       }
     }
