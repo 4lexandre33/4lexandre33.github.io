@@ -21,6 +21,7 @@ import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camada
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
+import {planejarAutoGrip,resumirAutoGrip,medirMao,validarOpcoes} from "./grip-auto.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
 import {objectRigidPose,setRigidObjectPose} from "../engine/rigid-transform.js";
 import {rotM} from "../engine/matematica.js";
@@ -36,6 +37,19 @@ function guardarContatoV2(it,antes){
 function withInst(it,fn){const prevP=P;setP(it.params);try{return fn()}finally{setP(prevP)}}
 const LOG=[];
 const HIST_COMANDOS={undo:[],redo:[],max:30};
+function donoAuto(ref){
+ if(ref===undefined||ref===null)return SCN.list[SCN.active];
+ if(typeof ref==="number")return SCN.list[ref];
+ return typeof ref==="string"?SCN.list.find(m=>m.name===ref||String(m.id)===ref):null;
+}
+function revisaoAutoGrip(it,o){
+ const data=JSON.stringify([it.id,it.params,o.id,o.tipo,o.x,o.z,o.giro,o.rot3,o.base,
+  o.larg,o.prof,o.alt,o.raio,o.encosto,o.sitesExtras,
+  SCN.objetos.map(q=>[q.id,q.x,q.z,q.base,q.giro,q.rot3]),
+  SCN.list.map(q=>[q.id,q.params.wx,q.params.wz,q.params.wRot])]);
+ let h=2166136261;for(let i=0;i<data.length;i++)h=Math.imul(h^data.charCodeAt(i),16777619);
+ return (h>>>0).toString(16);
+}
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
   const m={
@@ -127,6 +141,9 @@ function apiFor(it){
     /* ===== Contato anatômico V2 ===== */
     contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
     tocar(alvo,opts={}){chk();const r=tocarV2(it,alvo,opts);if(r.distanciaResidual>.3)LOG.push(["aviso","A mão não alcança precisamente o alvo."]);return r},
+    autoSegurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
+      return cena.autoEncaixarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)})},
+    medidasMao(lado="direita"){chk();return medirMao(it.params,ladoNum(lado))},
     segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
       cena.segurarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)});return m},
     soltar(ref,opts={}){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id):[acharObjeto(ref)];
@@ -272,6 +289,8 @@ function apiObjeto(q){
       return {manequim:owner?.name||null,mao:g.side===1?"esquerda":"direita",
         versao:q.gripV3?3:1,ponto:q.gripV3?.siteId||null,
         segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
+    autoEncaixarPor(manequim,opts={}){chk();return cena.autoEncaixarObjeto(q.id,
+      {...opts,manequim:typeof manequim==="object"?manequim.nome:manequim})},
     segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
     soltar(opts={}){chk();cena.soltarObjeto(q.id,opts);return o},
     trocarMaoPrincipal(mao){chk();cena.transferirMaoPrincipal(q.id,{mao});return o},
@@ -436,6 +455,9 @@ const cena={
     {id:"quadros",estado:"parcial",api:["cena.quadros.abrir","cena.quadros.texto","cena.quadros.renderizar","cena.quadros.fila","cena.quadros.baixar"]},
     {id:"blocking",estado:"parcial",api:["cena.blocking","cena.blocking.abrir","cena.blocking.estado"]},
     {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
+    {id:"autoGrip",estado:"experimental",api:["cena.autoEncaixarObjeto","cena.planejarEncaixe",
+      "cena.aplicarEncaixe","m.autoSegurar","m.medidasMao","obj.autoEncaixarPor"],
+      limite:"Busca geométrica e IK de mão/dedos; sem forças, tecido ou trajetória CCD exata. Retorna inviável quando necessário."},
     {id:"preensaoV3",estado:"experimental",api:["m.segurar","m.soltar","m.maoEmSite",
        "cena.segurarObjeto","cena.soltarObjeto","cena.vinculos","cena.inspecionarPreensao",
        "obj.pontosDeAgarre","obj.pontoDeAgarre","obj.emPosseDe","obj.pousar","obj.cair","obj.fisica","obj.pararQueda","cena.avancarFisica","cena.simularQueda","cena.transferirMaoPrincipal","m.trocarMaoPrincipal","obj.trocarMaoPrincipal"],
@@ -520,6 +542,67 @@ const cena={
       if(!r.ativos)break;
     }
     return {ultimo:r,frames:trajetoria?frames:undefined};
+  },
+
+  /* AutoGrip: plano puro seguido de confirmação atômica do vínculo Grip V3. */
+  planejarEncaixe(objeto,opts={}){
+    atualizarApoios();
+    const o=acharObjeto(objeto),it=donoAuto(opts.manequim);
+    if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
+    const options=validarOpcoes(opts),ground=restGround(SCN.list[0].params);
+    const r=planejarAutoGrip(it,o,ground,options);
+    return {...resumirAutoGrip(r),objeto:o.nome||o.tipo,manequim:it.name,
+      opcoes:options,revisao:revisaoAutoGrip(it,o)};
+  },
+  aplicarEncaixe(plano){
+    if(!plano||!plano.objeto||!plano.manequim||!plano.opcoes)
+      throw Error("Passe o plano devolvido por cena.planejarEncaixe.");
+    atualizarApoios();
+    const o=acharObjeto(plano.objeto),it=donoAuto(plano.manequim);
+    if(!o||!it||revisaoAutoGrip(it,o)!==plano.revisao)
+      throw Error("A cena mudou; planeje a pegada novamente.");
+    return cena.autoEncaixarObjeto(o.id,{...plano.opcoes,manequim:it.name});
+  },
+  autoEncaixarObjeto(objeto,opts={}){
+    atualizarApoios();
+    const o=acharObjeto(objeto),it=donoAuto(opts.manequim);
+    if(!o||!it)throw Error("AutoGrip: manequim ou objeto não encontrado.");
+    const options=validarOpcoes(opts);
+    const before=cena.estadoCompleto(),ground=restGround(SCN.list[0].params);
+    const found=planejarAutoGrip(it,o,ground,options);
+    if(!found.ok)throw Error("Encaixe inviável: "+found.rejeitados.slice(0,4)
+      .map(x=>x.ponto+" — "+x.motivo).join("; "));
+    const best=found.melhor;
+    try{
+      Object.assign(it.params,best.params);
+      if(best.secundaria){
+        const side=best.secundaria.lado===1?"L":"R";
+        for(const [k,v] of Object.entries(best.secundaria.params))
+          if(k.endsWith(side)&&/^(?:handCurl|thumbOpp|fSpread|f(?:Th|In|Me|An|Mi)|arm|elbow|pron|wrist)/.test(k))
+            it.params[k]=v;
+      }
+      const site=gripSiteWorld(o,best.ponto,ground),H=handFrameV3(it,best.lado,ground);
+      const reach=Math.max(.8,Math.hypot(...H.T.map((v,i)=>v-site.mundo[i]))+.15);
+      const g=beginRigidGrip(it,o,best.lado,ground,{ponto:best.ponto,reach,
+        modo:"preservar",fechar:false,exigirContato:true,objetos:SCN.objetos});
+      if(best.secundaria){
+        const secondary=best.secundaria,site2=gripSiteWorld(o,secondary.ponto,ground);
+        const H2=handFrameV3(it,secondary.lado,ground);
+        const reach2=Math.max(1,Math.hypot(...H2.T.map((v,i)=>v-site2.mundo[i]))+.25);
+        const g2=beginRigidGrip(it,o,secondary.lado,ground,{ponto:secondary.ponto,
+          reach:reach2,segunda:true,exigirContato:true,fechar:false,objetos:SCN.objetos});
+        if(!g2.alcancavel)throw Error("A segunda mão não alcança a pegada.");
+      }
+      o.gripV3.autoGrip={version:1,pegada:best.pegada,site:best.ponto,
+        score:best.score,penetracao:best.penetracao,desvioPalma:best.desvioPalma,
+        contatos:best.contatos.map(c=>({dedo:c.nome,contato:c.contato,distancia:c.distancia})),
+        segunda:best.secundaria?{mao:best.secundaria.mao,site:best.secundaria.ponto}:null};
+      atualizarApoios();cena.marcarEstado(before);
+      return {status:"aplicado",objeto:o.nome||o.tipo,manequim:it.name,
+        mao:best.mao,pegada:best.pegada,ponto:best.ponto,segundaMao:best.secundaria?.mao||null,
+        qualidade:resumirAutoGrip(found).escolha,grip:g,
+        aviso:"Encaixe geométrico aproximado: sem forças nem trajetória livre de obstáculos garantida."};
+    }catch(e){cena.restaurarCompleto(before);throw Error("AutoGrip revertido: "+e.message)}
   },
   segurarObjeto(objeto,{manequim,mao="direita",...opts}={}){
     // modo: 'aproximarMao' usa IK antes da captura. Sem deslocar a cadeira.
