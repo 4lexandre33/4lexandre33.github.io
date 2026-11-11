@@ -3,7 +3,63 @@
 Servidor MCP que deixa o **Claude**, o **ChatGPT** e o **Gemini** montarem cenas do GeoMannequin conversando: adicionar manequins, posar, posicionar em perspectiva, mudar câmera, lente e luz, ligar sombras e horizonte, e devolver a **imagem** da cena e um **link** que abre a mesma cena no app:
 <https://4lexandre33.github.io/geomannequin/>
 
-O servidor usa os mesmos módulos do app (`../src/engine` e `../src/scene`), então qualquer melhoria no app vale também para o MCP.
+O servidor usa os mesmos módulos do app durante o desenvolvimento; o pacote dist requer reconstrução e verificação de paridade após mudanças.
+
+## Ferramentas MCP V3 na branch de desenvolvimento
+
+O código-fonte desta branch registra 11 ferramentas tipadas adicionais às 25 antigas. Elas não devem ser tratadas como disponíveis no pacote dist ou no serviço remoto antes de reconstruir, testar e publicar.
+
+| Ferramenta | Ações e finalidade |
+|---|---|
+| capacidades_mcp | Descobrir métodos, parâmetros, limites e capacidades |
+| rig_parametro | Consultar e alterar ângulos e parâmetros do manequim |
+| objeto_3d | Ler e alterar posição 3D, rotação e frente/cima |
+| grip_sites | Consultar ou criar pontos de agarre |
+| preensao | Segurar, segunda mão, transferir, soltar e inspecionar |
+| fisica | Cair, avançar, simular, pousar, parar e consultar |
+| camera_anatomica | Frente, costas, perfis, seguir, focar e capturar |
+| historico_mcp | Marcar estado, desfazer, refazer e consultar |
+| contato_fisico | Detectar e resolver contatos aproximados |
+| artefatos_mcp | Exportar PNG, SVG, JSON, OBJ (cabeça) e ZIP |
+| roteiro_declarativo | Storyboard seguro por quadros e ações tipadas |
+
+### Exemplo de preensão via ferramentas
+
+- objetos: adicionar cadeira com nome Cadeira 1;
+- grip_sites: listar pontos da Cadeira 1;
+- preensao: segurar com mao direita, ponto encostoTopo, modo encaixar e reach 5;
+- rig_parametro: definir armFlexR = 45;
+- preensao: soltar a Cadeira 1 com modo queda;
+- fisica: simular duracao 3, passo 1/60.
+
+O IK pode não alcançar um GripSite. A física é aproximada por subpassos e não deve ser apresentada como solver bilateral e dinâmica de corpo rígido exatos.
+
+### Segurança do servidor
+
+- O HTTP nunca permite JavaScript arbitrário por executar_codigo, mesmo se GM_ALLOW_CODE=1.
+- Roteiro legada com scripts JavaScript só existe no MCP stdio local confiável.
+- Para HTTP, usar roteiro_declarativo com ações enumeradas e validadas.
+- node:vm não constitui sandbox de segurança para código não confiável.
+- GM_TOKEN é obrigatório em HTTP publicado. Exceção GM_HTTP_LOCAL_DEV=1 vincula somente ao loopback 127.0.0.1.
+- CORS não usa mais origem universal. Configure GM_ALLOWED_ORIGINS com origens exatas se necessário.
+- Prefira token em Authorization Bearer a token na URL, que pode aparecer em logs e históricos.
+- As operações tipadas de mutação possuem snapshot e rollback. A segurança e desempenho precisam ser validados em execução real.
+
+### Compilação e paridade source/dist
+
+O pacote dist na auditoria continha 18 módulos, enquanto a fonte continha 25. Reconstruir e executar testes num checkout Node:
+
+    cd geomannequin
+    npm ci
+    npm ci --prefix mcp
+    npm run testar:grip-v3
+    cd mcp
+    npm test
+    npm run build
+    npm run verify:dist
+    npm run test:dist
+
+O build passa a gerar um arquivo source-manifest.json em dist com hash dos arquivos-fonte. O verificador compara os 25 módulos e o hash, detectando distribuições desatualizadas. Sem testes integrados e novo deploy, a atualização remota não é comprovada.
 
 ## Ferramentas
 
@@ -144,7 +200,7 @@ Outras hospedagens: o `Dockerfile` funciona em Railway, Fly.io, Google Cloud Run
 |---|---|---|
 | `PORT` | 8787 | Porta HTTP |
 | `GM_TOKEN` | (vazio) | Senha: exige `?token=` no endereço ou `Authorization: Bearer` |
-| `GM_ALLOW_CODE` | `0` no HTTP, ligado no local | `1` libera `executar_codigo` no servidor (só faça isso em servidor privado: o código roda no servidor) |
+| `GM_ALLOW_CODE` | `0` no HTTP, ligado no local | Código local confiável pode ser desligado com 0. HTTP nunca permite JavaScript arbitrário. |
 | `GM_APP_URL` | página do GitHub Pages | Endereço do app usado nos links |
 | `GM_MAX_SESSIONS` | 200 | Conversas simultâneas |
 | `GM_SESSION_TTL_MIN` | 45 | Minutos até uma conversa parada ser descartada |
@@ -164,7 +220,8 @@ Cada conversa tem a sua cena. Para continuar uma cena outro dia, peça o link (o
 npm install
 npm test          # testa todas as ferramentas em stdio e HTTP (inclui checagem dos esquemas para o Gemini)
 npm run build     # gera dist/ (servidor em arquivo único, usado pela extensão e pela instalação local)
-npm run test:dist # testa o dist/
+npm run verify:dist # verifica módulos e hash de fonte no dist/
+npm run test:dist   # testa o dist/
 npm start         # servidor HTTP em http://localhost:8787/mcp
 ```
 
