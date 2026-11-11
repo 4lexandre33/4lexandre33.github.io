@@ -125,6 +125,8 @@ function loadScene(sc){
       if(owner&&(g.side===1||g.side===-1)&&validRigid(g.relative))
         o.gripV3={version:3,mannequinId:owner.id,side:g.side,siteId:String(g.siteId||"auto"),
           relative:{M:g.relative.M.slice(),T:g.relative.T.slice()},
+          ...(g.autoGrip&&typeof g.autoGrip==="object"&&g.autoGrip.version===1?
+            {autoGrip:JSON.parse(JSON.stringify(g.autoGrip))}:{ }),
           ...(g.secundaria&&(g.secundaria.side===1||g.secundaria.side===-1)&&validRigid(g.secundaria.relative)?
             {secundaria:{side:g.secundaria.side,siteId:String(g.secundaria.siteId||"auto"),
                relative:{M:g.secundaria.relative.M.slice(),T:g.secundaria.relative.T.slice()}}}:{})};
