@@ -466,16 +466,42 @@ function planejarAutoGripComAjuste(it,o,ground,opts={},scene={}){
    [.7,.7],[.7,-.7],[-.7,.7],[-.7,-.7]
  ];
  const rejected=[],fallback=[];
+ const obstacles=(scene.objetos||[]).filter(q=>q.id!==o.id);
+ const otherRigs=(scene.manequins||[]).filter(m=>m.id!==it.id)
+   .map(m=>colliderRig({...m.params,wy:ground-restGround(m.params)},{level:"coarse"}));
+ const ownerTorso=colliderRig({...it.params,wy:ground-restGround(it.params)},{level:"coarse"});
+ const protectedCaps=ownerTorso.caps.filter(c=>
+   !/^(mao|antebraco|braco|cotovelo)/.test(c.nome));
+ const bodies=[...otherRigs.map(r=>r.caps),protectedCaps];
+ const blockedAlong=(shift)=>{
+   // Amostrar todo o caminho (e não só a posição final). É um swept test
+   // discreto conservador, NÃO CCD matematicamente exato.
+   const divisions=Math.max(4,Math.ceil(Math.hypot(shift.dx,shift.dz)/.06));
+   for(let step=1;step<=divisions;step++){
+     const alpha=step/divisions;
+     const intermediate={...o,x:o.x+shift.dx*alpha,z:o.z+shift.dz*alpha};
+     if(obstacles.some(q=>colisaoEntreObjetos(intermediate,q,ground,.03).length))
+       return "A trajetória atravessa outro objeto (passo "+step+"/"+divisions+").";
+     const solids=colliderObject(intermediate,ground);
+     for(const caps of bodies)for(const c of caps){
+       const box=capsuleBox(c);
+       for(const solid of solids){
+         if(!overlaps(box,solid.box,.03))continue;
+         if(capsuleSolidContact(c,solid.shape,solid.id).prof>.03)
+           return "A trajetória atravessa um manequim (passo "+step+"/"+divisions+").";
+       }
+     }
+   }
+   return null;
+ };
  const deadline=since+opt.maxTempoMs;
  for(const [dx,dz] of trials){
    const rem=deadline-Date.now();if(rem<200)break;
    const shift={dx:dx*opt.maxDeslocamento,dz:dz*opt.maxDeslocamento};
    if(Math.abs(o.x+shift.dx)>40||Math.abs(o.z+shift.dz)>40)continue;
+   const blocked=blockedAlong(shift);
+   if(blocked){rejected.push({deslocamento:shift,motivo:blocked});continue}
    const moved={...o,x:o.x+shift.dx,z:o.z+shift.dz};
-   const collisions=(scene.objetos||[]).filter(q=>q.id!==o.id);
-   if(collisions.some(q=>colisaoEntreObjetos(moved,q,ground,.03).length)){
-     rejected.push({deslocamento:shift,motivo:"Colisão com outro objeto."});continue;
-   }
    const outcome=planejarAutoGrip(it,moved,ground,{
      ...baseOptions,maxSites:Math.min(baseOptions.maxSites,3),
      maxTempoMs:Math.max(200,Math.min(550,rem))
@@ -494,7 +520,7 @@ function planejarAutoGripComAjuste(it,o,ground,opts={},scene={}){
  const selected=fallback[0];
  selected.opcoes=opt;
  selected.avaliados+=initial.avaliados;
- selected.limitacoes.push("Microajuste horizontal com deslocamento limitado: não planeja trajetórias.");
+ selected.limitacoes.push("Microajuste X/Z com amostras intermediárias discretas; não é detecção contínua exata (CCD).");
  return selected;
 }
 function resumirAutoGrip(result){
