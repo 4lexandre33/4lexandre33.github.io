@@ -269,7 +269,7 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
      fingerCount>=required&&(!thumbIndex||polegarIndicadorOpostos));
  const maxPen=Math.max(geometric.maxHandPen,geometric.maxBodyPen,geometric.maxObstaclePen,geometric.maxThirdPen,geometric.maxSelfNewPen);
  const valid=maxPen<=opt.limitePenetracao&&fit.residual<=.38&&validFingers;
- const score=fit.cost+Math.max(0,maxPen-opt.limitePenetracao)*15+
+ const score=fit.cost+(style==="apoio"?.4:0)+Math.max(0,maxPen-opt.limitePenetracao)*15+
     (validFingers?0:2)+(distance*.015)+Math.max(0,fingerCount-3)*(-.02);
  const reasons=[];
  if(fit.residual>.38)reasons.push("Palma não alcança o alvo: "+fit.residual.toFixed(3)+" R");
@@ -317,10 +317,10 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
    return {side,sites:siteCandidates(o,ground,opt.ponto,side,frame,opt.maxSites)};
  });
  let limitReached=false;
- const test=(side,site)=>{
+ const test=(side,site,style=null)=>{
    if(Date.now()-started>=opt.maxTempoMs){limitReached=true;return}
    try{
-     const result=evaluate(it,o,side,site,ground,solids,opt,environment);
+     const result=evaluate(it,o,side,site,ground,solids,style?{...opt,pegada:style}:opt,environment);
      if(result.ok)raw.push(result);
      else failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,
        score:result.score??null,motivo:result.avisos?.join("; ")||result.motivo});
@@ -338,6 +338,23 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
      for(const site of sites.slice(0,Math.min(3,opt.maxSites))){
        for(const sample of surfaceSamples(site,o,ground,metric)){
          test(side,sample);if(limitReached)break;
+       }
+       if(limitReached)break;
+     }
+     if(limitReached)break;
+   }
+ }
+ // Se o tipo foi AUTO, variar também a estratégia de dedos e palma.
+ // Não transformar uma pegada rígida impossível em sucesso só pelo nome.
+ if(opt.pegada==="auto"&&!raw.length&&!limitReached){
+   const styles=o.tipo==="cadeira"?["gancho","potencia","apoio"]:
+     ["pinca","tripode","potencia","gancho","apoio"];
+   for(const {side,sites} of candidatesBySide){
+     for(const site of sites.slice(0,Math.min(2,opt.maxSites))){
+       const defaultStyle=guessStyle(o,site,medirMao(it.params,side),"auto");
+       for(const style of styles){
+         if(style===defaultStyle)continue;
+         test(side,site,style);if(limitReached)break;
        }
        if(limitReached)break;
      }
