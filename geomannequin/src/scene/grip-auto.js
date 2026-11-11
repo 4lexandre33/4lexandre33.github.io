@@ -522,22 +522,34 @@ function validarContatoAutoGrip(it,o,side,ground,{limitePenetracao=.06,toleranci
  const caps=geom.caps.filter(c=>(c.kind==="palm"||c.kind==="finger")&&c.side===label);
  let maxPenetracao=0,palmaContato=false,contatos=0;
  const dedos={polegar:false,indicador:false,"médio":false,anelar:false,"mínimo":false};
+ const pontosDedo={};
  for(const cap of caps){
-   let best=Infinity;
+   let best=null;
    for(const solid of solids){
      if(!overlaps(capsuleBox(cap),solid.box,tolerancia))continue;
      const hit=capsuleSolidContact(cap,solid.shape,solid.id);
-     best=Math.min(best,hit.distancia);
+     if(!best||hit.distancia<best.distancia)best=hit;
    }
-   maxPenetracao=Math.max(maxPenetracao,Math.max(0,-best));
-   if(best<=tolerancia&&best>=-limitePenetracao){
+   if(!best)continue;
+   maxPenetracao=Math.max(maxPenetracao,Math.max(0,-best.distancia));
+   if(best.distancia<=tolerancia&&best.distancia>=-limitePenetracao){
      contatos++;
      if(cap.kind==="palm")palmaContato=true;
-     if(cap.finger&&Object.prototype.hasOwnProperty.call(dedos,cap.finger))dedos[cap.finger]=true;
+     if(cap.finger&&Object.prototype.hasOwnProperty.call(dedos,cap.finger)){
+       dedos[cap.finger]=true;
+       const previous=pontosDedo[cap.finger];
+       // Guardar o contato melhor (mais próximo da superfície) por dedo.
+       if(!previous||Math.abs(best.distancia)<Math.abs(previous.distancia)){
+         pontosDedo[cap.finger]={normal:best.n.slice(),
+           distancia:best.distancia,segmento:cap.segment??null};
+       }
+     }
    }
  }
+ const th=pontosDedo.polegar,ind=pontosDedo.indicador;
+ const oposicaoPinça=!!(th&&ind&&dot(th.normal,ind.normal)<-.15);
  return {ok:maxPenetracao<=limitePenetracao,maxPenetracao,
-   palmaContato,contatos,contatosPorDedo:dedos};
+   palmaContato,contatos,contatosPorDedo:dedos,pontosDedo,oposicaoPinça};
 }
 
 return {planejarAutoGrip,planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip};
