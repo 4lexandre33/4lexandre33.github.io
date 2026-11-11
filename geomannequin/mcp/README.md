@@ -45,6 +45,8 @@ O IK pode não alcançar um GripSite. A física é aproximada por subpassos e n�
 - node:vm não constitui sandbox de segurança para código não confiável.
 - GM_TOKEN é obrigatório em HTTP publicado. Exceção GM_HTTP_LOCAL_DEV=1 vincula somente ao loopback 127.0.0.1.
 - CORS não usa mais origem universal. Configure GM_ALLOWED_ORIGINS com origens exatas se necessário.
+- GM_RATE_LIMIT_PER_MIN limita chamadas HTTP por endereço IP (padrão 300/min).
+- GM_ALLOW_SSE_LEGACY=1 reabilita SSE antigo; o padrão é desativado (HTTP 410), prefira Streamable HTTP.
 - Prefira token em Authorization Bearer a token na URL, que pode aparecer em logs e históricos.
 - As operações tipadas de mutação possuem snapshot e rollback. A segurança e desempenho precisam ser validados em execução real.
 
