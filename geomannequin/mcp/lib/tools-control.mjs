@@ -85,7 +85,7 @@ export function registerControlTools(s,W){
 
  register(s,W,"preensao","Preensão V2/V3 em objetos",
   "Segurar com uma ou duas mãos, transferir controle, soltar e diagnosticar vínculo rígido 6DOF.",{
-   acao:z.enum(["segurar","soltar","transferir","listar","inspecionar","verificar","planejar","auto_encaixar","reencaixar","aplicar"]),
+   acao:z.enum(["segurar","soltar","transferir","listar","inspecionar","verificar","medidas_mao","planejar","auto_encaixar","reencaixar","aplicar"]),
    objeto:ref.optional(),manequim:z.string().max(80).optional(),
    mao:side.optional(),ponto:z.string().max(40).optional(),
    motor:z.enum(["v2","v3"]).optional(),
@@ -105,6 +105,12 @@ export function registerControlTools(s,W){
    if(a.acao==="listar")return w.cena.vinculos();
    if(a.acao==="inspecionar")return w.cena.inspecionarPreensao().filter(v=>!a.objeto||v.objeto===a.objeto);
    if(a.acao==="verificar")return w.cena.inspecionarAutoGrip(req(a.objeto,"objeto"));
+   if(a.acao==="medidas_mao"){
+     const m=w.apiFor(pick(w,a.manequim));
+     if(a.mao==="ambas"||a.mao==="auto"||!a.mao)
+       return {direita:m.medidasMao("direita"),esquerda:m.medidasMao("esquerda")};
+     return {[a.mao]:m.medidasMao(a.mao)};
+   }
    const autoOpts={manequim:a.manequim,mao:a.mao??"auto",
      pegada:a.pegada??"auto",ponto:a.ponto??"auto",
      reach:a.reach,preservarObjeto:a.preservarObjeto,
