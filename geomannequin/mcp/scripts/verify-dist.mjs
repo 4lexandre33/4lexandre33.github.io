@@ -1,9 +1,10 @@
 /* Verifica dist entregue versus a fonte atual. Executar após npm run build. */
 import assert from "node:assert/strict";
 import {readFileSync,existsSync} from "node:fs";
-import {join,resolve} from "node:path";
+import {join,resolve,dirname} from "node:path";
+import {fileURLToPath} from "node:url";
 import {fingerprint} from "./source-fingerprint.mjs";
-const mcp=resolve(import.meta.dirname,".."),root=resolve(mcp,"..");
+const mcp=resolve(dirname(fileURLToPath(import.meta.url)),".."),root=resolve(mcp,"..");
 const read=p=>readFileSync(join(mcp,p),"utf8");
 assert.ok(existsSync(join(mcp,"dist/source-manifest.json")),
   "dist está obsoleto: falta source-manifest.json. Execute npm run build.");
