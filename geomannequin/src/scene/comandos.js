@@ -706,7 +706,7 @@ const cena={
         contatos:best.contatos.map(c=>({dedo:c.nome,contato:c.contato,distancia:c.distancia})),
         validacaoFinal:check,validacaoCena:checkedScene,
         poseReferencia:Object.fromEntries(SL.map(d=>[d.k,it.params[d.k]])),
-        segunda:best.secundaria?{mao:best.secundaria.mao,
+        segunda:best.secundaria?{mao:best.secundaria.mao,pegada:best.secundaria.pegada,
           site:o.gripV3.secundaria?.siteId,siteOriginal:best.secundaria.ponto,
           validacaoFinal:secondCheck}:null};
       atualizarApoios();cena.marcarEstado(before);
