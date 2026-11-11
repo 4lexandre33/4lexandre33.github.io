@@ -106,4 +106,34 @@ export function registerDeclarativeStoryboard(server,W){
   }
   return {isError:true,content:[{type:"text",text:"Erro no roteiro declarativo: "+String(error?.message||error)}]};
  });
+ server.registerTool("operacoes_lote",{
+  title:"Executar lote declarativo de operações da cena",
+  description:"Executa até 64 comandos enumerados como transação; prever=true valida sem alterar a sessão. Nunca executa código JavaScript recebido do cliente.",
+  inputSchema:{
+   acoes:z.array(command).min(1).max(64),
+   prever:z.boolean().optional()
+  },annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:false}
+ },async raw=>{
+  const w=W(),before=w.cena.estadoCompleto();
+  try{
+   const a=z.object({acoes:z.array(command).min(1).max(64),prever:z.boolean().optional()}).strict().parse(raw||{});
+   for(let i=0;i<a.acoes.length;i++)try{apply(w,a.acoes[i])}
+    catch(e){throw Error("Ação "+(i+1)+": "+e.message)}
+   const summary={previsao:!!a.prever,executadas:a.acoes.length,
+    manequins:w.SCN.list.map(it=>({nome:it.name,x:it.params.wx,z:it.params.wz,giro:it.params.wRot})),
+    objetos:w.SCN.objetos.map(o=>({nome:o.nome||o.tipo,x:o.x,z:o.z,segurado:!!o.gripV3})),
+    camera:w.camera.vista()};
+   if(a.prever)w.cena.restaurarCompleto(before);
+   else w.cena.marcarEstado(before);
+   const link=sceneLink(w);
+   return {content:[{type:"text",text:JSON.stringify({resultado:summary,link})}],
+    structuredContent:{resultado:summary,link}};
+  }catch(e){
+   try{w.cena.restaurarCompleto(before)}catch(rb){
+    return {isError:true,content:[{type:"text",text:"Erro crítico de rollback: "+rb.message}]};
+   }
+   return {isError:true,content:[{type:"text",text:"Lote revertido: "+e.message}]};
+  }
+ });
+
 }
