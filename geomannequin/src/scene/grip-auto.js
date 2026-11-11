@@ -438,7 +438,11 @@ function planejarAutoGrip(it,o,ground,opts={},scene={}){
      if(result.ok)raw.push(result);
      else failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,
        score:result.score??null,motivo:result.avisos?.join("; ")||result.motivo});
-   }catch(e){failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,motivo:e.message})}
+   }catch(e){
+     // Erros de programação não são limitações geométricas da pegada.
+     if(e instanceof ReferenceError)throw e;
+     failures.push({mao:side>0?"esquerda":"direita",ponto:site.id,motivo:e.message});
+   }
  };
  // Primeiro testar os GripSites nomeados e priorizados.
  for(const {side,sites} of candidatesBySide){
@@ -533,6 +537,9 @@ function verificarMicroDeslocamentoAutoGrip(o,shift,ground,scene={},owner,{passo
    throw Error("Passo do microdeslocamento deve estar entre 0.01 e 0.5 R.");
  if(!Number.isFinite(tolerancia)||tolerancia<0||tolerancia>.14)
    throw Error("Tolerância do microdeslocamento deve estar entre 0 e 0.14 R.");
+ const sweepLength=Math.hypot(shift.dx,shift.dz);
+ if(!Number.isFinite(sweepLength)||sweepLength>1)
+   throw Error("Microdeslocamento excede 1 R ou não possui comprimento finito.");
  const obstructions=(scene.objetos||[]).filter(q=>q.id!==o.id);
  const otherRigs=(scene.manequins||[]).filter(m=>m.id!==owner.id)
    .map(m=>colliderRig({...m.params,wy:ground-restGround(m.params)},{level:"coarse"}));
