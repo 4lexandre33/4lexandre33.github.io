@@ -50,8 +50,15 @@ function medirMao(p,side){
  const digits=juntasDedos(p,side).map(d=>({nome:d.nome,
    comprimento:d.pts.slice(1).reduce((total,pt,j)=>total+dist(pt,d.pts[j]),0),
    raio:(d.nome==="polegar"?.09:.078)*k}));
+
+ // Medida empírica do vão polegar/indicador com a própria FK do manequim.
+ const opened={...p},pinched={...p};
+ aplicarGesto(opened,side,"aberta");aplicarGesto(pinched,side,"pinca");
+ const span=q=>{const f=juntasDedos(q,side);
+   return dist(f[0].pts[3],f[1].pts[3])};
  return {comprimentoPalma:LH,larguraPalma:.74*k,espessuraPalma:.47*k,
    alcanceBraco:A.L1+A.L2,aberturaEstimada:.74*k,escala:k,
+   aberturaPincaAberta:span(opened),aberturaPincaFechada:span(pinched),
    dedos:digits};
 }
 function guessStyle(o,site,metrics,preferred){
@@ -235,8 +242,13 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
  const fingerCount=contacts.filter(c=>c.contato).length;
  const required=({pinca:2,tripode:3,gancho:2,potencia:2,lateral:2,apoio:0})[style];
  const thumbIndex=style==="pinca"||style==="lateral"||style==="tripode";
- const validFingers=(!opt.exigirContato||style==="apoio")?true:
-   fingerCount>=required&&(!thumbIndex||(contacts[0].contato&&contacts[1].contato));
+ const polegarIndicadorOpostos=!thumbIndex||(
+   contacts[0].contato&&contacts[1].contato&&
+   dot(contacts[0].normal,contacts[1].normal)<-.15);
+ const support=style!=="apoio"||geometric.contactCount>0;
+ const validFingers=!opt.exigirContato?true:
+   (style==="apoio"?support:
+     fingerCount>=required&&(!thumbIndex||polegarIndicadorOpostos));
  const maxPen=Math.max(geometric.maxHandPen,geometric.maxBodyPen,geometric.maxObstaclePen,geometric.maxSelfNewPen);
  const valid=maxPen<=opt.limitePenetracao&&fit.residual<=.38&&validFingers;
  const score=fit.cost+Math.max(0,maxPen-opt.limitePenetracao)*15+
@@ -244,7 +256,10 @@ function evaluate(it,o,side,site,ground,solids,opt,environment){
  const reasons=[];
  if(fit.residual>.38)reasons.push("Palma não alcança o alvo: "+fit.residual.toFixed(3)+" R");
  if(maxPen>opt.limitePenetracao)reasons.push("Interpenetração "+maxPen.toFixed(3)+" R acima de "+opt.limitePenetracao+" R");
- if(!validFingers)reasons.push("Contatos insuficientes para pegada "+style+": "+fingerCount+"/"+required);
+ if(!validFingers)reasons.push("Contatos incompatíveis com "+style+": "+
+   fingerCount+"/"+required+(thumbIndex&&!polegarIndicadorOpostos?
+    " (polegar e indicador sem oposição de superfícies)":"")+
+    (style==="apoio"?" (palma sem apoio válido)":""));
  return {ok:valid,objeto:o.nome||o.tipo,manequim:it.name,mao:side>0?"esquerda":"direita",
    lado:side,ponto:site.id,pegada:style,contatos:contacts,medidas:metrics,
    posicaoAlvo:target,normal,distanciaInicial:distance,desvioPalma:fit.residual,
