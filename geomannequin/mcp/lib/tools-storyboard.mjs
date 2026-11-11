@@ -10,7 +10,7 @@ const N=z.number().finite(),coord=N.optional();
 const command=z.object({
   acao:z.enum(["criar_manequim","criar_objeto","mover_manequim",
     "girar_manequim","pose_rapida","parametro","camera_ver","lente",
-    "segurar","soltar","avancar_fisica","mover_objeto_3d","girar_objeto_3d"]),
+    "segurar","auto_encaixar","soltar","avancar_fisica","mover_objeto_3d","girar_objeto_3d"]),
   alvo:z.string().max(120).optional(),
   nome:z.string().max(80).optional(),
   tipo:z.string().max(60).optional(),
@@ -18,7 +18,9 @@ const command=z.object({
   chave:z.string().max(80).optional(),
   valor:coord,x:coord,y:coord,z:coord,angulo:coord,
   yaw:coord,pitch:coord,roll:coord,segundos:N.min(0).max(.25).optional(),
-  mao:z.enum(["direita","esquerda"]).optional(),
+  mao:z.enum(["direita","esquerda","auto","ambas"]).optional(),
+  pegada:z.enum(["auto","pinca","potencia","gancho","tripode","lateral","apoio"]).optional(),
+  preservarObjeto:z.boolean().optional(),
   lado:z.enum(["frente","costas","esquerda","direita","3/4 esquerda","3/4 direita"]).optional(),
   area:z.string().max(80).optional(),
   ponto:z.string().max(40).optional(),
@@ -41,6 +43,10 @@ function apply(w,a){
  case "lente":w.camera.lente(req(a.valor,"lente"));break;
  case "segurar":w.cena.segurarObjeto(req(a.alvo,"objeto"),{mao:a.mao??"direita",
    ponto:a.ponto??"auto",modo:a.modo??"preservar",reach:a.reach});break;
+ case "auto_encaixar":w.cena.autoEncaixarObjeto(req(a.alvo,"objeto"),{
+   manequim:a.nome,mao:a.mao??"auto",pegada:a.pegada??"auto",
+   ponto:a.ponto??"auto",reach:a.reach??12,preservarObjeto:a.preservarObjeto!==false
+  });break;
  case "soltar":w.cena.soltarObjeto(req(a.alvo,"objeto"),{modo:a.modo??"manter"});break;
  case "avancar_fisica":w.cena.avancarFisica(a.segundos??1/60);break;
  case "mover_objeto_3d":o().posicao3D(req(a.x,"x"),req(a.y,"y"),req(a.z,"z"));break;
