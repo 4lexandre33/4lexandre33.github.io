@@ -117,7 +117,7 @@ function docs(w) {
   for (const [k, v] of Object.entries(w.EXPRESSOES)) d.push({ id: "expressao/" + k, title: "Expressão do rosto: " + k, text: `m.expressao("${k}") — editar_manequim {expressao: "${k}"}\nValores: ${JSON.stringify(v)}` });
   for (const [k, v] of Object.entries(w.GESTOS)) d.push({ id: "gesto/" + k, title: "Gesto da mão: " + k, text: `m.gesto("direita", "${k}") — editar_manequim {gesto: {lado: "direita", nome: "${k}"}}\nValores: ${JSON.stringify(v)}` });
   d.push({ id: "mcp-controle", title: "MCP tipado V3: preensão, física, câmera e segurança", text:
-    "Ferramentas adicionais: capacidades_mcp, rig_parametro, objeto_3d, grip_sites, preensao, fisica, camera_anatomica, historico_mcp, contato_fisico, artefatos_mcp, roteiro_declarativo. " +
+    "Ferramentas adicionais: capacidades_mcp, rig_parametro, objeto_3d, grip_sites, preensao, fisica, camera_anatomica, historico_mcp, contato_fisico, artefatos_mcp, roteiro_declarativo, operacoes_lote, anatomia_mcp e aparencia_mcp. " +
     "Fluxo: objetos adicionar cadeira; grip_sites listar; preensao segurar por encostoTopo com modo encaixar, mao direita e reach; rig_parametro definir armFlexR; preensao soltar modo queda; fisica simular duracao e passo. " +
     "Segunda mão exige tolerância de alcance; transferência de mão principal não move o objeto instantaneamente. " +
     "Camera_anatomica usa frente, costas, perfis, area da cabeca/tronco/mao. " +
@@ -194,7 +194,7 @@ const INVOCA = {
   contato_fisico: ["Analisando contatos…","Contatos processados"],
   artefatos_mcp: ["Gerando arquivo…","Arquivo gerado"],
   roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
-  aparencia_mcp:["Ajustando aparência…","Aparência pronta"]
+  aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"]
 };
 const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera"]);
 function metaChatGPT(nome) {
