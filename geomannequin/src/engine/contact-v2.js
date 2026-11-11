@@ -44,17 +44,20 @@ function colliderRig(p,{level="fine"}={}){
  const out=base.caps.filter(x=>!/^mao[ED]$/.test(x.nome))
    .map((x,i)=>({...x,id:x.nome+"#"+i,kind:"body"}));
  const S=shape(p),ch=chainSetup(p,S),toWorld=paraMundo(p),A=armDims(p);
+ // Igual à escala geométrica usada em buildPalm/buildFingers e juntasDedos.
+ const handK=.95*A.k*p.armLen;
+ const fingerRadius={polegar:.09,indicador:.075,"médio":.078,anelar:.073,"mínimo":.064};
  const append=(nome,a,b,r,meta={})=>out.push({id:nome+"#"+out.length,nome,a:toWorld(a),b:toWorld(b),r,kind:meta.kind||"palm",side:meta.side,segment:meta.segment,finger:meta.finger,parent:meta.parent});
  for(const side of [1,-1]){
   const label=side>0?"E":"D",hand=comp(ch.A2,armPose(p,ch.F,side).hand);
   const palm=(v)=>applyA(hand,v);
-  append("mao"+label,palm([0,-.10*A.LH,0]),palm([0,-.80*A.LH,.04*A.k]),.235*A.k,{side:label,kind:"palm"});
+  append("mao"+label,palm([0,-.10*A.LH,0]),palm([0,-.80*A.LH,.04*handK]),.27*handK,{side:label,kind:"palm"});
   const F=juntasDedos(p,side);
   for(const d of F){
    const names={polegar:"Polegar",indicador:"Indicador","médio":"Medio",anelar:"Anelar","mínimo":"Minimo"};
    const simple="dedo"+names[d.nome]+label;
    for(let j=0;j<d.pts.length-1;j++){
-    const rr=(d.nome==="polegar"?.090:.078)*A.k*(1-.10*j);
+    const rr=fingerRadius[d.nome]*handK*(1-.10*j);
     append(simple,palm(d.pts[j]),palm(d.pts[j+1]),rr,{side:label,kind:"finger",finger:d.nome,segment:j,parent:"mao"+label});
    }
   }
