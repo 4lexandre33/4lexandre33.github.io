@@ -85,7 +85,7 @@ export function registerControlTools(s,W){
 
  register(s,W,"preensao","Preensão V2/V3 em objetos",
   "Segurar com uma ou duas mãos, transferir controle, soltar e diagnosticar vínculo rígido 6DOF.",{
-   acao:z.enum(["segurar","soltar","transferir","listar","inspecionar","planejar","auto_encaixar","aplicar"]),
+   acao:z.enum(["segurar","soltar","transferir","listar","inspecionar","verificar","planejar","auto_encaixar","reencaixar","aplicar"]),
    objeto:ref.optional(),manequim:z.string().max(80).optional(),
    mao:side.optional(),ponto:z.string().max(40).optional(),
    motor:z.enum(["v2","v3"]).optional(),
@@ -104,6 +104,7 @@ export function registerControlTools(s,W){
   },(w,a)=>{
    if(a.acao==="listar")return w.cena.vinculos();
    if(a.acao==="inspecionar")return w.cena.inspecionarPreensao().filter(v=>!a.objeto||v.objeto===a.objeto);
+   if(a.acao==="verificar")return w.cena.inspecionarAutoGrip(req(a.objeto,"objeto"));
    const autoOpts={manequim:a.manequim,mao:a.mao??"auto",
      pegada:a.pegada??"auto",ponto:a.ponto??"auto",
      reach:a.reach,preservarObjeto:a.preservarObjeto,
@@ -117,6 +118,7 @@ export function registerControlTools(s,W){
        throw Error("A prévia expirou ou a revisão não confere. Replaneje.");
      return safe(w,()=>w.cena.aplicarEncaixe(preview));
    }
+   if(a.acao==="reencaixar")return safe(w,()=>w.cena.reajustarEncaixe(req(a.objeto,"objeto"),autoOpts));
    if(a.acao==="auto_encaixar")return safe(w,()=>
      w.cena.autoEncaixarObjeto(req(a.objeto,"objeto"),autoOpts));
    return safe(w,()=>{
