@@ -10,6 +10,7 @@ import { asset } from "./assets.mjs";
 import { estimarPoses } from "./estimativa.mjs";
 import { registerControlTools } from "./tools-control.mjs";
 import { registerDeclarativeStoryboard } from "./tools-storyboard.mjs";
+import { registerAnatomyTools } from "./tools-anatomy.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -192,7 +193,8 @@ const INVOCA = {
   historico_mcp: ["Consultando histórico…","Histórico processado"],
   contato_fisico: ["Analisando contatos…","Contatos processados"],
   artefatos_mcp: ["Gerando arquivo…","Arquivo gerado"],
-  roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"]
+  roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
+  aparencia_mcp:["Ajustando aparência…","Aparência pronta"]
 };
 const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera"]);
 function metaChatGPT(nome) {
@@ -843,6 +845,7 @@ export function registerAll(server, getWorld, opts = {}) {
   /* ---------- ferramentas MCP por domínio ---------- */
   registerControlTools(server, W);
   registerDeclarativeStoryboard(server, W);
+  registerAnatomyTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },
