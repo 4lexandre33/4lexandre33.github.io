@@ -154,6 +154,7 @@ function apiFor(it){
     /* ===== Contato anatômico V2 ===== */
     contatosDetalhados(opts){chk();return consultarContatosV2(opts).filter(c=>c.a===it.id||c.b===it.id)},
     tocar(alvo,opts={}){chk();const r=tocarV2(it,alvo,opts);if(r.distanciaResidual>.3)LOG.push(["aviso","A mão não alcança precisamente o alvo."]);return r},
+    inspecionarAutoGrip(ref){chk();return cena.inspecionarAutoGrip(ref)},
     autoSegurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
       return cena.autoEncaixarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)})},
     medidasMao(lado="direita"){chk();return medirMao(it.params,ladoNum(lado))},
@@ -302,6 +303,8 @@ function apiObjeto(q){
       return {manequim:owner?.name||null,mao:g.side===1?"esquerda":"direita",
         versao:q.gripV3?3:1,ponto:q.gripV3?.siteId||null,
         segundaMao:q.gripV3?.secundaria?(q.gripV3.secundaria.side===1?"esquerda":"direita"):null}},
+    inspecionarAutoGrip(){chk();return cena.inspecionarAutoGrip(q.id)},
+    reajustarEncaixe(opts={}){chk();return cena.reajustarEncaixe(q.id,opts)},
     autoEncaixarPor(manequim,opts={}){chk();return cena.autoEncaixarObjeto(q.id,
       {...opts,manequim:typeof manequim==="object"?manequim.nome:manequim})},
     segurarPor(manequim,opts={}){chk();cena.segurarObjeto(q.id,{manequim:typeof manequim==="object"?manequim.nome:manequim,...opts});return o},
@@ -468,7 +471,7 @@ const cena={
     {id:"quadros",estado:"parcial",api:["cena.quadros.abrir","cena.quadros.texto","cena.quadros.renderizar","cena.quadros.fila","cena.quadros.baixar"]},
     {id:"blocking",estado:"parcial",api:["cena.blocking","cena.blocking.abrir","cena.blocking.estado"]},
     {id:"colisao",estado:"experimental",api:["cena.contatoV2","cena.contatosFisicos","m.tocar"]},
-    {id:"autoGrip",estado:"experimental",api:["cena.autoEncaixarObjeto","cena.planejarEncaixe",
+    {id:"autoGrip",estado:"experimental",api:["cena.autoEncaixarObjeto","cena.planejarEncaixe","cena.reajustarEncaixe","cena.inspecionarAutoGrip",
       "cena.aplicarEncaixe","m.autoSegurar","m.medidasMao","obj.autoEncaixarPor"],
       limite:"Busca geométrica e IK de mão/dedos; sem forças, tecido ou trajetória CCD exata. Retorna inviável quando necessário."},
     {id:"preensaoV3",estado:"experimental",api:["m.segurar","m.soltar","m.maoEmSite",
@@ -557,6 +560,39 @@ const cena={
     return {ultimo:r,frames:trajetoria?frames:undefined};
   },
 
+  /* A inspeção de um vínculo existente não move dedos nem objetos.
+   * Pode ser chamada após mover o braço para detectar penetrações novas. */
+  inspecionarAutoGrip(objeto){
+    atualizarApoios();
+    const o=acharObjeto(objeto);
+    if(!o)throw Error("Objeto não encontrado.");
+    const g=o.gripV3||o.grip;
+    if(!g)return {status:"livre",objeto:o.nome||o.tipo,necessitaAjuste:false};
+    const it=SCN.list.find(m=>m.id===g.mannequinId);
+    if(!it)throw Error("O objeto não possui um manequim proprietário válido.");
+    if(!o.gripV3)return {status:"vinculo_v2",objeto:o.nome||o.tipo,
+      manequim:it.name,necessitaAjuste:true,
+      aviso:"Utilize AutoGrip para migrar a pegada V2 para contato anatômico."};
+    const ground=restGround(SCN.list[0].params);
+    const options={tolerancia:.055,limitePenetracao:.06};
+    const sides=[g.side,...(g.secundaria?[g.secundaria.side]:[])];
+    const contacts=sides.map(side=>({mao:side>0?"esquerda":"direita",
+      ...validarContatoAutoGrip(it,o,side,ground,options)}));
+    const scene=validarCenaAutoGrip(it,o,ground,
+      {objetos:SCN.objetos,manequins:SCN.list},it.params,options,sides);
+    const ok=scene.ok&&contacts.every(c=>c.ok);
+    const fingers=contacts.map(c=>({mao:c.mao,contatos:c.contatos,
+      dedos:c.contatosPorDedo,palma:c.palmaContato,penetracao:c.maxPenetracao}));
+    return {status:ok?"contato_geometrico":"reajuste_necessario",
+      objeto:o.nome||o.tipo,manequim:it.name,necessitaAjuste:!ok,
+      pegada:o.gripV3.autoGrip?.pegada??"manual",
+      ponto:g.siteId,versao:3,porMao:fingers,penetracaoCena:scene.maxPenetracao,
+      limites:options,
+      aviso:"Contato nos colisores simplificados; forças de preensão não avaliadas."};
+  },
+  reajustarEncaixe(objeto,opts={}){
+    return cena.autoEncaixarObjeto(objeto,opts);
+  },
   /* AutoGrip: plano puro seguido de confirmação atômica do vínculo Grip V3. */
   planejarEncaixe(objeto,opts={}){
     atualizarApoios();
