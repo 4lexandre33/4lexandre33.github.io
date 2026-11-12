@@ -26,8 +26,11 @@ const AU = [
   ["teethClench", "Dentes cerrados (lábios abertos, dentes juntos)", 0, 1, "dentesCerrados"]
 ];
 const AU_KEYS = AU.map(a => a[0]);
-const AU_ZERO = Object.freeze(Object.fromEntries(AU_KEYS.map(k => [k, 0])));
-const AU_ALIAS = Object.fromEntries(AU.map(a => [a[4], a[0]]));
+/* estados do rosto que não são músculos (também resetados por cada expressão) */
+const ESTADO_ROSTO = [["eyeBags", "Olheiras e bolsa sob os olhos (cansaço)", 0, 1, "olheiras"]];
+const ESTADO_KEYS = ESTADO_ROSTO.map(a => a[0]);
+const AU_ZERO = Object.freeze(Object.fromEntries([...AU_KEYS, ...ESTADO_KEYS].map(k => [k, 0])));
+const AU_ALIAS = Object.fromEntries([...AU, ...ESTADO_ROSTO].map(a => [a[4], a[0]]));
 const n = v => (Number.isFinite(v) ? v : 0);
 
 /* valores efetivos de um lado do rosto */
@@ -45,9 +48,9 @@ function ladoRosto(p, s) {
 }
 /* unidades sem lado */
 function rostoGeral(p) {
-  return { nose: clamp(n(p.noseWrinkle), 0, 1), press: clamp(n(p.lipPress), 0, 1), pout: clamp(n(p.pout), 0, 1), clench: clamp(n(p.teethClench), 0, 1) };
+  return { bags: clamp(n(p.eyeBags), 0, 1), nose: clamp(n(p.noseWrinkle), 0, 1), press: clamp(n(p.lipPress), 0, 1), pout: clamp(n(p.pout), 0, 1), clench: clamp(n(p.teethClench), 0, 1) };
 }
 /* valor ao longo da boca: mistura contínua do lado direito (x = −w) para o esquerdo (x = +w) */
 function aoLongo(vL, vR, x, w) { const t = clamp(x / Math.max(1e-6, w), -1, 1); return (vL + vR) / 2 + (vL - vR) / 2 * t; }
 
-export { AU, AU_KEYS, AU_ZERO, AU_ALIAS, ladoRosto, rostoGeral, aoLongo };
+export { AU, AU_KEYS, ESTADO_ROSTO, ESTADO_KEYS, AU_ZERO, AU_ALIAS, ladoRosto, rostoGeral, aoLongo };

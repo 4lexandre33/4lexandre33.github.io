@@ -1,6 +1,6 @@
 /* GeoMannequin — definição dos parâmetros (faixas, rótulos), camadas, nomes em português e aplicação de valores */
 import { CAMK, WORLDK } from "./modelo.js";
-import { FLEX_NOMES, ampliar, clamp, AU, AU_KEYS, AU_ALIAS } from "../engine/index.js";
+import { FLEX_NOMES, ampliar, clamp, AU, AU_KEYS, AU_ALIAS, ESTADO_ROSTO, ESTADO_KEYS } from "../engine/index.js";
 
 const fr=(x,d)=>x.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const SL=[
@@ -131,7 +131,7 @@ const SL=[
   {k:"blush",g:"slFace",label:"Rosto corado (vergonha)",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"tears",g:"slFace",label:"Lágrimas (choro)",min:0,max:1,step:0.01,u:"%",pct:true},
   /* unidades de ação do rosto, por lado (somam por cima dos controles gerais acima) */
-  ...AU.map(([k,label,min,max])=>({k,g:"slFace",label,min,max,step:0.01,u:"%",pct:true})),
+  ...[...ESTADO_ROSTO,...AU].map(([k,label,min,max])=>({k,g:"slFace",label,min,max,step:0.01,u:"%",pct:true})),
   {k:"fThMcpL",g:"slFingers",label:"Mão esquerda, polegar: base (MCF) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fThIpL",g:"slFingers",label:"Mão esquerda, polegar: ponta (IF) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fThAbdL",g:"slFingers",label:"Mão esquerda, polegar: base afastar da palma + / encostar −",min:-1,max:1,step:0.01,u:"%",pct:true},
@@ -300,7 +300,7 @@ export function iniciarParametros(){
     "hipFlexL","hipFlexR","hipAbdL","hipAbdR","hipRotL","hipRotR","kneeFlexL","kneeFlexR","ankleFlexL","ankleFlexR","ankleTiltL","ankleTiltR","toesL","toesR","ground",
     "lumFlex","lumSide","lumTwist","thoFlex","thoSide","thoTwist","neckFlex","neckSide","neckTwist","wristDevL","wristDevR",
     "fThL","fInL","fMeL","fAnL","fMiL","fThR","fInR","fMeR","fAnR","fMiR","fSpreadL","fSpreadR","thumbOppL","thumbOppR","bodyPitch","bodyRoll","bodyLift",
-    "halluxL","halluxR","footAddL","footAddR","tibiaRotL","tibiaRotR","shTensL","shTensR","scapRotL","scapRotR","jawOpen","jawSide","smile","eyeYaw","eyePitch","eyeLid","browUp","browIn","blush","tears",...AU_KEYS,
+    "halluxL","halluxR","footAddL","footAddR","tibiaRotL","tibiaRotR","shTensL","shTensR","scapRotL","scapRotR","jawOpen","jawSide","smile","eyeYaw","eyePitch","eyeLid","browUp","browIn","blush","tears",...AU_KEYS,...ESTADO_KEYS,
     "fThMcpL","fThIpL","fThAbdL","fInMcpL","fInIpL","fInAbdL","fMeMcpL","fMeIpL","fMeAbdL","fAnMcpL","fAnIpL","fAnAbdL","fMiMcpL","fMiIpL","fMiAbdL","fThMcpR","fThIpR","fThAbdR","fInMcpR","fInIpR","fInAbdR","fMeMcpR","fMeIpR","fMeAbdR","fAnMcpR","fAnIpR","fAnAbdR","fMiMcpR","fMiIpR","fMiAbdR"]);
 }
 

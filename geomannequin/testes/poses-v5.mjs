@@ -117,6 +117,21 @@ const svgDe = w => { const r = renderSvg(w, {}); return typeof r === "string" ? 
     let nanAU = 0; for (const modelo of ["v5", "v3", "v1"]) { const wn = createWorld(); wn.cena.ativo.cabeca(modelo); wn.cena.ativo.rosto(Object.fromEntries(AU.map(a => [a[4], a[3]]))); wn.camera.girar(30, 0); if (svgDe(wn).includes("NaN")) nanAU++; }
     ok(nanAU === 0, "todas as unidades no máximo: sem NaN na V5, V3 e V1");
   }
+  /* sobrancelhas exageradas (A4) e rugas estilo mangá (A5) */
+  { const v5 = f => { const w = createWorld(); w.cena.ativo.cabeca("v5"); f(w.cena.ativo); return svgDe(w); };
+    const fib = (s, id) => (grupo(s, id).match(/stroke-width:0\.5/g) || []).length;
+    const ra = v5(m => m.expressao("raiva")), su = v5(m => m.expressao("surpresa")), ri = v5(m => m.expressao("riso")), ca = v5(m => m.rosto({ olheiras: 1 }));
+    const contido = v5(m => m.rosto({ sorriso: -0.9, labiosApertar: 0.7, franzir: -0.8 })), nojo = v5(m => m.rosto({ labioCimaEsq: 0.9, narizFranzir: 0.9 }));
+    ok(fib(ra, "feicoes") >= fib(n, "feicoes") + 2, "raiva: rugas entre as sobrancelhas (" + fib(n, "feicoes") + " → " + fib(ra, "feicoes") + ")");
+    ok(fib(su, "feicoes") >= fib(n, "feicoes") + 2, "surpresa: rugas da testa");
+    ok(fib(ri, "olhos") >= fib(n, "olhos") + 4 && !/#fff/.test(grupo(ri, "olhos")), "riso: pés de galinha e bochecha subindo, olhos fechados");
+    ok((grupo(ca, "olhos").match(/<path/g) || []).length >= (grupo(n, "olhos").match(/<path/g) || []).length + 3, "olheiras: sombra e bolsa sob os dois olhos");
+    ok(fib(contido, "feicoes") >= fib(n, "feicoes") + 4, "choro contido: queixo enrugado e cantos apertados");
+    ok(fib(nojo, "feicoes") >= fib(n, "feicoes") + 5, "nojo: nariz franzido e sulco nariz-boca");
+    const yBrow = s => { const m0 = grupo(s, "feicoes").match(/<path d="([^"]*)" style="fill:[^"]*;stroke:none"\/>/); if (!m0) return 0; const ys = m0[1].match(/-?\d+\.?\d*/g).map(Number).filter((_, i) => i % 2); return ys.reduce((x, y) => x + y, 0) / ys.length; };
+    ok(yBrow(su) < yBrow(n) - 2 && yBrow(ra) > yBrow(n) + 2, "sobrancelhas: mais altas na surpresa e mais baixas na raiva (altura média)");
+    ok(DEF.eyeBags === 0, "olheiras começam em 0");
+  }
   const pv3 = pontosDoCorpo({ ...DEF, jawOpen: 0.8, smile: 0.6 }).rosto, pv5 = pontosDoCorpo({ ...DEF, headModel: "v5_anime", jawOpen: 0.8, smile: 0.6 }).rosto;
   ok(pv5.length === 70 && pv5[54][0] - pv5[48][0] > (pv3[54][0] - pv3[48][0]) * 1.2 && pv5[39][0] - pv5[36][0] > (pv3[39][0] - pv3[36][0]) * 1.2, "OpenPose do rosto acompanha olhos e boca grandes da V5");
   const w = createWorld(); ["riso", "choro", "vergonha"].forEach(e => w.cena.ativo.expressao(e)); ok(w.SCN.list[0].params.blush === 1, "expressões novas: riso, choro, vergonha");

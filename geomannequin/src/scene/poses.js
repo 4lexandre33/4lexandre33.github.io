@@ -1,7 +1,7 @@
 /* GeoMannequin — poses rápidas, tipos corporais, rostos, posturas e proteção dos braços */
 import { P } from "./modelo.js";
 import { BODIES } from "./biotipos.js";
-import { ISQUIO, ampliar, nivelFlex, apoiarContatos, aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, legClear, legDims, legPose, minAbd, pushOut, shape, AU_KEYS } from "../engine/index.js";
+import { ISQUIO, ampliar, nivelFlex, apoiarContatos, aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, legClear, legDims, legPose, minAbd, pushOut, shape, AU_KEYS, ESTADO_KEYS } from "../engine/index.js";
 
 /* o braço e a mão não atravessam a cabeça nem o tronco */
 const GUARD=/^(armAbd|armFlex|armRot|elbow|pron|wrist|spine|pelvis|shElev|shProt|head|hip|knee|ankle|toes)/;
@@ -69,7 +69,7 @@ const EXPRESSOES={
   vergonha:{jawOpen:0,jawSide:0.15,smile:0.25,eyeLid:0.3,browUp:0.15,browIn:-0.45,blush:1,tears:0,eyeYaw:0.55,eyePitch:-0.35}
 };
 /* toda expressão zera corar, lágrimas e as unidades de ação que não usa, para não herdar da anterior */
-Object.values(EXPRESSOES).forEach(e=>{if(e.blush===undefined)e.blush=0;if(e.tears===undefined)e.tears=0;for(const k of AU_KEYS)if(e[k]===undefined)e[k]=0});
+Object.values(EXPRESSOES).forEach(e=>{if(e.blush===undefined)e.blush=0;if(e.tears===undefined)e.tears=0;for(const k of [...AU_KEYS,...ESTADO_KEYS])if(e[k]===undefined)e[k]=0});
 const POSE0={spineFlex:0,spineSide:0,spineTwist:0,pelvisTilt:0,pelvisSide:0,pelvisTwist:0,hipFlexL:0,hipFlexR:0,hipAbdL:3,hipAbdR:3,hipRotL:0,hipRotR:0,kneeFlexL:0,kneeFlexR:0,ankleFlexL:0,ankleFlexR:0,ankleTiltL:0,ankleTiltR:0,toesL:0,toesR:0,
   armAbdL:12,armAbdR:12,armFlexL:0,armFlexR:0,armRotL:0,armRotR:0,elbowL:0,elbowR:0,pronL:0,pronR:0,wristL:0,wristR:0,handCurlL:0.3,handCurlR:0.3,
   headYaw:0,headPitch:0,headRoll:0,shElevL:0,shElevR:0,shProtL:0,shProtR:0,
