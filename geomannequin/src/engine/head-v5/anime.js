@@ -83,14 +83,28 @@ function olhosAnime(ctx) {
       bochechaELagrimas(E, Xq, q => arco(q) - 0.02, k, s);
       return;
     }
+    /* cavidade da órbita: sombra entre a pálpebra de cima e a sobrancelha, dá recuo ao globo */
+    fillP(arr(q => E(Xq(q), up(q) + 0.016 * k, 0.009), -0.1, 1.1, 20)
+      .concat(arr(q => E(Xq(q), up(q) + 0.05 * k, 0.009), 1.1, -0.1, 20)), pal.shade1, 0.42);
     /* esclera */
     fillP(arr(q => E(Xq(q), up(q), 0.01), 0, 1, 30).concat(arr(q => E(Xq(q), lo(q), 0.01), 1, 0, 30)), pal.fill);
+    /* esclera mais escura nas bordas (globo curvo): cantos de dentro e de fora */
+    const cornerShade = (q0, q1) => fillP(arr(q => E(Xq(q), up(q), 0.0105), q0, q1, 10)
+      .concat(arr(q => E(Xq(q), lo(q), 0.0105), q1, q0, 10)), pal.shade1, 0.4);
+    cornerShade(0, 0.13); cornerShade(0.87, 1);
+    /* sombra da pálpebra de cima sobre o branco do olho */
+    fillP(arr(q => E(Xq(q), up(q), 0.0112), 0.04, 0.96, 24)
+      .concat(arr(q => E(Xq(q), up(q) - 0.03 * k, 0.0112), 0.96, 0.04, 24)), pal.shade1, 0.5);
     /* íris alta e pupila: o olhar desloca; surpresa/medo encolhem a pupila */
     const rix = 0.36 * w, riy = Math.min(0.62 * (hu + hl0), 0.95 * hu + hl);
     const gx = G.gx(s), gy = G.gy;
     const dentro = (ex, ey) => { const q = clamp(ex / w + 0.5, 0, 1); return clamp(ey, lo(q) * 0.97, up(q) * 0.97); };
-    const iris = arr(a => { const ex = gx + rix * Math.cos(a), ey = gy + riy * Math.sin(a); return E(ex, dentro(ex, ey), 0.014); }, 0, 2 * Math.PI, 40);
-    fillP(iris, pal.shade3, 0.95);
+    const irisPts = (rx, ry, off) => arr(a => { const ex = gx + rx * Math.cos(a), ey = gy + ry * Math.sin(a); return E(ex, dentro(ex, ey), off); }, 0, 2 * Math.PI, 40);
+    /* anel externo escuro (limbo) por baixo, íris um pouco menor por cima */
+    fillP(irisPts(rix, riy, 0.0135), pal.ink, 0.9);
+    fillP(irisPts(rix * 0.84, riy * 0.84, 0.014), pal.shade3, 0.95);
+    /* faixa clara embaixo: luz refletida de baixo na parte inferior da íris */
+    fillP(arr(a => { const ex = gx + rix * 0.72 * Math.cos(a), ey = gy + riy * 0.72 * Math.sin(a); return E(ex, dentro(ex, ey), 0.0142); }, Math.PI * 1.08, Math.PI * 1.92, 16), pal.shade1, 0.5);
     /* sombra da pálpebra de cima sobre a íris (metade superior mais escura) */
     fillP(arr(a => { const ex = gx + rix * Math.cos(a), ey = gy + riy * 0.15 + riy * 0.85 * Math.abs(Math.sin(a)); return E(ex, dentro(ex, ey), 0.0145); }, 0, Math.PI, 20)
       .concat(arr(q => E(gx + rix * (1 - 2 * q), dentro(gx + rix * (1 - 2 * q), gy + riy * 0.15), 0.0145), 0, 1, 8)), pal.ink, 0.35);
@@ -106,6 +120,8 @@ function olhosAnime(ctx) {
     /* pálpebra de baixo: traço curto na metade de fora; prega da pálpebra acima */
     curve("feat", arr(q => E(Xq(q), lo(q), 0.013), 0.45, 1, 14));
     curve("fibra", arr(q => E(Xq(q), up(q) + esp(q) + 0.03 * k, 0.012), 0.2, 0.9, 16));
+    /* prega dupla: segunda dobra, mais alta e mais curta */
+    curve("fibra", arr(q => E(Xq(q), up(q) + esp(q) + 0.058 * k, 0.012), 0.3, 0.82, 14));
     bochechaELagrimas(E, Xq, lo, k, s);
   });
 }
@@ -154,20 +170,38 @@ function feicoesAnime(ctx) {
     const y = x => B.my + 0.03 * (B.ss - B.br) * Math.pow(Math.abs(x / w), 2) - 0.008 * (B.ss - B.br) * (1 - Math.pow(x / w, 2));
     curve("feat", arr(x => H(x, y(x), 0.02), -w, w, 24));
     if (B.ss > 0.5) [-1, 1].forEach(s => curve("fibra", arr(u => H(s * (w + 0.012 * u), y(s * w) + 0.01 - 0.02 * u, 0.018), 0, 1, 4)));
+    /* leve volume do lábio de baixo e comissuras, também com a boca fechada */
+    fillP(arr(x => H(x, y(x) - 0.006, 0.019), -w * 0.78, w * 0.78, 16).concat(arr(x => H(x, y(x) - 0.028, 0.019), w * 0.78, -w * 0.78, 16)), pal.coral, 0.22);
+    [-1, 1].forEach(s => fillP(arr(a => H(s * (w + 0.004) + 0.008 * Math.cos(a), y(s * w) + 0.006 * Math.sin(a), 0.021), 0, 2 * Math.PI, 8), pal.shade2, 0.45));
     curve("fibra", arr(x => H(x, B.my - 0.05, 0.016), -w * 0.35, w * 0.35, 8));
     return;
   }
   const cav = arr(x => H(x, B.cima(x), 0.03), -w, w, 40).concat(arr(x => H(x, B.baixo(x), 0.03), w, -w, 40));
   fillP(cav, pal.ink, 0.97);
-  /* língua no assoalho */
-  if (B.aberto > 0.18) { const tw = w * 0.62; fillP(arr(x => H(x, B.linguaSup(x), 0.034), -tw, tw, 24).concat(arr(x => H(x, B.baixo(x) + 0.004, 0.034), tw, -tw, 24)), pal.coral, 0.85); }
+  /* fundo da boca mais escuro: o vão entre as arcadas, mais estreito que os dentes */
+  const bw = w * 0.62, fundo = x => B.aberto > 0.6 ? B.denteInf(x) : B.baixo(x);
+  /* oval: as pontas fecham no dente de cima, sem bordas laterais retas */
+  fillP(arr(x => H(x, B.denteSup(x), 0.029), -bw, bw, 20).concat(arr(x => {
+    const t = Math.sqrt(Math.max(0, 1 - (x / bw) ** 2)); return H(x, B.denteSup(x) + (fundo(x) - B.denteSup(x)) * 0.85 * t, 0.029); }, bw, -bw, 20)), pal.ink);
+  /* língua no assoalho, com sulco central e brilho de volume */
+  if (B.aberto > 0.18) {
+    const tw = w * 0.62;
+    fillP(arr(x => H(x, B.linguaSup(x), 0.034), -tw, tw, 24).concat(arr(x => H(x, B.baixo(x) + 0.004, 0.034), tw, -tw, 24)), pal.coral, 0.85);
+    fillP(arr(x => H(x, B.linguaSup(x) - 0.004, 0.0345), -tw * 0.5, tw * 0.5, 12).concat(arr(x => H(x, B.linguaSup(x) - 0.016, 0.0345), tw * 0.5, -tw * 0.5, 12)), "#F2B8B8", 0.45);
+    curve("fibra", arr(u => H(0.004 * Math.sin(3 * u), B.linguaSup(0) - 0.004 - (B.linguaSup(0) - B.baixo(0)) * 0.7 * u, 0.036), 0, 1, 6));
+  }
   /* dentes de cima (maxila) sempre que abre; de baixo (mandíbula) com a boca bem aberta ou no grito */
   const dw = w * 0.82;
   fillP(arr(x => H(x, B.cima(x) - 0.002, 0.036), -dw, dw, 30).concat(arr(x => H(x, B.denteSup(x), 0.036), dw, -dw, 30)), "#F4EFE6", 0.98);
+  /* sombra do lábio de cima sobre os dentes */
+  fillP(arr(x => H(x, B.cima(x) - 0.002, 0.037), -dw * 0.96, dw * 0.96, 24).concat(arr(x => H(x, B.cima(x) - 0.002 - 0.45 * (B.cima(x) - B.denteSup(x)), 0.037), dw * 0.96, -dw * 0.96, 24)), pal.shade2, 0.45);
   if (B.aberto > 0.6) { const di = w * 0.6; fillP(arr(x => H(x, B.denteInf(x), 0.036), -di, di, 24).concat(arr(x => H(x, B.baixo(x) + 0.002, 0.036), di, -di, 24)), "#ECE4D8", 0.95); }
   curve("feat", cav);
-  /* lábio de baixo: só uma sombra curta sob a boca */
-  curve("fibra", arr(x => H(x, B.baixo(0) - 0.045, 0.016), -w * 0.3, w * 0.3, 8));
+  /* comissuras: dobra pequena e escura em cada canto */
+  [-1, 1].forEach(s => fillP(arr(a => H(s * (w + 0.004) + 0.009 * Math.cos(a), B.cima(s * w) - 0.004 + 0.007 * Math.sin(a), 0.033), 0, 2 * Math.PI, 8), pal.shade2, 0.5));
+  /* leve preenchimento do lábio de baixo e sombra sob a boca */
+  fillP(arr(x => H(x, B.baixo(x) - 0.004, 0.02), -w * 0.78, w * 0.78, 20).concat(arr(x => H(x, B.baixo(x) - 0.03, 0.02), w * 0.78, -w * 0.78, 20)), pal.coral, 0.22);
+  curve("fibra", arr(x => H(x, B.baixo(0) - 0.045, 0.016), -w * 0.35, w * 0.35, 8));
 }
 
 export { olhosAnime, feicoesAnime, bocaAnime, geoOlhoAnime, LEVANTA as LEVANTA_V5 };

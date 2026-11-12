@@ -92,6 +92,12 @@ const svgDe = w => { const r = renderSvg(w, {}); return typeof r === "string" ? 
   ok(/#F4EFE6/.test(grupo(g, "feicoes")) && (grupo(g, "feicoes").match(/<path/g) || []).length > (grupo(n, "feicoes").match(/<path/g) || []).length + 2, "V5 grito: cavidade, língua e dentes");
   ok(!/#fff/.test(grupo(r, "olhos")), "V5 riso: olhos fechados em arco (sem íris)");
   ok(/opacity:0\.[1-9]/.test(grupo(c, "olhos")) && (c.match(/opacity/g) || []).length > (n.match(/opacity/g) || []).length, "V5 choro: lágrimas");
+  /* profundidade (A1/A2): órbita, cantos e sombra da pálpebra na esclera, limbo escuro, faixa clara e prega dupla;
+     boca com fundo escuro, sombra do lábio nos dentes, língua com brilho e sulco, comissuras e lábio de baixo */
+  const nPath = (s, id) => (grupo(s, id).match(/<path/g) || []).length;
+  ok(nPath(n, "olhos") >= 2 * 15 && (grupo(n, "olhos").match(/opacity:0\.4/g) || []).length >= 4, "V5 olhos com profundidade: " + nPath(n, "olhos") + " formas");
+  ok(/#F2B8B8/.test(grupo(g, "feicoes")) && /#F2B8B8/.test(grupo(r, "feicoes")) && !/#F2B8B8/.test(grupo(n, "feicoes")), "V5 boca aberta: língua com brilho (só quando abre)");
+  ok(nPath(g, "feicoes") >= nPath(n, "feicoes") + 6, "V5 grito: fundo, sombra nos dentes, sulco, comissuras e lábio (" + nPath(n, "feicoes") + " → " + nPath(g, "feicoes") + ")");
   const pv3 = pontosDoCorpo({ ...DEF, jawOpen: 0.8, smile: 0.6 }).rosto, pv5 = pontosDoCorpo({ ...DEF, headModel: "v5_anime", jawOpen: 0.8, smile: 0.6 }).rosto;
   ok(pv5.length === 70 && pv5[54][0] - pv5[48][0] > (pv3[54][0] - pv3[48][0]) * 1.2 && pv5[39][0] - pv5[36][0] > (pv3[39][0] - pv3[36][0]) * 1.2, "OpenPose do rosto acompanha olhos e boca grandes da V5");
   const w = createWorld(); ["riso", "choro", "vergonha"].forEach(e => w.cena.ativo.expressao(e)); ok(w.SCN.list[0].params.blush === 1, "expressões novas: riso, choro, vergonha");
