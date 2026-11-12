@@ -54,6 +54,9 @@ async function suite(client, tag) {
     r = await call("biblioteca_item", { acao: "aplicar", item: JSON.stringify(it) }); check(!r.isError && /aplicada/.test(text(r)), "biblioteca_item: aplicar" + (r.isError ? ": " + text(r) : "")); }
   r = await call("descanso", {});
   check(!r.isError && /descanso/.test(text(r)), "descanso: volta à pose de descanso" + (r.isError ? ": " + text(r) : ""));
+  { const w0 = null; }
+  r = await call("segurar_como", { objeto: "nada-aqui", pegada: "abracado" });
+  check(r.isError && /não encontrado/i.test(text(r)), "segurar_como: avisa objeto que não existe");
   r = await call("estado_pose", {});
   check(!r.isError && (r.content || []).some(c => c.type === "image") && /Braço esquerdo/.test(text(r)) && r.structuredContent.estado.manequins.length >= 1, "estado_pose: texto, JSON e imagem" + (r.isError ? ": " + text(r) : ""));
   r = await call("manual_poses_ia", { curto: true });

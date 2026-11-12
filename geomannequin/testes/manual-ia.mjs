@@ -92,5 +92,14 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
   recs.forEach(r => { try { m7.pose(JSON.parse("{" + r.replace(/(\w+):/g, '"$1":') + "}")); } catch (e) { ruim = r + ": " + e.message; } });
   ok(recs.length >= 6 && !ruim, "receitas de cabeça e pescoço do manual funcionam" + (ruim ? " (" + ruim + ")" : ""));
   m7.poseRapida("empe"); m7.pose({ pescocoFrente: 20, pescocoGirar: -30 }); ok(/Pescoço: dobrado para a frente.*girado para a direita dele/.test(w7.cena.estadoIA()), "estado descreve o pescoço em palavras"); }
+/* 9. pegadas: cada uma segura sem atravessar o corpo e a mão alcança */
+{ const casos = [["forca", "bastao", {}], ["pinca", "cilindro", { raio: 0.06, alt: 2.6 }], ["gancho", "caixa", { larg: 2.2, prof: 1.2, alt: 2.6 }], ["bandeja", "caixa", { larg: 3, prof: 3, alt: 0.25 }],
+    ["duasMaos", "caixa", { larg: 3.4, prof: 2.6, alt: 2.4 }], ["abracado", "caixa", { larg: 3.6, prof: 3, alt: 3.2 }], ["acimaDaCabeca", "caixa", { larg: 4.5, prof: 3, alt: 1.2 }],
+    ["noOmbro", "cilindro", { raio: 0.6, alt: 9 }], ["debaixoDoBraco", "caixa", { larg: 2.4, prof: 0.4, alt: 3.2 }], ["noQuadril", "cilindro", { raio: 1.4, alt: 2.2 }], ["empurrando", "caixa", { larg: 4, prof: 3, alt: 4 }], ["espada", "espada", {}]];
+  const ruins = [];
+  for (const [peg, tipo, med] of casos) { const w8 = createWorld(), m8 = w8.cena.ativo; w8.cena.objeto(tipo, { x: 6, nome: "Obj", ...med });
+    try { const r = m8.segurarComo("Obj", peg); if (r.alcance !== "ok" || r.atravessa.length) ruins.push(peg + ": " + r.alcance + " " + r.atravessa.join(","));
+      m8.pose({ bracoDirFrente: (w8.SCN.list[0].params.armFlexR || 0) + 10 }); /* o objeto segue a mão */ } catch (e) { ruins.push(peg + ": " + e.message); } }
+  ok(!ruins.length, "12 pegadas: mão alcança e o objeto não atravessa o corpo" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);

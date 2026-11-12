@@ -4,6 +4,7 @@
 import { SL, POSEKEYS } from "./parametros.js";
 import { POSE_GRUPOS, NOMES_EXPRESSOES, BPOSES, EXPRESSOES } from "./poses.js";
 import { GRUPOS_ROSTO, chavesRosto, chavesFormato } from "./rosto-codigo.js";
+import { PEGADAS } from "./pegadas.js";
 import { REF } from "./ajuda.js";
 import { iaControle, estadoParaIA } from "./estado-ia.js";
 import { GESTOS, AU, CATALOGO, CATEGORIAS, PARTES_EFEITO, MODELOS_CABECA } from "../engine/index.js";
@@ -242,6 +243,13 @@ function manualPosesIA(opts = {}) {
   add("- Para espacate, ponte, escorpião: `m.flexibilidade(2)` antes da pose.");
   add("- Colisão entre partes: `m.validarPose()` lista o que atravessa. Entre manequins: `cena.resolverColisoes()`.\n");
   manualRosto(add);
+  add("## 7b. Objetos na mão: todas as formas de segurar");
+  add("1. Crie o objeto: `cena.objeto(\"caixa\", { nome: \"Caixa\", larg: 3.4, prof: 2.6, alt: 2.4 })` (unidades R ≈ 11,4 cm; o corpo tem ≈ 16,5 R). Formas: `caixa` (qualquer bloco: placa fina, livro, bandeja, tampo, mala), `cilindro` (`raio`, `alt`: varinha `raio 0.06`, garrafa, tora, cesto), e prontos: `bastao`, `cajado`, `espada`, `cadeira`, `mesa`…");
+  add("2. Segure de um jeito: `m.segurarComo(\"Caixa\", \"abracado\", { mao: \"direita\" })`. O app põe os braços por IK, fecha a mão com o gesto certo, prende o objeto à mão (ele acompanha a mão quando você muda a pose) e **empurra o objeto para fora do corpo** se ele atravessar o tronco, a cabeça ou as pernas. O retorno diz se a mão alcançou e quanto foi afastado.");
+  add("3. Pegadas (`cena.pegadas()` lista):");
+  Object.entries(PEGADAS).forEach(([k, d]) => add("   - `" + k + "`: " + d + "."));
+  add("4. Soltar: `m.soltar(\"Caixa\")`. Mudar de jeito: chame `segurarComo` de novo com outra pegada. Uma mão só segura uma coisa por vez.");
+  add("5. Dicas: objeto grande demais para os braços → use `abracado` ou `acimaDaCabeca`; longo e pesado → `noOmbro`; fino → `pinca`; com alça → `gancho`. Para virar o corpo enquanto segura, gire o manequim (`m.girar`) depois de segurar.\n");
   add("## 9. Efeitos especiais (opcional)");
   add("Padrão em preto e branco (nanquim de mangá); `colorido: true` liga a cor. `nivel` 1–5. Presos a uma parte: `m.efeito(\"impacto_contato\", { em: \"peDir\" })`; no chão: `cena.efeito(\"cratera\", { em: { modo: \"chao\", x: 0, z: 0 } })`; na tela: `cena.efeito(\"concentracao\")`; de outro manequim: `em: \"Leo.peito\"`. Direção: `para: \"Leo\"`.");
   add("- Partes para `em`: " + PARTES_EFEITO.map(p => "`" + p + "`").join(", ") + ".");

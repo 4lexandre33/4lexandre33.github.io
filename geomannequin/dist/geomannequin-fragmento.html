@@ -735,6 +735,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         <input id="colV3Reach" type="number" min="0.2" max="40" step="0.5" value="5" style="max-width:75px">
         <label for="colV3Modo">Ao segurar</label>
         <select id="colV3Modo" aria-label="Modo de captura"><option value="preservar">Preservar objeto no lugar</option><option value="encaixar">Aproximar a palma (IK)</option></select>
+        <div class="sel-linha"><label for="pegTipo">Como segurar</label><select id="pegTipo" aria-label="Jeito de segurar"></select></div>
+        <button type="button" id="pegSegurar" class="primary" title="Segura o objeto selecionado do jeito escolhido (braços por IK, sem atravessar o corpo)">Segurar desse jeito</button>
         <button type="button" id="colV2Segurar">Segurar objeto selecionado (V3)</button>
         <div class="group poses" role="group" aria-label="Encaixe anatômico automático">
           <label for="colAutoMao">AutoGrip: mão</label>
@@ -1066,7 +1068,7 @@ pre.cmdout .ok{color:var(--cobalt)}
 </script>
 <script>
 (() => {
-  // geomannequin/src/scene/ambiente.js
+  // src/scene/ambiente.js
   var $ = (id) => document.getElementById(id);
   var ganchos = {};
   function definirGanchos(o) {
@@ -1085,7 +1087,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (ganchos.updateModeButtons) return ganchos.updateModeButtons(...a);
   }
 
-  // geomannequin/src/scene/paletas.js
+  // src/scene/paletas.js
   var PAL_SCREEN = { cobalt: "var(--g-blue)", coral: "var(--g-red)", ink: "var(--m-ink)", fill: "var(--fill)", shade1: "var(--shade1)", shade2: "var(--shade2)", shade3: "var(--shade3)" };
   var STYLES = {
     creme: { cobalt: "#8DB0E2", coral: "#E29A9F", ink: "#3E434D", fill: "#F6F4EA", shade1: "#E4E4EB", shade2: "#CBCCD9", shade3: "#A9ABBB" },
@@ -1105,7 +1107,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return PAL_EXPORT = v;
   }
 
-  // geomannequin/src/engine/matematica.js
+  // src/engine/matematica.js
   var D = Math.PI / 180;
   var W = 600;
   var H = 700;
@@ -1162,7 +1164,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var mv = (M, v) => [M[0] * v[0] + M[1] * v[1] + M[2] * v[2], M[3] * v[0] + M[4] * v[1] + M[5] * v[2], M[6] * v[0] + M[7] * v[1] + M[8] * v[2]];
 
-  // geomannequin/src/engine/head/constants.js
+  // src/engine/head/constants.js
   var PI2 = Math.PI * 2;
   var clamp2 = (v, a, b) => Math.min(b, Math.max(a, v));
   var mix = (a, b, t) => a + (b - a) * t;
@@ -1176,7 +1178,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   };
   var gauss2 = (x, c, s) => Math.exp(-0.5 * Math.pow((x - c) / Math.max(1e-5, s), 2));
 
-  // geomannequin/src/engine/head/profile.js
+  // src/engine/head/profile.js
   var hermite = (u, v0, v1, m0, m1, h) => {
     const t = clamp2(u, 0, 1), t2 = t * t, t3 = t2 * t;
     return (2 * t3 - 3 * t2 + 1) * v0 + (t3 - 2 * t2 + t) * h * m0 + (-2 * t3 + 3 * t2) * v1 + (t3 - t2) * h * m1;
@@ -1213,7 +1215,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { front: Math.max(0, front), back: Math.max(0, back) };
   }
 
-  // geomannequin/src/engine/head/sections.js
+  // src/engine/head/sections.js
   function ringV2(y, p, S) {
     const k = clamp2(p.headScale || 1, 0.9, 1.1), t = S.t, chin = S.chinY, yy = clamp2(y, chin, 1);
     const fat = clamp2(p.fat || 0, 0, 1), fem = clamp2(p.fem || 0, 0, 1), mus = clamp2(p.muscle || 0, 0, 1);
@@ -1229,7 +1231,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [w, (f - b) * k * 0.5, (f + b) * k * 0.5];
   }
 
-  // geomannequin/src/engine/head/side-planes.js
+  // src/engine/head/side-planes.js
   var finite = (x, fallback) => Number.isFinite(x) ? x : fallback;
   var CACHE = /* @__PURE__ */ new WeakMap();
   function sidePlanesV2(p, S) {
@@ -1294,7 +1296,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return pts;
   }
 
-  // geomannequin/src/engine/head/face-fields.js
+  // src/engine/head/face-fields.js
   function facialRelief(y, x, p, S) {
     const fat = clamp2(p.fat || 0, 0, 1), mus = clamp2(p.muscle || 0, 0, 1), fem = clamp2(p.fem || 0, 0, 1);
     const ax = Math.abs(x), ey = S.eyeY, my = S.mouthY, t = S.t;
@@ -1315,7 +1317,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return z;
   }
 
-  // geomannequin/src/engine/head/jaw-rig.js
+  // src/engine/head/jaw-rig.js
   function jawPoseV2(v, p, S) {
     const opening = clamp2(p.jawOpen || 0, 0, 1), side = clamp2(p.jawSide || 0, -1, 1);
     if (!opening && !side) return [...v];
@@ -1328,7 +1330,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [v[0] + side * 0.055 * w, cy + dy * cs - dz * sn - translation, cz + dy * sn + dz * cs + translation * 0.6];
   }
 
-  // geomannequin/src/engine/head/mesh-clipping.js
+  // src/engine/head/mesh-clipping.js
   function flattenCraniumV2(point, p, S, offset = 0, planes = null) {
     const x = point[0], y = point[1], z = point[2];
     if (Math.abs(x) < 0.1) return point;
@@ -1341,7 +1343,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [s * mix(Math.abs(x), flat, blend), y, z];
   }
 
-  // geomannequin/src/engine/head/cranial-surface.js
+  // src/engine/head/cranial-surface.js
   function pointV2(y, theta, p, S, offset = 0) {
     const [w, cz, depth] = ringV2(y, p, S), sn = Math.sin(theta), cs = Math.cos(theta);
     const x = w * sn;
@@ -1372,7 +1374,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { V: V2, rows, cols, flip: 1, fb: null };
   }
 
-  // geomannequin/src/engine/head/ears.js
+  // src/engine/head/ears.js
   function earPointV2(p, S, sign, u, v) {
     const plane = planeAtV2(p, S, sign), scale = S.scale || 1, size = p.earSize || 1;
     const ey = S.eyeY - 0.09, ry = 0.3 * size * scale, rz = 0.145 * size * scale;
@@ -1401,7 +1403,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { V: V2, rows, cols, flip: -sign, fb: [sign, 0, 0] };
   }
 
-  // geomannequin/src/engine/head/mesh.js
+  // src/engine/head/mesh.js
   function meshFromGrid(fn, rows = 16, cols = 32, flip = 1) {
     const V2 = new Float32Array(rows * cols * 3);
     for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) {
@@ -1423,13 +1425,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     }, rows, cols, 1);
   }
 
-  // geomannequin/src/engine/head/orbit.js
+  // src/engine/head/orbit.js
   function orbitMeshesV2(p, S) {
     const y = S.eyeY, scale = p.headScale || 1, r = ringV2(y, p, S), xc = r[0] * 0.41, z = r[1] + r[2] - 0.065;
     return [-1, 1].map((sign) => ellipsoid([sign * xc, y, z], [0.145 * scale, 0.092 * scale, 0.092 * scale], 18, 32));
   }
 
-  // geomannequin/src/engine/head/mouth-cavity.js
+  // src/engine/head/mouth-cavity.js
   function apertureV2(p, S) {
     const open = clamp2(p.jawOpen || 0, 0, 1), smile = clamp2(p.smile || 0, -1, 1), w = (0.22 + 0.027 * Math.max(0, smile)) * (S.scale || 1);
     const gap = 0.17 * Math.pow(open, 0.85), my = S.mouthY;
@@ -1458,7 +1460,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { upper: trace(A.lipTop), lower: trace(A.lipBottom), top: trace(A.top), bottom: trace(A.bot) };
   }
 
-  // geomannequin/src/engine/head/dentition.js
+  // src/engine/head/dentition.js
   function toothMeshesV2(p, S) {
     const A = apertureV2(p, S);
     if (A.open < 0.12) return { upper: [], lower: [] };
@@ -1471,7 +1473,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { upper: mk(false), lower: A.open > 0.55 ? mk(true) : [] };
   }
 
-  // geomannequin/src/engine/head/tongue.js
+  // src/engine/head/tongue.js
   function tongueMeshV2(p, S) {
     const A = apertureV2(p, S);
     if (A.open < 0.18) return null;
@@ -1483,7 +1485,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }, 15, 36);
   }
 
-  // geomannequin/src/engine/head/expressions.js
+  // src/engine/head/expressions.js
   var EXPRESSION_V2 = Object.freeze({
     neutra: { jawOpen: 0, smile: 0, eyeLid: 0, browUp: 0, browIn: 0 },
     sorriso: { jawOpen: 0.05, smile: 0.9, eyeLid: 0.15, browUp: 0.1, browIn: 0 },
@@ -1492,7 +1494,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     franzir: { jawOpen: 0, smile: -0.08, eyeLid: 0.32, browUp: -0.4, browIn: 0.8 }
   });
 
-  // geomannequin/src/engine/head/iso-curves.js
+  // src/engine/head/iso-curves.js
   function isoCurvesV2(p, S, opt = {}) {
     const meridians = Math.max(4, Math.min(48, opt.meridians || 16)), parallels = Math.max(3, Math.min(32, opt.parallels || 12)), resolution = Math.max(24, Math.min(240, opt.resolution || 96)), out = [];
     for (let k = 0; k < meridians; k++) {
@@ -1509,10 +1511,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/head/compatibility.js
+  // src/engine/head/compatibility.js
   var headV2Enabled = (p) => p && p.headModel === "v2";
 
-  // geomannequin/src/engine/head-v3/anatomy.js
+  // src/engine/head-v3/anatomy.js
   var clamp3 = (x, a, b) => Math.max(a, Math.min(b, x));
   var mix2 = (a, b, t) => a + (b - a) * t;
   var smooth2 = (t) => {
@@ -1611,7 +1613,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { width, front, back };
   }
 
-  // geomannequin/src/engine/head-v3/microfields.js
+  // src/engine/head-v3/microfields.js
   var TAU = Math.PI * 2;
   var CACHE2 = /* @__PURE__ */ new WeakMap();
   var PARAMS = ["headScale", "skull", "jaw", "chin", "chinProj", "cranialDepth", "nose", "brow", "lips", "fat", "fem", "muscle", "smile", "eyeLid", "microDensity", "microStrength"];
@@ -1761,7 +1763,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return (a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty;
   }
 
-  // geomannequin/src/engine/head-v3/landmarks.js
+  // src/engine/head-v3/landmarks.js
   var PI = Math.PI;
   var TAU2 = 2 * PI;
   var lerp2 = (a, b, t) => a + (b - a) * t;
@@ -1801,7 +1803,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/head-v3/index.js
+  // src/engine/head-v3/index.js
   var TAU3 = 2 * Math.PI;
   var headV3Enabled = (p) => p?.headModel === "v3_microgeometry" || p?.headModel === "v5_anime";
   function ringV3(y, p, S) {
@@ -1917,7 +1919,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/head-v4/anatomy.js
+  // src/engine/head-v4/anatomy.js
   var W2 = [
     [0, 8e-3],
     [0.025, 0.29],
@@ -2012,7 +2014,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { width, front, back };
   }
 
-  // geomannequin/src/engine/head-v4/facial-relief.js
+  // src/engine/head-v4/facial-relief.js
   var bell2 = (x, y, cx, cy, sx, sy) => gauss3(x, cx, sx) * gauss3(y, cy, sy);
   var eyeMask = (u, v, s) => Math.hypot((u - s * 0.335) / 0.205, (v - 0.535) / 0.042);
   function facialReliefV4(u, v, p, S, atlas = compileMicroAtlasV3(p, S)) {
@@ -2067,7 +2069,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
   }
 
-  // geomannequin/src/engine/head-v4/ear-anatomy.js
+  // src/engine/head-v4/ear-anatomy.js
   var TAU4 = 2 * Math.PI;
   var gaussian2 = (u, v, cu, cv, ru, rv) => gauss3(u, cu, ru) * gauss3(v, cv, rv);
   function earMetricsV41(p, S) {
@@ -2138,7 +2140,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     ];
   }
 
-  // geomannequin/src/engine/head-v4/index.js
+  // src/engine/head-v4/index.js
   var TAU5 = 2 * Math.PI;
   var headV4Enabled = (p) => p?.headModel === "v4_anatomical";
   function ringV4(y, p, S) {
@@ -2280,7 +2282,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/cabeca.js
+  // src/engine/cabeca.js
   function shape(p) {
     const t = Math.sin(p.face * D), chinY = -2 * t;
     const scale = clamp(Number.isFinite(p.headScale) ? p.headScale : 1, 0.9, 1.1);
@@ -2463,7 +2465,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { V: V2, rows, cols, flip: -s, fb: [s, 0, 0] };
   }
 
-  // geomannequin/src/engine/corpo.js
+  // src/engine/corpo.js
   function bodyEff(p) {
     const m = p.muscle, f = p.fat, w = p.fem;
     return {
@@ -2613,7 +2615,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return 2 * clamp((y - c.yA) / (c.yB - c.yA), 0, 1);
   }
 
-  // geomannequin/src/engine/musculos.js
+  // src/engine/musculos.js
   function sdPoly(px, py, P3) {
     let d = 1e9, inside = false;
     for (let i = 0, j = P3.length - 1; i < P3.length; j = i++) {
@@ -2677,7 +2679,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return dz;
   }
 
-  // geomannequin/src/engine/atlas/util.js
+  // src/engine/atlas/util.js
   function suave(P3, n2 = 6, fechado = false) {
     const Q = fechado ? P3.concat([P3[0]]) : P3, m = Q.length, o = [];
     const at = (i) => fechado ? Q[(i + m - 1) % (m - 1)] : Q[clamp(i, 0, m - 1)];
@@ -2716,7 +2718,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [x0 - m, x1 + m, y0 - m, y1 + m];
   }
 
-  // geomannequin/src/engine/atlas/tronco.js
+  // src/engine/atlas/tronco.js
   var R_ANG = (F2) => F2.chestW;
   var graus = (F2, a, yy) => [a * D * R_ANG(F2), F2.yJ + yy];
   function forca(F2) {
@@ -2833,7 +2835,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [y, bustTh2(y, l.s * q[0], l.ref === "f", p, F2)];
   }
 
-  // geomannequin/src/engine/tronco.js
+  // src/engine/tronco.js
   function bustBump(x, y, th, p, F2) {
     const cs = Math.cos(th), cf = Math.max(0, cs), cb = Math.max(0, -cs), ax = Math.abs(x), s = x >= 0 ? 1 : -1, B3 = F2.B, mu = B3.mus;
     let dz = 0;
@@ -2979,7 +2981,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { V: V2, rows, cols, flip: 1, fb: null, open: true, tw: TW, cav: CAV, wq: WQ };
   }
 
-  // geomannequin/src/engine/malhas.js
+  // src/engine/malhas.js
   function tubeMesh(rows, cols, u0, u1, rad) {
     const V2 = new Float32Array(rows * cols * 3);
     for (let r = 0; r < rows; r++) {
@@ -3072,7 +3074,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { V: V2, rows, cols, flip: -1, fb: null };
   }
 
-  // geomannequin/src/engine/bracos.js
+  // src/engine/bracos.js
   function armDims(p) {
     const B3 = bodyEff(p);
     return { L1: 3.1 * p.armLen, L2: 2.75 * p.armLen, k: B3.armK, LH: 1 * p.armLen, mus: B3.mus };
@@ -3169,7 +3171,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { arm: { M, T: G }, fore, hand, elbow, G, Mb, pr: s * pr * D };
   }
 
-  // geomannequin/src/engine/pernas.js
+  // src/engine/pernas.js
   function legDims(p) {
     const B3 = bodyEff(p), L3 = p.legLen;
     return { L1: (3.85 + SOBE_QUADRIL) * L3, L2: 3.7 * L3, k: B3.thighK, mus: B3.mus, fat: B3.fat, fem: B3.fem, glute: B3.glute, f: L3 * (1 + 0.04 * B3.fat) * (0.97 + 0.06 * (1 - B3.fem)), hA: 0.62 * L3 };
@@ -3318,7 +3320,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
   }
 
-  // geomannequin/src/engine/maos.js
+  // src/engine/maos.js
   function buildPalm(p, s) {
     const k = bodyEff(p).armK * 0.95 * p.armLen, rows = 22, cols = 36, V2 = new Float32Array(rows * cols * 3), n2 = 3.2, e = 2 / n2;
     for (let r = 0; r < rows; r++) {
@@ -3438,7 +3440,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return p;
   }
 
-  // geomannequin/src/engine/camera.js
+  // src/engine/camera.js
   function makeXf(p) {
     const wr = (p.wRot || 0) * D, cw = Math.cos(wr), sw = Math.sin(wr);
     const cy = Math.cos(p.yaw * D), sy = Math.sin(p.yaw * D);
@@ -3452,7 +3454,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
   }
 
-  // geomannequin/src/engine/montagem.js
+  // src/engine/montagem.js
   function newCache() {
     return { meshKey: "", bustKey: "", armKey: "", legKey: "", handKey: ["", ""], toeKey: ["", ""], jointKey: {}, meshes: {} };
   }
@@ -3558,7 +3560,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     GCACHE = newCache();
   }
 
-  // geomannequin/src/engine/projecao.js
+  // src/engine/projecao.js
   var LD = [0, 0, 1];
   var LE1 = [1, 0, 0];
   var LE2 = [0, 1, 0];
@@ -3681,7 +3683,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return LWK = v;
   }
 
-  // geomannequin/src/engine/zbuffer.js
+  // src/engine/zbuffer.js
   var zb;
   var zp;
   var PT = 0;
@@ -3834,7 +3836,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return SMS = v;
   }
 
-  // geomannequin/src/engine/campos.js
+  // src/engine/campos.js
   var cov;
   var aoA;
   var RIMD = [[1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]];
@@ -4005,7 +4007,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     FK = new Float32Array(HN);
   }
 
-  // geomannequin/src/engine/sombra.js
+  // src/engine/sombra.js
   var FSRaw;
   var FS;
   function shadowMesh(m, G, n2, ln, S) {
@@ -4041,7 +4043,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     FS = new Float32Array(HN);
   }
 
-  // geomannequin/src/engine/contornos.js
+  // src/engine/contornos.js
   var exA;
   var eyA;
   var lk1;
@@ -4272,7 +4274,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     lk2 = new Int32Array(2 * HN);
   }
 
-  // geomannequin/src/engine/rosto-au.js
+  // src/engine/rosto-au.js
   var AU = [
     ["browInnerL", "Sobrancelha esquerda, ponta de dentro: baixar − / subir +", -1, 1, "sobrancelhaDentroEsq"],
     ["browInnerR", "Sobrancelha direita, ponta de dentro: baixar − / subir +", -1, 1, "sobrancelhaDentroDir"],
@@ -4346,7 +4348,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return (vL + vR) / 2 + (vL - vR) / 2 * t;
   }
 
-  // geomannequin/src/engine/padroes.js
+  // src/engine/padroes.js
   var DEF = {
     yaw: 0,
     pitch: 0,
@@ -4600,7 +4602,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return MODELOS_CABECA.some(([m]) => m === k) ? k : reserva;
   }
 
-  // geomannequin/src/engine/boca.js
+  // src/engine/boca.js
   function bocaForma(p, S) {
     const Q = rostoGeral(p), RL = ladoRosto(p, 1), RR = ladoRosto(p, -1);
     const aberto = Math.max(clamp(Number.isFinite(p.jawOpen) ? p.jawOpen : 0, 0, 1) * (1 - 0.9 * Q.press), 0.32 * Q.round, 0.14 * Q.lowerLip);
@@ -4636,7 +4638,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
   }
 
-  // geomannequin/src/engine/head-v5/anime.js
+  // src/engine/head-v5/anime.js
   var D2 = Math.PI / 180;
   function emo(p) {
     const X = clamp(p.v5Exagero ?? 1, 0, 1.6);
@@ -4957,7 +4959,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     curve("fibra", arr2((x) => H2(x, B3.baixo(0) - 0.045, 0.016), -w * 0.35, w * 0.35, 8));
   }
 
-  // geomannequin/src/engine/amplitude.js
+  // src/engine/amplitude.js
   var FLEX_NOMES = ["normal", "atleta", "ginasta", "contorcionista"];
   var AMPLIA = {
     spineFlex: [[-10, 5], [-35, 15], [-60, 30]],
@@ -4995,7 +4997,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var ISQUIO = [90, 110, 160, 175];
 
-  // geomannequin/src/engine/colisao.js
+  // src/engine/colisao.js
   function legGap(p, S) {
     const ch = chainSetup(p, S), A = legDims(p), pts = (s) => {
       const lp = legPose(p, ch.F, ch, s), Th = comp(ch.Pel, lp.thigh), Cf = comp(ch.Pel, lp.calf), Ft = comp(ch.Pel, lp.foot);
@@ -5075,7 +5077,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return P3;
   }
 
-  // geomannequin/src/engine/cadeia.js
+  // src/engine/cadeia.js
   function bump(h, a, b) {
     if (h <= a || h >= b) return 0;
     const t = (h - a) / (b - a);
@@ -5303,7 +5305,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { abd: c.x[0], flex: c.x[1], rot: c.x[2], elbow: c.x[3], err: c.e };
   }
 
-  // geomannequin/src/engine/atlas/pernas.js
+  // src/engine/atlas/pernas.js
   var L = (nome, parte, tipo, P3, min = 0, n2 = 6) => ({ nome, parte, tipo, min, pts: suave(P3, n2) });
   function atlasPerna() {
     return [
@@ -5345,7 +5347,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     ];
   }
 
-  // geomannequin/src/engine/curvas.js
+  // src/engine/curvas.js
   var EPS = 0.3;
   function rdp(P3, a, b, eps, keep) {
     let mx = 0, idx2 = -1;
@@ -5410,7 +5412,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return svg.replace(/ d="([MLZ0-9 .,\-]+)"/g, (m, d) => ' d="' + suavizarD(d) + '"');
   }
 
-  // geomannequin/src/engine/esqueleto.js
+  // src/engine/esqueleto.js
   var ARTICULACOES = {
     pelve: { nome: "pelve", params: ["pelvisTilt", "pelvisSide", "pelvisTwist"] },
     lombar: { nome: "coluna lombar", params: ["spineFlex", "spineSide", "spineTwist", "lumFlex", "lumSide", "lumTwist"] },
@@ -5540,7 +5542,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return "tronco";
   }
 
-  // geomannequin/src/engine/atlas/bracos.js
+  // src/engine/atlas/bracos.js
   var arr = (fn, a0, a1, n2) => {
     const o = [];
     for (let i = 0; i <= n2; i++) o.push(fn(a0 + (a1 - a0) * i / n2));
@@ -5582,7 +5584,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return L3;
   }
 
-  // geomannequin/src/engine/atlas/rosto.js
+  // src/engine/atlas/rosto.js
   var ring = (cx, cy, rx, ry, a0, a1, n2 = 24) => Array.from({ length: n2 + 1 }, (_, i) => {
     const a = a0 + (a1 - a0) * i / n2;
     return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)];
@@ -5612,7 +5614,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/desenho.js
+  // src/engine/desenho.js
   var CASTERS = [];
   function setCasters(v) {
     return CASTERS = v || [];
@@ -6749,7 +6751,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { svg: L3.retas ? out.join("") : suavizarSvg(out.join("")), info };
   }
 
-  // geomannequin/src/engine/rigid-transform.js
+  // src/engine/rigid-transform.js
   var R3_EYE = [1, 0, 0, 0, 1, 0, 0, 0, 1];
   var r3finite = (a) => Array.isArray(a) && a.length === 3 && a.every(Number.isFinite);
   var r3matrix = (a) => Array.isArray(a) && a.length === 9 && a.every(Number.isFinite);
@@ -6796,7 +6798,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return o;
   }
 
-  // geomannequin/src/engine/objetos.js
+  // src/engine/objetos.js
   var TIPOS_OBJETO = {
     cadeiraVazada: { nome: "cadeira com travessa", larg: 4, prof: 4, alt: 4, encosto: 4.2 },
     mesaComAlca: { nome: "mesa com alça", larg: 7, prof: 4, alt: 5 },
@@ -7369,7 +7371,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { x0, y0, w, h, z };
   }
 
-  // geomannequin/src/engine/colisao-cena.js
+  // src/engine/colisao-cena.js
   var PARTES = {
     cabeca: "cabeça",
     pescoco: "pescoço",
@@ -7508,7 +7510,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [CX + S * (q[0] * k + p.panX), CY - S * (q[1] * k + p.panY), q[2], S * k];
   }
 
-  // geomannequin/src/engine/contact-v2.js
+  // src/engine/contact-v2.js
   var V = (a, b) => a.map((x, i) => x - b[i]);
   var add = (a, b) => a.map((x, i) => x + b[i]);
   var mul = (a, s) => a.map((v) => v * s);
@@ -7718,7 +7720,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out.slice(0, max);
   }
 
-  // geomannequin/src/engine/efeitos/modelo.js
+  // src/engine/efeitos/modelo.js
   var ELEMENTOS = {
     fogo: { nome: "Fogo", cores: ["#FFF6C8", "#FFC145", "#FF6A1A", "#C2210B"] },
     gelo: { nome: "Gelo/água", cores: ["#FFFFFF", "#C9F1FF", "#5CC4F2", "#1F5FA8"] },
@@ -8346,7 +8348,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return e.cores && e.cores.length ? e.cores : ELEMENTOS[e.elemento].cores;
   }
 
-  // geomannequin/src/engine/efeitos/primitivas.js
+  // src/engine/efeitos/primitivas.js
   function rng(seed) {
     let a = Math.floor(seed) >>> 0 || 1;
     const r = () => {
@@ -8520,7 +8522,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
   }
 
-  // geomannequin/src/engine/efeitos/desenhar.js
+  // src/engine/efeitos/desenhar.js
   var PERMITIR_CODIGO = false;
   function setPermitirCodigoEfeito(v) {
     PERMITIR_CODIGO = !!v;
@@ -10164,7 +10166,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/camadas.js
+  // src/engine/camadas.js
   var ESTAT = { camadas: 0, grupos: 0, composicoes: 0 };
   var C = 2;
   var GW = Math.ceil(W / C);
@@ -10603,7 +10605,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return (opts.sombra !== false && g.res.sombra ? '<g id="sombra">' + g.res.sombra + "</g>" : "") + '<g id="manequim-' + (i + 1) + '">' + g.res.svg + "</g>";
   }
 
-  // geomannequin/src/engine/cena.js
+  // src/engine/cena.js
   function restGround(p) {
     const S = shape(p), F2 = bustFrame(p, S), A = legDims(p);
     return hipJoint(F2, 1)[1] - A.L1 - A.L2 - A.hA;
@@ -10804,7 +10806,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return k >= 0 && k < HN ? hid[k] : -1;
   }
 
-  // geomannequin/src/engine/head-v4/study-sheet.js
+  // src/engine/head-v4/study-sheet.js
   var STUDY_TOKENS = Object.freeze({
     paper: "#fafbfd",
     grid: "#e6ecf3",
@@ -10988,7 +10990,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return svg;
   }
 
-  // geomannequin/src/engine/zip.js
+  // src/engine/zip.js
   var TAB = (() => {
     const t = new Uint32Array(256);
     for (let n2 = 0; n2 < 256; n2++) {
@@ -11053,7 +11055,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
 
-  // geomannequin/src/engine/head-v3/mesh-export.js
+  // src/engine/head-v3/mesh-export.js
   function watertightMeshV3(p, S) {
     const grid = buildHeadV3(p, S), { V: V2, rows, cols } = grid, base2 = V2.length / 3;
     const positions = new Float32Array(V2.length + 6);
@@ -11142,7 +11144,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out.join("\n") + "\n";
   }
 
-  // geomannequin/src/engine/head-v4/mesh-export.js
+  // src/engine/head-v4/mesh-export.js
   var meshTopologyV4 = meshTopologyV3;
   function watertightMeshV4(p, S) {
     const { V: V2, rows, cols } = buildHeadV4(p, S), base2 = V2.length / 3;
@@ -11199,7 +11201,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return exportObjV3(mesh, "GeoMannequin Head V4 Anatomical").replace("o Head_V3_Microgeometry", "o Head_V4_Anatomical");
   }
 
-  // geomannequin/src/engine/vistas-pose.js
+  // src/engine/vistas-pose.js
   var VISTAS_POSE = { frente: "Frente", lado: "Lado (direita)", cima: "Cima", iso: "Isométrica" };
   var ISO_YAW = 45 * Math.PI / 180;
   var ISO_PITCH = Math.atan(1 / Math.SQRT2);
@@ -11352,7 +11354,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [v.w / 2 + (a[0] - v.cu) * v.s, v.h / 2 - (a[1] - v.cv) * v.s, a[2]];
   }
 
-  // geomannequin/src/engine/apoio.js
+  // src/engine/apoio.js
   function lerContatos(q) {
     const t = (Array.isArray(q) ? q.join(" ") : String(q || "maos pes")).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
     const out = [];
@@ -11486,7 +11488,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return avisos;
   }
 
-  // geomannequin/src/engine/planta.js
+  // src/engine/planta.js
   var M_R = 1 / 0.114;
   function cameraNoMundo(p) {
     const cam = makeXf(Object.assign({}, p, { wRot: 0 })), ex = cam([1, 0, 0]), ey = cam([0, 1, 0]), ez = cam([0, 0, 1]);
@@ -11793,7 +11795,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, s, w, h };
   }
 
-  // geomannequin/src/engine/pose2d.js
+  // src/engine/pose2d.js
   function rostoLocal(p) {
     const S = shape(p), t = S.t, eyeY = S.eyeY, mouthY = S.mouthY, hp = (y, th, off) => headPt(y, th, p, S, off || 0.01);
     const surfX = (y, x) => Math.asin(clamp(x / ringAt(y, p, S)[0], -0.99, 0.99)), out = [];
@@ -11915,7 +11917,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var B25_COCO = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 
-  // geomannequin/src/engine/autocolisao.js
+  // src/engine/autocolisao.js
   var VIZINHOS0 = [
     "cabeca|pescoco",
     "pescoco|torax",
@@ -11956,7 +11958,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out.sort((x, y) => y.prof - x.prof);
   }
 
-  // geomannequin/src/engine/grip-sites.js
+  // src/engine/grip-sites.js
   function gripSites(o) {
     const L3 = o.larg / 2, P3 = o.prof / 2, A = o.alt;
     const arr2 = [], push = (id, nome, x, y, z, normal = [0, 0, 1], priority = 0) => {
@@ -12014,7 +12016,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return sites[0];
   }
 
-  // geomannequin/src/engine/grip-dynamics.js
+  // src/engine/grip-dynamics.js
   var DEG = Math.PI / 180;
   var EPS2 = 1e-5;
   var vec3 = (v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
@@ -12156,7 +12158,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { ativos: active.filter((o) => o.dinamica?.ativo).length, passos: steps, contatos };
   }
 
-  // geomannequin/src/engine/superficie-referencia.js
+  // src/engine/superficie-referencia.js
   var dot3 = (a, b) => a.reduce((s, v, i) => s + v * b[i], 0);
   var sub2 = (a, b) => a.map((v, i) => v - b[i]);
   var cruz = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -12240,7 +12242,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return raiz;
   }
 
-  // geomannequin/src/engine/referencia-manga.js
+  // src/engine/referencia-manga.js
   var TIPOS_MANGA = ["paleto", "camisa", "calca", "painel", "curto", "longo", "franja", "preso", "linhas", "impacto", "explosao", "fumaca", "chama", "rastro"];
   var juntasManga = ["ombro", "cotovelo", "punho", "quadril", "joelho", "tornozelo", "pescoço", "pelve"];
   function numeroManga(v, min, max) {
@@ -12467,14 +12469,14 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { grupos, tela: tela.join("") };
   }
 
-  // geomannequin/src/engine/index.js
+  // src/engine/index.js
   iniciarMontagem();
   iniciarZbuffer();
   iniciarCampos();
   iniciarSombra();
   iniciarContornos();
 
-  // geomannequin/src/scene/parametros.js
+  // src/scene/parametros.js
   var fr = (x, d) => x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
   var SL = [
     { k: "yaw", g: "slOrient", label: "Rotação horizontal", min: -180, max: 180, step: 1, u: "°" },
@@ -13001,7 +13003,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     ]);
   }
 
-  // geomannequin/src/scene/modos.js
+  // src/scene/modos.js
   var L2 = {};
   var mode = "manequim";
   function setPreset(name) {
@@ -13017,7 +13019,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return mode = v;
   }
 
-  // geomannequin/src/scene/biotipos.js
+  // src/scene/biotipos.js
   var BIOTIPOS = Object.freeze({
     masculino: Object.freeze({
       magro: { muscle: 0.15, fat: 0.04, waist: 0.87, hips: 1.06, shW: 1.68, shDrop: 0.7, armThick: 0.9, thighThick: 0.9, gluteVol: 0.85, neck: 0.59, chestF: 0, headScale: 0.955, cranialDepth: 0.99, neckLen: 0.608, armLen: 0.985, legLen: 1.01 },
@@ -13081,7 +13083,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var BODIES = BIOTIPOS.masculino;
 
-  // geomannequin/src/scene/poses.js
+  // src/scene/poses.js
   var GUARD = /^(armAbd|armFlex|armRot|elbow|pron|wrist|spine|pelvis|shElev|shProt|head|hip|knee|ankle|toes)/;
   function limitesAcoplados(Q) {
     const av = [];
@@ -14140,7 +14142,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
   }
 
-  // geomannequin/src/scene/colisoes.js
+  // src/scene/colisoes.js
   var CM = 11.4;
   var COL = { modo: "avisar", preferir: "auto", ultima: [], desfazer: null, composicao: false, ultimaComp: [] };
   function setModoColisao(m) {
@@ -14630,7 +14632,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     COL.composicao = on !== false && on !== 0;
   }
 
-  // geomannequin/src/scene/cenario.js
+  // src/scene/cenario.js
   var chaoY = () => restGround(SCN.list[0].params);
   function comP(it, fn) {
     const prev = P2;
@@ -14972,7 +14974,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return q;
   }
 
-  // geomannequin/src/scene/regioes-orbita.js
+  // src/scene/regioes-orbita.js
   var AREAS_MAN_ORB = Object.freeze([
     ["", "Corpo inteiro"],
     ["cabeca", "Cabeça"],
@@ -15175,7 +15177,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { bb, frente: [Math.sin(ang), Math.cos(ang)], tipo: "objeto", area: reg };
   }
 
-  // geomannequin/src/scene/orientacao-frames.js
+  // src/scene/orientacao-frames.js
   var orfRad = Math.PI / 180;
   var orfSub = (a, b) => a.map((x, i) => x - b[i]);
   var orfAdd = (a, b) => a.map((x, i) => x + b[i]);
@@ -15289,7 +15291,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return v;
   }
 
-  // geomannequin/src/scene/orbita.js
+  // src/scene/orbita.js
   var semAcentoOrb = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
   var AZIMUTES = {
     frente: 0,
@@ -15639,7 +15641,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return v ? v[0] : Math.round(a) + "°";
   }
 
-  // geomannequin/src/scene/preensao-v2.js
+  // src/scene/preensao-v2.js
   function getHandAnchor(it, side, ground) {
     const p = it.params, S = shape(p), ch = chainSetup(p, S), A = armDims(p), frame = comp(ch.A2, armPose(p, ch.F, side).hand);
     const local = applyA(frame, [0, -0.5 * A.LH, 0]);
@@ -15718,7 +15720,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return true;
   }
 
-  // geomannequin/src/scene/grip-v3.js
+  // src/scene/grip-v3.js
   function handFrameV3(it, side, ground) {
     if (!it || !(side === 1 || side === -1)) throw Error("Selecione uma mão esquerda ou direita.");
     const p = it.params, S = shape(p), ch = chainSetup(p, S), A = armDims(p), hand = comp(ch.A2, armPose(p, ch.F, side).hand), W4 = paraMundo({ ...p, wy: ground - restGround(p) }), local = [0, -0.5 * A.LH, 0], basis = [
@@ -15983,7 +15985,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { solto: true, modo };
   }
 
-  // geomannequin/src/scene/modelo.js
+  // src/scene/modelo.js
   var P2;
   var UID = 0;
   var OBJID = 1e3;
@@ -16256,7 +16258,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return P2 = v;
   }
 
-  // geomannequin/src/scene/efeitos-cena.js
+  // src/scene/efeitos-cena.js
   var FX_MAX = 64;
   var fxLista = () => SCN.efeitos || (SCN.efeitos = []);
   function fxManequimPorRef(ref) {
@@ -16600,7 +16602,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     SCN.efeitos = out;
   }
 
-  // geomannequin/src/scene/descrever.js
+  // src/scene/descrever.js
   var sem = (t) => String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   var NUMS = {
     um: 1,

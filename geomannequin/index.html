@@ -217,6 +217,8 @@
         <input id="colV3Reach" type="number" min="0.2" max="40" step="0.5" value="5" style="max-width:75px">
         <label for="colV3Modo">Ao segurar</label>
         <select id="colV3Modo" aria-label="Modo de captura"><option value="preservar">Preservar objeto no lugar</option><option value="encaixar">Aproximar a palma (IK)</option></select>
+        <div class="sel-linha"><label for="pegTipo">Como segurar</label><select id="pegTipo" aria-label="Jeito de segurar"></select></div>
+        <button type="button" id="pegSegurar" class="primary" title="Segura o objeto selecionado do jeito escolhido (braços por IK, sem atravessar o corpo)">Segurar desse jeito</button>
         <button type="button" id="colV2Segurar">Segurar objeto selecionado (V3)</button>
         <div class="group poses" role="group" aria-label="Encaixe anatômico automático">
           <label for="colAutoMao">AutoGrip: mão</label>

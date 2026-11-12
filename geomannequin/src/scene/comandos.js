@@ -26,6 +26,7 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
+import { segurarComo, listaPegadas } from "./pegadas.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
 import {planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip} from "./grip-auto.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
@@ -201,6 +202,9 @@ function apiFor(it){
     autoSegurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
       return cena.autoEncaixarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)})},
     medidasMao(lado="direita"){chk();return medirMao(it.params,ladoNum(lado))},
+    /* segurar de um jeito: m.segurarComo("Caixa", "abracado") · tipos: cena.pegadas() */
+    segurarComo(ref,tipo,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);cena.marcarEstado();const r=segurarComo(it,o,tipo,opts);
+      if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.atravessa.length)LOG.push(["aviso","ainda encosta em: "+r.atravessa.join(", ")]);return r},
     segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
       cena.segurarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)});return m},
     soltar(ref,opts={}){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id):[acharObjeto(ref)];
@@ -436,6 +440,7 @@ const cena={
   manualIA(opts){return manualPosesIA(opts||{})},
   estadoIA(opts){const E=estadoParaIA(opts||{});return opts&&opts.json?E.json:E.texto},
   pacoteIA(pedido,opts){return pacoteParaIA(pedido,opts||{})},
+  pegadas(){return listaPegadas()},
   /* todos os manequins (ou um, pelo nome) na pose de descanso em pé */
   descanso(opts){const o=opts||{};SCN.list.filter(it=>!o.manequim||it.name===o.manequim).forEach(it=>apiFor(it).descanso(o));return cena},
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},

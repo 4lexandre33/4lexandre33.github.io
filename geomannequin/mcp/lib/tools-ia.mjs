@@ -98,6 +98,18 @@ export function registerIaTools(server, W) {
     try { const w = W(); w.cena.marcarEstado(); w.cena.descanso({ manequim: a.manequim, rosto: !!a.rosto }); return { content: [{ type: "text", text: "Pose de descanso aplicada" + (a.manequim ? " em " + a.manequim : " em todos") + (a.rosto ? " (rosto neutro)." : " (rosto mantido).") }], structuredContent: { link: sceneLink(w) } }; }
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
+  server.registerTool("segurar_como", {
+    title: "Segurar um objeto de um jeito",
+    description: "Faz o manequim segurar um objeto da cena do jeito pedido, com IK dos braços, gesto da mão e o objeto preso à mão (segue a mão). O objeto e a mão são empurrados para fora do corpo se atravessarem. " +
+      "Pegadas: forca (punho em volta, bastão/garrafa), espada (duas mãos no cabo), pinca (varinha, lápis), gancho (mala pela alça), bandeja (palma por baixo), duasMaos (caixa à frente), abracado (contra o peito), " +
+      "acimaDaCabeca (erguido com as duas mãos), noOmbro (tora, saco), debaixoDoBraco (livro, capacete), noQuadril (balde, cesto), empurrando (duas palmas à frente). Crie o objeto antes (ferramenta de objetos) e use o nome dele.",
+    inputSchema: { objeto: z.string().describe("Nome ou tipo do objeto na cena."), pegada: z.string().describe("Uma das pegadas da lista."), manequim: z.string().optional(), mao: z.enum(["direita", "esquerda"]).optional().describe("Mão principal (padrão: direita).") },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), m = a.manequim ? w.cena.obter(a.manequim) : w.cena.ativo; const r = m.segurarComo(a.objeto, a.pegada, { mao: a.mao });
+      return { content: [{ type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
   server.registerResource("manual-ia", "geomannequin://manual-ia", { title: "Manual de poses para IA", mimeType: "text/markdown", description: "Manual completo para qualquer IA montar e corrigir poses no GeoMannequin." },
     async uri => { const w = W(); return { contents: [{ uri: uri.href, mimeType: "text/markdown", text: w.cena.manualIA() }] }; });
 }

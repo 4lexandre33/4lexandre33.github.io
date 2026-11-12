@@ -192,6 +192,13 @@ export function iniciarColisoes() {
   });
   $("colAutoPrever")?.addEventListener("click",()=>executarAutoGrip(false));
   $("colAutoEncaixar")?.addEventListener("click",()=>executarAutoGrip(true));
+  /* segurar de um jeito (pegadas): abraçado, no ombro, acima da cabeça… */
+  {const sel=$("pegTipo");if(sel){cena.pegadas().forEach(q=>sel.add(new Option(q.tipo+" — "+q.descricao.split(" (")[0],q.tipo)));
+    $("pegSegurar").addEventListener("click",()=>{const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
+      if(!obj){status.textContent="Selecione um objeto antes de segurar.";return}
+      try{const r=cena.ativo.segurarComo(obj.id,sel.value,{mao:$("colV2Mao")?.value||"direita"});
+        status.textContent="✓ "+r.objeto+": "+r.pegada+" ("+r.maos.join(" + ")+")"+(r.empurradoParaFora?"; afastado "+r.empurradoParaFora+" cm do corpo":"")+(r.alcance!=="ok"?"; "+r.alcance:"")+(r.atravessa.length?"; ainda encosta em "+r.atravessa.join(", "):"")+". Ctrl+Z desfaz.";
+        refreshScene();syncControls();render();}catch(e){status.textContent="Não deu para segurar: "+e.message}});}}
   $("colV2Segurar")?.addEventListener("click",()=>{
     const obj=SCN.objetos.find(o=>o.id===SCN.objSel);
     if(!obj){status.textContent="Selecione um objeto antes de segurar.";return}
