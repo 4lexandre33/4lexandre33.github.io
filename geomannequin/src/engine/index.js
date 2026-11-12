@@ -63,3 +63,4 @@ export * from "./rosto-au.js";
 export * from "./efeitos/modelo.js";
 export * from "./efeitos/primitivas.js";
 export * from "./efeitos/desenhar.js";
+export * from "./efeitos/camadas-vfx.js";

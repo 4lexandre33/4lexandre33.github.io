@@ -199,6 +199,10 @@ export function iniciarColisoes() {
     $("intAplicar").addEventListener("click",()=>{encher();if(!ot.value){msg.textContent="Adicione um segundo manequim na cena.";return}
       try{const r=cena.interagir(SCN.list[SCN.active].name,ot.value,tp.value);msg.textContent="✓ "+r.a+" e "+r.b+": "+tp.selectedOptions[0].textContent+(r.alcance!=="ok"?" ("+r.alcance+")":"")+". Ctrl+Z desfaz.";
         refreshScene();syncControls();render();}catch(e){msg.textContent="Não deu: "+e.message}});}}
+  /* ações de luta e movimento */
+  {const sel=$("acaoTipo"),msg=$("acaoMsg");if(sel){cena.acoes().forEach(q=>sel.add(new Option(q.acao+(q.funcao?" — "+q.funcao:""),q.acao)));
+    $("acaoAplicar").addEventListener("click",()=>{try{const r=cena.ativo.acao(sel.value,{rosto:$("acaoRosto").checked,efeitos:$("acaoEfeitos").checked,lado:$("acaoEspelhar").checked?"dir":undefined});
+      msg.textContent="✓ "+r.acao+(r.expressao?" · rosto: "+r.expressao:"")+(r.efeitos.length&&$("acaoEfeitos").checked?" · efeitos: "+r.efeitos.join(", "):"")+". Ctrl+Z desfaz.";refreshScene();syncControls();render();}catch(e){msg.textContent="Não deu: "+e.message}});}}
   /* segurar de um jeito (pegadas): abraçado, no ombro, acima da cabeça… */
   {const sel=$("pegTipo");if(sel){cena.pegadas().forEach(q=>sel.add(new Option(q.tipo+" — "+q.descricao.split(" (")[0],q.tipo)));
     $("pegSegurar").addEventListener("click",()=>{const obj=SCN.objetos.find(o=>o.id===SCN.objSel);

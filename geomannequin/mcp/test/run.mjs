@@ -57,6 +57,26 @@ async function suite(client, tag) {
   { const w0 = null; }
   r = await call("segurar_como", { objeto: "nada-aqui", pegada: "abracado" });
   check(r.isError && /não encontrado/i.test(text(r)), "segurar_como: avisa objeto que não existe");
+  r = await call("objetos", { acao: "adicionar", tipo: "pneu", nome: "Pneu", x: 0, z: -6 });
+  r = await call("segurar_como", { objeto: "Pneu", pegada: "virarPneu", manequim: "Ana" });
+  check(!r.isError && r.structuredContent.pegada === "virarPneu" && (r.content || []).some(c => c.type === "image"), "segurar_como: virarPneu (ação nova)" + (r.isError ? ": " + text(r) : ""));
+  { const t = (await client.listTools()).tools; const sc = t.find(x => x.name === "segurar_como"); check(/levantamentoTerra/.test(sc.description) && /puxarCorda/.test(sc.description), "segurar_como: descrição com as 36 ações");
+    check(/apertoDeMao/.test(t.find(x => x.name === "interagir").description), "interagir: descrição com os tipos novos"); }
+  r = await call("interagir", { a: "Ana", b: "Leo", tipo: "apertoDeMao" });
+  check(!r.isError && r.structuredContent.interacao, "interagir: aperto de mão" + (r.isError ? ": " + text(r) : ""));
+  r = await call("acao", { acao: "socoCarregado", manequim: "Leo" });
+  check(!r.isError, "acao: soco com rosto e efeitos" + (r.isError ? ": " + text(r) : ""));
+  r = await call("molejo", { manequim: "Ana", intensidade: 0.8, semente: 3 });
+  check(!r.isError, "molejo" + (r.isError ? ": " + text(r) : ""));
+  r = await call("poses_por_funcao", { categoria: "Combate" });
+  check(!r.isError && r.structuredContent.poses.length > 3, "poses_por_funcao: categoria Combate" + (r.isError ? ": " + text(r) : ""));
+  r = await call("efeitos", { acao: "prontos" });
+  check(!r.isError && r.structuredContent.resultado.prontos.length >= 40, "efeitos: prontos (camadas)");
+  r = await call("efeitos", { acao: "criar", camadas: JSON.stringify([{ forma: "fita", caminho: { tipo: "espiral", voltas: 2 }, traco: { largura: 2, perfil: "fuso" } }]), em: { manequim: "Ana", parte: "maoDir" }, estilo: "cel", mostrar: false });
+  check(!r.isError && r.structuredContent.resultado.id, "efeitos: criar por camadas com estilo" + (r.isError ? ": " + text(r) : ""));
+  r = await call("efeitos", { acao: "criar", camadas: "{nao json" });
+  check(r.isError, "efeitos: criar recusa JSON inválido");
+  await call("efeitos", { acao: "limpar", mostrar: false });
   r = await call("estado_pose", {});
   check(!r.isError && (r.content || []).some(c => c.type === "image") && /Braço esquerdo/.test(text(r)) && r.structuredContent.estado.manequins.length >= 1, "estado_pose: texto, JSON e imagem" + (r.isError ? ": " + text(r) : ""));
   r = await call("manual_poses_ia", { curto: true });

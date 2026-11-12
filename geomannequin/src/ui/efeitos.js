@@ -6,7 +6,7 @@ import { cena } from "../scene/comandos.js";
 import { render } from "./palco.js";
 import { setOverlay } from "./palco.js";
 import { svgPt } from "./arrastar.js";
-import { W, H, CATALOGO, CATEGORIAS, ELEMENTOS, tamanhoEmCorpos, SIMBOLOS, PARTES_EFEITO, validarEfeito, desenharEfeitos, contextoCena, resolverAncora, resolverDirecao, telaParaChao, partesNaTela, setPermitirCodigoEfeito } from "../engine/index.js";
+import { W, H, CATALOGO, CATEGORIAS, ELEMENTOS, tamanhoEmCorpos, SIMBOLOS, PARTES_EFEITO, validarEfeito, desenharEfeitos, contextoCena, resolverAncora, resolverDirecao, telaParaChao, partesNaTela, setPermitirCodigoEfeito , ESTILOS_VFX, PRESETS_VFX } from "../engine/index.js";
 
 const NOMES_PARTES = { corpo: "corpo inteiro", centro: "centro", cabeca: "cabeça", topoCabeca: "topo da cabeça", rosto: "rosto", olhos: "olhos", olhoEsq: "olho esquerdo", olhoDir: "olho direito", pescoco: "pescoço", peito: "peito", cintura: "cintura", pelve: "pelve", pes: "pés (chão)",
   ombroEsq: "ombro esquerdo", ombroDir: "ombro direito", cotoveloEsq: "cotovelo esquerdo", cotoveloDir: "cotovelo direito", punhoEsq: "punho esquerdo", punhoDir: "punho direito", maoEsq: "mão esquerda", maoDir: "mão direita",
@@ -145,6 +145,15 @@ function propriedades() {
     add("Contorno branco (separa do desenho)", faixa(ac.contornoBranco ?? 0, 0, 1, 0.05, (v, s) => mud("contornoBranco", v, s)));
     { const c = document.createElement("input"); c.type = "checkbox"; c.checked = !!ac.inverter; c.addEventListener("change", () => mud("inverter", c.checked)); add("Inverter preto ↔ branco", c); } }
   add("Camada", escolha(e.camada, [["auto", "automática (profundidade)"], ["atras", "atrás"], ["frente", "na frente"], ["fundo", "fundo da tela"]], v => editar({ camada: v })));
+  /* estilo do traço (efeitos de mangá prontos e montados): linha, contorno, chapado, cel, brilho, nanquim */
+  if (C.preset || C.composto) {
+    add("Estilo", escolha(e.estilo || "auto", [["auto", "automático (contorno no P&B, cel na cor)"], ...Object.entries(ESTILOS_VFX)], v => editar({ estilo: v })));
+    /* as camadas em JSON: mude caminho, forma, repetir, traço e estilo de cada uma (o efeito pronto vira seu) */
+    const ta = document.createElement("textarea"); ta.rows = 8; ta.spellcheck = false; ta.className = "fx-camadas";
+    ta.value = JSON.stringify(e.camadas || (PRESETS_VFX[e.tipo] ? PRESETS_VFX[e.tipo].camadas : []), null, 1);
+    ta.addEventListener("change", () => { try { editar({ camadas: JSON.parse(ta.value) }); } catch (err) { msg("Camadas: " + err.message); } });
+    add("Camadas (JSON: caminho, forma, repetir, traço, estilo)", ta);
+  }
   /* direção */
   { const outros = SCN.list.filter(it => !(e.ancora.modo === "manequim" && it.name === e.ancora.alvo)).map(it => ["m:" + it.name, "para " + it.name]);
     const atual = e.direcao.modo === "alvo" ? (e.direcao.alvo === "auto" ? "maisPerto" : "m:" + (e.direcao.alvo.alvo || "")) : e.direcao.modo === "angulo" ? "angulo" : e.direcao.modo === "camera" ? "camera" : "auto";

@@ -1,7 +1,7 @@
 /* GeoMannequin — efeitos especiais na cena: criar, editar, remover, catálogo e salvar/carregar.
    Os efeitos ficam em SCN.efeitos; a âncora guarda o id do manequim/objeto (no arquivo, o índice). */
 import { SCN } from "./modelo.js";
-import { CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, LEGADO, validarEfeito, normTipo, normParte, deReferencia, registrarEfeito, tamanhoEmCorpos } from "../engine/index.js";
+import { PRESETS_VFX, ESTILOS_VFX, CAMINHOS_VFX, FORMAS_VFX, REPETIR_VFX, PERFIS_VFX, CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, LEGADO, validarEfeito, normTipo, normParte, deReferencia, registrarEfeito, tamanhoEmCorpos } from "../engine/index.js";
 
 const FX_MAX = 64;
 const fxLista = () => (SCN.efeitos || (SCN.efeitos = []));
@@ -100,6 +100,12 @@ function criarApiEfeitos(marcar) {
         parametros: Object.fromEntries(Object.entries(c.params).map(([k, d]) => [k, { padrao: d.padrao, min: d.min, max: d.max, rotulo: d.rotulo }])), ...(c.texto ? { texto: true } : {}), ...(c.simbolo ? { simbolos: SIMBOLOS } : {}) }));
     },
     categorias() { return { ...CATEGORIAS }; },
+    /* construtor por camadas: cena.efeitos.criar([{forma: "fita", caminho: {tipo: "arco", raio: 5}, traco: {largura: 2, perfil: "fuso"}, estilo: "cel"}], {em: "maoDir"}) → id */
+    criar(camadas, opts) { return api.adicionar("composto", { ...(opts || {}), camadas }); },
+    /* as peças do construtor (para montar efeitos novos) */
+    construtor() { return { caminhos: CAMINHOS_VFX.slice(), formas: FORMAS_VFX.slice(), repetir: REPETIR_VFX.slice(), perfis: PERFIS_VFX.slice(), estilos: { ...ESTILOS_VFX } }; },
+    /* os efeitos prontos de mangá: tipo, nome, para que serve e as camadas (para copiar e mudar) */
+    prontos(grupo) { return Object.entries(PRESETS_VFX).filter(([, v]) => !grupo || v.grupo === grupo).map(([tipo, v]) => ({ tipo, nome: v.nome, grupo: v.grupo, elemento: v.elem, ancora: v.ancora, camadas: JSON.parse(JSON.stringify(v.camadas)) })); },
     elementos() { return Object.fromEntries(Object.entries(ELEMENTOS).map(([k, v]) => [k, { nome: v.nome, cores: v.cores.slice() }])); },
     partes() { return PARTES_EFEITO.slice(); },
     simbolos() { return SIMBOLOS.slice(); },

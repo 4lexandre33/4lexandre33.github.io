@@ -358,6 +358,11 @@ export function iniciarAjuda(){
   cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta")
   camera.eixo("x" | "-x" | "z" | "-z" | "y") · camera.elevacao("alta" | "muito alta" | "média" | "olhos" | "baixa" | "muito baixa" | graus) · camera.plano("plongée" | "contra-plongée" | "de cima")
   tema("claro" | "escuro" | "sistema") · log(...)
+  Carregar e segurar: cena.objeto("pneu"|"saco"|"mala"|"vigaI"|"carrinhoDeMao"|… 42 tipos) · m.segurarComo("Pneu", "virarPneu", {mao, orientacao: "empe"|"deitado"|"diagonal"}) · cena.pegadas() lista as 36 ações
+  Dois manequins: cena.interagir("Ana", "Leo", "abracoFrente"|"apertoDeMao"|"apoiandoFerido"|…) · cena.interacoes()
+  Ação de luta: m.acao("socoCarregado", {lado, efeitos: true, rosto: true, colorido}) · cena.acoes() · m.molejo(0.6, semente) · poseRapida(nome, {molejo: 0})
+  Funções narrativas: cena.poses.arvore() · cena.poses.porTag("Combate/Ataque") · cena.poses.etiquetar("Minha pose", ["Social/Afeto"])
+  Efeito por camadas: cena.efeitos.criar([{forma: "fita", caminho: {tipo: "espiral", voltas: 2}, traco: {largura: 2, perfil: "fuso"}}], {em: "maoDir", estilo: "cel"}) · .prontos() · .construtor()
   
   Poses rápidas: ${todasPoses().join(", ")}
   Tipos corporais: ${Object.keys(BODIES).join(", ")}

@@ -198,12 +198,21 @@
       <label class="sel-linha">Solução preferida
         <select id="colPref"><option value="auto">Automática (muda o mínimo)</option><option value="distancia">Afastar no chão</option><option value="giro">Girar no chão</option><option value="pose">Ajustar a pose</option></select></label>
       <label class="check-linha"><input type="checkbox" id="colComp"> Avisar composição: tangências e cabeça escondida</label>
-      <details class="fino" id="intPainel"><summary>Dois manequins: abraçar e apoiar</summary>
+      <details class="fino" id="intPainel"><summary>Dois manequins: abraçar, apoiar, cumprimentar</summary>
         <p class="hint">O manequim ativo (A) fica onde está; o outro (B) é posto junto dele. Os braços vão por IK até as costas, ombros ou cintura do outro, e o contato entre os dois deixa de contar como colisão.</p>
         <div class="sel-linha"><label for="intOutro">Com</label><select id="intOutro"></select></div>
         <div class="sel-linha"><label for="intTipo">Como</label><select id="intTipo"></select></div>
         <button type="button" id="intAplicar" class="primary">Aplicar</button>
         <p id="intMsg" class="hint" role="status" aria-live="polite"></p>
+      </details>
+      <details class="fino" id="acaoPainel"><summary>Ação de luta / movimento (pose + rosto + efeitos)</summary>
+        <p class="hint">Corpo inclinado, braços e pernas bem angulados, rosto determinado e os efeitos de movimento atrás. Desmarque o que não quiser.</p>
+        <div class="sel-linha"><label for="acaoTipo">Ação</label><select id="acaoTipo"></select></div>
+        <label class="check-linha"><input type="checkbox" id="acaoRosto" checked> Rosto da ação</label>
+        <label class="check-linha"><input type="checkbox" id="acaoEfeitos" checked> Efeitos de movimento</label>
+        <label class="check-linha"><input type="checkbox" id="acaoEspelhar"> Espelhar (lado direito)</label>
+        <button type="button" id="acaoAplicar" class="primary">Aplicar no manequim ativo</button>
+        <p id="acaoMsg" class="hint" role="status" aria-live="polite"></p>
       </details>
       <label class="check-linha"><input type="checkbox" id="colV2"> Colisão anatômica detalhada V2 (dedos + autocolisão, experimental)</label>
       <p class="hint camadas-dica">No modo Bloquear, a V2 limita o movimento em 3D; o contato permitido não desativa os sólidos. Esta fase ainda usa aproximações geométricas e não simula forças físicas.</p>
@@ -324,6 +333,7 @@
         <p id="bibOnde" class="hint"></p>
         <div class="sel-linha"><label for="bibTipo">Guardar</label><select id="bibTipo"></select></div>
         <div class="sel-linha"><label for="bibNome">Nome</label><input id="bibNome" maxlength="80" placeholder="ex.: Soco de direita com raiva"></div>
+        <div class="sel-linha"><label for="bibTags">Função</label><input id="bibTags" maxlength="160" list="bibTagsLista" placeholder="ex.: Combate/Ataque/Soco (vírgula separa várias)"><datalist id="bibTagsLista"></datalist></div>
         <label class="pc-chk"><input type="checkbox" id="bibFormato"> rosto: incluir formato e modelo de cabeça</label>
         <div class="group poses" role="group" aria-label="Biblioteca">
           <button type="button" id="bibGuardar" class="primary">Guardar</button>
@@ -331,6 +341,7 @@
           <label class="mp-arquivo">Importar arquivo<input type="file" id="bibImportar" accept=".json,application/json"></label>
         </div>
         <div class="sel-linha"><label for="bibFiltro">Mostrar</label><select id="bibFiltro"></select><input id="bibBusca" type="search" placeholder="Buscar" aria-label="Buscar na biblioteca"></div>
+        <div class="sel-linha"><label for="bibFiltroTag">Função narrativa</label><select id="bibFiltroTag"><option value="">Todas</option></select></div>
         <p id="bibMsg" class="hint" role="status" aria-live="polite"></p>
         <p id="bibVazio" class="hint"></p>
         <ul id="bibLista" class="bib-lista"></ul>

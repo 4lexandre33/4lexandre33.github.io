@@ -26,7 +26,15 @@ function bibItem(tipo, nome, codigo, resumo) {
 }
 /* efeitos: guarda a lista legível (âncoras com nome de manequim, não id) */
 function bibEfeitosAtuais() { return cena.efeitos.lista().map(e => { const q = { ...e }; delete q.id; return q; }); }
+/* função narrativa (etiquetas "Combate/Ataque/Soco"): guardadas no resumo como #etiqueta, para caber em qualquer banco */
+function bibTags(t) { return (Array.isArray(t) ? t : String(t || "").split(",")).map(x => String(x).split("/").map(y => y.trim()).filter(Boolean).join("/")).filter(Boolean).slice(0, 6); }
+function tagsDoItem(x) { return [...String(x && x.resumo || "").matchAll(/#([^#·]+?)(?=\s*(?:#|·|$))/g)].map(m => m[1].trim()).filter(Boolean); }
 function capturarItem(tipo, o = {}) {
+  const it = capturarItem0(tipo, o), tg = bibTags(o.tags);
+  if (tg.length) it.resumo = (it.resumo + " " + tg.map(t => "#" + t).join(" ")).trim().slice(0, 200);
+  return it;
+}
+function capturarItem0(tipo, o = {}) {
   if (!BIB_TIPOS[tipo]) throw new Error("Tipo desconhecido: use " + Object.keys(BIB_TIPOS).join(", ") + ".");
   if (tipo === "pose") { const m = bibManequim(o.manequim); return bibItem(tipo, o.nome, m.codigoPose({ nome: o.nome }), m.nome + (SCN.list[SCN.active]?.exprNome ? " · rosto: " + SCN.list[SCN.active].exprNome : "")); }
   if (tipo === "rosto") { const m = bibManequim(o.manequim); return bibItem(tipo, o.nome, m.rostoCodigo({ nome: o.nome, formato: !!o.formato }), cena.expressoes.parecida(m.nome)); }
@@ -71,6 +79,6 @@ function importarItens(texto) {
   const L = Array.isArray(o) ? o : o && Array.isArray(o.itens) ? o.itens : [o];
   return L.map(validarItem);
 }
-cena.biblioteca = { tipos: () => ({ ...BIB_TIPOS }), capturar: capturarItem, aplicar: aplicarItem, validar: validarItem, exportar: exportarItens, importar: importarItens };
+cena.biblioteca = { tipos: () => ({ ...BIB_TIPOS }), capturar: capturarItem, tags: tagsDoItem, aplicar: aplicarItem, validar: validarItem, exportar: exportarItens, importar: importarItens };
 
-export { BIB_TIPOS, capturarItem, aplicarItem, validarItem, exportarItens, importarItens };
+export { tagsDoItem, BIB_TIPOS, capturarItem, aplicarItem, validarItem, exportarItens, importarItens };

@@ -34,6 +34,7 @@ const TIPOS_OBJETO = {
   barril: { nome: "barril", forma: "cilindro", raio: 2.3, alt: 7.6 },
   mesaRedonda: { nome: "mesa redonda", forma: "cilindro", raio: 4.0, alt: 6.5 }
 };
+TIPOS_OBJETO.corda = { nome: "corda / corrente", larg: 0.2, prof: 0.2, alt: 0.2, composto: true, grupo: "corda" };
 for (const [k, t] of Object.entries(COMPOSTOS)) TIPOS_OBJETO[k] = { nome: t.nome, larg: t.larg, prof: t.prof, alt: t.alt, composto: true, grupo: t.grupo };
 const ehCilindro = o => (TIPOS_OBJETO[o.tipo] || {}).forma === "cilindro";
 function objetoPadrao(tipo, o) {

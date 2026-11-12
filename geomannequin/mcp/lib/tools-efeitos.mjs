@@ -23,10 +23,10 @@ export function registerEffectsTools(server, W) {
       "Padrão: preto e branco (nanquim de mangá); colorido: true liga a cor do elemento (ou passe cores). nivel 1 a 5 = força (tamanho, intensidade e detalhes). reverso = implosão, destroços voltando, rachaduras fechando. progresso 0 → 1 = estágio do efeito. " +
       "Onomatopeia aceita katakana (texto \"ドッ\", \"ゴゴゴ\", \"ズドン\", \"バキッ\").",
     inputSchema: {
-      acao: z.enum(["catalogo", "adicionar", "editar", "remover", "listar", "duplicar", "limpar", "converter_antigos", "salvar_modelo", "usar_modelo", "modelos", "colorir"]).describe("O que fazer. colorir: liga (colorido: true) ou desliga a cor de um efeito (id) ou de todos."),
+      acao: z.enum(["catalogo", "adicionar", "editar", "remover", "listar", "duplicar", "limpar", "converter_antigos", "salvar_modelo", "usar_modelo", "modelos", "colorir", "criar", "prontos", "construtor"]).describe("O que fazer. colorir: liga (colorido: true) ou desliga a cor de um efeito (id) ou de todos. criar: efeito novo por camadas (campo camadas). prontos: os 46 efeitos de mangá com as camadas de cada um (para copiar e mudar). construtor: as peças (caminhos, formas, repetições, perfis de traço, estilos)."),
       id: z.string().optional().describe("Efeito a editar, remover ou duplicar (ex.: \"fx3\"), da lista."),
       tipo: z.enum(TIPOS).optional().describe("Tipo do efeito (adicionar) ou categoria do catálogo."),
-      categoria: z.enum(["tela", "cena", "personagem", "carga", "destruicao"]).optional().describe("Só no catálogo: filtra a categoria."),
+      categoria: z.enum(["tela", "cena", "personagem", "carga", "destruicao", "vfx"]).optional().describe("Só no catálogo: filtra a categoria."),
       em: z.object({
         modo: z.enum(["manequim", "chao", "mundo", "tela", "objeto"]).optional(),
         manequim: z.string().optional().describe("Nome do manequim (vazio = o ativo)."),
@@ -62,6 +62,8 @@ export function registerEffectsTools(server, W) {
       svg: z.string().max(60000).optional().describe("Efeito personalizado: SVG próprio (formas), centrado em 0,0; script e links são removidos."),
       params: z.object(PARAMS).optional().describe("Parâmetros do tipo (raio, comprimento, largura, aneis, fios, pontas…); o catálogo mostra quais cada tipo usa."),
       nome: z.string().max(40).optional().describe("Nome (do efeito ou do modelo salvo)."),
+      estilo: z.enum(["auto", "linha", "contorno", "chapado", "cel", "brilho", "nanquim"]).optional().describe("Acabamento: linha, contorno (fita com borda), chapado (preenchido), cel (sombra de anime), brilho (núcleo claro + halo), nanquim (preto com borda branca)."),
+      camadas: z.string().max(40000).optional().describe("Só em criar: JSON de uma lista de camadas. Cada camada = {forma, caminho, repetir, traco, estilo, cor}. formas: fita, aneis, particulas, gotas, estrelas, bolhas, espinhos, cupula, esfera, circuloMagico, nuvem, chamas, degraus, estouro. caminho.tipo: reta, arco, helice, espiral, onda, zigue, raio, s, laco, circulo, pontos (com comprimento, raio, voltas, amplitude…). repetir.tipo: nenhum, leque, anel, aoLongo, paralelo, aleatorio, fases (com n). traco: {largura, perfil: pincel|fuso|ponta|agulha|cheio|base|onda}. Use prontos para ver exemplos completos."),
       mostrar: z.boolean().optional().describe("Devolver a imagem da cena (padrão: sim ao adicionar/editar).")
     },
     annotations: RW
@@ -72,7 +74,7 @@ export function registerEffectsTools(server, W) {
       if (em && em.modo === "manequim") delete em.modo;
       const p = a.para; const para = !p ? undefined : p.maisPerto ? { alvo: "auto" } : p.camera ? "camera" : p.manequim ? p.manequim : p.objeto ? { objeto: p.objeto } : p.graus !== undefined ? p.graus : (p.x !== undefined || p.y !== undefined || p.z !== undefined) ? [p.x || 0, p.y || 0, p.z || 0] : undefined;
       const opts = {};
-      for (const k of ["elemento", "colorido", "nivel", "estiloTexto", "cores", "escala", "intensidade", "progresso", "opacidade", "camada", "reverso", "semente", "inicio", "duracao", "texto", "simbolo", "svg", "params", "nome", "acabamento"]) if (a[k] !== undefined) opts[k] = a[k];
+      for (const k of ["estilo", "elemento", "colorido", "nivel", "estiloTexto", "cores", "escala", "intensidade", "progresso", "opacidade", "camada", "reverso", "semente", "inicio", "duracao", "texto", "simbolo", "svg", "params", "nome", "acabamento"]) if (a[k] !== undefined) opts[k] = a[k];
       if (em) opts.ancora = em; if (para !== undefined) opts.direcao = para;
       let resultado, desenhar = false;
       switch (a.acao) {
@@ -86,6 +88,9 @@ export function registerEffectsTools(server, W) {
         case "salvar_modelo": if (!a.id) throw new Error("Informe o id do efeito."); resultado = { modelo: fx.salvarModelo(a.id, a.nome) }; break;
         case "usar_modelo": if (!a.nome) throw new Error("Informe o nome do modelo."); resultado = { id: fx.usarModelo(a.nome, opts) }; desenhar = true; break;
         case "modelos": resultado = { modelos: fx.modelos() }; break;
+        case "criar": { if (!a.camadas) throw new Error("Informe camadas (JSON de uma lista)."); let c; try { c = JSON.parse(a.camadas); } catch { throw new Error("camadas não é JSON válido."); } resultado = { id: fx.criar(Array.isArray(c) ? c : [c], opts) }; desenhar = true; break; }
+        case "prontos": resultado = { prontos: fx.prontos(a.nome) }; break;
+        case "construtor": resultado = { construtor: fx.construtor() }; break;
         case "colorir": resultado = { alterados: fx.colorir(a.colorido !== false, a.id) }; desenhar = true; break;
         default: resultado = {};
       }

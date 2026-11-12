@@ -342,6 +342,44 @@ function folhaDeContato(fotos, colunas, preparar) {
 }
 /* modelos prontos de roteiro */
 const MODELOS_ROTEIRO = {
+  "Página de luta (ações, efeitos e rostos)": `#cena
+cena.limpar();
+const ana = cena.ativo.renomear("Ana").posicao(-5, 0).girar(90);
+const leo = cena.adicionar({ nome: "Leo", x: 5 }).girar(-90);
+camera.perspectiva(true).lente(35);
+
+#quadro 1 — Arrancada 16:9
+cena.obter("Ana").acao("corridaSuperRapida");
+camera.enquadramento("geral", "Ana");
+// fala: Ana: Agora!
+
+#quadro 2 — Soco carregado novo 3:4
+cena.obter("Ana").posicao(-2, 0).acao("socoCarregado");
+cena.obter("Leo").acao("defesaComBracos");
+camera.enquadramento("medio", "Ana");
+
+#quadro 3 — Impacto 4:3
+cena.obter("Ana").acao("socando", { efeitos: false });
+cena.efeitos.adicionar("explosao_estrelada", { em: { manequim: "Ana", parte: "maoDir" } });
+cena.obter("Leo").acao("quedaDeCostas");
+camera.enquadramento("geral");
+
+#quadro 4 — Golpe especial (efeito montado por camadas) 16:9
+cena.efeitos.limpar();
+cena.obter("Ana").acao("lancandoMagia", { efeitos: false });
+cena.efeitos.criar([
+  { forma: "fita", caminho: { tipo: "helice", comprimento: 16, raio: 0.6, raioFim: 4, voltas: 4 }, traco: { largura: 1.3, perfil: "fuso" }, estilo: "cel" },
+  { forma: "aneis", caminho: { tipo: "reta", comprimento: 16, raio: 0.5, raioFim: 6 }, repetir: { n: 7 }, traco: { largura: 0.6, perfil: "cheio" }, estilo: "contorno" }
+], { em: { manequim: "Ana", parte: "maoDir" }, direcao: "Leo" });
+camera.enquadramento("geral");
+// fala: Ana: Tornado de fita!
+
+#quadro 5 — Ajudando a levantar 3:4
+cena.efeitos.limpar();
+cena.interagir("Ana", "Leo", "ajudarALevantar");
+cena.obter("Ana").expressao("alivio");
+camera.enquadramento("geral");
+`,
   "Diálogo entre dois": `#cena
 cena.limpar();
 const ana = cena.ativo.renomear("Ana").posicao(-3, 0).girar(90);

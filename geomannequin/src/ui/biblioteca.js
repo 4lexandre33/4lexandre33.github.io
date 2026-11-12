@@ -1,9 +1,10 @@
 /* GeoMannequin — painel "Biblioteca": guarda poses, rostos, efeitos, cenas e coleções num banco
    (nuvem do claude.ai, Supabase ou este navegador), lista, aplica, copia o código e apaga. */
 import { $ } from "../scene/ambiente.js";
-import { BIB_TIPOS, capturarItem, aplicarItem, exportarItens, importarItens } from "../scene/biblioteca.js";
+import { BIB_TIPOS, capturarItem, aplicarItem, exportarItens, importarItens, tagsDoItem } from "../scene/biblioteca.js";
 import { escolherBackend, configSupabase, guardarConfigSupabase, SQL_SUPABASE } from "./biblioteca-dados.js";
 import { render } from "./palco.js";
+import { cena } from "../scene/comandos.js";
 import { syncControls } from "./controles.js";
 import { baixar } from "./painel-cena.js";
 
@@ -15,8 +16,13 @@ const quando = s => { const d = new Date(s); return isNaN(d) ? "" : d.toLocaleDa
 async function copiar(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { const ta = $("bibCodigo"); ta.hidden = false; ta.value = t; ta.focus(); ta.select(); return false; } }
 
 function desenhar() {
-  const ul = $("bibLista"), f = $("bibFiltro").value, q = ($("bibBusca").value || "").trim().toLowerCase();
-  const L = todos.filter(x => (!f || x.tipo === f) && (!q || (x.nome + " " + x.resumo).toLowerCase().includes(q)));
+  const ul = $("bibLista"), f = $("bibFiltro").value, q = ($("bibBusca").value || "").trim().toLowerCase(), ft = ($("bibFiltroTag") && $("bibFiltroTag").value) || "";
+  /* árvore de funções narrativas: todas as etiquetas e seus níveis (Combate, Combate/Ataque, Combate/Ataque/Soco) */
+  { const sel = $("bibFiltroTag"), dl = $("bibTagsLista"), niveis = new Set();
+    todos.forEach(x => tagsDoItem(x).forEach(t => { const p = t.split("/"); for (let i = 1; i <= p.length; i++) niveis.add(p.slice(0, i).join("/")); }));
+    if (sel) { const v = sel.value; sel.replaceChildren(new Option("Todas", ""), ...[...niveis].sort().map(t => new Option("  ".repeat(t.split("/").length - 1) + t.split("/").pop(), t))); sel.value = [...niveis].includes(v) ? v : ""; }
+    if (dl && !dl.options.length) { try { cena.poses.tags().forEach(t => dl.appendChild(new Option(t))); } catch (e) { } } }
+  const L = todos.filter(x => (!f || x.tipo === f) && (!q || (x.nome + " " + x.resumo).toLowerCase().includes(q)) && (!ft || tagsDoItem(x).some(t => t === ft || t.startsWith(ft + "/"))));
   $("bibVazio").hidden = L.length > 0; $("bibVazio").textContent = todos.length ? "Nada com esse filtro." : "A biblioteca está vazia. Escolha o que guardar e clique em Guardar.";
   ul.replaceChildren(...L.map(x => {
     const li = document.createElement("li"), t = document.createElement("div"), b = document.createElement("div");
@@ -55,11 +61,11 @@ export async function iniciarBiblioteca() {
   if (!$("bibPainel")) return;
   $("bibTipo").replaceChildren(...Object.entries(BIB_TIPOS).map(([k, v]) => new Option(v, k)));
   $("bibFiltro").replaceChildren(new Option("Tudo", ""), ...Object.entries(BIB_TIPOS).map(([k, v]) => new Option(v.split(" (")[0], k)));
-  $("bibFiltro").addEventListener("change", desenhar); $("bibBusca").addEventListener("input", desenhar);
+  $("bibFiltro").addEventListener("change", desenhar); $("bibBusca").addEventListener("input", desenhar); $("bibFiltroTag")?.addEventListener("change", desenhar);
   $("bibLugar").addEventListener("change", e => { pref(e.target.value); conectar(e.target.value); });
   $("bibGuardar").addEventListener("click", async () => {
     try {
-      const item = capturarItem($("bibTipo").value, { nome: $("bibNome").value, formato: $("bibFormato").checked });
+      const item = capturarItem($("bibTipo").value, { nome: $("bibNome").value, formato: $("bibFormato").checked, tags: $("bibTags") ? $("bibTags").value : "" });
       $("bibGuardar").disabled = true; await B.salvar(item); msg("✓ “" + item.nome + "” guardado em " + B.nome + ".");
       $("bibNome").value = ""; if (!parar) await recarregar();
     } catch (e) { msg("✗ " + (e && e.message || e), true); } finally { $("bibGuardar").disabled = B.podeGravar === false; }

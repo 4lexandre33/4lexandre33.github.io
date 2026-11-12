@@ -27,6 +27,7 @@ import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camada
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
 import { segurarComo, listaPegadas } from "./pegadas.js";
+import { ACOES_LUTA, TAGS_POSES, aplicarAcao, arvorePoses, posesPorTag, normTag } from "./acoes-luta.js";
 import { interagir, listaInteracoes } from "./interacoes.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
 import {planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip} from "./grip-auto.js";
@@ -134,6 +135,8 @@ function apiFor(it){
       /* molejo: as poses prontas vêm com micro-variações (molejo: 0 desliga; 0.3 sutil; 1 solto) */
       const mj=opts&&opts.molejo!==undefined?(opts.molejo===false?0:+opts.molejo):0.6;if(mj>0)withInst(it,()=>aplicarMolejo(it.params,{intensidade:mj,semente:k+(opts&&opts.semente!==undefined?":"+opts.semente:"")}));
       guardarContatoV2(it,antes);return m},
+    /* m.acao("corridaSuperRapida") — pose de ação com rosto e efeitos de movimento; {efeitos:false, rosto:false, lado:"dir", colorido:true} */
+    acao(nome,o){chk();cena.marcarEstado();SCN.__cenaEfeitos=cena.efeitos;return aplicarAcao(m,it,nome,o||{})},
     /* m.molejo(0.6, "variação 2") — micro-inclinações e assimetria na pose atual */
     molejo(intensidade,semente){chk();const antes={...it.params};withInst(it,()=>aplicarMolejo(it.params,{intensidade:intensidade===undefined?0.6:+intensidade,semente:semente??(Date.now()%100000)}));limitesAcoplados(it.params);guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
@@ -495,8 +498,16 @@ const cena={
     renomear:(nome,novo)=>renomearPose(nome,novo).nome,
     duplicar:nome=>duplicarPose(nome).nome,
     ler:texto=>lerCodigoDePose(texto),
-    partes:()=>({...PARTES_POSE})
+    partes:()=>({...PARTES_POSE}),
+    /* função narrativa: cena.poses.arvore() · cena.poses.porTag("Combate/Ataque") · cena.poses.etiquetar("Minha pose", ["Combate/Ataque/Soco"]) · cena.poses.tags() */
+    arvore:o=>arvorePoses(o||{}),
+    porTag:(t,o)=>posesPorTag(t,{minhas:posesSalvas(),...(o||{})}),
+    tags:()=>[...new Set([...Object.values(TAGS_POSES),...posesSalvas().flatMap(p=>p.tags||[])])].sort(),
+    tagDe:nome=>TAGS_POSES[nomePose(nome)]||((posesSalvas().find(p=>p.nome===nome)||{}).tags||[])[0]||null,
+    etiquetar:(nome,tags)=>{const p=acharPoseSalva(nome);p.tags=[...new Set((Array.isArray(tags)?tags:[tags]).map(normTag).filter(Boolean))].slice(0,12);try{if(typeof localStorage!=="undefined")localStorage.setItem("geomannequin.minhasPoses",JSON.stringify(posesSalvas()))}catch(e){}return p.tags}
   },
+  /* ações (poses de luta e movimento com rosto e efeitos): cena.acoes() */
+  acoes(){return Object.entries(ACOES_LUTA).map(([acao,a])=>({acao,expressao:a.expressao,efeitos:a.efeitos.map(x=>x[0]),funcao:TAGS_POSES[acao]||null}))},
   /* roteiro de quadros (na página): cena.quadros.abrir(), .texto("#quadro 1 …"), .renderizar(), .fila(), .baixar() */
   quadros:{
     abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),

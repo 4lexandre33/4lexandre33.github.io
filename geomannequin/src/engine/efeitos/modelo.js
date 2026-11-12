@@ -3,6 +3,7 @@
    escala, cores (elemento ou lista), camada, semente, intensidade, progresso/tempo, reverso e visível.
    Guardado em SCN.efeitos (com desfazer) e salvo com a cena. */
 import { clamp } from "../matematica.js";
+import { PRESETS_VFX, ESTILOS_VFX, validarCamadas } from "./camadas-vfx.js";
 
 /* paletas por elemento: do mais claro (núcleo) ao mais escuro (borda) */
 const ELEMENTOS = {
@@ -136,9 +137,15 @@ const CATALOGO = {
   aneis_orbitais: { cat: "personagem", nome: "Anéis em volta do corpo", elem: "vento", camada: "auto", ancora: "corpo",
     params: { aneis: P(2, 1, 5, "anéis"), raio: P(1.1, 0.4, 3, "largura"), espessura: P(1, 0.3, 3, "espessura") } },
   /* ---- personalizado (código ou SVG próprio) ---- */
-  personalizado: { cat: "tela", nome: "Personalizado (código ou SVG)", elem: "tinta", camada: "auto", ancora: "tela", params: {}, personalizado: true }
+  personalizado: { cat: "tela", nome: "Personalizado (código ou SVG)", elem: "tinta", camada: "auto", ancora: "tela", params: {}, personalizado: true },
+  /* ---- construtor por camadas: caminho + forma + repetir + traço + estilo (qualquer efeito novo) ---- */
+  composto: { cat: "vfx", nome: "Efeito montado (camadas)", elem: "vento", camada: "auto", ancora: "maoDir", composto: true,
+    params: { tamanho: P(1, 0.1, 6, "tamanho"), quantidade: P(1, 0.2, 3, "quantidade"), espessura: P(1, 0.2, 4, "espessura do traço") } }
 };
-const CATEGORIAS = { tela: "Tela (plano do quadro)", cena: "Cena (no mundo, com perspectiva)", personagem: "No personagem (golpe)", carga: "Carga de energia / poder", destruicao: "Destruição e queda" };
+/* os efeitos prontos das referências de mangá (cada um é uma lista de camadas do construtor) */
+for (const [k, v] of Object.entries(PRESETS_VFX)) CATALOGO[k] = { cat: "vfx", nome: v.nome, grupo: v.grupo, elem: v.elem, camada: "auto", ancora: v.ancora, preset: true, direcao: v.direcao, tras: !!v.tras,
+  params: { tamanho: P(1, 0.1, 6, "tamanho"), quantidade: P(1, 0.2, 3, "quantidade"), espessura: P(1, 0.2, 4, "espessura do traço") } };
+const CATEGORIAS = { vfx: "Mangá: efeitos prontos e montados (camadas)", tela: "Tela (plano do quadro)", cena: "Cena (no mundo, com perspectiva)", personagem: "No personagem (golpe)", carga: "Carga de energia / poder", destruicao: "Destruição e queda" };
 const SIMBOLOS = ["veia", "gota", "tristeza", "brilho", "exclamacao", "interrogacao", "coracao", "sono", "vapor", "susto"];
 /* partes do manequim que servem de âncora */
 const PARTES = ["corpo", "centro", "cabeca", "topoCabeca", "rosto", "olhos", "olhoEsq", "olhoDir", "pescoco", "peito", "cintura", "pelve", "pes",
@@ -206,7 +213,7 @@ function validarEfeito(e) {
     id: typeof e.id === "string" && /^fx\d+$/.test(e.id) ? (SEQ = Math.max(SEQ, +e.id.slice(2) + 1), e.id) : "fx" + SEQ++,
     tipo, categoria: C.cat, nome: texto(e.nome || C.nome, 60), elemento: elem,
     ancora: validarAncora(e.ancora, C.ancora === "tela" ? { modo: "tela" } : C.ancora === "mundo" ? { modo: "mundo" } : C.ancora === "chao" ? { modo: "chao" } : C.ancora === "objeto" ? { modo: "objeto" } : { modo: "manequim", parte: C.ancora }),
-    direcao: validarDirecao(e.direcao),
+    direcao: validarDirecao(e.direcao === undefined ? C.direcao : e.direcao),
     escala: num(e.escala, 0.05, 20, 1), intensidade: num(e.intensidade, 0, 1.5, 1),
     camada: ["auto", "atras", "frente", "fundo"].includes(e.camada) ? e.camada : C.camada,
     semente: Math.round(num(e.semente, 0, 1e6, 1)), inicio: Math.round(num(e.inicio, 0, 1e5, 0)), duracao: Math.round(num(e.duracao, 1, 1e5 + 1, 1e5 + 1)),
@@ -227,6 +234,10 @@ function validarEfeito(e) {
   out.params = prm;
   if (C.texto) { out.texto = texto(e.texto || "BOOM!", 24); out.estiloTexto = ["latino", "katakana"].includes(e.estiloTexto) ? e.estiloTexto : /[\u30A0-\u30FF]/.test(out.texto) ? "katakana" : "latino"; }
   if (C.simbolo) out.simbolo = SIMBOLOS.includes(e.simbolo) ? e.simbolo : "veia";
+  /* estilo do acabamento (efeitos de camadas e prontos): linha, contorno, chapado, cel, brilho, nanquim */
+  if (e.estilo !== undefined && e.estilo !== "auto") { if (!ESTILOS_VFX[e.estilo]) throw new Error("Estilo “" + e.estilo + "”: use " + Object.keys(ESTILOS_VFX).join(", ") + " ou auto."); out.estilo = e.estilo; }
+  if (C.composto) out.camadas = validarCamadas(Array.isArray(e.camadas) && e.camadas.length ? e.camadas : [{ forma: "fita", caminho: { tipo: "arco", raio: 4, abertura: 140 }, traco: { largura: 1.4, perfil: "fuso" } }]);
+  else if (C.preset && Array.isArray(e.camadas)) out.camadas = validarCamadas(e.camadas);
   if (C.personalizado) {
     if (typeof e.svg === "string") out.svg = limparSvg(e.svg);
     if (typeof e.codigo === "string") out.codigo = e.codigo.slice(0, 20000);

@@ -188,7 +188,8 @@ function salvarPose(nome, valores, opts = {}) {
   if (!valores || !Object.keys(valores).length) throw new Error("Nada para salvar: a pose está vazia.");
   const lista = posesSalvas(), n0 = String(nome || "").trim() || "Pose";
   const i = lista.findIndex(p => p.nome === n0);
-  const reg = { nome: i >= 0 && opts.substituir ? n0 : nomeLivre(n0), valores: { ...valores }, criada: new Date().toISOString(), ...(opts.miniatura ? { miniatura: opts.miniatura } : {}) };
+  const tags = (Array.isArray(opts.tags) ? opts.tags : opts.tags ? [opts.tags] : []).map(t => String(t).split("/").map(x => x.trim()).filter(Boolean).join("/")).filter(Boolean).slice(0, 12);
+  const reg = { nome: i >= 0 && opts.substituir ? n0 : nomeLivre(n0), valores: { ...valores }, criada: new Date().toISOString(), ...(opts.miniatura ? { miniatura: opts.miniatura } : {}), ...(tags.length ? { tags } : {}) };
   if (i >= 0 && opts.substituir) lista[i] = reg; else lista.push(reg);
   persistirPoses(); return reg;
 }

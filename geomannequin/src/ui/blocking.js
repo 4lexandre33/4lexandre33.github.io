@@ -26,7 +26,9 @@ const E = {};
 /* onde cada parte está: "painel" | "flutuante" | "externo" (só o painel inteiro vai para outra janela do navegador) */
 const ONDE = { painel: "painel", cima: "painel", lado: "painel" };
 let externa = null;
-const ORDEM_OBJ = ["cadeira", "mesa", "mesaRedonda", "cama", "banco", "caixa", "cubo", "degrau", "parede", "cilindro", "copo", "coluna", "barril"];
+const ORDEM_OBJ = ["cadeira", "mesa", "mesaRedonda", "cama", "banco", "caixa", "cubo", "degrau", "parede", "cilindro", "copo", "coluna", "barril",
+  /* formas e objetos de carga, viagem, construção, ferramentas, rodas e armas */
+  ...Object.keys(TIPOS_OBJETO).filter(t => TIPOS_OBJETO[t].composto && t !== "corda")];
 
 /* ===== janela flutuante dentro da página: arrastar pelo título, redimensionar no canto, devolver ao painel ===== */
 function janela(id, titulo, x, y, aoDevolver) {

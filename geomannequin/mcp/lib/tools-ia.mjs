@@ -2,8 +2,11 @@
 import { z } from "zod";
 import { renderSvg, sceneLink } from "./scene.mjs";
 import { toPng } from "./png.mjs";
+import { createWorld } from "./core.mjs";
 
 const RO = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
+let _meta = null;
+function meta() { if (!_meta) { const w = createWorld(); _meta = { acoesPegada: Object.fromEntries(w.cena.pegadas().map(p => [p.tipo, (p.modo.startsWith("o corpo") ? "* " : "") + p.descricao])), interacoes: Object.fromEntries(w.cena.interacoes().map(i => [i.tipo, i.descricao])), acoesLuta: Object.fromEntries(w.cena.acoes().map(x => [x.acao, x.expressao])) }; } return _meta; }
 export function registerIaTools(server, W) {
   server.registerTool("estado_pose", {
     title: "Estado da pose (para conferir e corrigir)",
@@ -99,25 +102,58 @@ export function registerIaTools(server, W) {
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
   server.registerTool("segurar_como", {
-    title: "Segurar um objeto de um jeito",
-    description: "Faz o manequim segurar um objeto da cena do jeito pedido, com IK dos braços, gesto da mão e o objeto preso à mão (segue a mão). O objeto e a mão são empurrados para fora do corpo se atravessarem. " +
-      "Pegadas: forca (punho em volta, bastão/garrafa), espada (duas mãos no cabo), pinca (varinha, lápis), gancho (mala pela alça), bandeja (palma por baixo), duasMaos (caixa à frente), abracado (contra o peito), " +
-      "acimaDaCabeca (erguido com as duas mãos), noOmbro (tora, saco), debaixoDoBraco (livro, capacete), noQuadril (balde, cesto), empurrando (duas palmas à frente). Crie o objeto antes (ferramenta de objetos) e use o nome dele.",
-    inputSchema: { objeto: z.string().describe("Nome ou tipo do objeto na cena."), pegada: z.string().describe("Uma das pegadas da lista."), manequim: z.string().optional(), mao: z.enum(["direita", "esquerda"]).optional().describe("Mão principal (padrão: direita).") },
+    title: "Carregar, levantar, sustentar, puxar, empurrar ou arrastar um objeto",
+    description: "Faz o manequim pegar um objeto da cena de um jeito (36 ações das referências): a palma encosta por fora da superfície de verdade, o braço inteiro é resolvido com a orientação da palma e o comprimento do braço, os dedos fecham até encostar e nada atravessa o corpo. " +
+      "Ações (o corpo vai até o objeto nas marcadas com *): " + Object.entries(meta().acoesPegada).map(([k, d]) => k + " — " + d).join("; ") + ". " +
+      "Objetos prontos para criar antes (ferramenta de objetos): caixa, cilindro, esfera, cone, toro, pedra, pneu, saco, fardo, tambor, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco.",
+    inputSchema: { objeto: z.string().describe("Nome ou tipo do objeto na cena."), pegada: z.string().describe("Uma das ações da lista (nomes antigos também valem: duasMaos, gancho, empurrando)."), manequim: z.string().optional(),
+      mao: z.enum(["direita", "esquerda"]).optional().describe("Mão principal (padrão: direita)."), orientacao: z.enum(["empe", "deitado", "diagonal"]).optional().describe("Orientação do objeto nas ações que aceitam.") },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
   }, async a => {
-    try { const w = W(), m = a.manequim ? w.cena.obter(a.manequim) : w.cena.ativo; const r = m.segurarComo(a.objeto, a.pegada, { mao: a.mao });
-      return { content: [{ type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    try { const w = W(), m = a.manequim ? w.cena.obter(a.manequim) : w.cena.ativo; const r = m.segurarComo(a.objeto, a.pegada, { mao: a.mao, orientacao: a.orientacao });
+      const png = await toPng(renderSvg(w, {}).svg, 900);
+      return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
   server.registerTool("interagir", {
-    title: "Dois manequins: abraçar e apoiar",
-    description: "Põe dois manequins juntos numa interação com contato: abracoFrente, abracoLado, abracoPorTras, ombroAOmbro, maoNoOmbro, apoiandoFerido. A fica onde está; B é posicionado e girado junto de A; os braços vão por IK até as costas/ombros/cintura do outro e o contato entre os dois passa a ser permitido.",
+    title: "Dois manequins: abraçar, apoiar, cumprimentar",
+    description: "Põe dois manequins juntos numa interação com contato. A distância sai do corpo dos dois e cada mão vai à superfície do outro (costas, ombro, cintura) desviando do tronco dele. Tipos: " + Object.keys(meta().interacoes).join(", ") + ".",
     inputSchema: { a: z.string().describe("Nome do manequim A (fica no lugar)."), b: z.string().describe("Nome do manequim B (é posicionado)."), tipo: z.string().describe("Tipo de interação.") },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
   }, async a => {
     try { const w = W(), r = w.cena.interagir(a.a, a.b, a.tipo); const png = await toPng(renderSvg(w, {}).svg, 900);
       return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("acao", {
+    title: "Ação de luta ou movimento (pose + rosto + efeitos)",
+    description: "Aplica uma ação: pose com o corpo inclinado e membros bem angulados, a expressão da ação (determinação, grito de guerra, fúria…) e os efeitos de movimento atrás (rastro de velocidade, arco do golpe, linhas de impulso…). Ações: " + Object.keys(meta().acoesLuta).join(", ") + ".",
+    inputSchema: { acao: z.string(), manequim: z.string().optional(), lado: z.enum(["esq", "dir"]).optional(), efeitos: z.boolean().optional().describe("false = só a pose e o rosto."), rosto: z.boolean().optional(), colorido: z.boolean().optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), m = a.manequim ? w.cena.obter(a.manequim) : w.cena.ativo; const r = m.acao(a.acao, { lado: a.lado, efeitos: a.efeitos, rosto: a.rosto, colorido: a.colorido });
+      const png = await toPng(renderSvg(w, {}).svg, 900);
+      return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("molejo", {
+    title: "Molejo: micro-inclinações e assimetria na pose",
+    description: "Tira a dureza da pose atual: micro-inclinações de pelve, lombar, tórax, pescoço e cabeça, braços e pernas que não são espelho um do outro e, em pé, o peso numa perna. intensidade 0–1,5; semente escolhe a variação.",
+    inputSchema: { manequim: z.string().optional(), intensidade: z.number().min(0).max(1.5).optional(), semente: z.number().optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), m = a.manequim ? w.cena.obter(a.manequim) : w.cena.ativo; w.cena.marcarEstado(); m.molejo(a.intensidade ?? 0.6, a.semente ?? 1); return { content: [{ type: "text", text: "Molejo aplicado." }], structuredContent: { link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("poses_por_funcao", {
+    title: "Poses por função narrativa (categorias e subcategorias)",
+    description: "Lista a árvore de funções narrativas (Combate/Ataque/Soco, Social/Afeto/Abraço, Trabalho/Carregar…) ou as poses de uma categoria (com as subcategorias). Também etiqueta uma pose sua.",
+    inputSchema: { categoria: z.string().optional().describe("Ex.: Combate/Defesa. Vazio = árvore inteira."), etiquetar: z.object({ pose: z.string(), tags: z.array(z.string()) }).optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(); if (a.etiquetar) w.cena.poses.etiquetar(a.etiquetar.pose, a.etiquetar.tags);
+      const r = a.categoria ? { categoria: a.categoria, poses: w.cena.poses.porTag(a.categoria) } : { arvore: w.cena.poses.arvore() };
+      return { content: [{ type: "text", text: JSON.stringify(r) }], structuredContent: r }; }
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
   server.registerResource("manual-ia", "geomannequin://manual-ia", { title: "Manual de poses para IA", mimeType: "text/markdown", description: "Manual completo para qualquer IA montar e corrigir poses no GeoMannequin." },

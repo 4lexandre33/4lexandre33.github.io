@@ -58,7 +58,7 @@ function sceneState(){
       if(q.gripV3)delete q.gripV3.mannequinId;
     }
     if(o.grip){const j=SCN.list.findIndex(m=>m.id===o.grip.mannequinId);
-      q.grip=j<0?undefined:{...o.grip,mannequinIndex:j};if(q.grip)delete q.grip.mannequinId;}if(o.sobre){const j=SCN.objetos.findIndex(x=>x.id===o.sobre);if(j>=0)q.sobre=j;else delete q.sobre}else delete q.sobre;return q})};
+      q.grip=j<0?undefined:{...o.grip,mannequinIndex:j};if(q.grip)delete q.grip.mannequinId;}if(o.corda){const mi=SCN.list.findIndex(x=>x.id===o.corda.manequim),oi=SCN.objetos.findIndex(x=>x.id===o.corda.objeto);q.corda={...o.corda,manequim:undefined,objeto:undefined,manequimIndex:mi,objetoIndex:oi}}if(o.toques)q.toques=o.toques.map(t=>({side:t.side,mannequinIndex:SCN.list.findIndex(x=>x.id===t.mannequinId)})).filter(t=>t.mannequinIndex>=0);if(o.sobre){const j=SCN.objetos.findIndex(x=>x.id===o.sobre);if(j>=0)q.sobre=j;else delete q.sobre}else delete q.sobre;return q})};
 }
 function loadScene(sc){
   if(!sc||!Array.isArray(sc.list)||!sc.list.length)throw new Error("JSON da cena sem manequins.");
@@ -152,6 +152,9 @@ function loadScene(sc){
     q.hue=typeof o.hue==="number"&&isFinite(o.hue)?o.hue:null;
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
     if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();if(o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink))q.col={fill:o.col.fill,ink:o.col.ink};if(Number.isInteger(o.sobre))q._sobre=o.sobre;
+    if(o.tipo==="corda"&&Array.isArray(o.pontosCorda)){q.pontosCorda=o.pontosCorda.slice(0,80).filter(p=>Array.isArray(p)&&p.length===3&&p.every(Number.isFinite)).map(p=>p.slice());q.raioCorda=clamp(+o.raioCorda||0.09,0.02,0.4);q.corrente=!!o.corrente;q.emAr=true;q.base=0;if(o.corda)q._corda={...o.corda}}
+    if(Number.isFinite(o.semente))q.semente=o.semente;if(Number.isFinite(o.topo))q.topo=o.topo;
+    if(Array.isArray(o.toques))q._toques=o.toques.slice(0,4);
     if(o.grip&&Number.isInteger(o.grip.mannequinIndex))q._grip={...o.grip};
     if(o.gripV3&&Number.isInteger(o.gripV3.mannequinIndex))q._gripV3={...o.gripV3};
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
@@ -160,6 +163,8 @@ function loadScene(sc){
     SCN.objetos.push(q)}else SCN.objetos.push(null)}catch(e){SCN.objetos.push(null)}});
   /* apoio de objeto em objeto (guardado pelo índice) e cores que faltarem */
   {const arr=SCN.objetos.slice();SCN.objetos.length=0;arr.forEach(q=>{if(q)SCN.objetos.push(q)});
+   arr.forEach(q=>{if(q&&q._corda){const c=q._corda,m=SCN.list[c.manequimIndex],ob=arr[c.objetoIndex];if(m&&ob)q.corda={manequim:m.id,maos:Array.isArray(c.maos)?c.maos.filter(v=>v===1||v===-1):[-1],objeto:ob.id,local:Array.isArray(c.local)&&c.local.length===3?c.local.slice():[0,0,0],sobra:+c.sobra||3};delete q._corda}
+     if(q&&q._toques){q.toques=q._toques.map(t=>({side:t.side===1?1:-1,mannequinId:SCN.list[t.mannequinIndex]?.id})).filter(t=>t.mannequinId!==undefined);delete q._toques}});
    SCN.objetos.forEach(q=>{if(q._sobre!==undefined){const s=arr[q._sobre];q.sobre=s&&s!==q?s.id:null;delete q._sobre}if(q.hue===null&&!q.col)q.hue=nextHue(q)});atualizarApoios();}
   /* Restaurar vínculo cinemático com o NOVO ID do manequim. */
   SCN.objetos.forEach(o=>{if(o._grip){

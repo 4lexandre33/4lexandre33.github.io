@@ -8,6 +8,8 @@ import { paraMundo, telaDoMundo } from "../colisao-cena.js";
 import { colliderRig } from "../contact-v2.js";
 import { partesDoObjeto } from "../objetos.js";
 import { CATALOGO, ELEMENTOS, NIVEIS, coresDe, progressoNoQuadro, ativoNoQuadro } from "./modelo.js";
+import { desenharCamadas } from "./construtor.js";
+import { PRESETS_VFX, validarCamadas } from "./camadas-vfx.js";
 import { rng, caminho, suave, pincelada, estrela, faisca, labareda, raioRamificado, cristal, lasca, nuvem, circulo, misturar, corEm, forma } from "./primitivas.js";
 
 let PERMITIR_CODIGO = false;
@@ -995,6 +997,11 @@ TIPOS.sulco_poeira = fx => {
 };
 
 /* ---------- personalizado ---------- */
+/* construtor por camadas e os efeitos prontos de mangá: a profundidade de referência é o peito do dono */
+const zcDono = fx => { if (fx.plano || fx.A.dono < 0) return null; const q = pontoParte(fx.K, fx.A.dono, "peito"); return q ? fx.proj(q)[2] : null; };
+TIPOS.composto = fx => desenharCamadas(fx, fx.e.camadas || [], { zc: zcDono(fx) });
+const PRESETS_VALIDOS = {};
+for (const k of Object.keys(PRESETS_VFX)) TIPOS[k] = fx => { if (PRESETS_VFX[k].tras && fx.D.mundo && fx.e.direcao.modo === "auto") { fx.D.mundo = fx.D.mundo.map(v => -v); fx.D.ang += Math.PI; } return desenharCamadas(fx, fx.e.camadas || (PRESETS_VALIDOS[k] || (PRESETS_VALIDOS[k] = validarCamadas(PRESETS_VFX[k].camadas))), { zc: zcDono(fx) }); };
 TIPOS.personalizado = fx => {
   const e = fx.e, [x, y] = fx.A.tela, k = e.escala * (fx.A.z === null ? 1 : fx.A.s / 10), ang = fx.e.direcao.modo === "auto" ? 0 : fx.D.ang * 180 / Math.PI;
   if (e.svg) return '<g transform="translate(' + f1(x) + " " + f1(y) + ") rotate(" + f1(ang) + ") scale(" + (+k).toFixed(3) + ')">' + e.svg + "</g>";
