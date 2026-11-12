@@ -362,6 +362,9 @@ export function iniciarAjuda(){
   Dois manequins: cena.interagir("Ana", "Leo", "abracoFrente"|"apertoDeMao"|"apoiandoFerido"|…) · cena.interacoes()
   Ação de luta: m.acao("socoCarregado", {lado, efeitos: true, rosto: true, colorido}) · cena.acoes() · m.molejo(0.6, semente) · poseRapida(nome, {molejo: 0})
   Funções narrativas: cena.poses.arvore() · cena.poses.porTag("Combate/Ataque") · cena.poses.etiquetar("Minha pose", ["Social/Afeto"])
+  Muitos: cena.grade({n: 40, colunas: 8, espacamento: 6, x, z, poses: [...], olharPara: [x, z]}) · cena.arranjo("circulo"|"fila"|"arco"|"multidao", {...}) · cena.olharPara("todos"|"grupo:Nome", [x, z]) · cena.registro() · cena.separar() · cena.enquadrarTudo()
+  Planta (imagem colorida): cena.dePlanta(cena.lerPlanta({w, h, data}), {linha: 0}) — no Blocking: "Planta → cena"
+  Corpo: m.corpo("crianca"|"menino"|"menina") · m.pose({tamanho: 0.7, cinta: 1}) · rosto: eyeFocus (pupila minúscula), expressões iraFocada e focoTotal
   Efeito por camadas: cena.efeitos.criar([{forma: "fita", caminho: {tipo: "espiral", voltas: 2}, traco: {largura: 2, perfil: "fuso"}}], {em: "maoDir", estilo: "cel"}) · .prontos() · .construtor()
   
   Poses rápidas: ${todasPoses().join(", ")}

@@ -462,7 +462,7 @@ const cena={
   pegadas(){return listaPegadas()},
   /* dois manequins: cena.interagir("Ana", "Leo", "abracoFrente") · tipos: cena.interacoes() */
   interagir(a,b,tipo,opts){const A=typeof a==="number"?SCN.list[a]:SCN.list.find(x=>x.name===(a&&a.nome||a)),B=typeof b==="number"?SCN.list[b]:SCN.list.find(x=>x.name===(b&&b.nome||b));
-    if(!A||!B)throw new Error("Manequim não encontrado: use os nomes (cena.manequins()).");cena.marcarEstado();const r=interagir(A,B,tipo,opts||{});A.interacaoNome=B.interacaoNome=r.interacao;
+    if(!A||!B)throw new Error("Manequim não encontrado: use os nomes (cena.manequins()).");cena.marcarEstado();const r=interagir(A,B,tipo,Object.assign({ctx:{poseRapida:(it,nome)=>apiFor(it).poseRapida(nome,{molejo:0})}},opts||{}));A.interacaoNome=B.interacaoNome=r.interacao;
     if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.atravessando.length)LOG.push(["aviso","ainda encosta: "+r.atravessando.join(", ")]);return r},
   interacoes(){return listaInteracoes()},
   /* ===== muitos manequins =====

@@ -7,6 +7,7 @@
 import { SCN } from "./modelo.js";
 import { POSES_CORPO, POSE_GRUPOS, guardaBase, pesEm, aplicarMolejo } from "./poses.js";
 import { aplicarGesto } from "../engine/index.js";
+import { PARES } from "./interacoes.js";
 
 const alL = (s, k) => k + (s > 0 ? "L" : "R"), alO = (s, k) => k + (s > 0 ? "R" : "L");
 const alPunhos = Q => { aplicarGesto(Q, 1, "punho"); aplicarGesto(Q, -1, "punho"); };
@@ -147,6 +148,8 @@ const TAGS_PEGADAS = { carregar: "Trabalho/Carregar", levantar: "Trabalho/Levant
   "alcançar": "Trabalho/Alcançar", empunhar: "Combate/Armas", "usar ferramenta": "Trabalho/Ferramentas" };
 const TAGS_INTERACOES = { abracoFrente: "Social/Afeto/Abraço", abracoLado: "Social/Afeto/Abraço", abracoPorTras: "Social/Afeto/Abraço", ombroAOmbro: "Social/Camaradagem", maoNoOmbro: "Social/Apoio",
   apoiandoFerido: "Social/Apoio/Resgate", apertoDeMao: "Social/Saudação/Aperto de mão", toqueDePunho: "Social/Saudação", highFive: "Social/Celebração", ajudarALevantar: "Social/Apoio/Ajuda" };
+/* pares por referência (resgate, luta, consolo, fuga): a função vem de cada um */
+for (const [k, v] of Object.entries(PARES)) TAGS_INTERACOES[k] = v.tag;
 function normTag(t) { return String(t || "").split("/").map(x => x.trim()).filter(Boolean).join("/").slice(0, 120); }
 /* árvore: {Combate: {_poses: [...], Ataque: {_poses: [...], Soco: {...}}}} */
 function arvorePoses(o = {}) {

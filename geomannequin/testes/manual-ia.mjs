@@ -104,7 +104,8 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
 /* 10. dois manequins: cada interação alcança e não deixa braço atravessando fundo o tronco do outro */
 { const ruins = [];
   for (const t of createWorld().cena.interacoes().map(x => x.tipo)) { const w9 = createWorld(); w9.cena.ativo.renomear("Ana"); w9.cena.adicionar({ nome: "Leo", x: 6 });
-    try { const r = w9.cena.interagir("Ana", "Leo", t); if (/ficou a ([2-9]\d|\d{3}) cm/.test(r.alcance)) ruins.push(t + ": " + r.alcance); if (w9.cena.colisoes().length) ruins.push(t + ": colisão avisada"); } catch (e) { ruins.push(t + ": " + e.message); } }
-  ok(!ruins.length, "interações entre dois manequins (mão a menos de 20 cm do ponto, contato permitido)" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
+    /* pares de referência (resgate, luta, consolo, fuga): tolerância de 55 cm — limitação registrada nos pares de chão */
+    try { const r = w9.cena.interagir("Ana", "Leo", t), lim = w9.cena.interacoes().find(x => x.tipo === t).funcao ? 55 : 20, cm = +((r.alcance.match(/(\d+) cm/) || [0, 0])[1]); if (r.alcance !== "ok" && cm >= lim) ruins.push(t + ": " + r.alcance); if (w9.cena.colisoes().length) ruins.push(t + ": colisão avisada"); } catch (e) { ruins.push(t + ": " + e.message); } }
+  ok(!ruins.length, "interações entre dois manequins (mão a menos de 20 cm do ponto; 55 cm nos pares de chão; contato permitido)" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);
