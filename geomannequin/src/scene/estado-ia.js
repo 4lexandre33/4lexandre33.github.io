@@ -64,6 +64,14 @@ const IA_LADO = k => /L$/.test(k) && !/^(fSpread|thumbOpp)/.test(k) ? "esquerdo"
 function iaBase(k) { const b = k.replace(/[LR]$/, ""); return IA_SENTIDO[b] ? b : null; }
 const IA_ALIAS = (() => { const m = {}; Object.entries(ALIAS).forEach(([a, k]) => { if (!m[k]) m[k] = a; }); return m; })();
 /* rótulo, faixa e sentido de um controle */
+/* pescoço em palavras (sinais medidos: frente + = queixo ao peito; lado + = para a direita dele; girar + = para a esquerda dele) */
+function iaPescoco(p) {
+  const f = p.neckFlex || 0, l = p.neckSide || 0, g = p.neckTwist || 0, t = [];
+  if (Math.abs(f) >= 5) t.push(f > 0 ? "dobrado para a frente (queixo para o peito, " + Math.round(f) + "°)" : "estendido para trás (queixo para cima, " + Math.round(-f) + "°)");
+  if (Math.abs(l) >= 5) t.push("inclinado para a " + (l > 0 ? "direita" : "esquerda") + " dele (" + Math.round(Math.abs(l)) + "°)");
+  if (Math.abs(g) >= 5) t.push("girado para a " + (g > 0 ? "esquerda" : "direita") + " dele (" + Math.round(Math.abs(g)) + "°)");
+  return t.length ? t.join(", ") : "reto (neutro)";
+}
 function iaControle(k) {
   const d = SL.find(q => q.k === k), b = iaBase(k), s = b ? IA_SENTIDO[b] : null;
   return { chave: k, nome: IA_ALIAS[k] || k, rotulo: d ? d.label : k, min: d ? d.min : null, max: d ? d.max : null, negativo: s ? s[0] : "", positivo: s ? s[1] : "" };
@@ -153,7 +161,8 @@ function iaEstadoManequim(it, lst, idx, cam0) {
     nome: it.name, posicaoNoChao: { x: iaR(p.wx), z: iaR(p.wz) }, giroNoChao: Math.round(p.wRot || 0), ativo: SCN.list[SCN.active] === it,
     camera: { vista, azimute: az, elevacao: el, texto: "a câmera vê este manequim " + vista + (el > 25 ? ", de cima" : el < -15 ? ", de baixo" : "") },
     geral: { texto: geral, inclinacaoDoTronco: incl, troncoFrenteTras: pitchT, troncoLado: latT, torcaoPeitoSobrePelve: torcao, apoiadoEm: contatos, noAr },
-    cabeca: { olhando: olhar.texto + " (em relação ao tronco)", olhandoParaCamera: olhaCam < 30, anguloAteACamera: olhaCam },
+    cabeca: { olhando: olhar.texto + " (em relação ao tronco)", olhandoParaCamera: olhaCam < 30, anguloAteACamera: olhaCam,
+      pescoco: iaPescoco(p), valores: { cabecaGirar: p.headYaw || 0, cabecaInclinar: p.headPitch || 0, cabecaLado: p.headRoll || 0, pescocoFrente: p.neckFlex || 0, pescocoLado: p.neckSide || 0, pescocoGirar: p.neckTwist || 0 } },
     bracoEsquerdo: braco(1), bracoDireito: braco(-1), pernaEsquerda: perna(1), pernaDireita: perna(-1),
     rosto: iaRosto(it, p),
     controles: mudados, autoColisoes: col, naImagem: naTela,
@@ -179,6 +188,7 @@ function iaTextoEstado(E) {
   lin("- " + E.camera.texto + " (azimute " + E.camera.azimute + "°, elevação " + E.camera.elevacao + "°).");
   lin("- Postura: " + E.geral.texto + ". Tronco inclinado " + E.geral.inclinacaoDoTronco + "° da vertical (" + (E.geral.troncoFrenteTras >= 0 ? "para a frente " : "para trás ") + Math.abs(E.geral.troncoFrenteTras) + "°, " + (E.geral.troncoLado >= 0 ? "para a esquerda " : "para a direita ") + Math.abs(E.geral.troncoLado) + "°); peito girado " + E.geral.torcaoPeitoSobrePelve + "° sobre a pelve (+ = para a esquerda dele).");
   lin("- Apoiado em: " + (E.geral.apoiadoEm.length ? E.geral.apoiadoEm.join(", ") : "nada (solto no ar)") + ".");
+  lin("- Pescoço: " + E.cabeca.pescoco + ". Valores: " + Object.entries(E.cabeca.valores).map(([k, v]) => k + " " + Math.round(v)).join(", ") + ".");
   lin("- Cabeça: olhando " + E.cabeca.olhando + "; " + (E.cabeca.olhandoParaCamera ? "olha para a câmera" : "não olha para a câmera (" + E.cabeca.anguloAteACamera + "° fora)") + ".");
   for (const [n, b] of [["Braço esquerdo", E.bracoEsquerdo], ["Braço direito", E.bracoDireito]])
     lin("- " + n + ": mão " + b.altura + ", " + b.posicao.lado + ", " + (b.posicao.frenteDoCorpo >= 0 ? b.posicao.frenteDoCorpo + " à frente" : -b.posicao.frenteDoCorpo + " atrás") + " do corpo; braço (ombro→cotovelo) " + b.braco.texto + "; cotovelo " + b.cotovelo + "; antebraço " + b.antebraco.texto + "; palma virada " + b.palma.texto + "; dedos " + b.dedos.texto + "; " + b.mao + (b.noChao ? "; mão no chão" : "") + ".");

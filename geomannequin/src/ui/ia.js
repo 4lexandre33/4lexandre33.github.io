@@ -16,8 +16,9 @@ async function baixarTexto(nome, texto, tipo) {
 export function iniciarIA() {
   if (!$("iaPainel")) return;
   const pedido = () => ($("iaPedido").value || "").trim();
-  $("iaPacote").addEventListener("click", () => copiar(cena.pacoteIA(pedido(), { imagem: true }), "Pacote (manual + estado + pedido)"));
-  $("iaPacoteCurto").addEventListener("click", () => copiar(cena.pacoteIA(pedido(), { imagem: true, curto: true }), "Pacote sem o apêndice de comandos"));
+  const modo = () => { const r = document.querySelector('input[name="iaModo"]:checked'); return r ? r.value : ""; };
+  $("iaPacote").addEventListener("click", () => copiar(cena.pacoteIA(pedido(), { imagem: true, modo: modo() }), "Pacote (manual + estado + pedido)"));
+  $("iaPacoteCurto").addEventListener("click", () => copiar(cena.pacoteIA(pedido(), { imagem: true, curto: true, modo: modo() }), "Pacote sem o apêndice de comandos"));
   $("iaEstado").addEventListener("click", () => copiar("ESTADO ATUAL DA CENA (GeoMannequin)" + (pedido() ? "\nPEDIDO: " + pedido() : "") + "\n\n" + cena.estadoIA(), "Estado da pose"));
   $("iaManual").addEventListener("click", () => copiar(cena.manualIA(), "Manual"));
   $("iaVer").addEventListener("click", () => { const ta = $("iaTexto"); const ver = ta.hidden || ta.dataset.qual !== "manual"; ta.hidden = !ver; if (ver) { ta.value = cena.manualIA(); ta.dataset.qual = "manual"; ta.scrollTop = 0; } aviso(""); });

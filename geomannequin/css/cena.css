@@ -286,3 +286,5 @@ body.qd-aberto{overflow:hidden}
 .bib-acoes{display:flex;flex-wrap:wrap;gap:4px}
 .bib-sql{max-height:160px;overflow:auto;font-size:11px;white-space:pre;background:var(--panel2,rgba(0,0,0,.04));padding:6px;border-radius:4px}
 #bibBusca{flex:1 1 100px;min-width:0}
+.ia-modo{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;margin:8px 0;display:grid;gap:4px;font-size:13px}
+.ia-modo legend{font-size:12px;color:var(--muted)}

@@ -82,6 +82,14 @@ function manualRosto(add) {
   add("2. **Mistura** de duas ou mais (prontas ou guardadas): `m.expressao(\"60% raiva + 40% medo\")` ou `m.expressao({raiva: 0.6, medo: 0.4})`.");
   add("3. **Rosto por código** (controle a controle): `m.aplicarRosto('rosto({ sorriso: 0.4, palpebraBaixoEsq: 0.5 })')`. É assim que se cria um rosto que não existe na lista.");
   add("");
+  add("### 8.0 Cabeça e pescoço (controles de POSE, não de rosto)");
+  add("A cabeça gira sobre o pescoço (`cabeca*`) e o pescoço dobra sobre o tronco (`pescoco*`). Os dois se somam: use o pescoço para o grosso do movimento e a cabeça para o acabamento. Sinais medidos no desenho:");
+  add("- `pescocoFrente` −40 a 40: **+** queixo para o peito (pescoço dobra), **−** queixo para cima (pescoço estende). `cabecaInclinar` −60 a 50: **+** cabeça para baixo, **−** para cima.");
+  add("- `pescocoGirar` −45 a 45 e `cabecaGirar` −80 a 80: **+** vira para a ESQUERDA do manequim, **−** para a DIREITA.");
+  add("- `pescocoLado` −30 a 30 e `cabecaLado` −45 a 45: **+** inclina para o ombro DIREITO, **−** para o ESQUERDO.");
+  add("- Receitas: olhar para o céu `pescocoFrente: -25, cabecaInclinar: -25`; cabisbaixo `pescocoFrente: 25, cabecaInclinar: 20`; olhar por cima do ombro esquerdo `pescocoGirar: 40, cabecaGirar: 45, cabecaInclinar: 10`; curioso `cabecaLado: 18, pescocoLado: 8`; queixo erguido (arrogante) `cabecaInclinar: -15, pescocoFrente: -8`; encolhido de medo `pescocoFrente: 15` + `ombroEsqSubir: 0.7, ombroDirSubir: 0.7`.");
+  add("- O estado mostra `Pescoço:` em palavras e os seis valores. `m.olhar(\"câmera\")` ou `m.olhar(\"Leo\")` calcula cabeça e olhos sozinho.");
+  add("");
   add("### 8.1 O código do rosto");
   add("```js\nrosto(\"Sorriso cínico\", {\n  // boca e mandíbula\n  sorriso: 0.15, cantoBocaEsq: 0.6, cantoBocaDir: -0.2,\n  // olhos e pálpebras\n  palpebraBaixoEsq: 0.4,\n  // sobrancelhas\n  sobrancelhaForaEsq: 0.5, franzir: 0.2,\n}, { formato: { eyeSize: 1.1 }, cabeca: \"v5\" });\n```");
   add("- O nome (1º argumento) é opcional; serve para guardar. O 1º bloco `{…}` é a **expressão**; o 2º bloco é **opcional**: `formato` (feições do personagem, seção 8.6) e `cabeca` (modelo, seção 8.7).");
@@ -141,11 +149,18 @@ function manualPosesIA(opts = {}) {
   add("## 0. Regras para a IA (leia primeiro)");
   add("1. Você vai receber: este manual, o **ESTADO DA CENA** (texto e JSON com cada controle e o que cada parte do corpo está fazendo), uma **imagem** da cena (opcional) e o **pedido** da pessoa.");
   add("2. Responda com **um único bloco de código** ```js ... ``` com comandos do GeoMannequin. Antes do bloco, no máximo 2 frases dizendo o que vai mudar. Não invente comandos: use só os deste manual.");
-  add("3. Comece por uma pose pronta parecida (`m.poseRapida(\"nome\")`) e ajuste poucos controles com `m.pose({...})`. Os valores são **absolutos** (graus ou 0–1), não somam ao valor atual. Controle que você não mencionar fica como está.");
+  add("3. **Pose NOVA ou AJUSTE?** Os valores são **absolutos** (graus ou 0–1): não somam ao atual, e controle que você não citar fica como está.");
+  add("   - **Pose nova** (o pedido descreve outra pose, ex.: “pose de hip hop” com o manequim sentado): comece com `m.descanso()` (volta à pose em pé de descanso mantendo biotipo, rosto, posição e giro) ou com `m.poseRapida(\"nome\")` (que também parte do descanso), e depois `m.pose({...})`. Não reaproveite a pose atual: o que sobrar (corpo inclinado, joelho dobrado, braço levantado) estraga a nova.");
+  add("   - **Ajuste** (ex.: “levante mais o braço”, “feche o punho”): parta do ESTADO ATUAL e mude só os controles necessários.");
+  add("   - Nos dois casos leia o estado: ele diz quem está na cena (nomes), posição, para onde cada um olha, o rosto, o que segura e o que toca o chão. `m.descanso({rosto: true})` zera também a expressão.");
   add("4. **Esquerda/direita são sempre do manequim**, não da imagem. De frente para a câmera, a mão esquerda dele aparece à DIREITA da imagem. Confira no estado: `naImagem.maoEsq` dá a posição na foto.");
   add("5. Depois que a pessoa executar, ela manda o novo estado (e a imagem). Compare com o pedido, parte por parte (tronco, cabeça, cada braço, cada perna, mãos), e corrija só o que estiver errado. Repita até ficar certo.");
   add("6. Para movimentos com contato (mão no quadril, mão na parede, sentar numa cadeira) prefira os comandos de contato (`m.maoEm`, `m.sentar`, `m.apoiar`) em vez de adivinhar ângulos.");
   add("7. Se o estado mostrar **partes atravessando** (autoColisoes), afaste o membro (abra o braço, gire o tronco) ou mude o ângulo.\n");
+  add("### Onde pegar o estado atual");
+  add("- **No site**: painel “Usar com uma IA” (abaixo do editor de comandos) → **Copiar pacote para IA** (manual + estado + pedido) ou **Copiar estado da pose** (só o estado, para corrigir). Também **Ver estado**.");
+  add("- **Por código**: `cena.estadoIA()` (texto) ou `cena.estadoIA({json: true})`; um manequim: `m.estadoIA()`. O campo `codigo` recria a pose exata (corpo + rosto).");
+  add("- **Por MCP** (Claude, ChatGPT, Gemini com MCP): ferramenta `estado_pose` (texto + JSON + imagem); `descanso` volta à pose de descanso; `rosto` mexe só no rosto.\n");
   add("## 1. Mundo, eixos, unidades e lados");
   add("- Eixo **y** para cima. O chão fica em y = 0 (o apoio no chão acerta a altura sozinho: `apoio: 1`).");
   add("- Na cena nova, o manequim olha para **+z** (para a câmera inicial). A **esquerda dele é +x** (aparece à direita da imagem).");
@@ -246,7 +261,8 @@ function manualPosesIA(opts = {}) {
 /* pacote para colar numa IA: regras + manual + estado + pedido */
 function pacoteParaIA(pedido, opts = {}) {
   const E = estadoParaIA(opts);
-  return "Você vai controlar o GeoMannequin, um manequim 3D comandado por código. Leia o MANUAL, depois o ESTADO ATUAL e responda ao PEDIDO com um bloco ```js``` de comandos (veja as regras na seção 0 do manual)." +
+  const modo = opts.modo === "nova" ? "\n\n=== MODO ===\nPOSE NOVA: comece o código com `m.descanso()` (ou `m.poseRapida(...)`) e monte a pose a partir da pose de descanso em pé." : opts.modo === "ajuste" ? "\n\n=== MODO ===\nAJUSTE: parta da pose atual (estado abaixo) e mude só o necessário; não use m.descanso()." : "";
+  return "Você vai controlar o GeoMannequin, um manequim 3D comandado por código. Leia o MANUAL, depois o ESTADO ATUAL e responda ao PEDIDO com um bloco ```js``` de comandos (veja as regras na seção 0 do manual)." + modo +
     (opts.imagem ? " A imagem anexada é a cena atual." : "") + "\n\n=== PEDIDO ===\n" + (pedido && String(pedido).trim() ? String(pedido).trim() : "(escreva aqui o que você quer, por exemplo: \"deixe o braço direito mais alto e feche o punho\")") +
     "\n\n=== ESTADO ATUAL ===\n" + E.texto + "\n\n=== ESTADO EM JSON ===\n```json\n" + JSON.stringify(E.json, null, 1) + "\n```\n\n=== MANUAL ===\n" + manualPosesIA({ curto: !!opts.curto });
 }

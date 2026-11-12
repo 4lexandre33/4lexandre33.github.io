@@ -78,5 +78,19 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
   ok(ex && !erro, "o exemplo de código do rosto do manual funciona" + (erro ? ": " + erro : ""));
   const ins = [...r.matchAll(/m\.aplicarRosto\('([^']+)'\)/g)].map(x => x[1]).filter(t => !t.includes("…"));
   ok(ins.every(t => { try { m4.aplicarRosto(t); return true; } catch (e) { return false; } }), "exemplos curtos de aplicarRosto do manual funcionam"); }
+/* 7. pose de descanso: igual à pose em pé, mantém biotipo/posição/rosto; pacote diz o modo */
+{ const w5 = createWorld(), m5 = w5.cena.ativo; m5.corpo("atletico"); m5.posicao(3, 2); m5.poseRapida("chuteAlto"); m5.expressao("raiva"); const r0 = m5.rostoCodigo(); m5.descanso();
+  const p = w5.SCN.list[0].params, w6 = createWorld(); w6.cena.ativo.corpo("atletico"); w6.cena.ativo.poseRapida("empe"); const q = w6.SCN.list[0].params;
+  const dif = [...w5.POSEKEYS].filter(k => w5.parteDaChave(k) !== "rosto" && Math.abs((p[k] || 0) - (q[k] || 0)) > 1e-6);
+  ok(!dif.length && p.wx === 3 && p.wz === 2 && m5.rostoCodigo() === r0, "m.descanso(): pose em pé, mantém posição e rosto" + (dif.length ? " (difere: " + dif.join(", ") + ")" : ""));
+  m5.descanso({ rosto: true }); ok(!/sorriso|franzir/.test(m5.rostoCodigo()), "m.descanso({rosto:true}) zera a expressão");
+  const pn = w5.cena.pacoteIA("hip hop", { modo: "nova" }), pa = w5.cena.pacoteIA("braço", { modo: "ajuste" });
+  ok(/POSE NOVA/.test(pn) && /m\.descanso\(\)/.test(pn) && /AJUSTE/.test(pa) && /Onde pegar o estado atual/.test(pn), "pacote diz se é pose nova (descanso) ou ajuste, e onde pegar o estado"); }
+/* 8. cabeça e pescoço: as receitas do manual funcionam e o estado descreve o pescoço */
+{ const w7 = createWorld(), m7 = w7.cena.ativo, man = w7.cena.manualIA({ curto: true }), linha = man.split("\n").find(l => l.startsWith("- Receitas: olhar para o céu")) || "";
+  const recs = [...linha.matchAll(/`([^`]+)`/g)].map(x => x[1]); let ruim = "";
+  recs.forEach(r => { try { m7.pose(JSON.parse("{" + r.replace(/(\w+):/g, '"$1":') + "}")); } catch (e) { ruim = r + ": " + e.message; } });
+  ok(recs.length >= 6 && !ruim, "receitas de cabeça e pescoço do manual funcionam" + (ruim ? " (" + ruim + ")" : ""));
+  m7.poseRapida("empe"); m7.pose({ pescocoFrente: 20, pescocoGirar: -30 }); ok(/Pescoço: dobrado para a frente.*girado para a direita dele/.test(w7.cena.estadoIA()), "estado descreve o pescoço em palavras"); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);

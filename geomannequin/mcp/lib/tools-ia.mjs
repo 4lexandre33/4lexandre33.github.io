@@ -88,6 +88,16 @@ export function registerIaTools(server, W) {
       return { content: [{ type: "text", text: feitos.join("\n") }], structuredContent: { feitos, link: sceneLink(w) } };
     } catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
+  server.registerTool("descanso", {
+    title: "Pose de descanso (ponto de partida)",
+    description: "Põe o manequim (ou todos) de volta na pose de descanso em pé: zera corpo, braços, mãos, pernas, cabeça, pescoço, inclinação e salto, mantendo biotipo, posição, giro, cor e objetos. " +
+      "Use ANTES de montar uma pose nova do zero (os valores de pose são absolutos e o que sobrou da pose anterior estragaria a nova). Para só ajustar a pose atual, NÃO use: leia estado_pose e mude só o necessário.",
+    inputSchema: { manequim: z.string().optional().describe("Nome (vazio = todos)."), rosto: z.boolean().optional().describe("Também zerar a expressão (padrão: mantém o rosto).") },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  }, async a => {
+    try { const w = W(); w.cena.marcarEstado(); w.cena.descanso({ manequim: a.manequim, rosto: !!a.rosto }); return { content: [{ type: "text", text: "Pose de descanso aplicada" + (a.manequim ? " em " + a.manequim : " em todos") + (a.rosto ? " (rosto neutro)." : " (rosto mantido).") }], structuredContent: { link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
   server.registerResource("manual-ia", "geomannequin://manual-ia", { title: "Manual de poses para IA", mimeType: "text/markdown", description: "Manual completo para qualquer IA montar e corrigir poses no GeoMannequin." },
     async uri => { const w = W(); return { contents: [{ uri: uri.href, mimeType: "text/markdown", text: w.cena.manualIA() }] }; });
 }

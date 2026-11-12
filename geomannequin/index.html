@@ -295,6 +295,7 @@
         <button type="button" id="pcAplicarParte">Aplicar só a parte</button>
         <button type="button" id="pcCopiar">Copiar código</button>
         <button type="button" id="pcAtual">Pose atual</button>
+        <button type="button" id="pcDescanso" title="Volta à pose de descanso em pé (mantém biotipo, rosto, posição e objetos). Ctrl+Z desfaz.">Pose de descanso</button>
       </div>
       <p id="pcMsg" class="hint" role="status" aria-live="polite"></p>
       <h2>Minhas poses</h2>
@@ -516,10 +517,15 @@
       <details class="ia-painel" id="iaPainel"><summary>Usar com uma IA (Gemini, ChatGPT, Claude)</summary>
         <ol class="ia-passos">
           <li>Escreva o que você quer (ex.: “Ana dá um chute alto em Leo, que cai de costas”).</li>
+          <li>Escolha se é uma <b>pose nova</b> ou um <b>ajuste</b> da pose atual. O pacote já leva o <b>estado atual</b> (como cada parte do corpo está), então a IA sabe de onde parte.</li>
           <li>Clique em <b>Copiar pacote para IA</b> e cole na IA. Se der, anexe também a imagem (<b>Baixar imagem</b>).</li>
           <li>Copie o bloco de código da resposta, cole no editor acima e clique em <b>Executar</b>.</li>
           <li>Para corrigir: clique em <b>Copiar estado da pose</b>, cole na mesma conversa e diga o que ainda está errado.</li>
         </ol>
+        <fieldset class="ia-modo"><legend>A IA deve…</legend>
+          <label><input type="radio" name="iaModo" value="nova" checked> fazer uma <b>pose nova</b> (parte da pose de descanso em pé)</label>
+          <label><input type="radio" name="iaModo" value="ajuste"> <b>ajustar</b> a pose atual (muda só o necessário)</label>
+        </fieldset>
         <label class="ia-pedido">O que você quer <textarea id="iaPedido" rows="2" placeholder="ex.: deixe o braço direito mais alto, punho fechado, olhando para Leo"></textarea></label>
         <div class="group poses" role="group" aria-label="Pacote para IA">
           <button type="button" id="iaPacote" class="primary" title="Manual completo + estado da cena (texto e JSON) + o seu pedido">Copiar pacote para IA</button>

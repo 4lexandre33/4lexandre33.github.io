@@ -12,7 +12,7 @@ import { manualPosesIA, pacoteParaIA } from "./manual-ia.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
-import { EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
+import { EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, POSE0, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { codigoDaPose, lerCodigoDePose, filtrarPartes, espelharValores, posesSalvas, salvarPose, acharPoseSalva, apagarPose, renomearPose, duplicarPose, exportarPoses, importarPoses, parteDaChave, PARTES_POSE } from "./pose-codigo.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
@@ -119,6 +119,14 @@ function apiFor(it){
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
     girar(g){chk();const antes={...it.params};let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;guardarContatoV2(it,antes);return m},
     pose(o,opts){chk();if(typeof o==="string")return m.poseRapida(o,opts);const antes={...it.params};applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);guardarContatoV2(it,antes);return m},
+    /* pose de descanso em pé: zera todos os ângulos (corpo, braços, mãos, pernas, cabeça, pescoço, inclinação, salto)
+       mantendo biotipo, posição, giro, cor e objetos. {rosto:true} zera também a expressão; {flexibilidade:true} volta ao perfil normal */
+    descanso(opts){chk();const o=opts||{},antes={...it.params};
+      POSEKEYS.forEach(k=>{if(parteDaChave(k)==="rosto"&&!o.rosto)return;it.params[k]=k in POSE0?POSE0[k]:(DEF[k]??0)});
+      it.params.ground=1;it.params.bodyLift=0;if(o.flexibilidade)it.params.flex=0;if(o.rosto)it.exprNome="neutra";
+      /* o mesmo caminho da pose rápida "empe" (limites e braços livres do corpo), sem mexer no rosto */
+      const rosto={};POSEKEYS.forEach(k=>{if(parteDaChave(k)==="rosto")rosto[k]=it.params[k]});
+      withInst(it,()=>doBodyPose("empe"));Object.assign(it.params,rosto);guardarContatoV2(it,antes);return m},
     poseRapida(nome,opts){chk();const antes={...it.params},k=nomePose(nome);const ok=todasPoses();
       if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
@@ -428,6 +436,8 @@ const cena={
   manualIA(opts){return manualPosesIA(opts||{})},
   estadoIA(opts){const E=estadoParaIA(opts||{});return opts&&opts.json?E.json:E.texto},
   pacoteIA(pedido,opts){return pacoteParaIA(pedido,opts||{})},
+  /* todos os manequins (ou um, pelo nome) na pose de descanso em pé */
+  descanso(opts){const o=opts||{};SCN.list.filter(it=>!o.manequim||it.name===o.manequim).forEach(it=>apiFor(it).descanso(o));return cena},
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
   copiar(m){const it=m?SCN.list.find(x=>x.name===m.nome):SCN.list[SCN.active];if(!it)throw new Error("Manequim não encontrado.");return apiFor(dupInst(it,true))},
   remover(m){const it=typeof m==="string"?SCN.list.find(x=>x.name===m):SCN.list.find(x=>x.name===(m&&m.nome));if(!it)throw new Error("Manequim não encontrado.");delInst(it)},

@@ -52,6 +52,8 @@ async function suite(client, tag) {
   r = await call("biblioteca_item", { acao: "capturar", tipo: "pose", nome: "MCP" });
   { const it = r.structuredContent && r.structuredContent.item; check(!r.isError && it && it.tipo === "pose" && /pose\(/.test(it.codigo), "biblioteca_item: capturar pose");
     r = await call("biblioteca_item", { acao: "aplicar", item: JSON.stringify(it) }); check(!r.isError && /aplicada/.test(text(r)), "biblioteca_item: aplicar" + (r.isError ? ": " + text(r) : "")); }
+  r = await call("descanso", {});
+  check(!r.isError && /descanso/.test(text(r)), "descanso: volta à pose de descanso" + (r.isError ? ": " + text(r) : ""));
   r = await call("estado_pose", {});
   check(!r.isError && (r.content || []).some(c => c.type === "image") && /Braço esquerdo/.test(text(r)) && r.structuredContent.estado.manequins.length >= 1, "estado_pose: texto, JSON e imagem" + (r.isError ? ": " + text(r) : ""));
   r = await call("manual_poses_ia", { curto: true });

@@ -108,6 +108,7 @@ export function iniciarPoseCodigo() {
   $("pcAplicarParte").addEventListener("click", () => { if (!partes()) { msg("Escolha a parte em “Partes”.", true); return; } aplicarTexto(ta.value, { partes: partes() }); });
   $("pcCopiar").addEventListener("click", copiar);
   $("pcAtual").addEventListener("click", () => { editando = false; atualizarCodigo(true); msg("Código da pose atual de " + nomeAtivo() + "."); });
+  $("pcDescanso")?.addEventListener("click", () => { cena.marcarEstado(); cena.ativo.descanso(); syncControls(); render(); editando = false; atualizarCodigo(true); msg("✓ " + nomeAtivo() + " na pose de descanso (biotipo, rosto e posição mantidos). Ctrl+Z desfaz."); });
   ta.addEventListener("paste", () => setTimeout(() => { editando = true; try { const r = lerCodigoDePose(ta.value); msg("Código colado (" + Object.keys(r.valores).length + " ângulos" + (r.nome ? ", “" + r.nome + "”" : "") + "). “Aplicar código” leva o manequim a ela."); } catch (e) { msg("✗ " + e.message, true); } }, 0));
   [sel, $("pcSoMudancas"), $("mpNome")].forEach(el => el.addEventListener(el.tagName === "INPUT" && el.type === "text" ? "input" : "change", () => { if (!editando) atualizarCodigo(true); }));
   $("mpSalvar").addEventListener("click", () => {

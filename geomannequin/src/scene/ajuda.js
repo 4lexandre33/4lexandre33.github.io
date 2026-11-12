@@ -233,6 +233,7 @@ export function iniciarAjuda(){
   
   m.posicao(x, z) · m.mover(dx, dz) · m.girar(graus) · m.renomear("nome")
   m.pose({joelhoEsq: 60, ...}) · m.poseRapida("caminhando") · m.corpo("musculoso" | {musculo: 0.8})
+  m.descanso() — volta à pose de descanso em pé (mantém biotipo, rosto e posição) · m.descanso({rosto: true}) · cena.descanso() — todos
   m.cor("#preenchimento", "#contorno") · m.cor() = automática · m.copiar() · m.remover() · m.info()
   
   NOVO: camera.costas("Ana",{referencia:"tronco",area:"cabeca",elevacao:0}) — vista das costas do tronco
