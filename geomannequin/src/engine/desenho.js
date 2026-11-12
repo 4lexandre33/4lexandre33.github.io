@@ -606,8 +606,8 @@ function scene(p,L,pal,fast,mode){
         curve("feat",lip.bottom);
       }
     }else{
-      const M=bocaForma(p,sh),sm=M.sorriso,jo=M.aberto,ab=M.altura;
-      const H=(x,y,off=0.015)=>hp(y,surfX(y,x),off);
+      const M=bocaForma(p,sh),sm=M.sorriso,jo=M.aberto,ab=M.altura,Qr=M.Q;
+      const H=(x,y,off=0.015)=>hp(y,surfX(y,x+M.dx),off),H0=(x,y,off=0.015)=>hp(y,surfX(y,x),off);
       const w=M.width, xs=(f,a=1)=>arr(x=>H(x,f(x),0.028),-w*a,w*a,36);
       const upper=xs(M.labioSup),upperBase=xs(M.cima);
       /* Lábio superior fixo na maxila; contorno curvo, mais largo que alto.
@@ -619,7 +619,7 @@ function scene(p,L,pal,fast,mode){
         /* Cavidade oval: bordas se encontram naturalmente nos cantos. */
         fillP(roof.concat(floor),pal.ink,0.97);
         /* Língua curva e parcialmente oculta, apoiada no assoalho da boca. */
-        if(jo>0.15){
+        if(jo>0.15&&Qr.round<0.4){
           const tWidth=w*0.68;
           fillP(arr(x=>H(x,M.linguaSup(x),0.052),-tWidth,tWidth,28)
             .concat(arr(x=>H(x,M.linguaInf(x),0.054),tWidth,-tWidth,28)),pal.coral,0.70);
@@ -627,9 +627,9 @@ function scene(p,L,pal,fast,mode){
         }
         /* Arcadas incisiva/canina com forma contínua arqueada. As coroas são
            curtas e arredondadas, evitando as barras pretas dos prints. */
-        const dSup=arcadas(M,false);
+        const dSup=Qr.round>0.4?[]:arcadas(M,false);
         for(const crown of dSup)fillP(crown.pontos.map(([x,y])=>H(x,y,0.054)),"#F1EBDE",0.96);
-        if(jo>0.62)for(const crown of arcadas(M,true))
+        if(jo>0.62||M.mostraDentesBaixo)for(const crown of arcadas(M,true))
           fillP(crown.pontos.map(([x,y])=>H(x,y,0.054)),"#E7DDD0",0.90);
       }
       /* Lábio inferior ligado ao queixo que gira na ATM. */
@@ -646,17 +646,30 @@ function scene(p,L,pal,fast,mode){
       /* O sulco mentolabial acompanha o terço inferior, sem uma placa
          vertical sombreando o pescoço quando a mandíbula se desloca. */
       curve("fibra",arr(x=>H(x,M.labioInf(x)-0.055*M.curva(x),0.012),-0.14,0.14,20));
-      /* Sulcos nasolabiais e zigomáticos aparecem apenas durante o sorriso. */
-      if(sm>0.06)[-1,1].forEach(side=>{
+      /* Sulcos nasolabiais e zigomáticos: aparecem com o sorriso e com as rugas pedidas (rugasBoca, rugasBochecha) */
+      const nl=Math.max(sm>0.06?sm:0,Qr.rugas.boca),bc=Math.max(sm>0.45?sm:0,Qr.rugas.bochecha);
+      if(nl>0.06)[-1,1].forEach(side=>{
         curve("divisao",arr(u=>{
           const x=side*(0.145+0.115*Math.sin(Math.PI*u*0.8));
-          const y=lerp(-0.96*t,mouthY+0.07*sm,u);
-          return H(x,y,0.017);
+          const y=lerp(-0.96*t,mouthY+0.07*nl,u);
+          return H0(x,y,0.017);
         },0,1,18));
-        if(sm>0.45)curve("fibra",arr(u=>H(side*(0.29+0.06*u),eyeY-0.17-0.05*u,0.013),0,1,12));
       });
+      if(bc>0.2)[-1,1].forEach(side=>{for(let i=0;i<(bc>0.6?2:1);i++)curve(bc>0.45?"divisao":"fibra",arr(u=>H0(side*(0.29+0.06*u+0.03*i),eyeY-0.17-0.05*u-0.045*i,0.013),0,1,12))});
+      /* bochechas: infladas = contorno arredondado saindo da face; chupadas = sulco fundo sob o osso da bochecha */
+      if(Math.abs(Qr.puff)>0.08)[-1,1].forEach(side=>{
+        if(Qr.puff>0)curve("divisao",arr(u=>{const a=Math.PI*(0.15+0.7*u);return H0(side*(0.36+0.07*Qr.puff*Math.sin(a)),lerp(eyeY-0.2,mouthY-0.04,u),0.02+0.02*Qr.puff*Math.sin(a))},0,1,16));
+        else curve("divisao",arr(u=>H0(side*(0.3+0.04*Math.sin(Math.PI*u)),lerp(eyeY-0.22,mouthY+0.02,u),0.012),0,1,14));
+      });
+      /* linhas de expressão pedidas à mão (as automáticas da expressão continuam) */
+      {const rg=Qr.rugas,fr=Math.max(rg.franzido,clamp((p.browIn||0)-0.55,0,1)),te=Math.max(rg.testa,clamp((p.browUp||0)-0.55,0,1));
+       const est=v=>v>0.45?"divisao":"fibra";
+       if(te>0.06)for(let i=0;i<(te>0.55?3:2);i++){const y0=eyeY+0.42+0.08*i,xs=0.2+0.05*i;curve(est(te),arr(x=>H0(x,y0+0.008*Math.sin(x*30+i)-0.04*Math.pow(x/xs,2),0.012),-xs*(0.5+0.5*te),xs*(0.5+0.5*te),16))}
+       if(fr>0.06)[-1,1].forEach(side=>{for(let i=0;i<(fr>0.55?2:1);i++)curve(est(fr),arr(u=>H0(side*(0.035+0.025*i+0.01*u),eyeY+0.1+0.02*i+(0.07+0.07*fr)*u,0.012),0,1,5))});
+       if(rg.olhos>0.06)[-1,1].forEach(side=>{for(let i=0;i<(rg.olhos>0.5?3:2);i++){const a=(-0.4+0.4*i)*(0.6+0.4*rg.olhos);curve(est(rg.olhos),arr(u=>H0(side*(0.53+(0.04+0.06*rg.olhos)*u*Math.cos(a)),eyeY-0.005+(0.04+0.06*rg.olhos)*u*Math.sin(a),0.012),0,1,4))}});}
     }
-    const wing=[[0.105,-0.76],[0.14,-0.85],[0.17,-0.93],[0.14,-0.985],[0.07,-1.0],[0,-1.0]];
+    const fl=clamp(p.nostrilFlare||0,0,1);
+    const wing=[[0.105,-0.76],[0.14+0.02*fl,-0.85],[0.17+0.045*fl,-0.93],[0.14+0.035*fl,-0.985],[0.07+0.01*fl,-1.0],[0,-1.0]];
     const half=wing.map(w=>[w[0],w[1]*t]);
     const poly2=half.slice().reverse().map(w=>[-w[0],w[1]]).concat(half.slice(1));
     curve("feat",poly2.map(w=>hp(w[1],surfX(w[1],w[0]),0.008)));

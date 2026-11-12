@@ -7,10 +7,12 @@ import { ladoRosto, rostoGeral, aoLongo } from "./rosto-au.js";
 
 function bocaForma(p,S){
   const Q=rostoGeral(p),RL=ladoRosto(p,1),RR=ladoRosto(p,-1);
-  const aberto=clamp(Number.isFinite(p.jawOpen)?p.jawOpen:0,0,1)*(1-0.9*Q.press);
+  /* boca em "O" abre um pouco mesmo com a mandíbula fechada */
+  const aberto=Math.max(clamp(Number.isFinite(p.jawOpen)?p.jawOpen:0,0,1)*(1-0.9*Q.press),0.32*Q.round,0.14*Q.lowerLip);
   const sorriso=clamp((RL.smile+RR.smile)/2,-1,1);
-  const width=(0.235+0.012*Math.max(0,sorriso))*(S.scale||1)*(1-0.15*Q.press-0.25*Q.pout);
-  const altura=0.162*Math.pow(aberto,0.85);
+  const width=(0.235+0.012*Math.max(0,sorriso))*(S.scale||1)*(1-0.15*Q.press-0.25*Q.pout)*(1+0.3*Q.wide)*(1-0.5*Q.round);
+  /* em "O" a abertura fica quase tão alta quanto larga */
+  const altura=Math.max(0.162*Math.pow(aberto,0.85),1.25*width*Q.round);
   const my=S.mouthY;
   const curva=x=>Math.sqrt(Math.max(0,1-Math.pow(clamp(x/width,-1,1),2)));
   /* cada canto segue o seu lado (desprezo); o lábio de cima sobe ao lado do meio (nojo) */
@@ -18,12 +20,14 @@ function bocaForma(p,S){
   const cima=x=>my+canto(x)+0.007*curva(x);
   const baixo=x=>cima(x)-altura*curva(x);
   const labioSup=x=>cima(x)+(0.042+0.003*Math.max(0,sorriso))*(1-0.5*Q.press)*curva(x);
-  const labioInf=x=>baixo(x)-(0.038+0.008*aberto)*(1+0.6*Q.pout)*(1-0.5*Q.press)*curva(x);
+  const labioInf=x=>baixo(x)-(0.038+0.008*aberto)*(1+0.6*Q.pout+0.5*Q.round)*(1-0.5*Q.press)*curva(x)-0.03*Q.lowerLip*curva(x);
   const denteSup=x=>cima(x)-Math.min(0.05,altura*0.32)*curva(x);
-  const denteInf=x=>baixo(x)+Math.min(0.029,altura*0.18)*curva(x);
+  /* lábio de baixo descendo mostra os dentes de baixo mesmo com pouca abertura */
+  const denteInf=x=>baixo(x)+Math.max(Math.min(0.029,altura*0.18),0.026*Q.lowerLip)*curva(x);
   const linguaSup=x=>baixo(x)+altura*(0.22+0.20*curva(x))*curva(x);
   const linguaInf=x=>baixo(x)+0.10*altura*curva(x);
-  return {aberto,sorriso,width,altura,cima,baixo,labioSup,labioInf,denteSup,denteInf,linguaSup,linguaInf,curva,my};
+  /* dx: a boca inteira puxada para um lado (+ = esquerda do manequim) */
+  return {aberto,sorriso,width,altura,cima,baixo,labioSup,labioInf,denteSup,denteInf,linguaSup,linguaInf,curva,my,dx:0.07*Q.shift,mostraDentesBaixo:Q.lowerLip>0.25,Q};
 }
 /* A dentição visível forma um arco estreito: oito coroas anteriores sem
    barras verticais longas. Cada coroa tem quatro cantos com leve relevo. */

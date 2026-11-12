@@ -23,7 +23,21 @@ const AU = [
   ["mouthCornerR", "Canto direito da boca: baixar − / subir +", -1, 1, "cantoBocaDir"],
   ["lipPress", "Lábios: apertar", 0, 1, "labiosApertar"],
   ["pout", "Lábios: beicinho", 0, 1, "beicinho"],
-  ["teethClench", "Dentes cerrados (lábios abertos, dentes juntos)", 0, 1, "dentesCerrados"]
+  ["teethClench", "Dentes cerrados (lábios abertos, dentes juntos)", 0, 1, "dentesCerrados"],
+  /* boca: forma geral */
+  ["mouthWide", "Boca: estreitar − / alargar (esticar) +", -1, 1, "bocaLargura"],
+  ["mouthRound", "Boca em “O” (redonda; abre um pouco sozinha)", 0, 1, "bocaRedonda"],
+  ["lowerLipDown", "Lábio de baixo: descer (mostra os dentes de baixo)", 0, 1, "labioBaixoDescer"],
+  ["mouthShift", "Boca: puxar para a direita − / esquerda + (do manequim)", -1, 1, "bocaLado"],
+  /* bochechas e nariz */
+  ["cheekPuff", "Bochechas: chupar − / inflar +", -1, 1, "bochechasInflar"],
+  ["nostrilFlare", "Narinas: dilatar (raiva, esforço, cheirar)", 0, 1, "narinas"],
+  /* linhas de expressão (rugas): somam com as que a expressão já desenha sozinha */
+  ["wrinkleForehead", "Rugas: testa (linhas horizontais)", 0, 1, "rugasTesta"],
+  ["wrinkleFrown", "Rugas: entre as sobrancelhas (franzido)", 0, 1, "rugasFranzido"],
+  ["wrinkleCrow", "Rugas: pés de galinha (canto de fora dos olhos)", 0, 1, "rugasOlhos"],
+  ["wrinkleNasolabial", "Rugas: sulco nariz-boca (bigode chinês)", 0, 1, "rugasBoca"],
+  ["wrinkleCheek", "Linhas na bochecha (careta, esforço, bochecha subindo)", 0, 1, "rugasBochecha"]
 ];
 const AU_KEYS = AU.map(a => a[0]);
 /* estados do rosto que não são músculos (também resetados por cada expressão) */
@@ -48,7 +62,10 @@ function ladoRosto(p, s) {
 }
 /* unidades sem lado */
 function rostoGeral(p) {
-  return { bags: clamp(n(p.eyeBags), 0, 1), nose: clamp(n(p.noseWrinkle), 0, 1), press: clamp(n(p.lipPress), 0, 1), pout: clamp(n(p.pout), 0, 1), clench: clamp(n(p.teethClench), 0, 1) };
+  return { bags: clamp(n(p.eyeBags), 0, 1), nose: clamp(n(p.noseWrinkle), 0, 1), press: clamp(n(p.lipPress), 0, 1), pout: clamp(n(p.pout), 0, 1), clench: clamp(n(p.teethClench), 0, 1),
+    wide: clamp(n(p.mouthWide), -1, 1), round: clamp(n(p.mouthRound), 0, 1), lowerLip: clamp(n(p.lowerLipDown), 0, 1), shift: clamp(n(p.mouthShift), -1, 1),
+    puff: clamp(n(p.cheekPuff), -1, 1), flare: clamp(n(p.nostrilFlare), 0, 1),
+    rugas: { testa: clamp(n(p.wrinkleForehead), 0, 1), franzido: clamp(n(p.wrinkleFrown), 0, 1), olhos: clamp(n(p.wrinkleCrow), 0, 1), boca: clamp(n(p.wrinkleNasolabial), 0, 1), bochecha: clamp(n(p.wrinkleCheek), 0, 1) } };
 }
 /* valor ao longo da boca: mistura contínua do lado direito (x = −w) para o esquerdo (x = +w) */
 function aoLongo(vL, vR, x, w) { const t = clamp(x / Math.max(1e-6, w), -1, 1); return (vL + vR) / 2 + (vL - vR) / 2 * t; }

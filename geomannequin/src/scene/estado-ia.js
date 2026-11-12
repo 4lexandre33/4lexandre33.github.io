@@ -58,6 +58,12 @@ const IA_SENTIDO = {
   lidUp: ["", "fecha só a pálpebra de cima deste olho (piscar)"], lidLo: ["", "sobe a pálpebra de baixo deste olho (apertar, desconfiar, sorriso verdadeiro)"],
   cheek: ["", "sobe esta bochecha (sorriso verdadeiro, careta)"], noseWrinkle: ["", "franze o nariz (nojo; só aparece na cabeça V5)"],
   upperLip: ["", "sobe o lábio de cima deste lado (nojo, rosnar)"], mouthCorner: ["baixa este canto da boca", "sobe este canto da boca (meio sorriso)"],
+  mouthWide: ["estreita a boca (lábios juntos para o meio)", "alarga/estica a boca para os lados (careta, esforço, grito largo)"], mouthRound: ["", "boca em “O” (surpresa, assobio, “oh!”); abre um pouco sozinha"],
+  lowerLipDown: ["", "baixa o lábio de baixo e mostra os dentes de baixo (nojo, careta, raiva)"], mouthShift: ["puxa a boca inteira para a DIREITA do manequim", "puxa a boca inteira para a ESQUERDA do manequim (ironia, dúvida)"],
+  cheekPuff: ["chupa as bochechas (sulco fundo sob o osso)", "infla as bochechas (segurar o ar, raiva contida, cômico)"], nostrilFlare: ["", "dilata as narinas (raiva, esforço, cheirar)"],
+  wrinkleForehead: ["", "linhas horizontais na testa (surpresa, preocupação)"], wrinkleFrown: ["", "linhas verticais entre as sobrancelhas (raiva, concentração)"],
+  wrinkleCrow: ["", "pés de galinha no canto de fora dos olhos (sorriso verdadeiro, careta)"], wrinkleNasolabial: ["", "sulco do nariz até o canto da boca (sorriso, nojo, idade)"],
+  wrinkleCheek: ["", "linhas curtas na bochecha (careta, esforço, bochecha subindo)"],
   lipPress: ["", "aperta os lábios (segurar, determinação)"], pout: ["", "projeta os lábios (beicinho)"], teethClench: ["", "mostra os dentes cerrados (mais visível na cabeça V5)"]
 };
 const IA_LADO = k => /L$/.test(k) && !/^(fSpread|thumbOpp)/.test(k) ? "esquerdo" : /R$/.test(k) ? "direito" : "";
@@ -146,7 +152,7 @@ function iaEstadoManequim(it, lst, idx, cam0) {
   };
   /* controles fora do neutro, com o que fazem */
   const mudados = [];
-  POSEKEYS.forEach(k => { if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|upperLip|mouthCorner|lipPress|pout|teethClench)/.test(k)) return; const v = p[k], z = POSE0[k] !== undefined ? POSE0[k] : 0; if (typeof v !== "number" || Math.abs(v - z) < (Math.abs(z) > 2 || /^(arm|hip|knee|elbow|ankle|spine|pelvis|head|neck|body|wrist|pron|lum|tho|toes|foot|tibia|hallux)/.test(k) ? 0.5 : 0.02)) return;
+  POSEKEYS.forEach(k => { if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|nostril|upperLip|lowerLip|mouth|lipPress|pout|teethClench|wrinkle)/.test(k)) return; const v = p[k], z = POSE0[k] !== undefined ? POSE0[k] : 0; if (typeof v !== "number" || Math.abs(v - z) < (Math.abs(z) > 2 || /^(arm|hip|knee|elbow|ankle|spine|pelvis|head|neck|body|wrist|pron|lum|tho|toes|foot|tibia|hallux)/.test(k) ? 0.5 : 0.02)) return;
     const c = iaControle(k), b = iaBase(k), lado = IA_LADO(k); let sent = "";
     if (b) { sent = v < 0 ? c.negativo : c.positivo; if (lado && sent) sent = "(" + lado + ") " + sent; }
     mudados.push({ chave: k, nome: c.nome, valor: iaR(v, Math.abs(v) < 2 ? 2 : 0), faixa: [c.min, c.max], efeito: sent || c.rotulo }); });

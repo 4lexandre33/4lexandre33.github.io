@@ -124,6 +124,9 @@ function manualRosto(add) {
   add("   - Surpresa = sobrancelhas para cima + boca aberta, pálpebras bem abertas (`palpebras: 0`). Medo = surpresa + aflição + cantos para baixo.");
   add("   - Desprezo e ironia são ASSIMÉTRICOS: um canto só (`cantoBocaEsq: 0.6`), uma sobrancelha só.");
   add("   - Nojo = nariz franzido + lábio de cima subindo (`narizFranzir`, `labioCima*`). Determinação = `labiosApertar` + `franzir` leve + pálpebra de baixo.");
+  add("   - Forma da boca: `bocaLargura` (+ esticada: careta, esforço, grito largo; − estreita), `bocaRedonda` (“O”: surpresa, assobio), `labioBaixoDescer` (mostra os dentes de baixo: nojo, raiva), `bocaLado` (boca puxada: ironia, dúvida).");
+  add("   - Bochechas e nariz: `bochechasInflar` (+ cheias de ar, − chupadas), `narinas` (dilatadas: raiva, esforço).");
+  add("   - **Linhas de expressão** (traços que sugerem a pele dobrando): `rugasTesta`, `rugasFranzido`, `rugasOlhos` (pés de galinha), `rugasBoca` (sulco nariz-boca), `rugasBochecha`. Somam com as que a expressão já desenha sozinha; acima de 0,45 o traço fica mais forte. Ex.: esforço máximo = `dentesCerrados: 0.8, bocaLargura: 0.5, rugasBochecha: 0.7, rugasOlhos: 0.6, franzir: 0.8, narinas: 0.6`.");
   add("   - Intensidade: 0.3 sutil, 0.6 claro, 1 forte, acima de 1 só para mangá/cartum.");
   add("4. **Aplique e confira**: `m.aplicarRosto('rosto({ … })')`, depois `m.estadoIA()` (seção Rosto: cada controle fora do neutro e a expressão pronta mais parecida). Corrija só os números que precisa.");
   add("5. **Guarde com um nome**: `m.guardarRosto(\"Sorriso cínico\")` (ou no app: nome → Guardar). Daí em diante `m.expressao(\"Sorriso cínico\", 0.7)` funciona, entra nas misturas (`\"50% Sorriso cínico + 50% raiva\"`) e aparece como botão. `{formato: true}` guarda também as feições e a cabeça.");

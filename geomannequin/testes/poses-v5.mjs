@@ -101,7 +101,7 @@ const svgDe = w => { const r = renderSvg(w, {}); return typeof r === "string" ? 
   ok(nPath(g, "feicoes") >= nPath(n, "feicoes") + 6, "V5 grito: fundo, sombra nos dentes, sulco, comissuras e lábio (" + nPath(n, "feicoes") + " → " + nPath(g, "feicoes") + ")");
   /* unidades de ação do rosto (A3): por lado, padrão 0, nomes em português, espelho e OpenPose */
   { const fff = s => (grupo(s, "olhos").match(/#fff/g) || []).length;
-    ok(AU_KEYS.length === 18 && AU_KEYS.every(k => DEF[k] === 0), "18 unidades de ação do rosto, todas 0 no padrão");
+    ok(AU_KEYS.length === 29 && AU_KEYS.every(k => DEF[k] === 0), "29 unidades de ação do rosto (boca, bochechas, narinas e rugas incluídas), todas 0 no padrão");
     const wp = createWorld(); wp.cena.ativo.cabeca("v5"); wp.cena.ativo.expressao("piscando"); const sp = svgDe(wp);
     ok(fff(n) === 4 && fff(sp) === 2, "piscando fecha um olho só (brilhos: " + fff(n) + " → " + fff(sp) + ")");
     const wr = createWorld(); wr.cena.ativo.rosto({ palpebraDir: 1, cantoBocaEsq: 0.8 }); const pr = wr.SCN.list[0].params;
