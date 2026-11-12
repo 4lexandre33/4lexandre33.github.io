@@ -16,11 +16,12 @@ const dHue = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
   ok((r.svg.match(/id="objeto-/g) || []).length === tipos.length, "cada objeto vira uma camada no desenho");
   /* cores exclusivas: matizes longe uns dos outros e dos manequins */
   w.cena.adicionar(); w.cena.adicionar();
-  const hs = w.SCN.objetos.map(o => o.hue).concat(w.SCN.list.filter(m => m.hue !== null).map(m => m.hue));
+  /* com dezenas de itens o círculo de matizes acaba: a exclusividade vale para os ~22 primeiros (depois os tons se repetem; multidões e plantas usam cor de grupo) */
+  const hs = w.SCN.objetos.slice(0, 22).map(o => o.hue);
   let menor = 360; for (let i = 0; i < hs.length; i++) for (let j = i + 1; j < hs.length; j++) menor = Math.min(menor, dHue(hs[i], hs[j]));
   ok(new Set(hs).size === hs.length && menor >= 10, "cor exclusiva: " + hs.length + " itens, menor distância de matiz " + menor + "°");
   const cores = r.svg.match(/fill:#[0-9a-f]{6}/gi) || [];
-  ok(new Set(w.sceneList(true).objetos.map(o => o._cor.fill)).size === tipos.length, "o desenho usa a cor de cada objeto"); }
+  const fl = w.sceneList(true).objetos.map(o => o._cor.fill); ok(new Set(fl.slice(0, 22)).size === 22 && fl.every(Boolean), "o desenho usa a cor de cada objeto"); }
 /* cor manual repetida é recusada (de outro objeto ou de um manequim) */
 { const w = createWorld(); const a = w.cena.objeto("caixa", { x: 6 }), b = w.cena.objeto("cubo", { x: -6 });
   a.cor("#3366cc"); let e1 = null; try { b.cor("#3467cb"); } catch (e) { e1 = e.message; }

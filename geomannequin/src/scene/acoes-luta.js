@@ -44,7 +44,7 @@ const POSES_ACAO = {
     [alO(s, "armFlex")]: 60, [alO(s, "elbow")]: 120 }); alPunhos(Q); },
   defesaComBracos: (Q, s) => { Object.assign(Q, { armFlexL: 84, armFlexR: 84, armAbdL: -30, armAbdR: -28, elbowL: 118, elbowR: 112, pronL: 20, pronR: 20, spineFlex: 30, neckFlex: 12, headPitch: 24, shElevL: 0.5, shElevR: 0.5, shProtL: 0.6, shProtR: 0.6 });
     pesEm(Q, { L: [0.3, 0.2], R: [0.3, -0.24] }, 0.3); alPunhos(Q); },
-  esquivaBaixa: (Q, s) => { Object.assign(Q, { bodyPitch: 22, spineFlex: 36, spineSide: s * 14, neckFlex: -18, headPitch: -26, [alL(s, "armFlex")]: 70, [alL(s, "elbow")]: 130, [alO(s, "armFlex")]: 50, [alO(s, "elbow")]: 120, [alO(s, "armAbd")]: 20 });
+  esquivaBaixa: (Q, s) => { Object.assign(Q, { bodyPitch: 22, spineFlex: 36, spineSide: s * 14, neckFlex: -18, headPitch: -26, [alL(s, "armFlex")]: 70, [alL(s, "elbow")]: 130, [alO(s, "armFlex")]: 50, [alO(s, "elbow")]: 115, [alO(s, "armAbd")]: 32 });
     pesEm(Q, { [alL(s, "")]: [0.36, 0.22], [alO(s, "")]: [0.3, -0.3] }, 0.42); alPunhos(Q); },
   esquivaParaTras: (Q, s) => { Object.assign(Q, { bodyPitch: -30, spineFlex: -28, neckFlex: 14, headPitch: 18, armAbdL: 70, armAbdR: 74, armFlexL: 20, armFlexR: 10, elbowL: 40, elbowR: 30, [alL(s, "ankleFlex")]: -10 });
     pesEm(Q, { [alL(s, "")]: [0.2, 0.3], [alO(s, "")]: [0.2, -0.16] }, 0.24); aplicarGesto(Q, 1, "aberta"); aplicarGesto(Q, -1, "aberta"); },

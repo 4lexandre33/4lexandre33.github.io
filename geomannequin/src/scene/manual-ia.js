@@ -269,6 +269,7 @@ function manualPosesIA(opts = {}) {
   add("- `cena.arranjo(\"circulo\" | \"arco\" | \"fila\" | \"multidao\", { n, raio, x, z, ... })`; círculo e arco já olham para o centro. Objetos em massa: `{ objeto: \"caixote\" }`.");
   add("- `cena.olharPara(\"todos\" | \"grupo:Plateia\" | [\"Ana\", \"Leo\"], [x, z], { modo: \"costas\" })` — a FRENTE de cada um (manequim ou objeto) vira para o ponto.");
   add("- `cena.registro()` → para CADA manequim: posição, giro, frente, pegada no chão (círculo), altura, pose, ação, interação, para onde a cabeça olha, se aparece na foto; e a lista de sobrepostos. Vale mesmo para quem não é desenhado. `cena.sobrepostos()`, `cena.separar({ folga })` afasta o mínimo. `cena.selecionar(\"grupo:Plateia\")`.");
+  add("- A cena começa com \"Manequim 1\" em (0, 0): renomeie (`m.renomear`), mova ou remova antes de montar a multidão. Em `grade`/`arranjo`, `x, z` é o CENTRO do arranjo. `sobrepostos` ignora de propósito quem está em contato combinado (abraço, luta, carregar); para esses, veja `atravessando` no retorno de `cena.interagir`.");
   add("- `cena.enquadrarTudo({ yaw: -45, pitch: -34 })` põe a câmera vendo tudo (manequins e objetos).\n");
   add("## 7g. Cenário a partir de uma imagem de planta (cores)");
   add("- Cores chapadas: cinza = parede/prédio/rocha, areia/amarelo = chão, laranja/marrom = escada/madeira/móvel, verde = árvore/arbusto, ciano = água/poço; manequins em vermelho, azul e roxo (pontinhos na vista de cima, bonecos na lateral). Contorno preto e fundo branco são ignorados.");

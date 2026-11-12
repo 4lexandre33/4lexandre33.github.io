@@ -13,9 +13,9 @@ import {desenharReferencia} from "./objetos.js";
 import { desenharEfeitos } from "./efeitos/desenhar.js";
 import { scene, setCasters } from "./desenho.js";
 import { capsulas, telaDoMundo } from "./colisao-cena.js";
-import { setCUR_ID, setMULTI } from "./projecao.js";
+import { setCUR_ID, setMULTI, effScale } from "./projecao.js";
 import { zb, zp, FINO } from "./zbuffer.js";
-import { D, H, W, applyA, clamp, comp } from "./matematica.js";
+import { D, H, W, CX, CY, applyA, clamp, comp } from "./matematica.js";
 import { makeXf } from "./camera.js";
 import { shape } from "./cabeca.js";
 import { chainSetup, legPose } from "./cadeia.js";
@@ -184,11 +184,15 @@ function deInstancia(o, L, fast, lanc) {
   const p = o.p;
   if (p._ativo || FINO || (lanc && lanc.length) || L.instancias === false) return null;
   const v = visada(p), k = chaveInstancia(L, o, v) + (fast ? "§r" : ""), ent = INST.get(k);
-  if (!ent) return { k };
+  /* o próprio manequim (outro canal: quadro, palco) não é "cópia": desenha normal, para a foto ser idêntica */
+  if (!ent || (ent.p._id !== undefined && ent.p._id === p._id)) return { k };
   const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc = b[3] / a[3], r = ent.res;
   const tr = s => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
   ESTAT.instancias = (ESTAT.instancias || 0) + 1;
-  return { pronta: { svg: tr(r.svg), sombra: tr(r.sombra), info: Object.assign({}, r.info, { depth: r.info.depth + (b[2] - a[2]), handles: [], bb: null, instancia: true }), z: null, fast: r.fast } };
+  /* caixa (espaço da câmera) da cópia: a mesma conta da tela (deslocar e escalar), para o enquadramento automático */
+  let bb = null; const S = effScale(p);
+  if (r.info.bb && S > 0) { const X = v => ((CX + S * v - a[0]) * esc + b[0] - CX) / S, Y = v => (CY - ((CY - S * v - a[1]) * esc + b[1])) / S; bb = [X(r.info.bb[0]), X(r.info.bb[1]), Y(r.info.bb[2]), Y(r.info.bb[3])]; }
+  return { pronta: { svg: tr(r.svg), sombra: tr(r.sombra), info: Object.assign({}, r.info, { depth: r.info.depth + (b[2] - a[2]), handles: [], bb, instancia: true }), z: null, fast: r.fast } };
 }
 /* se a foto deste grupo é cópia de outra já desenhada (instância), usa-a e devolve true */
 function instanciaPronta(plan, g) {

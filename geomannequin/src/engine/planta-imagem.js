@@ -220,7 +220,7 @@ function lerPlanta(img, celCima, celLado, o = {}) {
     m.giro = Math.round(Math.atan2(ox - m.x, oz - m.z) * 180 / Math.PI); });
   /* chão: área de piso (para enquadrar e para o tamanho do mundo) */
   const piso = { larg: gw * R, prof: gh * R, classes: G.conta };
-  return { escala: { mPorCelula: mPorCel, RPorCelula: R, metrosLargura: gw * mPorCel, pelaLateral: !!(lado && lado.altPessoa) }, piso, itens, manequins,
+  return { escala: { mPorCelula: mPorCel, RPorCelula: R, metrosLargura: gw * mPorCel, pelaLateral: !o.larguraMetros && !!(lado && lado.altPessoa), pelaLargura: !!o.larguraMetros }, piso, itens, manequins,
     lateral: lado ? { manequins: lado.manequins.length, altPessoaCelulas: lado.altPessoa } : null, grade: { gw, gh, passo } };
 }
 

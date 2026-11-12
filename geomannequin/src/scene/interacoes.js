@@ -178,7 +178,7 @@ const PARES = {
   cavalinho: { desc: "Resgate: de cavalinho — B nas costas de A, braços nos ombros; A segura as coxas de B", tag: "Resgate/Carregar",
     A: PE("empe", { spineFlex: 16, kneeFlexL: 14, kneeFlexR: 14, hipFlexL: 12, hipFlexR: 12, headPitch: -8 }),
     B: PE(null, { hipFlexL: 70, hipFlexR: 70, hipAbdL: 58, hipAbdR: 58, hipRotL: 20, hipRotR: 20, kneeFlexL: 100, kneeFlexR: 100, spineFlex: 12, headPitch: 6, ground: 0 }),
-    giro: 0, ancora: { B: "abdomen", t: 0.5, A: "costas", folga: 0.2, sobe: -2.8 },
+    giro: 0, ancora: { B: "abdomen", t: 0.5, A: "costas", folga: 0.3, sobe: -0.6 },
     maos: [["A", 1, "coxaE", 0.6, [0, -1, 0], [0, 0, 1], "segurar"], ["A", -1, "coxaD", 0.6, [0, -1, 0], [0, 0, 1], "segurar"], ["B", 1, "torax", 0.55, [1, 0.3, 0.5], [0, -1, 0], "aberta"], ["B", -1, "torax", 0.45, [1, 0.3, -0.5], [0, -1, 0], "aberta"]] },
   arrastarPelasAxilas: { desc: "Resgate: arrastar pelas axilas — B sentado no chão, A atrás, curvado, mãos sob os braços de B", tag: "Resgate/Arrastar",
     A: PE("agachar", { spineFlex: 30, headPitch: -15 }), B: PE("pernasEsticadas", { headPitch: 25, armAbdL: 25, armAbdR: 25, spineFlex: 10 }),

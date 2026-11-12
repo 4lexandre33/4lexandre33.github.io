@@ -150,9 +150,9 @@ function apiFor(it){
     molejo(intensidade,semente){chk();const antes={...it.params};withInst(it,()=>aplicarMolejo(it.params,{intensidade:intensidade===undefined?0.6:+intensidade,semente:semente??(Date.now()%100000)}));limitesAcoplados(it.params);guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
         const k=o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
-        const part=k.match(/^(masculino|feminino)[\s_-]+(magro|medio|atletico|musculoso|cheio)$/);
+        const part=k.match(/^(masculino|feminino)(?:[\s_-]+(magro|medio|atletico|musculoso|cheio))?$/);
         if(/^(crianca|infantil|menino|menina)$/.test(k)){aplicarCrianca(it.params,k==="menina"?1:k==="menino"?0:it.params.fem);Object.assign(it.params,FACES.infantil,{shW:CRIANCA.shW,neck:CRIANCA.neck,neckLen:CRIANCA.neckLen});return m}
-        const tipo=part?part[2]:k,sexo=part?(part[1]==="feminino"?1:0):it.params.fem;
+        const tipo=part?(part[2]||"medio"):k,sexo=part?(part[1]==="feminino"?1:0):it.params.fem;
         if(!NOMES_BIOTIPOS.includes(tipo))throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+NOMES_BIOTIPOS.join(", ")+", crianca (menino, menina), ou 'feminino medio'.");
         aplicarBiotipo(it.params,tipo,sexo);return m
       }
@@ -517,7 +517,7 @@ const cena={
   selecionar(quem){SCN.selecao=quemSao(quem).map(q=>q.params?q.id:"o"+q.id);return SCN.selecao.length},
   /* todos os manequins (ou um, pelo nome) na pose de descanso em pé */
   descanso(opts){const o=opts||{};SCN.list.filter(it=>!o.manequim||it.name===o.manequim).forEach(it=>apiFor(it).descanso(o));return cena},
-  adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
+  adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o)try{if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}catch(e){delInst(it);throw e}return m},
   copiar(m){const it=m?SCN.list.find(x=>x.name===m.nome):SCN.list[SCN.active];if(!it)throw new Error("Manequim não encontrado.");return apiFor(dupInst(it,true))},
   remover(m){const it=typeof m==="string"?SCN.list.find(x=>x.name===m):SCN.list.find(x=>x.name===(m&&m.nome));if(!it)throw new Error("Manequim não encontrado.");delInst(it)},
   limpar(){const cam={};CAMK.forEach(k=>cam[k]=P[k]);SCN.list.splice(1);SCN.active=0;setP(SCN.list[0].params);Object.assign(P,cam);return apiFor(SCN.list[0])},
