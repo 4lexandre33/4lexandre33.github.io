@@ -300,6 +300,9 @@ export function iniciarAjuda(){
     ("dedão esquerdo", {dobrar: 30}) · ("canela direita", {girar: 20}) · ("pé esquerdo", {aduzir: 10}) · ("escápula esquerda", {girar: 0.5, tensao: 1})
     ("mandíbula", {abrir: 0.5, lado: 0.2}) · ("olhos", {lado: 0.6, cima: -0.2, fechar: 0.3}) · ("sobrancelhas", {subir: 0.5, franzir: 0.4})
   m.expressao("neutra" | "alegria" | "riso" | "surpresa" | "raiva" | "tristeza" | "choro" | "medo" | "grito" | "vergonha" | "sono" | "desconfianca" | "piscando") · m.olhos(x, y) · m.boca(abrir, sorriso)
+  m.rosto({...}) — unidades de ação do rosto, cada lado separado (somam por cima da expressão): sobrancelhaDentroEsq/Dir e sobrancelhaForaEsq/Dir (−1 a 1),
+    palpebraEsq/Dir (piscar um olho), palpebraBaixoEsq/Dir (apertar), bochechaEsq/Dir, narizFranzir, labioCimaEsq/Dir (nojo), cantoBocaEsq/Dir (−1 a 1, desprezo),
+    labiosApertar, beicinho, dentesCerrados (0 a 1) · m.piscar("esq" | "dir") · funcionam em m.pose({...}) e no código da pose; "espelhar" troca o lado
   m.cabeca("v3" | "v5" | "v1" | "v2" | "v4") — V3 é a padrão; V5 = anime/mangá (olhos e boca grandes, expressões exageradas)
   m.corpo({olhosAnime: 1.75, bocaAnime: 1.7, exagero: 1}) · m.pose({corar: 1, lagrimas: 1}) — corado e lágrimas (desenhados na V5)
   Teclado (articulação escolhida no palco ou nas vistas): ←/→ ↑/↓ giram, PgUp/PgDn torção, Shift grande, Alt fino, Tab próxima, [ ] pai/filho, R zera, M outro lado, F foco, Esc solta, Ctrl+Z/Ctrl+Y

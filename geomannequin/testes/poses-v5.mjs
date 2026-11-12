@@ -3,7 +3,7 @@
    Uso: node testes/poses-v5.mjs  (precisa de mcp/node_modules) */
 import { createWorld } from "../mcp/lib/core.mjs";
 import { renderSvg } from "../mcp/lib/scene.mjs";
-import { DEF, shape, earPointV3, ringAt, svgVistaPose, ossosDoCorpo, pontosDoCorpo, suavizarD, normalizarModeloCabeca } from "../src/engine/index.js";
+import { DEF, shape, earPointV3, ringAt, svgVistaPose, ossosDoCorpo, pontosDoCorpo, suavizarD, normalizarModeloCabeca, AU, AU_KEYS, bocaAnime, bocaForma } from "../src/engine/index.js";
 
 let falhou = false;
 const ok = (c, t) => { if (!c) falhou = true; console.log((c ? "  ok  " : "  FALHOU  ") + t); };
@@ -98,6 +98,25 @@ const svgDe = w => { const r = renderSvg(w, {}); return typeof r === "string" ? 
   ok(nPath(n, "olhos") >= 2 * 15 && (grupo(n, "olhos").match(/opacity:0\.4/g) || []).length >= 4, "V5 olhos com profundidade: " + nPath(n, "olhos") + " formas");
   ok(/#F2B8B8/.test(grupo(g, "feicoes")) && /#F2B8B8/.test(grupo(r, "feicoes")) && !/#F2B8B8/.test(grupo(n, "feicoes")), "V5 boca aberta: língua com brilho (só quando abre)");
   ok(nPath(g, "feicoes") >= nPath(n, "feicoes") + 6, "V5 grito: fundo, sombra nos dentes, sulco, comissuras e lábio (" + nPath(n, "feicoes") + " → " + nPath(g, "feicoes") + ")");
+  /* unidades de ação do rosto (A3): por lado, padrão 0, nomes em português, espelho e OpenPose */
+  { const fff = s => (grupo(s, "olhos").match(/#fff/g) || []).length;
+    ok(AU_KEYS.length === 18 && AU_KEYS.every(k => DEF[k] === 0), "18 unidades de ação do rosto, todas 0 no padrão");
+    const wp = createWorld(); wp.cena.ativo.cabeca("v5"); wp.cena.ativo.expressao("piscando"); const sp = svgDe(wp);
+    ok(fff(n) === 4 && fff(sp) === 2, "piscando fecha um olho só (brilhos: " + fff(n) + " → " + fff(sp) + ")");
+    const wr = createWorld(); wr.cena.ativo.rosto({ palpebraDir: 1, cantoBocaEsq: 0.8 }); const pr = wr.SCN.list[0].params;
+    ok(pr.lidUpR === 1 && pr.mouthCornerL === 0.8, "m.rosto aceita nomes em português");
+    let erroR = ""; try { wr.cena.ativo.rosto({ joelhoEsq: 10 }); } catch (e) { erroR = e.message; } ok(/não é do rosto/.test(erroR), "m.rosto recusa o que não é do rosto");
+    const we = createWorld(); we.cena.ativo.aplicarPose("pose({palpebraEsq: 1, sobrancelhaForaEsq: 0.5})", { espelhar: true });
+    ok(we.SCN.list[0].params.lidUpR === 1 && we.SCN.list[0].params.browOuterR === 0.5 && we.SCN.list[0].params.lidUpL === 0, "espelhar troca o olho e a sobrancelha de lado");
+    const pa = { ...DEF, headModel: "v5_anime", mouthCornerL: 0.9 }, Sa = shape(pa), Ba = bocaAnime(pa, Sa, ringAt), Bg = bocaForma(pa, Sa);
+    ok(Ba.linha(Ba.largura) > Ba.linha(-Ba.largura) + 0.01 && Bg.cima(Bg.width) > Bg.cima(-Bg.width) + 0.01, "canto da boca de um lado só (desprezo) na V5 e na V3");
+    const wc = createWorld(); wc.cena.ativo.cabeca("v5"); wc.cena.ativo.rosto({ dentesCerrados: 1 }); const sc = svgDe(wc);
+    ok(/#F4EFE6/.test(grupo(sc, "feicoes")) && /#ECE4D8/.test(grupo(sc, "feicoes")) && !/#F2B8B8/.test(grupo(sc, "feicoes")), "dentes cerrados: as duas arcadas, sem língua, com a mandíbula fechada");
+    const ro = pontosDoCorpo({ ...DEF, lidUpL: 1 }).rosto, alt = i => Math.abs(ro[i + 1][1] - ro[i + 5][1]);
+    ok(alt(42) < alt(36) * 0.3, "OpenPose: o olho piscado fecha só de um lado");
+    let nanAU = 0; for (const modelo of ["v5", "v3", "v1"]) { const wn = createWorld(); wn.cena.ativo.cabeca(modelo); wn.cena.ativo.rosto(Object.fromEntries(AU.map(a => [a[4], a[3]]))); wn.camera.girar(30, 0); if (svgDe(wn).includes("NaN")) nanAU++; }
+    ok(nanAU === 0, "todas as unidades no máximo: sem NaN na V5, V3 e V1");
+  }
   const pv3 = pontosDoCorpo({ ...DEF, jawOpen: 0.8, smile: 0.6 }).rosto, pv5 = pontosDoCorpo({ ...DEF, headModel: "v5_anime", jawOpen: 0.8, smile: 0.6 }).rosto;
   ok(pv5.length === 70 && pv5[54][0] - pv5[48][0] > (pv3[54][0] - pv3[48][0]) * 1.2 && pv5[39][0] - pv5[36][0] > (pv3[39][0] - pv3[36][0]) * 1.2, "OpenPose do rosto acompanha olhos e boca grandes da V5");
   const w = createWorld(); ["riso", "choro", "vergonha"].forEach(e => w.cena.ativo.expressao(e)); ok(w.SCN.list[0].params.blush === 1, "expressões novas: riso, choro, vergonha");

@@ -3,19 +3,22 @@
    a maxila fixa e mandíbula articulada em cabeca.js.
    As arcadas são formas visuais; não substituem uma tomografia dentária. */
 import { clamp } from "./matematica.js";
+import { ladoRosto, rostoGeral, aoLongo } from "./rosto-au.js";
 
 function bocaForma(p,S){
-  const aberto=clamp(Number.isFinite(p.jawOpen)?p.jawOpen:0,0,1);
-  const sorriso=clamp(Number.isFinite(p.smile)?p.smile:0,-1,1);
-  const width=(0.235+0.012*Math.max(0,sorriso))*(S.scale||1);
+  const Q=rostoGeral(p),RL=ladoRosto(p,1),RR=ladoRosto(p,-1);
+  const aberto=clamp(Number.isFinite(p.jawOpen)?p.jawOpen:0,0,1)*(1-0.9*Q.press);
+  const sorriso=clamp((RL.smile+RR.smile)/2,-1,1);
+  const width=(0.235+0.012*Math.max(0,sorriso))*(S.scale||1)*(1-0.15*Q.press-0.25*Q.pout);
   const altura=0.162*Math.pow(aberto,0.85);
   const my=S.mouthY;
   const curva=x=>Math.sqrt(Math.max(0,1-Math.pow(clamp(x/width,-1,1),2)));
-  const canto=x=>sorriso*0.035*Math.pow(Math.abs(x/width),1.4);
+  /* cada canto segue o seu lado (desprezo); o lábio de cima sobe ao lado do meio (nojo) */
+  const canto=x=>aoLongo(RL.smile,RR.smile,x,width)*0.035*Math.pow(Math.abs(x/width),1.4)+0.02*aoLongo(RL.upperLip,RR.upperLip,x,width)*Math.exp(-0.5*Math.pow((Math.abs(x/width)-0.45)/0.28,2));
   const cima=x=>my+canto(x)+0.007*curva(x);
   const baixo=x=>cima(x)-altura*curva(x);
-  const labioSup=x=>cima(x)+(0.042+0.003*Math.max(0,sorriso))*curva(x);
-  const labioInf=x=>baixo(x)-(0.038+0.008*aberto)*curva(x);
+  const labioSup=x=>cima(x)+(0.042+0.003*Math.max(0,sorriso))*(1-0.5*Q.press)*curva(x);
+  const labioInf=x=>baixo(x)-(0.038+0.008*aberto)*(1+0.6*Q.pout)*(1-0.5*Q.press)*curva(x);
   const denteSup=x=>cima(x)-Math.min(0.05,altura*0.32)*curva(x);
   const denteInf=x=>baixo(x)+Math.min(0.029,altura*0.18)*curva(x);
   const linguaSup=x=>baixo(x)+altura*(0.22+0.20*curva(x))*curva(x);

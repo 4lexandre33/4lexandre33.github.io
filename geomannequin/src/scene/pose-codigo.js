@@ -40,7 +40,7 @@ function parteDaChave(k) {
   if (/^(bodyPitch|bodyRoll|bodyLift|ground)$/.test(k)) return "corpo";
   if (/^(spine|lum|tho|pelvis)/.test(k)) return "tronco";
   if (/^(head|neck)/.test(k)) return "cabeca";
-  if (/^(jaw|smile|eye|brow|blush|tears)/.test(k)) return "rosto";
+  if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|upperLip|mouthCorner|lipPress|pout|teethClench)/.test(k)) return "rosto";
   if (/^(sh|scap|arm|elbow|pron|wrist)/.test(k)) return k === "shTension" ? "tronco" : "braco" + (lado || "Esq");
   if (/^(f[A-Z]|fSpread|thumb|handCurl)/.test(k)) return "mao" + (lado || "Esq");
   if (/^(hip|knee|ankle|toes|hallux|foot|tibia)/.test(k)) return "perna" + (lado || "Esq");

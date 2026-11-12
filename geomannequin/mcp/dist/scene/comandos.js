@@ -2,6 +2,7 @@
 import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
 import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
+import { AU } from "../engine/index.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
@@ -214,8 +215,15 @@ function apiFor(it){
     articulacao(nome,valores){chk();const antes={...it.params},r=articParams(nome,valores);applyParams(it,r,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);guardarContatoV2(it,antes);return m},
     espelhar(){chk();espelharPose(it.params);return m},
     /* rosto: m.expressao("alegria" | "riso" | "surpresa" | "raiva" | "tristeza" | "choro" | "medo" | "grito" | "vergonha" | "sono" | "desconfianca" | "piscando" | "neutra") — exageradas na cabeça V5 (anime) */
-    expressao(nome){chk();const k=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const e=EXPRESSOES[k];if(!e)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+".");Object.assign(it.params,e);if(k==="piscando")it.params.eyeLid=0;return m},
+    expressao(nome){chk();const k=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const e=EXPRESSOES[k];if(!e)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+".");Object.assign(it.params,e);return m},
     /* olhos para um lado sem mexer a cabeça: m.olhos(x, y) de −1 a 1 (x + = esquerda do manequim, y + = cima) */
+    /* unidades de ação do rosto, por lado: m.rosto({palpebraEsq: 1, sobrancelhaForaDir: 0.6, cantoBocaEsq: 0.4, narizFranzir: 0.5})
+       (também aceita os nomes gerais: sorriso, palpebras, sobrancelhas, franzir, bocaAbrir...) */
+    rosto(valores){chk();if(!valores||typeof valores!=="object")throw new Error("Passe um objeto, por exemplo m.rosto({palpebraEsq: 1}).");
+      for(const k0 of Object.keys(valores)){const k=ALIAS[k0]||k0;if(parteDaChave(k)!=="rosto")throw new Error("“"+k0+"” não é do rosto. Use: "+AU.map(a=>a[4]).join(", ")+".")}
+      applyParams(it,valores,true).forEach(t=>LOG.push(["aviso",t]));return m},
+    /* piscar um olho só: m.piscar("esq" | "dir"), quanto = 0..1 */
+    piscar(lado,quanto){chk();const l=String(lado||"esq").toLowerCase().startsWith("d")?"R":"L";it.params["lidUp"+l]=quanto===undefined?1:clamp(num(quanto,"quanto"),0,1);return m},
     olhos(x,y){chk();it.params.eyeYaw=clamp(num(x,"x"),-1,1);if(y!==undefined)it.params.eyePitch=clamp(num(y,"y"),-1,1);return m},
     /* boca: m.boca(abrir 0–1, sorriso −1 a 1) */
     boca(abrir,sorriso){chk();it.params.jawOpen=clamp(num(abrir,"abrir"),0,1);if(sorriso!==undefined)it.params.smile=clamp(num(sorriso,"sorriso"),-1,1);return m},

@@ -5,6 +5,7 @@ import { getMeshes, makeMat } from "./montagem.js";
 import { earSurf, headPt, ringAt, shape } from "./cabeca.js";
 import { bocaForma, arcadas } from "./boca.js";
 import { olhosAnime, feicoesAnime } from "./head-v5/anime.js";
+import { ladoRosto } from "./rosto-au.js";
 import { chainSetup, legPose } from "./cadeia.js";
 import { BASE, CX, CY, D, H, W, applyA, clamp, comp, f1, gauss, lerp, mmul, mv, rotM } from "./matematica.js";
 import { contourPath, fillPath, silhouette } from "./contornos.js";
@@ -559,9 +560,9 @@ function scene(p,L,pal,fast,mode){
   else if(L.feat){
     [-1,1].forEach(s=>{
       /* sobrancelhas: subir (+) / baixar (−); franzir (+, a ponta de dentro desce: raiva) / aflição (−, a ponta de dentro sobe) */
-      const bU=p.browUp||0,bI=p.browIn||0;
+      const bU=p.browUp||0,bI=p.browIn||0,RB=ladoRosto(p,s);
       const browPt=(u,dy)=>{
-        const y=0.10+0.045*Math.sin(Math.PI*Math.pow(u,0.8))-0.04*u+dy+0.035*bU-0.035*bI*Math.pow(1-u,1.5);
+        const y=0.10+0.045*Math.sin(Math.PI*Math.pow(u,0.8))-0.04*u+dy+0.035*bU-0.035*bI*Math.pow(1-u,1.5)+0.04*RB.browInner*Math.pow(1-u,1.4)+0.04*RB.browOuter*Math.pow(u,1.4);
         return hp(y,s*(10+36*u)*D,0.01);
       };
       if(p.browW>0.002){
@@ -695,6 +696,11 @@ function scene(p,L,pal,fast,mode){
       out.push('<path d="'+d+'Z" style="fill:'+col+';stroke:none'+(op?';opacity:'+op:'')+'"/>');
     };
     [-1,1].forEach(s=>{
+      /* cada olho com a sua pálpebra (piscar um só), pálpebra de baixo e bochecha */
+      const R=ladoRosto(p,s),lid=R.lid,ap=clamp(R.lidLo+0.55*R.cheek,0,1);
+      const hu=0.062*p.eyeSize*p.eyeOpen*(1-0.92*lid)*(1+0.18*Math.max(0,p.browUp||0))*(1-0.2*ap),hl=0.036*p.eyeSize*p.eyeOpen*(1-0.6*lid)*(1-0.5*ap);
+      const up=q=>{q=clamp(q,0,1);return hu*Math.sin(Math.PI*Math.pow(q,0.75))+tilt(q)};
+      const lo=q=>{q=clamp(q,0,1);return -hl*Math.sin(Math.PI*Math.pow(q,1.15))+tilt(q)};
       const xc=ringAt(eyeY,p,sh)[0]*Math.sin(p.eyeGap*D);
       const E=(ex,ey,off)=>{const y=eyeY+ey;return hp(y,s*Math.asin(clamp((xc+ex)/ringAt(y,p,sh)[0],0,0.99)),off||0.01)};
       /* sombra da órbita sob a sobrancelha */
@@ -732,7 +738,7 @@ function scene(p,L,pal,fast,mode){
       curve("feat",arr(k=>E(X(1)+0.012*k,up(1)-0.004+0.005*k),0,1,4));
       curve("feat",arr(a=>E(X(0)+0.012*Math.cos(a)+0.012,lo(0)+0.012*Math.sin(a)+0.006),-0.5,2.8,10));
       /* Orbicular dos olhos, pálpebras e pregas laterais coordenados. */
-      const contr=clamp(0.65*Math.max(0,p.smile||0)+0.35*lid+0.2*Math.max(0,p.browIn||0),0,1);
+      const contr=clamp(0.65*Math.max(0,R.smile)+0.35*lid+0.2*Math.max(0,p.browIn||0)+0.4*ap,0,1);
       if(contr>0.16){
         curve("divisao",arr(q=>E(X(q),lo(q)-0.025-0.018*contr*Math.sin(Math.PI*q),0.012),0.13,0.88,22));
         if(contr>0.4)for(const d of [-0.025,0.007])curve("fibra",
