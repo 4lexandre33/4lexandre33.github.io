@@ -1007,6 +1007,22 @@ TIPOS.personalizado = fx => {
   return typeof out === "string" ? out.replace(/<\s*script[\s\S]*?<\s*\/\s*script\s*>/gi, "").replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*')/gi, "") : "";
 };
 
+/* acabamento: um filtro SVG por efeito (espessura → suavidade → contraste → inverter → contorno branco) */
+function filtroAcabamento(a, id, defs) {
+  if (!a) return "";
+  const f = []; let ent = "SourceGraphic", n = 0; const prox = () => "r" + (n++);
+  if (Math.abs(a.espessura - 1) > 0.02) { const r = prox(); f.push('<feMorphology in="' + ent + '" operator="' + (a.espessura > 1 ? "dilate" : "erode") + '" radius="' + (Math.abs(a.espessura - 1) * 1.6).toFixed(2) + '" result="' + r + '"/>'); ent = r; }
+  if (a.suavidade > 0.01) { const b = prox(), r = prox(); f.push('<feGaussianBlur in="' + ent + '" stdDeviation="' + (0.25 + 0.9 * a.suavidade).toFixed(2) + '" result="' + b + '"/>');
+    /* bordas redondas e lisas: desfoca e volta a cortar o alfa (sem virar borrão) */
+    f.push('<feComponentTransfer in="' + b + '" result="' + r + '"><feFuncA type="table" tableValues="0 0.35 0.9 1 1"/></feComponentTransfer>'); ent = r; }
+  if (Math.abs(a.contraste - 1) > 0.02) { const r = prox(), c = a.contraste, i = (0.5 - 0.5 * c).toFixed(3); f.push('<feComponentTransfer in="' + ent + '" result="' + r + '"><feFuncR type="linear" slope="' + c + '" intercept="' + i + '"/><feFuncG type="linear" slope="' + c + '" intercept="' + i + '"/><feFuncB type="linear" slope="' + c + '" intercept="' + i + '"/></feComponentTransfer>'); ent = r; }
+  if (a.inverter) { const r = prox(); f.push('<feColorMatrix in="' + ent + '" type="matrix" values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0" result="' + r + '"/>'); ent = r; }
+  if (a.contornoBranco > 0.01) { const d = prox(), w = prox(), h = prox(); f.push('<feMorphology in="' + ent + '" operator="dilate" radius="' + (1 + 4 * a.contornoBranco).toFixed(2) + '" result="' + d + '"/><feFlood flood-color="#FFFFFF" result="' + w + '"/><feComposite in="' + w + '" in2="' + d + '" operator="in" result="' + h + '"/>');
+    f.push('<feMerge><feMergeNode in="' + h + '"/><feMergeNode in="' + ent + '"/></feMerge>'); }
+  if (!f.length) return "";
+  defs.push('<filter id="' + id + '" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">' + f.join("") + "</filter>");
+  return ' filter="url(#' + id + ')"';
+}
 /* ---------- orquestra: desenha todos os efeitos ativos ---------- */
 /* devolve [{ id, tipo, onde: "fundo" | "chao" | "frente" | "cena", camada, prof, svg, dono, parte, fantasma }] e defs */
 function desenharEfeitos(list0, efeitos, quadro = 0, opts = {}) {
@@ -1038,7 +1054,7 @@ function desenharEfeitos(list0, efeitos, quadro = 0, opts = {}) {
       }
       let res = TIPOS[e.tipo](fx); if (!res) return;
       if (typeof res === "string") res = { meio: res };
-      const op = e.opacidade < 0.999 ? ' opacity="' + e.opacidade.toFixed(3) + '"' : "";
+      const op = (e.opacidade < 0.999 ? ' opacity="' + e.opacidade.toFixed(3) + '"' : "") + filtroAcabamento(e.acabamento, fx.uid + "ac", defs);
       const embrulha = (s, parte) => '<g data-efeito="' + e.id + '" data-vfx="' + e.tipo + '"' + (parte ? ' data-parte="' + parte + '"' : "") + op + ">" + s + "</g>";
       const prof = fx.A.z === null ? 0 : fx.A.z;
       const partes = Object.entries(res).filter(([, s]) => s);

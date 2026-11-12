@@ -260,6 +260,9 @@ function manualPosesIA(opts = {}) {
   add("- Partes para `em`: " + PARTES_EFEITO.map(p => "`" + p + "`").join(", ") + ".");
   for (const [cat, nome] of Object.entries(CATEGORIAS)) add("- " + nome + ": " + Object.entries(CATALOGO).filter(([, c]) => c.cat === cat && !c.personalizado).map(([k]) => "`" + k + "`").join(", ") + ".");
   add("");
+  add("- Controles de todo efeito: `nivel` 1–5 (tamanho e força), `escala`, `intensidade` 0–1,5, `opacidade` 0,05–1 (transparência), `progresso` 0–1 (estágio), `camada` (\"auto\", \"atras\", \"frente\", \"fundo\"), `semente` (outra variação), `colorido`, `cores`, `para` (direção).");
+  add("- **Acabamento** (qualquer efeito): `acabamento: { espessura: 0.3–3, suavidade: 0–1, contraste: 0.3–3, contornoBranco: 0–1, inverter: true }`. Ex.: `m.efeito(\"impacto_contato\", { em: \"maoDir\", nivel: 4, acabamento: { espessura: 1.4, contornoBranco: 0.6 } })`. Mudar depois: `cena.efeitos.editar(id, { acabamento: {...} })`; listar: `cena.efeitos.lista()`; parâmetros de cada tipo: `cena.efeitos.catalogo()`.");
+  add("- Por MCP: ferramenta `efeitos` (adicionar, editar, listar, catálogo). Sem MCP: escreva os comandos acima no editor do site.\n");
   add("## 10. Como ler o ESTADO e corrigir");
   add("- `geral`: em pé, deitado, no ar; inclinação do tronco (graus da vertical, para frente/trás e para o lado); `apoiadoEm` = o que toca o chão.");
   add("- `bracoEsquerdo/bracoDireito`: altura da mão (acima da cabeça, ombro, cintura…), se cruzou para o outro lado, direção do braço e do antebraço, **para onde a palma está virada**, dedos, cotovelo, mão aberta/fechada.");

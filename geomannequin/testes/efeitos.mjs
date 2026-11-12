@@ -3,6 +3,7 @@
    reverso, semente determinística, SVG limpo, código desligado no servidor e conversão dos efeitos antigos.
    Uso: node testes/efeitos.mjs */
 import { createWorld } from "../mcp/lib/core.mjs";
+import { renderSvg } from "../mcp/lib/scene.mjs";
 import { CATALOGO, validarEfeito, limparSvg, desenharEfeitos, contextoCena, resolverAncora, registrarEfeito } from "../src/engine/index.js";
 
 let falhou = false;
@@ -98,5 +99,10 @@ const desenhar = w => w.renderScene(w.sceneList(true), Object.assign({}, w.L, { 
   const w2 = createWorld(); w2.cena.efeito("onomatopeia", { texto: "ドッ" }); const s = desenhar(w2), seg = s.slice(s.indexOf('data-vfx="onomatopeia"'));
   ok(w2.cena.efeitos.lista()[0].estiloTexto === "katakana" && !/<text/.test(seg.slice(0, seg.indexOf("</g></g>"))) && /<path/.test(seg), "katakana desenhado em pinceladas (sem depender de fonte)");
 }
+/* acabamento: filtro por efeito com espessura, suavidade, contraste, contorno branco e inverter */
+{ const w2 = createWorld(); w2.cena.ativo.efeito("impacto_contato", { acabamento: { espessura: 1.6, suavidade: 0.5, contraste: 1.4, contornoBranco: 0.7, inverter: true } }); const id = w2.cena.efeitos.lista().slice(-1)[0].id;
+  const e = w2.cena.efeitos.obter(id), svg = renderSvg(w2, {}).svg;
+  ok(e.acabamento && e.acabamento.espessura === 1.6 && e.acabamento.inverter === true && /feMorphology[^>]*dilate/.test(svg) && /feGaussianBlur/.test(svg) && /feFlood flood-color="#FFFFFF"/.test(svg) && /type="matrix" values="-1/.test(svg), "acabamento vira filtro SVG (espessura, suavidade, contraste, contorno branco, inverter)");
+  w2.cena.efeitos.editar(id, { acabamento: { espessura: 1 } }); ok(!w2.cena.efeitos.obter(id).acabamento, "acabamento neutro não gera filtro"); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);

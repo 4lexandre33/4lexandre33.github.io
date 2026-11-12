@@ -136,7 +136,14 @@ function propriedades() {
   add("Escala", faixa(e.escala, 0.1, 5, 0.05, (v, s) => editar({ escala: v }, s)));
   add("Intensidade", faixa(e.intensidade, 0, 1.5, 0.05, (v, s) => editar({ intensidade: v }, s)));
   add("Estágio (0 = começo, 1 = formado)", faixa(e.progresso ?? 1, 0, 1, 0.02, (v, s) => editar({ progresso: v }, s)));
-  add("Opacidade", faixa(e.opacidade, 0.05, 1, 0.05, (v, s) => editar({ opacidade: v }, s)));
+  add("Opacidade (transparência)", faixa(e.opacidade, 0.05, 1, 0.05, (v, s) => editar({ opacidade: v }, s)));
+  /* acabamento: traço mais grosso/fino, bordas lisas, contraste, contorno branco (separa do desenho) e inverter */
+  { const ac = e.acabamento || {}, mud = (k, v, s) => editar({ acabamento: { ...(e.acabamento || {}), [k]: v } }, s);
+    add("Espessura do traço", faixa(ac.espessura ?? 1, 0.3, 3, 0.05, (v, s) => mud("espessura", v, s)));
+    add("Suavidade das bordas", faixa(ac.suavidade ?? 0, 0, 1, 0.05, (v, s) => mud("suavidade", v, s)));
+    add("Contraste", faixa(ac.contraste ?? 1, 0.3, 3, 0.05, (v, s) => mud("contraste", v, s)));
+    add("Contorno branco (separa do desenho)", faixa(ac.contornoBranco ?? 0, 0, 1, 0.05, (v, s) => mud("contornoBranco", v, s)));
+    { const c = document.createElement("input"); c.type = "checkbox"; c.checked = !!ac.inverter; c.addEventListener("change", () => mud("inverter", c.checked)); add("Inverter preto ↔ branco", c); } }
   add("Camada", escolha(e.camada, [["auto", "automática (profundidade)"], ["atras", "atrás"], ["frente", "na frente"], ["fundo", "fundo da tela"]], v => editar({ camada: v })));
   /* direção */
   { const outros = SCN.list.filter(it => !(e.ancora.modo === "manequim" && it.name === e.ancora.alvo)).map(it => ["m:" + it.name, "para " + it.name]);

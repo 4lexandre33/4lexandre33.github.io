@@ -50,6 +50,8 @@ export function registerEffectsTools(server, W) {
       intensidade: N.optional().describe("0 a 1.5."),
       progresso: N.optional().describe("Estágio 0 (começando) a 1 (formado)."),
       opacidade: N.optional().describe("0.05 a 1."),
+      acabamento: z.object({ espessura: N.optional().describe("traço 0.3–3 (1 = normal)"), suavidade: N.optional().describe("bordas lisas 0–1"), contraste: N.optional().describe("0.3–3"),
+        contornoBranco: N.optional().describe("halo branco 0–1, separa o efeito do desenho"), inverter: z.boolean().optional().describe("preto ↔ branco") }).optional().describe("Acabamento do traço."),
       camada: z.enum(["auto", "atras", "frente", "fundo"]).optional().describe("auto = pela profundidade; atras/frente do dono; fundo = atrás de tudo."),
       reverso: z.boolean().optional().describe("Implosão / destroços voltando / rachaduras fechando."),
       semente: N.optional().describe("Varia a forma (mesmo número = mesmo desenho)."),
@@ -70,7 +72,7 @@ export function registerEffectsTools(server, W) {
       if (em && em.modo === "manequim") delete em.modo;
       const p = a.para; const para = !p ? undefined : p.maisPerto ? { alvo: "auto" } : p.camera ? "camera" : p.manequim ? p.manequim : p.objeto ? { objeto: p.objeto } : p.graus !== undefined ? p.graus : (p.x !== undefined || p.y !== undefined || p.z !== undefined) ? [p.x || 0, p.y || 0, p.z || 0] : undefined;
       const opts = {};
-      for (const k of ["elemento", "colorido", "nivel", "estiloTexto", "cores", "escala", "intensidade", "progresso", "opacidade", "camada", "reverso", "semente", "inicio", "duracao", "texto", "simbolo", "svg", "params", "nome"]) if (a[k] !== undefined) opts[k] = a[k];
+      for (const k of ["elemento", "colorido", "nivel", "estiloTexto", "cores", "escala", "intensidade", "progresso", "opacidade", "camada", "reverso", "semente", "inicio", "duracao", "texto", "simbolo", "svg", "params", "nome", "acabamento"]) if (a[k] !== undefined) opts[k] = a[k];
       if (em) opts.ancora = em; if (para !== undefined) opts.direcao = para;
       let resultado, desenhar = false;
       switch (a.acao) {

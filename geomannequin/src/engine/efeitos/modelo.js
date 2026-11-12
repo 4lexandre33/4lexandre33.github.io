@@ -215,6 +215,11 @@ function validarEfeito(e) {
     /* cor é opcional: sem "colorido", o efeito sai em nanquim; passar cores próprias liga a cor */
     colorido: e.colorido !== undefined ? !!e.colorido : Array.isArray(e.cores) && e.cores.some(cor)
   };
+  /* acabamento (opcional): contraste, espessura do traço, suavidade das bordas, contorno branco e inverter preto/branco */
+  { const a = e.acabamento && typeof e.acabamento === "object" ? e.acabamento : {}, ac = {
+      contraste: num(a.contraste, 0.3, 3, 1), espessura: num(a.espessura, 0.3, 3, 1), suavidade: num(a.suavidade, 0, 1, 0),
+      contornoBranco: num(a.contornoBranco, 0, 1, 0), inverter: !!a.inverter };
+    if (ac.contraste !== 1 || ac.espessura !== 1 || ac.suavidade || ac.contornoBranco || ac.inverter) out.acabamento = ac; }
   if (e.progresso !== undefined) out.progresso = num(e.progresso, 0, 1, 1);
   if (Array.isArray(e.cores)) { const cs = e.cores.map(cor).filter(Boolean).slice(0, 8); if (cs.length) out.cores = cs; }
   const prm = {};
