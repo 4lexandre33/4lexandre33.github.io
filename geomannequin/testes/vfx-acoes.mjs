@@ -53,4 +53,8 @@ m.poseRapida("empe"); const q1 = JSON.stringify(w.sceneList(true)[0].p);
 m.poseRapida("empe"); const q2 = JSON.stringify(w.sceneList(true)[0].p);
 ok(q0 !== q1 && q1 === q2, "molejo varia a pose e repete com a mesma semente");
 
+/* 6. abraço de frente: os dois abraçam com as duas mãos (nenhum braço pendurado) */
+{ const w2 = createWorld(); w2.cena.adicionar({ nome: "Leo", x: 8, z: 0, giro: -90 }); w2.cena.ativo.girar(90); w2.cena.interagir(w2.cena.ativo.nome, "Leo", "abracoFrente");
+  const L = w2.sceneList(true); ok(L.slice(0, 2).every(x => Math.abs(x.p.armFlexL) > 20 && Math.abs(x.p.armFlexR) > 20), "abraço de frente: quatro braços em volta"); }
+
 if (falhou) { console.log("\nFALHOU"); process.exit(1); } else console.log("\nvfx-acoes: tudo ok");

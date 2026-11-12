@@ -93,8 +93,8 @@ function planoInteracao(tipo, A, B, ground, folga = 0) {
   }
   const capsA = () => itCaps(A, ground), capsB = () => itCaps(B, ground), MA = marcosDoCorpo(A, ground), MB = marcosDoCorpo(B, ground);
   const centro = M => itMulX(itAddX(M.oE, M.oD), 0.5);
-  const costasDe = (M, caps, y, lado) => naSuperficie(caps, centro(M), itMulX(M.frenteChao, -1), y, itMulX(M.esqChao, lado));
-  const frenteDeM = (M, caps, y, lado) => naSuperficie(caps, centro(M), M.frenteChao, y, itMulX(M.esqChao, lado));
+  const costasDe = (M, caps, y, lado) => { for (const k of [1, 0.6, 0.3, 0]) { const r = naSuperficie(caps, centro(M), itMulX(M.frenteChao, -1), y, itMulX(M.esqChao, lado * k)); if (r) return r; } return null; };
+  const frenteDeM = (M, caps, y, lado) => { for (const k of [1, 0.6, 0.3, 0]) { const r = naSuperficie(caps, centro(M), M.frenteChao, y, itMulX(M.esqChao, lado * k)); if (r) return r; } return null; };
   const ombroDe = (M, caps, s, f) => { const sh = s > 0 ? M.oE : M.oD; return itRaio(caps, itCombX([sh, 1], [IT_UP, 6], [M.frenteChao, f || 0]), [0, -1, 0]); };
   const lista = [];
   const mao = (it, s, como, ct, extra, gesto, obst) => { if (ct) lista.push({ it, gesto, obst, c: Object.assign({ s, como, P: ct.P, N: ct.N }, extra) }); };
