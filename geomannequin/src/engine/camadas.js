@@ -10,6 +10,7 @@
    - Manequim congelado: a foto não é refeita, nem quando a câmera muda, até descongelar.
    Este módulo não usa a página: roda no navegador, em Web Workers e no Node (MCP). */
 import {desenharReferencia} from "./objetos.js";
+import { desenharEfeitos } from "./efeitos/desenhar.js";
 import { scene, setCasters } from "./desenho.js";
 import { setCUR_ID, setMULTI } from "./projecao.js";
 import { zb, zp, FINO } from "./zbuffer.js";
@@ -232,6 +233,31 @@ function comporCamadas(plan, opts) {
         referencia:"referencia-"+i+"-"+k,nome:grupo.tipo,vestivel:vestir!==undefined});
     });
   }
+  /* efeitos especiais: os de cena e de personagem entram na pilha pela profundidade (atrás/na frente do dono);
+     os de tela vão para o fundo de tudo ou para a frente de tudo; pós-imagens copiam a camada do dono */
+  let efeitosFundo = "", efeitosFrente = "", defsEfeitos = "";
+  if (list0.efeitos && list0.efeitos.length) {
+    const R = desenharEfeitos(list0, list0.efeitos, list0.quadroEfeitos || 0, { prefixo: uid, exportacao: !!list0.exportacao });
+    defsEfeitos = R.defs;
+    R.itens.forEach((it, k) => {
+      if (it.onde === "fundo") { efeitosFundo += it.svg; return; }
+      if (it.onde === "frente") { efeitosFrente += it.svg; return; }
+      const dono = it.dono >= 0 ? cams.find(c => !c.objeto && !c.referencia && !c.efeito && c.g.membros.includes(it.dono)) : null;
+      let prof = it.prof, ordem = dono ? dono.ordem : 0;
+      if (dono && it.camada === "atras") prof = dono.prof - 1e-3;
+      else if (dono && it.camada === "frente") prof = dono.prof + 1e-3;
+      else if (it.camada === "atras") prof -= 1e3; else if (it.camada === "frente") prof += 1e3;
+      let svg = it.svg;
+      if (it.fantasma) {
+        if (!dono) return;
+        const c = it.fantasma.cor, n = parseInt(c.slice(1), 16), rgb = [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => (0.55 * v / 255).toFixed(3)), fid = uid + "fxt" + k;
+        defsEfeitos += '<filter id="' + fid + '"><feColorMatrix type="matrix" values="0.45 0 0 0 ' + rgb[0] + ' 0 0.45 0 0 ' + rgb[1] + ' 0 0 0.45 0 ' + rgb[2] + ' 0 0 0 1 0"/></filter>';
+        svg = '<g data-efeito="' + it.id + '" data-vfx="pos_imagem" filter="url(#' + fid + ')">' + it.fantasma.copias.slice().reverse().map(q => '<g transform="translate(' + q.dx.toFixed(1) + " " + q.dy.toFixed(1) + ')" opacity="' + q.op + '">' + dono.res.svg + "</g>").join("") + "</g>";
+        prof = dono.prof - 2e-3;
+      }
+      cams.push({ g: { membros: [], lanc: [] }, res: { svg, z: null, sombra: "", info: { depth: prof } }, prof, ordem, efeito: it.id, nome: it.tipo });
+    });
+  }
   cams.sort((a, b) => a.ordem - b.ordem || a.prof - b.prof);
   /* atmosfera: quem está mais longe se aproxima da cor do fundo */
   const p0 = list0[plan.idx.length ? plan.idx[0] : 0].p, at = p0.persp ? (p0.atmo || 0) : 0, bg = p0.bg;
@@ -243,6 +269,7 @@ function comporCamadas(plan, opts) {
     const M = mascaraEscondida(c, outros);
     let attrs = "";
     if (M) { defs += '<clipPath id="' + uid + 'r' + k + '"><path clip-rule="evenodd" d="' + caminhoRecorte(c.res.z, M) + '"/></clipPath>'; attrs += ' clip-path="url(#' + uid + 'r' + k + ')"'; }
+    if(c.efeito){ corpo+='<g id="efeito-'+c.efeito+'" data-camada="'+c.nome+'">'+c.res.svg+'</g>'; return; }
     if(c.referencia){
       corpo+='<g id="'+c.referencia+'" data-camada="'+c.nome+'"'+attrs+'>'+c.res.svg+'</g>';
       sombras+=c.res.sombra;
@@ -263,14 +290,15 @@ function comporCamadas(plan, opts) {
     sombras += c.res.sombra || "";
   });
   const hidden = { hidden: true, handles: [], bb: null, fit: null }, infos = list0.map(() => hidden);
-  cams.forEach(c => { if (!c.objeto&&!c.referencia) infos[c.g.membros[0]] = c.res.info; });
+  cams.forEach(c => { if (!c.objeto&&!c.referencia&&!c.efeito) infos[c.g.membros[0]] = c.res.info; });
   let floorStr = "";
   if (plan.floor && list0.length) { let R = plan.floor; list0.forEach(o => R = Math.max(R, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2))); floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R, 80)); }
   const guias = L.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) + (L.pfObjetos !== false ? pfObjetosSvg(list0[0].p, list0[0].pal, list0.objetos, list0.chao !== undefined ? list0.chao : (list0[0].gy || 0)) : "") : "";
   const lay = (id, nome, s) => opts.inkscape ? '<g id="' + id + '" inkscape:label="' + nome + '"' + ink + ">" + s + "</g>" : (s ? '<g id="' + id + '">' + s + "</g>" : "");
-  const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias) + lay("vfx-quadro","VFX de quadro",efeitosQuadro);
+  defs += defsEfeitos;
+  const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("efeitos-fundo", "Efeitos (fundo)", efeitosFundo) + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias) + lay("vfx-quadro","VFX de quadro",efeitosQuadro) + lay("efeitos-frente", "Efeitos (frente)", efeitosFrente);
   if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros, obj: c.objeto ? c.g.obj : undefined })) });
-  return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto&&!c.referencia).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
+  return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto&&!c.referencia&&!c.efeito).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
 }
 /* qual manequim está no ponto (x, y) da tela: o mais perto entre as camadas */
 function pickCamadas(x, y) {

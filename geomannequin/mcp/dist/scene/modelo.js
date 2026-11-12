@@ -139,6 +139,8 @@ function sceneList(exp,exportarReferencias=!!exp){
     if(o.modeloMao&&o.vistaPega==="guia")copia._guiaPega=gripSite(o,"baseMao").local;
     return copia;
   });lst.chao=g0;
+  /* efeitos especiais da cena (os ocultos não entram) e o quadro atual da linha do tempo */
+  lst.efeitos=(SCN.efeitos||[]).filter(e=>e.visivel);lst.quadroEfeitos=SCN.frameManga||0;lst.exportacao=!!exportarReferencias;
   const base=exp?PAL_EXPORT:PAL_SCREEN,po={};for(const k in base)po[k]=exp?base[k]:cssHex(base[k]);lst.palObjetos=po;
   return lst;
 }

@@ -37,7 +37,7 @@ let camadasInfo=[],ULT={S:0,panX:0,panY:0};
 function draw(){
   const lst=sceneList(),rapido=!!drag||quick,floor=L.floor?16:0;
   let r;
-  if(lst.some(o=>o.referencia)||(!SCN.exato&&lst.filter(o=>!o.p._oculto).length>1)||lst.objetos.length){
+  if(lst.some(o=>o.referencia)||(lst.efeitos&&lst.efeitos.length)||(!SCN.exato&&lst.filter(o=>!o.p._oculto).length>1)||lst.objetos.length){
     const plan=prepararCamadas(lst,L,rapido,floor,{canal:"tela"}),par=paraleloAtivo();
     plan.grupos.forEach(g=>{
       if(g.pronto)return;

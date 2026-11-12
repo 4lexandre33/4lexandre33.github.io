@@ -3,6 +3,7 @@ import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHe
 import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
 import { AU } from "../engine/index.js";
+import { criarApiEfeitos } from "./efeitos-cena.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
@@ -224,6 +225,8 @@ function apiFor(it){
     /* olhos para um lado sem mexer a cabeça: m.olhos(x, y) de −1 a 1 (x + = esquerda do manequim, y + = cima) */
     /* unidades de ação do rosto, por lado: m.rosto({palpebraEsq: 1, sobrancelhaForaDir: 0.6, cantoBocaEsq: 0.4, narizFranzir: 0.5})
        (também aceita os nomes gerais: sorriso, palpebras, sobrancelhas, franzir, bocaAbrir...) */
+    /* efeito preso a este manequim: m.efeito("aura", {elemento: "fogo"}) · m.efeito("feixe", {em: "maoDir", para: "Leo"}) */
+    efeito(tipo,opts){chk();cena.efeitos.adicionar(tipo,{...(opts||{}),manequim:it.id});return m},
     rosto(valores){chk();if(!valores||typeof valores!=="object")throw new Error("Passe um objeto, por exemplo m.rosto({palpebraEsq: 1}).");
       for(const k0 of Object.keys(valores)){const k=ALIAS[k0]||k0;if(parteDaChave(k)!=="rosto")throw new Error("“"+k0+"” não é do rosto. Use: "+AU.map(a=>a[4]).join(", ")+".")}
       applyParams(it,valores,true).forEach(t=>LOG.push(["aviso",t]));return m},
@@ -407,6 +410,10 @@ const cena={
   remover(m){const it=typeof m==="string"?SCN.list.find(x=>x.name===m):SCN.list.find(x=>x.name===(m&&m.nome));if(!it)throw new Error("Manequim não encontrado.");delInst(it)},
   limpar(){const cam={};CAMK.forEach(k=>cam[k]=P[k]);SCN.list.splice(1);SCN.active=0;setP(SCN.list[0].params);Object.assign(P,cam);return apiFor(SCN.list[0])},
   lista(){return SCN.list.map(apiFor)},
+  /* efeitos especiais: cena.efeito("explosao", {em: {manequim: "Ana", parte: "maoDir"}, elemento: "fogo", raio: 6}) → id;
+     cena.efeitos.lista() / editar(id, {...}) / remover(id) / duplicar(id) / catalogo() / elementos() / converterAntigos() */
+  efeitos:criarApiEfeitos(()=>cena.marcarEstado()),
+  efeito(tipo,opts){return cena.efeitos.adicionar(tipo,opts)},
   obter(q){const it=typeof q==="number"?SCN.list[q]:SCN.list.find(x=>x.name===q);if(!it)throw new Error("Manequim “"+q+"” não existe.");return apiFor(it)},
   get ativo(){return apiFor(SCN.list[SCN.active])},
   /* Minhas poses: cena.poses.salvar("Aceno", {manequim:"Ana", partes:"bracoDir"}), .aplicar("Aceno", {manequim, partes, espelhar}),

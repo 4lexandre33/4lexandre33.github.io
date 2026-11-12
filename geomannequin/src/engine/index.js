@@ -59,3 +59,6 @@ export * from "./grip-dynamics.js";
 export * from "./referencia-manga.js";
 export * from "./superficie-referencia.js";
 export * from "./rosto-au.js";
+export * from "./efeitos/modelo.js";
+export * from "./efeitos/primitivas.js";
+export * from "./efeitos/desenhar.js";
