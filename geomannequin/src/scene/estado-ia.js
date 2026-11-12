@@ -46,7 +46,19 @@ const IA_SENTIDO = {
   hallux: ["levanta o dedão do pé", "dobra o dedão do pé"],
   bodyPitch: ["inclina o corpo inteiro para trás (−90 = deitado de costas)", "inclina o corpo inteiro para a frente (90 = de bruços, 180 = de cabeça para baixo)"],
   bodyRoll: ["tomba o corpo inteiro para a ESQUERDA do manequim", "tomba o corpo inteiro para a DIREITA do manequim (90 = deitado de lado)"],
-  bodyLift: ["", "levanta o corpo do chão (salto, flutuar), em unidades (o corpo tem ≈ 16,5)"]
+  bodyLift: ["", "levanta o corpo do chão (salto, flutuar), em unidades (o corpo tem ≈ 16,5)"],
+  /* rosto (conferido na imagem: com o manequim de frente para você, o lado ESQUERDO dele aparece à DIREITA da tela) */
+  jawOpen: ["", "abre a boca (0 fechada, 1 toda aberta)"], jawSide: ["desvia o queixo para a DIREITA do manequim", "desvia o queixo para a ESQUERDA do manequim"],
+  smile: ["baixa os cantos da boca (tristeza, desgosto)", "sobe os cantos da boca (sorriso)"],
+  eyeYaw: ["os olhos olham para a DIREITA do manequim", "os olhos olham para a ESQUERDA do manequim"], eyePitch: ["os olhos olham para baixo", "os olhos olham para cima"],
+  eyeLid: ["", "fecha as duas pálpebras de cima (0 abertas, 1 fechadas)"], browUp: ["baixa as sobrancelhas (bravo, concentrado)", "levanta as sobrancelhas (surpresa)"],
+  browIn: ["sobe a ponta de dentro das sobrancelhas (aflição, tristeza, medo)", "junta e baixa as sobrancelhas (franzir: raiva)"],
+  blush: ["", "rosto corado (só aparece na cabeça V5)"], tears: ["", "lágrimas (só aparece na cabeça V5)"], eyeBags: ["", "olheiras (só aparece na cabeça V5)"],
+  browInner: ["baixa a ponta de dentro desta sobrancelha", "sobe a ponta de dentro desta sobrancelha"], browOuter: ["baixa a ponta de fora desta sobrancelha", "sobe a ponta de fora desta sobrancelha (sobrancelha arqueada)"],
+  lidUp: ["", "fecha só a pálpebra de cima deste olho (piscar)"], lidLo: ["", "sobe a pálpebra de baixo deste olho (apertar, desconfiar, sorriso verdadeiro)"],
+  cheek: ["", "sobe esta bochecha (sorriso verdadeiro, careta)"], noseWrinkle: ["", "franze o nariz (nojo; só aparece na cabeça V5)"],
+  upperLip: ["", "sobe o lábio de cima deste lado (nojo, rosnar)"], mouthCorner: ["baixa este canto da boca", "sobe este canto da boca (meio sorriso)"],
+  lipPress: ["", "aperta os lábios (segurar, determinação)"], pout: ["", "projeta os lábios (beicinho)"], teethClench: ["", "mostra os dentes cerrados (mais visível na cabeça V5)"]
 };
 const IA_LADO = k => /L$/.test(k) && !/^(fSpread|thumbOpp)/.test(k) ? "esquerdo" : /R$/.test(k) ? "direito" : "";
 function iaBase(k) { const b = k.replace(/[LR]$/, ""); return IA_SENTIDO[b] ? b : null; }

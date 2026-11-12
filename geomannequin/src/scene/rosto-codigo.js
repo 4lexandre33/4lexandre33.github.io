@@ -6,7 +6,7 @@
        sorriso: 0.15, cantoBocaEsq: 0.7, cantoBocaDir: -0.2,
        // olhos e pálpebras
        palpebraBaixoEsq: 0.4,
-     }, { formato: { tamanhoOlhos: 1.1 }, cabeca: "v5_anime" });
+     }, { formato: { eyeSize: 1.1 }, cabeca: "v5" });
 
    O primeiro bloco é a expressão. Ao aplicar, o rosto é COMPLETO: o que não aparece volta ao neutro (0),
    assim o mesmo código dá sempre o mesmo rosto. O segundo bloco é opcional: formato do rosto (feições do

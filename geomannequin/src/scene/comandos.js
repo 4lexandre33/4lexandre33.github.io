@@ -233,7 +233,7 @@ function apiFor(it){
        {formato: false} ignora as feições/cabeça do código */
     aplicarRosto(fonte,opts){chk();const o=opts||{};const r=typeof fonte==="string"?lerCodigoDoRosto(fonte):{nome:"",valores:Object.fromEntries(Object.entries(fonte||{}).map(([a,b])=>[ALIAS[a]||a,b])),formato:null,cabeca:null};
       const vs=rostoCompleto(r.valores);applyParams(it,vs,true).forEach(t=>LOG.push(["aviso",t]));
-      if(o.formato!==false&&r.formato)applyParams(it,r.formato,true).forEach(t=>LOG.push(["aviso",t]));
+      if(o.formato!==false&&r.formato)applyParams(it,r.formato,false).forEach(t=>LOG.push(["aviso",t]));
       if(o.formato!==false&&r.cabeca)it.params.headModel=r.cabeca;
       it.exprNome=r.nome||"rosto aplicado por código";return m},
     /* guarda o rosto atual em Minhas expressões: m.guardarRosto("Sorriso cínico") · {formato: true} guarda também as feições */

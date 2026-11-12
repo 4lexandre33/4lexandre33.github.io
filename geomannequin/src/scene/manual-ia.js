@@ -2,10 +2,11 @@
    Gerado a partir do próprio código: os nomes, as faixas e a lista de poses nunca ficam desatualizados.
    Use junto com o estado da cena (estado-ia.js): o manual ensina; o estado diz como o manequim está agora. */
 import { SL, POSEKEYS } from "./parametros.js";
-import { POSE_GRUPOS, NOMES_EXPRESSOES, BPOSES } from "./poses.js";
+import { POSE_GRUPOS, NOMES_EXPRESSOES, BPOSES, EXPRESSOES } from "./poses.js";
+import { GRUPOS_ROSTO, chavesRosto, chavesFormato } from "./rosto-codigo.js";
 import { REF } from "./ajuda.js";
 import { iaControle, estadoParaIA } from "./estado-ia.js";
-import { GESTOS, AU, CATALOGO, CATEGORIAS, PARTES_EFEITO } from "../engine/index.js";
+import { GESTOS, AU, CATALOGO, CATEGORIAS, PARTES_EFEITO, MODELOS_CABECA } from "../engine/index.js";
 
 const MAN_GRUPOS = [
   ["Corpo inteiro (no chão, deitar, saltar)", k => /^(bodyPitch|bodyRoll|bodyLift|ground)$/.test(k)],
@@ -59,6 +60,80 @@ const MAN_LADO = {
   levantandoDeQuatro: "o pé plantado; a mão no chão é a do outro lado", joelhoMaoNoChao: "o pé plantado; a mão no chão é a do outro lado", ajoelhadoFerido: "a mão no peito; a outra vai ao chão",
   saltoSobreCaixa: "a mão que apoia", subindoDegrau: "o pé que sobe", desviando: "o lado para onde dá o passo", escalando: "a perna que sobe; a mão no alto é a do outro lado"
 };
+/* ---------- capítulo do rosto: tudo para ler, ajustar e CRIAR um rosto novo ---------- */
+const manNumR = v => String(Math.round(v * 100) / 100);
+function manLinhaRosto(k) {
+  const c = iaControle(k), d = SL.find(q => q.k === k);
+  let s = "- `" + c.nome + "`" + (c.nome !== k ? " (`" + k + "`)" : "") + ": " + (d ? manNumR(d.min) + " a " + manNumR(d.max) : "");
+  if (c.negativo && c.positivo) s += ". **−** " + c.negativo + "; **+** " + c.positivo + ".";
+  else if (c.positivo) s += ". " + c.positivo.charAt(0).toUpperCase() + c.positivo.slice(1) + ".";
+  else if (d) s += ". " + d.label + ".";
+  return s;
+}
+function manReceita(nome) {
+  const v = EXPRESSOES[nome]; if (!v) return "";
+  const pares = chavesRosto().filter(k => Math.abs(v[k] || 0) > 1e-4).map(k => iaControle(k).nome + ": " + manNumR(v[k]));
+  return "- `" + nome + "` (" + NOMES_EXPRESSOES[nome] + "): " + (pares.length ? "`" + pares.join(", ") + "`" : "tudo 0");
+}
+function manualRosto(add) {
+  add("## 8. Rosto e expressões (inclusive rostos NOVOS)");
+  add("O rosto é independente da pose do corpo. Há três jeitos de mexer nele, do mais rápido ao mais preciso:");
+  add("1. **Expressão pronta** (com intensidade 0–1,5): `m.expressao(\"raiva\")`, `m.expressao(\"tristeza\", 0.6)`.");
+  add("2. **Mistura** de duas ou mais (prontas ou guardadas): `m.expressao(\"60% raiva + 40% medo\")` ou `m.expressao({raiva: 0.6, medo: 0.4})`.");
+  add("3. **Rosto por código** (controle a controle): `m.aplicarRosto('rosto({ sorriso: 0.4, palpebraBaixoEsq: 0.5 })')`. É assim que se cria um rosto que não existe na lista.");
+  add("");
+  add("### 8.1 O código do rosto");
+  add("```js\nrosto(\"Sorriso cínico\", {\n  // boca e mandíbula\n  sorriso: 0.15, cantoBocaEsq: 0.6, cantoBocaDir: -0.2,\n  // olhos e pálpebras\n  palpebraBaixoEsq: 0.4,\n  // sobrancelhas\n  sobrancelhaForaEsq: 0.5, franzir: 0.2,\n}, { formato: { eyeSize: 1.1 }, cabeca: \"v5\" });\n```");
+  add("- O nome (1º argumento) é opcional; serve para guardar. O 1º bloco `{…}` é a **expressão**; o 2º bloco é **opcional**: `formato` (feições do personagem, seção 8.6) e `cabeca` (modelo, seção 8.7).");
+  add("- **O rosto é COMPLETO**: tudo que não aparece no código volta a 0 (neutro). Assim o mesmo código sempre dá o mesmo rosto. Não precisa escrever controles em 0.");
+  add("- **Valores são absolutos**, não somam. `sorriso: 0.4` duas vezes continua 0.4.");
+  add("- Só números (ponto decimal), nomes da lista abaixo (em português ou a chave interna). Comentários `//` são permitidos. Nome errado = erro com o nome que falhou.");
+  add("- Onde usar o código: no app (painel **Código do rosto e Minhas expressões**, colar → Aplicar), no editor de comandos (`m.aplicarRosto('rosto({ … })')`), via MCP (ferramenta `rosto`, acao `aplicar_codigo`). O **código da pose** também leva o rosto (grupo `rosto`), então copiar a pose copia a expressão junto.");
+  add("- Ajuste fino sem zerar o resto: `m.rosto({ palpebraEsq: 1 })` muda só esses controles e mantém o resto do rosto atual. `m.piscar(\"esq\")` fecha um olho.");
+  add("");
+  add("### 8.2 Lados e direções (medido no desenho)");
+  add("- **Esq/Dir são do MANEQUIM**, não da tela. Com o manequim de frente para você, o lado ESQUERDO dele aparece à DIREITA da imagem. `cantoBocaEsq` sobe o canto que você vê à direita.");
+  add("- `olharLado` + = os olhos vão para a esquerda DO MANEQUIM (sua direita, se ele está de frente). `olharCima` + = para cima. Para olhar para alguém, prefira virar a cabeça (`cabecaGirar`) e use o olhar para o resto.");
+  add("- Controles gerais (`sorriso`, `palpebras`, `sobrancelhas`, `franzir`) valem para os dois lados. Os de lado **somam** por cima e o total é cortado na faixa: canto da boca = `sorriso + cantoBoca*` (−1 a 1); pálpebra de cima = `palpebras + palpebra*` (0 a 1). Ex.: `sorriso: 0.3, cantoBocaDir: -0.5` dá um sorriso torto. As pontas das sobrancelhas (`sobrancelhaDentro*`, `sobrancelhaFora*`) se somam ao desenho de `sobrancelhas`/`franzir`.");
+  add("- **A cabeça não faz parte do rosto.** Virar, inclinar ou abaixar a cabeça (`cabecaGirar`, `cabecaInclinar`, `cabecaLado`, `pescoco*`) são controles da POSE: use `m.pose({ cabecaGirar: -30 })` (− = para a direita do manequim, + = para a esquerda). Eles vão no código da pose, não no `rosto(...)`. Para “olhar para alguém à direita dele”: `cabecaGirar` negativo + `olharLado` negativo.");
+  add("- Olhos **arregalados**: não há valor abaixo de 0 em `palpebras`; use `palpebras: 0` + `sobrancelhas: 0.3–0.6` e, para exagerar, a feição `eyeOpen: 1.2–1.4` no bloco `formato`. Olhar **fulminante**: `palpebraBaixo*: 0.4–0.6` + `sobrancelhas` negativo + `franzir` positivo.");
+  add("- Mandíbula **travada**/boca fechada com força: `labiosApertar` (0.6–1). `dentesCerrados` é OUTRA coisa: abre os lábios e mostra os dentes juntos (rosnar, dor); não use os dois juntos no máximo.");
+  add("");
+  add("### 8.3 Todos os controles do rosto (faixa e sinal)");
+  for (const [titulo, f] of GRUPOS_ROSTO) { const ks = chavesRosto().filter(f); if (!ks.length) continue; add("**" + titulo.charAt(0).toUpperCase() + titulo.slice(1) + "**"); ks.forEach(k => add(manLinhaRosto(k))); }
+  add("- Faixas: 0 a 1 = de nada a máximo; −1 a 1 = os dois sentidos. Valores fora são cortados.");
+  add("");
+  add("### 8.4 Receitas: os valores de cada expressão pronta");
+  add("Use como ponto de partida para um rosto novo (copie, mude 1–3 números). Valores com intensidade 1:");
+  Object.keys(EXPRESSOES).filter(n => n !== "neutra").forEach(n => add(manReceita(n)));
+  add("");
+  add("### 8.5 Como CRIAR um rosto novo (passo a passo)");
+  add("1. **Descreva a emoção em partes**: boca (cantos, abertura, lábios), olhos (pálpebras de cima e de baixo, olhar), sobrancelhas (ponta de dentro, ponta de fora, franzir), bochechas/nariz, estado (corar, lágrimas).");
+  add("2. **Parta da expressão mais parecida** (8.4) ou de uma mistura. Ex.: “esperança tímida” = `alivio` com o olhar para baixo e corado: `bocaAbrir: 0.05, sorriso: 0.3, palpebras: 0.3, franzir: -0.4, olharCima: -0.3, corar: 0.4`.");
+  add("3. **Regras de leitura** (o que o olho de quem vê entende):");
+  add("   - Sorriso VERDADEIRO sobe bochechas e pálpebras de baixo (`bochecha*: 0.5`, `palpebraBaixo*: 0.3`); sorriso só com a boca parece educado ou falso.");
+  add("   - Tristeza/medo/aflição = ponta de DENTRO da sobrancelha para cima (`franzir` negativo ou `sobrancelhaDentro*` +). Raiva = sobrancelhas juntas e baixas (`franzir` +, `sobrancelhas` −).");
+  add("   - Surpresa = sobrancelhas para cima + boca aberta, pálpebras bem abertas (`palpebras: 0`). Medo = surpresa + aflição + cantos para baixo.");
+  add("   - Desprezo e ironia são ASSIMÉTRICOS: um canto só (`cantoBocaEsq: 0.6`), uma sobrancelha só.");
+  add("   - Nojo = nariz franzido + lábio de cima subindo (`narizFranzir`, `labioCima*`). Determinação = `labiosApertar` + `franzir` leve + pálpebra de baixo.");
+  add("   - Intensidade: 0.3 sutil, 0.6 claro, 1 forte, acima de 1 só para mangá/cartum.");
+  add("4. **Aplique e confira**: `m.aplicarRosto('rosto({ … })')`, depois `m.estadoIA()` (seção Rosto: cada controle fora do neutro e a expressão pronta mais parecida). Corrija só os números que precisa.");
+  add("5. **Guarde com um nome**: `m.guardarRosto(\"Sorriso cínico\")` (ou no app: nome → Guardar). Daí em diante `m.expressao(\"Sorriso cínico\", 0.7)` funciona, entra nas misturas (`\"50% Sorriso cínico + 50% raiva\"`) e aparece como botão. `{formato: true}` guarda também as feições e a cabeça.");
+  add("6. **Compartilhe**: `m.rostoCodigo()` devolve o código do rosto atual; `cena.expressoes.exportar()` devolve todas as guardadas; `cena.expressoes.importar(texto)` lê um ou vários `rosto(...)`.");
+  add("- Comandos de Minhas expressões: `cena.expressoes.lista()`, `.salvar(nome, {manequim, valores, formato, substituir})`, `.aplicar(nome, {manequim, intensidade, formato})`, `.codigo(nome)`, `.apagar(nome)`, `.parecida(manequim)`. Nomes de expressões prontas não podem ser usados.");
+  add("");
+  add("- Formato e cabeça são opcionais: sem o 2º bloco o personagem fica como está. Para um rosto que deve funcionar em qualquer personagem, **não** inclua formato.");
+  add("");
+  add("### 8.6 Formato do rosto (feições do personagem, não é expressão)");
+  add("Vai no 2º bloco: `rosto({...}, { formato: { eyeSize: 1.2, nose: 0.3 } })`. Muda o personagem, não a emoção. Por código o formato vem junto (`{formato: false}` ignora); no painel do app só vale com “incluir formato” marcado.");
+  chavesFormato().forEach(k => { const d = SL.find(q => q.k === k); add("- `" + iaControle(k).nome + "`" + (iaControle(k).nome !== k ? " (`" + k + "`)" : "") + ": " + manNumR(d.min) + " a " + manNumR(d.max) + " — " + d.label + "."); });
+  add("");
+  add("### 8.7 Modelos de cabeça (o que aparece em cada um)");
+  MODELOS_CABECA.forEach(([k, nome]) => add("- `" + k.replace(/_.*/, "") + "`: " + nome + "."));
+  add("- `corar`, `lagrimas`, `olheiras` e `narizFranzir` **só aparecem na cabeça V5** (anime). `dentesCerrados` aparece melhor na V5. Nas outras cabeças use sobrancelhas, pálpebras e boca para passar a emoção. Troque com `m.cabeca(\"v5\")` ou `cabeca: \"v5\"` no código do rosto.");
+  add("- A V5 exagera a expressão (feição `v5Exagero`) e aumenta olhos e boca (`v5Olhos`, `v5Boca`); os mesmos números parecem mais fortes nela.");
+  add("");
+}
 function manualPosesIA(opts = {}) {
   const L = [], add = t => L.push(t);
   add("# Manual do GeoMannequin para IA: como fazer qualquer pose");
@@ -148,12 +223,7 @@ function manualPosesIA(opts = {}) {
   add("- Cada controle tem o limite humano (seção 3). Valores fora são cortados e o comando avisa. Alguns limites dependem de outros (limites acoplados): ex. a coxa sobe menos com o joelho esticado. O app corrige sozinho e mostra o aviso.");
   add("- Para espacate, ponte, escorpião: `m.flexibilidade(2)` antes da pose.");
   add("- Colisão entre partes: `m.validarPose()` lista o que atravessa. Entre manequins: `cena.resolverColisoes()`.\n");
-  add("## 8. Rosto e expressões");
-  add("- Expressões prontas: " + Object.keys(NOMES_EXPRESSOES).map(k => "`" + k + "`").join(", ") + ". Intensidade 0–1,5. Mistura (qualquer nome desta lista): `m.expressao(\"60% raiva + 40% medo\")` ou `m.expressao({raiva: 0.6, medo: 0.4})`.");
-  add("- Sem nome pronto? Combine: esforço = `\"70% determinacao + 30% dor\"` ou `raiva` com `bocaAbrir: 0.3`; grito de guerra = `grito`; susto = `choque`; cansado = `cansaco`.");
-  add("- Controles do rosto (em `m.pose` ou `m.rosto`):");
-  SL.filter(d => d.g === "slFace" && POSEKEYS.has(d.k)).forEach(d => add(manLinhaControle(d.k)));
-  add("- Por lado (`m.rosto({...})`): " + AU.map(a => "`" + a[0] + "`").join(", ") + ".\n");
+  manualRosto(add);
   add("## 9. Efeitos especiais (opcional)");
   add("Padrão em preto e branco (nanquim de mangá); `colorido: true` liga a cor. `nivel` 1–5. Presos a uma parte: `m.efeito(\"impacto_contato\", { em: \"peDir\" })`; no chão: `cena.efeito(\"cratera\", { em: { modo: \"chao\", x: 0, z: 0 } })`; na tela: `cena.efeito(\"concentracao\")`; de outro manequim: `em: \"Leo.peito\"`. Direção: `para: \"Leo\"`.");
   add("- Partes para `em`: " + PARTES_EFEITO.map(p => "`" + p + "`").join(", ") + ".");

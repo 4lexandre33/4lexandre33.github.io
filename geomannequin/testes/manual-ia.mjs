@@ -63,5 +63,20 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
   ok(/=== PEDIDO ===\nfeche o punho esquerdo/.test(p) && okJ && /=== MANUAL ===/.test(p), "pacote: pedido, estado em JSON válido e manual"); }
 /* 5. duas pessoas: relação entre elas */
 { const w3 = createWorld(); w3.cena.ativo.renomear("Ana"); w3.cena.adicionar({ nome: "Leo", x: 8, giro: -90 }); const t = w3.cena.estadoIA(); ok(/Leo → Ana: 8 unidades, à frente de Leo/.test(t), "relação entre manequins (Leo olha para Ana)"); }
+/* 6. rosto no manual: todos os controles com faixa e sinal, receitas = expressões prontas, exemplo de código aplica */
+{ const w4 = createWorld(), man = w4.cena.manualIA({ curto: true }), r = man.slice(man.indexOf("## 8"), man.indexOf("## 9"));
+  const falta = w4.chavesRosto().filter(k => !r.includes("(`" + k + "`)"));
+  ok(!falta.length, "manual do rosto cita todos os controles" + (falta.length ? ": faltam " + falta.join(", ") : ""));
+  const semSinal = r.split("\n").filter(l => /^- `\w+` \(`\w+`\): -1 a 1\./.test(l) && !/\*\*−\*\*/.test(l));
+  ok(!semSinal.length, "controles de −1 a 1 dizem o que o − e o + fazem" + (semSinal.length ? ": " + semSinal[0] : ""));
+  const m4 = w4.cena.ativo; let rec = 0, ruins = [];
+  for (const l of r.split("\n")) { const mm = /^- `(\w+)` \([^)]*\): `([^`]+)`/.exec(l); if (!mm || !w4.EXPRESSOES[mm[1]]) continue; rec++;
+    m4.aplicarRosto("rosto({" + mm[2] + "})"); const a = w4.cena.expressoes.ler(m4.rostoCodigo()).valores; m4.expressao(mm[1]); const b = w4.cena.expressoes.ler(m4.rostoCodigo()).valores;
+    if (Object.keys({ ...a, ...b }).some(k => Math.abs((a[k] || 0) - (b[k] || 0)) > 0.006)) ruins.push(mm[1]); }
+  ok(rec >= 26 && !ruins.length, "receitas do manual recriam as " + rec + " expressões" + (ruins.length ? " (diferem: " + ruins.join(", ") + ")" : ""));
+  const ex = /```js\n(rosto\([\s\S]*?\);)\n```/.exec(r); let erro = ""; try { m4.aplicarRosto(ex[1], { formato: true }); } catch (e) { erro = e.message; }
+  ok(ex && !erro, "o exemplo de código do rosto do manual funciona" + (erro ? ": " + erro : ""));
+  const ins = [...r.matchAll(/m\.aplicarRosto\('([^']+)'\)/g)].map(x => x[1]).filter(t => !t.includes("…"));
+  ok(ins.every(t => { try { m4.aplicarRosto(t); return true; } catch (e) { return false; } }), "exemplos curtos de aplicarRosto do manual funcionam"); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);
