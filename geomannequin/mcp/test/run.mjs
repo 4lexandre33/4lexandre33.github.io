@@ -49,6 +49,9 @@ async function suite(client, tag) {
   check(!r.isError && r.structuredContent.expressoes.some(e => e.nome === "Sorriso MCP"), "rosto: salvar e listar");
   r = await call("rosto", { acao: "aplicar_codigo", codigo: "rosto({ zzz: 1 })" });
   check(r.isError && /não é um controle/.test(text(r)), "rosto: recusa controle inválido");
+  r = await call("biblioteca_item", { acao: "capturar", tipo: "pose", nome: "MCP" });
+  { const it = r.structuredContent && r.structuredContent.item; check(!r.isError && it && it.tipo === "pose" && /pose\(/.test(it.codigo), "biblioteca_item: capturar pose");
+    r = await call("biblioteca_item", { acao: "aplicar", item: JSON.stringify(it) }); check(!r.isError && /aplicada/.test(text(r)), "biblioteca_item: aplicar" + (r.isError ? ": " + text(r) : "")); }
   r = await call("estado_pose", {});
   check(!r.isError && (r.content || []).some(c => c.type === "image") && /Braço esquerdo/.test(text(r)) && r.structuredContent.estado.manequins.length >= 1, "estado_pose: texto, JSON e imagem" + (r.isError ? ": " + text(r) : ""));
   r = await call("manual_poses_ia", { curto: true });

@@ -26,6 +26,7 @@ export * from "./blocking.js";
 export * from "./orientacao-frames.js";
 export * from "./orbita.js";
 export * from "./comandos.js";
+export * from "./biblioteca.js";
 export * from "./ajuda.js";
 export * from "./quadros.js";
 

@@ -459,6 +459,16 @@ body.qd-aberto{overflow:hidden}
 #rcPainel .row input[type=text],#rcPainel .row select{flex:1 1 140px;min-width:0}
 #rcPainel .chk{display:flex;gap:6px;align-items:center;font-size:12px}
 .expr-btns{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+/* Biblioteca */
+.bib-painel>summary h2{display:inline;margin:0}
+.bib-lista{list-style:none;margin:6px 0;padding:0;display:grid;gap:6px}
+.bib-lista li{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;align-items:center;border:1px solid var(--line,#ccc);border-radius:6px;padding:6px}
+.bib-txt{display:flex;flex-direction:column;min-width:0;flex:1 1 160px}
+.bib-txt small{color:var(--muted);overflow-wrap:anywhere}
+.bib-tag{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.bib-acoes{display:flex;flex-wrap:wrap;gap:4px}
+.bib-sql{max-height:160px;overflow:auto;font-size:11px;white-space:pre;background:var(--panel2,rgba(0,0,0,.04));padding:6px;border-radius:4px}
+#bibBusca{flex:1 1 100px;min-width:0}
 
 /* GeoMannequin — modo de estudo anatômico V4.2 (folha técnica vetorial).
  * Responsivo, acessível e isolado do palco/editor existentes. */
@@ -566,6 +576,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         <button type="button" id="colisoesAtalho" aria-controls="colSecao" title="Abrir diretamente a seção Colisões do painel Parâmetros">Colisões</button>
         <button type="button" id="headStudyOpen" title="Abrir a folha anatômica V4.2 com perfil, frontal, 3/4, anotações e SVG vetorial">Estudo V4.2</button>
         <button type="button" id="quadrosBtn" aria-pressed="false" title="Roteiro de quadros: escreva quadros em código (#quadro 1, #quadro 2…), renderize e baixe tudo junto">Quadros</button>
+        <button type="button" id="bibAbrir" title="Ir para a Biblioteca: guardar e abrir poses, rostos, efeitos e cenas">Biblioteca</button>
         <button type="button" id="fxBtn" aria-pressed="true" title="Mostrar o painel de efeitos especiais (logo abaixo do desenho)">Efeitos</button>
         <button type="button" id="blockingBtn" aria-pressed="false" title="Mostrar ou esconder o painel de blocking (vista de cima e lateral, inserir manequins e objetos)">Blocking</button>
       </div>
@@ -812,6 +823,32 @@ pre.cmdout .ok{color:var(--cobalt)}
       </div>
       <p id="mpVazio" class="hint">Nenhuma pose salva ainda. Elas ficam neste navegador e vão junto no arquivo da cena.</p>
       <ul id="mpLista" class="mp-lista"></ul>
+      <details id="bibPainel" class="fino bib-painel" open>
+        <summary><h2 id="bibTitulo">Biblioteca (banco de dados)</h2></summary>
+        <p class="hint">Guarde poses, rostos, efeitos, cenas inteiras e coleções. Cada item vira código que dá para aplicar de novo, copiar ou mandar para uma IA.</p>
+        <div class="sel-linha"><label for="bibLugar">Onde</label><select id="bibLugar" aria-describedby="bibOnde"></select></div>
+        <p id="bibOnde" class="hint"></p>
+        <div class="sel-linha"><label for="bibTipo">Guardar</label><select id="bibTipo"></select></div>
+        <div class="sel-linha"><label for="bibNome">Nome</label><input id="bibNome" maxlength="80" placeholder="ex.: Soco de direita com raiva"></div>
+        <label class="pc-chk"><input type="checkbox" id="bibFormato"> rosto: incluir formato e modelo de cabeça</label>
+        <div class="group poses" role="group" aria-label="Biblioteca">
+          <button type="button" id="bibGuardar" class="primary">Guardar</button>
+          <button type="button" id="bibExportar">Exportar arquivo</button>
+          <label class="mp-arquivo">Importar arquivo<input type="file" id="bibImportar" accept=".json,application/json"></label>
+        </div>
+        <div class="sel-linha"><label for="bibFiltro">Mostrar</label><select id="bibFiltro"></select><input id="bibBusca" type="search" placeholder="Buscar" aria-label="Buscar na biblioteca"></div>
+        <p id="bibMsg" class="hint" role="status" aria-live="polite"></p>
+        <p id="bibVazio" class="hint"></p>
+        <ul id="bibLista" class="bib-lista"></ul>
+        <textarea id="bibCodigo" class="pc-codigo" rows="5" hidden aria-label="Código do item"></textarea>
+        <details class="fino"><summary>Conectar meu Supabase (opcional)</summary>
+          <p class="hint">Para guardar num banco seu, fora do claude.ai: crie um projeto grátis em supabase.com, rode o SQL abaixo no SQL Editor e cole a URL e a chave <em>anon</em> (Settings › API). Funciona no site; dentro do artefato do claude.ai a rede externa é bloqueada e vale a Nuvem.</p>
+          <div class="sel-linha"><label for="bibSupaUrl">URL</label><input id="bibSupaUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+          <div class="sel-linha"><label for="bibSupaChave">Chave anon</label><input id="bibSupaChave" type="password" autocomplete="off"></div>
+          <div class="group poses"><button type="button" id="bibSupaConectar">Conectar</button><button type="button" id="bibSupaDesligar">Desconectar</button><button type="button" id="bibSupaCopiarSql">Copiar SQL</button></div>
+          <pre id="bibSupaSql" class="bib-sql"></pre>
+        </details>
+      </details>
       <h2>Coluna e pelve</h2>
       <div id="slSpine"></div>
       <h2>Pescoço e cabeça</h2>
@@ -1085,17 +1122,17 @@ pre.cmdout .ok{color:var(--cobalt)}
     const b = s * e, cb = Math.cos(b), sb = Math.sin(b);
     return [x1 * cb - dy * sb + P3[0], x1 * sb + dy * cb + P3[1], z1 + P3[2]];
   }
-  function mmul(A, B2) {
+  function mmul(A, B3) {
     const o = [];
-    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o.push(A[i * 3] * B2[j] + A[i * 3 + 1] * B2[3 + j] + A[i * 3 + 2] * B2[6 + j]);
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o.push(A[i * 3] * B3[j] + A[i * 3 + 1] * B3[3 + j] + A[i * 3 + 2] * B3[6 + j]);
     return o;
   }
   function mT(A) {
     return [A[0], A[3], A[6], A[1], A[4], A[7], A[2], A[5], A[8]];
   }
-  function comp(A, B2) {
-    const t = mv(A.M, B2.T);
-    return { M: mmul(A.M, B2.M), T: [t[0] + A.T[0], t[1] + A.T[1], t[2] + A.T[2]] };
+  function comp(A, B3) {
+    const t = mv(A.M, B3.T);
+    return { M: mmul(A.M, B3.M), T: [t[0] + A.T[0], t[1] + A.T[1], t[2] + A.T[2]] };
   }
   function rotP(R, P3) {
     const q = mv(R, P3);
@@ -1108,9 +1145,9 @@ pre.cmdout .ok{color:var(--cobalt)}
   function rotM(yw, pt2, rl) {
     const cy = Math.cos(yw), sy = Math.sin(yw), cp = Math.cos(pt2), sp = Math.sin(pt2), cr = Math.cos(rl), sr = Math.sin(rl);
     const Ry = [cy, 0, sy, 0, 1, 0, -sy, 0, cy], Rx = [1, 0, 0, 0, cp, -sp, 0, sp, cp], Rz = [cr, -sr, 0, sr, cr, 0, 0, 0, 1];
-    const mul3 = (A, B2) => {
+    const mul3 = (A, B3) => {
       const o = [];
-      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o.push(A[i * 3] * B2[j] + A[i * 3 + 1] * B2[3 + j] + A[i * 3 + 2] * B2[6 + j]);
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) o.push(A[i * 3] * B3[j] + A[i * 3 + 1] * B3[3 + j] + A[i * 3 + 2] * B3[6 + j]);
       return o;
     };
     return mul3(Rz, mul3(Rx, Ry));
@@ -2444,10 +2481,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
   }
   function bustFrame(p, S) {
-    const B2 = bodyEff(p), yJ = S.chinY - 1.05 * p.neckLen, W4 = B2.W, yAc = yJ + 0.02;
+    const B3 = bodyEff(p), yJ = S.chinY - 1.05 * p.neckLen, W4 = B3.W, yAc = yJ + 0.02;
     const yTr = yAc + clamp(p.shDrop * 0.67, 0.34, 0.59);
     return {
-      B: B2,
+      B: B3,
       yJ,
       W: W4,
       yAc,
@@ -2456,7 +2493,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       yTop: -0.42,
       v3Head: p.headModel === "v3_microgeometry" || p.headModel === "v5_anime" || p.headModel === "v4_anatomical",
       yC7: yJ + 0.42,
-      chestW: B2.chest,
+      chestW: B3.chest,
       yUB: yJ - 1.7,
       yWst: yJ - 3.05,
       yNav: yJ - 3.35,
@@ -2467,23 +2504,23 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function torsoProfile(F2) {
     if (F2._prof) return F2._prof;
-    const B2 = F2.B, f = B2.fat, yJ = F2.yJ, c = F2.chestW, c0 = B2.chest0, mf = clamp(1 - 1.4 * B2.fem, 0, 1) * 0.85, gk = clamp(B2.glute / 0.21, 0, 2.5);
-    const apoioBacia = B2.hip * (0.95 - 0.15 * B2.fem);
-    const cintura = B2.waist + 0.72 * Math.max(0, apoioBacia - B2.waist);
+    const B3 = F2.B, f = B3.fat, yJ = F2.yJ, c = F2.chestW, c0 = B3.chest0, mf = clamp(1 - 1.4 * B3.fem, 0, 1) * 0.85, gk = clamp(B3.glute / 0.21, 0, 2.5);
+    const apoioBacia = B3.hip * (0.95 - 0.15 * B3.fem);
+    const cintura = B3.waist + 0.72 * Math.max(0, apoioBacia - B3.waist);
     F2._prof = [
       [F2.yAc, F2.W - 0.05, 0.75, 0.8, -0.47, 2.4],
       [F2.yAc - 0.75, c, 1.06, 0.95, -0.47, 2.4],
       [F2.yUB, c * 1, 1.04 + 0.1 * f, 0.95, -0.46, 2.35],
       [yJ - 2.4, lerp(c0 * 0.97, c * 0.9, 0.5 + 0.5 * mf), 0.95 + 0.15 * f, 0.88 + 0.05 * f, -0.45, 2.3],
       /* Flanco aberto e transição progressiva: costelas inferiores → cintura → crista ilíaca. */
-      [F2.yWst, lerp(cintura * 0.96, Math.max(c0 * 0.9, B2.hip * 0.9), mf), 0.78 + 0.2 * f, 0.68 + 0.08 * f, -0.42, 2.2],
-      [F2.yNav, lerp(cintura, Math.max(c0 * 0.91, B2.hip * 0.94), mf), 0.8 + 0.28 * f, 0.7 + 0.08 * f, -0.42, 2.2],
-      [yJ - 4.1, lerp((cintura + B2.hip) / 2, Math.max(c0 * 0.88, B2.hip * 0.94), mf) * (1 + 0.027 * B2.fem), 0.84 + 0.2 * f, 0.82, -0.45, 2.3],
+      [F2.yWst, lerp(cintura * 0.96, Math.max(c0 * 0.9, B3.hip * 0.9), mf), 0.78 + 0.2 * f, 0.68 + 0.08 * f, -0.42, 2.2],
+      [F2.yNav, lerp(cintura, Math.max(c0 * 0.91, B3.hip * 0.94), mf), 0.8 + 0.28 * f, 0.7 + 0.08 * f, -0.42, 2.2],
+      [yJ - 4.1, lerp((cintura + B3.hip) / 2, Math.max(c0 * 0.88, B3.hip * 0.94), mf) * (1 + 0.027 * B3.fem), 0.84 + 0.2 * f, 0.82, -0.45, 2.3],
       /* Crista ilíaca com abertura própria, acima da articulação do fêmur.
          O perfil se fecha gradualmente na virilha e mantém volume em 3/4 e perfil. */
-      [F2.yHip + 0.38, B2.hip * (1.03 + 0.012 * B2.fem), 0.85 + 0.12 * f, 0.9 + 0.18 * gk, -0.47, 2.35],
-      [F2.yHip, B2.hip * (1 - 0.015 * B2.fem), 0.85 + 0.1 * f, 0.98 + 0.22 * gk, -0.48, 2.3],
-      [yJ - 5.4, B2.hip * (0.7 + 0.06 * gk + 0.03 * B2.fem), 0.68, 0.82 + 0.28 * gk, -0.5, 2.2],
+      [F2.yHip + 0.38, B3.hip * (1.03 + 0.012 * B3.fem), 0.85 + 0.12 * f, 0.9 + 0.18 * gk, -0.47, 2.35],
+      [F2.yHip, B3.hip * (1 - 0.015 * B3.fem), 0.85 + 0.1 * f, 0.98 + 0.22 * gk, -0.48, 2.3],
+      [yJ - 5.4, B3.hip * (0.7 + 0.06 * gk + 0.03 * B3.fem), 0.68, 0.82 + 0.28 * gk, -0.5, 2.2],
       [F2.yCr, 0.3 + 0.12 * gk, 0.4, 0.42 + 0.22 * gk, -0.46, 2.1],
       [F2.yB, 0.02, 0.02, 0.02, -0.46, 2]
     ];
@@ -2581,7 +2618,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function muscleDefs(F2) {
     if (F2._mus) return F2._mus;
-    const B2 = F2.B, c = F2.chestW, w = torsoProfile(F2)[5][1], yN = F2.yNav - F2.yJ;
+    const B3 = F2.B, c = F2.chestW, w = torsoProfile(F2)[5][1], yN = F2.yNav - F2.yJ;
     const pec = [[0.06, -0.18], [0.3, -0.12], [0.62, -0.13], [0.88 * c, -0.3], [0.98 * c, -0.62], [0.92 * c, -0.92], [0.72 * c, -1.18], [0.45, -1.33], [0.2, -1.36], [0.06, -1.3]];
     const aw = 0.31 * Math.min(1, w / 0.9), r0 = -1.78, abs = [];
     const rows = [[r0, r0 - 0.5], [r0 - 0.55, r0 - 1.02], [r0 - 1.07, yN - 0.02], [yN - 0.08, F2.yCr - F2.yJ + 0.55]];
@@ -2589,12 +2626,12 @@ pre.cmdout .ok{color:var(--cobalt)}
       const x1 = aw * (1 - 0.08 * i) + (i === 3 ? -0.04 : 0);
       abs.push([[0.035, a], [x1, a - 0.02], [x1 + 0.02, (a + b) / 2], [x1 - (i === 3 ? 0.08 : 0), b], [0.035, b + 0.03]]);
     });
-    const obl = [[aw + 0.06, -1.95], [0.86 * c, -1.7], [0.93 * w + 0.04, yN], [0.93 * B2.hip, F2.yHip - F2.yJ + 0.55], [0.62, F2.yHip - F2.yJ + 0.12], [aw + 0.02, yN - 0.6]];
+    const obl = [[aw + 0.06, -1.95], [0.86 * c, -1.7], [0.93 * w + 0.04, yN], [0.93 * B3.hip, F2.yHip - F2.yJ + 0.55], [0.62, F2.yHip - F2.yJ + 0.12], [aw + 0.02, yN - 0.6]];
     F2._mus = { pec, abs, obl, aw };
     return F2._mus;
   }
   function muscleBump(x, y, th, p, F2) {
-    const cs = Math.cos(th), cf = Math.max(0, cs), ax = Math.abs(x), B2 = F2.B, mu = B2.mus, fat = B2.fat, fem = B2.fem, yy = y - F2.yJ, Mu = muscleDefs(F2);
+    const cs = Math.cos(th), cf = Math.max(0, cs), ax = Math.abs(x), B3 = F2.B, mu = B3.mus, fat = B3.fat, fem = B3.fem, yy = y - F2.yJ, Mu = muscleDefs(F2);
     let dz = 0;
     if (cf > 0.02 && yy < 0.05 && yy > -1.7) {
       const h = (0.09 + 0.19 * mu) * (1 - 0.92 * fem) * (1 - 0.3 * fat);
@@ -2671,7 +2708,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   var R_ANG = (F2) => F2.chestW;
   var graus = (F2, a, yy) => [a * D * R_ANG(F2), F2.yJ + yy];
   function forca(F2) {
-    const B2 = F2.B, mu = B2.mus, fat = B2.fat, fem = B2.fem;
+    const B3 = F2.B, mu = B3.mus, fat = B3.fat, fem = B3.fem;
     return { mu, def: clamp(mu * (1 - fat) * (1 - 0.55 * fem), 0, 1.4), fat, fem };
   }
   function lado(p, F2, s) {
@@ -2786,7 +2823,7 @@ pre.cmdout .ok{color:var(--cobalt)}
 
   // src/engine/tronco.js
   function bustBump(x, y, th, p, F2) {
-    const cs = Math.cos(th), cf = Math.max(0, cs), cb = Math.max(0, -cs), ax = Math.abs(x), s = x >= 0 ? 1 : -1, B2 = F2.B, mu = B2.mus;
+    const cs = Math.cos(th), cf = Math.max(0, cs), cb = Math.max(0, -cs), ax = Math.abs(x), s = x >= 0 ? 1 : -1, B3 = F2.B, mu = B3.mus;
     let dz = 0;
     if (y > F2.yJ - 0.2) {
       const yS0 = -0.7, yS1 = F2.yJ + 0.04;
@@ -2799,7 +2836,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       dz -= 0.05 * gauss(y, F2.yJ + 0.03, 0.05) * gauss(x, 0, 0.09) * cf;
       dz += 0.03 * gauss(y, F2.yC7 - 0.05, 0.06) * gauss(x, 0, 0.1) * cb;
       const yCol = lerp(F2.yJ + 0.14, F2.yC7, (1 - cs) / 2);
-      dz -= 0.014 * gauss(y, yCol, 0.025) * (1 - sstep((ax - B2.neck * 1.25) / 0.15));
+      dz -= 0.014 * gauss(y, yCol, 0.025) * (1 - sstep((ax - B3.neck * 1.25) / 0.15));
     }
     const s01 = (ax - 0.1) / (F2.W - 0.12);
     if (s01 > 0 && s01 < 1) {
@@ -2807,14 +2844,14 @@ pre.cmdout .ok{color:var(--cobalt)}
       dz += cf * (0.06 * gauss(y, yc, 0.035) - 0.065 * gauss(y, yc + 0.15, 0.065) * gauss(s01, 0.42, 0.28) - 0.03 * gauss(y, yc - 0.12, 0.05) * gauss(s01, 0.75, 0.2)) * sstep(s01 * 5) * sstep((1 - s01) * 6);
     }
     if (y > F2.yJ - 2.6) {
-      if (B2.breast > 0.01) {
-        const vol = B2.breast, yb = F2.yJ - 1.25 - 0.06 * B2.fat, dy = y - yb;
-        const cx = 0.42 + 0.09 * F2.chestW, sx = 0.27 + 0.065 * B2.fat;
-        const sig = dy > 0 ? 0.35 : 0.31 + 0.11 * B2.fat;
+      if (B3.breast > 0.01) {
+        const vol = B3.breast, yb = F2.yJ - 1.25 - 0.06 * B3.fat, dy = y - yb;
+        const cx = 0.42 + 0.09 * F2.chestW, sx = 0.27 + 0.065 * B3.fat;
+        const sig = dy > 0 ? 0.35 : 0.31 + 0.11 * B3.fat;
         const main = gauss(ax, cx, sx) * gauss(dy, 0, sig);
         const tail = gauss(ax, cx + 0.16, 0.24) * gauss(dy, 0.17, 0.28);
-        dz += Math.pow(cf, 1.4) * vol * ((0.44 + 0.16 * B2.fat) * main + 0.1 * tail);
-        dz -= cf * vol * 0.027 * gauss(ax, cx, sx) * gauss(y, yb - 0.36 - 0.04 * B2.fat, 0.07);
+        dz += Math.pow(cf, 1.4) * vol * ((0.44 + 0.16 * B3.fat) * main + 0.1 * tail);
+        dz -= cf * vol * 0.027 * gauss(ax, cx, sx) * gauss(y, yb - 0.36 - 0.04 * B3.fat, 0.07);
       }
       dz -= 0.022 * cf * gauss(x, 0, 0.05) * clamp((F2.yJ - 0.15 - y) / 0.3, 0, 1);
     }
@@ -2822,10 +2859,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     dz -= 0.03 * cf * sstep((yArc - y) / 0.08) * gauss(ax, 0, 0.55) * sstep((y - (F2.yNav - 0.6)) / 0.3);
     if (y < F2.yJ - 2.2 && y > F2.yCr) {
       dz -= 0.045 * cf * gauss(ax, 0, 0.035) * gauss(y, F2.yNav, 0.04);
-      dz += cf * B2.belly * gauss(ax, 0, 0.55) * gauss(y, F2.yNav - 0.2, 0.5);
-      const d = segDist(ax, y, 0.78 * B2.hip, F2.yHip + 0.45, 0.05, F2.yCr + 0.12);
+      dz += cf * B3.belly * gauss(ax, 0, 0.55) * gauss(y, F2.yNav - 0.2, 0.5);
+      const d = segDist(ax, y, 0.78 * B3.hip, F2.yHip + 0.45, 0.05, F2.yCr + 0.12);
       dz -= 0.024 * cf * gauss(d, 0, 0.04);
-      dz += 0.02 * gauss(ax, 0.72 * B2.hip, 0.12) * gauss(y, F2.yJ - 4.3, 0.12) * (0.4 + 0.6 * cf) * (1 - B2.fat);
+      dz += 0.02 * gauss(ax, 0.72 * B3.hip, 0.12) * gauss(y, F2.yJ - 4.3, 0.12) * (0.4 + 0.6 * cf) * (1 - B3.fat);
     }
     if (cb > 0) {
       {
@@ -2836,12 +2873,12 @@ pre.cmdout .ok{color:var(--cobalt)}
       dz -= 0.035 * cb * gauss(x, 0, 0.08) * clamp((F2.yC7 - y) / 0.4, 0, 1) * sstep((y - (F2.yHip - 0.1)) / 0.3);
       if (y < F2.yC7 && y > F2.yHip - 0.2) dz += cb * 0.014 * gauss(x, 0, 0.035) * Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * (F2.yC7 - y) / 0.3), 2);
       dz -= 0.02 * cb * gauss(ax, 0.2, 0.05) * gauss(y, F2.yJ - 4.45, 0.06);
-      const gl = 0.04 + 0.85 * B2.glute;
-      const centroGluteo = 0.46 * B2.hip, larguraGluteo = 0.3 + 0.06 * B2.fem + 0.025 * B2.fat;
+      const gl = 0.04 + 0.85 * B3.glute;
+      const centroGluteo = 0.46 * B3.hip, larguraGluteo = 0.3 + 0.06 * B3.fem + 0.025 * B3.fat;
       dz += cb * gl * gauss(ax, centroGluteo, larguraGluteo) * gauss(y, F2.yHip - 0.58, 0.44) * (1 - 0.75 * gauss(x, 0, 0.055));
       const sideHip = Math.abs(Math.atan2(Math.sin(th), cs));
-      dz += (0.4 + 0.6 * cb) * 0.35 * gl * gauss(sideHip, 1.72 + 0.05 * B2.fem, 0.39 + 0.055 * B2.fem) * gauss(y, F2.yHip + 0.07, 0.36);
-      dz += 0.027 * B2.fem * (0.5 + 0.5 * B2.glute) * gauss(sideHip, 1.55, 0.32) * gauss(y, F2.yHip + 0.2, 0.44);
+      dz += (0.4 + 0.6 * cb) * 0.35 * gl * gauss(sideHip, 1.72 + 0.05 * B3.fem, 0.39 + 0.055 * B3.fem) * gauss(y, F2.yHip + 0.07, 0.36);
+      dz += 0.027 * B3.fem * (0.5 + 0.5 * B3.glute) * gauss(sideHip, 1.55, 0.32) * gauss(y, F2.yHip + 0.2, 0.44);
     }
     dz += (p.shTension + 0.5 * ((s > 0 ? p.shTensL : p.shTensR) || 0)) * 0.045 * gauss(y, F2.yTr - 0.12, 0.14) * gauss(ax, 0.72, 0.3);
     dz += muscleBump(x, y, th, p, F2) + relevoTronco(x, y, th, p, F2);
@@ -3025,8 +3062,8 @@ pre.cmdout .ok{color:var(--cobalt)}
 
   // src/engine/bracos.js
   function armDims(p) {
-    const B2 = bodyEff(p);
-    return { L1: 3.1 * p.armLen, L2: 2.75 * p.armLen, k: B2.armK, LH: 1 * p.armLen, mus: B2.mus };
+    const B3 = bodyEff(p);
+    return { L1: 3.1 * p.armLen, L2: 2.75 * p.armLen, k: B3.armK, LH: 1 * p.armLen, mus: B3.mus };
   }
   function armRadius(u, th, A, s) {
     s = s || 1;
@@ -3122,8 +3159,8 @@ pre.cmdout .ok{color:var(--cobalt)}
 
   // src/engine/pernas.js
   function legDims(p) {
-    const B2 = bodyEff(p), L3 = p.legLen;
-    return { L1: 3.85 * L3, L2: 3.7 * L3, k: B2.thighK, mus: B2.mus, fat: B2.fat, fem: B2.fem, glute: B2.glute, f: L3 * (1 + 0.04 * B2.fat) * (0.97 + 0.06 * (1 - B2.fem)), hA: 0.62 * L3 };
+    const B3 = bodyEff(p), L3 = p.legLen;
+    return { L1: 3.85 * L3, L2: 3.7 * L3, k: B3.thighK, mus: B3.mus, fat: B3.fat, fem: B3.fem, glute: B3.glute, f: L3 * (1 + 0.04 * B3.fat) * (0.97 + 0.06 * (1 - B3.fem)), hA: 0.62 * L3 };
   }
   function thighR(u, th, A, s) {
     const k = A.k, L1 = A.L1, r0 = 0.68 * k, r1 = 0.36 * k, mu = A.mus;
@@ -3257,8 +3294,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
   function hipJoint(F2, s) {
-    const B2 = F2.B, ideal = B2.hip * 0.5 / 1.1, topoCoxa = 0.68 * B2.thighK;
-    const x = Math.max(0.28 * B2.hip, Math.min(ideal, (1.06 - 0.02 * B2.fem * B2.fat) * B2.hip - topoCoxa * (1 + 0.04 * B2.fem * B2.fat)));
+    const B3 = F2.B, ideal = B3.hip * 0.5 / 1.1, topoCoxa = 0.68 * B3.thighK;
+    const x = Math.max(0.28 * B3.hip, Math.min(ideal, (1.06 - 0.02 * B3.fem * B3.fat) * B3.hip - topoCoxa * (1 + 0.04 * B3.fem * B3.fat)));
     return [s * x, F2.yHip - 0.3, -0.48];
   }
   function quadrosGluteo(p, F2, ch) {
@@ -3484,17 +3521,17 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function poseSetup(p, S) {
     const ya = p.headYaw * D, pa = p.headPitch * D, ra = p.headRoll * D, nt = (p.neckTwist || 0) * D, nf = (p.neckFlex || 0) * D, ns = (p.neckSide || 0) * D;
-    const F2 = bustFrame(p, S), yb = F2.yJ + 0.15, B2 = [0, yb, bustZc(yb, F2)], Hs = [0, -0.55, -0.22];
+    const F2 = bustFrame(p, S), yb = F2.yJ + 0.15, B3 = [0, yb, bustZc(yb, F2)], Hs = [0, -0.55, -0.22];
     const kb = [0.4, 0.45, 0.45];
     const Rb = rotM(ya * kb[0] + nt, pa * kb[1] + nf, ra * kb[2] + ns);
-    const bh = mv(Rb, [Hs[0] - B2[0], Hs[1] - B2[1], Hs[2] - B2[2]]);
-    const H1 = [B2[0] + bh[0], B2[1] + bh[1], B2[2] + bh[2]];
+    const bh = mv(Rb, [Hs[0] - B3[0], Hs[1] - B3[1], Hs[2] - B3[2]]);
+    const H1 = [B3[0] + bh[0], B3[1] + bh[1], B3[2] + bh[2]];
     const aff = (t) => {
       const R1 = rotM((ya * kb[0] + nt) * t, (pa * kb[1] + nf) * t, (ra * kb[2] + ns) * t);
       const t2 = t * t, R2 = rotM(ya * (1 - kb[0]) * t2, pa * (1 - kb[1]) * t2, ra * (1 - kb[2]) * t2);
       const M = [];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) M.push(R2[i * 3] * R1[j] + R2[i * 3 + 1] * R1[3 + j] + R2[i * 3 + 2] * R1[6 + j]);
-      const b1 = mv(R1, B2), d = [B2[0] - b1[0] - H1[0], B2[1] - b1[1] - H1[1], B2[2] - b1[2] - H1[2]], r22 = mv(R2, d);
+      const b1 = mv(R1, B3), d = [B3[0] - b1[0] - H1[0], B3[1] - b1[1] - H1[1], B3[2] - b1[2] - H1[2]], r22 = mv(R2, d);
       return { M, T: [r22[0] + H1[0], r22[1] + H1[1], r22[2] + H1[2]] };
     };
     const tab2 = [];
@@ -4016,7 +4053,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       const tl = v0 < 0, tr = v1 < 0, br = v2 < 0, bl = v3 < 0;
       const c = (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
       if (c === 0 || c === 15) continue;
-      const T = 2 * k, B2 = 2 * (k + HW), Lf = 2 * k + 1, R = 2 * (k + 1) + 1;
+      const T = 2 * k, B3 = 2 * (k + HW), Lf = 2 * k + 1, R = 2 * (k + 1) + 1;
       if (tl !== tr) {
         const t = v0 / (v0 - v1);
         exA[T] = x + t;
@@ -4024,8 +4061,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       }
       if (bl !== br) {
         const t = v3 / (v3 - v2);
-        exA[B2] = x + t;
-        eyA[B2] = y + 1;
+        exA[B3] = x + t;
+        eyA[B3] = y + 1;
       }
       if (tl !== bl) {
         const t = v0 / (v0 - v3);
@@ -4052,24 +4089,24 @@ pre.cmdout .ok{color:var(--cobalt)}
           break;
         case 4:
         case 11:
-          seg(R, B2);
+          seg(R, B3);
           break;
         case 6:
         case 9:
-          seg(T, B2);
+          seg(T, B3);
           break;
         case 7:
         case 8:
-          seg(Lf, B2);
+          seg(Lf, B3);
           break;
         case 5: {
           const m = (v0 + v1 + v2 + v3) / 4;
           if (m < 0) {
             seg(T, R);
-            seg(Lf, B2);
+            seg(Lf, B3);
           } else {
             seg(Lf, T);
-            seg(R, B2);
+            seg(R, B3);
           }
           break;
         }
@@ -4077,10 +4114,10 @@ pre.cmdout .ok{color:var(--cobalt)}
           const m = (v0 + v1 + v2 + v3) / 4;
           if (m < 0) {
             seg(Lf, T);
-            seg(R, B2);
+            seg(R, B3);
           } else {
             seg(T, R);
-            seg(Lf, B2);
+            seg(Lf, B3);
           }
           break;
         }
@@ -4187,15 +4224,15 @@ pre.cmdout .ok{color:var(--cobalt)}
     for (let guard = 0; guard < 40; guard++) {
       let done = true;
       outer: for (let i = 0; i < chains.length; i++) for (let j = i + 1; j < chains.length; j++) {
-        const A = chains[i], B2 = chains[j];
-        const ends = [[A[A.length - 1], B2[0], 0], [A[A.length - 1], B2[B2.length - 1], 1], [A[0], B2[0], 2], [A[0], B2[B2.length - 1], 3]];
+        const A = chains[i], B3 = chains[j];
+        const ends = [[A[A.length - 1], B3[0], 0], [A[A.length - 1], B3[B3.length - 1], 1], [A[0], B3[0], 2], [A[0], B3[B3.length - 1], 3]];
         for (const [x, y, t] of ends) {
           if (d2(x, y) < 48) {
             let nc;
-            if (t === 0) nc = A.concat(B2);
-            else if (t === 1) nc = A.concat(B2.slice().reverse());
-            else if (t === 2) nc = A.slice().reverse().concat(B2);
-            else nc = B2.concat(A);
+            if (t === 0) nc = A.concat(B3);
+            else if (t === 1) nc = A.concat(B3.slice().reverse());
+            else if (t === 2) nc = A.slice().reverse().concat(B3);
+            else nc = B3.concat(A);
             chains.splice(j, 1);
             chains[i] = nc;
             done = false;
@@ -4544,12 +4581,12 @@ pre.cmdout .ok{color:var(--cobalt)}
     const linguaInf = (x) => baixo(x) + 0.1 * altura * curva(x);
     return { aberto, sorriso, width, altura, cima, baixo, labioSup, labioInf, denteSup, denteInf, linguaSup, linguaInf, curva, my };
   }
-  function arcadas(B2, inferior = false) {
-    const n2 = 8, lim = B2.width * 0.72, step = 2 * lim / n2;
+  function arcadas(B3, inferior = false) {
+    const n2 = 8, lim = B3.width * 0.72, step = 2 * lim / n2;
     return Array.from({ length: n2 }, (_, i) => {
       const a = -lim + i * step + step * 0.035, b = -lim + (i + 1) * step - step * 0.035;
-      const sup = inferior ? B2.denteInf : B2.cima, inf = inferior ? B2.baixo : B2.denteSup;
-      const y0 = (x) => inferior ? inf(x) : sup(x) - 0.012 * B2.curva(x);
+      const sup = inferior ? B3.denteInf : B3.cima, inf = inferior ? B3.baixo : B3.denteSup;
+      const y0 = (x) => inferior ? inf(x) : sup(x) - 0.012 * B3.curva(x);
       const y1 = (x) => inferior ? sup(x) : inf(x);
       const xMid = (a + b) / 2;
       return {
@@ -4773,9 +4810,9 @@ pre.cmdout .ok{color:var(--cobalt)}
         }
       });
     }
-    const B2 = bocaAnime(p, sh, ringAt2), w = B2.largura;
+    const B3 = bocaAnime(p, sh, ringAt2), w = B3.largura;
     {
-      const Qg = B2.Q, RL = ladoRosto(p, 1), RR = ladoRosto(p, -1), yt = -0.8 * t;
+      const Qg = B3.Q, RL = ladoRosto(p, 1), RR = ladoRosto(p, -1), yt = -0.8 * t;
       const fr2 = clamp(Math.max(0, e.bI) * X + 0.6 * Qg.nose - 0.15, 0, 1);
       if (fr2 > 0.08) [-1, 1].forEach((s) => {
         for (let i = 0; i < (fr2 > 0.55 ? 2 : 1); i++) {
@@ -4791,7 +4828,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       [[1, RL], [-1, RR]].forEach(([s, R]) => {
         const v = clamp(1.3 * (Math.max(0, R.smile) * X - 0.35) + 0.9 * R.upperLip + 0.4 * Qg.nose + 0.5 * R.cheek, 0, 1);
         if (v < 0.1) return;
-        const P0 = [s * 0.075, yt - 0.03], P22 = [s * (w + 0.035), B2.my - 5e-3], P1 = [s * (w + 0.075), (P0[1] + P22[1]) / 2 + 0.02], fim = 0.5 + 0.5 * v;
+        const P0 = [s * 0.075, yt - 0.03], P22 = [s * (w + 0.035), B3.my - 5e-3], P1 = [s * (w + 0.075), (P0[1] + P22[1]) / 2 + 0.02], fim = 0.5 + 0.5 * v;
         curve("fibra", arr2((u) => {
           const a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u;
           return H2(a * P0[0] + b * P1[0] + c * P22[0], a * P0[1] + b * P1[1] + c * P22[1], 0.014);
@@ -4804,57 +4841,57 @@ pre.cmdout .ok{color:var(--cobalt)}
         if (cq > 0.45) curve("fibra", arr2((x) => H2(x, yc - 0.03 + 0.01 * Math.pow(x / 0.07, 2), 0.014), -0.065, 0.065, 8));
       }
     }
-    if (B2.aberto < 0.04) {
-      const y = B2.linha, Q = B2.Q;
+    if (B3.aberto < 0.04) {
+      const y = B3.linha, Q = B3.Q;
       curve("feat", arr2((x) => H2(x, y(x), 0.02), -w, w, 24));
       if (Q.press > 0.2) curve("feat", arr2((x) => H2(x, y(x) - 7e-3, 0.02), -w * 0.85, w * 0.85, 16));
       if (Q.press > 0.4) [-1, 1].forEach((s) => curve("fibra", [H2(s * (w + 8e-3), y(s * w) + 0.014, 0.02), H2(s * (w + 0.012), y(s * w) - 0.016, 0.02)]));
       if (Q.pout > 0.15) curve("fibra", arr2((x) => H2(x, y(x) + 0.012 + 0.016 * Q.pout * (1 - Math.pow(x / w, 2)), 0.021), -w * 0.9, w * 0.9, 14));
-      if (B2.ss > 0.5) [-1, 1].forEach((s) => curve("fibra", arr2((u) => H2(s * (w + 0.012 * u), y(s * w) + 0.01 - 0.02 * u, 0.018), 0, 1, 4)));
+      if (B3.ss > 0.5) [-1, 1].forEach((s) => curve("fibra", arr2((u) => H2(s * (w + 0.012 * u), y(s * w) + 0.01 - 0.02 * u, 0.018), 0, 1, 4)));
       if (Q.press < 0.8) fillP(arr2((x) => H2(x, y(x) - 6e-3, 0.019), -w * 0.78, w * 0.78, 16).concat(arr2((x) => H2(x, y(x) - 6e-3 - 0.022 * (1 + 1.6 * Q.pout) * (1 - 0.7 * Q.press) * Math.sqrt(Math.max(0, 1 - Math.pow(x / (w * 0.78), 2))), 0.019), w * 0.78, -w * 0.78, 16)), pal.coral, 0.22 * (1 + 0.8 * Q.pout) * (1 - Q.press) + 0.01);
       [-1, 1].forEach((s) => fillP(arr2((a) => H2(s * (w + 4e-3) + 8e-3 * Math.cos(a), y(s * w) + 6e-3 * Math.sin(a), 0.021), 0, 2 * Math.PI, 8), pal.shade2, 0.45));
-      curve("fibra", arr2((x) => H2(x, B2.my - 0.05, 0.016), -w * 0.35, w * 0.35, 8));
+      curve("fibra", arr2((x) => H2(x, B3.my - 0.05, 0.016), -w * 0.35, w * 0.35, 8));
       return;
     }
-    const cav = arr2((x) => H2(x, B2.cima(x), 0.03), -w, w, 40).concat(arr2((x) => H2(x, B2.baixo(x), 0.03), w, -w, 40));
+    const cav = arr2((x) => H2(x, B3.cima(x), 0.03), -w, w, 40).concat(arr2((x) => H2(x, B3.baixo(x), 0.03), w, -w, 40));
     fillP(cav, pal.ink, 0.97);
-    if (B2.cerrado) {
-      const dw2 = w * 0.86, meio = (x) => (B2.cima(x) + B2.baixo(x)) / 2;
-      fillP(arr2((x) => H2(x, B2.cima(x) - 2e-3, 0.036), -dw2, dw2, 30).concat(arr2((x) => H2(x, meio(x), 0.036), dw2, -dw2, 30)), "#F4EFE6", 0.98);
-      fillP(arr2((x) => H2(x, meio(x), 0.036), -dw2 * 0.92, dw2 * 0.92, 30).concat(arr2((x) => H2(x, B2.baixo(x) + 2e-3, 0.036), dw2 * 0.92, -dw2 * 0.92, 30)), "#ECE4D8", 0.96);
+    if (B3.cerrado) {
+      const dw2 = w * 0.86, meio = (x) => (B3.cima(x) + B3.baixo(x)) / 2;
+      fillP(arr2((x) => H2(x, B3.cima(x) - 2e-3, 0.036), -dw2, dw2, 30).concat(arr2((x) => H2(x, meio(x), 0.036), dw2, -dw2, 30)), "#F4EFE6", 0.98);
+      fillP(arr2((x) => H2(x, meio(x), 0.036), -dw2 * 0.92, dw2 * 0.92, 30).concat(arr2((x) => H2(x, B3.baixo(x) + 2e-3, 0.036), dw2 * 0.92, -dw2 * 0.92, 30)), "#ECE4D8", 0.96);
       curve("fibra", arr2((x) => H2(x, meio(x), 0.037), -dw2 * 0.9, dw2 * 0.9, 20));
       for (let i = -3; i <= 3; i++) {
         const x = i * dw2 / 4.2;
-        curve("fibra", [H2(x, B2.cima(x) - 4e-3, 0.037), H2(x, B2.baixo(x) + 4e-3, 0.037)]);
+        curve("fibra", [H2(x, B3.cima(x) - 4e-3, 0.037), H2(x, B3.baixo(x) + 4e-3, 0.037)]);
       }
-      fillP(arr2((x) => H2(x, B2.cima(x) - 2e-3, 0.037), -dw2 * 0.96, dw2 * 0.96, 24).concat(arr2((x) => H2(x, B2.cima(x) - 2e-3 - 0.3 * (B2.cima(x) - meio(x)), 0.037), dw2 * 0.96, -dw2 * 0.96, 24)), pal.shade2, 0.45);
+      fillP(arr2((x) => H2(x, B3.cima(x) - 2e-3, 0.037), -dw2 * 0.96, dw2 * 0.96, 24).concat(arr2((x) => H2(x, B3.cima(x) - 2e-3 - 0.3 * (B3.cima(x) - meio(x)), 0.037), dw2 * 0.96, -dw2 * 0.96, 24)), pal.shade2, 0.45);
       curve("feat", cav);
-      [-1, 1].forEach((s) => fillP(arr2((a) => H2(s * (w + 4e-3) + 9e-3 * Math.cos(a), B2.cima(s * w) - 4e-3 + 7e-3 * Math.sin(a), 0.033), 0, 2 * Math.PI, 8), pal.shade2, 0.5));
-      fillP(arr2((x) => H2(x, B2.baixo(x) - 4e-3, 0.02), -w * 0.78, w * 0.78, 20).concat(arr2((x) => H2(x, B2.baixo(x) - 0.03, 0.02), w * 0.78, -w * 0.78, 20)), pal.coral, 0.22);
+      [-1, 1].forEach((s) => fillP(arr2((a) => H2(s * (w + 4e-3) + 9e-3 * Math.cos(a), B3.cima(s * w) - 4e-3 + 7e-3 * Math.sin(a), 0.033), 0, 2 * Math.PI, 8), pal.shade2, 0.5));
+      fillP(arr2((x) => H2(x, B3.baixo(x) - 4e-3, 0.02), -w * 0.78, w * 0.78, 20).concat(arr2((x) => H2(x, B3.baixo(x) - 0.03, 0.02), w * 0.78, -w * 0.78, 20)), pal.coral, 0.22);
       return;
     }
-    const bw = w * 0.62, fundo = (x) => B2.aberto > 0.6 ? B2.denteInf(x) : B2.baixo(x);
-    fillP(arr2((x) => H2(x, B2.denteSup(x), 0.029), -bw, bw, 20).concat(arr2((x) => {
+    const bw = w * 0.62, fundo = (x) => B3.aberto > 0.6 ? B3.denteInf(x) : B3.baixo(x);
+    fillP(arr2((x) => H2(x, B3.denteSup(x), 0.029), -bw, bw, 20).concat(arr2((x) => {
       const t2 = Math.sqrt(Math.max(0, 1 - (x / bw) ** 2));
-      return H2(x, B2.denteSup(x) + (fundo(x) - B2.denteSup(x)) * 0.85 * t2, 0.029);
+      return H2(x, B3.denteSup(x) + (fundo(x) - B3.denteSup(x)) * 0.85 * t2, 0.029);
     }, bw, -bw, 20)), pal.ink);
-    if (B2.aberto > 0.18) {
+    if (B3.aberto > 0.18) {
       const tw = w * 0.62;
-      fillP(arr2((x) => H2(x, B2.linguaSup(x), 0.034), -tw, tw, 24).concat(arr2((x) => H2(x, B2.baixo(x) + 4e-3, 0.034), tw, -tw, 24)), pal.coral, 0.85);
-      fillP(arr2((x) => H2(x, B2.linguaSup(x) - 4e-3, 0.0345), -tw * 0.5, tw * 0.5, 12).concat(arr2((x) => H2(x, B2.linguaSup(x) - 0.016, 0.0345), tw * 0.5, -tw * 0.5, 12)), "#F2B8B8", 0.45);
-      curve("fibra", arr2((u) => H2(4e-3 * Math.sin(3 * u), B2.linguaSup(0) - 4e-3 - (B2.linguaSup(0) - B2.baixo(0)) * 0.7 * u, 0.036), 0, 1, 6));
+      fillP(arr2((x) => H2(x, B3.linguaSup(x), 0.034), -tw, tw, 24).concat(arr2((x) => H2(x, B3.baixo(x) + 4e-3, 0.034), tw, -tw, 24)), pal.coral, 0.85);
+      fillP(arr2((x) => H2(x, B3.linguaSup(x) - 4e-3, 0.0345), -tw * 0.5, tw * 0.5, 12).concat(arr2((x) => H2(x, B3.linguaSup(x) - 0.016, 0.0345), tw * 0.5, -tw * 0.5, 12)), "#F2B8B8", 0.45);
+      curve("fibra", arr2((u) => H2(4e-3 * Math.sin(3 * u), B3.linguaSup(0) - 4e-3 - (B3.linguaSup(0) - B3.baixo(0)) * 0.7 * u, 0.036), 0, 1, 6));
     }
     const dw = w * 0.82;
-    fillP(arr2((x) => H2(x, B2.cima(x) - 2e-3, 0.036), -dw, dw, 30).concat(arr2((x) => H2(x, B2.denteSup(x), 0.036), dw, -dw, 30)), "#F4EFE6", 0.98);
-    fillP(arr2((x) => H2(x, B2.cima(x) - 2e-3, 0.037), -dw * 0.96, dw * 0.96, 24).concat(arr2((x) => H2(x, B2.cima(x) - 2e-3 - 0.45 * (B2.cima(x) - B2.denteSup(x)), 0.037), dw * 0.96, -dw * 0.96, 24)), pal.shade2, 0.45);
-    if (B2.aberto > 0.6) {
+    fillP(arr2((x) => H2(x, B3.cima(x) - 2e-3, 0.036), -dw, dw, 30).concat(arr2((x) => H2(x, B3.denteSup(x), 0.036), dw, -dw, 30)), "#F4EFE6", 0.98);
+    fillP(arr2((x) => H2(x, B3.cima(x) - 2e-3, 0.037), -dw * 0.96, dw * 0.96, 24).concat(arr2((x) => H2(x, B3.cima(x) - 2e-3 - 0.45 * (B3.cima(x) - B3.denteSup(x)), 0.037), dw * 0.96, -dw * 0.96, 24)), pal.shade2, 0.45);
+    if (B3.aberto > 0.6) {
       const di = w * 0.6;
-      fillP(arr2((x) => H2(x, B2.denteInf(x), 0.036), -di, di, 24).concat(arr2((x) => H2(x, B2.baixo(x) + 2e-3, 0.036), di, -di, 24)), "#ECE4D8", 0.95);
+      fillP(arr2((x) => H2(x, B3.denteInf(x), 0.036), -di, di, 24).concat(arr2((x) => H2(x, B3.baixo(x) + 2e-3, 0.036), di, -di, 24)), "#ECE4D8", 0.95);
     }
     curve("feat", cav);
-    [-1, 1].forEach((s) => fillP(arr2((a) => H2(s * (w + 4e-3) + 9e-3 * Math.cos(a), B2.cima(s * w) - 4e-3 + 7e-3 * Math.sin(a), 0.033), 0, 2 * Math.PI, 8), pal.shade2, 0.5));
-    fillP(arr2((x) => H2(x, B2.baixo(x) - 4e-3, 0.02), -w * 0.78, w * 0.78, 20).concat(arr2((x) => H2(x, B2.baixo(x) - 0.03, 0.02), w * 0.78, -w * 0.78, 20)), pal.coral, 0.22);
-    curve("fibra", arr2((x) => H2(x, B2.baixo(0) - 0.045, 0.016), -w * 0.35, w * 0.35, 8));
+    [-1, 1].forEach((s) => fillP(arr2((a) => H2(s * (w + 4e-3) + 9e-3 * Math.cos(a), B3.cima(s * w) - 4e-3 + 7e-3 * Math.sin(a), 0.033), 0, 2 * Math.PI, 8), pal.shade2, 0.5));
+    fillP(arr2((x) => H2(x, B3.baixo(x) - 4e-3, 0.02), -w * 0.78, w * 0.78, 20).concat(arr2((x) => H2(x, B3.baixo(x) - 0.03, 0.02), w * 0.78, -w * 0.78, 20)), pal.coral, 0.22);
+    curve("fibra", arr2((x) => H2(x, B3.baixo(0) - 0.045, 0.016), -w * 0.35, w * 0.35, 8));
   }
 
   // src/engine/amplitude.js
@@ -4920,10 +4957,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { abdL: q.hipAbdL, abdR: q.hipAbdR };
   }
   function bodyProxies(p, S) {
-    const ch = chainSetup(p, S), F2 = ch.F, B2 = F2.B;
+    const ch = chainSetup(p, S), F2 = ch.F, B3 = F2.B;
     return [
       { A: ch.A3, c: [0, 0.05, 0.12], r: [1 * p.skull / 0.82, 1.15, 1.05] },
-      { A: ch.A2, c: [0, F2.yJ - 1.45, F2.zT + 0.05], r: [B2.chest * 0.86, 1.25, 0.8] },
+      { A: ch.A2, c: [0, F2.yJ - 1.45, F2.zT + 0.05], r: [B3.chest * 0.86, 1.25, 0.8] },
       { A: quadroTronco(ch, F2.yNav + 0.1), c: [0, F2.yNav + 0.1, F2.zT + 0.08], r: [bustR(F2.yNav + 0.1, Math.PI / 2, p, F2) * 0.88, 1, 0.68] }
     ];
   }
@@ -5036,7 +5073,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { F: F2, tab: tab2, Pel, tilt, gY, A2: tab2[128], A3: tab2[192] };
   }
   function pontoMaisBaixo(p, F2, tab2, Pel, tilt) {
-    const A = legDims(p), f = A.f, B2 = F2.B;
+    const A = legDims(p), f = A.f, B3 = F2.B;
     let mn = 1e9;
     const ve = (q, r) => {
       if (q[1] - r < mn) mn = q[1] - r;
@@ -5054,7 +5091,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       ve(comp(A2, ap.hand).T, 0.28 * Ad.k);
       ve(applyA(comp(A2, ap.hand), [0, -0.95 * Ad.LH, 0]), 0.12);
       ve(applyA(A2, [s * (F2.W - 0.1), F2.yAc - 0.2, F2.zT]), 0.55);
-      ve(applyA(Pel, [s * B2.hip * 0.42, F2.yHip - 0.55, -0.75]), 0.55);
+      ve(applyA(Pel, [s * B3.hip * 0.42, F2.yHip - 0.55, -0.75]), 0.55);
     });
     ve(applyA(tab2[192], [0, 0.1, 0.05]), 0.98);
     [[tab2[128], F2.yJ - 1.3], [tab2[Math.round(tauTronco(F2.yJ - 2.1, F2) * 64)], F2.yJ - 2.1], [tab2[Math.round(tauTronco(F2.yNav, F2) * 64)], F2.yNav]].forEach(([T, y]) => {
@@ -5332,7 +5369,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return a.params.map((q) => a.lado ? q + (s > 0 ? "L" : "R") : q);
   }
   function ossosDoCorpo(p) {
-    const S = shape(p), ch = chainSetup(p, S), F2 = ch.F, B2 = F2.B, ossos = [], juntas = [];
+    const S = shape(p), ch = chainSetup(p, S), F2 = ch.F, B3 = F2.B, ossos = [], juntas = [];
     const T = (x, y, z) => {
       const A = ch.tab[Math.round(clamp(bustTw(x, y, F2), 0, 3) * 64)];
       return applyA(A, [x, y, z]);
@@ -5371,7 +5408,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const sac = applyA(ch.Pel, [0, F2.yHip + 0.35, -1]), cox = applyA(ch.Pel, [0, F2.yHip - 0.45, -1.05]);
     osso("sacro", sac, cox, 0.18, "plano");
     [-1, 1].forEach((s) => {
-      const H2 = applyA(ch.Pel, hipJoint(F2, s)), cr2 = applyA(ch.Pel, [s * B2.hip * 0.72, F2.yHip + 0.85, -0.55]), asis = applyA(ch.Pel, [s * B2.hip * 0.6, F2.yHip + 0.45, 0.25]), pub = applyA(ch.Pel, [s * 0.18, F2.yHip - 0.75, 0.15]);
+      const H2 = applyA(ch.Pel, hipJoint(F2, s)), cr2 = applyA(ch.Pel, [s * B3.hip * 0.72, F2.yHip + 0.85, -0.55]), asis = applyA(ch.Pel, [s * B3.hip * 0.6, F2.yHip + 0.45, 0.25]), pub = applyA(ch.Pel, [s * 0.18, F2.yHip - 0.75, 0.15]);
       osso("ílio", sac, cr2, 0.14, "plano");
       osso("ílio", cr2, asis, 0.12, "plano");
       osso("púbis", asis, pub, 0.1, "plano");
@@ -5382,7 +5419,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const est2 = T(0, F2.yJ + 0.05, 0.42), xif = T(0, F2.yJ - 1.9, 0.5);
     osso("esterno", est2, xif, 0.12, "plano");
     for (let i = 0; i < 6; i++) {
-      const y = F2.yJ - 0.4 - i * 0.42, w = B2.chest * (0.85 + 0.1 * Math.sin(Math.PI * i / 5));
+      const y = F2.yJ - 0.4 - i * 0.42, w = B3.chest * (0.85 + 0.1 * Math.sin(Math.PI * i / 5));
       [-1, 1].forEach((s) => {
         const a = T(0, y + 0.25, -0.85), b = T(s * w * 0.95, y - 0.05, -0.45), c = T(s * w * 0.55, y - 0.35, 0.42);
         osso("costela", a, b, 0.05, "costela");
@@ -6186,11 +6223,11 @@ pre.cmdout .ok{color:var(--cobalt)}
         }, 0.08, 0.88, 30), xb);
       });
       {
-        const at = atlasTronco(p, F2), B2 = F2.B, def = clamp(B2.mus * (1 - B2.fat) * (1 - 0.75 * B2.fem), 0, 2);
+        const at = atlasTronco(p, F2), B3 = F2.B, def = clamp(B3.mus * (1 - B3.fat) * (1 - 0.75 * B3.fem), 0, 2);
         [1, -1].forEach((s) => at[s].linhas.forEach((l) => {
           if (l.tipo === "fibra" && !L3.fibras) return;
           if (def < (l.min || 0)) return;
-          const strength = L3.cel ? 1 : clamp(0.42 + 0.35 * B2.mus - 0.32 * B2.fat - 0.1 * B2.fem, 0.3, 0.93);
+          const strength = L3.cel ? 1 : clamp(0.42 + 0.35 * B3.mus - 0.32 * B3.fat - 0.1 * B3.fem, 0.3, 0.93);
           lineT(l.tipo, l.pts.map((q) => {
             const yt = linhaParaPele(l, q, bustTh, p, F2);
             return bp(yt[0], yt[1], 0.012);
@@ -6875,10 +6912,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     }));
     return { caps, lo, hi };
   }
-  function sobrepoePartes3D(A, B2) {
-    const axes = [], sub3 = [B2.c[0] - A.c[0], B2.c[1] - A.c[1], B2.c[2] - A.c[2]];
-    for (const E3 of [...A.e, ...B2.e]) axes.push(E3);
-    for (const a of A.e) for (const b of B2.e) {
+  function sobrepoePartes3D(A, B3) {
+    const axes = [], sub3 = [B3.c[0] - A.c[0], B3.c[1] - A.c[1], B3.c[2] - A.c[2]];
+    for (const E3 of [...A.e, ...B3.e]) axes.push(E3);
+    for (const a of A.e) for (const b of B3.e) {
       const v = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
       if (Math.hypot(...v) > 1e-7) axes.push(v);
     }
@@ -6886,28 +6923,28 @@ pre.cmdout .ok{color:var(--cobalt)}
     for (const v of axes) {
       const len3 = Math.hypot(...v), ax = v.map((x) => x / len3), dist = sub3.reduce((z, x, i) => z + x * ax[i], 0);
       const radius = (E3) => E3.e.reduce((z, e, i) => z + E3.h[i] * Math.abs(e.reduce((t, x, k) => t + x * ax[k], 0)), 0);
-      const overlap = radius(A) + radius(B2) - Math.abs(dist);
+      const overlap = radius(A) + radius(B3) - Math.abs(dist);
       if (overlap <= 0) return null;
       if (overlap < min) {
         min = overlap;
         n2 = ax.map((x) => x * (dist > 0 ? -1 : 1));
       }
     }
-    return { prof: min, plano: min, ponto: A.c.map((v, i) => (v + B2.c[i]) / 2), n: n2 };
+    return { prof: min, plano: min, ponto: A.c.map((v, i) => (v + B3.c[i]) / 2), n: n2 };
   }
-  function sobrepoePartes(A, B2) {
-    if ([A, B2].some((q) => Math.abs(q.e[1][0]) > 1e-5 || Math.abs(q.e[1][2]) > 1e-5))
-      return sobrepoePartes3D(A, B2);
-    const yA = [A.c[1] - A.h[1], A.c[1] + A.h[1]], yB = [B2.c[1] - B2.h[1], B2.c[1] + B2.h[1]], oy = Math.min(yA[1], yB[1]) - Math.max(yA[0], yB[0]);
+  function sobrepoePartes(A, B3) {
+    if ([A, B3].some((q) => Math.abs(q.e[1][0]) > 1e-5 || Math.abs(q.e[1][2]) > 1e-5))
+      return sobrepoePartes3D(A, B3);
+    const yA = [A.c[1] - A.h[1], A.c[1] + A.h[1]], yB = [B3.c[1] - B3.h[1], B3.c[1] + B3.h[1]], oy = Math.min(yA[1], yB[1]) - Math.max(yA[0], yB[0]);
     if (oy <= 0) return null;
-    const dx = B2.c[0] - A.c[0], dz = B2.c[2] - A.c[2];
+    const dx = B3.c[0] - A.c[0], dz = B3.c[2] - A.c[2];
     let prof, n2;
-    if (A.cil && B2.cil) {
+    if (A.cil && B3.cil) {
       const d = Math.hypot(dx, dz);
-      prof = A.r + B2.r - d;
+      prof = A.r + B3.r - d;
       n2 = d > 1e-6 ? [-dx / d, -dz / d] : [1, 0];
-    } else if (A.cil || B2.cil) {
-      const C2 = A.cil ? A : B2, R = A.cil ? B2 : A, ux = [R.e[0][0], R.e[0][2]], uz = [R.e[2][0], R.e[2][2]];
+    } else if (A.cil || B3.cil) {
+      const C2 = A.cil ? A : B3, R = A.cil ? B3 : A, ux = [R.e[0][0], R.e[0][2]], uz = [R.e[2][0], R.e[2][2]];
       const vx = C2.c[0] - R.c[0], vz = C2.c[2] - R.c[2], lx = vx * ux[0] + vz * ux[1], lz = vx * uz[0] + vz * uz[1];
       const qx = Math.max(-R.h[0], Math.min(R.h[0], lx)), qz = Math.max(-R.h[2], Math.min(R.h[2], lz)), ex = lx - qx, ez = lz - qz, d = Math.hypot(ex, ez);
       let nl;
@@ -6929,9 +6966,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     } else {
       prof = 1e9;
       n2 = [1, 0];
-      for (const E3 of [A, B2]) for (const k of [0, 2]) {
+      for (const E3 of [A, B3]) for (const k of [0, 2]) {
         const ax = [E3.e[k][0], E3.e[k][2]], proj2 = (R) => Math.abs(R.h[0] * (R.e[0][0] * ax[0] + R.e[0][2] * ax[1])) + Math.abs(R.h[2] * (R.e[2][0] * ax[0] + R.e[2][2] * ax[1]));
-        const dist = dx * ax[0] + dz * ax[1], ov = proj2(A) + proj2(B2) - Math.abs(dist);
+        const dist = dx * ax[0] + dz * ax[1], ov = proj2(A) + proj2(B3) - Math.abs(dist);
         if (ov < prof) {
           prof = ov;
           n2 = dist > 0 ? [-ax[0], -ax[1]] : ax;
@@ -6939,7 +6976,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       }
     }
     if (prof <= 0) return null;
-    const ponto = [(A.c[0] + B2.c[0]) / 2, (Math.max(yA[0], yB[0]) + Math.min(yA[1], yB[1])) / 2, (A.c[2] + B2.c[2]) / 2];
+    const ponto = [(A.c[0] + B3.c[0]) / 2, (Math.max(yA[0], yB[0]) + Math.min(yA[1], yB[1])) / 2, (A.c[2] + B3.c[2]) / 2];
     return { prof: Math.min(prof, oy), plano: prof, ponto, n: [n2[0], 0, n2[1]] };
   }
   function colisaoEntreObjetos(o1, o2, g0, tol) {
@@ -6959,9 +6996,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [n2 >> 16 & 255, n2 >> 8 & 255, n2 & 255];
   }
   function mistura(a, b, t) {
-    const A = hx(a), B2 = hx(b);
-    if (!A || !B2) return a;
-    return "#" + A.map((v, i) => Math.round(v + (B2[i] - v) * t).toString(16).padStart(2, "0")).join("");
+    const A = hx(a), B3 = hx(b);
+    if (!A || !B3) return a;
+    return "#" + A.map((v, i) => Math.round(v + (B3[i] - v) * t).toString(16).padStart(2, "0")).join("");
   }
   function paletaObjeto(o, pal) {
     const c = o._cor;
@@ -7287,16 +7324,16 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
   }
   function capsulas(p) {
-    const S = shape(p), ch = chainSetup(p, S), F2 = ch.F, B2 = F2.B, M = paraMundo(p), out = [];
+    const S = shape(p), ch = chainSetup(p, S), F2 = ch.F, B3 = F2.B, M = paraMundo(p), out = [];
     const cap = (nome, a, b, r) => out.push({ nome, a: M(a), b: M(b), r });
     const zc = -0.46;
     cap("cabeca", applyA(ch.A3, [0, 0.25, 0.1]), applyA(ch.A3, [0, -0.25, 0.15]), 0.95 * (p.skull || 0.82) / 0.82);
     cap("pescoco", applyA(ch.A3, [0, -0.9, -0.1]), applyA(ch.A2, [0, F2.yJ + 0.3, zc]), 0.42 * (p.neck || 1));
-    const cw = Math.max(0.2, B2.chest * 0.5);
+    const cw = Math.max(0.2, B3.chest * 0.5);
     cap("torax", applyA(ch.A2, [-cw, F2.yJ - 1.1, zc]), applyA(ch.A2, [cw, F2.yJ - 1.1, zc]), 0.9);
     cap("torax", applyA(ch.A2, [-cw * 0.7, F2.yJ - 2, zc + 0.05]), applyA(ch.A2, [cw * 0.7, F2.yJ - 2, zc + 0.05]), 0.85);
-    cap("abdomen", applyA(ch.A2, [0, F2.yJ - 2.5, zc + 0.05]), applyA(ch.Pel, [0, F2.yHip + 0.55, -0.45]), Math.max(0.55, B2.waist * 0.72));
-    const hw = Math.max(0.2, B2.hip * 0.42), raioPelve = Math.max(0.6, B2.hip * 0.56);
+    cap("abdomen", applyA(ch.A2, [0, F2.yJ - 2.5, zc + 0.05]), applyA(ch.Pel, [0, F2.yHip + 0.55, -0.45]), Math.max(0.55, B3.waist * 0.72));
+    const hw = Math.max(0.2, B3.hip * 0.42), raioPelve = Math.max(0.6, B3.hip * 0.56);
     cap("pelve", applyA(ch.Pel, [-hw, F2.yHip - 0.1, -0.48]), applyA(ch.Pel, [hw, F2.yHip - 0.1, -0.48]), raioPelve);
     const Aarm = armDims(p), Aleg = legDims(p);
     [1, -1].forEach((s) => {
@@ -7350,8 +7387,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     const p = [P0[0] + d1[0] * s, P0[1] + d1[1] * s, P0[2] + d1[2] * s], q = [Q0[0] + d2[0] * t, Q0[1] + d2[1] * t, Q0[2] + d2[2] * t];
     return { p, q, d: Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) };
   }
-  function caixasSeTocam(A, B2, folga) {
-    for (let k = 0; k < 3; k++) if (A.lo[k] > B2.hi[k] + folga || B2.lo[k] > A.hi[k] + folga) return false;
+  function caixasSeTocam(A, B3, folga) {
+    for (let k = 0; k < 3; k++) if (A.lo[k] > B3.hi[k] + folga || B3.lo[k] > A.hi[k] + folga) return false;
     return true;
   }
   function contatosEntre(CA, CB, tol) {
@@ -7398,8 +7435,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     return { caps, lo, hi };
   }
-  function overlaps(A, B2, pad = 0) {
-    for (let i = 0; i < 3; i++) if (A.hi[i] + pad < B2.lo[i] || B2.hi[i] + pad < A.lo[i]) return false;
+  function overlaps(A, B3, pad = 0) {
+    for (let i = 0; i < 3; i++) if (A.hi[i] + pad < B3.lo[i] || B3.hi[i] + pad < A.lo[i]) return false;
     return true;
   }
   function capsuleBox(c) {
@@ -7472,33 +7509,33 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     return false;
   }
-  function capsuleContact(A, B2) {
-    const r = segSeg(A.a, A.b, B2.a, B2.b);
-    const fallback = unit(V(mul(add(A.a, A.b), 0.5), mul(add(B2.a, B2.b), 0.5)));
-    const n2 = unit(V(r.p, r.q), fallback), dist = r.d - (A.r + B2.r);
+  function capsuleContact(A, B3) {
+    const r = segSeg(A.a, A.b, B3.a, B3.b);
+    const fallback = unit(V(mul(add(A.a, A.b), 0.5), mul(add(B3.a, B3.b), 0.5)));
+    const n2 = unit(V(r.p, r.q), fallback), dist = r.d - (A.r + B3.r);
     return {
       idA: A.id,
-      idB: B2.id,
+      idB: B3.id,
       pa: A.nome,
-      pb: B2.nome,
+      pb: B3.nome,
       kindA: A.kind,
-      kindB: B2.kind,
+      kindB: B3.kind,
       distancia: dist,
       prof: Math.max(0, -dist),
       n: n2,
       a: V(r.p, mul(n2, A.r)),
-      b: add(r.q, mul(n2, B2.r)),
-      ponto: mul(add(V(r.p, mul(n2, A.r)), add(r.q, mul(n2, B2.r))), 0.5)
+      b: add(r.q, mul(n2, B3.r)),
+      ponto: mul(add(V(r.p, mul(n2, A.r)), add(r.q, mul(n2, B3.r))), 0.5)
     };
   }
-  function manifoldCaps(A, B2, { tol = 0, includeTouch = false, margin = 0.025, self = false, max = 96 } = {}) {
+  function manifoldCaps(A, B3, { tol = 0, includeTouch = false, margin = 0.025, self = false, max = 96 } = {}) {
     const out = [];
-    if (!overlaps(A, B2, margin)) return out;
-    const bboxes = B2.caps.map(capsuleBox);
+    if (!overlaps(A, B3, margin)) return out;
+    const bboxes = B3.caps.map(capsuleBox);
     for (let i = 0; i < A.caps.length; i++) {
       const a = A.caps[i], ab = capsuleBox(a);
-      for (let j = self ? i + 1 : 0; j < B2.caps.length; j++) {
-        const b = B2.caps[j];
+      for (let j = self ? i + 1 : 0; j < B3.caps.length; j++) {
+        const b = B3.caps[j];
         if (self && adjacentSelf(a, b)) continue;
         if (!overlaps(ab, bboxes[j], margin)) continue;
         const hit = capsuleContact(a, b);
@@ -8368,8 +8405,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return "#" + c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
   }
   function misturar(a, b, t) {
-    const A = hexRgb(a), B2 = hexRgb(b);
-    return rgbHex(A.map((v, i) => v + (B2[i] - v) * t));
+    const A = hexRgb(a), B3 = hexRgb(b);
+    return rgbHex(A.map((v, i) => v + (B3[i] - v) * t));
   }
   function corEm(cores, t) {
     t = Math.max(0, Math.min(1, t));
@@ -8583,8 +8620,8 @@ pre.cmdout .ok{color:var(--cobalt)}
           }
         }
       } else {
-        const B2 = resolverAncora(K, d.alvo, {});
-        T = B2 && B2.mundo;
+        const B3 = resolverAncora(K, d.alvo, {});
+        T = B3 && B3.mundo;
       }
       if (T) {
         deMundo(sub(T, A.mundo));
@@ -8628,18 +8665,18 @@ pre.cmdout .ok{color:var(--cobalt)}
   var medio = (fx) => fx.cores[Math.min(2, fx.cores.length - 1)];
   var quant = (fx, n2) => Math.max(1, Math.round(n2 * (fx.dens || 1)));
   function aroMundo(fx, c, n2, raio, k = 40, a0 = 0, a1 = 2 * Math.PI) {
-    const B2 = base(n2), out = [];
+    const B3 = base(n2), out = [];
     for (let i = 0; i <= k; i++) {
       const a = a0 + (a1 - a0) * i / k;
-      out.push(T2(fx, add2(c, add2(mul2(B2.v, Math.cos(a) * raio), mul2(B2.w, Math.sin(a) * raio)))));
+      out.push(T2(fx, add2(c, add2(mul2(B3.v, Math.cos(a) * raio), mul2(B3.w, Math.sin(a) * raio)))));
     }
     return out;
   }
   function aroMundoW(c, n2, raio, k = 40, a0 = 0, a1 = 2 * Math.PI) {
-    const B2 = base(n2), out = [];
+    const B3 = base(n2), out = [];
     for (let i = 0; i <= k; i++) {
       const a = a0 + (a1 - a0) * i / k;
-      out.push(add2(c, add2(mul2(B2.v, Math.cos(a) * raio), mul2(B2.w, Math.sin(a) * raio))));
+      out.push(add2(c, add2(mul2(B3.v, Math.cos(a) * raio), mul2(B3.w, Math.sin(a) * raio))));
     }
     return out;
   }
@@ -8854,12 +8891,12 @@ pre.cmdout .ok{color:var(--cobalt)}
     return forma(d, escuro(fx), { op: 0.75 });
   };
   function fiosNoEixo(fx, O, u, L3, raio0, raio1, n2, larg, torcao = 0.6, perfil = "pincel") {
-    const B2 = base(u), r = fx.r, lista2 = [];
+    const B3 = base(u), r = fx.r, lista2 = [];
     for (let i = 0; i < n2; i++) {
       const phi = r() * 6.28, rr = r.entre(0.15, 1), t0 = r.entre(0, 0.25), t1 = r.entre(0.7, 1), pts = [];
       for (let k = 0; k <= 10; k++) {
         const t = t0 + (t1 - t0) * k / 10, ra = (raio0 + (raio1 - raio0) * t) * rr, a = phi + torcao * t * r.sinal();
-        pts.push(add2(add2(O, mul2(u, L3 * t)), add2(mul2(B2.v, Math.cos(a) * ra), mul2(B2.w, Math.sin(a) * ra))));
+        pts.push(add2(add2(O, mul2(u, L3 * t)), add2(mul2(B3.v, Math.cos(a) * ra), mul2(B3.w, Math.sin(a) * ra))));
       }
       const z = fx.proj(pts[5])[2];
       lista2.push({ z, rr, d: pincelada(pts.map((q) => T2(fx, q)), larg * r.entre(0.45, 1.2) * (0.6 + rr * 0.6), perfil) });
@@ -8888,10 +8925,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     return svg;
   };
   TIPOS.cone = (fx) => {
-    const { P: P3, cores, A, D: D3, r } = fx, O = A.mundo, B2 = base(D3.mundo), L3 = escalaW(fx, P3.comprimento) * (0.15 + 0.85 * fx.t), ab = P3.abertura * Math.PI / 180 / 2, s = pxu(fx);
+    const { P: P3, cores, A, D: D3, r } = fx, O = A.mundo, B3 = base(D3.mundo), L3 = escalaW(fx, P3.comprimento) * (0.15 + 0.85 * fx.t), ab = P3.abertura * Math.PI / 180 / 2, s = pxu(fx);
     const cristalino = ["gelo", "cristal"].includes(fx.e.elemento), itens = [], curvaLeque = 0.12 * r.sinal();
     for (let i = 0; i < quant(fx, P3.fios); i++) {
-      const a = r.entre(-ab, ab), b = r() * 6.28, dir = norm(add2(mul2(B2.u, Math.cos(a)), add2(mul2(B2.v, Math.sin(a) * Math.cos(b)), mul2(B2.w, Math.sin(a) * Math.sin(b)))));
+      const a = r.entre(-ab, ab), b = r() * 6.28, dir = norm(add2(mul2(B3.u, Math.cos(a)), add2(mul2(B3.v, Math.sin(a) * Math.cos(b)), mul2(B3.w, Math.sin(a) * Math.sin(b)))));
       const Li = L3 * r.entre(0.5, 1), p0 = add2(O, mul2(dir, Li * r.entre(0.05, 0.25))), p1 = add2(O, mul2(dir, Li)), a0 = T2(fx, p0), a1 = T2(fx, p1);
       const z = fx.proj(p1)[2], cor2 = fx.ink ? r() < 0.45 ? INK : PAPEL : corEm(cores, r.entre(0.15, 0.95));
       if (cristalino) {
@@ -8906,21 +8943,21 @@ pre.cmdout .ok{color:var(--cobalt)}
     return (fx.ink ? estouro(fx, o[0], o[1], escalaW(fx, 1.4) * s, 10, r, { salpicos: false }) : forma(circulo(o[0], o[1], escalaW(fx, 1.2) * s), cores[1], { op: 0.7, filtro: brilho(fx) })) + itens.sort((a, b) => a.z - b.z).map((q) => q.s).join("") + estrelas(fx, itens.flatMap((q) => q.pts || []), 60);
   };
   TIPOS.espiral = (fx) => {
-    const { P: P3, cores, A, D: D3 } = fx, O = A.mundo, B2 = base(D3.mundo), L3 = escalaW(fx, P3.comprimento) * (0.15 + 0.85 * fx.t), Rw = escalaW(fx, P3.largura), s = pxu(fx), N = Math.round(P3.voltas * 24);
+    const { P: P3, cores, A, D: D3 } = fx, O = A.mundo, B3 = base(D3.mundo), L3 = escalaW(fx, P3.comprimento) * (0.15 + 0.85 * fx.t), Rw = escalaW(fx, P3.largura), s = pxu(fx), N = Math.round(P3.voltas * 24);
     const pts = [];
     for (let i = 0; i <= N; i++) {
       const t = i / N, a = 2 * Math.PI * P3.voltas * t, ra = Rw * (0.25 + 0.75 * Math.pow(t, 0.8));
-      pts.push(add2(add2(O, mul2(B2.u, L3 * t)), add2(mul2(B2.v, Math.cos(a) * ra), mul2(B2.w, Math.sin(a) * ra))));
+      pts.push(add2(add2(O, mul2(B3.u, L3 * t)), add2(mul2(B3.v, Math.cos(a) * ra), mul2(B3.w, Math.sin(a) * ra))));
     }
     const seg = [];
     for (let i = 0; i < N; i += 12) {
       const q = pts.slice(Math.max(0, i - 1), Math.min(N + 1, i + 14));
       if (q.length < 3) continue;
-      const z = fx.proj(q[6] || q[0])[2] - fx.proj(add2(O, mul2(B2.u, L3 * (i + 6) / N)))[2];
+      const z = fx.proj(q[6] || q[0])[2] - fx.proj(add2(O, mul2(B3.u, L3 * (i + 6) / N)))[2];
       seg.push({ z, q, t: i / N });
     }
     seg.sort((a, b) => a.z - b.z);
-    let svg = fx.ink ? "" : forma(pincelada(Array.from({ length: 8 }, (_, k) => T2(fx, add2(O, mul2(B2.u, L3 * k / 7)))), Rw * 1.5 * s, "pincel"), cores[cores.length - 2] || cores[1], { op: 0.25, filtro: brilho(fx) });
+    let svg = fx.ink ? "" : forma(pincelada(Array.from({ length: 8 }, (_, k) => T2(fx, add2(O, mul2(B3.u, L3 * k / 7)))), Rw * 1.5 * s, "pincel"), cores[cores.length - 2] || cores[1], { op: 0.25, filtro: brilho(fx) });
     seg.forEach((g) => {
       const atras = g.z < 0, d = pincelada(g.q.map((q) => T2(fx, q)), Rw * (0.16 + 0.22 * g.t) * s, "cheio");
       if (fx.ink) svg += forma(d, atras ? "#8C8C8C" : PAPEL, ct(fx, Math.max(0.8, Rw * s * 0.03))) + (atras ? "" : forma(pincelada(g.q.map((q) => T2(fx, q)), Rw * (0.04 + 0.05 * g.t) * s, "fuso"), INK));
@@ -8946,9 +8983,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       d += lasca(q[0], q[1], escalaW(fx, 0.25) * s, r);
     }
     out.frente += forma(d, fx.ink ? PAPEL : escuro(fx), ct(fx, 0.7));
-    const B2 = base(up), bs = [];
+    const B3 = base(up), bs = [];
     for (let i = 0; i < quant(fx, 9); i++) {
-      const a = i / 9 * 6.28 + r() * 0.3, q = T2(fx, add2(O, add2(mul2(B2.v, Math.cos(a) * Rw * 0.45), mul2(B2.w, Math.sin(a) * Rw * 0.45))));
+      const a = i / 9 * 6.28 + r() * 0.3, q = T2(fx, add2(O, add2(mul2(B3.v, Math.cos(a) * Rw * 0.45), mul2(B3.w, Math.sin(a) * Rw * 0.45))));
       bs.push([q[0], q[1], Rw * s * r.entre(0.12, 0.22)]);
     }
     out.chao = nuvemTinta(fx, bs, r, "cinza", 0.9);
@@ -9017,8 +9054,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   }
   TIPOS.circulo_magico = (fx) => {
-    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.03, A.mundo[2]], Rw = escalaW(fx, P3.raio) * (0.2 + 0.8 * fx.t), g = brilho(fx), B2 = base(up);
-    const pt2 = (rad, a) => T2(fx, add2(C2, add2(mul2(B2.v, Math.cos(a) * rad), mul2(B2.w, Math.sin(a) * rad))));
+    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.03, A.mundo[2]], Rw = escalaW(fx, P3.raio) * (0.2 + 0.8 * fx.t), g = brilho(fx), B3 = base(up);
+    const pt2 = (rad, a) => T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * rad), mul2(B3.w, Math.sin(a) * rad))));
     const aro = (k, a0 = 0, a1 = 6.2832) => suave2(Array.from({ length: 73 }, (_, i) => pt2(k * Rw, a0 + (a1 - a0) * i / 72)), false);
     const cor2 = fx.ink ? INK : cores[Math.min(2, cores.length - 1)], fino = Math.max(0.8, fx.A.s * 0.06);
     let svg = forma(suave2(Array.from({ length: 48 }, (_, i) => pt2(Rw, i / 48 * 6.2832)), true), fx.ink ? PAPEL : cores[1], { op: (fx.ink ? 0.7 : 0.18) * fx.X, filtro: g });
@@ -9030,8 +9067,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     for (let i = 0; i < 6; i++) {
       const a = i * Math.PI / 3 - Math.PI / 2;
       d += suave2(Array.from({ length: 17 }, (_, k) => {
-        const c = add2(C2, add2(mul2(B2.v, Math.cos(a) * 0.6 * Rw), mul2(B2.w, Math.sin(a) * 0.6 * Rw)));
-        return T2(fx, add2(c, add2(mul2(B2.v, Math.cos(k / 16 * 6.28) * 0.08 * Rw), mul2(B2.w, Math.sin(k / 16 * 6.28) * 0.08 * Rw))));
+        const c = add2(C2, add2(mul2(B3.v, Math.cos(a) * 0.6 * Rw), mul2(B3.w, Math.sin(a) * 0.6 * Rw)));
+        return T2(fx, add2(c, add2(mul2(B3.v, Math.cos(k / 16 * 6.28) * 0.08 * Rw), mul2(B3.w, Math.sin(k / 16 * 6.28) * 0.08 * Rw))));
       }), false);
     }
     for (let i = 0; i < 72; i++) {
@@ -9063,12 +9100,12 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   };
   TIPOS.pilar = (fx) => {
-    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], Hh = escalaW(fx, P3.altura) * (0.2 + 0.8 * fx.t), Rw = escalaW(fx, P3.raio), s = pxu(fx), g = brilho(fx), B2 = base(up);
+    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], Hh = escalaW(fx, P3.altura) * (0.2 + 0.8 * fx.t), Rw = escalaW(fx, P3.raio), s = pxu(fx), g = brilho(fx), B3 = base(up);
     const zc = fx.proj(C2)[2], out = { atras: "", frente: "", chao: "" };
     const eixo = [0, 0.5, 1].map((t) => T2(fx, add2(C2, mul2(up, Hh * t))));
     out.atras += fx.ink ? forma(pincelada(eixo, Rw * 2.2 * s, "ponta"), PAPEL, { op: 0.6 }) : forma(pincelada(eixo, Rw * 2.4 * s, "ponta"), cores[2] || cores[1], { op: 0.35, filtro: g });
     for (let i = 0; i < quant(fx, 30); i++) {
-      const a = r() * 6.28, rr = Rw * r.entre(0.55, 1.05), p0 = add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))), h = Hh * r.entre(0.45, 1), b0 = r.entre(0, 0.25);
+      const a = r() * 6.28, rr = Rw * r.entre(0.55, 1.05), p0 = add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), h = Hh * r.entre(0.45, 1), b0 = r.entre(0, 0.25);
       const pts = [b0, 0.4, 0.7, 1].map((t) => T2(fx, add2(p0, mul2(up, h * t)))), dd = pincelada(pts, Rw * s * r.entre(0.05, 0.16), "ponta"), tras = fx.proj(p0)[2] < zc;
       const cor2 = fx.ink ? tras ? "#8A8A8A" : INK : corEm(cores, 0.1 + 0.6 * rr / Rw);
       out[tras ? "atras" : "frente"] += forma(dd, cor2, { op: tras ? 0.7 : 0.85 });
@@ -9137,7 +9174,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     return svg;
   };
   TIPOS.onda_choque = (fx) => {
-    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], Rw = escalaW(fx, P3.raio), g = brilho(fx), s = pxu(fx), B2 = base(up);
+    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], Rw = escalaW(fx, P3.raio), g = brilho(fx), s = pxu(fx), B3 = base(up);
     let svg = "";
     for (let k = 0; k < P3.aneis; k++) {
       const f = fx.t * (1 - 0.22 * k), rr = Rw * Math.max(0.05, f);
@@ -9153,7 +9190,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     let d = "";
     for (let i = 0; i < quant(fx, 30); i++) {
       const a = r() * 6.28, r0 = Rw * fx.t * r.entre(0.75, 1), r1 = r0 + Rw * r.entre(0.12, 0.3);
-      const p0 = T2(fx, add2(C2, add2(mul2(B2.v, Math.cos(a) * r0), mul2(B2.w, Math.sin(a) * r0)))), p1 = T2(fx, add2(C2, add2(mul2(B2.v, Math.cos(a) * r1), mul2(B2.w, Math.sin(a) * r1))));
+      const p0 = T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * r0), mul2(B3.w, Math.sin(a) * r0)))), p1 = T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * r1), mul2(B3.w, Math.sin(a) * r1))));
       d += pincelada([p0, p1], escalaW(fx, 0.5 * r.entre(0.5, 1.5)) * s, "agulha");
     }
     return { chao: svg + forma(d, escuro(fx), { op: 0.7 }) };
@@ -9179,9 +9216,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   };
   TIPOS.fogo_chao = (fx) => {
-    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], Rw = escalaW(fx, P3.raio), s = pxu(fx), B2 = base(up), itens = [], zc = fx.proj(C2)[2];
+    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], Rw = escalaW(fx, P3.raio), s = pxu(fx), B3 = base(up), itens = [], zc = fx.proj(C2)[2];
     for (let i = 0; i < quant(fx, P3.labaredas); i++) {
-      const a = r() * 6.28, rr = Rw * Math.sqrt(r()), p = add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))), q = T2(fx, p), cu = cimaTela(fx, fx.plano ? null : p);
+      const a = r() * 6.28, rr = Rw * Math.sqrt(r()), p = add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), q = T2(fx, p), cu = cimaTela(fx, fx.plano ? null : p);
       const h = escalaW(fx, 3.4) * s * (1 - 0.5 * rr / Rw) * r.entre(0.6, 1.3) * (0.3 + 0.7 * fx.t), ang = Math.atan2(cu[1], cu[0]) + r.entre(-0.25, 0.25), wd = h * r.entre(0.35, 0.55);
       const sv = fx.ink ? forma(labareda(q[0], q[1], ang, h, wd, r), INK) + forma(labareda(q[0], q[1], ang, h * 0.7, wd * 0.62, r), PAPEL, ct(fx, 0.6)) : forma(labareda(q[0], q[1], ang, h, wd, r), cores[cores.length - 1]) + forma(labareda(q[0], q[1], ang, h * 0.72, wd * 0.7, r), cores[2] || cores[1]) + forma(labareda(q[0], q[1], ang, h * 0.42, wd * 0.42, r), cores[1]);
       itens.push({ z: fx.proj(p)[2], s: sv });
@@ -9413,9 +9450,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       svg += forma(pincelada(pts, escalaW(fx, 0.42 * (1.15 - 0.5 * f)) * s, "fuso"), fx.ink ? INK : corEm(fx.cores, 0.4 + 0.5 * f), { op: 1 - 0.18 * k, ...fx.ink ? {} : ct(fx, 0.6) });
     }
     let d = "";
-    const B2 = base(u);
+    const B3 = base(u);
     for (let i = 0; i < quant(fx, 22); i++) {
-      const a = r() * 6.28, rr = R * r.entre(0.9, 1.4), p0 = add2(A.mundo, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))), p1 = add2(p0, add2(mul2(u, R * r.entre(-0.1, 0.4)), add2(mul2(B2.v, Math.cos(a) * R * 0.5), mul2(B2.w, Math.sin(a) * R * 0.5))));
+      const a = r() * 6.28, rr = R * r.entre(0.9, 1.4), p0 = add2(A.mundo, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), p1 = add2(p0, add2(mul2(u, R * r.entre(-0.1, 0.4)), add2(mul2(B3.v, Math.cos(a) * R * 0.5), mul2(B3.w, Math.sin(a) * R * 0.5))));
       d += pincelada([T2(fx, p0), T2(fx, p1)], escalaW(fx, 0.14) * s * r.entre(0.5, 1.4), "fuso");
     }
     return svg + forma(d, fx.ink ? INK : escuro(fx), { op: 0.85 });
@@ -9613,9 +9650,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     return fx.ink ? forma(claroD, PAPEL, ct(fx, 0.9)) + forma(escD, INK, { op: 0.85 }) : forma(claroD, fx.cores[1], { op: 0.8, ...ct(fx, 0.6) }) + forma(escD, medio(fx), { op: 0.7 });
   };
   TIPOS.pedras_levitando = (fx) => {
-    const { P: P3, r } = fx, up = UPW(fx), C2 = fx.plano ? fx.A.mundo : [fx.A.mundo[0], fx.K.g0, fx.A.mundo[2]], s = pxu(fx), zc = fx.proj(C2)[2], out = { atras: "", frente: "", chao: "" }, B2 = base(up);
+    const { P: P3, r } = fx, up = UPW(fx), C2 = fx.plano ? fx.A.mundo : [fx.A.mundo[0], fx.K.g0, fx.A.mundo[2]], s = pxu(fx), zc = fx.proj(C2)[2], out = { atras: "", frente: "", chao: "" }, B3 = base(up);
     for (let i = 0; i < quant(fx, P3.quantidade); i++) {
-      const a = r() * 6.28, rr = escalaW(fx, P3.raio) * r.entre(0.25, 1), h = escalaW(fx, P3.altura) * r.entre(0.05, 1) * fx.t, p = add2(add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))), mul2(up, h)), q = fx.proj(p);
+      const a = r() * 6.28, rr = escalaW(fx, P3.raio) * r.entre(0.25, 1), h = escalaW(fx, P3.altura) * r.entre(0.05, 1) * fx.t, p = add2(add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), mul2(up, h)), q = fx.proj(p);
       const tam = escalaW(fx, r.entre(0.35, 1.1)) * s, cu = cimaTela(fx, fx.plano ? null : p);
       let sv = forma(lasca(q[0], q[1], tam, r), fx.ink ? PAPEL : misturar(fx.cores[1], "#B9A68F", 0.5), ct(fx, Math.max(0.7, tam * 0.08)));
       sv += forma(lasca(q[0] + tam * 0.2, q[1] + tam * 0.2, tam * 0.45, r), fx.ink ? INK : escuro(fx), { op: 0.5 });
@@ -9677,14 +9714,14 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   };
   function rachar(fx, C2, up, R, ramos, prog, r) {
-    const B2 = base(up), linhas = [];
+    const B3 = base(up), linhas = [];
     for (let i = 0; i < ramos; i++) {
       const a0 = i / ramos * 6.28 + r.entre(-0.3, 0.3), L3 = R * r.entre(0.6, 1) * prog, pts = [];
       let a = a0, x = 0;
       for (let k = 0; k <= 8; k++) {
         x = L3 * k / 8;
         a += r.entre(-0.35, 0.35);
-        pts.push(add2(C2, add2(mul2(B2.v, Math.cos(a) * x), mul2(B2.w, Math.sin(a) * x))));
+        pts.push(add2(C2, add2(mul2(B3.v, Math.cos(a) * x), mul2(B3.w, Math.sin(a) * x))));
       }
       linhas.push({ pts, w: 1 });
       if (r() < 0.7) {
@@ -9692,7 +9729,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         let aa = b;
         for (let k = 0; k <= 4; k++) {
           aa += r.entre(-0.3, 0.3);
-          q.push(add2(p0, add2(mul2(B2.v, Math.cos(aa) * L22 * k / 4), mul2(B2.w, Math.sin(aa) * L22 * k / 4))));
+          q.push(add2(p0, add2(mul2(B3.v, Math.cos(aa) * L22 * k / 4), mul2(B3.w, Math.sin(aa) * L22 * k / 4))));
         }
         linhas.push({ pts: q, w: 0.55 });
       }
@@ -9700,10 +9737,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     return linhas;
   }
   function lajes(fx, C2, up, R, n2, r) {
-    const B2 = base(up), out = [];
+    const B3 = base(up), out = [];
     for (let i = 0; i < n2; i++) {
       const a = i / n2 * 6.28 + r.entre(-0.2, 0.2), d = R * r.entre(0.95, 1.25), w = R * r.entre(0.25, 0.45), dd = R * r.entre(0.18, 0.35), lev = R * r.entre(0.08, 0.3);
-      const rad = add2(mul2(B2.v, Math.cos(a)), mul2(B2.w, Math.sin(a))), tg = add2(mul2(B2.v, -Math.sin(a)), mul2(B2.w, Math.cos(a)));
+      const rad = add2(mul2(B3.v, Math.cos(a)), mul2(B3.w, Math.sin(a))), tg = add2(mul2(B3.v, -Math.sin(a)), mul2(B3.w, Math.cos(a)));
       const p = add2(C2, mul2(rad, d)), q0 = add2(p, mul2(tg, -w / 2)), q1 = add2(p, mul2(tg, w / 2)), q2 = add2(add2(q1, mul2(rad, dd)), mul2(up, lev)), q3 = add2(add2(q0, mul2(rad, dd)), mul2(up, lev));
       out.push({ z: fx.proj(p)[2], pts: [q0, q1, q2, q3].map((w2) => T2(fx, w2)), lado: [q0, q1, add2(q1, mul2(up, -lev * 0.4)), add2(q0, mul2(up, -lev * 0.4))].map((w2) => T2(fx, w2)) });
     }
@@ -9720,10 +9757,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { chao: forma(d, escuro(fx)) + lj };
   };
   TIPOS.cratera = (fx) => {
-    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P3.raio) * (0.2 + 0.8 * fx.t), s = pxu(fx), B2 = base(up);
+    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P3.raio) * (0.2 + 0.8 * fx.t), s = pxu(fx), B3 = base(up);
     const borda = (k) => Array.from({ length: 30 }, (_, i) => {
       const a = i / 30 * 6.2832, rr = R * k * (1 + 0.12 * Math.sin(a * 5 + fx.e.semente) + 0.06 * Math.sin(a * 11));
-      return T2(fx, add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))));
+      return T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
     });
     let chao2 = fx.ink ? forma(suave2(borda(1.18), true), "#E2E2E2", ct(fx, 1.2)) + forma(suave2(borda(0.9), true), "#9C9C9C", ct(fx, 0.9)) + forma(suave2(borda(0.62), true), INK) : forma(suave2(borda(1.18), true), cores[1], { stroke: escuro(fx), sw: 1.2 }) + forma(suave2(borda(0.88), true), cores[2] || cores[1]) + forma(suave2(borda(0.62), true), escuro(fx), { op: 0.75 });
     let d = "";
@@ -9734,7 +9771,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
     let db = "";
     for (let i = 0; i < quant(fx, 16); i++) {
-      const a = r() * 6.28, rr = R * r.entre(0.6, 1.5), h = R * r.entre(0.2, 1.6) * fx.t, q = T2(fx, add2(add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))), mul2(up, h)));
+      const a = r() * 6.28, rr = R * r.entre(0.6, 1.5), h = R * r.entre(0.2, 1.6) * fx.t, q = T2(fx, add2(add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), mul2(up, h)));
       db += lasca(q[0], q[1], escalaW(fx, r.entre(0.2, 0.5)) * s, r);
     }
     return { chao: chao2, frente: forma(db, fx.ink ? PAPEL : cores[2] || cores[1], ct(fx, 0.8)) };
@@ -9751,10 +9788,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   };
   TIPOS.poeira = (fx) => {
-    const { P: P3, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], s = pxu(fx), Rw = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), B2 = base(up), zc = fx.proj(C2)[2];
+    const { P: P3, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], s = pxu(fx), Rw = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), B3 = base(up), zc = fx.proj(C2)[2];
     const tras = [], frente = [];
     for (let i = 0; i < quant(fx, 16); i++) {
-      const a = i / 16 * 6.28 + r() * 0.2, rr = Rw * r.entre(0.75, 1.05), p = add2(add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))), mul2(up, escalaW(fx, P3.altura) * r.entre(0.15, 0.45))), q = fx.proj(p);
+      const a = i / 16 * 6.28 + r() * 0.2, rr = Rw * r.entre(0.75, 1.05), p = add2(add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), mul2(up, escalaW(fx, P3.altura) * r.entre(0.15, 0.45))), q = fx.proj(p);
       bolhas(q[0], q[1], s * escalaW(fx, P3.altura) * r.entre(0.55, 0.9), r, 4).forEach((c) => (q[2] < zc ? tras : frente).push(c));
     }
     frente.sort((a, b) => a[1] - b[1]);
@@ -9773,25 +9810,25 @@ pre.cmdout .ok{color:var(--cobalt)}
       const fc = n2[0] ? [v, c[1], c[2]] : n2[1] ? [c[0], v, c[2]] : [c[0], c[1], v], vira = fx.proj(add2(fc, n2))[2] - fx.proj(fc)[2], area = n2[0] ? ext[1] * ext[2] : n2[1] ? ext[0] * ext[2] : ext[0] * ext[1], z = vira > 0 ? vira * area : -1e9 + vira;
       if (!best || z > best.z) best = { n: n2, fc: add2(fc, mul2(n2, 0.02)), z };
     }
-    const s = fx.A.s, R = escalaW(fx, P3.raio), B2 = base(best.n);
+    const s = fx.A.s, R = escalaW(fx, P3.raio), B3 = base(best.n);
     const buraco = Array.from({ length: 11 }, (_, i) => {
       const a = i / 11 * 6.28, rr = R * 0.32 * r.entre(0.6, 1.2) * fx.t;
-      return T2(fx, add2(best.fc, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))));
+      return T2(fx, add2(best.fc, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
     });
     let d = "";
     rachar(fx, best.fc, best.n, R * 1.6, Math.round(P3.ramos), fx.t, r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), s * 0.4 * l.w * fx.e.escala * 1.6, "agulha"));
     let db = "";
     for (let i = 0; i < quant(fx, 10); i++) {
-      const a = r() * 6.28, rr = R * r.entre(0.5, 1.2), q = T2(fx, add2(add2(best.fc, mul2(best.n, R * r.entre(0.2, 0.8) * fx.t)), add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))));
+      const a = r() * 6.28, rr = R * r.entre(0.5, 1.2), q = T2(fx, add2(add2(best.fc, mul2(best.n, R * r.entre(0.2, 0.8) * fx.t)), add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
       db += lasca(q[0], q[1], s * r.entre(0.15, 0.4), r);
     }
     return forma(caminho(buraco, true), escuro(fx), { op: 0.9 }) + forma(d, escuro(fx)) + forma(db, fx.ink ? PAPEL : "#CFC7BD", ct(fx, 0.7));
   };
   TIPOS.buraco_chao = (fx) => {
-    const { P: P3, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), s = pxu(fx), B2 = base(up);
+    const { P: P3, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), s = pxu(fx), B3 = base(up);
     const borda = (k) => Array.from({ length: 14 }, (_, i) => {
       const a = i / 14 * 6.2832, rr = R * k * r.entre(0.82, 1.12);
-      return T2(fx, add2(C2, add2(mul2(B2.v, Math.cos(a) * rr), mul2(B2.w, Math.sin(a) * rr))));
+      return T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
     });
     let chao2 = forma(caminho(borda(1.05), true), fx.ink ? "#CFCFCF" : fx.cores[1], ct(fx, 1)) + forma(caminho(borda(0.85), true), fx.ink ? INK : escuro(fx));
     let d = "";
@@ -10129,9 +10166,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     const A = (p.lightAz || 0) * D, E3 = (p.lightEl || 45) * D;
     return [Math.sin(A) * Math.cos(E3), Math.sin(E3), Math.cos(A) * Math.cos(E3)];
   }
-  function fazSombra(A, B2, LD2) {
+  function fazSombra(A, B3, LD2) {
     let n2 = 0;
-    for (const b of B2) {
+    for (const b of B3) {
       for (const a of A) {
         const dx = a[0] - b[0], dy = a[1] - b[1], dz = a[2] - b[2], t = dx * LD2[0] + dy * LD2[1] + dz * LD2[2];
         if (t <= 1.5) continue;
@@ -10546,17 +10583,17 @@ pre.cmdout .ok{color:var(--cobalt)}
       }
     }
     if (hs.length >= 2) {
-      let A = hs[0], B2 = hs[0], best = -1;
+      let A = hs[0], B3 = hs[0], best = -1;
       for (const q1 of hs) for (const q2 of hs) {
         const dd = Math.hypot(q1[0] - q2[0], q1[1] - q2[1]);
         if (dd > best) {
           best = dd;
           A = q1;
-          B2 = q2;
+          B3 = q2;
         }
       }
-      if (best > 1 && Math.abs(B2[0] - A[0]) > 1e-3) {
-        const m = (B2[1] - A[1]) / (B2[0] - A[0]), yAt2 = (x) => A[1] + m * (x - A[0]), y0 = yAt2(-10), y1 = yAt2(W + 10);
+      if (best > 1 && Math.abs(B3[0] - A[0]) > 1e-3) {
+        const m = (B3[1] - A[1]) / (B3[0] - A[0]), yAt2 = (x) => A[1] + m * (x - A[0]), y0 = yAt2(-10), y1 = yAt2(W + 10);
         if (Math.max(y0, y1) > 0 && Math.min(y0, y1) < H) {
           o.push('<path d="M-10 ' + f1(y0) + "L" + (W + 10) + " " + f1(y1) + '" style="fill:none;stroke:' + pal.coral + ';stroke-width:1.2;stroke-dasharray:8 5;opacity:.8"/>');
           const ly = yAt2(W - 10);
@@ -10588,9 +10625,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     return o.join("");
   }
   function mixC(a, b, t) {
-    const A = /^#([0-9a-f]{6})$/i.exec(a || ""), B2 = /^#([0-9a-f]{6})$/i.exec(b || "");
-    if (!A || !B2) return a;
-    const x = parseInt(A[1], 16), y = parseInt(B2[1], 16);
+    const A = /^#([0-9a-f]{6})$/i.exec(a || ""), B3 = /^#([0-9a-f]{6})$/i.exec(b || "");
+    if (!A || !B3) return a;
+    const x = parseInt(A[1], 16), y = parseInt(B3[1], 16);
     return "#" + [16, 8, 0].map((sh) => {
       const u = x >> sh & 255, v = y >> sh & 255;
       return Math.round(u + (v - u) * t).toString(16).padStart(2, "0");
@@ -10916,9 +10953,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     fim.setUint16(10, arquivos.length, true);
     fim.setUint32(12, tamC, true);
     fim.setUint32(16, pos, true);
-    const todos = partes2.concat(centrais, [new Uint8Array(fim.buffer)]), out = new Uint8Array(pos + tamC + 22);
+    const todos2 = partes2.concat(centrais, [new Uint8Array(fim.buffer)]), out = new Uint8Array(pos + tamC + 22);
     let o = 0;
-    for (const b of todos) {
+    for (const b of todos2) {
       out.set(b, o);
       o += b.length;
     }
@@ -11721,11 +11758,11 @@ pre.cmdout .ok{color:var(--cobalt)}
       const g = Gs(s);
       ordem.forEach(([q, k]) => out.push(E3(s, X(q), g.fechado ? meio(q, g) : k > 0 ? g.up(q) : k < 0 ? g.lo(q) : meio(q, g))));
     });
-    const B2 = bocaAnime(p, S, ringAt), w = B2.largura, M = (x, y) => hp(y, surfX(y, x), 0.02);
-    const fechada = B2.aberto < 0.04, linha = B2.linha;
-    const sup = (x) => fechada ? linha(x) + 0.012 * (1 - Math.pow(x / w, 2)) : B2.cima(x) + 0.015 * B2.c(x), inf = (x) => fechada ? linha(x) - 0.012 * (1 - Math.pow(x / w, 2)) : B2.baixo(x) - 0.015 * B2.c(x);
+    const B3 = bocaAnime(p, S, ringAt), w = B3.largura, M = (x, y) => hp(y, surfX(y, x), 0.02);
+    const fechada = B3.aberto < 0.04, linha = B3.linha;
+    const sup = (x) => fechada ? linha(x) + 0.012 * (1 - Math.pow(x / w, 2)) : B3.cima(x) + 0.015 * B3.c(x), inf = (x) => fechada ? linha(x) - 0.012 * (1 - Math.pow(x / w, 2)) : B3.baixo(x) - 0.015 * B3.c(x);
     [[-1, sup], [-0.65, sup], [-0.25, sup], [0, sup], [0.25, sup], [0.65, sup], [1, sup], [0.65, inf], [0.25, inf], [0, inf], [-0.25, inf], [-0.65, inf]].forEach(([u, f]) => out.push(M(u * w, f(u * w))));
-    const ci = (x) => fechada ? linha(x) : B2.cima(x), bi = (x) => fechada ? linha(x) : B2.baixo(x);
+    const ci = (x) => fechada ? linha(x) : B3.cima(x), bi = (x) => fechada ? linha(x) : B3.baixo(x);
     [[-0.85, ci], [-0.3, ci], [0, ci], [0.3, ci], [0.85, ci], [0.3, bi], [0, bi], [-0.3, bi]].forEach(([u, f]) => out.push(M(u * w, f(u * w))));
     [-1, 1].forEach((s) => {
       const g = Gs(s);
@@ -11839,10 +11876,10 @@ pre.cmdout .ok{color:var(--cobalt)}
       const y = cadeira ? A + (o.encosto || 4.2) : mesa ? A - 0.5 : o.tipo === "espada" ? 0.7 : A / 2;
       push("baseMao", "Centro da base da mão", 0, y, cadeira ? -P3 + 0.18 : mesa ? P3 + 0.65 : 0, [1, 0, 0], 100);
     } else if (o.tipo === "cadeira") {
-      const E3 = o.encosto || 4.2, B2 = -P3 + 0.18;
-      push("encostoTopo", "Topo do encosto", 0, A + E3, B2, [0, 0, -1], 100);
-      push("encostoEsquerdo", "Encosto à esquerda", -L3 + 0.23, A + E3 * 0.75, B2, [0, 0, -1], 90);
-      push("encostoDireito", "Encosto à direita", L3 - 0.23, A + E3 * 0.75, B2, [0, 0, -1], 90);
+      const E3 = o.encosto || 4.2, B3 = -P3 + 0.18;
+      push("encostoTopo", "Topo do encosto", 0, A + E3, B3, [0, 0, -1], 100);
+      push("encostoEsquerdo", "Encosto à esquerda", -L3 + 0.23, A + E3 * 0.75, B3, [0, 0, -1], 90);
+      push("encostoDireito", "Encosto à direita", L3 - 0.23, A + E3 * 0.75, B3, [0, 0, -1], 90);
       push("assentoFrente", "Borda dianteira do assento", 0, A, P3, [0, 0, 1], 75);
       push("assentoEsquerdo", "Lateral esquerda do assento", -L3, A, 0, [-1, 0, 0], 70);
       push("assentoDireito", "Lateral direita do assento", L3, A, 0, [1, 0, 0], 70);
@@ -13974,7 +14011,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   function penet(it, params, outros) {
     const A = capsulas(pMundo(it, params));
     let s = 0;
-    for (const B2 of outros) for (const c of contatosEntre(A, B2)) s += c.prof;
+    for (const B3 of outros) for (const c of contatosEntre(A, B3)) s += c.prof;
     return s;
   }
   function maosSegurando(it, o) {
@@ -14013,11 +14050,11 @@ pre.cmdout .ok{color:var(--cobalt)}
     }));
     const objs = SCN.objetos, g0 = chao();
     for (let k = 0; k < objs.length; k++) for (let j = k + 1; j < objs.length; j++) {
-      const A = objs[k], B2 = objs[j];
-      if (A.sobre === B2.id || B2.sobre === A.id) continue;
-      const cs = colisaoEntreObjetos(A, B2, g0);
+      const A = objs[k], B3 = objs[j];
+      if (A.sobre === B3.id || B3.sobre === A.id) continue;
+      const cs = colisaoEntreObjetos(A, B3, g0);
       if (!cs.length) continue;
-      out.push({ a: -1, b: -1, objeto: k, objeto2: j, prof: cs[0].prof, contatos: cs, texto: nomeObj(A) + " entra em " + nomeObj(B2) + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" });
+      out.push({ a: -1, b: -1, objeto: k, objeto2: j, prof: cs[0].prof, contatos: cs, texto: nomeObj(A) + " entra em " + nomeObj(B3) + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" });
     }
     COL.ultima = out;
     return out;
@@ -14098,7 +14135,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     for (let k = 0; k < 30; k++) {
       const A = capsulas(pMundo(it, q));
       let vx = 0, vz = 0, pm = 0;
-      for (const B2 of outros) for (const c of contatosEntre(A, B2, 0.01)) {
+      for (const B3 of outros) for (const c of contatosEntre(A, B3, 0.01)) {
         vx += c.n[0] * c.prof;
         vz += c.n[2] * c.prof;
         pm = Math.max(pm, c.prof);
@@ -14107,9 +14144,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       let L3 = Math.hypot(vx, vz);
       if (L3 < 1e-4) {
         let cx = 0, cz = 0;
-        outros.forEach((B2) => {
-          cx += (B2.lo[0] + B2.hi[0]) / 2;
-          cz += (B2.lo[2] + B2.hi[2]) / 2;
+        outros.forEach((B3) => {
+          cx += (B3.lo[0] + B3.hi[0]) / 2;
+          cz += (B3.lo[2] + B3.hi[2]) / 2;
         });
         vx = q.wx - cx / outros.length;
         vz = q.wz - cz / outros.length;
@@ -14172,7 +14209,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function solPose(it, outros) {
     const A0 = capsulas(pMundo(it)), membros = /* @__PURE__ */ new Map();
-    for (const B2 of outros) for (const c of contatosEntre(A0, B2)) {
+    for (const B3 of outros) for (const c of contatosEntre(A0, B3)) {
       const m = MEMBRO[c.pa];
       if (m) membros.set(m[0] + m[1], m);
     }
@@ -14188,7 +14225,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         const pw = pMundo(it, q), S = shape(q), ch = chainSetup(pw, S), ap = armPose(pw, ch.F, s), Ah = comp(ch.A2, ap.hand);
         const M = paraMundo(pw), Mi = doMundo(pw);
         let w = M(Ah.T);
-        for (let k = 0; k < 4; k++) for (const B2 of outros) for (const c of B2.caps) {
+        for (let k = 0; k < 4; k++) for (const B3 of outros) for (const c of B3.caps) {
           const r = segSeg(w, w, c.a, c.b), need = c.r + 0.45 - r.d;
           if (need > 0 && r.d > 1e-4) {
             const n2 = [(w[0] - r.q[0]) / r.d, (w[1] - r.q[1]) / r.d, (w[2] - r.q[2]) / r.d];
@@ -14248,18 +14285,18 @@ pre.cmdout .ok{color:var(--cobalt)}
   function resolverPar(a, b, metodo, quem) {
     metodo = metodo || COL.preferir;
     quem = quem || "b";
-    const A = SCN.list[a], B2 = SCN.list[b];
-    if (!A || !B2) throw new Error("Par de manequins não encontrado.");
-    const its = quem === "a" ? [A] : quem === "ambos" ? [B2, A] : [B2];
+    const A = SCN.list[a], B3 = SCN.list[b];
+    if (!A || !B3) throw new Error("Par de manequins não encontrado.");
+    const its = quem === "a" ? [A] : quem === "ambos" ? [B3, A] : [B3];
     guardarDesfazer(its);
     const feitos = [];
     if (quem === "ambos" && metodo === "distancia") {
-      const r = solDistancia(B2, capsOutros(B2)), dx = (r.params.wx - B2.params.wx) / 2, dz = (r.params.wz - B2.params.wz) / 2;
-      B2.params.wx += dx;
-      B2.params.wz += dz;
+      const r = solDistancia(B3, capsOutros(B3)), dx = (r.params.wx - B3.params.wx) / 2, dz = (r.params.wz - B3.params.wz) / 2;
+      B3.params.wx += dx;
+      B3.params.wz += dz;
       A.params.wx -= dx;
       A.params.wz -= dz;
-      feitos.push(B2.name + " e " + A.name + ": afastar " + Math.round(Math.hypot(dx, dz) * 2 * CM) + " cm");
+      feitos.push(B3.name + " e " + A.name + ": afastar " + Math.round(Math.hypot(dx, dz) * 2 * CM) + " cm");
     } else for (const it of its) {
       const outros = capsOutros(it);
       if (penet(it, it.params, outros) <= 0) continue;
@@ -14342,7 +14379,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const pw = pMundo(it), M = paraMundo(pw), Mi = doMundo(pw);
     let w = M(alvo);
     pad = pad === void 0 ? 0.35 : pad;
-    for (let k = 0; k < 4; k++) for (const B2 of outros) for (const c of B2.caps) {
+    for (let k = 0; k < 4; k++) for (const B3 of outros) for (const c of B3.caps) {
       const r = segSeg(w, w, c.a, c.b), need = c.r + pad - r.d;
       if (need > 0 && r.d > 1e-4) {
         const n2 = [(w[0] - r.q[0]) / r.d, (w[1] - r.q[1]) / r.d, (w[2] - r.q[2]) / r.d];
@@ -14363,17 +14400,17 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [it.name + ": " + r.desc];
   }
   function permitirContato(a, b, on) {
-    const A = SCN.list[a], B2 = SCN.list[b];
-    if (!A || !B2 || A === B2) throw new Error("Escolha dois manequins diferentes.");
-    A.contato = (A.contato || []).filter((id) => id !== B2.id);
-    B2.contato = (B2.contato || []).filter((id) => id !== A.id);
-    if (on !== false) A.contato.push(B2.id);
+    const A = SCN.list[a], B3 = SCN.list[b];
+    if (!A || !B3 || A === B3) throw new Error("Escolha dois manequins diferentes.");
+    A.contato = (A.contato || []).filter((id) => id !== B3.id);
+    B3.contato = (B3.contato || []).filter((id) => id !== A.id);
+    if (on !== false) A.contato.push(B3.id);
   }
   var EXTREM = /^(mao[ED]|pe[ED]|cabeca)$/;
   function capsTela(p0, it) {
     return capsulas(pMundo(it)).caps.map((c) => {
-      const A = telaDoMundo(p0, c.a), B2 = telaDoMundo(p0, c.b);
-      return { nome: c.nome, a: [A[0], A[1], 0], b: [B2[0], B2[1], 0], z: (A[2] + B2[2]) / 2, r: c.r * (A[3] + B2[3]) / 2 };
+      const A = telaDoMundo(p0, c.a), B3 = telaDoMundo(p0, c.b);
+      return { nome: c.nome, a: [A[0], A[1], 0], b: [B3[0], B3[1], 0], z: (A[2] + B3[2]) / 2, r: c.r * (A[3] + B3[3]) / 2 };
     });
   }
   function problemasComposicao(p0, vis, T) {
@@ -14389,9 +14426,9 @@ pre.cmdout .ok{color:var(--cobalt)}
           if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc6 = { pb: b.nome, pt: a.a };
         }
       }
-      const A = SCN.list.indexOf(vis[i]), B2 = SCN.list.indexOf(vis[j]);
-      if (esc6) out.push({ tipo: "escondida", a: A, b: B2, pt: esc6.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc6.pb] + " de " + vis[j].name });
-      else if (tang && !vistos.has(Math.min(i, j) + "-" + Math.max(i, j)) && vistos.add(Math.min(i, j) + "-" + Math.max(i, j))) out.push({ tipo: "tangencia", a: A, b: B2, pt: tang.pt, texto: PARTES[tang.pa] + " de " + vis[i].name + " encosta no contorno de " + PARTES[tang.pb] + " de " + vis[j].name + " (tangência)" });
+      const A = SCN.list.indexOf(vis[i]), B3 = SCN.list.indexOf(vis[j]);
+      if (esc6) out.push({ tipo: "escondida", a: A, b: B3, pt: esc6.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc6.pb] + " de " + vis[j].name });
+      else if (tang && !vistos.has(Math.min(i, j) + "-" + Math.max(i, j)) && vistos.add(Math.min(i, j) + "-" + Math.max(i, j))) out.push({ tipo: "tangencia", a: A, b: B3, pt: tang.pt, texto: PARTES[tang.pa] + " de " + vis[i].name + " encosta no contorno de " + PARTES[tang.pb] + " de " + vis[j].name + " (tangência)" });
     }
     return out;
   }
@@ -15818,14 +15855,14 @@ pre.cmdout .ok{color:var(--cobalt)}
     return [n2 >> 16 & 255, n2 >> 8 & 255, n2 & 255];
   }
   function mixHex(a, b, t) {
-    const A = hex2rgb(a), B2 = hex2rgb(b);
-    if (!A || !B2) return a;
-    return "#" + A.map((v, i) => Math.round(v + (B2[i] - v) * t).toString(16).padStart(2, "0")).join("");
+    const A = hex2rgb(a), B3 = hex2rgb(b);
+    if (!A || !B3) return a;
+    return "#" + A.map((v, i) => Math.round(v + (B3[i] - v) * t).toString(16).padStart(2, "0")).join("");
   }
   function colDist(a, b) {
-    const A = hex2rgb(a), B2 = hex2rgb(b);
-    if (!A || !B2) return 999;
-    return Math.hypot(A[0] - B2[0], A[1] - B2[1], A[2] - B2[2]);
+    const A = hex2rgb(a), B3 = hex2rgb(b);
+    if (!A || !B3) return 999;
+    return Math.hypot(A[0] - B3[0], A[1] - B3[1], A[2] - B3[2]);
   }
   function hueColors(h, dark) {
     return dark ? { fill: hsl2hex(h, 24, 25), shade1: hsl2hex(h, 24, 20), shade2: hsl2hex(h, 26, 15), shade3: hsl2hex(h, 28, 11), ink: hsl2hex(h, 60, 82) } : { fill: hsl2hex(h, 40, 91), shade1: hsl2hex(h, 32, 83), shade2: hsl2hex(h, 28, 73), shade3: hsl2hex(h, 26, 58), ink: hsl2hex(h, 48, 27) };

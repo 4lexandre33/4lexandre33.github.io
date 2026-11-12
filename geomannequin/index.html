@@ -60,6 +60,7 @@
         <button type="button" id="colisoesAtalho" aria-controls="colSecao" title="Abrir diretamente a seção Colisões do painel Parâmetros">Colisões</button>
         <button type="button" id="headStudyOpen" title="Abrir a folha anatômica V4.2 com perfil, frontal, 3/4, anotações e SVG vetorial">Estudo V4.2</button>
         <button type="button" id="quadrosBtn" aria-pressed="false" title="Roteiro de quadros: escreva quadros em código (#quadro 1, #quadro 2…), renderize e baixe tudo junto">Quadros</button>
+        <button type="button" id="bibAbrir" title="Ir para a Biblioteca: guardar e abrir poses, rostos, efeitos e cenas">Biblioteca</button>
         <button type="button" id="fxBtn" aria-pressed="true" title="Mostrar o painel de efeitos especiais (logo abaixo do desenho)">Efeitos</button>
         <button type="button" id="blockingBtn" aria-pressed="false" title="Mostrar ou esconder o painel de blocking (vista de cima e lateral, inserir manequins e objetos)">Blocking</button>
       </div>
@@ -306,6 +307,32 @@
       </div>
       <p id="mpVazio" class="hint">Nenhuma pose salva ainda. Elas ficam neste navegador e vão junto no arquivo da cena.</p>
       <ul id="mpLista" class="mp-lista"></ul>
+      <details id="bibPainel" class="fino bib-painel" open>
+        <summary><h2 id="bibTitulo">Biblioteca (banco de dados)</h2></summary>
+        <p class="hint">Guarde poses, rostos, efeitos, cenas inteiras e coleções. Cada item vira código que dá para aplicar de novo, copiar ou mandar para uma IA.</p>
+        <div class="sel-linha"><label for="bibLugar">Onde</label><select id="bibLugar" aria-describedby="bibOnde"></select></div>
+        <p id="bibOnde" class="hint"></p>
+        <div class="sel-linha"><label for="bibTipo">Guardar</label><select id="bibTipo"></select></div>
+        <div class="sel-linha"><label for="bibNome">Nome</label><input id="bibNome" maxlength="80" placeholder="ex.: Soco de direita com raiva"></div>
+        <label class="pc-chk"><input type="checkbox" id="bibFormato"> rosto: incluir formato e modelo de cabeça</label>
+        <div class="group poses" role="group" aria-label="Biblioteca">
+          <button type="button" id="bibGuardar" class="primary">Guardar</button>
+          <button type="button" id="bibExportar">Exportar arquivo</button>
+          <label class="mp-arquivo">Importar arquivo<input type="file" id="bibImportar" accept=".json,application/json"></label>
+        </div>
+        <div class="sel-linha"><label for="bibFiltro">Mostrar</label><select id="bibFiltro"></select><input id="bibBusca" type="search" placeholder="Buscar" aria-label="Buscar na biblioteca"></div>
+        <p id="bibMsg" class="hint" role="status" aria-live="polite"></p>
+        <p id="bibVazio" class="hint"></p>
+        <ul id="bibLista" class="bib-lista"></ul>
+        <textarea id="bibCodigo" class="pc-codigo" rows="5" hidden aria-label="Código do item"></textarea>
+        <details class="fino"><summary>Conectar meu Supabase (opcional)</summary>
+          <p class="hint">Para guardar num banco seu, fora do claude.ai: crie um projeto grátis em supabase.com, rode o SQL abaixo no SQL Editor e cole a URL e a chave <em>anon</em> (Settings › API). Funciona no site; dentro do artefato do claude.ai a rede externa é bloqueada e vale a Nuvem.</p>
+          <div class="sel-linha"><label for="bibSupaUrl">URL</label><input id="bibSupaUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+          <div class="sel-linha"><label for="bibSupaChave">Chave anon</label><input id="bibSupaChave" type="password" autocomplete="off"></div>
+          <div class="group poses"><button type="button" id="bibSupaConectar">Conectar</button><button type="button" id="bibSupaDesligar">Desconectar</button><button type="button" id="bibSupaCopiarSql">Copiar SQL</button></div>
+          <pre id="bibSupaSql" class="bib-sql"></pre>
+        </details>
+      </details>
       <h2>Coluna e pelve</h2>
       <div id="slSpine"></div>
       <h2>Pescoço e cabeça</h2>

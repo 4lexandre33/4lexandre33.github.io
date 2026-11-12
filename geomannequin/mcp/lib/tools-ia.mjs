@@ -67,6 +67,27 @@ export function registerIaTools(server, W) {
       return { content: [{ type: "text", text: texto }], structuredContent: { expressoes: ex.lista(), link: sceneLink(w) } };
     } catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
+  server.registerTool("biblioteca_item", {
+    title: "Item da Biblioteca (guardar e aplicar)",
+    description: "Converte o que está na cena num item da Biblioteca (texto JSON pronto para guardar em qualquer banco: o banco do artefato, Supabase, arquivo) ou aplica um item guardado. " +
+      "acao \"capturar\" com tipo pose | rosto | efeitos | cena | colecao; acao \"aplicar\" com item (o JSON). A pose leva o rosto junto.",
+    inputSchema: {
+      acao: z.enum(["capturar", "aplicar"]),
+      tipo: z.enum(["pose", "rosto", "efeitos", "cena", "colecao"]).optional(),
+      nome: z.string().optional(), manequim: z.string().optional(),
+      item: z.string().optional().describe("JSON de um item (ou de um arquivo da biblioteca com vários itens) para aplicar."),
+      formato: z.boolean().optional().describe("Rosto: incluir/aplicar formato do rosto e modelo de cabeça.")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try {
+      const w = W(), B = w.cena.biblioteca;
+      if (a.acao === "capturar") { if (!a.tipo) throw new Error("Falta o tipo."); const it = B.capturar(a.tipo, { nome: a.nome, manequim: a.manequim, formato: !!a.formato }); return { content: [{ type: "text", text: JSON.stringify(it) }], structuredContent: { item: it } }; }
+      if (!a.item) throw new Error("Falta o item.");
+      const feitos = B.importar(a.item).map(it => B.aplicar(it, { manequim: a.manequim, formato: !!a.formato }));
+      return { content: [{ type: "text", text: feitos.join("\n") }], structuredContent: { feitos, link: sceneLink(w) } };
+    } catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
   server.registerResource("manual-ia", "geomannequin://manual-ia", { title: "Manual de poses para IA", mimeType: "text/markdown", description: "Manual completo para qualquer IA montar e corrigir poses no GeoMannequin." },
     async uri => { const w = W(); return { contents: [{ uri: uri.href, mimeType: "text/markdown", text: w.cena.manualIA() }] }; });
 }
