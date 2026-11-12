@@ -1,6 +1,6 @@
 /* GeoMannequin — editor de comandos: numeração de linhas, execução, exemplos e histórico */
 import { $ } from "../scene/ambiente.js";
-import { LOG, camera, cena, tema } from "../scene/comandos.js";
+import { LOG, camera, cena, tema, poseCmd } from "../scene/comandos.js";
 import { loadScene, sceneState } from "../scene/estado.js";
 import { refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
@@ -23,8 +23,8 @@ async function runCode(){
   try{
     // Executa scripts síncronos antigos e scripts com await na mesma API.
     // Não é sandbox de segurança: só execute código que você conhece.
-    const fn=new Function("cena","camera","tema","log",'"use strict";return (async()=>{\n'+code+'\n})();');
-    await fn(cena,camera,tema,log);
+    const fn=new Function("cena","camera","tema","log","pose",'"use strict";return (async()=>{\n'+code+'\n})();');
+    await fn(cena,camera,tema,log,poseCmd);
     if(!/cena\.(?:desfazer|refazer|marcarEstado)\s*\(/.test(code))cena.marcarEstado(snapshot);
     LOG.forEach(([k,t])=>outLine((k==="aviso"?"⚠ ":"")+t,k==="aviso"?"err":""));
     outLine("✓ Executado: "+SCN.list.length+" manequim(ns). Comandos com await finalizados.","ok");

@@ -568,3 +568,17 @@ log(cadeira.pose3D(),cadeira.pontosDeAgarre());
 ```
 
 Enquanto estiver segurada, a **mão** é quem controla posição e rotação. A aplicação bloqueia edição direta da cadeira que romperia o vínculo. Para selecionar visualmente um ponto de agarre use a seção **Colisões → Local de agarre**.
+
+### Poses com teclado e mouse, pose em código e cabeça V5 anime (11/11/2026)
+
+- **Cabeça V3 é a padrão.** Manequins novos nascem com ela; cenas antigas salvas sem modelo de cabeça continuam com a V1. A lista de cabeças fica em `src/engine/padroes.js` (`MODELOS_CABECA`).
+- **Orelhas da V3** presas pela borda da frente e abertas para fora do crânio (≈30° no alto, ≈12° no lóbulo), com hélice, anti-hélice, concha e trago; aparecem de frente, de costas e em 3/4 (`earPointV3`).
+- **Pose em código** (`src/scene/pose-codigo.js`): `pose("Aceno", {cotoveloDir: 70, ...})` com os nomes em português. O painel "Código da pose" mostra a pose ao vivo; editar e aplicar muda o manequim; aplica a pose inteira ou só uma parte, espelhada ou não; erros apontam a linha. "Minhas poses" guarda com nome e miniatura (no navegador e no arquivo da cena), exporta e importa arquivo `.txt`. No editor de comandos, `pose(...)` vale para o manequim ativo.
+- **Teclado das articulações** (`src/ui/teclado-juntas.js`): com uma junta escolhida no palco ou nas vistas, ←/→ e ↑/↓ giram os dois eixos, PgUp/PgDn a torção; Shift passo grande, Alt fino; Tab troca de junta, `[` `]` sobe e desce na cadeia, R zera, M copia para o outro lado, F foca, Esc solta, Ctrl+Z / Ctrl+Y.
+- **Blocking › Mover: Articulações** (`src/ui/vistas-pose.js`, `src/engine/vistas-pose.js`): vistas de frente, lado, cima e isométrica do esqueleto do manequim ativo. Clicar escolhe a junta; arrastar gira a junta no plano daquela vista (o eixo é descoberto medindo o giro de cada parâmetro na tela). Foco por região; escolher punho, mão ou dedo aproxima a mão com os cinco dedos.
+- **Cabeça V5 (anime)** (`src/engine/head-v5/anime.js`): geometria da V3 com olhos grandes (íris, pupila, brilhos, linha de cílios), boca pequena que cresce ao abrir e sorrir com cavidade anatômica (dentes presos à maxila e à mandíbula, língua no assoalho, altura limitada pelo queixo), nariz reduzido e sobrancelhas expressivas. Parâmetros `olhosAnime`, `bocaAnime`, `exagero`, `corar`, `lagrimas`; expressões novas `riso`, `choro`, `vergonha`. Os 70 pontos de rosto do OpenPose seguem os olhos e a boca da V5.
+- **Correção no traço**: a simplificação de caminhos fazia sumir contornos fechados de 0 a 2π (início e fim no mesmo ponto).
+- **MCP**: `pose_em_codigo` (gerar, aplicar, salvar, listar, exportar, importar) e `vistas_de_pose` (as quatro vistas numa imagem, com foco).
+- Testes: `node testes/poses-v5.mjs`.
+
+Limitações: o "piscando" ainda fecha os dois olhos juntos (há um só parâmetro de pálpebra); lágrimas e rosto corado são desenhados só na V5; no modo Articulações, um membro apontado de ponta para a vista gira com ganho limitado (pode parecer lento).

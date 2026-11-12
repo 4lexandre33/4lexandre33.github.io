@@ -36,7 +36,9 @@ function paramsDaArticulacao(k, s) {
 function ossosDoCorpo(p) {
   const S = shape(p), ch = chainSetup(p, S), F = ch.F, B = F.B, ossos = [], juntas = [];
   const T = (x, y, z) => { const A = ch.tab[Math.round(clamp(bustTw(x, y, F), 0, 3) * 64)]; return applyA(A, [x, y, z]); };
-  const osso = (nome, a, b, r, tipo) => ossos.push({ nome, a, b, r, tipo: tipo || "longo" });
+  /* cada osso leva o lado (1 esquerdo, −1 direito, 0 centro) e a região, para o foco das vistas de pose */
+  let lado = 0;
+  const osso = (nome, a, b, r, tipo) => ossos.push({ nome, a, b, r, tipo: tipo || "longo", s: lado, regiao: regiaoDoOsso(nome) });
   const junta = (nome, P, k, s) => juntas.push({ nome, P, k, s });
   /* coluna: 5 lombares, 12 torácicas, 7 cervicais */
   const vert = [];
@@ -48,7 +50,7 @@ function ossosDoCorpo(p) {
   vert.forEach(v => juntas.push({ nome: "vértebra " + v[0], P: v[1], k: v[2], s: 0, menor: true }));
   /* crânio e mandíbula */
   const cr = applyA(A3, [0, 0.15, 0.05]);
-  ossos.push({ nome: "crânio", a: cr, b: cr, r: 0.95 * (p.skull || 0.82) / 0.82, tipo: "cranio" });
+  ossos.push({ nome: "crânio", a: cr, b: cr, r: 0.95 * (p.skull || 0.82) / 0.82, tipo: "cranio", s: 0, regiao: "cabeca" });
   /* Mandíbula e dentes usam a mesma ATM da malha facial. O ramo proximal
      permanece junto à orelha; o mento acompanha a abertura inferior. */
   [-1,1].forEach(s=>{
@@ -75,6 +77,7 @@ function ossosDoCorpo(p) {
   osso("esterno", est, xif, 0.12, "plano");
   for (let i = 0; i < 6; i++) { const y = F.yJ - 0.4 - i * 0.42, w = B.chest * (0.85 + 0.1 * Math.sin(Math.PI * i / 5)); [-1, 1].forEach(s => { const a = T(0, y + 0.25, -0.85), b = T(s * w * 0.95, y - 0.05, -0.45), c = T(s * w * 0.55, y - 0.35, 0.42); osso("costela", a, b, 0.05, "costela"); osso("costela", b, c, 0.05, "costela"); }); }
   [-1, 1].forEach(s => {
+    lado = s;
     const G = applyA(ch.A2, armJoint(p, F, s)), cl0 = T(s * 0.18, F.yJ + 0.08, 0.38);
     osso("clavícula", cl0, applyA(ch.A2, [s * (F.W - 0.2), F.yAc - 0.15, F.zT + 0.25]), 0.09);
     const e1 = applyA(ch.A2, [s * (F.W - 0.35), F.yAc - 0.2, F.zT - 0.55]), e2 = applyA(ch.A2, [s * 0.45, F.yJ - 0.35, -1.05]), e3 = applyA(ch.A2, [s * 0.55, F.yJ - 2.05, -1.0]);
@@ -88,6 +91,7 @@ function ossosDoCorpo(p) {
     junta("cotovelo", Af.T, "cotovelo", s); junta("punho", w, "punho", s);
     juntasDedos(p, s).forEach(d => {
       const pts = d.pts.map(q => applyA(Ah, q)), b = applyA(Ah, d.base);
+      juntas.push({ nome: "dedo " + d.nome, P: pts[0], k: "dedo", s, dedo: CODIGO_DEDO[d.nome], menor: true });
       osso("metacarpo (" + d.nome + ")", b, pts[0], 0.045);
       for (let i = 0; i + 1 < pts.length; i++) osso("falange (" + d.nome + ")", pts[i], pts[i + 1], 0.04, "dedo");
     });
@@ -105,6 +109,15 @@ function ossosDoCorpo(p) {
     junta("joelho", Cf.T, "joelho", s); junta("tornozelo", Ft.T, "tornozelo", s);
   });
   return { ossos, juntas };
+}
+const CODIGO_DEDO = { polegar: "Th", indicador: "In", "médio": "Me", anelar: "An", "mínimo": "Mi" };
+function regiaoDoOsso(nome) {
+  if (/crânio|cranio|mandíbula|dente/.test(nome)) return "cabeca";
+  if (/clavícula|escápula|úmero|ulna|rádio/.test(nome)) return "braco";
+  if (/metacarpo|falange \(/.test(nome)) return "mao";
+  if (/fêmur|patela|tíbia|fíbula/.test(nome)) return "perna";
+  if (/calcâneo|metatarso|falange do pé|tálus/.test(nome)) return "pe";
+  return "tronco";
 }
 
 export { ARTICULACOES, paramsDaArticulacao, ossosDoCorpo };

@@ -11,6 +11,7 @@ import { lastInfo, render, svgEl } from "./palco.js";
 import { syncControls } from "./controles.js";
 import { updateModeButtons } from "./modos.js";
 import { fmt } from "./exportar.js";
+import { escolherJunta } from "./selecao-junta.js";
 
 /* arrastar na horizontal → primeiro, na vertical → segundo */
 const EIXOS = { pelve: ["pelvisSide", "pelvisTilt"], lombar: ["lumSide", "lumFlex"], toracica: ["thoSide", "thoFlex"], cervical: ["neckTwist", "neckFlex"],
@@ -44,7 +45,7 @@ function atualizarPainel() {
 function marcar() {
   const old = svgEl.querySelector("#gm-junta-sel"); if (old) old.remove();
   if (!sel || !L.ossos || !lastInfo || !lastInfo.juntas) return;
-  const j = lastInfo.juntas.find(x => x.k === sel.k && x.s === sel.s && x.nome === sel.nome); if (!j) return;
+  const kk = sel.k === "dedo" ? "mao" : sel.k, j = lastInfo.juntas.find(x => x.k === kk && x.s === sel.s); if (!j) return;
   const g = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   g.setAttribute("id", "gm-junta-sel"); g.setAttribute("cx", j.x); g.setAttribute("cy", j.y); g.setAttribute("r", 8);
   g.setAttribute("style", "fill:none;stroke:var(--cobalt,#2a5bd7);stroke-width:2");
@@ -57,7 +58,7 @@ function pegarJunta(q) {
   let best = null, bd = 11;
   lastInfo.juntas.forEach(j => { const d = Math.hypot(j.x - q[0], j.y - q[1]); if (d < bd) { bd = d; best = j; } });
   if (!best) return null;
-  sel = { k: best.k, s: best.s, nome: best.nome }; montarPainel();
+  sel = { k: best.k, s: best.s, nome: best.nome }; montarPainel(); escolherJunta(sel, "palco");
   const [h, v] = EIXOS[best.k].map(k => chaveLado(k, best.s));
   return { mode: "junta", q0: q, h, v, h0: P[h], v0: P[v], s: best.s };
 }
@@ -85,6 +86,12 @@ export function iniciarArticulacoes() {
   $("artCopiar").addEventListener("click", () => { copia = {}; POSEKEYS.forEach(k => { if (P[k] !== undefined) copia[k] = P[k]; }); $("artColar").disabled = false; });
   $("artColar").addEventListener("click", () => { if (!copia) return; Object.assign(P, copia); syncControls(); render(); });
   window.addEventListener("gm:desenhou", () => { syncOssos(); marcar(); atualizarPainel(); });
+  /* escolhida nas vistas de pose (ou pelo teclado): o painel e o anel no palco acompanham; dedo usa o painel da mão */
+  window.addEventListener("gm:junta", e => {
+    if (e.detail.origem === "palco") return;
+    const j = e.detail.junta; sel = j ? { k: j.k === "dedo" ? "mao" : j.k, s: j.s, nome: j.nome } : null;
+    if (sel && ARTICULACOES[sel.k]) montarPainel(); marcar();
+  });
 }
 
 export { pegarJunta, arrastarJunta };

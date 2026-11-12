@@ -16,7 +16,7 @@ const text = r => (r.content || []).filter(c => c.type === "text").map(c => c.te
 async function suite(client, tag) {
   console.log(`\n== ${tag}`);
   const tools = (await client.listTools()).tools.map(t => t.name);
-  check(["referencias_controlnet", "vistas_em_volta", "estimar_poses"].every(n => tools.includes(n)), "ferramentas novas: referencias_controlnet, vistas_em_volta, estimar_poses");
+  check(["referencias_controlnet", "vistas_em_volta", "estimar_poses", "pose_em_codigo", "vistas_de_pose"].every(n => tools.includes(n)), "ferramentas novas: referencias_controlnet, vistas_em_volta, estimar_poses");
   check(["nova_cena", "adicionar_manequim", "editar_manequim", "copiar_manequim", "remover_manequim", "camera", "luz", "aparencia_cena", "listar_cena", "renderizar", "exportar_cena", "carregar_cena", "referencia", "executar_codigo", "search", "fetch", "camadas_da_cena", "colisoes", "descrever_cena", "objetos", "planta_da_cena"].every(t => tools.includes(t)), "ferramentas registradas: " + tools.length);
   const call = (name, args = {}) => client.callTool({ name, arguments: args });
   /* esquemas no subconjunto aceito pelo Gemini: sem anyOf/oneOf/allOf, sem tipos múltiplos, sem additionalProperties, objetos com propriedades */
@@ -183,6 +183,20 @@ async function suite(client, tag) {
   if (r._meta.gm.paginas[0]) writeFileSync(join(OUT, tag + "_ficha.png"), Buffer.from(r._meta.gm.paginas[0].split(",")[1], "base64"));
   r = await call("vistas_em_volta", { alvo: "Ana", vistas: 6, elevacao: "alta", folha: false, largura: 240 });
   check(!r.isError && r._meta.gm.itens.length === 6 && r.structuredContent.elevacao === 35, "vistas_em_volta: giro de 6 vistas, elevação \"alta\"");
+  /* pose em código, Minhas poses e vistas do esqueleto */
+  r = await call("editar_manequim", { pose: { cotoveloDir: 70 } });
+  r = await call("pose_em_codigo", { acao: "codigo", partes: "bracoDir", so_mudancas: true });
+  const codigoPose = r.content[0].text;
+  check(!r.isError && /cotoveloDir: 70/.test(codigoPose), "pose_em_codigo: gera o código da pose");
+  r = await call("pose_em_codigo", { acao: "salvar", nome: "Braço" });
+  check(!r.isError && /Braço/.test(r.content[0].text), "pose_em_codigo: salva em Minhas poses");
+  r = await call("pose_em_codigo", { acao: "aplicar", codigo: "pose({cotoveloDir: 0})" });
+  r = await call("pose_em_codigo", { acao: "aplicar", nome: "Braço", espelhar: true });
+  check(!r.isError, "pose_em_codigo: aplica pose salva espelhada");
+  r = await call("pose_em_codigo", { acao: "aplicar", codigo: "pose({\n joelhoX: 2 })" });
+  check(r.isError && /Linha 2/.test(r.content[0].text), "pose_em_codigo: erro com o número da linha");
+  r = await call("vistas_de_pose", { foco: "maoDir" });
+  check(!r.isError && r.content[0].type === "image" && r.structuredContent.juntas.frente.filter(j => /dedo/.test(j.junta)).length === 5, "vistas_de_pose: 4 vistas, foco na mão com os 5 dedos");
   r = await call("estimar_poses", { amostras: 400 });
   check(!r.isError && r.structuredContent.fracao_valida > 0 && /10\^/.test(r.structuredContent.poses_validas_5graus), "estimar_poses: " + (r.structuredContent || {}).poses_validas_5graus);
   if(tag==="http"){

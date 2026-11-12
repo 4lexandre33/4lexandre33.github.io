@@ -168,6 +168,8 @@ O build passa a gerar um arquivo source-manifest.json em dist com hash dos arqui
 | `referencias_controlnet` | Passes da cena aberta, sem roteiro: contorno, OpenPose completo (corpo BODY_25 + mãos 21 + rosto 70, confiança 0,5 = escondido; estilo DWPose) ou só corpo, profundidade, normais, máscara, partes do corpo (com legenda) e canny, no formato pedido (16:9, 1:1, vertical…), com o JSON do OpenPose |
 | `vistas_em_volta` | Giro 360° (N vistas) ou ficha do personagem (frente, 3/4, perfil, costas; completa = 8) em volta de manequim, grupo, objeto, ponto ou cena; elevação, orto, passes por vista e folha de contato |
 | `estimar_poses` | Quantas poses o manequim consegue fazer (Monte Carlo): combinações, fração válida (sem partes atravessando nem limites acoplados), poses válidas com intervalo de 95% |
+| `pose_em_codigo` | Pose como texto que se copia e cola (`pose("Nome", {cotoveloDir: 70})`): gerar (inteira ou só partes), aplicar (código ou pose salva, espelhada), salvar em Minhas poses, listar, renomear, apagar, exportar e importar |
+| `vistas_de_pose` | As quatro vistas do esqueleto (frente, lado, cima, isométrica) numa imagem, com foco por região (mão com os 5 dedos, cabeça, pé…) e a posição de cada junta |
 | `luz` | Direção e altura da luz |
 | `aparencia_cena` | Tema noturno, modo, estilo, sombras, horizonte e pontos de fuga, atmosfera, camadas |
 | `renderizar` | Desenha e devolve PNG + link do app. No ChatGPT abre o widget com botões para **girar a câmera em volta do pivô** (8 vistas, ±15°, ±10°) ali mesmo, tela cheia e “Abrir no GeoMannequin” |

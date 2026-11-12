@@ -246,6 +246,28 @@
       <div class="sel-linha"><label for="gestoE">Mão esquerda</label><select id="gestoE"></select></div>
       <div class="sel-linha"><label for="gestoD">Mão direita</label><select id="gestoD"></select></div>
       <div id="artSel" class="art-sel"><p class="hint">Ligue “Mostrar ossos” e clique numa articulação (círculo coral) para ver só os controles dela; arraste a articulação para girá-la — na horizontal move o primeiro controle, na vertical o segundo. Os limites são os do corpo humano.</p></div>
+      <h2 id="pcTitulo">Código da pose</h2>
+      <p class="hint">A pose do manequim ativo em texto: copie e cole depois (aqui ou no editor de comandos) para voltar a ela, ou edite os números e aplique.</p>
+      <div class="sel-linha"><label for="pcPartes">Partes</label><select id="pcPartes"></select></div>
+      <label class="pc-chk"><input type="checkbox" id="pcSoMudancas"> só o que difere da pose neutra (código curto)</label>
+      <textarea id="poseCodigo" class="pc-codigo" spellcheck="false" rows="9" aria-labelledby="pcTitulo"></textarea>
+      <div class="group poses" role="group" aria-label="Código da pose">
+        <button type="button" id="pcAplicar" title="Ctrl+Enter">Aplicar código</button>
+        <button type="button" id="pcAplicarParte">Aplicar só a parte</button>
+        <button type="button" id="pcCopiar">Copiar código</button>
+        <button type="button" id="pcAtual">Pose atual</button>
+      </div>
+      <p id="pcMsg" class="hint" role="status" aria-live="polite"></p>
+      <h2>Minhas poses</h2>
+      <div class="sel-linha"><label for="mpNome">Nome</label><input id="mpNome" class="mp-nome" maxlength="60" placeholder="ex.: Aceno"></div>
+      <div class="group poses" role="group" aria-label="Minhas poses">
+        <button type="button" id="mpSalvar">Salvar pose atual</button>
+        <button type="button" id="mpImportarTexto" title="Guarda as poses escritas no campo de código">Guardar o código</button>
+        <button type="button" id="mpExportar">Exportar arquivo</button>
+        <label class="mp-arquivo">Importar arquivo<input type="file" id="mpImportar" accept=".txt,.json,.js,text/plain,application/json"></label>
+      </div>
+      <p id="mpVazio" class="hint">Nenhuma pose salva ainda. Elas ficam neste navegador e vão junto no arquivo da cena.</p>
+      <ul id="mpLista" class="mp-lista"></ul>
       <h2>Coluna e pelve</h2>
       <div id="slSpine"></div>
       <h2>Pescoço e cabeça</h2>

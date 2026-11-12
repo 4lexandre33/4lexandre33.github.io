@@ -13,13 +13,13 @@ import { updateModeButtons } from "./modos.js";
 import { autoFit, setZoomEff } from "../scene/enquadrar.js";
 import { applyStyle } from "./estilo.js";
 import { refreshScene } from "./painel-cena.js";
-import { CY, DEF, effScale } from "../engine/index.js";
+import { CY, DEF, effScale, MODELOS_CABECA, normalizarModeloCabeca } from "../engine/index.js";
 
 function syncControls(){
   /* a faixa dos sliders de pose acompanha o perfil de flexibilidade */
   SL.forEach(d=>{const el=$("sl_"+d.k);if(POSEKEYS.has(d.k)){const [a,b]=faixa(d.k,P.flex);if(+el.min!==a)el.min=a;if(+el.max!==b)el.max=b}el.value=P[d.k];$("ov_"+d.k).textContent=fmt(d,P[d.k])});
   LAY.forEach(l=>{$("ly_"+l.k).checked=!!L[l.k]});
-  {const q=$("headModelSelect");if(q)q.value=["v1","v2","v3_microgeometry","v4_anatomical"].includes(P.headModel)?P.headModel:"v1"}
+  {const q=$("headModelSelect");if(q)q.value=normalizarModeloCabeca(P.headModel)}
   {const o=$("ocultas");if(o){const v=Math.round(100*(L.ocultas===undefined?0.5:L.ocultas));o.value=v;$("ov_ocultas").textContent=v+"%"}}
 }
 
@@ -38,18 +38,13 @@ export function iniciarControles(){
       }
     }
     if(q){
-      const modelos=[
-        ["v1","Cabeça V1 — estável"],
-        ["v2","Cabeça V2 — experimental"],
-        ["v3_microgeometry","Cabeça V3 — microgeometria anatômica"],
-        ["v4_anatomical","Cabeça V4.2 — estudo anatômico refinado"]
-      ];
+      const modelos=MODELOS_CABECA;
       for(const [value,label] of modelos){
         if(!Array.from(q.options).some(o=>o.value===value))q.add(new Option(label,value));
       }
-      q.value=modelos.some(([value])=>value===P.headModel)?P.headModel:"v1";
+      q.value=normalizarModeloCabeca(P.headModel);
       q.addEventListener("change",e=>{
-        P.headModel=modelos.some(([value])=>value===e.target.value)?e.target.value:"v1";
+        P.headModel=normalizarModeloCabeca(e.target.value);
         render();
       });
     }

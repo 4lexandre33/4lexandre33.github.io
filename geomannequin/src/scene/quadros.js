@@ -9,7 +9,7 @@
    Por padrão cada quadro CONTINUA do anterior (como animação): só se escreve o que muda.
    O roteiro roda sobre a própria cena (mesmo motor e mesmas regras), mas a cena aberta é guardada antes e devolvida
    depois: renderizar não muda o que está no palco. Este módulo não usa a página (roda também no MCP). */
-import { LOG, camera, cena, tema } from "./comandos.js";
+import { LOG, camera, cena, tema, poseCmd } from "./comandos.js";
 import { loadScene, sceneState } from "./estado.js";
 import { L } from "./modos.js";
 import { SCN, sceneList, instColors, corObjeto } from "./modelo.js";
@@ -90,7 +90,7 @@ function rodarBloco(codigo, linhaInicial) {
   LOG.length = 0; const saida = [];
   const log = (...a) => saida.push(a.map(x => typeof x === "object" ? JSON.stringify(x) : String(x)).join(" "));
   try {
-    if (codigo.trim()) new Function("cena", "camera", "tema", "log", '"use strict";\n' + codigo)(cena, camera, tema, log);
+    if (codigo.trim()) new Function("cena", "camera", "tema", "log", "pose", '"use strict";\n' + codigo)(cena, camera, tema, log, poseCmd);
     return { ok: true, saida, avisos: LOG.filter(x => x[0] === "aviso").map(x => x[1]) };
   } catch (err) {
     /* a linha do erro dentro do bloco: o quadro do código do usuário (função criada em rodarBloco) */

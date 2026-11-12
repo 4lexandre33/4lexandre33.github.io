@@ -21,7 +21,9 @@ assert.ok(ui.includes("Blob([lastSvg]"),"Exportação SVG não implementada");
 assert.ok(style.includes(".gm42-sheet>svg"),"Folha não responsiva");
 assert.ok(shell.includes("renderScene"),"Folha não chama o motor real");
 assert.ok(shell.includes("STUDY_SIZE"),"Tamanho de folha indefinido");
-assert.ok(controls.includes("v4_anatomical")&&state.includes("v4_anatomical"));
+/* a lista de cabeças fica num lugar só (padroes.js); controles e estado usam essa lista */
+{const padroes=readFileSync(new URL("../src/engine/padroes.js",import.meta.url),"utf8");
+ assert.ok(padroes.includes('"v4_anatomical"')&&controls.includes("MODELOS_CABECA")&&state.includes("normalizarModeloCabeca"));}
 for(const s of ["v42NapeRoundness","v42OrbitalCavity","v42EarProjection"])
  assert.ok(math.includes(s),"Parâmetro não foi persistido: "+s);
 assert.ok(!shell.includes("<image "), "A folha não deve fingir ser um render usando imagem embutida");

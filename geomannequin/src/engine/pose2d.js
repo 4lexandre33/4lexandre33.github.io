@@ -2,6 +2,7 @@
    geometria que desenha o manequim: juntas do esqueleto, falanges das mãos (juntasDedos), pé (legPose) e o rosto
    sobre a malha da cabeça (headPt, já com a mandíbula, o sorriso, as pálpebras e o olhar).
    Tudo sai em coordenadas do corpo (antes de posicionar no mundo); quem chama aplica paraMundo e a câmera. */
+import { geoOlhoAnime, bocaAnime, LEVANTA_V5 } from "./head-v5/anime.js";
 import { D, applyA, clamp, comp, lerp } from "./matematica.js";
 import { headPt, ringAt, shape } from "./cabeca.js";
 import { chainSetup, legPose } from "./cadeia.js";
@@ -22,6 +23,7 @@ function rostoLocal(p) {
   /* 27–30: ponte do nariz até a ponta; 31–35: base do nariz */
   [0, 1, 2, 3].forEach(i => out.push(hp(lerp(eyeY, -0.76 * t, i / 3), 0, 0.02)));
   [-0.11, -0.055, 0, 0.055, 0.11].forEach(x => { const y = -0.955 * t + (x === 0 ? -0.01 : 0); out.push(hp(y, surfX(y, x), 0.012)); });
+  if (p.headModel === "v5_anime") return rostoV5(p, S, out, hp, surfX);
   /* 36–47: olhos (6 pontos cada, do canto de fora, por cima, ao canto de dentro e por baixo; direito, depois esquerdo) */
   const lid = Math.max(0, Math.min(1, p.eyeLid || 0)), w = 0.30 * p.eyeSize, hu = 0.062 * p.eyeSize * p.eyeOpen * (1 - 0.92 * lid), hl = 0.036 * p.eyeSize * p.eyeOpen * (1 - 0.6 * lid);
   const tilt = q => 0.034 * (q - 0.45), up = q => hu * Math.sin(Math.PI * Math.pow(q, 0.75)) + tilt(q), lo = q => -hl * Math.sin(Math.PI * Math.pow(q, 1.15)) + tilt(q), X = q => (q - 0.5) * w;
@@ -38,6 +40,22 @@ function rostoLocal(p) {
   /* 68–69: pupilas (com o olhar) */
   const gY = p.eyeYaw || 0, gP = p.eyePitch || 0;
   [-1, 1].forEach(s => out.push(E(s, s * gY * 0.085 * p.eyeSize, gP * 0.03 * p.eyeSize + tilt(0.5) * 0.5)));
+  return out;
+}
+/* V5 anime: olhos e boca com a mesma geometria do desenho (olhos grandes, boca que cresce) */
+function rostoV5(p, S, out, hp0, surfX) {
+  const hp = (y, th, off) => hp0(y, th, (off || 0.01) + LEVANTA_V5), G = geoOlhoAnime(p, S, ringAt, S.eyeY);
+  const X = q => (q - 0.5) * G.w, E = (s, ex, ey) => { const y = G.ey0 + ey; return hp(y, s * Math.asin(clamp((G.xc + ex) / ringAt(y, p, S)[0], 0, 0.99)), 0.012); };
+  const meio = q => (G.up(q) + G.lo(q)) / 2;
+  [-1, 1].forEach(s => { const ordem = s < 0 ? [[1, 0], [0.67, 1], [0.33, 1], [0, 0], [0.33, -1], [0.67, -1]] : [[0, 0], [0.33, 1], [0.67, 1], [1, 0], [0.67, -1], [0.33, -1]];
+    ordem.forEach(([q, k]) => out.push(E(s, X(q), G.fechado ? meio(q) : k > 0 ? G.up(q) : k < 0 ? G.lo(q) : meio(q)))); });
+  const B = bocaAnime(p, S, ringAt), w = B.largura, M = (x, y) => hp(y, surfX(y, x), 0.02);
+  const fechada = B.aberto < 0.04, linha = x => B.my + 0.03 * (B.ss - B.br) * Math.pow(Math.abs(x / w), 2);
+  const sup = x => fechada ? linha(x) + 0.012 * (1 - Math.pow(x / w, 2)) : B.cima(x) + 0.015 * B.c(x), inf = x => fechada ? linha(x) - 0.012 * (1 - Math.pow(x / w, 2)) : B.baixo(x) - 0.015 * B.c(x);
+  [[-1, sup], [-0.65, sup], [-0.25, sup], [0, sup], [0.25, sup], [0.65, sup], [1, sup], [0.65, inf], [0.25, inf], [0, inf], [-0.25, inf], [-0.65, inf]].forEach(([u, f]) => out.push(M(u * w, f(u * w))));
+  const ci = x => fechada ? linha(x) : B.cima(x), bi = x => fechada ? linha(x) : B.baixo(x);
+  [[-0.85, ci], [-0.3, ci], [0, ci], [0.3, ci], [0.85, ci], [0.3, bi], [0, bi], [-0.3, bi]].forEach(([u, f]) => out.push(M(u * w, f(u * w))));
+  [-1, 1].forEach(s => out.push(E(s, G.gx(s), G.fechado ? meio(0.5) : G.gy)));
   return out;
 }
 /* ===== corpo inteiro, em coordenadas do corpo ===== */

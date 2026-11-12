@@ -60,8 +60,14 @@ const EXPRESSOES={
   grito:{jawOpen:1,jawSide:0,smile:-0.2,eyeLid:0.2,browUp:-0.2,browIn:0.9},
   sono:{jawOpen:0.05,jawSide:0,smile:0,eyeLid:0.95,browUp:-0.1,browIn:0},
   desconfianca:{jawOpen:0,jawSide:0.3,smile:-0.3,eyeLid:0.45,browUp:-0.2,browIn:0.5},
-  piscando:{jawOpen:0,jawSide:0,smile:0.6,eyeLid:0,browUp:0.1,browIn:0}
+  piscando:{jawOpen:0,jawSide:0,smile:0.6,eyeLid:0,browUp:0.1,browIn:0},
+  /* exageradas (a V5 anime as leva ao máximo; nas outras cabeças viram versões contidas) */
+  riso:{jawOpen:0.6,jawSide:0,smile:1,eyeLid:0.95,browUp:0.3,browIn:-0.2,blush:0.4,tears:0},
+  choro:{jawOpen:0.45,jawSide:0,smile:-0.9,eyeLid:0.4,browUp:0.2,browIn:-1,blush:0.3,tears:1},
+  vergonha:{jawOpen:0,jawSide:0.15,smile:0.25,eyeLid:0.3,browUp:0.15,browIn:-0.45,blush:1,tears:0,eyeYaw:0.55,eyePitch:-0.35}
 };
+/* as expressões antigas zeram corar e lágrimas para não herdar da anterior */
+Object.values(EXPRESSOES).forEach(e=>{if(e.blush===undefined)e.blush=0;if(e.tears===undefined)e.tears=0});
 const POSE0={spineFlex:0,spineSide:0,spineTwist:0,pelvisTilt:0,pelvisSide:0,pelvisTwist:0,hipFlexL:0,hipFlexR:0,hipAbdL:3,hipAbdR:3,hipRotL:0,hipRotR:0,kneeFlexL:0,kneeFlexR:0,ankleFlexL:0,ankleFlexR:0,ankleTiltL:0,ankleTiltR:0,toesL:0,toesR:0,
   armAbdL:12,armAbdR:12,armFlexL:0,armFlexR:0,armRotL:0,armRotR:0,elbowL:0,elbowR:0,pronL:0,pronR:0,wristL:0,wristR:0,handCurlL:0.3,handCurlR:0.3,
   headYaw:0,headPitch:0,headRoll:0,shElevL:0,shElevR:0,shProtL:0,shProtR:0,

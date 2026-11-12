@@ -8,6 +8,7 @@ import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
 import { EXPRESSOES, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
+import { codigoDaPose, lerCodigoDePose, filtrarPartes, espelharValores, posesSalvas, salvarPose, acharPoseSalva, apagarPose, renomearPose, duplicarPose, exportarPoses, importarPoses, parteDaChave, PARTES_POSE } from "./pose-codigo.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
 import {orientacaoAlvo,encontrarAlvoOrientacao} from "./orientacao-frames.js";
@@ -32,7 +33,7 @@ import { gerarNaMao } from "./bases-mao.js";
 import {verificarMicroDeslocamentoAutoGrip} from "./grip-auto.js";
 import {targetSurface,tocarV2} from "./toque-v2.js";
 import { COL, pMundo, colisoesDaCena, desfazerColisao, listaColisoes, permitirContato, resolverPar, resolverTodas, setModoColisao, setPreferir, composicaoDaCena, ajustarComposicao, setComposicao } from "./colisoes.js";
-import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, colliderRig, colliderObject, manifoldObject, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg } from "../engine/index.js";
+import { D, DEF, PRESETS, TIPOS_OBJETO, ehCilindro, faixaLente, ossosDoCorpo, paraMundo, effScale, H, W, CX, CY, apoiarContatos, autoColisoes, colliderRig, colliderObject, manifoldObject, cameraNoMundo, aplicarGesto, clamp, distToZoom, restGround, zoomToDist, criarZip, shape, watertightMeshV3,meshTopologyV3,exportObjV3,watertightMeshV4,meshTopologyV4,exportObjV4,buildHeadStudySvg, MODELOS_CABECA, normalizarModeloCabeca } from "../engine/index.js";
 
 /* roda uma ação com o manequim como ativo (as funções de pose usam P) */
 function guardarContatoV2(it,antes){
@@ -67,6 +68,30 @@ function revisaoAutoGrip(it,o){
   for(let i=0;i<data.length;i++)hash=Math.imul(hash^data.charCodeAt(i),16777619);
   return (hash>>>0).toString(16);
 }
+/* de onde vem uma pose: texto com pose({...}), nome de pose salva, ou objeto {chave: graus} */
+function valoresDeFonte(fonte){
+  if(fonte&&typeof fonte==="object")return lerCodigoDePose(JSON.stringify(fonte)).valores;
+  const t=String(fonte??"");
+  if(/[{]/.test(t))return lerCodigoDePose(t).valores;
+  return {...acharPoseSalva(t.trim()).valores};
+}
+function aplicarValoresDePose(it,valores,opts={}){
+  let v=filtrarPartes(valores,opts.partes);if(opts.espelhar)v=espelharValores(v);
+  if(!Object.keys(v).length)throw new Error("Nenhum ângulo dessa pose pertence às partes pedidas ("+opts.partes+").");
+  const antes={...it.params};
+  applyParams(it,v,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));
+  withInst(it,guardArms);guardarContatoV2(it,antes);
+}
+/* pose(...) solto no editor de comandos e nos quadros: vale para o manequim ativo
+   pose("Aceno", {...}) · pose({...}) · pose("Aceno") (pose salva) · pose("Aceno", {partes:"bracoDir"}) */
+function poseCmd(a,b){
+  const it=SCN.list[SCN.active];if(!it)throw new Error("Não há manequim na cena.");
+  const temValores=x=>x&&typeof x==="object"&&Object.keys(x).some(k=>POSEKEYS.has(ALIAS[k]||k));
+  if(typeof a==="string"&&temValores(b)){aplicarValoresDePose(it,lerCodigoDePose(JSON.stringify(b)).valores);return apiFor(it)}
+  if(temValores(a)){aplicarValoresDePose(it,lerCodigoDePose(JSON.stringify(a)).valores,b);return apiFor(it)}
+  if(typeof a==="string"){aplicarValoresDePose(it,valoresDeFonte(a),b);return apiFor(it)}
+  throw new Error("pose: use pose({cotoveloDir: 70}), pose(\"Nome\", {...}) ou pose(\"Nome salvo\").");
+}
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
   const m={
@@ -83,7 +108,7 @@ function apiFor(it){
     },
     parametros(){chk();return Object.fromEntries(SL.filter(q=>!CAMK.includes(q.k)&&!WORLDK.includes(q.k)).map(q=>[q.k,it.params[q.k]]))},
     exportarOBJ(opts={}){chk();return cena.exportarOBJ({...opts,alvo:it.name})},
-    cabeca(modelo){chk();const v=String(modelo||"").toLowerCase();if(!["v1","v2","v3","v3_microgeometry","v4","v4_anatomical"].includes(v))throw new Error("Modelo da cabeça: use v1, v2, v3 ou v4.");it.params.headModel=v==="v3"?"v3_microgeometry":v==="v4"?"v4_anatomical":v;return m},
+    cabeca(modelo){chk();const v=normalizarModeloCabeca(modelo,null);if(!v)throw new Error("Modelo da cabeça: use "+MODELOS_CABECA.map(([k])=>k.replace(/_.*/,"")).join(", ")+" (v3 é a principal).");it.params.headModel=v;return m},
     posicao(x,z){chk();const antes={...it.params};it.params.wx=clamp(num(x,"x"),-30,30);if(z!==undefined)it.params.wz=clamp(num(z,"z"),-30,30);guardarContatoV2(it,antes);return m},
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
     girar(g){chk();const antes={...it.params};let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;guardarContatoV2(it,antes);return m},
@@ -188,12 +213,16 @@ function apiFor(it){
       return {ok:!a.length&&!l.length,atravessa:a.map(x=>({partes:[x.a,x.b],profundidade:x.prof})),limites:l}},
     articulacao(nome,valores){chk();const antes={...it.params},r=articParams(nome,valores);applyParams(it,r,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);guardarContatoV2(it,antes);return m},
     espelhar(){chk();espelharPose(it.params);return m},
-    /* rosto: m.expressao("alegria" | "surpresa" | "raiva" | "tristeza" | "medo" | "grito" | "sono" | "desconfianca" | "piscando" | "neutra") */
+    /* rosto: m.expressao("alegria" | "riso" | "surpresa" | "raiva" | "tristeza" | "choro" | "medo" | "grito" | "vergonha" | "sono" | "desconfianca" | "piscando" | "neutra") — exageradas na cabeça V5 (anime) */
     expressao(nome){chk();const k=String(nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const e=EXPRESSOES[k];if(!e)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+".");Object.assign(it.params,e);if(k==="piscando")it.params.eyeLid=0;return m},
     /* olhos para um lado sem mexer a cabeça: m.olhos(x, y) de −1 a 1 (x + = esquerda do manequim, y + = cima) */
     olhos(x,y){chk();it.params.eyeYaw=clamp(num(x,"x"),-1,1);if(y!==undefined)it.params.eyePitch=clamp(num(y,"y"),-1,1);return m},
     /* boca: m.boca(abrir 0–1, sorriso −1 a 1) */
     boca(abrir,sorriso){chk();it.params.jawOpen=clamp(num(abrir,"abrir"),0,1);if(sorriso!==undefined)it.params.smile=clamp(num(sorriso,"sorriso"),-1,1);return m},
+    /* pose como código: m.codigoPose({partes:"bracoDir", soMudancas:true}) → texto; m.aplicarPose(texto | nome salvo | {..}, {partes, espelhar}) */
+    codigoPose(opts){chk();return codigoDaPose(it.params,{nome:opts&&opts.nome,...(opts||{})})},
+    aplicarPose(fonte,opts){chk();aplicarValoresDePose(it,valoresDeFonte(fonte),opts);return m},
+    salvarPose(nome,opts={}){chk();const v={};POSEKEYS.forEach(k=>{if(typeof it.params[k]==="number")v[k]=it.params[k]});return salvarPose(nome,filtrarPartes(v,opts.partes),opts).nome},
     copiarPose(outro){chk();const o=typeof outro==="object"&&outro?SCN.list.find(x=>x.name===outro.nome):SCN.list.find(x=>x.name===outro);if(!o)throw new Error("Manequim “"+outro+"” não existe.");
       POSEKEYS.forEach(k=>{if(o.params[k]!==undefined)it.params[k]=o.params[k]});return m},
     /* colisão: deixa encostar neste outro manequim sem contar como erro (abraço, aperto de mão) */
@@ -356,7 +385,9 @@ function blockingApi(){const d=leituraBlocking(),m=v=>Math.round(v*0.114*100)/10
     objetos:d.objetos.map(o=>Object.assign({nome:o.nome,tipo:o.tipo,forma:o.forma,x:m(o.x),z:m(o.z),giro:o.giro,altura:m(o.alt),base:m(o.base),cor:o.cor.fill,sobre:o.sobre?(d.objetos.find(q=>q.id===o.sobre)||{}).nome||null:null},o.forma==="cilindro"?{raio:m(o.raio)}:{largura:m(o.larg),profundidade:m(o.prof)})),
     colisoes:listaColisoes().map(c=>c.descricao)}}
 Object.assign(blockingApi,{abrir:()=>painelBlk("abrir"),fechar:()=>painelBlk("fechar"),destacar:q=>painelBlk("destacar",q),flutuar:()=>painelBlk("flutuar"),devolver:q=>painelBlk("devolver",q),
-  recolher:on=>painelBlk("recolher",on),lateral:mo=>painelBlk("lateral",mo),inserir:t=>painelBlk("inserir",t),estado:()=>painelBlk("estado")});
+  recolher:on=>painelBlk("recolher",on),lateral:mo=>painelBlk("lateral",mo),inserir:t=>painelBlk("inserir",t),estado:()=>painelBlk("estado"),
+  /* modo Articulações: quatro vistas do esqueleto; foco numa região (mão → punho e dedos) */
+  mover:m=>painelBlk("mover",m),foco:r=>painelBlk("foco",r)});
 const cena={
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
   copiar(m){const it=m?SCN.list.find(x=>x.name===m.nome):SCN.list[SCN.active];if(!it)throw new Error("Manequim não encontrado.");return apiFor(dupInst(it,true))},
@@ -365,6 +396,21 @@ const cena={
   lista(){return SCN.list.map(apiFor)},
   obter(q){const it=typeof q==="number"?SCN.list[q]:SCN.list.find(x=>x.name===q);if(!it)throw new Error("Manequim “"+q+"” não existe.");return apiFor(it)},
   get ativo(){return apiFor(SCN.list[SCN.active])},
+  /* Minhas poses: cena.poses.salvar("Aceno", {manequim:"Ana", partes:"bracoDir"}), .aplicar("Aceno", {manequim, partes, espelhar}),
+     .lista(), .codigo("Aceno"), .exportar(), .importar(texto), .apagar(n), .renomear(n, novo), .duplicar(n) */
+  poses:{
+    lista:()=>posesSalvas().map(p=>({nome:p.nome,angulos:Object.keys(p.valores).length,partes:[...new Set(Object.keys(p.valores).map(parteDaChave))],criada:p.criada})),
+    salvar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");return apiFor(it).salvarPose(nome,o)},
+    aplicar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");return apiFor(it).aplicarPose(nome,o)},
+    codigo:(nome,o={})=>codigoDaPose(acharPoseSalva(nome).valores,{...o,nome:acharPoseSalva(nome).nome}),
+    exportar:nomes=>exportarPoses(nomes),
+    importar:texto=>importarPoses(texto).map(p=>p.nome),
+    apagar:nome=>apagarPose(nome),
+    renomear:(nome,novo)=>renomearPose(nome,novo).nome,
+    duplicar:nome=>duplicarPose(nome).nome,
+    ler:texto=>lerCodigoDePose(texto),
+    partes:()=>({...PARTES_POSE})
+  },
   /* roteiro de quadros (na página): cena.quadros.abrir(), .texto("#quadro 1 …"), .renderizar(), .fila(), .baixar() */
   quadros:{
     abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),
@@ -1081,4 +1127,4 @@ const API={get cena(){return cena},get camera(){return camera},manequim(i){const
 
 function tema(n){const i=THEMES.findIndex(t=>t[0]===String(n).toLowerCase());if(i<0)throw new Error("Tema desconhecido: use 'claro', 'escuro' ou 'sistema'.");applyTheme(i)}
 
-export { espelharPose as espelharPoseP, withInst, LOG, apiFor, cena, camSet, camera, tema };
+export { espelharPose as espelharPoseP, withInst, LOG, apiFor, cena, camSet, camera, tema, poseCmd, aplicarValoresDePose, valoresDeFonte };

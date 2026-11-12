@@ -4,8 +4,10 @@
 const EPS = 0.3;
 function rdp(P, a, b, eps, keep) {
   let mx = 0, idx = -1;
-  const ax = P[a][0], ay = P[a][1], dx = P[b][0] - ax, dy = P[b][1] - ay, l = Math.hypot(dx, dy) || 1e-9;
-  for (let i = a + 1; i < b; i++) { const d = Math.abs((P[i][0] - ax) * dy - (P[i][1] - ay) * dx) / l; if (d > mx) { mx = d; idx = i; } }
+  const ax = P[a][0], ay = P[a][1], dx = P[b][0] - ax, dy = P[b][1] - ay, l = Math.hypot(dx, dy);
+  /* extremos no mesmo lugar (contorno fechado de 0 a 2π): a "reta" vira um ponto e a distância é até ele —
+     antes dava zero para todos e a elipse inteira sumia */
+  for (let i = a + 1; i < b; i++) { const d = l < 1e-6 ? Math.hypot(P[i][0] - ax, P[i][1] - ay) : Math.abs((P[i][0] - ax) * dy - (P[i][1] - ay) * dx) / l; if (d > mx) { mx = d; idx = i; } }
   if (mx > eps) { keep[idx] = 1; rdp(P, a, idx, eps, keep); rdp(P, idx, b, eps, keep); }
 }
 const n1 = v => (Math.round(v * 10) / 10).toString();

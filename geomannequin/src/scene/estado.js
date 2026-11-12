@@ -1,16 +1,16 @@
 /* GeoMannequin — salvar e carregar a cena (JSON) */
-import { LAY, SL, SLK } from "./parametros.js";
+import { LAY, SL, SLK, POSEKEYS } from "./parametros.js";
 import { NOMES_BIOTIPOS } from "./biotipos.js";
 import { STYLES, setStyleName } from "./paletas.js";
 import { $ } from "./ambiente.js";
 import { L, setMode } from "./modos.js";
 import { CAMK, MAXM, P, SCN, hex2rgb, newInst, nextHue, novoIdObjeto, setP, atualizarApoios } from "./modelo.js";
 import {normalizarPerfil} from "../engine/objetos.js";
-import { validarReferencia, ventoManga, DEF, TIPOS_OBJETO, clamp, objetoPadrao, zoomToDist } from "../engine/index.js";
+import { validarReferencia, ventoManga, DEF, TIPOS_OBJETO, clamp, objetoPadrao, zoomToDist, normalizarModeloCabeca } from "../engine/index.js";
 import { COL, setModoColisao, setPreferir } from "./colisoes.js";
 import {CONTATO_V2,setContatoV2} from "./contato-v2.js";
 
-function modeloCabecaEstadoOrb(v){return ["v1","v2","v3_microgeometry","v4_anatomical"].includes(v)?v:"v1";}
+function modeloCabecaEstadoOrb(v){return normalizarModeloCabeca(v,"v1");}
 function salvarPivoOrbita(){
  const p=SCN.pivo;
  if(p===undefined||p===null)return null;
@@ -49,7 +49,7 @@ function sceneState(){
     if(ix>=0)seguir={tipo:q.tipo,indice:ix,opts:{...q.opts}};
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
-  return {...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
+  return {...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
     if(o.gripV3){
       const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
       q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
@@ -61,6 +61,17 @@ function sceneState(){
 function loadScene(sc){
   if(!sc||!Array.isArray(sc.list)||!sc.list.length)throw new Error("JSON da cena sem manequins.");
   const vento=sc.vento?ventoManga(sc.vento):null;
+  /* poses salvas que vieram com a cena: juntam-se às que já existem (as de mesmo nome são substituídas) */
+  if(Array.isArray(sc.minhasPoses)){
+    const lista=SCN.minhasPoses||(SCN.minhasPoses=[]);
+    sc.minhasPoses.slice(0,500).forEach(p=>{
+      if(!p||typeof p.nome!=="string"||!p.valores||typeof p.valores!=="object")return;
+      const v={};Object.entries(p.valores).forEach(([k,x])=>{if(POSEKEYS.has(k)&&typeof x==="number"&&isFinite(x))v[k]=x});
+      if(!Object.keys(v).length)return;
+      const i=lista.findIndex(q=>q.nome===p.nome),reg={nome:p.nome.slice(0,60),valores:v,criada:p.criada};
+      if(i>=0)lista[i]=reg;else lista.push(reg);
+    });
+  }
   const refs=sc.list.slice(0,MAXM).map(o=>(o.referencias||[]).slice(0,32).map(validarReferencia));
   const chaves=(sc.chavesVento||[]).slice(0,256).map(v=>{
     if(!Number.isInteger(v.quadro)||v.quadro<0||v.quadro>100000)throw Error("Chave de vento inválida.");

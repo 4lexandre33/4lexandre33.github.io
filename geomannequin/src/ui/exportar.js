@@ -54,7 +54,7 @@ export function iniciarExportar(){
   try{if(typeof IntersectionObserver!=="undefined"){outVisivel=false;new IntersectionObserver(es=>{outVisivel=es.some(e=>e.isIntersecting);if(outVisivel&&outSujo)refreshOut()}).observe($("out"))}}catch(e){outVisivel=true}
   window.gmState=()=>({info:lastInfo,P});
   $("downloadHeadV3").addEventListener("click",()=>{
-    if(P.headModel!=="v3_microgeometry"){say("Selecione a Cabeça V3 no painel de proporções para exportar OBJ.","err");return}
+    if(P.headModel!=="v3_microgeometry"&&P.headModel!=="v5_anime"){say("Selecione a Cabeça V3 (ou V5) no painel de proporções para exportar OBJ.","err");return}
     try{
       const mesh=watertightMeshV3(P,shape(P)),check=meshTopologyV3(mesh);
       if(check.invalid||check.boundary||check.nonmanifold||check.degenerate)throw Error("Malha não-manifold: "+JSON.stringify(check));

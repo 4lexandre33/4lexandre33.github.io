@@ -128,6 +128,8 @@ const SL=[
   {k:"eyeLid",g:"slFace",label:"Pálpebras: abertas → fechadas",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"browUp",g:"slFace",label:"Sobrancelhas: baixar − / levantar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"browIn",g:"slFace",label:"Sobrancelhas: aflição − / franzir +",min:-1,max:1,step:0.01,u:"%",pct:true},
+  {k:"blush",g:"slFace",label:"Rosto corado (vergonha)",min:0,max:1,step:0.01,u:"%",pct:true},
+  {k:"tears",g:"slFace",label:"Lágrimas (choro)",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"fThMcpL",g:"slFingers",label:"Mão esquerda, polegar: base (MCF) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fThIpL",g:"slFingers",label:"Mão esquerda, polegar: ponta (IF) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fThAbdL",g:"slFingers",label:"Mão esquerda, polegar: base afastar da palma + / encostar −",min:-1,max:1,step:0.01,u:"%",pct:true},
@@ -200,6 +202,10 @@ const SL=[
   {k:"lightEl",g:"slOrient",label:"Luz: altura",min:10,max:80,step:1,u:"°"},
   {k:"eyeStyle",g:"slFeat",label:"Íris (0 vazio, 1 com íris)",min:0,max:1,step:1,u:""},
   {k:"eyeOpen",g:"slFeat",label:"Abertura das pálpebras",min:0.4,max:1.4,step:0.01,u:"%",pct:true},
+  /* cabeça V5 (anime): olhos e boca grandes e expressões exageradas sobre a anatomia da V3 */
+  {k:"v5Olhos",g:"slFeat",label:"V5 anime: tamanho dos olhos",min:1,max:2.4,step:0.01,u:"×"},
+  {k:"v5Boca",g:"slFeat",label:"V5 anime: boca ao abrir e sorrir",min:1,max:2.4,step:0.01,u:"×"},
+  {k:"v5Exagero",g:"slFeat",label:"V5 anime: exagero das expressões",min:0,max:1.6,step:0.01,u:"×"},
   {k:"earSize",g:"slFeat",label:"Tamanho das orelhas",min:0.8,max:1.3,step:0.01,u:"%",pct:true},
   {k:"earFlare",g:"slFeat",label:"Abertura das orelhas",min:0.4,max:1.6,step:0.01,u:"%",pct:true}
 ];
@@ -249,7 +255,8 @@ const ALIAS={
   peEsqVirar:"ankleTiltL",peDirVirar:"ankleTiltR",
   dedaoEsq:"halluxL",dedaoDir:"halluxR",peEsqAduzir:"footAddL",peDirAduzir:"footAddR",canelaEsqGirar:"tibiaRotL",canelaDirGirar:"tibiaRotR",
   escapulaEsqTensao:"shTensL",escapulaDirTensao:"shTensR",escapulaEsqGirar:"scapRotL",escapulaDirGirar:"scapRotR",
-  bocaAbrir:"jawOpen",mandibulaLado:"jawSide",sorriso:"smile",olharLado:"eyeYaw",olharCima:"eyePitch",palpebras:"eyeLid",sobrancelhas:"browUp",franzir:"browIn",
+  olhosAnime:"v5Olhos",bocaAnime:"v5Boca",exagero:"v5Exagero",
+  bocaAbrir:"jawOpen",mandibulaLado:"jawSide",sorriso:"smile",olharLado:"eyeYaw",olharCima:"eyePitch",palpebras:"eyeLid",sobrancelhas:"browUp",franzir:"browIn",corar:"blush",lagrimas:"tears",
   corpoInclinar:"bodyPitch",corpoRolar:"bodyRoll",altura:"bodyLift",apoio:"ground",
   comprimentoPernas:"legLen",flexibilidade:"flex",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF"
 };
@@ -290,7 +297,7 @@ export function iniciarParametros(){
     "hipFlexL","hipFlexR","hipAbdL","hipAbdR","hipRotL","hipRotR","kneeFlexL","kneeFlexR","ankleFlexL","ankleFlexR","ankleTiltL","ankleTiltR","toesL","toesR","ground",
     "lumFlex","lumSide","lumTwist","thoFlex","thoSide","thoTwist","neckFlex","neckSide","neckTwist","wristDevL","wristDevR",
     "fThL","fInL","fMeL","fAnL","fMiL","fThR","fInR","fMeR","fAnR","fMiR","fSpreadL","fSpreadR","thumbOppL","thumbOppR","bodyPitch","bodyRoll","bodyLift",
-    "halluxL","halluxR","footAddL","footAddR","tibiaRotL","tibiaRotR","shTensL","shTensR","scapRotL","scapRotR","jawOpen","jawSide","smile","eyeYaw","eyePitch","eyeLid","browUp","browIn",
+    "halluxL","halluxR","footAddL","footAddR","tibiaRotL","tibiaRotR","shTensL","shTensR","scapRotL","scapRotR","jawOpen","jawSide","smile","eyeYaw","eyePitch","eyeLid","browUp","browIn","blush","tears",
     "fThMcpL","fThIpL","fThAbdL","fInMcpL","fInIpL","fInAbdL","fMeMcpL","fMeIpL","fMeAbdL","fAnMcpL","fAnIpL","fAnAbdL","fMiMcpL","fMiIpL","fMiAbdL","fThMcpR","fThIpR","fThAbdR","fInMcpR","fInIpR","fInAbdR","fMeMcpR","fMeIpR","fMeAbdR","fAnMcpR","fAnIpR","fAnAbdR","fMiMcpR","fMiIpR","fMiAbdR"]);
 }
 

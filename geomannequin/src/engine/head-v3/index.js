@@ -6,7 +6,8 @@ import {anatomicalCurvesV3 as _anatomicalCurvesV3,landmarksV3 as _landmarksV3} f
 export {sectionV3,normalizedHeight,yAt} from './anatomy.js';
 export {microformsV3,compileMicroAtlasV3} from './microfields.js';
 const TAU=2*Math.PI;
-export const headV3Enabled=p=>p?.headModel==='v3_microgeometry';
+/* a V5 (anime) usa a mesma geometria da V3: crânio, mandíbula, pescoço e orelhas */
+export const headV3Enabled=p=>p?.headModel==='v3_microgeometry'||p?.headModel==='v5_anime';
 export function ringV3(y,p,S){
  const {width,front,back}=sectionV3(normalizedHeight(y,S),p,S);
  return [width,(front+back)/2,(front-back)/2];
@@ -53,16 +54,36 @@ export function buildHeadV3(p,S){
  }
  return {V,rows,cols,flip:1,fb:null};
 }
-export function earPointV3(p,S,sign,u,v){
- const scale=clamp(p.headScale||1,.9,1.1),size=(p.earSize||1)*scale;
- const y=S.eyeY-.16+.28*size*v,h=normalizedHeight(y,S),s=sectionV3(h,p,S);
+/* Orelha V3: aba presa na borda da frente (junto ao trago, u≈+0,82) e
+   girada para fora do crânio (ângulo céfalo-auricular): ~30° no alto,
+   ~24° no meio e ~12° no lóbulo, que fica mais colado. Relevo no sentido
+   da normal da aba: hélice enrolada na borda, anti-hélice em Y no terço
+   superior, concha funda, trago à frente do meato. Nunca entra no crânio.
+   p.earFlare (padrão 1) escala o ângulo; 0 volta a uma orelha colada. */
+export function earPointV3(p,S,sign,u,v,traco=false){
+ const scale=clamp(p.headScale||1,.9,1.1),size=1.1*(p.earSize||1)*scale;
+ const y=S.eyeY-.17+.28*size*v,h=normalizedHeight(y,S),s=sectionV3(h,p,S);
  const center=(s.front+s.back)*.5,depth=Math.max(.1,(s.front-s.back)*.5);
- const z=center+.10*scale+.135*size*u-.03*v;
- const ct=clamp((z-center)/depth,-.94,.94),shell=s.width*Math.sqrt(Math.max(0,1-ct*ct));
- const r=Math.hypot(u,v),helix=.065*Math.exp(-.5*((r-.84)/.17)**2),concha=.029*Math.exp(-.5*(r/.27)**2);
- const lobe=v<-.60?1-.25*clamp((-.60-v)/.40,0,1):1;
- const x=sign*(shell+.026*scale+.02*(p.earFlare||1)*lobe+helix*size-concha*size);
- return [x,y,z];
+ const casca=z=>{const ct=clamp((z-center)/depth,-.94,.94);return s.width*Math.sqrt(Math.max(0,1-ct*ct));};
+ /* borda de fixação pela seção na altura do meato (sem cisalhar com o crânio),
+    eixo longo inclinado ~15° para trás, largura ~0,55 da altura */
+ const y0=S.eyeY-.16,s0=sectionV3(normalizedHeight(y0,S),p,S),c0=(s0.front+s0.back)*.5;
+ const uA=.82,zA=c0+.10*scale+.175*size*uA-.05*size*v;
+ const lobo=clamp((-.45-v)/.5,0,1),alto=clamp(v,0,1);
+ const ang=(24+6*alto-12*lobo)*Math.PI/180*clamp(p.earFlare??1,0,2);
+ const d=Math.max(0,uA-u)*.175*size;
+ const z=zA-d*Math.cos(ang)-.012*Math.max(0,u-uA)*size;
+ const r=Math.hypot(u,v),th=Math.atan2(v,u);
+ const helice=.034*Math.exp(-.5*((r-.9)/.08)**2)*(1-.6*lobo);
+ const antihelice=.018*Math.exp(-.5*((r-.56)/.09)**2)*clamp(1-Math.abs(th-1.75)/1.6,0,1);
+ const concha=.032*Math.exp(-.5*(Math.hypot(u-.18,v+.05)/.26)**2);
+ const trago=.022*Math.exp(-.5*(Math.hypot(u-.95,v+.12)/.12)**2);
+ /* traco: ponto para os traços de desenho — sem a depressão da concha e um pouco acima da pele */
+ const relevo=(traco?helice+antihelice+trago+.035:helice+antihelice-concha+trago)*size;
+ const raiz=casca(zA)+.018*scale;
+ let x=raiz+d*Math.sin(ang)+relevo;
+ x=Math.max(x,casca(z)+.012*scale);
+ return [sign*x,y,z];
 }
 export function buildEarV3(p,S,sign){
  const rows=14,cols=48,V=new Float32Array(rows*cols*3);

@@ -10,6 +10,8 @@
     "enquadrar.js",
     "biotipos.js",
     "poses.js",
+    "pose-codigo.js",
+    "junta-controle.js",
     "camadas-cena.js",
     "colisoes.js",
     "cenario.js",

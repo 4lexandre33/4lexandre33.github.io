@@ -29,7 +29,7 @@ export function registerAnatomyTools(server,W){
   acao:z.enum(["orientacao","modelo_cabeca","expressao","olhos","boca","gesto",
    "articulacao","estudo_cabeca"]),
   manequim:z.string().max(100).optional(),referencia:z.enum(["tronco","cabeca"]).optional(),
-  modelo:z.enum(["v1","v2","v3","v4","v3_microgeometry","v4_anatomical"]).optional(),
+  modelo:z.enum(["v1","v2","v3","v4","v5","anime","v3_microgeometry","v4_anatomical","v5_anime"]).optional(),
   nome:z.string().max(100).optional(),lado:z.enum(["direita","esquerda","ambas"]).optional(),
   x:N.optional(),y:N.optional(),abrir:N.optional(),sorriso:N.optional(),
   dobrar:N.optional(),frente:N.optional(),girar:N.optional(),desvio:N.optional(),

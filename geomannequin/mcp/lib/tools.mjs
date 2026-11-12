@@ -8,6 +8,8 @@ import { summary, summaryText, renderSvg, sceneLink, loadInto, pick, APP_URL, rg
 import { toPng } from "./png.mjs";
 import { asset } from "./assets.mjs";
 import { estimarPoses } from "./estimativa.mjs";
+import { ossosDoCorpo, svgVistaPose, VISTAS_POSE, REGIOES_POSE } from "../../src/engine/index.js";
+const ENGINE_VP = { ossosDoCorpo, svgVistaPose, VISTAS_POSE, REGIOES_POSE };
 import { registerControlTools } from "./tools-control.mjs";
 import { registerDeclarativeStoryboard } from "./tools-storyboard.mjs";
 import { registerAnatomyTools } from "./tools-anatomy.mjs";
@@ -177,6 +179,7 @@ function metaWidget(w, tipo, extra) { return { gm: Object.assign({ tipo, link: s
 
 /* metadados do ChatGPT (Apps SDK): texto enquanto a ferramenta roda e quando termina; as visuais abrem o widget */
 const INVOCA = {
+  pose_em_codigo: ["Lendo a pose…", "Pose pronta"], vistas_de_pose: ["Desenhando o esqueleto…", "Vistas prontas"],
   nova_cena: ["Limpando a cena…", "Cena nova"], adicionar_manequim: ["Adicionando manequim…", "Manequim adicionado"], editar_manequim: ["Ajustando o manequim…", "Manequim ajustado"],
   copiar_manequim: ["Copiando…", "Copiado"], remover_manequim: ["Removendo…", "Removido"], camera: ["Movendo a câmera…", "Câmera ajustada"], descrever_cena: ["Montando a cena…", "Cena montada"],
   objetos: ["Arrumando os objetos…", "Objetos prontos"], luz: ["Ajustando a luz…", "Luz ajustada"], aparencia_cena: ["Mudando a aparência…", "Aparência ajustada"], listar_cena: ["Lendo a cena…", "Cena lida"],
@@ -792,6 +795,62 @@ export function registerAll(server, getWorld, opts = {}) {
   }));
 
   /* ---------- código (mesma API do editor do app) ---------- */
+  server.registerTool("pose_em_codigo", {
+    title: "Pose em código e Minhas poses",
+    description: "Pose como texto que se copia e cola para voltar a ela (o mesmo formato do painel “Código da pose” e do editor de comandos: pose(\"Nome\", {cotoveloDir: 70, ...})). " +
+      "acao: codigo (gera o código da pose do manequim; partes e so_mudancas encurtam), aplicar (código, nome salvo, partes, espelhar), salvar (guarda em Minhas poses), listar, apagar, renomear, exportar (texto com todas) e importar (texto com um ou mais blocos pose(...)). " +
+      "Partes: corpo, tronco, cabeca, rosto, bracoEsq, bracoDir, maoEsq, maoDir, pernaEsq, pernaDir (ou bracos, maos, pernas, esquerda, direita).",
+    inputSchema: {
+      acao: z.enum(["codigo", "aplicar", "salvar", "listar", "apagar", "renomear", "exportar", "importar"]),
+      manequim: Ref.optional(),
+      codigo: z.string().max(60000).optional().describe("Texto da pose (aplicar/importar) — pose({...}) ou JSON."),
+      nome: z.string().max(60).optional().describe("Nome da pose salva (salvar, aplicar, apagar, renomear) ou nome no código gerado."),
+      novo_nome: z.string().max(60).optional(),
+      partes: z.string().max(200).optional().describe("Partes separadas por vírgula, ex.: \"bracoDir, maoDir\" ou \"pernas\"."),
+      so_mudancas: z.boolean().optional().describe("codigo: só os ângulos que diferem da pose neutra."),
+      espelhar: z.boolean().optional().describe("aplicar: troca esquerda e direita.")
+    },
+    annotations: RW
+  }, guard((a) => {
+    const w = W(), it = a.manequim !== undefined ? pick(w, a.manequim) : w.SCN.list[w.SCN.active], m = w.apiFor(it);
+    const partes = a.partes;
+    switch (a.acao) {
+      case "codigo": return { content: [{ type: "text", text: m.codigoPose({ nome: a.nome, partes, soMudancas: !!a.so_mudancas }) }] };
+      case "aplicar": {
+        const fonte = a.codigo || a.nome; if (!fonte) throw new Error("aplicar: passe codigo (texto da pose) ou nome (pose salva).");
+        const { avisos } = run(w, () => m.aplicarPose(fonte, { partes, espelhar: !!a.espelhar }));
+        return ok(w, "Pose aplicada em “" + it.name + "”" + (partes ? " (só " + [].concat(partes).join(", ") + ")" : "") + (a.espelhar ? ", espelhada" : "") + ".", avisos);
+      }
+      case "salvar": { const n = m.salvarPose(a.nome || "Pose", { partes }); return ok(w, "Salva em Minhas poses como “" + n + "” (vai junto em exportar_cena)."); }
+      case "listar": { const l = w.cena.poses.lista(); return { content: [{ type: "text", text: l.length ? l.map(p => "• " + p.nome + " — " + p.angulos + " ângulos (" + p.partes.join(", ") + ")").join("\n") : "Nenhuma pose salva nesta cena." }] }; }
+      case "apagar": w.cena.poses.apagar(a.nome); return { content: [{ type: "text", text: "Pose “" + a.nome + "” apagada." }] };
+      case "renomear": return { content: [{ type: "text", text: "Renomeada para “" + w.cena.poses.renomear(a.nome, a.novo_nome) + "”." }] };
+      case "exportar": { const l = w.cena.poses.lista(); return { content: [{ type: "text", text: l.length ? w.cena.poses.exportar() : "Nenhuma pose salva nesta cena." }] }; }
+      case "importar": { if (!a.codigo) throw new Error("importar: passe codigo."); const n = w.cena.poses.importar(a.codigo); return { content: [{ type: "text", text: "Importadas: " + n.join(", ") + "." }] }; }
+    }
+  }));
+
+  server.registerTool("vistas_de_pose", {
+    title: "Vistas do esqueleto (frente, lado, cima, isométrica)",
+    description: "As quatro vistas do esqueleto do manequim (as mesmas do modo Articulações do Blocking), lado a lado numa imagem, para conferir uma pose. " +
+      "foco aproxima uma região: corpo, cabeca, tronco, bracoEsq, bracoDir, maoEsq, maoDir (punho e os 5 dedos), pernaEsq, pernaDir, peEsq, peDir. " +
+      "Devolve também a posição de cada junta em cada vista. Para mudar a pose use editar_manequim ou pose_em_codigo.",
+    inputSchema: { manequim: Ref, foco: z.enum(["corpo", "cabeca", "tronco", "bracoEsq", "bracoDir", "maoEsq", "maoDir", "pernaEsq", "pernaDir", "peEsq", "peDir"]).optional(), largura: z.number().int().min(320).max(1600).optional() },
+    annotations: RO
+  }, guard(async (a) => {
+    const w = W(), it = pick(w, a.manequim), E = ENGINE_VP;
+    const V = ["frente", "lado", "cima", "iso"], T = 300, esq = E.ossosDoCorpo(it.params);
+    const vs = V.map(v => E.svgVistaPose(it.params, v, { w: T, h: T, regiao: a.foco, esqueleto: esq }));
+    const css = ".vp-ref{fill:none;stroke:#c8d1dc;stroke-dasharray:3 3}.vp-osso{fill:none;stroke:#2f3a4c;stroke-linecap:round}.vp-esq{stroke:#2a5bd7}.vp-dir{stroke:#cf4a27}" +
+      ".vp-cranio{fill:#eaeff4;stroke:#2f3a4c;stroke-width:1.4}.vp-olhar{stroke:#2f3a4c;stroke-width:2}.vp-junta{fill:#fff;stroke:#2f3a4c;stroke-width:1.4}.vp-sel{fill:#2a5bd7}";
+    const folha = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (T * 4 + 30) + " " + (T + 30) + '"><style>' + css + '</style><rect width="100%" height="100%" fill="#fbfcfd"/>' +
+      vs.map((r, i) => '<g transform="translate(' + (6 + i * (T + 6)) + ',24)"><rect width="' + T + '" height="' + T + '" fill="#fff" stroke="#c8d1dc"/>' + r.svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "") +
+        '</g><text x="' + (10 + i * (T + 6)) + '" y="17" font-family="sans-serif" font-size="13" fill="#2f3a4c">' + E.VISTAS_POSE[V[i]] + "</text>").join("") + "</svg>";
+    const png = await toPng(folha, a.largura || 1200);
+    const juntas = Object.fromEntries(V.map((v, i) => [v, vs[i].juntas.map(j => ({ junta: j.nome + (j.s ? (j.s > 0 ? " esq." : " dir.") : ""), x: Math.round(j.x), y: Math.round(j.y) }))]));
+    return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: "Vistas de “" + it.name + "”" + (a.foco && a.foco !== "corpo" ? " com foco em " + E.REGIOES_POSE[a.foco].toLowerCase() : "") + ": frente, lado (direita), cima, isométrica. Azul = lado esquerdo do manequim, vermelho = direito." }], structuredContent: { manequim: it.name, foco: a.foco || "corpo", juntas } };
+  }));
+
   server.registerTool("executar_codigo", {
     title: "Executar código da cena",
     description: opts.allowCode
@@ -804,7 +863,7 @@ export function registerAll(server, getWorld, opts = {}) {
     const w = W(), snap = JSON.stringify({ scene: w.sceneState(), layers: w.L, style: w.style }), logs = [];
     w.LOG.length = 0;
     const log = (...x) => logs.push(x.map(v => typeof v === "object" ? JSON.stringify(v) : String(v)).join(" "));
-    const ctx = vm.createContext({ cena: w.cena, camera: w.camera, tema: w.tema, log, Math, JSON });
+    const ctx = vm.createContext({ cena: w.cena, camera: w.camera, tema: w.tema, pose: w.poseCmd, log, Math, JSON });
     try {
       vm.runInContext('"use strict";\n' + a.codigo, ctx, { timeout: 3000, filename: "cena.js" });
     } catch (e) {

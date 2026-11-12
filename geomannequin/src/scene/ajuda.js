@@ -266,6 +266,10 @@ export function iniciarAjuda(){
     coluna, lombar, toracica, pescoco, cabeca, pelve, corpo; movimentos: dobrar, frente, abrir, girar, lado, inclinar, desvio, apontar, virar, subir
   m.gesto("direita" | "esquerda" | "ambas", "punho" | "apontar" | "pinca" | "joinha" | "paz" | "ok" | "garra" | "acenar" | …)
   m.dedos("esquerda", {polegar, indicador, medio, anelar, minimo, mao, afastar, opor}) · m.espelhar() · m.copiarPose(outro)
+  pose({cotoveloDir: 70, bracoDirAbrir: 80}) · pose("Aceno", {...}) · pose("Aceno") — vale para o manequim ativo; é o mesmo texto do painel "Código da pose"
+  m.codigoPose({partes: "bracoDir", soMudancas: true}) → texto · m.aplicarPose(texto | "nome salvo", {partes, espelhar}) · m.salvarPose("Aceno", {partes})
+  cena.poses.lista() · .salvar(nome, {manequim, partes}) · .aplicar(nome, {manequim, partes, espelhar}) · .codigo(nome) · .exportar() · .importar(texto) · .renomear(n, novo) · .apagar(n) · .duplicar(n)
+    partes: corpo, tronco, cabeca, rosto, bracoEsq, bracoDir, maoEsq, maoDir, pernaEsq, pernaDir (ou bracos, maos, pernas, esquerda, direita)
   m.flexibilidade("normal" | "atleta" | "ginasta" | "contorcionista") — amplia os limites (ponte, espacate, arabesque pedem "ginasta")
   m.apoiar("maos pes" | "maos" | "maos joelhos" | "mao esquerda pe direito") — vários pontos no chão ao mesmo tempo (ponte, parada de mão, prancha)
   Poses de ginasta: ponte, ponteUmaPerna, paradaAbertura, escorpiao, arabesque, espacateSaltado, camelo, agachamentoProfundo, prancha, quatroApoios
@@ -295,7 +299,11 @@ export function iniciarAjuda(){
   Rig fino: m.articulacao("indicador esquerdo", {base: 0.8, ponta: 0.5, afastar: -0.3}) · ("polegar direito", {base, ponta, afastar, opor}) — de −1 a 1
     ("dedão esquerdo", {dobrar: 30}) · ("canela direita", {girar: 20}) · ("pé esquerdo", {aduzir: 10}) · ("escápula esquerda", {girar: 0.5, tensao: 1})
     ("mandíbula", {abrir: 0.5, lado: 0.2}) · ("olhos", {lado: 0.6, cima: -0.2, fechar: 0.3}) · ("sobrancelhas", {subir: 0.5, franzir: 0.4})
-  m.expressao("neutra" | "alegria" | "surpresa" | "raiva" | "tristeza" | "medo" | "grito" | "sono" | "desconfianca" | "piscando") · m.olhos(x, y) · m.boca(abrir, sorriso)
+  m.expressao("neutra" | "alegria" | "riso" | "surpresa" | "raiva" | "tristeza" | "choro" | "medo" | "grito" | "vergonha" | "sono" | "desconfianca" | "piscando") · m.olhos(x, y) · m.boca(abrir, sorriso)
+  m.cabeca("v3" | "v5" | "v1" | "v2" | "v4") — V3 é a padrão; V5 = anime/mangá (olhos e boca grandes, expressões exageradas)
+  m.corpo({olhosAnime: 1.75, bocaAnime: 1.7, exagero: 1}) · m.pose({corar: 1, lagrimas: 1}) — corado e lágrimas (desenhados na V5)
+  Teclado (articulação escolhida no palco ou nas vistas): ←/→ ↑/↓ giram, PgUp/PgDn torção, Shift grande, Alt fino, Tab próxima, [ ] pai/filho, R zera, M outro lado, F foco, Esc solta, Ctrl+Z/Ctrl+Y
+  cena.blocking.mover("articulacoes" | "manequim") · cena.blocking.foco("maoDir" | "cabeca" | "corpo" …) — quatro vistas do esqueleto (frente, lado, cima, isométrica)
   m.validarPose() → {ok, atravessa: [{partes, profundidade}], limites: [...]} — partes do corpo atravessando umas às outras e limites acoplados
   Gestos novos: chifres, telefone, gancho, mesa, vulcano, figa, cruzados
   cena.linhasOcultas(0..1) — opacidade das linhas atrás do corpo · cena.rosto("completo" | "minimo" | "liso")

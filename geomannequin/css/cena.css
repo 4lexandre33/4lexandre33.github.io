@@ -222,3 +222,51 @@ body.qd-aberto{overflow:hidden}
 .orb-passo{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .orb-passo label{font-size:12px;margin-left:auto}
 #orbInfo{display:block;min-height:1.2em}
+
+/* código da pose e minhas poses */
+.pc-codigo{width:100%;box-sizing:border-box;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:8px;resize:vertical;min-height:120px;tab-size:2}
+.pc-chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:4px 0}
+.pc-erro{color:var(--coral,#c4472d)}
+.pc-ok{color:var(--muted)}
+.mp-nome{font:inherit;font-size:12px;color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:5px;padding:3px 6px;max-width:58%;min-width:0}
+.mp-arquivo{position:relative;display:inline-flex;align-items:center;cursor:pointer;font-size:12px;border:1px solid var(--rule);border-radius:6px;padding:5px 9px;color:var(--ink);background:var(--field)}
+.mp-arquivo input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.mp-lista{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mp-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 8px;align-items:center;border:1px solid var(--rule);border-radius:7px;padding:6px}
+.mp-mini{grid-row:span 2;width:44px;height:44px;color:var(--ink);background:var(--field);border-radius:5px;display:block}
+.mp-mini svg{width:100%;height:100%}
+.mp-info{display:flex;flex-direction:column;min-width:0}
+.mp-info strong{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-info small{font-size:11px;color:var(--muted)}
+.mp-acoes{display:flex;flex-wrap:wrap;gap:4px}
+.mp-acoes button{font-size:11px;padding:2px 7px}
+.mp-renome{font:inherit;font-size:12px;width:100%;box-sizing:border-box}
+
+/* Blocking › mover articulações: quatro vistas do esqueleto */
+.blk-modo{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:12px;color:var(--muted)}
+.blk-modo button{font-size:12px;padding:4px 10px}
+.blk-modo button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.blk-painel.modo-articulacoes .blk-vista,.blk-painel.modo-articulacoes .blk-zoom{display:none}
+.vp-foco{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.vp-foco button{font-size:11px;padding:3px 7px}
+.vp-foco button[aria-pressed="true"]{background:var(--cobalt,#2a5bd7);color:#fff;border-color:transparent}
+.vp-seguir{font-size:12px}
+.vp-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:6px 0}
+.vp-vista{margin:0;border:1px solid var(--rule);border-radius:7px;background:var(--paper,var(--field));overflow:hidden;min-width:0}
+.vp-vista figcaption{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:4px 7px 0}
+.vp-host{aspect-ratio:1;max-width:100%;touch-action:none;cursor:crosshair}
+.vp-host:focus-visible{outline:2px solid var(--cobalt,#2a5bd7);outline-offset:-2px}
+.vp-host svg{display:block;width:100%;height:100%}
+.vp-ref{fill:none;stroke:var(--rule);stroke-width:1;stroke-dasharray:3 3}
+.vp-osso{fill:none;stroke:var(--ink);stroke-linecap:round}
+.vp-osso.vp-esq{stroke:var(--cobalt,#2a5bd7)}
+.vp-osso.vp-dir{stroke:var(--coral,#cf4a27)}
+.vp-cranio{fill:var(--field);stroke:var(--ink);stroke-width:1.4}
+.vp-olhar{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.vp-junta{fill:var(--bg,#fff);stroke:var(--ink);stroke-width:1.4;cursor:grab}
+.vp-junta.vp-dedo{stroke-width:1.1}
+.vp-junta.vp-sel{fill:var(--cobalt,#2a5bd7);stroke:var(--cobalt,#2a5bd7)}
+.vp-anel{fill:none;stroke:var(--cobalt,#2a5bd7);stroke-width:1.6;stroke-dasharray:3 2}
+.vp-info{font-size:12px;color:var(--ink);margin:4px 0}
+.gm-junta-hud{position:absolute;left:10px;bottom:10px;z-index:5;max-width:calc(100% - 20px);font-size:12px;line-height:1.35;color:var(--ink);background:var(--panel,var(--bg));border:1px solid var(--rule);border-radius:7px;padding:5px 9px;box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:none}
+#stagebox{position:relative}

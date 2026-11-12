@@ -10,6 +10,7 @@ import { P, SCN, UIH, addInst, delInst, dupInst, setActive } from "../scene/mode
 import { COL, corrigirAtivo, separarObjeto } from "../scene/colisoes.js";
 import { LENTES, zoomLente, zoomPasso, abrirCone, alturaManequim, apontarManequim, girarManequim, girarObjeto, leituraBlocking, medidasObjeto, moverAlvo, moverCamera, moverManequim, moverObjeto, selecionarObjeto } from "../scene/blocking.js";
 import { adicionarObjeto, duplicarObjeto, editarObjeto, removerObjeto, APOIAVEL } from "../scene/cenario.js";
+import { montarVistasPose, ativarVistasPose, focoVistasPose } from "./vistas-pose.js";
 import { D, M_R, TIPOS_OBJETO, faixaLente, cameraNoMundo, eixoPerfil, encaixar, svgPerfil, svgPlanta } from "../engine/index.js";
 import { render, setQuick, setSettle, settle } from "./palco.js";
 import { syncControls } from "./controles.js";
@@ -436,6 +437,8 @@ export function iniciarBlocking() {
     '<div class="blk-conteudo">' +
     '<div class="blk-inserir"><button type="button" data-p="manequim" class="blk-mais">+ Manequim</button><div class="blk-menu-w"><button type="button" data-p="objeto" class="blk-mais" aria-haspopup="true" aria-expanded="false">+ Objeto ▾</button><div class="blk-menu" role="menu" hidden>' + opcoes + '</div></div>' +
     '<label class="blk-chk"><input type="checkbox" data-p="encaixe" checked> encaixe</label><label class="blk-chk"><input type="checkbox" data-p="persp"> perspectiva</label></div>' +
+    '<div class="blk-modo" role="group" aria-label="O que mover"><span>Mover</span><button type="button" data-mover="manequim" aria-pressed="true">Manequim</button><button type="button" data-mover="articulacoes" aria-pressed="false">Articulações</button></div>' +
+    '<div class="vp-area" hidden></div>' +
     '<div class="blk-zoom" role="group" aria-label="Zoom da lente (a câmera fica parada)"><span class="blk-zoom-tit">Zoom</span><button type="button" data-z="-1" title="Abrir: lente menor, mais campo (grande-angular)" aria-label="Abrir o campo">−</button>' +
     '<input type="range" data-z="faixa" min="0" max="1000" step="1" aria-label="Lente"><button type="button" data-z="1" title="Fechar: lente maior, menos campo (tele)" aria-label="Fechar o campo">+</button>' +
     '<select data-z="lista" aria-label="Lente em mm">' + LENTES.map(v => '<option value="' + v + '">' + v + " mm</option>").join("") + '</select><span class="blk-zoom-info" aria-live="polite"></span></div>' +
@@ -475,6 +478,16 @@ export function iniciarBlocking() {
   zl.addEventListener("change", () => { zoomLente(+zl.value); mudou(true); });
   painel.querySelectorAll('button[data-z]').forEach(b => b.addEventListener("click", () => { zoomPasso(+b.dataset.z); mudou(true); }));
   E.zoom = { zr, zl, info: q(".blk-zoom-info"), lnMin, lnMax };
+  /* Mover: manequim (vistas da cena) ou articulações (quatro vistas do esqueleto do manequim ativo) */
+  E.vpArea = q(".vp-area"); montarVistasPose(E.vpArea);
+  const modoMover = m => {
+    const art = m === "articulacoes"; painel.classList.toggle("modo-articulacoes", art); E.vpArea.hidden = !art;
+    painel.querySelectorAll("[data-mover]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mover === m ? "true" : "false"));
+    ativarVistasPose(art); ls.gravar("mover", m); if (!art) pedirDesenho();
+  };
+  painel.querySelectorAll("[data-mover]").forEach(b => b.addEventListener("click", () => modoMover(b.dataset.mover)));
+  E.modoMover = modoMover;
+  modoMover(ls.ler("mover", "manequim"));
   painel.addEventListener("keydown", teclado);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && colocar) pararColocar(); });
   ligarCima(); ligarLado(); ligarCampos(); ligarLargura();
@@ -495,6 +508,8 @@ export function iniciarBlocking() {
     devolver(qual) { (qual ? [qual === "cima" ? "cima" : /lado|lateral/.test(qual) ? "lado" : "painel"] : ["cima", "lado", "painel"]).forEach(devolver); return estado(); },
     recolher(on) { recolher(on !== false); return estado(); },
     lateral(modo) { const m = modo === undefined ? "camera" : String(modo).replace("câmera", "camera"); const ok = ["camera", "0", "45", "90", "135", "180", "225", "270", "315"]; const v = ok.includes(m) ? m : { frente: "0", direita: "90", "+x": "90", tras: "180", "trás": "180", esquerda: "270", "-x": "270", "+z": "0", "-z": "180" }[m]; if (!v) throw new Error("Lateral: use \"camera\", \"frente\", \"direita\", \"tras\", \"esquerda\" ou graus (0, 45 … 315)."); vista.lado.modo = v; E.modo.value = v; ls.gravar("modo", v); vista.lado.auto = true; pedirDesenho(); return estado(); },
+    mover(m) { const n = /artic|junta|pose/.test(String(m || "")) ? "articulacoes" : "manequim"; mostrar(true); E.modoMover(n); return estado(); },
+    foco(regiao) { return focoVistasPose(regiao); },
     inserir(tipo) { comecarColocar(tipo === "manequim" ? "manequim" : tipo); return estado(); },
     estado
   };
