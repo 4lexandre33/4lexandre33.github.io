@@ -71,7 +71,7 @@ function cabeEmCima(o, s) { const a = ehCilindro(o) ? Math.PI * o.raio * o.raio 
 /* mover no chão; com "apoiar" (padrão ao arrastar), ao passar sobre um tampo maior o objeto sobe nele, ao sair desce */
 function moverObjeto(id, x, z, apoiar) {
   const o = achaObj(id); if (!o) return;
-  editarObjeto(o, { x: r2(clamp(x, -40, 40)), z: r2(clamp(z, -40, 40)) });
+  editarObjeto(o, { x: r2(clamp(x, -200, 200)), z: r2(clamp(z, -200, 200)) });
   if (apoiar !== false) { const s = apoioSob(o, o.x, o.z); o.sobre = s && cabeEmCima(o, s) ? s.id : null; atualizarApoios(); }
   if (COL.modo === "bloquear") separarObjeto(o, 6);
 }

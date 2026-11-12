@@ -32,6 +32,23 @@ const ocPega = (P, N, eixo, extra) => Object.assign({ P, N: ocUnit(N), eixo: ocU
 /* ======== os objetos ======== */
 const COMPOSTOS = {
   /* -- formas puras (medidas pela caixa envolvente) -- */
+  /* cenário (plantas): árvore, palmeira, arbusto, poço, água, telhado plano */
+  arvore: { nome: "árvore", larg: 8, prof: 8, alt: 24, grupo: "cenario",
+    partes: o => { const A = o.alt, r = o.larg / 2; return [{ cil: true, c: [0, A * 0.28, 0], r: Math.max(0.35, r * 0.13), r1: Math.max(0.25, r * 0.09), hh: A * 0.28 }, ocEsf([0, A * 0.7, 0], [r, A * 0.3, o.prof / 2], { facetas: 11, semente: o.semente || 3 })]; } },
+  palmeira: { nome: "palmeira", larg: 9, prof: 9, alt: 30, grupo: "cenario",
+    partes: o => { const A = o.alt, r = o.larg / 2, out = [{ cil: true, c: [0, A * 0.45, 0], r: 0.55, r1: 0.4, hh: A * 0.45 }];
+      for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3, d = [Math.sin(a), -0.35, Math.cos(a)]; out.push(ocEsf([d[0] * r * 0.55, A * 0.9 + d[1] * r * 0.4, d[2] * r * 0.55], [1.0, r * 0.55, 0.3], { R: rotParaEixo(d) })); }
+      return out; } },
+  arbusto: { nome: "arbusto", larg: 4, prof: 4, alt: 3.5, grupo: "cenario",
+    partes: o => [ocEsf([0, o.alt / 2, 0], [o.larg / 2, o.alt / 2, o.prof / 2], { facetas: 8, semente: o.semente || 5 })] },
+  poco: { nome: "poço", larg: 7, prof: 7, alt: 4.5, grupo: "cenario",
+    partes: o => { const r = o.larg / 2; return [ocToro([0, o.alt * 0.9, 0], r * 0.85, r * 0.15, "y"), { cil: true, c: [0, o.alt * 0.45, 0], r: r, hh: o.alt * 0.45 }, { cil: true, c: [0, o.alt * 0.92, 0], r: r * 0.7, hh: 0.05, cor: "fundo" }]; } },
+  agua: { nome: "água (espelho)", larg: 10, prof: 6, alt: 0.3, grupo: "cenario",
+    partes: o => [ocCaixa([0, o.alt / 2, 0], [o.larg / 2, o.alt / 2, o.prof / 2])] },
+  predio: { nome: "prédio/casa (bloco)", larg: 20, prof: 20, alt: 26, grupo: "cenario",
+    partes: o => [ocCaixa([0, o.alt / 2, 0], [o.larg / 2, o.alt / 2, o.prof / 2]), ocCaixa([0, o.alt + 0.3, 0], [o.larg / 2 + 0.2, 0.3, o.prof / 2 + 0.2])] },
+  rampaDegraus: { nome: "escada de degraus", larg: 6, prof: 12, alt: 10, grupo: "cenario",
+    partes: o => { const n = Math.max(2, Math.round(o.alt / 1.6)), out = []; for (let k = 0; k < n; k++) { const h = o.alt * (k + 1) / n, d = o.prof / n; out.push(ocCaixa([0, h / 2, -o.prof / 2 + d * (k + 0.5)], [o.larg / 2, h / 2, d / 2])); } return out; } },
   esfera: { nome: "esfera", larg: 3, prof: 3, alt: 3, grupo: "forma",
     partes: o => [ocEsf([0, o.alt / 2, 0], [o.larg / 2, o.alt / 2, o.prof / 2])] },
   cone: { nome: "cone", larg: 3, prof: 3, alt: 4, grupo: "forma",
@@ -173,6 +190,6 @@ const SINONIMOS_COMPOSTOS = { bola: "bola", "bola de praia": "esfera", rocha: "p
   viga: "vigaI", "viga i": "vigaI", cano: "cano", tora: "cano", tronco: "cano", tubo: "cano", tabua: "tabua", "tábua": "tabua", prancha: "tabua", escada: "escada", trelica: "trelica", "treliça": "trelica",
   barra: "barraPesos", haltere: "barraPesos", "barra de pesos": "barraPesos", pa: "pa", "pá": "pa", marreta: "marreta", martelo: "marreta", alavanca: "alavanca", "pe de cabra": "alavanca", "pé de cabra": "alavanca",
   "carrinho de mao": "carrinhoDeMao", "carrinho de mão": "carrinhoDeMao", "carrinho de carga": "carrinhoCarga", diabo: "carrinhoCarga", "carrinho plataforma": "carrinhoPlataforma", cacamba: "cacamba", "caçamba": "cacamba",
-  ancora: "ancora", "âncora": "ancora", "pilha de caixas": "pilhaCaixas", lanca: "lanca", "lança": "lanca", machado: "machado", escudo: "escudo", arco: "arco", cone: "cone", toro: "toro", anel: "toro", capsula: "capsula", "cápsula": "capsula", prisma: "prisma", esfera: "esfera" };
+  ancora: "ancora", "âncora": "ancora", "pilha de caixas": "pilhaCaixas", lanca: "lanca", "lança": "lanca", machado: "machado", escudo: "escudo", arco: "arco", cone: "cone", toro: "toro", anel: "toro", capsula: "capsula", "cápsula": "capsula", prisma: "prisma", esfera: "esfera", arvore: "arvore", "árvore": "arvore", palmeira: "palmeira", arbusto: "arbusto", poco: "poco", "poço": "poco", agua: "agua", "água": "agua", predio: "predio", "prédio": "predio", casa: "predio", rampa: "rampaDegraus", "escadaria": "rampaDegraus" };
 function pegasDoObjeto(o) { const t = COMPOSTOS[o.tipo]; return t && t.pegas ? t.pegas(o) : {}; }
 export { COMPOSTOS, SINONIMOS_COMPOSTOS, pegasDoObjeto, rotParaEixo };

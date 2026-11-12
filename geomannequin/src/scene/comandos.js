@@ -2,9 +2,9 @@
 import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
 import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
-import { AU } from "../engine/index.js";
+import { AU, analisarFolha, analisarImagemUnica, telaDoMundo } from "../engine/index.js";
 import { criarApiEfeitos } from "./efeitos-cena.js";
-import { registroCena, sobreposicoes, separar, olharParaPonto, posicoesArranjo, mdSorteio } from "./multidao.js";
+import { registroCena, sobreposicoes, separar, olharParaPonto, posicoesArranjo, mdSorteio, construirDaPlanta } from "./multidao.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import { estadoParaIA } from "./estado-ia.js";
@@ -468,6 +468,28 @@ const cena={
      cena.registro() → onde está e o que faz cada um (mesmo sem desenho) · cena.sobrepostos() · cena.separar({folga})
      cena.grade({n: 20, colunas: 5, espacamento: 6, x, z | area: [x0, z0, x1, z1], pose: "empe" | poses: [...], expressao, olharPara: [x, z], cor: "grupo", grupo: "Plateia"})
      cena.arranjo("circulo" | "fila" | "arco" | "multidao", {n, raio, x, z, ...mesmas opções}) · cena.olharPara(["Ana", "Leo"] | "todos" | "grupo:Plateia", [x, z], {modo: "costas"}) */
+  /* cenário por imagem de planta (cores): cena.lerPlanta(pixels {w,h,data}, {linha: 0, larguraMetros, legenda}) → análise (folha com várias linhas ou imagem única);
+     cena.dePlanta(análise | pixels, {linha: 0, limpar: true, manequins: true, escala: 1}) → monta caixas, escadas, árvores, água e manequins */
+  lerPlanta(img,o){if(!img||!img.data||!img.w)throw new Error("Passe os pixels da imagem: {w, h, data} (RGBA).");const op=o||{};const f=analisarFolha(img,op);
+    if(f.linhas.length&&f.linhas.some(l=>l.itens))return f;return {celulas:[],linhas:[{linha:0,...analisarImagemUnica(img,op)}]}},
+  dePlanta(a,o){const op=o||{};let an=a;if(a&&a.data&&a.w)an=cena.lerPlanta(a,op);if(an&&an.linhas){const l=an.linhas[op.linha||0];if(!l||!l.itens)throw new Error("Linha "+(op.linha||0)+" da folha não tem planta (há "+an.linhas.length+" linhas).");an=l}
+    cena.marcarEstado();const r=construirDaPlanta(an,op);if(op.enquadrar!==false)try{cena.enquadrarTudo({yaw:op.yaw??-45,pitch:op.pitch??-34})}catch(e){}return r},
+  /* câmera que mostra TUDO (manequins e objetos): {yaw: 35, pitch: -32} = vista isométrica de cima; sem perspectiva com {orto: true} */
+  enquadrarTudo(o){const op=o||{},pts=[];
+    SCN.list.forEach(it=>{if(it.oculto)return;const x=it.params.wx||0,z=it.params.wz||0;pts.push([x-2,0,z-2],[x+2,16,z+2])});
+    SCN.objetos.forEach(q=>{const r=Math.max(q.larg||1,q.prof||1)/2+0.5;pts.push([q.x-r,0,q.z-r],[q.x+r,(q.alt||2),q.z+r])});
+    if(!pts.length)return cena;
+    const lo=[0,1,2].map(k=>Math.min(...pts.map(p=>p[k]))),hi=[0,1,2].map(k=>Math.max(...pts.map(p=>p[k]))),g0=restGround(SCN.list[0].params);
+    Object.assign(P,{tx:(lo[0]+hi[0])/2,ty:g0+(hi[1]-lo[1])*0.25,tz:(lo[2]+hi[2])/2,yaw:op.yaw??35,pitch:op.pitch??-32,roll:0,panX:0,panY:0});
+    if(op.orto)P.persp=0;
+    const raio=Math.hypot(hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2])/2;
+    if(P.persp){P.camDist=clamp(raio*2.4,8,400);
+      for(let k=0;k<6;k++){const c={...SCN.list[0].params,...P};let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+        for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
+        const f=Math.max((x1-x0)/(W*0.9),(y1-y0)/(H*0.86));P.camDist=clamp(P.camDist*Math.max(0.6,Math.min(1.8,f)),6,400);P.panY=+(((y0+y1)/2-H/2)/Math.max(1,effScale(c))).toFixed(2)}
+    }else{const c={...SCN.list[0].params,...P};P.zoom=1;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
+      P.zoom=clamp(Math.min(W*0.9/(x1-x0),H*0.86/(y1-y0)),0.05,12)}
+    cena.marcarEstado&&0;return cena},
   registro(o){return registroCena(o||{})},
   sobrepostos(){return sobreposicoes().map(([a,b,d])=>({a:SCN.list[a].name,b:SCN.list[b].name,sobra:Math.round(d*11.4)+" cm"}))},
   separar(o){cena.marcarEstado();return separar(o||{})},

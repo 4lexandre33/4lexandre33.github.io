@@ -3,7 +3,8 @@
    desenhado (fora do quadro, oculto, figura simples de longe). Unidade: R (1 R ≈ 11,4 cm). */
 import { SCN, P, CAMK } from "./modelo.js";
 import { pMundo } from "./colisoes.js";
-import { orientar } from "./cenario.js";
+import { orientar, adicionarObjeto, removerObjeto } from "./cenario.js";
+import { addInst, nextHue } from "./modelo.js";
 import { capsulas, telaDoMundo } from "../engine/index.js";
 
 /* pegada no chão (círculo que cobre o corpo visto de cima) e altura, pelas cápsulas do corpo */
@@ -103,4 +104,36 @@ function posicoesArranjo(tipo, n, o = {}) {
 }
 function mdSorteio(s) { let a = (typeof s === "number" ? s : String(s).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) >>> 0 || 1; return () => (a = (a * 1664525 + 1013904223) >>> 0) / 4294967296; }
 
-export { mdPegada, registroCena, sobreposicoes, separar, olharParaPonto, posicoesArranjo, mdSorteio, mdFrente };
+/* monta a cena a partir da análise de uma planta (engine/planta-imagem.js): caixas, escadas, árvores, água e manequins.
+   {limpar: true} tira os objetos e os manequins extras antes; {manequins: false} só o cenário; {escala: 1} multiplica tudo. */
+function construirDaPlanta(an, o = {}) {
+  if (!an || !an.itens) throw new Error("Análise de planta inválida (use cena.lerPlanta).");
+  const k = o.escala || 1;
+  if (o.limpar !== false) { while (SCN.objetos.length) removerObjeto(SCN.objetos[SCN.objetos.length - 1]); SCN.list.splice(1); SCN.active = 0; }
+  const grupo = o.grupo || "Planta", feitos = [], erros = [];
+  const nome = { parede: "parede", predio: "prédio", rampaDegraus: "escada", caixa: "banca", arvore: "árvore", palmeira: "palmeira", arbusto: "arbusto", agua: "água", poco: "poço" }, cont = {};
+  for (const it of an.itens.slice(0, 280)) {
+    try { cont[it.tipo] = (cont[it.tipo] || 0) + 1;
+      const q = adicionarObjeto(it.tipo, { x: it.x * k, z: it.z * k, larg: it.larg * k, prof: it.prof * k, alt: it.alt * k, giro: it.giro || 0, nome: (nome[it.tipo] || it.tipo) + " " + cont[it.tipo] });
+      q.grupo = grupo; feitos.push(q);
+      /* cores do cenário (como na planta): cinza, madeira, verde, água — variam um pouco de tom para cada peça se distinguir */
+      if (o.coresDaPlanta !== false) { const base = { parede: [150, 150, 152], madeira: [196, 128, 60], vegetacao: [70, 150, 70], agua: [70, 190, 205] }[it.classe];
+        if (base) { const v = ((cont[it.tipo] * 37) % 21) - 10, f = base.map(c => Math.max(0, Math.min(255, c + v))), hx = c => c.toString(16).padStart(2, "0"), tinta = f.map(c => Math.round(c * 0.45));
+          q.col = { fill: "#" + f.map(hx).join(""), ink: "#" + tinta.map(hx).join("") }; } } } catch (e) { erros.push(e.message); }
+  }
+  const mqs = [];
+  if (o.manequins !== false) {
+    const porCor = {};
+    an.manequins.forEach((m, i) => {
+      try { const it = i === 0 && SCN.list.length === 1 && o.limpar !== false ? SCN.list[0] : addInst({}, null, true);
+        it.params.wx = m.x * k; it.params.wz = m.z * k; it.params.wRot = m.giro || 0; it.grupo = grupo + " · " + m.cor;
+        porCor[m.cor] = (porCor[m.cor] || 0) + 1; it.name = (m.cor[0].toUpperCase() + m.cor.slice(1)) + " " + porCor[m.cor];
+        /* a cor da planta (vermelho, azul, roxo), com um tom levemente diferente para cada um */
+        const base = { vermelho: [232, 112, 112], azul: [112, 140, 232], roxo: [176, 116, 214] }[m.cor], v = (porCor[m.cor] * 23) % 30 - 15, hx = c => Math.max(0, Math.min(255, c)).toString(16).padStart(2, "0");
+        if (base) it.col = { fill: "#" + base.map(c => hx(c + v)).join(""), ink: "#" + base.map(c => hx(Math.round(c * 0.32))).join("") }; else it.hue = nextHue(it); mqs.push(it); } catch (e) { erros.push(e.message); }
+    });
+  }
+  return { objetos: feitos.length, manequins: mqs.length, erros: erros.slice(0, 5), escala: an.escala, nomes: mqs.map(it => it.name) };
+}
+
+export { construirDaPlanta, mdPegada, registroCena, sobreposicoes, separar, olharParaPonto, posicoesArranjo, mdSorteio, mdFrente };

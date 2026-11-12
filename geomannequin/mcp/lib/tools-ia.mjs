@@ -3,6 +3,7 @@ import { z } from "zod";
 import { renderSvg, sceneLink } from "./scene.mjs";
 import { toPng } from "./png.mjs";
 import { createWorld } from "./core.mjs";
+import { decodificarImagem } from "./decodificar.mjs";
 
 const RO = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 let _meta = null;
@@ -134,6 +135,58 @@ export function registerIaTools(server, W) {
     try { const w = W(), m = a.manequim ? w.cena.obter(a.manequim) : w.cena.ativo; const r = m.acao(a.acao, { lado: a.lado, efeitos: a.efeitos, rosto: a.rosto, colorido: a.colorido });
       const png = await toPng(renderSvg(w, {}).svg, 900);
       return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("planta_para_cena", {
+    title: "Montar o cenário a partir de uma imagem de planta (cores)",
+    description: "Lê uma imagem de planta em cores chapadas e monta o cenário em 3D com formas simples: cinza = parede/prédio, areia = chão, laranja/marrom = escada/madeira, verde = árvore/arbusto, ciano = água/poço; manequins em vermelho, azul e roxo viram manequins nessas posições. " +
+      "Folha com várias linhas (cada linha = vista de cima | vista lateral | isométrica do mesmo lugar): escolha a linha; a lateral dá a escala (manequim = 1,75 m) e as alturas. Uma imagem só = vista de cima (informe larguraMetros). apenas_ler: true devolve só o que foi entendido.",
+    inputSchema: { imagem: z.string().describe("PNG ou JPEG em base64 (pode ser data:image/...;base64,...)."), linha: z.number().int().min(0).optional().describe("Linha da folha (0 = primeira)."),
+      larguraMetros: z.number().min(2).max(200).optional().describe("Largura real da vista de cima, se não houver lateral."), limpar: z.boolean().optional().describe("Substituir a cena (padrão: sim)."),
+      manequins: z.boolean().optional().describe("Criar os manequins (padrão: sim)."), apenas_ler: z.boolean().optional(), alturaMaxPessoas: z.number().min(1).max(10).optional().describe("Altura máxima das construções em pessoas (padrão 2,2).") },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), img = await decodificarImagem(a.imagem), op = { larguraMetros: a.larguraMetros, alturaMaxPessoas: a.alturaMaxPessoas };
+      const an = w.cena.lerPlanta(img, op), resumo = an.linhas.map(l => l.itens ? { linha: l.linha, pecas: l.itens.length, manequins: l.manequins.length, larguraMetros: +l.escala.metrosLargura.toFixed(1), escalaPelaLateral: l.escala.pelaLateral } : { linha: l.linha, semPlanta: true });
+      if (a.apenas_ler) return { content: [{ type: "text", text: JSON.stringify({ linhas: resumo }) }], structuredContent: { linhas: resumo } };
+      const r = w.cena.dePlanta(an, { linha: a.linha || 0, limpar: a.limpar, manequins: a.manequins });
+      const png = await toPng(renderSvg(w, {}).svg, 900);
+      return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify({ ...r, linhas: resumo }) }], structuredContent: { ...r, linhas: resumo, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("arranjo_em_massa", {
+    title: "Muitos manequins ou objetos de uma vez (grade, multidão, círculo, fila, arco)",
+    description: "Cria vários manequins (ou objetos) arrumados: grade (linhas × colunas ou numa área), multidão espalhada com distância mínima, círculo/arco virados para o centro, fila. Ninguém fica sobreposto (afasta o mínimo). Mesma cor no grupo = desenho mais leve.",
+    inputSchema: { tipo: z.enum(["grade", "multidao", "circulo", "arco", "fila"]), n: z.number().int().min(1).max(200), x: z.number().optional(), z: z.number().optional(),
+      area: z.object({ x0: z.number(), z0: z.number(), x1: z.number(), z1: z.number() }).optional().describe("Área no chão (R)."), colunas: z.number().int().optional(), espacamento: z.number().optional().describe("Distância entre eles (R; 6 R ≈ 70 cm)."),
+      raio: z.number().optional(), poses: z.array(z.string()).optional().describe("Poses rápidas (sorteadas)."), expressao: z.string().optional(), objeto: z.string().optional().describe("Tipo de objeto em vez de manequim."),
+      olharPara: z.object({ x: z.number(), z: z.number() }).optional(), corDoGrupo: z.boolean().optional(), grupo: z.string().optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), o = { n: a.n, x: a.x, z: a.z, colunas: a.colunas, espacamento: a.espacamento, raio: a.raio, poses: a.poses, expressao: a.expressao, objeto: a.objeto, grupo: a.grupo, cor: a.corDoGrupo === false ? "auto" : a.corDoGrupo ? "grupo" : undefined };
+      if (a.area) o.area = [a.area.x0, a.area.z0, a.area.x1, a.area.z1]; if (a.olharPara) o.olharPara = [a.olharPara.x, a.olharPara.z];
+      const r = w.cena.arranjo(a.tipo, o), png = await toPng(renderSvg(w, {}).svg, 900);
+      return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify(r).slice(0, 4000) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("olhar_para_ponto", {
+    title: "Todos (ou alguns) virados para um ponto",
+    description: "Gira manequins e objetos para que a frente aponte para o ponto [x, z] do chão. quem: \"todos\", \"grupo:Nome\", \"objetos\" ou lista de nomes. modo costas/lado.",
+    inputSchema: { x: z.number(), z: z.number(), quem: z.array(z.string()).optional(), grupo: z.string().optional(), modo: z.enum(["frente", "costas", "lado"]).optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), quem = a.grupo ? "grupo:" + a.grupo : a.quem && a.quem.length ? a.quem : "todos", r = w.cena.olharPara(quem, [a.x, a.z], { modo: a.modo === "frente" ? undefined : a.modo });
+      return { content: [{ type: "text", text: JSON.stringify({ virados: r }) }], structuredContent: { virados: r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
+  server.registerTool("registro_da_cena", {
+    title: "Registro: onde está e o que faz cada manequim (mesmo sem desenho)",
+    description: "Lista cada manequim (posição, giro, frente, pegada no chão, altura, pose, ação, interação, para onde olha, se aparece na foto) e cada objeto, e os pares que se sobrepõem. separar: true afasta os sobrepostos antes de responder.",
+    inputSchema: { separar: z.boolean().optional() },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+  }, async a => {
+    try { const w = W(); let sep = null; if (a.separar) sep = w.cena.separar(); const r = w.cena.registro(); if (sep) r.separados = sep;
+      return { content: [{ type: "text", text: JSON.stringify(r).slice(0, 20000) }], structuredContent: r }; }
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
   server.registerTool("molejo", {

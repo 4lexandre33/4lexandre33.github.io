@@ -501,6 +501,37 @@ function ligarMassa(painel) {
     catch (err) { aviso(err.message, true); }
     assLista = ""; mudou(true); });
 }
+
+/* ===== planta → cena: lê a imagem, mostra o que entendeu (retângulos por cima da vista de cima) e monta ===== */
+function ligarPlanta(painel) {
+  const q = s => painel.querySelector('[data-planta="' + s + '"]'), cv = q("previa"), info = painel.querySelector(".blk-planta-info");
+  let img = null, an = null, foto = null;
+  const cores = { parede: "#555", madeira: "#c60", vegetacao: "#080", agua: "#09b" }, corM = { vermelho: "#e00", azul: "#03e", roxo: "#90c" };
+  const previa = () => {
+    if (!an || !foto) return; const k = +q("linha").value || 0, L = an.linhas[k]; if (!L || !L.celulas) return;
+    const c = L.celulas, x0 = Math.min(...c.map(a => a.x0)), y0 = Math.min(...c.map(a => a.y0)), x1 = Math.max(...c.map(a => a.x1)), y1 = Math.max(...c.map(a => a.y1));
+    const s = Math.min(600 / (x1 - x0 + 1), 260 / (y1 - y0 + 1)); cv.width = Math.round((x1 - x0 + 1) * s); cv.height = Math.round((y1 - y0 + 1) * s);
+    const g = cv.getContext("2d"); g.drawImage(foto, x0, y0, x1 - x0 + 1, y1 - y0 + 1, 0, 0, cv.width, cv.height);
+    if (!L.itens) { info.textContent = "Esta linha não tem planta."; return; }
+    const cima = c[0], R = L.escala.RPorCelula, gw = L.grade.gw, gh = L.grade.gh, px = (cima.x1 - cima.x0 + 1) / gw, py = (cima.y1 - cima.y0 + 1) / gh;
+    const tela = (x, z) => [((x / R + gw / 2) * px + cima.x0 - x0) * s, ((z / R + gh / 2) * py + cima.y0 - y0) * s];
+    g.lineWidth = 1.5;
+    L.itens.forEach(it => { const a = tela(it.x - it.larg / 2, it.z - it.prof / 2), b = tela(it.x + it.larg / 2, it.z + it.prof / 2); g.strokeStyle = cores[it.classe] || "#333"; g.setLineDash(it.classe === "madeira" ? [3, 2] : []); g.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]); });
+    g.setLineDash([]); L.manequins.forEach(m => { const a = tela(m.x, m.z); g.fillStyle = corM[m.cor]; g.beginPath(); g.arc(a[0], a[1], 4, 0, 7); g.fill(); g.strokeStyle = "#fff"; g.stroke(); });
+    const n = {}; L.itens.forEach(it => n[it.tipo] = (n[it.tipo] || 0) + 1);
+    info.textContent = "Entendi: " + Object.entries(n).map(([t, v]) => v + " " + t).join(", ") + "; " + L.manequins.length + " manequim(ns). Largura ≈ " + L.escala.metrosLargura.toFixed(1) + " m (" + (L.escala.pelaLateral ? "escala pela lateral" : "escala estimada") + ").";
+    q("aplicar").disabled = false;
+  };
+  const analisar = () => { if (!img) return; try { const lm = +q("largura").value; an = cena.lerPlanta(img, lm ? { larguraMetros: lm } : {});
+    q("linha").innerHTML = an.linhas.map((l, i) => '<option value="' + i + '">' + (i + 1) + (l.itens ? " · " + l.itens.length + " peças, " + l.manequins.length + " manequins" : " · (sem planta)") + "</option>").join(""); previa(); } catch (err) { info.textContent = err.message; } };
+  q("arquivo").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (!f) return; const url = URL.createObjectURL(f), im = new Image();
+    im.onload = () => { const k = Math.min(1, 2048 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      const g = c.getContext("2d"); g.drawImage(im, 0, 0, c.width, c.height); const d = g.getImageData(0, 0, c.width, c.height); img = { w: c.width, h: c.height, data: d.data }; foto = c; analisar(); URL.revokeObjectURL(url); };
+    im.onerror = () => { info.textContent = "Não consegui abrir a imagem."; }; im.src = url; });
+  q("linha").addEventListener("change", previa); q("largura").addEventListener("change", analisar);
+  q("aplicar").addEventListener("click", () => { try { const r = cena.dePlanta(an, { linha: +q("linha").value || 0, limpar: q("limpar").checked });
+    aviso("Cena montada: " + r.objetos + " peças e " + r.manequins + " manequins. Ctrl+Z desfaz." + (r.erros.length ? " Avisos: " + r.erros[0] : "")); refreshScene(); assLista = ""; vista.cima.auto = true; mudou(true); } catch (err) { aviso(err.message, true); } });
+}
 export function iniciarBlocking() {
   if (typeof document === "undefined") return;
   let painel = document.getElementById("blkPainel");
@@ -521,6 +552,9 @@ export function iniciarBlocking() {
     '<label>O quê <select name="oque"><option value="manequim">manequim</option>' + ORDEM_OBJ.filter(t => TIPOS_OBJETO[t]).map(t => '<option value="' + t + '">' + TIPOS_OBJETO[t].nome + '</option>').join("") + '</select></label>' +
     '<label>Pose <select name="pose"><option value="empe">em pé</option><option value="contrapposto">contrapposto</option><option value="caminhando">caminhando</option><option value="correndo">correndo</option><option value="sentadoChao">sentado no chão</option><option value="bracosCruzadosPeito">braços cruzados</option><option value="acenando">acenando</option><option value="apontando">apontando</option><option value="guardaLuta">guarda de luta</option><option value="variadas">variadas</option></select></label>' +
     '<label>Espaço (m) <input type="number" name="esp" min="0.3" max="10" step="0.1" value="0.7"></label><label class="blk-chk"><input type="checkbox" name="cor" checked> mesma cor (mais leve)</label><label class="blk-chk"><input type="checkbox" name="olhar"> olhar para o centro</label><button type="submit">Criar</button></form>' +
+    '<details class="blk-planta"><summary>Planta → cena (imagem colorida)</summary><p class="blk-dica">Imagem de planta em cores chapadas: cinza = parede/prédio, areia = chão, laranja/marrom = escada/madeira, verde = árvore, ciano = água; manequins em <b style="color:#c22">vermelho</b>, <b style="color:#23c">azul</b> e <b style="color:#83b">roxo</b>. Folha com várias linhas (vista de cima | lateral | isométrica): escolha a linha. A lateral dá a escala (manequim = 1,75 m) e as alturas.</p>' +
+    '<input type="file" accept="image/*" data-planta="arquivo"><label>Linha <select data-planta="linha"></select></label><label>Largura (m, opcional) <input type="number" data-planta="largura" min="2" max="200" step="0.5" style="width:5em"></label><label class="blk-chk"><input type="checkbox" data-planta="limpar" checked> substituir a cena</label>' +
+    '<canvas data-planta="previa" width="600" height="200" style="max-width:100%;display:block;margin:6px 0"></canvas><p class="blk-planta-info" aria-live="polite"></p><button type="button" data-planta="aplicar" disabled>Montar a cena</button></details>' +
     '<div class="blk-modo" role="group" aria-label="O que mover"><span>Mover</span><button type="button" data-mover="manequim" aria-pressed="true">Manequim</button><button type="button" data-mover="articulacoes" aria-pressed="false">Articulações</button></div>' +
     '<div class="vp-area" hidden></div>' +
     '<div class="blk-zoom" role="group" aria-label="Zoom da lente (a câmera fica parada)"><span class="blk-zoom-tit">Zoom</span><button type="button" data-z="-1" title="Abrir: lente menor, mais campo (grande-angular)" aria-label="Abrir o campo">−</button>' +
@@ -574,7 +608,7 @@ export function iniciarBlocking() {
   modoMover(ls.ler("mover", "manequim"));
   painel.addEventListener("keydown", teclado);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && colocar) pararColocar(); });
-  ligarCima(); ligarLado(); ligarCampos(); ligarLargura(); ligarMassa(painel);
+  ligarCima(); ligarLado(); ligarCampos(); ligarLargura(); ligarMassa(painel); ligarPlanta(painel);
   E.painel.hidden = !ls.ler("aberto", true);
   if (ls.ler("recolhido", false)) recolher(true);
   estadoLayout();

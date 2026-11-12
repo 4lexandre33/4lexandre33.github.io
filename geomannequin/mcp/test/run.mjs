@@ -280,6 +280,15 @@ async function suite(client, tag) {
   check(/3\/4 esquerda/.test(JSON.parse(text(r)).text), "fetch da órbita");
   r = await call("referencia", { assunto: "rig" });
   check(/vulcano/.test(text(r)) && /desconfianca/.test(text(r)), "referencia rig: gestos e expressões");
+  { const fs = await import("node:fs"); const png = fs.readFileSync(join(HERE, "planta-teste.png")).toString("base64");
+    r = await call("planta_para_cena", { imagem: png, apenas_ler: true });
+    check(!r.isError && r.structuredContent.linhas.length >= 1 && r.structuredContent.linhas[0].pecas > 0, "planta_para_cena: lê a folha" + (r.isError ? ": " + text(r) : ""));
+    r = await call("planta_para_cena", { imagem: png, linha: 0 });
+    check(!r.isError && r.structuredContent.objetos > 3 && r.structuredContent.manequins >= 2, "planta_para_cena: monta o cenário" + (r.isError ? ": " + text(r) : ""));
+    r = await call("registro_da_cena", { separar: true }); check(!r.isError && r.structuredContent.manequins.length >= 2, "registro_da_cena");
+    r = await call("arranjo_em_massa", { tipo: "circulo", n: 8, x: 0, z: -40, raio: 12, grupo: "Roda" }); check(!r.isError && r.structuredContent.manequins.length === 8, "arranjo_em_massa: círculo" + (r.isError ? ": " + text(r) : ""));
+    r = await call("olhar_para_ponto", { x: 0, z: 0, grupo: "Roda" }); check(!r.isError && r.structuredContent.virados.length === 8, "olhar_para_ponto");
+  }
   return link;
 }
 
