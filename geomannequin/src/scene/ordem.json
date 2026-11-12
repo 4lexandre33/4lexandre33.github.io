@@ -37,7 +37,9 @@
   "comandos.js",
   "biblioteca.js",
   "ajuda.js",
-  "quadros.js"
+  "quadros.js",
+  "name-dsl.js",
+  "manual-name.js"
  ],
  "iniciar": [
   "iniciarModelo",

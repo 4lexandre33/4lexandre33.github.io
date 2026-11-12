@@ -1,7 +1,7 @@
 /* GeoMannequin — efeitos especiais na cena: criar, editar, remover, catálogo e salvar/carregar.
    Os efeitos ficam em SCN.efeitos; a âncora guarda o id do manequim/objeto (no arquivo, o índice). */
 import { SCN } from "./modelo.js";
-import { CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, LEGADO, validarEfeito, normTipo, normParte, deReferencia, registrarEfeito } from "../engine/index.js";
+import { PRESETS_VFX, ESTILOS_VFX, CAMINHOS_VFX, FORMAS_VFX, REPETIR_VFX, PERFIS_VFX, CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, LEGADO, validarEfeito, normTipo, normParte, deReferencia, registrarEfeito, tamanhoEmCorpos } from "../engine/index.js";
 
 const FX_MAX = 64;
 const fxLista = () => (SCN.efeitos || (SCN.efeitos = []));
@@ -60,6 +60,8 @@ function fxMontar(tipo, o, base) {
   const e = { ...(base || {}), tipo: t };
   const ali = { em: "ancora", onde: "ancora", para: "direcao", cor: "cores", quadro: "inicio" };
   for (const [k, v] of Object.entries(o)) { const kk = ali[k] || k; if (kk === "cores" && typeof v === "string") e.cores = [v]; else e[kk] = v; }
+  /* passar cores próprias liga a cor (o padrão é preto e branco) */
+  if ((o.cores !== undefined || o.cor !== undefined) && o.colorido === undefined) e.colorido = Array.isArray(e.cores) ? e.cores.length > 0 : !!e.cores;
   if (o.params || base) e.params = { ...((base && base.params) || {}), ...(o.params || {}) };
   /* parâmetros do tipo também podem vir soltos: {raio: 6} */
   for (const k of Object.keys(CATALOGO[t].params)) if (o[k] !== undefined) { e.params = e.params || {}; e.params[k] = o[k]; delete e[k]; }
@@ -86,6 +88,10 @@ function criarApiEfeitos(marcar) {
     editar(id, opts, silencioso) { const i = fxAchar(id), atual = fxLista()[i]; const e = fxMontar((opts && opts.tipo) || atual.tipo, opts, { ...atual, id: atual.id }); if (!silencioso) marcar(); fxLista()[i] = e; return e.id; },
     remover(id) { const i = fxAchar(id); marcar(); fxLista().splice(i, 1); },
     limpar() { if (!fxLista().length) return; marcar(); fxLista().length = 0; },
+    /* cena.efeitos.colorir(false) → todos em preto e branco; colorir(true, "fx3") → só um */
+    colorir(sim = true, id) { const alvos = id ? [fxAchar(id)] : fxLista().map((_, i) => i); if (!alvos.length) return 0; marcar(); alvos.forEach(i => { fxLista()[i] = validarEfeito({ ...fxLista()[i], colorido: !!sim }); }); return alvos.length; },
+    /* tamanho do efeito em alturas do corpo (para conferir a escala) */
+    tamanho(id) { return tamanhoEmCorpos(fxLista()[fxAchar(id)]); },
     duplicar(id, opts) { const i = fxAchar(id), b = JSON.parse(JSON.stringify(fxLista()[i])); delete b.id; const e = fxMontar(b.tipo, { ...(opts || {}), semente: (opts && opts.semente) ?? b.semente + 1 }, b); marcar(); fxLista().splice(i + 1, 0, e); return e.id; },
     mostrar(id, sim = true) { const i = fxAchar(id); marcar(); fxLista()[i].visivel = !!sim; },
     ordem(id, onde) { const i = fxAchar(id), [e] = fxLista().splice(i, 1); if (onde === "frente") fxLista().push(e); else fxLista().unshift(e); },
@@ -94,6 +100,12 @@ function criarApiEfeitos(marcar) {
         parametros: Object.fromEntries(Object.entries(c.params).map(([k, d]) => [k, { padrao: d.padrao, min: d.min, max: d.max, rotulo: d.rotulo }])), ...(c.texto ? { texto: true } : {}), ...(c.simbolo ? { simbolos: SIMBOLOS } : {}) }));
     },
     categorias() { return { ...CATEGORIAS }; },
+    /* construtor por camadas: cena.efeitos.criar([{forma: "fita", caminho: {tipo: "arco", raio: 5}, traco: {largura: 2, perfil: "fuso"}, estilo: "cel"}], {em: "maoDir"}) → id */
+    criar(camadas, opts) { return api.adicionar("composto", { ...(opts || {}), camadas }); },
+    /* as peças do construtor (para montar efeitos novos) */
+    construtor() { return { caminhos: CAMINHOS_VFX.slice(), formas: FORMAS_VFX.slice(), repetir: REPETIR_VFX.slice(), perfis: PERFIS_VFX.slice(), estilos: { ...ESTILOS_VFX } }; },
+    /* os efeitos prontos de mangá: tipo, nome, para que serve e as camadas (para copiar e mudar) */
+    prontos(grupo) { return Object.entries(PRESETS_VFX).filter(([, v]) => !grupo || v.grupo === grupo).map(([tipo, v]) => ({ tipo, nome: v.nome, grupo: v.grupo, elemento: v.elem, ancora: v.ancora, camadas: JSON.parse(JSON.stringify(v.camadas)) })); },
     elementos() { return Object.fromEntries(Object.entries(ELEMENTOS).map(([k, v]) => [k, { nome: v.nome, cores: v.cores.slice() }])); },
     partes() { return PARTES_EFEITO.slice(); },
     simbolos() { return SIMBOLOS.slice(); },

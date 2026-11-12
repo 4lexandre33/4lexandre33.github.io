@@ -481,6 +481,34 @@ body.qd-aberto{overflow:hidden}
 .ia-modo{border:1px solid var(--rule);border-radius:6px;padding:6px 10px;margin:8px 0;display:grid;gap:4px;font-size:13px}
 .ia-modo legend{font-size:12px;color:var(--muted)}
 
+/* ===== Name (DSL) ===== */
+.nm-hlwrap{position:relative;flex:1;min-width:0;overflow:hidden}
+.nm-hl,.nm-hlwrap textarea{position:absolute;inset:0;margin:0;padding:8px 10px;font:12.5px/18px var(--font-mono);white-space:pre;overflow:auto;tab-size:2;border:0}
+.nm-hl{pointer-events:none;color:var(--ink);scrollbar-width:none}
+.nm-hl::-webkit-scrollbar{display:none}
+.nm-hlwrap textarea{color:transparent;caret-color:var(--ink);background:transparent;resize:none;outline:0}
+.nm-hlwrap textarea::selection{background:color-mix(in srgb,var(--cobalt) 30%,transparent);color:transparent}
+.nm-k{color:var(--cobalt)}.nm-s{color:#2f8f4e}.nm-n{color:#c2620c}.nm-c{color:var(--muted);font-style:italic}
+.nm-b b{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--cobalt);text-underline-offset:3px}
+.nm-p{color:var(--c);font-weight:700}
+.nm-err{background:color-mix(in srgb,var(--coral) 16%,transparent);border-radius:2px}
+.nm-ac{position:absolute;z-index:5;margin:0;padding:3px;list-style:none;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);font:12px/1.5 var(--font-mono);max-height:220px;overflow:auto;min-width:150px}
+.nm-ac li{padding:1px 8px;border-radius:4px;cursor:pointer;white-space:nowrap}.nm-ac li.sel{background:var(--cobalt);color:#fff}
+.nm-erros{margin:0;padding:0;list-style:none;max-height:120px;overflow:auto;font:12px/1.5 var(--font-mono)}
+.nm-erros li{padding:1px 6px;border-radius:4px}.nm-erros li.err{color:var(--coral);cursor:pointer}.nm-erros li.err:hover{background:var(--field)}.nm-erros li.aviso{color:var(--muted)}
+.nm-imgs{margin:0;font-size:12px;color:var(--muted)}.nm-imgs:empty{display:none}
+.nm-tabs{display:flex;gap:4px;flex-wrap:wrap}.nm-tabs button{font-size:12px;padding:3px 10px;border-radius:14px}.nm-tabs button.sel{background:var(--cobalt);color:#fff;border-color:var(--cobalt)}
+.nm-locbar{display:none;gap:6px;flex-wrap:wrap}.nm-em-locais .nm-locbar{display:flex}.nm-locbar input[type=search]{flex:1;min-width:140px}
+.nm-prev{max-height:62vh;overflow:auto;align-items:flex-start}.nm-prev>svg{max-height:60vh}
+.nm-duas{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}.nm-duas svg{width:100%;height:auto}
+.nm-locais{display:flex;flex-direction:column;gap:8px;width:100%;padding:6px}
+.nm-local{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--rule);border-radius:8px;padding:6px;background:var(--panel)}
+.nm-mini{width:96px;height:96px;border-radius:6px;overflow:hidden;background:var(--field)}.nm-mini svg{width:100%;height:100%}
+.nm-info{display:flex;flex-direction:column;gap:4px;min-width:0}.nm-info small{color:var(--muted)}.nm-info select{align-self:flex-start;font-size:12px}
+.nm-bts{display:flex;gap:4px;flex-wrap:wrap}.nm-bts button{font-size:11px;padding:2px 8px}.nm-bts .perigo{color:var(--coral)}
+.nm-dlg{display:flex;gap:6px;align-items:end;flex-wrap:wrap;padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--field)}.nm-dlg[hidden]{display:none}.nm-dlg label{display:flex;flex-direction:column;gap:2px;font-size:12px;flex:1;min-width:160px}
+.nm-texto{display:flex;flex-direction:column;gap:6px}.nm-texto[hidden]{display:none}.nm-texto textarea{min-height:240px;font:12px/1.5 var(--font-mono);background:var(--field);color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:8px}
+
 /* GeoMannequin — modo de estudo anatômico V4.2 (folha técnica vetorial).
  * Responsivo, acessível e isolado do palco/editor existentes. */
 .gm42-shell[hidden]{display:none!important}
@@ -587,6 +615,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         <button type="button" id="colisoesAtalho" aria-controls="colSecao" title="Abrir diretamente a seção Colisões do painel Parâmetros">Colisões</button>
         <button type="button" id="headStudyOpen" title="Abrir a folha anatômica V4.2 com perfil, frontal, 3/4, anotações e SVG vetorial">Estudo V4.2</button>
         <button type="button" id="quadrosBtn" aria-pressed="false" title="Roteiro de quadros: escreva quadros em código (#quadro 1, #quadro 2…), renderize e baixe tudo junto">Quadros</button>
+        <button type="button" id="nameBtn" aria-pressed="false" title="Name (DSL): escreva a história em texto (elenco, locais, quadros), gere as fichas para a IA de imagem e guarde locais na biblioteca">Name</button>
         <button type="button" id="bibAbrir" title="Ir para a Biblioteca: guardar e abrir poses, rostos, efeitos e cenas">Biblioteca</button>
         <button type="button" id="fxBtn" aria-pressed="true" title="Mostrar o painel de efeitos especiais (logo abaixo do desenho)">Efeitos</button>
         <button type="button" id="blockingBtn" aria-pressed="false" title="Mostrar ou esconder o painel de blocking (vista de cima e lateral, inserir manequins e objetos)">Blocking</button>
@@ -1171,9 +1200,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     const t = mv(A.M, B3.T);
     return { M: mmul(A.M, B3.M), T: [t[0] + A.T[0], t[1] + A.T[1], t[2] + A.T[2]] };
   }
-  function rotP(R, P3) {
-    const q = mv(R, P3);
-    return { M: R, T: [P3[0] - q[0], P3[1] - q[1], P3[2] - q[2]] };
+  function rotP(R2, P3) {
+    const q = mv(R2, P3);
+    return { M: R2, T: [P3[0] - q[0], P3[1] - q[1], P3[2] - q[2]] };
   }
   function applyA(A, v) {
     const q = mv(A.M, v);
@@ -2846,8 +2875,8 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function atlasTronco(p, F3) {
     if (F3._atlas) return F3._atlas;
-    const L3 = lado(p, F3, 1), R = lado(p, F3, -1);
-    F3._atlas = { 1: L3, "-1": R };
+    const L3 = lado(p, F3, 1), R2 = lado(p, F3, -1);
+    F3._atlas = { 1: L3, "-1": R2 };
     return F3._atlas;
   }
   function relevoTronco(x, y, th, p, F3) {
@@ -3432,19 +3461,19 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function buildFingers(p, s, curl) {
     const k = bodyEff(p).armK * 0.95 * p.armLen, out = [];
-    const zs = [0.25, 0.085, -0.08, -0.23], Lf = [0.74, 0.82, 0.76, 0.6], R = [0.075, 0.078, 0.073, 0.064], fr2 = [0.45, 0.3, 0.25];
-    for (let f = 0; f < 4; f++) out.push(fingerMesh([0, -0.86 * k, zs[f] * k], dirsDedo(p, s, f, curl), [Lf[f] * k * fr2[0], Lf[f] * k * fr2[1], Lf[f] * k * fr2[2]], R[f] * k));
+    const zs = [0.25, 0.085, -0.08, -0.23], Lf = [0.74, 0.82, 0.76, 0.6], R2 = [0.075, 0.078, 0.073, 0.064], fr2 = [0.45, 0.3, 0.25];
+    for (let f = 0; f < 4; f++) out.push(fingerMesh([0, -0.86 * k, zs[f] * k], dirsDedo(p, s, f, curl), [Lf[f] * k * fr2[0], Lf[f] * k * fr2[1], Lf[f] * k * fr2[2]], R2[f] * k));
     out.push(fingerMesh([-s * 0.05 * k, -0.3 * k, 0.26 * k], dirsPolegar(p, s, curl), [0.3 * k, 0.22 * k, 0.2 * k], 0.09 * k));
     return out;
   }
   function juntasDedos(p, s) {
     const curl = s > 0 ? p.handCurlL : p.handCurlR, k = bodyEff(p).armK * 0.95 * p.armLen, out = [];
     const zs = [0.25, 0.085, -0.08, -0.23], Lf = [0.74, 0.82, 0.76, 0.6], fr2 = [0.45, 0.3, 0.25];
-    const cadeia = (o, dirs, ls3) => {
+    const cadeia = (o, dirs, ls4) => {
       const pts = [o];
       let q = o;
       dirs.forEach((d, i) => {
-        q = [q[0] + d[0] * ls3[i], q[1] + d[1] * ls3[i], q[2] + d[2] * ls3[i]];
+        q = [q[0] + d[0] * ls4[i], q[1] + d[1] * ls4[i], q[2] + d[2] * ls4[i]];
         pts.push(q);
       });
       return pts;
@@ -3617,8 +3646,8 @@ pre.cmdout .ok{color:var(--cobalt)}
   var LE1 = [1, 0, 0];
   var LE2 = [0, 1, 0];
   function setLight(az, el2) {
-    const A = az * D, E3 = el2 * D;
-    LD = [Math.sin(A) * Math.cos(E3), Math.sin(E3), Math.cos(A) * Math.cos(E3)];
+    const A = az * D, E4 = el2 * D;
+    LD = [Math.sin(A) * Math.cos(E4), Math.sin(E4), Math.cos(A) * Math.cos(E4)];
     let v = [-LD[2], 0, LD[0]];
     const l = Math.hypot(v[0], v[1], v[2]);
     LE1 = v.map((q) => q / l);
@@ -4019,9 +4048,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       FHRaw[k] = Math.min(nl - 0.44, cs + 0.5);
       let rim = 1;
       if (nl < 0.02) {
-        const R = Math.round(7 / RS);
+        const R2 = Math.round(7 / RS);
         for (const d of RIMD) {
-          const xx = x + Math.round(d[0] * R), yy = y + Math.round(d[1] * R);
+          const xx = x + Math.round(d[0] * R2), yy = y + Math.round(d[1] * R2);
           if (xx < 0 || yy < 0 || xx >= HW || yy >= HH || hz[yy * HW + xx] < -1e5) {
             rim = -1;
             break;
@@ -4154,7 +4183,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       const tl = v0 < 0, tr = v1 < 0, br = v2 < 0, bl = v3 < 0;
       const c = (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
       if (c === 0 || c === 15) continue;
-      const T = 2 * k, B3 = 2 * (k + HW), Lf = 2 * k + 1, R = 2 * (k + 1) + 1;
+      const T = 2 * k, B3 = 2 * (k + HW), Lf = 2 * k + 1, R2 = 2 * (k + 1) + 1;
       if (tl !== tr) {
         const t = v0 / (v0 - v1);
         exA[T] = x + t;
@@ -4172,8 +4201,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       }
       if (tr !== br) {
         const t = v1 / (v1 - v2);
-        exA[R] = x + 1;
-        eyA[R] = y + t;
+        exA[R2] = x + 1;
+        eyA[R2] = y + t;
       }
       switch (c) {
         case 1:
@@ -4182,15 +4211,15 @@ pre.cmdout .ok{color:var(--cobalt)}
           break;
         case 2:
         case 13:
-          seg(T, R);
+          seg(T, R2);
           break;
         case 3:
         case 12:
-          seg(Lf, R);
+          seg(Lf, R2);
           break;
         case 4:
         case 11:
-          seg(R, B3);
+          seg(R2, B3);
           break;
         case 6:
         case 9:
@@ -4203,11 +4232,11 @@ pre.cmdout .ok{color:var(--cobalt)}
         case 5: {
           const m = (v0 + v1 + v2 + v3) / 4;
           if (m < 0) {
-            seg(T, R);
+            seg(T, R2);
             seg(Lf, B3);
           } else {
             seg(Lf, T);
-            seg(R, B3);
+            seg(R2, B3);
           }
           break;
         }
@@ -4215,9 +4244,9 @@ pre.cmdout .ok{color:var(--cobalt)}
           const m = (v0 + v1 + v2 + v3) / 4;
           if (m < 0) {
             seg(Lf, T);
-            seg(R, B3);
+            seg(R2, B3);
           } else {
-            seg(T, R);
+            seg(T, R2);
             seg(Lf, B3);
           }
           break;
@@ -4790,13 +4819,13 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var LEVANTA = 0.04;
   function geoOlhoAnime(p, sh, ringAt2, eyeY, s = 1) {
-    const R = ladoRosto(p, s), aperto = clamp(R.lidLo + 0.55 * R.cheek, 0, 1);
+    const R2 = ladoRosto(p, s), aperto = clamp(R2.lidLo + 0.55 * R2.cheek, 0, 1);
     const e = emo(p), X = e.X, k = e.k, ey0 = eyeY - 0.025, r0 = ringAt2(ey0, p, sh)[0];
     const w = Math.min(0.3 * (p.eyeSize || 1.25) * Math.pow(k, 0.5), 0.62 * r0);
-    const surpresa = Math.max(0, e.bU) * X, raiva = Math.max(0, e.bI) * X, tristeza = Math.max(0, -e.bI) * X, alegria = Math.max(0, R.smile) * X;
+    const surpresa = Math.max(0, e.bU) * X, raiva = Math.max(0, e.bI) * X, tristeza = Math.max(0, -e.bI) * X, alegria = Math.max(0, R2.smile) * X;
     const wide = rostoGeral(p).olho.arregalar;
-    const abre = (p.eyeOpen || 1) * (1 + 0.28 * surpresa + 0.42 * wide) * (1 - 0.95 * R.lid);
-    const hu = 0.088 * (p.eyeSize || 1.25) * k * abre, hl0 = 0.05 * (p.eyeSize || 1.25) * k * (1 - 0.7 * R.lid) * (1 + 0.45 * wide);
+    const abre = (p.eyeOpen || 1) * (1 + 0.28 * surpresa + 0.42 * wide) * (1 - 0.95 * R2.lid);
+    const hu = 0.088 * (p.eyeSize || 1.25) * k * abre, hl0 = 0.05 * (p.eyeSize || 1.25) * k * (1 - 0.7 * R2.lid) * (1 + 0.45 * wide);
     const hl = hl0 * (1 - 0.55 * clamp(alegria - 0.2, 0, 1)) * (1 - 0.45 * aperto);
     const xc = clamp(r0 * Math.sin((p.eyeGap || 22) * D2) + 0.1 * (k - 1), w / 2 + 0.06, r0 * 0.7);
     const up = (q) => {
@@ -4814,7 +4843,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const gY = clamp(p.eyeYaw || 0, -1, 1), gP = clamp(p.eyePitch || 0, -1, 1);
     return {
       e,
-      R,
+      R: R2,
       aperto,
       X,
       k,
@@ -4834,7 +4863,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       alegria,
       gx: (s2) => s2 * gY * 0.22 * w,
       gy: gP * 0.25 * hu - 0.12 * hu,
-      fechado: R.lid > 0.86 || abre < 0.12
+      fechado: R2.lid > 0.86 || abre < 0.12
     };
   }
   function olhosAnime(ctx) {
@@ -4842,61 +4871,61 @@ pre.cmdout .ok{color:var(--cobalt)}
     const X = emo(p).X, Gm = [geoOlhoAnime(p, sh, ringAt2, eyeY, 1), geoOlhoAnime(p, sh, ringAt2, eyeY, -1)];
     const alegriaMedia = (Gm[0].alegria + Gm[1].alegria) / 2;
     const corar = clamp(Math.max(p.blush || 0, 0.35 * clamp(alegriaMedia - 0.6, 0, 1)) * (0.6 + 0.4 * X), 0, 1), choro = clamp((p.tears || 0) * (0.6 + 0.4 * X), 0, 1);
-    const bochechaELagrimas = (E3, Xq, lo, k, s) => {
+    const bochechaELagrimas = (E4, Xq, lo, k, s) => {
       if (corar > 0.05) {
         const cy = lo(0.5) - 0.11 * k, cx = Xq(0.5);
-        fillP(arr2((a) => E3(cx + 0.13 * k * Math.cos(a), cy + 0.05 * k * Math.sin(a), 0.01), 0, 2 * Math.PI, 20), pal.coral, 0.35 * corar);
+        fillP(arr2((a) => E4(cx + 0.13 * k * Math.cos(a), cy + 0.05 * k * Math.sin(a), 0.01), 0, 2 * Math.PI, 20), pal.coral, 0.35 * corar);
         const n2 = corar > 0.6 ? 4 : 3;
-        for (let i = 0; i < n2; i++) curve("fibra", arr2((u) => E3(cx - 0.08 * k + 0.055 * k * i + 0.03 * k * u, cy + 0.03 * k - 0.05 * k * u, 0.013), 0, 1, 3));
+        for (let i = 0; i < n2; i++) curve("fibra", arr2((u) => E4(cx - 0.08 * k + 0.055 * k * i + 0.03 * k * u, cy + 0.03 * k - 0.05 * k * u, 0.013), 0, 1, 3));
       }
       if (choro > 0.05) {
         const y0 = lo(0.75);
-        fillP(arr2((q) => E3(Xq(q), lo(q) + 0.012, 0.016), 0.15, 0.95, 16).concat(arr2((q) => E3(Xq(q), lo(q) - 0.02 * choro, 0.016), 0.95, 0.15, 16)), pal.cobalt, 0.55 * choro);
+        fillP(arr2((q) => E4(Xq(q), lo(q) + 0.012, 0.016), 0.15, 0.95, 16).concat(arr2((q) => E4(Xq(q), lo(q) - 0.02 * choro, 0.016), 0.95, 0.15, 16)), pal.cobalt, 0.55 * choro);
         [0.62, 0.84].forEach((q0, i) => {
           const L3 = (0.32 + 0.12 * i) * choro;
-          const fio = arr2((u) => E3(Xq(q0) + 0.012 * Math.sin(5 * u + i), y0 - L3 * u, 0.016), 0, 1, 12), esp = 0.012 + 8e-3 * i;
-          fillP(fio.concat(arr2((u) => E3(Xq(q0) + esp + 0.012 * Math.sin(5 * u + i), y0 - L3 * u, 0.016), 1, 0, 12)), pal.cobalt, 0.6 * choro);
+          const fio = arr2((u) => E4(Xq(q0) + 0.012 * Math.sin(5 * u + i), y0 - L3 * u, 0.016), 0, 1, 12), esp = 0.012 + 8e-3 * i;
+          fillP(fio.concat(arr2((u) => E4(Xq(q0) + esp + 0.012 * Math.sin(5 * u + i), y0 - L3 * u, 0.016), 1, 0, 12)), pal.cobalt, 0.6 * choro);
         });
       }
     };
     [-1, 1].forEach((s) => {
       const G = Gm[s > 0 ? 0 : 1], { e, k, ey0, w, hu, hl0, hl, xc, up, lo, abre, surpresa, alegria } = G;
       const Xq = (q) => (q - 0.5) * w;
-      const E3 = (ex, ey, off) => {
+      const E4 = (ex, ey, off) => {
         const y = ey0 + ey;
         return hp(y, s * Math.asin(clamp((xc + ex) / ringAt2(y, p, sh)[0], 0, 0.99)), off || 0.012);
       };
       {
-        const R = G.R, bg = rostoGeral(p).bags;
-        const pg = clamp(1.3 * (alegria - 0.55) + 0.8 * R.cheek + 0.5 * R.lidLo, 0, 1);
+        const R2 = G.R, bg = rostoGeral(p).bags;
+        const pg = clamp(1.3 * (alegria - 0.55) + 0.8 * R2.cheek + 0.5 * R2.lidLo, 0, 1);
         if (pg > 0.12) for (let i = 0, nL = pg > 0.6 ? 3 : 2; i < nL; i++) {
           const a0 = (nL === 3 ? -28 + 28 * i : -16 + 32 * i) * D2, L3 = (0.025 + 0.045 * pg) * k;
-          curve("fibra", arr2((u) => E3(Xq(1) + 0.012 * k + L3 * u * Math.cos(a0), 8e-3 * k + L3 * u * Math.sin(a0), 0.011), 0, 1, 4));
+          curve("fibra", arr2((u) => E4(Xq(1) + 0.012 * k + L3 * u * Math.cos(a0), 8e-3 * k + L3 * u * Math.sin(a0), 0.011), 0, 1, 4));
         }
-        const ch = clamp(1.3 * (alegria - 0.5) + R.cheek, 0, 1);
-        if (ch > 0.15) curve("fibra", arr2((q) => E3(Xq(q), lo(q) - (0.075 - 0.025 * ch) * k - 0.01 * k * Math.sin(Math.PI * q), 0.011), 0.22, 0.86, 10));
+        const ch = clamp(1.3 * (alegria - 0.5) + R2.cheek, 0, 1);
+        if (ch > 0.15) curve("fibra", arr2((q) => E4(Xq(q), lo(q) - (0.075 - 0.025 * ch) * k - 0.01 * k * Math.sin(Math.PI * q), 0.011), 0.22, 0.86, 10));
         if (bg > 0.05) {
-          fillP(arr2((q) => E3(Xq(q), lo(q) - 6e-3, 0.0105), 0.08, 0.95, 16).concat(arr2((q) => E3(Xq(q), lo(q) - 6e-3 - (0.018 + 0.03 * bg) * k * Math.sin(Math.PI * Math.pow(q, 0.9)), 0.0105), 0.95, 0.08, 16)), pal.shade2, +(0.12 + 0.3 * bg).toFixed(3));
-          if (bg > 0.3) curve("fibra", arr2((q) => E3(Xq(q), lo(q) - (0.03 + 0.03 * bg) * k * Math.sin(Math.PI * q), 0.011), 0.2, 0.85, 10));
+          fillP(arr2((q) => E4(Xq(q), lo(q) - 6e-3, 0.0105), 0.08, 0.95, 16).concat(arr2((q) => E4(Xq(q), lo(q) - 6e-3 - (0.018 + 0.03 * bg) * k * Math.sin(Math.PI * Math.pow(q, 0.9)), 0.0105), 0.95, 0.08, 16)), pal.shade2, +(0.12 + 0.3 * bg).toFixed(3));
+          if (bg > 0.3) curve("fibra", arr2((q) => E4(Xq(q), lo(q) - (0.03 + 0.03 * bg) * k * Math.sin(Math.PI * q), 0.011), 0.2, 0.85, 10));
         }
       }
       if (G.fechado) {
         const feliz = alegria > 0.15;
         const arco = (q) => (feliz ? 1 : -0.5) * 0.06 * k * Math.sin(Math.PI * q) - (feliz ? 0 : 0.01);
-        const pts = arr2((q) => E3(Xq(q), arco(q), 0.012), -0.02, 1.02, 26);
+        const pts = arr2((q) => E4(Xq(q), arco(q), 0.012), -0.02, 1.02, 26);
         curve("eyeU", pts);
-        curve("eyeU", arr2((q) => E3(Xq(q), arco(q) + 6e-3, 0.013), 0.1, 0.95, 20));
-        if (!feliz) curve("feat", arr2((q) => E3(Xq(1) + 0.02 * q, -0.012 - 0.02 * q, 0.012), 0, 1, 4));
-        bochechaELagrimas(E3, Xq, (q) => arco(q) - 0.02, k, s);
+        curve("eyeU", arr2((q) => E4(Xq(q), arco(q) + 6e-3, 0.013), 0.1, 0.95, 20));
+        if (!feliz) curve("feat", arr2((q) => E4(Xq(1) + 0.02 * q, -0.012 - 0.02 * q, 0.012), 0, 1, 4));
+        bochechaELagrimas(E4, Xq, (q) => arco(q) - 0.02, k, s);
         return;
       }
       const rvO = Math.min(1, G.raiva), opO = 0.42 * (1 - rvO);
-      if (opO > 0.04) fillP(arr2((q) => E3(Xq(q), up(q) + 0.016 * k, 9e-3), -0.1, 1.1, 20).concat(arr2((q) => E3(Xq(q), up(q) + (0.05 - 0.03 * rvO) * k, 9e-3), 1.1, -0.1, 20)), pal.shade1, +opO.toFixed(3));
-      fillP(arr2((q) => E3(Xq(q), up(q), 0.01), 0, 1, 30).concat(arr2((q) => E3(Xq(q), lo(q), 0.01), 1, 0, 30)), pal.fill);
-      const cornerShade = (q0, q1) => fillP(arr2((q) => E3(Xq(q), up(q), 0.0105), q0, q1, 10).concat(arr2((q) => E3(Xq(q), lo(q), 0.0105), q1, q0, 10)), pal.shade1, 0.4);
+      if (opO > 0.04) fillP(arr2((q) => E4(Xq(q), up(q) + 0.016 * k, 9e-3), -0.1, 1.1, 20).concat(arr2((q) => E4(Xq(q), up(q) + (0.05 - 0.03 * rvO) * k, 9e-3), 1.1, -0.1, 20)), pal.shade1, +opO.toFixed(3));
+      fillP(arr2((q) => E4(Xq(q), up(q), 0.01), 0, 1, 30).concat(arr2((q) => E4(Xq(q), lo(q), 0.01), 1, 0, 30)), pal.fill);
+      const cornerShade = (q0, q1) => fillP(arr2((q) => E4(Xq(q), up(q), 0.0105), q0, q1, 10).concat(arr2((q) => E4(Xq(q), lo(q), 0.0105), q1, q0, 10)), pal.shade1, 0.4);
       cornerShade(0, 0.13);
       cornerShade(0.87, 1);
-      fillP(arr2((q) => E3(Xq(q), up(q), 0.0112), 0.04, 0.96, 24).concat(arr2((q) => E3(Xq(q), up(q) - 0.03 * k, 0.0112), 0.96, 0.04, 24)), pal.shade1, 0.5);
+      fillP(arr2((q) => E4(Xq(q), up(q), 0.0112), 0.04, 0.96, 24).concat(arr2((q) => E4(Xq(q), up(q) - 0.03 * k, 0.0112), 0.96, 0.04, 24)), pal.shade1, 0.5);
       const OL = rostoGeral(p).olho, CI = rostoGeral(p).cilios, escI = (1 + 0.32 * OL.iris) * (1 - 0.2 * OL.arregalar);
       const rix = 0.36 * w * escI, riy = Math.min(0.62 * (hu + hl0) * escI * (1 + 0.25 * OL.arregalar), 0.95 * hu + hl);
       const semIris = OL.branco > 0.5 || OL.foco > 0.5, opI = 1 - Math.min(1, Math.max(OL.branco, OL.foco) * 2);
@@ -4907,37 +4936,37 @@ pre.cmdout .ok{color:var(--cobalt)}
       };
       const irisPts = (rx, ry, off) => arr2((a) => {
         const ex = gx + rx * Math.cos(a), ey = gy + ry * Math.sin(a);
-        return E3(ex, dentro2(ex, ey), off);
+        return E4(ex, dentro2(ex, ey), off);
       }, 0, 2 * Math.PI, 40);
       if (!semIris) {
         fillP(irisPts(rix, riy, 0.0135), pal.ink, 0.9 * opI);
         fillP(irisPts(rix * 0.84, riy * 0.84, 0.014), pal.shade3, 0.95 * opI);
         fillP(arr2((a) => {
           const ex = gx + rix * 0.72 * Math.cos(a), ey = gy + riy * 0.72 * Math.sin(a);
-          return E3(ex, dentro2(ex, ey), 0.0142);
+          return E4(ex, dentro2(ex, ey), 0.0142);
         }, Math.PI * 1.08, Math.PI * 1.92, 16), pal.shade1, 0.5);
         fillP(arr2((a) => {
           const ex = gx + rix * Math.cos(a), ey = gy + riy * 0.15 + riy * 0.85 * Math.abs(Math.sin(a));
-          return E3(ex, dentro2(ex, ey), 0.0145);
-        }, 0, Math.PI, 20).concat(arr2((q) => E3(gx + rix * (1 - 2 * q), dentro2(gx + rix * (1 - 2 * q), gy + riy * 0.15), 0.0145), 0, 1, 8)), pal.ink, 0.35);
+          return E4(ex, dentro2(ex, ey), 0.0145);
+        }, 0, Math.PI, 20).concat(arr2((q) => E4(gx + rix * (1 - 2 * q), dentro2(gx + rix * (1 - 2 * q), gy + riy * 0.15), 0.0145), 0, 1, 8)), pal.ink, 0.35);
         const rp = clamp((0.5 - 0.28 * clamp(surpresa + 0.6 * Math.max(0, e.bU) * Math.max(0, -e.bI), 0, 1)) * (OL.pupila >= 0 ? 1 + 0.75 * OL.pupila : 1 + 0.78 * OL.pupila), 0.06, 0.92) * rix;
         const rpx = rp * (1 - 0.78 * OL.fenda), rpy = 1.25 * rp * (1 + 0.55 * OL.fenda);
         fillP(arr2((a) => {
           const ex = gx + rpx * Math.cos(a), ey = gy + rpy * Math.sin(a);
-          return E3(ex, dentro2(ex, ey), 0.015);
+          return E4(ex, dentro2(ex, ey), 0.015);
         }, 0, 2 * Math.PI, 20), pal.ink, opI);
         const bri = OL.brilho, opB = clamp(1 + bri, 0, 1) * opI, kb = 1 + 0.45 * Math.max(0, bri);
         const bx = gx + 0.32 * rix, by = gy + 0.42 * riy;
         if (opB > 0.02) {
-          fillP(arr2((a) => E3(bx + 0.24 * kb * rix * Math.cos(a), dentro2(bx, by + 0.24 * kb * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 14), "#fff", opB);
-          fillP(arr2((a) => E3(gx - 0.3 * rix + 0.1 * kb * rix * Math.cos(a), dentro2(gx - 0.3 * rix, gy - 0.45 * riy + 0.1 * kb * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 10), "#fff", 0.9 * opB);
+          fillP(arr2((a) => E4(bx + 0.24 * kb * rix * Math.cos(a), dentro2(bx, by + 0.24 * kb * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 14), "#fff", opB);
+          fillP(arr2((a) => E4(gx - 0.3 * rix + 0.1 * kb * rix * Math.cos(a), dentro2(gx - 0.3 * rix, gy - 0.45 * riy + 0.1 * kb * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 10), "#fff", 0.9 * opB);
         }
         if (bri > 0.3) {
-          fillP(arr2((a) => E3(gx + 0.05 * rix + 0.07 * rix * Math.cos(a), dentro2(gx, gy - 0.1 * riy + 0.07 * rix * Math.sin(a)), 0.0162), 0, 2 * Math.PI, 8), "#fff", 0.9);
+          fillP(arr2((a) => E4(gx + 0.05 * rix + 0.07 * rix * Math.cos(a), dentro2(gx, gy - 0.1 * riy + 0.07 * rix * Math.sin(a)), 0.0162), 0, 2 * Math.PI, 8), "#fff", 0.9);
           const sx = gx - 0.15 * rix, sy = gy + 0.25 * riy, R1 = 0.3 * rix * bri, R2 = 0.07 * rix;
           fillP(arr2((a) => {
             const rr = Math.round(a / (Math.PI / 4)) % 2 === 0 ? R1 : R2;
-            return E3(sx + rr * Math.cos(a), dentro2(sx, sy + rr * Math.sin(a)), 0.0164);
+            return E4(sx + rr * Math.cos(a), dentro2(sx, sy + rr * Math.sin(a)), 0.0164);
           }, 0, 2 * Math.PI, 8), "#fff", 0.95);
         }
       }
@@ -4945,24 +4974,24 @@ pre.cmdout .ok{color:var(--cobalt)}
         const rf = (0.07 + 0.05 * (1 - OL.foco)) * rix;
         fillP(arr2((a) => {
           const ex = gx + rf * Math.cos(a), ey = gy + rf * 1.1 * Math.sin(a);
-          return E3(ex, dentro2(ex, ey), 0.015);
+          return E4(ex, dentro2(ex, ey), 0.015);
         }, 0, 2 * Math.PI, 14), pal.ink, Math.min(1, OL.foco * 1.6));
       }
       const esp = (q) => (0.011 + 0.022 * Math.pow(clamp(q, 0, 1), 1.3)) * k * (1 + 0.55 * CI.grossa);
-      fillP(arr2((q) => E3(Xq(q), up(q), 0.017), -0.04, 1.06, 30).concat(arr2((q) => E3(Xq(q) + 0.018 * k * Math.max(0, q - 0.85) / 0.15, up(q) + esp(q), 0.017), 1.1, -0.04, 30)), pal.ink);
+      fillP(arr2((q) => E4(Xq(q), up(q), 0.017), -0.04, 1.06, 30).concat(arr2((q) => E4(Xq(q) + 0.018 * k * Math.max(0, q - 0.85) / 0.15, up(q) + esp(q), 0.017), 1.1, -0.04, 30)), pal.ink);
       if (CI.comp > 0.05) for (let i = 0; i < 4; i++) {
-        const q = 0.62 + 0.14 * i, L3 = (0.02 + 0.05 * CI.comp) * k * (0.7 + 0.15 * i), a = (35 - 12 * i) * D2, b0 = E3(Xq(q), up(q) + esp(q) * 0.6, 0.0172);
+        const q = 0.62 + 0.14 * i, L3 = (0.02 + 0.05 * CI.comp) * k * (0.7 + 0.15 * i), a = (35 - 12 * i) * D2, b0 = E4(Xq(q), up(q) + esp(q) * 0.6, 0.0172);
         const base2 = [Xq(q), up(q) + esp(q) * 0.6], ponta = [base2[0] + L3 * Math.cos(a), base2[1] + L3 * Math.sin(a)], larg = 6e-3 * k;
-        fillP([E3(base2[0] - larg, base2[1] - 2e-3, 0.0172), E3((base2[0] + ponta[0]) / 2, (base2[1] + ponta[1]) / 2 + 6e-3 * k, 0.0172), E3(ponta[0], ponta[1], 0.0172), E3(base2[0] + larg, base2[1] - 4e-3, 0.0172)], pal.ink);
+        fillP([E4(base2[0] - larg, base2[1] - 2e-3, 0.0172), E4((base2[0] + ponta[0]) / 2, (base2[1] + ponta[1]) / 2 + 6e-3 * k, 0.0172), E4(ponta[0], ponta[1], 0.0172), E4(base2[0] + larg, base2[1] - 4e-3, 0.0172)], pal.ink);
       }
       if (CI.baixo > 0.05) for (let i = 0; i < 3; i++) {
         const q = 0.6 + 0.15 * i, L3 = (0.012 + 0.025 * CI.baixo) * k;
-        curve("feat", [E3(Xq(q), lo(q), 0.0135), E3(Xq(q) + 0.35 * L3, lo(q) - L3, 0.0135)]);
+        curve("feat", [E4(Xq(q), lo(q), 0.0135), E4(Xq(q) + 0.35 * L3, lo(q) - L3, 0.0135)]);
       }
-      curve("feat", arr2((q) => E3(Xq(q), lo(q), 0.013), 0.45, 1, 14));
-      curve("fibra", arr2((q) => E3(Xq(q), up(q) + esp(q) + 0.03 * k, 0.012), 0.2, 0.9, 16));
-      curve("fibra", arr2((q) => E3(Xq(q), up(q) + esp(q) + 0.058 * k, 0.012), 0.3, 0.82, 14));
-      bochechaELagrimas(E3, Xq, lo, k, s);
+      curve("feat", arr2((q) => E4(Xq(q), lo(q), 0.013), 0.45, 1, 14));
+      curve("fibra", arr2((q) => E4(Xq(q), up(q) + esp(q) + 0.03 * k, 0.012), 0.2, 0.9, 16));
+      curve("fibra", arr2((q) => E4(Xq(q), up(q) + esp(q) + 0.058 * k, 0.012), 0.3, 0.82, 14));
+      bochechaELagrimas(E4, Xq, lo, k, s);
     });
   }
   function bocaAnime(p, sh, ringAt2) {
@@ -4993,7 +5022,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const surfX = (y, x) => Math.asin(clamp(x / ringAt2(y, p, sh)[0], -0.99, 0.99));
     let H2 = (x, y, off = 0.015) => hp(y, surfX(y, x), off);
     [-1, 1].forEach((s) => {
-      const R = ladoRosto(p, s), sup = Math.max(0, e.bU) * X, baixa = Math.max(0, -e.bU) * X, rv = Math.max(0, e.bI) * X, tr = Math.max(0, -e.bI) * X, iI = R.browInner * X, iO = R.browOuter * X;
+      const R2 = ladoRosto(p, s), sup = Math.max(0, e.bU) * X, baixa = Math.max(0, -e.bU) * X, rv = Math.max(0, e.bI) * X, tr = Math.max(0, -e.bI) * X, iI = R2.browInner * X, iO = R2.browOuter * X;
       const th0 = 8 - 3 * Math.min(1, rv), SB = rostoGeral(p).sobrancelha;
       const pt2 = (u, dy) => {
         const arco = (0.035 + 0.045 * sup - 0.02 * Math.min(1, rv)) * (1 + 0.9 * SB.arco) * Math.sin(Math.PI * Math.pow(u, 0.7)) + SB.quebra * 0.045 * Math.max(0, 1 - Math.abs(u - 0.62) / 0.62) - SB.quebra * 0.02 * u + SB.onda * 0.011 * Math.sin(u * Math.PI * 5);
@@ -5035,8 +5064,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         const y0 = eyeY + 0.36 + 0.065 * i, xs = 0.13 + 0.04 * i - 0.04 * (1 - testa);
         curve(testa > 0.45 ? "divisao" : "fibra", arr2((x) => H2(x, y0 + 6e-3 * Math.sin(x * 40 + i) - 0.03 * Math.pow(x / xs, 2), 0.012), -xs, xs, 14));
       }
-      [[1, RL], [-1, RR]].forEach(([s, R]) => {
-        const v = Math.max(clamp(1.3 * (Math.max(0, R.smile) * X - 0.35) + 0.9 * R.upperLip + 0.4 * Qg.nose + 0.5 * R.cheek, 0, 1), Qg.rugas.boca);
+      [[1, RL], [-1, RR]].forEach(([s, R2]) => {
+        const v = Math.max(clamp(1.3 * (Math.max(0, R2.smile) * X - 0.35) + 0.9 * R2.upperLip + 0.4 * Qg.nose + 0.5 * R2.cheek, 0, 1), Qg.rugas.boca);
         if (v < 0.1) return;
         const P0 = [s * 0.075, yt - 0.03], P22 = [s * (w + 0.035), B3.my - 5e-3], P1 = [s * (w + 0.075), (P0[1] + P22[1]) / 2 + 0.02], fim = 0.5 + 0.5 * v;
         curve("fibra", arr2((u) => {
@@ -5308,15 +5337,15 @@ pre.cmdout .ok{color:var(--cobalt)}
       sl += wl[k];
       st += wt[k];
     }
-    let R = [1, 0, 0, 0, 1, 0, 0, 0, 1], C2 = [0, yA, zc];
-    const out = [comp(Pel, { M: R, T: [0, 0, 0] })];
+    let R2 = [1, 0, 0, 0, 1, 0, 0, 0, 1], C2 = [0, yA, zc];
+    const out = [comp(Pel, { M: R2, T: [0, 0, 0] })];
     for (let k = 0; k < N; k++) {
       const a = wl[k] / sl, b = wt[k] / st, d = [0, 1, 2].map((i) => (ang[0][i] * a + ang[1][i] * b) * D);
-      const Rh = mmul(R, rotM(d[0] / 2, d[1] / 2, d[2] / 2)), v = mv(Rh, [0, dy, 0]);
+      const Rh = mmul(R2, rotM(d[0] / 2, d[1] / 2, d[2] / 2)), v = mv(Rh, [0, dy, 0]);
       C2 = [C2[0] + v[0], C2[1] + v[1], C2[2] + v[2]];
-      R = mmul(R, rotM(d[0], d[1], d[2]));
-      const y = yA + (k + 1) * dy, q = mv(R, [0, y, zc]);
-      out.push(comp(Pel, { M: R, T: [C2[0] - q[0], C2[1] - q[1], C2[2] - q[2]] }));
+      R2 = mmul(R2, rotM(d[0], d[1], d[2]));
+      const y = yA + (k + 1) * dy, q = mv(R2, [0, y, zc]);
+      out.push(comp(Pel, { M: R2, T: [C2[0] - q[0], C2[1] - q[1], C2[2] - q[2]] }));
     }
     return out;
   }
@@ -5479,9 +5508,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     pole = [pole[0] - pd * dir[0], pole[1] - pd * dir[1], pole[2] - pd * dir[2]];
     const pl = Math.hypot(pole[0], pole[1], pole[2]) || 1;
     pole = pole.map((c3) => c3 / pl);
-    const E3 = [G[0] + dir[0] * a + pole[0] * h, G[1] + dir[1] * a + pole[1] * h, G[2] + dir[2] * a + pole[2] * h];
+    const E4 = [G[0] + dir[0] * a + pole[0] * h, G[1] + dir[1] * a + pole[1] * h, G[2] + dir[2] * a + pole[2] * h];
     const Pc = [G[0] + dir[0] * dc, G[1] + dir[1] * dc, G[2] + dir[2] * dc];
-    const u = [(E3[0] - G[0]) / L1, (E3[1] - G[1]) / L1, (E3[2] - G[2]) / L1], w = [(Pc[0] - E3[0]) / L22, (Pc[1] - E3[1]) / L22, (Pc[2] - E3[2]) / L22];
+    const u = [(E4[0] - G[0]) / L1, (E4[1] - G[1]) / L1, (E4[2] - G[2]) / L1], w = [(Pc[0] - E4[0]) / L22, (Pc[1] - E4[1]) / L22, (Pc[2] - E4[2]) / L22];
     const fl = Math.asin(clamp(u[2], -1, 1)), b = Math.atan2(u[0], -u[1]);
     const ab = s * b;
     const M0 = rotM(0, -fl, s * ab * 1), fl2 = mv(mT(M0), w);
@@ -6813,7 +6842,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         out.push('<path d="' + d + 'Z" style="fill:' + col + ";stroke:none" + (op ? ";opacity:" + op : "") + '"/>');
       };
       [-1, 1].forEach((s) => {
-        const R = ladoRosto(p, s), lid2 = R.lid, ap = clamp(R.lidLo + 0.55 * R.cheek, 0, 1);
+        const R2 = ladoRosto(p, s), lid2 = R2.lid, ap = clamp(R2.lidLo + 0.55 * R2.cheek, 0, 1);
         const OL = rostoGeral(p).olho;
         const hu2 = 0.062 * p.eyeSize * p.eyeOpen * (1 - 0.92 * lid2) * (1 + 0.18 * Math.max(0, p.browUp || 0) + 0.45 * OL.arregalar) * (1 - 0.2 * ap), hl2 = 0.036 * p.eyeSize * p.eyeOpen * (1 - 0.6 * lid2) * (1 - 0.5 * ap) * (1 + 0.4 * OL.arregalar);
         const up2 = (q) => {
@@ -6825,56 +6854,56 @@ pre.cmdout .ok{color:var(--cobalt)}
           return -hl2 * Math.sin(Math.PI * Math.pow(q, 1.15)) + tilt(q);
         };
         const xc = ringAt(eyeY, p, sh)[0] * Math.sin(p.eyeGap * D);
-        const E3 = (ex, ey, off) => {
+        const E4 = (ex, ey, off) => {
           const y = eyeY + ey;
           return hp(y, s * Math.asin(clamp((xc + ex) / ringAt(y, p, sh)[0], 0, 0.99)), off || 0.01);
         };
         const so = [], si = [];
         for (let i = 0; i <= 20; i++) {
           const q = i / 20, k = Math.sin(Math.PI * q);
-          so.push(E3(X(q) * 1.25 - 0.01, up2(q) + 0.012 + 0.05 * k * p.eyeSize, 4e-3));
-          si.push(E3(X(q), up2(q), 4e-3));
+          so.push(E4(X(q) * 1.25 - 0.01, up2(q) + 0.012 + 0.05 * k * p.eyeSize, 4e-3));
+          si.push(E4(X(q), up2(q), 4e-3));
         }
         fillP2(so.concat(si.reverse()), pal.shade2, 0.75);
-        const al = arr2((q) => E3(X(q), up2(q), 8e-3), 0, 1, 28), bl = arr2((q) => E3(X(q), lo2(q), 8e-3), 1, 0, 28);
+        const al = arr2((q) => E4(X(q), up2(q), 8e-3), 0, 1, 28), bl = arr2((q) => E4(X(q), lo2(q), 8e-3), 1, 0, 28);
         fillP2(al.concat(bl), pal.fill);
-        const sh1 = arr2((q) => E3(X(q), up2(q), 0.01), 0.05, 0.95, 20), sh2 = arr2((q) => E3(X(q), up2(q) - 0.4 * hu2 * Math.sin(Math.PI * q), 0.01), 0.95, 0.05, 20);
+        const sh1 = arr2((q) => E4(X(q), up2(q), 0.01), 0.05, 0.95, 20), sh2 = arr2((q) => E4(X(q), up2(q) - 0.4 * hu2 * Math.sin(Math.PI * q), 0.01), 0.95, 0.05, 20);
         fillP2(sh1.concat(sh2), pal.shade1, 0.9);
-        if (OL.foco > 0.5 && lid2 < 0.8) fillP2(arr2((a) => E3(s * gY * 0.085 * p.eyeSize + 8e-3 * p.eyeSize * Math.cos(a), gP * 0.03 * p.eyeSize + 9e-3 * p.eyeSize * Math.sin(a), 0.013), 0, 2 * Math.PI, 10), pal.ink);
+        if (OL.foco > 0.5 && lid2 < 0.8) fillP2(arr2((a) => E4(s * gY * 0.085 * p.eyeSize + 8e-3 * p.eyeSize * Math.cos(a), gP * 0.03 * p.eyeSize + 9e-3 * p.eyeSize * Math.sin(a), 0.013), 0, 2 * Math.PI, 10), pal.ink);
         if ((p.eyeStyle >= 0.5 || OL.iris || OL.pupila || OL.brilho || OL.fenda) && OL.branco < 0.5 && OL.foco < 0.5) {
           const ri = 0.066 * p.eyeSize * (1 + 0.3 * OL.iris) * (1 - 0.2 * OL.arregalar), gx = s * gY * 0.085 * p.eyeSize, gy = gP * 0.03 * p.eyeSize, rpu = 0.024 * p.eyeSize * (OL.pupila >= 0 ? 1 + 0.8 * OL.pupila : 1 + 0.8 * OL.pupila) * (1 + 0.3 * OL.iris);
           const ip = [];
           for (let i = 0; i < 48; i++) {
             const a = i / 48 * 2 * Math.PI, ex = ri * Math.cos(a) + gx, ey = ri * Math.sin(a) + gy, q = clamp(ex / w + 0.5, 0, 1);
-            ip.push(E3(ex, clamp(ey, lo2(q) * 0.98, up2(q) * 0.98), 0.012));
+            ip.push(E4(ex, clamp(ey, lo2(q) * 0.98, up2(q) * 0.98), 0.012));
           }
           fillP2(ip, pal.shade2);
           if (lid2 < 0.8) {
             const pc = (q) => [clamp(gx + rpu * (1 - 0.75 * OL.fenda) * Math.cos(q), X(0.08), X(0.92)), clamp(gy + rpu * (1 + 0.5 * OL.fenda) * Math.sin(q), lo2(clamp(gx / w + 0.5, 0, 1)) * 0.9, up2(clamp(gx / w + 0.5, 0, 1)) * 0.9)];
             const pp = arr2((a) => {
               const c = pc(a);
-              return E3(c[0], c[1], 0.013);
+              return E4(c[0], c[1], 0.013);
             }, 0, 2 * Math.PI, 16);
             fillP2(pp, pal.ink);
             const ob = clamp(1 + OL.brilho, 0, 1), kb = 1 + 0.5 * Math.max(0, OL.brilho);
-            if (ob > 0.02) fillP2(arr2((a) => E3(gx + 0.012 * p.eyeSize + 7e-3 * kb * Math.cos(a), gy + 0.02 * p.eyeSize + 7e-3 * kb * Math.sin(a), 0.014), 0, 2 * Math.PI, 10), "#fff", ob < 1 ? ob : void 0);
-            if (OL.brilho > 0.3) fillP2(arr2((a) => E3(gx - 0.012 * p.eyeSize + 4e-3 * Math.cos(a), gy - 0.012 * p.eyeSize + 4e-3 * Math.sin(a), 0.014), 0, 2 * Math.PI, 8), "#fff");
+            if (ob > 0.02) fillP2(arr2((a) => E4(gx + 0.012 * p.eyeSize + 7e-3 * kb * Math.cos(a), gy + 0.02 * p.eyeSize + 7e-3 * kb * Math.sin(a), 0.014), 0, 2 * Math.PI, 10), "#fff", ob < 1 ? ob : void 0);
+            if (OL.brilho > 0.3) fillP2(arr2((a) => E4(gx - 0.012 * p.eyeSize + 4e-3 * Math.cos(a), gy - 0.012 * p.eyeSize + 4e-3 * Math.sin(a), 0.014), 0, 2 * Math.PI, 8), "#fff");
           }
         }
-        curve("eyeU", arr2((q) => E3(X(q), up2(q)), -0.04, 1.02, 32));
-        curve("feat", arr2((q) => E3(X(q), lo2(q)), 0.03, 0.97, 28));
+        curve("eyeU", arr2((q) => E4(X(q), up2(q)), -0.04, 1.02, 32));
+        curve("feat", arr2((q) => E4(X(q), lo2(q)), 0.03, 0.97, 28));
         curve("feat", arr2((q) => {
           const r = 0.1 + 0.8 * q;
-          return E3(X(r), up2(r) + 0.026 * p.eyeSize + 0.01 * Math.sin(Math.PI * q), 0.01);
+          return E4(X(r), up2(r) + 0.026 * p.eyeSize + 0.01 * Math.sin(Math.PI * q), 0.01);
         }, 0, 1, 20));
-        curve("feat", arr2((k) => E3(X(1) + 0.012 * k, up2(1) - 4e-3 + 5e-3 * k), 0, 1, 4));
-        curve("feat", arr2((a) => E3(X(0) + 0.012 * Math.cos(a) + 0.012, lo2(0) + 0.012 * Math.sin(a) + 6e-3), -0.5, 2.8, 10));
-        const contr = clamp(0.65 * Math.max(0, R.smile) + 0.35 * lid2 + 0.2 * Math.max(0, p.browIn || 0) + 0.4 * ap, 0, 1);
+        curve("feat", arr2((k) => E4(X(1) + 0.012 * k, up2(1) - 4e-3 + 5e-3 * k), 0, 1, 4));
+        curve("feat", arr2((a) => E4(X(0) + 0.012 * Math.cos(a) + 0.012, lo2(0) + 0.012 * Math.sin(a) + 6e-3), -0.5, 2.8, 10));
+        const contr = clamp(0.65 * Math.max(0, R2.smile) + 0.35 * lid2 + 0.2 * Math.max(0, p.browIn || 0) + 0.4 * ap, 0, 1);
         if (contr > 0.16) {
-          curve("divisao", arr2((q) => E3(X(q), lo2(q) - 0.025 - 0.018 * contr * Math.sin(Math.PI * q), 0.012), 0.13, 0.88, 22));
+          curve("divisao", arr2((q) => E4(X(q), lo2(q) - 0.025 - 0.018 * contr * Math.sin(Math.PI * q), 0.012), 0.13, 0.88, 22));
           if (contr > 0.4) for (const d of [-0.025, 7e-3]) curve(
             "fibra",
-            arr2((u) => E3(X(1) + 0.015 + 0.06 * u, 0.025 + d - 0.025 * u, 0.015), 0, 1, 9)
+            arr2((u) => E4(X(1) + 0.015 + 0.06 * u, 0.025 + d - 0.025 * u, 0.015), 0, 1, 9)
           );
         }
       });
@@ -6883,17 +6912,17 @@ pre.cmdout .ok{color:var(--cobalt)}
     out.push('<g id="orelhas">');
     if (L3.ears) {
       [-1, 1].forEach((s) => {
-        const E3 = headV3Enabled(p) ? (u, v) => earPointV3(p, sh, s, u, v, true) : (u, v) => earSurf(p, sh, s, u, v);
-        if (s * xfd([1, 0, 0])[2] > 0.05) fillP(arr2((a) => E3(0.12 + 0.34 * Math.cos(a), -0.05 + 0.36 * Math.sin(a)), 0, 2 * Math.PI, 28), pal.shade2, 0.9);
+        const E4 = headV3Enabled(p) ? (u, v) => earPointV3(p, sh, s, u, v, true) : (u, v) => earSurf(p, sh, s, u, v);
+        if (s * xfd([1, 0, 0])[2] > 0.05) fillP(arr2((a) => E4(0.12 + 0.34 * Math.cos(a), -0.05 + 0.36 * Math.sin(a)), 0, 2 * Math.PI, 28), pal.shade2, 0.9);
         if (p.headModel === "v4_anatomical") {
           earCurvesV41(p, sh, s).forEach((g) => curve(g.name === "helix" ? "ear" : "divisao", g.pts));
         } else {
-          curve("ear", arr2((a) => E3(Math.cos(a), Math.sin(a)), 0, 2 * Math.PI, 64));
-          curve("ear", arr2((a) => E3(0.8 * Math.cos(a) - 0.02, 0.84 * Math.sin(a)), 35 * D, 335 * D, 52));
-          curve("ear", arr2((k) => E3(-0.07 - 0.38 * Math.sin(Math.PI * k), 0.62 - 1.12 * k), 0, 1, 22));
-          curve("ear", arr2((k) => E3(lerp(0.25, -0.1, k), lerp(0.78, 0.5, k)), 0, 1, 8));
-          curve("ear", arr2((a) => E3(0.8 + 0.1 * Math.cos(a), -0.18 + 0.16 * Math.sin(a)), -80 * D, 100 * D, 12));
-          curve("ear", arr2((k) => E3(lerp(-0.5, 0.45, k), -0.74 + 0.06 * Math.sin(Math.PI * k)), 0, 1, 14));
+          curve("ear", arr2((a) => E4(Math.cos(a), Math.sin(a)), 0, 2 * Math.PI, 64));
+          curve("ear", arr2((a) => E4(0.8 * Math.cos(a) - 0.02, 0.84 * Math.sin(a)), 35 * D, 335 * D, 52));
+          curve("ear", arr2((k) => E4(-0.07 - 0.38 * Math.sin(Math.PI * k), 0.62 - 1.12 * k), 0, 1, 22));
+          curve("ear", arr2((k) => E4(lerp(0.25, -0.1, k), lerp(0.78, 0.5, k)), 0, 1, 8));
+          curve("ear", arr2((a) => E4(0.8 + 0.1 * Math.cos(a), -0.18 + 0.16 * Math.sin(a)), -80 * D, 100 * D, 12));
+          curve("ear", arr2((k) => E4(lerp(-0.5, 0.45, k), -0.74 + 0.06 * Math.sin(Math.PI * k)), 0, 1, 14));
         }
       });
     }
@@ -6940,11 +6969,11 @@ pre.cmdout .ok{color:var(--cobalt)}
     out.push("</g>");
     let juntasTela = null;
     if (L3.ossos && mode2 !== "depth") {
-      const E3 = ossosDoCorpo(p), sp = (v) => {
+      const E4 = ossosDoCorpo(p), sp = (v) => {
         const q = xv(v);
         return [CX + S * q[0], CY - S * q[1], q[2]];
       }, g = [];
-      const ord = E3.ossos.map((o) => ({ o, a: sp(o.a), b: sp(o.b) })).sort((x, y) => x.a[2] + x.b[2] - (y.a[2] + y.b[2]));
+      const ord = E4.ossos.map((o) => ({ o, a: sp(o.a), b: sp(o.b) })).sort((x, y) => x.a[2] + x.b[2] - (y.a[2] + y.b[2]));
       for (const { o, a, b } of ord) {
         if (o.tipo === "cranio") {
           const r = o.r * S;
@@ -6955,7 +6984,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         g.push('<path d="' + d + '" style="fill:none;stroke:' + pal.ink + ";stroke-width:" + f1(w + 1.6) + ';stroke-linecap:round;opacity:.85"/>');
         g.push('<path d="' + d + '" style="fill:none;stroke:' + pal.fill + ";stroke-width:" + f1(w) + ';stroke-linecap:round"/>');
       }
-      juntasTela = E3.juntas.filter((j) => !j.menor).map((j) => {
+      juntasTela = E4.juntas.filter((j) => !j.menor).map((j) => {
         const q = sp(j.P);
         return { nome: j.nome, k: j.k, s: j.s, x: q[0], y: q[1] };
       });
@@ -7061,9 +7090,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     const d = b.map((v, i) => v - a[i]), L3 = Math.hypot(...d);
     return Object.assign({ cil: true, c: a.map((v, i) => (v + b[i]) / 2), r, hh: L3 / 2, R: rotParaEixo(d) }, extra || {});
   }
-  var ocCaixa = (c, h, R) => R ? { c, h, R } : { c, h };
+  var ocCaixa = (c, h, R2) => R2 ? { c, h, R: R2 } : { c, h };
   var ocEsf = (c, r, extra) => Object.assign({ esf: true, c, r: Array.isArray(r) ? r : [r, r, r] }, extra || {});
-  var ocToro = (c, R, rt, eixo, ra, extra) => Object.assign({ toro: true, c, Rm: R, rt, ra: ra || rt, R: rotParaEixo(EIXO[eixo] || eixo) }, extra || {});
+  var ocToro = (c, R2, rt, eixo, ra, extra) => Object.assign({ toro: true, c, Rm: R2, rt, ra: ra || rt, R: rotParaEixo(EIXO[eixo] || eixo) }, extra || {});
   var ocPega = (P3, N, eixo, extra) => Object.assign({ P: P3, N: ocUnit(N), eixo: ocUnit(eixo) }, extra || {});
   var COMPOSTOS = {
     /* -- formas puras (medidas pela caixa envolvente) -- */
@@ -7647,8 +7676,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       alt: 12,
       grupo: "arma",
       partes: (o) => {
-        const c = o.alt * 0.46, sg = 2, R = (c * c + sg * sg) / (2 * sg);
-        return [ocToro([0.4 + R - sg, o.alt / 2, 0], R, 0.13, "z", 0.13, { meio: [-1, 0, 0, (R - sg) / R - 0.01] }), ocTubo([0.4, o.alt / 2 - c, 0], [0.4, o.alt / 2 + c, 0], 0.025)];
+        const c = o.alt * 0.46, sg = 2, R2 = (c * c + sg * sg) / (2 * sg);
+        return [ocToro([0.4 + R2 - sg, o.alt / 2, 0], R2, 0.13, "z", 0.13, { meio: [-1, 0, 0, (R2 - sg) / R2 - 0.01] }), ocTubo([0.4, o.alt / 2 - c, 0], [0.4, o.alt / 2 + c, 0], 0.025)];
       },
       pegas: (o) => ({ punho: ocPega([0.4 - 2, o.alt / 2, 0], [-1, 0, 0], [0, 1, 0]) })
     }
@@ -7912,7 +7941,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function sobrepoePartes3D(A, B3) {
     const axes = [], sub3 = [B3.c[0] - A.c[0], B3.c[1] - A.c[1], B3.c[2] - A.c[2]];
-    for (const E3 of [...A.e, ...B3.e]) axes.push(E3);
+    for (const E4 of [...A.e, ...B3.e]) axes.push(E4);
     for (const a of A.e) for (const b of B3.e) {
       const v = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
       if (Math.hypot(...v) > 1e-7) axes.push(v);
@@ -7920,7 +7949,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     let min = Infinity, n2 = [0, 1, 0];
     for (const v of axes) {
       const len3 = Math.hypot(...v), ax = v.map((x) => x / len3), dist = sub3.reduce((z, x, i) => z + x * ax[i], 0);
-      const radius = (E3) => E3.e.reduce((z, e, i) => z + E3.h[i] * Math.abs(e.reduce((t, x, k) => t + x * ax[k], 0)), 0);
+      const radius = (E4) => E4.e.reduce((z, e, i) => z + E4.h[i] * Math.abs(e.reduce((t, x, k) => t + x * ax[k], 0)), 0);
       const overlap = radius(A) + radius(B3) - Math.abs(dist);
       if (overlap <= 0) return null;
       if (overlap < min) {
@@ -7942,15 +7971,15 @@ pre.cmdout .ok{color:var(--cobalt)}
       prof = A.r + B3.r - d;
       n2 = d > 1e-6 ? [-dx / d, -dz / d] : [1, 0];
     } else if (A.cil || B3.cil) {
-      const C2 = A.cil ? A : B3, R = A.cil ? B3 : A, ux = [R.e[0][0], R.e[0][2]], uz = [R.e[2][0], R.e[2][2]];
-      const vx = C2.c[0] - R.c[0], vz = C2.c[2] - R.c[2], lx = vx * ux[0] + vz * ux[1], lz = vx * uz[0] + vz * uz[1];
-      const qx = Math.max(-R.h[0], Math.min(R.h[0], lx)), qz = Math.max(-R.h[2], Math.min(R.h[2], lz)), ex = lx - qx, ez = lz - qz, d = Math.hypot(ex, ez);
+      const C2 = A.cil ? A : B3, R2 = A.cil ? B3 : A, ux = [R2.e[0][0], R2.e[0][2]], uz = [R2.e[2][0], R2.e[2][2]];
+      const vx = C2.c[0] - R2.c[0], vz = C2.c[2] - R2.c[2], lx = vx * ux[0] + vz * ux[1], lz = vx * uz[0] + vz * uz[1];
+      const qx = Math.max(-R2.h[0], Math.min(R2.h[0], lx)), qz = Math.max(-R2.h[2], Math.min(R2.h[2], lz)), ex = lx - qx, ez = lz - qz, d = Math.hypot(ex, ez);
       let nl;
       if (d > 1e-6) {
         prof = C2.r - d;
         nl = [ex / d, ez / d];
       } else {
-        const fx = R.h[0] - Math.abs(lx), fz = R.h[2] - Math.abs(lz);
+        const fx = R2.h[0] - Math.abs(lx), fz = R2.h[2] - Math.abs(lz);
         if (fx < fz) {
           prof = C2.r + fx;
           nl = [Math.sign(lx) || 1, 0];
@@ -7964,8 +7993,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     } else {
       prof = 1e9;
       n2 = [1, 0];
-      for (const E3 of [A, B3]) for (const k of [0, 2]) {
-        const ax = [E3.e[k][0], E3.e[k][2]], proj2 = (R) => Math.abs(R.h[0] * (R.e[0][0] * ax[0] + R.e[0][2] * ax[1])) + Math.abs(R.h[2] * (R.e[2][0] * ax[0] + R.e[2][2] * ax[1]));
+      for (const E4 of [A, B3]) for (const k of [0, 2]) {
+        const ax = [E4.e[k][0], E4.e[k][2]], proj2 = (R2) => Math.abs(R2.h[0] * (R2.e[0][0] * ax[0] + R2.e[0][2] * ax[1])) + Math.abs(R2.h[2] * (R2.e[2][0] * ax[0] + R2.e[2][2] * ax[1]));
         const dist = dx * ax[0] + dz * ax[1], ov = proj2(A) + proj2(B3) - Math.abs(dist);
         if (ov < prof) {
           prof = ov;
@@ -8013,8 +8042,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { cam, cs, tela, d, S, persp: !!p.persp };
   }
   function luzCam(p) {
-    const A = (p.lightAz || 0) * D, E3 = (p.lightEl || 45) * D;
-    return [Math.sin(A) * Math.cos(E3), Math.sin(E3), Math.cos(A) * Math.cos(E3)];
+    const A = (p.lightAz || 0) * D, E4 = (p.lightEl || 45) * D;
+    return [Math.sin(A) * Math.cos(E4), Math.sin(E4), Math.cos(A) * Math.cos(E4)];
   }
   var FACES = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]];
   function cantos(b) {
@@ -8048,6 +8077,11 @@ pre.cmdout .ok{color:var(--cobalt)}
     let sombra = "";
     for (const b of bs) {
       const fs = [], g = { b, fs, cil: null };
+      const zPerto = p.persp ? ci.d * 0.79 : Infinity;
+      if (p.persp && (b.esf || b.toro || b.cil)) {
+        const cz = ci.cs(b.c)[2], rr = b.cil ? Math.max(b.r || 0, b.h && b.h[1] || 0) : Math.max(...[].concat(b.r || 0));
+        if (cz + rr > zPerto) continue;
+      }
       if (b.esf || b.toro) {
         g.malha = malhaFaces(b, ci, LD2, fs);
         if (b.cor) fs.forEach((f) => f.ink = b.cor);
@@ -8077,11 +8111,25 @@ pre.cmdout .ok{color:var(--cobalt)}
         const olho = p.persp ? [-cen[0], -cen[1], ci.d - cen[2]] : [0, 0, 1];
         if (n2[0] * olho[0] + n2[1] * olho[1] + n2[2] * olho[2] <= 1e-6) return;
         const lum = n2[0] * LD2[0] + n2[1] * LD2[1] + n2[2] * LD2[2];
+        if (f.some((i) => Cc[i][2] > zPerto)) {
+          const P0 = f.map((i) => Cc[i]), Q = [];
+          for (let k = 0; k < P0.length; k++) {
+            const A = P0[k], B3 = P0[(k + 1) % P0.length], ia = A[2] <= zPerto, ib = B3[2] <= zPerto;
+            if (ia) Q.push(A);
+            if (ia !== ib) {
+              const t = (zPerto - A[2]) / (B3[2] - A[2]);
+              Q.push([A[0] + (B3[0] - A[0]) * t, A[1] + (B3[1] - A[1]) * t, zPerto]);
+            }
+          }
+          if (Q.length < 3) return;
+          fs.push({ pts: Q.map(ci.tela), z: Math.min(cen[2], zPerto), lum });
+          return;
+        }
         fs.push({ pts: f.map((i) => T[i]), z: cen[2], lum });
       });
       grupos.push(g);
       faces.push(...fs);
-      if (L3.shadow && Lw[1] > 0.08) {
+      if (L3.shadow && Lw[1] > 0.08 && !Cc.some((c) => c[2] > zPerto)) {
         const pts = C2.map((w) => {
           const t = (w[1] - g0) / Lw[1];
           return ci.tela(ci.cs([w[0] - Lw[0] * t, g0, w[2] - Lw[2] * t]));
@@ -8129,9 +8177,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (dl > 1e-6) eixos.push([dx / dl, dz / dl]);
     for (const q of [a, b]) if (!q.cil) for (const k of [0, 2]) eixos.push([q.e[k][0], q.e[k][2]]);
     if (a.cil !== b.cil) {
-      const C2 = a.cil ? a : b, R = a.cil ? b : a, vx = C2.c[0] - R.c[0], vz = C2.c[2] - R.c[2];
-      const lx = Math.max(-R.h[0], Math.min(R.h[0], vx * R.e[0][0] + vz * R.e[0][2])), lz = Math.max(-R.h[2], Math.min(R.h[2], vx * R.e[2][0] + vz * R.e[2][2]));
-      const px = R.c[0] + lx * R.e[0][0] + lz * R.e[2][0], pz = R.c[2] + lx * R.e[0][2] + lz * R.e[2][2], ux = C2.c[0] - px, uz = C2.c[2] - pz, ul = Math.hypot(ux, uz);
+      const C2 = a.cil ? a : b, R2 = a.cil ? b : a, vx = C2.c[0] - R2.c[0], vz = C2.c[2] - R2.c[2];
+      const lx = Math.max(-R2.h[0], Math.min(R2.h[0], vx * R2.e[0][0] + vz * R2.e[0][2])), lz = Math.max(-R2.h[2], Math.min(R2.h[2], vx * R2.e[2][0] + vz * R2.e[2][2]));
+      const px = R2.c[0] + lx * R2.e[0][0] + lz * R2.e[2][0], pz = R2.c[2] + lx * R2.e[0][2] + lz * R2.e[2][2], ux = C2.c[0] - px, uz = C2.c[2] - pz, ul = Math.hypot(ux, uz);
       if (ul > 1e-6) eixos.push([ux / ul, uz / ul]);
     }
     for (const ax of eixos) {
@@ -9946,22 +9994,22 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var pt = (q) => f1(q[0]) + " " + f1(q[1]);
   var ok = (q) => Number.isFinite(q[0]) && Number.isFinite(q[1]);
-  function caminho(pts, fechar2) {
+  function caminho(pts, fechar3) {
     pts = pts.filter(ok);
     if (pts.length < 2) return "";
-    return "M" + pts.map(pt).join("L") + (fechar2 ? "Z" : "");
+    return "M" + pts.map(pt).join("L") + (fechar3 ? "Z" : "");
   }
-  function suave2(pts, fechar2) {
+  function suave2(pts, fechar3) {
     pts = pts.filter(ok);
     const n2 = pts.length;
-    if (n2 < 3) return caminho(pts, fechar2);
-    const g = (i) => fechar2 ? pts[(i + n2) % n2] : pts[Math.max(0, Math.min(n2 - 1, i))];
+    if (n2 < 3) return caminho(pts, fechar3);
+    const g = (i) => fechar3 ? pts[(i + n2) % n2] : pts[Math.max(0, Math.min(n2 - 1, i))];
     let d = "M" + pt(pts[0]);
-    for (let i = 0, fim = fechar2 ? n2 : n2 - 1; i < fim; i++) {
+    for (let i = 0, fim = fechar3 ? n2 : n2 - 1; i < fim; i++) {
       const a = g(i - 1), b = g(i), c = g(i + 1), e = g(i + 2);
       d += "C" + pt([b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6]) + " " + pt([c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6]) + " " + pt(c);
     }
-    return d + (fechar2 ? "Z" : "");
+    return d + (fechar3 ? "Z" : "");
   }
   var PERFIS = {
     pincel: (t) => Math.sin(Math.PI * Math.pow(t, 0.62)),
@@ -10153,19 +10201,19 @@ pre.cmdout .ok{color:var(--cobalt)}
       case "arco": {
         const ab = k.abertura * D2R, a0 = f0 - ab / 2;
         return [amostra((t) => {
-          const th = a0 + ab * t, R = Rt(t);
-          return k.plano === "frente" ? [0, R * Math.cos(th), R * Math.sin(th)] : [R * Math.cos(th), R * Math.sin(th), k.subir * (t - 0.5)];
+          const th = a0 + ab * t, R2 = Rt(t);
+          return k.plano === "frente" ? [0, R2 * Math.cos(th), R2 * Math.sin(th)] : [R2 * Math.cos(th), R2 * Math.sin(th), k.subir * (t - 0.5)];
         })];
       }
       case "helice":
         return [amostra((t) => {
-          const th = 2 * Math.PI * k.voltas * t + f0, R = Rt(t);
-          return [L3 * t, R * Math.cos(th), R * Math.sin(th)];
+          const th = 2 * Math.PI * k.voltas * t + f0, R2 = Rt(t);
+          return [L3 * t, R2 * Math.cos(th), R2 * Math.sin(th)];
         })];
       case "espiral":
         return [amostra((t) => {
-          const th = 2 * Math.PI * k.voltas * t + f0, R = R0 * (0.06 + 0.94 * t);
-          return [L3 * t, R * Math.cos(th), R * Math.sin(th)];
+          const th = 2 * Math.PI * k.voltas * t + f0, R2 = R0 * (0.06 + 0.94 * t);
+          return [L3 * t, R2 * Math.cos(th), R2 * Math.sin(th)];
         })];
       case "onda":
         return [amostra((t) => {
@@ -10366,8 +10414,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       let { p, d } = noCaminho(pts0, c.inicio + (c.fim - c.inicio) * (c.forma === "aneis" || c.forma === "degraus" ? t : t));
       const j = c.repetir.espalhar;
       if (c.repetir.modo === "anel") {
-        const g = 2 * Math.PI * i / n2 + r() * j, R = c.repetir.raio * (0.6 + 0.6 * r());
-        p = vAdd(p, [0, R * Math.cos(g), R * Math.sin(g)]);
+        const g = 2 * Math.PI * i / n2 + r() * j, R2 = c.repetir.raio * (0.6 + 0.6 * r());
+        p = vAdd(p, [0, R2 * Math.cos(g), R2 * Math.sin(g)]);
         d = vNorm([0.2, Math.cos(g), Math.sin(g)]);
       } else if (c.repetir.modo === "leque") {
         const al = (r() - 0.5) * c.repetir.abertura, L3 = c.caminho.comprimento * (0.3 + 0.7 * r());
@@ -10376,8 +10424,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         d = vNorm(p);
       } else if (c.repetir.modo === "aleatorio") p = vAdd(p, [(r() - 0.5) * c.repetir.raio, (r() - 0.5) * c.repetir.raio, (r() - 0.5) * c.repetir.raio]);
       else if (j > 0 && c.forma !== "aneis" && c.forma !== "degraus") {
-        const esc6 = (c.caminho.raio || 1) * 0.5 + c.caminho.comprimento * 0.08;
-        p = vAdd(p, [(r() - 0.5) * j * esc6, (r() - 0.5) * 2 * j * esc6, (r() - 0.5) * 2 * j * esc6]);
+        const esc7 = (c.caminho.raio || 1) * 0.5 + c.caminho.comprimento * 0.08;
+        p = vAdd(p, [(r() - 0.5) * j * esc7, (r() - 0.5) * 2 * j * esc7, (r() - 0.5) * 2 * j * esc7]);
       }
       lugares.push({ t, p, d, i });
     }
@@ -10386,11 +10434,11 @@ pre.cmdout .ok{color:var(--cobalt)}
       const q = Pt(L3.p), onde = lado2(q[2]), k = escPx(q);
       switch (c.forma) {
         case "aneis": {
-          const R = c.caminho.raio + ((c.caminho.raioFim ?? c.caminho.raio) - c.caminho.raio) * L3.t, e1 = Math.abs(L3.d[1]) < 0.9 ? vNorm(vCross(L3.d, [0, 1, 0])) : vNorm(vCross(L3.d, [0, 0, 1])), e2 = vCross(L3.d, e1);
+          const R2 = c.caminho.raio + ((c.caminho.raioFim ?? c.caminho.raio) - c.caminho.raio) * L3.t, e1 = Math.abs(L3.d[1]) < 0.9 ? vNorm(vCross(L3.d, [0, 1, 0])) : vNorm(vCross(L3.d, [0, 0, 1])), e2 = vCross(L3.d, e1);
           const anel = [];
           for (let s = 0; s <= 40; s++) {
             const a = s / 40 * 2 * Math.PI;
-            anel.push(Pt(vAdd(L3.p, vAdd(vMul(e1, R * Math.cos(a)), vMul(e2, R * Math.sin(a))))));
+            anel.push(Pt(vAdd(L3.p, vAdd(vMul(e1, R2 * Math.cos(a)), vMul(e2, R2 * Math.sin(a))))));
           }
           const lg = anel.map((w) => Math.max(0.3, c.traco.largura * S * (w[3] || 1) * (0.75 + 0.25 * Math.sin(anel.indexOf(w) / 40 * 2 * Math.PI * 2 + L3.i))));
           let ini = 0;
@@ -10420,8 +10468,8 @@ pre.cmdout .ok{color:var(--cobalt)}
           break;
         }
         case "degraus": {
-          const th = 2 * Math.PI * c.caminho.voltas * L3.t + c.caminho.inicioAng * D2R, R = c.caminho.raio, a = c.caminho.comprimento * L3.t;
-          const p1 = Pt([a, R * Math.cos(th), R * Math.sin(th)]), p2 = Pt([a, -R * Math.cos(th), -R * Math.sin(th)]);
+          const th = 2 * Math.PI * c.caminho.voltas * L3.t + c.caminho.inicioAng * D2R, R2 = c.caminho.raio, a = c.caminho.comprimento * L3.t;
+          const p1 = Pt([a, R2 * Math.cos(th), R2 * Math.sin(th)]), p2 = Pt([a, -R2 * Math.cos(th), -R2 * Math.sin(th)]);
           empurra(lado2((p1[2] + p2[2]) / 2), pintarFita(fx, [[p1[0], p1[1]], [p2[0], p2[1]]], [c.traco.largura * k, c.traco.largura * k], est2, P3));
           break;
         }
@@ -10437,8 +10485,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         case "cupula":
         case "esfera": {
           if (L3.i > 0) break;
-          const R = c.caminho.raio, C0 = [c.caminho.comprimento, 0, 0], arcos = Math.max(3, c.repetir.n), cheia = c.forma === "esfera", thMax = cheia ? Math.PI : Math.PI / 2;
-          const pt3 = (th, ph) => vAdd(C0, [R * Math.cos(th), R * Math.sin(th) * Math.cos(ph), R * Math.sin(th) * Math.sin(ph)]);
+          const R2 = c.caminho.raio, C0 = [c.caminho.comprimento, 0, 0], arcos = Math.max(3, c.repetir.n), cheia = c.forma === "esfera", thMax = cheia ? Math.PI : Math.PI / 2;
+          const pt3 = (th, ph) => vAdd(C0, [R2 * Math.cos(th), R2 * Math.sin(th) * Math.cos(ph), R2 * Math.sin(th) * Math.sin(ph)]);
           const linha = (pts) => {
             const W4 = pts.map(Pt), lg = W4.map((w, i) => Math.max(0.3, c.traco.largura * S * (w[3] || 1) * perfil(i / (W4.length - 1))));
             let ini = 0;
@@ -10463,7 +10511,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       }
     }
     if (c.forma === "circuloMagico") {
-      const R = c.caminho.raio, C0 = c.caminho.plano === "chao" ? [0.05, 0, 0] : [c.caminho.comprimento, 0, 0];
+      const R2 = c.caminho.raio, C0 = c.caminho.plano === "chao" ? [0.05, 0, 0] : [c.caminho.comprimento, 0, 0];
       const plano = (rr, th) => c.caminho.plano === "chao" ? vAdd(C0, [0, rr * Math.cos(th), rr * Math.sin(th)]) : vAdd(C0, [0, rr * Math.cos(th), rr * Math.sin(th)]);
       const traco = (pts, w) => {
         const W4 = pts.map(Pt), lg = W4.map((q2) => Math.max(0.35, w * S * (q2[3] || 1)));
@@ -10474,15 +10522,15 @@ pre.cmdout .ok{color:var(--cobalt)}
         for (let s = 0; s <= 64; s++) pts.push(plano(rr, s / 64 * 2 * Math.PI));
         traco(pts, w);
       };
-      aro(R, 0.16);
-      aro(R * 0.9, 0.08);
-      aro(R * 0.62, 0.1);
-      const v5 = [0, 1, 2, 3, 4].map((i) => plano(R * 0.62, -Math.PI / 2 + i * 2 * Math.PI / 5));
+      aro(R2, 0.16);
+      aro(R2 * 0.9, 0.08);
+      aro(R2 * 0.62, 0.1);
+      const v5 = [0, 1, 2, 3, 4].map((i) => plano(R2 * 0.62, -Math.PI / 2 + i * 2 * Math.PI / 5));
       for (let i = 0; i < 5; i++) traco([v5[i], v5[(i + 2) % 5]], 0.07);
       const nR = c.texto ? c.texto.length * 2 : 18;
       for (let i = 0; i < nR; i++) {
-        const th = i / nR * 2 * Math.PI, rr = R * 0.95 - R * 0.1 * 0.5, g = rng(c.semente + i * 13);
-        const pts = [plano(rr - R * 0.03, th), plano(rr + R * 0.03 * (g() - 0.5) * 2, th + 0.06 * (g() - 0.5)), plano(rr + R * 0.03, th + 0.05)];
+        const th = i / nR * 2 * Math.PI, rr = R2 * 0.95 - R2 * 0.1 * 0.5, g = rng(c.semente + i * 13);
+        const pts = [plano(rr - R2 * 0.03, th), plano(rr + R2 * 0.03 * (g() - 0.5) * 2, th + 0.06 * (g() - 0.5)), plano(rr + R2 * 0.03, th + 0.05)];
         traco(pts, 0.05);
       }
       if (out.chao) {
@@ -10868,11 +10916,11 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
     return grupo((sw > 0 ? forma(a, o.stroke || INK2) : "") + forma(b, fill), o.op);
   }
-  function bolhas(cx, cy, R, r, n2 = 7, achata = 0.72) {
+  function bolhas(cx, cy, R2, r, n2 = 7, achata = 0.72) {
     const out = [];
     for (let i = 0; i < n2; i++) {
-      const a = r() * 6.28, d = R * r.entre(0.05, 0.62), rr = R * r.entre(0.32, 0.58);
-      out.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d * achata - R * 0.08, rr]);
+      const a = r() * 6.28, d = R2 * r.entre(0.05, 0.62), rr = R2 * r.entre(0.32, 0.58);
+      out.push([cx + Math.cos(a) * d, cy + Math.sin(a) * d * achata - R2 * 0.08, rr]);
     }
     return out;
   }
@@ -10898,20 +10946,20 @@ pre.cmdout .ok{color:var(--cobalt)}
     const fill = tom === "escuro" ? misturar(escuro(fx), "#2A2A33", 0.6) : tom === "cinza" ? misturar(fx.cores[1], "#9A9AA6", 0.5) : fx.cores[1];
     return grupo(uniao(circs, fill, { sw: sw * 0.7, stroke: misturar(escuro(fx), "#1A1030", 0.5) }) + forma(cachos(circs, r), "none", { stroke: tom === "escuro" ? fx.cores[1] : escuro(fx), sw: sw * 0.45, op: 0.7 }), op);
   }
-  function estouro(fx, cx, cy, R, n2, r, o = {}) {
+  function estouro(fx, cx, cy, R2, n2, r, o = {}) {
     const preto = fx.ink ? INK2 : escuro(fx), branco = fx.ink ? PAPEL2 : fx.cores[0], meio = fx.ink ? PAPEL2 : fx.cores[1];
     let s = "";
-    if (!fx.ink) s += forma(circulo(cx, cy, R * 0.95), medio(fx), { op: 0.35, filtro: brilho(fx) });
-    s += forma(estrela(cx, cy, R, R * 0.36, n2, r() * 6, r, 0.95), preto);
-    s += forma(estrela(cx, cy, R * 0.66, R * 0.3, Math.max(6, n2 - 3), r() * 6, r, 0.8), meio, fx.ink ? {} : ct(fx, 0.8));
-    s += forma(estrela(cx, cy, R * 0.36, R * 0.2, Math.max(6, n2 - 6), r() * 6, r, 0.6), branco);
+    if (!fx.ink) s += forma(circulo(cx, cy, R2 * 0.95), medio(fx), { op: 0.35, filtro: brilho(fx) });
+    s += forma(estrela(cx, cy, R2, R2 * 0.36, n2, r() * 6, r, 0.95), preto);
+    s += forma(estrela(cx, cy, R2 * 0.66, R2 * 0.3, Math.max(6, n2 - 3), r() * 6, r, 0.8), meio, fx.ink ? {} : ct(fx, 0.8));
+    s += forma(estrela(cx, cy, R2 * 0.36, R2 * 0.2, Math.max(6, n2 - 6), r() * 6, r, 0.6), branco);
     let d = "";
     for (let i = 0; i < n2 * 1.6; i++) {
-      const a = r() * 6.28, r0 = R * r.entre(0.95, 1.15), r12 = r0 + R * r.entre(0.25, 0.85);
-      d += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], R * r.entre(0.02, 0.06), "fuso");
+      const a = r() * 6.28, r0 = R2 * r.entre(0.95, 1.15), r12 = r0 + R2 * r.entre(0.25, 0.85);
+      d += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], R2 * r.entre(0.02, 0.06), "fuso");
     }
     s += forma(d, preto, { op: 0.9 });
-    if (o.salpicos !== false) s += forma(gotas(cx, cy, 0, 7, R * 1.05, R * 1.9, Math.round(n2 * 0.9), R * 0.05, r), preto);
+    if (o.salpicos !== false) s += forma(gotas(cx, cy, 0, 7, R2 * 1.05, R2 * 1.9, Math.round(n2 * 0.9), R2 * 0.05, r), preto);
     return s;
   }
   function gotas(cx, cy, ang, ab, r0, r12, n2, tam, r) {
@@ -10950,28 +10998,28 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   var TIPOS = {};
   TIPOS.concentracao = (fx) => {
-    const { P: P3, r } = fx, [cx, cy] = fx.A.tela, n2 = quant(fx, P3.linhas * Math.min(1.5, fx.X)), R = Math.hypot(W, H), vz = P3.vazio * Math.min(W, H) * 0.5 * fx.e.escala * (0.4 + 0.6 * fx.t);
+    const { P: P3, r } = fx, [cx, cy] = fx.A.tela, n2 = quant(fx, P3.linhas * Math.min(1.5, fx.X)), R2 = Math.hypot(W, H), vz = P3.vazio * Math.min(W, H) * 0.5 * fx.e.escala * (0.4 + 0.6 * fx.t);
     let d = "";
     for (let i = 0; i < n2; i++) {
       const a = (i + r() * 0.8) / n2 * 2 * Math.PI, r0 = vz * r.entre(0.85, 1.6), w = r.entre(0.8, 4.2) * P3.espessura;
-      d += pincelada([[cx + Math.cos(a) * R, cy + Math.sin(a) * R], [cx + Math.cos(a) * (r0 + (R - r0) * 0.5), cy + Math.sin(a) * (r0 + (R - r0) * 0.5)], [cx + Math.cos(a) * r0, cy + Math.sin(a) * r0]], w, "agulha");
+      d += pincelada([[cx + Math.cos(a) * R2, cy + Math.sin(a) * R2], [cx + Math.cos(a) * (r0 + (R2 - r0) * 0.5), cy + Math.sin(a) * (r0 + (R2 - r0) * 0.5)], [cx + Math.cos(a) * r0, cy + Math.sin(a) * r0]], w, "agulha");
     }
     return forma(d, escuro(fx), { op: Math.min(1, 0.9 * fx.X) });
   };
   TIPOS.velocidade = (fx) => {
     const { P: P3, r } = fx, ang = fx.D.ang === -Math.PI / 2 && fx.e.direcao.modo === "auto" ? 0 : fx.D.ang, ux = Math.cos(ang), uy = Math.sin(ang), nx = -uy, ny = ux;
-    const [cx, cy] = fx.A.tela, R = Math.hypot(W, H), n2 = quant(fx, P3.linhas * Math.min(1.5, fx.X)), cob = P3.cobertura;
+    const [cx, cy] = fx.A.tela, R2 = Math.hypot(W, H), n2 = quant(fx, P3.linhas * Math.min(1.5, fx.X)), cob = P3.cobertura;
     let d = "";
     for (let i = 0; i < n2; i++) {
-      const o = (r() - 0.5) * R * cob, L3 = r.entre(0.18, 0.55) * W * (0.4 + 0.6 * fx.t), s0 = r.entre(-0.6, 0.6) * R * 0.5, w = r.entre(1, 4.5) * fx.P.espessura;
+      const o = (r() - 0.5) * R2 * cob, L3 = r.entre(0.18, 0.55) * W * (0.4 + 0.6 * fx.t), s0 = r.entre(-0.6, 0.6) * R2 * 0.5, w = r.entre(1, 4.5) * fx.P.espessura;
       const x0 = cx + nx * o + ux * s0, y0 = cy + ny * o + uy * s0;
       d += pincelada([[x0, y0], [x0 - ux * L3 * 0.5, y0 - uy * L3 * 0.5], [x0 - ux * L3, y0 - uy * L3]], w, "agulha");
     }
     return forma(d, escuro(fx), { op: Math.min(1, 0.85 * fx.X) });
   };
   TIPOS.impacto_tela = (fx) => {
-    const { P: P3, r } = fx, [cx, cy] = fx.A.tela, R = P3.raio * W * fx.e.escala * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X);
-    return estouro(fx, cx, cy, R, Math.round(P3.pontas), r);
+    const { P: P3, r } = fx, [cx, cy] = fx.A.tela, R2 = P3.raio * W * fx.e.escala * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X);
+    return estouro(fx, cx, cy, R2, Math.round(P3.pontas), r);
   };
   TIPOS.flash = (fx) => {
     const { P: P3, cores } = fx, id = fx.uid + "v", [cx, cy] = fx.A.tela;
@@ -10979,11 +11027,11 @@ pre.cmdout .ok{color:var(--cobalt)}
     return '<rect x="-20" y="-20" width="' + (W + 40) + '" height="' + (H + 40) + '" fill="url(#' + id + ')"/>';
   };
   TIPOS.sombra_dramatica = (fx) => {
-    const { P: P3, r } = fx, [cx, cy] = fx.A.tela, R = Math.hypot(W, H);
+    const { P: P3, r } = fx, [cx, cy] = fx.A.tela, R2 = Math.hypot(W, H);
     let s = '<rect x="-20" y="-20" width="' + (W + 40) + '" height="' + (H + 40) + '" fill="' + escuro(fx) + '" opacity="' + Math.min(1, 0.92 * fx.X).toFixed(3) + '"/>';
     let d = "";
     for (let i = 0; i < quant(fx, P3.riscos); i++) {
-      const a = r() * 6.28, r0 = R * r.entre(0.12, 0.3), r12 = R * r.entre(0.55, 1);
+      const a = r() * 6.28, r0 = R2 * r.entre(0.12, 0.3), r12 = R2 * r.entre(0.55, 1);
       d += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], r.entre(1, 5), "fuso");
     }
     return s + forma(d, claro(fx), { op: 0.85 });
@@ -11139,42 +11187,42 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   };
   TIPOS.explosao = (fx) => {
-    const { P: P3, cores, A, r, t } = fx, O = A.mundo, s = pxu(fx), R = escalaW(fx, P3.raio) * (0.25 + 0.75 * t) * Math.min(1.3, fx.X) * s, [cx, cy] = T2(fx, O), g = brilho(fx);
+    const { P: P3, cores, A, r, t } = fx, O = A.mundo, s = pxu(fx), R2 = escalaW(fx, P3.raio) * (0.25 + 0.75 * t) * Math.min(1.3, fx.X) * s, [cx, cy] = T2(fx, O), g = brilho(fx);
     let svg = "";
     if (fx.e.reverso) {
       let d2 = "";
       for (let i = 0; i < quant(fx, P3.pontas * 2); i++) {
-        const a = r() * 6.28, r0 = R * r.entre(1.1, 2.2), r12 = R * r.entre(0.15, 0.4);
-        d2 += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], R * r.entre(0.05, 0.12), "ponta");
+        const a = r() * 6.28, r0 = R2 * r.entre(1.1, 2.2), r12 = R2 * r.entre(0.15, 0.4);
+        d2 += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], R2 * r.entre(0.05, 0.12), "ponta");
       }
-      return forma(d2, fx.ink ? INK2 : corEm(cores, 0.6), { op: 0.85 }) + forma(circulo(cx, cy, R * 0.45), fx.ink ? PAPEL2 : cores[1], { filtro: g, ...ct(fx, 1.2) }) + forma(estrela(cx, cy, R * 0.5, R * 0.22, 12, r() * 6, r), fx.ink ? INK2 : cores[0]);
+      return forma(d2, fx.ink ? INK2 : corEm(cores, 0.6), { op: 0.85 }) + forma(circulo(cx, cy, R2 * 0.45), fx.ink ? PAPEL2 : cores[1], { filtro: g, ...ct(fx, 1.2) }) + forma(estrela(cx, cy, R2 * 0.5, R2 * 0.22, 12, r() * 6, r), fx.ink ? INK2 : cores[0]);
     }
     if (P3.fumaca > 0) {
       const rr = rng(fx.e.semente + 7), cs = [];
       for (let i = 0; i < 11; i++) {
-        const a = i / 11 * 6.28 + rr() * 0.4, dd = R * rr.entre(0.75, 1.1);
-        cs.push([cx + Math.cos(a) * dd, cy + Math.sin(a) * dd * 0.75 - R * 0.12, R * rr.entre(0.3, 0.5)]);
+        const a = i / 11 * 6.28 + rr() * 0.4, dd = R2 * rr.entre(0.75, 1.1);
+        cs.push([cx + Math.cos(a) * dd, cy + Math.sin(a) * dd * 0.75 - R2 * 0.12, R2 * rr.entre(0.3, 0.5)]);
       }
       svg += nuvemTinta(fx, cs, rr, fx.ink ? "escuro" : "escuro", Math.min(1, 0.4 + 0.6 * P3.fumaca));
     }
-    if (!fx.ink) svg += forma(circulo(cx, cy, R * 1.05), cores[2] || cores[1], { op: 0.45, filtro: g });
-    svg += forma(estrela(cx, cy, R * 1.15, R * 0.62, Math.round(P3.pontas), r() * 6, r, 0.7), fx.ink ? INK2 : escuro(fx));
+    if (!fx.ink) svg += forma(circulo(cx, cy, R2 * 1.05), cores[2] || cores[1], { op: 0.45, filtro: g });
+    svg += forma(estrela(cx, cy, R2 * 1.15, R2 * 0.62, Math.round(P3.pontas), r() * 6, r, 0.7), fx.ink ? INK2 : escuro(fx));
     let d = "";
     for (let i = 0; i < P3.pontas; i++) {
       const a = i / P3.pontas * 6.28 + r() * 0.2;
-      d += labareda(cx + Math.cos(a) * R * 0.55, cy + Math.sin(a) * R * 0.55, a, R * r.entre(0.55, 0.95), R * r.entre(0.25, 0.4), r);
+      d += labareda(cx + Math.cos(a) * R2 * 0.55, cy + Math.sin(a) * R2 * 0.55, a, R2 * r.entre(0.55, 0.95), R2 * r.entre(0.25, 0.4), r);
     }
-    svg += forma(d, fx.ink ? PAPEL2 : cores[2] || cores[1], ct(fx, Math.max(0.8, R * 0.012)));
-    svg += forma(estrela(cx, cy, R * 0.8, R * 0.45, Math.max(8, P3.pontas - 6), r() * 6, r, 0.6), fx.ink ? "#E6E6E6" : cores[1], fx.ink ? ct(fx, 0.8) : {});
-    svg += forma(circulo(cx, cy, R * 0.42), cores[0], { filtro: g }) + forma(circulo(cx, cy, R * 0.3), cores[0]);
+    svg += forma(d, fx.ink ? PAPEL2 : cores[2] || cores[1], ct(fx, Math.max(0.8, R2 * 0.012)));
+    svg += forma(estrela(cx, cy, R2 * 0.8, R2 * 0.45, Math.max(8, P3.pontas - 6), r() * 6, r, 0.6), fx.ink ? "#E6E6E6" : cores[1], fx.ink ? ct(fx, 0.8) : {});
+    svg += forma(circulo(cx, cy, R2 * 0.42), cores[0], { filtro: g }) + forma(circulo(cx, cy, R2 * 0.3), cores[0]);
     let sp = "", db = "";
     for (let i = 0; i < quant(fx, 16); i++) {
-      const a = r() * 6.28, dd = R * r.entre(1.1, 1.8);
-      sp += faisca(cx + Math.cos(a) * dd, cy + Math.sin(a) * dd, R * r.entre(0.05, 0.12), r() * 2);
-      const b = r() * 6.28, e2 = R * r.entre(1.2, 2.1);
-      db += lasca(cx + Math.cos(b) * e2, cy + Math.sin(b) * e2, R * r.entre(0.03, 0.07), r);
+      const a = r() * 6.28, dd = R2 * r.entre(1.1, 1.8);
+      sp += faisca(cx + Math.cos(a) * dd, cy + Math.sin(a) * dd, R2 * r.entre(0.05, 0.12), r() * 2);
+      const b = r() * 6.28, e2 = R2 * r.entre(1.2, 2.1);
+      db += lasca(cx + Math.cos(b) * e2, cy + Math.sin(b) * e2, R2 * r.entre(0.03, 0.07), r);
     }
-    return svg + forma(sp, fx.ink ? INK2 : cores[1]) + forma(db, fx.ink ? INK2 : misturar(escuro(fx), "#222222", 0.5)) + (fx.ink ? forma(gotas(cx, cy, 0, 7, R * 1.2, R * 2, quant(fx, 18), R * 0.04, r), INK2) : "");
+    return svg + forma(sp, fx.ink ? INK2 : cores[1]) + forma(db, fx.ink ? INK2 : misturar(escuro(fx), "#222222", 0.5)) + (fx.ink ? forma(gotas(cx, cy, 0, 7, R2 * 1.2, R2 * 2, quant(fx, 18), R2 * 0.04, r), INK2) : "");
   };
   TIPOS.barreira = (fx) => {
     const { P: P3, cores, A } = fx, Rw = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), C2 = A.mundo, s = pxu(fx), [cx, cy] = T2(fx, C2), Rs = Rw * s, g = brilho(fx);
@@ -11529,23 +11577,23 @@ pre.cmdout .ok{color:var(--cobalt)}
     return svg;
   };
   TIPOS.energia_mao = (fx) => {
-    const { P: P3, cores, A, r } = fx, s = pxu(fx), R = escalaW(fx, P3.raio) * s * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X), [x, y] = A.tela, g = brilho(fx);
-    let svg = fx.ink ? forma(circulo(x, y, R), PAPEL2, ct(fx, Math.max(1.4, R * 0.08))) + forma(circulo(x, y, R * 0.62), "none", { stroke: INK2, sw: Math.max(0.6, R * 0.03), op: 0.6 }) : forma(circulo(x, y, R * 1.9), cores[2] || cores[1], { op: 0.35, filtro: g }) + forma(circulo(x, y, R), cores[2] || cores[1], { op: 0.9 }) + forma(circulo(x, y, R * 0.72), cores[1]) + forma(circulo(x - R * 0.15, y - R * 0.15, R * 0.38), cores[0]);
+    const { P: P3, cores, A, r } = fx, s = pxu(fx), R2 = escalaW(fx, P3.raio) * s * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X), [x, y] = A.tela, g = brilho(fx);
+    let svg = fx.ink ? forma(circulo(x, y, R2), PAPEL2, ct(fx, Math.max(1.4, R2 * 0.08))) + forma(circulo(x, y, R2 * 0.62), "none", { stroke: INK2, sw: Math.max(0.6, R2 * 0.03), op: 0.6 }) : forma(circulo(x, y, R2 * 1.9), cores[2] || cores[1], { op: 0.35, filtro: g }) + forma(circulo(x, y, R2), cores[2] || cores[1], { op: 0.9 }) + forma(circulo(x, y, R2 * 0.72), cores[1]) + forma(circulo(x - R2 * 0.15, y - R2 * 0.15, R2 * 0.38), cores[0]);
     let d = "";
     for (let i = 0; i < quant(fx, P3.fios); i++) {
-      const rx = R * r.entre(1.15, 1.7), ry = rx * r.entre(0.25, 0.6), rot = r() * 6.28, a0 = r() * 6.28, a1 = a0 + r.entre(1.5, 3.2), pts = [];
+      const rx = R2 * r.entre(1.15, 1.7), ry = rx * r.entre(0.25, 0.6), rot = r() * 6.28, a0 = r() * 6.28, a1 = a0 + r.entre(1.5, 3.2), pts = [];
       for (let k = 0; k <= 14; k++) {
         const a = a0 + (a1 - a0) * k / 14, px = Math.cos(a) * rx, py = Math.sin(a) * ry;
         pts.push([x + px * Math.cos(rot) - py * Math.sin(rot), y + px * Math.sin(rot) + py * Math.cos(rot)]);
       }
-      d += pincelada(pts, R * r.entre(0.08, 0.18), "fuso");
+      d += pincelada(pts, R2 * r.entre(0.08, 0.18), "fuso");
     }
     svg += forma(d, fx.ink ? INK2 : cores[0], { op: 0.9 });
     if (fx.ink) {
       let l = "";
       for (let i = 0; i < quant(fx, 16); i++) {
-        const a = r() * 6.28, r0 = R * r.entre(1.1, 1.3), r12 = r0 + R * r.entre(0.4, 1.3);
-        l += pincelada([[x + Math.cos(a) * r0, y + Math.sin(a) * r0], [x + Math.cos(a) * r12, y + Math.sin(a) * r12]], R * r.entre(0.04, 0.09), "fuso");
+        const a = r() * 6.28, r0 = R2 * r.entre(1.1, 1.3), r12 = r0 + R2 * r.entre(0.4, 1.3);
+        l += pincelada([[x + Math.cos(a) * r0, y + Math.sin(a) * r0], [x + Math.cos(a) * r12, y + Math.sin(a) * r12]], R2 * r.entre(0.04, 0.09), "fuso");
       }
       svg += forma(l, INK2);
     }
@@ -11553,14 +11601,14 @@ pre.cmdout .ok{color:var(--cobalt)}
       let l = "";
       for (let i = 0; i < 4; i++) {
         const a = r() * 6.28;
-        raioRamificado([x + Math.cos(a) * R, y + Math.sin(a) * R], [x + Math.cos(a) * R * 2.2, y + Math.sin(a) * R * 2.2], r, 0.3, 4, 1).forEach((q) => l += caminho(q));
+        raioRamificado([x + Math.cos(a) * R2, y + Math.sin(a) * R2], [x + Math.cos(a) * R2 * 2.2, y + Math.sin(a) * R2 * 2.2], r, 0.3, 4, 1).forEach((q) => l += caminho(q));
       }
       svg += fx.ink ? forma(l, "none", { stroke: INK2, sw: 1.6 }) : forma(l, "none", { stroke: cores[2] || cores[1], sw: 1.4 }) + forma(l, "none", { stroke: cores[0], sw: 0.6 });
     }
     let sp = "";
     for (let i = 0; i < quant(fx, 8); i++) {
-      const a = r() * 6.28, dd = R * r.entre(1.3, 2.4);
-      sp += faisca(x + Math.cos(a) * dd, y + Math.sin(a) * dd, R * r.entre(0.1, 0.22), r());
+      const a = r() * 6.28, dd = R2 * r.entre(1.3, 2.4);
+      sp += faisca(x + Math.cos(a) * dd, y + Math.sin(a) * dd, R2 * r.entre(0.1, 0.22), r());
     }
     return svg + forma(sp, fx.ink ? INK2 : cores[0]);
   };
@@ -11585,21 +11633,21 @@ pre.cmdout .ok{color:var(--cobalt)}
     return forma(d, escuro(fx), { op: 0.85 * Math.min(1, fx.X) });
   };
   TIPOS.impacto_contato = (fx) => {
-    const { P: P3, A, r } = fx, s = pxu(fx), R = escalaW(fx, P3.raio) * s * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X), [x, y] = A.tela;
-    return estouro(fx, x, y, R, Math.round(P3.pontas), r);
+    const { P: P3, A, r } = fx, s = pxu(fx), R2 = escalaW(fx, P3.raio) * s * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X), [x, y] = A.tela;
+    return estouro(fx, x, y, R2, Math.round(P3.pontas), r);
   };
   TIPOS.aneis_impacto = (fx) => {
-    const { P: P3, A, D: D3, r } = fx, s = pxu(fx), R = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), u = D3.mundo || [1, 0, 0];
+    const { P: P3, A, D: D3, r } = fx, s = pxu(fx), R2 = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), u = D3.mundo || [1, 0, 0];
     let svg = "";
     for (let k = 0; k < Math.round(P3.aneis); k++) {
-      const f = (k + 1) / P3.aneis, c = add2(A.mundo, mul2(u, R * (0.15 + 0.55 * f))), rr = R * (0.35 + 0.65 * f), a0 = r() * 6.28;
+      const f = (k + 1) / P3.aneis, c = add2(A.mundo, mul2(u, R2 * (0.15 + 0.55 * f))), rr = R2 * (0.35 + 0.65 * f), a0 = r() * 6.28;
       const pts = aroMundo(fx, c, u, rr, 48, a0, a0 + r.entre(5.2, 6.25));
       svg += forma(pincelada(pts, escalaW(fx, 0.42 * (1.15 - 0.5 * f)) * s, "fuso"), fx.ink ? INK2 : corEm(fx.cores, 0.4 + 0.5 * f), { op: 1 - 0.18 * k, ...fx.ink ? {} : ct(fx, 0.6) });
     }
     let d = "";
     const B3 = base(u);
     for (let i = 0; i < quant(fx, 22); i++) {
-      const a = r() * 6.28, rr = R * r.entre(0.9, 1.4), p0 = add2(A.mundo, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), p1 = add2(p0, add2(mul2(u, R * r.entre(-0.1, 0.4)), add2(mul2(B3.v, Math.cos(a) * R * 0.5), mul2(B3.w, Math.sin(a) * R * 0.5))));
+      const a = r() * 6.28, rr = R2 * r.entre(0.9, 1.4), p0 = add2(A.mundo, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), p1 = add2(p0, add2(mul2(u, R2 * r.entre(-0.1, 0.4)), add2(mul2(B3.v, Math.cos(a) * R2 * 0.5), mul2(B3.w, Math.sin(a) * R2 * 0.5))));
       d += pincelada([T2(fx, p0), T2(fx, p1)], escalaW(fx, 0.14) * s * r.entre(0.5, 1.4), "fuso");
     }
     return svg + forma(d, fx.ink ? INK2 : escuro(fx), { op: 0.85 });
@@ -11729,44 +11777,44 @@ pre.cmdout .ok{color:var(--cobalt)}
     return out;
   };
   TIPOS.aura_vento = (fx) => {
-    const { P: P3, r } = fx, cd = corpoDono(fx), s = pxu(fx), Hc = cd ? cd.h : corpoW(fx), E3 = cd ? cd.eixo : fx.A.mundo, zc = fx.proj(add2(E3, [0, Hc * 0.5, 0]))[2], out = { atras: "", frente: "" };
+    const { P: P3, r } = fx, cd = corpoDono(fx), s = pxu(fx), Hc = cd ? cd.h : corpoW(fx), E4 = cd ? cd.eixo : fx.A.mundo, zc = fx.proj(add2(E4, [0, Hc * 0.5, 0]))[2], out = { atras: "", frente: "" };
     for (let k = 0; k < quant(fx, P3.aneis); k++) {
       const t = (k + 0.5) / Math.max(1, quant(fx, P3.aneis)), inc = P3.inclinacao * Math.PI / 180 * r.entre(0.5, 1.2) * r.sinal(), az = r() * 6.28, n2 = norm([Math.sin(inc) * Math.cos(az), Math.cos(inc), Math.sin(inc) * Math.sin(az)]);
-      const c = add2(E3, [0, Hc * (0.12 + 0.8 * t), 0]), rr = P3.raio * Hc * (0.15 + 0.1 * Math.sin(Math.PI * t)) * r.entre(0.85, 1.15) * (0.4 + 0.6 * fx.t), a0 = r() * 6.28;
+      const c = add2(E4, [0, Hc * (0.12 + 0.8 * t), 0]), rr = P3.raio * Hc * (0.15 + 0.1 * Math.sin(Math.PI * t)) * r.entre(0.85, 1.15) * (0.4 + 0.6 * fx.t), a0 = r() * 6.28;
       const dv = aroDividido(fx, aroMundoW(c, n2, rr, 56, a0, a0 + r.entre(3.6, 5.6)), zc, escalaW(fx, 0.35) * s * r.entre(0.7, 1.5));
       out.atras += forma(dv.atras, fx.ink ? INK2 : corEm(fx.cores, 0.85), { op: 0.85 });
       out.frente += forma(dv.frente, fx.ink ? INK2 : corEm(fx.cores, 0.5), { op: 0.95, ...fx.ink ? {} : ct(fx, 0.5) });
     }
     let d = "";
     for (let i = 0; i < quant(fx, 14); i++) {
-      const a = r() * 6.28, rr = Hc * P3.raio * r.entre(0.2, 0.35), q = T2(fx, add2(E3, [Math.cos(a) * rr, Hc * r.entre(0.05, 1), Math.sin(a) * rr])), L3 = escalaW(fx, 0.6) * s;
+      const a = r() * 6.28, rr = Hc * P3.raio * r.entre(0.2, 0.35), q = T2(fx, add2(E4, [Math.cos(a) * rr, Hc * r.entre(0.05, 1), Math.sin(a) * rr])), L3 = escalaW(fx, 0.6) * s;
       d += pincelada([[q[0] - L3, q[1]], [q[0], q[1] - L3 * 0.2], [q[0] + L3, q[1]]], L3 * 0.25, "fuso");
     }
     out.frente += forma(d, fx.ink ? INK2 : escuro(fx), { op: 0.7 });
     return out;
   };
   TIPOS.esfera_energia = (fx) => {
-    const { P: P3, r } = fx, T = corpoTela(fx), R = T.h * P3.raio * 0.5 * (0.3 + 0.7 * fx.t), cx = T.x, cy = T.cd ? T.y : T.y;
+    const { P: P3, r } = fx, T = corpoTela(fx), R2 = T.h * P3.raio * 0.5 * (0.3 + 0.7 * fx.t), cx = T.x, cy = T.cd ? T.y : T.y;
     const out = { atras: "", frente: "", chao: "" };
-    out.atras += forma(circulo(cx, cy, R), fx.ink ? PAPEL2 : fx.cores[1], { op: fx.ink ? 0.75 : 0.25 * fx.X });
+    out.atras += forma(circulo(cx, cy, R2), fx.ink ? PAPEL2 : fx.cores[1], { op: fx.ink ? 0.75 : 0.25 * fx.X });
     let an = "";
     for (let k = 1; k <= 3; k++) {
-      const rk = R * (1 - 0.13 * k), a0 = r() * 6.28;
+      const rk = R2 * (1 - 0.13 * k), a0 = r() * 6.28;
       an += suave2(Array.from({ length: 25 }, (_, i) => {
         const a = a0 + i / 24 * r.entre(2, 3.6);
         return [cx + Math.cos(a) * rk, cy + Math.sin(a) * rk];
       }), false);
     }
-    out.atras += forma(an, "none", { stroke: fx.ink ? "#8A8A8A" : medio(fx), sw: Math.max(0.6, R * 6e-3), op: 0.8 });
-    out.frente += forma(circulo(cx, cy, R), "none", fx.ink ? { stroke: INK2, sw: Math.max(1.4, R * 0.014) } : { stroke: medio(fx), sw: Math.max(1.5, R * 0.02), filtro: brilho(fx) });
+    out.atras += forma(an, "none", { stroke: fx.ink ? "#8A8A8A" : medio(fx), sw: Math.max(0.6, R2 * 6e-3), op: 0.8 });
+    out.frente += forma(circulo(cx, cy, R2), "none", fx.ink ? { stroke: INK2, sw: Math.max(1.4, R2 * 0.014) } : { stroke: medio(fx), sw: Math.max(1.5, R2 * 0.02), filtro: brilho(fx) });
     out.frente += forma(pincelada(Array.from({ length: 12 }, (_, i) => {
       const a = 3.6 + i / 11 * 1.3;
-      return [cx + Math.cos(a) * R * 0.9, cy + Math.sin(a) * R * 0.9];
-    }), R * 0.05, "fuso"), fx.ink ? INK2 : fx.cores[0], { op: 0.8 });
+      return [cx + Math.cos(a) * R2 * 0.9, cy + Math.sin(a) * R2 * 0.9];
+    }), R2 * 0.05, "fuso"), fx.ink ? INK2 : fx.cores[0], { op: 0.8 });
     let l = "";
     for (let i = 0; i < quant(fx, P3.linhas); i++) {
-      const a = r() * 6.28, r0 = R * r.entre(1.04, 1.1), r12 = r0 + R * r.entre(0.08, 0.3);
-      l += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], R * r.entre(8e-3, 0.02), "fuso");
+      const a = r() * 6.28, r0 = R2 * r.entre(1.04, 1.1), r12 = r0 + R2 * r.entre(0.08, 0.3);
+      l += pincelada([[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r12, cy + Math.sin(a) * r12]], R2 * r.entre(8e-3, 0.02), "fuso");
     }
     out.frente += forma(l, fx.ink ? INK2 : escuro(fx), { op: 0.85 });
     if (T.cd) {
@@ -11824,29 +11872,29 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { chao: svg };
   };
   TIPOS.carga_maos = (fx) => {
-    const { P: P3, r } = fx, s = pxu(fx), R = escalaW(fx, P3.raio) * s * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X), [x, y] = fx.A.tela, g = brilho(fx);
+    const { P: P3, r } = fx, s = pxu(fx), R2 = escalaW(fx, P3.raio) * s * (0.3 + 0.7 * fx.t) * Math.min(1.4, fx.X), [x, y] = fx.A.tela, g = brilho(fx);
     let l = "";
     for (let i = 0; i < quant(fx, P3.raios); i++) {
-      const a = r() * 6.28, r0 = R * r.entre(1.05, 1.3), r12 = r0 + R * r.entre(0.6, 2.8);
-      l += pincelada([[x + Math.cos(a) * r0, y + Math.sin(a) * r0], [x + Math.cos(a) * r12, y + Math.sin(a) * r12]], R * r.entre(0.03, 0.09), "fuso");
+      const a = r() * 6.28, r0 = R2 * r.entre(1.05, 1.3), r12 = r0 + R2 * r.entre(0.6, 2.8);
+      l += pincelada([[x + Math.cos(a) * r0, y + Math.sin(a) * r0], [x + Math.cos(a) * r12, y + Math.sin(a) * r12]], R2 * r.entre(0.03, 0.09), "fuso");
     }
     let svg = fx.ink ? forma(l, INK2, { op: 0.9 }) : forma(l, medio(fx), { op: 0.9 });
-    svg += fx.ink ? forma(circulo(x, y, R), PAPEL2, ct(fx, Math.max(1.5, R * 0.07))) + forma(circulo(x, y, R * 0.7), "none", { stroke: INK2, sw: Math.max(0.6, R * 0.025), op: 0.5 }) : forma(circulo(x, y, R * 1.8), medio(fx), { op: 0.35, filtro: g }) + forma(circulo(x, y, R), fx.cores[1]) + forma(circulo(x, y, R * 0.6), fx.cores[0]);
+    svg += fx.ink ? forma(circulo(x, y, R2), PAPEL2, ct(fx, Math.max(1.5, R2 * 0.07))) + forma(circulo(x, y, R2 * 0.7), "none", { stroke: INK2, sw: Math.max(0.6, R2 * 0.025), op: 0.5 }) : forma(circulo(x, y, R2 * 1.8), medio(fx), { op: 0.35, filtro: g }) + forma(circulo(x, y, R2), fx.cores[1]) + forma(circulo(x, y, R2 * 0.6), fx.cores[0]);
     let sp = "";
     for (let i = 0; i < quant(fx, 10); i++) {
-      const a = r() * 6.28, dd = R * r.entre(1.4, 3);
-      sp += faisca(x + Math.cos(a) * dd, y + Math.sin(a) * dd, R * r.entre(0.12, 0.3), r());
+      const a = r() * 6.28, dd = R2 * r.entre(1.4, 3);
+      sp += faisca(x + Math.cos(a) * dd, y + Math.sin(a) * dd, R2 * r.entre(0.12, 0.3), r());
     }
     return svg + forma(sp, fx.ink ? INK2 : fx.cores[0]);
   };
   TIPOS.redemoinho = (fx) => {
-    const { P: P3, r } = fx, cd = corpoDono(fx), s = pxu(fx), Hc = cd ? cd.h : corpoW(fx), E3 = cd ? [cd.eixo[0], fx.K.g0, cd.eixo[2]] : fx.plano ? fx.A.mundo : [fx.A.mundo[0], fx.K.g0, fx.A.mundo[2]], up = UPW(fx);
-    const zc = fx.proj(add2(E3, mul2(up, Hc * 0.4)))[2], out = { atras: "", frente: "", chao: "" }, Hh = Hc * P3.altura * (0.3 + 0.7 * fx.t);
+    const { P: P3, r } = fx, cd = corpoDono(fx), s = pxu(fx), Hc = cd ? cd.h : corpoW(fx), E4 = cd ? [cd.eixo[0], fx.K.g0, cd.eixo[2]] : fx.plano ? fx.A.mundo : [fx.A.mundo[0], fx.K.g0, fx.A.mundo[2]], up = UPW(fx);
+    const zc = fx.proj(add2(E4, mul2(up, Hc * 0.4)))[2], out = { atras: "", frente: "", chao: "" }, Hh = Hc * P3.altura * (0.3 + 0.7 * fx.t);
     for (let f = 0; f < 3; f++) {
       const N = 120, pts = [], fase = f * 2.1 + r() * 0.5, R0 = P3.raio * Hc * 0.3 * r.entre(0.85, 1.1);
       for (let i = 0; i <= N; i++) {
         const t = i / N, a = fase + 2 * Math.PI * P3.voltas * t, rr = R0 * (0.55 + 0.6 * t);
-        pts.push(add2(E3, add2(mul2(up, Hh * t), [Math.cos(a) * rr, 0, Math.sin(a) * rr])));
+        pts.push(add2(E4, add2(mul2(up, Hh * t), [Math.cos(a) * rr, 0, Math.sin(a) * rr])));
       }
       const dv = aroDividido(fx, pts, zc, escalaW(fx, 0.26) * s * r.entre(0.7, 1.3), (t) => Math.sin(Math.PI * Math.min(1, t * 1.05)) * (0.6 + 0.4 * Math.sin(t * 40 + f)));
       out.atras += forma(dv.atras, fx.ink ? INK2 : corEm(fx.cores, 0.85), { op: 0.85 });
@@ -11854,16 +11902,16 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     const bs = [];
     for (let i = 0; i < quant(fx, 14); i++) {
-      const a = i / 14 * 6.28 + r() * 0.3, q = T2(fx, add2(E3, [Math.cos(a) * Hc * 0.3 * P3.raio, Hc * 0.03, Math.sin(a) * Hc * 0.3 * P3.raio]));
+      const a = i / 14 * 6.28 + r() * 0.3, q = T2(fx, add2(E4, [Math.cos(a) * Hc * 0.3 * P3.raio, Hc * 0.03, Math.sin(a) * Hc * 0.3 * P3.raio]));
       bolhas(q[0], q[1], Hc * s * r.entre(0.06, 0.1), r, 3, 0.55).forEach((c) => bs.push(c));
     }
     out.chao = nuvemTinta(fx, bs, r, "claro", 0.95);
     return out;
   };
-  function rachar(fx, C2, up, R, ramos, prog, r) {
+  function rachar(fx, C2, up, R2, ramos, prog, r) {
     const B3 = base(up), linhas = [];
     for (let i = 0; i < ramos; i++) {
-      const a0 = i / ramos * 6.28 + r.entre(-0.3, 0.3), L3 = R * r.entre(0.6, 1) * prog, pts = [];
+      const a0 = i / ramos * 6.28 + r.entre(-0.3, 0.3), L3 = R2 * r.entre(0.6, 1) * prog, pts = [];
       let a = a0, x = 0;
       for (let k = 0; k <= 8; k++) {
         x = L3 * k / 8;
@@ -11883,10 +11931,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     return linhas;
   }
-  function lajes(fx, C2, up, R, n2, r) {
+  function lajes(fx, C2, up, R2, n2, r) {
     const B3 = base(up), out = [];
     for (let i = 0; i < n2; i++) {
-      const a = i / n2 * 6.28 + r.entre(-0.2, 0.2), d = R * r.entre(0.95, 1.25), w = R * r.entre(0.25, 0.45), dd = R * r.entre(0.18, 0.35), lev = R * r.entre(0.08, 0.3);
+      const a = i / n2 * 6.28 + r.entre(-0.2, 0.2), d = R2 * r.entre(0.95, 1.25), w = R2 * r.entre(0.25, 0.45), dd = R2 * r.entre(0.18, 0.35), lev = R2 * r.entre(0.08, 0.3);
       const rad = add2(mul2(B3.v, Math.cos(a)), mul2(B3.w, Math.sin(a))), tg = add2(mul2(B3.v, -Math.sin(a)), mul2(B3.w, Math.cos(a)));
       const p = add2(C2, mul2(rad, d)), q0 = add2(p, mul2(tg, -w / 2)), q1 = add2(p, mul2(tg, w / 2)), q2 = add2(add2(q1, mul2(rad, dd)), mul2(up, lev)), q3 = add2(add2(q0, mul2(rad, dd)), mul2(up, lev));
       out.push({ z: fx.proj(p)[2], pts: [q0, q1, q2, q3].map((w2) => T2(fx, w2)), lado: [q0, q1, add2(q1, mul2(up, -lev * 0.4)), add2(q0, mul2(up, -lev * 0.4))].map((w2) => T2(fx, w2)) });
@@ -11904,21 +11952,21 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { chao: forma(d, escuro(fx)) + lj };
   };
   TIPOS.cratera = (fx) => {
-    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P3.raio) * (0.2 + 0.8 * fx.t), s = pxu(fx), B3 = base(up);
+    const { P: P3, cores, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R2 = escalaW(fx, P3.raio) * (0.2 + 0.8 * fx.t), s = pxu(fx), B3 = base(up);
     const borda = (k) => Array.from({ length: 30 }, (_, i) => {
-      const a = i / 30 * 6.2832, rr = R * k * (1 + 0.12 * Math.sin(a * 5 + fx.e.semente) + 0.06 * Math.sin(a * 11));
+      const a = i / 30 * 6.2832, rr = R2 * k * (1 + 0.12 * Math.sin(a * 5 + fx.e.semente) + 0.06 * Math.sin(a * 11));
       return T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
     });
     let chao2 = fx.ink ? forma(suave2(borda(1.18), true), "#E2E2E2", ct(fx, 1.2)) + forma(suave2(borda(0.9), true), "#9C9C9C", ct(fx, 0.9)) + forma(suave2(borda(0.62), true), INK2) : forma(suave2(borda(1.18), true), cores[1], { stroke: escuro(fx), sw: 1.2 }) + forma(suave2(borda(0.88), true), cores[2] || cores[1]) + forma(suave2(borda(0.62), true), escuro(fx), { op: 0.75 });
     let d = "";
-    rachar(fx, C2, up, R * 2.1, Math.round(P3.rachaduras), Math.min(1, fx.t * 1.2), r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), escalaW(fx, 0.8 * l.w) * s, "agulha"));
+    rachar(fx, C2, up, R2 * 2.1, Math.round(P3.rachaduras), Math.min(1, fx.t * 1.2), r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), escalaW(fx, 0.8 * l.w) * s, "agulha"));
     chao2 += forma(d, escuro(fx));
-    lajes(fx, C2, up, R, quant(fx, 9), r).sort((a, b) => a.z - b.z).forEach((l) => {
+    lajes(fx, C2, up, R2, quant(fx, 9), r).sort((a, b) => a.z - b.z).forEach((l) => {
       chao2 += forma(caminho(l.lado, true), fx.ink ? "#5A5A5A" : escuro(fx), ct(fx, 0.7)) + forma(caminho(l.pts, true), fx.ink ? PAPEL2 : cores[1], ct(fx, 0.9));
     });
     let db = "";
     for (let i = 0; i < quant(fx, 16); i++) {
-      const a = r() * 6.28, rr = R * r.entre(0.6, 1.5), h = R * r.entre(0.2, 1.6) * fx.t, q = T2(fx, add2(add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), mul2(up, h)));
+      const a = r() * 6.28, rr = R2 * r.entre(0.6, 1.5), h = R2 * r.entre(0.2, 1.6) * fx.t, q = T2(fx, add2(add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))), mul2(up, h)));
       db += lasca(q[0], q[1], escalaW(fx, r.entre(0.2, 0.5)) * s, r);
     }
     return { chao: chao2, frente: forma(db, fx.ink ? PAPEL2 : cores[2] || cores[1], ct(fx, 0.8)) };
@@ -11957,31 +12005,31 @@ pre.cmdout .ok{color:var(--cobalt)}
       const fc = n2[0] ? [v, c[1], c[2]] : n2[1] ? [c[0], v, c[2]] : [c[0], c[1], v], vira = fx.proj(add2(fc, n2))[2] - fx.proj(fc)[2], area = n2[0] ? ext[1] * ext[2] : n2[1] ? ext[0] * ext[2] : ext[0] * ext[1], z = vira > 0 ? vira * area : -1e9 + vira;
       if (!best || z > best.z) best = { n: n2, fc: add2(fc, mul2(n2, 0.02)), z };
     }
-    const s = fx.A.s, R = escalaW(fx, P3.raio), B3 = base(best.n);
+    const s = fx.A.s, R2 = escalaW(fx, P3.raio), B3 = base(best.n);
     const buraco = Array.from({ length: 11 }, (_, i) => {
-      const a = i / 11 * 6.28, rr = R * 0.32 * r.entre(0.6, 1.2) * fx.t;
+      const a = i / 11 * 6.28, rr = R2 * 0.32 * r.entre(0.6, 1.2) * fx.t;
       return T2(fx, add2(best.fc, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
     });
     let d = "";
-    rachar(fx, best.fc, best.n, R * 1.6, Math.round(P3.ramos), fx.t, r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), s * 0.4 * l.w * fx.e.escala * 1.6, "agulha"));
+    rachar(fx, best.fc, best.n, R2 * 1.6, Math.round(P3.ramos), fx.t, r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), s * 0.4 * l.w * fx.e.escala * 1.6, "agulha"));
     let db = "";
     for (let i = 0; i < quant(fx, 10); i++) {
-      const a = r() * 6.28, rr = R * r.entre(0.5, 1.2), q = T2(fx, add2(add2(best.fc, mul2(best.n, R * r.entre(0.2, 0.8) * fx.t)), add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
+      const a = r() * 6.28, rr = R2 * r.entre(0.5, 1.2), q = T2(fx, add2(add2(best.fc, mul2(best.n, R2 * r.entre(0.2, 0.8) * fx.t)), add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
       db += lasca(q[0], q[1], s * r.entre(0.15, 0.4), r);
     }
     return forma(caminho(buraco, true), escuro(fx), { op: 0.9 }) + forma(d, escuro(fx)) + forma(db, fx.ink ? PAPEL2 : "#CFC7BD", ct(fx, 0.7));
   };
   TIPOS.buraco_chao = (fx) => {
-    const { P: P3, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), s = pxu(fx), B3 = base(up);
+    const { P: P3, A, r } = fx, up = UPW(fx), C2 = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R2 = escalaW(fx, P3.raio) * (0.3 + 0.7 * fx.t), s = pxu(fx), B3 = base(up);
     const borda = (k) => Array.from({ length: 14 }, (_, i) => {
-      const a = i / 14 * 6.2832, rr = R * k * r.entre(0.82, 1.12);
+      const a = i / 14 * 6.2832, rr = R2 * k * r.entre(0.82, 1.12);
       return T2(fx, add2(C2, add2(mul2(B3.v, Math.cos(a) * rr), mul2(B3.w, Math.sin(a) * rr))));
     });
     let chao2 = forma(caminho(borda(1.05), true), fx.ink ? "#CFCFCF" : fx.cores[1], ct(fx, 1)) + forma(caminho(borda(0.85), true), fx.ink ? INK2 : escuro(fx));
     let d = "";
-    rachar(fx, C2, up, R * 1.9, quant(fx, 10), fx.t, r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), escalaW(fx, 0.6 * l.w) * s, "agulha"));
+    rachar(fx, C2, up, R2 * 1.9, quant(fx, 10), fx.t, r).forEach((l) => d += pincelada(l.pts.map((q) => T2(fx, q)), escalaW(fx, 0.6 * l.w) * s, "agulha"));
     chao2 = forma(d, escuro(fx)) + chao2;
-    lajes(fx, C2, up, R * 0.95, quant(fx, P3.lajes), r).sort((a, b) => a.z - b.z).forEach((l) => {
+    lajes(fx, C2, up, R2 * 0.95, quant(fx, P3.lajes), r).sort((a, b) => a.z - b.z).forEach((l) => {
       chao2 += forma(caminho(l.lado, true), fx.ink ? "#4A4A4A" : escuro(fx), ct(fx, 0.7)) + forma(caminho(l.pts, true), fx.ink ? PAPEL2 : fx.cores[1], ct(fx, 1));
     });
     return { chao: chao2 };
@@ -12403,8 +12451,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return pts;
   }
   function luzDir(p) {
-    const A = (p.lightAz || 0) * D, E3 = (p.lightEl || 45) * D;
-    return [Math.sin(A) * Math.cos(E3), Math.sin(E3), Math.cos(A) * Math.cos(E3)];
+    const A = (p.lightAz || 0) * D, E4 = (p.lightEl || 45) * D;
+    return [Math.sin(A) * Math.cos(E4), Math.sin(E4), Math.cos(A) * Math.cos(E4)];
   }
   function fazSombra(A, B3, LD2) {
     let n2 = 0;
@@ -12507,13 +12555,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (p._ativo || FINO || lanc && lanc.length || L3.instancias === false) return null;
     const v = visada(p), k = chaveInstancia(L3, o, v) + (fast ? "§r" : ""), ent = INST.get(k);
     if (!ent || ent.p._id !== void 0 && ent.p._id === p._id) return { k };
-    const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc6 = b[3] / a[3], r = ent.res;
-    const tr = (s) => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc6.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
+    const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc7 = b[3] / a[3], r = ent.res;
+    const tr = (s) => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc7.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
     ESTAT.instancias = (ESTAT.instancias || 0) + 1;
     let bb = null;
     const S = effScale(p);
     if (r.info.bb && S > 0) {
-      const X = (v2) => ((CX + S * v2 - a[0]) * esc6 + b[0] - CX) / S, Y = (v2) => (CY - ((CY - S * v2 - a[1]) * esc6 + b[1])) / S;
+      const X = (v2) => ((CX + S * v2 - a[0]) * esc7 + b[0] - CX) / S, Y = (v2) => (CY - ((CY - S * v2 - a[1]) * esc7 + b[1])) / S;
       bb = [X(r.info.bb[0]), X(r.info.bb[1]), Y(r.info.bb[2]), Y(r.info.bb[3])];
     }
     return { pronta: { svg: tr(r.svg), sombra: tr(r.sombra), info: Object.assign({}, r.info, { depth: r.info.depth + (b[2] - a[2]), handles: [], bb, instancia: true }), z: null, fast: r.fast } };
@@ -12656,7 +12704,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       const pc = list0[0].p, palO = list0.palObjetos || list0[0].pal, g0 = list0.chao !== void 0 ? list0.chao : list0[0].gy || 0;
       objs.forEach((o, k) => {
         const res = desenharObjeto(o, pc, palO, g0, L3);
-        cams.push({ g: { membros: [], obj: k, lanc: [], velho: false, congelado: false }, res, prof: res.info.depth, ordem: o.ordem || 0, objeto: o });
+        cams.push({ g: { membros: [], obj: k, lanc: [], velho: false, congelado: false }, res, prof: o.chao || o.alt <= 1 && !o.emAr && o.larg * o.prof > 400 ? -1e9 : res.info.depth, ordem: o.ordem || 0, objeto: o });
       });
     }
     let efeitosQuadro = "";
@@ -12683,9 +12731,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     let efeitosFundo = "", efeitosFrente = "", efeitosChao = "", defsEfeitos = "";
     const efeitosCena = [];
     if (list0.efeitos && list0.efeitos.length) {
-      const R = desenharEfeitos(list0, list0.efeitos, list0.quadroEfeitos || 0, { prefixo: uid, exportacao: !!list0.exportacao });
-      defsEfeitos = R.defs;
-      R.itens.forEach((it, k) => {
+      const R2 = desenharEfeitos(list0, list0.efeitos, list0.quadroEfeitos || 0, { prefixo: uid, exportacao: !!list0.exportacao });
+      defsEfeitos = R2.defs;
+      R2.itens.forEach((it, k) => {
         if (it.onde === "fundo") {
           efeitosFundo += it.svg;
           return;
@@ -12764,9 +12812,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
     let floorStr = "";
     if (plan.floor && list0.length) {
-      let R = plan.floor;
-      list0.forEach((o) => R = Math.max(R, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2)));
-      floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R, 80));
+      let R2 = plan.floor;
+      list0.forEach((o) => R2 = Math.max(R2, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2)));
+      floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R2, 80));
     }
     const guias = L3.horizon && list0.length ? vanishSvg(list0[0].p, list0[0].pal, infos) + (L3.pfObjetos !== false ? pfObjetosSvg(list0[0].p, list0[0].pal, list0.objetos, list0.chao !== void 0 ? list0.chao : list0[0].gy || 0) : "") : "";
     const lay = (id, nome, s) => opts.inkscape ? '<g id="' + id + '" inkscape:label="' + nome + '"' + ink + ">" + s + "</g>" : s ? '<g id="' + id + '">' + s + "</g>" : "";
@@ -12824,7 +12872,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const AW = area ? area.w : W, AH = area ? area.h : H, MX = area ? AW * 0.067 : 40, MY = area ? AH * 0.037 : 26, w = Math.max(0.05, bb[1] - bb[0]), h = Math.max(0.05, bb[3] - bb[2]), S = Math.min((AW - 2 * MX) / w, (AH - 2 * MY) / h) * 0.96;
     return { zoom: +(S / BASE).toFixed(3), panX: +(-(bb[0] + bb[1]) / 2).toFixed(3), panY: +((CY - H / 2) / S - (bb[2] + bb[3]) / 2).toFixed(3) };
   }
-  function floorSvg(p, gy, pal, R) {
+  function floorSvg(p, gy, pal, R2) {
     const cam = makeXf(Object.assign({}, p, { wRot: 0 })), S = effScale(p), o = [];
     setPAN(cam([-(p.tx || 0), -(p.ty || 0), -(p.tz || 0)]));
     setSPAN([p.panX, p.panY]);
@@ -12849,16 +12897,16 @@ pre.cmdout .ok{color:var(--cobalt)}
         } else pen = false;
       }
     };
-    for (let i = -R; i <= R; i += 2) {
-      seg(i, -R, i, R);
-      seg(-R, i, R, i);
+    for (let i = -R2; i <= R2; i += 2) {
+      seg(i, -R2, i, R2);
+      seg(-R2, i, R2, i);
     }
     o.push('<path d="' + d + '" style="fill:none;stroke:' + pal.cobalt + ';stroke-width:0.7;opacity:.35"/>');
     d = "";
-    seg(-R, 0, R, 0);
+    seg(-R2, 0, R2, 0);
     o.push('<path d="' + d + '" style="fill:none;stroke:' + pal.coral + ';stroke-width:1.1;opacity:.6"/>');
     d = "";
-    seg(0, -R, 0, R);
+    seg(0, -R2, 0, R2);
     o.push('<path d="' + d + '" style="fill:none;stroke:' + pal.cobalt + ';stroke-width:1.1;opacity:.7"/>');
     return o.join("");
   }
@@ -12944,9 +12992,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (list0.some((o) => o.referencia) || list0.efeitos && list0.efeitos.length || !(opts && opts.exato) && list0.filter((o) => !o.p._oculto).length > 1 || list0.objetos && list0.objetos.length) return renderCamadas(list0, L3, fast, floor, opts);
     let floorStr = "";
     if (floor && list0.length) {
-      let R = floor;
-      list0.forEach((o) => R = Math.max(R, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2)));
-      floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R, 80));
+      let R2 = floor;
+      list0.forEach((o) => R2 = Math.max(R2, 2 * Math.ceil((Math.max(Math.abs(o.p.wx || 0), Math.abs(o.p.wz || 0)) + 5) / 2)));
+      floorStr = floorSvg(list0[0].p, list0[0].gy || 0, list0[0].pal, Math.min(R2, 80));
     }
     const vis = list0.map((o) => !o.p._oculto && (!o.p.persp || figDepth(o.p) < Math.max(3, o.p.camDist || 30) - 3));
     const idx2 = list0.map((o, i) => i).filter((i) => vis[i]), list = idx2.map((i) => list0[i]);
@@ -13458,7 +13506,7 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function svgVistaPose(params, vista2, opts = {}) {
     const w = opts.w || 260, h = opts.h || 260, pr = projetorPose(vista2);
-    const E3 = opts.esqueleto || ossosDoCorpo(params), F3 = filtroRegiao(opts.regiao);
+    const E4 = opts.esqueleto || ossosDoCorpo(params), F3 = filtroRegiao(opts.regiao);
     const foco = opts.regiao && opts.regiao !== "corpo";
     let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9;
     const somar = (q) => {
@@ -13468,7 +13516,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       v0 = Math.min(v0, a[1]);
       v1 = Math.max(v1, a[1]);
     };
-    E3.ossos.forEach((o) => {
+    E4.ossos.forEach((o) => {
       if (!F3.osso(o)) return;
       if (o.tipo === "cranio") {
         const a = pr(o.a);
@@ -13483,7 +13531,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         somar(o.b);
       }
     });
-    E3.juntas.forEach((j) => {
+    E4.juntas.forEach((j) => {
       if (F3.junta(j)) somar(j.P);
     });
     if (u0 > u1) {
@@ -13500,7 +13548,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
     const f12 = (x) => (Math.round(x * 10) / 10).toString();
     let d0 = 1e9, d1 = -1e9;
-    const bs = E3.ossos.map((o) => {
+    const bs = E4.ossos.map((o) => {
       const a = tela(o.a), b = tela(o.b);
       d0 = Math.min(d0, a[2], b[2]);
       d1 = Math.max(d1, a[2], b[2]);
@@ -13514,7 +13562,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         out.push('<path class="vp-ref" d="M' + f12(c[0] - 12) + " " + f12(c[1]) + "H" + f12(c[0] + 12) + "M" + f12(c[0]) + " " + f12(c[1] - 12) + "V" + f12(c[1] + 12) + '"/>');
       } else {
         let gy = 1e9;
-        E3.ossos.forEach((o) => {
+        E4.ossos.forEach((o) => {
           gy = Math.min(gy, o.a[1], o.b[1]);
         });
         const a = tela([-6, gy, 0]), b = tela([6, gy, 0]);
@@ -13530,7 +13578,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       const lw = Math.max(1.2, Math.min(foco ? 7 : 10, (foco ? 1.1 : 2) * o.r * s));
       out.push('<path class="vp-osso' + (o.s > 0 ? " vp-esq" : o.s < 0 ? " vp-dir" : "") + '" d="M' + f12(a[0]) + " " + f12(a[1]) + "L" + f12(b[0]) + " " + f12(b[1]) + '" style="stroke-width:' + f12(lw) + ";opacity:" + op.toFixed(2) + '"/>');
     }
-    const at = E3.juntas.find((j) => j.k === "cabeca"), ro = E3.juntas.find((j) => j.k === "rosto");
+    const at = E4.juntas.find((j) => j.k === "cabeca"), ro = E4.juntas.find((j) => j.k === "rosto");
     if (at && ro) {
       const a = tela(at.P), b = tela(ro.P), dx = b[0] - a[0], dy = b[1] - a[1], L3 = Math.hypot(dx, dy);
       if (L3 > 2) {
@@ -13540,7 +13588,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     const juntas = [];
     const raioJ = foco ? 5.5 : 4.2, dedosVis = foco || s > 60;
-    E3.juntas.forEach((j) => {
+    E4.juntas.forEach((j) => {
       if (j.menor && j.k !== "dedo") return;
       if (j.k === "dedo" && !dedosVis) return;
       if (foco && !F3.junta(j)) return;
@@ -13897,8 +13945,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     return { r: [Math.cos(a), 0, -Math.sin(a)], o: [0, 0, 0] };
   }
   function svgPerfil(dados, v, modo) {
-    const C2 = dados.camera, E3 = eixoPerfil(dados, modo), g0 = dados.chao;
-    const u = (w) => (w[0] - E3.o[0]) * E3.r[0] + (w[2] - E3.o[2]) * E3.r[2], vd = [E3.r[2], 0, -E3.r[0]], fundo = (w) => w[0] * vd[0] + w[2] * vd[2];
+    const C2 = dados.camera, E4 = eixoPerfil(dados, modo), g0 = dados.chao;
+    const u = (w) => (w[0] - E4.o[0]) * E4.r[0] + (w[2] - E4.o[2]) * E4.r[2], vd = [E4.r[2], 0, -E4.r[0]], fundo = (w) => w[0] * vd[0] + w[2] * vd[2];
     const mp = (q) => [v.w / 2 + (q[0] - v.cx) * v.s, v.h / 2 - (q[1] - v.cy) * v.s], m3 = (w) => mp([u(w), w[1]]);
     const o = [cabecalho(v)];
     o.push(grade(v, (q) => mp([q[0], q[1]]), 0, "perfil"));
@@ -13998,6 +14046,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     const m = margem || 30, s = clamp(Math.min((w - 2 * m) / Math.max(4, x1 - x0), (h - 2 * m) / Math.max(4, y1 - y0)), 0.5, 60);
     return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, s, w, h };
   }
+  var CSS_PLANTA = "<style>.blk-orbita{fill:none;stroke:#E0603A;stroke-width:1.2;stroke-dasharray:5 4;opacity:.8}.blk-pivo-txt{fill:#B4432A}.blk-grade{fill:none;stroke:#CBD4DF;stroke-width:.7}.blk-eixo-x{stroke:#CF4A27;opacity:.55}.blk-eixo-z{stroke:#2B63D9;opacity:.55}.blk-cone{fill:#2B63D9;fill-opacity:.08;stroke:none}.blk-cone-borda{fill:none;stroke:#2B63D9;stroke-width:1.6;stroke-dasharray:7 4}.blk-raio{fill:none;stroke:#2B63D9;stroke-width:.7;opacity:.5}.blk-toque{fill:#2B63D9}.lente-grande.blk-cone{fill:#0E9F8A}.lente-grande.blk-cone-borda,.lente-grande.blk-raio{stroke:#0E9F8A}.lente-tele.blk-cone{fill:#C2410C}.lente-tele.blk-cone-borda,.lente-tele.blk-raio{stroke:#C2410C}.lente-grande.blk-toque{fill:#0E9F8A}.lente-tele.blk-toque{fill:#C2410C}.blk-lente-txt.lente-grande{fill:#0E9F8A}.blk-lente-txt.lente-tele{fill:#C2410C}.blk-lente-txt.lente-normal{fill:#2B63D9}.blk-escala{stroke:#586577;stroke-width:.8;stroke-dasharray:2 4}.blk-txt{font:10px sans-serif;fill:#586577;text-anchor:middle}.blk-nome{fill:#15212F;font-weight:bold}.blk-escala-txt{text-anchor:start;fill:#2B63D9}.blk-info-t{font-weight:normal;fill:#586577}.blk-regua-txt{text-anchor:start}.blk-obj{fill:#E4E4EB;stroke:#586577;stroke-width:1.2}.blk-alca{fill:#fff;stroke:#2B63D9;stroke-width:1.5}.blk-col{fill:#CF4A27;fill-opacity:.2;stroke:#CF4A27;stroke-width:1.6}.blk-obj-txt{font-weight:bold}.blk-seta{stroke:#fff}.blk-sel{fill:none;stroke:#2B63D9;stroke-width:1.4;stroke-dasharray:4 3}.blk-sel-seta{fill:#2B63D9}.blk-mira{stroke:#586577;stroke-width:.8}.blk-alvo{fill:none;stroke:#CF4A27;stroke-width:1.5}.blk-cam rect,.blk-cam path{fill:#CF4A27;stroke:#15212F;stroke-width:1.2}.blk-chao{fill:#EAEFF4}.blk-chao-linha{stroke:#15212F;stroke-width:1.4}.blk-regua{stroke:#586577}.blk-prumo{stroke:#586577;stroke-dasharray:3 3}</style>";
+  function comFundo(svg, w, h) {
+    return svg.replace('class="blk-svg">', 'class="blk-svg" width="' + w + '" height="' + h + '">' + CSS_PLANTA + '<rect width="' + w + '" height="' + h + '" fill="#F9FBFD"/>');
+  }
 
   // src/engine/pose2d.js
   function rostoLocal(p) {
@@ -14008,8 +14060,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       out.push(hp(y, u * 82 * D, 5e-3));
     }
     const bU = p.browUp || 0, bI = p.browIn || 0, brow = (s, u) => {
-      const R = ladoRosto(p, s);
-      return hp(0.1 + 0.045 * Math.sin(Math.PI * Math.pow(u, 0.8)) - 0.04 * u + 0.035 * bU - 0.035 * bI * Math.pow(1 - u, 1.5) + (p.headModel === "v5_anime" ? 0.085 : 0.04) * (R.browInner * Math.pow(1 - u, 1.4) + R.browOuter * Math.pow(u, 1.4)), s * (10 + 36 * u) * D);
+      const R2 = ladoRosto(p, s);
+      return hp(0.1 + 0.045 * Math.sin(Math.PI * Math.pow(u, 0.8)) - 0.04 * u + 0.035 * bU - 0.035 * bI * Math.pow(1 - u, 1.5) + (p.headModel === "v5_anime" ? 0.085 : 0.04) * (R2.browInner * Math.pow(1 - u, 1.4) + R2.browOuter * Math.pow(u, 1.4)), s * (10 + 36 * u) * D);
     };
     [1, 0.75, 0.5, 0.25, 0].forEach((u) => out.push(brow(-1, u)));
     [0, 0.25, 0.5, 0.75, 1].forEach((u) => out.push(brow(1, u)));
@@ -14021,18 +14073,18 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (p.headModel === "v5_anime") return rostoV5(p, S, out, hp, surfX);
     const w = 0.3 * p.eyeSize, tilt = (q) => 0.034 * (q - 0.45), X = (q) => (q - 0.5) * w;
     const pal = (s) => {
-      const R = ladoRosto(p, s), ap = clamp(R.lidLo + 0.55 * R.cheek, 0, 1);
-      return { hu: 0.062 * p.eyeSize * p.eyeOpen * (1 - 0.92 * R.lid) * (1 - 0.2 * ap), hl: 0.036 * p.eyeSize * p.eyeOpen * (1 - 0.6 * R.lid) * (1 - 0.5 * ap) };
+      const R2 = ladoRosto(p, s), ap = clamp(R2.lidLo + 0.55 * R2.cheek, 0, 1);
+      return { hu: 0.062 * p.eyeSize * p.eyeOpen * (1 - 0.92 * R2.lid) * (1 - 0.2 * ap), hl: 0.036 * p.eyeSize * p.eyeOpen * (1 - 0.6 * R2.lid) * (1 - 0.5 * ap) };
     };
     const xc = ringAt(eyeY, p, S)[0] * Math.sin(p.eyeGap * D);
-    const E3 = (s, ex, ey) => {
+    const E4 = (s, ex, ey) => {
       const y = eyeY + ey;
       return hp(y, s * Math.asin(clamp((xc + ex) / ringAt(y, p, S)[0], 0, 0.99)), 0.012);
     };
     [-1, 1].forEach((s) => {
       const ordem = s < 0 ? [[1, 0], [0.67, 1], [0.33, 1], [0, 0], [0.33, -1], [0.67, -1]] : [[0, 0], [0.33, 1], [0.67, 1], [1, 0], [0.67, -1], [0.33, -1]];
       const { hu, hl } = pal(s), up = (q) => hu * Math.sin(Math.PI * Math.pow(q, 0.75)) + tilt(q), lo = (q) => -hl * Math.sin(Math.PI * Math.pow(q, 1.15)) + tilt(q);
-      ordem.forEach(([q, k]) => out.push(E3(s, X(q), k > 0 ? up(q) : k < 0 ? lo(q) : tilt(q))));
+      ordem.forEach(([q, k]) => out.push(E4(s, X(q), k > 0 ? up(q) : k < 0 ? lo(q) : tilt(q))));
     });
     const RL = ladoRosto(p, 1), RR = ladoRosto(p, -1), sm2 = (RL.smile + RR.smile) / 2, ab = (p.jawOpen || 0) > 0.02 ? 0.036 : 0, mY = (x) => mouthY + 0.016 * Math.pow(x / 0.2, 2) + aoLongo(RL.smile, RR.smile, x, 0.2) * 0.028 * Math.pow(x / 0.2, 2);
     const top = (x) => mY(x) + 0.034 * (1 - Math.pow(Math.abs(x) / 0.2, 1.3)), bot = (x) => mouthY - 0.07 - 0.02 * (1 - Math.pow(x / 0.13, 2)) + 0.012;
@@ -14040,12 +14092,12 @@ pre.cmdout .ok{color:var(--cobalt)}
     [[-0.2, mY], [-0.13, top], [-0.05, top], [0, top], [0.05, top], [0.13, top], [0.2, mY], [0.13, bot], [0.05, bot], [0, bot], [-0.05, bot], [-0.13, bot]].forEach(([x, f]) => out.push(M2(x, f(x))));
     [[-0.17, 0], [-0.06, 0], [0, 0], [0.06, 0], [0.17, 0], [0.06, 1], [0, 1], [-0.06, 1]].forEach(([x, b]) => out.push(M2(x, mY(x) - b * ab * (0.25 + 0.75 * (1 - Math.pow(x / 0.19, 2))))));
     const gY = p.eyeYaw || 0, gP = p.eyePitch || 0;
-    [-1, 1].forEach((s) => out.push(E3(s, s * gY * 0.085 * p.eyeSize, gP * 0.03 * p.eyeSize + tilt(0.5) * 0.5)));
+    [-1, 1].forEach((s) => out.push(E4(s, s * gY * 0.085 * p.eyeSize, gP * 0.03 * p.eyeSize + tilt(0.5) * 0.5)));
     return out;
   }
   function rostoV5(p, S, out, hp0, surfX) {
     const hp = (y, th, off) => hp0(y, th, (off || 0.01) + LEVANTA), GL = geoOlhoAnime(p, S, ringAt, S.eyeY, 1), GR = geoOlhoAnime(p, S, ringAt, S.eyeY, -1), G = GL, Gs = (s) => s > 0 ? GL : GR;
-    const X = (q) => (q - 0.5) * G.w, E3 = (s, ex, ey) => {
+    const X = (q) => (q - 0.5) * G.w, E4 = (s, ex, ey) => {
       const y = G.ey0 + ey;
       return hp(y, s * Math.asin(clamp((G.xc + ex) / ringAt(y, p, S)[0], 0, 0.99)), 0.012);
     };
@@ -14053,7 +14105,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     [-1, 1].forEach((s) => {
       const ordem = s < 0 ? [[1, 0], [0.67, 1], [0.33, 1], [0, 0], [0.33, -1], [0.67, -1]] : [[0, 0], [0.33, 1], [0.67, 1], [1, 0], [0.67, -1], [0.33, -1]];
       const g = Gs(s);
-      ordem.forEach(([q, k]) => out.push(E3(s, X(q), g.fechado ? meio(q, g) : k > 0 ? g.up(q) : k < 0 ? g.lo(q) : meio(q, g))));
+      ordem.forEach(([q, k]) => out.push(E4(s, X(q), g.fechado ? meio(q, g) : k > 0 ? g.up(q) : k < 0 ? g.lo(q) : meio(q, g))));
     });
     const B3 = bocaAnime(p, S, ringAt), w = B3.largura, M2 = (x, y) => hp(y, surfX(y, x), 0.02);
     const fechada = B3.aberto < 0.04, linha = B3.linha;
@@ -14063,7 +14115,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     [[-0.85, ci], [-0.3, ci], [0, ci], [0.3, ci], [0.85, ci], [0.3, bi], [0, bi], [-0.3, bi]].forEach(([u, f]) => out.push(M2(u * w, f(u * w))));
     [-1, 1].forEach((s) => {
       const g = Gs(s);
-      out.push(E3(s, g.gx(s), g.fechado ? meio(0.5, g) : g.gy));
+      out.push(E4(s, g.gx(s), g.fechado ? meio(0.5, g) : g.gy));
     });
     return out;
   }
@@ -14173,10 +14225,10 @@ pre.cmdout .ok{color:var(--cobalt)}
       const y = cadeira ? A + (o.encosto || 4.2) : mesa ? A - 0.5 : o.tipo === "espada" ? 0.7 : A / 2;
       push("baseMao", "Centro da base da mão", 0, y, cadeira ? -P3 + 0.18 : mesa ? P3 + 0.65 : 0, [1, 0, 0], 100);
     } else if (o.tipo === "cadeira") {
-      const E3 = o.encosto || 4.2, B3 = -P3 + 0.18;
-      push("encostoTopo", "Topo do encosto", 0, A + E3, B3, [0, 0, -1], 100);
-      push("encostoEsquerdo", "Encosto à esquerda", -L3 + 0.23, A + E3 * 0.75, B3, [0, 0, -1], 90);
-      push("encostoDireito", "Encosto à direita", L3 - 0.23, A + E3 * 0.75, B3, [0, 0, -1], 90);
+      const E4 = o.encosto || 4.2, B3 = -P3 + 0.18;
+      push("encostoTopo", "Topo do encosto", 0, A + E4, B3, [0, 0, -1], 100);
+      push("encostoEsquerdo", "Encosto à esquerda", -L3 + 0.23, A + E4 * 0.75, B3, [0, 0, -1], 90);
+      push("encostoDireito", "Encosto à direita", L3 - 0.23, A + E4 * 0.75, B3, [0, 0, -1], 90);
       push("assentoFrente", "Borda dianteira do assento", 0, A, P3, [0, 0, 1], 75);
       push("assentoEsquerdo", "Lateral esquerda do assento", -L3, A, 0, [-1, 0, 0], 70);
       push("assentoDireito", "Lateral direita do assento", L3, A, 0, [1, 0, 0], 70);
@@ -14931,8 +14983,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       const mPorCelLado = 1.75 / lado2.altPessoa, larguraM = lado2.largura * mPorCelLado;
       mPorCel = Math.min(1.2, Math.max(0.05, larguraM / gw));
     } else mPorCel = 16 / gw;
-    const R = mPorCel * M;
-    const cx = gw / 2, cz = gh / 2, mundo = (x, y) => [(x + 0.5 - cx) * R, (y + 0.5 - cz) * R];
+    const R2 = mPorCel * M;
+    const cx = gw / 2, cz = gh / 2, mundo = (x, y) => [(x + 0.5 - cx) * R2, (y + 0.5 - cz) * R2];
     const altLado = (xFrac0, xFrac1, qual) => {
       if (!lado2) return null;
       const P3 = qual === "madeira" ? lado2.perfilMad : lado2.perfil, a = Math.floor(xFrac0 * lado2.largura), b = Math.ceil(xFrac1 * lado2.largura);
@@ -14973,7 +15025,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     }
     for (const comp2 of componentes(G, (c) => c === "vegetacao")) {
       if (comp2.n < 2) continue;
-      const [x, z] = mundo(comp2.cx, comp2.cy), d = Math.max(comp2.x1 - comp2.x0 + 1, comp2.y1 - comp2.y0 + 1) * R;
+      const [x, z] = mundo(comp2.cx, comp2.cy), d = Math.max(comp2.x1 - comp2.x0 + 1, comp2.y1 - comp2.y0 + 1) * R2;
       itens.push({ classe: "vegetacao", tipo: d > 9 ? "arvore" : d > 5 ? "palmeira" : "arbusto", x, z, larg: d, prof: d, alt: d > 9 ? Math.min(60, d * 2.6) : d > 5 ? 28 : Math.max(2.5, d * 0.8) });
     }
     for (const comp2 of componentes(G, (c) => c === "agua")) {
@@ -15007,9 +15059,9 @@ pre.cmdout .ok{color:var(--cobalt)}
       const ox = manequins.length > 1 ? (cmx * manequins.length - m.x) / (manequins.length - 1) : 0, oz = manequins.length > 1 ? (cmz * manequins.length - m.z) / (manequins.length - 1) : 0;
       m.giro = Math.round(Math.atan2(ox - m.x, oz - m.z) * 180 / Math.PI);
     });
-    const piso = { larg: gw * R, prof: gh * R, classes: G.conta };
+    const piso = { larg: gw * R2, prof: gh * R2, classes: G.conta };
     return {
-      escala: { mPorCelula: mPorCel, RPorCelula: R, metrosLargura: gw * mPorCel, pelaLateral: !o.larguraMetros && !!(lado2 && lado2.altPessoa), pelaLargura: !!o.larguraMetros },
+      escala: { mPorCelula: mPorCel, RPorCelula: R2, metrosLargura: gw * mPorCel, pelaLateral: !o.larguraMetros && !!(lado2 && lado2.altPessoa), pelaLargura: !!o.larguraMetros },
       piso,
       itens,
       manequins,
@@ -15210,21 +15262,21 @@ pre.cmdout .ok{color:var(--cobalt)}
     { k: "fMiIpR", g: "slFingers", label: "Mão direita, mínimo: meio e ponta (IFP/IFD) estender − / dobrar +", min: -1, max: 1, step: 0.01, u: "%", pct: true },
     { k: "fMiAbdR", g: "slFingers", label: "Mão direita, mínimo: afastar + / juntar −", min: -1, max: 1, step: 0.01, u: "%", pct: true },
     { k: "ground", g: "slLeg", label: "Apoio no chão (0 = solto, 1 = a parte mais baixa encosta no chão)", min: 0, max: 1, step: 1, u: "" },
-    { k: "zoom", g: "slOrient", label: "Zoom (sem perspectiva)", min: 0.05, max: 12, step: 0.01, u: "×" },
-    { k: "panY", g: "slOrient", label: "Deslocar na vertical", min: -12, max: 24, step: 0.05, u: " R" },
-    { k: "panX", g: "slOrient", label: "Deslocar na horizontal", min: -24, max: 24, step: 0.05, u: " R" },
-    { k: "tx", g: "slCam", label: "Alvo da câmera: X", min: -30, max: 30, step: 0.1, u: " R" },
-    { k: "ty", g: "slCam", label: "Alvo da câmera: altura", min: -20, max: 20, step: 0.1, u: " R" },
-    { k: "tz", g: "slCam", label: "Alvo da câmera: Z", min: -30, max: 30, step: 0.1, u: " R" },
+    { k: "zoom", g: "slOrient", label: "Zoom (sem perspectiva)", min: 0.01, max: 12, step: 0.01, u: "×" },
+    { k: "panY", g: "slOrient", label: "Deslocar na vertical", min: -200, max: 200, step: 0.05, u: " R" },
+    { k: "panX", g: "slOrient", label: "Deslocar na horizontal", min: -200, max: 200, step: 0.05, u: " R" },
+    { k: "tx", g: "slCam", label: "Alvo da câmera: X", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "ty", g: "slCam", label: "Alvo da câmera: altura", min: -20, max: 60, step: 0.1, u: " R" },
+    { k: "tz", g: "slCam", label: "Alvo da câmera: Z", min: -200, max: 200, step: 0.1, u: " R" },
     { k: "persp", g: "slCam", label: "Perspectiva (0 = desligada, 1 = ligada)", min: 0, max: 1, step: 1, u: "" },
-    { k: "camDist", g: "slCam", label: "Distância da câmera (perspectiva)", min: 4, max: 200, step: 0.5, u: " R" },
+    { k: "camDist", g: "slCam", label: "Distância da câmera (perspectiva)", min: 4, max: 400, step: 0.5, u: " R" },
     { k: "lens", g: "slCam", label: "Lente: grande-angular (18) a teleobjetiva (200)", min: 18, max: 200, step: 1, u: " mm" },
     { k: "atmo", g: "slCam", label: "Perspectiva atmosférica (longe = mais claro)", min: 0, max: 1, step: 0.05, u: "" },
     { k: "bodyPitch", g: "slScene", label: "Corpo inteiro: deitar de costas (−) / de bruços (+)", min: -180, max: 180, step: 1, u: "°" },
     { k: "bodyRoll", g: "slScene", label: "Corpo inteiro: deitar de lado", min: -180, max: 180, step: 1, u: "°" },
-    { k: "bodyLift", g: "slScene", label: "Altura (salto, flutuar)", min: -2, max: 30, step: 0.1, u: " R" },
-    { k: "wx", g: "slScene", label: "Posição no chão: X", min: -30, max: 30, step: 0.1, u: " R" },
-    { k: "wz", g: "slScene", label: "Posição no chão: Z", min: -30, max: 30, step: 0.1, u: " R" },
+    { k: "bodyLift", g: "slScene", label: "Altura (salto, flutuar)", min: -2, max: 120, step: 0.1, u: " R" },
+    { k: "wx", g: "slScene", label: "Posição no chão: X", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "wz", g: "slScene", label: "Posição no chão: Z", min: -200, max: 200, step: 0.1, u: " R" },
     { k: "wRot", g: "slScene", label: "Girar no chão", min: -180, max: 180, step: 1, u: "°" },
     { k: "headYaw", g: "slPose", label: "Girar o pescoço (rotação)", min: -80, max: 80, step: 1, u: "°" },
     { k: "headPitch", g: "slPose", label: "Baixar (+) / levantar (−) a cabeça", min: -60, max: 50, step: 1, u: "°" },
@@ -16780,18 +16832,18 @@ pre.cmdout .ok{color:var(--cobalt)}
       Q[k] = Math.round(Math.min(mx, Math.max(mn, (Q[k] || 0) + v)) * 10) / 10;
     };
     const emPe = Math.max(Q.kneeFlexL || 0, Q.kneeFlexR || 0) < 25 && Math.max(Math.abs(Q.hipFlexL || 0), Math.abs(Q.hipFlexR || 0)) < 30 && Math.abs(Q.bodyPitch || 0) < 20 && Math.abs(Q.bodyRoll || 0) < 20;
-    const w = r() > 0 ? 1 : -1, L3 = (k) => k + (w > 0 ? "L" : "R"), R = (k) => k + (w > 0 ? "R" : "L");
+    const w = r() > 0 ? 1 : -1, L3 = (k) => k + (w > 0 ? "L" : "R"), R2 = (k) => k + (w > 0 ? "R" : "L");
     const apoiado = Math.abs(Q.bodyPitch || 0) >= 30 || Math.abs(Q.bodyRoll || 0) >= 30;
     if (emPe && o.pernas !== false) {
       add3("pelvisSide", w * (4 + 3 * Math.abs(r())) * i);
       add3("spineSide", -w * (2 + 1.5 * Math.abs(r())) * i);
       add3("thoSide", -w * 1.2 * i * Math.abs(r()));
-      add3(R("kneeFlex"), (9 + 6 * Math.abs(r())) * i);
-      add3(R("hipFlex"), (3 + 3 * Math.abs(r())) * i);
-      add3(R("hipRot"), (4 + 4 * r()) * i);
+      add3(R2("kneeFlex"), (9 + 6 * Math.abs(r())) * i);
+      add3(R2("hipFlex"), (3 + 3 * Math.abs(r())) * i);
+      add3(R2("hipRot"), (4 + 4 * r()) * i);
       add3(L3("hipRot"), 3 * r() * i);
-      add3(R("ankleFlex"), (3 + 3 * Math.abs(r())) * i);
-      add3(R("hipAbd"), 2 * r() * i);
+      add3(R2("ankleFlex"), (3 + 3 * Math.abs(r())) * i);
+      add3(R2("hipAbd"), 2 * r() * i);
       plantarPes(Q, 0.01 * i, {});
     } else if (o.pernas !== false && !apoiado) {
       for (const s of ["L", "R"]) {
@@ -17316,17 +17368,17 @@ pre.cmdout .ok{color:var(--cobalt)}
     const out = [], vistos = /* @__PURE__ */ new Set();
     for (let i = 0; i < vis.length; i++) for (let j = 0; j < vis.length; j++) {
       if (i === j || contatoPermitido(vis[i], vis[j])) continue;
-      let tang = null, esc6 = null;
+      let tang = null, esc7 = null;
       for (const a of T[i]) {
         if (!EXTREM.test(a.nome)) continue;
         for (const b of T[j]) {
           const r = segSeg(a.a, a.b, b.a, b.b), gap = r.d - (a.r + b.r);
           if (Math.abs(gap) < 2.5 && (!tang || Math.abs(gap) < tang.gap)) tang = { gap: Math.abs(gap), pa: a.nome, pb: b.nome, pt: r.p };
-          if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc6 = { pb: b.nome, pt: a.a };
+          if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc7 = { pb: b.nome, pt: a.a };
         }
       }
       const A = SCN.list.indexOf(vis[i]), B3 = SCN.list.indexOf(vis[j]);
-      if (esc6) out.push({ tipo: "escondida", a: A, b: B3, pt: esc6.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc6.pb] + " de " + vis[j].name });
+      if (esc7) out.push({ tipo: "escondida", a: A, b: B3, pt: esc7.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc7.pb] + " de " + vis[j].name });
       else if (tang && !vistos.has(Math.min(i, j) + "-" + Math.max(i, j)) && vistos.add(Math.min(i, j) + "-" + Math.max(i, j))) out.push({ tipo: "tangencia", a: A, b: B3, pt: tang.pt, texto: PARTES[tang.pa] + " de " + vis[i].name + " encosta no contorno de " + PARTES[tang.pb] + " de " + vis[j].name + " (tangência)" });
     }
     return out;
@@ -18169,7 +18221,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         d = dmin;
         P2.lens = Math.round(clamp(18 * S * d / (W / 2), 18, 200));
       }
-      P2.camDist = +clamp(d, 4, 200).toFixed(2);
+      P2.camDist = +clamp(d, 4, 400).toFixed(2);
     } else P2.zoom = +clamp(S / effScale(Object.assign({}, P2, { persp: 0, zoom: 1 })), 0.05, A.area ? 12 : 3).toFixed(3);
   }
   function centrarPivo() {
@@ -18192,9 +18244,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     const explicito = Object.prototype.hasOwnProperty.call(opts, "area") || Object.prototype.hasOwnProperty.call(opts, "regiao");
     const area = explicito ? Object.prototype.hasOwnProperty.call(opts, "area") ? opts.area : opts.regiao : mesmaChaveOrb(SCN.pivo, alvo) ? SCN.orbitaArea : null;
     const A = resolverAlvo(alvo, { area });
-    P2.tx = clamp(A.c[0], -30, 30);
-    P2.ty = clamp(A.c[1], -20, 20);
-    P2.tz = clamp(A.c[2], -30, 30);
+    P2.tx = clamp(A.c[0], -200, 200);
+    P2.ty = clamp(A.c[1], -20, 60);
+    P2.tz = clamp(A.c[2], -200, 200);
     if (opts.enquadrar) enquadrarPivo(A, -(P2.pitch || 0), opts.folga);
     centrarPivo();
     SCN.pivo = A.chave;
@@ -18224,9 +18276,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (SCN.pivo === void 0 || SCN.pivo === null) return null;
     try {
       const A = resolverAlvo(SCN.pivo, { area: SCN.orbitaArea });
-      P2.tx = clamp(A.c[0], -30, 30);
-      P2.ty = clamp(A.c[1], -20, 20);
-      P2.tz = clamp(A.c[2], -30, 30);
+      P2.tx = clamp(A.c[0], -200, 200);
+      P2.ty = clamp(A.c[1], -20, 60);
+      P2.tz = clamp(A.c[2], -200, 200);
       return A;
     } catch (e) {
       SCN.pivo = null;
@@ -18310,8 +18362,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (dist !== void 0) {
       const d = Number(dist);
       if (!Number.isFinite(d) || d <= 0) throw Error("Distância deve ser positiva e finita (R).");
-      if (P2.persp) P2.camDist = clamp(d, 4, 200);
-      else P2.zoom = clamp(6.2 / d, 0.05, 3);
+      if (P2.persp) P2.camDist = clamp(d, 4, 400);
+      else P2.zoom = clamp(6.2 / d, 0.01, 3);
     } else if (opts.enquadrar !== false) enquadrarPivo(A, -P2.pitch, opts.folga);
     centrarPivo();
     if (!interno) SCN.seguirCamera = null;
@@ -18392,7 +18444,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const a = angle * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
     return [dx * c + dz * s, -dx * s + dz * c];
   }
-  function beginGrip(it, o, side, ground, { reach = 2.5, fechar: fechar2 = true } = {}) {
+  function beginGrip(it, o, side, ground, { reach = 2.5, fechar: fechar3 = true } = {}) {
     if (!it || !o) throw Error("Manequim ou objeto inválido.");
     if (side !== 1 && side !== -1) throw Error("Mão inválida; escolha esquerda ou direita.");
     if (o.grip && o.grip.mannequinId !== it.id) throw Error("Este objeto já está sendo segurado.");
@@ -18408,7 +18460,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       yawOffset: (o.giro || 0) - (p.wRot || 0),
       version: 1
     };
-    const dedos = fechar2 ? fecharDedos(it, o, side, ground) : null;
+    const dedos = fechar3 ? fecharDedos(it, o, side, ground) : null;
     return { objeto: o.nome || o.tipo, mao: side === 1 ? "esquerda" : "direita", distancia: distance, dedos };
   }
   function updateGrip(it, o, ground) {
@@ -18527,7 +18579,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     s.alcancavel = deviation <= 0.35;
     return deviation;
   }
-  function beginRigidGrip(it, o, side, ground, { ponto, site, reach = 2.5, modo = "preservar", fechar: fechar2 = false, segunda = false, exigirContato = false, preservarPoseSecundaria = false, objetos = [] } = {}) {
+  function beginRigidGrip(it, o, side, ground, { ponto, site, reach = 2.5, modo = "preservar", fechar: fechar3 = false, segunda = false, exigirContato = false, preservarPoseSecundaria = false, objetos = [] } = {}) {
     if (!it || !o || !(side === 1 || side === -1)) throw Error("Manequim, objeto ou mão inválidos.");
     if (!Number.isFinite(reach) || reach < 0 || reach > 100) throw Error("Alcance precisa estar entre 0 e 100 R.");
     if (o.gripV3 && !segunda) throw Error("Objeto já está segurado; use segunda:true para adicionar outra mão.");
@@ -18601,7 +18653,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (o.sobre) delete o.sobre;
     o.gripV3 = { version: 3, mannequinId: it.id, side, siteId: selected.id, relative: rel };
     o.emAr = true;
-    const dedos = fechar2 ? fecharDedos(it, o, side, ground) : null;
+    const dedos = fechar3 ? fecharDedos(it, o, side, ground) : null;
     return {
       objeto: o.nome || o.tipo,
       mao: side === 1 ? "esquerda" : "direita",
@@ -19502,13 +19554,13 @@ pre.cmdout .ok{color:var(--cobalt)}
         out.push([cx + Math.cos(a) * t, cz - Math.sin(a) * t]);
       }
     } else if (tipo === "circulo" || tipo === "arco") {
-      const ab = tipo === "arco" ? o.abertura || 120 : 360, R = o.raio || Math.max(esp * n2 / (2 * Math.PI) * (360 / ab), esp), a0 = (o.direcao || 0) - ab / 2;
+      const ab = tipo === "arco" ? o.abertura || 120 : 360, R2 = o.raio || Math.max(esp * n2 / (2 * Math.PI) * (360 / ab), esp), a0 = (o.direcao || 0) - ab / 2;
       for (let k = 0; k < n2; k++) {
         const a = (a0 + (tipo === "arco" ? n2 > 1 ? ab * k / (n2 - 1) : ab / 2 : 360 * k / n2)) * Math.PI / 180;
-        out.push([cx + Math.sin(a) * R, cz + Math.cos(a) * R]);
+        out.push([cx + Math.sin(a) * R2, cz + Math.cos(a) * R2]);
       }
     } else if (tipo === "multidao") {
-      const R = o.raio || Math.sqrt(n2) * esp * 0.62, area = o.area;
+      const R2 = o.raio || Math.sqrt(n2) * esp * 0.62, area = o.area;
       let tent = 0;
       while (out.length < n2 && tent++ < n2 * 400) {
         let x, z;
@@ -19516,7 +19568,7 @@ pre.cmdout .ok{color:var(--cobalt)}
           x = area[0] + rnd() * (area[2] - area[0]);
           z = area[1] + rnd() * (area[3] - area[1]);
         } else {
-          const a = rnd() * 2 * Math.PI, r = R * Math.sqrt(rnd());
+          const a = rnd() * 2 * Math.PI, r = R2 * Math.sqrt(rnd());
           x = cx + Math.cos(a) * r;
           z = cz + Math.sin(a) * r;
         }

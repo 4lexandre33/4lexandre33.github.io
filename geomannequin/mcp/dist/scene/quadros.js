@@ -299,7 +299,7 @@ const GRADES = { "1": [[1]], "2": [[1], [1]], "2h": [[1, 1]], "3": [[1], [1, 1]]
 function paginaQuadros(fotos, opts) {
   opts = opts || {};
   const PW = opts.largura || 1200, PH = opts.altura || Math.round(PW * 1.414), m = opts.margem === undefined ? 40 : opts.margem, cal = opts.calha === undefined ? 18 : opts.calha;
-  const grade = GRADES[opts.grade || ({ 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6" }[Math.min(fotos.length, 6)] || "6")] || GRADES["4"], jp = opts.leitura === "japonesa" || opts.leitura === "direita";
+  const grade = Array.isArray(opts.grade) ? opts.grade : GRADES[opts.grade || ({ 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6" }[Math.min(fotos.length, 6)] || "6")] || GRADES["4"], jp = opts.leitura === "japonesa" || opts.leitura === "direita";
   const porPag = grade.reduce((s, l) => s + l.length, 0), paginas = [];
   for (let p0 = 0; p0 < fotos.length; p0 += porPag) {
     const fs = fotos.slice(p0, p0 + porPag), alt = (PH - 2 * m - cal * (grade.length - 1)) / grade.length; let s = "", k = 0;
@@ -311,7 +311,7 @@ function paginaQuadros(fotos, opts) {
         const f = fs[k++]; if (!f) return; const y = m + li * (alt + cal), id = "q" + (p0 + k);
         /* o quadro cobre o painel (corta o que sobra): pelo centro, ou por cima quando o quadro é mais alto que o painel (cabeças) */
         const vb = /viewBox="([^"]+)"/.exec(f.svg)[1].split(" ").map(Number), alto = vb[3] / vb[2] > alt / c.w;
-        s += imagemSvg(f.svg, c.x, y, c.w, alt, opts.preparar, alto ? "xMidYMin slice" : "xMidYMid slice");
+        s += f.png ? '<image x="' + c.x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + c.w.toFixed(2) + '" height="' + alt.toFixed(2) + '" preserveAspectRatio="' + (alto ? "xMidYMin slice" : "xMidYMid slice") + '" href="' + f.png + '"/>' : imagemSvg(f.svg, c.x, y, c.w, alt, opts.preparar, alto ? "xMidYMin slice" : "xMidYMid slice");
         s += '<rect x="' + c.x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + c.w.toFixed(1) + '" height="' + alt.toFixed(1) + '" fill="none" stroke="#111" stroke-width="4"/>';
         /* balões de fala (a partir de "// fala:") */
         (f.falas || []).slice(0, 3).forEach((fl, j) => {
@@ -342,6 +342,44 @@ function folhaDeContato(fotos, colunas, preparar) {
 }
 /* modelos prontos de roteiro */
 const MODELOS_ROTEIRO = {
+  "Página de luta (ações, efeitos e rostos)": `#cena
+cena.limpar();
+const ana = cena.ativo.renomear("Ana").posicao(-5, 0).girar(90);
+const leo = cena.adicionar({ nome: "Leo", x: 5 }).girar(-90);
+camera.perspectiva(true).lente(35);
+
+#quadro 1 — Arrancada 16:9
+cena.obter("Ana").acao("corridaSuperRapida");
+camera.enquadramento("geral", "Ana");
+// fala: Ana: Agora!
+
+#quadro 2 — Soco carregado novo 3:4
+cena.obter("Ana").posicao(-2, 0).acao("socoCarregado");
+cena.obter("Leo").acao("defesaComBracos");
+camera.enquadramento("medio", "Ana");
+
+#quadro 3 — Impacto 4:3
+cena.obter("Ana").acao("socando", { efeitos: false });
+cena.efeitos.adicionar("explosao_estrelada", { em: { manequim: "Ana", parte: "maoDir" } });
+cena.obter("Leo").acao("quedaDeCostas");
+camera.enquadramento("geral");
+
+#quadro 4 — Golpe especial (efeito montado por camadas) 16:9
+cena.efeitos.limpar();
+cena.obter("Ana").acao("lancandoMagia", { efeitos: false });
+cena.efeitos.criar([
+  { forma: "fita", caminho: { tipo: "helice", comprimento: 16, raio: 0.6, raioFim: 4, voltas: 4 }, traco: { largura: 1.3, perfil: "fuso" }, estilo: "cel" },
+  { forma: "aneis", caminho: { tipo: "reta", comprimento: 16, raio: 0.5, raioFim: 6 }, repetir: { n: 7 }, traco: { largura: 0.6, perfil: "cheio" }, estilo: "contorno" }
+], { em: { manequim: "Ana", parte: "maoDir" }, direcao: "Leo" });
+camera.enquadramento("geral");
+// fala: Ana: Tornado de fita!
+
+#quadro 5 — Ajudando a levantar 3:4
+cena.efeitos.limpar();
+cena.interagir("Ana", "Leo", "ajudarALevantar");
+cena.obter("Ana").expressao("alivio");
+camera.enquadramento("geral");
+`,
   "Diálogo entre dois": `#cena
 cena.limpar();
 const ana = cena.ativo.renomear("Ana").posicao(-3, 0).girar(90);

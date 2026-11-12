@@ -83,7 +83,7 @@ function enquadrarPivo(A, elev, folga) {
   const Hf = SCN.recorte ? SCN.recorte.h : H, Wf = SCN.recorte ? SCN.recorte.w : W, k = folga===undefined?1.08:clamp(+folga||1.08,.80,2.5);
   const S = Math.min(Hf * 0.86 / (2 * ry * k), Wf * 0.9 / (2 * rh * k));
   if (P.persp) { const raio = Math.hypot(rh, hy); let d = (W / 2) * (P.lens || 50) / (18 * S); const dmin = Math.max(6, raio * 1.25 + 2);
-    if (d < dmin) { d = dmin; P.lens = Math.round(clamp(18 * S * d / (W / 2), 18, 200)); } P.camDist = +clamp(d, 4, 200).toFixed(2); }
+    if (d < dmin) { d = dmin; P.lens = Math.round(clamp(18 * S * d / (W / 2), 18, 200)); } P.camDist = +clamp(d, 4, 400).toFixed(2); }
   else P.zoom = +clamp(S / effScale(Object.assign({}, P, { persp: 0, zoom: 1 })), 0.05, A.area?12:3).toFixed(3);
 }
 /* o pivô no centro da foto */
@@ -99,7 +99,7 @@ function pivoCamera(alvo,opts={}) {
   const area=explicito?(Object.prototype.hasOwnProperty.call(opts,"area")?opts.area:opts.regiao):
     (mesmaChaveOrb(SCN.pivo,alvo)?SCN.orbitaArea:null);
   const A=resolverAlvo(alvo,{area});
-  P.tx=clamp(A.c[0],-30,30);P.ty=clamp(A.c[1],-20,20);P.tz=clamp(A.c[2],-30,30);
+  P.tx=clamp(A.c[0],-200,200);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-200,200);
   if(opts.enquadrar)enquadrarPivo(A,-(P.pitch||0),opts.folga);
   centrarPivo();SCN.pivo=A.chave;SCN.orbitaArea=A.area;
   return A;
@@ -122,7 +122,7 @@ function atualizarFocoOrbita(){
   if(SCN.pivo===undefined||SCN.pivo===null)return null;
   try{
     const A=resolverAlvo(SCN.pivo,{area:SCN.orbitaArea});
-    P.tx=clamp(A.c[0],-30,30);P.ty=clamp(A.c[1],-20,20);P.tz=clamp(A.c[2],-30,30);
+    P.tx=clamp(A.c[0],-200,200);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-200,200);
     return A;
   }catch(e){SCN.pivo=null;SCN.orbitaArea=null;return null;}
 }
@@ -201,7 +201,7 @@ function verOrientadaCamera(alvo,opts={},interno=false){
   P.roll=((autoRoll+extra+540)%360)-180;
   if(dist!==undefined){
     const d=Number(dist);if(!Number.isFinite(d)||d<=0)throw Error("Distância deve ser positiva e finita (R).");
-    if(P.persp)P.camDist=clamp(d,4,200);else P.zoom=clamp(6.2/d,.05,3);
+    if(P.persp)P.camDist=clamp(d,4,400);else P.zoom=clamp(6.2/d,.01,3);
   }else if(opts.enquadrar!==false)enquadrarPivo(A,-P.pitch,opts.folga);
   centrarPivo();
   if(!interno)SCN.seguirCamera=null;

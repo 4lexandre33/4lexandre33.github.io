@@ -65,6 +65,7 @@ return {
   leituraBlocking, svgPlanta, svgPerfil, encaixar, eixoPerfil, moverManequim, girarManequim, apontarManequim, alturaManequim, moverCamera, moverAlvo, abrirCone, cameraNoMundo, M_R, comFundo,
   moverObjeto, girarObjeto, medidasObjeto, selecionarObjeto, corObjeto, pegadaNoChao, distEscala, faixaLente,
   lerRoteiro, executarRoteiro, renderizarQuadro, manifestoQuadros, pastaQuadro, paginaQuadros, folhaDeContato, MODELOS_ROTEIRO, recorteQuadro, OP_NOMES, PARTES_SEG, PASSES_QUADRO, openPoseJson,
+  compilarName, validarName, fichaDoQuadro, pecasDaFicha, paginasDoName, legendaDeCores, manifestoName, bibliotecaLocais, localDoPalco, abrirLocalNoPalco, NM_CORES, NM_BORDA, manualName, PROMPTS_NAME, EXEMPLO_NAME,
   eixosDaJunta, moverJunta, zerarJunta, planoDoArrasto, nomeDaJunta, poseCmd, codigoDaPose, lerCodigoDePose, posesSalvas, PARTES_POSE, parteDaChave,
   faixa, limitesAcoplados, ajustarAoPerfil, EXPRESSOES, chavesRosto, chavesFormato, GRUPOS_ROSTO, BASE_ROSTO, resolverAlvo, orbitarCamera, pivoCamera, vistaAtual, azimutesGiro, nomeVista, VISTAS_8, elevacaoDe, azimuteDe, AZIMUTES
 };`;

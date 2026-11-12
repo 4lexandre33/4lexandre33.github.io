@@ -57,6 +57,7 @@ function arquivosCamadas(json) {
   /* efeitos especiais: fundo da tela, cada efeito de cena num arquivo e a frente da tela (empilhe na ordem) */
   const E = r.efeitos || {}, defs = E.defs ? "<defs>" + E.defs + "</defs>" : "";
   if (E.fundo) fx.push({ nome: "00a-efeitos-fundo.svg", texto: cabecalho("GeoMannequin — efeitos (fundo)") + defs + '<g inkscape:groupmode="layer" inkscape:label="Efeitos (fundo)">' + E.fundo + "</g>\n</svg>\n" });
+  if (E.chao) fx.push({ nome: "00b-efeitos-chao.svg", texto: cabecalho("GeoMannequin — efeitos no chão") + defs + '<g inkscape:groupmode="layer" inkscape:label="Efeitos (chão)">' + E.chao + "</g>\n</svg>\n" });
   (E.cena || []).forEach((q, k) => fx.push({ nome: "efeito-" + String(k + 1).padStart(2, "0") + "-" + nomeArquivo(q.tipo) + ".svg", texto: cabecalho("GeoMannequin — efeito " + q.tipo) + defs + '<g inkscape:groupmode="layer" inkscape:label="' + esc(q.tipo) + '">' + q.svg + "</g>\n</svg>\n" }));
   if (E.frente) fx.push({ nome: "99-efeitos-frente.svg", texto: cabecalho("GeoMannequin — efeitos (frente)") + defs + '<g inkscape:groupmode="layer" inkscape:label="Efeitos (frente)">' + E.frente + "</g>\n</svg>\n" });
   if (json) fx.push({ nome: "cena.json", texto: json });
@@ -65,7 +66,7 @@ function arquivosCamadas(json) {
     "00-chao.svg e 01-…, 02-…: uma \"foto\" por manequim, com fundo transparente, já na posição e na perspectiva da cena.\n" +
     "Empilhe na ordem dos números (o 01 fica atrás) para remontar a cena. Onde um manequim passa na frente de outro de um jeito\n" +
     "que a ordem simples não resolve (um braço à frente do vizinho), use cena-em-camadas.svg, que já vem com o recorte certo.\n" +
-    ((E.fundo || (E.cena || []).length || E.frente) ? "00a-efeitos-fundo.svg fica atrás de tudo; efeito-01…, efeito-02… são os efeitos da cena (a posição certa entre os manequins está em cena-em-camadas.svg); 99-efeitos-frente.svg vai por cima de tudo.\n" : "") +
+    ((E.fundo || E.chao || (E.cena || []).length || E.frente) ? "00a-efeitos-fundo.svg fica atrás de tudo; 00b-efeitos-chao.svg (crateras, círculos, rachaduras) vai logo acima do chão e abaixo dos manequins; efeito-01…, efeito-02… são os efeitos da cena (a posição certa entre os manequins está em cena-em-camadas.svg); 99-efeitos-frente.svg vai por cima de tudo.\n" : "") +
     (json ? "cena.json: a cena para abrir de novo no GeoMannequin (aba JSON → Aplicar JSON).\n" : "") });
   return fx;
 }

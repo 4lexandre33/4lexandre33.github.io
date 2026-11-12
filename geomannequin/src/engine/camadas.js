@@ -285,7 +285,7 @@ function comporCamadas(plan, opts) {
   const objs = list0.objetos || [];
   if (objs.length && list0.length) {
     const pc = list0[0].p, palO = list0.palObjetos || list0[0].pal, g0 = list0.chao !== undefined ? list0.chao : (list0[0].gy || 0);
-    objs.forEach((o, k) => { const res = desenharObjeto(o, pc, palO, g0, L); cams.push({ g: { membros: [], obj: k, lanc: [], velho: false, congelado: false }, res, prof: res.info.depth, ordem: o.ordem || 0, objeto: o }); });
+    objs.forEach((o, k) => { const res = desenharObjeto(o, pc, palO, g0, L); cams.push({ g: { membros: [], obj: k, lanc: [], velho: false, congelado: false }, res, prof: o.chao || (o.alt <= 1 && !o.emAr && o.larg * o.prof > 400) ? -1e9 : res.info.depth, ordem: o.ordem || 0, objeto: o }); }); /* piso/terreno: sempre atrás de tudo */
   }
   let efeitosQuadro="";
   for(const i of plan.idx){

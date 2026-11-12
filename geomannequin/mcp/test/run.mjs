@@ -289,6 +289,25 @@ async function suite(client, tag) {
     r = await call("arranjo_em_massa", { tipo: "circulo", n: 8, x: 0, z: -40, raio: 12, grupo: "Roda" }); check(!r.isError && r.structuredContent.manequins.length === 8, "arranjo_em_massa: círculo" + (r.isError ? ": " + text(r) : ""));
     r = await call("olhar_para_ponto", { x: 0, z: 0, grupo: "Roda" }); check(!r.isError && r.structuredContent.virados.length === 8, "olhar_para_ponto");
   }
+  /* name (DSL): manual, validar, gerar fichas + zip, prévia/salvar/listar/abrir local, legenda de cores, planta anexada */
+  { const fs = await import("node:fs"); const png = fs.readFileSync(join(HERE, "planta-teste.png")).toString("base64");
+    r = await call("manual_name", {}); check(!r.isError && /LER UMA IMAGEM/.test(text(r)) && /BORDA VERDE|borda VERDE/.test(text(r)), "manual_name");
+    r = await call("manual_name", { secao: "exemplo" }); const ex = text(r);
+    r = await call("validar_name", { name: ex }); check(!r.isError && r.structuredContent.ok && r.structuredContent.quadros.length === 4, "validar_name: exemplo do manual" + (r.isError ? ": " + text(r) : ""));
+    r = await call("validar_name", { name: "elenco\n  Kai relevante\nquadro plano medo\n  Kia em (0,0)\n" }); check(!r.isError && !r.structuredContent.ok && r.structuredContent.erros.length >= 2 && /Quis dizer/.test(JSON.stringify(r.structuredContent.erros)), "validar_name: erros com linha e sugestão");
+    r = await call("gerar_name", { name: ex, quadros: [1, 3], zip: true }); const imgs = (r.content || []).filter(c => c.type === "image"), zip = (r.content || []).find(c => c.type === "resource");
+    check(!r.isError && imgs.length === 3 && zip && zip.resource.blob.length > 10000, "gerar_name: 2 fichas + cartão de cores + zip" + (r.isError ? ": " + text(r) : ""));
+    if (imgs[0]) writeFileSync(join(OUT, "name-ficha-" + tag + ".png"), Buffer.from(imgs[0].data, "base64"));
+    r = await call("ficha_quadro", { name: ex, quadro: 2, semLaterais: true }); check(!r.isError && r.content[0].type === "image", "ficha_quadro sem laterais");
+    r = await call("previa_local", { local: 'local "Quarto" unidade m\n  sala "Quarto" retangulo 0,0 a 4,3 porta lado sul\n  cama encostado-em "Quarto" lado norte\n  marca "porta" em (2,0.4)', salvar: "Quarto", tags: ["casa"] });
+    check(!r.isError && r.content.filter(c => c.type === "image").length === 2 && r.structuredContent.salvo && r.structuredContent.salvo.versao === 1, "previa_local + salvar" + (r.isError ? ": " + text(r) : ""));
+    r = await call("salvar_local", { nome: "Quarto", codigo: 'local "x" unidade m\n  sala "Quarto" retangulo 0,0 a 5,3 porta lado sul' }); check(!r.isError && r.structuredContent.versao === 2, "salvar_local: nova versão");
+    r = await call("listar_locais", {}); check(!r.isError && r.structuredContent.locais.some(l => l.nome === "Quarto" && l.versao === 2), "listar_locais");
+    r = await call("validar_name", { name: 'elenco\n  Ana relevante\nquadro local "Quarto" plano inteiro\n  Ana em (2,1.5)\n' }); check(!r.isError && r.structuredContent.ok && r.structuredContent.locais[0].daBiblioteca === 2, "name usa o local salvo");
+    r = await call("abrir_local", { nome: "Quarto" }); check(!r.isError && r.structuredContent.pecas >= 4, "abrir_local");
+    r = await call("legenda_cores", { name: ex }); check(!r.isError && r.structuredContent.elenco.length === 4, "legenda_cores");
+    r = await call("validar_name", { name: 'elenco\n  Ana relevante\nlocal "Q" planta "p1"\nquadro local "Q" plano geral\n  Ana em marca vermelho1\n', imagens: [{ nome: "p1", imagem: png }] }); check(!r.isError && r.structuredContent.ok && r.structuredContent.locais[0].pecas > 5, "name com planta anexada" + (r.isError ? ": " + text(r) : JSON.stringify(r.structuredContent.erros)));
+  }
   return link;
 }
 

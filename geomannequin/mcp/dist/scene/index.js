@@ -25,9 +25,16 @@ export * from "./descrever.js";
 export * from "./blocking.js";
 export * from "./orientacao-frames.js";
 export * from "./orbita.js";
+export * from "./pegadas.js";
+export * from "./acoes-luta.js";
+export * from "./multidao.js";
+export * from "./interacoes.js";
 export * from "./comandos.js";
+export * from "./biblioteca.js";
 export * from "./ajuda.js";
 export * from "./quadros.js";
+export * from "./name-dsl.js";
+export * from "./manual-name.js";
 
 iniciarModelo();
 iniciarModos();

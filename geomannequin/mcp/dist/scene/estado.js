@@ -51,14 +51,14 @@ function sceneState(){
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const fxs=efeitosParaSalvar();
-  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
+  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasExpressoes?.length?{minhasExpressoes:JSON.parse(JSON.stringify(SCN.minhasExpressoes))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.exprNome)o.exprNome=String(it.exprNome).slice(0,120);if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.grupo)o.grupo=it.grupo;if(it.papel)o.papel=it.papel;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
     if(o.gripV3){
       const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
       q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
       if(q.gripV3)delete q.gripV3.mannequinId;
     }
     if(o.grip){const j=SCN.list.findIndex(m=>m.id===o.grip.mannequinId);
-      q.grip=j<0?undefined:{...o.grip,mannequinIndex:j};if(q.grip)delete q.grip.mannequinId;}if(o.sobre){const j=SCN.objetos.findIndex(x=>x.id===o.sobre);if(j>=0)q.sobre=j;else delete q.sobre}else delete q.sobre;return q})};
+      q.grip=j<0?undefined:{...o.grip,mannequinIndex:j};if(q.grip)delete q.grip.mannequinId;}if(o.corda){const mi=SCN.list.findIndex(x=>x.id===o.corda.manequim),oi=SCN.objetos.findIndex(x=>x.id===o.corda.objeto);q.corda={...o.corda,manequim:undefined,objeto:undefined,manequimIndex:mi,objetoIndex:oi}}if(o.toques)q.toques=o.toques.map(t=>({side:t.side,mannequinIndex:SCN.list.findIndex(x=>x.id===t.mannequinId)})).filter(t=>t.mannequinIndex>=0);if(o.sobre){const j=SCN.objetos.findIndex(x=>x.id===o.sobre);if(j>=0)q.sobre=j;else delete q.sobre}else delete q.sobre;return q})};
 }
 function loadScene(sc){
   if(!sc||!Array.isArray(sc.list)||!sc.list.length)throw new Error("JSON da cena sem manequins.");
@@ -73,6 +73,14 @@ function loadScene(sc){
       const i=lista.findIndex(q=>q.nome===p.nome),reg={nome:p.nome.slice(0,60),valores:v,criada:p.criada};
       if(i>=0)lista[i]=reg;else lista.push(reg);
     });
+  }
+  /* expressões guardadas que vieram com a cena (rosto completo, só controles do rosto) */
+  if(Array.isArray(sc.minhasExpressoes)){
+    const L=SCN.minhasExpressoes||(SCN.minhasExpressoes=[]);
+    sc.minhasExpressoes.slice(0,300).forEach(e=>{if(!e||typeof e.nome!=="string"||!e.valores||typeof e.valores!=="object")return;
+      const v={};Object.entries(e.valores).forEach(([k,x])=>{if(POSEKEYS.has(k)&&typeof x==="number"&&isFinite(x))v[k]=x});
+      const reg={nome:e.nome.slice(0,40),valores:v,criada:e.criada};if(e.formato&&typeof e.formato==="object")reg.formato=Object.fromEntries(Object.entries(e.formato).filter(([,x])=>typeof x==="number"&&isFinite(x)));if(typeof e.cabeca==="string")reg.cabeca=e.cabeca.slice(0,30);
+      const i=L.findIndex(q=>q.nome===reg.nome);if(i>=0)L[i]=reg;else L.push(reg)});
   }
   const refs=sc.list.slice(0,MAXM).map(o=>(o.referencias||[]).slice(0,32).map(validarReferencia));
   const chaves=(sc.chavesVento||[]).slice(0,256).map(v=>{
@@ -96,11 +104,11 @@ function loadScene(sc){
       }
     }
     if(refs[SCN.list.length].length)it.referencias=refs[SCN.list.length];
-    it.congelado=!!o.congelado;it.oculto=!!o.oculto;it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
+    if(typeof o.exprNome==="string")it.exprNome=o.exprNome.slice(0,120);it.congelado=!!o.congelado;it.oculto=!!o.oculto;if(typeof o.grupo==="string")it.grupo=o.grupo.slice(0,60);if(typeof o.papel==="string")it.papel=o.papel.slice(0,20);it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
   SCN.exato=!!sc.exato;
   /* objetos da cena */
   SCN.objetos.length=0;SCN.objSel=null;
-  if(Array.isArray(sc.objetos))sc.objetos.slice(0,40).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo);["x","z","giro","larg","prof","alt","encosto","cabeceira","raio"].forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],k==="giro"?-180:k==="raio"?0.1:-40,k==="giro"?180:k==="raio"?20:40)});
+  if(Array.isArray(sc.objetos))sc.objetos.slice(0,300).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo),LIM={x:[-200,200],z:[-200,200],giro:[-180,180],larg:[0.2,160],prof:[0.2,160],alt:[0.2,120],encosto:[0.5,12],cabeceira:[0.5,12],raio:[0.1,20]};Object.keys(LIM).forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],LIM[k][0],LIM[k][1])});
     if(o.perfilPega)q.perfilPega=normalizarPerfil(o.perfilPega);
     if(typeof o.modeloMao==="string"&&o.modeloMao.length<=16)q.modeloMao=o.modeloMao;
     if(o.gestoAnterior)q.gestoAnterior=Object.fromEntries(Object.entries(o.gestoAnterior).filter(([k,v])=>
@@ -112,7 +120,7 @@ function loadScene(sc){
     if(o.vistaPega==="guia")q.vistaPega="guia";
     if(Number.isFinite(o.comprimentoPega)&&o.comprimentoPega>0)q.comprimentoPega=Math.min(o.comprimentoPega,8);
     if(Number.isFinite(o.secaoPega)&&o.secaoPega>0)q.secaoPega=Math.min(o.secaoPega,4);
-    if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);q.id=novoIdObjeto();
+    if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);if(typeof o.grupo==="string")q.grupo=o.grupo.slice(0,60);if(o.chao)q.chao=true;q.id=novoIdObjeto();
     if(Array.isArray(o.rot3)&&o.rot3.length===9&&o.rot3.every(Number.isFinite))q.rot3=o.rot3.slice();
     // Dinâmica V3 é persistida apenas com valores finitos (sem reexecutar a queda na carga).
     if(o.dinamica&&o.dinamica.versao===1&&
@@ -144,6 +152,9 @@ function loadScene(sc){
     q.hue=typeof o.hue==="number"&&isFinite(o.hue)?o.hue:null;
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
     if(Array.isArray(o.cimaLocal)&&o.cimaLocal.length===3&&o.cimaLocal.every(Number.isFinite))q.cimaLocal=o.cimaLocal.slice();if(o.col&&hex2rgb(o.col.fill)&&hex2rgb(o.col.ink))q.col={fill:o.col.fill,ink:o.col.ink};if(Number.isInteger(o.sobre))q._sobre=o.sobre;
+    if(o.tipo==="corda"&&Array.isArray(o.pontosCorda)){q.pontosCorda=o.pontosCorda.slice(0,80).filter(p=>Array.isArray(p)&&p.length===3&&p.every(Number.isFinite)).map(p=>p.slice());q.raioCorda=clamp(+o.raioCorda||0.09,0.02,0.4);q.corrente=!!o.corrente;q.emAr=true;q.base=0;if(o.corda)q._corda={...o.corda}}
+    if(Number.isFinite(o.semente))q.semente=o.semente;if(Number.isFinite(o.topo))q.topo=o.topo;
+    if(Array.isArray(o.toques))q._toques=o.toques.slice(0,4);
     if(o.grip&&Number.isInteger(o.grip.mannequinIndex))q._grip={...o.grip};
     if(o.gripV3&&Number.isInteger(o.gripV3.mannequinIndex))q._gripV3={...o.gripV3};
     if(Array.isArray(o.frenteLocal)&&o.frenteLocal.length===3&&o.frenteLocal.every(Number.isFinite))q.frenteLocal=o.frenteLocal.slice();
@@ -152,6 +163,8 @@ function loadScene(sc){
     SCN.objetos.push(q)}else SCN.objetos.push(null)}catch(e){SCN.objetos.push(null)}});
   /* apoio de objeto em objeto (guardado pelo índice) e cores que faltarem */
   {const arr=SCN.objetos.slice();SCN.objetos.length=0;arr.forEach(q=>{if(q)SCN.objetos.push(q)});
+   arr.forEach(q=>{if(q&&q._corda){const c=q._corda,m=SCN.list[c.manequimIndex],ob=arr[c.objetoIndex];if(m&&ob)q.corda={manequim:m.id,maos:Array.isArray(c.maos)?c.maos.filter(v=>v===1||v===-1):[-1],objeto:ob.id,local:Array.isArray(c.local)&&c.local.length===3?c.local.slice():[0,0,0],sobra:+c.sobra||3};delete q._corda}
+     if(q&&q._toques){q.toques=q._toques.map(t=>({side:t.side===1?1:-1,mannequinId:SCN.list[t.mannequinIndex]?.id})).filter(t=>t.mannequinId!==undefined);delete q._toques}});
    SCN.objetos.forEach(q=>{if(q._sobre!==undefined){const s=arr[q._sobre];q.sobre=s&&s!==q?s.id:null;delete q._sobre}if(q.hue===null&&!q.col)q.hue=nextHue(q)});atualizarApoios();}
   /* Restaurar vínculo cinemático com o NOVO ID do manequim. */
   SCN.objetos.forEach(o=>{if(o._grip){

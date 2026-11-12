@@ -12,6 +12,7 @@
   "biotipos.js",
   "poses.js",
   "pose-codigo.js",
+  "rosto-codigo.js",
   "junta-controle.js",
   "camadas-cena.js",
   "colisoes.js",
@@ -27,9 +28,18 @@
   "orientacao-frames.js",
   "orbita.js",
   "descrever.js",
+  "estado-ia.js",
+  "manual-ia.js",
+  "pegadas.js",
+  "interacoes.js",
+  "acoes-luta.js",
+  "multidao.js",
   "comandos.js",
+  "biblioteca.js",
   "ajuda.js",
-  "quadros.js"
+  "quadros.js",
+  "name-dsl.js",
+  "manual-name.js"
  ],
  "iniciar": [
   "iniciarModelo",

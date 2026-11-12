@@ -1,0 +1,269 @@
+/* GeoMannequin — Manual da DSL do NAME (para a pessoa e para a IA que converte a narrativa) e os prompts prontos.
+   As listas (poses, expressões, objetos, interações, pegadas, ações, efeitos) saem dos dados do app: estão sempre em dia. */
+import { NM_CORES, NM_BORDA } from "./name-dsl.js";
+import { todasPoses, EXPRESSOES } from "./poses.js";
+import { INTERACOES } from "./interacoes.js";
+import { ACOES } from "./pegadas.js";
+import { ACOES_LUTA } from "./acoes-luta.js";
+import { TIPOS_OBJETO, CATALOGO } from "../engine/index.js";
+
+const mnLista = (a, n) => { const l = [...a]; return l.slice(0, n || l.length).join(", ") + (n && l.length > n ? "… (" + l.length + " no total)" : ""); };
+
+const EXEMPLO_NAME = `semente 12
+elenco
+  Kai relevante corpo masculino atletico
+  Mira relevante corpo feminino
+  Tomo relevante corpo crianca
+  povo figurante
+
+local "Praça do mercado" unidade m origem (0,0)
+  chao retangulo -15,-10 a 15,10 classe pedra
+  sala "Padaria" retangulo -14,4 a -6,9 altura 3 porta lado sul janela lado leste
+  nivel "Terraço" altura 2 retangulo 6,6 a 14,10
+  escada de (8,2) ate (8,6) sobe-para norte altura 2
+  poco "Poço" em (0,0)
+  fileira 4 banca de (-10,-8) ate (2,-8) tamanho 1.6x0.8x1 classe madeira
+  arvore em (11,-6) raio 1.5 altura 5
+  marca "fonte" em (0,1.5)
+  regiao "feira" retangulo -12,-9.5 a 4,-4
+
+quadro 1 local "Praça do mercado" plano geral funcao "estabelecimento"
+  povo 20..28 multidao em regiao "feira" olham: 50% Kai, 20% costas, resto aleatorio poses: caminhando:2 | empe:3
+  Kai em (2,2) pose empe expressao determinacao
+  Mira frente-de Kai distancia 2 olha Kai expressao surpresa
+
+quadro 2 continua plano medio alvo Kai, Mira lado 3/4-direita
+  Kai expressao raiva olha Mira
+  Mira expressao medo
+
+transicao tempo "Mais tarde"
+quadro 3 local "Praça do mercado" plano inteiro alvo Tomo angulo plongee funcao "revelação"
+  Tomo em marca "fonte" sentado expressao tristeza
+  povo 6 fila em fundo olham: resto aleatorio mantem
+
+quadro 4 continua plano close alvo Tomo lado frente tamanho grande
+  Tomo expressao choro intensidade 0.8
+`;
+
+function manualName() {
+  const P = todasPoses(), X = Object.keys(EXPRESSOES), O = Object.keys(TIPOS_OBJETO), I = Object.keys(INTERACOES), G = Object.keys(ACOES), A = Object.keys(ACOES_LUTA), F = Object.keys(CATALOGO);
+  return `MANUAL DA DSL DO NAME — GeoMannequin
+=====================================
+Para que serve: uma IA (ChatGPT, Claude, Gemini…) lê a sua narrativa e escreve este texto. O GeoMannequin transforma o texto
+em quadros de name (storyboard de mangá): cenário geométrico, manequins posados, câmera e uma FICHA por quadro para a IA de
+imagem fazer a arte final. Não há texto dentro dos quadros: o texto vai na legenda (retângulo vermelho) e no manifesto.
+
+1. REGRAS GERAIS
+- Um bloco começa numa linha SEM recuo; as linhas do bloco têm recuo (2 espaços).
+- Blocos: semente · define · elenco · local · modelo · quadro · transicao · pagina.
+- Comentários: "// texto", "-- texto" ou "# texto" (com espaço depois do #). Cores "#a1b2c3" não são comentário.
+- Unidade padrão: METROS. Também: 30cm, 2.5m, 12R (R = unidade do manequim, 1 R ≈ 11,4 cm). Ângulos em graus.
+- Coordenadas (x,z) vistas DE CIMA: x cresce para a DIREITA (leste), z cresce para CIMA na planta (norte, "para o fundo").
+  Altura é sempre separada (altura 3, base 1). Um ponto pode ser (x,z) ou (x,altura,z) quando a altura importa (câmera).
+- Faixa sorteada: 3..6 (inteiro entre 3 e 6). Porcentagem: 60%. Texto com espaços: "entre aspas".
+- Palavras-chave sem acento também valem (plongee, angulo, transicao). Nomes com espaço vão entre aspas.
+- Tudo o que é sorteado depende da "semente": o mesmo texto com a mesma semente dá sempre os mesmos quadros.
+- Erros dizem a linha e a palavra mais parecida ("Quis dizer …?"); um erro não impede os outros quadros.
+
+2. ELENCO (quem é quem, por COR)
+elenco
+  Kai relevante corpo masculino atletico      ← cada relevante ganha uma cor fixa a história toda
+  Mira relevante corpo feminino cor roxo       ← cor escolhida (opcional)
+  Tomo relevante corpo crianca                 ← crianca | menino | menina
+  povo figurante                               ← TODOS os figurantes têm a mesma cor neutra (cinza)
+Cores dos relevantes, na ordem: ${NM_CORES.map(c => c[0]).join(", ")} (até 12). Figurantes: cinza.
+Corpos: masculino | feminino [magro | medio | atletico | musculoso | cheio] · crianca | menino | menina. "tamanho 0.9" muda a escala.
+"apelido Kaizinho" deixa usar outro nome. A legenda das cores (manifesto + cartão) diz "vermelho = Kai".
+
+3. LOCAL (o cenário, descrito com geometria)
+local "Nome" [unidade m|R] [origem (x,z)|auto] [norte -z] [herda "Outro local"] [planta "imagem" linha N largura 20]
+  A origem: se a IA escolheu um ponto (0,0) na imagem, escreva "origem (0,0)" e use as MESMAS coordenadas para os
+  personagens. "auto" (padrão) centraliza o desenho, mas os personagens continuam na mesma conta: tudo bate.
+  herda "Rua": copia o outro local e acrescenta o que vier (ex.: a mesma rua à noite, com lixo e um carro).
+  planta "p1" linha 2: monta a partir de uma imagem de planta colorida anexada (veja o capítulo 9).
+  Um local SALVO na biblioteca é usado só com o nome: "local "Praça do mercado"" (sem linhas) ou direto no quadro.
+
+Peças do local (uma por linha):
+  chao retangulo x0,z0 a x1,z1 [classe areia|grama|pedra|piso|terra|madeira]
+  chao circulo em (x,z) raio 8
+  parede linha (x,z)-(x,z)-(x,z) [altura 3] [espessura 0.25] [vao porta (x,z) largura 1] [vao janela (x,z) largura 1.2]
+  muro linha …   ·   cerca linha … (cerca = 1,1 m, fina, de madeira)
+  sala "Cozinha" retangulo x0,z0 a x1,z1 [altura 3] [porta lado sul [em 2] [largura 1]] [janela lado norte] [telhado]
+       (os lados são norte = z maior, sul = z menor, leste = x maior, oeste = x menor; "em 2" = a 2 m do canto)
+  casa "Casa do Kai" retangulo … altura 6     ·   predio "Torre" retangulo … altura 20   (bloco fechado)
+  escada de (x,z) ate (x,z) sobe-para norte altura 3      (escadaria: sobe de A para B; a altura é a do topo)
+  escada em (x,z)                                          (escada de mão, objeto)
+  rampa de (x,z) ate (x,z) altura 1
+  nivel "Terraço" altura 2 retangulo x0,z0 a x1,z1         (plataforma, mezanino, palco; "terraco", "palco" também)
+  marca "porta" em (x,z)                                   (ponto com nome, para usar nos quadros)
+  regiao "feira" retangulo x0,z0 a x1,z1                   (área com nome: figurantes "em regiao "feira"")
+  <objeto> ["nome"] em (x,z) [gira 30] [tamanho LxPxA] [raio r] [altura h] [base h] [classe madeira] [cor #8a5a2b] [nivel "Terraço"]
+  <objeto> encostado-em "Cozinha" lado norte [aos 2]       (encosta na parede de dentro da sala/região)
+  <objeto> centro-de "Cozinha"   ·   <objeto> entre (x,z) e (x,z)   ·   <objeto> em marca "fonte"
+  fileira 6 banca de (x,z) ate (x,z) [tamanho …] [variar 0.2]   (N objetos em linha)
+  grade-de 3x4 coluna de (x,z) ate (x,z)                         (grade C colunas × L linhas)
+  circulo-de 8 arvore em (x,z) raio 6                             (N objetos em roda, virados para o centro)
+  repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
+Objetos: ${mnLista(O)}.
+  Também valem: banca/balcão/barraca (caixas com nome), pilar (= coluna), "árvore", "poço".
+  "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus, anti-horário visto de cima).
+  Cores: por classe (parede, madeira, vegetacao, agua, pedra, areia, piso, grama, terra, tecido, metal, telhado) ou "cor #hex".
+
+4. QUADRO (um momento: um painel do name)
+quadro [n] ["título"] [local "Nome" | continua | novo] [plano …] [angulo … [graus]] [alvo A, B] [lado …] [lente 35]
+       [formato 16:9] [tamanho grande] [funcao "…"] [legenda "…"] [camera (x,y,z) olhando (x,y,z)]
+- local "X": troca de cenário (corte): tira personagens e figurantes do quadro anterior.
+- continua (padrão): mesmo local, mesmas pessoas onde estavam; escreva só o que muda.
+- novo: mesmo local, mas começa vazio.
+- plano: geral (o lugar todo) | conjunto | inteiro (corpo inteiro) | americano (joelhos para cima) | medio (cintura) |
+         primeiro-plano (peito) | close (rosto) | detalhe | pov.
+- angulo: normal | plongee (de cima) | contra-plongee (de baixo) | zenital | nadir | holandes [graus].
+- lado (de onde a câmera vê o alvo): frente | 3/4 | 3/4-direita | perfil | perfil-direito | costas.
+- alvo: em quem a câmera mira (padrão: quem está no quadro).
+- formato: 16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal, quadrado.
+- tamanho (na página): grande | largo | alto | normal | pequeno | inserto. Função de clímax/impacto/revelação → grande.
+- funcao: a função narrativa do quadro (estabelecimento, reação, ação, clímax, transição, detalhe, revelação…).
+- A câmera foge sozinha de parede entre ela e o alvo (gira para o lado livre mais perto e avisa).
+
+Personagem (uma linha por pessoa ou por grupo "Kai, Mira"):
+  Nome [em (x,z) | em marca "m" | em centro | em fundo | em Outro]
+       [frente-de | atras-de | ao-lado-de | esquerda-de | direita-de | perto-de Outro [distancia 1.5]]
+       [nivel "Terraço" | sobre "mesa"]  [gira 90 | vira-para Outro | vira-para camera]
+       [pose nome] [sentado | deitado | ajoelhado | agachado | correndo | caminhando | em-pe]
+       [acao nome] [expressao nome [intensidade 0.7]] [olha Outro | olha (x,z) | olha camera]
+       [segura objeto [como pegada]] [carrega | levanta | puxa | empurra | arrasta objeto]
+       [interacao tipo com Outro] [efeito tipo [em maoDir]] [molejo 0.6] [fala "…"] [sai]
+  "frente-de Kai" = na frente de Kai (para onde ele olha), virado para ele.
+  Se a posição cair dentro de parede/objeto, a pessoa sai pelo lado mais perto (aviso).
+Figurantes (procedurais):
+  povo 20..30 [multidao | grade | circulo | fila | arco] [em regiao "feira" | em fundo | em area (x,z) (x,z) | em (x,z) | em marca "m"]
+       [perto-de Kai | em-volta-de Kai] [raio 8] [espacamento 0.8]
+       olham: 60% Kai, 20% costas, 10% camera, resto aleatorio
+       poses: empe:3 | caminhando:1        (peso depois dos dois-pontos)
+       expressoes: alegria:2 | surpresa
+       [mantem]   (mantem = não apaga os figurantes do quadro anterior)
+  "povo em (3,4)" sem número = 1 figurante ali. Ninguém fica sobreposto (os figurantes se afastam).
+Outras linhas do quadro:
+  objeto caixa em (1,2)        (objeto só deste quadro em diante)
+  legenda "Kai percebe a armadilha."   ·   fala "texto" (narração, fica no manifesto)
+  escolha 60% Kai expressao raiva | 40% Kai expressao medo | nada
+  repetir 3: povo em (1+i*2, 5)
+  usar conversa(Kai, Mira)     (modelo definido antes: "modelo conversa(a, b)" + linhas com a e b)
+
+Listas:
+  Poses (${P.length}): ${mnLista(P)}.
+  Expressões (${X.length}): ${mnLista(X)}.
+  Ações com efeito (acao): ${mnLista(A)}.
+  Interações a dois (${I.length}): ${mnLista(I)}.
+  Pegadas (segura … como …): ${mnLista(G)}.
+  Efeitos (efeito …): ${mnLista(F, 60)}.
+
+5. TRANSIÇÃO, PÁGINA, SEMENTE, VARIÁVEIS, MODELOS
+transicao tempo ["Mais tarde"] | lugar | corte | flashback   (vale para o quadro seguinte; entra na legenda e no manifesto)
+pagina [grade 2x2|3|4|…] [leitura ocidental|japonesa]       (os quadros seguintes vão para uma página nova; japonesa = da direita)
+semente 12                                                   (sorteios reproduzíveis)
+define altura 3   →  use $altura
+modelo conversa(a, b)
+  a em (3,3) olha b
+  b frente-de a distancia 1.5 olha a
+
+6. LEGENDA (o retângulo vermelho da ficha)
+- "legenda "…"" no quadro (ou no cabeçalho) manda. Sem ela, a legenda é automática: transição, local, função, quem está
+  (com a cor), pose/ação, o que segura, interação, expressão, para onde olha e os figurantes (quantos, para onde olham).
+- Falas NÃO entram na legenda (elas vão no manifesto). Para a IA de imagem, escreva legendas visuais e curtas.
+
+7. A FICHA DO QUADRO (o que a IA de imagem recebe)
+- Painel principal, borda VERDE (${NM_BORDA.verde}): o quadro na câmera real (perspectiva). É a referência da imagem final.
+- Retângulo VERMELHO (${NM_BORDA.vermelho}) embaixo, texto BRANCO: a legenda de contexto (legível por OCR).
+- Coluna da direita, em cima, borda AZUL (${NM_BORDA.azul}): planta (vista de cima) com paredes, objetos, pessoas nas cores, setas
+  de direção e o cone da câmera.
+- Coluna da direita, embaixo, borda AMARELA (${NM_BORDA.amarelo}): vista isométrica do local.
+- Só as bordas são coloridas; dentro de cada painel está a cena como ela é.
+
+8. COMO CORTAR A HISTÓRIA EM QUADROS (para a IA que escreve o name)
+- Um quadro = um instante. Uma ação com começo, meio e fim vira 2 ou 3 quadros (preparação, golpe, resultado).
+- Abra cada cena (lugar novo) com um plano geral ou conjunto (funcao "estabelecimento").
+- Diálogo: alterne planos médios/close dos dois, mantendo o mesmo lado (regra dos 180°: o app avisa se cruzar).
+- Reação emocional: close com expressão forte; clímax: tamanho grande, ângulo contra-plongee ou holandes.
+- Tempo passou? "transicao tempo". Mudou de lugar? "transicao lugar" + novo local. Lembrança? "transicao flashback".
+- Relevantes sempre com o mesmo nome do elenco; multidões como figurantes (um grupo por tipo de gente).
+- Pense em 4 a 7 quadros por página; use "pagina" para cortar.
+
+9. LER UMA IMAGEM E DESCREVER O CENÁRIO (para a IA que olha uma foto, desenho ou planta)
+Objetivo: transformar a imagem num "local" com números. Passo a passo:
+ a) ORIGEM: escolha um ponto fácil de achar (um canto do piso, o centro de uma praça, a porta) = (0,0). Diga qual foi.
+ b) EIXOS: olhando a planta de cima, x para a direita e z para cima (fundo). Numa foto em perspectiva, x = largura do chão
+    da esquerda para a direita, z = profundidade (para longe da câmera). Mantenha em todas as peças.
+ c) ESCALA por referência: porta ≈ 0,9–1,0 m de largura e 2,1 m de altura; pessoa adulta ≈ 1,75 m; degrau ≈ 18 cm de
+    altura e 28 cm de piso; cadeira ≈ 45 cm de assento; mesa ≈ 75 cm de altura; carro ≈ 4,5 × 1,8 m; vaga ≈ 2,5 × 5 m;
+    calçada ≈ 2–3 m; pé-direito de casa ≈ 2,7–3 m; andar de prédio ≈ 3 m.
+ d) PIXELS → METROS: meça em pixels algo de tamanho conhecido (ex.: a porta com 40 px = 1 m → 40 px/m). Divida as
+    outras medidas por esse número. Numa planta, use a escala desenhada se houver.
+ e) ALTURAS: conte andares, degraus ou compare com a pessoa. Escada: altura do topo = degraus × 0,18 m.
+ f) POSIÇÃO RELATIVA: quando não der para medir, use encostado-em, centro-de, entre, fileira, a distância de uma marca.
+ g) NOMEIE marcas e regiões que a história vai usar (porta, balcão, janela, "feira", "palco").
+ h) Escreva primeiro o chão (retângulo do terreno), depois paredes/salas, níveis e escadas, depois os objetos grandes,
+    por último os pequenos. Prefira poucas peças certas a muitas inventadas.
+Exemplo 1 (foto de uma sala vista da porta): porta embaixo = (0,0); a sala tem 4 portas de largura (4 m) e 5 m de fundo.
+  local "Sala da Mira" unidade m origem (0,0)
+    chao retangulo -2,0 a 2,5 classe madeira
+    sala "Sala" retangulo -2,0 a 2,5 altura 2.8 porta lado sul janela lado norte
+    // não existe "sofa" na lista: um banco com nome e tamanho faz o papel
+    banco "sofá" encostado-em "Sala" lado oeste tamanho 2x0.9x0.8
+    mesa encostado-em "Sala" lado norte tamanho 1.2x0.7x0.75
+    marca "janela" em (0,4.6)
+Exemplo 2 (planta de uma praça com escada para um terraço): centro da praça = (0,0); 30 × 20 m pelo desenho (barra de 10 m = 120 px).
+  local "Praça" unidade m origem (0,0)
+    chao retangulo -15,-10 a 15,10 classe pedra
+    nivel "Terraço" altura 2 retangulo 6,6 a 14,10
+    escada de (8,2) ate (8,6) sobe-para norte altura 2
+    poco em (0,0)
+    fileira 4 banca de (-10,-8) ate (2,-8) tamanho 1.6x0.8x1
+    regiao "feira" retangulo -12,-9.5 a 4,-4
+Planta colorida (do próprio app): anexe a imagem e escreva  local "Quintal" planta "p1" linha 1 largura 18 .
+
+10. BIBLIOTECA DE LOCAIS
+- Todo local pode ser SALVO (nome, código, miniaturas, marcas, regiões, tags, versões). No name, basta o nome:
+  quadro local "Praça do mercado" … · local "Praça à noite" herda "Praça do mercado" (+ peças novas).
+- No site: aba Name → Locais (salvar, abrir no palco, duplicar, exportar/importar). Pela IA (MCP): salvar_local, listar_locais, abrir_local.
+
+11. EXEMPLO COMPLETO
+${EXEMPLO_NAME}`;
+}
+
+const PROMPTS_NAME = {
+  "História → name": `Você vai converter a história abaixo em um NAME (storyboard de mangá) escrito na DSL do GeoMannequin.
+Siga o "Manual da DSL do NAME" (abaixo ou anexado) À RISCA: só palavras, poses, expressões e objetos das listas.
+1) Leia a história e liste: personagens relevantes (elenco, um por linha) e grupos de figurantes.
+2) Para cada lugar, escreva um bloco "local" geométrico em metros (chão, paredes/salas, níveis, escadas, objetos grandes, marcas e regiões que a história usa).
+3) Corte a história em quadros (um instante por quadro; 4 a 7 por página; "pagina" separa páginas). Para cada quadro:
+   local/continua, plano, ângulo, lado, alvo, funcao, e as linhas dos personagens (posição, pose/ação, expressão, olhar, o que seguram, interações) e figurantes (quantidade, distribuição, para onde olham em %).
+4) Use "transicao tempo|lugar|flashback" quando o tempo passar, o lugar mudar ou for lembrança.
+5) Escreva "legenda" só quando a legenda automática não bastar (legenda visual, curta, sem falas). Falas: "fala".
+Responda SÓ com o código, num bloco de código. Comece com "semente 1".
+
+HISTÓRIA:
+`,
+  "Imagem → local": `Olhe a imagem anexada (foto, desenho ou planta) e descreva o CENÁRIO como um bloco "local" da DSL do GeoMannequin (veja o capítulo 9 do manual: origem, eixos, escala por referência, pixels → metros, alturas).
+- Diga em um comentário qual ponto você escolheu como (0,0), para onde vão x e z, e qual referência deu a escala.
+- Use metros. Comece pelo chão, depois paredes/salas (com portas e janelas), níveis e escadas, objetos grandes, objetos pequenos.
+- Nomeie com "marca" e "regiao" os lugares onde personagens vão ficar.
+- Só objetos da lista do manual (use "caixa"/"banco"/"mesa" com nome e tamanho para o que não existir).
+Responda SÓ com o código do local, num bloco de código.`,
+  "História + local salvo → name": `Converta a história abaixo num NAME na DSL do GeoMannequin, usando o(s) local(is) JÁ SALVO(S) abaixo (não redescreva o cenário: use "quadro local "Nome"" e as marcas/regiões que ele tem; para variações use "local "Nome à noite" herda "Nome"" com as peças novas).
+Siga o manual à risca. Responda só com o código.
+
+LOCAIS SALVOS (nome, marcas, regiões):
+{locais}
+
+HISTÓRIA:
+`,
+  "Explicar a ficha para a IA de imagem": `Cada imagem anexada é a FICHA de um quadro de mangá (storyboard). Leia assim:
+- O painel com BORDA VERDE é o quadro: desenhe a cena final exatamente com este enquadramento, esta câmera, estas poses e posições. Os manequins coloridos são personagens: a mesma cor é sempre o mesmo personagem (veja a legenda de cores); manequins cinza são figurantes.
+- O RETÂNGULO VERMELHO com texto branco é o contexto do momento (o que acontece). Não desenhe esse texto.
+- O painel de BORDA AZUL é a planta vista de cima (onde está cada um, para onde olha, de onde a câmera vê).
+- O painel de BORDA AMARELA é uma vista isométrica do lugar (volume das construções).
+Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço. Mantenha o estilo pedido e a continuidade entre os quadros.`
+};
+
+export { manualName, PROMPTS_NAME, EXEMPLO_NAME };

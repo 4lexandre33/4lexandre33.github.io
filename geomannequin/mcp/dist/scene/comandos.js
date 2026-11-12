@@ -1,15 +1,19 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
 import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
-import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
+import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS, aplicarCrianca, CRIANCA } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
-import { AU } from "../engine/index.js";
+import { AU, analisarFolha, analisarImagemUnica, telaDoMundo } from "../engine/index.js";
 import { criarApiEfeitos } from "./efeitos-cena.js";
+import { registroCena, sobreposicoes, separar, olharParaPonto, posicoesArranjo, mdSorteio, construirDaPlanta } from "./multidao.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
+import { estadoParaIA } from "./estado-ia.js";
+import { codigoDoRosto, lerCodigoDoRosto, rostoCompleto, valoresDoRosto, formatoDoRosto, expressoesSalvas, expressaoDoUsuario, salvarExpressao, apagarExpressao, exportarExpressoes, importarExpressoes, expressaoParecida } from "./rosto-codigo.js";
+import { manualPosesIA, pacoteParaIA } from "./manual-ia.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
-import { EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
+import { FACES, aplicarMolejo, EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, POSE0, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { codigoDaPose, lerCodigoDePose, filtrarPartes, espelharValores, posesSalvas, salvarPose, acharPoseSalva, apagarPose, renomearPose, duplicarPose, exportarPoses, importarPoses, parteDaChave, PARTES_POSE } from "./pose-codigo.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
@@ -23,6 +27,9 @@ import { THEMES, applyTheme } from "./tema.js";
 import { cenaCamadasSvg, fotoSvg, listaCamadas, arquivosCamadas } from "./camadas-cena.js";
 import {setContatoV2,consultarContatosV2,limitarPropostaV2,CONTATO_V2} from "./contato-v2.js";
 import {beginGrip,releaseGrip,getHandAnchor} from "./preensao-v2.js";
+import { segurarComo, listaPegadas } from "./pegadas.js";
+import { ACOES_LUTA, TAGS_POSES, aplicarAcao, arvorePoses, posesPorTag, normTag } from "./acoes-luta.js";
+import { interagir, listaInteracoes } from "./interacoes.js";
 import {beginRigidGrip,releaseRigidGrip,inspectRigidGrip,handFrameV3,pousarObjetoRigido,alinharPalmaV3,transferirMaoPrincipalV3} from "./grip-v3.js";
 import {planejarAutoGripComAjuste,resumirAutoGrip,medirMao,validarOpcoes,validarContatoAutoGrip,validarCenaAutoGrip,registrarRegiaoAutoGrip} from "./grip-auto.js";
 import {gripSites,gripSiteWorld} from "../engine/grip-sites.js";
@@ -81,6 +88,7 @@ function aplicarValoresDePose(it,valores,opts={}){
   let v=filtrarPartes(valores,opts.partes);if(opts.espelhar)v=espelharValores(v);
   if(!Object.keys(v).length)throw new Error("Nenhum ângulo dessa pose pertence às partes pedidas ("+opts.partes+").");
   const antes={...it.params};
+  if("flex" in v){applyParams(it,{flex:v.flex},false);v={...v};delete v.flex}
   applyParams(it,v,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));
   withInst(it,guardArms);guardarContatoV2(it,antes);
 }
@@ -93,6 +101,14 @@ function poseCmd(a,b){
   if(temValores(a)){aplicarValoresDePose(it,lerCodigoDePose(JSON.stringify(a)).valores,b);return apiFor(it)}
   if(typeof a==="string"){aplicarValoresDePose(it,valoresDeFonte(a),b);return apiFor(it)}
   throw new Error("pose: use pose({cotoveloDir: 70}), pose(\"Nome\", {...}) ou pose(\"Nome salvo\").");
+}
+/* "todos", "selecionados", "grupo:Nome", "objetos", nome ou lista de nomes (manequins e objetos) */
+function quemSao(q){
+  if(q===undefined||q==="todos")return SCN.list.slice();
+  if(q==="selecionados"){const s=new Set(SCN.selecao||[]);return [...SCN.list.filter(it=>s.has(it.id)),...SCN.objetos.filter(o=>s.has("o"+o.id))]}
+  if(q==="objetos")return SCN.objetos.slice();
+  if(typeof q==="string"&&/^grupo:/i.test(q)){const g=q.slice(6).trim();return [...SCN.list.filter(it=>it.grupo===g),...SCN.objetos.filter(o=>o.grupo===g)]}
+  const ns=Array.isArray(q)?q:[q];return ns.map(n=>{if(n&&typeof n==="object")n=n.nome;const it=SCN.list.find(x=>x.name===n);if(it)return it;const o=acharObjeto(n);if(!o)throw new Error("Não encontrei “"+n+"”.");return o});
 }
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
@@ -115,13 +131,29 @@ function apiFor(it){
     mover(dx,dz){chk();return m.posicao(it.params.wx+num(dx,"dx"),it.params.wz+num(dz||0,"dz"))},
     girar(g){chk();const antes={...it.params};let a=num(g,"graus");a=((a+180)%360+360)%360-180;it.params.wRot=a;guardarContatoV2(it,antes);return m},
     pose(o,opts){chk();if(typeof o==="string")return m.poseRapida(o,opts);const antes={...it.params};applyParams(it,o,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));withInst(it,guardArms);guardarContatoV2(it,antes);return m},
+    /* pose de descanso em pé: zera todos os ângulos (corpo, braços, mãos, pernas, cabeça, pescoço, inclinação, salto)
+       mantendo biotipo, posição, giro, cor e objetos. {rosto:true} zera também a expressão; {flexibilidade:true} volta ao perfil normal */
+    descanso(opts){chk();const o=opts||{},antes={...it.params};
+      POSEKEYS.forEach(k=>{if(parteDaChave(k)==="rosto"&&!o.rosto)return;it.params[k]=k in POSE0?POSE0[k]:(DEF[k]??0)});
+      it.params.ground=1;it.params.bodyLift=0;if(o.flexibilidade)it.params.flex=0;if(o.rosto)it.exprNome="neutra";
+      /* o mesmo caminho da pose rápida "empe" (limites e braços livres do corpo), sem mexer no rosto */
+      const rosto={};POSEKEYS.forEach(k=>{if(parteDaChave(k)==="rosto")rosto[k]=it.params[k]});
+      withInst(it,()=>doBodyPose("empe"));Object.assign(it.params,rosto);guardarContatoV2(it,antes);return m},
     poseRapida(nome,opts){chk();const antes={...it.params},k=nomePose(nome);const ok=todasPoses();
-      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));guardarContatoV2(it,antes);return m},
+      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));it.poseNome=k;it.acaoNome=null;
+      /* molejo: as poses prontas vêm com micro-variações (molejo: 0 desliga; 0.3 sutil; 1 solto) */
+      const mj=opts&&opts.molejo!==undefined?(opts.molejo===false?0:+opts.molejo):0.6;if(mj>0)withInst(it,()=>aplicarMolejo(it.params,{intensidade:mj,semente:k+(opts&&opts.semente!==undefined?":"+opts.semente:"")}));
+      guardarContatoV2(it,antes);return m},
+    /* m.acao("corridaSuperRapida") — pose de ação com rosto e efeitos de movimento; {efeitos:false, rosto:false, lado:"dir", colorido:true} */
+    acao(nome,o){chk();cena.marcarEstado();SCN.__cenaEfeitos=cena.efeitos;const r=aplicarAcao(m,it,nome,o||{});it.acaoNome=nome;return r},
+    /* m.molejo(0.6, "variação 2") — micro-inclinações e assimetria na pose atual */
+    molejo(intensidade,semente){chk();const antes={...it.params};withInst(it,()=>aplicarMolejo(it.params,{intensidade:intensidade===undefined?0.6:+intensidade,semente:semente??(Date.now()%100000)}));limitesAcoplados(it.params);guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
         const k=o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
-        const part=k.match(/^(masculino|feminino)[\s_-]+(magro|medio|atletico|musculoso|cheio)$/);
-        const tipo=part?part[2]:k,sexo=part?(part[1]==="feminino"?1:0):it.params.fem;
-        if(!NOMES_BIOTIPOS.includes(tipo))throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+NOMES_BIOTIPOS.join(", ")+", ou 'feminino medio'.");
+        const part=k.match(/^(masculino|feminino)(?:[\s_-]+(magro|medio|atletico|musculoso|cheio))?$/);
+        if(/^(crianca|infantil|menino|menina)$/.test(k)){aplicarCrianca(it.params,k==="menina"?1:k==="menino"?0:it.params.fem);Object.assign(it.params,FACES.infantil,{shW:CRIANCA.shW,neck:CRIANCA.neck,neckLen:CRIANCA.neckLen});return m}
+        const tipo=part?(part[2]||"medio"):k,sexo=part?(part[1]==="feminino"?1:0):it.params.fem;
+        if(!NOMES_BIOTIPOS.includes(tipo))throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+NOMES_BIOTIPOS.join(", ")+", crianca (menino, menina), ou 'feminino medio'.");
         aplicarBiotipo(it.params,tipo,sexo);return m
       }
       /* Troca de sexo recalibra o mesmo perfil, preservando correções manuais. */
@@ -189,6 +221,9 @@ function apiFor(it){
     autoSegurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado.");
       return cena.autoEncaixarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)})},
     medidasMao(lado="direita"){chk();return medirMao(it.params,ladoNum(lado))},
+    /* segurar de um jeito: m.segurarComo("Caixa", "abracado") · tipos: cena.pegadas() */
+    segurarComo(ref,tipo,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);cena.marcarEstado();const r=segurarComo(it,o,tipo,opts);
+      if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.atravessa.length)LOG.push(["aviso","ainda encosta em: "+r.atravessa.join(", ")]);return r},
     segurar(ref,opts={}){chk();const o=acharObjeto(ref);if(!o)throw Error("Objeto não encontrado: "+ref);
       cena.segurarObjeto(o.id,{...opts,manequim:SCN.list.indexOf(it)});return m},
     soltar(ref,opts={}){chk();const targets=ref===undefined?SCN.objetos.filter(o=>o.grip?.mannequinId===it.id||o.gripV3?.mannequinId===it.id):[acharObjeto(ref)];
@@ -219,9 +254,22 @@ function apiFor(it){
     /* m.expressao("raiva") · m.expressao("raiva", 0.5) (intensidade 0 a 1.5) · misturas:
        m.expressao({raiva: 0.6, tristeza: 0.4}, 1) ou m.expressao("60% raiva + 40% tristeza") */
     expressao(nome,intensidade){chk();const I=intensidade===undefined?1:num(intensidade,"intensidade");
-      if((nome&&typeof nome==="object")||/[%+,]/.test(String(nome))){Object.assign(it.params,misturarExpressoes(nome,I));return m}
-      const k=chaveExpressao(nome),e=EXPRESSOES[k];if(!e)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+".");
-      Object.assign(it.params,I===1?e:misturarExpressoes({[k]:1},I));return m},
+      const rot=typeof nome==="object"&&nome?Object.entries(nome).map(([a,b])=>b+" "+a).join(" + "):String(nome);
+      if((nome&&typeof nome==="object")||/[%+,]/.test(String(nome))){Object.assign(it.params,misturarExpressoes(nome,I));it.exprNome=rot+(I!==1?" ×"+I:"");return m}
+      const k=chaveExpressao(nome),e=EXPRESSOES[k],u=e?null:expressaoDoUsuario(nome);
+      if(!e&&!u)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+(expressoesSalvas().length?" ou uma das suas: "+expressoesSalvas().map(x=>x.nome).join(", "):"")+".");
+      Object.assign(it.params,u?(I===1?rostoCompleto(u.valores):misturarExpressoes({[k]:1},I)):(I===1?e:misturarExpressoes({[k]:1},I)));it.exprNome=(u?u.nome:k)+(I!==1?" ×"+I:"");return m},
+    /* rosto como código: m.rostoCodigo() · m.rostoCodigo({nome: "Meu sorriso", formato: true}) (formato = feições e modelo de cabeça) */
+    rostoCodigo(opts){chk();return codigoDoRosto(it.params,{...(opts||{}),origem:it.exprNome})},
+    /* aplica um rosto: texto rosto("…", {...}) ou objeto {sorriso: 0.5, ...}; o rosto é completo (o que faltar volta a 0).
+       {formato: false} ignora as feições/cabeça do código */
+    aplicarRosto(fonte,opts){chk();const o=opts||{};const r=typeof fonte==="string"?lerCodigoDoRosto(fonte):{nome:"",valores:Object.fromEntries(Object.entries(fonte||{}).map(([a,b])=>[ALIAS[a]||a,b])),formato:null,cabeca:null};
+      const vs=rostoCompleto(r.valores);applyParams(it,vs,true).forEach(t=>LOG.push(["aviso",t]));
+      if(o.formato!==false&&r.formato)applyParams(it,r.formato,false).forEach(t=>LOG.push(["aviso",t]));
+      if(o.formato!==false&&r.cabeca)it.params.headModel=r.cabeca;
+      it.exprNome=r.nome||"rosto aplicado por código";return m},
+    /* guarda o rosto atual em Minhas expressões: m.guardarRosto("Sorriso cínico") · {formato: true} guarda também as feições */
+    guardarRosto(nome,opts){chk();const o=opts||{};return salvarExpressao(nome,valoresDoRosto(it.params),{substituir:!!o.substituir,formato:o.formato?formatoDoRosto(it.params):null,cabeca:o.formato?it.params.headModel:null}).nome},
     /* olhos para um lado sem mexer a cabeça: m.olhos(x, y) de −1 a 1 (x + = esquerda do manequim, y + = cima) */
     /* unidades de ação do rosto, por lado: m.rosto({palpebraEsq: 1, sobrancelhaForaDir: 0.6, cantoBocaEsq: 0.4, narizFranzir: 0.5})
        (também aceita os nomes gerais: sorriso, palpebras, sobrancelhas, franzir, bocaAbrir...) */
@@ -229,14 +277,16 @@ function apiFor(it){
     efeito(tipo,opts){chk();cena.efeitos.adicionar(tipo,{...(opts||{}),manequim:it.id});return m},
     rosto(valores){chk();if(!valores||typeof valores!=="object")throw new Error("Passe um objeto, por exemplo m.rosto({palpebraEsq: 1}).");
       for(const k0 of Object.keys(valores)){const k=ALIAS[k0]||k0;if(parteDaChave(k)!=="rosto")throw new Error("“"+k0+"” não é do rosto. Use: "+AU.map(a=>a[4]).join(", ")+".")}
-      applyParams(it,valores,true).forEach(t=>LOG.push(["aviso",t]));return m},
+      applyParams(it,valores,true).forEach(t=>LOG.push(["aviso",t]));it.exprNome=(it.exprNome?it.exprNome+" + ajustes":"ajustes do rosto");return m},
     /* piscar um olho só: m.piscar("esq" | "dir"), quanto = 0..1 */
     piscar(lado,quanto){chk();const l=String(lado||"esq").toLowerCase().startsWith("d")?"R":"L";it.params["lidUp"+l]=quanto===undefined?1:clamp(num(quanto,"quanto"),0,1);return m},
     olhos(x,y){chk();it.params.eyeYaw=clamp(num(x,"x"),-1,1);if(y!==undefined)it.params.eyePitch=clamp(num(y,"y"),-1,1);return m},
     /* boca: m.boca(abrir 0–1, sorriso −1 a 1) */
     boca(abrir,sorriso){chk();it.params.jawOpen=clamp(num(abrir,"abrir"),0,1);if(sorriso!==undefined)it.params.smile=clamp(num(sorriso,"sorriso"),-1,1);return m},
     /* pose como código: m.codigoPose({partes:"bracoDir", soMudancas:true}) → texto; m.aplicarPose(texto | nome salvo | {..}, {partes, espelhar}) */
-    codigoPose(opts){chk();return codigoDaPose(it.params,{nome:opts&&opts.nome,...(opts||{})})},
+    codigoPose(opts){chk();return codigoDaPose(it.params,{nome:opts&&opts.nome,expressao:it.exprNome,...(opts||{})})},
+    /* estado deste manequim para uma IA: m.estadoIA() → texto; m.estadoIA({json:true}) → objeto */
+    estadoIA(opts){chk();const E=estadoParaIA({manequim:it.id});return opts&&opts.json?E.json.manequins[0]:E.texto},
     aplicarPose(fonte,opts){chk();aplicarValoresDePose(it,valoresDeFonte(fonte),opts);return m},
     salvarPose(nome,opts={}){chk();const v={};POSEKEYS.forEach(k=>{if(typeof it.params[k]==="number")v[k]=it.params[k]});return salvarPose(nome,filtrarPartes(v,opts.partes),opts).nome},
     copiarPose(outro){chk();const o=typeof outro==="object"&&outro?SCN.list.find(x=>x.name===outro.nome):SCN.list.find(x=>x.name===outro);if(!o)throw new Error("Manequim “"+outro+"” não existe.");
@@ -405,7 +455,69 @@ Object.assign(blockingApi,{abrir:()=>painelBlk("abrir"),fechar:()=>painelBlk("fe
   /* modo Articulações: quatro vistas do esqueleto; foco numa região (mão → punho e dedos) */
   mover:m=>painelBlk("mover",m),foco:r=>painelBlk("foco",r)});
 const cena={
-  adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
+  /* para IA (Gemini, ChatGPT, Claude…): manual completo de poses, estado da cena e pacote pronto para colar */
+  manualIA(opts){return manualPosesIA(opts||{})},
+  estadoIA(opts){const E=estadoParaIA(opts||{});return opts&&opts.json?E.json:E.texto},
+  pacoteIA(pedido,opts){return pacoteParaIA(pedido,opts||{})},
+  pegadas(){return listaPegadas()},
+  /* dois manequins: cena.interagir("Ana", "Leo", "abracoFrente") · tipos: cena.interacoes() */
+  interagir(a,b,tipo,opts){const A=typeof a==="number"?SCN.list[a]:SCN.list.find(x=>x.name===(a&&a.nome||a)),B=typeof b==="number"?SCN.list[b]:SCN.list.find(x=>x.name===(b&&b.nome||b));
+    if(!A||!B)throw new Error("Manequim não encontrado: use os nomes (cena.manequins()).");cena.marcarEstado();const r=interagir(A,B,tipo,Object.assign({ctx:{poseRapida:(it,nome)=>apiFor(it).poseRapida(nome,{molejo:0})}},opts||{}));A.interacaoNome=B.interacaoNome=r.interacao;
+    if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.atravessando.length)LOG.push(["aviso","ainda encosta: "+r.atravessando.join(", ")]);return r},
+  interacoes(){return listaInteracoes()},
+  /* ===== muitos manequins =====
+     cena.registro() → onde está e o que faz cada um (mesmo sem desenho) · cena.sobrepostos() · cena.separar({folga})
+     cena.grade({n: 20, colunas: 5, espacamento: 6, x, z | area: [x0, z0, x1, z1], pose: "empe" | poses: [...], expressao, olharPara: [x, z], cor: "grupo", grupo: "Plateia"})
+     cena.arranjo("circulo" | "fila" | "arco" | "multidao", {n, raio, x, z, ...mesmas opções}) · cena.olharPara(["Ana", "Leo"] | "todos" | "grupo:Plateia", [x, z], {modo: "costas"}) */
+  /* cenário por imagem de planta (cores): cena.lerPlanta(pixels {w,h,data}, {linha: 0, larguraMetros, legenda}) → análise (folha com várias linhas ou imagem única);
+     cena.dePlanta(análise | pixels, {linha: 0, limpar: true, manequins: true, escala: 1}) → monta caixas, escadas, árvores, água e manequins */
+  lerPlanta(img,o){if(!img||!img.data||!img.w)throw new Error("Passe os pixels da imagem: {w, h, data} (RGBA).");const op=o||{};const f=analisarFolha(img,op);
+    if(f.linhas.length&&f.linhas.some(l=>l.itens))return f;return {celulas:[],linhas:[{linha:0,...analisarImagemUnica(img,op)}]}},
+  dePlanta(a,o){const op=o||{};let an=a;if(a&&a.data&&a.w)an=cena.lerPlanta(a,op);if(an&&an.linhas){const l=an.linhas[op.linha||0];if(!l||!l.itens)throw new Error("Linha "+(op.linha||0)+" da folha não tem planta (há "+an.linhas.length+" linhas).");an=l}
+    cena.marcarEstado();const r=construirDaPlanta(an,op);if(op.enquadrar!==false)try{cena.enquadrarTudo({yaw:op.yaw??-45,pitch:op.pitch??-34})}catch(e){}return r},
+  /* câmera que mostra TUDO (manequins e objetos): {yaw: 35, pitch: -32} = vista isométrica de cima; sem perspectiva com {orto: true} */
+  enquadrarTudo(o){const op=o||{},pts=[];
+    SCN.list.forEach(it=>{if(it.oculto)return;const x=it.params.wx||0,z=it.params.wz||0;pts.push([x-2,0,z-2],[x+2,16,z+2])});
+    SCN.objetos.forEach(q=>{const r=Math.max(q.larg||1,q.prof||1)/2+0.5;pts.push([q.x-r,0,q.z-r],[q.x+r,(q.alt||2),q.z+r])});
+    if(!pts.length)return cena;
+    const lo=[0,1,2].map(k=>Math.min(...pts.map(p=>p[k]))),hi=[0,1,2].map(k=>Math.max(...pts.map(p=>p[k]))),g0=restGround(SCN.list[0].params);
+    Object.assign(P,{tx:(lo[0]+hi[0])/2,ty:g0+(hi[1]-lo[1])*0.25,tz:(lo[2]+hi[2])/2,yaw:op.yaw??35,pitch:op.pitch??-32,roll:0,panX:0,panY:0});
+    if(op.orto)P.persp=0;
+    const raio=Math.hypot(hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2])/2;
+    if(P.persp){P.camDist=clamp(raio*2.4,8,400);
+      for(let k=0;k<6;k++){const c={...SCN.list[0].params,...P};let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+        for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
+        const f=Math.max((x1-x0)/(W*0.9),(y1-y0)/((op.alturaTela||H*0.86))),Sc=Math.max(0.01,effScale(c));P.panX=+(P.panX-((x0+x1)/2-W/2)/Sc).toFixed(3);P.panY=+(P.panY+((y0+y1)/2-H/2)/Sc).toFixed(3);P.camDist=clamp(P.camDist*Math.max(0.6,Math.min(1.8,f)),6,400)}
+    }else{const c={...SCN.list[0].params,...P};P.zoom=1;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
+      P.zoom=clamp(Math.min(W*0.9/(x1-x0),(op.alturaTela||H*0.86)/(y1-y0)),0.01,12);const c2={...SCN.list[0].params,...P},Sc=Math.max(0.01,effScale(c2));let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c2,[a,b,d]);a0=Math.min(a0,t[0]);a1=Math.max(a1,t[0]);b0=Math.min(b0,t[1]);b1=Math.max(b1,t[1])}P.panX=-((a0+a1)/2-W/2)/Sc;P.panY=((b0+b1)/2-H/2)/Sc}
+    cena.marcarEstado&&0;return cena},
+  registro(o){return registroCena(o||{})},
+  sobrepostos(){return sobreposicoes().map(([a,b,d])=>({a:SCN.list[a].name,b:SCN.list[b].name,sobra:Math.round(d*11.4)+" cm"}))},
+  separar(o){cena.marcarEstado();return separar(o||{})},
+  grade(o){return cena.arranjo("grade",o)},
+  arranjo(tipo,o0){const o=o0||{};cena.marcarEstado();
+    const n=Math.max(1,Math.min(200-SCN.list.length,Math.round(o.n||(o.colunas&&o.linhas?o.colunas*o.linhas:9))));
+    if(n<1)throw new Error("A cena já tem o máximo de manequins (200).");
+    const pos=posicoesArranjo(tipo,n,o),grupo=o.grupo||("Grupo "+(1+new Set(SCN.list.map(it=>it.grupo).filter(Boolean)).size)),rnd=mdSorteio(o.semente??grupo);
+    if(o.objeto){const feitos=pos.map(([x,z],k)=>{const q=adicionarObjeto(o.objeto,{x,z,giro:o.giro||0});q.grupo=grupo;return q});
+      if(o.olharPara)olharParaPonto(feitos,o.olharPara,o);else if(tipo==="circulo"||tipo==="arco")olharParaPonto(feitos,[o.x||0,o.z||0],o);return {grupo,objetos:feitos.map(q=>q.nome||q.tipo)}}
+    const cor=o.cor===undefined?(n>12?"grupo":"auto"):o.cor,poses=(o.poses||(o.pose?[o.pose]:["empe"])).map(nomePose),its=[];
+    {const ok=todasPoses(),ruins=poses.filter(p=>!ok.includes(p));if(ruins.length)throw new Error("Pose rápida desconhecida: “"+ruins.join("”, “")+"”.")}
+    let hue=null;
+    pos.forEach(([x,z],k)=>{const it=addInst({wx:x,wz:z},(o.nome||grupo)+" "+(k+1),true);it.grupo=grupo;if(cor==="grupo"){if(hue===null)hue=it.hue;else it.hue=hue}
+      const m=apiFor(it);if(o.corpo)m.corpo(o.corpo);
+      const pz=poses[o.sortear===false?k%poses.length:Math.floor(rnd()*poses.length)];
+      m.poseRapida(pz,{molejo:o.molejo??0.6,semente:o.variar===false||(o.variar===undefined&&n>30)?undefined:k});
+      if(o.expressao)m.expressao(o.expressao);if(o.giro!==undefined)m.girar(o.giro);its.push(it)});
+    const alvo=o.olharPara||((tipo==="circulo"||tipo==="arco")&&o.olharPara!==false?[o.x||0,o.z||0]:null);
+    if(alvo)olharParaPonto(its,alvo,{modo:o.modo});
+    const sep=o.separar===false?null:separar({folga:o.folga??0.3,fixos:SCN.list.filter(it=>!its.includes(it)).map(it=>it.name)});
+    return {grupo,manequins:its.map(it=>it.name),separados:sep?sep.movidos.length:0}},
+  olharPara(quem,ponto,o){cena.marcarEstado();const its=quemSao(quem);return olharParaPonto(its,ponto,o||{})},
+  selecionar(quem){SCN.selecao=quemSao(quem).map(q=>q.params?q.id:"o"+q.id);return SCN.selecao.length},
+  /* todos os manequins (ou um, pelo nome) na pose de descanso em pé */
+  descanso(opts){const o=opts||{};SCN.list.filter(it=>!o.manequim||it.name===o.manequim).forEach(it=>apiFor(it).descanso(o));return cena},
+  adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o)try{if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}catch(e){delInst(it);throw e}return m},
   copiar(m){const it=m?SCN.list.find(x=>x.name===m.nome):SCN.list[SCN.active];if(!it)throw new Error("Manequim não encontrado.");return apiFor(dupInst(it,true))},
   remover(m){const it=typeof m==="string"?SCN.list.find(x=>x.name===m):SCN.list.find(x=>x.name===(m&&m.nome));if(!it)throw new Error("Manequim não encontrado.");delInst(it)},
   limpar(){const cam={};CAMK.forEach(k=>cam[k]=P[k]);SCN.list.splice(1);SCN.active=0;setP(SCN.list[0].params);Object.assign(P,cam);return apiFor(SCN.list[0])},
@@ -418,6 +530,23 @@ const cena={
   get ativo(){return apiFor(SCN.list[SCN.active])},
   /* Minhas poses: cena.poses.salvar("Aceno", {manequim:"Ana", partes:"bracoDir"}), .aplicar("Aceno", {manequim, partes, espelhar}),
      .lista(), .codigo("Aceno"), .exportar(), .importar(texto), .apagar(n), .renomear(n, novo), .duplicar(n) */
+  /* Minhas expressões (rostos guardados): cena.expressoes.salvar("Sorriso cínico") guarda o rosto do ativo;
+     aplicar(nome, {manequim, intensidade}) · codigo(nome) · importar(texto) · exportar() · apagar(nome) · lista() · parecida(manequim) */
+  expressoes:{
+    lista:()=>expressoesSalvas().map(e=>({nome:e.nome,controles:Object.values(e.valores).filter(v=>Math.abs(v)>1e-4).length,formato:!!e.formato,cabeca:e.cabeca||null,criada:e.criada})),
+    salvar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];
+      if(o.valores)return salvarExpressao(nome,Object.fromEntries(Object.entries(o.valores).map(([a,b])=>[ALIAS[a]||a,b])),{substituir:!!o.substituir}).nome;
+      if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");return salvarExpressao(nome,valoresDoRosto(it.params),{substituir:!!o.substituir,formato:o.formato?formatoDoRosto(it.params):null,cabeca:o.formato?it.params.headModel:null}).nome},
+    aplicar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");
+      const e=expressaoDoUsuario(nome);if(!e)throw new Error("Não há expressão salva com o nome “"+nome+"”.");const mm=apiFor(it);
+      if(o.intensidade!==undefined&&o.intensidade!==1)mm.expressao(e.nome,o.intensidade);else mm.aplicarRosto(codigoDoRosto({...e.valores,...(e.formato||{}),headModel:e.cabeca},{nome:e.nome,formato:!!(o.formato&&(e.formato||e.cabeca))}),{formato:!!o.formato});return e.nome},
+    codigo:(nome)=>{const e=expressaoDoUsuario(nome);if(!e)throw new Error("Não há expressão salva com o nome “"+nome+"”.");return codigoDoRosto({...e.valores,...(e.formato||{}),headModel:e.cabeca},{nome:e.nome,formato:!!(e.formato||e.cabeca)})},
+    importar:(texto,o)=>importarExpressoes(texto,o||{}),
+    exportar:()=>exportarExpressoes(),
+    apagar:nome=>apagarExpressao(nome),
+    ler:texto=>lerCodigoDoRosto(texto),
+    parecida:(manequim)=>{const it=manequim!==undefined?SCN.list.find(x=>x.name===manequim):SCN.list[SCN.active];return expressaoParecida(it.params).texto}
+  },
   poses:{
     lista:()=>posesSalvas().map(p=>({nome:p.nome,angulos:Object.keys(p.valores).length,partes:[...new Set(Object.keys(p.valores).map(parteDaChave))],criada:p.criada})),
     salvar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");return apiFor(it).salvarPose(nome,o)},
@@ -429,8 +558,16 @@ const cena={
     renomear:(nome,novo)=>renomearPose(nome,novo).nome,
     duplicar:nome=>duplicarPose(nome).nome,
     ler:texto=>lerCodigoDePose(texto),
-    partes:()=>({...PARTES_POSE})
+    partes:()=>({...PARTES_POSE}),
+    /* função narrativa: cena.poses.arvore() · cena.poses.porTag("Combate/Ataque") · cena.poses.etiquetar("Minha pose", ["Combate/Ataque/Soco"]) · cena.poses.tags() */
+    arvore:o=>arvorePoses(o||{}),
+    porTag:(t,o)=>posesPorTag(t,{minhas:posesSalvas(),...(o||{})}),
+    tags:()=>[...new Set([...Object.values(TAGS_POSES),...posesSalvas().flatMap(p=>p.tags||[])])].sort(),
+    tagDe:nome=>TAGS_POSES[nomePose(nome)]||((posesSalvas().find(p=>p.nome===nome)||{}).tags||[])[0]||null,
+    etiquetar:(nome,tags)=>{const p=acharPoseSalva(nome);p.tags=[...new Set((Array.isArray(tags)?tags:[tags]).map(normTag).filter(Boolean))].slice(0,12);try{if(typeof localStorage!=="undefined")localStorage.setItem("geomannequin.minhasPoses",JSON.stringify(posesSalvas()))}catch(e){}return p.tags}
   },
+  /* ações (poses de luta e movimento com rosto e efeitos): cena.acoes() */
+  acoes(){return Object.entries(ACOES_LUTA).map(([acao,a])=>({acao,expressao:a.expressao,efeitos:a.efeitos.map(x=>x[0]),funcao:TAGS_POSES[acao]||null}))},
   /* roteiro de quadros (na página): cena.quadros.abrir(), .texto("#quadro 1 …"), .renderizar(), .fila(), .baixar() */
   quadros:{
     abrir:()=>painelQd("abrir"),fechar:()=>painelQd("fechar"),texto:t=>painelQd("texto",t),
@@ -986,14 +1123,14 @@ const camera={
   posicao(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;num(x,"x");num(y,"y");num(z,"z");
     const dx=x-P.tx,dy=y-P.ty,dz=z-P.tz,d=Math.hypot(dx,dy,dz);if(d<0.5)throw new Error("A câmera está colada no alvo; afaste-a.");
     P.yaw=Math.round(-Math.atan2(dx,dz)/D*10)/10;P.pitch=clamp(Math.round(-Math.atan2(dy,Math.hypot(dx,dz))/D*10)/10,-70,70);P.roll=0;
-    P.camDist=clamp(d,4,200);P.zoom=clamp(6.2/d,0.05,3);P.panX=0;P.panY=0;return camera},
-  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-30,30,"x");camSet("ty",y,-20,20,"y");camSet("tz",z,-30,30,"z");P.panX=0;P.panY=0;return camera},
+    P.camDist=clamp(d,4,400);P.zoom=clamp(6.2/d,0.01,3);P.panX=0;P.panY=0;return camera},
+  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-200,200,"x");camSet("ty",y,-20,60,"y");camSet("tz",z,-200,200,"z");P.panX=0;P.panY=0;return camera},
   girar(yaw,pitch,roll){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
   zoom(z){setZoomEff(num(z,"zoom"));return camera},
   perspectiva(on,dist){P.persp=on===false||on===0?0:1;if(dist!==undefined)camSet("camDist",dist,4,200,"distância");return camera},
   distancia(d){camSet("camDist",d,4,200,"distância");return camera},
   /* lente em mm: 18–35 grande-angular (perspectiva forte), 50 normal, 85–200 tele (achata). Mantém o tamanho do alvo na tela. */
-  lente(mm,manterTamanho){const z=distToZoom(P);camSet("lens",mm,18,200,"lente");if(manterTamanho!==false)P.camDist=clamp(zoomToDist(P,z),4,200);return camera},
+  lente(mm,manterTamanho){const z=distToZoom(P);camSet("lens",mm,18,200,"lente");if(manterTamanho!==false)P.camDist=clamp(zoomToDist(P,z),4,400);return camera},
   /* zoom óptico (a câmera fica parada; só a lente muda): camera.zoomLente(85) em mm, ou camera.zoomLente("2x") / ("0.5x") */
   zoomLente(v){const t=String(v).trim().replace(",",".");if(/x$/i.test(t)){const k=parseFloat(t);if(!(k>0))throw new Error("Zoom: use mm (18–200) ou um fator como \"2x\".");zoomFator(k)}else zoomLente(num(+t,"lente"));return camera},
   /* campo de visão horizontal em graus (abre ou fecha o "cone" sem mover a câmera) */
@@ -1035,15 +1172,15 @@ const camera={
       /* plano geral/inteiro: o enquadramento automático só com esses manequins, com folga no geral */
       const ocultos=SCN.list.map(x=>x.oculto);SCN.list.forEach(x=>{x.oculto=!alvos.includes(x)});
       try{autoFit()}finally{SCN.list.forEach((x,i)=>{x.oculto=ocultos[i]})}
-      if(f<0){const k=f===-2?0.45:0.7;if(P.persp)P.camDist=+clamp(P.camDist/k,4,200).toFixed(2);else P.zoom=+clamp(P.zoom*k,0.05,3).toFixed(3);P.panX*=k;P.panY*=k}
+      if(f<0){const k=f===-2?0.45:0.7;if(P.persp)P.camDist=+clamp(P.camDist/k,4,400).toFixed(2);else P.zoom=+clamp(P.zoom*k,0.05,3).toFixed(3);P.panX*=k;P.panY*=k}
       return camera}
     const it=alvos[0],po=pMundo(it),os=ossosDoCorpo(po),M=paraMundo(po),cr=os.ossos.find(x=>x.nome==="crânio"),cab=M(cr.a),pel=M(os.juntas.find(x=>x.nome==="pelve").P);
     const Hs=1.0-restGround(SCN.list[0].params),hreg=f*Hs,topo=cab[1]+cr.r*1.05,b=Math.min(1,Math.max(0,(f-0.3)/0.7));
     /* centro: perto da cabeça nos planos fechados; no meio do corpo nos abertos */
     const c=[cab[0]+(pel[0]-cab[0])*b,topo-hreg/2,cab[2]+(pel[2]-cab[2])*b];
-    P.tx=clamp(c[0],-30,30);P.ty=clamp(c[1],-20,20);P.tz=clamp(c[2],-30,30);
+    P.tx=clamp(c[0],-200,200);P.ty=clamp(c[1],-20,60);P.tz=clamp(c[2],-200,200);
     const S=(SCN.recorte?SCN.recorte.h:H)*0.86/(hreg*1.08);
-    if(P.persp){let d=(W/2)*(P.lens||50)/(18*S);if(d<6){d=6;P.lens=Math.round(clamp(18*S*d/(W/2),18,200))}P.camDist=+clamp(d,4,200).toFixed(2)}
+    if(P.persp){let d=(W/2)*(P.lens||50)/(18*S);if(d<6){d=6;P.lens=Math.round(clamp(18*S*d/(W/2),18,200))}P.camDist=+clamp(d,4,400).toFixed(2)}
     else P.zoom=+clamp(S/effScale(Object.assign({},P,{persp:0,zoom:1})),0.05,3).toFixed(3);
     /* o alvo fica no centro da foto (o centro de projeção do palco fica acima do meio) */
     const Sx=effScale(P);P.panX=(W/2-CX)/Sx;P.panY=(CY-H/2)/Sx;

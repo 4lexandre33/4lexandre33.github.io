@@ -15,6 +15,7 @@ import { registerDeclarativeStoryboard } from "./tools-storyboard.mjs";
 import { registerAnatomyTools } from "./tools-anatomy.mjs";
 import { registerEffectsTools } from "./tools-efeitos.mjs";
 import { registerIaTools } from "./tools-ia.mjs";
+import { registerNameTools } from "./tools-name.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -206,6 +207,9 @@ const INVOCA = {
   roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
   aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"],
   efeitos: ["Desenhando os efeitos…", "Efeitos prontos"],
+  manual_name: ["Abrindo o manual do name…", "Manual do name"], validar_name: ["Conferindo o name…", "Name conferido"], gerar_name: ["Gerando as fichas…", "Name pronto"],
+  ficha_quadro: ["Montando a ficha…", "Ficha pronta"], previa_local: ["Montando o local…", "Local pronto"], salvar_local: ["Salvando o local…", "Local salvo"],
+  listar_locais: ["Lendo a biblioteca…", "Locais"], abrir_local: ["Abrindo o local…", "Local aberto"], legenda_cores: ["Montando a legenda…", "Legenda de cores"],
   estado_pose: ["Lendo a pose…", "Estado da pose"], manual_poses_ia: ["Abrindo o manual…", "Manual de poses"], rosto: ["Mexendo no rosto…", "Rosto"], biblioteca_item: ["Preparando o item…", "Item da Biblioteca"], descanso: ["Voltando ao descanso…", "Pose de descanso"], segurar_como: ["Segurando…", "Objeto na mão"], interagir: ["Juntando os dois…", "Interação"], acao: ["Montando a ação…", "Ação"], molejo: ["Soltando a pose…", "Molejo"], poses_por_funcao: ["Buscando poses…", "Poses por função"], planta_para_cena: ["Lendo a planta…", "Cenário montado"], arranjo_em_massa: ["Arrumando…", "Arranjo"], olhar_para_ponto: ["Virando…", "Olhar para o ponto"], registro_da_cena: ["Lendo o registro…", "Registro da cena"]
 };
 const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena", "efeitos", "estado_pose"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
@@ -919,6 +923,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerAnatomyTools(server, W);
   registerEffectsTools(server, W);
   registerIaTools(server, W);
+  registerNameTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

@@ -40,7 +40,7 @@ function parteDaChave(k) {
   if (/^(bodyPitch|bodyRoll|bodyLift|ground)$/.test(k)) return "corpo";
   if (/^(spine|lum|tho|pelvis)/.test(k)) return "tronco";
   if (/^(head|neck)/.test(k)) return "cabeca";
-  if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|upperLip|mouthCorner|lipPress|pout|teethClench)/.test(k)) return "rosto";
+  if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|nostril|upperLip|lowerLip|mouth|lipPress|lipBite|pout|teethClench|teethShow|wrinkle|iris|pupil|lash|fang|tongueOut|angerVein|sweatDrop)/.test(k)) return "rosto";
   if (/^(sh|scap|arm|elbow|pron|wrist)/.test(k)) return k === "shTension" ? "tronco" : "braco" + (lado || "Esq");
   if (/^(f[A-Z]|fSpread|thumb|handCurl)/.test(k)) return "mao" + (lado || "Esq");
   if (/^(hip|knee|ankle|toes|hallux|foot|tibia)/.test(k)) return "perna" + (lado || "Esq");
@@ -86,8 +86,11 @@ function codigoDaPose(params, opts = {}) {
   const nome = String(opts.nome || "").replace(/["\\\n]/g, " ").trim();
   const cab = ["/* GeoMannequin · pose" + (nome ? " “" + nome + "”" : "") + " · formato " + FORMATO_POSE +
     (sel ? " · partes: " + [...sel].join(", ") : "") + (so ? " · só o que difere da pose neutra" : ""),
+    (opts.expressao ? "   Rosto: partiu de “" + String(opts.expressao).replace(/\*\//g, "") + "” (os valores estão no grupo “rosto” abaixo)." : "   O rosto (expressão) vai junto, no grupo “rosto”; para só o rosto use m.rostoCodigo()."),
     "   Cole em “Código da pose”, no editor de comandos ou em Minhas poses › Importar. */"];
   const linhas = [];
+  /* pose de atleta/ginasta: o perfil de flexibilidade vai na frente (sem ele os ângulos além do normal seriam cortados) */
+  if (!sel && params.flex > 0) linhas.push("  flexibilidade: " + Math.round(params.flex) + ", // 0 normal · 1 atleta · 2 ginasta · 3 contorcionista");
   Object.keys(PARTES_POSE).forEach(p => {
     const g = grupos[p]; if (!g) return;
     if (com) linhas.push("  // " + PARTES_POSE[p].toLowerCase());
@@ -124,6 +127,7 @@ function lerCodigoDePose(texto) {
   for (let j = a; j < limpo.length; j++) { if (limpo[j] === "{") prof++; else if (limpo[j] === "}") { prof--; if (!prof) { b = j; break; } } }
   if (b < 0) throw erroLinha(txt, a, "falta fechar a chave “}” do bloco da pose.");
   const corpo = limpo.slice(a + 1, b), base = a + 1, valores = {}, partes = new Set();
+  let flex = null;
   const ITEM = /^(["']?)([A-Za-z_$][\w$]*)\1\s*:\s*([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)$/;
   let ini = 0;
   for (const pedaco of corpo.split(",")) {
@@ -133,6 +137,8 @@ function lerCodigoDePose(texto) {
     const m = ITEM.exec(item);
     if (!m) throw erroLinha(txt, pos, "não entendi “" + item.split(/\s+/).slice(0, 3).join(" ") + "”. Use nome: número, separados por vírgula.");
     const k = chaveInterna(m[2]);
+    /* perfil de flexibilidade (0 normal · 1 atleta · 2 ginasta · 3 contorcionista): vale antes dos ângulos */
+    if (k === "flex" || m[2] === "flexibilidade") { flex = Math.max(0, Math.min(3, Math.round(Number(m[3])))); continue; }
     if (!POSEKEYS.has(k)) {
       const sug = Object.keys(ALIAS).filter(x => POSEKEYS.has(ALIAS[x]) && x.toLowerCase().startsWith(m[2].toLowerCase().slice(0, 4))).slice(0, 4);
       throw erroLinha(txt, pos, "“" + m[2] + "” não é um ângulo de pose." + (sug.length ? " Talvez: " + sug.join(", ") + "." : ""));
@@ -140,12 +146,14 @@ function lerCodigoDePose(texto) {
     valores[k] = Number(m[3]); partes.add(parteDaChave(k));
   }
   if (!Object.keys(valores).length) throw new Error("O bloco da pose não tem nenhum ângulo.");
+  /* a flexibilidade viaja junto dos valores (chave flex), para quem aplica ajustar a faixa antes */
+  if (flex !== null) valores.flex = flex;
   return { nome, valores, partes: [...partes] };
 }
 /* recorte de um conjunto de valores para algumas partes */
 function filtrarPartes(valores, partes) {
   const sel = partesPedidas(partes); if (!sel) return { ...valores };
-  const o = {}; Object.entries(valores).forEach(([k, v]) => { if (sel.has(parteDaChave(k))) o[k] = v; }); return o;
+  const o = {}; Object.entries(valores).forEach(([k, v]) => { if (k === "flex" || sel.has(parteDaChave(k))) o[k] = v; }); return o;
 }
 /* troca esquerda ↔ direita (para aplicar uma pose de mão direita na esquerda, por exemplo) */
 const NEGA_ESPELHO = /^(headYaw|headRoll|neckSide|neckTwist|spineSide|spineTwist|lumSide|lumTwist|thoSide|thoTwist|pelvisSide|pelvisTwist|bodyRoll|jawSide|eyeYaw)$/;
@@ -180,7 +188,8 @@ function salvarPose(nome, valores, opts = {}) {
   if (!valores || !Object.keys(valores).length) throw new Error("Nada para salvar: a pose está vazia.");
   const lista = posesSalvas(), n0 = String(nome || "").trim() || "Pose";
   const i = lista.findIndex(p => p.nome === n0);
-  const reg = { nome: i >= 0 && opts.substituir ? n0 : nomeLivre(n0), valores: { ...valores }, criada: new Date().toISOString(), ...(opts.miniatura ? { miniatura: opts.miniatura } : {}) };
+  const tags = (Array.isArray(opts.tags) ? opts.tags : opts.tags ? [opts.tags] : []).map(t => String(t).split("/").map(x => x.trim()).filter(Boolean).join("/")).filter(Boolean).slice(0, 12);
+  const reg = { nome: i >= 0 && opts.substituir ? n0 : nomeLivre(n0), valores: { ...valores }, criada: new Date().toISOString(), ...(opts.miniatura ? { miniatura: opts.miniatura } : {}), ...(tags.length ? { tags } : {}) };
   if (i >= 0 && opts.substituir) lista[i] = reg; else lista.push(reg);
   persistirPoses(); return reg;
 }

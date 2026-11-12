@@ -5,7 +5,7 @@ import { D, clamp, distToZoom, fitFromBB, restGround, zoomToDist } from "../engi
 /* calcula zoom/deslocamento para caber o manequim inteiro (camadas visíveis) na tela, com margem */
 /* tamanho na tela: sem perspectiva muda o zoom; com perspectiva aproxima ou afasta a câmera (dolly) */
 function getZoomEff(){return P.persp?distToZoom(P):P.zoom}
-function setZoomEff(z){if(P.persp)P.camDist=+clamp(zoomToDist(P,z),4,200).toFixed(2);else P.zoom=+clamp(z,0.05,12).toFixed(3)}
+function setZoomEff(z){if(P.persp)P.camDist=+clamp(zoomToDist(P,z),4,400).toFixed(2);else P.zoom=+clamp(z,0.01,12).toFixed(3)}
 function autoFit(only){
   /* em perspectiva o contorno muda com a distância: repete até estabilizar */
   for(let it=0;it<(P.persp?3:1);it++){

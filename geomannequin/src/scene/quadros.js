@@ -299,7 +299,7 @@ const GRADES = { "1": [[1]], "2": [[1], [1]], "2h": [[1, 1]], "3": [[1], [1, 1]]
 function paginaQuadros(fotos, opts) {
   opts = opts || {};
   const PW = opts.largura || 1200, PH = opts.altura || Math.round(PW * 1.414), m = opts.margem === undefined ? 40 : opts.margem, cal = opts.calha === undefined ? 18 : opts.calha;
-  const grade = GRADES[opts.grade || ({ 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6" }[Math.min(fotos.length, 6)] || "6")] || GRADES["4"], jp = opts.leitura === "japonesa" || opts.leitura === "direita";
+  const grade = Array.isArray(opts.grade) ? opts.grade : GRADES[opts.grade || ({ 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6" }[Math.min(fotos.length, 6)] || "6")] || GRADES["4"], jp = opts.leitura === "japonesa" || opts.leitura === "direita";
   const porPag = grade.reduce((s, l) => s + l.length, 0), paginas = [];
   for (let p0 = 0; p0 < fotos.length; p0 += porPag) {
     const fs = fotos.slice(p0, p0 + porPag), alt = (PH - 2 * m - cal * (grade.length - 1)) / grade.length; let s = "", k = 0;
@@ -311,7 +311,7 @@ function paginaQuadros(fotos, opts) {
         const f = fs[k++]; if (!f) return; const y = m + li * (alt + cal), id = "q" + (p0 + k);
         /* o quadro cobre o painel (corta o que sobra): pelo centro, ou por cima quando o quadro é mais alto que o painel (cabeças) */
         const vb = /viewBox="([^"]+)"/.exec(f.svg)[1].split(" ").map(Number), alto = vb[3] / vb[2] > alt / c.w;
-        s += imagemSvg(f.svg, c.x, y, c.w, alt, opts.preparar, alto ? "xMidYMin slice" : "xMidYMid slice");
+        s += f.png ? '<image x="' + c.x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + c.w.toFixed(2) + '" height="' + alt.toFixed(2) + '" preserveAspectRatio="' + (alto ? "xMidYMin slice" : "xMidYMid slice") + '" href="' + f.png + '"/>' : imagemSvg(f.svg, c.x, y, c.w, alt, opts.preparar, alto ? "xMidYMin slice" : "xMidYMid slice");
         s += '<rect x="' + c.x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + c.w.toFixed(1) + '" height="' + alt.toFixed(1) + '" fill="none" stroke="#111" stroke-width="4"/>';
         /* balões de fala (a partir de "// fala:") */
         (f.falas || []).slice(0, 3).forEach((fl, j) => {

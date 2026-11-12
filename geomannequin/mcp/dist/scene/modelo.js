@@ -112,6 +112,8 @@ function atualizarApoios(){
     working.delete(o);done.add(o);
   }
   SCN.objetos.forEach(moveChild);
+  // 3) Cordas e o que mais depende das mãos (registrado pelos módulos).
+  (SCN.aposApoios||[]).forEach(f=>{try{f()}catch(e){}});
 }
 function sceneList(exp,exportarReferencias=!!exp){
   atualizarApoios();
@@ -119,7 +121,7 @@ function sceneList(exp,exportarReferencias=!!exp){
   const g0=restGround(SCN.list[0].params),cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const bg=exp?"#ffffff":cssHex("var(--paper)");
   const lst=SCN.list.map(it=>{const pal=palOf(it,exp),pr={};for(const k in pal)pr[k]=exp?pal[k]:cssHex(pal[k]);
-    return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
+    return {p:Object.assign({},it.params,cam,{_cache:it.cache,_id:it.id,_nome:it.name,_congelado:!!it.congelado,_oculto:!!it.oculto,_ordem:it.ordem||0,_ativo:it===SCN.list[SCN.active],wy:g0-restGround(it.params),bg}),pal:pr,gy:g0}});
   /* objetos da cena (banco, cadeira, parede…), o chão e as cores neutras deles */
   lst.forEach((o,i)=>{
     const refs=SCN.list[i].referencias;
@@ -156,7 +158,7 @@ function setActive(i){
   SCN.active=i;P=SCN.list[i].params;Object.assign(P,cam);
   refreshScene();syncControls();render();
 }
-const MAXM=12;
+const MAXM=200;
 function addInst(params,name,silent){
   if(SCN.list.length>=MAXM)throw new Error("Limite de "+MAXM+" manequins na cena.");
   let mx=-1e9;SCN.list.forEach(it=>mx=Math.max(mx,it.params.wx));

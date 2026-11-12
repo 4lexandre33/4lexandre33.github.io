@@ -233,6 +233,7 @@ export function iniciarAjuda(){
   
   m.posicao(x, z) · m.mover(dx, dz) · m.girar(graus) · m.renomear("nome")
   m.pose({joelhoEsq: 60, ...}) · m.poseRapida("caminhando") · m.corpo("musculoso" | {musculo: 0.8})
+  m.descanso() — volta à pose de descanso em pé (mantém biotipo, rosto e posição) · m.descanso({rosto: true}) · cena.descanso() — todos
   m.cor("#preenchimento", "#contorno") · m.cor() = automática · m.copiar() · m.remover() · m.info()
   
   NOVO: camera.costas("Ana",{referencia:"tronco",area:"cabeca",elevacao:0}) — vista das costas do tronco
@@ -244,6 +245,10 @@ export function iniciarAjuda(){
   Estilo: cena.estilos() · cena.estilo("lapis") · cena.estiloAtual()
   Camadas: cena.camadasVisuais() · cena.camadaVisual("grid",false) · cena.camadaVisual("eyes",true)
   Arquivos: cena.exportarSVG() · cena.exportarOBJ({modelo:"v4"}) · cena.exportarJSON() · cena.importarJSON(json)
+  IA sem MCP (Gemini, ChatGPT, Claude): cena.manualIA() — manual completo de poses · cena.estadoIA() — como cada parte do corpo está (texto; {json:true} = objeto)
+    cena.pacoteIA("o que eu quero") — manual + estado + pedido para colar na IA · m.estadoIA() — só este manequim · painel “Usar com uma IA” embaixo do editor
+  Efeitos: padrão em preto e branco; {colorido: true} liga a cor · {nivel: 1..5} força · cena.efeitos.colorir(false) · cena.efeitos.tamanho(id) → alturas do corpo
+    onomatopeia em katakana: cena.efeito("onomatopeia", {texto: "ドッ"}) · chão (cratera, círculo, rachaduras) fica abaixo dos manequins
   Exportação navegador: await cena.exportarPNG({escala:2}); await cena.baixar("cena.png",png,"image/png")
   Parâmetros: m.parametro("headYaw",45) · m.parametros() · camera.parametro("lens",85) · camera.parametros()
   Câmera sem alterar a ativa: camera.capturar("Ana",{lado:"costas"}) · camera.capturarVistas("Ana")
@@ -353,6 +358,14 @@ export function iniciarAjuda(){
   cena.descrever("manequim 1 sentado, manequim 2 deitado ao longo do eixo x, câmera no eixo z, elevação alta")
   camera.eixo("x" | "-x" | "z" | "-z" | "y") · camera.elevacao("alta" | "muito alta" | "média" | "olhos" | "baixa" | "muito baixa" | graus) · camera.plano("plongée" | "contra-plongée" | "de cima")
   tema("claro" | "escuro" | "sistema") · log(...)
+  Carregar e segurar: cena.objeto("pneu"|"saco"|"mala"|"vigaI"|"carrinhoDeMao"|… 42 tipos) · m.segurarComo("Pneu", "virarPneu", {mao, orientacao: "empe"|"deitado"|"diagonal"}) · cena.pegadas() lista as 36 ações
+  Dois manequins: cena.interagir("Ana", "Leo", "abracoFrente"|"apertoDeMao"|"apoiandoFerido"|…) · cena.interacoes()
+  Ação de luta: m.acao("socoCarregado", {lado, efeitos: true, rosto: true, colorido}) · cena.acoes() · m.molejo(0.6, semente) · poseRapida(nome, {molejo: 0})
+  Funções narrativas: cena.poses.arvore() · cena.poses.porTag("Combate/Ataque") · cena.poses.etiquetar("Minha pose", ["Social/Afeto"])
+  Muitos: cena.grade({n: 40, colunas: 8, espacamento: 6, x, z, poses: [...], olharPara: [x, z]}) · cena.arranjo("circulo"|"fila"|"arco"|"multidao", {...}) · cena.olharPara("todos"|"grupo:Nome", [x, z]) · cena.registro() · cena.separar() · cena.enquadrarTudo()
+  Planta (imagem colorida): cena.dePlanta(cena.lerPlanta({w, h, data}), {linha: 0}) — no Blocking: "Planta → cena"
+  Corpo: m.corpo("crianca"|"menino"|"menina") · m.pose({tamanho: 0.7, cinta: 1}) · rosto: eyeFocus (pupila minúscula), expressões iraFocada e focoTotal
+  Efeito por camadas: cena.efeitos.criar([{forma: "fita", caminho: {tipo: "espiral", voltas: 2}, traco: {largura: 2, perfil: "fuso"}}], {em: "maoDir", estilo: "cel"}) · .prontos() · .construtor()
   
   Poses rápidas: ${todasPoses().join(", ")}
   Tipos corporais: ${Object.keys(BODIES).join(", ")}

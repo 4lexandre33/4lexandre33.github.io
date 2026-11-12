@@ -487,9 +487,9 @@ const cena={
     if(P.persp){P.camDist=clamp(raio*2.4,8,400);
       for(let k=0;k<6;k++){const c={...SCN.list[0].params,...P};let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
         for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
-        const f=Math.max((x1-x0)/(W*0.9),(y1-y0)/(H*0.86)),Sc=Math.max(0.01,effScale(c));P.panX=+(P.panX-((x0+x1)/2-W/2)/Sc).toFixed(3);P.panY=+(P.panY+((y0+y1)/2-H/2)/Sc).toFixed(3);P.camDist=clamp(P.camDist*Math.max(0.6,Math.min(1.8,f)),6,400)}
+        const f=Math.max((x1-x0)/(W*0.9),(y1-y0)/((op.alturaTela||H*0.86))),Sc=Math.max(0.01,effScale(c));P.panX=+(P.panX-((x0+x1)/2-W/2)/Sc).toFixed(3);P.panY=+(P.panY+((y0+y1)/2-H/2)/Sc).toFixed(3);P.camDist=clamp(P.camDist*Math.max(0.6,Math.min(1.8,f)),6,400)}
     }else{const c={...SCN.list[0].params,...P};P.zoom=1;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
-      P.zoom=clamp(Math.min(W*0.9/(x1-x0),H*0.86/(y1-y0)),0.05,12);const c2={...SCN.list[0].params,...P},Sc=Math.max(0.01,effScale(c2));let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c2,[a,b,d]);a0=Math.min(a0,t[0]);a1=Math.max(a1,t[0]);b0=Math.min(b0,t[1]);b1=Math.max(b1,t[1])}P.panX=-((a0+a1)/2-W/2)/Sc;P.panY=((b0+b1)/2-H/2)/Sc}
+      P.zoom=clamp(Math.min(W*0.9/(x1-x0),(op.alturaTela||H*0.86)/(y1-y0)),0.01,12);const c2={...SCN.list[0].params,...P},Sc=Math.max(0.01,effScale(c2));let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c2,[a,b,d]);a0=Math.min(a0,t[0]);a1=Math.max(a1,t[0]);b0=Math.min(b0,t[1]);b1=Math.max(b1,t[1])}P.panX=-((a0+a1)/2-W/2)/Sc;P.panY=((b0+b1)/2-H/2)/Sc}
     cena.marcarEstado&&0;return cena},
   registro(o){return registroCena(o||{})},
   sobrepostos(){return sobreposicoes().map(([a,b,d])=>({a:SCN.list[a].name,b:SCN.list[b].name,sobra:Math.round(d*11.4)+" cm"}))},
@@ -1123,14 +1123,14 @@ const camera={
   posicao(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;num(x,"x");num(y,"y");num(z,"z");
     const dx=x-P.tx,dy=y-P.ty,dz=z-P.tz,d=Math.hypot(dx,dy,dz);if(d<0.5)throw new Error("A câmera está colada no alvo; afaste-a.");
     P.yaw=Math.round(-Math.atan2(dx,dz)/D*10)/10;P.pitch=clamp(Math.round(-Math.atan2(dy,Math.hypot(dx,dz))/D*10)/10,-70,70);P.roll=0;
-    P.camDist=clamp(d,4,200);P.zoom=clamp(6.2/d,0.05,3);P.panX=0;P.panY=0;return camera},
-  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-30,30,"x");camSet("ty",y,-20,20,"y");camSet("tz",z,-30,30,"z");P.panX=0;P.panY=0;return camera},
+    P.camDist=clamp(d,4,400);P.zoom=clamp(6.2/d,0.01,3);P.panX=0;P.panY=0;return camera},
+  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-200,200,"x");camSet("ty",y,-20,60,"y");camSet("tz",z,-200,200,"z");P.panX=0;P.panY=0;return camera},
   girar(yaw,pitch,roll){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
   zoom(z){setZoomEff(num(z,"zoom"));return camera},
   perspectiva(on,dist){P.persp=on===false||on===0?0:1;if(dist!==undefined)camSet("camDist",dist,4,200,"distância");return camera},
   distancia(d){camSet("camDist",d,4,200,"distância");return camera},
   /* lente em mm: 18–35 grande-angular (perspectiva forte), 50 normal, 85–200 tele (achata). Mantém o tamanho do alvo na tela. */
-  lente(mm,manterTamanho){const z=distToZoom(P);camSet("lens",mm,18,200,"lente");if(manterTamanho!==false)P.camDist=clamp(zoomToDist(P,z),4,200);return camera},
+  lente(mm,manterTamanho){const z=distToZoom(P);camSet("lens",mm,18,200,"lente");if(manterTamanho!==false)P.camDist=clamp(zoomToDist(P,z),4,400);return camera},
   /* zoom óptico (a câmera fica parada; só a lente muda): camera.zoomLente(85) em mm, ou camera.zoomLente("2x") / ("0.5x") */
   zoomLente(v){const t=String(v).trim().replace(",",".");if(/x$/i.test(t)){const k=parseFloat(t);if(!(k>0))throw new Error("Zoom: use mm (18–200) ou um fator como \"2x\".");zoomFator(k)}else zoomLente(num(+t,"lente"));return camera},
   /* campo de visão horizontal em graus (abre ou fecha o "cone" sem mover a câmera) */
@@ -1172,15 +1172,15 @@ const camera={
       /* plano geral/inteiro: o enquadramento automático só com esses manequins, com folga no geral */
       const ocultos=SCN.list.map(x=>x.oculto);SCN.list.forEach(x=>{x.oculto=!alvos.includes(x)});
       try{autoFit()}finally{SCN.list.forEach((x,i)=>{x.oculto=ocultos[i]})}
-      if(f<0){const k=f===-2?0.45:0.7;if(P.persp)P.camDist=+clamp(P.camDist/k,4,200).toFixed(2);else P.zoom=+clamp(P.zoom*k,0.05,3).toFixed(3);P.panX*=k;P.panY*=k}
+      if(f<0){const k=f===-2?0.45:0.7;if(P.persp)P.camDist=+clamp(P.camDist/k,4,400).toFixed(2);else P.zoom=+clamp(P.zoom*k,0.05,3).toFixed(3);P.panX*=k;P.panY*=k}
       return camera}
     const it=alvos[0],po=pMundo(it),os=ossosDoCorpo(po),M=paraMundo(po),cr=os.ossos.find(x=>x.nome==="crânio"),cab=M(cr.a),pel=M(os.juntas.find(x=>x.nome==="pelve").P);
     const Hs=1.0-restGround(SCN.list[0].params),hreg=f*Hs,topo=cab[1]+cr.r*1.05,b=Math.min(1,Math.max(0,(f-0.3)/0.7));
     /* centro: perto da cabeça nos planos fechados; no meio do corpo nos abertos */
     const c=[cab[0]+(pel[0]-cab[0])*b,topo-hreg/2,cab[2]+(pel[2]-cab[2])*b];
-    P.tx=clamp(c[0],-30,30);P.ty=clamp(c[1],-20,20);P.tz=clamp(c[2],-30,30);
+    P.tx=clamp(c[0],-200,200);P.ty=clamp(c[1],-20,60);P.tz=clamp(c[2],-200,200);
     const S=(SCN.recorte?SCN.recorte.h:H)*0.86/(hreg*1.08);
-    if(P.persp){let d=(W/2)*(P.lens||50)/(18*S);if(d<6){d=6;P.lens=Math.round(clamp(18*S*d/(W/2),18,200))}P.camDist=+clamp(d,4,200).toFixed(2)}
+    if(P.persp){let d=(W/2)*(P.lens||50)/(18*S);if(d<6){d=6;P.lens=Math.round(clamp(18*S*d/(W/2),18,200))}P.camDist=+clamp(d,4,400).toFixed(2)}
     else P.zoom=+clamp(S/effScale(Object.assign({},P,{persp:0,zoom:1})),0.05,3).toFixed(3);
     /* o alvo fica no centro da foto (o centro de projeção do palco fica acima do meio) */
     const Sx=effScale(P);P.panX=(W/2-CX)/Sx;P.panY=(CY-H/2)/Sx;

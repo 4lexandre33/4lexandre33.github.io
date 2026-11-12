@@ -33,6 +33,8 @@ export * from "./comandos.js";
 export * from "./biblioteca.js";
 export * from "./ajuda.js";
 export * from "./quadros.js";
+export * from "./name-dsl.js";
+export * from "./manual-name.js";
 
 iniciarModelo();
 iniciarModos();

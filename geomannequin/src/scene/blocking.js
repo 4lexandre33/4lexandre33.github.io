@@ -47,7 +47,7 @@ function direcaoPara(pos, alvo) {
 }
 function aplicarCameraBlk(pos, alvo) {
   const r = direcaoPara(pos, alvo); if (r.d < 1) return false;
-  P.tx = clamp(alvo[0], -30, 30); P.ty = clamp(alvo[1], -20, 20); P.tz = clamp(alvo[2], -30, 30);
+  P.tx = clamp(alvo[0], -200, 200); P.ty = clamp(alvo[1], -20, 60); P.tz = clamp(alvo[2], -200, 200);
   P.yaw = Math.round(r.yaw * 10) / 10; P.pitch = clamp(Math.round(r.pitch * 10) / 10, -89, 89); P.roll = 0;
   if (P.persp) P.camDist = Math.round(clamp(r.d, 4, 200) * 100) / 100; else P.camDist = Math.round(clamp(r.d, 4, 200) * 100) / 100;
   return true;

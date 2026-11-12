@@ -329,6 +329,9 @@ function desenharObjeto(o, p, pal0, g0, L) {
   let sombra = "";
   for (const b of bs) {
     const fs = [], g = { b, fs, cil: null };
+    /* atrás da câmera (perspectiva): peças redondas que cruzam o olho não são desenhadas; caixas são cortadas no plano perto */
+    const zPerto = p.persp ? ci.d * 0.79 : Infinity; /* a projeção satura a 0,2·d do olho: corta antes disso */
+    if (p.persp && (b.esf || b.toro || b.cil)) { const cz = ci.cs(b.c)[2], rr = b.cil ? Math.max(b.r || 0, (b.h && b.h[1]) || 0) : Math.max(...[].concat(b.r || 0)); if (cz + rr > zPerto) continue; }
     if (b.esf || b.toro) { g.malha = malhaFaces(b, ci, LD, fs); if (b.cor) fs.forEach(f => f.ink = b.cor); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(g.malha.V, Lw, g0, ci, pal); grupos.push(g); faces.push(...fs); continue; }
     if (b.cil) { g.cil = cilindroFaces(b, ci, LD, fs); if (b.cor) fs.forEach(f => f.ink = b.cor); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(cilPontos(b), Lw, g0, ci, pal); grupos.push(g); faces.push(...fs); continue; }
     const C = cantos(b), Cc = C.map(ci.cs), T = Cc.map(ci.tela);
@@ -343,11 +346,14 @@ function desenharObjeto(o, p, pal0, g0, L) {
       const olho = p.persp ? [-cen[0], -cen[1], ci.d - cen[2]] : [0, 0, 1];
       if (n[0] * olho[0] + n[1] * olho[1] + n[2] * olho[2] <= 1e-6) return;
       const lum = n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2];
+      if (f.some(i => Cc[i][2] > zPerto)) { /* corta a face no plano perto da câmera */
+        const P0 = f.map(i => Cc[i]), Q = []; for (let k = 0; k < P0.length; k++) { const A = P0[k], B = P0[(k + 1) % P0.length], ia = A[2] <= zPerto, ib = B[2] <= zPerto; if (ia) Q.push(A); if (ia !== ib) { const t = (zPerto - A[2]) / (B[2] - A[2]); Q.push([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, zPerto]); } }
+        if (Q.length < 3) return; fs.push({ pts: Q.map(ci.tela), z: Math.min(cen[2], zPerto), lum }); return; }
       fs.push({ pts: f.map(i => T[i]), z: cen[2], lum });
     });
     grupos.push(g); faces.push(...fs);
     /* sombra no chão: cantos projetados ao longo da luz, casca convexa */
-    if (L.shadow && Lw[1] > 0.08) {
+    if (L.shadow && Lw[1] > 0.08 && !Cc.some(c => c[2] > zPerto)) {
       const pts = C.map(w => { const t = (w[1] - g0) / Lw[1]; return ci.tela(ci.cs([w[0] - Lw[0] * t, g0, w[2] - Lw[2] * t])); });
       const hull = cascaConvexa(pts.map(q => [q[0], q[1]]));
       if (hull.length > 2) sombra += '<path d="M' + hull.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + pal.shade3 + ';stroke:none;opacity:.34"/>';
