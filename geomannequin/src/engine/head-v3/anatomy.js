@@ -51,10 +51,15 @@ export function spline(knots,t){
 }
 export const normalizedHeight=(y,S)=>clamp((1-y)/(1-S.chinY),0,1);
 export const yAt=(v,S)=>1-v*(1-S.chinY);
+/* Escala própria da cabeça V3/V5 (pedido do usuário): com o biotipo médio (headScale/cranialDepth
+   em 1×, a referência), a V3 e a V5 passam a desenhar com escala anatômica 0.940× e nuca/occipital
+   0.850× — cabeça um pouco menor e nuca mais curta que o modelo V1/V4. Os outros biotipos continuam
+   variando em torno dessa base, igual já faziam. Só entra aqui (não afeta V1, V2 ou V4). */
+const V35_ESCALA=0.940,V35_NUCA=0.850;
 export function sectionV3(v,p,S){
  const fat=clamp(p.fat||0,0,1),fem=clamp(p.fem||0,0,1),
    muscle=clamp(p.muscle||0,0,1);
- const scale=clamp(p.headScale??1,.9,1.1),skull=clamp((p.skull??.82)/.82,.73,1.22);
+ const scale=clamp(p.headScale??1,.9,1.1)*V35_ESCALA,skull=clamp((p.skull??.82)/.82,.73,1.22);
  const jaw=clamp((p.jaw??.6)/.6,.7,1.4),chin=clamp((p.chin??.27)/.27,.55,1.55);
  const middle=1+.030*fat-.012*fem+.014*muscle,
    jawW=mix(1,jaw,smooth((v-.70)/.16)),
@@ -62,6 +67,6 @@ export function sectionV3(v,p,S){
  const width=Math.max(.005,spline(WIDTH_V3,v)*skull*middle*jawW*chinW*scale);
  const front=spline(FRONT_V3,v)*scale*(1+.012*fat)+
    (v>.85?(.80-(p.chinProj??.80))*.58*smooth((v-.85)/.15):0);
- const back=spline(BACK_V3,v)*scale*(v<.79?clamp(p.cranialDepth??1,.90,1.12):1);
+ const back=spline(BACK_V3,v)*scale*(v<.79?clamp(p.cranialDepth??1,.90,1.12)*V35_NUCA:1);
  return {width,front,back};
 }

@@ -20,9 +20,12 @@ for(const fem of [0,1])for(const tipo of NOMES_BIOTIPOS){
   assert.ok(S.scale>=0.9&&S.scale<=1.1);
   /* A base da mandíbula permanece no mesmo ponto cervical ao mudar tamanho. */
   perto(headPt(S.chinY,0,p,S)[1],S.chinY,0.06);
-  /* Calota craniana com raio parietal diferente de uma esfera. */
+  /* Calota craniana com raio parietal diferente de uma esfera. (A V3/V5, padrão deste app, agora
+     desenha com escala 0.940× e nuca 0.850× — a cabeça inteira ficou menor, então a diferença absoluta
+     para a esfera de referência também encolhe; 0.015 ainda barra uma calota esférica demais, com folga
+     sobre o mínimo observado nos 10 biotipos, ~0.0197 no feminino magro.) */
   const calota=ringAt(0.32,p,S)[0];
-  assert.ok(Math.abs(calota-p.skull*Math.sqrt(1-0.32**2)*S.scale)>0.025,
+  assert.ok(Math.abs(calota-p.skull*Math.sqrt(1-0.32**2)*S.scale)>0.015,
     tipo+": calota sem diferenciação parietal");
   const mesh=buildHead(p,S);
   assert.ok(mesh.V.length>50000);

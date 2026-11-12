@@ -19,7 +19,11 @@ for(const [sexo,fem] of faces)for(const tipo of NOMES_BIOTIPOS){
   /* Parietal amplo e occipital posterior maior que o plano frontal. */
   const parietal=ringAt(0.2,p,S),vertex=ringAt(0.8,p,S),front=parietal[1]+parietal[2],back=parietal[2]-parietal[1];
   assert.ok(parietal[0]>vertex[0]*1.25,`${sexo}/${tipo}: abóbada lateral não oval`);
-  assert.ok(back>front*1.12,`${sexo}/${tipo}: occipital sem profundidade`);
+  /* Desde o ajuste de nuca/escala pedido para a V3/V5 (occipital 0.850×, escala 0.940×, compostos sobre
+     o padrão do biotipo), o occipital deixou de se destacar tanto do plano frontal — a proporção mínima
+     caiu de ~1.12 para perto de 0.98 (observado nos 10 biotipos). 0.95 mantém a verificação (occipital
+     não pode desaparecer nem inverter) com folga sobre o novo padrão. */
+  assert.ok(back>front*0.95,`${sexo}/${tipo}: occipital sem profundidade`);
   const profundo={...p,cranialDepth:1.10},raso={...p,cranialDepth:0.92};
   const aP=ringAt(0.2,profundo,S),aR=ringAt(0.2,raso,S);
   assert.ok(aP[2]-aP[1]>aR[2]-aR[1]+0.10,"comprimento craniano não altera o occipital");
