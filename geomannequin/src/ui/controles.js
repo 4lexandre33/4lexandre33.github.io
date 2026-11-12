@@ -5,7 +5,7 @@ import { P, WORLDK, SCN } from "../scene/modelo.js";
 import {COL} from "../scene/colisoes.js";
 import {CONTATO_V2,limitarPropostaV2} from "../scene/contato-v2.js";
 import { FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes } from "../scene/poses.js";
-import { aplicarBiotipo, transitarSexo } from "../scene/biotipos.js";
+import { aplicarBiotipo, transitarSexo, aplicarCrianca, CRIANCA } from "../scene/biotipos.js";
 import { fmt } from "./exportar.js";
 import { render, setQuick, setSettle, settle } from "./palco.js";
 import { L, setMode, setPreset } from "../scene/modos.js";
@@ -127,6 +127,9 @@ export function iniciarControles(){
   document.querySelectorAll("[data-face]").forEach(b=>{
     b.addEventListener("click",()=>{
       const face=b.dataset.face;
+      /* Infantil = criança inteira (corpo, tamanho e rosto); voltar a adulto restaura o biotipo médio */
+      if(face==="infantil"){aplicarCrianca(P);["skull","jaw","chin","face","chinProj","brow","nose","lips","eyeSize","browW","earSize","adam"].forEach(k=>P[k]=DEF[k]);Object.assign(P,FACES.infantil,{shW:CRIANCA.shW,neck:CRIANCA.neck,neckLen:CRIANCA.neckLen});syncControls();render();return}
+      if(P._biotipo==="crianca"&&face!=="infantil")aplicarBiotipo(P,"medio",face==="feminino"?1:face==="masculino"?0:P.fem);
       if(face==="masculino"||face==="feminino")transitarSexo(P,face==="feminino"?1:0);
       /* Restaurar só os traços faciais, sem apagar o biotipo nem os ajustes de cintura/quadril. */
       ["skull","jaw","chin","face","chinProj","brow","nose","lips","eyeSize","browW","earSize","adam"].forEach(k=>P[k]=DEF[k]);

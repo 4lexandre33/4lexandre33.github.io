@@ -12,6 +12,7 @@ import { legDims } from "./pernas.js";
 import { CX, CY } from "./matematica.js";
 import { makeXf } from "./camera.js";
 import { effScale } from "./projecao.js";
+import { restGround } from "./cena.js";
 
 /* nomes das partes, para as mensagens */
 const PARTES = {
@@ -24,18 +25,22 @@ const MEMBRO = { bracoE: ["braco", 1], antebracoE: ["braco", 1], maoE: ["braco",
   coxaE: ["perna", 1], pernaE: ["perna", 1], peE: ["perna", 1], coxaD: ["perna", -1], pernaD: ["perna", -1], peD: ["perna", -1] };
 
 /* corpo → mundo: giro no chão (wRot) e posição (wx, wy, wz) */
+/* tamanho do corpo (p.tamanho): escala em volta do chão local (os pés ficam no chão) */
+function tamanhoDe(p) { const k = Math.max(0.4, Math.min(1.6, p.tamanho || 1)); return k === 1 ? null : { k, g: restGround(p) }; }
 function paraMundo(p) {
-  const wr = (p.wRot || 0) * Math.PI / 180, c = Math.cos(wr), s = Math.sin(wr), wx = p.wx || 0, wy = p.wy || 0, wz = p.wz || 0;
+  const wr = (p.wRot || 0) * Math.PI / 180, c = Math.cos(wr), s = Math.sin(wr), wx = p.wx || 0, wy = p.wy || 0, wz = p.wz || 0, T = tamanhoDe(p);
+  if (T) return v => { const x = v[0] * T.k, y = T.g + (v[1] - T.g) * T.k, z = v[2] * T.k; return [x * c + z * s + wx, y + wy, -x * s + z * c + wz]; };
   return v => [v[0] * c + v[2] * s + wx, v[1] + wy, -v[0] * s + v[2] * c + wz];
 }
 function doMundo(p) {
-  const wr = (p.wRot || 0) * Math.PI / 180, c = Math.cos(wr), s = Math.sin(wr), wx = p.wx || 0, wy = p.wy || 0, wz = p.wz || 0;
+  const wr = (p.wRot || 0) * Math.PI / 180, c = Math.cos(wr), s = Math.sin(wr), wx = p.wx || 0, wy = p.wy || 0, wz = p.wz || 0, T = tamanhoDe(p);
+  if (T) return w => { const x = w[0] - wx, z = w[2] - wz; return [(x * c - z * s) / T.k, T.g + (w[1] - wy - T.g) / T.k, (x * s + z * c) / T.k]; };
   return w => { const x = w[0] - wx, z = w[2] - wz; return [x * c - z * s, w[1] - wy, x * s + z * c]; };
 }
 /* cápsulas de um manequim (p com wx, wy, wz, wRot) */
 function capsulas(p) {
   const S = shape(p), ch = chainSetup(p, S), F = ch.F, B = F.B, M = paraMundo(p), out = [];
-  const cap = (nome, a, b, r) => out.push({ nome, a: M(a), b: M(b), r });
+  const kT = Math.max(0.4, Math.min(1.6, p.tamanho || 1)), cap = (nome, a, b, r) => out.push({ nome, a: M(a), b: M(b), r: r * kT });
   const zc = -0.46;
   cap("cabeca", applyA(ch.A3, [0, 0.25, 0.1]), applyA(ch.A3, [0, -0.25, 0.15]), 0.95 * (p.skull || 0.82) / 0.82);
   cap("pescoco", applyA(ch.A3, [0, -0.9, -0.1]), applyA(ch.A2, [0, F.yJ + 0.3, zc]), 0.42 * (p.neck || 1));

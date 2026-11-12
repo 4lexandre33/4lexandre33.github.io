@@ -87,6 +87,8 @@ const EXPRESSOES={
   sorrisoManiaco:{smile:1,mouthCornerL:0.4,mouthCornerR:0.4,teethShow:1,mouthWide:1,eyeWide:0.75,pupilSize:-0.85,eyeShine:-0.6,browIn:0.55,browUp:0.2,browSharp:0.6,lidLoL:0.2,lidLoR:0.2,wrinkleNasolabial:0.7,wrinkleCheek:0.4},
   surpresaTotal:{jawOpen:0.75,mouthRound:0.6,browUp:1,eyeWide:1,pupilSize:-0.9,eyeShine:-0.2,wrinkleForehead:0.7},
   olharVazio:{eyeShine:-1,eyeLid:0.3,smile:-0.15,browIn:-0.2,pupilSize:-0.2,eyePitch:-0.25},
+  iraFocada:{eyeFocus:1,eyeWide:0.55,browIn:1,browUp:-0.7,browSharp:1,browThick:0.5,wrinkleFrown:1,wrinkleNoseBridge:0.6,teethClench:0.9,lipPress:0.3,smile:-0.35,angerVein:0.8,nostrilFlare:0.6},
+  focoTotal:{eyeFocus:0.9,eyeWide:0.35,browIn:0.6,browUp:-0.3,wrinkleFrown:0.7,lipPress:0.5,smile:-0.1},
   choqueComico:{eyeBlank:1,eyeWide:0.8,jawOpen:0.8,browUp:1,mouthWobble:0.6,sweatDrop:1},
   nervoso:{browWave:1,browIn:-0.5,browUp:0.3,mouthWobble:1,smile:0.15,sweatDrop:0.9,eyeWide:0.3,pupilSize:-0.4},
   mordendoLabio:{lipBite:1,smile:0.25,eyeLid:0.3,blush:0.5,browIn:-0.25,eyeYaw:0.4,eyePitch:-0.2},
@@ -102,7 +104,7 @@ const EXPRESSOES={
 const NOMES_EXPRESSOES={neutra:"Neutra",alegria:"Alegria",riso:"Riso",surpresa:"Surpresa",raiva:"Raiva",tristeza:"Tristeza",choro:"Choro",medo:"Medo",grito:"Grito",
   vergonha:"Vergonha",sono:"Sono",desconfianca:"Desconfiança",piscando:"Piscando",nojo:"Nojo",desprezo:"Desprezo",determinacao:"Determinação",malicia:"Malícia",
   confusao:"Confusão",choque:"Choque",tedio:"Tédio",dor:"Dor",cansaco:"Cansaço",admiracao:"Admiração",culpa:"Culpa",orgulho:"Orgulho",pensativo:"Pensativo",alivio:"Alívio",
-  sorrisoManiaco:"Sorriso maníaco",surpresaTotal:"Surpresa total",olharVazio:"Olhar vazio",choqueComico:"Choque cômico",nervoso:"Nervoso",mordendoLabio:"Mordendo o lábio",provocando:"Provocando",furia:"Fúria",esforco:"Esforço",encantado:"Encantado",sombrio:"Sombrio",determinadoLuta:"Determinado (luta)",gritoDeGuerra:"Grito de guerra"};
+  sorrisoManiaco:"Sorriso maníaco",surpresaTotal:"Surpresa total",olharVazio:"Olhar vazio",choqueComico:"Choque cômico",nervoso:"Nervoso",mordendoLabio:"Mordendo o lábio",provocando:"Provocando",furia:"Fúria",esforco:"Esforço",encantado:"Encantado",sombrio:"Sombrio",determinadoLuta:"Determinado (luta)",gritoDeGuerra:"Grito de guerra",iraFocada:"Ira focada (pupila minúscula)",focoTotal:"Foco total"};
 /* toda expressão zera corar, lágrimas e as unidades de ação que não usa, para não herdar da anterior */
 const BASE_ROSTO=["jawOpen","jawSide","smile","eyeLid","browUp","browIn","blush","tears",...AU_KEYS,...ESTADO_KEYS];
 Object.values(EXPRESSOES).forEach(e=>{for(const k of BASE_ROSTO)if(e[k]===undefined)e[k]=0});

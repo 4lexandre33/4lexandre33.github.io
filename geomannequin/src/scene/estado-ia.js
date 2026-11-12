@@ -63,7 +63,7 @@ const IA_SENTIDO = {
   cheekPuff: ["chupa as bochechas (sulco fundo sob o osso)", "infla as bochechas (segurar o ar, raiva contida, cômico)"],
   eyeWide: ["", "arregala os olhos: o branco aparece em volta da íris (susto, choque, loucura)"], irisSize: ["íris pequena (olhar duro, assustado, insano)", "íris grande (fofo, encantado, infantil)"],
   pupilSize: ["pupila minúscula (choque, medo, fúria)", "pupila enorme (encanto, paixão, escuro)"], eyeShine: ["tira o brilho do olho: olhar vazio, triste, hipnotizado, morto", "brilho extra com estrelinha (emoção, encanto, determinação)"],
-  pupilSlit: ["", "pupila em fenda vertical (felino, demônio, ameaça)"], eyeBlank: ["", "olhos brancos sem íris (choque cômico de mangá)"],
+  pupilSlit: ["", "pupila em fenda vertical (felino, demônio, ameaça)"], eyeBlank: ["", "olhos brancos sem íris (choque cômico de mangá)"], eyeFocus: ["", "olho de foco/ira: todo branco com a pupila minúscula (fúria, foco extremo)"],
   browThick: ["sobrancelhas finas (delicado, elegante)", "sobrancelhas grossas (forte, bravo, cômico)"], browArch: ["sobrancelhas retas (sério, frio)", "sobrancelhas bem arqueadas (expressivo, surpreso, arrogante)"],
   browSharp: ["", "quebra angular no meio da sobrancelha (expressão dura, determinação, vilão)"], browWave: ["", "sobrancelhas tremidas em onda (nervoso, aflição cômica)"],
   lashLen: ["", "pontas compridas nos cílios de cima (feminino, delicado, glamour)"], lashThick: ["linha dos cílios fina (olho mais leve)", "linha dos cílios grossa (olhar marcante)"], lashLower: ["", "cílios de baixo (olho grande de mangá shoujo)"],

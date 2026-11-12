@@ -47,6 +47,7 @@ const AU = [
   ["eyeShine", "Brilho do olho: sem brilho (olhar vazio, tristeza) − / brilho extra (emoção) +", -1, 1, "olhosBrilho"],
   ["pupilSlit", "Pupila em fenda (felina, ameaça)", 0, 1, "pupilaFenda"],
   ["eyeBlank", "Olhos brancos (choque cômico de mangá: sem íris)", 0, 1, "olhosBrancos"],
+  ["eyeFocus", "Olho de foco/ira: todo branco com a pupila minúscula no meio (fúria, foco extremo, ameaça)", 0, 1, "olhoFoco"],
   /* sobrancelhas e cílios estilizados */
   ["browThick", "Sobrancelhas: finas − / grossas +", -1, 1, "sobrancelhaGrossura"],
   ["browArch", "Sobrancelhas: retas − / bem arqueadas +", -1, 1, "sobrancelhaArco"],
@@ -91,9 +92,11 @@ function rostoGeral(p) {
   return { bags: clamp(n(p.eyeBags), 0, 1), nose: clamp(n(p.noseWrinkle), 0, 1), press: clamp(n(p.lipPress), 0, 1), pout: clamp(n(p.pout), 0, 1), clench: clamp(n(p.teethClench), 0, 1),
     wide: clamp(n(p.mouthWide), -1, 1), round: clamp(n(p.mouthRound), 0, 1), lowerLip: clamp(n(p.lowerLipDown), 0, 1), shift: clamp(n(p.mouthShift), -1, 1),
     puff: clamp(n(p.cheekPuff), -1, 1), flare: clamp(n(p.nostrilFlare), 0, 1),
-    rugas: { testa: clamp(n(p.wrinkleForehead), 0, 1), franzido: clamp(n(p.wrinkleFrown), 0, 1), olhos: clamp(n(p.wrinkleCrow), 0, 1), boca: clamp(n(p.wrinkleNasolabial), 0, 1), bochecha: clamp(n(p.wrinkleCheek), 0, 1),
+    rugas: { testa: clamp(n(p.wrinkleForehead), 0, 1),
+      /* entre as sobrancelhas: as pedidas OU as que a própria expressão cria (sobrancelhas juntas e baixas = corrugador); rugasAuto: 0 desliga */
+      franzido: Math.max(clamp(n(p.wrinkleFrown), 0, 1), (p.rugasAuto ?? 1) * clamp(0.75 * Math.max(0, n(p.browIn)) + 0.35 * Math.max(0, -n(p.browUp)) * Math.max(0, n(p.browIn) + 0.3) - 0.15, 0, 0.9)), olhos: clamp(n(p.wrinkleCrow), 0, 1), boca: clamp(n(p.wrinkleNasolabial), 0, 1), bochecha: clamp(n(p.wrinkleCheek), 0, 1),
       queixo: clamp(n(p.wrinkleChin), 0, 1), nariz: clamp(n(p.wrinkleNoseBridge), 0, 1) },
-    olho: { arregalar: clamp(n(p.eyeWide), 0, 1), iris: clamp(n(p.irisSize), -1, 1), pupila: clamp(n(p.pupilSize), -1, 1), brilho: clamp(n(p.eyeShine), -1, 1), fenda: clamp(n(p.pupilSlit), 0, 1), branco: clamp(n(p.eyeBlank), 0, 1) },
+    olho: { arregalar: clamp(n(p.eyeWide), 0, 1), iris: clamp(n(p.irisSize), -1, 1), pupila: clamp(n(p.pupilSize), -1, 1), brilho: clamp(n(p.eyeShine), -1, 1), fenda: clamp(n(p.pupilSlit), 0, 1), branco: clamp(n(p.eyeBlank), 0, 1), foco: clamp(n(p.eyeFocus), 0, 1) },
     sobrancelha: { grossa: clamp(n(p.browThick), -1, 1), arco: clamp(n(p.browArch), -1, 1), quebra: clamp(n(p.browSharp), 0, 1), onda: clamp(n(p.browWave), 0, 1) },
     cilios: { comp: clamp(n(p.lashLen), 0, 1), grossa: clamp(n(p.lashThick), -1, 1), baixo: clamp(n(p.lashLower), 0, 1) },
     dentes: clamp(n(p.teethShow), 0, 1), morder: clamp(n(p.lipBite), 0, 1), tremer: clamp(n(p.mouthWobble), 0, 1), presa: clamp(n(p.fang), 0, 1), lingua: clamp(n(p.tongueOut), 0, 1),

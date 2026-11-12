@@ -120,7 +120,7 @@ function olhosAnime(ctx) {
     /* íris alta e pupila: o olhar desloca; surpresa/medo encolhem a pupila */
     const OL = rostoGeral(p).olho, CI = rostoGeral(p).cilios, escI = (1 + 0.32 * OL.iris) * (1 - 0.2 * OL.arregalar);
     const rix = 0.36 * w * escI, riy = Math.min(0.62 * (hu + hl0) * escI * (1 + 0.25 * OL.arregalar), 0.95 * hu + hl);
-    const semIris = OL.branco > 0.5, opI = 1 - Math.min(1, OL.branco * 2);
+    const semIris = OL.branco > 0.5 || OL.foco > 0.5, opI = 1 - Math.min(1, Math.max(OL.branco, OL.foco) * 2);
     const gx = G.gx(s), gy = G.gy;
     const dentro = (ex, ey) => { const q = clamp(ex / w + 0.5, 0, 1); return clamp(ey, lo(q) * 0.97, up(q) * 0.97); };
     const irisPts = (rx, ry, off) => arr(a => { const ex = gx + rx * Math.cos(a), ey = gy + ry * Math.sin(a); return E(ex, dentro(ex, ey), off); }, 0, 2 * Math.PI, 40);
@@ -150,6 +150,8 @@ function olhosAnime(ctx) {
       fillP(arr(a => { const rr = (Math.round(a / (Math.PI / 4)) % 2 === 0) ? R1 : R2; return E(sx + rr * Math.cos(a), dentro(sx, sy + rr * Math.sin(a)), 0.0164); }, 0, 2 * Math.PI, 8), "#fff", 0.95);
     }
     }
+    /* olho de foco: sem íris, só um ponto preto pequeno (e um anel fino em volta se for parcial) */
+    if (OL.foco > 0.02) { const rf = (0.07 + 0.05 * (1 - OL.foco)) * rix; fillP(arr(a => { const ex = gx + rf * Math.cos(a), ey = gy + rf * 1.1 * Math.sin(a); return E(ex, dentro(ex, ey), 0.015); }, 0, 2 * Math.PI, 14), pal.ink, Math.min(1, OL.foco * 1.6)); }
     /* linha de cílios de cima: faixa grossa, mais grossa e com ponta no canto de fora */
     const esp = q => (0.011 + 0.022 * Math.pow(clamp(q, 0, 1), 1.3)) * k * (1 + 0.55 * CI.grossa);
     fillP(arr(q => E(Xq(q), up(q), 0.017), -0.04, 1.06, 30).concat(arr(q => E(Xq(q) + 0.018 * k * Math.max(0, q - 0.85) / 0.15, up(q) + esp(q), 0.017), 1.1, -0.04, 30)), pal.ink);

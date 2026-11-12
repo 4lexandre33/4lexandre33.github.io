@@ -36,8 +36,10 @@ let CASTERS=[];
 function setCasters(v){return CASTERS=v||[]}
 function scene(p,L,pal,fast,mode){
   setLight(p.lightAz,p.lightEl);
-  {const cam=makeXf(Object.assign({},p,{wRot:0})),T=cam([(p.wx||0)-(p.tx||0),(p.wy||0)-(p.ty||0),(p.wz||0)-(p.tz||0)]);setPAN(T);setSPAN([p.panX,p.panY]);setPERSP(p.persp?Math.max(3,p.camDist||20):0)}
-  const S=effScale(p),xv0=makeXf(p),xv=v=>camPt(xv0(v)),Mx=makeMat(p),sh=shape(p),M=getMeshes(p,sh);
+  /* tamanho do corpo (criança, gigante): escala tudo em volta do ponto do chão sob o manequim (os pés continuam no chão) */
+  const TK=clamp(p.tamanho||1,0.4,1.6);
+  {const cam=makeXf(Object.assign({},p,{wRot:0})),T=cam([(p.wx||0)-(p.tx||0),(p.wy||0)-(p.ty||0)+(TK!==1?(1-TK)*restGround(p):0),(p.wz||0)-(p.tz||0)]);setPAN(T);setSPAN([p.panX,p.panY]);setPERSP(p.persp?Math.max(3,p.camDist||20):0)}
+  const S=effScale(p),xr0=makeXf(p),xv0=TK===1?xr0:v=>xr0([v[0]*TK,v[1]*TK,v[2]*TK]),xv=v=>camPt(xv0(v)),Mx=TK===1?makeMat(p):makeMat(p).map(c=>c.map(x=>x*TK)),sh=shape(p),M=getMeshes(p,sh);
   /* perspectiva: o manequim mais longe tem linhas mais finas e menos guias */
   {const qz=xv0([0,-5.5,-0.4])[2]+PAN[2],wc=PERSP>0?PERSP/Math.max(0.2*PERSP,PERSP-qz):1,hp=S*wc*14;
    setLWK(PERSP>0?clamp(Math.pow(wc,0.6),0.45,1.2):1);
@@ -63,15 +65,17 @@ function scene(p,L,pal,fast,mode){
     const fw=mv(A2.M,[0,0,1]),k=Ad.k,mid=(P,Q,o)=>[0,1,2].map(i=>(P[i]+Q[i])/2+o[i]);
     /* peitoral → braço: começa escondido dentro do tórax e entra no braço por baixo do deltoide anterior (parede da frente da axila) */
     const pa=applyA(A2,[s*0.32,F.yJ-0.88,-0.22]),pb=applyA(Aa,[-s*0.1,-0.82,0.08]);
-    const la=applyA(A2,[s*0.55,F.yJ-1.35,-0.5]),lb=applyA(Aa,[-s*0.06,-0.62,-0.1]);
+    /* grande dorsal: nasce mais baixo e por fora no tronco e entra mais longe no braço — com o braço erguido a parede de trás da axila fica uma curva contínua */
+    const ab0=Math.max(s>0?p.armAbdL:p.armAbdR,s>0?p.armFlexL:p.armFlexR),er=clamp((ab0-70)/90,0,1);
+    const la=applyA(A2,[s*(0.55+0.1*er),F.yJ-1.35-0.4*er,-0.5+0.02*er]),lb=applyA(Aa,[-s*0.06,-0.62-0.3*er,-0.1-0.02*er]);
     /* músculo esticado fica mais fino */
-    const thin=(P,Q,L0)=>Math.pow(clamp(L0/Math.hypot(P[0]-Q[0],P[1]-Q[1],P[2]-Q[2]),0.45,1),0.8);
+    const thin=(P,Q,L0)=>Math.pow(clamp(L0/Math.hypot(P[0]-Q[0],P[1]-Q[1],P[2]-Q[2]),0.62,1),0.8);
     const tp=thin(pa,pb,1.3),tl=thin(la,lb,1.25);
     /* Pontes axilares estreitas e tangentes suaves: desaparecem os recortes
        triangulares artificiais sob o deltoide em poses de braço elevado. */
     const soft=1-0.12*(p.fem||0);
     const pec=proj(bandMesh(pa,pb,mid(pa,pb,fw.map(c=>c*0.02)),0.29*k*tp*soft,0.17*k*tp*soft,fw,0.2),Mx,S);
-    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),0.32*k*tl*soft,0.23*k*tl*soft,fw,0.2),Mx,S);
+    const lat=proj(bandMesh(la,lb,mid(la,lb,fw.map(c=>-c*0.12)),(0.32+0.06*er)*k*tl*soft,(0.23+0.06*er)*k*tl*soft,fw,0.2),Mx,S);
     arms.push({s,a,f,el,d,ap,Aa,Af,Ah,Ae,hs,pec,lat});
     const wp=Ah.T,ws=xv(wp),ep=Af.T,es=xv(ep);
     handles.push({k:"wrist",s,P:wp,x:CX+S*ws[0],y:CY-S*ws[1]});
@@ -494,8 +498,10 @@ function scene(p,L,pal,fast,mode){
       lineT("dobra",arr(k=>{const ax=lerp(0.97*F.B.hip*0.93,0.04,k),y=lerp(F.yHip+0.42,F.yCr+0.06,Math.pow(k,1.25))-0.1*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,true,p,F),0.012)},0,1,24),xb,L.cel?0.85:0.58);
       lineT("divisao",arr(k=>{const ax=lerp(0.26,0.02,k),y=lerp(F.yHip+0.32,F.yHip-0.3,Math.pow(k,1.1));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,16),xb);
     });
-    /* fenda entre os glúteos */
-    lineT("dobra",arr(y=>bp(y,Math.PI,0.012),F.yHip-0.2,F.yCr+0.05,14),xb);
+    /* fenda entre os glúteos (sem a cinta) — com a cinta, o cós: uma faixa lisa em volta do quadril, como peça de manequim */
+    const cinta=clamp(p.cinta??1,0,1);
+    if(cinta<0.5)lineT("dobra",arr(y=>bp(y,Math.PI,0.012),F.yHip-0.2,F.yCr+0.05,14),xb);
+    else{const yc=F.yHip+0.36;lineT("divisao",arr(a=>bp(yc+0.04*Math.cos(a),a,0.012),-Math.PI*0.62,Math.PI*0.62,30),xb,L.cel?0.8:0.45);lineT("divisao",arr(a=>bp(yc-0.04*Math.cos(a),a,0.012),Math.PI*0.62,Math.PI*1.38,22),xb,L.cel?0.8:0.45)}
     /* glúteo máximo: borda de fora (do sacro, descendo em diagonal para fora até o trocânter) e glúteo médio acima, no lado */
     {const gk=clamp(F.B.glute/0.21,0,2.5),hw=F.B.hip;
      if(gk>0.25)[-1,1].forEach(s=>{
@@ -535,7 +541,7 @@ function scene(p,L,pal,fast,mode){
       /* trocânter maior: o relevo ósseo do lado de fora, logo abaixo do quadril */
       lineT("mus",arr(a=>{const u=A.L1*(0.07+0.05*Math.sin(a)),th=s*(Math.PI/2+0.25*Math.cos(a)),r=thighR(u,th,A,s)+0.012;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.3,Math.PI*2-0.3,14).map(Xt),v=>v);
       /* dobra do glúteo: um "sorriso" sob cada nádega, da fenda para fora (some quando a coxa sobe) */
-      if(hf<45)lineT("dobra",arr(a=>{const th=Math.PI+s*a,u=A.L1*(0.2-0.03*Math.pow(a,1.6)),r=thighR(u,th,A,s)+0.05;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.04,1.3,18).map(Xt),v=>v);
+      if(hf<45&&(p.cinta??1)<0.5)lineT("dobra",arr(a=>{const th=Math.PI+s*a,u=A.L1*(0.2-0.03*Math.pow(a,1.6)),r=thighR(u,th,A,s)+0.05;return [r*Math.sin(th),-u,r*Math.cos(th)]},0.04,1.3,18).map(Xt),v=>v);
       /* maléolos (o de dentro mais alto) */
       [[-1,0.07],[1,-0.06]].forEach(([sd,dy])=>lineT("mus",arr(a=>[s*sd*0.205*k,-A.L2+dy*k+0.06*k*Math.sin(a),0.06*k*Math.cos(a)],0,2*Math.PI,14).map(Xc),v=>v));
       /* atlas: sartório, reto femoral, vastos, trato iliotibial, adutores, isquiotibiais; tíbia, gastrocnêmio, sóleo, Aquiles */
@@ -737,7 +743,9 @@ function scene(p,L,pal,fast,mode){
       const sh1=arr(q=>E(X(q),up(q),0.01),0.05,0.95,20),sh2=arr(q=>E(X(q),up(q)-0.4*hu*Math.sin(Math.PI*q),0.01),0.95,0.05,20);
       fillP(sh1.concat(sh2),pal.shade1,0.9);
       /* íris */
-      if((p.eyeStyle>=0.5||OL.iris||OL.pupila||OL.brilho||OL.fenda)&&OL.branco<0.5){
+      /* olho de foco: branco com um ponto preto minúsculo */
+      if(OL.foco>0.5&&lid<0.8)fillP(arr(a=>E(s*gY*0.085*p.eyeSize+0.008*p.eyeSize*Math.cos(a),gP*0.03*p.eyeSize+0.009*p.eyeSize*Math.sin(a),0.013),0,2*Math.PI,10),pal.ink);
+      if((p.eyeStyle>=0.5||OL.iris||OL.pupila||OL.brilho||OL.fenda)&&OL.branco<0.5&&OL.foco<0.5){
         const ri=0.066*p.eyeSize*(1+0.3*OL.iris)*(1-0.2*OL.arregalar),gx=s*gY*0.085*p.eyeSize,gy=gP*0.03*p.eyeSize,rpu=0.024*p.eyeSize*(OL.pupila>=0?1+0.8*OL.pupila:1+0.8*OL.pupila)*(1+0.3*OL.iris);
         const ip=[];
         for(let i=0;i<48;i++){

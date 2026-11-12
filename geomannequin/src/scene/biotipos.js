@@ -4,8 +4,8 @@ const BIOTIPOS = Object.freeze({
   masculino: Object.freeze({
     magro:     {muscle:0.15,fat:0.04,waist:0.87,hips:1.06,shW:1.68,shDrop:0.70,armThick:0.90,thighThick:0.90,gluteVol:0.85,neck:0.59,chestF:0,headScale:0.955,cranialDepth:0.99,neckLen:0.608,armLen:0.985,legLen:1.01},
     medio:     {muscle:0.40,fat:0.20,waist:0.93,hips:1.10,shW:1.78,shDrop:0.72,armThick:1.00,thighThick:1.00,gluteVol:1.00,neck:0.63,chestF:0,headScale:1,cranialDepth:1,neckLen:0.608,armLen:1,legLen:1},
-    atletico:  {muscle:0.75,fat:0.12,waist:0.93,hips:1.10,shW:1.84,shDrop:0.66,armThick:1.08,thighThick:1.07,gluteVol:1.12,neck:0.66,chestF:0,headScale:1.012,cranialDepth:1.012,neckLen:0.612,armLen:1.015,legLen:1.015},
-    musculoso: {muscle:1.00,fat:0.08,waist:0.98,hips:1.15,shW:1.93,shDrop:0.61,armThick:1.17,thighThick:1.14,gluteVol:1.25,neck:0.72,chestF:0,headScale:1.018,cranialDepth:1.025,neckLen:0.604,armLen:1.028,legLen:1.02},
+    atletico:  {muscle:0.75,fat:0.12,waist:0.93,hips:1.10,shW:1.81,shDrop:0.66,armThick:1.08,thighThick:1.07,gluteVol:1.12,neck:0.66,chestF:0,headScale:1.012,cranialDepth:1.012,neckLen:0.612,armLen:1.015,legLen:1.015},
+    musculoso: {muscle:1.00,fat:0.08,waist:0.98,hips:1.15,shW:1.87,shDrop:0.61,armThick:1.17,thighThick:1.14,gluteVol:1.25,neck:0.72,chestF:0,headScale:1.018,cranialDepth:1.025,neckLen:0.604,armLen:1.028,legLen:1.02},
     cheio:     {muscle:0.32,fat:0.80,waist:1.10,hips:1.14,shW:1.79,shDrop:0.75,armThick:1.13,thighThick:1.17,gluteVol:1.28,neck:0.68,chestF:0,headScale:1.018,cranialDepth:1.02,neckLen:0.596,armLen:1,legLen:0.99}
   }),
   feminino: Object.freeze({
@@ -34,12 +34,13 @@ function perfilBiotipo(tipo="medio",fem=0){
 function aplicarBiotipo(p,tipo="medio",fem=p.fem){
   const sexo=limitar(Number.isFinite(fem)?fem:0,0,1);
   Object.assign(p,perfilBiotipo(tipo,sexo));
-  p.fem=sexo;p._biotipo=tipo;
+  p.fem=sexo;p._biotipo=tipo;p.tamanho=1;
   return p;
 }
 /* Trocar sexo ou mover o slider preserva deltas manuais (e.g. +0,05 de quadril),
    em vez de resetar o corpo ou deixá-lo com valores do sexo anterior. */
 function transitarSexo(p,fem){
+  if(p._biotipo==="crianca")return aplicarCrianca(p,fem);
   const sexo=limitar(Number.isFinite(fem)?fem:0,0,1),tipo=NOMES_BIOTIPOS.includes(p._biotipo)?p._biotipo:"medio";
   const antes=perfilBiotipo(tipo,p.fem),depois=perfilBiotipo(tipo,sexo);
   for(const k of CHAVES_BIOTIPO){
@@ -49,6 +50,16 @@ function transitarSexo(p,fem){
   p.fem=sexo;p._biotipo=tipo;
   return p;
 }
+/* Criança (~8 anos, ≈ 1,25 m): proporções próprias — cabeça grande para o corpo (≈ 6 cabeças), pernas e braços mais curtos,
+   ombros estreitos, pescoço curto e fino, sem cintura marcada nem músculo; e o corpo inteiro menor (tamanho ≈ 0,7).
+   Antes o botão "Infantil" punha só o rosto e ombros de criança num corpo adulto — daí a mistura estranha. */
+const CRIANCA=Object.freeze({muscle:0.04,fat:0.3,waist:1.02,hips:0.94,shW:1.34,shDrop:0.74,armThick:0.8,thighThick:0.88,gluteVol:0.55,neck:0.44,chestF:0,
+  headScale:1.28,cranialDepth:1.03,neckLen:0.5,armLen:0.88,legLen:0.86,tamanho:0.66});
+function aplicarCrianca(p,fem){
+  const sexo=limitar(Number.isFinite(fem)?fem:(p.fem||0),0,1);
+  Object.assign(p,perfilBiotipo("medio",sexo),CRIANCA);p.fem=sexo*0.35;p._biotipo="crianca";
+  return p;
+}
 /* Exportação legada para referências de lista; usar aplicarBiotipo nos seletores. */
 const BODIES=BIOTIPOS.masculino;
-export { BIOTIPOS, BODIES, NOMES_BIOTIPOS, CHAVES_BIOTIPO, perfilBiotipo, aplicarBiotipo, transitarSexo };
+export { CRIANCA, aplicarCrianca, BIOTIPOS, BODIES, NOMES_BIOTIPOS, CHAVES_BIOTIPO, perfilBiotipo, aplicarBiotipo, transitarSexo };

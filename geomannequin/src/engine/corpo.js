@@ -60,8 +60,9 @@ function torsoProfile(F){
     [F.yAt(4.1),lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf)*(1+0.027*B.fem),0.84+0.2*f,0.82,-0.45,2.3],
     /* Crista ilíaca com abertura própria, acima da articulação do fêmur.
        O perfil se fecha gradualmente na virilha e mantém volume em 3/4 e perfil. */
-    [F.yHip+0.38,B.hip*(1.03+0.012*B.fem),0.85+0.12*f,0.90+0.18*gk,-0.47,2.35],
-    [F.yHip,B.hip*(1.00-0.015*B.fem),0.85+0.10*f,0.98+0.22*gk,-0.48,2.3],
+    /* no feminino a bacia alarga continuamente até o trocânter (sem "degrau" na crista ilíaca, que parecia pneuzinho) */
+    [F.yHip+0.38,B.hip*(1.03-0.045*B.fem),0.85+0.12*f,0.90+0.18*gk,-0.47,2.35],
+    [F.yHip,B.hip*(1.00+0.03*B.fem),0.85+0.10*f,0.98+0.22*gk,-0.48,2.3],
     [F.yAt(5.4),B.hip*(0.70+0.06*gk+0.03*B.fem),0.68,0.82+0.28*gk,-0.50,2.2],
     [F.yCr,0.3+0.12*gk,0.4,0.42+0.22*gk,-0.46,2.1],
     [F.yB,0.02,0.02,0.02,-0.46,2]

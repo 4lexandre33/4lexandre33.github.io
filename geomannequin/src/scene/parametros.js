@@ -59,6 +59,8 @@ const SL=[
   {k:"waist",g:"slBody",label:"Cintura",min:0.7,max:1.2,step:0.01,u:" R"},
   {k:"hips",g:"slBody",label:"Quadril",min:0.85,max:1.4,step:0.01,u:" R"},
   {k:"gluteVol",g:"slBody",label:"Volume dos glúteos",min:0,max:2,step:0.05,u:"×"},
+  {k:"tamanho",g:"slBody",label:"Tamanho do corpo (criança ≈ 0,7)",min:0.45,max:1.3,step:0.01,u:"×"},
+  {k:"cinta",g:"slBody",label:"Cinta de manequim (glúteos e virilha lisos)",min:0,max:1,step:0.05,u:"%",pct:true},
   {k:"thighThick",g:"slBody",label:"Espessura das coxas",min:0.75,max:1.3,step:0.01,u:"×"},
   {k:"legLen",g:"slBody",label:"Comprimento das pernas",min:0.85,max:1.15,step:0.01,u:"×"},
   {k:"flex",g:"slBody",label:"Flexibilidade (normal · atleta · ginasta · contorcionista)",min:0,max:3,step:1,u:""},
@@ -262,7 +264,7 @@ const ALIAS={
   bocaAbrir:"jawOpen",mandibulaLado:"jawSide",sorriso:"smile",olharLado:"eyeYaw",olharCima:"eyePitch",palpebras:"eyeLid",sobrancelhas:"browUp",franzir:"browIn",corar:"blush",lagrimas:"tears",
   ...AU_ALIAS,
   corpoInclinar:"bodyPitch",corpoRolar:"bodyRoll",altura:"bodyLift",apoio:"ground",
-  comprimentoPernas:"legLen",flexibilidade:"flex",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF"
+  comprimentoPernas:"legLen",flexibilidade:"flex",comprimentoBracos:"armLen",coxas:"thighThick",espessuraBracos:"armThick",seios:"chestF",cinta:"cinta",tamanho:"tamanho",tamanhoCorpo:"tamanho"
 };
 const SLK={};
 let POSEKEYS;

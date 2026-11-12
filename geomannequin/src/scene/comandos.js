@@ -1,6 +1,6 @@
 /* GeoMannequin — API de comandos em português: cena, camera, tema e cada manequim */
 import { CAMK, WORLDK, P, SCN, UIH, addInst, delInst, dupInst, instColors, mixHex, nextHue, setColor, setP, corObjeto, atualizarApoios } from "./modelo.js";
-import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
+import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS, aplicarCrianca, CRIANCA } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
 import { AU, analisarFolha, analisarImagemUnica, telaDoMundo } from "../engine/index.js";
 import { criarApiEfeitos } from "./efeitos-cena.js";
@@ -13,7 +13,7 @@ import { manualPosesIA, pacoteParaIA } from "./manual-ia.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
-import { aplicarMolejo, EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, POSE0, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
+import { FACES, aplicarMolejo, EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, POSE0, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { codigoDaPose, lerCodigoDePose, filtrarPartes, espelharValores, posesSalvas, salvarPose, acharPoseSalva, apagarPose, renomearPose, duplicarPose, exportarPoses, importarPoses, parteDaChave, PARTES_POSE } from "./pose-codigo.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
@@ -151,8 +151,9 @@ function apiFor(it){
     corpo(o){chk();if(typeof o==="string"){
         const k=o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
         const part=k.match(/^(masculino|feminino)[\s_-]+(magro|medio|atletico|musculoso|cheio)$/);
+        if(/^(crianca|infantil|menino|menina)$/.test(k)){aplicarCrianca(it.params,k==="menina"?1:k==="menino"?0:it.params.fem);Object.assign(it.params,FACES.infantil,{shW:CRIANCA.shW,neck:CRIANCA.neck,neckLen:CRIANCA.neckLen});return m}
         const tipo=part?part[2]:k,sexo=part?(part[1]==="feminino"?1:0):it.params.fem;
-        if(!NOMES_BIOTIPOS.includes(tipo))throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+NOMES_BIOTIPOS.join(", ")+", ou 'feminino medio'.");
+        if(!NOMES_BIOTIPOS.includes(tipo))throw new Error("Tipo corporal desconhecido: “"+o+"”. Opções: "+NOMES_BIOTIPOS.join(", ")+", crianca (menino, menina), ou 'feminino medio'.");
         aplicarBiotipo(it.params,tipo,sexo);return m
       }
       /* Troca de sexo recalibra o mesmo perfil, preservando correções manuais. */
@@ -486,9 +487,9 @@ const cena={
     if(P.persp){P.camDist=clamp(raio*2.4,8,400);
       for(let k=0;k<6;k++){const c={...SCN.list[0].params,...P};let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
         for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
-        const f=Math.max((x1-x0)/(W*0.9),(y1-y0)/(H*0.86));P.camDist=clamp(P.camDist*Math.max(0.6,Math.min(1.8,f)),6,400);P.panY=+(((y0+y1)/2-H/2)/Math.max(1,effScale(c))).toFixed(2)}
+        const f=Math.max((x1-x0)/(W*0.9),(y1-y0)/(H*0.86)),Sc=Math.max(0.01,effScale(c));P.panX=+(P.panX-((x0+x1)/2-W/2)/Sc).toFixed(3);P.panY=+(P.panY+((y0+y1)/2-H/2)/Sc).toFixed(3);P.camDist=clamp(P.camDist*Math.max(0.6,Math.min(1.8,f)),6,400)}
     }else{const c={...SCN.list[0].params,...P};P.zoom=1;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c,[a,b,d]);x0=Math.min(x0,t[0]);x1=Math.max(x1,t[0]);y0=Math.min(y0,t[1]);y1=Math.max(y1,t[1])}
-      P.zoom=clamp(Math.min(W*0.9/(x1-x0),H*0.86/(y1-y0)),0.05,12)}
+      P.zoom=clamp(Math.min(W*0.9/(x1-x0),H*0.86/(y1-y0)),0.05,12);const c2={...SCN.list[0].params,...P},Sc=Math.max(0.01,effScale(c2));let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;for(const a of [lo[0],hi[0]])for(const b of [lo[1]+g0,hi[1]+g0])for(const d of [lo[2],hi[2]]){const t=telaDoMundo(c2,[a,b,d]);a0=Math.min(a0,t[0]);a1=Math.max(a1,t[0]);b0=Math.min(b0,t[1]);b1=Math.max(b1,t[1])}P.panX=-((a0+a1)/2-W/2)/Sc;P.panY=((b0+b1)/2-H/2)/Sc}
     cena.marcarEstado&&0;return cena},
   registro(o){return registroCena(o||{})},
   sobrepostos(){return sobreposicoes().map(([a,b,d])=>({a:SCN.list[a].name,b:SCN.list[b].name,sobra:Math.round(d*11.4)+" cm"}))},

@@ -28,7 +28,8 @@ for(const sexo of [0,1])for(const tipo of NOMES_BIOTIPOS){
   const cintura=r(F.yWst),bacia=r(F.yHip),crista=r(F.yHip+0.38),axila=r(F.yUB);
   vao(cintura,0.5,2.1,`${sexo}/${tipo} cintura`);
   vao(bacia/cintura,sexo===0?1.01:1.17,sexo===0?1.20:1.53,`${sexo}/${tipo} proporção bacia/cintura`);
-  vao(crista/bacia,1,1.08,`${sexo}/${tipo} crista ilíaca`);
+  /* no feminino a bacia alarga até o trocânter (crista um pouco mais estreita): sem o "degrau" que parecia pneuzinho */
+  vao(crista/bacia,sexo===0?1:0.93,1.08,`${sexo}/${tipo} crista ilíaca`);
   const A=legDims(p),hL=hipJoint(F,1),hR=hipJoint(F,-1),topo=thighR(0,Math.PI/2,A,1);
   perto(hL[0],-hR[0]);perto(hL[1],hR[1]);perto(hL[2],hR[2]);
   vao((hL[0]+topo)/bacia,0.95,1.10,`${sexo}/${tipo} encaixe lateral coxa/pelve`);

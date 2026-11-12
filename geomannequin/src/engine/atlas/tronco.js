@@ -51,7 +51,8 @@ function lado(p, F, s) {
   forma("grande_dorsal", "a", dors, 0.035 + 0.055 * k.mu * (1 - 0.6 * k.fem), 0.26);
   /* oblíquo externo: flanco acima da crista ilíaca */
   const obl = [[60, -2.1], [92, -2.25], [100, -3.4], [96, -4.3], [74, -4.4], [58, -3.3]].map(([a, yy]) => graus(F, a, yy));
-  forma("obliquo", "a", obl, 0.025 + 0.04 * k.mu * (1 - 0.5 * k.fem) + 0.02 * k.fat, 0.18);
+  /* no feminino o flanco é liso (o oblíquo marcado acima da crista virava "pneuzinho") */
+  forma("obliquo", "a", obl, (0.025 + 0.04 * k.mu * (1 - 0.5 * k.fem) + 0.02 * k.fat) * (1 - 0.7 * k.fem), 0.18 + 0.08 * k.fem);
 
   /* ---------- LINHAS ---------- */
   const back = "b", ang = "a", fr = "f";

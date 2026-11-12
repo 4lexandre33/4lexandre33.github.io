@@ -43,8 +43,10 @@ function buildElbow(p,s,el){
 /* comprimento do deltoide em volta do braço: gota que aponta para a inserção no meio do braço, do lado de fora */
 function deltV(phi){const g=Math.cos(clamp(phi,-2.1,2.1)*0.62);return 0.55+0.75*Math.pow(Math.max(0,g),1.6)}
 /* raio do deltoide a uma distância v do ombro, no ângulo th (mesma fórmula da malha e das linhas) */
+/* raio do topo do deltoide: cresce menos que o braço nos corpos fortes (antes virava uma ombreira) */
+function deltRc(A){return 0.55*A.k*(1-0.16*clamp(A.k-1,0,0.8))}
 function deltR(v,th,A,s){
-  const thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc)),Rc=0.55*A.k*(1-0.1*Math.max(0,-Math.cos(th)));
+  const thc=s*Math.PI/2,phi=Math.atan2(Math.sin(th-thc),Math.cos(th-thc)),Rc=deltRc(A)*(1-0.1*Math.max(0,-Math.cos(th)));
   const vmax=deltV(phi)*A.L1/2.9,inner=sstep((Math.abs(phi)-95*D)/(45*D));
   /* Continuidade na seção v=0 (C0): antes o raio interno saltava de 0,30k para
      0,41k, criando um bico na axila e uma costura no deltoide. */
@@ -55,7 +57,9 @@ function deltR(v,th,A,s){
   return lerp(outer,ra-0.06*A.k,inner);
 }
 function buildDelt(p,s){
-  const A=armDims(p),Rc=0.55*A.k,rows=22,cols=56,V=new Float32Array(rows*cols*3);
+  const A=armDims(p),Rc=deltRc(A),rows=22,cols=56,V=new Float32Array(rows*cols*3);
+  /* cúpula achatada: o topo do deltoide não passa da linha do acrômio/trapézio (sem o "degrau" no alto do ombro) */
+  const achata=Math.min(1,0.4/(Rc*0.848));
   const thc=s*Math.PI/2;
   for(let r=0;r<rows;r++){
     const t=r/(rows-1);
@@ -66,7 +70,7 @@ function buildDelt(p,s){
       const inner=sstep((Math.abs(phi)-95*D)/(45*D));
       const rr=deltR(v,th,A,s);
       const k=(r*cols+j)*3;
-      V[k]=rr*Math.sin(th)+s*0.03*(1-inner);V[k+1]=-v;V[k+2]=rr*Math.cos(th);
+      V[k]=rr*Math.sin(th)+s*0.03*(1-inner);V[k+1]=-(v<0?v*achata:v);V[k+2]=rr*Math.cos(th);
     }
   }
   return {V,rows,cols,flip:1,fb:null,open:true,border:true};
