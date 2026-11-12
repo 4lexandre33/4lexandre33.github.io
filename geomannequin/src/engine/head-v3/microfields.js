@@ -3,7 +3,7 @@
  * visíveis ou tampas sobre o crânio. Atlas rasterizado + cache de campos. */
 import {clamp,gauss} from './anatomy.js';
 const TAU=Math.PI*2;
-const CACHE=new WeakMap();
+const CACHE=new Map(); /* por chave dos parâmetros (o atlas só depende deles); guarda os 64 mais recentes */
 const PARAMS=['headScale','skull','jaw','chin','chinProj','cranialDepth','nose','brow','lips','fat','fem','muscle','smile','eyeLid','microDensity','microStrength'];
 const bell=(u,v,x,y,sx,sy)=>gauss(u,x,sx)*gauss(v,y,sy);
 export function microformsV3(p){
@@ -58,9 +58,14 @@ export function microformsV3(p){
    (u,v)=>.024*smile*bell(u,v,side*.4,.82,.14,.05));
  return pieces;
 }
+let ULT_V=null,ULT_A=null; /* última chamada: compara os 16 valores sem montar texto */
 export function compileMicroAtlasV3(p,S){
- const key=PARAMS.map(n=>p[n]).join('|');const found=CACHE.get(S);
- if(found&&found.key===key)return found.atlas;
+ if(ULT_V){let igual=true;for(let i=0;i<PARAMS.length;i++)if(p[PARAMS[i]]!==ULT_V[i]){igual=false;break}if(igual)return ULT_A}
+ ULT_V=PARAMS.map(n=>p[n]);ULT_A=compileMicroAtlasV3b(p,S);return ULT_A;
+}
+function compileMicroAtlasV3b(p,S){
+ const key=PARAMS.map(n=>p[n]).join('|');const found=CACHE.get(key);
+ if(found){CACHE.delete(key);CACHE.set(key,found);return found}
  const W=129,H=161,front=new Float32Array(W*H),back=new Float32Array(W*H),side=new Float32Array(W*H);
  const patches=microformsV3(p),channels={front,back,side};
  for(const e of patches){
@@ -78,7 +83,7 @@ export function compileMicroAtlasV3(p,S){
    }
  }
  const atlas={W,H,front,back,side,count:patches.length,patches};
- CACHE.set(S,{key,atlas});return atlas;
+ CACHE.set(key,atlas);if(CACHE.size>64)CACHE.delete(CACHE.keys().next().value);return atlas;
 }
 export function sampleMicroV3(atlas,u,v,channel){
  const data=atlas[channel],fx=clamp((u+1)*.5*(atlas.W-1),0,atlas.W-1),fy=clamp(v*(atlas.H-1),0,atlas.H-1);

@@ -111,6 +111,15 @@
 .blk-painel.recolhido .blk-cab{flex-direction:column-reverse}
 .blk-painel.recolhido .blk-cab h2{writing-mode:vertical-rl;transform:rotate(180deg)}
 .blk-inserir{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.blk-massa{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12px}
+.blk-massa>span:first-child{font-weight:600;opacity:.75}
+.blk-massa button[aria-pressed="true"]{outline:2px solid var(--accent,#2b6cb0);outline-offset:1px}
+.blk-massa-n{opacity:.7}
+.blk-massa-form{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px;padding:6px;border:1px dashed currentColor;border-radius:6px}
+.blk-massa-form input[type=number]{width:4.5em}
+.blk-painel.marcando .blk-svg-host[data-svg="cima"]{cursor:crosshair}
+.blk-svg .blk-sel{stroke:#e8590c!important;stroke-width:2.5!important}
+.blk-svg .blk-area{fill:rgba(232,89,12,.08);stroke:#e8590c;stroke-dasharray:5 3;stroke-width:1.5}
 .blk-mais{font-weight:600}
 .blk-menu-w{position:relative}
 .blk-menu{position:absolute;z-index:30;top:calc(100% + 4px);left:0;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:6px;min-width:250px;background:var(--panel);border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16)}

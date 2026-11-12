@@ -33,6 +33,7 @@
   "pegadas.js",
   "interacoes.js",
   "acoes-luta.js",
+  "multidao.js",
   "comandos.js",
   "biblioteca.js",
   "ajuda.js",

@@ -1,18 +1,21 @@
 /* GeoMannequin — vetorização: contornos dos campos, silhueta e preenchimento */
 import { HH, HN, HW, RS } from "./zbuffer.js";
 import { f1 } from "./matematica.js";
+import { ROI, CAMPOS } from "./campos.js";
 
 /* contornos por marching squares, encadeados em laços e suavizados */
 let exA,eyA,lk1,lk2;
 function contourPath(F){
-  lk1.fill(-1);lk2.fill(-1);
+  /* nos campos do manequim, só a região de interesse tem contorno (fora dela tudo vale 1) */
+  const r=CAMPOS.has(F)&&ROI.x1>=0?ROI:null,Y0=r?r.y0:0,Y1=r?Math.min(HH-2,r.y1):HH-2,X0=r?r.x0:0,X1=r?Math.min(HW-2,r.x1):HW-2;
+  if(r){const a=2*Y0*HW,b=Math.min(lk1.length,2*(Y1+2)*HW+2);lk1.fill(-1,a,b);lk2.fill(-1,a,b)}else{lk1.fill(-1);lk2.fill(-1)}
   const sa=[],sb=[];
   const seg=(a,b)=>{
     const s=sa.length;sa.push(a);sb.push(b);
     if(lk1[a]<0)lk1[a]=s;else lk2[a]=s;
     if(lk1[b]<0)lk1[b]=s;else lk2[b]=s;
   };
-  for(let y=0;y<HH-1;y++)for(let x=0;x<HW-1;x++){
+  for(let y=Y0;y<=Y1;y++)for(let x=X0;x<=X1;x++){
     const k=y*HW+x;
     const v0=F[k],v1=F[k+1],v2=F[k+HW+1],v3=F[k+HW];
     const tl=v0<0,tr=v1<0,br=v2<0,bl=v3<0;

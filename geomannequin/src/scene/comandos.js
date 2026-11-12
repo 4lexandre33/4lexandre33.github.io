@@ -4,6 +4,7 @@ import { aplicarBiotipo, transitarSexo, NOMES_BIOTIPOS } from "./biotipos.js";
 import { applyParams, num, POSEKEYS, ALIAS, SLK } from "./parametros.js";
 import { AU } from "../engine/index.js";
 import { criarApiEfeitos } from "./efeitos-cena.js";
+import { registroCena, sobreposicoes, separar, olharParaPonto, posicoesArranjo, mdSorteio } from "./multidao.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import { estadoParaIA } from "./estado-ia.js";
@@ -101,6 +102,14 @@ function poseCmd(a,b){
   if(typeof a==="string"){aplicarValoresDePose(it,valoresDeFonte(a),b);return apiFor(it)}
   throw new Error("pose: use pose({cotoveloDir: 70}), pose(\"Nome\", {...}) ou pose(\"Nome salvo\").");
 }
+/* "todos", "selecionados", "grupo:Nome", "objetos", nome ou lista de nomes (manequins e objetos) */
+function quemSao(q){
+  if(q===undefined||q==="todos")return SCN.list.slice();
+  if(q==="selecionados"){const s=new Set(SCN.selecao||[]);return [...SCN.list.filter(it=>s.has(it.id)),...SCN.objetos.filter(o=>s.has("o"+o.id))]}
+  if(q==="objetos")return SCN.objetos.slice();
+  if(typeof q==="string"&&/^grupo:/i.test(q)){const g=q.slice(6).trim();return [...SCN.list.filter(it=>it.grupo===g),...SCN.objetos.filter(o=>o.grupo===g)]}
+  const ns=Array.isArray(q)?q:[q];return ns.map(n=>{if(n&&typeof n==="object")n=n.nome;const it=SCN.list.find(x=>x.name===n);if(it)return it;const o=acharObjeto(n);if(!o)throw new Error("Não encontrei “"+n+"”.");return o});
+}
 function apiFor(it){
   const chk=()=>{if(!SCN.list.includes(it))throw new Error("Este manequim foi removido da cena.");return it};
   const m={
@@ -131,12 +140,12 @@ function apiFor(it){
       const rosto={};POSEKEYS.forEach(k=>{if(parteDaChave(k)==="rosto")rosto[k]=it.params[k]});
       withInst(it,()=>doBodyPose("empe"));Object.assign(it.params,rosto);guardarContatoV2(it,antes);return m},
     poseRapida(nome,opts){chk();const antes={...it.params},k=nomePose(nome);const ok=todasPoses();
-      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));
+      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));it.poseNome=k;it.acaoNome=null;
       /* molejo: as poses prontas vêm com micro-variações (molejo: 0 desliga; 0.3 sutil; 1 solto) */
       const mj=opts&&opts.molejo!==undefined?(opts.molejo===false?0:+opts.molejo):0.6;if(mj>0)withInst(it,()=>aplicarMolejo(it.params,{intensidade:mj,semente:k+(opts&&opts.semente!==undefined?":"+opts.semente:"")}));
       guardarContatoV2(it,antes);return m},
     /* m.acao("corridaSuperRapida") — pose de ação com rosto e efeitos de movimento; {efeitos:false, rosto:false, lado:"dir", colorido:true} */
-    acao(nome,o){chk();cena.marcarEstado();SCN.__cenaEfeitos=cena.efeitos;return aplicarAcao(m,it,nome,o||{})},
+    acao(nome,o){chk();cena.marcarEstado();SCN.__cenaEfeitos=cena.efeitos;const r=aplicarAcao(m,it,nome,o||{});it.acaoNome=nome;return r},
     /* m.molejo(0.6, "variação 2") — micro-inclinações e assimetria na pose atual */
     molejo(intensidade,semente){chk();const antes={...it.params};withInst(it,()=>aplicarMolejo(it.params,{intensidade:intensidade===undefined?0.6:+intensidade,semente:semente??(Date.now()%100000)}));limitesAcoplados(it.params);guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
@@ -452,9 +461,37 @@ const cena={
   pegadas(){return listaPegadas()},
   /* dois manequins: cena.interagir("Ana", "Leo", "abracoFrente") · tipos: cena.interacoes() */
   interagir(a,b,tipo,opts){const A=typeof a==="number"?SCN.list[a]:SCN.list.find(x=>x.name===(a&&a.nome||a)),B=typeof b==="number"?SCN.list[b]:SCN.list.find(x=>x.name===(b&&b.nome||b));
-    if(!A||!B)throw new Error("Manequim não encontrado: use os nomes (cena.manequins()).");cena.marcarEstado();const r=interagir(A,B,tipo,opts||{});
+    if(!A||!B)throw new Error("Manequim não encontrado: use os nomes (cena.manequins()).");cena.marcarEstado();const r=interagir(A,B,tipo,opts||{});A.interacaoNome=B.interacaoNome=r.interacao;
     if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.atravessando.length)LOG.push(["aviso","ainda encosta: "+r.atravessando.join(", ")]);return r},
   interacoes(){return listaInteracoes()},
+  /* ===== muitos manequins =====
+     cena.registro() → onde está e o que faz cada um (mesmo sem desenho) · cena.sobrepostos() · cena.separar({folga})
+     cena.grade({n: 20, colunas: 5, espacamento: 6, x, z | area: [x0, z0, x1, z1], pose: "empe" | poses: [...], expressao, olharPara: [x, z], cor: "grupo", grupo: "Plateia"})
+     cena.arranjo("circulo" | "fila" | "arco" | "multidao", {n, raio, x, z, ...mesmas opções}) · cena.olharPara(["Ana", "Leo"] | "todos" | "grupo:Plateia", [x, z], {modo: "costas"}) */
+  registro(o){return registroCena(o||{})},
+  sobrepostos(){return sobreposicoes().map(([a,b,d])=>({a:SCN.list[a].name,b:SCN.list[b].name,sobra:Math.round(d*11.4)+" cm"}))},
+  separar(o){cena.marcarEstado();return separar(o||{})},
+  grade(o){return cena.arranjo("grade",o)},
+  arranjo(tipo,o0){const o=o0||{};cena.marcarEstado();
+    const n=Math.max(1,Math.min(200-SCN.list.length,Math.round(o.n||(o.colunas&&o.linhas?o.colunas*o.linhas:9))));
+    if(n<1)throw new Error("A cena já tem o máximo de manequins (200).");
+    const pos=posicoesArranjo(tipo,n,o),grupo=o.grupo||("Grupo "+(1+new Set(SCN.list.map(it=>it.grupo).filter(Boolean)).size)),rnd=mdSorteio(o.semente??grupo);
+    if(o.objeto){const feitos=pos.map(([x,z],k)=>{const q=adicionarObjeto(o.objeto,{x,z,giro:o.giro||0});q.grupo=grupo;return q});
+      if(o.olharPara)olharParaPonto(feitos,o.olharPara,o);else if(tipo==="circulo"||tipo==="arco")olharParaPonto(feitos,[o.x||0,o.z||0],o);return {grupo,objetos:feitos.map(q=>q.nome||q.tipo)}}
+    const cor=o.cor===undefined?(n>12?"grupo":"auto"):o.cor,poses=(o.poses||(o.pose?[o.pose]:["empe"])).map(nomePose),its=[];
+    {const ok=todasPoses(),ruins=poses.filter(p=>!ok.includes(p));if(ruins.length)throw new Error("Pose rápida desconhecida: “"+ruins.join("”, “")+"”.")}
+    let hue=null;
+    pos.forEach(([x,z],k)=>{const it=addInst({wx:x,wz:z},(o.nome||grupo)+" "+(k+1),true);it.grupo=grupo;if(cor==="grupo"){if(hue===null)hue=it.hue;else it.hue=hue}
+      const m=apiFor(it);if(o.corpo)m.corpo(o.corpo);
+      const pz=poses[o.sortear===false?k%poses.length:Math.floor(rnd()*poses.length)];
+      m.poseRapida(pz,{molejo:o.molejo??0.6,semente:o.variar===false||(o.variar===undefined&&n>30)?undefined:k});
+      if(o.expressao)m.expressao(o.expressao);if(o.giro!==undefined)m.girar(o.giro);its.push(it)});
+    const alvo=o.olharPara||((tipo==="circulo"||tipo==="arco")&&o.olharPara!==false?[o.x||0,o.z||0]:null);
+    if(alvo)olharParaPonto(its,alvo,{modo:o.modo});
+    const sep=o.separar===false?null:separar({folga:o.folga??0.3,fixos:SCN.list.filter(it=>!its.includes(it)).map(it=>it.name)});
+    return {grupo,manequins:its.map(it=>it.name),separados:sep?sep.movidos.length:0}},
+  olharPara(quem,ponto,o){cena.marcarEstado();const its=quemSao(quem);return olharParaPonto(its,ponto,o||{})},
+  selecionar(quem){SCN.selecao=quemSao(quem).map(q=>q.params?q.id:"o"+q.id);return SCN.selecao.length},
   /* todos os manequins (ou um, pelo nome) na pose de descanso em pé */
   descanso(opts){const o=opts||{};SCN.list.filter(it=>!o.manequim||it.name===o.manequim).forEach(it=>apiFor(it).descanso(o));return cena},
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},

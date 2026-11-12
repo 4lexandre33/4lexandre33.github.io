@@ -8,7 +8,7 @@ import { fr } from "../scene/parametros.js";
 import { eyeHeight } from "../scene/enquadrar.js";
 import { sceneState } from "../scene/estado.js";
 import { styleName } from "../scene/paletas.js";
-import { CX, CY, H, W, comporCamadas, effScale, f1, guardarCamada, prepararCamadas, renderGrupoLocal, renderScene } from "../engine/index.js";
+import { CX, CY, H, W, comporCamadas, effScale, f1, guardarCamada, instanciaPronta, prepararCamadas, renderGrupoLocal, renderScene } from "../engine/index.js";
 import { paraleloAtivo, pedirCamada } from "./trabalhadores.js";
 import { COL, colisoesDaCena, composicaoDaCena } from "../scene/colisoes.js";
 import {CONTATO_V2,context as contextoV2,contacts as contatosV2} from "../scene/contato-v2.js";
@@ -43,7 +43,7 @@ function draw(){
   if(lst.some(o=>o.referencia)||(lst.efeitos&&lst.efeitos.length)||(!SCN.exato&&lst.filter(o=>!o.p._oculto).length>1)||lst.objetos.length){
     const plan=prepararCamadas(lst,L,rapido,floor,{canal:"tela"}),par=paraleloAtivo();
     plan.grupos.forEach(g=>{
-      if(g.pronto)return;
+      if(g.pronto||instanciaPronta(plan,g))return;
       const ativo=g.membros[0]===SCN.active;
       if(!par||!g.res||(rapido&&ativo)){renderGrupoLocal(plan,g);return}
       const fastG=plan.fast;

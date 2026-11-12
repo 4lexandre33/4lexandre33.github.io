@@ -81,7 +81,7 @@ function rasterH(m){
   }
 }
 /* mapa de sombra: profundidade máxima na direção da luz */
-const SMN=640;
+const SMN=448; /* mapa de sombra: 448² (era 640²) — mesma sombra própria, metade do custo */
 let SMO=5,SMS=64;
 let sm;
 function triS(m,i0,i1,i2){

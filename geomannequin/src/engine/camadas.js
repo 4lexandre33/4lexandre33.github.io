@@ -12,6 +12,7 @@
 import {desenharReferencia} from "./objetos.js";
 import { desenharEfeitos } from "./efeitos/desenhar.js";
 import { scene, setCasters } from "./desenho.js";
+import { capsulas, telaDoMundo } from "./colisao-cena.js";
 import { setCUR_ID, setMULTI } from "./projecao.js";
 import { zb, zp, FINO } from "./zbuffer.js";
 import { D, H, W, applyA, clamp, comp } from "./matematica.js";
@@ -49,7 +50,32 @@ function capturarZ() {
 }
 
 /* ===== desenhar um manequim sozinho; "lanc" = manequins que projetam sombra nele (entram só no mapa de sombra) ===== */
+/* ===== nível de detalhe: manequim pequeno na tela (longe, multidão) vira figura de cápsulas — leve e rápida.
+   O manequim ativo e os que estão perto continuam com o desenho completo. L.lod = false desliga; L.lodPx = altura limite. */
+function alturaNaTela(p) {
+  const caps = capsulas(p); let y0 = 1e9, y1 = -1e9, z = 0;
+  for (const c of caps.caps || caps) for (const w of [c.a, c.b]) { const t = telaDoMundo(p, w); if (t[1] < y0) y0 = t[1]; if (t[1] > y1) y1 = t[1]; z += t[2]; }
+  return { h: y1 - y0, caps: caps.caps || caps };
+}
+const LOD_PX = 70;
+function figuraSimples(o, caps, L) {
+  const p = o.p, pal = o.pal, T = caps.map(c => { const a = telaDoMundo(p, c.a), b = telaDoMundo(p, c.b); return { c, a, b, z: (a[2] + b[2]) / 2, w: 2 * c.r * (a[3] + b[3]) / 2 }; });
+  T.sort((u, v) => u.z - v.z);
+  const lw = Math.max(0.8, 1.4 * ((T[0] && T[0].a[3]) || 10) / 30), f1 = v => Math.round(v * 10) / 10;
+  let contorno = "", miolo = "", x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (const t of T) {
+    const d = "M" + f1(t.a[0]) + " " + f1(t.a[1]) + "L" + f1(t.b[0]) + " " + f1(t.b[1]);
+    contorno += '<path d="' + d + '" stroke-width="' + f1(t.w + 2 * lw) + '"/>'; miolo += '<path d="' + d + '" stroke-width="' + f1(t.w) + '"/>';
+    for (const q of [t.a, t.b]) { x0 = Math.min(x0, q[0] - t.w); x1 = Math.max(x1, q[0] + t.w); y0 = Math.min(y0, q[1] - t.w); y1 = Math.max(y1, q[1] + t.w); }
+  }
+  const svg = '<g class="lod" stroke-linecap="round" fill="none"><g stroke="' + pal.ink + '">' + contorno + '</g><g stroke="' + (L.fill === false ? "#fff" : pal.fill) + '">' + miolo + "</g></g>";
+  const prof = T.length ? T.reduce((s, t) => s + t.z, 0) / T.length : 0;
+  return { svg, sombra: "", info: { handles: [], bb: null, fit: null, depth: prof, lod: true, caixa: [x0, y0, x1, y1] }, z: null, fast: !!0 };
+}
 function renderIsolado(o, L, fast, lanc) {
+  if (L.lod !== false && !o.p._ativo && !FINO) { const a = alturaNaTela(o.p); if (a.h > 0 && a.h < (L.lodPx || LOD_PX)) { ESTAT.camadas++; ESTAT.lod = (ESTAT.lod || 0) + 1; return figuraSimples(o, a.caps, L); }
+    /* multidão (mais de 16 na cena): quem é médio na tela sai sem os campos de tom finos (traço e preenchimento iguais) */
+    if (o.p._muitos && a.h < (L.lodMedioPx || 150)) fast = true; }
   const mal = [];
   if (lanc && lanc.length && L.shade && !fast) lanc.forEach(c => { const r = scene(c.p, L, c.pal, true, "malhas"); if (r && r.all) r.all.forEach(m => mal.push(m)); });
   setMULTI(false); setCUR_ID(0); setCasters(mal);
@@ -109,11 +135,13 @@ function prepararCamadas(list0, L, fast, floor, opts) {
   const canal = opts.canal || "padrao";
   const vis = list0.map(o => !o.p._oculto && (!o.p.persp || figDepth(o.p) < Math.max(3, o.p.camDist || 30) - 3));
   const idx = list0.map((o, i) => i).filter(i => vis[i]);
+  if (idx.length > 16) idx.forEach(i => { list0[i].p._muitos = true; });
   /* quem faz sombra em quem (só com sombreado completo: no desenho rápido não há sombra entre manequins) */
   const lanc = idx.map(() => []);
   if (L.shade && !fast && opts.sombraEntre !== false && idx.length > 1) {
     const Es = idx.map(i => esqueleto(list0[i].p)), LD = luzDir(list0[idx[0]].p);
-    for (let b = 0; b < idx.length; b++) for (let a = 0; a < idx.length; a++) if (a !== b && fazSombra(Es[a], Es[b], LD)) lanc[b].push(idx[a]);
+    const perto = (a, b) => { const pa = list0[idx[a]].p, pb = list0[idx[b]].p; return Math.hypot((pa.wx || 0) - (pb.wx || 0), (pa.wz || 0) - (pb.wz || 0)) < 24; };
+    for (let b = 0; b < idx.length; b++) for (let a = 0; a < idx.length; a++) if (a !== b && perto(a, b) && fazSombra(Es[a], Es[b], LD)) lanc[b].push(idx[a]);
   }
   const LK = chaveL(L), grupos = [], cm = new Map(), km = i => { if (!cm.has(i)) cm.set(i, chaveMembro(list0[i])); return cm.get(i); };
   idx.forEach((i, k) => {
@@ -135,8 +163,46 @@ function guardarCamada(dono, slot, chave, fast, res) {
   if (!dono.camadas) dono.camadas = new Map();
   dono.camadas.set(slot, { chave, fast: !!fast, res });
 }
+/* ===== instâncias: sem perspectiva, dois manequins com a MESMA pose, corpo, giro e cores têm a mesma foto,
+   só deslocada na tela. A multidão em grade desenha uma vez e copia (translate). */
+/* (a mesma cor: manequins de uma multidão/grupo com a mesma cor viram cópias; cores diferentes = fotos próprias) */
+const INST = new Map(), INST_PASSO = 4; /* graus por "gaveta" de ângulo de visão */
+/* posição do manequim vista da câmera: azimute (para o lado) e elevação, em graus */
+function visada(p) {
+  const cam = makeXf(Object.assign({}, p, { wRot: 0 })), q = cam([(p.wx || 0) - (p.tx || 0), (p.wy || 0) - (p.ty || 0), (p.wz || 0) - (p.tz || 0)]);
+  if (!p.persp) return [0, 0];
+  const d = Math.max(3, p.camDist || 30), f = Math.max(0.5, d - q[2]);
+  return [Math.atan2(q[0], f) / D, Math.atan2(q[1], f) / D];
+}
+function chaveInstancia(L, o, v) {
+  const q = {}; for (const k in o.p) if (k[0] !== "_" && k !== "wx" && k !== "wz" && k !== "wRot") q[k] = o.p[k];
+  const giro = Math.round(((o.p.wRot || 0) + SINAL_VISADA * v[0]) / INST_PASSO), elev = Math.round(v[1] / INST_PASSO);
+  return chaveL(L) + "§" + JSON.stringify([q, o.pal, o.gy, giro, elev]);
+}
+const SINAL_VISADA = 1;
+function deInstancia(o, L, fast, lanc) {
+  const p = o.p;
+  if (p._ativo || FINO || (lanc && lanc.length) || L.instancias === false) return null;
+  const v = visada(p), k = chaveInstancia(L, o, v) + (fast ? "§r" : ""), ent = INST.get(k);
+  if (!ent) return { k };
+  const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc = b[3] / a[3], r = ent.res;
+  const tr = s => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
+  ESTAT.instancias = (ESTAT.instancias || 0) + 1;
+  return { pronta: { svg: tr(r.svg), sombra: tr(r.sombra), info: Object.assign({}, r.info, { depth: r.info.depth + (b[2] - a[2]), handles: [], bb: null, instancia: true }), z: null, fast: r.fast } };
+}
+/* se a foto deste grupo é cópia de outra já desenhada (instância), usa-a e devolve true */
+function instanciaPronta(plan, g) {
+  if (plan.L.instancias === false) return false;
+  const o0 = plan.list0[g.membros[0]], inst = deInstancia(o0, plan.L, plan.fast, g.lanc.map(j => plan.list0[j]));
+  if (!inst || !inst.pronta) return false;
+  g.res = inst.pronta; g.pronto = true; g.velho = false; guardarCamada(g.dono, g.slot, g.chave, plan.fast, g.res); return true;
+}
 function renderGrupoLocal(plan, g) {
-  const res = renderIsolado(plan.list0[g.membros[0]], plan.L, plan.fast, g.lanc.map(j => plan.list0[j]));
+  const o0 = plan.list0[g.membros[0]], lancs = g.lanc.map(j => plan.list0[j]), inst = plan.L.instancias === false ? null : deInstancia(o0, plan.L, plan.fast, lancs);
+  let res;
+  if (inst && inst.pronta) res = inst.pronta;
+  else { res = renderIsolado(o0, plan.L, plan.fast, lancs);
+    if (inst && inst.k && !res.info.lod) { INST.set(inst.k, { res, p: o0.p, pal: o0.pal }); if (INST.size > 256) INST.delete(INST.keys().next().value); } }
   guardarCamada(g.dono, g.slot, g.chave, plan.fast, res);
   g.res = res; g.pronto = true; g.velho = false;
   return res;
@@ -336,4 +402,4 @@ function fotoManequim(list0, i, L, opts) {
 }
 
 export { ESTAT, zerarEstat, capturarZ, renderIsolado, renderJob, esqueleto, fazSombra, chaveL, chaveMembro, prepararCamadas, guardarCamada,
-  renderGrupoLocal, comporCamadas, pickCamadas, renderCamadas, fotoManequim, ULTIMA, setUltima, ultimaComposicao, filtroAtmo, caminhoRecorte, mascaraEscondida };
+  renderGrupoLocal, instanciaPronta, comporCamadas, pickCamadas, renderCamadas, fotoManequim, ULTIMA, setUltima, ultimaComposicao, filtroAtmo, caminhoRecorte, mascaraEscondida };

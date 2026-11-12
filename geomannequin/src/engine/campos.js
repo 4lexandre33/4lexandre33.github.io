@@ -9,19 +9,25 @@ let AOD;
 let FcRaw,FcTmp,Fc;
 let FARaw,FA,FBRaw,FB,FHRaw,FH,FRRaw,FR,FKRaw,FK;
 let CelTmp;
+/* região de interesse (em células): só onde está o manequim deste desenho + margem, unida à do desenho anterior
+   (para limpar o que ele sujou). Fora dela os campos já valem 1 (= fora). Multidão e figuras pequenas: bem mais rápido. */
+const ROI={x0:0,y0:0,x1:-1,y1:-1},ANT={x0:0,y0:0,x1:-1,y1:-1,cheio:true};
+const CAMPOS=new Set();
 function blurPlain(src,dst){
-  for(let y=0;y<HH;y++){
+  const r=CAMPOS.has(dst)?ROI:{x0:0,y0:0,x1:HW-1,y1:HH-1},X0=r.x0,X1=r.x1;
+  for(let y=r.y0;y<=r.y1;y++){
     const y0=y>0?y-1:0,y1=y<HH-1?y+1:y;
-    for(let x=0;x<HW;x++){
+    for(let x=X0;x<=X1;x++){
       const x0=x>0?x-1:0,x1=x<HW-1?x+1:x;
       dst[y*HW+x]=(src[y0*HW+x0]+src[y0*HW+x]+src[y0*HW+x1]+src[y*HW+x0]+src[y*HW+x]+src[y*HW+x1]+src[y1*HW+x0]+src[y1*HW+x]+src[y1*HW+x1])/9;
     }
   }
 }
 function blurMasked(src,dst){
-  for(let y=0;y<HH;y++){
+  const r=CAMPOS.has(dst)?ROI:{x0:0,y0:0,x1:HW-1,y1:HH-1},X0=r.x0,X1=r.x1;
+  for(let y=r.y0;y<=r.y1;y++){
     const y0=y>0?y-1:0,y1=y<HH-1?y+1:y;
-    for(let x=0;x<HW;x++){
+    for(let x=X0;x<=X1;x++){
       const k=y*HW+x;
       if(!cov[k]){dst[k]=1;continue}
       const x0=x>0?x-1:0,x1=x<HW-1?x+1:x;
@@ -37,8 +43,17 @@ function borders(F){
   for(let y=0;y<HH;y++){F[y*HW]=1;F[y*HW+HW-1]=1}
 }
 /* cel: tons planos (écorché) — mais desfoque e só a normal suavizada decide o tom, sem ruído do mapa de sombra */
+function regiaoDoDesenho(){
+  let x0=HW,y0=HH,x1=-1,y1=-1;
+  for(let y=0;y<HH;y++){const o=y*HW;for(let x=0;x<HW;x++){const k=o+x;if(hz[k]>-1e5&&hid[k]===CUR_ID){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;y1=y}}}
+  const M=6;
+  let n=x1<0?{x0:0,y0:0,x1:-1,y1:-1}:{x0:Math.max(0,x0-M),y0:Math.max(0,y0-M),x1:Math.min(HW-1,x1+M),y1:Math.min(HH-1,y1+M)};
+  const u=ANT.cheio?{x0:0,y0:0,x1:HW-1,y1:HH-1}:ANT.x1<0?n:n.x1<0?{x0:ANT.x0,y0:ANT.y0,x1:ANT.x1,y1:ANT.y1}:{x0:Math.min(n.x0,ANT.x0),y0:Math.min(n.y0,ANT.y0),x1:Math.max(n.x1,ANT.x1),y1:Math.max(n.y1,ANT.y1)};
+  Object.assign(ROI,u);Object.assign(ANT,n,{cheio:false});
+}
 function makeFields(doShade,cel){
-  for(let y=0;y<HH;y++)for(let x=0;x<HW;x++){
+  regiaoDoDesenho();
+  for(let y=ROI.y0;y<=ROI.y1;y++)for(let x=ROI.x0;x<=ROI.x1;x++){
     const k=y*HW+x;
     if(hz[k]<-1e5||hid[k]!==CUR_ID){cov[k]=0;FcRaw[k]=1;FARaw[k]=1;FBRaw[k]=1;FHRaw[k]=1;FRRaw[k]=1;FKRaw[k]=1;continue}
     cov[k]=1;FcRaw[k]=-1;
@@ -96,6 +111,10 @@ export function iniciarCampos(){
   CelTmp=new Float32Array(HN);
   FKRaw=new Float32Array(HN);
   FK=new Float32Array(HN);
+  [FcRaw,FcTmp,Fc,FARaw,FA,FBRaw,FB,FHRaw,FH,FRRaw,FR,CelTmp,FKRaw,FK].forEach(a=>CAMPOS.add(a));
+  ANT.cheio=true;
 }
+/* o grid mudou de tamanho ou outro código escreveu nos campos: o próximo desenho refaz tudo */
+function camposSujos(){ANT.cheio=true}
 
-export { cov, aoA, RIMD, AOD, FcRaw, FcTmp, Fc, FARaw, FA, FBRaw, FB, FHRaw, FH, FRRaw, FR, FKRaw, FK, blurPlain, blurMasked, borders, makeFields };
+export { ROI, CAMPOS, camposSujos, cov, aoA, RIMD, AOD, FcRaw, FcTmp, Fc, FARaw, FA, FBRaw, FB, FHRaw, FH, FRRaw, FR, FKRaw, FK, blurPlain, blurMasked, borders, makeFields };

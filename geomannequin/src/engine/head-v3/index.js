@@ -12,8 +12,8 @@ export function ringV3(y,p,S){
  const {width,front,back}=sectionV3(normalizedHeight(y,S),p,S);
  return [width,(front+back)/2,(front-back)/2];
 }
-export function pointV3(y,theta,p,S,offset=0){
- const v=normalizedHeight(y,S),s=sectionV3(v,p,S),sin=Math.sin(theta),cos=Math.cos(theta),a=compileMicroAtlasV3(p,S);
+export function pointV3(y,theta,p,S,offset=0,a=compileMicroAtlasV3(p,S)){
+ const v=normalizedHeight(y,S),s=sectionV3(v,p,S),sin=Math.sin(theta),cos=Math.cos(theta);
  const u=sin,frontWeight=smooth((cos+.10)/.62),backWeight=smooth((-cos+.10)/.62);
  /* Suaviza a transição do crânio frontal ao plano lateral temporal.
   * Disco de Loomis não é um sólido separado; o achatamento nasce da seção. */
@@ -43,12 +43,12 @@ export function pointV3(y,theta,p,S,offset=0){
 }
 export function buildHeadV3(p,S){
  const density=clamp(Math.round(p.headDetail??1),0,2),rows=[96,148,200][density],cols=[80,124,168][density];
- const V=new Float32Array(rows*cols*3);
+ const V=new Float32Array(rows*cols*3),atlas=compileMicroAtlasV3(p,S);
  /* Fecha a calota superior em ponto quase singular; não acrescenta esfera. */
  for(let i=0;i<rows;i++){
    const y=yAt(i/(rows-1),S);
    for(let j=0;j<cols;j++){
-     const theta=j*TAU/cols,q=pointV3(y,theta,p,S),idx=3*(i*cols+j);
+     const theta=j*TAU/cols,q=pointV3(y,theta,p,S,0,atlas),idx=3*(i*cols+j);
      V[idx]=q[0];V[idx+1]=q[1];V[idx+2]=q[2];
    }
  }

@@ -14,7 +14,7 @@ function leituraBlocking() {
   const C = cameraNoMundo(P), g0 = chaoBlk();
   const manequins = SCN.list.map((it, i) => {
     const cp = capsulas(pMundo(it)).caps;
-    return { id: it.id, i, nome: it.name, cor: instColors(it, typeof document === "undefined"), caps: cp, x: it.params.wx || 0, z: it.params.wz || 0, giro: it.params.wRot || 0,
+    return { id: it.id, i, ativo: i === SCN.active, nome: it.name, cor: instColors(it, typeof document === "undefined"), caps: cp, x: it.params.wx || 0, z: it.params.wz || 0, giro: it.params.wRot || 0,
       altura: it.params.bodyLift || 0, sel: i === SCN.active && !SCN.objSel, oculto: !!it.oculto, foto: tamanhoNaFoto(C, cp) };
   });
   atualizarApoios();

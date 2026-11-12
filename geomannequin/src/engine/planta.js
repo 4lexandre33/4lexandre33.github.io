@@ -149,7 +149,7 @@ function svgPlanta(dados, v, opts) {
     if (mq.sel) o.push('<circle cx="' + f1(c[0]) + '" cy="' + f1(c[1]) + '" r="' + f1(r0 + 13) + '" class="blk-sel"/>');
     /* nome e, ao lado, quanto da altura da foto o manequim ocupa (a perspectiva em número) */
     const info = mq.foto && opts.tamanhos !== false ? (mq.foto.atras ? "atrás da câmera" : !mq.foto.dentro ? "fora da foto" : Math.round(mq.foto.frac * 100) + "%" + (mq.foto.inteiro ? "" : " cortado")) : "";
-    o.push('<text x="' + f1(c[0]) + '" y="' + f1(c[1] - r0 - 6) + '" class="blk-txt blk-nome">' + esc(mq.nome) + (info ? '<tspan class="blk-info-t"> · ' + esc(info) + "</tspan>" : "") + "</text>");
+    if (dados.manequins.length <= 24 || mq.ativo) o.push('<text x="' + f1(c[0]) + '" y="' + f1(c[1] - r0 - 6) + '" class="blk-txt blk-nome">' + esc(mq.nome) + (info ? '<tspan class="blk-info-t"> · ' + esc(info) + "</tspan>" : "") + "</text>");
   });
   /* órbita: círculo por onde a câmera passa ao girar em volta do pivô (centro = alvo) */
   if (dados.pivo) { const t = m3(C.alvo), r = Math.hypot(C.pos[0] - C.alvo[0], C.pos[2] - C.alvo[2]) * v.s;

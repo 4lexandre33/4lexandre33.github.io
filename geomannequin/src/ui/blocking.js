@@ -15,6 +15,7 @@ import { D, M_R, TIPOS_OBJETO, faixaLente, cameraNoMundo, eixoPerfil, encaixar, 
 import { render, setQuick, setSettle, settle } from "./palco.js";
 import { syncControls } from "./controles.js";
 import { refreshScene } from "./painel-cena.js";
+import { cena } from "../scene/comandos.js";
 
 const VW = { cima: [520, 420], lado: [520, 300] };
 const vista = { cima: { auto: true }, lado: { auto: true, modo: "camera" } };
@@ -144,7 +145,7 @@ function desenhar() {
   pedido = 0;
   if (E.painel.hidden && ONDE.cima === "painel" && ONDE.lado === "painel") return;
   const d = dadosCache = leituraBlocking();
-  if (visivel("cima")) { E.cimaSvg.innerHTML = svgPlanta(d, ajustarCima(d)); fantasma(); }
+  if (visivel("cima")) { E.cimaSvg.innerHTML = svgPlanta(d, ajustarCima(d)); fantasma(); marcarSelecao(); }
   if (visivel("lado")) { E.ladoSvg.innerHTML = svgPerfil(d, ajustarLado(d), vista.lado.modo); bussola(d); }
   if (!E.painel.hidden && !E.painel.classList.contains("recolhido")) { lista(d); campos(d); mostrarZoom(d); }
 }
@@ -253,6 +254,8 @@ function ligarCima() {
     if (!host.querySelector("svg")) return;
     const q0 = ptSvg(host, e), v = vista.cima, w0 = cimaParaMundo(v, q0), alvo = e.target.closest("[data-k]"), k = alvo ? alvo.dataset.k : "";
     if (colocar) { e.preventDefault(); colocarEm(snap(w0[0]), snap(w0[1])); return; }
+    if (massaNoClique(host, e, w0, k)) return;
+    if (moverSelecao(host, e, w0, k)) return;
     let arr = null;
     if (k.startsWith("m:")) {
       const id = +k.slice(2), i = idx(id); if (i < 0) return;
@@ -427,6 +430,77 @@ function ligarLargura() {
   alca.addEventListener("dblclick", () => { ls.gravar("largura", aplica(380)); });
 }
 
+
+/* ===== em massa: área, seleção múltipla, grade/multidão e olhar para o ponto ===== */
+let massa = { modo: null, area: null, arrasto: null };
+function selecao() { if (!SCN.selecao) SCN.selecao = []; return SCN.selecao; }
+function marcarSelecao() {
+  const svg = E.cimaSvg && E.cimaSvg.querySelector("svg"); if (!svg) return;
+  const s = new Set(selecao()), v = vista.cima, ns = "http://www.w3.org/2000/svg";
+  svg.querySelectorAll("[data-k]").forEach(el => { const k = el.dataset.k, id = k.startsWith("m:") ? +k.slice(2) : k.startsWith("o:") ? "o" + k.slice(2) : null; if (id !== null) el.classList.toggle("blk-sel", s.has(id)); });
+  const a = massa.arrasto || massa.area;
+  if (a) { const r = svg.ownerDocument.createElementNS(ns, "rect"), x0 = v.w / 2 + (Math.min(a[0], a[2]) - v.cx) * v.s, y0 = v.h / 2 + (Math.min(a[1], a[3]) - v.cy) * v.s;
+    r.setAttribute("x", x0); r.setAttribute("y", y0); r.setAttribute("width", Math.abs(a[2] - a[0]) * v.s); r.setAttribute("height", Math.abs(a[3] - a[1]) * v.s); r.setAttribute("class", "blk-area"); svg.appendChild(r); }
+  if (E.massaN) E.massaN.textContent = s.size ? s.size + " selecionado" + (s.size > 1 ? "s" : "") : massa.area ? "área marcada" : "";
+}
+function idsNaArea(a) {
+  const x0 = Math.min(a[0], a[2]), x1 = Math.max(a[0], a[2]), z0 = Math.min(a[1], a[3]), z1 = Math.max(a[1], a[3]), dentro = (x, z) => x >= x0 && x <= x1 && z >= z0 && z <= z1;
+  return [...SCN.list.filter(it => dentro(it.params.wx || 0, it.params.wz || 0)).map(it => it.id), ...SCN.objetos.filter(o => dentro(o.x, o.z)).map(o => "o" + o.id)];
+}
+function alternarSel(id) { const s = selecao(), i = s.indexOf(id); if (i >= 0) s.splice(i, 1); else s.push(id); pedirDesenho(); }
+function modoMassa(m, quieto) {
+  massa.modo = massa.modo === m ? null : m;
+  E.painel.querySelectorAll("[data-massa=area],[data-massa=olhar]").forEach(b => b.setAttribute("aria-pressed", b.dataset.massa === massa.modo ? "true" : "false"));
+  E.painel.classList.toggle("marcando", !!massa.modo);
+  if (!quieto || massa.modo) aviso(massa.modo === "area" ? "Arraste na vista de cima para marcar a área · Esc cancela" : massa.modo === "olhar" ? "Clique no ponto para onde " + (selecao().length || "todos") + " vão olhar" : "");
+}
+/* chamado pelo pointerdown da vista de cima; devolve true se tratou o clique */
+function massaNoClique(host, e, w0, k) {
+  if (massa.modo === "olhar") { e.preventDefault();
+    const s = new Set(selecao()), quem = s.size ? [...SCN.list.filter(it => s.has(it.id)).map(it => it.name), ...SCN.objetos.filter(o => s.has("o" + o.id)).map(o => o.nome || o.tipo)] : "todos";
+    try { const f = cena.olharPara(quem, [w0[0], w0[1]], { modo: E.painel.querySelector('[data-massa="costas"]').checked ? "costas" : undefined }); aviso(f.length + " virado" + (f.length > 1 ? "s" : "") + " para o ponto. Ctrl+Z desfaz."); } catch (err) { aviso(err.message, true); }
+    modoMassa("olhar", true); mudou(true); return true; }
+  if (e.shiftKey && (k.startsWith("m:") || k.startsWith("o:"))) { alternarSel(k.startsWith("m:") ? +k.slice(2) : "o" + k.slice(2)); return true; }
+  if (massa.modo === "area" || (e.shiftKey && !k)) { e.preventDefault(); host.setPointerCapture(e.pointerId);
+    massa.arrasto = [w0[0], w0[1], w0[0], w0[1]];
+    const mv = ev => { const w = cimaParaMundo(vista.cima, ptSvg(host, ev)); massa.arrasto[2] = w[0]; massa.arrasto[3] = w[1]; pedirDesenho(); };
+    const up = () => { host.removeEventListener("pointermove", mv); host.removeEventListener("pointerup", up);
+      const a = massa.arrasto; massa.arrasto = null;
+      if (Math.abs(a[2] - a[0]) + Math.abs(a[3] - a[1]) > 0.5) { massa.area = a.map(v => Math.round(v * 10) / 10); SCN.selecao = idsNaArea(a); }
+      if (massa.modo === "area") modoMassa("area", true); pedirDesenho(); };
+    host.addEventListener("pointermove", mv); host.addEventListener("pointerup", up); return true; }
+  return false;
+}
+/* arrastar um item selecionado leva todos os selecionados */
+function moverSelecao(host, e, w0, k) {
+  const s = selecao(), id = k.startsWith("m:") ? +k.slice(2) : k.startsWith("o:") ? "o" + k.slice(2) : null;
+  if (id === null || s.length < 2 || !s.includes(id)) return false;
+  const its = SCN.list.filter(it => s.includes(it.id)).map(it => [it, it.params.wx || 0, it.params.wz || 0]), obs = SCN.objetos.filter(o => s.includes("o" + o.id)).map(o => [o, o.x, o.z]);
+  arrastar(host, e, vista.cima, cimaParaMundo, w => { const dx = snap(w[0] - w0[0]), dz = snap(w[1] - w0[1]);
+    its.forEach(([it, x, z]) => { it.params.wx = x + dx; it.params.wz = z + dz; }); obs.forEach(([o, x, z]) => moverObjeto(o.id, x + dx, z + dz, false)); }, k);
+  return true;
+}
+function ligarMassa(painel) {
+  const q = s => painel.querySelector(s), form = q(".blk-massa-form");
+  E.massaN = q(".blk-massa-n");
+  q('[data-massa="area"]').addEventListener("click", () => modoMassa("area"));
+  q('[data-massa="olhar"]').addEventListener("click", () => modoMassa("olhar"));
+  q('[data-massa="form"]').addEventListener("click", () => { form.hidden = !form.hidden; });
+  q('[data-massa="limpar"]').addEventListener("click", () => { SCN.selecao = []; massa.area = null; pedirDesenho(); });
+  q('[data-massa="separar"]').addEventListener("click", () => { try { const r = cena.separar(); aviso(r.movidos.length ? r.movidos.length + " afastado(s); " + (r.restantes ? r.restantes + " ainda encostam." : "ninguém sobreposto.") : "Ninguém sobreposto."); } catch (err) { aviso(err.message, true); } mudou(true); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && massa.modo) modoMassa(massa.modo); });
+  form.addEventListener("submit", e => { e.preventDefault();
+    const f = new FormData(form), n = +f.get("n"), arr = f.get("arranjo"), oque = f.get("oque"), pose = f.get("pose"), esp = (+f.get("esp") || 0.7) * M_R, a = massa.area;
+    const o = { n, espacamento: esp, cor: f.get("cor") ? "grupo" : "auto" };
+    if (a) { if (arr === "grade" || arr === "multidao") o.area = [Math.min(a[0], a[2]), Math.min(a[1], a[3]), Math.max(a[0], a[2]), Math.max(a[1], a[3])]; o.x = (a[0] + a[2]) / 2; o.z = (a[1] + a[3]) / 2; if (arr !== "grade" && arr !== "multidao") o.raio = Math.max(Math.abs(a[2] - a[0]), Math.abs(a[3] - a[1])) / 2; }
+    else { const C = cameraNoMundo(P); o.x = C.alvo[0]; o.z = C.alvo[2]; }
+    if (oque !== "manequim") o.objeto = oque; else if (pose === "variadas") o.poses = ["empe", "contrapposto", "bracosCruzadosPeito", "acenando", "apontando", "pensando"]; else o.pose = pose;
+    if (f.get("olhar")) o.olharPara = [o.x, o.z];
+    try { const r = cena.arranjo(arr, o); const nomes = r.manequins || r.objetos || []; SCN.selecao = r.manequins ? SCN.list.filter(it => it.grupo === r.grupo).map(it => it.id) : SCN.objetos.filter(q2 => q2.grupo === r.grupo).map(q2 => "o" + q2.id);
+      aviso(nomes.length + " criado" + (nomes.length > 1 ? "s" : "") + " (" + r.grupo + ")" + (r.separados ? ", " + r.separados + " afastado(s) para não sobrepor" : "") + ". Ctrl+Z desfaz."); refreshScene(); }
+    catch (err) { aviso(err.message, true); }
+    assLista = ""; mudou(true); });
+}
 export function iniciarBlocking() {
   if (typeof document === "undefined") return;
   let painel = document.getElementById("blkPainel");
@@ -439,6 +513,14 @@ export function iniciarBlocking() {
     '<div class="blk-conteudo">' +
     '<div class="blk-inserir"><button type="button" data-p="manequim" class="blk-mais">+ Manequim</button><div class="blk-menu-w"><button type="button" data-p="objeto" class="blk-mais" aria-haspopup="true" aria-expanded="false">+ Objeto ▾</button><div class="blk-menu" role="menu" hidden>' + opcoes + '</div></div>' +
     '<label class="blk-chk"><input type="checkbox" data-p="encaixe" checked> encaixe</label><label class="blk-chk"><input type="checkbox" data-p="persp"> perspectiva</label></div>' +
+    '<div class="blk-massa" role="group" aria-label="Em massa"><span>Em massa</span><button type="button" data-massa="area" aria-pressed="false" title="Arraste na vista de cima para marcar uma área (seleciona o que estiver dentro). Shift+clique soma/tira um item.">▭ Área</button>' +
+    '<button type="button" data-massa="form" title="Encher a área (ou o centro) com manequins ou objetos em grade, multidão, círculo, fila ou arco">▦ Grade…</button>' +
+    '<button type="button" data-massa="olhar" aria-pressed="false" title="Clique num ponto da vista de cima: todos os selecionados viram a frente para ele">◎ Olhar para o ponto</button>' +
+    '<label class="blk-chk"><input type="checkbox" data-massa="costas"> de costas</label><button type="button" data-massa="separar" title="Afastar quem está sobreposto, o mínimo necessário">Separar</button><button type="button" data-massa="limpar" title="Limpar a seleção">✕</button><span class="blk-massa-n" aria-live="polite"></span></div>' +
+    '<form class="blk-massa-form" hidden><label>Quantos <input type="number" name="n" min="1" max="200" value="20"></label><label>Arranjo <select name="arranjo"><option value="grade">grade</option><option value="multidao">multidão</option><option value="circulo">círculo</option><option value="arco">arco</option><option value="fila">fila</option></select></label>' +
+    '<label>O quê <select name="oque"><option value="manequim">manequim</option>' + ORDEM_OBJ.filter(t => TIPOS_OBJETO[t]).map(t => '<option value="' + t + '">' + TIPOS_OBJETO[t].nome + '</option>').join("") + '</select></label>' +
+    '<label>Pose <select name="pose"><option value="empe">em pé</option><option value="contrapposto">contrapposto</option><option value="caminhando">caminhando</option><option value="correndo">correndo</option><option value="sentadoChao">sentado no chão</option><option value="bracosCruzadosPeito">braços cruzados</option><option value="acenando">acenando</option><option value="apontando">apontando</option><option value="guardaLuta">guarda de luta</option><option value="variadas">variadas</option></select></label>' +
+    '<label>Espaço (m) <input type="number" name="esp" min="0.3" max="10" step="0.1" value="0.7"></label><label class="blk-chk"><input type="checkbox" name="cor" checked> mesma cor (mais leve)</label><label class="blk-chk"><input type="checkbox" name="olhar"> olhar para o centro</label><button type="submit">Criar</button></form>' +
     '<div class="blk-modo" role="group" aria-label="O que mover"><span>Mover</span><button type="button" data-mover="manequim" aria-pressed="true">Manequim</button><button type="button" data-mover="articulacoes" aria-pressed="false">Articulações</button></div>' +
     '<div class="vp-area" hidden></div>' +
     '<div class="blk-zoom" role="group" aria-label="Zoom da lente (a câmera fica parada)"><span class="blk-zoom-tit">Zoom</span><button type="button" data-z="-1" title="Abrir: lente menor, mais campo (grande-angular)" aria-label="Abrir o campo">−</button>' +
@@ -492,7 +574,7 @@ export function iniciarBlocking() {
   modoMover(ls.ler("mover", "manequim"));
   painel.addEventListener("keydown", teclado);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && colocar) pararColocar(); });
-  ligarCima(); ligarLado(); ligarCampos(); ligarLargura();
+  ligarCima(); ligarLado(); ligarCampos(); ligarLargura(); ligarMassa(painel);
   E.painel.hidden = !ls.ler("aberto", true);
   if (ls.ler("recolhido", false)) recolher(true);
   estadoLayout();

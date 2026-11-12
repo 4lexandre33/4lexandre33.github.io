@@ -27,6 +27,7 @@ export * from "./orientacao-frames.js";
 export * from "./orbita.js";
 export * from "./pegadas.js";
 export * from "./acoes-luta.js";
+export * from "./multidao.js";
 export * from "./interacoes.js";
 export * from "./comandos.js";
 export * from "./biblioteca.js";
