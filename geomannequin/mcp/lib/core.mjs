@@ -49,7 +49,7 @@ const getComputedStyle=()=>({getPropertyValue:k=>((document.documentElement.data
 ${sceneSrc}
 ${ordem.iniciar.map(f => f + "();").join("\n")}
 return {
-  get P(){return P}, SCN, cena, camera, tema, LOG,
+  get P(){return P}, SCN, cena, camera, tema, LOG, handFrameV3,
   get L(){return L}, setLayer:(k,v)=>{L[k]=!!v;mode=null},
   setPreset:n=>{if(!PRESETS[n])throw new Error("Modo desconhecido: use 'manequim', 'construcao' ou 'ecorche'.");setPreset(n)},
   get mode(){return mode},

@@ -123,8 +123,18 @@ function manifoldCaps(A,B,{tol=0,includeTouch=false,margin=.025,self=false,max=9
 function pointSolid(p,b){
  const delta=V(p,b.c),loc=b.e.map(e=>dot(delta,e));
  let d,nLocal;
- if(b.cil){
-  const radial=Math.hypot(loc[0],loc[2]),dx=radial-b.r,dy=Math.abs(loc[1])-b.hh;
+ if(b.esf){
+  /* elipsoide: distância aproximada pelo gradiente do campo normalizado */
+  const q=loc.map((v,i)=>v/b.r[i]),k=Math.hypot(...q)||1e-9,g=q.map((v,i)=>v/b.r[i]),gl=Math.hypot(...g)||1e-9;
+  d=(k-1)*k/gl;nLocal=g.map(v=>v/gl);
+ }else if(b.toro){
+  const ra=b.ra||b.rt,rad=Math.hypot(loc[0],loc[2]),ur=rad>1e-9?[loc[0]/rad,0,loc[2]/rad]:[1,0,0];
+  const qx=(rad-b.Rm)/b.rt,qy=loc[1]/ra,k=Math.hypot(qx,qy)||1e-9;
+  d=(k-1)*Math.min(b.rt,ra)*(k>1?1:1);
+  const nv=[qx/b.rt,qy/ra],nl=Math.hypot(...nv)||1;nLocal=[ur[0]*nv[0]/nl,nv[1]/nl,ur[2]*nv[0]/nl];
+ }else if(b.cil){
+  const r0=b.r0??b.r,r1=b.r1??b.r,rY=r0+(r1-r0)*Math.max(0,Math.min(1,(loc[1]/(b.hh||1)+1)/2));
+  const radial=Math.hypot(loc[0],loc[2]),dx=(radial-rY)*Math.cos(Math.atan2(r0-r1,2*b.hh||1)),dy=Math.abs(loc[1])-b.hh;
   const outside=Math.hypot(Math.max(0,dx),Math.max(0,dy));
   d=outside+Math.min(Math.max(dx,dy),0);
   const nr=radial>1e-9?[loc[0]/radial,0,loc[2]/radial]:[1,0,0];
@@ -162,7 +172,7 @@ function capsuleSolidContact(cap,solid,partId){
  const a=V(center,mul(n,cap.r)),b=V(center,mul(n,best.d));
  return {idA:cap.id,idB:partId,pa:cap.nome,pb:partId,
   distancia:dist,prof:Math.max(0,-dist),n,a,b,ponto:mul(add(a,b),.5),
-  kindA:cap.kind,kindB:solid.cil?"cylinder":"box"};
+  kindA:cap.kind,kindB:solid.esf?"ellipsoid":solid.toro?"torus":solid.cil?"cylinder":"box"};
 }
 function solidAABB(b){
  const e=b.e,h=b.h,ex=[0,1,2].map(k=>e.reduce((s,ax,i)=>s+Math.abs(ax[k])*h[i],0));

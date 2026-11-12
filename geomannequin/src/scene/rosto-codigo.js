@@ -26,12 +26,15 @@ function chavesRosto() { if (!_chavesRosto) { const s = new Set(); SL.forEach(d 
 let _chavesFormato = null;
 function chavesFormato() { return _chavesFormato || (_chavesFormato = SL.filter(d => d.g === "slFeat").map(d => d.k)); }
 const GRUPOS_ROSTO = [
-  ["boca e mandíbula", k => /^(jaw|smile|mouth|upperLip|lowerLip|lipPress|pout|teethClench)/.test(k)],
-  ["olhos e pálpebras", k => /^(eyeLid|lidUp|lidLo|eyeBags)/.test(k)],
+  ["boca e mandíbula", k => /^(jaw|smile|mouth|upperLip|lowerLip|lipPress|lipBite|pout|teethClench|teethShow|fang|tongueOut)/.test(k)],
+  ["olhos e pálpebras", k => /^(eyeLid|lidUp|lidLo|eyeBags|eyeWide)/.test(k)],
+  ["íris, pupila e brilho", k => /^(irisSize|pupilSize|pupilSlit|eyeShine|eyeBlank)$/.test(k)],
   ["olhar (para onde os olhos apontam)", k => /^(eyeYaw|eyePitch)$/.test(k)],
   ["sobrancelhas", k => /^brow/.test(k)],
+  ["cílios", k => /^lash/.test(k)],
   ["bochechas e nariz", k => /^(cheek|nose|nostril)/.test(k)],
   ["linhas de expressão (rugas)", k => /^wrinkle/.test(k)],
+  ["sinais de mangá (veia, suor)", k => /^(angerVein|sweatDrop)$/.test(k)],
   ["estado (corar, lágrimas)", k => /^(blush|tears)$/.test(k)]
 ];
 let _nomeRosto = null;

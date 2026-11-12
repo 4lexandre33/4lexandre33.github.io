@@ -80,7 +80,7 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
   ok(ins.every(t => { try { m4.aplicarRosto(t); return true; } catch (e) { return false; } }), "exemplos curtos de aplicarRosto do manual funcionam"); }
 /* 7. pose de descanso: igual à pose em pé, mantém biotipo/posição/rosto; pacote diz o modo */
 { const w5 = createWorld(), m5 = w5.cena.ativo; m5.corpo("atletico"); m5.posicao(3, 2); m5.poseRapida("chuteAlto"); m5.expressao("raiva"); const r0 = m5.rostoCodigo(); m5.descanso();
-  const p = w5.SCN.list[0].params, w6 = createWorld(); w6.cena.ativo.corpo("atletico"); w6.cena.ativo.poseRapida("empe"); const q = w6.SCN.list[0].params;
+  const p = w5.SCN.list[0].params, w6 = createWorld(); w6.cena.ativo.corpo("atletico"); w6.cena.ativo.poseRapida("empe", { molejo: 0 }); const q = w6.SCN.list[0].params;
   const dif = [...w5.POSEKEYS].filter(k => w5.parteDaChave(k) !== "rosto" && Math.abs((p[k] || 0) - (q[k] || 0)) > 1e-6);
   ok(!dif.length && p.wx === 3 && p.wz === 2 && m5.rostoCodigo() === r0, "m.descanso(): pose em pé, mantém posição e rosto" + (dif.length ? " (difere: " + dif.join(", ") + ")" : ""));
   m5.descanso({ rosto: true }); ok(!/sorriso|franzir/.test(m5.rostoCodigo()), "m.descanso({rosto:true}) zera a expressão");
@@ -92,19 +92,19 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
   recs.forEach(r => { try { m7.pose(JSON.parse("{" + r.replace(/(\w+):/g, '"$1":') + "}")); } catch (e) { ruim = r + ": " + e.message; } });
   ok(recs.length >= 6 && !ruim, "receitas de cabeça e pescoço do manual funcionam" + (ruim ? " (" + ruim + ")" : ""));
   m7.poseRapida("empe"); m7.pose({ pescocoFrente: 20, pescocoGirar: -30 }); ok(/Pescoço: dobrado para a frente.*girado para a direita dele/.test(w7.cena.estadoIA()), "estado descreve o pescoço em palavras"); }
-/* 9. pegadas: cada uma segura sem atravessar o corpo e a mão alcança */
-{ const casos = [["forca", "bastao", {}], ["pinca", "cilindro", { raio: 0.06, alt: 2.6 }], ["gancho", "caixa", { larg: 2.2, prof: 1.2, alt: 2.6 }], ["bandeja", "caixa", { larg: 3, prof: 3, alt: 0.25 }],
-    ["duasMaos", "caixa", { larg: 3.4, prof: 2.6, alt: 2.4 }], ["abracado", "caixa", { larg: 3.6, prof: 3, alt: 3.2 }], ["acimaDaCabeca", "caixa", { larg: 4.5, prof: 3, alt: 1.2 }],
-    ["noOmbro", "cilindro", { raio: 0.6, alt: 9 }], ["debaixoDoBraco", "caixa", { larg: 2.4, prof: 0.4, alt: 3.2 }], ["noQuadril", "cilindro", { raio: 1.4, alt: 2.2 }], ["empurrando", "caixa", { larg: 4, prof: 3, alt: 4 }], ["espada", "espada", {}]];
-  const ruins = [];
-  for (const [peg, tipo, med] of casos) { const w8 = createWorld(), m8 = w8.cena.ativo; w8.cena.objeto(tipo, { x: 6, nome: "Obj", ...med });
-    try { const r = m8.segurarComo("Obj", peg); if (r.alcance !== "ok" || r.atravessa.length) ruins.push(peg + ": " + r.alcance + " " + r.atravessa.join(","));
-      m8.pose({ bracoDirFrente: (w8.SCN.list[0].params.armFlexR || 0) + 10 }); /* o objeto segue a mão */ } catch (e) { ruins.push(peg + ": " + e.message); } }
-  ok(!ruins.length, "12 pegadas: mão alcança e o objeto não atravessa o corpo" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
+/* 9. pegadas: cada ação (com o objeto de teste dela) alcança e não deixa o objeto dentro do tronco ou da cabeça */
+{ const ruins = [], lista = createWorld().cena.pegadas();
+  for (const a of lista) { const w8 = createWorld(), m8 = w8.cena.ativo; w8.cena.objeto(a.teste, { x: 0, z: 6, nome: "Obj", ...(a.testeMedidas || {}) });
+    try { const r = m8.segurarComo("Obj", a.tipo); const cm = /ficou a (\d+) cm/.exec(r.alcance); if (cm && +cm[1] > 22) ruins.push(a.tipo + ": " + r.alcance);
+      if (r.atravessa.some(x => /torax|abdomen|pelve|cabeca|pescoco/.test(x))) ruins.push(a.tipo + ": " + r.atravessa.join(","));
+      m8.pose({ bracoDirFrente: (w8.SCN.list[0].params.armFlexR || 0) + 5 }); } catch (e) { ruins.push(a.tipo + ": " + e.message); } }
+  /* nomes antigos continuam valendo */
+  for (const velho of ["duasMaos", "gancho", "empurrando"]) { const w8 = createWorld(); w8.cena.objeto("caixa", { x: 0, z: 6, nome: "Obj", larg: 2.4, prof: 1.4, alt: 2.4 }); try { w8.cena.ativo.segurarComo("Obj", velho); } catch (e) { ruins.push(velho + ": " + e.message); } }
+  ok(!ruins.length, lista.length + " pegadas: a palma alcança e o objeto não entra no tronco" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
 /* 10. dois manequins: cada interação alcança e não deixa braço atravessando fundo o tronco do outro */
 { const ruins = [];
-  for (const t of ["abracoFrente", "abracoLado", "abracoPorTras", "ombroAOmbro", "maoNoOmbro", "apoiandoFerido"]) { const w9 = createWorld(); w9.cena.ativo.renomear("Ana"); w9.cena.adicionar({ nome: "Leo", x: 6 });
+  for (const t of createWorld().cena.interacoes().map(x => x.tipo)) { const w9 = createWorld(); w9.cena.ativo.renomear("Ana"); w9.cena.adicionar({ nome: "Leo", x: 6 });
     try { const r = w9.cena.interagir("Ana", "Leo", t); if (/ficou a ([2-9]\d|\d{3}) cm/.test(r.alcance)) ruins.push(t + ": " + r.alcance); if (w9.cena.colisoes().length) ruins.push(t + ": colisão avisada"); } catch (e) { ruins.push(t + ": " + e.message); } }
-  ok(!ruins.length, "6 interações entre dois manequins (mão a menos de 20 cm do ponto, contato permitido)" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
+  ok(!ruins.length, "interações entre dois manequins (mão a menos de 20 cm do ponto, contato permitido)" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);

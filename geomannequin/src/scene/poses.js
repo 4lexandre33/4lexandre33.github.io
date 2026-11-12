@@ -82,17 +82,32 @@ const EXPRESSOES={
   culpa:{browIn:-0.6,browUp:0.1,eyeLid:0.35,eyePitch:-0.6,eyeYaw:0.3,smile:-0.4,lipPress:0.4,blush:0.2},
   orgulho:{smile:0.45,mouthCornerL:0.15,eyeLid:0.3,browUp:0.1,lidLoL:0.2,lidLoR:0.2,eyePitch:-0.1},
   pensativo:{browIn:0.2,browInnerL:0.35,eyeYaw:0.5,eyePitch:0.5,pout:0.35,mouthCornerR:-0.2},
-  alivio:{smile:0.4,eyeLid:0.45,browIn:-0.3,browUp:0.15,jawOpen:0.08}
+  alivio:{smile:0.4,eyeLid:0.45,browIn:-0.3,browUp:0.15,jawOpen:0.08},
+  /* mangá: olhos, pupila, brilho, dentes e sinais */
+  sorrisoManiaco:{smile:1,mouthCornerL:0.4,mouthCornerR:0.4,teethShow:1,mouthWide:1,eyeWide:0.75,pupilSize:-0.85,eyeShine:-0.6,browIn:0.55,browUp:0.2,browSharp:0.6,lidLoL:0.2,lidLoR:0.2,wrinkleNasolabial:0.7,wrinkleCheek:0.4},
+  surpresaTotal:{jawOpen:0.75,mouthRound:0.6,browUp:1,eyeWide:1,pupilSize:-0.9,eyeShine:-0.2,wrinkleForehead:0.7},
+  olharVazio:{eyeShine:-1,eyeLid:0.3,smile:-0.15,browIn:-0.2,pupilSize:-0.2,eyePitch:-0.25},
+  choqueComico:{eyeBlank:1,eyeWide:0.8,jawOpen:0.8,browUp:1,mouthWobble:0.6,sweatDrop:1},
+  nervoso:{browWave:1,browIn:-0.5,browUp:0.3,mouthWobble:1,smile:0.15,sweatDrop:0.9,eyeWide:0.3,pupilSize:-0.4},
+  mordendoLabio:{lipBite:1,smile:0.25,eyeLid:0.3,blush:0.5,browIn:-0.25,eyeYaw:0.4,eyePitch:-0.2},
+  provocando:{tongueOut:1,lidUpL:1,smile:0.35,browOuterR:0.5,cheekL:0.5},
+  furia:{browIn:1,browUp:-0.6,browSharp:1,browThick:0.6,teethShow:1,angerVein:1,eyeWide:0.35,pupilSize:-0.6,nostrilFlare:1,wrinkleNoseBridge:0.8,wrinkleNasolabial:0.7,smile:-0.4},
+  esforco:{browIn:0.85,browUp:-0.3,eyeLid:0.4,lidLoL:0.6,lidLoR:0.6,teethClench:1,wrinkleFrown:1,wrinkleNoseBridge:0.8,wrinkleChin:0.6,nostrilFlare:0.7,wrinkleCheek:0.5,sweatDrop:0.6},
+  encantado:{pupilSize:0.9,eyeShine:1,smile:0.7,browUp:0.4,browIn:-0.3,blush:0.6,jawOpen:0.15},
+  sombrio:{eyeShine:-1,pupilSlit:0.4,browIn:0.7,browSharp:0.8,eyeLid:0.35,smile:0.25,mouthCornerL:0.4,mouthCornerR:-0.1},
+  determinadoLuta:{browIn:0.85,browUp:-0.35,browSharp:0.9,browThick:0.4,eyeLid:0.15,lidLoL:0.35,lidLoR:0.35,teethClench:0.7,lipPress:0.2,smile:-0.25,eyeShine:0.2,nostrilFlare:0.5,wrinkleFrown:0.6},
+  gritoDeGuerra:{jawOpen:1,mouthWide:0.7,teethShow:0.4,browIn:1,browSharp:1,browThick:0.5,eyeWide:0.4,pupilSize:-0.5,wrinkleNasolabial:0.8,wrinkleNoseBridge:0.8,angerVein:0.6,nostrilFlare:0.9}
 };
 /* nomes para a interface e a ajuda */
 const NOMES_EXPRESSOES={neutra:"Neutra",alegria:"Alegria",riso:"Riso",surpresa:"Surpresa",raiva:"Raiva",tristeza:"Tristeza",choro:"Choro",medo:"Medo",grito:"Grito",
   vergonha:"Vergonha",sono:"Sono",desconfianca:"Desconfiança",piscando:"Piscando",nojo:"Nojo",desprezo:"Desprezo",determinacao:"Determinação",malicia:"Malícia",
-  confusao:"Confusão",choque:"Choque",tedio:"Tédio",dor:"Dor",cansaco:"Cansaço",admiracao:"Admiração",culpa:"Culpa",orgulho:"Orgulho",pensativo:"Pensativo",alivio:"Alívio"};
+  confusao:"Confusão",choque:"Choque",tedio:"Tédio",dor:"Dor",cansaco:"Cansaço",admiracao:"Admiração",culpa:"Culpa",orgulho:"Orgulho",pensativo:"Pensativo",alivio:"Alívio",
+  sorrisoManiaco:"Sorriso maníaco",surpresaTotal:"Surpresa total",olharVazio:"Olhar vazio",choqueComico:"Choque cômico",nervoso:"Nervoso",mordendoLabio:"Mordendo o lábio",provocando:"Provocando",furia:"Fúria",esforco:"Esforço",encantado:"Encantado",sombrio:"Sombrio",determinadoLuta:"Determinado (luta)",gritoDeGuerra:"Grito de guerra"};
 /* toda expressão zera corar, lágrimas e as unidades de ação que não usa, para não herdar da anterior */
 const BASE_ROSTO=["jawOpen","jawSide","smile","eyeLid","browUp","browIn","blush","tears",...AU_KEYS,...ESTADO_KEYS];
 Object.values(EXPRESSOES).forEach(e=>{for(const k of BASE_ROSTO)if(e[k]===undefined)e[k]=0});
 /* nome de expressão sem acento e em minúsculas */
-const chaveExpressao=nome=>String(nome||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const chaveExpressao=nome=>{const t=String(nome||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"");return Object.keys(EXPRESSOES).find(k=>k.toLowerCase()===t)||t};
 /* mistura: pesos {raiva: 0.6, tristeza: 0.4} (ou o texto "60% raiva + 40% tristeza"), intensidade 0..1.5.
    Cada parâmetro é a média ponderada das expressões (o que uma não usa conta como 0) vezes a intensidade;
    o olhar (eyeYaw/eyePitch) só entra se alguma das expressões o define. */
@@ -348,6 +363,44 @@ Object.assign(POSE_ALIAS,{"guarda":"guardaLuta","guarda de luta":"guardaLuta","s
   "salto sobre a caixa":"saltoSobreCaixa","subindo degrau":"subindoDegrau","salto longo":"saltoLongo","desviando":"desviando","escalando":"escalando","vitória":"vitoria","comemorando":"vitoria"});
 function nomePose(k){const t=String(k||"").trim();if(POSES_CORPO[t]||BPOSES[t]||["cintura","cruzar","ombro"].includes(t))return t;const a=POSE_ALIAS[t.toLowerCase()];return a||t}
 function todasPoses(){return Object.keys(BPOSES).concat(["cintura","cruzar","ombro"],Object.keys(POSES_CORPO).filter(k=>k!=="maosNaCintura"))}
+/* ===== molejo: o corpo nunca está "duro" — micro-inclinações da pelve, lombar, tórax, pescoço e cabeça, braços e
+   pernas que não são espelho um do outro e, em pé, o peso numa perna (contrapposto). Determinístico pela semente.
+   intensidade 0 (nada) a 1.5 (bem solto). Fica dentro dos limites de cada articulação. */
+function molejoRand(semente){let x=0;const t=String(semente??"gm");for(let i=0;i<t.length;i++)x=(x*31+t.charCodeAt(i))>>>0;x=x||1234567;return()=>{x^=x<<13;x>>>=0;x^=x>>17;x^=x<<5;x>>>=0;return (x%20001)/10000-1}}
+function aplicarMolejo(Q,opts){
+  const o=typeof opts==="number"?{intensidade:opts}:(opts||{}),i=Math.max(0,Math.min(1.5,o.intensidade??0.6));if(!i)return Q;
+  const r=molejoRand(o.semente??"molejo"),add=(k,v)=>{const [mn,mx]=faixa(k,Q.flex);Q[k]=Math.round(Math.min(mx,Math.max(mn,(Q[k]||0)+v))*10)/10};
+  const emPe=Math.max(Q.kneeFlexL||0,Q.kneeFlexR||0)<25&&Math.max(Math.abs(Q.hipFlexL||0),Math.abs(Q.hipFlexR||0))<30&&Math.abs(Q.bodyPitch||0)<20&&Math.abs(Q.bodyRoll||0)<20;
+  /* contrapposto: o peso na perna "w"; a pelve sobe desse lado, o ombro desce; a outra perna solta */
+  const w=r()>0?1:-1,L=k=>k+(w>0?"L":"R"),R=k=>k+(w>0?"R":"L");
+  const apoiado=Math.abs(Q.bodyPitch||0)>=30||Math.abs(Q.bodyRoll||0)>=30;
+  if(emPe&&o.pernas!==false){
+    add("pelvisSide",w*(4+3*Math.abs(r()))*i);add("spineSide",-w*(2+1.5*Math.abs(r()))*i);add("thoSide",-w*1.2*i*Math.abs(r()));
+    add(R("kneeFlex"),(9+6*Math.abs(r()))*i);add(R("hipFlex"),(3+3*Math.abs(r()))*i);add(R("hipRot"),(4+4*r())*i);add(L("hipRot"),3*r()*i);
+    add(R("ankleFlex"),(3+3*Math.abs(r()))*i);add(R("hipAbd"),2*r()*i);
+    plantarPes(Q,0.01*i,{});
+  }else if(o.pernas!==false&&!apoiado){
+    for(const s of ["L","R"]){add("hipRot"+s,3*r()*i);add("ankleTilt"+s,2*r()*i);if((Q["kneeFlex"+s]||0)>20)add("kneeFlex"+s,3*r()*i)}
+  }
+  /* apoiado no chão (prancha, ponte, deitado): só cabeça e pescoço — o apoio decide o resto */
+  if(apoiado){add("headRoll",3*r()*i);add("headYaw",4*r()*i);add("neckSide",2*r()*i);return Q}
+  /* coluna em vários pontos: lombar e tórax com curvas próprias (não um bloco só) */
+  add("pelvisTilt",3*r()*i);add("pelvisTwist",3*r()*i);
+  add("lumFlex",3*r()*i);add("thoFlex",(2+2*r())*i);add("lumSide",1.5*r()*i);add("thoTwist",3*r()*i);add("lumTwist",2*r()*i);
+  /* pescoço e cabeça: pescoço um pouco à frente, cabeça compensa; inclinação e giro pequenos */
+  add("neckFlex",(3+3*r())*i);add("neckSide",2*r()*i);add("neckTwist",2*r()*i);
+  add("headPitch",-2*Math.abs(r())*i);add("headRoll",(3*r()-w*2)*i);add("headYaw",4*r()*i);
+  /* apoiado no chão pelas mãos/costas (prancha, ponte, deitado): braços e pernas ficam (o apoio decide) */
+  if(Math.abs(Q.bodyPitch||0)>=30||Math.abs(Q.bodyRoll||0)>=30)return Q;
+  /* ombros e braços: cada um do seu jeito */
+  for(const s of ["L","R"]){
+    add("shElev"+s,0.12*r()*i);add("shProt"+s,0.12*r()*i);
+    add("armAbd"+s,4*r()*i);add("armFlex"+s,4*r()*i);add("armRot"+s,4*r()*i);
+    add("elbow"+s,(4+4*r())*i);add("pron"+s,6*r()*i);add("wrist"+s,6*r()*i);add("wristDev"+s,3*r()*i);
+    const c=Q["handCurl"+s];if(typeof c==="number"&&c>0.2&&c<0.7)Q["handCurl"+s]=Math.round(Math.min(0.75,Math.max(0.2,c+0.08*r()*i))*100)/100;
+  }
+  return Q;
+}
 function doBodyPose(k,opts){
     k=nomePose(k);
     const s=opts&&(opts.lado==="dir"||opts.lado==="direito"||opts.lado===-1)?-1:1;
@@ -376,4 +429,4 @@ function doBodyPoseBase(k){
     }
 }
 
-export { BASE_ROSTO, definirExpressoesExtras, POSE_GRUPOS, EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes, chaveExpressao, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };
+export { aplicarMolejo, pesEm, plantarPes, guardaBase, BASE_ROSTO, definirExpressoesExtras, POSE_GRUPOS, EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes, chaveExpressao, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };

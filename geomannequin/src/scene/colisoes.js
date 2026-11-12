@@ -34,6 +34,9 @@ function maosSegurando(it, o) {
     if (g.side !== undefined) out.push(nome(g.side));
     if (g.secundaria && g.secundaria.side !== undefined) out.push(nome(g.secundaria.side));
   }
+  /* mãos que só encostam (empurrar, carrinho, corda) */
+  (o.toques || []).forEach(t => { if (t.mannequinId === it.id) out.push(nome(t.side)); });
+  if (o.corda && o.corda.manequim === it.id) out.push("maoE", "maoD", "antebracoE", "antebracoD");
   return out;
 }
 /* ===== detectar ===== */
@@ -53,6 +56,7 @@ function colisoesDaCena() {
   /* manequim × objeto (banco, parede…) */
   vis.forEach((it, i) => SCN.objetos.forEach((o, k) => {
     if (it.apoioEm === o.id) return;
+    if (o.tipo === "corda" && o.corda && o.corda.manequim !== it.id) { /* corda de outro: conta normalmente */ }
     /* a pegada é um contato previsto: a mão que segura (principal ou secundária) não colide com o próprio objeto;
        o resto do corpo continua valendo (encosto na coxa, assento no peito…) */
     const maos = maosSegurando(it, o);
@@ -64,6 +68,7 @@ function colisoesDaCena() {
   const objs = SCN.objetos, g0 = chao();
   for (let k = 0; k < objs.length; k++) for (let j = k + 1; j < objs.length; j++) {
     const A = objs[k], B = objs[j]; if (A.sobre === B.id || B.sobre === A.id) continue;
+    if ((A.corda && A.corda.objeto === B.id) || (B.corda && B.corda.objeto === A.id) || A.tipo === "corda" && B.tipo === "corda") continue;
     const cs = colisaoEntreObjetos(A, B, g0); if (!cs.length) continue;
     out.push({ a: -1, b: -1, objeto: k, objeto2: j, prof: cs[0].prof, contatos: cs, texto: nomeObj(A) + " entra em " + nomeObj(B) + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" });
   }

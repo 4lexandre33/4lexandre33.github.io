@@ -7,6 +7,7 @@ import { makeXf } from "./camera.js";
 import { effScale } from "./projecao.js";
 import { FINO } from "./zbuffer.js";
 import {objectRigidPose,rigidPoint,rigidDirection} from "./rigid-transform.js";
+import { COMPOSTOS } from "./objetos-compostos.js";
 
 /* medidas padrão (R): largura (x), profundidade (z), altura (y) */
 const TIPOS_OBJETO = {
@@ -33,6 +34,7 @@ const TIPOS_OBJETO = {
   barril: { nome: "barril", forma: "cilindro", raio: 2.3, alt: 7.6 },
   mesaRedonda: { nome: "mesa redonda", forma: "cilindro", raio: 4.0, alt: 6.5 }
 };
+for (const [k, t] of Object.entries(COMPOSTOS)) TIPOS_OBJETO[k] = { nome: t.nome, larg: t.larg, prof: t.prof, alt: t.alt, composto: true, grupo: t.grupo };
 const ehCilindro = o => (TIPOS_OBJETO[o.tipo] || {}).forma === "cilindro";
 function objetoPadrao(tipo, o) {
   const t = TIPOS_OBJETO[tipo]; if (!t) throw new Error("Objeto desconhecido: “" + tipo + "”. Opções: " + Object.keys(TIPOS_OBJETO).join(", ") + ".");
@@ -94,6 +96,8 @@ function medidasDaPega(o){
   return {largura,altura,area,comprimento:o.comprimentoPega??null};
 }
 function partesLocais(o) {
+  if (o.tipo === "corda" && Array.isArray(o.pontosCorda)) return partesCorda(o);
+  if (COMPOSTOS[o.tipo] && !o._guiaPega) return COMPOSTOS[o.tipo].partes(o);
   const L = o.larg / 2, P = o.prof / 2, A = o.alt, out = [], perna = (x, z, alt) => out.push({ c: [x, alt / 2, z], h: [0.17, alt / 2, 0.17] });
   const d=o.secaoPega||.25;
   if(o._guiaPega){
@@ -160,9 +164,26 @@ function partesDoObjeto(o, g0) {
   const eixos=[[pose.M[0],pose.M[3],pose.M[6]],
                [pose.M[1],pose.M[4],pose.M[7]],
                [pose.M[2],pose.M[5],pose.M[8]]];
-  return partesLocais(o).map(b => Object.assign({}, b,
-    {c:rigidPoint(pose,b.c),e:eixos},
-    b.cil?{h:[b.r,b.hh,b.r]}:{}));
+  return partesLocais(o).map(b => {
+    const e = b.R ? [0, 1, 2].map(k => rigidDirection(pose, [b.R[k], b.R[3 + k], b.R[6 + k]])) : eixos;
+    const q = Object.assign({}, b, { c: rigidPoint(pose, b.c), e });
+    if (b.cil) { q.r0 = b.r; q.r1 = b.r1 ?? b.r; q.r = Math.max(q.r0, q.r1); q.h = [q.r, b.hh, q.r]; }
+    else if (b.esf) q.h = b.r.slice();
+    else if (b.toro) q.h = [b.Rm + b.rt, b.ra || b.rt, b.Rm + b.rt];
+    if (b.meio) q.meioW = rigidDirection(pose, b.meio.slice(0, 3));
+    return q;
+  });
+}
+/* corda/corrente: cilindros finos entre pontos (locais ao pivô do objeto, sem giro) */
+function partesCorda(o) {
+  const P = o.pontosCorda, r = o.raioCorda || 0.09, out = [];
+  for (let i = 1; i < P.length; i++) {
+    const a = P[i - 1], b = P[i], d = b.map((v, k) => v - a[k]), L = Math.hypot(...d); if (L < 1e-4) continue;
+    const Y = d.map(v => v / L); let X = Math.abs(Y[1]) < 0.9 ? [Y[2], 0, -Y[0]] : [1, 0, 0]; const lx = Math.hypot(...X); X = X.map(v => v / lx);
+    const Z = [X[1] * Y[2] - X[2] * Y[1], X[2] * Y[0] - X[0] * Y[2], X[0] * Y[1] - X[1] * Y[0]];
+    out.push({ cil: true, c: a.map((v, k) => (v + b[k]) / 2), r, hh: L / 2 + (o.corrente ? 0 : r * 0.6), R: [X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2]], corda: true, elo: o.corrente ? i : 0 });
+  }
+  return out;
 }
 function caixasDoObjeto(o, g0) { return partesDoObjeto(o, g0); }
 /* topo de apoio (para sentar/subir ou pôr um objeto em cima): altura no mundo */
@@ -172,6 +193,13 @@ function alturaApoio(o, g0) { return baseY(o, g0) + o.alt; }
 function capsulasObjeto(o, g0) {
   const caps = [];
   for (const b of partesDoObjeto(o, g0)) {
+    if (b.esf) { /* elipsoide: cápsula no eixo mais longo, raio do do meio */
+      const idx = [0, 1, 2].sort((i, j) => b.r[j] - b.r[i]), L = Math.max(0, b.r[idx[0]] - b.r[idx[1]]), u = b.e[idx[0]];
+      caps.push({ nome: o.tipo, a: b.c.map((v, i) => v - u[i] * L), b: b.c.map((v, i) => v + u[i] * L), r: (b.r[idx[1]] + b.r[idx[2]]) / 2 }); continue; }
+    if (b.toro) { const n = 14, rr = Math.min(b.rt, b.ra || b.rt), P = k => { const a = k / n * 2 * Math.PI; return b.c.map((v, i) => v + b.Rm * (Math.cos(a) * b.e[0][i] + Math.sin(a) * b.e[2][i])); };
+      for (let k = 0; k < n; k++) { const A = P(k), B = P(k + 1), mid = A.map((v, i) => (v + B[i]) / 2 - b.c[i]);
+        if (b.meioW) { const l = Math.hypot(...mid) || 1, d = mid.reduce((s, v, i) => s + v * b.meioW[i], 0) / l; if (d < (b.meio[3] || 0) - 0.15) continue; }
+        caps.push({ nome: o.tipo, a: A, b: B, r: rr }); } continue; }
     if (b.cil) {
       /* cilindro em pé: alto → uma cápsula vertical; baixo e largo (tampo, copo largo) → cordas horizontais */
       if (b.hh >= b.r * 0.9) { const l = Math.max(0, b.hh - b.r),u=b.e[1]; caps.push({ nome: o.tipo, a: b.c.map((v,i)=>v-u[i]*l), b: b.c.map((v,i)=>v+u[i]*l), r: b.r }); }
@@ -300,7 +328,8 @@ function desenharObjeto(o, p, pal0, g0, L) {
   let sombra = "";
   for (const b of bs) {
     const fs = [], g = { b, fs, cil: null };
-    if (b.cil) { g.cil = cilindroFaces(b, ci, LD, fs); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(cilPontos(b), Lw, g0, ci, pal); grupos.push(g); faces.push(...fs); continue; }
+    if (b.esf || b.toro) { g.malha = malhaFaces(b, ci, LD, fs); if (b.cor) fs.forEach(f => f.ink = b.cor); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(g.malha.V, Lw, g0, ci, pal); grupos.push(g); faces.push(...fs); continue; }
+    if (b.cil) { g.cil = cilindroFaces(b, ci, LD, fs); if (b.cor) fs.forEach(f => f.ink = b.cor); if (L.shadow && Lw[1] > 0.08) sombra += sombraPts(cilPontos(b), Lw, g0, ci, pal); grupos.push(g); faces.push(...fs); continue; }
     const C = cantos(b), Cc = C.map(ci.cs), T = Cc.map(ci.tela);
     FACES.forEach(f => {
       const a = Cc[f[0]], bb = Cc[f[1]], c = Cc[f[2]];
@@ -332,11 +361,13 @@ function desenharObjeto(o, p, pal0, g0, L) {
     g.fs.sort((a, b) => a.z - b.z);
     for (const fc of g.fs) {
       /* lateral do cilindro: tom contínuo (degradê pela luz) e só preenchimento (o contorno vem da silhueta); faces planas: degraus de tom */
-      const cor = !L.fill ? "none" : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
-      if (fc.lado) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? cor : "none") + ';stroke-width:0.7;stroke-linejoin:round"/>';
+      const cor = !L.fill ? "none" : fc.ink ? (fc.ink === "ink" ? pal.ink : mistura(pal.shade3, pal.ink, 0.25)) : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
+      if (fc.faceta) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? mistura(pal.fill, pal.ink, 0.55) : pal.ink) + ';stroke-width:0.8;stroke-linejoin:round"/>';
+      else if (fc.lado) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? cor : "none") + ';stroke-width:0.7;stroke-linejoin:round"/>';
       else svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + pal.ink + ';stroke-width:1.5;stroke-linejoin:round"/>';
     }
     /* silhueta do cilindro (a projeção de um cilindro é convexa), logo depois das faces dele */
+    if (g.malha && g.malha.contorno) svg += '<path d="' + g.malha.contorno + '" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linecap:round"/>';
     if (g.cil) { const h = cascaConvexa(g.cil.pts); if (h.length > 2) svg += '<path d="M' + h.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>'; }
   }
   return { svg, sombra, z: (() => { const z = zDasFaces(faces); if (z && FINO) z.fino = zDasFaces(faces, 1); return z; })(), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [], ordemPartes: ordem.map(g => grupos.indexOf(g)) } };
@@ -431,30 +462,75 @@ function pfObjetosSvg(p, pal, objs, g0) {
 /* cilindro: pontos dos círculos de baixo e de cima (no mundo) */
 const NCIL = 40;
 function cilPontos(b) {
-  const out = [];
-  for (const sy of [-1, 1]) for (let i = 0; i < NCIL; i++) {
-    const a = i / NCIL * 2 * Math.PI,ca=Math.cos(a),sa=Math.sin(a);
-    out.push(b.c.map((v,j)=>v+ca*b.r*b.e[0][j]+sy*b.hh*b.e[1][j]+sa*b.r*b.e[2][j]));
+  const out = [], n = b.lados || NCIL, r0 = b.r0 ?? b.r, r1 = b.r1 ?? b.r, a0 = b.lados ? Math.PI / n : 0;
+  for (const sy of [-1, 1]) for (let i = 0; i < n; i++) {
+    const a = a0 + i / n * 2 * Math.PI,ca=Math.cos(a),sa=Math.sin(a), r = sy < 0 ? r0 : r1;
+    out.push(b.c.map((v,j)=>v+ca*r*b.e[0][j]+sy*b.hh*b.e[1][j]+sa*r*b.e[2][j]));
   }
   return out;
 }
-/* faces do cilindro: quadriláteros da lateral (só os voltados para a câmera) e as tampas visíveis */
+/* faces do cilindro / cone / prisma: quadriláteros da lateral (só os voltados para a câmera) e as tampas visíveis */
 function cilindroFaces(b, ci, LD, faces) { /* faces: lista onde as faces visíveis entram */
-  const W0 = cilPontos(b), Cc = W0.map(ci.cs), T = Cc.map(ci.tela), olho = q => ci.persp ? [-q[0], -q[1], ci.d - q[2]] : [0, 0, 1];
-  const cen = ci.cs(b.c);
-  for (let i = 0; i < NCIL; i++) {
-    const j = (i + 1) % NCIL, q = [i, j, NCIL + j, NCIL + i], m = [0, 1, 2].map(k => (Cc[i][k] + Cc[j][k] + Cc[NCIL + i][k] + Cc[NCIL + j][k]) / 4);
-    const a = (i + 0.5) / NCIL * 2 * Math.PI, nw = b.c.map((_,j)=>Math.cos(a)*b.e[0][j]+Math.sin(a)*b.e[2][j]), nc0 = ci.cs(b.c.map((v,j)=>v+nw[j])), n = [nc0[0] - cen[0], nc0[1] - cen[1], nc0[2] - cen[2]];
-    const e = olho(m); if (n[0] * e[0] + n[1] * e[1] + n[2] * e[2] <= 0) continue;
-    faces.push({ pts: q.map(k => T[k]), z: m[2], lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], lado: true });
+  const n = b.lados || NCIL, W0 = cilPontos(b), Cc = W0.map(ci.cs), T = Cc.map(ci.tela), olho = q => ci.persp ? [-q[0], -q[1], ci.d - q[2]] : [0, 0, 1];
+  const cen = ci.cs(b.c), a0 = b.lados ? Math.PI / n : 0;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n, q = [i, j, n + j, n + i], m = [0, 1, 2].map(k => (Cc[i][k] + Cc[j][k] + Cc[n + i][k] + Cc[n + j][k]) / 4);
+    const a = a0 + (i + 0.5) / n * 2 * Math.PI, nw = b.c.map((_,j)=>Math.cos(a)*b.e[0][j]+Math.sin(a)*b.e[2][j]), nc0 = ci.cs(b.c.map((v,j)=>v+nw[j])), nn = [nc0[0] - cen[0], nc0[1] - cen[1], nc0[2] - cen[2]];
+    const e = olho(m); if (nn[0] * e[0] + nn[1] * e[1] + nn[2] * e[2] <= 0) continue;
+    faces.push({ pts: q.map(k => T[k]), z: m[2], lum: nn[0] * LD[0] + nn[1] * LD[1] + nn[2] * LD[2], lado: !b.lados, faceta: !!b.lados });
   }
   for (const sy of [-1, 1]) {
-    const ids = [...Array(NCIL).keys()].map(i => i + (sy > 0 ? NCIL : 0)), m = ci.cs(b.c.map((v,j)=>v+sy*b.hh*b.e[1][j])), up = ci.cs(b.c.map((v,j)=>v+sy*(b.hh+1)*b.e[1][j]));
-    const n = [up[0] - m[0], up[1] - m[1], up[2] - m[2]], e = olho(m); if (n[0] * e[0] + n[1] * e[1] + n[2] * e[2] <= 0) continue;
-    /* tampa como leque de quadriláteros (para o recorte por profundidade) e um polígono só para o desenho */
-    faces.push({ pts: ids.map(k => T[k]), z: m[2] + 0.001, lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], tampa: true });
+    if ((sy < 0 ? b.r0 ?? b.r : b.r1 ?? b.r) < 0.03) continue;
+    const ids = [...Array(n).keys()].map(i => i + (sy > 0 ? n : 0)), m = ci.cs(b.c.map((v,j)=>v+sy*b.hh*b.e[1][j])), up = ci.cs(b.c.map((v,j)=>v+sy*(b.hh+1)*b.e[1][j]));
+    const nn = [up[0] - m[0], up[1] - m[1], up[2] - m[2]], e = olho(m); if (nn[0] * e[0] + nn[1] * e[1] + nn[2] * e[2] <= 0) continue;
+    faces.push({ pts: ids.map(k => T[k]), z: m[2] + 0.001, lum: nn[0] * LD[0] + nn[1] * LD[1] + nn[2] * LD[2], tampa: true });
   }
   return { pts: T.map(q => [q[0], q[1]]) };
+}
+/* ===== malhas: elipsoide (lisa ou pedra lapidada) e toro (inteiro ou só um arco) ===== */
+function ocRand(seed) { let x = (seed * 9301 + 49297) % 233280; return () => { x = (x * 9301 + 49297) % 233280; return x / 233280; }; }
+function malhaParte(b) {
+  const V = [], N = [], F = [];
+  if (b.esf) {
+    const nla = b.facetas ? 4 : 9, nlo = b.facetas || 20, rnd = b.facetas ? ocRand(b.semente || 7) : null, jit = [];
+    for (let i = 0; i <= nla; i++) for (let k = 0; k < nlo; k++) jit.push(rnd ? 0.8 + 0.28 * rnd() : 1);
+    const idx = (i, k) => i === 0 ? 0 : i === nla ? 1 : 2 + (i - 1) * nlo + (k % nlo);
+    const P = (th, ph, j) => { const l = [Math.cos(th) * Math.cos(ph) * b.r[0] * j, Math.sin(th) * b.r[1] * j, Math.cos(th) * Math.sin(ph) * b.r[2] * j]; return b.c.map((v, q) => v + l[0] * b.e[0][q] + l[1] * b.e[1][q] + l[2] * b.e[2][q]); };
+    V.push(P(-Math.PI / 2, 0, rnd ? 0.92 : 1), P(Math.PI / 2, 0, rnd ? 0.95 : 1));
+    for (let i = 1; i < nla; i++) for (let k = 0; k < nlo; k++) V.push(P(-Math.PI / 2 + i / nla * Math.PI, (k + (rnd && i % 2 ? 0.5 : 0)) / nlo * 2 * Math.PI, jit[i * nlo + k]));
+    for (let k = 0; k < nlo; k++) { F.push([0, idx(1, k + 1), idx(1, k)]); F.push([1, idx(nla - 1, k), idx(nla - 1, k + 1)]); }
+    for (let i = 1; i < nla - 1; i++) for (let k = 0; k < nlo; k++) F.push([idx(i, k), idx(i, k + 1), idx(i + 1, k + 1), idx(i + 1, k)]);
+  } else if (b.toro) {
+    const nu = 28, nv = 10, ra = b.ra || b.rt, lim = b.meio ? (b.meio[3] || 0) : -2;
+    for (let i = 0; i < nu; i++) for (let k = 0; k < nv; k++) { const u = i / nu * 2 * Math.PI, v = k / nv * 2 * Math.PI, cu = Math.cos(u), su = Math.sin(u), rr = b.Rm + b.rt * Math.cos(v);
+      V.push(b.c.map((c, q) => c + rr * (cu * b.e[0][q] + su * b.e[2][q]) + ra * Math.sin(v) * b.e[1][q])); }
+    const id = (i, k) => (i % nu) * nv + (k % nv);
+    for (let i = 0; i < nu; i++) {
+      if (b.meioW) { const u = (i + 0.5) / nu * 2 * Math.PI, d = [0, 1, 2].reduce((s, q) => s + (Math.cos(u) * b.e[0][q] + Math.sin(u) * b.e[2][q]) * b.meioW[q], 0) / (Math.hypot(...b.meioW) || 1); if (d < lim) continue; }
+      for (let k = 0; k < nv; k++) F.push([id(i, k), id(i + 1, k), id(i + 1, k + 1), id(i, k + 1)]);
+    }
+  }
+  return { V, F };
+}
+function malhaFaces(b, ci, LD, faces) {
+  const { V, F } = malhaParte(b), Cc = V.map(ci.cs), T = Cc.map(ci.tela), frente = [];
+  const olho = q => ci.persp ? [-q[0], -q[1], ci.d - q[2]] : [0, 0, 1], cen = ci.cs(b.c);
+  F.forEach((f, fi) => {
+    const P = f.map(i => Cc[i]), m = [0, 1, 2].map(k => P.reduce((s, q) => s + q[k], 0) / P.length);
+    let n = [0, 0, 0]; for (let i = 0; i < P.length; i++) { const a = P[i], c = P[(i + 1) % P.length]; n[0] += (a[1] - c[1]) * (a[2] + c[2]); n[1] += (a[2] - c[2]) * (a[0] + c[0]); n[2] += (a[0] - c[0]) * (a[1] + c[1]); }
+    const nl = Math.hypot(...n) || 1; n = n.map(x => x / nl);
+    /* normal para fora: elipsoide = longe do centro; toro = longe do anel */
+    let ref = m.map((v, k) => v - cen[k]);
+    if (b.toro) { const W = f.map(i => V[i]), mw = [0, 1, 2].map(k => W.reduce((s, q) => s + q[k], 0) / W.length), d = mw.map((v, k) => v - b.c[k]), ax = b.e[1], h = d.reduce((s, v, k) => s + v * ax[k], 0), rad = d.map((v, k) => v - h * ax[k]), rl = Math.hypot(...rad) || 1;
+      const anel = b.c.map((v, k) => v + rad[k] / rl * b.Rm), rc = ci.cs(anel); ref = m.map((v, k) => v - rc[k]); }
+    if (n[0] * ref[0] + n[1] * ref[1] + n[2] * ref[2] < 0) n = n.map(x => -x);
+    const e = olho(m), vis = n[0] * e[0] + n[1] * e[1] + n[2] * e[2] > 1e-6; frente[fi] = vis; if (!vis) return;
+    faces.push({ pts: f.map(i => T[i]), z: m[2], lum: n[0] * LD[0] + n[1] * LD[1] + n[2] * LD[2], lado: !b.facetas, faceta: !!b.facetas });
+  });
+  /* contorno: arestas entre uma face da frente e uma de trás (ou borda aberta) */
+  const ar = new Map(); F.forEach((f, fi) => f.forEach((a, i) => { const c = f[(i + 1) % f.length], k = a < c ? a + "," + c : c + "," + a; (ar.get(k) || ar.set(k, []).get(k)).push(fi); }));
+  let d = ""; for (const [k, fs] of ar) { const vis = fs.filter(fi => frente[fi]).length; if (vis === 1 && (fs.length === 1 || fs.length === 2)) { const [a, c] = k.split(",").map(Number); d += "M" + f1(T[a][0]) + " " + f1(T[a][1]) + "L" + f1(T[c][0]) + " " + f1(T[c][1]); } }
+  return { contorno: d, pts: T.map(q => [q[0], q[1]]), V };
 }
 function sombraPts(W0, Lw, g0, ci, pal) {
   const pts = W0.map(w => { const t = (w[1] - g0) / Lw[1]; return ci.tela(ci.cs([w[0] - Lw[0] * t, g0, w[2] - Lw[2] * t])); });

@@ -12,7 +12,7 @@ import { manualPosesIA, pacoteParaIA } from "./manual-ia.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
-import { EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, POSE0, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
+import { aplicarMolejo, EXPRESSOES, misturarExpressoes, chaveExpressao, BODIES, BPOSES, POSE0, doBodyPose, guardArms, limitesAcoplados, nomePose, todasPoses } from "./poses.js";
 import { codigoDaPose, lerCodigoDePose, filtrarPartes, espelharValores, posesSalvas, salvarPose, acharPoseSalva, apagarPose, renomearPose, duplicarPose, exportarPoses, importarPoses, parteDaChave, PARTES_POSE } from "./pose-codigo.js";
 import { autoFit, setZoomEff } from "./enquadrar.js";
 import { VISTAS_8, azimutesGiro, orbitarCamera, passoOrbita, pivoCamera, resolverAlvo, vistaAtual, verOrientadaCamera, seguirOrientacaoCamera, pararSeguimentoCamera, estadoSeguimentoCamera } from "./orbita.js";
@@ -130,7 +130,12 @@ function apiFor(it){
       const rosto={};POSEKEYS.forEach(k=>{if(parteDaChave(k)==="rosto")rosto[k]=it.params[k]});
       withInst(it,()=>doBodyPose("empe"));Object.assign(it.params,rosto);guardarContatoV2(it,antes);return m},
     poseRapida(nome,opts){chk();const antes={...it.params},k=nomePose(nome);const ok=todasPoses();
-      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));guardarContatoV2(it,antes);return m},
+      if(!ok.includes(k))throw new Error("Pose rápida desconhecida: “"+nome+"”. Opções: "+ok.join(", ")+".");withInst(it,()=>doBodyPose(k,opts));
+      /* molejo: as poses prontas vêm com micro-variações (molejo: 0 desliga; 0.3 sutil; 1 solto) */
+      const mj=opts&&opts.molejo!==undefined?(opts.molejo===false?0:+opts.molejo):0.6;if(mj>0)withInst(it,()=>aplicarMolejo(it.params,{intensidade:mj,semente:k+(opts&&opts.semente!==undefined?":"+opts.semente:"")}));
+      guardarContatoV2(it,antes);return m},
+    /* m.molejo(0.6, "variação 2") — micro-inclinações e assimetria na pose atual */
+    molejo(intensidade,semente){chk();const antes={...it.params};withInst(it,()=>aplicarMolejo(it.params,{intensidade:intensidade===undefined?0.6:+intensidade,semente:semente??(Date.now()%100000)}));limitesAcoplados(it.params);guardarContatoV2(it,antes);return m},
     corpo(o){chk();if(typeof o==="string"){
         const k=o.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
         const part=k.match(/^(masculino|feminino)[\s_-]+(magro|medio|atletico|musculoso|cheio)$/);
@@ -445,7 +450,7 @@ const cena={
   /* dois manequins: cena.interagir("Ana", "Leo", "abracoFrente") · tipos: cena.interacoes() */
   interagir(a,b,tipo,opts){const A=typeof a==="number"?SCN.list[a]:SCN.list.find(x=>x.name===(a&&a.nome||a)),B=typeof b==="number"?SCN.list[b]:SCN.list.find(x=>x.name===(b&&b.nome||b));
     if(!A||!B)throw new Error("Manequim não encontrado: use os nomes (cena.manequins()).");cena.marcarEstado();const r=interagir(A,B,tipo,opts||{});
-    if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.bracoAtravessando.length)LOG.push(["aviso","braço ainda encosta: "+r.bracoAtravessando.join(", ")]);return r},
+    if(r.alcance!=="ok")LOG.push(["aviso",r.alcance]);if(r.atravessando.length)LOG.push(["aviso","ainda encosta: "+r.atravessando.join(", ")]);return r},
   interacoes(){return listaInteracoes()},
   /* todos os manequins (ou um, pelo nome) na pose de descanso em pé */
   descanso(opts){const o=opts||{};SCN.list.filter(it=>!o.manequim||it.name===o.manequim).forEach(it=>apiFor(it).descanso(o));return cena},

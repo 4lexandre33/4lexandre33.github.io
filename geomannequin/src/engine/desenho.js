@@ -5,7 +5,7 @@ import { getMeshes, makeMat } from "./montagem.js";
 import { earSurf, headPt, ringAt, shape } from "./cabeca.js";
 import { bocaForma, arcadas } from "./boca.js";
 import { olhosAnime, feicoesAnime } from "./head-v5/anime.js";
-import { ladoRosto } from "./rosto-au.js";
+import { ladoRosto, rostoGeral } from "./rosto-au.js";
 import { chainSetup, legPose } from "./cadeia.js";
 import { BASE, CX, CY, D, H, W, applyA, clamp, comp, f1, gauss, lerp, mmul, mv, rotM } from "./matematica.js";
 import { contourPath, fillPath, silhouette } from "./contornos.js";
@@ -560,15 +560,16 @@ function scene(p,L,pal,fast,mode){
   else if(L.feat){
     [-1,1].forEach(s=>{
       /* sobrancelhas: subir (+) / baixar (−); franzir (+, a ponta de dentro desce: raiva) / aflição (−, a ponta de dentro sobe) */
-      const bU=p.browUp||0,bI=p.browIn||0,RB=ladoRosto(p,s);
+      const bU=p.browUp||0,bI=p.browIn||0,RB=ladoRosto(p,s),SB=rostoGeral(p).sobrancelha;
       const browPt=(u,dy)=>{
-        const y=0.10+0.045*Math.sin(Math.PI*Math.pow(u,0.8))-0.04*u+dy+0.035*bU-0.035*bI*Math.pow(1-u,1.5)+0.04*RB.browInner*Math.pow(1-u,1.4)+0.04*RB.browOuter*Math.pow(u,1.4);
+        const y=0.10+0.045*(1+0.9*SB.arco)*Math.sin(Math.PI*Math.pow(u,0.8))-0.04*u+dy+0.035*bU-0.035*bI*Math.pow(1-u,1.5)+0.04*RB.browInner*Math.pow(1-u,1.4)+0.04*RB.browOuter*Math.pow(u,1.4)
+          +SB.quebra*0.04*Math.max(0,1-Math.abs(u-0.6)/0.6)-SB.quebra*0.018*u+SB.onda*0.01*Math.sin(u*Math.PI*5);
         return hp(y,s*(10+36*u)*D,0.01);
       };
       if(p.browW>0.002){
         const up=[],lo=[];
         for(let i=0;i<=24;i++){
-          const u=i/24,th=p.browW*(0.9-0.25*u)*(1-0.7*Math.pow(u,2.2))+0.004;
+          const u=i/24,th=(p.browW*(0.9-0.25*u)*(1-0.7*Math.pow(u,2.2))+0.004)*(1+0.75*SB.grossa)*(1-0.4*SB.quebra*u);
           up.push(browPt(u,th/2));lo.push(browPt(u,-th/2));
         }
         poly("brow",up.concat(lo.reverse()),pal.shade3);
@@ -666,7 +667,11 @@ function scene(p,L,pal,fast,mode){
        const est=v=>v>0.45?"divisao":"fibra";
        if(te>0.06)for(let i=0;i<(te>0.55?3:2);i++){const y0=eyeY+0.42+0.08*i,xs=0.2+0.05*i;curve(est(te),arr(x=>H0(x,y0+0.008*Math.sin(x*30+i)-0.04*Math.pow(x/xs,2),0.012),-xs*(0.5+0.5*te),xs*(0.5+0.5*te),16))}
        if(fr>0.06)[-1,1].forEach(side=>{for(let i=0;i<(fr>0.55?2:1);i++)curve(est(fr),arr(u=>H0(side*(0.035+0.025*i+0.01*u),eyeY+0.1+0.02*i+(0.07+0.07*fr)*u,0.012),0,1,5))});
-       if(rg.olhos>0.06)[-1,1].forEach(side=>{for(let i=0;i<(rg.olhos>0.5?3:2);i++){const a=(-0.4+0.4*i)*(0.6+0.4*rg.olhos);curve(est(rg.olhos),arr(u=>H0(side*(0.53+(0.04+0.06*rg.olhos)*u*Math.cos(a)),eyeY-0.005+(0.04+0.06*rg.olhos)*u*Math.sin(a),0.012),0,1,4))}});}
+       if(rg.olhos>0.06)[-1,1].forEach(side=>{for(let i=0;i<(rg.olhos>0.5?3:2);i++){const a=(-0.4+0.4*i)*(0.6+0.4*rg.olhos);curve(est(rg.olhos),arr(u=>H0(side*(0.53+(0.04+0.06*rg.olhos)*u*Math.cos(a)),eyeY-0.005+(0.04+0.06*rg.olhos)*u*Math.sin(a),0.012),0,1,4))}});
+       if(rg.queixo>0.08){const yc=sh.chinY+0.1;[-0.06,0,0.06].forEach(xc=>curve(est(rg.queixo),arr(a=>H0(xc+0.022*Math.cos(a),yc+0.015*Math.sin(a),0.014),Math.PI*0.15,Math.PI*0.85,5)));if(rg.queixo>0.45)curve("fibra",arr(x=>H0(x,yc-0.035+0.012*Math.pow(x/0.08,2),0.014),-0.08,0.08,8))}
+       if(rg.nariz>0.08)for(let i=0;i<(rg.nariz>0.5?3:2);i++)curve(est(rg.nariz),arr(x=>H0(x,eyeY+0.03-0.035*i+0.006*Math.sin(x*60),0.013),-0.045-0.012*i,0.045+0.012*i,6));
+       if(Qr.veia>0.05){const cx=0.24,cy=eyeY+0.48,r=0.055+0.03*Qr.veia;for(let q=0;q<4;q++){const a0=q*Math.PI/2+Math.PI/4,ox=Math.cos(a0)*r*1.1,oy=Math.sin(a0)*r*1.1;curve("divisao",arr(a=>H0(cx+ox+r*0.75*Math.cos(a),cy+oy+r*0.75*Math.sin(a),0.03),a0+Math.PI*0.62,a0+Math.PI*1.38,7))}}
+       if(Qr.suor>0.05){const cx=-0.5,cy=eyeY+0.3,rr=0.035+0.03*Qr.suor,g=arr(a=>H0(cx+rr*Math.cos(a)*(1-0.4*Math.max(0,Math.sin(a))),cy+rr*Math.sin(a)+(Math.sin(a)>0?1.4*rr*Math.pow(Math.sin(a),3):0),0.05),0,2*Math.PI,18);fillP(g,"#BFE3F5",0.9);curve("feat",g.concat([g[0]]))}}
     }
     const fl=clamp(p.nostrilFlare||0,0,1);
     const wing=[[0.105,-0.76],[0.14+0.02*fl,-0.85],[0.17+0.045*fl,-0.93],[0.14+0.035*fl,-0.985],[0.07+0.01*fl,-1.0],[0,-1.0]];
@@ -711,7 +716,8 @@ function scene(p,L,pal,fast,mode){
     [-1,1].forEach(s=>{
       /* cada olho com a sua pálpebra (piscar um só), pálpebra de baixo e bochecha */
       const R=ladoRosto(p,s),lid=R.lid,ap=clamp(R.lidLo+0.55*R.cheek,0,1);
-      const hu=0.062*p.eyeSize*p.eyeOpen*(1-0.92*lid)*(1+0.18*Math.max(0,p.browUp||0))*(1-0.2*ap),hl=0.036*p.eyeSize*p.eyeOpen*(1-0.6*lid)*(1-0.5*ap);
+      const OL=rostoGeral(p).olho;
+      const hu=0.062*p.eyeSize*p.eyeOpen*(1-0.92*lid)*(1+0.18*Math.max(0,p.browUp||0)+0.45*OL.arregalar)*(1-0.2*ap),hl=0.036*p.eyeSize*p.eyeOpen*(1-0.6*lid)*(1-0.5*ap)*(1+0.4*OL.arregalar);
       const up=q=>{q=clamp(q,0,1);return hu*Math.sin(Math.PI*Math.pow(q,0.75))+tilt(q)};
       const lo=q=>{q=clamp(q,0,1);return -hl*Math.sin(Math.PI*Math.pow(q,1.15))+tilt(q)};
       const xc=ringAt(eyeY,p,sh)[0]*Math.sin(p.eyeGap*D);
@@ -731,18 +737,20 @@ function scene(p,L,pal,fast,mode){
       const sh1=arr(q=>E(X(q),up(q),0.01),0.05,0.95,20),sh2=arr(q=>E(X(q),up(q)-0.4*hu*Math.sin(Math.PI*q),0.01),0.95,0.05,20);
       fillP(sh1.concat(sh2),pal.shade1,0.9);
       /* íris */
-      if(p.eyeStyle>=0.5){
-        const ri=0.066*p.eyeSize,gx=s*gY*0.085*p.eyeSize,gy=gP*0.03*p.eyeSize;
+      if((p.eyeStyle>=0.5||OL.iris||OL.pupila||OL.brilho||OL.fenda)&&OL.branco<0.5){
+        const ri=0.066*p.eyeSize*(1+0.3*OL.iris)*(1-0.2*OL.arregalar),gx=s*gY*0.085*p.eyeSize,gy=gP*0.03*p.eyeSize,rpu=0.024*p.eyeSize*(OL.pupila>=0?1+0.8*OL.pupila:1+0.8*OL.pupila)*(1+0.3*OL.iris);
         const ip=[];
         for(let i=0;i<48;i++){
           const a=i/48*2*Math.PI,ex=ri*Math.cos(a)+gx,ey=ri*Math.sin(a)+gy,q=clamp(ex/w+0.5,0,1);
           ip.push(E(ex,clamp(ey,lo(q)*0.98,up(q)*0.98),0.012));
         }
         fillP(ip,pal.shade2);
-        if(lid<0.8){const pc=q=>[clamp(gx+0.024*p.eyeSize*Math.cos(q),X(0.08),X(0.92)),clamp(gy+0.024*p.eyeSize*Math.sin(q),lo(clamp(gx/w+0.5,0,1))*0.9,up(clamp(gx/w+0.5,0,1))*0.9)];
+        if(lid<0.8){const pc=q=>[clamp(gx+rpu*(1-0.75*OL.fenda)*Math.cos(q),X(0.08),X(0.92)),clamp(gy+rpu*(1+0.5*OL.fenda)*Math.sin(q),lo(clamp(gx/w+0.5,0,1))*0.9,up(clamp(gx/w+0.5,0,1))*0.9)];
         const pp=arr(a=>{const c=pc(a);return E(c[0],c[1],0.013)},0,2*Math.PI,16);
         fillP(pp,pal.ink);
-        fillP(arr(a=>E(gx+0.012*p.eyeSize+0.007*Math.cos(a),gy+0.02*p.eyeSize+0.007*Math.sin(a),0.014),0,2*Math.PI,10),"#fff");}
+        const ob=clamp(1+OL.brilho,0,1),kb=1+0.5*Math.max(0,OL.brilho);
+        if(ob>0.02)fillP(arr(a=>E(gx+0.012*p.eyeSize+0.007*kb*Math.cos(a),gy+0.02*p.eyeSize+0.007*kb*Math.sin(a),0.014),0,2*Math.PI,10),"#fff",ob<1?ob:undefined);
+        if(OL.brilho>0.3)fillP(arr(a=>E(gx-0.012*p.eyeSize+0.004*Math.cos(a),gy-0.012*p.eyeSize+0.004*Math.sin(a),0.014),0,2*Math.PI,8),"#fff");}
       }
       /* linhas: pálpebra superior grossa, inferior fina, prega, cantos */
       curve("eyeU",arr(q=>E(X(q),up(q)),-0.04,1.02,32));

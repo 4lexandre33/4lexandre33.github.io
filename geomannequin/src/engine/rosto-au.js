@@ -37,7 +37,33 @@ const AU = [
   ["wrinkleFrown", "Rugas: entre as sobrancelhas (franzido)", 0, 1, "rugasFranzido"],
   ["wrinkleCrow", "Rugas: pés de galinha (canto de fora dos olhos)", 0, 1, "rugasOlhos"],
   ["wrinkleNasolabial", "Rugas: sulco nariz-boca (bigode chinês)", 0, 1, "rugasBoca"],
-  ["wrinkleCheek", "Linhas na bochecha (careta, esforço, bochecha subindo)", 0, 1, "rugasBochecha"]
+  ["wrinkleCheek", "Linhas na bochecha (careta, esforço, bochecha subindo)", 0, 1, "rugasBochecha"],
+  ["wrinkleChin", "Rugas: queixo enrugado (choro contido, esforço)", 0, 1, "rugasQueixo"],
+  ["wrinkleNoseBridge", "Rugas: raiz do nariz (linhas de esforço entre os olhos)", 0, 1, "rugasNariz"],
+  /* olhos: íris, pupila, brilho, arregalar */
+  ["eyeWide", "Olhos: arregalar (branco aparece em volta da íris)", 0, 1, "olhosArregalar"],
+  ["irisSize", "Íris: pequena − / grande +", -1, 1, "irisTamanho"],
+  ["pupilSize", "Pupila: minúscula (choque, medo) − / enorme (encanto, escuro) +", -1, 1, "pupilaTamanho"],
+  ["eyeShine", "Brilho do olho: sem brilho (olhar vazio, tristeza) − / brilho extra (emoção) +", -1, 1, "olhosBrilho"],
+  ["pupilSlit", "Pupila em fenda (felina, ameaça)", 0, 1, "pupilaFenda"],
+  ["eyeBlank", "Olhos brancos (choque cômico de mangá: sem íris)", 0, 1, "olhosBrancos"],
+  /* sobrancelhas e cílios estilizados */
+  ["browThick", "Sobrancelhas: finas − / grossas +", -1, 1, "sobrancelhaGrossura"],
+  ["browArch", "Sobrancelhas: retas − / bem arqueadas +", -1, 1, "sobrancelhaArco"],
+  ["browSharp", "Sobrancelhas: quebra angular (expressão dura, determinação)", 0, 1, "sobrancelhaQuebra"],
+  ["browWave", "Sobrancelhas tremidas (nervoso, aflição cômica)", 0, 1, "sobrancelhaTremida"],
+  ["lashLen", "Cílios: pontas compridas (de cima)", 0, 1, "ciliosComprimento"],
+  ["lashThick", "Linha dos cílios: fina − / grossa +", -1, 1, "ciliosGrossura"],
+  ["lashLower", "Cílios de baixo", 0, 1, "ciliosBaixo"],
+  /* boca: mais formas */
+  ["teethShow", "Mostrar os dentes (sorriso maníaco, careta, rosnado)", 0, 1, "dentesMostrar"],
+  ["lipBite", "Morder o lábio de baixo", 0, 1, "morderLabio"],
+  ["mouthWobble", "Boca tremida (nervoso, choro, susto)", 0, 1, "bocaTremida"],
+  ["fang", "Presa (canino pontudo de mangá)", 0, 1, "presa"],
+  ["tongueOut", "Língua de fora (provocação)", 0, 1, "linguaFora"],
+  /* sinais de mangá */
+  ["angerVein", "Veia de raiva (marca de mangá na testa)", 0, 1, "veiaRaiva"],
+  ["sweatDrop", "Gota de suor (constrangimento, nervoso)", 0, 1, "gotaSuor"]
 ];
 const AU_KEYS = AU.map(a => a[0]);
 /* estados do rosto que não são músculos (também resetados por cada expressão) */
@@ -65,7 +91,13 @@ function rostoGeral(p) {
   return { bags: clamp(n(p.eyeBags), 0, 1), nose: clamp(n(p.noseWrinkle), 0, 1), press: clamp(n(p.lipPress), 0, 1), pout: clamp(n(p.pout), 0, 1), clench: clamp(n(p.teethClench), 0, 1),
     wide: clamp(n(p.mouthWide), -1, 1), round: clamp(n(p.mouthRound), 0, 1), lowerLip: clamp(n(p.lowerLipDown), 0, 1), shift: clamp(n(p.mouthShift), -1, 1),
     puff: clamp(n(p.cheekPuff), -1, 1), flare: clamp(n(p.nostrilFlare), 0, 1),
-    rugas: { testa: clamp(n(p.wrinkleForehead), 0, 1), franzido: clamp(n(p.wrinkleFrown), 0, 1), olhos: clamp(n(p.wrinkleCrow), 0, 1), boca: clamp(n(p.wrinkleNasolabial), 0, 1), bochecha: clamp(n(p.wrinkleCheek), 0, 1) } };
+    rugas: { testa: clamp(n(p.wrinkleForehead), 0, 1), franzido: clamp(n(p.wrinkleFrown), 0, 1), olhos: clamp(n(p.wrinkleCrow), 0, 1), boca: clamp(n(p.wrinkleNasolabial), 0, 1), bochecha: clamp(n(p.wrinkleCheek), 0, 1),
+      queixo: clamp(n(p.wrinkleChin), 0, 1), nariz: clamp(n(p.wrinkleNoseBridge), 0, 1) },
+    olho: { arregalar: clamp(n(p.eyeWide), 0, 1), iris: clamp(n(p.irisSize), -1, 1), pupila: clamp(n(p.pupilSize), -1, 1), brilho: clamp(n(p.eyeShine), -1, 1), fenda: clamp(n(p.pupilSlit), 0, 1), branco: clamp(n(p.eyeBlank), 0, 1) },
+    sobrancelha: { grossa: clamp(n(p.browThick), -1, 1), arco: clamp(n(p.browArch), -1, 1), quebra: clamp(n(p.browSharp), 0, 1), onda: clamp(n(p.browWave), 0, 1) },
+    cilios: { comp: clamp(n(p.lashLen), 0, 1), grossa: clamp(n(p.lashThick), -1, 1), baixo: clamp(n(p.lashLower), 0, 1) },
+    dentes: clamp(n(p.teethShow), 0, 1), morder: clamp(n(p.lipBite), 0, 1), tremer: clamp(n(p.mouthWobble), 0, 1), presa: clamp(n(p.fang), 0, 1), lingua: clamp(n(p.tongueOut), 0, 1),
+    veia: clamp(n(p.angerVein), 0, 1), suor: clamp(n(p.sweatDrop), 0, 1) };
 }
 /* valor ao longo da boca: mistura contínua do lado direito (x = −w) para o esquerdo (x = +w) */
 function aoLongo(vL, vR, x, w) { const t = clamp(x / Math.max(1e-6, w), -1, 1); return (vL + vR) / 2 + (vL - vR) / 2 * t; }

@@ -39,6 +39,7 @@ export * from "./colisao-cena.js";
 export * from "./esqueleto.js";
 export * from "./vistas-pose.js";
 export * from "./objetos.js";
+export * from "./objetos-compostos.js";
 export * from "./amplitude.js";
 export * from "./apoio.js";
 export * from "./curvas.js";

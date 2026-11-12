@@ -112,6 +112,8 @@ function atualizarApoios(){
     working.delete(o);done.add(o);
   }
   SCN.objetos.forEach(moveChild);
+  // 3) Cordas e o que mais depende das mãos (registrado pelos módulos).
+  (SCN.aposApoios||[]).forEach(f=>{try{f()}catch(e){}});
 }
 function sceneList(exp,exportarReferencias=!!exp){
   atualizarApoios();

@@ -33,8 +33,9 @@ function geoOlhoAnime(p, sh, ringAt, eyeY, s = 1) {
   const w = Math.min(0.3 * (p.eyeSize || 1.25) * Math.pow(k, 0.5), 0.62 * r0);
   const surpresa = Math.max(0, e.bU) * X, raiva = Math.max(0, e.bI) * X, tristeza = Math.max(0, -e.bI) * X, alegria = Math.max(0, R.smile) * X;
   /* pálpebra: abre com a surpresa, fecha com eyeLid; a de baixo sobe com o sorriso (bochecha) */
-  const abre = (p.eyeOpen || 1) * (1 + 0.28 * surpresa) * (1 - 0.95 * R.lid);
-  const hu = 0.088 * (p.eyeSize || 1.25) * k * abre, hl0 = 0.05 * (p.eyeSize || 1.25) * k * (1 - 0.7 * R.lid);
+  const wide = rostoGeral(p).olho.arregalar;
+  const abre = (p.eyeOpen || 1) * (1 + 0.28 * surpresa + 0.42 * wide) * (1 - 0.95 * R.lid);
+  const hu = 0.088 * (p.eyeSize || 1.25) * k * abre, hl0 = 0.05 * (p.eyeSize || 1.25) * k * (1 - 0.7 * R.lid) * (1 + 0.45 * wide);
   const hl = hl0 * (1 - 0.55 * clamp(alegria - 0.2, 0, 1)) * (1 - 0.45 * aperto);
   const xc = clamp(r0 * Math.sin((p.eyeGap || 22) * D) + 0.1 * (k - 1), w / 2 + 0.06, r0 * 0.7);
   /* q: 0 = canto de dentro, 1 = de fora */
@@ -117,27 +118,48 @@ function olhosAnime(ctx) {
     fillP(arr(q => E(Xq(q), up(q), 0.0112), 0.04, 0.96, 24)
       .concat(arr(q => E(Xq(q), up(q) - 0.03 * k, 0.0112), 0.96, 0.04, 24)), pal.shade1, 0.5);
     /* íris alta e pupila: o olhar desloca; surpresa/medo encolhem a pupila */
-    const rix = 0.36 * w, riy = Math.min(0.62 * (hu + hl0), 0.95 * hu + hl);
+    const OL = rostoGeral(p).olho, CI = rostoGeral(p).cilios, escI = (1 + 0.32 * OL.iris) * (1 - 0.2 * OL.arregalar);
+    const rix = 0.36 * w * escI, riy = Math.min(0.62 * (hu + hl0) * escI * (1 + 0.25 * OL.arregalar), 0.95 * hu + hl);
+    const semIris = OL.branco > 0.5, opI = 1 - Math.min(1, OL.branco * 2);
     const gx = G.gx(s), gy = G.gy;
     const dentro = (ex, ey) => { const q = clamp(ex / w + 0.5, 0, 1); return clamp(ey, lo(q) * 0.97, up(q) * 0.97); };
     const irisPts = (rx, ry, off) => arr(a => { const ex = gx + rx * Math.cos(a), ey = gy + ry * Math.sin(a); return E(ex, dentro(ex, ey), off); }, 0, 2 * Math.PI, 40);
     /* anel externo escuro (limbo) por baixo, íris um pouco menor por cima */
-    fillP(irisPts(rix, riy, 0.0135), pal.ink, 0.9);
-    fillP(irisPts(rix * 0.84, riy * 0.84, 0.014), pal.shade3, 0.95);
+    if (!semIris) {
+    fillP(irisPts(rix, riy, 0.0135), pal.ink, 0.9 * opI);
+    fillP(irisPts(rix * 0.84, riy * 0.84, 0.014), pal.shade3, 0.95 * opI);
     /* faixa clara embaixo: luz refletida de baixo na parte inferior da íris */
     fillP(arr(a => { const ex = gx + rix * 0.72 * Math.cos(a), ey = gy + riy * 0.72 * Math.sin(a); return E(ex, dentro(ex, ey), 0.0142); }, Math.PI * 1.08, Math.PI * 1.92, 16), pal.shade1, 0.5);
     /* sombra da pálpebra de cima sobre a íris (metade superior mais escura) */
     fillP(arr(a => { const ex = gx + rix * Math.cos(a), ey = gy + riy * 0.15 + riy * 0.85 * Math.abs(Math.sin(a)); return E(ex, dentro(ex, ey), 0.0145); }, 0, Math.PI, 20)
       .concat(arr(q => E(gx + rix * (1 - 2 * q), dentro(gx + rix * (1 - 2 * q), gy + riy * 0.15), 0.0145), 0, 1, 8)), pal.ink, 0.35);
-    const rp = (0.5 - 0.28 * clamp(surpresa + 0.6 * Math.max(0, e.bU) * Math.max(0, -e.bI), 0, 1)) * rix;
-    fillP(arr(a => { const ex = gx + rp * Math.cos(a), ey = gy + 1.25 * rp * Math.sin(a); return E(ex, dentro(ex, ey), 0.015); }, 0, 2 * Math.PI, 20), pal.ink);
-    /* brilhos: um grande em cima, um pequeno embaixo (do lado da luz) */
+    /* pupila: encolhe na surpresa/medo; pupilaTamanho manda (minúscula a enorme); em fenda fica estreita e alta */
+    const rp = clamp((0.5 - 0.28 * clamp(surpresa + 0.6 * Math.max(0, e.bU) * Math.max(0, -e.bI), 0, 1)) * (OL.pupila >= 0 ? 1 + 0.75 * OL.pupila : 1 + 0.78 * OL.pupila), 0.06, 0.92) * rix;
+    const rpx = rp * (1 - 0.78 * OL.fenda), rpy = 1.25 * rp * (1 + 0.55 * OL.fenda);
+    fillP(arr(a => { const ex = gx + rpx * Math.cos(a), ey = gy + rpy * Math.sin(a); return E(ex, dentro(ex, ey), 0.015); }, 0, 2 * Math.PI, 20), pal.ink, opI);
+    /* brilhos: um grande em cima, um pequeno embaixo (do lado da luz); sem brilho = olhar vazio; brilho extra = estrelinhas */
+    const bri = OL.brilho, opB = clamp(1 + bri, 0, 1) * opI, kb = 1 + 0.45 * Math.max(0, bri);
     const bx = gx + 0.32 * rix, by = gy + 0.42 * riy;
-    fillP(arr(a => E(bx + 0.24 * rix * Math.cos(a), dentro(bx, by + 0.24 * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 14), "#fff");
-    fillP(arr(a => E(gx - 0.3 * rix + 0.1 * rix * Math.cos(a), dentro(gx - 0.3 * rix, gy - 0.45 * riy + 0.1 * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 10), "#fff", 0.9);
+    if (opB > 0.02) {
+      fillP(arr(a => E(bx + 0.24 * kb * rix * Math.cos(a), dentro(bx, by + 0.24 * kb * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 14), "#fff", opB);
+      fillP(arr(a => E(gx - 0.3 * rix + 0.1 * kb * rix * Math.cos(a), dentro(gx - 0.3 * rix, gy - 0.45 * riy + 0.1 * kb * rix * Math.sin(a)), 0.016), 0, 2 * Math.PI, 10), "#fff", 0.9 * opB);
+    }
+    if (bri > 0.3) { /* brilho de emoção: terceiro ponto e uma estrela de 4 pontas */
+      fillP(arr(a => E(gx + 0.05 * rix + 0.07 * rix * Math.cos(a), dentro(gx, gy - 0.1 * riy + 0.07 * rix * Math.sin(a)), 0.0162), 0, 2 * Math.PI, 8), "#fff", 0.9);
+      const sx = gx - 0.15 * rix, sy = gy + 0.25 * riy, R1 = 0.3 * rix * bri, R2 = 0.07 * rix;
+      fillP(arr(a => { const rr = (Math.round(a / (Math.PI / 4)) % 2 === 0) ? R1 : R2; return E(sx + rr * Math.cos(a), dentro(sx, sy + rr * Math.sin(a)), 0.0164); }, 0, 2 * Math.PI, 8), "#fff", 0.95);
+    }
+    }
     /* linha de cílios de cima: faixa grossa, mais grossa e com ponta no canto de fora */
-    const esp = q => (0.011 + 0.022 * Math.pow(clamp(q, 0, 1), 1.3)) * k;
+    const esp = q => (0.011 + 0.022 * Math.pow(clamp(q, 0, 1), 1.3)) * k * (1 + 0.55 * CI.grossa);
     fillP(arr(q => E(Xq(q), up(q), 0.017), -0.04, 1.06, 30).concat(arr(q => E(Xq(q) + 0.018 * k * Math.max(0, q - 0.85) / 0.15, up(q) + esp(q), 0.017), 1.1, -0.04, 30)), pal.ink);
+    /* cílios compridos: pontas afinadas saindo da metade de fora, para fora e para cima */
+    if (CI.comp > 0.05) for (let i = 0; i < 4; i++) {
+      const q = 0.62 + 0.14 * i, L = (0.02 + 0.05 * CI.comp) * k * (0.7 + 0.15 * i), a = (35 - 12 * i) * D, b0 = E(Xq(q), up(q) + esp(q) * 0.6, 0.0172);
+      const base = [Xq(q), up(q) + esp(q) * 0.6], ponta = [base[0] + L * Math.cos(a), base[1] + L * Math.sin(a)], larg = 0.006 * k;
+      fillP([E(base[0] - larg, base[1] - 0.002, 0.0172), E((base[0] + ponta[0]) / 2, (base[1] + ponta[1]) / 2 + 0.006 * k, 0.0172), E(ponta[0], ponta[1], 0.0172), E(base[0] + larg, base[1] - 0.004, 0.0172)], pal.ink); }
+    /* cílios de baixo: riscos curtos na metade de fora */
+    if (CI.baixo > 0.05) for (let i = 0; i < 3; i++) { const q = 0.6 + 0.15 * i, L = (0.012 + 0.025 * CI.baixo) * k; curve("feat", [E(Xq(q), lo(q), 0.0135), E(Xq(q) + 0.35 * L, lo(q) - L, 0.0135)]); }
     /* pálpebra de baixo: traço curto na metade de fora; prega da pálpebra acima */
     curve("feat", arr(q => E(Xq(q), lo(q), 0.013), 0.45, 1, 14));
     curve("fibra", arr(q => E(Xq(q), up(q) + esp(q) + 0.03 * k, 0.012), 0.2, 0.9, 16));
@@ -152,11 +174,11 @@ function bocaAnime(p, sh, ringAt) {
   const e = emo(p), X = e.X, my = sh.mouthY, RL = ladoRosto(p, 1), RR = ladoRosto(p, -1), Q = rostoGeral(p);
   /* lábios apertados fecham a boca; nojo (lábio de cima) e dentes cerrados afastam os lábios mesmo com a mandíbula fechada */
   const a0 = Math.max(clamp(e.jo * (0.85 + 0.3 * X), 0, 1.25) * (1 - 0.9 * Q.press), 0.3 * Q.round, 0.14 * Q.lowerLip);
-  const ulM = Math.max(RL.upperLip, RR.upperLip), fenda = clamp(Math.max(Q.clench, 0.75 * ulM) * (1 - Q.press), 0, 1);
+  const ulM = Math.max(RL.upperLip, RR.upperLip), fenda = clamp(Math.max(Q.clench, 0.75 * ulM, 1.1 * Q.dentes) * (1 - Q.press), 0, 1);
   const a = Math.max(a0, fenda > 0.12 ? 0.05 + 0.06 * fenda : 0);
   const smM = (RL.smile + RR.smile) / 2, ss = Math.max(0, smM) * X, br = Math.max(0, -smM) * X;
   const meia = ringAt(my, p, sh)[0];
-  const largura = Math.min(0.1 + 0.105 * e.kb * (0.62 * a0 + 0.55 * ss + 0.15 * br) + 0.06 * Q.clench, 0.72 * meia) * (1 - 0.3 * Q.press - 0.4 * Q.pout) * (1 + 0.35 * Q.wide) * (1 - 0.2 * Q.round);
+  const largura = Math.min(0.1 + 0.105 * e.kb * (0.62 * a0 + 0.55 * ss + 0.15 * br) + 0.06 * Math.max(Q.clench, Q.dentes), 0.72 * meia) * (1 - 0.3 * Q.press - 0.4 * Q.pout) * (1 + 0.35 * Q.wide) * (1 - 0.2 * Q.round);
   /* altura da cavidade: a mandíbula abre, o queixo limita (lábio inferior e mento continuam); em "O" quase tão alta quanto larga */
   const altura = Math.min(Math.max(0.03 + 0.15 * e.kb * a0 + 0.045 * fenda, 1.6 * largura * Q.round), (my - sh.chinY) * 0.72);
   const c = x => Math.sqrt(Math.max(0, 1 - Math.pow(clamp(x / largura, -1, 1), 2)));
@@ -165,7 +187,7 @@ function bocaAnime(p, sh, ringAt) {
   const smX = x => aoLongo(RL.smile, RR.smile, x, largura), ssX = x => Math.max(0, smX(x)) * X, brX = x => Math.max(0, -smX(x)) * X;
   const ulX = x => aoLongo(RL.upperLip, RR.upperLip, x, largura) * Math.exp(-0.5 * Math.pow((r(x) - 0.45) / 0.28, 2));
   /* borda de cima quase reta (cantos sobem no sorriso, descem na raiva/tristeza) */
-  const cima = x => my + 0.045 * ssX(x) * Math.pow(r(x), 2) - 0.04 * brX(x) * Math.pow(r(x), 1.5) + 0.012 * brX(x) * c(x) + 0.03 * X * ulX(x);
+  const cima = x => my + 0.045 * ssX(x) * Math.pow(r(x), 2) - 0.04 * brX(x) * Math.pow(r(x), 1.5) + 0.012 * brX(x) * c(x) + 0.03 * X * ulX(x) + 0.008 * Q.tremer * Math.sin(x / Math.max(1e-6, 0.2) * Math.PI * 2.5);
   /* borda de baixo: "D" cheio no sorriso, mais rasa e reta na raiva */
   const baixo = x => cima(x) - altura * Math.pow(c(x), ss > 0.2 ? 0.75 : br > 0.2 ? 1.6 : 1.05);
   const denteSup = x => cima(x) - Math.min(0.045, altura * (0.24 + 0.3 * fenda)) * c(x);
@@ -173,8 +195,9 @@ function bocaAnime(p, sh, ringAt) {
   const linguaSup = x => baixo(x) + altura * (0.18 + 0.2 * c(x)) * c(x);
   /* boca fechada: a linha dos lábios (o OpenPose usa a mesma) */
   /* o que um canto tem a mais que o outro sobe/desce em rampa (sorriso de um lado só fica legível na boca pequena) */
-  const linha = x => my + 0.03 * smX(x) * X * Math.pow(Math.abs(x / largura), 2) - 0.008 * smM * X * (1 - Math.pow(x / largura, 2)) + 0.028 * X * (smX(x) - smM) * Math.abs(x / largura);
-  const cerrado = Q.clench > 0.15 && a0 < 0.3;
+  const treme = x => 0.011 * Q.tremer * Math.sin(x / Math.max(1e-6, largura) * Math.PI * 2.5);
+  const linha = x => my + 0.03 * smX(x) * X * Math.pow(Math.abs(x / largura), 2) - 0.008 * smM * X * (1 - Math.pow(x / largura, 2)) + 0.028 * X * (smX(x) - smM) * Math.abs(x / largura) + treme(x);
+  const cerrado = (Q.clench > 0.15 || Q.dentes > 0.35) && a0 < 0.3;
   return { aberto: a, largura, altura, cima, baixo, denteSup, denteInf, linguaSup, linha, c, my, ss, br, cerrado, Q, dx: 0.06 * Q.shift, dentesBaixo: Q.lowerLip > 0.25 };
 }
 function feicoesAnime(ctx) {
@@ -188,9 +211,10 @@ function feicoesAnime(ctx) {
   [-1, 1].forEach(s => {
     const R = ladoRosto(p, s), sup = Math.max(0, e.bU) * X, baixa = Math.max(0, -e.bU) * X,
       rv = Math.max(0, e.bI) * X, tr = Math.max(0, -e.bI) * X, iI = R.browInner * X, iO = R.browOuter * X;
-    const th0 = 8 - 3 * Math.min(1, rv);
+    const th0 = 8 - 3 * Math.min(1, rv), SB = rostoGeral(p).sobrancelha;
     const pt = (u, dy) => {
-      const arco = (0.035 + 0.045 * sup - 0.02 * Math.min(1, rv)) * Math.sin(Math.PI * Math.pow(u, 0.7));
+      const arco = (0.035 + 0.045 * sup - 0.02 * Math.min(1, rv)) * (1 + 0.9 * SB.arco) * Math.sin(Math.PI * Math.pow(u, 0.7))
+        + SB.quebra * 0.045 * Math.max(0, 1 - Math.abs(u - 0.62) / 0.62) - SB.quebra * 0.02 * u + SB.onda * 0.011 * Math.sin(u * Math.PI * 5);
       const y = eyeY + 0.13 + 0.07 * (k - 1) + arco - 0.02 * u + dy + 0.07 * e.bU * X
         - 0.15 * rv * Math.pow(1 - u, 1.25) + 0.03 * rv * Math.pow(u, 2)
         + 0.11 * tr * Math.pow(1 - u, 1.5) - 0.035 * tr * Math.pow(u, 1.5)
@@ -198,7 +222,7 @@ function feicoesAnime(ctx) {
       return hp(y, s * (th0 + (40 + 2 * Math.min(1, rv)) * u) * D, 0.012);
     };
     /* espessura: mais grossa por dentro na raiva, mais fina na surpresa */
-    const esp = u => (0.026 * (1 - 0.75 * u) + 0.004) * (1 + 0.55 * Math.min(1.3, rv) * (1 - u) + 0.15 * baixa) * (1 - 0.28 * Math.min(1, sup));
+    const esp = u => (0.026 * (1 - 0.75 * u) + 0.004) * (1 + 0.55 * Math.min(1.3, rv) * (1 - u) + 0.15 * baixa) * (1 - 0.28 * Math.min(1, sup)) * (1 + 0.75 * SB.grossa) * (1 - 0.4 * SB.quebra * u);
     const up = [], lo = [];
     for (let i = 0; i <= 22; i++) { const u = i / 22, th = esp(u); up.push(pt(u, th / 2)); lo.push(pt(u, -th / 2)); }
     fillP(up.concat(lo.reverse()), pal.ink);
@@ -228,7 +252,17 @@ function feicoesAnime(ctx) {
       if (v < 0.1) return;
       const P0 = [s * 0.075, yt - 0.03], P2 = [s * (w + 0.035), B.my - 0.005], P1 = [s * (w + 0.075), (P0[1] + P2[1]) / 2 + 0.02], fim = 0.5 + 0.5 * v;
       curve("fibra", arr(u => { const a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u; return H(a * P0[0] + b * P1[0] + c * P2[0], a * P0[1] + b * P1[1] + c * P2[1], 0.014); }, 0.08, fim, 12)); });
-    const smM = (RL.smile + RR.smile) / 2, cq = clamp(1.4 * (Math.max(0, -smM) * X - 0.4) * (1 - 2.5 * e.jo) + 0.7 * Qg.press, 0, 1);
+    const smM = (RL.smile + RR.smile) / 2, cq = Math.max(clamp(1.4 * (Math.max(0, -smM) * X - 0.4) * (1 - 2.5 * e.jo) + 0.7 * Qg.press, 0, 1), Qg.rugas.queixo);
+    /* raiz do nariz: linhas horizontais curtas de esforço */
+    if (Qg.rugas.nariz > 0.08) for (let i = 0; i < (Qg.rugas.nariz > 0.5 ? 3 : 2); i++) curve(Qg.rugas.nariz > 0.5 ? "divisao" : "fibra", arr(x => H(x, eyeY + 0.02 - 0.03 * i + 0.006 * Math.sin(x * 60), 0.013), -0.035 - 0.01 * i, 0.035 + 0.01 * i, 6));
+    /* veia de raiva (marca de mangá): quatro arcos em cruz na testa, do lado esquerdo */
+    if (Qg.veia > 0.05) { const cx = 0.2, cy = eyeY + 0.42, r = 0.05 + 0.03 * Qg.veia;
+      for (let q = 0; q < 4; q++) { const a0 = q * Math.PI / 2 + Math.PI / 4, ox = Math.cos(a0) * r * 1.1, oy = Math.sin(a0) * r * 1.1;
+        curve("divisao", arr(a => H(cx + ox + r * 0.75 * Math.cos(a), cy + oy + r * 0.75 * Math.sin(a), 0.03), a0 + Math.PI * 0.62, a0 + Math.PI * 1.38, 7)); } }
+    /* gota de suor na têmpora */
+    if (Qg.suor > 0.05) { const cx = -0.42, cy = eyeY + 0.25, rr = 0.03 + 0.03 * Qg.suor;
+      const gota = arr(a => { const r0 = rr * (a < Math.PI ? 1 : 1); return H(cx + r0 * Math.cos(a) * (1 - 0.4 * Math.max(0, Math.sin(a))), cy + r0 * Math.sin(a) + (Math.sin(a) > 0 ? 1.4 * rr * Math.pow(Math.sin(a), 3) : 0), 0.05); }, 0, 2 * Math.PI, 18);
+      fillP(gota, "#BFE3F5", 0.9); curve("feat", gota.concat([gota[0]])); }
     if (cq > 0.12) { const yc = sh.chinY + 0.09;
       [-0.045, 0, 0.045].forEach(xc => curve("fibra", arr(a => H(xc + 0.017 * Math.cos(a), yc + 0.012 * Math.sin(a), 0.014), Math.PI * 0.15, Math.PI * 0.85, 5)));
       if (cq > 0.45) curve("fibra", arr(x => H(x, yc - 0.03 + 0.01 * Math.pow(x / 0.07, 2), 0.014), -0.065, 0.065, 8)); } }
@@ -256,6 +290,7 @@ function feicoesAnime(ctx) {
     if (Q.press < 0.8) fillP(arr(x => H(x, y(x) - 0.006, 0.019), -w * 0.78, w * 0.78, 16).concat(arr(x => H(x, y(x) - 0.006 - 0.022 * (1 + 1.6 * Q.pout) * (1 - 0.7 * Q.press) * Math.sqrt(Math.max(0, 1 - Math.pow(x / (w * 0.78), 2))), 0.019), w * 0.78, -w * 0.78, 16)), pal.coral, 0.22 * (1 + 0.8 * Q.pout) * (1 - Q.press) + 0.01);
     [-1, 1].forEach(s => fillP(arr(a => H(s * (w + 0.004) + 0.008 * Math.cos(a), y(s * w) + 0.006 * Math.sin(a), 0.021), 0, 2 * Math.PI, 8), pal.shade2, 0.45));
     curve("fibra", arr(x => H(x, B.my - 0.05, 0.016), -w * 0.35, w * 0.35, 8));
+    extrasBoca(B, H, y, w, fillP, curve, arr, pal);
     return;
   }
   const cav = arr(x => H(x, B.cima(x), 0.03), -w, w, 40).concat(arr(x => H(x, B.baixo(x), 0.03), w, -w, 40));
@@ -297,6 +332,23 @@ function feicoesAnime(ctx) {
   /* leve preenchimento do lábio de baixo e sombra sob a boca */
   fillP(arr(x => H(x, B.baixo(x) - 0.004, 0.02), -w * 0.78, w * 0.78, 20).concat(arr(x => H(x, B.baixo(x) - 0.03, 0.02), w * 0.78, -w * 0.78, 20)), pal.coral, 0.22);
   curve("fibra", arr(x => H(x, B.baixo(0) - 0.045, 0.016), -w * 0.35, w * 0.35, 8));
+  extrasBoca(B, H, B.cima, w, fillP, curve, arr, pal);
+}
+/* presa, lábio mordido e língua de fora (por cima do desenho da boca) */
+function extrasBoca(B, H, linha, w, fillP, curve, arr, pal) {
+  const Q = B.Q;
+  if (Q.morder > 0.1 && B.aberto < 0.2) { const dw = w * 0.5, y0 = x => linha(x) - 0.004;
+    fillP(arr(x => H(x, y0(x), 0.034), -dw, dw, 12).concat(arr(x => H(x, y0(x) - 0.022 * Q.morder * Math.sqrt(Math.max(0, 1 - (x / dw) ** 2)), 0.034), dw, -dw, 12)), "#F4EFE6", 0.98);
+    curve("fibra", arr(x => H(x, y0(x) - 0.022 * Q.morder * Math.sqrt(Math.max(0, 1 - (x / dw) ** 2)), 0.035), -dw, dw, 10));
+    curve("fibra", arr(x => H(x, linha(x) - 0.03 - 0.012 * Q.morder, 0.02), -w * 0.6, w * 0.6, 10)); }
+  if (Q.presa > 0.1) { const x0 = w * 0.55, y0 = linha(x0) - 0.003, L = 0.02 + 0.025 * Q.presa;
+    const tri = [H(x0 - 0.013, y0, 0.04), H(x0 + 0.004, y0 - L, 0.04), H(x0 + 0.013, y0, 0.04)]; fillP(tri, "#F8F4EC", 1); curve("fibra", tri); }
+  if (Q.lingua > 0.1) { const tw = w * 0.42, y0 = (B.aberto < 0.04 ? linha(0) : B.baixo(0)) - 0.004, L = 0.03 + 0.06 * Q.lingua;
+    const borda = arr(a => H(tw * Math.cos(a), y0 - L * Math.max(0, Math.sin(a)) * 1.0 - 0.004, 0.05), 0, Math.PI, 16).map((q, i, arr0) => q);
+    const tl = arr(a => H(tw * Math.cos(a), y0 - L * Math.sin(a), 0.05), Math.PI, 2 * Math.PI, 16);
+    fillP(arr(x => H(x, y0, 0.05), -tw, tw, 8).concat(arr(x => H(x, y0 - L * Math.sqrt(Math.max(0, 1 - (x / tw) ** 2)), 0.05), tw, -tw, 16)), pal.coral, 0.95);
+    curve("feat", arr(x => H(x, y0 - L * Math.sqrt(Math.max(0, 1 - (x / tw) ** 2)), 0.051), -tw, tw, 16));
+    curve("fibra", [H(0, y0 - 0.004, 0.052), H(0, y0 - L * 0.6, 0.052)]); void borda; void tl; }
 }
 
 export { olhosAnime, feicoesAnime, bocaAnime, geoOlhoAnime, LEVANTA as LEVANTA_V5 };
