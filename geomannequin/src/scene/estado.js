@@ -51,7 +51,7 @@ function sceneState(){
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const fxs=efeitosParaSalvar();
-  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
+  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasExpressoes?.length?{minhasExpressoes:JSON.parse(JSON.stringify(SCN.minhasExpressoes))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.exprNome)o.exprNome=String(it.exprNome).slice(0,120);if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
     if(o.gripV3){
       const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
       q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
@@ -73,6 +73,14 @@ function loadScene(sc){
       const i=lista.findIndex(q=>q.nome===p.nome),reg={nome:p.nome.slice(0,60),valores:v,criada:p.criada};
       if(i>=0)lista[i]=reg;else lista.push(reg);
     });
+  }
+  /* expressões guardadas que vieram com a cena (rosto completo, só controles do rosto) */
+  if(Array.isArray(sc.minhasExpressoes)){
+    const L=SCN.minhasExpressoes||(SCN.minhasExpressoes=[]);
+    sc.minhasExpressoes.slice(0,300).forEach(e=>{if(!e||typeof e.nome!=="string"||!e.valores||typeof e.valores!=="object")return;
+      const v={};Object.entries(e.valores).forEach(([k,x])=>{if(POSEKEYS.has(k)&&typeof x==="number"&&isFinite(x))v[k]=x});
+      const reg={nome:e.nome.slice(0,40),valores:v,criada:e.criada};if(e.formato&&typeof e.formato==="object")reg.formato=Object.fromEntries(Object.entries(e.formato).filter(([,x])=>typeof x==="number"&&isFinite(x)));if(typeof e.cabeca==="string")reg.cabeca=e.cabeca.slice(0,30);
+      const i=L.findIndex(q=>q.nome===reg.nome);if(i>=0)L[i]=reg;else L.push(reg)});
   }
   const refs=sc.list.slice(0,MAXM).map(o=>(o.referencias||[]).slice(0,32).map(validarReferencia));
   const chaves=(sc.chavesVento||[]).slice(0,256).map(v=>{
@@ -96,7 +104,7 @@ function loadScene(sc){
       }
     }
     if(refs[SCN.list.length].length)it.referencias=refs[SCN.list.length];
-    it.congelado=!!o.congelado;it.oculto=!!o.oculto;it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
+    if(typeof o.exprNome==="string")it.exprNome=o.exprNome.slice(0,120);it.congelado=!!o.congelado;it.oculto=!!o.oculto;it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
   SCN.exato=!!sc.exato;
   /* objetos da cena */
   SCN.objetos.length=0;SCN.objSel=null;

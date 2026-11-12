@@ -8,6 +8,7 @@ import { SL, ALIAS, POSEKEYS } from "./parametros.js";
 import { POSE0 } from "./poses.js";
 import { codigoDaPose } from "./pose-codigo.js";
 import { pMundo } from "./colisoes.js";
+import { codigoDoRosto, valoresDoRosto, expressaoParecida, GRUPOS_ROSTO } from "./rosto-codigo.js";
 import { ossosDoCorpo, paraMundo, telaDoMundo, autoColisoes, W, H } from "../engine/index.js";
 
 /* o que o valor negativo e o positivo de cada controle fazem (sem o L/R do lado) — medido no motor */
@@ -125,7 +126,7 @@ function iaEstadoManequim(it, lst, idx, cam0) {
   };
   /* controles fora do neutro, com o que fazem */
   const mudados = [];
-  POSEKEYS.forEach(k => { const v = p[k], z = POSE0[k] !== undefined ? POSE0[k] : 0; if (typeof v !== "number" || Math.abs(v - z) < (Math.abs(z) > 2 || /^(arm|hip|knee|elbow|ankle|spine|pelvis|head|neck|body|wrist|pron|lum|tho|toes|foot|tibia|hallux)/.test(k) ? 0.5 : 0.02)) return;
+  POSEKEYS.forEach(k => { if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|upperLip|mouthCorner|lipPress|pout|teethClench)/.test(k)) return; const v = p[k], z = POSE0[k] !== undefined ? POSE0[k] : 0; if (typeof v !== "number" || Math.abs(v - z) < (Math.abs(z) > 2 || /^(arm|hip|knee|elbow|ankle|spine|pelvis|head|neck|body|wrist|pron|lum|tho|toes|foot|tibia|hallux)/.test(k) ? 0.5 : 0.02)) return;
     const c = iaControle(k), b = iaBase(k), lado = IA_LADO(k); let sent = "";
     if (b) { sent = v < 0 ? c.negativo : c.positivo; if (lado && sent) sent = "(" + lado + ") " + sent; }
     mudados.push({ chave: k, nome: c.nome, valor: iaR(v, Math.abs(v) < 2 ? 2 : 0), faixa: [c.min, c.max], efeito: sent || c.rotulo }); });
@@ -142,10 +143,20 @@ function iaEstadoManequim(it, lst, idx, cam0) {
     geral: { texto: geral, inclinacaoDoTronco: incl, troncoFrenteTras: pitchT, troncoLado: latT, torcaoPeitoSobrePelve: torcao, apoiadoEm: contatos, noAr },
     cabeca: { olhando: olhar.texto + " (em relação ao tronco)", olhandoParaCamera: olhaCam < 30, anguloAteACamera: olhaCam },
     bracoEsquerdo: braco(1), bracoDireito: braco(-1), pernaEsquerda: perna(1), pernaDireita: perna(-1),
-    rosto: { sorriso: iaR(p.smile || 0, 2), bocaAberta: iaR(p.jawOpen || 0, 2), palpebras: iaR(p.eyeLid || 0, 2), sobrancelhas: iaR(p.browUp || 0, 2), franzir: iaR(p.browIn || 0, 2) },
+    rosto: iaRosto(it, p),
     controles: mudados, autoColisoes: col, naImagem: naTela,
     codigo: codigoDaPose(p, { soMudancas: true })
   };
+}
+/* rosto: expressão de origem, a mais parecida, cada controle fora do neutro (com o que faz), olhar e código */
+function iaRosto(it, p) {
+  const v = valoresDoRosto(p), par = expressaoParecida(p), ctl = [];
+  GRUPOS_ROSTO.forEach(([g, f]) => Object.keys(v).filter(k => f(k) && Math.abs(v[k]) > 1e-3).forEach(k => { const c = iaControle(k), b = IA_SENTIDO[k] ? k : iaBase(k), sn = b && IA_SENTIDO[b] ? IA_SENTIDO[b][v[k] < 0 ? 0 : 1] : "", lado = /L$/.test(k) ? "esquerdo" : /R$/.test(k) ? "direito" : "";
+    ctl.push({ grupo: g, chave: k, nome: c.nome, valor: v[k], faixa: [c.min, c.max], efeito: (lado && sn ? "(" + lado + ") " : "") + (sn || c.rotulo) }); }));
+  const ey = p.eyeYaw || 0, ep = p.eyePitch || 0;
+  const olhos = Math.abs(ey) < 0.1 && Math.abs(ep) < 0.1 ? "olhos para a frente" : "olhos " + [Math.abs(ey) >= 0.1 ? (ey > 0 ? "para a esquerda dele" : "para a direita dele") : "", Math.abs(ep) >= 0.1 ? (ep > 0 ? "para cima" : "para baixo") : ""].filter(Boolean).join(" e ");
+  return { expressaoDeOrigem: it.exprNome || null, parecida: par.texto, semelhanca: par.semelhanca === undefined ? 100 : par.semelhanca, olhos, cabeca: p.headModel || "v3_microgeometry",
+    controles: ctl, codigo: codigoDoRosto(p, { origem: it.exprNome }) };
 }
 /* texto legível (Markdown) a partir do estado */
 function iaTextoEstado(E) {
@@ -161,9 +172,12 @@ function iaTextoEstado(E) {
     lin("- " + n + ": mão " + b.altura + ", " + b.posicao.lado + ", " + (b.posicao.frenteDoCorpo >= 0 ? b.posicao.frenteDoCorpo + " à frente" : -b.posicao.frenteDoCorpo + " atrás") + " do corpo; braço (ombro→cotovelo) " + b.braco.texto + "; cotovelo " + b.cotovelo + "; antebraço " + b.antebraco.texto + "; palma virada " + b.palma.texto + "; dedos " + b.dedos.texto + "; " + b.mao + (b.noChao ? "; mão no chão" : "") + ".");
   for (const [n, q] of [["Perna esquerda", E.pernaEsquerda], ["Perna direita", E.pernaDireita]])
     lin("- " + n + ": pé " + q.pe + ", " + (q.pePosicao.frenteDaPelve >= 0 ? q.pePosicao.frenteDaPelve + " à frente" : -q.pePosicao.frenteDaPelve + " atrás") + " da pelve e " + q.pePosicao.paraFora + " para fora; coxa " + q.coxa.texto + "; joelho " + q.joelho + "; canela " + q.canela.texto + "; " + q.ponta + ".");
-  lin("- Rosto: sorriso " + E.rosto.sorriso + ", boca aberta " + E.rosto.bocaAberta + ", pálpebras " + E.rosto.palpebras + ", sobrancelhas " + E.rosto.sobrancelhas + ", franzir " + E.rosto.franzir + ".");
+  lin("- Rosto: " + (E.rosto.controles.length ? "parece “" + E.rosto.parecida + "” (" + E.rosto.semelhanca + "% de semelhança)" : "neutro") + (E.rosto.expressaoDeOrigem ? "; partiu de “" + E.rosto.expressaoDeOrigem + "”" : "") + "; " + E.rosto.olhos + "; cabeça " + E.rosto.cabeca + ".");
+  if (E.rosto.controles.length) { lin("  - Controles do rosto fora do neutro:"); E.rosto.controles.forEach(c => lin("    - " + c.grupo + ": " + c.nome + (c.nome !== c.chave ? " (" + c.chave + ")" : "") + " = " + c.valor + " [" + c.faixa[0] + " a " + c.faixa[1] + "] → " + c.efeito)); }
+  lin("  - Código só do rosto (m.aplicarRosto(`…`) ou cola em “Código do rosto”):");
+  lin("```js\n" + E.rosto.codigo.trim() + "\n```");
   if (E.autoColisoes.length) lin("- ATENÇÃO, partes atravessando: " + E.autoColisoes.join("; ") + ".");
-  lin("- Controles fora do neutro (nome em português = chave interna: valor [faixa] → efeito):");
+  lin("- Controles do corpo fora do neutro (nome em português = chave interna: valor [faixa] → efeito):");
   E.controles.forEach(c => lin("  - " + c.nome + (c.nome !== c.chave ? " (" + c.chave + ")" : "") + " = " + c.valor + " [" + c.faixa[0] + " a " + c.faixa[1] + "] → " + c.efeito));
   lin("- Onde aparece na imagem (x, y de 0 a 1, a partir do canto de cima à esquerda): " + Object.entries(E.naImagem).map(([k, v]) => k + " " + v[0] + "," + v[1]).join("; ") + ".");
   lin("- Código que reproduz esta pose (aplique com cena.obter(\"" + E.nome + "\").pose({...}) ou cole no editor):");

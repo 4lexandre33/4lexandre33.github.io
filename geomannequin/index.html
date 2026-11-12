@@ -370,6 +370,30 @@
       </details>
       <div id="slFace"></div>
       <details class="fino"><summary>Rosto: cada lado (piscar um olho, desprezo, nojo…)</summary><div id="slFaceAU"></div></details>
+      <details class="fino" id="rcPainel" open><summary>Código do rosto e Minhas expressões</summary>
+        <p class="hint">O rosto atual vira código: copie, cole outro e aplique, ou guarde com um nome para reutilizar (ex.: “Sorriso cínico”). O código da pose também leva o rosto.</p>
+        <textarea id="rostoCodigo" rows="7" spellcheck="false" aria-label="Código do rosto"></textarea>
+        <div class="row">
+          <button type="button" id="rcAtual">Rosto atual</button>
+          <button type="button" id="rcCopiar">Copiar</button>
+          <button type="button" id="rcAplicar" class="primary">Aplicar</button>
+          <button type="button" id="rcImportar" title="Guarda todos os rosto(...) colados no campo">Importar</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="rcFormato"> incluir formato do rosto e modelo de cabeça</label>
+        <div class="row">
+          <input id="rcNome" type="text" maxlength="40" placeholder="Nome da expressão" aria-label="Nome da nova expressão">
+          <button type="button" id="rcGuardar" class="primary">Guardar</button>
+        </div>
+        <div class="row">
+          <select id="rcLista" aria-label="Minhas expressões"></select>
+          <button type="button" id="rcUsar">Usar</button>
+          <button type="button" id="rcVerCodigo">Código</button>
+          <button type="button" id="rcApagar">Apagar</button>
+          <button type="button" id="rcExportar">Exportar</button>
+        </div>
+        <div id="rcBotoes" class="expr-btns" hidden></div>
+        <p id="rcMsg" class="hint" role="status" aria-live="polite"></p>
+      </details>
       <h2>Vista (câmera)</h2>
       <div class="orb" id="orbPainel">
         <label class="orb-pivo">Girar em volta de <select id="orbPivo" aria-label="Pivô da órbita"></select></label>

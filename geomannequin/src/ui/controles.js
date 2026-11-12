@@ -89,7 +89,7 @@ export function iniciarControles(){
   {const g=document.querySelector('[aria-label="Expressões"]');
    if(g)Object.keys(EXPRESSOES).forEach(k=>{if(!g.querySelector('[data-expr="'+k+'"]')){const b=document.createElement("button");b.type="button";b.dataset.expr=k;b.textContent=NOMES_EXPRESSOES[k]||k;g.appendChild(b)}});}
   document.querySelectorAll("[data-expr]").forEach(b=>{
-    b.addEventListener("click",()=>{Object.assign(P,EXPRESSOES[b.dataset.expr]);syncControls();render()});
+    b.addEventListener("click",()=>{Object.assign(P,EXPRESSOES[b.dataset.expr]);const it=SCN.list[SCN.active];if(it)it.exprNome=b.dataset.expr;syncControls();render()});
   });
   /* misturar duas emoções com peso e intensidade */
   {const A=$("mixA"),B=$("mixB"),peso=$("mixPeso"),int=$("mixInt");
@@ -98,7 +98,7 @@ export function iniciarControles(){
      A.value="raiva";B.value="tristeza";
      const rot=()=>{$("mixPesoOut").textContent=peso.value+"% A + "+(100-peso.value)+"% B";$("mixIntOut").textContent=int.value+"%"};
      const aplicar=()=>{const pa=+peso.value/100,w={};w[A.value]=(w[A.value]||0)+pa;w[B.value]=(w[B.value]||0)+1-pa;
-       if(!(pa>0||1-pa>0))return;Object.assign(P,misturarExpressoes(w,+int.value/100));syncControls();render()};
+       if(!(pa>0||1-pa>0))return;Object.assign(P,misturarExpressoes(w,+int.value/100));const it=SCN.list[SCN.active];if(it)it.exprNome=Math.round(pa*100)+"% "+A.value+" + "+Math.round((1-pa)*100)+"% "+B.value+(+int.value!==100?" ×"+(+int.value/100):"");syncControls();render()};
      peso.addEventListener("input",()=>{rot();aplicar()});int.addEventListener("input",()=>{rot();aplicar()});
      A.addEventListener("change",aplicar);B.addEventListener("change",aplicar);$("mixAplicar").addEventListener("click",aplicar);rot();
    }}

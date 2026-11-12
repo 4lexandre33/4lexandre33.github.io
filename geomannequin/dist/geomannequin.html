@@ -458,6 +458,12 @@ body.qd-aberto{overflow:hidden}
 .vp-info{font-size:12px;color:var(--ink);margin:4px 0}
 .gm-junta-hud{position:absolute;left:10px;bottom:10px;z-index:5;max-width:calc(100% - 20px);font-size:12px;line-height:1.35;color:var(--ink);background:var(--panel,var(--bg));border:1px solid var(--rule);border-radius:7px;padding:5px 9px;box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:none}
 #stagebox{position:relative}
+/* Código do rosto / Minhas expressões */
+#rostoCodigo{width:100%;box-sizing:border-box;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+#rcPainel .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#rcPainel .row input[type=text],#rcPainel .row select{flex:1 1 140px;min-width:0}
+#rcPainel .chk{display:flex;gap:6px;align-items:center;font-size:12px}
+.expr-btns{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
 
 /* GeoMannequin — modo de estudo anatômico V4.2 (folha técnica vetorial).
  * Responsivo, acessível e isolado do palco/editor existentes. */
@@ -877,6 +883,30 @@ pre.cmdout .ok{color:var(--cobalt)}
       </details>
       <div id="slFace"></div>
       <details class="fino"><summary>Rosto: cada lado (piscar um olho, desprezo, nojo…)</summary><div id="slFaceAU"></div></details>
+      <details class="fino" id="rcPainel" open><summary>Código do rosto e Minhas expressões</summary>
+        <p class="hint">O rosto atual vira código: copie, cole outro e aplique, ou guarde com um nome para reutilizar (ex.: “Sorriso cínico”). O código da pose também leva o rosto.</p>
+        <textarea id="rostoCodigo" rows="7" spellcheck="false" aria-label="Código do rosto"></textarea>
+        <div class="row">
+          <button type="button" id="rcAtual">Rosto atual</button>
+          <button type="button" id="rcCopiar">Copiar</button>
+          <button type="button" id="rcAplicar" class="primary">Aplicar</button>
+          <button type="button" id="rcImportar" title="Guarda todos os rosto(...) colados no campo">Importar</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="rcFormato"> incluir formato do rosto e modelo de cabeça</label>
+        <div class="row">
+          <input id="rcNome" type="text" maxlength="40" placeholder="Nome da expressão" aria-label="Nome da nova expressão">
+          <button type="button" id="rcGuardar" class="primary">Guardar</button>
+        </div>
+        <div class="row">
+          <select id="rcLista" aria-label="Minhas expressões"></select>
+          <button type="button" id="rcUsar">Usar</button>
+          <button type="button" id="rcVerCodigo">Código</button>
+          <button type="button" id="rcApagar">Apagar</button>
+          <button type="button" id="rcExportar">Exportar</button>
+        </div>
+        <div id="rcBotoes" class="expr-btns" hidden></div>
+        <p id="rcMsg" class="hint" role="status" aria-live="polite"></p>
+      </details>
       <h2>Vista (câmera)</h2>
       <div class="orb" id="orbPainel">
         <label class="orb-pivo">Girar em volta de <select id="orbPivo" aria-label="Pivô da órbita"></select></label>
@@ -12919,10 +12949,10 @@ pre.cmdout .ok{color:var(--cobalt)}
   }
   function transitarSexo(p, fem) {
     const sexo = limitar(Number.isFinite(fem) ? fem : 0, 0, 1), tipo = NOMES_BIOTIPOS.includes(p._biotipo) ? p._biotipo : "medio";
-    const antes = perfilBiotipo(tipo, p.fem), depois3 = perfilBiotipo(tipo, sexo);
+    const antes = perfilBiotipo(tipo, p.fem), depois4 = perfilBiotipo(tipo, sexo);
     for (const k of CHAVES_BIOTIPO) {
       const valor = Number.isFinite(p[k]) ? p[k] : antes[k], c = LIMITES_BIOTIPO[k];
-      p[k] = limitar(depois3[k] + valor - antes[k], c[0], c[1]);
+      p[k] = limitar(depois4[k] + valor - antes[k], c[0], c[1]);
     }
     p.fem = sexo;
     p._biotipo = tipo;
@@ -13082,6 +13112,11 @@ pre.cmdout .ok{color:var(--cobalt)}
   });
   var chaveExpressao = (nome) => String(nome || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   var FAIXA_ROSTO = { jawOpen: [0, 1], eyeLid: [0, 1], blush: [0, 1], tears: [0, 1] };
+  var EXPR_EXTRA = null;
+  function definirExpressoesExtras(f) {
+    EXPR_EXTRA = f;
+  }
+  var fonteExpressao = (k) => EXPRESSOES[k] || (EXPR_EXTRA ? EXPR_EXTRA(k) : null);
   function lerPesos(pesos) {
     if (typeof pesos === "string") {
       const o = {}, partes2 = pesos.split(/[+,;]/).map((t) => t.trim()).filter(Boolean);
@@ -13097,7 +13132,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const out = {};
     for (const [n2, v] of Object.entries(pesos)) {
       const k = chaveExpressao(n2);
-      if (!EXPRESSOES[k]) throw new Error("Expressão “" + n2 + "” não existe. Use: " + Object.keys(EXPRESSOES).join(", ") + ".");
+      if (!fonteExpressao(k)) throw new Error("Expressão “" + n2 + "” não existe. Use: " + Object.keys(EXPRESSOES).join(", ") + ".");
       if (typeof v !== "number" || !isFinite(v) || v < 0) throw new Error("Peso de “" + n2 + "” precisa ser um número ≥ 0.");
       out[k] = (out[k] || 0) + v;
     }
@@ -13108,10 +13143,10 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (!(tot > 0)) throw new Error("Mistura: algum peso precisa ser maior que 0.");
     const I = Math.max(0, Math.min(1.5, Number.isFinite(intensidade) ? intensidade : 1)), out = {};
     const chaves = new Set(BASE_ROSTO);
-    Object.keys(P0).forEach((n2) => Object.keys(EXPRESSOES[n2]).forEach((k) => chaves.add(k)));
+    Object.keys(P0).forEach((n2) => Object.keys(fonteExpressao(n2)).forEach((k) => chaves.add(k)));
     for (const k of chaves) {
       let v = 0;
-      for (const [n2, w] of Object.entries(P0)) v += (EXPRESSOES[n2][k] || 0) * w / tot;
+      for (const [n2, w] of Object.entries(P0)) v += (fonteExpressao(n2)[k] || 0) * w / tot;
       const [a, b] = FAIXA_ROSTO[k] || (/^(lidUp|lidLo|cheek|upperLip|noseWrinkle|lipPress|pout|teethClench|eyeBags)/.test(k) ? [0, 1] : [-1, 1]);
       out[k] = Math.round(Math.max(a, Math.min(b, v * I)) * 1e3) / 1e3;
     }
@@ -16930,6 +16965,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const nome = String(opts.nome || "").replace(/["\\\n]/g, " ").trim();
     const cab = [
       "/* GeoMannequin · pose" + (nome ? " “" + nome + "”" : "") + " · formato " + FORMATO_POSE + (sel2 ? " · partes: " + [...sel2].join(", ") : "") + (so ? " · só o que difere da pose neutra" : ""),
+      opts.expressao ? "   Rosto: partiu de “" + String(opts.expressao).replace(/\*\//g, "") + "” (os valores estão no grupo “rosto” abaixo)." : "   O rosto (expressão) vai junto, no grupo “rosto”; para só o rosto use m.rostoCodigo().",
       "   Cole em “Código da pose”, no editor de comandos ou em Minhas poses › Importar. */"
     ];
     const linhas = [];
@@ -16941,9 +16977,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
     return cab.join("\n") + "\npose(" + (nome ? JSON.stringify(nome) + ", " : "") + "{\n" + linhas.join("\n") + "\n});\n";
   }
-  function erroLinha(txt, pos, msg4) {
+  function erroLinha(txt, pos, msg5) {
     const linha = txt.slice(0, pos).split("\n").length;
-    const e = new Error("Linha " + linha + ": " + msg4);
+    const e = new Error("Linha " + linha + ": " + msg5);
     e.linha = linha;
     return e;
   }
@@ -17128,6 +17164,257 @@ pre.cmdout .ok{color:var(--cobalt)}
     });
   }
 
+  // src/scene/rosto-codigo.js
+  var FORMATO_ROSTO_VERSAO = 1;
+  var _chavesRosto = null;
+  function chavesRosto() {
+    if (!_chavesRosto) {
+      const s = /* @__PURE__ */ new Set();
+      SL.forEach((d) => {
+        if (POSEKEYS.has(d.k) && parteDaChave(d.k) === "rosto") s.add(d.k);
+      });
+      BASE_ROSTO.forEach((k) => s.add(k));
+      ["eyeYaw", "eyePitch"].forEach((k) => s.add(k));
+      _chavesRosto = [...s];
+    }
+    return _chavesRosto;
+  }
+  var _chavesFormato = null;
+  function chavesFormato() {
+    return _chavesFormato || (_chavesFormato = SL.filter((d) => d.g === "slFeat").map((d) => d.k));
+  }
+  var GRUPOS_ROSTO = [
+    ["boca e mandíbula", (k) => /^(jaw|smile|mouthCorner|upperLip|lipPress|pout|teethClench)/.test(k)],
+    ["olhos e pálpebras", (k) => /^(eyeLid|lidUp|lidLo|eyeBags)/.test(k)],
+    ["olhar (para onde os olhos apontam)", (k) => /^(eyeYaw|eyePitch)$/.test(k)],
+    ["sobrancelhas", (k) => /^brow/.test(k)],
+    ["bochechas e nariz", (k) => /^(cheek|nose)/.test(k)],
+    ["estado (corar, lágrimas)", (k) => /^(blush|tears)$/.test(k)]
+  ];
+  var _nomeRosto = null;
+  function nomeRosto(k) {
+    if (!_nomeRosto) {
+      _nomeRosto = {};
+      Object.entries(ALIAS).forEach(([a, k2]) => {
+        if (!(k2 in _nomeRosto)) _nomeRosto[k2] = a;
+      });
+    }
+    return _nomeRosto[k] || k;
+  }
+  var arredR = (v) => Math.round(v * 1e3) / 1e3;
+  function valoresDoRosto(params) {
+    const o = {};
+    chavesRosto().forEach((k) => {
+      const v = params[k];
+      o[k] = typeof v === "number" && isFinite(v) ? arredR(v) : 0;
+    });
+    return o;
+  }
+  function formatoDoRosto(params) {
+    const o = {};
+    chavesFormato().forEach((k) => {
+      const v = params[k];
+      if (typeof v === "number" && isFinite(v)) o[k] = arredR(v);
+    });
+    return o;
+  }
+  function codigoDoRosto(params, opts = {}) {
+    const v = valoresDoRosto(params), nome = String(opts.nome || "").replace(/["\\\n]/g, " ").trim(), linhas = [];
+    GRUPOS_ROSTO.forEach(([titulo, f]) => {
+      const g = chavesRosto().filter((k) => f(k) && Math.abs(v[k]) > 1e-4).map((k) => nomeRosto(k) + ": " + v[k]);
+      if (!g.length) return;
+      linhas.push("  // " + titulo);
+      for (let i = 0; i < g.length; i += 4) linhas.push("  " + g.slice(i, i + 4).join(", ") + ",");
+    });
+    let extra = "";
+    if (opts.formato) {
+      const f = formatoDoRosto(params), fl = Object.entries(f).map(([k, x]) => nomeRosto(k) + ": " + x), cab = params.headModel;
+      extra = ", {\n  formato: {\n" + (fl.length ? "    " + fl.reduce((a, t, i) => a + t + (i % 4 === 3 ? ",\n    " : ", "), "").replace(/,\s*$/, "") + "\n" : "") + "  }" + (cab ? ",\n  cabeca: " + JSON.stringify(cab) : "") + "\n}";
+    }
+    return "/* GeoMannequin · rosto" + (nome ? " “" + nome + "”" : "") + " · formato " + FORMATO_ROSTO_VERSAO + (opts.origem ? " · partiu de: " + String(opts.origem).replace(/\*\//g, "") : "") + "\n   Rosto completo: o que não aparece aqui fica neutro (0). Cole em “Código do rosto”, no editor (m.aplicarRosto(`…`)) ou em Minhas expressões. */\nrosto(" + (nome ? JSON.stringify(nome) + ", " : "") + "{\n" + (linhas.length ? linhas.join("\n") : "  // rosto neutro") + "\n}" + extra + ");\n";
+  }
+  function semComentarios(txt) {
+    let o = "", i = 0, q = null;
+    while (i < txt.length) {
+      const c = txt[i], d = txt[i + 1];
+      if (q) {
+        o += c;
+        if (c === "\\") {
+          o += d || "";
+          i += 2;
+          continue;
+        }
+        if (c === q) q = null;
+        i++;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === "`") {
+        q = c;
+        o += c;
+        i++;
+        continue;
+      }
+      if (c === "/" && d === "/") {
+        while (i < txt.length && txt[i] !== "\n") i++;
+        continue;
+      }
+      if (c === "/" && d === "*") {
+        const f = txt.indexOf("*/", i + 2);
+        i = f < 0 ? txt.length : f + 2;
+        continue;
+      }
+      o += c;
+      i++;
+    }
+    return o;
+  }
+  function blocoEm(t, a) {
+    let p = 0;
+    for (let j = a; j < t.length; j++) {
+      if (t[j] === "{") p++;
+      else if (t[j] === "}") {
+        p--;
+        if (!p) return t.slice(a, j + 1);
+      }
+    }
+    throw new Error("Falta fechar a chave “}” no código do rosto.");
+  }
+  function objetoLiteral(s) {
+    const j = s.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (m, x) => JSON.stringify(x)).replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":').replace(/,\s*([}\]])/g, "$1");
+    try {
+      return JSON.parse(j);
+    } catch (e) {
+      throw new Error("Não entendi o código do rosto: use nome: número, separados por vírgula.");
+    }
+  }
+  function lerCodigoDoRosto(texto2) {
+    const t = semComentarios(String(texto2 ?? "")).trim();
+    if (!t) throw new Error("O código do rosto está vazio.");
+    let nome = "";
+    const mN = /rosto\s*\(\s*(["'])((?:\\.|(?!\1).)*)\1\s*,/.exec(t);
+    if (mN) nome = mN[2];
+    const a = t.indexOf("{");
+    if (a < 0) throw new Error("Não achei o bloco { … } com os valores do rosto.");
+    const b1 = blocoEm(t, a), resto = t.slice(a + b1.length), a2 = resto.indexOf("{");
+    const cru = objetoLiteral(b1), opc = a2 >= 0 && /^\s*,/.test(resto) ? objetoLiteral(blocoEm(resto, a2)) : {};
+    const valores = {};
+    for (const [k0, v] of Object.entries(cru)) {
+      const k = ALIAS[k0] || k0;
+      if (!chavesRosto().includes(k)) throw new Error("“" + k0 + "” não é um controle do rosto.");
+      if (typeof v !== "number" || !isFinite(v)) throw new Error("“" + k0 + "” precisa de um número.");
+      valores[k] = v;
+    }
+    let formato = null, cabeca = null;
+    if (opc.formato && typeof opc.formato === "object") {
+      formato = {};
+      for (const [k0, v] of Object.entries(opc.formato)) {
+        const k = ALIAS[k0] || k0;
+        if (!chavesFormato().includes(k)) throw new Error("“" + k0 + "” não é uma feição do rosto.");
+        if (typeof v === "number" && isFinite(v)) formato[k] = v;
+      }
+    }
+    if (opc.cabeca !== void 0) {
+      cabeca = normalizarModeloCabeca(opc.cabeca, null);
+      if (!cabeca) throw new Error("Cabeça: use v1, v2, v3, v4 ou v5.");
+    }
+    return { nome, valores, formato, cabeca };
+  }
+  function rostoCompleto(valores) {
+    const o = {};
+    chavesRosto().forEach((k) => {
+      o[k] = valores[k] !== void 0 ? valores[k] : 0;
+    });
+    return o;
+  }
+  var CHAVE_LOCAL_EXPR = "geomannequin.minhasExpressoes";
+  function expressoesSalvas() {
+    if (!SCN.minhasExpressoes) SCN.minhasExpressoes = [];
+    return SCN.minhasExpressoes;
+  }
+  function persistirExpressoes() {
+    try {
+      if (typeof localStorage !== "undefined") localStorage.setItem(CHAVE_LOCAL_EXPR, JSON.stringify(expressoesSalvas()));
+    } catch (e) {
+    }
+  }
+  function carregarExpressoesLocais() {
+    try {
+      if (typeof localStorage === "undefined") return;
+      const t = localStorage.getItem(CHAVE_LOCAL_EXPR);
+      if (!t) return;
+      const L3 = JSON.parse(t);
+      if (!Array.isArray(L3)) return;
+      L3.forEach((e) => {
+        if (e && e.nome && e.valores && !expressoesSalvas().some((x) => x.nome === e.nome)) expressoesSalvas().push(e);
+      });
+    } catch (e) {
+    }
+  }
+  function expressaoDoUsuario(nome) {
+    const k = chaveExpressao(nome);
+    return expressoesSalvas().find((e) => chaveExpressao(e.nome) === k) || null;
+  }
+  function salvarExpressao(nome, valores, opts = {}) {
+    const n2 = String(nome || "").trim().slice(0, 40);
+    if (!n2) throw new Error("Dê um nome à expressão.");
+    if (EXPRESSOES[chaveExpressao(n2)]) throw new Error("“" + n2 + "” já é uma expressão pronta. Escolha outro nome.");
+    const L3 = expressoesSalvas(), i = L3.findIndex((e) => chaveExpressao(e.nome) === chaveExpressao(n2));
+    if (i >= 0 && !opts.substituir) throw new Error("Já existe “" + L3[i].nome + "”. Use {substituir: true} ou outro nome.");
+    const reg = { nome: n2, valores: rostoCompleto(valores), criada: (/* @__PURE__ */ new Date()).toISOString(), ...opts.formato ? { formato: { ...opts.formato } } : {}, ...opts.cabeca ? { cabeca: opts.cabeca } : {} };
+    if (i >= 0) L3[i] = reg;
+    else L3.push(reg);
+    persistirExpressoes();
+    return reg;
+  }
+  function apagarExpressao(nome) {
+    const e = expressaoDoUsuario(nome);
+    if (!e) throw new Error("Não há expressão salva com o nome “" + nome + "”.");
+    SCN.minhasExpressoes = expressoesSalvas().filter((x) => x !== e);
+    persistirExpressoes();
+    return true;
+  }
+  function exportarExpressoes() {
+    return expressoesSalvas().map((e) => codigoDoRosto({ ...e.valores, ...e.formato || {}, headModel: e.cabeca }, { nome: e.nome, formato: !!(e.formato || e.cabeca) })).join("\n");
+  }
+  function importarExpressoes(texto2, opts = {}) {
+    const t = String(texto2 || ""), idx2 = [];
+    const re = /rosto\s*\(/g;
+    let m;
+    while (m = re.exec(t)) idx2.push(m.index);
+    if (!idx2.length) throw new Error("Não achei nenhum rosto(...) no texto.");
+    const feitos = [];
+    idx2.forEach((a, i) => {
+      const r = lerCodigoDoRosto(t.slice(a, idx2[i + 1] || t.length));
+      const n2 = r.nome || "Expressão " + (expressoesSalvas().length + 1);
+      feitos.push(salvarExpressao(n2, r.valores, { substituir: opts.substituir !== false, formato: r.formato, cabeca: r.cabeca }).nome);
+    });
+    return feitos;
+  }
+  definirExpressoesExtras((k) => {
+    const e = expoesSalvasChave(k);
+    return e ? e.valores : null;
+  });
+  function expoesSalvasChave(k) {
+    return expressoesSalvas().find((e) => chaveExpressao(e.nome) === k) || null;
+  }
+  function expressaoParecida(params) {
+    const v = valoresDoRosto(params), nomes = Object.keys(EXPRESSOES).filter((n2) => n2 !== "neutra"), ks = BASE_ROSTO;
+    const dist = (w) => ks.reduce((a, k) => a + Math.pow((v[k] || 0) - w(k), 2), 0);
+    const mag = ks.reduce((a, k) => a + (v[k] || 0) ** 2, 0);
+    if (mag < 0.02) return { texto: "neutra", nome: "neutra" };
+    let melhor = { d: dist(() => 0), texto: "neutra" };
+    for (const a of nomes) for (const I of [0.5, 0.75, 1, 1.25]) {
+      const d = dist((k) => (EXPRESSOES[a][k] || 0) * I);
+      if (d < melhor.d) melhor = { d, texto: a + (I !== 1 ? " (intensidade " + I + ")" : ""), nome: a };
+    }
+    for (let i = 0; i < nomes.length; i++) for (let j = i + 1; j < nomes.length; j++) for (let p = 0.2; p < 0.81; p += 0.1) for (const I of [0.8, 1, 1.2]) {
+      const a = nomes[i], b = nomes[j], d = dist((k) => ((EXPRESSOES[a][k] || 0) * p + (EXPRESSOES[b][k] || 0) * (1 - p)) * I);
+      if (d < melhor.d - 0.01) melhor = { d, texto: Math.round(p * 100) + "% " + a + " + " + Math.round((1 - p) * 100) + "% " + b + (I !== 1 ? " (intensidade " + I + ")" : ""), nome: a };
+    }
+    melhor.semelhanca = Math.max(0, Math.round(100 * (1 - Math.sqrt(melhor.d / Math.max(mag, 0.05)))));
+    return melhor;
+  }
+
   // src/scene/estado-ia.js
   var IA_SENTIDO = {
     spineFlex: ["arqueia o tronco para trás", "curva o tronco para a frente"],
@@ -17285,6 +17572,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     };
     const mudados = [];
     POSEKEYS.forEach((k) => {
+      if (/^(jaw|smile|eye|brow|blush|tears|lid|cheek|nose|upperLip|mouthCorner|lipPress|pout|teethClench)/.test(k)) return;
       const v = p[k], z = POSE0[k] !== void 0 ? POSE0[k] : 0;
       if (typeof v !== "number" || Math.abs(v - z) < (Math.abs(z) > 2 || /^(arm|hip|knee|elbow|ankle|spine|pelvis|head|neck|body|wrist|pron|lum|tho|toes|foot|tibia|hallux)/.test(k) ? 0.5 : 0.02)) return;
       const c = iaControle(k), b = iaBase(k), lado2 = IA_LADO(k);
@@ -17320,11 +17608,29 @@ pre.cmdout .ok{color:var(--cobalt)}
       bracoDireito: braco(-1),
       pernaEsquerda: perna(1),
       pernaDireita: perna(-1),
-      rosto: { sorriso: iaR(p.smile || 0, 2), bocaAberta: iaR(p.jawOpen || 0, 2), palpebras: iaR(p.eyeLid || 0, 2), sobrancelhas: iaR(p.browUp || 0, 2), franzir: iaR(p.browIn || 0, 2) },
+      rosto: iaRosto(it, p),
       controles: mudados,
       autoColisoes: col,
       naImagem: naTela,
       codigo: codigoDaPose(p, { soMudancas: true })
+    };
+  }
+  function iaRosto(it, p) {
+    const v = valoresDoRosto(p), par = expressaoParecida(p), ctl = [];
+    GRUPOS_ROSTO.forEach(([g, f]) => Object.keys(v).filter((k) => f(k) && Math.abs(v[k]) > 1e-3).forEach((k) => {
+      const c = iaControle(k), b = IA_SENTIDO[k] ? k : iaBase(k), sn = b && IA_SENTIDO[b] ? IA_SENTIDO[b][v[k] < 0 ? 0 : 1] : "", lado2 = /L$/.test(k) ? "esquerdo" : /R$/.test(k) ? "direito" : "";
+      ctl.push({ grupo: g, chave: k, nome: c.nome, valor: v[k], faixa: [c.min, c.max], efeito: (lado2 && sn ? "(" + lado2 + ") " : "") + (sn || c.rotulo) });
+    }));
+    const ey = p.eyeYaw || 0, ep = p.eyePitch || 0;
+    const olhos = Math.abs(ey) < 0.1 && Math.abs(ep) < 0.1 ? "olhos para a frente" : "olhos " + [Math.abs(ey) >= 0.1 ? ey > 0 ? "para a esquerda dele" : "para a direita dele" : "", Math.abs(ep) >= 0.1 ? ep > 0 ? "para cima" : "para baixo" : ""].filter(Boolean).join(" e ");
+    return {
+      expressaoDeOrigem: it.exprNome || null,
+      parecida: par.texto,
+      semelhanca: par.semelhanca === void 0 ? 100 : par.semelhanca,
+      olhos,
+      cabeca: p.headModel || "v3_microgeometry",
+      controles: ctl,
+      codigo: codigoDoRosto(p, { origem: it.exprNome })
     };
   }
   function iaTextoEstado(E3) {
@@ -17340,9 +17646,15 @@ pre.cmdout .ok{color:var(--cobalt)}
       lin("- " + n2 + ": mão " + b.altura + ", " + b.posicao.lado + ", " + (b.posicao.frenteDoCorpo >= 0 ? b.posicao.frenteDoCorpo + " à frente" : -b.posicao.frenteDoCorpo + " atrás") + " do corpo; braço (ombro→cotovelo) " + b.braco.texto + "; cotovelo " + b.cotovelo + "; antebraço " + b.antebraco.texto + "; palma virada " + b.palma.texto + "; dedos " + b.dedos.texto + "; " + b.mao + (b.noChao ? "; mão no chão" : "") + ".");
     for (const [n2, q] of [["Perna esquerda", E3.pernaEsquerda], ["Perna direita", E3.pernaDireita]])
       lin("- " + n2 + ": pé " + q.pe + ", " + (q.pePosicao.frenteDaPelve >= 0 ? q.pePosicao.frenteDaPelve + " à frente" : -q.pePosicao.frenteDaPelve + " atrás") + " da pelve e " + q.pePosicao.paraFora + " para fora; coxa " + q.coxa.texto + "; joelho " + q.joelho + "; canela " + q.canela.texto + "; " + q.ponta + ".");
-    lin("- Rosto: sorriso " + E3.rosto.sorriso + ", boca aberta " + E3.rosto.bocaAberta + ", pálpebras " + E3.rosto.palpebras + ", sobrancelhas " + E3.rosto.sobrancelhas + ", franzir " + E3.rosto.franzir + ".");
+    lin("- Rosto: " + (E3.rosto.controles.length ? "parece “" + E3.rosto.parecida + "” (" + E3.rosto.semelhanca + "% de semelhança)" : "neutro") + (E3.rosto.expressaoDeOrigem ? "; partiu de “" + E3.rosto.expressaoDeOrigem + "”" : "") + "; " + E3.rosto.olhos + "; cabeça " + E3.rosto.cabeca + ".");
+    if (E3.rosto.controles.length) {
+      lin("  - Controles do rosto fora do neutro:");
+      E3.rosto.controles.forEach((c) => lin("    - " + c.grupo + ": " + c.nome + (c.nome !== c.chave ? " (" + c.chave + ")" : "") + " = " + c.valor + " [" + c.faixa[0] + " a " + c.faixa[1] + "] → " + c.efeito));
+    }
+    lin("  - Código só do rosto (m.aplicarRosto(`…`) ou cola em “Código do rosto”):");
+    lin("```js\n" + E3.rosto.codigo.trim() + "\n```");
     if (E3.autoColisoes.length) lin("- ATENÇÃO, partes atravessando: " + E3.autoColisoes.join("; ") + ".");
-    lin("- Controles fora do neutro (nome em português = chave interna: valor [faixa] → efeito):");
+    lin("- Controles do corpo fora do neutro (nome em português = chave interna: valor [faixa] → efeito):");
     E3.controles.forEach((c) => lin("  - " + c.nome + (c.nome !== c.chave ? " (" + c.chave + ")" : "") + " = " + c.valor + " [" + c.faixa[0] + " a " + c.faixa[1] + "] → " + c.efeito));
     lin("- Onde aparece na imagem (x, y de 0 a 1, a partir do canto de cima à esquerda): " + Object.entries(E3.naImagem).map(([k, v]) => k + " " + v[0] + "," + v[1]).join("; ") + ".");
     lin('- Código que reproduz esta pose (aplique com cena.obter("' + E3.nome + '").pose({...}) ou cole no editor):');
@@ -18326,12 +18638,13 @@ log(cena.vinculos());`,
     const cam = {};
     CAMK.forEach((k) => cam[k] = P2[k]);
     const fxs = efeitosParaSalvar();
-    return { ...fxs ? { efeitos: fxs } : {}, ...SCN.meusEfeitos?.length ? { meusEfeitos: JSON.parse(JSON.stringify(SCN.meusEfeitos)) } : {}, ...SCN.minhasPoses?.length ? { minhasPoses: SCN.minhasPoses.map((p) => ({ nome: p.nome, valores: { ...p.valores }, criada: p.criada })) } : {}, ...SCN.chavesVento?.length ? { chavesVento: structuredClone(SCN.chavesVento) } : {}, ...SCN.frameManga ? { frameManga: SCN.frameManga } : {}, ...SCN.vento ? { vento: { ...SCN.vento } } : {}, active: SCN.active, camera: cam, orbita: salvarPivoOrbita(), seguirCamera: seguir, vistaOrientada: SCN.ultimaVistaOrientada ? { ...SCN.ultimaVistaOrientada } : null, exato: !!SCN.exato, list: SCN.list.map((it) => {
+    return { ...fxs ? { efeitos: fxs } : {}, ...SCN.meusEfeitos?.length ? { meusEfeitos: JSON.parse(JSON.stringify(SCN.meusEfeitos)) } : {}, ...SCN.minhasExpressoes?.length ? { minhasExpressoes: JSON.parse(JSON.stringify(SCN.minhasExpressoes)) } : {}, ...SCN.minhasPoses?.length ? { minhasPoses: SCN.minhasPoses.map((p) => ({ nome: p.nome, valores: { ...p.valores }, criada: p.criada })) } : {}, ...SCN.chavesVento?.length ? { chavesVento: structuredClone(SCN.chavesVento) } : {}, ...SCN.frameManga ? { frameManga: SCN.frameManga } : {}, ...SCN.vento ? { vento: { ...SCN.vento } } : {}, active: SCN.active, camera: cam, orbita: salvarPivoOrbita(), seguirCamera: seguir, vistaOrientada: SCN.ultimaVistaOrientada ? { ...SCN.ultimaVistaOrientada } : null, exato: !!SCN.exato, list: SCN.list.map((it) => {
       const pr = {};
       SL.forEach((d) => pr[d.k] = it.params[d.k]);
       if (NOMES_BIOTIPOS.includes(it.params._biotipo)) pr._biotipo = it.params._biotipo;
       pr.headModel = modeloCabecaEstadoOrb(it.params.headModel);
       const o = { name: it.name, params: pr, hue: it.hue, col: it.col };
+      if (it.exprNome) o.exprNome = String(it.exprNome).slice(0, 120);
       if (it.modelosGuardados) o.modelosGuardados = structuredClone(it.modelosGuardados);
       if (it.referencias?.length) o.referencias = structuredClone(it.referencias);
       if (it.congelado) o.congelado = true;
@@ -18385,6 +18698,22 @@ log(cena.vinculos());`,
         else lista2.push(reg);
       });
     }
+    if (Array.isArray(sc.minhasExpressoes)) {
+      const L3 = SCN.minhasExpressoes || (SCN.minhasExpressoes = []);
+      sc.minhasExpressoes.slice(0, 300).forEach((e) => {
+        if (!e || typeof e.nome !== "string" || !e.valores || typeof e.valores !== "object") return;
+        const v = {};
+        Object.entries(e.valores).forEach(([k, x]) => {
+          if (POSEKEYS.has(k) && typeof x === "number" && isFinite(x)) v[k] = x;
+        });
+        const reg = { nome: e.nome.slice(0, 40), valores: v, criada: e.criada };
+        if (e.formato && typeof e.formato === "object") reg.formato = Object.fromEntries(Object.entries(e.formato).filter(([, x]) => typeof x === "number" && isFinite(x)));
+        if (typeof e.cabeca === "string") reg.cabeca = e.cabeca.slice(0, 30);
+        const i = L3.findIndex((q) => q.nome === reg.nome);
+        if (i >= 0) L3[i] = reg;
+        else L3.push(reg);
+      });
+    }
     const refs = sc.list.slice(0, MAXM).map((o) => (o.referencias || []).slice(0, 32).map(validarReferencia));
     const chaves = (sc.chavesVento || []).slice(0, 256).map((v) => {
       if (!Number.isInteger(v.quadro) || v.quadro < 0 || v.quadro > 1e5) throw Error("Chave de vento inválida.");
@@ -18420,6 +18749,7 @@ log(cena.vinculos());`,
         }
       }
       if (refs[SCN.list.length].length) it.referencias = refs[SCN.list.length];
+      if (typeof o.exprNome === "string") it.exprNome = o.exprNome.slice(0, 120);
       it.congelado = !!o.congelado;
       it.oculto = !!o.oculto;
       it.ordem = typeof o.ordem === "number" && isFinite(o.ordem) ? clamp(Math.round(o.ordem), -99, 99) : 0;
@@ -21149,14 +21479,41 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       expressao(nome, intensidade) {
         chk();
         const I = intensidade === void 0 ? 1 : num2(intensidade, "intensidade");
+        const rot = typeof nome === "object" && nome ? Object.entries(nome).map(([a, b]) => b + " " + a).join(" + ") : String(nome);
         if (nome && typeof nome === "object" || /[%+,]/.test(String(nome))) {
           Object.assign(it.params, misturarExpressoes(nome, I));
+          it.exprNome = rot + (I !== 1 ? " ×" + I : "");
           return m;
         }
-        const k = chaveExpressao(nome), e = EXPRESSOES[k];
-        if (!e) throw new Error("Expressão: use " + Object.keys(EXPRESSOES).join(", ") + ".");
-        Object.assign(it.params, I === 1 ? e : misturarExpressoes({ [k]: 1 }, I));
+        const k = chaveExpressao(nome), e = EXPRESSOES[k], u = e ? null : expressaoDoUsuario(nome);
+        if (!e && !u) throw new Error("Expressão: use " + Object.keys(EXPRESSOES).join(", ") + (expressoesSalvas().length ? " ou uma das suas: " + expressoesSalvas().map((x) => x.nome).join(", ") : "") + ".");
+        Object.assign(it.params, u ? I === 1 ? rostoCompleto(u.valores) : misturarExpressoes({ [k]: 1 }, I) : I === 1 ? e : misturarExpressoes({ [k]: 1 }, I));
+        it.exprNome = (u ? u.nome : k) + (I !== 1 ? " ×" + I : "");
         return m;
+      },
+      /* rosto como código: m.rostoCodigo() · m.rostoCodigo({nome: "Meu sorriso", formato: true}) (formato = feições e modelo de cabeça) */
+      rostoCodigo(opts) {
+        chk();
+        return codigoDoRosto(it.params, { ...opts || {}, origem: it.exprNome });
+      },
+      /* aplica um rosto: texto rosto("…", {...}) ou objeto {sorriso: 0.5, ...}; o rosto é completo (o que faltar volta a 0).
+         {formato: false} ignora as feições/cabeça do código */
+      aplicarRosto(fonte, opts) {
+        chk();
+        const o = opts || {};
+        const r = typeof fonte === "string" ? lerCodigoDoRosto(fonte) : { nome: "", valores: Object.fromEntries(Object.entries(fonte || {}).map(([a, b]) => [ALIAS[a] || a, b])), formato: null, cabeca: null };
+        const vs = rostoCompleto(r.valores);
+        applyParams(it, vs, true).forEach((t) => LOG.push(["aviso", t]));
+        if (o.formato !== false && r.formato) applyParams(it, r.formato, true).forEach((t) => LOG.push(["aviso", t]));
+        if (o.formato !== false && r.cabeca) it.params.headModel = r.cabeca;
+        it.exprNome = r.nome || "rosto aplicado por código";
+        return m;
+      },
+      /* guarda o rosto atual em Minhas expressões: m.guardarRosto("Sorriso cínico") · {formato: true} guarda também as feições */
+      guardarRosto(nome, opts) {
+        chk();
+        const o = opts || {};
+        return salvarExpressao(nome, valoresDoRosto(it.params), { substituir: !!o.substituir, formato: o.formato ? formatoDoRosto(it.params) : null, cabeca: o.formato ? it.params.headModel : null }).nome;
       },
       /* olhos para um lado sem mexer a cabeça: m.olhos(x, y) de −1 a 1 (x + = esquerda do manequim, y + = cima) */
       /* unidades de ação do rosto, por lado: m.rosto({palpebraEsq: 1, sobrancelhaForaDir: 0.6, cantoBocaEsq: 0.4, narizFranzir: 0.5})
@@ -21175,6 +21532,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           if (parteDaChave(k) !== "rosto") throw new Error("“" + k0 + "” não é do rosto. Use: " + AU.map((a) => a[4]).join(", ") + ".");
         }
         applyParams(it, valores, true).forEach((t) => LOG.push(["aviso", t]));
+        it.exprNome = it.exprNome ? it.exprNome + " + ajustes" : "ajustes do rosto";
         return m;
       },
       /* piscar um olho só: m.piscar("esq" | "dir"), quanto = 0..1 */
@@ -21200,7 +21558,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       /* pose como código: m.codigoPose({partes:"bracoDir", soMudancas:true}) → texto; m.aplicarPose(texto | nome salvo | {..}, {partes, espelhar}) */
       codigoPose(opts) {
         chk();
-        return codigoDaPose(it.params, { nome: opts && opts.nome, ...opts || {} });
+        return codigoDaPose(it.params, { nome: opts && opts.nome, expressao: it.exprNome, ...opts || {} });
       },
       /* estado deste manequim para uma IA: m.estadoIA() → texto; m.estadoIA({json:true}) → objeto */
       estadoIA(opts) {
@@ -21687,6 +22045,40 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     },
     /* Minhas poses: cena.poses.salvar("Aceno", {manequim:"Ana", partes:"bracoDir"}), .aplicar("Aceno", {manequim, partes, espelhar}),
        .lista(), .codigo("Aceno"), .exportar(), .importar(texto), .apagar(n), .renomear(n, novo), .duplicar(n) */
+    /* Minhas expressões (rostos guardados): cena.expressoes.salvar("Sorriso cínico") guarda o rosto do ativo;
+       aplicar(nome, {manequim, intensidade}) · codigo(nome) · importar(texto) · exportar() · apagar(nome) · lista() · parecida(manequim) */
+    expressoes: {
+      lista: () => expressoesSalvas().map((e) => ({ nome: e.nome, controles: Object.values(e.valores).filter((v) => Math.abs(v) > 1e-4).length, formato: !!e.formato, cabeca: e.cabeca || null, criada: e.criada })),
+      salvar: (nome, o = {}) => {
+        const it = o.manequim !== void 0 ? typeof o.manequim === "number" ? SCN.list[o.manequim] : SCN.list.find((x) => x.name === o.manequim) : SCN.list[SCN.active];
+        if (o.valores) return salvarExpressao(nome, Object.fromEntries(Object.entries(o.valores).map(([a, b]) => [ALIAS[a] || a, b])), { substituir: !!o.substituir }).nome;
+        if (!it) throw new Error("Manequim “" + o.manequim + "” não existe.");
+        return salvarExpressao(nome, valoresDoRosto(it.params), { substituir: !!o.substituir, formato: o.formato ? formatoDoRosto(it.params) : null, cabeca: o.formato ? it.params.headModel : null }).nome;
+      },
+      aplicar: (nome, o = {}) => {
+        const it = o.manequim !== void 0 ? typeof o.manequim === "number" ? SCN.list[o.manequim] : SCN.list.find((x) => x.name === o.manequim) : SCN.list[SCN.active];
+        if (!it) throw new Error("Manequim “" + o.manequim + "” não existe.");
+        const e = expressaoDoUsuario(nome);
+        if (!e) throw new Error("Não há expressão salva com o nome “" + nome + "”.");
+        const mm = apiFor(it);
+        if (o.intensidade !== void 0 && o.intensidade !== 1) mm.expressao(e.nome, o.intensidade);
+        else mm.aplicarRosto(codigoDoRosto({ ...e.valores, ...e.formato || {}, headModel: e.cabeca }, { nome: e.nome, formato: !!(o.formato && (e.formato || e.cabeca)) }), { formato: !!o.formato });
+        return e.nome;
+      },
+      codigo: (nome) => {
+        const e = expressaoDoUsuario(nome);
+        if (!e) throw new Error("Não há expressão salva com o nome “" + nome + "”.");
+        return codigoDoRosto({ ...e.valores, ...e.formato || {}, headModel: e.cabeca }, { nome: e.nome, formato: !!(e.formato || e.cabeca) });
+      },
+      importar: (texto2, o) => importarExpressoes(texto2, o || {}),
+      exportar: () => exportarExpressoes(),
+      apagar: (nome) => apagarExpressao(nome),
+      ler: (texto2) => lerCodigoDoRosto(texto2),
+      parecida: (manequim) => {
+        const it = manequim !== void 0 ? SCN.list.find((x) => x.name === manequim) : SCN.list[SCN.active];
+        return expressaoParecida(it.params).texto;
+      }
+    },
     poses: {
       lista: () => posesSalvas().map((p) => ({ nome: p.nome, angulos: Object.keys(p.valores).length, partes: [...new Set(Object.keys(p.valores).map(parteDaChave))], criada: p.criada })),
       salvar: (nome, o = {}) => {
@@ -23403,6 +23795,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     document.querySelectorAll("[data-expr]").forEach((b) => {
       b.addEventListener("click", () => {
         Object.assign(P2, EXPRESSOES[b.dataset.expr]);
+        const it = SCN.list[SCN.active];
+        if (it) it.exprNome = b.dataset.expr;
         syncControls2();
         render2();
       });
@@ -23426,6 +23820,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           w[B2.value] = (w[B2.value] || 0) + 1 - pa;
           if (!(pa > 0 || 1 - pa > 0)) return;
           Object.assign(P2, misturarExpressoes(w, +int.value / 100));
+          const it = SCN.list[SCN.active];
+          if (it) it.exprNome = Math.round(pa * 100) + "% " + A.value + " + " + Math.round((1 - pa) * 100) + "% " + B2.value + (+int.value !== 100 ? " ×" + +int.value / 100 : "");
           syncControls2();
           render2();
         };
@@ -23720,10 +24116,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       ta.readOnly = true;
     }
   }
-  function acaoCamada(fn, msg4) {
+  function acaoCamada(fn, msg5) {
     try {
       fn(SCN.list[SCN.active]);
-      sceneMsg(msg4 || "");
+      sceneMsg(msg5 || "");
       refreshScene2();
       syncControls2();
       render2();
@@ -24254,8 +24650,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const plan = prepararCamadas(lst, L2, rapido, floor, { canal: "tela" }), par = paraleloAtivo();
       plan.grupos.forEach((g) => {
         if (g.pronto) return;
-        const ativo = g.membros[0] === SCN.active;
-        if (!par || !g.res || rapido && ativo) {
+        const ativo2 = g.membros[0] === SCN.active;
+        if (!par || !g.res || rapido && ativo2) {
           renderGrupoLocal(plan, g);
           return;
         }
@@ -24348,7 +24744,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
 
   // src/ui/referencia-manga.js
   function iniciarReferenciaManga() {
-    const svg = $("svg"), lista2 = $("mangaLista"), msg4 = $("mangaAviso");
+    const svg = $("svg"), lista2 = $("mangaLista"), msg5 = $("mangaAviso");
     let desenho = null, rodando2 = false;
     function sincronizar2() {
       const refs = cena.referencias(), valor = lista2.value;
@@ -24362,7 +24758,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         sincronizar2();
         render2();
       } catch (e) {
-        msg4.textContent = e.message;
+        msg5.textContent = e.message;
       }
     }
     $("mangaControles").addEventListener("toggle", sincronizar2);
@@ -24397,7 +24793,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const tipo = $("mangaTipo").value;
       cena.referencia(tipo, { ...ajustes(), inicio: cena.quadroSimulado() });
       lista2.value = "";
-      msg4.textContent = "Referência criada.";
+      msg5.textContent = "Referência criada.";
     });
     $("mangaVisivel").onclick = () => acao2(() => {
       const i = Number(lista2.value), r = cena.referencias()[i];
@@ -24408,7 +24804,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const i = Number(lista2.value), novo = cena.amostrarRastro(cena.referencias()[i]?.tipo === "rastro" ? i : null, { cor: $("mangaCor").value });
       sincronizar2();
       lista2.value = String(novo);
-      msg4.textContent = "Posição da mão registrada neste quadro.";
+      msg5.textContent = "Posição da mão registrada neste quadro.";
     });
     $("mangaRemover").onclick = () => acao2(() => cena.removerReferencia(Number(lista2.value)));
     $("mangaAplicarVento").onclick = () => acao2(() => cena.vento({
@@ -24446,15 +24842,15 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     };
     $("mangaDesenhar").onclick = () => {
       desenho = { id: SCN.list[SCN.active].id, pontos: [] };
-      msg4.textContent = "Clique no corpo para marcar os vértices do painel em ordem.";
+      msg5.textContent = "Clique no corpo para marcar os vértices do painel em ordem.";
     };
     $("mangaMarcarRaiz").onclick = () => {
       desenho = { id: SCN.list[SCN.active].id, cabelo: true, pontos: [] };
-      msg4.textContent = "Clique no couro cabeludo e finalize para aplicar as raízes.";
+      msg5.textContent = "Clique no couro cabeludo e finalize para aplicar as raízes.";
     };
     $("mangaCancelar").onclick = () => {
       desenho = null;
-      msg4.textContent = "";
+      msg5.textContent = "";
     };
     svg.addEventListener("pointerdown", (e) => {
       if (!desenho) return;
@@ -24462,7 +24858,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       e.preventDefault();
       if (desenho.id !== SCN.list[SCN.active].id) {
         desenho = null;
-        msg4.textContent = "Manequim alterado. Inicie outro painel.";
+        msg5.textContent = "Manequim alterado. Inicie outro painel.";
         return;
       }
       if (desenho.pontos.length >= 40) return;
@@ -24470,11 +24866,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const click = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
       const ponto = desenho.cabelo ? marcarRaiz(p, click.x, click.y, Number($("mangaMecha").value)) : marcarTecido(p, click.x, click.y, $("mangaPonto").value);
       if (!ponto) {
-        msg4.textContent = desenho.cabelo ? "Clique na região do couro cabeludo." : "Clique sobre o manequim.";
+        msg5.textContent = desenho.cabelo ? "Clique na região do couro cabeludo." : "Clique sobre o manequim.";
         return;
       }
       desenho.pontos.push(ponto);
-      msg4.textContent = desenho.pontos.length + (desenho.cabelo ? " raízes marcadas." : " pontos no tecido.");
+      msg5.textContent = desenho.pontos.length + (desenho.cabelo ? " raízes marcadas." : " pontos no tecido.");
     }, true);
     $("mangaFechar").onclick = () => acao2(() => {
       if (!desenho || desenho.id !== SCN.list[SCN.active].id) throw Error("Inicie o desenho no manequim ativo.");
@@ -24482,10 +24878,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         const tipo = $("mangaTipo").value;
         cena.referencia(["curto", "longo", "franja", "preso"].includes(tipo) ? tipo : "longo", { ...ajustes(), raizes: desenho.pontos });
         $("mangaRaizes").value = JSON.stringify(desenho.pontos);
-        msg4.textContent = "Mechas aplicadas.";
+        msg5.textContent = "Mechas aplicadas.";
       } else {
         cena.referencia("painel", { ...ajustes(), pontos: desenho.pontos });
-        msg4.textContent = "Painel vestido.";
+        msg5.textContent = "Painel vestido.";
       }
       desenho = null;
     });
@@ -25452,6 +25848,164 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     listar();
   }
 
+  // src/ui/rosto-codigo.js
+  var editando2 = false;
+  var msg3 = (t, erro) => {
+    const el2 = $("rcMsg");
+    if (el2) {
+      el2.textContent = t || "";
+      el2.className = "hint" + (erro ? " pc-erro" : " pc-ok");
+    }
+  };
+  var ativo = () => SCN.list[SCN.active] || {};
+  function atualizar(forcar) {
+    const ta = $("rostoCodigo");
+    if (!ta || editando2 && !forcar) return;
+    ta.value = codigoDoRosto(P2, { nome: ($("rcNome").value || "").trim(), formato: $("rcFormato").checked, origem: ativo().exprNome });
+  }
+  function depois2(t) {
+    syncControls2();
+    render2();
+    editando2 = false;
+    atualizar(true);
+    listar2();
+    msg3(t);
+  }
+  function listar2() {
+    const sel2 = $("rcLista"), bts = $("rcBotoes");
+    if (!sel2) return;
+    const L3 = expressoesSalvas(), atual2 = sel2.value;
+    sel2.replaceChildren(...L3.map((e) => new Option(e.nome + (e.formato || e.cabeca ? " (com formato)" : ""), e.nome)));
+    if (L3.some((e) => e.nome === atual2)) sel2.value = atual2;
+    if (bts) {
+      bts.replaceChildren(...L3.slice(0, 24).map((e) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = e.nome;
+        b.title = "Aplicar “" + e.nome + "” no manequim ativo";
+        b.addEventListener("click", () => aplicarSalva(e.nome));
+        return b;
+      }));
+      bts.hidden = !L3.length;
+    }
+    ["rcUsar", "rcVerCodigo", "rcApagar", "rcExportar"].forEach((id) => {
+      if ($(id)) $(id).disabled = !L3.length;
+    });
+    ["mixA", "mixB"].forEach((id) => {
+      const s = $(id);
+      if (!s) return;
+      [...s.options].filter((o) => o.dataset.usuario).forEach((o) => o.remove());
+      L3.forEach((e) => {
+        const o = new Option("★ " + e.nome, e.nome);
+        o.dataset.usuario = "1";
+        s.add(o);
+      });
+    });
+  }
+  function aplicarSalva(nome) {
+    try {
+      cena.marcarEstado();
+      cena.expressoes.aplicar(nome, { formato: $("rcFormato").checked });
+      depois2("✓ “" + nome + "” aplicada em " + ativo().name + ". Ctrl+Z desfaz.");
+    } catch (e) {
+      msg3("✗ " + e.message, true);
+    }
+  }
+  function iniciarRostoCodigo() {
+    if (!$("rostoCodigo")) return;
+    carregarExpressoesLocais();
+    const ta = $("rostoCodigo");
+    ta.addEventListener("input", () => {
+      editando2 = true;
+    });
+    $("rcAtual").addEventListener("click", () => {
+      editando2 = false;
+      atualizar(true);
+      msg3("Código do rosto atual de " + ativo().name + ".");
+    });
+    $("rcFormato").addEventListener("change", () => {
+      editando2 = false;
+      atualizar(true);
+    });
+    $("rcCopiar").addEventListener("click", async () => {
+      atualizar(!editando2);
+      try {
+        await navigator.clipboard.writeText(ta.value);
+        msg3("✓ Código do rosto copiado.");
+      } catch (e) {
+        ta.focus();
+        ta.select();
+        msg3("Selecionei o código: use Ctrl+C.");
+      }
+    });
+    $("rcAplicar").addEventListener("click", () => {
+      try {
+        lerCodigoDoRosto(ta.value);
+        cena.marcarEstado();
+        cena.ativo.aplicarRosto(ta.value, { formato: $("rcFormato").checked });
+        depois2("✓ Rosto aplicado em " + ativo().name + ". Ctrl+Z desfaz.");
+      } catch (e) {
+        msg3("✗ " + e.message, true);
+      }
+    });
+    $("rcGuardar").addEventListener("click", () => {
+      const nome = ($("rcNome").value || "").trim();
+      if (!nome) {
+        msg3("Dê um nome à expressão (ex.: Sorriso cínico).", true);
+        return;
+      }
+      try {
+        if (editando2) {
+          const r = lerCodigoDoRosto(ta.value);
+          cena.expressoes.importar(codigoDoRosto({ ...r.valores, ...r.formato || {}, headModel: r.cabeca }, { nome, formato: !!(r.formato || r.cabeca) }));
+        } else cena.ativo.guardarRosto(nome, { formato: $("rcFormato").checked, substituir: true });
+        listar2();
+        $("rcLista").value = nome;
+        msg3("✓ “" + nome + '” guardada em Minhas expressões. Use m.expressao("' + nome + '") ou o botão.');
+      } catch (e) {
+        msg3("✗ " + e.message, true);
+      }
+    });
+    $("rcUsar").addEventListener("click", () => {
+      const n2 = $("rcLista").value;
+      if (n2) aplicarSalva(n2);
+    });
+    $("rcVerCodigo").addEventListener("click", () => {
+      const n2 = $("rcLista").value;
+      if (!n2) return;
+      editando2 = true;
+      ta.value = cena.expressoes.codigo(n2);
+      msg3("Código de “" + n2 + "” no campo acima.");
+    });
+    $("rcApagar").addEventListener("click", () => {
+      const n2 = $("rcLista").value;
+      if (!n2) return;
+      try {
+        cena.expressoes.apagar(n2);
+        listar2();
+        msg3("“" + n2 + "” apagada.");
+      } catch (e) {
+        msg3("✗ " + e.message, true);
+      }
+    });
+    $("rcExportar").addEventListener("click", async () => {
+      const r = await baixar("minhas-expressoes.txt", cena.expressoes.exportar(), "text/plain;charset=utf-8");
+      msg3(r === "ok" ? "✓ Arquivo baixado." : "Download indisponível: use Copiar.");
+    });
+    $("rcImportar").addEventListener("click", () => {
+      try {
+        const n2 = cena.expressoes.importar(ta.value);
+        listar2();
+        msg3("✓ Importada(s): " + n2.join(", ") + ".");
+      } catch (e) {
+        msg3("✗ " + e.message, true);
+      }
+    });
+    listar2();
+    atualizar(true);
+    window.addEventListener("gm:desenhou", () => atualizar(false));
+  }
+
   // src/scene/junta-controle.js
   var EIXOS_JUNTA = {
     pelve: ["pelvisSide", "pelvisTilt", "pelvisTwist"],
@@ -25606,7 +26160,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     ultimaMarca = t;
   }
-  function depois2(j, texto2) {
+  function depois3(j, texto2) {
     guardArms();
     syncControls2();
     render2();
@@ -25666,7 +26220,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     if (eixo) {
       marcarParaDesfazer();
       const r = moverJunta(P2, j, eixo[0], eixo[1], mod);
-      if (r) depois2(j, r.rotulo.replace(/^[^:]*:\s*/, "") + " " + fmtValor(r.k));
+      if (r) depois3(j, r.rotulo.replace(/^[^:]*:\s*/, "") + " " + fmtValor(r.k));
       else mostrarHud(nomeDaJunta(j) + " não tem esse eixo — " + descreverEixos(j));
       e.preventDefault();
       e.stopPropagation();
@@ -25691,13 +26245,13 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     if (e.key === "r" || e.key === "R") {
       marcarParaDesfazer();
       zerarJunta(P2, j);
-      depois2(j, "voltou à posição neutra");
+      depois3(j, "voltou à posição neutra");
       e.preventDefault();
       return;
     }
     if (e.key === "m" || e.key === "M") {
       marcarParaDesfazer();
-      depois2(j, espelharJunta(j));
+      depois3(j, espelharJunta(j));
       e.preventDefault();
       return;
     }
@@ -28024,19 +28578,19 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
   var TIPO = "explosao";
   var COLOCAR = null;
   var ARR = null;
-  var msg3 = (t) => {
+  var msg4 = (t) => {
     const el2 = $("fxAviso");
     if (el2) el2.textContent = t || "";
   };
   function acao(fn) {
     try {
       const r = fn();
-      msg3("");
+      msg4("");
       sincronizar();
       render2();
       return r;
     } catch (e) {
-      msg3(e.message);
+      msg4(e.message);
     }
   }
   var CACHE_MINI = /* @__PURE__ */ new Map();
@@ -28124,13 +28678,13 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
     const onde = $("fxOnde").value, o = opcoesInsercao();
     if (onde === "clique") {
       COLOCAR = { tipo: TIPO, o };
-      msg3("Clique no palco: num manequim (prende na parte mais perto), no chão ou em qualquer ponto da tela.");
+      msg4("Clique no palco: num manequim (prende na parte mais perto), no chão ou em qualquer ponto da tela.");
       $("stage").classList.add("fx-colocando");
       return;
     }
     if (onde === "objeto") {
       if (!SCN.objetos.length) {
-        msg3("Não há objeto na cena.");
+        msg4("Não há objeto na cena.");
         return;
       }
       const ob = SCN.objSel ? SCN.objetos.find((q) => q.id === SCN.objSel) || SCN.objetos[0] : SCN.objetos[0];
@@ -28189,7 +28743,7 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
     const onde = $("fxOnde");
     if (CATALOGO[TIPO].cat !== "tela" && onde.value !== "parte") onde.value = "parte";
     inserir();
-    msg3("Teste: " + CATALOGO[TIPO].nome + (ps ? " com a pose “" + ps + "”" : "") + ". Ctrl+Z desfaz.");
+    msg4("Teste: " + CATALOGO[TIPO].nome + (ps ? " com a pose “" + ps + "”" : "") + ". Ctrl+Z desfaz.");
   }
   function ancoraDoClique(q, tipo) {
     const K = contextoCena(sceneList());
@@ -28260,11 +28814,11 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
     if (!SEL) return;
     try {
       cena.efeitos.editar(SEL, o, silencioso);
-      msg3("");
+      msg4("");
       if (!silencioso) sincronizarLista();
       render2();
     } catch (e) {
-      msg3(e.message);
+      msg4(e.message);
     }
   }
   function sincronizarLista() {
@@ -28352,7 +28906,7 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
       b.addEventListener("click", () => {
         COLOCAR = { mover: SEL };
         $("stage").classList.add("fx-colocando");
-        msg3("Clique no palco para a nova posição.");
+        msg4("Clique no palco para a nova posição.");
       });
       box.appendChild(b);
     }
@@ -28485,7 +29039,7 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
         else cena.efeitos.editar(ARR.id, { ancora: ancoraDoClique(q, ARR.e0.tipo) }, true);
         render2();
       } catch (err) {
-        msg3(err.message);
+        msg4(err.message);
       }
     }, true);
     const fim = (ev) => {
@@ -28551,22 +29105,22 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
     });
     $("fxConverter").addEventListener("click", () => acao(() => {
       const n2 = cena.efeitos.converterAntigos();
-      msg3(n2 + " efeito(s) convertido(s).");
+      msg4(n2 + " efeito(s) convertido(s).");
     }));
     $("fxTodosPB").addEventListener("click", () => acao(() => {
       const n2 = cena.efeitos.colorir(false);
-      msg3(n2 + " efeito(s) em preto e branco.");
+      msg4(n2 + " efeito(s) em preto e branco.");
     }));
     $("fxTodosCor").addEventListener("click", () => acao(() => {
       const n2 = cena.efeitos.colorir(true);
-      msg3(n2 + " efeito(s) coloridos.");
+      msg4(n2 + " efeito(s) coloridos.");
     }));
     $("fxSalvarModelo").addEventListener("click", () => {
       if (!SEL) return;
       const n2 = acao(() => cena.efeitos.salvarModelo(SEL, $("fxNomeModelo").value));
       if (n2) {
         guardarModelosLocais();
-        msg3("Salvo em Meus efeitos: " + n2);
+        msg4("Salvo em Meus efeitos: " + n2);
       }
     });
     $("fxUsarModelo").addEventListener("click", () => {
@@ -28654,6 +29208,7 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
   iniciarColisoes();
   iniciarArticulacoes();
   iniciarPoseCodigo();
+  iniciarRostoCodigo();
   iniciarTecladoJuntas();
   iniciarBlocking();
   iniciarQuadros();

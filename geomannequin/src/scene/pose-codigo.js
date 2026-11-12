@@ -86,6 +86,7 @@ function codigoDaPose(params, opts = {}) {
   const nome = String(opts.nome || "").replace(/["\\\n]/g, " ").trim();
   const cab = ["/* GeoMannequin · pose" + (nome ? " “" + nome + "”" : "") + " · formato " + FORMATO_POSE +
     (sel ? " · partes: " + [...sel].join(", ") : "") + (so ? " · só o que difere da pose neutra" : ""),
+    (opts.expressao ? "   Rosto: partiu de “" + String(opts.expressao).replace(/\*\//g, "") + "” (os valores estão no grupo “rosto” abaixo)." : "   O rosto (expressão) vai junto, no grupo “rosto”; para só o rosto use m.rostoCodigo()."),
     "   Cole em “Código da pose”, no editor de comandos ou em Minhas poses › Importar. */"];
   const linhas = [];
   Object.keys(PARTES_POSE).forEach(p => {

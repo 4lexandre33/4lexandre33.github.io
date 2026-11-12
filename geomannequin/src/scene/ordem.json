@@ -12,6 +12,7 @@
   "biotipos.js",
   "poses.js",
   "pose-codigo.js",
+  "rosto-codigo.js",
   "junta-controle.js",
   "camadas-cena.js",
   "colisoes.js",

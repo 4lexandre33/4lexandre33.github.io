@@ -33,6 +33,40 @@ export function registerIaTools(server, W) {
     try { const w = W(); return { content: [{ type: "text", text: w.cena.manualIA({ curto: !!(a && a.curto) }) }] }; }
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
+  server.registerTool("rosto", {
+    title: "Rosto: código, aplicar e Minhas expressões",
+    description: "Trabalha com o rosto (expressão) como código. acao: \"codigo\" devolve o rosto atual como rosto({...}) (todos os controles fora do neutro, por grupo); " +
+      "\"aplicar_codigo\" aplica um código rosto({...}) (o que não vier fica neutro); \"salvar\" guarda o rosto atual (ou o código dado) com um nome em Minhas expressões; " +
+      "\"listar\", \"aplicar\" (uma expressão guardada, com intensidade), \"apagar\", \"importar\" (vários rosto(...)), \"exportar\". " +
+      "Para criar um rosto novo leia a seção Rosto do manual (manual_poses_ia): cada controle com faixa e sinal.",
+    inputSchema: {
+      acao: z.enum(["codigo", "aplicar_codigo", "salvar", "listar", "aplicar", "apagar", "importar", "exportar"]),
+      manequim: z.string().optional().describe("Nome do manequim (vazio = ativo)."),
+      codigo: z.string().optional().describe("Texto rosto(\"Nome\", { sorriso: 0.6, … }) para aplicar_codigo, salvar ou importar."),
+      nome: z.string().optional().describe("Nome da expressão (salvar, aplicar, apagar)."),
+      intensidade: z.number().min(0).max(1.5).optional().describe("Intensidade ao aplicar uma expressão guardada (1 = como foi guardada)."),
+      formato: z.boolean().optional().describe("Incluir/aplicar também o formato do rosto (feições) e o modelo de cabeça.")
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try {
+      const w = W(), c = w.cena, ex = c.expressoes, opc = a.manequim ? { manequim: a.manequim } : {};
+      const m = a.manequim ? c.obter(a.manequim) : c.ativo;
+      let texto;
+      switch (a.acao) {
+        case "codigo": texto = m.rostoCodigo({ nome: a.nome, formato: !!a.formato }); break;
+        case "aplicar_codigo": if (!a.codigo) throw new Error("Falta o código."); c.marcarEstado(); m.aplicarRosto(a.codigo, { formato: !!a.formato }); texto = "Rosto aplicado.\n" + m.rostoCodigo(); break;
+        case "salvar": if (!a.nome) throw new Error("Falta o nome."); if (a.codigo) { const r = ex.ler(a.codigo); texto = "Guardada: " + ex.salvar(a.nome, { valores: r.valores, substituir: true }); }
+          else texto = "Guardada: " + ex.salvar(a.nome, { ...opc, formato: !!a.formato, substituir: true }); break;
+        case "listar": texto = JSON.stringify(ex.lista(), null, 1); break;
+        case "aplicar": if (!a.nome) throw new Error("Falta o nome."); c.marcarEstado(); texto = "Aplicada: " + ex.aplicar(a.nome, { ...opc, intensidade: a.intensidade, formato: !!a.formato }) + "\n" + m.rostoCodigo(); break;
+        case "apagar": ex.apagar(a.nome); texto = "Apagada: " + a.nome; break;
+        case "importar": texto = "Importadas: " + ex.importar(a.codigo || "").join(", "); break;
+        case "exportar": texto = ex.exportar() || "(nenhuma expressão guardada)"; break;
+      }
+      return { content: [{ type: "text", text: texto }], structuredContent: { expressoes: ex.lista(), link: sceneLink(w) } };
+    } catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
   server.registerResource("manual-ia", "geomannequin://manual-ia", { title: "Manual de poses para IA", mimeType: "text/markdown", description: "Manual completo para qualquer IA montar e corrigir poses no GeoMannequin." },
     async uri => { const w = W(); return { contents: [{ uri: uri.href, mimeType: "text/markdown", text: w.cena.manualIA() }] }; });
 }

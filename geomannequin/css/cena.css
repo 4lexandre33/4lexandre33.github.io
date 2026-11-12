@@ -270,3 +270,9 @@ body.qd-aberto{overflow:hidden}
 .vp-info{font-size:12px;color:var(--ink);margin:4px 0}
 .gm-junta-hud{position:absolute;left:10px;bottom:10px;z-index:5;max-width:calc(100% - 20px);font-size:12px;line-height:1.35;color:var(--ink);background:var(--panel,var(--bg));border:1px solid var(--rule);border-radius:7px;padding:5px 9px;box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:none}
 #stagebox{position:relative}
+/* Código do rosto / Minhas expressões */
+#rostoCodigo{width:100%;box-sizing:border-box;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+#rcPainel .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#rcPainel .row input[type=text],#rcPainel .row select{flex:1 1 140px;min-width:0}
+#rcPainel .chk{display:flex;gap:6px;align-items:center;font-size:12px}
+.expr-btns{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}

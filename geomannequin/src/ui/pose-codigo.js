@@ -34,7 +34,7 @@ function miniatura(params) {
 
 function atualizarCodigo(forcar) {
   const ta = $("poseCodigo"); if (!ta || (editando && !forcar)) return;
-  const t = codigoDaPose(P, { nome: $("mpNome") && $("mpNome").value.trim(), partes: partes(), soMudancas: $("pcSoMudancas") && $("pcSoMudancas").checked });
+  const t = codigoDaPose(P, { nome: $("mpNome") && $("mpNome").value.trim(), partes: partes(), soMudancas: $("pcSoMudancas") && $("pcSoMudancas").checked, expressao: (SCN.list[SCN.active] || {}).exprNome });
   if (t !== ultimo) { ta.value = t; ultimo = t; }
 }
 function depoisDeMudar(texto) { syncControls(); render(); editando = false; atualizarCodigo(true); listar(); msg(texto); }

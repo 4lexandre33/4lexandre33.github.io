@@ -96,6 +96,10 @@ const chaveExpressao=nome=>String(nome||"").trim().toLowerCase().normalize("NFD"
    Cada parâmetro é a média ponderada das expressões (o que uma não usa conta como 0) vezes a intensidade;
    o olhar (eyeYaw/eyePitch) só entra se alguma das expressões o define. */
 const FAIXA_ROSTO={jawOpen:[0,1],eyeLid:[0,1],blush:[0,1],tears:[0,1]};
+/* expressões guardadas pelo usuário (Minhas expressões): rosto-codigo.js registra a busca aqui */
+let EXPR_EXTRA=null;
+function definirExpressoesExtras(f){EXPR_EXTRA=f}
+const fonteExpressao=k=>EXPRESSOES[k]||(EXPR_EXTRA?EXPR_EXTRA(k):null);
 function lerPesos(pesos){
   if(typeof pesos==="string"){
     const o={},partes=pesos.split(/[+,;]/).map(t=>t.trim()).filter(Boolean);
@@ -106,7 +110,7 @@ function lerPesos(pesos){
   }
   if(!pesos||typeof pesos!=="object")throw new Error("Mistura: passe {raiva: 0.6, tristeza: 0.4} ou \"60% raiva + 40% tristeza\".");
   const out={};
-  for(const [n,v] of Object.entries(pesos)){const k=chaveExpressao(n);if(!EXPRESSOES[k])throw new Error("Expressão “"+n+"” não existe. Use: "+Object.keys(EXPRESSOES).join(", ")+".");
+  for(const [n,v] of Object.entries(pesos)){const k=chaveExpressao(n);if(!fonteExpressao(k))throw new Error("Expressão “"+n+"” não existe. Use: "+Object.keys(EXPRESSOES).join(", ")+".");
     if(typeof v!=="number"||!isFinite(v)||v<0)throw new Error("Peso de “"+n+"” precisa ser um número ≥ 0.");out[k]=(out[k]||0)+v}
   return out;
 }
@@ -114,8 +118,8 @@ function misturarExpressoes(pesos,intensidade=1){
   const P0=lerPesos(pesos),tot=Object.values(P0).reduce((a,b)=>a+b,0);
   if(!(tot>0))throw new Error("Mistura: algum peso precisa ser maior que 0.");
   const I=Math.max(0,Math.min(1.5,Number.isFinite(intensidade)?intensidade:1)),out={};
-  const chaves=new Set(BASE_ROSTO);Object.keys(P0).forEach(n=>Object.keys(EXPRESSOES[n]).forEach(k=>chaves.add(k)));
-  for(const k of chaves){let v=0;for(const [n,w] of Object.entries(P0))v+=(EXPRESSOES[n][k]||0)*w/tot;
+  const chaves=new Set(BASE_ROSTO);Object.keys(P0).forEach(n=>Object.keys(fonteExpressao(n)).forEach(k=>chaves.add(k)));
+  for(const k of chaves){let v=0;for(const [n,w] of Object.entries(P0))v+=(fonteExpressao(n)[k]||0)*w/tot;
     const [a,b]=FAIXA_ROSTO[k]||(/^(lidUp|lidLo|cheek|upperLip|noseWrinkle|lipPress|pout|teethClench|eyeBags)/.test(k)?[0,1]:[-1,1]);
     out[k]=Math.round(Math.max(a,Math.min(b,v*I))*1000)/1000}
   return out;
@@ -325,4 +329,4 @@ function doBodyPoseBase(k){
     }
 }
 
-export { POSE_GRUPOS, EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes, chaveExpressao, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };
+export { BASE_ROSTO, definirExpressoesExtras, POSE_GRUPOS, EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes, chaveExpressao, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };

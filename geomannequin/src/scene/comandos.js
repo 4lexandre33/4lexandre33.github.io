@@ -7,6 +7,7 @@ import { criarApiEfeitos } from "./efeitos-cena.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
 import { estadoParaIA } from "./estado-ia.js";
+import { codigoDoRosto, lerCodigoDoRosto, rostoCompleto, valoresDoRosto, formatoDoRosto, expressoesSalvas, expressaoDoUsuario, salvarExpressao, apagarExpressao, exportarExpressoes, importarExpressoes, expressaoParecida } from "./rosto-codigo.js";
 import { manualPosesIA, pacoteParaIA } from "./manual-ia.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
@@ -221,9 +222,22 @@ function apiFor(it){
     /* m.expressao("raiva") · m.expressao("raiva", 0.5) (intensidade 0 a 1.5) · misturas:
        m.expressao({raiva: 0.6, tristeza: 0.4}, 1) ou m.expressao("60% raiva + 40% tristeza") */
     expressao(nome,intensidade){chk();const I=intensidade===undefined?1:num(intensidade,"intensidade");
-      if((nome&&typeof nome==="object")||/[%+,]/.test(String(nome))){Object.assign(it.params,misturarExpressoes(nome,I));return m}
-      const k=chaveExpressao(nome),e=EXPRESSOES[k];if(!e)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+".");
-      Object.assign(it.params,I===1?e:misturarExpressoes({[k]:1},I));return m},
+      const rot=typeof nome==="object"&&nome?Object.entries(nome).map(([a,b])=>b+" "+a).join(" + "):String(nome);
+      if((nome&&typeof nome==="object")||/[%+,]/.test(String(nome))){Object.assign(it.params,misturarExpressoes(nome,I));it.exprNome=rot+(I!==1?" ×"+I:"");return m}
+      const k=chaveExpressao(nome),e=EXPRESSOES[k],u=e?null:expressaoDoUsuario(nome);
+      if(!e&&!u)throw new Error("Expressão: use "+Object.keys(EXPRESSOES).join(", ")+(expressoesSalvas().length?" ou uma das suas: "+expressoesSalvas().map(x=>x.nome).join(", "):"")+".");
+      Object.assign(it.params,u?(I===1?rostoCompleto(u.valores):misturarExpressoes({[k]:1},I)):(I===1?e:misturarExpressoes({[k]:1},I)));it.exprNome=(u?u.nome:k)+(I!==1?" ×"+I:"");return m},
+    /* rosto como código: m.rostoCodigo() · m.rostoCodigo({nome: "Meu sorriso", formato: true}) (formato = feições e modelo de cabeça) */
+    rostoCodigo(opts){chk();return codigoDoRosto(it.params,{...(opts||{}),origem:it.exprNome})},
+    /* aplica um rosto: texto rosto("…", {...}) ou objeto {sorriso: 0.5, ...}; o rosto é completo (o que faltar volta a 0).
+       {formato: false} ignora as feições/cabeça do código */
+    aplicarRosto(fonte,opts){chk();const o=opts||{};const r=typeof fonte==="string"?lerCodigoDoRosto(fonte):{nome:"",valores:Object.fromEntries(Object.entries(fonte||{}).map(([a,b])=>[ALIAS[a]||a,b])),formato:null,cabeca:null};
+      const vs=rostoCompleto(r.valores);applyParams(it,vs,true).forEach(t=>LOG.push(["aviso",t]));
+      if(o.formato!==false&&r.formato)applyParams(it,r.formato,true).forEach(t=>LOG.push(["aviso",t]));
+      if(o.formato!==false&&r.cabeca)it.params.headModel=r.cabeca;
+      it.exprNome=r.nome||"rosto aplicado por código";return m},
+    /* guarda o rosto atual em Minhas expressões: m.guardarRosto("Sorriso cínico") · {formato: true} guarda também as feições */
+    guardarRosto(nome,opts){chk();const o=opts||{};return salvarExpressao(nome,valoresDoRosto(it.params),{substituir:!!o.substituir,formato:o.formato?formatoDoRosto(it.params):null,cabeca:o.formato?it.params.headModel:null}).nome},
     /* olhos para um lado sem mexer a cabeça: m.olhos(x, y) de −1 a 1 (x + = esquerda do manequim, y + = cima) */
     /* unidades de ação do rosto, por lado: m.rosto({palpebraEsq: 1, sobrancelhaForaDir: 0.6, cantoBocaEsq: 0.4, narizFranzir: 0.5})
        (também aceita os nomes gerais: sorriso, palpebras, sobrancelhas, franzir, bocaAbrir...) */
@@ -231,14 +245,14 @@ function apiFor(it){
     efeito(tipo,opts){chk();cena.efeitos.adicionar(tipo,{...(opts||{}),manequim:it.id});return m},
     rosto(valores){chk();if(!valores||typeof valores!=="object")throw new Error("Passe um objeto, por exemplo m.rosto({palpebraEsq: 1}).");
       for(const k0 of Object.keys(valores)){const k=ALIAS[k0]||k0;if(parteDaChave(k)!=="rosto")throw new Error("“"+k0+"” não é do rosto. Use: "+AU.map(a=>a[4]).join(", ")+".")}
-      applyParams(it,valores,true).forEach(t=>LOG.push(["aviso",t]));return m},
+      applyParams(it,valores,true).forEach(t=>LOG.push(["aviso",t]));it.exprNome=(it.exprNome?it.exprNome+" + ajustes":"ajustes do rosto");return m},
     /* piscar um olho só: m.piscar("esq" | "dir"), quanto = 0..1 */
     piscar(lado,quanto){chk();const l=String(lado||"esq").toLowerCase().startsWith("d")?"R":"L";it.params["lidUp"+l]=quanto===undefined?1:clamp(num(quanto,"quanto"),0,1);return m},
     olhos(x,y){chk();it.params.eyeYaw=clamp(num(x,"x"),-1,1);if(y!==undefined)it.params.eyePitch=clamp(num(y,"y"),-1,1);return m},
     /* boca: m.boca(abrir 0–1, sorriso −1 a 1) */
     boca(abrir,sorriso){chk();it.params.jawOpen=clamp(num(abrir,"abrir"),0,1);if(sorriso!==undefined)it.params.smile=clamp(num(sorriso,"sorriso"),-1,1);return m},
     /* pose como código: m.codigoPose({partes:"bracoDir", soMudancas:true}) → texto; m.aplicarPose(texto | nome salvo | {..}, {partes, espelhar}) */
-    codigoPose(opts){chk();return codigoDaPose(it.params,{nome:opts&&opts.nome,...(opts||{})})},
+    codigoPose(opts){chk();return codigoDaPose(it.params,{nome:opts&&opts.nome,expressao:it.exprNome,...(opts||{})})},
     /* estado deste manequim para uma IA: m.estadoIA() → texto; m.estadoIA({json:true}) → objeto */
     estadoIA(opts){chk();const E=estadoParaIA({manequim:it.id});return opts&&opts.json?E.json.manequins[0]:E.texto},
     aplicarPose(fonte,opts){chk();aplicarValoresDePose(it,valoresDeFonte(fonte),opts);return m},
@@ -426,6 +440,23 @@ const cena={
   get ativo(){return apiFor(SCN.list[SCN.active])},
   /* Minhas poses: cena.poses.salvar("Aceno", {manequim:"Ana", partes:"bracoDir"}), .aplicar("Aceno", {manequim, partes, espelhar}),
      .lista(), .codigo("Aceno"), .exportar(), .importar(texto), .apagar(n), .renomear(n, novo), .duplicar(n) */
+  /* Minhas expressões (rostos guardados): cena.expressoes.salvar("Sorriso cínico") guarda o rosto do ativo;
+     aplicar(nome, {manequim, intensidade}) · codigo(nome) · importar(texto) · exportar() · apagar(nome) · lista() · parecida(manequim) */
+  expressoes:{
+    lista:()=>expressoesSalvas().map(e=>({nome:e.nome,controles:Object.values(e.valores).filter(v=>Math.abs(v)>1e-4).length,formato:!!e.formato,cabeca:e.cabeca||null,criada:e.criada})),
+    salvar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];
+      if(o.valores)return salvarExpressao(nome,Object.fromEntries(Object.entries(o.valores).map(([a,b])=>[ALIAS[a]||a,b])),{substituir:!!o.substituir}).nome;
+      if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");return salvarExpressao(nome,valoresDoRosto(it.params),{substituir:!!o.substituir,formato:o.formato?formatoDoRosto(it.params):null,cabeca:o.formato?it.params.headModel:null}).nome},
+    aplicar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");
+      const e=expressaoDoUsuario(nome);if(!e)throw new Error("Não há expressão salva com o nome “"+nome+"”.");const mm=apiFor(it);
+      if(o.intensidade!==undefined&&o.intensidade!==1)mm.expressao(e.nome,o.intensidade);else mm.aplicarRosto(codigoDoRosto({...e.valores,...(e.formato||{}),headModel:e.cabeca},{nome:e.nome,formato:!!(o.formato&&(e.formato||e.cabeca))}),{formato:!!o.formato});return e.nome},
+    codigo:(nome)=>{const e=expressaoDoUsuario(nome);if(!e)throw new Error("Não há expressão salva com o nome “"+nome+"”.");return codigoDoRosto({...e.valores,...(e.formato||{}),headModel:e.cabeca},{nome:e.nome,formato:!!(e.formato||e.cabeca)})},
+    importar:(texto,o)=>importarExpressoes(texto,o||{}),
+    exportar:()=>exportarExpressoes(),
+    apagar:nome=>apagarExpressao(nome),
+    ler:texto=>lerCodigoDoRosto(texto),
+    parecida:(manequim)=>{const it=manequim!==undefined?SCN.list.find(x=>x.name===manequim):SCN.list[SCN.active];return expressaoParecida(it.params).texto}
+  },
   poses:{
     lista:()=>posesSalvas().map(p=>({nome:p.nome,angulos:Object.keys(p.valores).length,partes:[...new Set(Object.keys(p.valores).map(parteDaChave))],criada:p.criada})),
     salvar:(nome,o={})=>{const it=o.manequim!==undefined?(typeof o.manequim==="number"?SCN.list[o.manequim]:SCN.list.find(x=>x.name===o.manequim)):SCN.list[SCN.active];if(!it)throw new Error("Manequim “"+o.manequim+"” não existe.");return apiFor(it).salvarPose(nome,o)},

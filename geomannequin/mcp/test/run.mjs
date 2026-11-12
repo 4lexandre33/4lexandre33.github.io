@@ -42,6 +42,13 @@ async function suite(client, tag) {
   check(!r.isError, "expressão misturada com intensidade e unidades de ação por lado" + (r.isError ? ": " + text(r) : ""));
   r = await call("editar_manequim", { manequim: "Ana", expressao: "xyz" });
   check(r.isError && /não existe|Expressão/.test(text(r)), "expressão desconhecida → erro em português");
+  r = await call("rosto", { acao: "aplicar_codigo", codigo: 'rosto("Teste", { sorriso: 0.7, bocaAbrir: 0.2 })' });
+  check(!r.isError && /sorriso: 0.7/.test(text(r)), "rosto: aplicar código" + (r.isError ? ": " + text(r) : ""));
+  r = await call("rosto", { acao: "salvar", nome: "Sorriso MCP" });
+  r = await call("rosto", { acao: "listar" });
+  check(!r.isError && r.structuredContent.expressoes.some(e => e.nome === "Sorriso MCP"), "rosto: salvar e listar");
+  r = await call("rosto", { acao: "aplicar_codigo", codigo: "rosto({ zzz: 1 })" });
+  check(r.isError && /não é um controle/.test(text(r)), "rosto: recusa controle inválido");
   r = await call("estado_pose", {});
   check(!r.isError && (r.content || []).some(c => c.type === "image") && /Braço esquerdo/.test(text(r)) && r.structuredContent.estado.manequins.length >= 1, "estado_pose: texto, JSON e imagem" + (r.isError ? ": " + text(r) : ""));
   r = await call("manual_poses_ia", { curto: true });
