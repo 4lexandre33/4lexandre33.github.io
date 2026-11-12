@@ -6,6 +6,8 @@ import { AU } from "../engine/index.js";
 import { criarApiEfeitos } from "./efeitos-cena.js";
 import { adicionarObjeto, duplicarObjeto, acharObjeto, apontarPara, deitar, editarObjeto, encostarEm, maoEm, olharPara, orientar, peEm, removerObjeto, sentar, subirEm } from "./cenario.js";
 import { descreverCena, montarCena } from "./descrever.js";
+import { estadoParaIA } from "./estado-ia.js";
+import { manualPosesIA, pacoteParaIA } from "./manual-ia.js";
 import {lerRoteiro,executarRoteiro,renderizarQuadro,paginaQuadros,folhaDeContato} from "./quadros.js";
 import { loadScene, sceneState, applyState } from "./estado.js";
 import { leituraBlocking, moverCamera, abrirCone, zoomLente, zoomFator } from "./blocking.js";
@@ -237,6 +239,8 @@ function apiFor(it){
     boca(abrir,sorriso){chk();it.params.jawOpen=clamp(num(abrir,"abrir"),0,1);if(sorriso!==undefined)it.params.smile=clamp(num(sorriso,"sorriso"),-1,1);return m},
     /* pose como código: m.codigoPose({partes:"bracoDir", soMudancas:true}) → texto; m.aplicarPose(texto | nome salvo | {..}, {partes, espelhar}) */
     codigoPose(opts){chk();return codigoDaPose(it.params,{nome:opts&&opts.nome,...(opts||{})})},
+    /* estado deste manequim para uma IA: m.estadoIA() → texto; m.estadoIA({json:true}) → objeto */
+    estadoIA(opts){chk();const E=estadoParaIA({manequim:it.id});return opts&&opts.json?E.json.manequins[0]:E.texto},
     aplicarPose(fonte,opts){chk();aplicarValoresDePose(it,valoresDeFonte(fonte),opts);return m},
     salvarPose(nome,opts={}){chk();const v={};POSEKEYS.forEach(k=>{if(typeof it.params[k]==="number")v[k]=it.params[k]});return salvarPose(nome,filtrarPartes(v,opts.partes),opts).nome},
     copiarPose(outro){chk();const o=typeof outro==="object"&&outro?SCN.list.find(x=>x.name===outro.nome):SCN.list.find(x=>x.name===outro);if(!o)throw new Error("Manequim “"+outro+"” não existe.");
@@ -405,6 +409,10 @@ Object.assign(blockingApi,{abrir:()=>painelBlk("abrir"),fechar:()=>painelBlk("fe
   /* modo Articulações: quatro vistas do esqueleto; foco numa região (mão → punho e dedos) */
   mover:m=>painelBlk("mover",m),foco:r=>painelBlk("foco",r)});
 const cena={
+  /* para IA (Gemini, ChatGPT, Claude…): manual completo de poses, estado da cena e pacote pronto para colar */
+  manualIA(opts){return manualPosesIA(opts||{})},
+  estadoIA(opts){const E=estadoParaIA(opts||{});return opts&&opts.json?E.json:E.texto},
+  pacoteIA(pedido,opts){return pacoteParaIA(pedido,opts||{})},
   adicionar(o){const it=addInst(null,o&&o.nome,true);const m=apiFor(it);if(o){if(o.x!==undefined||o.z!==undefined)m.posicao(o.x??it.params.wx,o.z??0);if(o.giro!==undefined)m.girar(o.giro);if(o.corpo)m.corpo(o.corpo);if(o.pose)m.pose(o.pose);if(o.cor)m.cor(o.cor,o.contorno)}return m},
   copiar(m){const it=m?SCN.list.find(x=>x.name===m.nome):SCN.list[SCN.active];if(!it)throw new Error("Manequim não encontrado.");return apiFor(dupInst(it,true))},
   remover(m){const it=typeof m==="string"?SCN.list.find(x=>x.name===m):SCN.list.find(x=>x.name===(m&&m.nome));if(!it)throw new Error("Manequim não encontrado.");delInst(it)},

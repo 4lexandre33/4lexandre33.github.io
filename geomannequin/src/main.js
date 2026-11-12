@@ -1,4 +1,5 @@
 /* GeoMannequin — ponto de entrada da página: prepara a cena, liga a interface e desenha */
+import { iniciarIA } from "./ui/ia.js";
 import "./scene/index.js";
 import {iniciarReferenciaManga} from "./ui/referencia-manga.js";
 import { definirGanchos } from "./scene/ambiente.js";
@@ -45,6 +46,7 @@ iniciarTecladoJuntas();
 iniciarBlocking();
 iniciarQuadros();
 iniciarEfeitos();
+iniciarIA();
 iniciarOrbita();
 iniciarInicio();
 iniciarHeadStudy();

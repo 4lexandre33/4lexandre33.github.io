@@ -42,6 +42,10 @@ async function suite(client, tag) {
   check(!r.isError, "expressão misturada com intensidade e unidades de ação por lado" + (r.isError ? ": " + text(r) : ""));
   r = await call("editar_manequim", { manequim: "Ana", expressao: "xyz" });
   check(r.isError && /não existe|Expressão/.test(text(r)), "expressão desconhecida → erro em português");
+  r = await call("estado_pose", {});
+  check(!r.isError && (r.content || []).some(c => c.type === "image") && /Braço esquerdo/.test(text(r)) && r.structuredContent.estado.manequins.length >= 1, "estado_pose: texto, JSON e imagem" + (r.isError ? ": " + text(r) : ""));
+  r = await call("manual_poses_ia", { curto: true });
+  check(!r.isError && /Regras para a IA/.test(text(r)) && /`chuteAlto`/.test(text(r)), "manual_poses_ia: manual com regras e poses novas");
   r = await call("efeitos", { acao: "catalogo", categoria: "carga" });
   check(!r.isError && r.structuredContent.resultado.catalogo.some(c => c.tipo === "aura") && r.structuredContent.resultado.catalogo.some(c => c.tipo === "aura_explosiva"), "efeitos: catálogo por categoria");
   r = await call("efeitos", { acao: "adicionar", tipo: "aura", em: { manequim: "Ana", parte: "corpo" }, elemento: "vazio" });

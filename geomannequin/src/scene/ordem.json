@@ -27,6 +27,8 @@
   "orientacao-frames.js",
   "orbita.js",
   "descrever.js",
+  "estado-ia.js",
+  "manual-ia.js",
   "comandos.js",
   "ajuda.js",
   "quadros.js"

@@ -244,6 +244,10 @@ export function iniciarAjuda(){
   Estilo: cena.estilos() · cena.estilo("lapis") · cena.estiloAtual()
   Camadas: cena.camadasVisuais() · cena.camadaVisual("grid",false) · cena.camadaVisual("eyes",true)
   Arquivos: cena.exportarSVG() · cena.exportarOBJ({modelo:"v4"}) · cena.exportarJSON() · cena.importarJSON(json)
+  IA sem MCP (Gemini, ChatGPT, Claude): cena.manualIA() — manual completo de poses · cena.estadoIA() — como cada parte do corpo está (texto; {json:true} = objeto)
+    cena.pacoteIA("o que eu quero") — manual + estado + pedido para colar na IA · m.estadoIA() — só este manequim · painel “Usar com uma IA” embaixo do editor
+  Efeitos: padrão em preto e branco; {colorido: true} liga a cor · {nivel: 1..5} força · cena.efeitos.colorir(false) · cena.efeitos.tamanho(id) → alturas do corpo
+    onomatopeia em katakana: cena.efeito("onomatopeia", {texto: "ドッ"}) · chão (cratera, círculo, rachaduras) fica abaixo dos manequins
   Exportação navegador: await cena.exportarPNG({escala:2}); await cena.baixar("cena.png",png,"image/png")
   Parâmetros: m.parametro("headYaw",45) · m.parametros() · camera.parametro("lens",85) · camera.parametros()
   Câmera sem alterar a ativa: camera.capturar("Ana",{lado:"costas"}) · camera.capturarVistas("Ana")

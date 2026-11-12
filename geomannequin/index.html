@@ -458,6 +458,27 @@
       </div>
       <div class="codewrap"><pre id="gutter" aria-hidden="true">1</pre><textarea id="code" spellcheck="false" aria-label="Editor de comandos" wrap="off"></textarea></div>
       <pre class="cmdout" id="cmdOut" aria-live="polite">Escreva comandos e clique em Executar (ou Ctrl + Enter).</pre>
+      <details class="ia-painel" id="iaPainel"><summary>Usar com uma IA (Gemini, ChatGPT, Claude)</summary>
+        <ol class="ia-passos">
+          <li>Escreva o que você quer (ex.: “Ana dá um chute alto em Leo, que cai de costas”).</li>
+          <li>Clique em <b>Copiar pacote para IA</b> e cole na IA. Se der, anexe também a imagem (<b>Baixar imagem</b>).</li>
+          <li>Copie o bloco de código da resposta, cole no editor acima e clique em <b>Executar</b>.</li>
+          <li>Para corrigir: clique em <b>Copiar estado da pose</b>, cole na mesma conversa e diga o que ainda está errado.</li>
+        </ol>
+        <label class="ia-pedido">O que você quer <textarea id="iaPedido" rows="2" placeholder="ex.: deixe o braço direito mais alto, punho fechado, olhando para Leo"></textarea></label>
+        <div class="group poses" role="group" aria-label="Pacote para IA">
+          <button type="button" id="iaPacote" class="primary" title="Manual completo + estado da cena (texto e JSON) + o seu pedido">Copiar pacote para IA</button>
+          <button type="button" id="iaPacoteCurto" title="O mesmo pacote sem o apêndice com todos os comandos do app (menor)">Pacote curto</button>
+          <button type="button" id="iaEstado" title="Como cada parte do corpo está agora: para a IA conferir e corrigir">Copiar estado da pose</button>
+          <button type="button" id="iaBaixarPng">Baixar imagem (.png)</button>
+        </div>
+        <div class="group poses" role="group" aria-label="Manual">
+          <button type="button" id="iaVer">Ver manual</button><button type="button" id="iaVerEstado">Ver estado</button>
+          <button type="button" id="iaManual">Copiar manual</button><button type="button" id="iaBaixarManual">Baixar manual (.md)</button>
+        </div>
+        <p class="msg" id="iaMsg" role="status"></p>
+        <textarea id="iaTexto" class="ia-texto" rows="14" spellcheck="false" readonly hidden aria-label="Manual ou estado"></textarea>
+      </details>
     </section>
   </main>
 </div>

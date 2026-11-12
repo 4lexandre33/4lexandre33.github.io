@@ -7,3 +7,12 @@ pre.cmdout{margin:8px 0 0;padding:10px;background:var(--field);border-radius:6px
 pre.cmdout .err{color:var(--coral)}
 pre.cmdout .ok{color:var(--cobalt)}
 #examples,#history{font:inherit;font-size:12.5px;color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:5px 6px;max-width:200px}
+
+/* painel "Usar com uma IA" */
+.ia-painel{margin-top:10px;border-top:1px solid var(--rule);padding-top:8px}
+.ia-painel summary{cursor:pointer;font-weight:600}
+.ia-passos{margin:8px 0;padding-left:20px;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.ia-pedido{display:flex;flex-direction:column;gap:4px;font-size:12.5px;margin:6px 0}
+.ia-pedido textarea{min-height:52px;max-height:160px;font-family:var(--font-body);font-size:13px}
+.ia-painel .group{margin:6px 0}
+.ia-texto{min-height:260px;max-height:420px;font-size:11.5px;white-space:pre-wrap}

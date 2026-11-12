@@ -14,6 +14,7 @@ import { registerControlTools } from "./tools-control.mjs";
 import { registerDeclarativeStoryboard } from "./tools-storyboard.mjs";
 import { registerAnatomyTools } from "./tools-anatomy.mjs";
 import { registerEffectsTools } from "./tools-efeitos.mjs";
+import { registerIaTools } from "./tools-ia.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -110,6 +111,8 @@ function docRoteiro() {
 function docs(w) {
   const d = [];
   d.push({ id: "referencia", title: "Referência da API de comandos", text: w.REF });
+  d.push({ id: "manual-ia", title: "Manual completo de poses para IA (eixos, lados, todos os controles com sinal, receitas, biblioteca)", text: w.cena.manualIA({ curto: true }) });
+  for (const k of w.todasPoses()) if (!w.BPOSES[k] && !["cintura", "cruzar", "ombro"].includes(k)) d.push({ id: "pose/" + k, title: "Pose rápida: " + k, text: `poseRapida("${k}", {lado: "esq" | "dir"}) — editar_manequim {pose: "${k}"}` });
   d.push({ id: "parametros", title: "Parâmetros de pose e corpo (nomes em português)", text: Object.entries(w.ALIAS).map(([k, v]) => { const s = w.SL.find(x => x.k === v); return `${k} (${v}): ${s ? s.label + " — de " + s.min + " a " + s.max + s.u : ""}`; }).join("\n") });
   for (const [k, v] of Object.entries(w.BPOSES)) d.push({ id: "pose/" + k, title: "Pose rápida: " + k, text: `poseRapida("${k}")\nValores: ${JSON.stringify(v)}` });
   for (const k of ["cintura", "cruzar", "ombro"]) d.push({ id: "pose/" + k, title: "Pose rápida: " + k, text: `poseRapida("${k}") — calculada por cinemática inversa (mão na ${k === "cintura" ? "cintura" : k === "cruzar" ? "frente do peito" : "no ombro oposto"}).` });
@@ -202,9 +205,10 @@ const INVOCA = {
   artefatos_mcp: ["Gerando arquivo…","Arquivo gerado"],
   roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
   aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"],
-  efeitos: ["Desenhando os efeitos…", "Efeitos prontos"]
+  efeitos: ["Desenhando os efeitos…", "Efeitos prontos"],
+  estado_pose: ["Lendo a pose…", "Estado da pose"], manual_poses_ia: ["Abrindo o manual…", "Manual de poses"]
 };
-const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena", "efeitos"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
+const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena", "efeitos", "estado_pose"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
 function metaChatGPT(nome) {
   const m = {}, t = INVOCA[nome]; if (t) { m["openai/toolInvocation/invoking"] = t[0]; m["openai/toolInvocation/invoked"] = t[1]; }
   if (VISUAIS.has(nome)) m["openai/outputTemplate"] = WIDGET_URI;
@@ -914,6 +918,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerDeclarativeStoryboard(server, W);
   registerAnatomyTools(server, W);
   registerEffectsTools(server, W);
+  registerIaTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },
