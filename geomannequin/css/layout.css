@@ -1,9 +1,9 @@
 /* GeoMannequin — Layout: prancheta com camadas à esquerda, palco no centro, parâmetros à direita */
 main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
-  grid-template-areas:"stage" "commands" "params" "layers" "export"}
+  grid-template-areas:"stage" "fx" "commands" "params" "layers" "export"}
 @media (min-width:1040px){
   main{grid-template-columns:220px minmax(0,1fr) 310px;
-    grid-template-areas:"layers stage params" "layers commands params" "layers export params";align-items:start}
+    grid-template-areas:"layers stage params" "layers fx params" "layers commands params" "layers export params";align-items:start}
   #params,#layers,.stage{position:sticky;top:10px}
   #params,#layers{max-height:calc(100vh - 20px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
 }
@@ -28,12 +28,12 @@ main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
 #export{grid-area:export}
 /* painel de blocking: coluna própria ao lado do palco (encaixado), embaixo do palco em telas menores */
 #blkPainel{grid-area:blk}
-main.com-blk{grid-template-areas:"stage" "blk" "commands" "params" "layers" "export"}
+main.com-blk{grid-template-areas:"stage" "fx" "blk" "commands" "params" "layers" "export"}
 @media (min-width:1040px) and (max-width:1279px){
-  main.com-blk{grid-template-areas:"layers stage params" "layers blk params" "layers commands params" "layers export params"}
+  main.com-blk{grid-template-areas:"layers stage params" "layers fx params" "layers blk params" "layers commands params" "layers export params"}
 }
 @media (min-width:1280px){
-  main.com-blk{grid-template-columns:200px minmax(0,1fr) var(--blk-w,380px) 300px;grid-template-areas:"layers stage blk params" "layers commands blk params" "layers export blk params"}
+  main.com-blk{grid-template-columns:200px minmax(0,1fr) var(--blk-w,380px) 300px;grid-template-areas:"layers stage blk params" "layers fx blk params" "layers commands blk params" "layers export blk params"}
   main.com-blk.blk-recolhido{grid-template-columns:200px minmax(0,1fr) 44px 300px}
   main.com-blk #blkPainel{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 }
@@ -43,3 +43,14 @@ main.com-blk{grid-template-areas:"stage" "blk" "commands" "params" "layers" "exp
 .readout{display:flex;flex-wrap:wrap;gap:4px 18px;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
 .readout b{color:var(--ink);font-weight:500}
 .hint{font-size:12px;color:var(--muted);margin:0}
+
+/* efeitos especiais: logo abaixo do palco */
+#fxArea{grid-area:fx;min-width:0}
+#fxArea[hidden]{display:none}
+.fx-painel-palco>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;cursor:pointer;list-style:none}
+.fx-painel-palco>summary::-webkit-details-marker{display:none}
+.fx-painel-palco>summary::before{content:"▸";color:var(--muted);font-size:12px}
+.fx-painel-palco[open]>summary::before{content:"▾"}
+.fx-painel-palco .fx-titulo{margin:0!important}
+.fx-painel-palco>summary .hint{font-size:12px}
+.fx-painel-palco .fx-grade{max-height:none}

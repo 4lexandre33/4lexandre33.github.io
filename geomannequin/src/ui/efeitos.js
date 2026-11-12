@@ -58,6 +58,7 @@ function montarGrade() {
     const b = document.createElement("button"); b.type = "button"; b.className = "fx-mini"; b.title = c.nome; b.setAttribute("aria-pressed", tipo === TIPO ? "true" : "false");
     b.innerHTML = miniatura(tipo) + "<span>" + c.nome + "</span>";
     b.addEventListener("click", () => { TIPO = tipo; $("fxElemento").value = c.elem; montarGrade(); atualizarOnde(); });
+    b.addEventListener("dblclick", () => { TIPO = tipo; $("fxElemento").value = c.elem; atualizarOnde(); inserir(); });
     g.appendChild(b);
   });
   document.querySelectorAll("[data-fxcat]").forEach(b => b.setAttribute("aria-pressed", b.dataset.fxcat === CAT ? "true" : "false"));
@@ -79,6 +80,18 @@ function inserir() {
   else if (onde === "tela") o.ancora = CATALOGO[TIPO].cat === "tela" ? undefined : { modo: "tela", x: 0.5, y: 0.45 };
   else o.ancora = $("fxParte").value;
   const id = acao(() => cena.efeitos.adicionar(TIPO, o)); if (id) { SEL = id; sincronizar(); }
+}
+/* testar rápido: põe no manequim ativo uma pose que combina com o efeito e insere */
+const POSE_DE_TESTE = { arco_movimento: "chuteAlto", rastro_membro: "direto", impacto_contato: "direto", energia_mao: "palma", feixe: "palmaDupla", cone: "palmaDupla", espiral: "palmaDupla", chama: "palma",
+  aneis_impacto: "direto", salpicos: "chuteAlto", carga_maos: "esferaDeLado", aura_explosiva: "baseGritando", aura: "baseGritando", aura_vento: "bracosAbertosLevitando", esfera_energia: "lotusFlutuando",
+  fios_energia: "concentrando", pedras_levitando: "baseGritando", ondas_chao: "lotusFlutuando", redemoinho: "chuteGiratorio", aneis_orbitais: "chuteVoador", sulco_poeira: "investida", rastro_fumaca: "arremessadoCostas",
+  velocidade_corpo: "investida", pos_imagem: "investida", cratera: "aterrissagemHeroi", rachaduras: "aterrissagemHeroi", onda_choque: "aterrissagemHeroi", buraco_chao: "aterrissagemHeroi", destrocos: "aterrissagemHeroi",
+  poeira: "aterrissagemHeroi", circulo_magico: "cargaDuasMaos", pilar: "bracosAbertosLevitando", barreira: "defesaCruzada", raio: "bracoAosCeus", emote: "golpeEstomago", tornado: "bracosAbertosLevitando" };
+function testarRapido() {
+  const m = cena.ativo, ps = POSE_DE_TESTE[TIPO];
+  acao(() => { if (ps) m.poseRapida(ps); });
+  const onde = $("fxOnde"); if (CATALOGO[TIPO].cat !== "tela" && onde.value !== "parte") onde.value = "parte";
+  inserir(); msg("Teste: " + CATALOGO[TIPO].nome + (ps ? " com a pose “" + ps + "”" : "") + ". Ctrl+Z desfaz.");
 }
 /* clique no palco → âncora */
 function ancoraDoClique(q, tipo) {
@@ -221,7 +234,15 @@ export function iniciarEfeitos() {
     else if (!silencioso) { const id = acao(() => cena.efeitos.adicionar("personalizado", svg ? { svg, ancora: { modo: "tela" } } : { codigo })); if (id) { SEL = id; sincronizar(); } } };
   ["fxCodigo", "fxSvgTexto"].forEach(k => $(k).addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => aplicarCodigo(true), 350); }));
   $("fxAplicarCodigo").addEventListener("click", () => aplicarCodigo(false));
+  if ($("fxTestar")) $("fxTestar").addEventListener("click", testarRapido);
   $("fxPainel").addEventListener("toggle", () => { carregarModelosLocais(); sincronizar(); render(); });
+  /* botão "Efeitos" no topo: mostra o painel (logo abaixo do desenho), abre e rola até ele */
+  const area = $("fxArea"), btn = $("fxBtn");
+  if (btn && area) btn.addEventListener("click", () => {
+    const abrir = area.hidden || !$("fxPainel").open;
+    area.hidden = !abrir; $("fxPainel").open = abrir; btn.setAttribute("aria-pressed", String(abrir));
+    if (abrir) area.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
   carregarModelosLocais();
   setOverlay(alcas);
   iniciarAlcas();

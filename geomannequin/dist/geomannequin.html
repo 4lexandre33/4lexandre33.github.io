@@ -82,10 +82,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 
 /* GeoMannequin — Layout: prancheta com camadas à esquerda, palco no centro, parâmetros à direita */
 main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
-  grid-template-areas:"stage" "commands" "params" "layers" "export"}
+  grid-template-areas:"stage" "fx" "commands" "params" "layers" "export"}
 @media (min-width:1040px){
   main{grid-template-columns:220px minmax(0,1fr) 310px;
-    grid-template-areas:"layers stage params" "layers commands params" "layers export params";align-items:start}
+    grid-template-areas:"layers stage params" "layers fx params" "layers commands params" "layers export params";align-items:start}
   #params,#layers,.stage{position:sticky;top:10px}
   #params,#layers{max-height:calc(100vh - 20px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
 }
@@ -110,12 +110,12 @@ main{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
 #export{grid-area:export}
 /* painel de blocking: coluna própria ao lado do palco (encaixado), embaixo do palco em telas menores */
 #blkPainel{grid-area:blk}
-main.com-blk{grid-template-areas:"stage" "blk" "commands" "params" "layers" "export"}
+main.com-blk{grid-template-areas:"stage" "fx" "blk" "commands" "params" "layers" "export"}
 @media (min-width:1040px) and (max-width:1279px){
-  main.com-blk{grid-template-areas:"layers stage params" "layers blk params" "layers commands params" "layers export params"}
+  main.com-blk{grid-template-areas:"layers stage params" "layers fx params" "layers blk params" "layers commands params" "layers export params"}
 }
 @media (min-width:1280px){
-  main.com-blk{grid-template-columns:200px minmax(0,1fr) var(--blk-w,380px) 300px;grid-template-areas:"layers stage blk params" "layers commands blk params" "layers export blk params"}
+  main.com-blk{grid-template-columns:200px minmax(0,1fr) var(--blk-w,380px) 300px;grid-template-areas:"layers stage blk params" "layers fx blk params" "layers commands blk params" "layers export blk params"}
   main.com-blk.blk-recolhido{grid-template-columns:200px minmax(0,1fr) 44px 300px}
   main.com-blk #blkPainel{position:sticky;top:10px;max-height:calc(100vh - 20px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
 }
@@ -125,6 +125,17 @@ main.com-blk{grid-template-areas:"stage" "blk" "commands" "params" "layers" "exp
 .readout{display:flex;flex-wrap:wrap;gap:4px 18px;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
 .readout b{color:var(--ink);font-weight:500}
 .hint{font-size:12px;color:var(--muted);margin:0}
+
+/* efeitos especiais: logo abaixo do palco */
+#fxArea{grid-area:fx;min-width:0}
+#fxArea[hidden]{display:none}
+.fx-painel-palco>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;cursor:pointer;list-style:none}
+.fx-painel-palco>summary::-webkit-details-marker{display:none}
+.fx-painel-palco>summary::before{content:"▸";color:var(--muted);font-size:12px}
+.fx-painel-palco[open]>summary::before{content:"▾"}
+.fx-painel-palco .fx-titulo{margin:0!important}
+.fx-painel-palco>summary .hint{font-size:12px}
+.fx-painel-palco .fx-grade{max-height:none}
 
 /* GeoMannequin — Controles: camadas, sliders, medidas, abas, áreas de texto e mensagens */
 .layer{display:flex;align-items:center;gap:10px;padding:5px 0;cursor:pointer}
@@ -556,6 +567,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         <button type="button" id="colisoesAtalho" aria-controls="colSecao" title="Abrir diretamente a seção Colisões do painel Parâmetros">Colisões</button>
         <button type="button" id="headStudyOpen" title="Abrir a folha anatômica V4.2 com perfil, frontal, 3/4, anotações e SVG vetorial">Estudo V4.2</button>
         <button type="button" id="quadrosBtn" aria-pressed="false" title="Roteiro de quadros: escreva quadros em código (#quadro 1, #quadro 2…), renderize e baixe tudo junto">Quadros</button>
+        <button type="button" id="fxBtn" aria-pressed="true" title="Mostrar o painel de efeitos especiais (logo abaixo do desenho)">Efeitos</button>
         <button type="button" id="blockingBtn" aria-pressed="false" title="Mostrar ou esconder o painel de blocking (vista de cima e lateral, inserir manequins e objetos)">Blocking</button>
       </div>
       <div class="group" role="group" aria-label="Tema">
@@ -591,6 +603,43 @@ pre.cmdout .ok{color:var(--cobalt)}
       <p class="hint">Arraste sobre o desenho para girar a vista. Os controles de pescoço e cabeça movem a cabeça em relação aos ombros. No estilo Construção, as linhas tracejadas ficam atrás do volume.</p>
     </section>
 
+    <section id="fxArea" aria-label="Efeitos especiais">
+      <details id="fxPainel" class="panel fx-painel-palco" open><summary><h2 class="fx-titulo">Efeitos especiais</h2><span class="hint">mangá, anime, magia, impacto · clique num efeito e em “Inserir efeito” (ou dois cliques no efeito)</span></summary>
+        <div class="group poses fx-cats" id="fxCats" role="group" aria-label="Categorias de efeito"></div>
+        <div class="fx-grade" id="fxGrade" role="group" aria-label="Catálogo de efeitos"></div>
+        <div class="fx-inserir">
+          <label>Onde <select id="fxOnde" aria-label="Onde colocar o efeito">
+            <option value="parte">No manequim ativo</option><option value="clique">Clicar no palco</option><option value="objeto">No objeto</option><option value="tela">Na tela (centrado no personagem)</option>
+          </select></label>
+          <label>Parte <select id="fxParte" aria-label="Parte do manequim"></select></label>
+          <label>Elemento <select id="fxElemento" aria-label="Elemento e cores"></select></label>
+          <label>Nível <select id="fxNivel" aria-label="Nível de poder"><option value="1">1 · leve</option><option value="2">2</option><option value="3" selected>3 · normal</option><option value="4">4</option><option value="5">5 · máximo</option></select></label>
+          <label class="check-linha"><input type="checkbox" id="fxColorido"> Colorido</label>
+          <button type="button" id="fxInserir" class="primary">Inserir efeito</button>
+          <button type="button" id="fxTestar" title="Põe no manequim ativo uma pose que combina com o efeito e insere (Ctrl+Z desfaz)">Testar com pose</button>
+        </div>
+        <label class="fx-lista-rot">Na cena <select id="fxLista" size="5" aria-label="Efeitos na cena"></select></label>
+        <div class="group poses">
+          <button type="button" id="fxDuplicar">Duplicar</button><button type="button" id="fxMostrar">Mostrar / ocultar</button><button type="button" id="fxRemover">Remover</button>
+          <button type="button" id="fxConverter" hidden>Converter efeitos antigos</button>
+          <button type="button" id="fxTodosPB" title="Todos os efeitos da cena em preto e branco (nanquim)">Todos P&amp;B</button><button type="button" id="fxTodosCor" title="Todos os efeitos da cena coloridos">Todos coloridos</button>
+        </div>
+        <div class="fx-props" id="fxProps"></div>
+        <details class="fino"><summary>Meus efeitos</summary>
+          <label>Nome <input type="text" id="fxNomeModelo" maxlength="40" placeholder="ex.: Soco de fogo"></label>
+          <button type="button" id="fxSalvarModelo">Salvar o selecionado</button>
+          <label>Modelos <select id="fxModelos"></select></label>
+          <button type="button" id="fxUsarModelo">Usar na parte escolhida</button><button type="button" id="fxApagarModelo">Apagar</button>
+        </details>
+        <details class="fino"><summary>Efeito personalizado (código ou SVG)</summary>
+          <label>Código <textarea id="fxCodigo" rows="9" spellcheck="false" aria-label="Código do efeito"></textarea></label>
+          <label>ou SVG (centrado em 0,0) <textarea id="fxSvgTexto" rows="3" spellcheck="false" placeholder='&lt;circle r="40" fill="#f60"/&gt;'></textarea></label>
+          <button type="button" id="fxAplicarCodigo">Aplicar (prévia ao vivo enquanto digita)</button>
+        </details>
+        <p class="hint">No palco: arraste o ponto branco para mover, a bolinha azul para apontar e o anel tracejado para mudar o tamanho.</p>
+        <p class="msg" id="fxAviso" role="status"></p>
+      </details>
+    </section>
     <section class="panel blk-painel" id="blkPainel" aria-label="Blocking"></section>
     <section class="panel" id="params" aria-label="Parâmetros">
       <h2>Cena</h2>
@@ -647,40 +696,6 @@ pre.cmdout .ok{color:var(--cobalt)}
       <button id="mangaAplicarVento" type="button">Aplicar vento</button><button id="mangaVentoChave" type="button">Marcar vento neste quadro</button>
       <label>Quadro <input id="mangaTempo" type="number" min="0" max="100000" value="0"></label>
       <button id="mangaPlay" type="button">Simular</button><p id="mangaAviso" role="status"></p></details>
-      <details id="fxPainel"><summary>Efeitos especiais</summary>
-        <div class="group poses fx-cats" id="fxCats" role="group" aria-label="Categorias de efeito"></div>
-        <div class="fx-grade" id="fxGrade" role="group" aria-label="Catálogo de efeitos"></div>
-        <div class="fx-inserir">
-          <label>Onde <select id="fxOnde" aria-label="Onde colocar o efeito">
-            <option value="parte">No manequim ativo</option><option value="clique">Clicar no palco</option><option value="objeto">No objeto</option><option value="tela">Na tela (centrado no personagem)</option>
-          </select></label>
-          <label>Parte <select id="fxParte" aria-label="Parte do manequim"></select></label>
-          <label>Elemento <select id="fxElemento" aria-label="Elemento e cores"></select></label>
-          <label>Nível <select id="fxNivel" aria-label="Nível de poder"><option value="1">1 · leve</option><option value="2">2</option><option value="3" selected>3 · normal</option><option value="4">4</option><option value="5">5 · máximo</option></select></label>
-          <label class="check-linha"><input type="checkbox" id="fxColorido"> Colorido</label>
-          <button type="button" id="fxInserir">Inserir efeito</button>
-        </div>
-        <label class="fx-lista-rot">Na cena <select id="fxLista" size="5" aria-label="Efeitos na cena"></select></label>
-        <div class="group poses">
-          <button type="button" id="fxDuplicar">Duplicar</button><button type="button" id="fxMostrar">Mostrar / ocultar</button><button type="button" id="fxRemover">Remover</button>
-          <button type="button" id="fxConverter" hidden>Converter efeitos antigos</button>
-          <button type="button" id="fxTodosPB" title="Todos os efeitos da cena em preto e branco (nanquim)">Todos P&amp;B</button><button type="button" id="fxTodosCor" title="Todos os efeitos da cena coloridos">Todos coloridos</button>
-        </div>
-        <div class="fx-props" id="fxProps"></div>
-        <details class="fino"><summary>Meus efeitos</summary>
-          <label>Nome <input type="text" id="fxNomeModelo" maxlength="40" placeholder="ex.: Soco de fogo"></label>
-          <button type="button" id="fxSalvarModelo">Salvar o selecionado</button>
-          <label>Modelos <select id="fxModelos"></select></label>
-          <button type="button" id="fxUsarModelo">Usar na parte escolhida</button><button type="button" id="fxApagarModelo">Apagar</button>
-        </details>
-        <details class="fino"><summary>Efeito personalizado (código ou SVG)</summary>
-          <label>Código <textarea id="fxCodigo" rows="9" spellcheck="false" aria-label="Código do efeito"></textarea></label>
-          <label>ou SVG (centrado em 0,0) <textarea id="fxSvgTexto" rows="3" spellcheck="false" placeholder='&lt;circle r="40" fill="#f60"/&gt;'></textarea></label>
-          <button type="button" id="fxAplicarCodigo">Aplicar (prévia ao vivo enquanto digita)</button>
-        </details>
-        <p class="hint">No palco: arraste o ponto branco para mover, a bolinha azul para apontar e o anel tracejado para mudar o tamanho.</p>
-        <p class="msg" id="fxAviso" role="status"></p>
-      </details>
       <section id="colSecao" class="col-secao" aria-labelledby="colSecaoTitulo" tabindex="-1">
       <h2 id="colSecaoTitulo">Colisões e contato 3D</h2>
       <p class="hint camadas-dica">Quando um manequim atravessa outro (mão no quadril do vizinho, braços cruzando), escolha como corrigir: afastar, girar, ajustar a pose ou automático.</p>
@@ -28080,6 +28095,12 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
         montarGrade();
         atualizarOnde();
       });
+      b.addEventListener("dblclick", () => {
+        TIPO = tipo;
+        $("fxElemento").value = c.elem;
+        atualizarOnde();
+        inserir();
+      });
       g.appendChild(b);
     });
     document.querySelectorAll("[data-fxcat]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.fxcat === CAT ? "true" : "false"));
@@ -28121,6 +28142,54 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
       SEL = id;
       sincronizar();
     }
+  }
+  var POSE_DE_TESTE = {
+    arco_movimento: "chuteAlto",
+    rastro_membro: "direto",
+    impacto_contato: "direto",
+    energia_mao: "palma",
+    feixe: "palmaDupla",
+    cone: "palmaDupla",
+    espiral: "palmaDupla",
+    chama: "palma",
+    aneis_impacto: "direto",
+    salpicos: "chuteAlto",
+    carga_maos: "esferaDeLado",
+    aura_explosiva: "baseGritando",
+    aura: "baseGritando",
+    aura_vento: "bracosAbertosLevitando",
+    esfera_energia: "lotusFlutuando",
+    fios_energia: "concentrando",
+    pedras_levitando: "baseGritando",
+    ondas_chao: "lotusFlutuando",
+    redemoinho: "chuteGiratorio",
+    aneis_orbitais: "chuteVoador",
+    sulco_poeira: "investida",
+    rastro_fumaca: "arremessadoCostas",
+    velocidade_corpo: "investida",
+    pos_imagem: "investida",
+    cratera: "aterrissagemHeroi",
+    rachaduras: "aterrissagemHeroi",
+    onda_choque: "aterrissagemHeroi",
+    buraco_chao: "aterrissagemHeroi",
+    destrocos: "aterrissagemHeroi",
+    poeira: "aterrissagemHeroi",
+    circulo_magico: "cargaDuasMaos",
+    pilar: "bracosAbertosLevitando",
+    barreira: "defesaCruzada",
+    raio: "bracoAosCeus",
+    emote: "golpeEstomago",
+    tornado: "bracosAbertosLevitando"
+  };
+  function testarRapido() {
+    const m = cena.ativo, ps = POSE_DE_TESTE[TIPO];
+    acao(() => {
+      if (ps) m.poseRapida(ps);
+    });
+    const onde = $("fxOnde");
+    if (CATALOGO[TIPO].cat !== "tela" && onde.value !== "parte") onde.value = "parte";
+    inserir();
+    msg3("Teste: " + CATALOGO[TIPO].nome + (ps ? " com a pose “" + ps + "”" : "") + ". Ctrl+Z desfaz.");
   }
   function ancoraDoClique(q, tipo) {
     const K = contextoCena(sceneList());
@@ -28534,10 +28603,19 @@ return fx.forma(d, fx.cores[2]) + fx.forma(fx.circulo(fx.x, fx.y, 18 * fx.escala
       t = setTimeout(() => aplicarCodigo(true), 350);
     }));
     $("fxAplicarCodigo").addEventListener("click", () => aplicarCodigo(false));
+    if ($("fxTestar")) $("fxTestar").addEventListener("click", testarRapido);
     $("fxPainel").addEventListener("toggle", () => {
       carregarModelosLocais();
       sincronizar();
       render2();
+    });
+    const area = $("fxArea"), btn = $("fxBtn");
+    if (btn && area) btn.addEventListener("click", () => {
+      const abrir2 = area.hidden || !$("fxPainel").open;
+      area.hidden = !abrir2;
+      $("fxPainel").open = abrir2;
+      btn.setAttribute("aria-pressed", String(abrir2));
+      if (abrir2) area.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     carregarModelosLocais();
     setOverlay(alcas);
