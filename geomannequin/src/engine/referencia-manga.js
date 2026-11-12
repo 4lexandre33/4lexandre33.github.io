@@ -6,6 +6,7 @@ import {chainSetup} from "./cadeia.js";
 import {orientacaoTecido} from "./superficie-referencia.js";
 import {applyA,mv,H,W} from "./matematica.js";
 import {colliderRig} from "./contact-v2.js";
+import {bustFrame,torsoProfile,crInterp} from "./corpo.js";
 import {paraMundo} from "./colisao-cena.js";
 
 const TIPOS_MANGA=["paleto","camisa","calca","painel","curto","longo","franja","preso","linhas","impacto","explosao","fumaca","chama","rastro"];
@@ -118,10 +119,15 @@ function geometriaReferencia(p,refs,frame,vento,exportacao=false){
       }
       if(r.tipo!=="calca"){
         const cintura=(pontoJ("quadril",1)[1]+pontoJ("quadril",-1)[1])/2;
+        /* barra do paletó: largura e profundidade pelo perfil real do tronco nessa altura,
+           para a bacia (mais larga desde a reconstrução da pelve) não atravessar o tecido */
+        S??=shape(p);const F=bustFrame(p,S),perfil=torsoProfile(F),yBarra=cintura-.8;
+        const meiaL=crInterp(perfil,yBarra,1),prof=Math.max(crInterp(perfil,yBarra,2),crInterp(perfil,yBarra,3));
         const tronco=(baixo)=>Array.from({length:16},(_,i)=>{
           const a=i*Math.PI/8,s=Math.cos(a)>=0?1:-1,j=pontoJ(baixo?"quadril":"ombro",s);
-          const pt=[Math.abs(j[0])*Math.cos(a)*(baixo?1.65:1.08),baixo?cintura-.8:j[1],
-            j[2]+Math.sin(a)*(baixo?1.18:1.27)*r.escala];
+          const pt=baixo
+            ?[Math.max(Math.abs(j[0])*1.65,meiaL*1.12)*Math.cos(a),yBarra,j[2]+Math.sin(a)*Math.max(1.18,prof*1.15)*r.escala]
+            :[Math.abs(j[0])*Math.cos(a)*1.08,j[1],j[2]+Math.sin(a)*1.27*r.escala];
           return deslocar(mundo(pt),baixo?.24:0);
         });
         unir(tronco(false),tronco(true));

@@ -78,7 +78,8 @@ for(const fem of [0,1])for(const biotipo of NOMES_BIOTIPOS){
  p.headModel="v3_microgeometry";
  const depois=getMeshes(p,s).bust;
  assert.notStrictEqual(antes,depois,"O cache impediu a atualização cervical V3.");
- assert.notEqual(antes.V[0],depois.V[0],"Sem alteração real na malha cervical.");
+ {let dif=0;const n=Math.min(antes.V.length,depois.V.length);for(let i=0;i<n;i++)if(Math.abs(antes.V[i]-depois.V[i])>1e-9)dif++;
+  assert.ok(dif>0,"Sem alteração real na malha cervical.");}
 }
 assert.equal(variants,NOMES_BIOTIPOS.length*2);
 assert.equal(meshes,variants*3);

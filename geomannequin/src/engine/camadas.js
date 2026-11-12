@@ -148,17 +148,24 @@ function setUltima(v) { return ULTIMA = v; }
 function ultimaComposicao() { return ULTIMA; }
 function zEm(z, cx, cy) { const x = cx - z.x0, y = cy - z.y0; return x < 0 || y < 0 || x >= z.w || y >= z.h ? -1e6 : z.z[y * z.w + x]; }
 /* células onde a camada "j" fica escondida por outra camada que está na frente dela */
+const ORDEM_VESTIR = { painel: 0, calca: 1, camisa: 2, paleto: 3, lapelas: 4, gola: 5, curto: 6, longo: 6, preso: 6, franja: 7 };
 function mascaraEscondida(j, outros) {
   const zj = j.res.z; if (!zj) return null;
   let M = null;
+  /* roupa e cabelo ficam colados à pele de quem veste: contra esse corpo a folga é maior
+     (senão os dois disputam a profundidade e o recorte sai em escada); o lado de trás,
+     uns 2 R mais fundo, continua escondido, e os outros manequins e objetos ocultam como sempre */
+  const dono = j.referencia ? j.g.membros[0] : -1;
   for (const o of outros) {
     const zo = o.res.z; if (!zo) continue;
+    const doDono = dono >= 0 && !o.objeto && o.g.membros.includes(dono) && (!o.referencia || (j.vestivel && o.vestivel));
+    const tol = doDono ? 0.45 : 0.04;
     const ax = Math.max(zj.x0, zo.x0), bx = Math.min(zj.x0 + zj.w, zo.x0 + zo.w), ay = Math.max(zj.y0, zo.y0), by = Math.min(zj.y0 + zj.h, zo.y0 + zo.h);
     if (ax >= bx || ay >= by) continue;
     for (let cy = ay; cy < by; cy++) for (let cx = ax; cx < bx; cx++) {
       const vj = zj.z[(cy - zj.y0) * zj.w + cx - zj.x0]; if (vj < -1e5) continue;
       const vo = zo.z[(cy - zo.y0) * zo.w + cx - zo.x0];
-      if (vo > vj + 0.04) { if (!M) M = new Uint8Array(zj.w * zj.h); M[(cy - zj.y0) * zj.w + cx - zj.x0] = 1; }
+      if (vo > vj + tol) { if (!M) M = new Uint8Array(zj.w * zj.h); M[(cy - zj.y0) * zj.w + cx - zj.x0] = 1; }
     }
   }
   if (!M) return null;
@@ -214,10 +221,15 @@ function comporCamadas(plan, opts) {
     const ref=list0[i].referencia;
     if(!ref)continue;
     efeitosQuadro+=ref.tela;
+    /* roupa e cabelo: logo à frente do corpo de quem veste, numa ordem fixa de vestir;
+       efeitos (explosão, chama, fumaça, rastro) mantêm a profundidade real e podem passar atrás */
+    const corpo=cams.find(c=>!c.objeto&&!c.referencia&&c.g.membros.includes(i));
     ref.grupos.forEach((grupo,k)=>{
       const res=desenharReferencia(grupo,list0[i].p,list0[i].pal,list0[i].gy,L);
-      cams.push({g:{membros:[i],lanc:[]},res,prof:res.info.depth,ordem:list0[i].p._ordem||0,
-        referencia:"referencia-"+i+"-"+k,nome:grupo.tipo});
+      const vestir=ORDEM_VESTIR[grupo.tipo];
+      const prof=corpo&&vestir!==undefined?corpo.prof+1e-4*(vestir+1):res.info.depth;
+      cams.push({g:{membros:[i],lanc:[]},res,prof,ordem:corpo&&vestir!==undefined?corpo.ordem:(list0[i].p._ordem||0),
+        referencia:"referencia-"+i+"-"+k,nome:grupo.tipo,vestivel:vestir!==undefined});
     });
   }
   cams.sort((a, b) => a.ordem - b.ordem || a.prof - b.prof);

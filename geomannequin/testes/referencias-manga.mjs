@@ -88,3 +88,16 @@ for(const mao of ["esquerda","direita"]){
   const v=createWorld();v.loadScene(w.sceneState());
   assert.deepEqual(v.cena.objetos()[0].medidasDaBase().contatosAoCriar,contatos);
 }
+/* M6: o contato previsto da mão com a travessa não é colisão; outro corpo na cadeira continua sendo */
+{
+  const w=createWorld(),it=w.SCN.list[0];
+  w.cena.objetoNaMao("cadeira",{mao:"direita"});
+  assert.equal(w.colisoesDaCena().filter(c=>c.a===0&&c.objeto===0).length,0,"a mão que segura não deve colidir com o próprio objeto");
+  it.params.elbowR=70;w.sceneState();
+  assert.equal(w.colisoesDaCena().filter(c=>c.a===0&&c.objeto===0).length,0);
+  const o=w.SCN.objetos[0],{partesDoObjeto,restGround:rg}=await import("../src/engine/index.js");
+  const c=partesDoObjeto(o,rg(it.params))[0].c;
+  w.cena.adicionar({x:c[0],z:c[2]});
+  assert.ok(w.colisoesDaCena().some(x=>x.a===1&&x.objeto===0),"um segundo manequim dentro da cadeira tem de ser colisão");
+  console.log("Referências PASS: pegada filtrada, colisões externas preservadas.");
+}

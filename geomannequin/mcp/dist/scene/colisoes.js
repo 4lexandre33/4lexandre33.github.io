@@ -26,6 +26,16 @@ function capsObjetos(it) { return SCN.objetos.filter(o => !it || it.apoioEm !== 
 function capsOutros(it) { return visiveis().filter(o => o !== it && !contatoPermitido(it, o)).map(o => capsulas(pMundo(o))).concat(capsObjetos(it)); }
 function penet(it, params, outros) { const A = capsulas(pMundo(it, params)); let s = 0; for (const B of outros) for (const c of contatosEntre(A, B)) s += c.prof; return s; }
 
+/* partes de mão do manequim que seguram este objeto (vínculo rígido V3 ou pegada antiga) */
+function maosSegurando(it, o) {
+  const out = [], nome = l => (l === 1 || l === "esquerda" || l === "L") ? "maoE" : "maoD";
+  for (const g of [o.gripV3, o.grip]) {
+    if (!g || (g.mannequinId !== undefined && g.mannequinId !== it.id)) continue;
+    if (g.side !== undefined) out.push(nome(g.side));
+    if (g.secundaria && g.secundaria.side !== undefined) out.push(nome(g.secundaria.side));
+  }
+  return out;
+}
 /* ===== detectar ===== */
 function colisoesDaCena() {
   const vis = visiveis(), C = vis.map(it => capsulas(pMundo(it))), out = [];
@@ -43,7 +53,10 @@ function colisoesDaCena() {
   /* manequim × objeto (banco, parede…) */
   vis.forEach((it, i) => SCN.objetos.forEach((o, k) => {
     if (it.apoioEm === o.id) return;
-    const cs = contatosEntre(C[i], capsulasObjeto(o, chao())); if (!cs.length) return;
+    /* a pegada é um contato previsto: a mão que segura (principal ou secundária) não colide com o próprio objeto;
+       o resto do corpo continua valendo (encosto na coxa, assento no peito…) */
+    const maos = maosSegurando(it, o);
+    const cs = contatosEntre(C[i], capsulasObjeto(o, chao())).filter(c => !maos.includes(c.pa)); if (!cs.length) return;
     const a = SCN.list.indexOf(it), nomeO = o.nome || TIPOS_OBJETO[o.tipo].nome;
     out.push({ a, b: -1, objeto: k, prof: cs[0].prof, contatos: cs, texto: PARTES[cs[0].pa] + " de " + it.name + " entra em " + nomeO + " (" + Math.max(1, Math.round(cs[0].prof * CM)) + " cm)" + (cs.length > 1 ? " · mais " + (cs.length - 1) + " ponto" + (cs.length > 2 ? "s" : "") : "") });
   }));
@@ -323,11 +336,20 @@ function ajustarComposicao(k) {
   const it = SCN.list[c.a], p0 = sceneList()[0].p, outros = capsOutros(it), x0 = it.params.wx, z0 = it.params.wz;
   const chave = x => x.tipo + x.a + "-" + x.b;
   guardarDesfazer([it]);
+  /* aceita o menor passo que tira esta tangência sem criar outras:
+   * o total de avisos tem de cair (antes, empurrar o manequim podia
+   * encostá-lo em outra figura e a cena continuava com o mesmo número) */
+  const n0 = (COL.ultimaComp || []).length; let reserva = null;
   for (let t = 0.3; t <= 4; t += 0.3) for (let a = 0; a < 360; a += 30) {
     it.params.wx = x0 + Math.cos(a * Math.PI / 180) * t; it.params.wz = z0 + Math.sin(a * Math.PI / 180) * t;
     if (penet(it, it.params, outros) > 0) continue;
-    if (!composicaoDaCena().some(x => chave(x) === chave(c))) return [it.name + ": afastado " + Math.round(t * CM) + " cm para melhorar a composição"];
+    const novo = composicaoDaCena();
+    if (novo.some(x => chave(x) === chave(c))) continue;
+    if (novo.length < n0) return [it.name + ": afastado " + Math.round(t * CM) + " cm para melhorar a composição"];
+    if (!reserva) reserva = [it.params.wx, it.params.wz, t];
   }
+  if (reserva) { it.params.wx = reserva[0]; it.params.wz = reserva[1]; composicaoDaCena();
+    return [it.name + ": afastado " + Math.round(reserva[2] * CM) + " cm; esta tangência saiu, mas surgiu outra — confira a composição"]; }
   it.params.wx = x0; it.params.wz = z0; composicaoDaCena();
   return ["Não achei um passo pequeno que resolva; tente girar ou mudar a pose."];
 }
