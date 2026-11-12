@@ -4,7 +4,7 @@ import { $ } from "../scene/ambiente.js";
 import { P, WORLDK, SCN } from "../scene/modelo.js";
 import {COL} from "../scene/colisoes.js";
 import {CONTATO_V2,limitarPropostaV2} from "../scene/contato-v2.js";
-import { FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES } from "../scene/poses.js";
+import { FACES, GUARD, POSTURES, doBodyPose, guardArms , EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes } from "../scene/poses.js";
 import { aplicarBiotipo, transitarSexo } from "../scene/biotipos.js";
 import { fmt } from "./exportar.js";
 import { render, setQuick, setSettle, settle } from "./palco.js";
@@ -85,9 +85,23 @@ export function iniciarControles(){
   document.querySelectorAll("[data-bpose]").forEach(b=>{
     b.addEventListener("click",()=>{doBodyPose(b.dataset.bpose);syncControls();render()});
   });
+  /* botões para toda a biblioteca de expressões (os que não estão no HTML entram aqui) */
+  {const g=document.querySelector('[aria-label="Expressões"]');
+   if(g)Object.keys(EXPRESSOES).forEach(k=>{if(!g.querySelector('[data-expr="'+k+'"]')){const b=document.createElement("button");b.type="button";b.dataset.expr=k;b.textContent=NOMES_EXPRESSOES[k]||k;g.appendChild(b)}});}
   document.querySelectorAll("[data-expr]").forEach(b=>{
     b.addEventListener("click",()=>{Object.assign(P,EXPRESSOES[b.dataset.expr]);syncControls();render()});
   });
+  /* misturar duas emoções com peso e intensidade */
+  {const A=$("mixA"),B=$("mixB"),peso=$("mixPeso"),int=$("mixInt");
+   if(A&&B&&peso&&int){
+     Object.keys(EXPRESSOES).forEach(k=>{A.add(new Option(NOMES_EXPRESSOES[k]||k,k));B.add(new Option(NOMES_EXPRESSOES[k]||k,k))});
+     A.value="raiva";B.value="tristeza";
+     const rot=()=>{$("mixPesoOut").textContent=peso.value+"% A + "+(100-peso.value)+"% B";$("mixIntOut").textContent=int.value+"%"};
+     const aplicar=()=>{const pa=+peso.value/100,w={};w[A.value]=(w[A.value]||0)+pa;w[B.value]=(w[B.value]||0)+1-pa;
+       if(!(pa>0||1-pa>0))return;Object.assign(P,misturarExpressoes(w,+int.value/100));syncControls();render()};
+     peso.addEventListener("input",()=>{rot();aplicar()});int.addEventListener("input",()=>{rot();aplicar()});
+     A.addEventListener("change",aplicar);B.addEventListener("change",aplicar);$("mixAplicar").addEventListener("click",aplicar);rot();
+   }}
   document.querySelectorAll("[data-hand]").forEach(b=>{
     b.addEventListener("click",()=>{P.handCurlL=P.handCurlR=parseFloat(b.dataset.hand);syncControls();render()});
   });

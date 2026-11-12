@@ -131,7 +131,8 @@ const SL=[
   {k:"blush",g:"slFace",label:"Rosto corado (vergonha)",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"tears",g:"slFace",label:"Lágrimas (choro)",min:0,max:1,step:0.01,u:"%",pct:true},
   /* unidades de ação do rosto, por lado (somam por cima dos controles gerais acima) */
-  ...[...ESTADO_ROSTO,...AU].map(([k,label,min,max])=>({k,g:"slFace",label,min,max,step:0.01,u:"%",pct:true})),
+  ...ESTADO_ROSTO.map(([k,label,min,max])=>({k,g:"slFace",label,min,max,step:0.01,u:"%",pct:true})),
+  ...AU.map(([k,label,min,max])=>({k,g:"slFaceAU",label,min,max,step:0.01,u:"%",pct:true})),
   {k:"fThMcpL",g:"slFingers",label:"Mão esquerda, polegar: base (MCF) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fThIpL",g:"slFingers",label:"Mão esquerda, polegar: ponta (IF) estender − / dobrar +",min:-1,max:1,step:0.01,u:"%",pct:true},
   {k:"fThAbdL",g:"slFingers",label:"Mão esquerda, polegar: base afastar da palma + / encostar −",min:-1,max:1,step:0.01,u:"%",pct:true},

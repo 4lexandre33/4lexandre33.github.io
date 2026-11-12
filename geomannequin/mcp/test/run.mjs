@@ -38,6 +38,10 @@ async function suite(client, tag) {
   check(!r.isError && /ajustado/.test(text(r)), "limite anatômico gera aviso");
   r = await call("editar_manequim", { manequim: "Ana", pose: { joelhoXYZ: 3 } });
   check(r.isError && /desconhecido/.test(text(r)), "parâmetro errado → erro em português");
+  r = await call("editar_manequim", { manequim: "Ana", expressao: "60% raiva + 40% tristeza", intensidade: 1.2, rosto: { palpebraEsq: 1, cantoBocaDir: 0.5 } });
+  check(!r.isError, "expressão misturada com intensidade e unidades de ação por lado" + (r.isError ? ": " + text(r) : ""));
+  r = await call("editar_manequim", { manequim: "Ana", expressao: "xyz" });
+  check(r.isError && /não existe|Expressão/.test(text(r)), "expressão desconhecida → erro em português");
   r = await call("editar_manequim", { manequim: "0", cor: cores[1] });
   check(r.isError && /já é usada/.test(text(r)), "cor repetida recusada");
   r = await call("copiar_manequim", { manequim: "Leo", x: 8, z: -30 });

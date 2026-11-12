@@ -33,7 +33,8 @@ export function registerAnatomyTools(server,W){
   nome:z.string().max(100).optional(),lado:z.enum(["direita","esquerda","ambas"]).optional(),
   x:N.optional(),y:N.optional(),abrir:N.optional(),sorriso:N.optional(),
   dobrar:N.optional(),frente:N.optional(),girar:N.optional(),desvio:N.optional(),
-  base:N.optional(),ponta:N.optional(),afastar:N.optional(),opor:N.optional()
+  base:N.optional(),ponta:N.optional(),afastar:N.optional(),opor:N.optional(),
+  intensidade:N.optional()
  },(w,a)=>{
   const it=pick(w,a.manequim),m=w.apiFor(it);
   if(a.acao==="orientacao")return m.orientacao(a.referencia??"tronco");
@@ -46,7 +47,7 @@ export function registerAnatomyTools(server,W){
   }
   return rollback(w,()=>{
    if(a.acao==="modelo_cabeca")m.cabeca(required(a.modelo,"modelo"));
-   else if(a.acao==="expressao")m.expressao(required(a.nome,"expressao"));
+   else if(a.acao==="expressao")m.expressao(required(a.nome,"expressao"),a.intensidade);
    else if(a.acao==="olhos")m.olhos(required(a.x,"x"),a.y??0);
    else if(a.acao==="boca")m.boca(required(a.abrir,"abrir"),a.sorriso??0);
    else if(a.acao==="gesto")m.gesto(a.lado??"ambas",required(a.nome,"gesto"));

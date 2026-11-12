@@ -321,7 +321,17 @@
         <button type="button" data-expr="grito">Grito</button>
         <button type="button" data-expr="sono">Sono</button>
       </div>
+      <details class="fino" id="exprMistura"><summary>Misturar emoções</summary>
+        <div class="mistura">
+          <label>Emoção A <select id="mixA" aria-label="Primeira emoção"></select></label>
+          <label>Emoção B <select id="mixB" aria-label="Segunda emoção"></select></label>
+          <label>Peso <input id="mixPeso" type="range" min="0" max="100" step="5" value="60" aria-label="Quanto da emoção A"> <output id="mixPesoOut">60% A + 40% B</output></label>
+          <label>Intensidade <input id="mixInt" type="range" min="0" max="150" step="5" value="100" aria-label="Intensidade da mistura"> <output id="mixIntOut">100%</output></label>
+          <button type="button" id="mixAplicar">Aplicar mistura</button>
+        </div>
+      </details>
       <div id="slFace"></div>
+      <details class="fino"><summary>Rosto: cada lado (piscar um olho, desprezo, nojo…)</summary><div id="slFaceAU"></div></details>
       <h2>Vista (câmera)</h2>
       <div class="orb" id="orbPainel">
         <label class="orb-pivo">Girar em volta de <select id="orbPivo" aria-label="Pivô da órbita"></select></label>

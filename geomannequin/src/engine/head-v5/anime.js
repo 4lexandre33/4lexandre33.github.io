@@ -172,7 +172,8 @@ function bocaAnime(p, sh, ringAt) {
   const denteInf = x => baixo(x) + Math.min(0.03, altura * 0.16) * c(x);
   const linguaSup = x => baixo(x) + altura * (0.18 + 0.2 * c(x)) * c(x);
   /* boca fechada: a linha dos lábios (o OpenPose usa a mesma) */
-  const linha = x => my + 0.03 * smX(x) * X * Math.pow(Math.abs(x / largura), 2) - 0.008 * smM * X * (1 - Math.pow(x / largura, 2));
+  /* o que um canto tem a mais que o outro sobe/desce em rampa (sorriso de um lado só fica legível na boca pequena) */
+  const linha = x => my + 0.03 * smX(x) * X * Math.pow(Math.abs(x / largura), 2) - 0.008 * smM * X * (1 - Math.pow(x / largura, 2)) + 0.028 * X * (smX(x) - smM) * Math.abs(x / largura);
   const cerrado = Q.clench > 0.15 && a0 < 0.3;
   return { aberto: a, largura, altura, cima, baixo, denteSup, denteInf, linguaSup, linha, c, my, ss, br, cerrado, Q };
 }

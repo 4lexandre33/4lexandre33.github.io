@@ -66,10 +66,60 @@ const EXPRESSOES={
   /* exageradas (a V5 anime as leva ao máximo; nas outras cabeças viram versões contidas) */
   riso:{jawOpen:0.6,jawSide:0,smile:1,eyeLid:0.95,browUp:0.3,browIn:-0.2,blush:0.4,tears:0},
   choro:{jawOpen:0.45,jawSide:0,smile:-0.9,eyeLid:0.4,browUp:0.2,browIn:-1,blush:0.3,tears:1},
-  vergonha:{jawOpen:0,jawSide:0.15,smile:0.25,eyeLid:0.3,browUp:0.15,browIn:-0.45,blush:1,tears:0,eyeYaw:0.55,eyePitch:-0.35}
+  vergonha:{jawOpen:0,jawSide:0.15,smile:0.25,eyeLid:0.3,browUp:0.15,browIn:-0.45,blush:1,tears:0,eyeYaw:0.55,eyePitch:-0.35},
+  /* biblioteca nova: montadas com as unidades de ação de cada lado (o que não aparece fica em 0) */
+  nojo:{smile:-0.3,browIn:0.5,browUp:-0.2,upperLipL:0.85,upperLipR:0.6,noseWrinkle:0.9,lidLoL:0.5,lidLoR:0.5,cheekL:0.3,cheekR:0.2},
+  desprezo:{mouthCornerL:0.9,mouthCornerR:-0.2,browOuterL:0.5,browInnerR:-0.2,eyeLid:0.3,lidLoR:0.3,eyeYaw:0.15},
+  determinacao:{browIn:0.6,browUp:-0.3,eyeLid:0.12,lidLoL:0.45,lidLoR:0.45,lipPress:0.7,smile:-0.1},
+  malicia:{smile:0.45,mouthCornerL:0.45,mouthCornerR:-0.15,browIn:0.3,browOuterR:0.45,eyeLid:0.35,lidLoL:0.45,lidLoR:0.4,eyeYaw:-0.3},
+  confusao:{browIn:0.15,browInnerL:0.6,browOuterL:0.45,browInnerR:-0.35,mouthCornerR:-0.35,jawSide:0.25,smile:-0.1,eyePitch:0.2},
+  choque:{jawOpen:0.85,browUp:1,browIn:-0.15,smile:-0.3},
+  tedio:{eyeLid:0.55,browUp:-0.15,smile:-0.15,lipPress:0.25,eyePitch:-0.2,eyeYaw:0.35},
+  dor:{browIn:0.7,browInnerL:0.5,browInnerR:0.5,eyeLid:0.5,lidLoL:0.7,lidLoR:0.7,cheekL:0.4,cheekR:0.4,teethClench:0.8,noseWrinkle:0.5,upperLipL:0.3,upperLipR:0.3,smile:-0.4},
+  cansaco:{eyeLid:0.5,eyeBags:1,browUp:-0.1,browIn:-0.25,smile:-0.2,jawOpen:0.06},
+  admiracao:{browUp:0.6,browIn:-0.2,jawOpen:0.22,smile:0.35,blush:0.3},
+  culpa:{browIn:-0.6,browUp:0.1,eyeLid:0.35,eyePitch:-0.6,eyeYaw:0.3,smile:-0.4,lipPress:0.4,blush:0.2},
+  orgulho:{smile:0.45,mouthCornerL:0.15,eyeLid:0.3,browUp:0.1,lidLoL:0.2,lidLoR:0.2,eyePitch:-0.1},
+  pensativo:{browIn:0.2,browInnerL:0.35,eyeYaw:0.5,eyePitch:0.5,pout:0.35,mouthCornerR:-0.2},
+  alivio:{smile:0.4,eyeLid:0.45,browIn:-0.3,browUp:0.15,jawOpen:0.08}
 };
+/* nomes para a interface e a ajuda */
+const NOMES_EXPRESSOES={neutra:"Neutra",alegria:"Alegria",riso:"Riso",surpresa:"Surpresa",raiva:"Raiva",tristeza:"Tristeza",choro:"Choro",medo:"Medo",grito:"Grito",
+  vergonha:"Vergonha",sono:"Sono",desconfianca:"Desconfiança",piscando:"Piscando",nojo:"Nojo",desprezo:"Desprezo",determinacao:"Determinação",malicia:"Malícia",
+  confusao:"Confusão",choque:"Choque",tedio:"Tédio",dor:"Dor",cansaco:"Cansaço",admiracao:"Admiração",culpa:"Culpa",orgulho:"Orgulho",pensativo:"Pensativo",alivio:"Alívio"};
 /* toda expressão zera corar, lágrimas e as unidades de ação que não usa, para não herdar da anterior */
-Object.values(EXPRESSOES).forEach(e=>{if(e.blush===undefined)e.blush=0;if(e.tears===undefined)e.tears=0;for(const k of [...AU_KEYS,...ESTADO_KEYS])if(e[k]===undefined)e[k]=0});
+const BASE_ROSTO=["jawOpen","jawSide","smile","eyeLid","browUp","browIn","blush","tears",...AU_KEYS,...ESTADO_KEYS];
+Object.values(EXPRESSOES).forEach(e=>{for(const k of BASE_ROSTO)if(e[k]===undefined)e[k]=0});
+/* nome de expressão sem acento e em minúsculas */
+const chaveExpressao=nome=>String(nome||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+/* mistura: pesos {raiva: 0.6, tristeza: 0.4} (ou o texto "60% raiva + 40% tristeza"), intensidade 0..1.5.
+   Cada parâmetro é a média ponderada das expressões (o que uma não usa conta como 0) vezes a intensidade;
+   o olhar (eyeYaw/eyePitch) só entra se alguma das expressões o define. */
+const FAIXA_ROSTO={jawOpen:[0,1],eyeLid:[0,1],blush:[0,1],tears:[0,1]};
+function lerPesos(pesos){
+  if(typeof pesos==="string"){
+    const o={},partes=pesos.split(/[+,;]/).map(t=>t.trim()).filter(Boolean);
+    for(const t of partes){const m=/^(?:(\d+(?:[.,]\d+)?)\s*%?\s*)?([^\d%]+?)(?:\s*(\d+(?:[.,]\d+)?)\s*%)?$/.exec(t);
+      if(!m)throw new Error("Mistura: não entendi “"+t+"”. Ex.: \"60% raiva + 40% tristeza\".");
+      const v=parseFloat((m[1]||m[3]||"100").replace(",","."));o[m[2].trim()]=v}
+    pesos=o;
+  }
+  if(!pesos||typeof pesos!=="object")throw new Error("Mistura: passe {raiva: 0.6, tristeza: 0.4} ou \"60% raiva + 40% tristeza\".");
+  const out={};
+  for(const [n,v] of Object.entries(pesos)){const k=chaveExpressao(n);if(!EXPRESSOES[k])throw new Error("Expressão “"+n+"” não existe. Use: "+Object.keys(EXPRESSOES).join(", ")+".");
+    if(typeof v!=="number"||!isFinite(v)||v<0)throw new Error("Peso de “"+n+"” precisa ser um número ≥ 0.");out[k]=(out[k]||0)+v}
+  return out;
+}
+function misturarExpressoes(pesos,intensidade=1){
+  const P0=lerPesos(pesos),tot=Object.values(P0).reduce((a,b)=>a+b,0);
+  if(!(tot>0))throw new Error("Mistura: algum peso precisa ser maior que 0.");
+  const I=Math.max(0,Math.min(1.5,Number.isFinite(intensidade)?intensidade:1)),out={};
+  const chaves=new Set(BASE_ROSTO);Object.keys(P0).forEach(n=>Object.keys(EXPRESSOES[n]).forEach(k=>chaves.add(k)));
+  for(const k of chaves){let v=0;for(const [n,w] of Object.entries(P0))v+=(EXPRESSOES[n][k]||0)*w/tot;
+    const [a,b]=FAIXA_ROSTO[k]||(/^(lidUp|lidLo|cheek|upperLip|noseWrinkle|lipPress|pout|teethClench|eyeBags)/.test(k)?[0,1]:[-1,1]);
+    out[k]=Math.round(Math.max(a,Math.min(b,v*I))*1000)/1000}
+  return out;
+}
 const POSE0={spineFlex:0,spineSide:0,spineTwist:0,pelvisTilt:0,pelvisSide:0,pelvisTwist:0,hipFlexL:0,hipFlexR:0,hipAbdL:3,hipAbdR:3,hipRotL:0,hipRotR:0,kneeFlexL:0,kneeFlexR:0,ankleFlexL:0,ankleFlexR:0,ankleTiltL:0,ankleTiltR:0,toesL:0,toesR:0,
   armAbdL:12,armAbdR:12,armFlexL:0,armFlexR:0,armRotL:0,armRotR:0,elbowL:0,elbowR:0,pronL:0,pronR:0,wristL:0,wristR:0,handCurlL:0.3,handCurlR:0.3,
   headYaw:0,headPitch:0,headRoll:0,shElevL:0,shElevR:0,shProtL:0,shProtR:0,
@@ -194,4 +244,4 @@ function doBodyPoseBase(k){
     }
 }
 
-export { EXPRESSOES, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };
+export { EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes, chaveExpressao, limitesAcoplados, GUARD, guardArms, FACES, POSTURES, BODIES, POSE0, BPOSES, doBodyPose, POSES_CORPO, POSE_ALIAS, nomePose, todasPoses };

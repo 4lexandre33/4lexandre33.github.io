@@ -299,7 +299,9 @@ export function iniciarAjuda(){
   Rig fino: m.articulacao("indicador esquerdo", {base: 0.8, ponta: 0.5, afastar: -0.3}) · ("polegar direito", {base, ponta, afastar, opor}) — de −1 a 1
     ("dedão esquerdo", {dobrar: 30}) · ("canela direita", {girar: 20}) · ("pé esquerdo", {aduzir: 10}) · ("escápula esquerda", {girar: 0.5, tensao: 1})
     ("mandíbula", {abrir: 0.5, lado: 0.2}) · ("olhos", {lado: 0.6, cima: -0.2, fechar: 0.3}) · ("sobrancelhas", {subir: 0.5, franzir: 0.4})
-  m.expressao("neutra" | "alegria" | "riso" | "surpresa" | "raiva" | "tristeza" | "choro" | "medo" | "grito" | "vergonha" | "sono" | "desconfianca" | "piscando") · m.olhos(x, y) · m.boca(abrir, sorriso)
+  m.expressao(nome, intensidade) — neutra, alegria, riso, surpresa, raiva, tristeza, choro, medo, grito, vergonha, sono, desconfianca, piscando,
+    nojo, desprezo, determinacao, malicia, confusao, choque, tedio, dor, cansaco, admiracao, culpa, orgulho, pensativo, alivio (intensidade 0 a 1.5)
+  Misturar: m.expressao({raiva: 0.6, tristeza: 0.4}, 1) ou m.expressao("60% raiva + 40% tristeza") · m.olhos(x, y) · m.boca(abrir, sorriso)
   m.rosto({...}) — unidades de ação do rosto, cada lado separado (somam por cima da expressão): sobrancelhaDentroEsq/Dir e sobrancelhaForaEsq/Dir (−1 a 1),
     palpebraEsq/Dir (piscar um olho), palpebraBaixoEsq/Dir (apertar), bochechaEsq/Dir, narizFranzir, labioCimaEsq/Dir (nojo), cantoBocaEsq/Dir (−1 a 1, desprezo),
     labiosApertar, beicinho, dentesCerrados, olheiras (0 a 1) · m.piscar("esq" | "dir") · funcionam em m.pose({...}) e no código da pose; "espelhar" troca o lado

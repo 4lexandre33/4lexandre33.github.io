@@ -26,7 +26,7 @@ const num = (d) => z.number().describe(d);
 /* Esquemas sem uniões e sem objetos livres: o Gemini (e alguns clientes) rejeitam esses formatos.
    Cada parâmetro de pose/corpo vira uma propriedade explícita, com a faixa anatômica na descrição. */
 const Ref = z.string().optional().describe("Manequim: nome (ex.: \"Ana\") ou índice (\"0\", \"1\"…). Vazio = o manequim ativo.");
-let Pose, Medidas, Camadas, TIPOS, POSES_RAPIDAS, GESTOS_E, OBJ_E;
+let Pose, Medidas, Rosto, Camadas, TIPOS, POSES_RAPIDAS, GESTOS_E, OBJ_E;
 const Dir = z.string().describe("Direção: \"+x\", \"-x\", \"+z\", \"-z\", \"câmera\", \"direita\", \"esquerda\", \"frente\", \"trás\", graus (\"90\") ou o nome de outro manequim/objeto.");
 const dirV = d => /^-?\d+(\.\d+)?$/.test(String(d)) ? +d : d;
 function buildSchemas(w) {
@@ -35,6 +35,8 @@ function buildSchemas(w) {
   const pose = {}, med = {};
   for (const [a, k] of Object.entries(w.ALIAS)) (w.POSEKEYS.has(k) ? pose : med)[a] = field(a, k);
   Pose = z.object(pose).passthrough().describe("Ângulos da pose (só os que mudam). Ex.: {joelhoEsq: 60, cotoveloDir: 90, colunaFrente: 20}. Valores fora do limite anatômico são ajustados e avisados.");
+  const rosto = {}; for (const [a, k] of Object.entries(w.ALIAS)) if (/^(browInner|browOuter|lidUp|lidLo|cheek|noseWrinkle|upperLip|mouthCorner|lipPress|pout|teethClench|eyeBags)/.test(k)) rosto[a] = field(a, k);
+  Rosto = z.object(rosto).describe("Unidades de ação do rosto, cada lado separado (somam por cima da expressão). Ex.: {palpebraEsq: 1} pisca um olho; {cantoBocaEsq: 0.7, sobrancelhaForaEsq: 0.5} = desprezo; {labioCimaEsq: 0.8, narizFranzir: 0.8} = nojo.");
   Medidas = z.object(med).passthrough().describe("Medidas do corpo (só as que mudam). Ex.: {musculo: 0.8, feminino: 0.9}.");
   const cam = {}; for (const l of w.LAY) cam[l.k] = z.boolean().optional().describe(l.label);
   Camadas = z.object(cam).describe("Liga (true) ou desliga (false) camadas de desenho.");
@@ -68,7 +70,7 @@ function docRig(w) {
     "- Pé: \"dedão esquerdo\" {dobrar: graus, − levanta} · \"pé direito\" {aduzir: graus} · \"canela esquerda\" {girar: graus (só com o joelho dobrado)}\n" +
     "- Escápula: \"escápula esquerda\" {subir, avancar, girar (−1 a 1), tensao (−1 a 1)}\n" +
     "- Rosto: \"mandíbula\" {abrir 0–1, lado −1 a 1} · \"boca\" {abrir, sorrir −1 a 1} · \"olhos\" {lado, cima, fechar 0–1} · \"sobrancelhas\" {subir, franzir}\n" +
-    "- Atalhos: m.expressao(nome) · m.olhos(x, y) · m.boca(abrir, sorriso) · m.gesto(lado, nome) · m.validarPose()\n" +
+    "- Atalhos: m.expressao(nome, intensidade) ou m.expressao(\"60% raiva + 40% tristeza\") · m.rosto({palpebraEsq: 1, cantoBocaEsq: 0.6}) · m.olhos(x, y) · m.boca(abrir, sorriso) · m.gesto(lado, nome) · m.validarPose()\n" +
     "EXPRESSÕES: " + Object.keys(w.EXPRESSOES).join(", ") + "\n" +
     "GESTOS DA MÃO: " + Object.keys(w.GESTOS).join(", ") + "\n" +
     "LIMITES ACOPLADOS: coxa alta só com o joelho dobrado (isquiotibiais); braço acima de 120° pela lateral gira para fora; dedo dobrado na base quase não abre; dedão + dedos do pé até ±60°; canela gira até 5° + 0,45 × flexão do joelho; mandíbula aberta desvia no máximo metade.\n" +
@@ -300,7 +302,9 @@ export function registerAll(server, getWorld, opts = {}) {
       flexibilidade: z.enum(["normal", "atleta", "ginasta", "contorcionista"]).optional().describe("Perfil de amplitude das articulações. Ponte, espacate, arabesque e parada com abertura pedem \"ginasta\"."),
       apoiar: z.string().optional().describe("Vários pontos no chão ao mesmo tempo: \"maos pes\", \"maos\", \"maos joelhos\", \"mao esquerda pe direito\" (ponte, parada de mão, prancha)."),
       copiarPoseDe: z.string().optional().describe("Copia a pose de outro manequim (nome)."),
-      expressao: z.enum(["neutra", "alegria", "surpresa", "raiva", "tristeza", "medo", "grito", "sono", "desconfianca", "piscando"]).optional().describe("Expressão do rosto (mandíbula, sorriso, pálpebras, sobrancelhas)."),
+      expressao: z.string().optional().describe("Expressão do rosto: neutra, alegria, riso, surpresa, raiva, tristeza, choro, medo, grito, vergonha, sono, desconfianca, piscando, nojo, desprezo, determinacao, malicia, confusao, choque, tedio, dor, cansaco, admiracao, culpa, orgulho, pensativo, alivio — ou uma mistura em texto: \"60% raiva + 40% tristeza\"."),
+      intensidade: z.number().optional().describe("Intensidade da expressão ou da mistura: 0 a 1.5 (1 = normal; acima de 1 exagera)."),
+      rosto: Rosto.optional(),
       olhos: z.object({ x: z.number().describe("−1 a 1; + = para a esquerda do manequim."), y: z.number().optional().describe("−1 a 1; + = para cima.") }).optional().describe("Olhar para um lado sem mexer a cabeça."),
       boca: z.object({ abrir: z.number().describe("0 a 1."), sorriso: z.number().optional().describe("−1 (triste) a 1.") }).optional(),
       validar: z.boolean().optional().describe("true = devolve se alguma parte do corpo atravessa outra e quais limites acoplados corrigiriam a pose.")
@@ -340,7 +344,8 @@ export function registerAll(server, getWorld, opts = {}) {
       if (a.olhar) m.olhar(a.olhar);
       if (a.espelhar) m.espelhar();
       if (a.apoiar) m.apoiar(a.apoiar);
-      if (a.expressao) m.expressao(a.expressao);
+      if (a.expressao) m.expressao(a.expressao, a.intensidade);
+      if (a.rosto && Object.keys(a.rosto).length) m.rosto(a.rosto);
       if (a.olhos) m.olhos(a.olhos.x, a.olhos.y);
       if (a.boca) m.boca(a.boca.abrir, a.boca.sorriso);
     });

@@ -4,6 +4,7 @@
 import { createWorld } from "../mcp/lib/core.mjs";
 import { renderSvg } from "../mcp/lib/scene.mjs";
 import { DEF, shape, earPointV3, ringAt, svgVistaPose, ossosDoCorpo, pontosDoCorpo, suavizarD, normalizarModeloCabeca, AU, AU_KEYS, bocaAnime, bocaForma } from "../src/engine/index.js";
+import { EXPRESSOES, NOMES_EXPRESSOES, misturarExpressoes } from "../src/scene/poses.js";
 
 let falhou = false;
 const ok = (c, t) => { if (!c) falhou = true; console.log((c ? "  ok  " : "  FALHOU  ") + t); };
@@ -131,6 +132,21 @@ const svgDe = w => { const r = renderSvg(w, {}); return typeof r === "string" ? 
     const yBrow = s => { const m0 = grupo(s, "feicoes").match(/<path d="([^"]*)" style="fill:[^"]*;stroke:none"\/>/); if (!m0) return 0; const ys = m0[1].match(/-?\d+\.?\d*/g).map(Number).filter((_, i) => i % 2); return ys.reduce((x, y) => x + y, 0) / ys.length; };
     ok(yBrow(su) < yBrow(n) - 2 && yBrow(ra) > yBrow(n) + 2, "sobrancelhas: mais altas na surpresa e mais baixas na raiva (altura média)");
     ok(DEF.eyeBags === 0, "olheiras começam em 0");
+  }
+  /* biblioteca de emoções e mistura (A6) */
+  { const nomes = Object.keys(EXPRESSOES);
+    ok(nomes.length >= 27 && ["nojo", "desprezo", "determinacao", "malicia", "confusao", "choque", "tedio", "dor", "cansaco", "admiracao", "culpa", "orgulho"].every(k => EXPRESSOES[k]) && nomes.every(k => NOMES_EXPRESSOES[k]), nomes.length + " expressões, com nome na interface");
+    ok(nomes.every(k => ["jawOpen", "smile", "eyeLid", "browUp", "browIn", "blush", "tears", ...AU_KEYS, "eyeBags"].every(q => typeof EXPRESSOES[k][q] === "number")), "toda expressão zera o que não usa (não herda da anterior)");
+    const mx = misturarExpressoes({ alegria: 1, tristeza: 1 }), tx = misturarExpressoes("60% raiva + 40% tristeza"), ox = misturarExpressoes({ raiva: 0.6, tristeza: 0.4 });
+    ok(Math.abs(mx.smile - (EXPRESSOES.alegria.smile + EXPRESSOES.tristeza.smile) / 2) < 1e-3, "mistura 50/50 é a média (sorriso " + mx.smile + ")");
+    ok(JSON.stringify(tx) === JSON.stringify(ox), "mistura em texto (\"60% raiva + 40% tristeza\") = em objeto");
+    const zero = misturarExpressoes({ raiva: 1 }, 0), forte = misturarExpressoes({ grito: 1 }, 1.5);
+    ok(Object.values(zero).every(v => v === 0) && forte.jawOpen === 1 && forte.browIn <= 1, "intensidade 0 = neutra; 1.5 exagera sem passar dos limites");
+    const wi = createWorld(); wi.cena.ativo.expressao("raiva", 0.5); ok(Math.abs(wi.SCN.list[0].params.browIn - EXPRESSOES.raiva.browIn / 2) < 1e-3, "m.expressao(\"raiva\", 0.5) = metade");
+    const wm = createWorld(); wm.cena.ativo.expressao({ nojo: 0.5, alegria: 0.5 }); ok(wm.SCN.list[0].params.noseWrinkle > 0.3 && wm.SCN.list[0].params.smile > 0.2, "m.expressao({nojo: 0.5, alegria: 0.5}) mistura");
+    let erroM = ""; try { misturarExpressoes({ xyz: 1 }); } catch (e) { erroM = e.message; } ok(/não existe/.test(erroM), "expressão desconhecida na mistura → erro em português");
+    let nanE = 0; for (const ex of nomes) for (const az of [0, 40]) { const w2 = createWorld(); w2.cena.ativo.cabeca("v5"); w2.cena.ativo.expressao(ex); w2.camera.girar(az, 0); if (svgDe(w2).includes("NaN")) nanE++; }
+    ok(nanE === 0, "V5: nenhum NaN nas " + nomes.length + " expressões × 2 ângulos");
   }
   const pv3 = pontosDoCorpo({ ...DEF, jawOpen: 0.8, smile: 0.6 }).rosto, pv5 = pontosDoCorpo({ ...DEF, headModel: "v5_anime", jawOpen: 0.8, smile: 0.6 }).rosto;
   ok(pv5.length === 70 && pv5[54][0] - pv5[48][0] > (pv3[54][0] - pv3[48][0]) * 1.2 && pv5[39][0] - pv5[36][0] > (pv3[39][0] - pv3[36][0]) * 1.2, "OpenPose do rosto acompanha olhos e boca grandes da V5");
