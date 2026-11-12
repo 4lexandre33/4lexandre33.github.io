@@ -47,6 +47,12 @@ console.log("3. girar no lugar");
   ok(r.ok && a1 && /girar360D/.test(a1.anim.nome) && Math.abs(Math.abs(k2.wRot) - 90) < 3, "DSL: gira 360 passos direita · vira-para Mira passos (fica a " + k2.wRot + "°)");
 }
 
+{ const w = createWorld(), r = w.compilarName("elenco\n  Kai relevante\n  Mira relevante\nquadro\n  Kai em (0,0) gira 360 passos direita\n  Kai gira 360 pivo\n  Mira em (0,-1.5)\nanimacao \"olhaTras\" duracao 1s\n  chave 0s\n  chave 0.5s olha Mira so-cabeca\n");
+  const as = r.quadros[0].animacoes, v = w.videoDoName(r, { fps: 10 });
+  ok(as.length === 2 && Math.abs(as[1].inicio - as[0].anim.duracao) < 1e-6 && v.duracao > as[0].anim.duracao + as[1].anim.duracao, "duas animações da mesma pessoa no quadro tocam em sequência (" + v.duracao.toFixed(1) + " s)");
+  const r2 = createWorld().compilarName("elenco\n  Kai relevante\n  Mira relevante\nanimacao \"olhaTras\" duracao 1s\n  chave 0s\n  chave 0.5s olha Mira so-cabeca\nquadro\n  Kai em (0,0) anima olhaTras\n  Mira em (0,-2)\n");
+  ok(r2.avisos.some(a => /animação “olhaTras”/.test(a)), "olhar impossível dentro de uma animação também avisa"); }
+
 console.log("4. andar até");
 {
   const w = createWorld(), r = w.compilarName("elenco\n  Kai relevante\n  Mira relevante\nlocal Sala unidade m\n  chao retangulo -6,-6 a 6,6\n  caixa \"Caixa\" em (0,1.5) tamanho 0.8x0.8x1.2\nquadro local Sala\n  Kai em (0,0)\n  Mira em (0,3)\nquadro 2 continua\n  Kai anda-ate Mira\n");

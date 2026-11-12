@@ -118,7 +118,7 @@ Peças do local (uma por linha):
   repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
 Objetos: ${mnLista(O)}.
   Também valem: banca/balcão/barraca (caixas com nome), pilar (= coluna), "árvore", "poço".
-  "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus, anti-horário visto de cima).
+  "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus; o mesmo sentido das pessoas: 0 = comprimento norte-sul, 90 = leste-oeste).
   Cores: por classe (parede, madeira, vegetacao, agua, pedra, areia, piso, grama, terra, tecido, metal, telhado) ou "cor #hex".
   Dois "chao" que se cobrem: o escrito DEPOIS fica por cima (ex.: piso de pedra e, depois, um tapete de grama).
   Limites: o palco vai até ±45 m do centro; uma peça tem no máximo 51 m de lado (divida um chão maior em partes).
@@ -312,14 +312,17 @@ Animações prontas (${bibliotecaAnimacoes().listar().length}): ${bibliotecaAnim
 Olhar de verdade é em cadeia: os OLHOS fazem até ~35° para os lados (~25° para cima/baixo), a CABEÇA até ~60°, o TRONCO ajuda e, se o alvo
 estiver mais atrás que isso, o CORPO vira (fica ~35° do alvo e a cabeça/olhos fecham o resto).
   Kai olha Mira                 (natural: olhos → cabeça → tronco → corpo, o que precisar)
-  Kai olha Mira so-cabeca       (o corpo NÃO vira; se não der, o quadro avisa e a legenda diz "tentando olhar")
+  Kai olha Mira so-cabeca       (os pés/corpo NÃO viram — cabeça, olhos e a torção do tronco alcançam ~150° para o lado; mais que isso o quadro avisa e a legenda diz "tentando olhar")
   Kai olha Mira so-olhos        (só os olhos; bom para "olhar de canto")
   Kai olha Mira corpo           (o corpo todo vira para Mira)
   alvo: alguém do elenco, camera, um objeto ("olha Mesa"), ou (x,z) em metros.
-Conferência automática: depois do quadro, cada olhar é medido; se faltar mais de 10° o aviso diz quanto falta e o que usar ("olha … corpo" ou "vira-para …").
+Conferência automática: depois do quadro, cada olhar (na linha do personagem, no dialogo e nas chaves "olha" das animações) é medido; se faltar mais de 10° o aviso diz quanto falta e o que usar ("olha … corpo" ou "vira-para …").
 Diálogo: "dialogo Kai, Mira [tom tenso] [de-frente|lado-a-lado|aberto|livre]"
   de-frente (padrão) = os corpos viram um para o outro · lado-a-lado = ombro a ombro (corpos para a frente, cabeças viradas) ·
-  aberto = 3/4, meio virados para a frente da cena (teatro) · livre = não mexe nos corpos. Quem tem "vira-para", "gira" ou "anima" na linha não é virado.
+  aberto = 3/4, meio virados para o norte (teatro) · livre = não mexe nos corpos. "Frente" aqui = o norte (+z, o mesmo que gira 0): monte a câmera do lado norte (lado frente de quem olha para o norte) para ver os rostos.
+  Quem tem "vira-para", "gira" ou "anima" na linha não é virado. Quem só tem "atitude" ganha também papel e gesto do dialogo (para não ganhar, escreva um gesto ou um papel na linha, ou use dialogo … livre só para os corpos).
+SEQUÊNCIA NO QUADRO: várias animações da MESMA pessoa no mesmo quadro (gira, vira-para … passos, anda-ate, anima) tocam UMA DEPOIS DA OUTRA, na ordem escrita
+  (ex.: "Kai anda-ate Mira" e na linha seguinte "Kai gira 360 pivo" = anda e depois gira). Pessoas diferentes tocam ao mesmo tempo. "anima A depois B" também encadeia.
 VIRAR:
   Kai vira-para Mira            (instantâneo: o quadro mostra já virado)
   Kai vira-para Mira passos     (anima: vira com passos de verdade, entra no vídeo)
@@ -331,7 +334,8 @@ GIRAR NO LUGAR (anima, com os pés; até 360° e além, ex.: 720 pivo):
   Kai gira 360 luta             — base baixa (joelhos dobrados), 3 passos curtos e rápidos
   Kai gira 360 salto            — impulso, giro no ar, aterrissa dobrando os joelhos
   Ordem do corpo ao virar: olhos e cabeça ANTECIPAM → ombros/tronco → pelve → pés (a cabeça chega antes).
-  Sentido: esquerda = anti-horário visto de cima = para a esquerda DO PERSONAGEM; direita = horário. Sem sentido: o sinal do número (−90 = direita).
+  Sentido: esquerda = para a esquerda DO PRÓPRIO PERSONAGEM (ângulo positivo: virado para o norte, "gira 90 passos esquerda" termina virado para o leste);
+  direita = para a direita dele (negativo). Sem sentido escrito: vale o sinal do número (360 = esquerda, −360 = direita). Use sempre "esquerda/direita" do personagem, não "horário".
   Prontas na biblioteca: girar45E/D, girar90E/D, girar180E/D, girar360E/D, girar360E/D_pivo, girar720E_pivo, girar360E/D_luta, girar360E/D_salto.
 ANDAR ATÉ:
   Kai anda-ate Mira [correndo] [parar 1.2]   (para a ~90 cm de uma pessoa/objeto; "parar" muda a distância em metros)
@@ -346,7 +350,7 @@ TEMPO E QUADROS POR SEGUNDO (fps 1–60):
    60   | vídeo fluido / câmera lenta depois
   em-dois / em-tres: repete cada desenho 2 ou 3 quadros (mesmo fps, menos desenhos, aspecto de animação tradicional).
   velocidade: 2 = duas vezes mais rápido; 0.5 = metade (câmera lenta). Vale no cabeçalho da animação, do quadro, ou no "video" do topo.
-  segurar 0.3s (numa chave): pausa naquela pose.
+  segurar 0.3s (numa chave): pausa naquela pose. A duração listada da animação já conta a velocidade e as pausas (1,6 s a velocidade 0.8 + segurar 0.4 s = 2,4 s).
 LIMITES (o que ainda NÃO faz, para ninguém prometer):
   - o pé de apoio fica preso, mas o pé livre pode arrastar alguns cm rente ao chão no começo do passo (sai pelo calcanhar); salto: só o giro no ar, sem física;
   - "anda-ate" desvia de UM objeto (o primeiro no caminho), não de pessoas, e não sobe escada sozinho;

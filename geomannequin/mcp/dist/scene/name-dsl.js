@@ -442,7 +442,12 @@ function nmFrenteDe(it) { const a = (it.params.wRot || 0) * Math.PI / 180; retur
 function nmVirarPara(it, p) { const dx = p[0] - it.params.wx, dz = p[1] - it.params.wz; if (Math.hypot(dx, dz) > 0.2) it.params.wRot = Math.round(Math.atan2(dx, dz) * 180 / Math.PI); }
 /* uma linha de personagem(ns) no quadro */
 /* toca uma animação num manequim do quadro: fica na pose final (ou no instante) e entra na lista do vídeo */
-function nmTocar(Q, x, an, inst) { const base = { params: anSemCamera(x.params) }; aplicarAnimacao(x, an, inst === null || inst === undefined ? an.duracao : Math.min(an.duracao, inst), { base }); delete x._animBase; (Q.animacoes = Q.animacoes || []).push({ quem: x.name, anim: an, base: base.params, instante: inst ?? null }); }
+function nmTocar(Q, x, an, inst) { const base = { params: anSemCamera(x.params) }; aplicarAnimacao(x, an, inst === null || inst === undefined ? an.duracao : Math.min(an.duracao, inst), { base }); delete x._animBase;
+  /* a mesma pessoa com várias animações no quadro: uma depois da outra */
+  const L_ = (Q.animacoes = Q.animacoes || []), ant = L_.filter(a => a.quem === x.name), inicio = ant.reduce((s0, a) => Math.max(s0, (a.inicio || 0) + (a.instante ?? a.anim.duracao)), 0);
+  L_.push({ quem: x.name, anim: an, base: base.params, instante: inst ?? null, inicio });
+  /* olhar dentro da animação também é conferido */
+  const ko = (an.chaves || []).filter(c => c.olha).pop(); if (ko) { try { const tmp = { name: x.name, params: Object.assign({}, x.params) }, r = olharNatural(tmp, ko.olha, { modo: ko.olhaModo || "so-cabeca" }); if (!r.alcancou) Q.avisos.push(x.name + " (animação “" + an.nome + "”) não consegue olhar direto para " + ko.olha + ": faltam " + r.erro + "° — use “olha " + ko.olha + " corpo” na chave ou vire antes."); } catch (e) { } } }
 function nmPersonagem(ctx, l, Q) {
   const toks = nmTokens(l.txt); let k = 0; const nomes = [];
   while (toks[k] && (toks[k].t === "pal" || toks[k].t === "str")) { const n = nmQuem(ctx, toks[k].v); if (!n) break; nomes.push(n); k++; if (toks[k] && toks[k].v === ",") k++; else if (toks[k] && nmNorm(toks[k].v) === "e" && toks[k + 1] && nmQuem(ctx, toks[k + 1].v)) k++; }
@@ -531,7 +536,7 @@ function nmPersonagem(ctx, l, Q) {
       if (toks[k + 1] && nmNorm(toks[k + 1].v) === "instante") { const tv = toks[k + 2]; inst = tv.t === "num" ? tv.v : nmNorm(tv.v) === "inicio" ? 0 : null; k += 2; }
       const lista = nomes.map(n => { const a = (ctx.animacoes && ctx.animacoes.get(n)) || bibliotecaAnimacoes().obter(n); if (!a) { const sg = nmParecida(n, bibliotecaAnimacoes().listar().map(x => x.nome).concat(ctx.animacoes ? [...ctx.animacoes.keys()] : [])); throw new NmErro("Animação “" + n + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), l.linha); } return a; });
       const an = lista.length > 1 ? encadear(lista) : lista[0];
-      depois.push(() => its.forEach(x => { const base = { params: anSemCamera(x.params) }; aplicarAnimacao(x, an, inst === null ? an.duracao : Math.min(an.duracao, inst), { base }); delete x._animBase; (Q.animacoes = Q.animacoes || []).push({ quem: x.name, anim: an, base: base.params, instante: inst }); }));
+      depois.push(() => its.forEach(x => nmTocar(Q, x, an, inst)));
       feito.anima = nomes.join(" depois "); }
     else if (w === "fala" || w === "diz" || w === "pensa") { const txt = nx.v; Q.falas.push({ quem: it.name, texto: txt, tipo: w }); k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") { feito.tom = nmNorm(toks[k + 2].v); k += 2; } Q.falas[Q.falas.length - 1].tom = feito.tom || null;
       if (w !== "pensa") { feito.fala = true; depois.push(() => its.forEach(x => { if (!temGesto && !feito.semGesto) { const lista = PAPEIS_CONVERSA[feito.tom === "raiva" ? "discutindo" : feito.tom === "pergunta" ? "perguntando" : "falante"].gestos.filter(Boolean), r = mdSorteio(ctx.semente + ":" + Q.indice + x.name); aplicarGestoConversa(x, lista[Math.floor(r() * lista.length)], { intensidade: 0.75, mao: r() < 0.7 ? "direita" : "esquerda" }); }
@@ -712,7 +717,7 @@ function nmLegenda(ctx, Q) {
     if (f.acao) acts.push(nmFrase(f.acao)); else if (f.pose) acts.push(nmFrase(f.pose));
     if (f.segura) acts.push("segura " + f.segura.replace(/\s*\(.*\)/, ""));
     if (f.interacao) { const [t, o] = f.interacao.split(" com "); acts.push(nomes.includes(o) ? nmFrase(t) : nmFrase(t) + " com " + o + " (" + cor(o) + ")"); }
-    if (f.anima) acts.push(nmFrase(f.anima));
+    if (f.anima) acts.push(/^(gira |vira para |anda até |corre até )/.test(f.anima) ? f.anima : nmFrase(f.anima));
     if (f.papel) acts.push(nmFrase(f.papel) + (f.papelR && f.papelR.gesto ? " (" + nmFrase(f.papelR.gesto) + ")" : ""));
     else if (f.fala) acts.push("falando" + (f.tom ? " (" + f.tom + ")" : "") + (f.gesto ? "" : ", gesticulando"));
     if (f.gesto) acts.push("gesto " + nmFrase(f.gesto));
@@ -854,7 +859,7 @@ function nmCompilar(texto, opts = {}) {
         (Q.viraCamera || []).forEach(it => nmVirarPara(it, camW())); (Q.costasCamera || []).forEach(it => { nmVirarPara(it, camW()); it.params.wRot = ((it.params.wRot + 360) % 360) - 180 + 180; });
         SCN.recorte = salvoRecorte; SCN.active = 0; /* o reserva escondido fica ativo: sem alças de seleção no quadro */
         const legenda = Q.cab.legenda || nmLegenda(ctx, Q);
-        quadros.push({ camChaves, velocidade: Q.cab.velocidade || null, duracao: Q.cab.duracao || null, movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null, animacoes: (Q.animacoes || []).map(a => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante })), indice, n: Q.cab.n || indice + 1, titulo: Q.cab.titulo || "", formato: Q.cab.formato || "16:9", tamanho: NM_TAMANHOS[Q.cab.tamanho] || (Q.cab.funcao && /climax|clímax|impacto|revela/i.test(Q.cab.funcao) ? 2 : 1), funcao: Q.cab.funcao, plano, local: Q.localNome, transicao: Q.tipoTransicao || null,
+        quadros.push({ camChaves, velocidade: Q.cab.velocidade || null, duracao: Q.cab.duracao || null, movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null, animacoes: (Q.animacoes || []).map(a => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante, inicio: a.inicio || 0 })), indice, n: Q.cab.n || indice + 1, titulo: Q.cab.titulo || "", formato: Q.cab.formato || "16:9", tamanho: NM_TAMANHOS[Q.cab.tamanho] || (Q.cab.funcao && /climax|clímax|impacto|revela/i.test(Q.cab.funcao) ? 2 : 1), funcao: Q.cab.funcao, plano, local: Q.localNome, transicao: Q.tipoTransicao || null,
           legenda, falas: Q.falas, personagens: [...Q.presentes].map(n => ({ nome: n, cor: (ctx.elenco.get(n) || {}).nomeCor, hex: (ctx.elenco.get(n) || {}).hex })), figurantes: Q.multidoes.reduce((s, m) => s + m.n, 0),
           avisos: Q.avisos, linha: b.linha, estado: JSON.parse(JSON.stringify(sceneState())), L: Object.assign(JSON.parse(JSON.stringify(L)), { girdle: false, prop: false, grid: false }), pagina: pagina.n });
         pagina.quadros.push(indice);
@@ -1068,7 +1073,7 @@ function videoDoName(r, o = {}) {
   const V = r.video || {}, fps = Math.max(1, Math.min(60, Math.round(o.fps || V.fps || 8))), passo = Math.max(1, Math.round(o.passo || (o.emDois ? 2 : o.emTres ? 3 : V.passo || 1))), vida = o.vida ?? V.vida ?? true, velG = o.velocidade || V.velocidade || 1;
   const frames = [], avisos = [], salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L)), vistos = new Set();
   const qs = o.quadros ? r.quadros.filter(q => o.quadros.includes(q.indice + 1)) : r.quadros;
-  const durQ = q => { const vel = (q.velocidade || 1) * velG, durA = Math.max(0, ...(q.animacoes || []).map(a => a.anim.loop ? 0 : (a.instante ?? a.anim.duracao))), durF = Math.max(0, ...(q.falas || []).filter(f => f.quem && f.tipo !== "pensa").map(f => linhaDaFala(f.texto).duracao)), durC = Math.max(0, ...(q.camChaves || []).map(c => c.t)); return +q.duracao || Math.max(durA / vel + 0.3, durF + 0.3, durC + 0.2, 1.5) * (durA || durF || durC ? 1 : 1); };
+  const durQ = q => { const vel = (q.velocidade || 1) * velG, durA = Math.max(0, ...(q.animacoes || []).map(a => a.anim.loop ? 0 : (a.inicio || 0) + (a.instante ?? a.anim.duracao))), durF = Math.max(0, ...(q.falas || []).filter(f => f.quem && f.tipo !== "pensa").map(f => linhaDaFala(f.texto).duracao)), durC = Math.max(0, ...(q.camChaves || []).map(c => c.t)); return +q.duracao || Math.max(durA / vel + 0.3, durF + 0.3, durC + 0.2, 1.5) * (durA || durF || durC ? 1 : 1); };
   const total = qs.reduce((s0, q) => s0 + Math.max(1, Math.round(durQ(q) * fps)), 0); let feitos = 0, cancelado = false;
   try { for (const q of qs) {
       const d = durQ(q), n = Math.max(1, Math.round(d * fps)), vel = (q.velocidade || 1) * velG, mems = {}, linhas = (q.falas || []).filter(f => f.quem && f.tipo !== "pensa").map(f => ({ f, L: linhaDaFala(f.texto) }));
@@ -1076,8 +1081,11 @@ function videoDoName(r, o = {}) {
       for (let i = 0; i < n; i++) { if (o.cancelar && o.cancelar()) { cancelado = true; break; }
         if (passo > 1 && i % passo && ultimo) { frames.push(Object.assign({}, ultimo, { t: i / fps, repetido: true })); feitos++; continue; }
         loadScene(JSON.parse(JSON.stringify(q.estado))); const t = i / fps, ta = t * vel;
-        for (const a of q.animacoes || []) { const it = SCN.list.find(x => x.name === a.quem); if (!it) continue; Object.assign(it.params, anSemCamera(a.base)); aplicarAnimacao(it, a.anim, a.anim.loop ? ta : Math.min(ta, a.instante ?? a.anim.duracao), { base: { params: Object.assign({}, a.base) } }); delete it._animBase;
-          if (a.anim.travarPes) { const k = a.quem + ":" + a.anim.nome, m = mems[k]; if (m && m.acc) { it.params.wx += m.acc[0]; it.params.wz += m.acc[1]; } mems[k] = travarPes(it, m, { apoio: apoioNoTempo(a.anim, Math.min(ta, a.instante ?? a.anim.duracao)) }); } }
+        /* cada pessoa: a animação da vez (as da mesma pessoa tocam em sequência; antes da primeira, a pose de partida dela) */
+        const porQuem = {}; for (const a of q.animacoes || []) (porQuem[a.quem] = porQuem[a.quem] || []).push(a);
+        for (const [quem, lst] of Object.entries(porQuem)) { const it = SCN.list.find(x => x.name === quem); if (!it) continue; let a = lst[0]; for (const b of lst) if (ta >= (b.inicio || 0)) a = b;
+          const tl = Math.max(0, ta - (a.inicio || 0)); Object.assign(it.params, anSemCamera(a.base)); aplicarAnimacao(it, a.anim, a.anim.loop ? tl : Math.min(tl, a.instante ?? a.anim.duracao), { base: { params: Object.assign({}, a.base) } }); delete it._animBase;
+          if (a.anim.travarPes) { const k = quem + ":" + lst.indexOf(a), m = mems[k]; if (m && m.acc) { it.params.wx += m.acc[0]; it.params.wz += m.acc[1]; } mems[k] = travarPes(it, m, { apoio: apoioNoTempo(a.anim, Math.min(tl, a.instante ?? a.anim.duracao)) }); } }
         for (const { f, L: lf } of linhas) { const it = SCN.list.find(x => x.name === f.quem); if (it) falarNoTempo(it, f.tom, f.texto, t, { linha: lf }); }
         if (vida) SCN.list.forEach(it => { if (!it.oculto && it.name !== "__vazio__") nmVida(it, t + q.indice * 1.7); });
         try { atualizarApoios(); } catch (e) { }
