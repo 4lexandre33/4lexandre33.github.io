@@ -336,6 +336,7 @@ body.qd-aberto{overflow:hidden}
 .an-cab{position:absolute;top:0;bottom:-400px;width:2px;background:var(--coral);pointer-events:none;z-index:2}
 .an-chave{position:absolute;top:3px;width:10px;height:10px;margin-left:-5px;transform:rotate(45deg);background:var(--cobalt);border:1px solid var(--ink);cursor:grab}.an-chave.sel{background:var(--coral)}
 .an-prev{min-height:260px;position:relative}.an-pilha{position:relative;width:100%}.an-pilha svg{display:block;width:100%;height:auto;max-height:46vh}
+.an-prev .an-traj{position:absolute;right:6px;bottom:6px;width:120px;height:auto;max-height:120px;background:var(--panel,#fff);border:1px solid var(--line,#ccc);border-radius:6px;color:var(--ink,#333);opacity:.92}.an-est{margin:.2rem 0;font-size:.8rem;opacity:.75}
 .an-fant{position:absolute;inset:0;pointer-events:none}.an-frente{position:relative}
 .an-tempo{font:12px var(--font-mono);color:var(--muted)}
 .an-lista{list-style:none;margin:0;padding:0;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:4px}

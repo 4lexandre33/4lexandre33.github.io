@@ -6,7 +6,9 @@ import { L } from "../scene/modos.js";
 import { sceneState } from "../scene/estado.js";
 import { POSEKEYS } from "../scene/parametros.js";
 import { todasPoses } from "../scene/poses.js";
-import { anSemCamera, AN_PARTES, CURVAS, criarAnimacao, aplicarAnimacao, animacaoDePoses, bibliotecaAnimacoes, anPoseValores } from "../scene/animacao.js";
+import { anSemCamera, AN_PARTES, CURVAS, criarAnimacao, aplicarAnimacao, animacaoDePoses, bibliotecaAnimacoes, anPoseValores, retimar } from "../scene/animacao.js";
+import { animacaoGiro, animacaoAndarAte, travarPes, apoioNoTempo, pesDoManequim } from "../scene/movimento.js";
+import { olharNatural } from "../scene/cenario.js";
 import { compilarName, videoDoName, framesDaAnimacao } from "../scene/name-dsl.js";
 import { renderizarQuadro } from "../scene/quadros.js";
 import { criarGif } from "../engine/index.js";
@@ -17,7 +19,11 @@ import { render } from "./palco.js";
 
 const E = {}, esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const ROSTO = ["jawOpen", "smile", "eyeLid", "browUp", "browIn", "eyeYaw", "eyePitch", "blush", "tears"];
-let ED = null, T = 0, FR = null, tocando = null, chaveSel = -1, copia = null, NUVEM = null, gravT = 0;
+let ED = null, T = 0, FR = null, tocando = null, chaveSel = -1, copia = null, NUVEM = null, gravT = 0, CANCELAR = false, CACHE = new Map(), noPalco = null;
+const DESF = [], REF = []; /* desfazer / refazer (fotos das chaves) */
+function marcar() { DESF.push(JSON.stringify({ chaves: ED.chaves, duracao: ED.duracao })); if (DESF.length > 80) DESF.shift(); REF.length = 0; }
+function desfazer(re) { const de = re ? REF : DESF, para = re ? DESF : REF; if (!de.length) return log("Nada para " + (re ? "refazer" : "desfazer") + "."); para.push(JSON.stringify({ chaves: ED.chaves, duracao: ED.duracao })); const x = JSON.parse(de.pop()); ED.chaves = x.chaves; ED.duracao = x.duracao; chaveSel = -1; FR = null; desenharLinha(); log(re ? "Refeito." : "Desfeito."); }
+const opcTempo = () => ({ fps: Math.max(1, Math.min(60, +E.fps.value || 12)), passo: +E.passo.value || 1, velocidade: +E.velA.value || 1 });
 const novoEd = () => ({ nome: "minha animação", duracao: 1, fps: 12, modo: "absoluta", curva: "suave", loop: false, tags: [], chaves: [] });
 const it = () => SCN.list[+E.quem.value] || SCN.list[SCN.active] || SCN.list[0];
 function log(t, err) { E.out.textContent = t || ""; E.out.className = "qd-out" + (err ? " err" : ""); }
@@ -28,7 +34,7 @@ function gravarChave() {
   const x = it(); if (!ED.base) ED.base = anSemCamera(x.params);
   const g = (ED.base.wRot || 0) * Math.PI / 180, dx = (x.params.wx - (ED.base.wx || 0)) * 0.114, dz = (x.params.wz - (ED.base.wz || 0)) * 0.114;
   const c = { t: +T.toFixed(3), valores: fotoDoManequim(x), mover: { frente: +(dx * Math.sin(g) + dz * Math.cos(g)).toFixed(3), lado: +(dx * Math.cos(g) - dz * Math.sin(g)).toFixed(3), giro: (x.params.wRot || 0) - (ED.base.wRot || 0) } };
-  const i = ED.chaves.findIndex(k => Math.abs(k.t - c.t) < 1e-3); if (i >= 0) ED.chaves[i] = c; else ED.chaves.push(c);
+  marcar(); const i = ED.chaves.findIndex(k => Math.abs(k.t - c.t) < 1e-3); if (i >= 0) ED.chaves[i] = c; else ED.chaves.push(c);
   ED.chaves.sort((a, b) => a.t - b.t); if (c.t > ED.duracao) ED.duracao = c.t; FR = null; desenharLinha(); log("Chave gravada em " + c.t.toFixed(2) + " s (" + ED.chaves.length + " chaves).");
 }
 /* só o que muda entre as chaves (a animação fica parcial e reutilizável) */
@@ -37,27 +43,47 @@ function animacaoDoEditor() {
   const k0 = ED.chaves[0].valores, muda = new Set(); for (const k of Object.keys(k0)) if (ED.chaves.some(c => Math.abs((c.valores[k] ?? k0[k]) - k0[k]) > 1e-3)) muda.add(k);
   const rel = ED.modo === "relativa", partes = [...E.partes.querySelectorAll("input:checked")].map(i => i.value), filtro = partes.length ? new Set(partes.flatMap(p => AN_PARTES[p] || [])) : null;
   const chaves = ED.chaves.map(c => { const v = {}; for (const k of muda) if (!filtro || filtro.has(k)) v[k] = rel ? (c.valores[k] ?? k0[k]) - k0[k] : c.valores[k] ?? k0[k];
-    const mv = c.mover && (c.mover.frente || c.mover.lado || c.mover.giro) ? c.mover : null; return { t: c.t, valores: v, mover: mv, curva: c.curva, rosto: c.rosto || null }; });
+    const mv = c.mover && (c.mover.frente || c.mover.lado || c.mover.giro) ? c.mover : null; return { t: c.t, valores: v, mover: mv, curva: c.curva, rosto: c.rosto || null, apoio: c.apoio, olha: c.olha, olhaModo: c.olhaModo }; });
   if (chaves.some(c => c.mover) && !chaves[0].mover) chaves[0].mover = { frente: 0, lado: 0, giro: 0 };
-  return criarAnimacao({ nome: E.nome.value.trim() || "minha animação", duracao: +E.dur.value || ED.duracao, fps: +E.fps.value || 12, modo: ED.modo, curva: E.curva.value, loop: E.loop.checked, tags: E.tags.value.split(",").map(s => s.trim()).filter(Boolean), chaves });
+  return criarAnimacao({ nome: E.nome.value.trim() || "minha animação", duracao: +E.dur.value || ED.duracao, fps: +E.fps.value || 12, modo: ED.modo, curva: E.curva.value, loop: E.loop.checked, travarPes: !!ED.travarPes, escalarPeloCorpo: true, tags: E.tags.value.split(",").map(s => s.trim()).filter(Boolean), chaves });
 }
 /* ===== quadros (render) ===== */
-function prepararQuadros(a) {
-  const x = it(), salvo = anSemCamera(x.params), base = ED && ED.base ? anSemCamera(ED.base) : anSemCamera(x.params);
-  Object.assign(x.params, base); let fr; try { fr = framesDaAnimacao(x, a, { fps: +E.fps.value || 12 }); } finally { Object.assign(x.params, salvo); }
-  return fr.frames.map(f => ({ t: f.t, svg: renderizarQuadro(f, { passes: false }).svg, estado: f }));
+/* quadros em segundo plano: aos poucos (a página não trava), com progresso, cancelar e cache (mesma animação + mesmo tempo = não refaz) */
+async function prepararQuadros(a) {
+  const x = it(), salvo = anSemCamera(x.params), base = ED && ED.base ? anSemCamera(ED.base) : anSemCamera(x.params), op = opcTempo();
+  const chave = JSON.stringify([a.chaves, a.duracao, a.modo, a.curva, op, base.wx, base.wz, base.wRot, x.name]); if (CACHE.has(chave)) return CACHE.get(chave);
+  Object.assign(x.params, base); let fr; try { fr = framesDaAnimacao(x, a, { fps: op.fps, passo: op.passo, velocidade: op.velocidade, vida: E.vida && E.vida.checked }); } finally { Object.assign(x.params, salvo); }
+  CANCELAR = false; E.cancelar.hidden = false; const out = []; let ultimo = null;
+  try { for (let i = 0; i < fr.frames.length; i++) { if (CANCELAR) throw new Error("Cancelado.");
+      const f = fr.frames[i]; ultimo = f.repetido && ultimo ? Object.assign({}, ultimo, { t: f.t }) : { t: f.t, svg: renderizarQuadro(f, { passes: false }).svg, estado: f }; out.push(ultimo);
+      if (i % 4 === 3) { log("Quadro " + (i + 1) + " de " + fr.frames.length + "…"); await new Promise(r => setTimeout(r, 0)); } } }
+  finally { E.cancelar.hidden = true; }
+  out.trajeto = trajeto(fr.frames, a); CACHE.set(chave, out); if (CACHE.size > 12) CACHE.delete(CACHE.keys().next().value); return out;
 }
+/* trajeto visto de cima: o caminho do corpo e as pisadas (pé de apoio) — para conferir giro e caminhada */
+function trajeto(frames, a) {
+  const pts = [], pes = []; let ant = null;
+  for (const f of frames) { const m = f.estado.list.find(q => q.name === it().name) || f.estado.list[0]; if (!m) continue; pts.push([m.params.wx, m.params.wz]);
+    const ap = apoioNoTempo(a, f.t); if (ap && ap !== ant) { try { const pe = pesDoManequim({ name: m.name, params: m.params })[ap === "ambos" ? "L" : ap]; if (pe) pes.push([pe.x, pe.z, ap]); } catch (e) { } ant = ap; } }
+  if (pts.length < 2) return "";
+  const xs = pts.map(p => p[0]).concat(pes.map(p => p[0])), zs = pts.map(p => p[1]).concat(pes.map(p => p[1])), x0 = Math.min(...xs) - 3, x1 = Math.max(...xs) + 3, z0 = Math.min(...zs) - 3, z1 = Math.max(...zs) + 3, k = 140 / Math.max(x1 - x0, z1 - z0);
+  const P_ = p => ((x1 - p[0]) * k).toFixed(1) + "," + ((z1 - p[1]) * k).toFixed(1);
+  return '<svg class="an-traj" viewBox="0 0 ' + ((x1 - x0) * k).toFixed(0) + " " + ((z1 - z0) * k).toFixed(0) + '" role="img" aria-label="Trajeto visto de cima"><polyline points="' + pts.map(P_).join(" ") + '" fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+    pes.map(p => '<circle cx="' + P_(p).split(",")[0] + '" cy="' + P_(p).split(",")[1] + '" r="3" fill="' + (p[2] === "L" ? "#1060ff" : p[2] === "R" ? "#e00000" : "#888") + '"/>').join("") + '<circle cx="' + P_(pts[0]).split(",")[0] + '" cy="' + P_(pts[0]).split(",")[1] + '" r="2" fill="#00b140"/></svg>';
+}
+function estimativa() { try { const a = animacaoDoEditor(), op = opcTempo(), d = a.duracao / op.velocidade, n = Math.round(d * op.fps) + 1, des = Math.ceil(n / op.passo), larg = +E.larg.value || 480;
+  E.est.textContent = "≈ " + n + " quadros (" + des + " desenhos) · " + d.toFixed(2) + " s · GIF ~" + (des * larg * larg * 0.5625 * 0.12 / 1e6).toFixed(1) + " MB"; } catch (e) { E.est.textContent = ""; } }
 function mostrarQuadro(i) {
   if (!FR || !FR.length) return; i = Math.max(0, Math.min(FR.length - 1, i)); const f = FR[i];
   let fantasma = ""; if (E.onion.checked && !tocando) { const a = FR[Math.max(0, i - Math.round(FR.length / 6))], b = FR[Math.min(FR.length - 1, i + Math.round(FR.length / 6))];
     fantasma = [a, b].filter(q => q !== f).map((q, j) => '<div class="an-fant" style="opacity:.22;filter:' + (j ? "hue-rotate(180deg)" : "none") + '">' + q.svg + "</div>").join(""); }
-  E.prev.innerHTML = '<div class="an-pilha">' + fantasma + '<div class="an-frente">' + f.svg + "</div></div>"; E.tempo.textContent = f.t.toFixed(2) + " s · quadro " + (i + 1) + "/" + FR.length;
+  E.prev.innerHTML = '<div class="an-pilha">' + fantasma + '<div class="an-frente">' + f.svg + "</div></div>" + (FR.trajeto && E.traj.checked ? FR.trajeto : ""); E.tempo.textContent = f.t.toFixed(2) + " s · quadro " + (i + 1) + "/" + FR.length;
 }
-async function preparar() { try { const a = animacaoDoEditor(); log("Preparando os quadros…"); await new Promise(r => setTimeout(r, 20)); FR = prepararQuadros(a); E.sl.max = FR.length - 1; mostrarQuadro(+E.sl.value || 0); log(FR.length + " quadros prontos (" + a.duracao.toFixed(2) + " s)."); return a; } catch (e) { log(e.message, true); return null; } }
+async function preparar() { try { const a = animacaoDoEditor(); log("Preparando os quadros…"); await new Promise(r => setTimeout(r, 20)); FR = await prepararQuadros(a); E.sl.max = FR.length - 1; mostrarQuadro(+E.sl.value || 0); log(FR.length + " quadros prontos (" + a.duracao.toFixed(2) + " s)."); return a; } catch (e) { log(e.message, true); return null; } }
 async function tocar() {
   if (tocando) { clearInterval(tocando); tocando = null; E.play.textContent = "▶ Tocar"; return; }
   if (!FR) await preparar(); if (!FR) return; let i = +E.sl.value || 0; E.play.textContent = "⏸ Pausar";
-  const vel = +E.vel.value || 1; tocando = setInterval(() => { if (!FR) { clearInterval(tocando); tocando = null; E.play.textContent = "▶ Tocar"; return; } i++; if (i >= FR.length) { if (E.loop.checked || E.repetir.checked) i = 0; else { clearInterval(tocando); tocando = null; E.play.textContent = "▶ Tocar"; return; } } E.sl.value = i; mostrarQuadro(i); }, 1000 / ((+E.fps.value || 12) * vel));
+  const vel = +E.vel.value || 1; tocando = setInterval(() => { if (!FR) { clearInterval(tocando); tocando = null; E.play.textContent = "▶ Tocar"; return; } i++; if (i >= FR.length) { if (E.loop.checked || E.repetir.checked) i = 0; else { clearInterval(tocando); tocando = null; E.play.textContent = "▶ Tocar"; return; } } E.sl.value = i; mostrarQuadro(i); }, 1000 / (opcTempo().fps * vel));
 }
 /* ===== linha do tempo: trilhas por parte do corpo ===== */
 function desenharLinha() {
@@ -72,6 +98,23 @@ function irPara(t) { T = Math.max(0, Math.min(+E.dur.value || ED.duracao, t)); E
 /* põe o manequim do palco no instante T (para ajustar e gravar de novo) */
 function poseNoPalco() { try { const a = animacaoDoEditor(), x = it(); if (!ED.base) ED.base = anSemCamera(x.params); Object.assign(x.params, ED.base); aplicarAnimacao(x, a, T, { base: { params: Object.assign({}, ED.base) } }); delete x._animBase; refreshScene && refreshScene(); syncControls && syncControls(); render(); log("Palco no instante " + T.toFixed(2) + " s: ajuste e grave a chave."); } catch (e) { log(e.message, true); } }
 
+/* toca a animação no próprio palco (o manequim de verdade, com pés presos), e volta para onde estava */
+function tocarNoPalco() {
+  if (noPalco) { cancelAnimationFrame(noPalco.raf); Object.assign(noPalco.x.params, noPalco.salvo); noPalco = null; render(); E.palcoPlay.textContent = "▶ No palco"; return; }
+  let a; try { a = animacaoDoEditor(); } catch (e) { return log(e.message, true); }
+  const x = it(), salvo = anSemCamera(x.params), base = ED.base ? anSemCamera(ED.base) : anSemCamera(x.params), op = opcTempo(); let t0 = performance.now(), mem = null;
+  noPalco = { x, salvo }; E.palcoPlay.textContent = "■ Parar";
+  const passo = () => { if (!noPalco) return; let t = (performance.now() - t0) / 1000 * op.velocidade * (+E.vel.value || 1); if (op.passo > 1) t = Math.floor(t * op.fps / op.passo) * op.passo / op.fps;
+    if (t > a.duracao) { if (E.repetir.checked) { t0 = performance.now(); mem = null; noPalco.raf = requestAnimationFrame(passo); return; } tocarNoPalco(); return; }
+    Object.assign(x.params, base); aplicarAnimacao(x, a, t, { base: { params: Object.assign({}, base) } }); delete x._animBase;
+    if (a.travarPes) { if (mem && mem.acc) { x.params.wx += mem.acc[0]; x.params.wz += mem.acc[1]; } mem = travarPes(x, mem, { apoio: apoioNoTempo(a, t) }); }
+    render(); noPalco.raf = requestAnimationFrame(passo); };
+  noPalco.raf = requestAnimationFrame(passo);
+}
+/* giros e caminhadas prontos → viram chaves no editor (dá para ajustar e salvar) */
+function carregarNoEditor(an) { const x = it(); ED = { nome: an.nome, duracao: an.duracao, fps: an.fps || 12, modo: an.modo, curva: an.curva, loop: !!an.loop, tags: an.tags || [], base: anSemCamera(x.params), travarPes: !!an.travarPes,
+    chaves: an.chaves.map(c => ({ t: c.t, valores: an.modo === "relativa" ? Object.fromEntries(Object.entries(c.valores).map(([k, v]) => [k, (x.params[k] || 0) + v])) : Object.assign({}, c.valores), mover: c.mover, curva: c.curva, rosto: c.rosto, apoio: c.apoio, olha: c.olha, olhaModo: c.olhaModo })) };
+  E.nome.value = an.nome; E.dur.value = +an.duracao.toFixed(3); E.curva.value = an.curva || "suave"; E.loop.checked = !!an.loop; E.rel.checked = an.modo === "relativa"; E.tags.value = (an.tags || []).join(", "); FR = null; T = 0; chaveSel = -1; DESF.length = 0; REF.length = 0; desenharLinha(); estimativa(); }
 /* ===== exportar ===== */
 function svgParaCanvas(svg, larg) { return new Promise((ok, erro) => { const vb = /viewBox="([^"]+)"/.exec(svg)[1].split(/\s+/).map(Number), k = larg / vb[2], url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })), im = new Image();
   im.onload = () => { const c = document.createElement("canvas"); c.width = Math.round(vb[2] * k); c.height = Math.round(vb[3] * k); const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok(c); }; im.onerror = () => { URL.revokeObjectURL(url); erro(new Error("imagem")); }; im.src = url; }); }
@@ -103,9 +146,11 @@ async function videoDoNameUI() {
   let txt = ""; try { txt = localStorage.getItem("gm-nm-texto") || ""; } catch (e) { } const ta = document.querySelector("#nmArea textarea"); if (ta && ta.value) txt = ta.value;
   if (!txt.trim()) { log("Escreva um name na aba Name primeiro.", true); return; }
   log("Montando o vídeo do name…"); await new Promise(r => setTimeout(r, 20));
-  try { const r = compilarName(txt), fps = +E.fps.value || 8, v = videoDoName(r, { fps }); if (v.frames.length > 600) throw new Error("Vídeo longo demais (" + v.frames.length + " quadros); reduza as durações.");
-    FRV = []; for (let i = 0; i < v.frames.length; i++) { FRV.push({ t: v.frames[i].t, svg: renderizarQuadro(v.frames[i], { passes: false }).svg, estado: v.frames[i] }); if (i % 6 === 0) { log("Vídeo: quadro " + (i + 1) + " de " + v.frames.length); await new Promise(r2 => setTimeout(r2, 0)); } }
-    FR = FRV; E.sl.max = FR.length - 1; E.sl.value = 0; mostrarQuadro(0); log("Vídeo do name: " + FR.length + " quadros (" + v.duracao.toFixed(1) + " s). Toque ou exporte (GIF/WebM)." + (r.erros.length ? " Há " + r.erros.length + " erro(s) no name." : "")); }
+  try { const r = compilarName(txt), op = opcTempo(), v = videoDoName(r, { fps: (r.video && !E.fps.dataset.mexido) ? r.video.fps : op.fps, passo: (r.video && !E.passo.dataset.mexido) ? r.video.passo : op.passo, velocidade: op.velocidade }); if (v.frames.length > 1800) throw new Error("Vídeo longo demais (" + v.frames.length + " quadros); reduza o fps ou as durações.");
+    CANCELAR = false; E.cancelar.hidden = false; FRV = []; let ult = null;
+    try { for (let i = 0; i < v.frames.length; i++) { if (CANCELAR) throw new Error("Cancelado."); const f = v.frames[i]; ult = f.repetido && ult ? Object.assign({}, ult, { t: f.t }) : { t: f.t, svg: renderizarQuadro(f, { passes: false }).svg, estado: f }; FRV.push(ult); if (i % 6 === 0) { log("Vídeo: quadro " + (i + 1) + " de " + v.frames.length); await new Promise(r2 => setTimeout(r2, 0)); } } }
+    finally { E.cancelar.hidden = true; }
+    FR = FRV; E.sl.max = FR.length - 1; E.sl.value = 0; mostrarQuadro(0); log("Vídeo do name: " + FR.length + " quadros a " + v.fps + " fps (" + v.desenhos + " desenhos, " + v.duracao.toFixed(1) + " s). Toque ou exporte (GIF/WebM)." + (v.avisos.length ? " Avisos: " + v.avisos.slice(0, 3).join("; ") : "") + (r.erros.length ? " Há " + r.erros.length + " erro(s) no name." : "")); }
   catch (e) { log(e.message, true); }
 }
 
@@ -131,15 +176,14 @@ function lista() {
 }
 async function acaoLista(nome, a, el) {
   const B = bibliotecaAnimacoes(), an = B.obter(nome); if (!an) return;
-  if (a === "ver") { ED = Object.assign(novoEd(), { base: anSemCamera(it().params) }); FR = prepararQuadros(an); E.sl.max = FR.length - 1; E.sl.value = 0; mostrarQuadro(0); log("Prévia de “" + nome + "”."); tocar(); }
+  if (a === "ver") { ED = Object.assign(novoEd(), { base: anSemCamera(it().params) }); FR = await prepararQuadros(an); E.sl.max = FR.length - 1; E.sl.value = 0; mostrarQuadro(0); log("Prévia de “" + nome + "”."); tocar(); }
   else if (a === "aplicar") { const x = it(), base = { params: Object.assign({}, x.params) }; aplicarAnimacao(x, an, an.duracao, { base }); delete x._animBase; refreshScene && refreshScene(); syncControls && syncControls(); render(); log("“" + nome + "” aplicada no manequim (fim do movimento)."); }
-  else if (a === "editar") { const x = it(); ED = { nome: an.nome, duracao: an.duracao, fps: an.fps || 12, modo: an.modo, curva: an.curva, loop: !!an.loop, tags: an.tags || [], base: anSemCamera(x.params), chaves: an.chaves.map(c => ({ t: c.t, valores: an.modo === "relativa" ? Object.fromEntries(Object.entries(c.valores).map(([k, v]) => [k, (x.params[k] || 0) + v])) : Object.assign({}, c.valores), mover: c.mover, curva: c.curva, rosto: c.rosto })) };
-    E.nome.value = an.origem === "pronta" ? an.nome + " (minha)" : an.nome; E.dur.value = an.duracao; E.curva.value = an.curva || "suave"; E.loop.checked = !!an.loop; E.rel.checked = an.modo === "relativa"; E.tags.value = (an.tags || []).join(", "); FR = null; T = 0; desenharLinha(); log("Editando “" + nome + "”."); }
+  else if (a === "editar") { carregarNoEditor(an); if (an.origem === "pronta") E.nome.value = an.nome + " (minha)"; log("Editando “" + nome + "”."); }
   else if (a === "del") { if (el.dataset.c !== "1") { el.dataset.c = "1"; el.textContent = "Confirmar?"; return; } B.remove ? 0 : B.remover(nome); if (NUVEM) try { await NUVEM.doc(slug(nome)).delete(); } catch (e) { } lista(); }
 }
 
 /* ===== área ===== */
-function abrir() { E.area.hidden = false; const b = document.getElementById("animBtn"); if (b) b.setAttribute("aria-pressed", "true"); E.quem.innerHTML = SCN.list.map((x, i) => '<option value="' + i + '"' + (i === SCN.active ? " selected" : "") + ">" + esc(x.name) + "</option>").join(""); desenharLinha(); lista(); }
+function abrir() { E.area.hidden = false; const b = document.getElementById("animBtn"); if (b) b.setAttribute("aria-pressed", "true"); E.quem.innerHTML = SCN.list.map((x, i) => '<option value="' + i + '"' + (i === SCN.active ? " selected" : "") + ">" + esc(x.name) + "</option>").join(""); const oa = E.area.querySelector('[data-a="oAlvo"]'); if (oa) oa.innerHTML = '<option value="camera">câmera</option>' + SCN.list.map(x => "<option>" + esc(x.name) + "</option>").join(""); desenharLinha(); lista(); estimativa(); }
 function fechar() { E.area.hidden = true; if (tocando) { clearInterval(tocando); tocando = null; } const b = document.getElementById("animBtn"); if (b) b.setAttribute("aria-pressed", "false"); }
 export function iniciarAnimacao() {
   if (typeof document === "undefined") return;
@@ -147,40 +191,49 @@ export function iniciarAnimacao() {
   const area = document.createElement("section"); area.id = "anArea"; area.className = "qd-area an-area"; area.hidden = true; area.setAttribute("role", "dialog"); area.setAttribute("aria-label", "Animação");
   const poses = todasPoses().map(p => "<option>" + p + "</option>").join("");
   area.innerHTML = '<header class="qd-cab"><h2>Animação</h2><label>Manequim <select data-a="quem"></select></label><input data-a="nome" value="minha animação" aria-label="Nome da animação" maxlength="80">' +
-    '<label>Duração <input data-a="dur" type="number" min="0.1" max="60" step="0.1" value="1"> s</label><label>fps <input data-a="fps" type="number" min="2" max="30" value="12"></label>' +
+    '<label>Duração <input data-a="dur" type="number" min="0.1" max="60" step="0.1" value="1"> s</label><label>fps <input data-a="fps" type="number" min="1" max="60" value="12" list="anFpsLista"></label><datalist id="anFpsLista"><option value="6"><option value="8"><option value="12"><option value="24"><option value="30"><option value="60"></datalist><label title="Repete cada desenho 2 ou 3 quadros (animação tradicional)">Desenhos <select data-a="passo"><option value="1">em um</option><option value="2">em dois</option><option value="3">em três</option></select></label><label title="2 = duas vezes mais rápido">Velocidade <input data-a="velA" type="number" min="0.1" max="8" step="0.1" value="1">×</label>' +
     '<label>Curva <select data-a="curva">' + Object.keys(CURVAS).map(c => "<option" + (c === "suave" ? " selected" : "") + ">" + c + "</option>").join("") + '</select></label><label><input type="checkbox" data-a="rel"> relativa</label><label><input type="checkbox" data-a="loop"> loop</label>' +
     '<input data-a="tags" placeholder="tags: Locomocao/Passo, Conversa/Explicar" aria-label="Tags"><button type="button" class="primario" data-a="salvar">Salvar na biblioteca</button><button type="button" data-a="fechar" aria-label="Fechar">✕</button></header>' +
     '<div class="qd-corpo"><div class="qd-ed"><div class="qd-barra"><button type="button" class="primario" data-a="gravar" title="Grava a pose atual do manequim do palco no instante marcado">● Gravar chave</button><label>em <input data-a="t" type="number" min="0" step="0.05" value="0"> s</label>' +
-    '<button type="button" data-a="palco" title="Põe o manequim do palco neste instante da animação">Ver no palco</button><button type="button" data-a="apagar">Apagar chave</button><button type="button" data-a="copiar">Copiar</button><button type="button" data-a="colar">Colar</button><button type="button" data-a="nova">Nova</button></div>' +
+    '<button type="button" data-a="palco" title="Põe o manequim do palco neste instante da animação">Ver no palco</button><button type="button" data-a="apagar">Apagar chave</button><button type="button" data-a="copiar">Copiar</button><button type="button" data-a="colar">Colar</button><button type="button" data-a="nova">Nova</button><button type="button" data-a="desf" title="Desfazer (Ctrl+Z)">↶</button><button type="button" data-a="refa" title="Refazer (Ctrl+Y)">↷</button><label title="Curva só da chave escolhida (do anterior até ela)">Curva da chave <select data-a="curvaK"><option value="">(a da animação)</option>' + Object.keys(CURVAS).map(c => "<option>" + c + "</option>").join("") + '</select></label><label title="O pé de apoio não escorrega (giros, passos)"><input type="checkbox" data-a="trav"> pés presos</label></div>' +
     '<div class="an-chaves"></div><div class="an-linha" aria-label="Linha do tempo"></div>' +
-    '<fieldset class="qd-opc"><legend>Pose A → pose B</legend><select data-a="pA">' + poses + '</select> → <select data-a="pB">' + poses + '</select><button type="button" data-a="ab">Criar</button><small>usa as poses prontas; ajuste depois gravando chaves</small></fieldset>' +
+    '<fieldset class="qd-opc"><legend>Girar, andar, olhar</legend><label>Girar <input data-a="gAng" type="number" min="-1080" max="1080" step="15" value="360">°</label><select data-a="gEst"><option value="passos">com passos</option><option value="pivo">pivô (pirueta)</option><option value="luta">base de luta</option><option value="salto">no ar</option></select><select data-a="gDir"><option value="1">para a esquerda</option><option value="-1">para a direita</option></select><button type="button" data-a="gCriar">Criar giro</button> <label>Andar até <input data-a="aX" type="number" step="0.5" value="2" aria-label="x (m)"> , <input data-a="aZ" type="number" step="0.5" value="2" aria-label="z (m)"> m</label><label><input type="checkbox" data-a="aCorre"> correndo</label><button type="button" data-a="aCriar">Criar caminhada</button> <label>Olhar para <select data-a="oAlvo"></select></label><select data-a="oModo"><option value="natural">natural (olhos→cabeça→corpo)</option><option value="so-cabeca">só a cabeça</option><option value="so-olhos">só os olhos</option><option value="corpo">o corpo todo</option></select><button type="button" data-a="oFazer">Olhar</button></fieldset><fieldset class="qd-opc"><legend>Pose A → pose B</legend><select data-a="pA">' + poses + '</select> → <select data-a="pB">' + poses + '</select><button type="button" data-a="ab">Criar</button><small>usa as poses prontas; ajuste depois gravando chaves</small></fieldset>' +
     '<fieldset class="qd-opc an-partes"><legend>Partes que a animação mexe (nenhuma marcada = todas)</legend>' + Object.keys(AN_PARTES).map(p => '<label><input type="checkbox" value="' + p + '"> ' + p + "</label>").join("") + "</fieldset>" +
     '<fieldset class="qd-opc"><legend>Exportar</legend><label>Largura <input data-a="larg" type="number" min="160" max="1600" value="480"> px</label><button type="button" data-x="gif">GIF</button><button type="button" data-x="webm">Vídeo WebM</button><button type="button" data-x="png">PNGs (.zip)</button><button type="button" data-x="openpose">OpenPose por quadro</button><button type="button" data-x="json">JSON</button>' +
     '<button type="button" data-a="video" title="Toca o name da aba Name: durações, animações e movimentos de câmera">Vídeo do name</button></fieldset><p class="qd-out"></p></div>' +
-    '<div class="qd-lado"><div class="an-prev qd-prev"></div><div class="qd-barra"><button type="button" data-a="prep">Preparar</button><button type="button" class="primario" data-a="play">▶ Tocar</button><button type="button" data-a="ant">⏮</button><button type="button" data-a="prox">⏭</button>' +
-    '<select data-a="vel" aria-label="Velocidade"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select><label><input type="checkbox" data-a="repetir" checked> repetir</label><label><input type="checkbox" data-a="onion"> fantasma</label><span class="an-tempo"></span></div>' +
+    '<div class="qd-lado"><div class="an-prev qd-prev"></div><div class="qd-barra"><button type="button" data-a="prep">Preparar</button><button type="button" class="primario" data-a="play">▶ Tocar</button><button type="button" data-a="cancelar" hidden>Cancelar</button><button type="button" data-a="palcoPlay" title="Toca no palco, no manequim de verdade">▶ No palco</button><button type="button" data-a="ant">⏮</button><button type="button" data-a="prox">⏭</button>' +
+    '<select data-a="vel" aria-label="Velocidade"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select><label><input type="checkbox" data-a="repetir" checked> repetir</label><label><input type="checkbox" data-a="onion"> fantasma</label><label title="Caminho visto de cima, com as pisadas (azul = esquerdo, vermelho = direito)"><input type="checkbox" data-a="traj" checked> trajeto</label><label title="Pisca e respira sozinho"><input type="checkbox" data-a="vida"> vida</label><span class="an-tempo"></span></div><p class="an-est" aria-live="polite"></p>' +
     '<input type="range" data-a="sl" min="0" max="0" value="0" aria-label="Quadro">' +
     '<h3 class="qd-sub">Biblioteca de animações</h3><div class="qd-barra"><input type="search" data-a="busca" placeholder="Buscar"><select data-a="tagF"></select><select data-a="parteF"><option value="">Todas as partes</option>' + Object.keys(AN_PARTES).map(p => "<option>" + p + "</option>").join("") + '</select><button type="button" data-a="imp">Importar…</button><input type="file" accept=".json,.gmanim" data-a="impArq" hidden><button type="button" data-a="expTodas">Exportar as minhas</button><span class="qd-cont"></span></div><ul class="an-lista"></ul></div></div>';
   document.body.appendChild(area);
   const q = s => area.querySelector(s), b = k => q('[data-a="' + k + '"]');
   Object.assign(E, { area, quem: b("quem"), nome: b("nome"), dur: b("dur"), fps: b("fps"), curva: b("curva"), rel: b("rel"), loop: b("loop"), tags: b("tags"), t: b("t"), chaves: q(".an-chaves"), linha: q(".an-linha"), partes: q(".an-partes"), larg: b("larg"),
-    out: q(".qd-out"), prev: q(".an-prev"), play: b("play"), vel: b("vel"), repetir: b("repetir"), onion: b("onion"), tempo: q(".an-tempo"), sl: b("sl"), busca: b("busca"), tagF: b("tagF"), parteF: b("parteF"), lista: q(".an-lista"), cont: q(".qd-cont") });
+    out: q(".qd-out"), prev: q(".an-prev"), play: b("play"), vel: b("vel"), repetir: b("repetir"), onion: b("onion"), tempo: q(".an-tempo"), sl: b("sl"), busca: b("busca"), tagF: b("tagF"), parteF: b("parteF"), lista: q(".an-lista"), cont: q(".qd-cont"), passo: b("passo"), velA: b("velA"), cancelar: b("cancelar"), palcoPlay: b("palcoPlay"), traj: b("traj"), vida: b("vida"), est: q(".an-est"), curvaK: b("curvaK"), trav: b("trav") });
   const mudou = () => { ED.modo = E.rel.checked ? "relativa" : "absoluta"; ED.duracao = +E.dur.value || 1; FR = null; desenharLinha(); };
-  [E.dur, E.fps, E.curva, E.rel, E.loop].forEach(x => x.addEventListener("change", mudou));
+  [E.dur, E.fps, E.curva, E.rel, E.loop, E.passo, E.velA].forEach(x => x.addEventListener("change", () => { mudou(); estimativa(); }));
+  [E.fps, E.passo].forEach(x => x.addEventListener("change", () => { x.dataset.mexido = "1"; if (+E.fps.value > 60) E.fps.value = 60; if (+E.fps.value < 1) E.fps.value = 1; }));
+  E.cancelar.addEventListener("click", () => { CANCELAR = true; }); E.palcoPlay.addEventListener("click", tocarNoPalco);
+  E.traj.addEventListener("change", () => mostrarQuadro(+E.sl.value)); E.vida.addEventListener("change", () => { FR = null; });
+  b("desf").addEventListener("click", () => desfazer(false)); b("refa").addEventListener("click", () => desfazer(true));
+  E.curvaK.addEventListener("change", () => { if (chaveSel < 0) return log("Escolha uma chave (clique nela) para dar a curva só dela.", true); marcar(); ED.chaves[chaveSel].curva = E.curvaK.value || undefined; FR = null; log("Curva da chave " + ED.chaves[chaveSel].t.toFixed(2) + " s: " + (E.curvaK.value || "a da animação")); });
+  E.trav.addEventListener("change", () => { ED.travarPes = E.trav.checked; FR = null; });
+  b("gCriar").addEventListener("click", () => { try { const an = animacaoGiro({ angulo: Math.abs(+b("gAng").value || 360) * (+b("gDir").value || 1), estilo: b("gEst").value }); carregarNoEditor(an); E.trav.checked = true; preparar(); log(an.descricao + " — ajuste as chaves e salve, se quiser."); } catch (e) { log(e.message, true); } });
+  b("aCriar").addEventListener("click", () => { try { const x = it(), an = animacaoAndarAte(x, [(+b("aX").value || 0) / 0.114, (+b("aZ").value || 0) / 0.114], { correndo: b("aCorre").checked }); carregarNoEditor(an); preparar(); log(an.descricao + "."); } catch (e) { log(e.message, true); } });
+  b("oFazer").addEventListener("click", () => { try { const x = it(), al = b("oAlvo").value; const r = olharNatural(x, al === "camera" ? "camera" : al, { modo: b("oModo").value }); refreshScene && refreshScene(); syncControls && syncControls(); render(); log(r.alcancou ? "Olhando para " + al + (r.virouCorpo ? " (o corpo virou " + r.virouCorpo + "°)" : "") + "." : "Não alcança " + al + " (faltam " + r.erro + "°): use “o corpo todo” ou gire.", !r.alcancou); } catch (e) { log(e.message, true); } });
   E.partes.addEventListener("change", () => { FR = null; });
   b("gravar").addEventListener("click", gravarChave); b("t").addEventListener("change", () => irPara(+E.t.value || 0));
   b("palco").addEventListener("click", poseNoPalco);
-  b("apagar").addEventListener("click", () => { if (chaveSel >= 0) { ED.chaves.splice(chaveSel, 1); chaveSel = -1; FR = null; desenharLinha(); } else log("Escolha uma chave (clique nela).", true); });
+  b("apagar").addEventListener("click", () => { if (chaveSel >= 0) { marcar(); ED.chaves.splice(chaveSel, 1); chaveSel = -1; FR = null; desenharLinha(); } else log("Escolha uma chave (clique nela).", true); });
   b("copiar").addEventListener("click", () => { if (chaveSel >= 0) { copia = JSON.parse(JSON.stringify(ED.chaves[chaveSel])); log("Chave copiada."); } });
-  b("colar").addEventListener("click", () => { if (!copia) return; const c = Object.assign(JSON.parse(JSON.stringify(copia)), { t: +T.toFixed(3) }); ED.chaves = ED.chaves.filter(k => Math.abs(k.t - c.t) > 1e-3).concat([c]).sort((a, b2) => a.t - b2.t); FR = null; desenharLinha(); });
+  b("colar").addEventListener("click", () => { if (!copia) return; const c = Object.assign(JSON.parse(JSON.stringify(copia)), { t: +T.toFixed(3) }); marcar(); ED.chaves = ED.chaves.filter(k => Math.abs(k.t - c.t) > 1e-3).concat([c]).sort((a, b2) => a.t - b2.t); FR = null; desenharLinha(); });
   b("nova").addEventListener("click", () => { ED = novoEd(); E.nome.value = ED.nome; E.dur.value = 1; E.tags.value = ""; FR = null; T = 0; chaveSel = -1; desenharLinha(); E.prev.innerHTML = ""; log("Animação nova."); });
   b("ab").addEventListener("click", () => { try { const x = it(), a = animacaoDePoses([b("pA").value, b("pB").value], { duracao: +E.dur.value || 1, base: x.params }); ED.base = anSemCamera(x.params);
     ED.chaves = a.chaves.map(c => ({ t: c.t, valores: Object.assign(fotoDoManequim(x), c.valores) })); E.nome.value = a.nome; FR = null; desenharLinha(); preparar(); } catch (e) { log(e.message, true); } });
-  E.chaves.addEventListener("click", e => { const t = e.target.closest("[data-i]"); if (!t) return; chaveSel = +t.dataset.i; irPara(ED.chaves[chaveSel].t); });
+  E.chaves.addEventListener("click", e => { const t = e.target.closest("[data-i]"); if (!t) return; chaveSel = +t.dataset.i; E.curvaK.value = ED.chaves[chaveSel].curva || ""; irPara(ED.chaves[chaveSel].t); });
   /* arrastar uma chave na linha do tempo muda o instante dela; clicar na régua move a agulha */
   let arr = null;
   E.linha.addEventListener("pointerdown", e => { const ch = e.target.closest(".an-chave"), tr = e.target.closest(".an-trilha"); if (!tr) return; const r = tr.getBoundingClientRect(), D = +E.dur.value || ED.duracao, tAt = Math.max(0, Math.min(D, (e.clientX - r.left) / r.width * D));
-    if (ch) { chaveSel = +ch.dataset.i; arr = { i: chaveSel, r, D }; tr.setPointerCapture && tr.setPointerCapture(e.pointerId); } else irPara(tAt); });
+    if (ch) { chaveSel = +ch.dataset.i; marcar(); E.curvaK.value = ED.chaves[chaveSel].curva || ""; arr = { i: chaveSel, r, D }; tr.setPointerCapture && tr.setPointerCapture(e.pointerId); } else irPara(tAt); });
   E.linha.addEventListener("pointermove", e => { if (!arr) return; const t = Math.max(0, Math.min(arr.D, (e.clientX - arr.r.left) / arr.r.width * arr.D)); ED.chaves[arr.i].t = Math.round(t * 20) / 20; desenharLinha(); });
   E.linha.addEventListener("pointerup", () => { if (arr) { ED.chaves.sort((a, b2) => a.t - b2.t); arr = null; FR = null; desenharLinha(); } });
   b("prep").addEventListener("click", preparar); E.play.addEventListener("click", tocar);
@@ -195,8 +248,8 @@ export function iniciarAnimacao() {
   E.lista.addEventListener("click", e => { const bt = e.target.closest("button[data-a]"), li = e.target.closest("li[data-n]"); if (bt && li) acaoLista(li.dataset.n, bt.dataset.a, bt); });
   b("imp").addEventListener("click", () => b("impArq").click()); b("impArq").addEventListener("change", async e => { const f = e.target.files && e.target.files[0]; if (f) try { log(bibliotecaAnimacoes().importar(await f.text()) + " animação(ões) importada(s)."); lista(); } catch (er) { log("Arquivo inválido: " + er.message, true); } e.target.value = ""; });
   b("expTodas").addEventListener("click", async () => { const r = await baixar("animacoes.gmanim.json", bibliotecaAnimacoes().exportar(), "application/json"); log(r === "ok" ? "Exportadas." : "Não deu para baixar (" + r + ").", r !== "ok"); });
-  area.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); if (e.key === " " && e.target === area) { e.preventDefault(); tocar(); } });
+  area.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "y") && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { e.preventDefault(); desfazer(e.key === "y" || e.shiftKey); return; } if (e.key === "Escape") fechar(); if (e.key === " " && e.target === area) { e.preventDefault(); tocar(); } });
   const btn = document.getElementById("animBtn"); if (btn) btn.addEventListener("click", () => E.area.hidden ? abrir() : fechar());
   iniciarBiblioteca();
-  void L; void sceneState; void anPoseValores;
+  void L; void sceneState; void anPoseValores; void retimar;
 }

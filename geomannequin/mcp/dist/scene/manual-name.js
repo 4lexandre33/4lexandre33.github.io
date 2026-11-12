@@ -290,16 +290,72 @@ Bloco de animação (sem recuo), chaves com recuo:
   Só o que muda entre as chaves entra na animação (ela fica parcial e reutilizável).
   "relativa" = guarda as diferenças para a primeira chave (vale a partir de qualquer pose: "pe direito 15cm para direita" funciona em pé, agachado…).
   Numa relativa, pose/gesto/expressão também viram diferenças (ex.: o quanto o braço sobe do começo ao gesto).
-  Repetir um trecho (acenar 3 vezes): escreva as chaves de ida e volta, ou use "loop" na animação inteira. "olha" não vai em chave (use no quadro).
+  Repetir um trecho (acenar 3 vezes): escreva as chaves de ida e volta, ou use "loop" na animação inteira.
+  "olha Mira [so-cabeca|so-olhos|corpo]" numa chave: dali em diante a cabeça (e os olhos) seguem Mira; a cabeça chega em ~0,3 s (padrão: so-cabeca, para não brigar com "move giro").
+  "segurar 0.3s" numa chave: o corpo para naquela chave por 0,3 s (pausa dramática) e o resto anda para depois.
+  Cabeçalho: fps 1–60 · velocidade 2 (duas vezes mais rápida; 0.5 = câmera lenta) · em-dois / em-tres (cada desenho fica 2 ou 3 quadros) · travar-pes (o pé de apoio não escorrega).
   "salvar" = vai para a biblioteca de animações.
 No quadro:  Kai anima chegar [depois acenarSim] [instante 0.5s]   (o quadro mostra o fim, ou o instante; o vídeo toca tudo)
 Cabeçalho do quadro:  duracao 2s  ·  camera-move aproxima|afasta|panoramica-esquerda|panoramica-direita|orbita 30|sobe|desce|treme
   (o número opcional é o quanto: aproxima 40 = 40% mais perto; orbita 30 = 30 graus; padrão: aproxima 40, afasta 60, panorâmica 20, orbita 30, sobe/desce 15)
-Vídeo (animatic): cada quadro dura "duracao"; as animações tocam e a câmera se move → GIF/WebM/PNG (site: Animação → Vídeo do name; MCP: video_name).
+Vídeo (animatic): cada quadro dura "duracao" (ou o tempo da animação mais longa / da fala mais longa); as animações tocam e a câmera se move → GIF/WebM/PNG (site: Animação → Vídeo do name; MCP: video_name).
+  No topo do name:  video fps 24 [em-dois|em-tres] [velocidade 1.5] [sem-vida]
+  Cabeçalho do quadro: velocidade 0.5 (só aquele quadro, ex.: câmera lenta no impacto).
+  Câmera no tempo (dentro do quadro):  camera 1.5s plano close alvo Kai lado 60 [elevacao 10] [lente 85] [angulo plongee]
+    a câmera do quadro é a do instante 0; ela vai suave até cada chave de câmera (pode ter várias).
+  No vídeo, sozinho: a boca segue a fala letra a letra (~13 letras/s; vírgula fecha 0,25 s, ponto 0,45 s); todos piscam (~a cada 3,5 s) e respiram
+    ("sem-vida" desliga); objetos seguros acompanham a mão; quem atravessa outra pessoa num quadro do vídeo vira aviso ("Kai e Mira se atravessam").
 Curvas: ${Object.keys(CURVAS).join(", ")}. Partes do corpo: ${Object.keys(AN_PARTES).join(", ")}.
 Animações prontas (${bibliotecaAnimacoes().listar().length}): ${bibliotecaAnimacoes().listar().map(a => a.nome).join(", ")}.
 
-13. EXEMPLO COMPLETO
+13. OLHAR, VIRAR E GIRAR (quem olha para quem, girar 360° com os pés)
+Olhar de verdade é em cadeia: os OLHOS fazem até ~35° para os lados (~25° para cima/baixo), a CABEÇA até ~60°, o TRONCO ajuda e, se o alvo
+estiver mais atrás que isso, o CORPO vira (fica ~35° do alvo e a cabeça/olhos fecham o resto).
+  Kai olha Mira                 (natural: olhos → cabeça → tronco → corpo, o que precisar)
+  Kai olha Mira so-cabeca       (o corpo NÃO vira; se não der, o quadro avisa e a legenda diz "tentando olhar")
+  Kai olha Mira so-olhos        (só os olhos; bom para "olhar de canto")
+  Kai olha Mira corpo           (o corpo todo vira para Mira)
+  alvo: alguém do elenco, camera, um objeto ("olha Mesa"), ou (x,z) em metros.
+Conferência automática: depois do quadro, cada olhar é medido; se faltar mais de 10° o aviso diz quanto falta e o que usar ("olha … corpo" ou "vira-para …").
+Diálogo: "dialogo Kai, Mira [tom tenso] [de-frente|lado-a-lado|aberto|livre]"
+  de-frente (padrão) = os corpos viram um para o outro · lado-a-lado = ombro a ombro (corpos para a frente, cabeças viradas) ·
+  aberto = 3/4, meio virados para a frente da cena (teatro) · livre = não mexe nos corpos. Quem tem "vira-para", "gira" ou "anima" na linha não é virado.
+VIRAR:
+  Kai vira-para Mira            (instantâneo: o quadro mostra já virado)
+  Kai vira-para Mira passos     (anima: vira com passos de verdade, entra no vídeo)
+  Kai gira 90                   (instantâneo: fica virado a 90° — número = direção no mundo)
+GIRAR NO LUGAR (anima, com os pés; até 360° e além, ex.: 720 pivo):
+  Kai gira 360 passos [esquerda|direita]   — pisa em 4 passos (90° cada); o pé de apoio fica PRESO no chão e o corpo gira em volta dele;
+                                              o pé livre sai pelo calcanhar, gira no ar e desce reto; a coxa gira ao contrário (até ~22°) e o resto é a bola do pé
+  Kai gira 360 pivo             — pirueta na ponta de um pé, a outra perna recolhida (passé), a cabeça presa num ponto e virando de uma vez (spotting)
+  Kai gira 360 luta             — base baixa (joelhos dobrados), 3 passos curtos e rápidos
+  Kai gira 360 salto            — impulso, giro no ar, aterrissa dobrando os joelhos
+  Ordem do corpo ao virar: olhos e cabeça ANTECIPAM → ombros/tronco → pelve → pés (a cabeça chega antes).
+  Sentido: esquerda = anti-horário visto de cima = para a esquerda DO PERSONAGEM; direita = horário. Sem sentido: o sinal do número (−90 = direita).
+  Prontas na biblioteca: girar45E/D, girar90E/D, girar180E/D, girar360E/D, girar360E/D_pivo, girar720E_pivo, girar360E/D_luta, girar360E/D_salto.
+ANDAR ATÉ:
+  Kai anda-ate Mira [correndo] [parar 1.2]   (para a ~90 cm de uma pessoa/objeto; "parar" muda a distância em metros)
+  Kai anda-ate (3,2) · Kai anda-ate marca "porta" · Kai corre-ate Mira
+  Vira com passos se precisar, anda com passadas do tamanho do corpo (criança dá passos menores), desvia do primeiro objeto alto no caminho e, no fim, olha para quem foi encontrar.
+TEMPO E QUADROS POR SEGUNDO (fps 1–60):
+  fps | uso
+   6–8  | animatic rápido (rascunho, leve)
+   12   | animação limitada / mangá animado (padrão do editor)
+   24   | cinema (com "em-dois" = 12 desenhos por segundo, o clássico)
+   30   | vídeo
+   60   | vídeo fluido / câmera lenta depois
+  em-dois / em-tres: repete cada desenho 2 ou 3 quadros (mesmo fps, menos desenhos, aspecto de animação tradicional).
+  velocidade: 2 = duas vezes mais rápido; 0.5 = metade (câmera lenta). Vale no cabeçalho da animação, do quadro, ou no "video" do topo.
+  segurar 0.3s (numa chave): pausa naquela pose.
+LIMITES (o que ainda NÃO faz, para ninguém prometer):
+  - o pé de apoio fica preso, mas o pé livre pode arrastar alguns cm rente ao chão no começo do passo (sai pelo calcanhar); salto: só o giro no ar, sem física;
+  - "anda-ate" desvia de UM objeto (o primeiro no caminho), não de pessoas, e não sobe escada sozinho;
+  - "olha" numa chave segue o alvo no lugar em que ele está no fim do quadro;
+  - mão que segura objeto: o objeto acompanha, mas a pegada não se reajusta ao andar;
+  - esbarrão é só aviso (centro a centro < 30 cm), não desvia;
+  - boca: ritmo por letra (não é fonema de verdade), em português.
+
+14. EXEMPLO COMPLETO
 ${EXEMPLO_NAME}`;
 }
 
@@ -329,6 +385,16 @@ LOCAIS SALVOS (nome, marcas, regiões):
 {locais}
 
 HISTÓRIA:
+`,
+  "Movimento em texto → animação": `Converta a descrição de movimento abaixo numa ANIMAÇÃO na DSL do GeoMannequin (capítulos 12 e 13 do manual).
+- Se for virar ou girar, use as palavras prontas: "gira 360 passos direita", "vira-para Mira passos", "gira 360 pivo|luta|salto". Se for ir até alguém: "anda-ate Mira [correndo]". Para olhar: "olha Mira [so-cabeca|so-olhos|corpo]".
+- Se for um movimento próprio, escreva um bloco: animacao "nome" duracao Xs [relativa] [fps 24] [em-dois] [velocidade 1] tags "Categoria/Sub" salvar
+  com linhas "chave Ts …" (pose, gesto, atitude, expressao, ajustes como "pe direito 15cm para direita", move frente/lado/giro, olha, segurar 0.3s, fala).
+- Pense na ordem do corpo: olhos e cabeça antes, depois ombros/tronco, pelve e pés; antecipação (um pouco para o lado contrário) antes do movimento grande e um pequeno exagero no fim.
+- Use "relativa" quando o movimento deve valer a partir de qualquer pose (ex.: abaixar a cabeça). Tags hierárquicas (Locomocao/Virar, Conversa/Explicar, Ajuste/Pe).
+Responda SÓ com o código, num bloco de código.
+
+MOVIMENTO:
 `,
   "Explicar a ficha para a IA de imagem": `Cada imagem anexada é a FICHA de um quadro de mangá (storyboard). Leia assim:
 - O painel com BORDA VERDE é o quadro: desenhe a cena final exatamente com este enquadramento, esta câmera, estas poses e posições. Os manequins coloridos são personagens: a mesma cor é sempre o mesmo personagem (veja a legenda de cores); manequins cinza são figurantes.

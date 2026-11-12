@@ -150,6 +150,33 @@ function olharPara(it, alvo) {
   const tw = clamp(yaw - clamp(yaw, -75, 75), -40, 40);
   Object.assign(Q, { headYaw: clamp(yaw - tw, -80, 80), headPitch: clamp(pit * 0.7, -60, 50), neckFlex: clamp(pit * 0.3, -40, 40), spineTwist: clamp((Q.spineTwist || 0) + tw, -45, 45) });
 }
+/* ===== olhar natural: olhos → cabeça → tronco → corpo (como uma pessoa vira para ver alguém) ===== */
+function alvoDoOlhar(alvo) {
+  const s = String(alvo).toLowerCase();
+  if (Array.isArray(alvo)) return alvo.length === 2 ? [alvo[0], 13, alvo[1]] : alvo;
+  if (s === "camera" || s === "câmera") { const yaw = P.yaw * D, pit = P.pitch * D, d = Math.max(3, P.camDist || 30); return [P.tx + Math.sin(yaw) * Math.cos(pit) * d, P.ty - Math.sin(pit) * d, P.tz + Math.cos(yaw) * Math.cos(pit) * d]; }
+  const o = SCN.list.find(x => x.name.toLowerCase() === s); if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+  const po = pMundo(o), ch = chainSetup(o.params, shape(o.params)); return paraMundo(po)(applyA(ch.A3, [0, 0, 0]));
+}
+/* ângulo (graus) do alvo visto pela cabeça: yaw + = para a esquerda do manequim, pit + = para baixo */
+function anguloNaCabeca(it, W) {
+  const Q = it.params, pw = pMundo(it), ch = chainSetup(Q, shape(Q)), cab = applyA(ch.A3, [0, 0, 0]), al = doMundo(pw)(W), dl = mv(mT(ch.A3.M), [al[0] - cab[0], al[1] - cab[1], al[2] - cab[2]]);
+  return { yaw: Math.atan2(dl[0], dl[2]) / D, pit: -Math.atan2(dl[1], Math.hypot(dl[0], dl[2])) / D };
+}
+/* modo: "natural" (padrão: o corpo vira se precisar), "so-cabeca", "so-olhos", "corpo" (vira o corpo todo para o alvo) */
+function olharNatural(it, alvo, o = {}) {
+  const Q = it.params, modo = String(o.modo || "natural").toLowerCase().replace(/ó/g, "o"), W = alvoDoOlhar(alvo);
+  const dx = W[0] - (Q.wx || 0), dz = W[2] - (Q.wz || 0), angAlvo = Math.atan2(dx, dz) / D, rel = ((angAlvo - (Q.wRot || 0)) % 360 + 540) % 360 - 180;
+  let virou = 0;
+  if (modo === "corpo") { virou = rel; Q.wRot = Math.round(angAlvo); }
+  else if (modo === "natural" && Math.abs(rel) > (o.limite ?? 60) && Math.hypot(dx, dz) > 0.5) { virou = rel - Math.sign(rel) * 35; Q.wRot = Math.round(((Q.wRot || 0) + virou + 540) % 360 - 180); }
+  if (modo !== "so-olhos") olharPara(it, W);
+  /* olhos fecham o que falta (±35° para os lados, ±25° em cima/embaixo) */
+  const r = anguloNaCabeca(it, W); Q.eyeYaw = clamp(r.yaw / 35, -1, 1); Q.eyePitch = clamp(-r.pit / 25, -1, 1);
+  const erroYaw = Math.max(0, Math.abs(r.yaw) - 35), erroPit = Math.max(0, Math.abs(r.pit) - 25), erro = Math.hypot(erroYaw, erroPit);
+  it.olharAlvo = typeof alvo === "string" ? alvo : null;
+  return { alcancou: erro < 10, erro: Math.round(erro), virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
+}
 /* mão (lado 1 = esquerda, −1 = direita) num ponto do mundo [x, y, z] */
 function maoEm(it, lado, W) {
   const Q = it.params, S = shape(Q), pw = pMundo(it), alvo = doMundo(pw)(W), r = ikArm(Q, S, lado, alvo), L_ = lado > 0 ? "L" : "R";
@@ -220,4 +247,4 @@ function encostarEm(it, ref) {
   it.apoioEm = q.id; return q;
 }
 
-export { adicionarObjeto, editarObjeto, removerObjeto, duplicarObjeto, acharObjeto, apoioSob, emCimaDe, tipoObjeto, APOIAVEL, direcaoMundo, orientar, deitar, olharPara, maoEm, peEm, apontarPara, isquios, sentar, subirEm, encostarEm, DIRS };
+export { olharNatural, anguloNaCabeca, alvoDoOlhar, adicionarObjeto, editarObjeto, removerObjeto, duplicarObjeto, acharObjeto, apoioSob, emCimaDe, tipoObjeto, APOIAVEL, direcaoMundo, orientar, deitar, olharPara, maoEm, peEm, apontarPara, isquios, sentar, subirEm, encostarEm, DIRS };

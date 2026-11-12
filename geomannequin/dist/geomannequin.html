@@ -524,6 +524,7 @@ body.qd-aberto{overflow:hidden}
 .an-cab{position:absolute;top:0;bottom:-400px;width:2px;background:var(--coral);pointer-events:none;z-index:2}
 .an-chave{position:absolute;top:3px;width:10px;height:10px;margin-left:-5px;transform:rotate(45deg);background:var(--cobalt);border:1px solid var(--ink);cursor:grab}.an-chave.sel{background:var(--coral)}
 .an-prev{min-height:260px;position:relative}.an-pilha{position:relative;width:100%}.an-pilha svg{display:block;width:100%;height:auto;max-height:46vh}
+.an-prev .an-traj{position:absolute;right:6px;bottom:6px;width:120px;height:auto;max-height:120px;background:var(--panel,#fff);border:1px solid var(--line,#ccc);border-radius:6px;color:var(--ink,#333);opacity:.92}.an-est{margin:.2rem 0;font-size:.8rem;opacity:.75}
 .an-fant{position:absolute;inset:0;pointer-events:none}.an-frente{position:relative}
 .an-tempo{font:12px var(--font-mono);color:var(--muted)}
 .an-lista{list-style:none;margin:0;padding:0;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
@@ -17812,6 +17813,41 @@ pre.cmdout .ok{color:var(--cobalt)}
     const tw = clamp(yaw - clamp(yaw, -75, 75), -40, 40);
     Object.assign(Q, { headYaw: clamp(yaw - tw, -80, 80), headPitch: clamp(pit * 0.7, -60, 50), neckFlex: clamp(pit * 0.3, -40, 40), spineTwist: clamp((Q.spineTwist || 0) + tw, -45, 45) });
   }
+  function alvoDoOlhar(alvo) {
+    const s = String(alvo).toLowerCase();
+    if (Array.isArray(alvo)) return alvo.length === 2 ? [alvo[0], 13, alvo[1]] : alvo;
+    if (s === "camera" || s === "câmera") {
+      const yaw = P2.yaw * D, pit = P2.pitch * D, d = Math.max(3, P2.camDist || 30);
+      return [P2.tx + Math.sin(yaw) * Math.cos(pit) * d, P2.ty - Math.sin(pit) * d, P2.tz + Math.cos(yaw) * Math.cos(pit) * d];
+    }
+    const o = SCN.list.find((x) => x.name.toLowerCase() === s);
+    if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+    const po = pMundo(o), ch = chainSetup(o.params, shape(o.params));
+    return paraMundo(po)(applyA(ch.A3, [0, 0, 0]));
+  }
+  function anguloNaCabeca(it2, W4) {
+    const Q = it2.params, pw = pMundo(it2), ch = chainSetup(Q, shape(Q)), cab = applyA(ch.A3, [0, 0, 0]), al = doMundo(pw)(W4), dl = mv(mT(ch.A3.M), [al[0] - cab[0], al[1] - cab[1], al[2] - cab[2]]);
+    return { yaw: Math.atan2(dl[0], dl[2]) / D, pit: -Math.atan2(dl[1], Math.hypot(dl[0], dl[2])) / D };
+  }
+  function olharNatural(it2, alvo, o = {}) {
+    const Q = it2.params, modo = String(o.modo || "natural").toLowerCase().replace(/ó/g, "o"), W4 = alvoDoOlhar(alvo);
+    const dx = W4[0] - (Q.wx || 0), dz = W4[2] - (Q.wz || 0), angAlvo = Math.atan2(dx, dz) / D, rel = ((angAlvo - (Q.wRot || 0)) % 360 + 540) % 360 - 180;
+    let virou = 0;
+    if (modo === "corpo") {
+      virou = rel;
+      Q.wRot = Math.round(angAlvo);
+    } else if (modo === "natural" && Math.abs(rel) > (o.limite ?? 60) && Math.hypot(dx, dz) > 0.5) {
+      virou = rel - Math.sign(rel) * 35;
+      Q.wRot = Math.round(((Q.wRot || 0) + virou + 540) % 360 - 180);
+    }
+    if (modo !== "so-olhos") olharPara(it2, W4);
+    const r = anguloNaCabeca(it2, W4);
+    Q.eyeYaw = clamp(r.yaw / 35, -1, 1);
+    Q.eyePitch = clamp(-r.pit / 25, -1, 1);
+    const erroYaw = Math.max(0, Math.abs(r.yaw) - 35), erroPit = Math.max(0, Math.abs(r.pit) - 25), erro = Math.hypot(erroYaw, erroPit);
+    it2.olharAlvo = typeof alvo === "string" ? alvo : null;
+    return { alcancou: erro < 10, erro: Math.round(erro), virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
+  }
   function maoEm(it2, lado2, W4) {
     const Q = it2.params, S = shape(Q), pw = pMundo(it2), alvo = doMundo(pw)(W4), r = ikArm(Q, S, lado2, alvo), L_ = lado2 > 0 ? "L" : "R";
     Object.assign(Q, { ["armAbd" + L_]: r.abd, ["armFlex" + L_]: r.flex, ["armRot" + L_]: r.rot, ["elbow" + L_]: r.elbow });
@@ -19303,13 +19339,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (q.direcao && q.direcao.alvo && typeof q.direcao.alvo === "object") nomeDe(q.direcao.alvo);
     return q;
   }
-  function criarApiEfeitos(marcar2) {
+  function criarApiEfeitos(marcar3) {
     const api = {
       /* cena.efeitos.adicionar("explosao", {em: {manequim: "Ana", parte: "maoDir"}, elemento: "fogo", raio: 6}) → id */
       adicionar(tipo, opts) {
         if (fxLista().length >= FX_MAX) throw new Error("Limite de " + FX_MAX + " efeitos na cena.");
         const e = fxMontar(tipo, opts);
-        marcar2();
+        marcar3();
         fxLista().push(e);
         return e.id;
       },
@@ -19323,25 +19359,25 @@ pre.cmdout .ok{color:var(--cobalt)}
       editar(id, opts, silencioso) {
         const i = fxAchar(id), atual2 = fxLista()[i];
         const e = fxMontar(opts && opts.tipo || atual2.tipo, opts, { ...atual2, id: atual2.id });
-        if (!silencioso) marcar2();
+        if (!silencioso) marcar3();
         fxLista()[i] = e;
         return e.id;
       },
       remover(id) {
         const i = fxAchar(id);
-        marcar2();
+        marcar3();
         fxLista().splice(i, 1);
       },
       limpar() {
         if (!fxLista().length) return;
-        marcar2();
+        marcar3();
         fxLista().length = 0;
       },
       /* cena.efeitos.colorir(false) → todos em preto e branco; colorir(true, "fx3") → só um */
       colorir(sim = true, id) {
         const alvos = id ? [fxAchar(id)] : fxLista().map((_, i) => i);
         if (!alvos.length) return 0;
-        marcar2();
+        marcar3();
         alvos.forEach((i) => {
           fxLista()[i] = validarEfeito({ ...fxLista()[i], colorido: !!sim });
         });
@@ -19355,13 +19391,13 @@ pre.cmdout .ok{color:var(--cobalt)}
         const i = fxAchar(id), b = JSON.parse(JSON.stringify(fxLista()[i]));
         delete b.id;
         const e = fxMontar(b.tipo, { ...opts || {}, semente: (opts && opts.semente) ?? b.semente + 1 }, b);
-        marcar2();
+        marcar3();
         fxLista().splice(i + 1, 0, e);
         return e.id;
       },
       mostrar(id, sim = true) {
         const i = fxAchar(id);
-        marcar2();
+        marcar3();
         fxLista()[i].visivel = !!sim;
       },
       ordem(id, onde) {
@@ -19409,7 +19445,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       /* efeitos antigos (referências de explosão, chama, fumaça, rastro, linhas, impacto) → sistema novo */
       converterAntigos() {
         let n2 = 0;
-        marcar2();
+        marcar3();
         SCN.list.forEach((it2) => {
           const refs = it2.referencias || [], fica = [];
           refs.forEach((r) => {
@@ -25298,6 +25334,10 @@ log(cena.vinculos());`,
     add3("## 7j. Conversa e animação");
     add3('- Conversa: `aplicarGestoConversa(it, "explicar")`, `aplicarAtitude(it, "cabecaInclinada")`, `aplicarPapel(it, "ouvinteCetico")`, `falar(it, "raiva", "texto")`, `ajusteFino(it, "pe direito", "pe", 15, "direita")` (no MCP: `linguagem_corporal`; na DSL do name: `gesto`, `atitude`, `papel`, `fala … tom …`, `pescoco inclina 15`, `pe direito 15cm para direita`, `dialogo A, B`).');
     add3("- Animação por quadros-chave: bloco `animacao` na DSL (chaves com pose, gesto, atitude, ajustes, move), biblioteca com mais de 70 mini animações com tags (`listar_animacoes`), `criar_animacao`, `aplicar_animacao`, `exportar_animacao` (GIF, PNGs, OpenPose por quadro) e `video_name` (animatic). No site: botão Animação.\n");
+    add3("## 7k. Olhar, virar, girar e tempo");
+    add3('- Olhar natural (olhos ±35° → cabeça ±60° → tronco → corpo): `olharNatural(it, "Mira" | "camera" | [x,y,z], { modo: "natural" | "so-cabeca" | "so-olhos" | "corpo" })` → `{ alcancou, erro, virouCorpo }`. MCP: `olhar`. DSL: `Kai olha Mira [so-cabeca|so-olhos|corpo]`; `dialogo A, B [de-frente|lado-a-lado|aberto|livre]` já vira os corpos e confere os olhares (aviso se faltar mais de 10°).');
+    add3('- Girar no lugar com os pés: `animacaoGiro({ angulo: 360, estilo: "passos" | "pivo" | "luta" | "salto" })` (+ = esquerda do personagem); o pé de apoio fica preso (`travarPes`, chave `apoio`). Andar até: `animacaoAndarAte(it, [x, z])`. MCP: `girar`, `andar_ate`. DSL: `gira 360 passos direita`, `vira-para Mira passos`, `anda-ate Mira [correndo]`.');
+    add3("- Tempo: fps 1–60, `em-dois`/`em-tres`, `velocidade`, `segurar 0.3s`, `video fps 24 em-dois` no topo do name, `camera 1.5s plano close alvo Kai` (câmera no tempo). No vídeo a boca segue a fala, todos piscam e respiram e esbarrões viram aviso.\n");
     add3("## 7h. Corpo: cinta, criança e tamanho");
     add3("- `cinta` (0–1, padrão 1): glúteos e virilha lisos com um cós, como peça de manequim (sem sugerir nudez); 0 volta à anatomia com a fenda.");
     add3('- `m.corpo("crianca" | "menino" | "menina")`: proporções de criança (≈ 6 cabeças, ombros estreitos, sem músculo) e o corpo menor (`tamanho` ≈ 0,66). `tamanho` (0,45–1,3) escala o corpo inteiro com os pés no chão (gigante, anão, criança).');
@@ -30376,6 +30416,31 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     it2.exprNome = "falando (" + Object.keys(TONS_FALA).find((x) => TONS_FALA[x] === t) + ")";
     return { tom: t.tag };
   }
+  function linhaDaFala(texto2, o = {}) {
+    const v = +o.velocidade || 1, out = [];
+    let t = 0;
+    for (const ch of anNorm(texto2 || "")) {
+      const d = /[a-z]/.test(ch) ? 0.075 : ch === " " ? 0.04 : /[,;:]/.test(ch) ? 0.25 : /[.!?…]/.test(ch) ? 0.45 : 0;
+      if (!d) continue;
+      out.push({ t0: t / v, t1: (t + d) / v, c: /[a-z]/.test(ch) ? ch : null });
+      t += d;
+    }
+    return { segmentos: out, duracao: t / v };
+  }
+  function falarNoTempo(it2, tom, texto2, t, o = {}) {
+    const L_ = o.linha || linhaDaFala(texto2, o), s = L_.segmentos.find((x) => t >= x.t0 && t < x.t1), T3 = TONS_FALA[anNorm(tom || "calmo")] || TONS_FALA.calmo;
+    if (!s) {
+      anSet(it2.params, "jawOpen", 0.03);
+      return { falando: false, fim: t >= L_.duracao };
+    }
+    if (s.c === null) {
+      anSet(it2.params, "jawOpen", 0.03);
+      return { falando: true, pausa: true };
+    }
+    const v = VISEMAS[s.c] ?? 0.35, u = (t - s.t0) / Math.max(1e-3, s.t1 - s.t0);
+    anSet(it2.params, "jawOpen", Math.max(0.04, T3.boca * (0.35 + 0.65 * v) * (0.6 + 0.4 * Math.sin(Math.PI * u))));
+    return { falando: true, letra: s.c };
+  }
   var PAPEIS_CONVERSA = {
     falante: { gestos: ["explicar", "oferecer", "enfatizar", "contarDedos", "apontar"], atitudes: ["troncoAFrente", "cabecaInclinada", null], tom: "explicando", fala: true },
     explicando: { gestos: ["explicar", "contarDedos", "oferecer"], atitudes: ["troncoAFrente", null], tom: "explicando", fala: true },
@@ -30448,8 +30513,26 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     a.chaves = (a.chaves || []).map((c) => Object.assign({ t: 0, valores: {} }, c)).sort((x, y) => x.t - y.t);
     if (!a.chaves.length) throw new Error("A animação precisa de pelo menos uma chave.");
     a.duracao = Math.max(a.duracao, a.chaves[a.chaves.length - 1].t);
-    a.partes = a.partes && a.partes.length ? a.partes : [...new Set(a.chaves.flatMap((c) => Object.keys(c.valores).map((k) => AN_DE_PARTE[k]).concat(c.rosto || c.fala ? ["rosto"] : []).concat(c.mover ? ["lugar"] : []).filter(Boolean)))];
+    a.partes = a.partes && a.partes.length ? a.partes : [...new Set(a.chaves.flatMap((c) => Object.keys(c.valores).map((k) => AN_DE_PARTE[k]).concat(c.rosto || c.fala ? ["rosto"] : []).concat(c.olha ? ["cabeca"] : []).concat(c.mover ? ["lugar"] : []).filter(Boolean)))];
     return a;
+  }
+  function retimar(a, o = {}) {
+    const v = +o.velocidade || 1;
+    let chaves = a.chaves.map((c) => Object.assign({}, c, { t: c.t / v })), dur = a.duracao / v;
+    if (o.segurar) for (const [tk, d] of Object.entries(o.segurar)) {
+      const t0 = +tk / v, i = chaves.findIndex((c2) => Math.abs(c2.t - t0) < 1e-3);
+      if (i < 0) continue;
+      const c = chaves[i];
+      chaves = chaves.map((x) => x.t > t0 + 1e-6 ? Object.assign({}, x, { t: x.t + d }) : x);
+      chaves.splice(i + 1, 0, Object.assign({}, c, { t: t0 + d, curva: "linear", fala: null }));
+      dur += d;
+    }
+    return criarAnimacao(Object.assign({}, a, { nome: o.nome || a.nome, chaves, duracao: dur, velocidade: void 0, segurar: void 0 }));
+  }
+  function instantesVideo(duracao, o = {}) {
+    const fps = Math.max(1, Math.min(60, Math.round(+o.fps || 12))), passo = Math.max(1, Math.min(4, Math.round(+o.passo || (o.emDois ? 2 : o.emTres ? 3 : 1)))), n2 = Math.max(1, Math.round(duracao * fps)) + 1, out = [];
+    for (let i = 0; i < n2; i++) out.push(Math.min(duracao, Math.floor(i / passo) * passo / fps));
+    return { fps, passo, tempos: out, quadros: n2, desenhos: Math.ceil(n2 / passo) };
   }
   function amostrar(a, t, base2) {
     const tt = a.loop ? (t % a.duracao + a.duracao) % a.duracao : Math.max(0, Math.min(a.duracao, t)), ch = a.chaves, out = {}, rel = a.modo === "relativa";
@@ -30518,10 +30601,21 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     if (s.fala) falar(it2, s.fala.tom, s.fala.texto, Math.floor(s.t * 8));
     if (s.mover) {
-      const g = (B3.wRot || 0) * Math.PI / 180, f = [Math.sin(g), Math.cos(g)], d = [f[1], -f[0]];
-      Q.wx = (B3.wx || 0) + (f[0] * s.mover.frente + d[0] * s.mover.lado) * AN_M;
-      Q.wz = (B3.wz || 0) + (f[1] * s.mover.frente + d[1] * s.mover.lado) * AN_M;
-      Q.wRot = (B3.wRot || 0) + s.mover.giro;
+      const g = (B3.wRot || 0) * Math.PI / 180, f = [Math.sin(g), Math.cos(g)], d = [f[1], -f[0]], k = a.escalarPeloCorpo !== false ? B3.tamanho || 1 : 1;
+      Q.wx = (B3.wx || 0) + (f[0] * s.mover.frente + d[0] * s.mover.lado) * AN_M * k;
+      Q.wz = (B3.wz || 0) + (f[1] * s.mover.frente + d[1] * s.mover.lado) * AN_M * k;
+      Q.wRot = (((B3.wRot || 0) + s.mover.giro) % 360 + 540) % 360 - 180;
+    }
+    const ko = (a.chaves || []).filter((c) => c.olha && c.t <= s.t + 1e-6).pop();
+    if (ko) {
+      const ks = ["headYaw", "headPitch", "headRoll", "spineTwist", "eyeYaw", "eyePitch", "wRot"], antes = {};
+      ks.forEach((k) => antes[k] = Q[k] || 0);
+      try {
+        olharNatural(it2, ko.olha, { modo: ko.olhaModo || "so-cabeca" });
+        const u = Math.min(1, (s.t - ko.t) / (ko.olhaTempo || 0.3)), e = u * u * (3 - 2 * u);
+        ks.forEach((k) => Q[k] = antes[k] + ((Q[k] || 0) - antes[k]) * (k.startsWith("eye") ? Math.min(1, u * 3) : e));
+      } catch (er) {
+      }
     }
     limitesAcoplados(Q);
     if (a.pesFixos && !Q.bodyLift && !/salto|pulo|voo/i.test((a.tags || []).join(" "))) {
@@ -30612,6 +30706,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     };
   }
   var AN_CACHE = null;
+  var AN_PROVEDORES = [];
+  function registrarProntas(fn) {
+    AN_PROVEDORES.push(fn);
+    AN_CACHE = null;
+  }
   function ANIM_PRONTAS() {
     if (AN_CACHE) return AN_CACHE;
     const L3 = {}, base2 = Object.assign({}, SCN.list[0] ? SCN.list[0].params : {}), add3 = (nome, a, tags, desc) => {
@@ -30682,6 +30781,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     } catch (e) {
       L3._erro = { nome: "_erro", descricao: e.message, chaves: [{ t: 0, valores: {} }], duracao: 0, tags: [] };
     }
+    for (const f of AN_PROVEDORES) try {
+      Object.assign(L3, f());
+    } catch (e) {
+      L3._erroProvedor = { nome: "_erroProvedor", descricao: e.message, chaves: [{ t: 0, valores: {} }], duracao: 0, tags: [] };
+    }
     AN_CACHE = L3;
     return L3;
   }
@@ -30694,6 +30798,228 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     return o;
   }
+
+  // src/scene/movimento.js
+  var MV_M = 1 / 0.114;
+  var mvRot = (th, p) => {
+    const c = Math.cos(th * Math.PI / 180), s = Math.sin(th * Math.PI / 180);
+    return [p[0] * c + p[1] * s, -p[0] * s + p[1] * c];
+  };
+  var PE_L = [0.11, 0];
+  var PE_R = [-0.11, 0];
+  function pesDoManequim(it2) {
+    const cs = capsulas(pMundo(it2)).caps || capsulas(pMundo(it2)), pe = (n2) => cs.find((c) => c.nome === n2);
+    const f = (c) => c ? { x: (c.a[0] + c.b[0]) / 2, z: (c.a[2] + c.b[2]) / 2, y: Math.min(c.a[1], c.b[1]), calc: c.a, ponta: c.b } : null;
+    return { L: f(pe("peE")), R: f(pe("peD")) };
+  }
+  function apoioNoTempo(a, t) {
+    let r = null;
+    for (const c of a.chaves || []) {
+      if (c.t > t + 1e-6) break;
+      if (c.apoio) r = c.apoio;
+    }
+    return r;
+  }
+  function travarPes(it2, mem, o = {}) {
+    const p = pesDoManequim(it2);
+    if (!p.L || !p.R) return mem;
+    const yMin = Math.min(p.L.y, p.R.y), apoio = o.apoio === "L" || o.apoio === "R" ? o.apoio : o.apoio === "ambos" && mem && mem.lado ? mem.lado : Math.abs(p.L.y - p.R.y) < (o.empate ?? 0.15) ? mem && mem.lado || "L" : p.L.y < p.R.y ? "L" : "R";
+    if (mem && mem.lado === apoio && mem.pos && !(it2.params.bodyLift > 0.5)) {
+      const dx = mem.pos[0] - p[apoio].x, dz = mem.pos[1] - p[apoio].z;
+      if (Math.hypot(dx, dz) < (o.maxCorrecao ?? 4)) {
+        it2.params.wx += dx;
+        it2.params.wz += dz;
+        mem.acc = [(mem.acc ? mem.acc[0] : 0) + dx, (mem.acc ? mem.acc[1] : 0) + dz];
+        return Object.assign(mem, { y: yMin });
+      }
+    }
+    return { lado: apoio, pos: [p[apoio].x, p[apoio].z], acc: mem ? mem.acc : [0, 0], y: yMin };
+  }
+  var _peCache = /* @__PURE__ */ new Map();
+  function peLocal(vals, lado2) {
+    const ch = lado2 + JSON.stringify(vals);
+    if (_peCache.has(ch)) return _peCache.get(ch);
+    let r = lado2 === "L" ? PE_L.slice() : PE_R.slice();
+    try {
+      const b = SCN.list[0] ? anSemCamera(SCN.list[0].params) : {}, emp = anPoseValores("empe", b), p = Object.assign({}, b, emp), out = {};
+      for (const [k, v] of Object.entries(vals)) out[k] = (emp[k] || 0) + v;
+      const it2 = { name: "_medida", params: Object.assign(p, out, { wx: 0, wz: 0, wRot: 0, bodyLift: 0, tamanho: 1 }) }, q = pesDoManequim(it2)[lado2];
+      if (q && Number.isFinite(q.x)) r = [q.x / MV_M, q.z / MV_M];
+    } catch (e) {
+    }
+    if (_peCache.size > 5e3) _peCache.clear();
+    _peCache.set(ch, r);
+    return r;
+  }
+  function animacaoGiro(o = {}) {
+    const a = animacaoGiro0(o);
+    const ks = new Set(a.chaves.flatMap((c) => Object.keys(c.valores)));
+    a.chaves.forEach((c) => ks.forEach((k) => {
+      if (!(k in c.valores)) c.valores[k] = 0;
+    }));
+    return a;
+  }
+  function animacaoGiro0(o = {}) {
+    const A = +o.angulo || 360, estilo = String(o.estilo || "passos").toLowerCase(), sg = Math.sign(A) || 1, nome = o.nome || "girar" + Math.abs(A) + (sg > 0 ? "E" : "D") + (estilo === "passos" ? "" : "_" + estilo);
+    const chaves = [], add3 = (t, v, th, c, extra) => chaves.push(Object.assign({ t: +t.toFixed(3), valores: Object.assign({ headYaw: 0, spineTwist: 0, hipRotL: 0, hipRotR: 0, hipFlexL: 0, hipFlexR: 0, kneeFlexL: 0, kneeFlexR: 0, ankleFlexL: 0, ankleFlexR: 0, armFlexL: 0, armFlexR: 0 }, v), mover: { frente: +c[1].toFixed(4), lado: +c[0].toFixed(4), giro: +th.toFixed(2) } }, extra || {}));
+    const s = { L: 1, R: -1 };
+    const lim = estilo === "luta" ? 40 : o.limiteQuadril ?? 22, hip = (lado2, yawPe, th) => Math.max(-lim, Math.min(lim, s[lado2] * (yawPe - th)));
+    if (estilo === "passos" || estilo === "luta") {
+      const n2 = o.passos || Math.max(1, Math.ceil(Math.abs(A) / (estilo === "luta" ? 120 : 90))), ds = o.duracaoPasso || (estilo === "luta" ? 0.42 : 0.62), a = A / n2;
+      const base2 = estilo === "luta" ? { kneeFlexL: 32, kneeFlexR: 32, hipFlexL: 18, hipFlexR: 18, ankleFlexL: -12, ankleFlexR: -12 } : {};
+      const lead = sg > 0 ? "L" : "R", trail = lead === "L" ? "R" : "L", P3 = { L: PE_L, R: PE_R };
+      let th = 0, c = [0, 0], t = 0;
+      const Y = { L: 0, R: 0 }, F3 = {};
+      const pose = (th0, swing, lev, extra) => {
+        const v = Object.assign({}, base2);
+        for (const l of ["L", "R"]) v["hipRot" + l] = hip(l, Y[l], th0) + (l === swing ? 0 : 0);
+        if (swing && lev) {
+          v["hipFlex" + swing] = (base2["hipFlex" + swing] || 0) + 22 * lev;
+          v["kneeFlex" + swing] = (base2["kneeFlex" + swing] || 0) + 42 * lev;
+          v["ankleFlex" + swing] = (base2["ankleFlex" + swing] || 0) - 14 * lev;
+        }
+        return Object.assign(v, extra || {});
+      };
+      {
+        const v0 = pose(0, null, 0);
+        F3.L = peLocal(v0, "L");
+        F3.R = peLocal(v0, "R");
+        add3(0, v0, 0, c);
+      }
+      for (let i = 0; i < n2; i++) {
+        const fases = [[lead, trail, 0.6], [trail, lead, 0.4]];
+        for (const [ph, [sw, piv, fr2]] of fases.entries()) {
+          const th0 = th, th1 = th + a * fr2, dur = ds * (ph ? 0.45 : 0.55);
+          const US = [0.18, 0.45, 0.75, 1], GIRO = [0.04, 0.4, 0.8, 1], YG = [0.45, 0.7, 0.9, 1], LEV = [0.6, 1, 0.75, 0.3], ANT2 = ph === 0 ? [1, 0.9, 0.6, 0.4] : [0.25, 0.25, 0.1, 0];
+          const Y0 = Y[sw];
+          for (let k = 0; k < 4; k++) {
+            const u = US[k], thk = th0 + (th1 - th0) * GIRO[k];
+            const ant = Math.min(Math.abs(a), 35) * sg * ANT2[k], tronco = ph === 0 ? Math.min(Math.abs(a) * 0.3, 14) * sg * (k < 3 ? 1 : 0.5) : 0;
+            Y[sw] = Y0 + (th1 - Y0) * YG[k];
+            const braco = (sw === "L" ? 1 : -1) * 8 * Math.sin(Math.PI * u);
+            const lev = LEV[k] * (estilo === "luta" ? 1.1 : 1);
+            const v = pose(thk, sw, lev, Object.assign({ headYaw: ant, spineTwist: tronco, armFlexL: braco, armFlexR: -braco }, k === 0 ? { ["ankleFlex" + sw]: (base2["ankleFlex" + sw] || 0) + 18 } : {})), cr = mvRot(thk, peLocal(v, piv));
+            c = [F3[piv][0] - cr[0], F3[piv][1] - cr[1]];
+            add3(t + dur * u, v, thk, c, { apoio: piv });
+          }
+          const desce = estilo === "luta" ? 0.06 : 0.09, vd = pose(th1, sw, 0, { headYaw: ph === 0 ? Math.min(Math.abs(a), 35) * sg * 0.3 : 0, spineTwist: 0, armFlexL: 0, armFlexR: 0 }), cd = mvRot(th1, peLocal(vd, piv));
+          c = [F3[piv][0] - cd[0], F3[piv][1] - cd[1]];
+          add3(t + dur + desce, vd, th1, c, { apoio: sw });
+          th = th1;
+          const ps = mvRot(th1, peLocal(vd, sw));
+          F3[sw] = [c[0] + ps[0], c[1] + ps[1]];
+          Y[sw] = th1;
+          Y[piv] = th1 + s[piv] * hip(piv, Y[piv], th1);
+          t += dur + desce;
+        }
+      }
+      {
+        const vf = Object.assign(pose(th, null, 0), { hipRotL: 0, hipRotR: 0 }), pf = mvRot(th, peLocal(vf, lead === "L" ? "R" : "L"));
+        const lst = lead === "L" ? "R" : "L";
+        add3(t + 0.15, vf, th, [F3[lst][0] - pf[0], F3[lst][1] - pf[1]], { apoio: "ambos" });
+      }
+      return criarAnimacao({ nome, duracao: t + 0.15, modo: "relativa", curva: "suave", pesFixos: true, travarPes: true, escalarPeloCorpo: true, tags: ["Locomocao/Virar/" + (estilo === "luta" ? "Luta" : "Passos")], descricao: "gira " + Math.abs(A) + "° para a " + (sg > 0 ? "esquerda" : "direita") + " com " + n2 + " passos", chaves });
+    }
+    if (estilo === "pivo" || estilo === "pirueta") {
+      const piv = sg > 0 ? "R" : "L", liv = piv === "R" ? "L" : "R", P0 = piv === "R" ? PE_R : PE_L, voltas = Math.abs(A), dGiro = o.duracaoGiro || Math.max(0.5, voltas / 360 * 0.8);
+      const braco = { armFlexL: 55, armFlexR: 55, armAbdL: -12, armAbdR: -12, elbowL: 75, elbowR: 75 }, passe = { ["hipFlex" + liv]: 65, ["hipAbd" + liv]: 35, ["hipRot" + liv]: 30 * (liv === "L" ? 1 : -1), ["kneeFlex" + liv]: 115, ["ankleFlex" + liv]: 30 };
+      const prep = { kneeFlexL: 22, kneeFlexR: 22, hipFlexL: 10, hipFlexR: 10, armAbdL: 30, armAbdR: 30, armFlexL: 20, armFlexR: 20, elbowL: 20, elbowR: 20 }, ponta = { ["ankleFlex" + piv]: 28 };
+      const cOf = (th) => {
+        const r = mvRot(th, P0);
+        return [P0[0] - r[0], P0[1] - r[1]];
+      };
+      add3(0, {}, 0, [0, 0]);
+      add3(0.3, prep, 0, [0, 0]);
+      add3(0.45, Object.assign({}, braco, passe, ponta), 0, [0, 0], { apoio: piv });
+      const N = Math.max(4, Math.round(voltas / 30));
+      for (let k = 1; k <= N; k++) {
+        const th = A * k / N, olha = (-th % 360 + 540) % 360 - 180;
+        add3(0.45 + dGiro * k / N, Object.assign({}, braco, passe, ponta, { headYaw: Math.max(-70, Math.min(70, olha)) }), th, cOf(th), { curva: "linear", apoio: piv });
+      }
+      add3(0.45 + dGiro + 0.25, prep, A, cOf(A), { apoio: "ambos" });
+      add3(0.45 + dGiro + 0.55, {}, A, cOf(A));
+      return criarAnimacao({ nome, duracao: 1 + dGiro, modo: "relativa", curva: "suave", pesFixos: true, escalarPeloCorpo: true, tags: ["Locomocao/Virar/Pivo", "Danca/Pirueta"], descricao: "pirueta de " + voltas + "° na ponta do pé", chaves });
+    }
+    if (estilo === "salto" || estilo === "pulo") {
+      const dAr = o.duracaoGiro || 0.5;
+      add3(0, {}, 0, [0, 0]);
+      add3(0.25, { kneeFlexL: 55, kneeFlexR: 55, hipFlexL: 40, hipFlexR: 40, ankleFlexL: -15, ankleFlexR: -15, armFlexL: -20, armFlexR: -20 }, 0, [0, 0]);
+      const ar = { kneeFlexL: 25, kneeFlexR: 25, hipFlexL: 20, hipFlexR: 20, ankleFlexL: 25, ankleFlexR: 25, armFlexL: 40, armFlexR: 40, armAbdL: -10, armAbdR: -10, elbowL: 80, elbowR: 80 };
+      const N = Math.max(3, Math.round(Math.abs(A) / 45));
+      for (let k = 1; k <= N; k++) {
+        const u = k / N, th = A * u;
+        add3(0.25 + dAr * u, Object.assign({ bodyLift: 6 * Math.sin(Math.PI * Math.min(1, u * 1.05)) }, ar), th, [0, 0], { curva: "linear" });
+      }
+      add3(0.25 + dAr + 0.15, { kneeFlexL: 45, kneeFlexR: 45, hipFlexL: 30, hipFlexR: 30, ankleFlexL: -12, ankleFlexR: -12, bodyLift: 0 }, A, [0, 0]);
+      add3(0.25 + dAr + 0.5, { bodyLift: 0 }, A, [0, 0]);
+      return criarAnimacao({ nome, duracao: 0.75 + dAr, modo: "relativa", curva: "suave", escalarPeloCorpo: true, tags: ["Locomocao/Virar/Salto", "Locomocao/Salto"], descricao: "giro de " + Math.abs(A) + "° no ar", chaves });
+    }
+    throw new Error("Estilo de giro: passos, pivo, luta ou salto.");
+  }
+  function animacaoAndarAte(it2, destino, o = {}) {
+    const Q = it2.params, tam = Q.tamanho || 1, g0 = Q.wRot || 0, dxW = destino[0] - (Q.wx || 0), dzW = destino[1] - (Q.wz || 0);
+    const local = (p) => mvRot(-g0, [p[0] / MV_M, p[1] / MV_M]);
+    let pontos = [[0, 0], local([dxW, dzW])];
+    const obs = SCN.objetos.find((ob) => {
+      if (ob.chao || ob.alt < 3) return false;
+      for (let k = 1; k < 10; k++) {
+        const u = k / 10, x = (Q.wx || 0) + dxW * u, z = (Q.wz || 0) + dzW * u;
+        if (Math.abs(x - ob.x) < (ob.larg || 2) / 2 + 2.5 && Math.abs(z - ob.z) < (ob.prof || 2) / 2 + 2.5) return true;
+      }
+      return false;
+    });
+    if (obs && o.desviar !== false) {
+      const r = Math.max(obs.larg || 2, obs.prof || 2) / 2 + 4, nx = -dzW, nz = dxW, nl = Math.hypot(nx, nz) || 1, lado2 = (obs.x - Q.wx) * nx + (obs.z - Q.wz) * nz > 0 ? -1 : 1;
+      const w1 = [obs.x + lado2 * nx / nl * r - (Q.wx || 0), obs.z + lado2 * nz / nl * r - (Q.wz || 0)];
+      pontos = [[0, 0], local(w1), local([dxW, dzW])];
+    }
+    const passada = (o.passada || 0.68) * tam, ds = o.duracaoPasso || 0.5 / Math.sqrt(tam) * (o.correndo ? 0.6 : 1);
+    const empe = anPoseValores("empe", Q), cam = anPoseValores(o.correndo ? "correndo" : "caminhando", Q), esp = {};
+    for (const [k, v] of Object.entries(cam)) {
+      const m = /^(.*)(L|R)$/.exec(k);
+      esp[m ? m[1] + (m[2] === "L" ? "R" : "L") : k] = /Side|Twist|Yaw|Roll/.test(k) && !m ? -v : v;
+    }
+    const delta = (v) => {
+      const d = {};
+      for (const k of Object.keys(v)) if (!/^(wx|wz|wRot|bodyLift|bodyPitch|bodyRoll|ground)$/.test(k)) d[k] = (v[k] || 0) - (empe[k] || 0);
+      return d;
+    };
+    const D0 = delta(empe), D1 = delta(cam), D22 = delta(esp), chaves = [], add3 = (t2, v, mv2) => chaves.push({ t: +t2.toFixed(3), valores: Object.assign({}, v), mover: mv2 });
+    let t = 0, th = 0, pos = [0, 0];
+    add3(0, D0, { frente: 0, lado: 0, giro: 0 });
+    for (let i = 1; i < pontos.length; i++) {
+      const dx = pontos[i][0] - pos[0], dz = pontos[i][1] - pos[1], dist = Math.hypot(dx, dz);
+      if (dist < 0.05) continue;
+      const ang = Math.atan2(dx, dz) * 180 / Math.PI, giro = ((ang - th) % 360 + 540) % 360 - 180;
+      if (Math.abs(giro) > 25) {
+        const n3 = Math.max(1, Math.ceil(Math.abs(giro) / 90)), dt = 0.5 * n3;
+        for (let k = 1; k <= n3; k++) {
+          const u = k / n3;
+          add3(t + dt * u, Object.assign({}, k % 2 ? D1 : D22, k === n3 ? D0 : {}), { frente: pos[1], lado: pos[0], giro: th + giro * u });
+        }
+        t += dt;
+        th += giro;
+      }
+      const n2 = Math.max(1, Math.round(dist / passada));
+      for (let k = 1; k <= n2; k++) {
+        const u = k / n2, p = [pos[0] + dx * u, pos[1] + dz * u];
+        add3(t + ds * k, k === n2 && i === pontos.length - 1 ? D0 : k % 2 ? D1 : D22, { frente: p[1], lado: p[0], giro: th });
+      }
+      t += ds * n2;
+      pos = pontos[i];
+    }
+    add3(t + 0.25, D0, { frente: pos[1], lado: pos[0], giro: th });
+    return criarAnimacao({ nome: o.nome || "andarAte", duracao: t + 0.25, modo: "relativa", curva: "suave", travarPes: false, tags: ["Locomocao/Andar/AteUmPonto"], descricao: "anda " + Math.hypot(...pontos[pontos.length - 1]).toFixed(1) + " m" + (pontos.length > 2 ? " desviando de “" + (obs.nome || obs.tipo) + "”" : ""), chaves });
+  }
+  function registrarGiros() {
+    const L3 = {};
+    for (const [A, e] of [[45, "passos"], [-45, "passos"], [90, "passos"], [-90, "passos"], [180, "passos"], [-180, "passos"], [360, "passos"], [-360, "passos"], [360, "pivo"], [-360, "pivo"], [360, "luta"], [-360, "luta"], [360, "salto"], [-360, "salto"], [720, "pivo"]]) {
+      const a = animacaoGiro({ angulo: A, estilo: e });
+      L3[a.nome] = Object.assign(a, { origem: "pronta", versao: 0 });
+    }
+    return L3;
+  }
+  registrarProntas(registrarGiros);
 
   // src/scene/name-dsl.js
   var NM_M = 1 / 0.114;
@@ -30764,7 +31090,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       this.linha = linha;
     }
   };
-  var NM_TOPO = /^(animacao|animação|animation|elenco|cast|local|location|lugar|modelo|macro|pagina|página|page|quadro|panel|frame|painel|transicao|transição|transition|semente|seed|define|variavel|variável|legenda-auto|formato-padrao|leitura)\b/i;
+  var NM_TOPO = /^(animacao|animação|animation|elenco|cast|local|location|lugar|modelo|macro|pagina|página|page|quadro|panel|frame|painel|transicao|transição|transition|semente|seed|define|variavel|variável|legenda-auto|formato-padrao|leitura|video|vídeo)\b/i;
   function nmBlocos(texto2) {
     const linhas = String(texto2 || "").replace(/\r/g, "").split("\n"), blocos2 = [];
     let atual2 = null;
@@ -31555,6 +31881,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           q.hora = toks[++k].v;
         } else if (w === "duracao" || w === "duração") {
           q.duracao = toks[++k].v;
+        } else if (w === "velocidade") {
+          q.velocidade = toks[++k].v;
         } else if (w === "camera-move" || w === "movimento") {
           q.movCamera = nmNorm(toks[++k].v);
           if (toks[k + 1] && toks[k + 1].t === "num") q.movValor = toks[++k].v;
@@ -31573,8 +31901,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return q;
   }
   var NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
-  var NM_CHAVES_Q = /* @__PURE__ */ new Set(["duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
-  var NM_CHAVES_P = /* @__PURE__ */ new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
+  var NM_CHAVES_Q = /* @__PURE__ */ new Set(["velocidade", "duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
+  var NM_CHAVES_P = /* @__PURE__ */ new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
   function nmPontoDe(ctx, tok, toks, k) {
     if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
     const w = nmNorm(tok.v), LA = SCN.localAtual || { marcas: {}, regioes: {} };
@@ -31604,6 +31932,12 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function nmVirarPara(it2, p) {
     const dx = p[0] - it2.params.wx, dz = p[1] - it2.params.wz;
     if (Math.hypot(dx, dz) > 0.2) it2.params.wRot = Math.round(Math.atan2(dx, dz) * 180 / Math.PI);
+  }
+  function nmTocar(Q, x, an, inst) {
+    const base2 = { params: anSemCamera(x.params) };
+    aplicarAnimacao(x, an, inst === null || inst === void 0 ? an.duracao : Math.min(an.duracao, inst), { base: base2 });
+    delete x._animBase;
+    (Q.animacoes = Q.animacoes || []).push({ quem: x.name, anim: an, base: base2.params, instante: inst ?? null });
   }
   function nmPersonagem(ctx, l, Q) {
     const toks = nmTokens(l.txt);
@@ -31691,14 +32025,80 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
             });
           }
         });
-      } else if (w === "gira") {
-        its.forEach((x) => x.params.wRot = nx.v);
+      } else if (w === "gira" || w === "girar") {
+        let ang = nx.v, est2 = null, dir = null;
         k++;
+        feito.vira = true;
+        while (toks[k + 1] && toks[k + 1].t === "pal" && /^(passos|passo|pivo|pirueta|luta|salto|pulo|direita|esquerda|horario|anti-horario)$/.test(nmNorm(toks[k + 1].v))) {
+          const q = nmNorm(toks[k + 1].v);
+          if (/^(direita|horario)$/.test(q)) dir = -1;
+          else if (/^(esquerda|anti-horario)$/.test(q)) dir = 1;
+          else est2 = q === "passo" ? "passos" : q === "pirueta" ? "pivo" : q === "pulo" ? "salto" : q;
+          k++;
+        }
+        if (typeof ang !== "number") throw new NmErro("“gira” precisa de um ângulo em graus, ex.: “gira 180” ou “gira 360 passos direita”.", l.linha);
+        if (!est2 && dir === null) its.forEach((x) => x.params.wRot = ang);
+        else {
+          const A = Math.abs(ang) * (dir ?? (ang < 0 ? -1 : 1)), an = animacaoGiro({ angulo: A, estilo: est2 || "passos" });
+          depois4.push(() => its.forEach((x) => nmTocar(Q, x, an, null)));
+          feito.anima = "gira " + Math.abs(A) + "° " + (A > 0 ? "para a esquerda" : "para a direita") + " (" + (est2 || "passos") + ")";
+        }
+      } else if (w === "anda-ate" || w === "anda-até" || w === "caminha-ate" || w === "corre-ate") {
+        const tok0 = nx, k0 = k + 1;
+        let [p0, k2] = nmPontoDe(ctx, nx, toks, k + 1);
+        if (!p0) throw new NmErro("“anda-ate " + (nx && nx.v) + '”: use alguém do elenco, (x,z), marca "nome" ou um objeto.', l.linha);
+        k = k2 - 1;
+        let correndo = w === "corre-ate", parar2 = null;
+        while (toks[k + 1] && /^(correndo|parar|distancia|distância)$/.test(nmNorm(toks[k + 1].v))) {
+          const q = nmNorm(toks[k + 1].v);
+          if (q === "correndo") {
+            correndo = true;
+            k++;
+          } else {
+            parar2 = toks[k + 2].v * (toks[k + 2].u === "R" ? 1 / NM_M : 1);
+            k += 2;
+          }
+        }
+        depois4.push(() => its.forEach((x) => {
+          let [p] = nmPontoDe(ctx, tok0, toks, k0);
+          const alvoP = nmQuem(ctx, tok0.v) || acharObjeto(tok0.v);
+          const st = parar2 ?? (alvoP ? 0.9 : 0);
+          if (st) {
+            const dx = p[0] - x.params.wx, dz = p[1] - x.params.wz, L3 = Math.hypot(dx, dz) || 1, r = Math.max(0, L3 - st * NM_M);
+            p = [x.params.wx + dx / L3 * r, x.params.wz + dz / L3 * r];
+          }
+          nmTocar(Q, x, animacaoAndarAte(x, p, { correndo }), null);
+          if (nmQuem(ctx, tok0.v)) {
+            try {
+              olharNatural(x, nmQuem(ctx, tok0.v));
+            } catch (e) {
+            }
+          }
+        }));
+        feito.anima = (correndo ? "corre até " : "anda até ") + tok0.v;
       } else if (w === "vira-para" || w === "virado-para") {
         const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1);
-        if (p) depois4.unshift(() => its.forEach((x) => nmVirarPara(x, p)));
-        else if (nmNorm(nx.v) === "camera" || nmNorm(nx.v) === "câmera") Q.viraCamera = (Q.viraCamera || []).concat(its);
-        k = (p ? k2 : k + 2) - 1;
+        const tok0 = nx, k0 = k + 1;
+        feito.vira = true;
+        if (p) {
+          k = k2 - 1;
+          let est2 = null;
+          if (toks[k + 1] && toks[k + 1].t === "pal" && /^(passos|passo|pivo|luta|salto)$/.test(nmNorm(toks[k + 1].v))) {
+            est2 = nmNorm(toks[k + 1].v).replace(/^passo$/, "passos");
+            k++;
+          }
+          if (!est2) depois4.unshift(() => its.forEach((x) => nmVirarPara(x, p)));
+          else {
+            depois4.push(() => its.forEach((x) => {
+              const [p1] = nmPontoDe(ctx, tok0, toks, k0), ang = Math.atan2(p1[0] - x.params.wx, p1[1] - x.params.wz) * 180 / Math.PI, rel = ((ang - (x.params.wRot || 0)) % 360 + 540) % 360 - 180;
+              if (Math.abs(rel) > 3) nmTocar(Q, x, animacaoGiro({ angulo: Math.round(rel), estilo: est2 }), null);
+            }));
+            feito.anima = "vira para " + tok0.v + " (" + est2 + ")";
+          }
+        } else if (nmNorm(nx.v) === "camera") {
+          Q.viraCamera = (Q.viraCamera || []).concat(its);
+          k++;
+        } else k++;
       } else if (w === "pose") {
         const pz = nmPoseValida(nx.v, l.linha);
         its.forEach((x) => apiFor(x).poseRapida(pz, { molejo: Q.molejo ?? 0.5, semente: x.name + Q.indice }));
@@ -31730,21 +32130,31 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       } else if (w === "olha" || w === "olha-para" || w === "olhando") {
         const alvo = nx;
         k++;
+        let modo = "natural";
+        if (toks[k + 1] && toks[k + 1].t === "pal" && /^(so-cabeca|so-olhos|corpo|natural|so-a-cabeca|so-os-olhos)$/.test(nmNorm(toks[k + 1].v))) {
+          modo = nmNorm(toks[k + 1].v).replace("-a-", "-").replace("-os-", "-");
+          k++;
+        }
         depois4.push(() => {
           const n2 = nmQuem(ctx, alvo.v);
           its.forEach((x) => {
             try {
-              if (n2) apiFor(x).olhar(n2);
-              else if (alvo.t === "tupla") {
-                const p = nmXZ(alvo.v);
-                apiFor(x).olhar([p[0], 14, p[1]]);
-              } else apiFor(x).olhar(nmNorm(alvo.v));
+              const a = n2 ? n2 : alvo.t === "tupla" ? ((p) => [p[0], 14, p[1]])(nmXZ(alvo.v)) : /^(camera|câmera)$/.test(nmNorm(alvo.v)) ? "camera" : acharObjeto(alvo.v) ? ((o) => [o.x, (o.base || 0) + o.alt, o.z])(acharObjeto(alvo.v)) : null;
+              if (a === null) {
+                apiFor(x).olhar(nmNorm(alvo.v));
+                return;
+              }
+              const r = olharNatural(x, a, { modo });
+              (Q.olhares = Q.olhares || []).push(Object.assign({ quem: x.name, alvo: String(alvo.v), modo }, r));
+              feito.olhaR = r;
+              if (!r.alcancou) Q.avisos.push(x.name + " não consegue olhar direto para " + alvo.v + " (" + modo + "): faltam " + r.erro + "° — use “olha " + alvo.v + " corpo” ou “vira-para " + alvo.v + "”.");
             } catch (e) {
               Q.avisos.push(x.name + " olhar: " + e.message);
             }
           });
         });
         feito.olha = alvo.v;
+        feito.olhaModo = modo;
       } else if (w === "segura" || w === "carrega" || w === "levanta" || w === "puxa" || w === "empurra" || w === "arrasta") {
         const ob = nx.v;
         let peg = null;
@@ -31964,6 +32374,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           feito.tom = nmNorm(toks[k + 2].v);
           k += 2;
         }
+        Q.falas[Q.falas.length - 1].tom = feito.tom || null;
         if (w !== "pensa") {
           feito.fala = true;
           depois4.push(() => its.forEach((x) => {
@@ -32418,7 +32829,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       if (f.gesto) acts.push("gesto " + nmFrase(f.gesto));
       if (f.atitudes) acts.push(f.atitudes.map(nmFrase).join(", "));
       if (f.expressao) acts.push("expressão " + nmFrase(f.expressao));
-      if (f.olha) acts.push("olhando para " + f.olha);
+      if (f.olha) acts.push(f.olhaR && !f.olhaR.alcancou ? "tentando olhar para " + f.olha + " (fora do alcance)" : (f.olhaModo === "so-olhos" ? "só os olhos em " : f.olhaModo === "so-cabeca" ? "virando a cabeça para " : "olhando para ") + f.olha);
       partes2.push(quem + (acts.length ? ": " + acts.join(", ") : "") + ".");
     }
     for (const m of Q.multidoes) partes2.push(m.n + " figurantes (cinza)" + (m.regras.length ? ", " + m.regras.join(", ") : "") + ".");
@@ -32453,6 +32864,18 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     for (const b of blocos2) {
       const t = nmTokens(b.cab), w = nmNorm(t[0].v);
       if (w === "semente" || w === "seed") ctx.semente = t[1] ? t[1].t === "num" ? t[1].v : String(t[1].v).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7) : 1;
+      if (w === "video" || w === "vídeo") {
+        const v = ctx.video = { fps: 12, passo: 1, vida: true };
+        for (let k = 1; k < t.length; k++) {
+          const q = nmNorm(t[k].v);
+          if (q === "fps") v.fps = Math.max(1, Math.min(60, t[++k].v));
+          else if (q === "em-dois") v.passo = 2;
+          else if (q === "em-tres") v.passo = 3;
+          else if (q === "passo") v.passo = t[++k].v;
+          else if (q === "sem-vida") v.vida = false;
+          else if (q === "velocidade") v.velocidade = t[++k].v;
+        }
+      }
       if (w === "define" || w === "variavel" || w === "variável") {
         const v = t[2];
         ctx.vars[t[1].v] = v.t === "num" ? v.v * (v.u === "R" ? 1 / NM_M : v.u === "cm" ? 0.01 : 1) : v.v;
@@ -32608,13 +33031,43 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
                 Q.cab.legenda = tk[1].v;
                 continue;
               }
+              if (w0 === "camera-chave" || (w0 === "camera" || w0 === "câmera") && tk[1] && tk[1].t === "num" && /^(s|ms)$/.test(tk[1].u || "")) {
+                const ck = { t: tk[1].v * (tk[1].u === "ms" ? 1e-3 : 1) };
+                for (let kk = 2; kk < tk.length; kk++) {
+                  const q = nmNorm(tk[kk].v);
+                  if (q === "plano") {
+                    let p = nmNorm(tk[++kk].v);
+                    if (p === "primeiro" && tk[kk + 1] && nmNorm(tk[kk + 1].v) === "plano") {
+                      p = "primeiro plano";
+                      kk++;
+                    }
+                    ck.plano = p;
+                  } else if (q === "alvo") {
+                    ck.alvo = [];
+                    while (tk[kk + 1] && (tk[kk + 1].v === "," || nmQuem(ctx, tk[kk + 1].v))) {
+                      kk++;
+                      if (tk[kk].v !== ",") ck.alvo.push(tk[kk].v);
+                    }
+                  } else if (q === "lado" || q === "azimute") ck.lado = tk[++kk].v;
+                  else if (q === "elevacao") ck.elevacao = tk[++kk].v;
+                  else if (q === "lente") ck.lente = tk[++kk].v;
+                  else if (q === "angulo") ck.angulo = nmNorm(tk[++kk].v);
+                  else throw new NmErro("camera 1s …: use plano, alvo, lado, elevacao, lente, angulo (ex.: camera 1.5s plano close alvo Kai lado 60).", l.linha);
+                }
+                (Q.camChaves = Q.camChaves || []).push(ck);
+                continue;
+              }
               if (w0 === "dialogo" || w0 === "diálogo") {
                 const nomes = [];
-                let tom = null;
+                let tom = null, arranjo = "de-frente";
                 for (let kk = 1; kk < tk.length; kk++) {
                   if (tk[kk].v === ",") continue;
                   if (nmNorm(tk[kk].v) === "tom") {
                     tom = nmNorm(tk[++kk].v);
+                    continue;
+                  }
+                  if (/^(de-frente|frente-a-frente|lado-a-lado|aberto|aberto-para-camera|livre)$/.test(nmNorm(tk[kk].v))) {
+                    arranjo = nmNorm(tk[kk].v).replace("frente-a-frente", "de-frente").replace("aberto-para-camera", "aberto");
                     continue;
                   }
                   const n2 = nmQuem(ctx, tk[kk].v);
@@ -32622,7 +33075,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
                   nomes.push(n2);
                 }
                 if (nomes.length < 2) throw new NmErro("diálogo: diga quem conversa (ex.: dialogo Kai, Mira tom tenso).", l.linha);
-                Q.dialogo = { nomes, tom };
+                Q.dialogo = { nomes, tom, arranjo };
                 continue;
               }
               if (w0 === "fala" || w0 === "narracao" || w0 === "narração") {
@@ -32645,21 +33098,50 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           if (Q.dialogo) {
             const D3 = Q.dialogo, ctxD = ctx.dialogos = ctx.dialogos || {}, chave = D3.nomes.join("|"), vez = ctxD[chave] = (ctxD[chave] ?? -1) + 1;
             const comFala = Q.falas.find((f) => D3.nomes.includes(f.quem)), fal = comFala ? comFala.quem : D3.nomes[vez % D3.nomes.length];
+            const ms = D3.nomes.map((n2) => nmManequim(ctx, n2)), cx = ms.reduce((a, m) => a + m.params.wx, 0) / ms.length, cz = ms.reduce((a, m) => a + m.params.wz, 0) / ms.length;
+            if (D3.arranjo !== "livre") ms.forEach((x, i) => {
+              const f0 = Q.feitos.find((f) => f.nome.split(" e ").includes(x.name));
+              if (f0 && (f0.vira || f0.anima)) return;
+              const o = ms.length === 2 ? ms[1 - i] : null, ox = o ? o.params.wx : cx, oz = o ? o.params.wz : cz, ang = Math.atan2(ox - x.params.wx, oz - x.params.wz) * 180 / Math.PI;
+              if (Math.hypot(ox - x.params.wx, oz - x.params.wz) < 0.5) return;
+              if (D3.arranjo === "de-frente") x.params.wRot = Math.round(ang);
+              else if (D3.arranjo === "lado-a-lado") {
+                const w2 = ((a) => (a % 360 + 540) % 360 - 180);
+                x.params.wRot = Math.round(Math.abs(w2(ang - 70)) < Math.abs(w2(ang + 70)) ? w2(ang - 70) : w2(ang + 70));
+              } else if (D3.arranjo === "aberto") {
+                const rel = ((0 - ang) % 360 + 540) % 360 - 180;
+                x.params.wRot = Math.round(ang + Math.max(-40, Math.min(40, rel * 0.45)));
+              }
+            });
             for (const n2 of D3.nomes) {
               const x = nmManequim(ctx, n2);
               x.oculto = false;
               Q.presentes.add(n2);
               const f0 = Q.feitos.find((f) => f.nome.split(" e ").includes(n2));
-              if (f0 && (f0.gesto || f0.papel || f0.fala)) continue;
+              const alvoOlhar = n2 === fal ? D3.nomes.find((y) => y !== n2) : fal;
+              if (f0 && (f0.gesto || f0.papel || f0.fala)) {
+                if (!f0.olha) {
+                  try {
+                    const r = olharNatural(x, alvoOlhar, { limite: D3.arranjo === "lado-a-lado" ? 80 : 60 });
+                    Object.assign(f0, { olha: alvoOlhar, olhaR: r });
+                    (Q.olhares = Q.olhares || []).push(Object.assign({ quem: n2, alvo: alvoOlhar, modo: "natural" }, r));
+                  } catch (e) {
+                  }
+                }
+                continue;
+              }
               const papel = n2 === fal ? D3.tom === "raiva" || D3.tom === "tenso" ? "discutindo" : "falante" : D3.tom === "tenso" ? "ouvinteCetico" : "ouvinte";
               try {
                 const r = aplicarPapel(x, papel, { semente: ctx.semente + ":" + Q.indice + n2, tom: D3.tom && TONS_FALA[D3.tom] ? D3.tom : void 0, texto: comFala && comFala.quem === n2 ? comFala.texto : "" });
+                let ro = null;
                 try {
-                  apiFor(x).olhar(n2 === fal ? D3.nomes.find((y) => y !== n2) : fal);
+                  ro = olharNatural(x, alvoOlhar, { limite: D3.arranjo === "lado-a-lado" ? 80 : 60 });
+                  (Q.olhares = Q.olhares || []).push(Object.assign({ quem: n2, alvo: alvoOlhar, modo: "natural" }, ro));
+                  if (!ro.alcancou) Q.avisos.push(n2 + " não consegue olhar direto para " + alvoOlhar + " (faltam " + ro.erro + "°).");
                 } catch (e) {
                 }
-                if (f0) Object.assign(f0, { papel, papelR: r });
-                else Q.feitos.push({ nome: n2, papel, papelR: r, texto: [] });
+                if (f0) Object.assign(f0, { papel, papelR: r, olha: f0.olha || alvoOlhar, olhaR: f0.olhaR || ro });
+                else Q.feitos.push({ nome: n2, papel, papelR: r, texto: [], olha: alvoOlhar, olhaR: ro });
               } catch (e) {
                 Q.avisos.push("diálogo: " + e.message);
               }
@@ -32705,6 +33187,28 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           }
           Q.hora = ctx.hora || null;
           const plano = nmCamera(ctx, Q);
+          let camChaves = null;
+          if (Q.camChaves && Q.camChaves.length) {
+            const cam0 = {};
+            CAMK.forEach((k) => cam0[k] = P2[k]);
+            const piv0 = [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera], cab0 = Object.assign({}, Q.cab);
+            camChaves = [{ t: 0, cam: Object.assign({}, cam0) }];
+            for (const ck of Q.camChaves.sort((a, b2) => a.t - b2.t)) {
+              Object.assign(Q.cab, { plano: ck.plano || cab0.plano, alvo: ck.alvo || cab0.alvo, lado: ck.lado ?? cab0.lado, elevacao: ck.elevacao ?? cab0.elevacao, lente: ck.lente ?? cab0.lente, angulo: ck.angulo ?? cab0.angulo });
+              try {
+                nmCamera(ctx, Q);
+              } catch (e) {
+                Q.avisos.push("câmera " + ck.t + "s: " + e.message);
+              }
+              const c = {};
+              CAMK.forEach((k) => c[k] = P2[k]);
+              if (ck.t === 0) camChaves[0].cam = c;
+              else camChaves.push({ t: ck.t, cam: c });
+            }
+            Q.cab = cab0;
+            CAMK.forEach((k) => P2[k] = camChaves[0].cam[k]);
+            [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera] = piv0;
+          }
           const camW = () => {
             const a = (P2.yaw || 0) * Math.PI / 180, d = Math.max(10, P2.camDist || 30);
             return [(P2.tx || 0) + Math.sin(a) * d, (P2.tz || 0) + Math.cos(a) * d];
@@ -32718,6 +33222,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           SCN.active = 0;
           const legenda = Q.cab.legenda || nmLegenda(ctx, Q);
           quadros.push({
+            camChaves,
+            velocidade: Q.cab.velocidade || null,
             duracao: Q.cab.duracao || null,
             movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null,
             animacoes: (Q.animacoes || []).map((a) => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante })),
@@ -32769,6 +33275,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     avisos.push(...quadros.flatMap((q) => q.avisos.map((a) => "quadro " + (q.indice + 1) + ": " + a)));
     return {
+      video: ctx.video || null,
       animacoes: [...ctx.animacoes.values()],
       ok: !erros.length,
       erros,
@@ -32815,15 +33322,22 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       else if (w === "absoluta") o.modo = "absoluta";
       else if (w === "loop" || w === "repete") o.loop = true;
       else if (w === "curva") o.curva = nmNorm(cab[++k].v);
-      else if (w === "fps") o.fps = cab[++k].v;
-      else if (w === "tags") o.tags = String(cab[++k].v).split(",").map((x) => x.trim()).filter(Boolean);
+      else if (w === "fps") {
+        o.fps = cab[++k].v;
+        if (!(o.fps >= 1 && o.fps <= 60)) throw new NmErro("fps vai de 1 a 60 (12 = animatic, 24 = cinema, 30/60 = vídeo).", bloco.linha);
+      } else if (w === "tags") o.tags = String(cab[++k].v).split(",").map((x) => x.trim()).filter(Boolean);
       else if (w === "salvar") salvar = true;
       else if (w === "descricao" || w === "descrição") o.descricao = cab[++k].v;
-      else throw new NmErro("animacao: não entendi “" + cab[k].v + '” (use duracao 1s, relativa, loop, curva suave, tags "a, b", salvar).', bloco.linha);
+      else if (w === "velocidade") o.velocidade = cab[++k].v;
+      else if (w === "em-dois" || w === "em-2") o.passo = 2;
+      else if (w === "em-tres" || w === "em-3") o.passo = 3;
+      else if (w === "passo") o.passo = cab[++k].v;
+      else if (w === "travar-pes" || w === "pes-travados") o.travarPes = true;
+      else throw new NmErro("animacao: não entendi “" + cab[k].v + '” (use duracao 1s, relativa, loop, curva suave, fps 24, velocidade 1.5, em-dois, tags "a, b", salvar).', bloco.linha);
     }
     const tmp = { name: "_anim", params: Object.assign({}, SCN.list[0].params) };
     Object.assign(tmp.params, anPoseValores("empe", tmp.params));
-    const chaves = [];
+    const chaves = [], segurar = {};
     let primeira = null;
     for (const l of nmExpandir(bloco.corpo, ctx.vars, ctx.rnd)) {
       const toks = nmTokens(l.txt);
@@ -32876,6 +33390,18 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         } else if (w === "curva") {
           c.curva = nmNorm(nx.v);
           k++;
+        } else if (w === "olha" || w === "olha-para") {
+          c.olha = /^(camera|câmera)$/.test(nmNorm(nx.v)) ? "camera" : nx.t === "tupla" ? ((p) => [p[0], 14, p[1]])(nmXZ(nx.v)) : nx.v;
+          k++;
+          if (toks[k + 1] && /^(so-cabeca|so-olhos|corpo|natural)$/.test(nmNorm(toks[k + 1].v))) {
+            c.olhaModo = nmNorm(toks[k + 1].v);
+            k++;
+          }
+        } else if (w === "segurar" || w === "segura-por" || w === "pausa") {
+          const v = nx;
+          if (!v || v.t !== "num") throw new NmErro("segurar: diga quanto tempo (ex.: segurar 0.3s).", l.linha);
+          segurar[c.t] = v.v * (v.u === "ms" ? 1e-3 : 1);
+          k++;
         } else if (w === "fala") {
           let texto2 = "a e o a i o", tom = "calmo";
           if (nx && nx.t === "str") {
@@ -32914,7 +33440,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
             }
             ajusteFino(tmp, parte, nmNorm(o0.v), v);
           }
-        } else throw new NmErro("Na chave, não entendi “" + toks[k].v + "” (use pose, expressao, gesto, atitude, ajustes como “pe direito 15cm para direita”, move frente 0.5, curva, fala).", l.linha);
+        } else throw new NmErro("Na chave, não entendi “" + toks[k].v + "” (use pose, expressao, gesto, atitude, olha Mira, segurar 0.3s, ajustes como “pe direito 15cm para direita”, move frente 0.5, curva, fala).", l.linha);
       }
       const vals = {};
       for (const kk of Object.keys(tmp.params)) if ((POSEKEYS.has(kk) || /^(jawOpen|smile|eyeLid|browUp|browIn|eyeYaw|eyePitch|blush|tears)$/.test(kk)) && Number.isFinite(tmp.params[kk])) vals[kk] = tmp.params[kk];
@@ -32932,7 +33458,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     chaves.forEach((c) => {
       for (const kk of Object.keys(c.valores)) if (!muda.has(kk)) delete c.valores[kk];
     });
-    const a = criarAnimacao(Object.assign(o, { duracao: o.duracao || chaves[chaves.length - 1].t, chaves }));
+    let a = criarAnimacao(Object.assign(o, { duracao: o.duracao || chaves[chaves.length - 1].t, chaves }));
+    if (o.velocidade || Object.keys(segurar).length) a = retimar(a, { velocidade: o.velocidade, segurar });
     ctx.animacoes.set(a.nome, a);
     if (salvar) bibliotecaAnimacoes().salvar(a, { tags: a.tags, origem: "dsl" });
     return a;
@@ -33135,25 +33662,106 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       P2.panY += Math.cos(u * 67) * (v || 0.4);
     }
   }
+  function nmVida(it2, t) {
+    const Q = it2.params, h = [...it2.name].reduce((a, c) => a * 31 + c.charCodeAt(0) | 0, 7), fase = (h >>> 0) % 1e3 / 1e3 * 3.4, ciclo = 3.1 + (h >>> 3) % 7 / 10, u = (t + fase) % ciclo;
+    if (u < 0.14) Q.eyeLid = Math.max(Q.eyeLid || 0, Math.sin(Math.PI * u / 0.14));
+    Q.spineFlex = (Q.spineFlex || 0) + 0.7 * Math.sin(2 * Math.PI * (t + fase) / 3.8);
+  }
+  function nmCameraNoTempo(ch, t) {
+    if (!ch || !ch.length) return;
+    let i = 0;
+    while (i < ch.length - 1 && ch[i + 1].t <= t) i++;
+    const a = ch[i], b = ch[Math.min(ch.length - 1, i + 1)], u0 = b === a ? 1 : Math.max(0, Math.min(1, (t - a.t) / (b.t - a.t))), u = u0 * u0 * (3 - 2 * u0);
+    for (const k of CAMK) {
+      const va = a.cam[k], vb = b.cam[k];
+      if (typeof va !== "number" || typeof vb !== "number") {
+        if (va !== void 0) P2[k] = u < 0.5 ? va : vb;
+        continue;
+      }
+      if (k === "yaw" || k === "lightAz") {
+        const d = ((vb - va) % 360 + 540) % 360 - 180;
+        P2[k] = va + d * u;
+      } else P2[k] = va + (vb - va) * u;
+    }
+    SCN.pivo = null;
+    SCN.orbitaArea = null;
+    SCN.seguirCamera = null;
+  }
+  function nmEsbarroes(t, quadro, vistos, avisos) {
+    const vis = SCN.list.filter((x) => !x.oculto && x.name !== "__vazio__");
+    for (let a = 0; a < vis.length; a++) for (let b = a + 1; b < vis.length; b++) {
+      const A = vis[a].params, B3 = vis[b].params, d = Math.hypot(A.wx - B3.wx, A.wz - B3.wz) / NM_M, lim = 0.3 * Math.min(A.tamanho || 1, B3.tamanho || 1);
+      const ch = quadro + ":" + vis[a].name + "|" + vis[b].name;
+      if (d < lim && !vistos.has(ch) && Math.abs((A.bodyLift || 0) - (B3.bodyLift || 0)) < 8) {
+        vistos.add(ch);
+        avisos.push("quadro " + quadro + ", " + t.toFixed(2) + " s: " + vis[a].name + " e " + vis[b].name + " se atravessam (" + Math.round(d * 100) + " cm)");
+      }
+    }
+  }
   function videoDoName(r, o = {}) {
-    const fps = o.fps || 8, frames = [], salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L2));
+    const V2 = r.video || {}, fps = Math.max(1, Math.min(60, Math.round(o.fps || V2.fps || 8))), passo = Math.max(1, Math.round(o.passo || (o.emDois ? 2 : o.emTres ? 3 : V2.passo || 1))), vida = o.vida ?? V2.vida ?? true, velG = o.velocidade || V2.velocidade || 1;
+    const frames = [], avisos = [], salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L2)), vistos = /* @__PURE__ */ new Set();
     const qs = o.quadros ? r.quadros.filter((q) => o.quadros.includes(q.indice + 1)) : r.quadros;
+    const durQ = (q) => {
+      const vel = (q.velocidade || 1) * velG, durA = Math.max(0, ...(q.animacoes || []).map((a) => a.anim.loop ? 0 : a.instante ?? a.anim.duracao)), durF = Math.max(0, ...(q.falas || []).filter((f) => f.quem && f.tipo !== "pensa").map((f) => linhaDaFala(f.texto).duracao)), durC = Math.max(0, ...(q.camChaves || []).map((c) => c.t));
+      return +q.duracao || Math.max(durA / vel + 0.3, durF + 0.3, durC + 0.2, 1.5) * (durA || durF || durC ? 1 : 1);
+    };
+    const total = qs.reduce((s0, q) => s0 + Math.max(1, Math.round(durQ(q) * fps)), 0);
+    let feitos = 0, cancelado = false;
     try {
       for (const q of qs) {
-        const durA = Math.max(0, ...(q.animacoes || []).map((a) => a.anim.loop ? 0 : a.anim.duracao)), d = +q.duracao || (durA ? durA + 0.3 : 1.5), n2 = Math.max(1, Math.round(d * fps));
+        const d = durQ(q), n2 = Math.max(1, Math.round(d * fps)), vel = (q.velocidade || 1) * velG, mems = {}, linhas = (q.falas || []).filter((f) => f.quem && f.tipo !== "pensa").map((f) => ({ f, L: linhaDaFala(f.texto) }));
+        let ultimo2 = null;
         for (let i = 0; i < n2; i++) {
+          if (o.cancelar && o.cancelar()) {
+            cancelado = true;
+            break;
+          }
+          if (passo > 1 && i % passo && ultimo2) {
+            frames.push(Object.assign({}, ultimo2, { t: i / fps, repetido: true }));
+            feitos++;
+            continue;
+          }
           loadScene(JSON.parse(JSON.stringify(q.estado)));
-          const t = i / fps;
+          const t = i / fps, ta = t * vel;
           for (const a of q.animacoes || []) {
             const it2 = SCN.list.find((x) => x.name === a.quem);
             if (!it2) continue;
             Object.assign(it2.params, anSemCamera(a.base));
-            aplicarAnimacao(it2, a.anim, a.anim.loop ? t : Math.min(t, a.instante ?? a.anim.duracao), { base: { params: Object.assign({}, a.base) } });
+            aplicarAnimacao(it2, a.anim, a.anim.loop ? ta : Math.min(ta, a.instante ?? a.anim.duracao), { base: { params: Object.assign({}, a.base) } });
             delete it2._animBase;
+            if (a.anim.travarPes) {
+              const k = a.quem + ":" + a.anim.nome, m = mems[k];
+              if (m && m.acc) {
+                it2.params.wx += m.acc[0];
+                it2.params.wz += m.acc[1];
+              }
+              mems[k] = travarPes(it2, m, { apoio: apoioNoTempo(a.anim, Math.min(ta, a.instante ?? a.anim.duracao)) });
+            }
           }
+          for (const { f, L: lf } of linhas) {
+            const it2 = SCN.list.find((x) => x.name === f.quem);
+            if (it2) falarNoTempo(it2, f.tom, f.texto, t, { linha: lf });
+          }
+          if (vida) SCN.list.forEach((it2) => {
+            if (!it2.oculto && it2.name !== "__vazio__") nmVida(it2, t + q.indice * 1.7);
+          });
+          try {
+            atualizarApoios();
+          } catch (e) {
+          }
+          if (q.camChaves) nmCameraNoTempo(q.camChaves, t);
           if (q.movCamera) nmMoverCamera(q.movCamera, n2 > 1 ? i / (n2 - 1) : 1);
-          frames.push({ estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, t, legenda: q.legenda });
+          nmEsbarroes(t, q.indice + 1, vistos, avisos);
+          ultimo2 = { estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, t, legenda: q.legenda };
+          frames.push(ultimo2);
+          feitos++;
+          if (o.progresso) try {
+            o.progresso(feitos, total);
+          } catch (e) {
+          }
         }
+        if (cancelado) break;
       }
     } finally {
       loadScene(JSON.parse(salvo));
@@ -33162,19 +33770,21 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       });
       Object.assign(L2, salvoL);
     }
-    return { fps, frames, duracao: frames.length / fps };
+    return { fps, passo, frames, duracao: frames.length / fps, desenhos: frames.filter((f) => !f.repetido).length, avisos, cancelado, estimativaMB: +(frames.length * 0.035).toFixed(1) };
   }
   function framesDaAnimacao(quem, a, o = {}) {
     const it2 = typeof quem === "object" ? quem : SCN.list.find((x) => x.name === quem) || SCN.list[SCN.active] || SCN.list[0];
     if (!it2) throw new Error("Manequim não encontrado.");
-    const an = typeof a === "string" ? bibliotecaAnimacoes().obter(a) : a;
+    let an = typeof a === "string" ? bibliotecaAnimacoes().obter(a) : a;
     if (!an) throw new Error("Animação “" + a + "” não existe.");
-    const fps = o.fps || an.fps || 12, n2 = Math.max(2, Math.round((o.duracao || an.duracao) * fps) + 1), salvo = anSemCamera(it2.params), base2 = { params: anSemCamera(it2.params) }, frames = [], Lq = Object.assign(JSON.parse(JSON.stringify(L2)), { girdle: false, prop: false });
+    if (o.velocidade && o.velocidade !== 1) an = retimar(an, { velocidade: o.velocidade });
+    const dur = o.duracao || an.duracao, I = instantesVideo(dur, { fps: o.fps || an.fps || 12, passo: o.passo || an.passo, emDois: o.emDois, emTres: o.emTres }), fps = I.fps;
+    const salvo = anSemCamera(it2.params), base2 = { params: anSemCamera(it2.params) }, frames = [], Lq = Object.assign(JSON.parse(JSON.stringify(L2)), { girdle: false, prop: false });
     const camSalva = JSON.stringify(P2), pivo = [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera];
     try {
       if (o.enquadrar !== false) {
         const pts = [];
-        for (const tt of [0, an.duracao / 2, an.duracao]) {
+        for (const tt of [0, an.duracao / 4, an.duracao / 2, an.duracao * 3 / 4, an.duracao]) {
           Object.assign(it2.params, base2.params);
           aplicarAnimacao(it2, an, tt, { base: base2 });
           pts.push(...nmPtsDe([it2.name], "inteiro"));
@@ -33193,19 +33803,48 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         if (o.lado !== void 0) P2.yaw = (it2.params.wRot || 0) + o.lado;
         nmCentrar(recorteQuadro(o.formato || "16:9"), 0.85, pts);
       }
-      for (let i = 0; i < n2; i++) {
-        const t = (o.duracao || an.duracao) * i / (n2 - 1);
+      let mem = null, ultimo2 = null, tAnt = -1;
+      const travar = o.travarPes ?? an.travarPes;
+      for (let i = 0; i < I.tempos.length; i++) {
+        if (o.cancelar && o.cancelar()) break;
+        const t = I.tempos[i];
+        if (t === tAnt && ultimo2) {
+          frames.push(Object.assign({}, ultimo2, { t: i / fps, repetido: true }));
+          continue;
+        }
+        tAnt = t;
         Object.assign(it2.params, base2.params);
         aplicarAnimacao(it2, an, t, { base: base2 });
-        frames.push({ estado: JSON.parse(JSON.stringify(sceneState())), L: Lq, formato: o.formato || "16:9", t });
+        if (travar) {
+          if (mem && mem.acc) {
+            it2.params.wx += mem.acc[0];
+            it2.params.wz += mem.acc[1];
+          }
+          mem = travarPes(it2, mem, { apoio: apoioNoTempo(an, t) });
+        }
+        if (o.vida) nmVida(it2, t);
+        try {
+          atualizarApoios();
+        } catch (e) {
+        }
+        ultimo2 = { estado: JSON.parse(JSON.stringify(sceneState())), L: Lq, formato: o.formato || "16:9", t };
+        frames.push(ultimo2);
+        if (o.progresso) try {
+          o.progresso(i + 1, I.tempos.length);
+        } catch (e) {
+        }
       }
     } finally {
       Object.assign(it2.params, salvo);
       delete it2._animBase;
       Object.assign(P2, JSON.parse(camSalva));
       [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera] = pivo;
+      try {
+        atualizarApoios();
+      } catch (e) {
+      }
     }
-    return { fps, frames, duracao: an.duracao, nome: an.nome };
+    return { fps, passo: I.passo, frames, desenhos: frames.filter((f) => !f.repetido).length, duracao: an.duracao, nome: an.nome };
   }
   cena.name = { video: videoDoName, framesDaAnimacao, compilar: compilarName, validar: validarName, ficha: fichaDoQuadro, paginas: paginasDoName, cores: legendaDeCores, manifesto: manifestoName, locais: bibliotecaLocais, abrirLocal: abrirLocalNoPalco, localDoPalco };
 
@@ -33493,16 +34132,72 @@ Bloco de animação (sem recuo), chaves com recuo:
   Só o que muda entre as chaves entra na animação (ela fica parcial e reutilizável).
   "relativa" = guarda as diferenças para a primeira chave (vale a partir de qualquer pose: "pe direito 15cm para direita" funciona em pé, agachado…).
   Numa relativa, pose/gesto/expressão também viram diferenças (ex.: o quanto o braço sobe do começo ao gesto).
-  Repetir um trecho (acenar 3 vezes): escreva as chaves de ida e volta, ou use "loop" na animação inteira. "olha" não vai em chave (use no quadro).
+  Repetir um trecho (acenar 3 vezes): escreva as chaves de ida e volta, ou use "loop" na animação inteira.
+  "olha Mira [so-cabeca|so-olhos|corpo]" numa chave: dali em diante a cabeça (e os olhos) seguem Mira; a cabeça chega em ~0,3 s (padrão: so-cabeca, para não brigar com "move giro").
+  "segurar 0.3s" numa chave: o corpo para naquela chave por 0,3 s (pausa dramática) e o resto anda para depois.
+  Cabeçalho: fps 1–60 · velocidade 2 (duas vezes mais rápida; 0.5 = câmera lenta) · em-dois / em-tres (cada desenho fica 2 ou 3 quadros) · travar-pes (o pé de apoio não escorrega).
   "salvar" = vai para a biblioteca de animações.
 No quadro:  Kai anima chegar [depois acenarSim] [instante 0.5s]   (o quadro mostra o fim, ou o instante; o vídeo toca tudo)
 Cabeçalho do quadro:  duracao 2s  ·  camera-move aproxima|afasta|panoramica-esquerda|panoramica-direita|orbita 30|sobe|desce|treme
   (o número opcional é o quanto: aproxima 40 = 40% mais perto; orbita 30 = 30 graus; padrão: aproxima 40, afasta 60, panorâmica 20, orbita 30, sobe/desce 15)
-Vídeo (animatic): cada quadro dura "duracao"; as animações tocam e a câmera se move → GIF/WebM/PNG (site: Animação → Vídeo do name; MCP: video_name).
+Vídeo (animatic): cada quadro dura "duracao" (ou o tempo da animação mais longa / da fala mais longa); as animações tocam e a câmera se move → GIF/WebM/PNG (site: Animação → Vídeo do name; MCP: video_name).
+  No topo do name:  video fps 24 [em-dois|em-tres] [velocidade 1.5] [sem-vida]
+  Cabeçalho do quadro: velocidade 0.5 (só aquele quadro, ex.: câmera lenta no impacto).
+  Câmera no tempo (dentro do quadro):  camera 1.5s plano close alvo Kai lado 60 [elevacao 10] [lente 85] [angulo plongee]
+    a câmera do quadro é a do instante 0; ela vai suave até cada chave de câmera (pode ter várias).
+  No vídeo, sozinho: a boca segue a fala letra a letra (~13 letras/s; vírgula fecha 0,25 s, ponto 0,45 s); todos piscam (~a cada 3,5 s) e respiram
+    ("sem-vida" desliga); objetos seguros acompanham a mão; quem atravessa outra pessoa num quadro do vídeo vira aviso ("Kai e Mira se atravessam").
 Curvas: ${Object.keys(CURVAS).join(", ")}. Partes do corpo: ${Object.keys(AN_PARTES).join(", ")}.
 Animações prontas (${bibliotecaAnimacoes().listar().length}): ${bibliotecaAnimacoes().listar().map((a) => a.nome).join(", ")}.
 
-13. EXEMPLO COMPLETO
+13. OLHAR, VIRAR E GIRAR (quem olha para quem, girar 360° com os pés)
+Olhar de verdade é em cadeia: os OLHOS fazem até ~35° para os lados (~25° para cima/baixo), a CABEÇA até ~60°, o TRONCO ajuda e, se o alvo
+estiver mais atrás que isso, o CORPO vira (fica ~35° do alvo e a cabeça/olhos fecham o resto).
+  Kai olha Mira                 (natural: olhos → cabeça → tronco → corpo, o que precisar)
+  Kai olha Mira so-cabeca       (o corpo NÃO vira; se não der, o quadro avisa e a legenda diz "tentando olhar")
+  Kai olha Mira so-olhos        (só os olhos; bom para "olhar de canto")
+  Kai olha Mira corpo           (o corpo todo vira para Mira)
+  alvo: alguém do elenco, camera, um objeto ("olha Mesa"), ou (x,z) em metros.
+Conferência automática: depois do quadro, cada olhar é medido; se faltar mais de 10° o aviso diz quanto falta e o que usar ("olha … corpo" ou "vira-para …").
+Diálogo: "dialogo Kai, Mira [tom tenso] [de-frente|lado-a-lado|aberto|livre]"
+  de-frente (padrão) = os corpos viram um para o outro · lado-a-lado = ombro a ombro (corpos para a frente, cabeças viradas) ·
+  aberto = 3/4, meio virados para a frente da cena (teatro) · livre = não mexe nos corpos. Quem tem "vira-para", "gira" ou "anima" na linha não é virado.
+VIRAR:
+  Kai vira-para Mira            (instantâneo: o quadro mostra já virado)
+  Kai vira-para Mira passos     (anima: vira com passos de verdade, entra no vídeo)
+  Kai gira 90                   (instantâneo: fica virado a 90° — número = direção no mundo)
+GIRAR NO LUGAR (anima, com os pés; até 360° e além, ex.: 720 pivo):
+  Kai gira 360 passos [esquerda|direita]   — pisa em 4 passos (90° cada); o pé de apoio fica PRESO no chão e o corpo gira em volta dele;
+                                              o pé livre sai pelo calcanhar, gira no ar e desce reto; a coxa gira ao contrário (até ~22°) e o resto é a bola do pé
+  Kai gira 360 pivo             — pirueta na ponta de um pé, a outra perna recolhida (passé), a cabeça presa num ponto e virando de uma vez (spotting)
+  Kai gira 360 luta             — base baixa (joelhos dobrados), 3 passos curtos e rápidos
+  Kai gira 360 salto            — impulso, giro no ar, aterrissa dobrando os joelhos
+  Ordem do corpo ao virar: olhos e cabeça ANTECIPAM → ombros/tronco → pelve → pés (a cabeça chega antes).
+  Sentido: esquerda = anti-horário visto de cima = para a esquerda DO PERSONAGEM; direita = horário. Sem sentido: o sinal do número (−90 = direita).
+  Prontas na biblioteca: girar45E/D, girar90E/D, girar180E/D, girar360E/D, girar360E/D_pivo, girar720E_pivo, girar360E/D_luta, girar360E/D_salto.
+ANDAR ATÉ:
+  Kai anda-ate Mira [correndo] [parar 1.2]   (para a ~90 cm de uma pessoa/objeto; "parar" muda a distância em metros)
+  Kai anda-ate (3,2) · Kai anda-ate marca "porta" · Kai corre-ate Mira
+  Vira com passos se precisar, anda com passadas do tamanho do corpo (criança dá passos menores), desvia do primeiro objeto alto no caminho e, no fim, olha para quem foi encontrar.
+TEMPO E QUADROS POR SEGUNDO (fps 1–60):
+  fps | uso
+   6–8  | animatic rápido (rascunho, leve)
+   12   | animação limitada / mangá animado (padrão do editor)
+   24   | cinema (com "em-dois" = 12 desenhos por segundo, o clássico)
+   30   | vídeo
+   60   | vídeo fluido / câmera lenta depois
+  em-dois / em-tres: repete cada desenho 2 ou 3 quadros (mesmo fps, menos desenhos, aspecto de animação tradicional).
+  velocidade: 2 = duas vezes mais rápido; 0.5 = metade (câmera lenta). Vale no cabeçalho da animação, do quadro, ou no "video" do topo.
+  segurar 0.3s (numa chave): pausa naquela pose.
+LIMITES (o que ainda NÃO faz, para ninguém prometer):
+  - o pé de apoio fica preso, mas o pé livre pode arrastar alguns cm rente ao chão no começo do passo (sai pelo calcanhar); salto: só o giro no ar, sem física;
+  - "anda-ate" desvia de UM objeto (o primeiro no caminho), não de pessoas, e não sobe escada sozinho;
+  - "olha" numa chave segue o alvo no lugar em que ele está no fim do quadro;
+  - mão que segura objeto: o objeto acompanha, mas a pegada não se reajusta ao andar;
+  - esbarrão é só aviso (centro a centro < 30 cm), não desvia;
+  - boca: ritmo por letra (não é fonema de verdade), em português.
+
+14. EXEMPLO COMPLETO
 ${EXEMPLO_NAME}`;
   }
   var PROMPTS_NAME = {
@@ -33531,6 +34226,16 @@ LOCAIS SALVOS (nome, marcas, regiões):
 {locais}
 
 HISTÓRIA:
+`,
+    "Movimento em texto → animação": `Converta a descrição de movimento abaixo numa ANIMAÇÃO na DSL do GeoMannequin (capítulos 12 e 13 do manual).
+- Se for virar ou girar, use as palavras prontas: "gira 360 passos direita", "vira-para Mira passos", "gira 360 pivo|luta|salto". Se for ir até alguém: "anda-ate Mira [correndo]". Para olhar: "olha Mira [so-cabeca|so-olhos|corpo]".
+- Se for um movimento próprio, escreva um bloco: animacao "nome" duracao Xs [relativa] [fps 24] [em-dois] [velocidade 1] tags "Categoria/Sub" salvar
+  com linhas "chave Ts …" (pose, gesto, atitude, expressao, ajustes como "pe direito 15cm para direita", move frente/lado/giro, olha, segurar 0.3s, fala).
+- Pense na ordem do corpo: olhos e cabeça antes, depois ombros/tronco, pelve e pés; antecipação (um pouco para o lado contrário) antes do movimento grande e um pequeno exagero no fim.
+- Use "relativa" quando o movimento deve valer a partir de qualquer pose (ex.: abaixar a cabeça). Tags hierárquicas (Locomocao/Virar, Conversa/Explicar, Ajuste/Pe).
+Responda SÓ com o código, num bloco de código.
+
+MOVIMENTO:
 `,
     "Explicar a ficha para a IA de imagem": `Cada imagem anexada é a FICHA de um quadro de mangá (storyboard). Leia assim:
 - O painel com BORDA VERDE é o quadro: desenhe a cena final exatamente com este enquadramento, esta câmera, estas poses e posições. Os manequins coloridos são personagens: a mesma cor é sempre o mesmo personagem (veja a legenda de cores); manequins cinza são figurantes.
@@ -40039,6 +40744,29 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
   var copia2 = null;
   var NUVEM2 = null;
   var gravT2 = 0;
+  var CANCELAR = false;
+  var CACHE3 = /* @__PURE__ */ new Map();
+  var noPalco = null;
+  var DESF = [];
+  var REF2 = [];
+  function marcar2() {
+    DESF.push(JSON.stringify({ chaves: ED.chaves, duracao: ED.duracao }));
+    if (DESF.length > 80) DESF.shift();
+    REF2.length = 0;
+  }
+  function desfazer(re) {
+    const de = re ? REF2 : DESF, para = re ? DESF : REF2;
+    if (!de.length) return log3("Nada para " + (re ? "refazer" : "desfazer") + ".");
+    para.push(JSON.stringify({ chaves: ED.chaves, duracao: ED.duracao }));
+    const x = JSON.parse(de.pop());
+    ED.chaves = x.chaves;
+    ED.duracao = x.duracao;
+    chaveSel = -1;
+    FR2 = null;
+    desenharLinha();
+    log3(re ? "Refeito." : "Desfeito.");
+  }
+  var opcTempo = () => ({ fps: Math.max(1, Math.min(60, +E4.fps.value || 12)), passo: +E4.passo.value || 1, velocidade: +E4.velA.value || 1 });
   var novoEd = () => ({ nome: "minha animação", duracao: 1, fps: 12, modo: "absoluta", curva: "suave", loop: false, tags: [], chaves: [] });
   var it = () => SCN.list[+E4.quem.value] || SCN.list[SCN.active] || SCN.list[0];
   function log3(t, err) {
@@ -40055,6 +40783,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     if (!ED.base) ED.base = anSemCamera(x.params);
     const g = (ED.base.wRot || 0) * Math.PI / 180, dx = (x.params.wx - (ED.base.wx || 0)) * 0.114, dz = (x.params.wz - (ED.base.wz || 0)) * 0.114;
     const c = { t: +T.toFixed(3), valores: fotoDoManequim(x), mover: { frente: +(dx * Math.sin(g) + dz * Math.cos(g)).toFixed(3), lado: +(dx * Math.cos(g) - dz * Math.sin(g)).toFixed(3), giro: (x.params.wRot || 0) - (ED.base.wRot || 0) } };
+    marcar2();
     const i = ED.chaves.findIndex((k) => Math.abs(k.t - c.t) < 1e-3);
     if (i >= 0) ED.chaves[i] = c;
     else ED.chaves.push(c);
@@ -40073,21 +40802,74 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       const v = {};
       for (const k of muda) if (!filtro || filtro.has(k)) v[k] = rel ? (c.valores[k] ?? k0[k]) - k0[k] : c.valores[k] ?? k0[k];
       const mv2 = c.mover && (c.mover.frente || c.mover.lado || c.mover.giro) ? c.mover : null;
-      return { t: c.t, valores: v, mover: mv2, curva: c.curva, rosto: c.rosto || null };
+      return { t: c.t, valores: v, mover: mv2, curva: c.curva, rosto: c.rosto || null, apoio: c.apoio, olha: c.olha, olhaModo: c.olhaModo };
     });
     if (chaves.some((c) => c.mover) && !chaves[0].mover) chaves[0].mover = { frente: 0, lado: 0, giro: 0 };
-    return criarAnimacao({ nome: E4.nome.value.trim() || "minha animação", duracao: +E4.dur.value || ED.duracao, fps: +E4.fps.value || 12, modo: ED.modo, curva: E4.curva.value, loop: E4.loop.checked, tags: E4.tags.value.split(",").map((s) => s.trim()).filter(Boolean), chaves });
+    return criarAnimacao({ nome: E4.nome.value.trim() || "minha animação", duracao: +E4.dur.value || ED.duracao, fps: +E4.fps.value || 12, modo: ED.modo, curva: E4.curva.value, loop: E4.loop.checked, travarPes: !!ED.travarPes, escalarPeloCorpo: true, tags: E4.tags.value.split(",").map((s) => s.trim()).filter(Boolean), chaves });
   }
-  function prepararQuadros(a) {
-    const x = it(), salvo = anSemCamera(x.params), base2 = ED && ED.base ? anSemCamera(ED.base) : anSemCamera(x.params);
+  async function prepararQuadros(a) {
+    const x = it(), salvo = anSemCamera(x.params), base2 = ED && ED.base ? anSemCamera(ED.base) : anSemCamera(x.params), op = opcTempo();
+    const chave = JSON.stringify([a.chaves, a.duracao, a.modo, a.curva, op, base2.wx, base2.wz, base2.wRot, x.name]);
+    if (CACHE3.has(chave)) return CACHE3.get(chave);
     Object.assign(x.params, base2);
     let fr2;
     try {
-      fr2 = framesDaAnimacao(x, a, { fps: +E4.fps.value || 12 });
+      fr2 = framesDaAnimacao(x, a, { fps: op.fps, passo: op.passo, velocidade: op.velocidade, vida: E4.vida && E4.vida.checked });
     } finally {
       Object.assign(x.params, salvo);
     }
-    return fr2.frames.map((f) => ({ t: f.t, svg: renderizarQuadro(f, { passes: false }).svg, estado: f }));
+    CANCELAR = false;
+    E4.cancelar.hidden = false;
+    const out = [];
+    let ultimo2 = null;
+    try {
+      for (let i = 0; i < fr2.frames.length; i++) {
+        if (CANCELAR) throw new Error("Cancelado.");
+        const f = fr2.frames[i];
+        ultimo2 = f.repetido && ultimo2 ? Object.assign({}, ultimo2, { t: f.t }) : { t: f.t, svg: renderizarQuadro(f, { passes: false }).svg, estado: f };
+        out.push(ultimo2);
+        if (i % 4 === 3) {
+          log3("Quadro " + (i + 1) + " de " + fr2.frames.length + "…");
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      }
+    } finally {
+      E4.cancelar.hidden = true;
+    }
+    out.trajeto = trajeto(fr2.frames, a);
+    CACHE3.set(chave, out);
+    if (CACHE3.size > 12) CACHE3.delete(CACHE3.keys().next().value);
+    return out;
+  }
+  function trajeto(frames, a) {
+    const pts = [], pes = [];
+    let ant = null;
+    for (const f of frames) {
+      const m = f.estado.list.find((q) => q.name === it().name) || f.estado.list[0];
+      if (!m) continue;
+      pts.push([m.params.wx, m.params.wz]);
+      const ap = apoioNoTempo(a, f.t);
+      if (ap && ap !== ant) {
+        try {
+          const pe = pesDoManequim({ name: m.name, params: m.params })[ap === "ambos" ? "L" : ap];
+          if (pe) pes.push([pe.x, pe.z, ap]);
+        } catch (e) {
+        }
+        ant = ap;
+      }
+    }
+    if (pts.length < 2) return "";
+    const xs = pts.map((p) => p[0]).concat(pes.map((p) => p[0])), zs = pts.map((p) => p[1]).concat(pes.map((p) => p[1])), x0 = Math.min(...xs) - 3, x1 = Math.max(...xs) + 3, z0 = Math.min(...zs) - 3, z1 = Math.max(...zs) + 3, k = 140 / Math.max(x1 - x0, z1 - z0);
+    const P_ = (p) => ((x1 - p[0]) * k).toFixed(1) + "," + ((z1 - p[1]) * k).toFixed(1);
+    return '<svg class="an-traj" viewBox="0 0 ' + ((x1 - x0) * k).toFixed(0) + " " + ((z1 - z0) * k).toFixed(0) + '" role="img" aria-label="Trajeto visto de cima"><polyline points="' + pts.map(P_).join(" ") + '" fill="none" stroke="currentColor" stroke-width="1.5"/>' + pes.map((p) => '<circle cx="' + P_(p).split(",")[0] + '" cy="' + P_(p).split(",")[1] + '" r="3" fill="' + (p[2] === "L" ? "#1060ff" : p[2] === "R" ? "#e00000" : "#888") + '"/>').join("") + '<circle cx="' + P_(pts[0]).split(",")[0] + '" cy="' + P_(pts[0]).split(",")[1] + '" r="2" fill="#00b140"/></svg>';
+  }
+  function estimativa() {
+    try {
+      const a = animacaoDoEditor(), op = opcTempo(), d = a.duracao / op.velocidade, n2 = Math.round(d * op.fps) + 1, des = Math.ceil(n2 / op.passo), larg = +E4.larg.value || 480;
+      E4.est.textContent = "≈ " + n2 + " quadros (" + des + " desenhos) · " + d.toFixed(2) + " s · GIF ~" + (des * larg * larg * 0.5625 * 0.12 / 1e6).toFixed(1) + " MB";
+    } catch (e) {
+      E4.est.textContent = "";
+    }
   }
   function mostrarQuadro(i) {
     if (!FR2 || !FR2.length) return;
@@ -40098,7 +40880,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       const a = FR2[Math.max(0, i - Math.round(FR2.length / 6))], b = FR2[Math.min(FR2.length - 1, i + Math.round(FR2.length / 6))];
       fantasma2 = [a, b].filter((q) => q !== f).map((q, j) => '<div class="an-fant" style="opacity:.22;filter:' + (j ? "hue-rotate(180deg)" : "none") + '">' + q.svg + "</div>").join("");
     }
-    E4.prev.innerHTML = '<div class="an-pilha">' + fantasma2 + '<div class="an-frente">' + f.svg + "</div></div>";
+    E4.prev.innerHTML = '<div class="an-pilha">' + fantasma2 + '<div class="an-frente">' + f.svg + "</div></div>" + (FR2.trajeto && E4.traj.checked ? FR2.trajeto : "");
     E4.tempo.textContent = f.t.toFixed(2) + " s · quadro " + (i + 1) + "/" + FR2.length;
   }
   async function preparar() {
@@ -40106,7 +40888,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       const a = animacaoDoEditor();
       log3("Preparando os quadros…");
       await new Promise((r) => setTimeout(r, 20));
-      FR2 = prepararQuadros(a);
+      FR2 = await prepararQuadros(a);
       E4.sl.max = FR2.length - 1;
       mostrarQuadro(+E4.sl.value || 0);
       log3(FR2.length + " quadros prontos (" + a.duracao.toFixed(2) + " s).");
@@ -40147,7 +40929,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       }
       E4.sl.value = i;
       mostrarQuadro(i);
-    }, 1e3 / ((+E4.fps.value || 12) * vel));
+    }, 1e3 / (opcTempo().fps * vel));
   }
   function desenharLinha() {
     const D3 = Math.max(+E4.dur.value || ED.duracao, 0.1), w = 100, linhas = Object.keys(AN_PARTES).filter((p) => p !== "lugar").concat(["lugar"]);
@@ -40185,6 +40967,82 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     } catch (e) {
       log3(e.message, true);
     }
+  }
+  function tocarNoPalco() {
+    if (noPalco) {
+      cancelAnimationFrame(noPalco.raf);
+      Object.assign(noPalco.x.params, noPalco.salvo);
+      noPalco = null;
+      render2();
+      E4.palcoPlay.textContent = "▶ No palco";
+      return;
+    }
+    let a;
+    try {
+      a = animacaoDoEditor();
+    } catch (e) {
+      return log3(e.message, true);
+    }
+    const x = it(), salvo = anSemCamera(x.params), base2 = ED.base ? anSemCamera(ED.base) : anSemCamera(x.params), op = opcTempo();
+    let t0 = performance.now(), mem = null;
+    noPalco = { x, salvo };
+    E4.palcoPlay.textContent = "■ Parar";
+    const passo = () => {
+      if (!noPalco) return;
+      let t = (performance.now() - t0) / 1e3 * op.velocidade * (+E4.vel.value || 1);
+      if (op.passo > 1) t = Math.floor(t * op.fps / op.passo) * op.passo / op.fps;
+      if (t > a.duracao) {
+        if (E4.repetir.checked) {
+          t0 = performance.now();
+          mem = null;
+          noPalco.raf = requestAnimationFrame(passo);
+          return;
+        }
+        tocarNoPalco();
+        return;
+      }
+      Object.assign(x.params, base2);
+      aplicarAnimacao(x, a, t, { base: { params: Object.assign({}, base2) } });
+      delete x._animBase;
+      if (a.travarPes) {
+        if (mem && mem.acc) {
+          x.params.wx += mem.acc[0];
+          x.params.wz += mem.acc[1];
+        }
+        mem = travarPes(x, mem, { apoio: apoioNoTempo(a, t) });
+      }
+      render2();
+      noPalco.raf = requestAnimationFrame(passo);
+    };
+    noPalco.raf = requestAnimationFrame(passo);
+  }
+  function carregarNoEditor(an) {
+    const x = it();
+    ED = {
+      nome: an.nome,
+      duracao: an.duracao,
+      fps: an.fps || 12,
+      modo: an.modo,
+      curva: an.curva,
+      loop: !!an.loop,
+      tags: an.tags || [],
+      base: anSemCamera(x.params),
+      travarPes: !!an.travarPes,
+      chaves: an.chaves.map((c) => ({ t: c.t, valores: an.modo === "relativa" ? Object.fromEntries(Object.entries(c.valores).map(([k, v]) => [k, (x.params[k] || 0) + v])) : Object.assign({}, c.valores), mover: c.mover, curva: c.curva, rosto: c.rosto, apoio: c.apoio, olha: c.olha, olhaModo: c.olhaModo }))
+    };
+    E4.nome.value = an.nome;
+    E4.dur.value = +an.duracao.toFixed(3);
+    E4.curva.value = an.curva || "suave";
+    E4.loop.checked = !!an.loop;
+    E4.rel.checked = an.modo === "relativa";
+    E4.tags.value = (an.tags || []).join(", ");
+    FR2 = null;
+    T = 0;
+    chaveSel = -1;
+    DESF.length = 0;
+    REF2.length = 0;
+    desenharLinha();
+    estimativa();
   }
   function svgParaCanvas(svg, larg) {
     return new Promise((ok3, erro) => {
@@ -40286,21 +41144,31 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     log3("Montando o vídeo do name…");
     await new Promise((r) => setTimeout(r, 20));
     try {
-      const r = compilarName(txt), fps = +E4.fps.value || 8, v = videoDoName(r, { fps });
-      if (v.frames.length > 600) throw new Error("Vídeo longo demais (" + v.frames.length + " quadros); reduza as durações.");
+      const r = compilarName(txt), op = opcTempo(), v = videoDoName(r, { fps: r.video && !E4.fps.dataset.mexido ? r.video.fps : op.fps, passo: r.video && !E4.passo.dataset.mexido ? r.video.passo : op.passo, velocidade: op.velocidade });
+      if (v.frames.length > 1800) throw new Error("Vídeo longo demais (" + v.frames.length + " quadros); reduza o fps ou as durações.");
+      CANCELAR = false;
+      E4.cancelar.hidden = false;
       FRV = [];
-      for (let i = 0; i < v.frames.length; i++) {
-        FRV.push({ t: v.frames[i].t, svg: renderizarQuadro(v.frames[i], { passes: false }).svg, estado: v.frames[i] });
-        if (i % 6 === 0) {
-          log3("Vídeo: quadro " + (i + 1) + " de " + v.frames.length);
-          await new Promise((r22) => setTimeout(r22, 0));
+      let ult = null;
+      try {
+        for (let i = 0; i < v.frames.length; i++) {
+          if (CANCELAR) throw new Error("Cancelado.");
+          const f = v.frames[i];
+          ult = f.repetido && ult ? Object.assign({}, ult, { t: f.t }) : { t: f.t, svg: renderizarQuadro(f, { passes: false }).svg, estado: f };
+          FRV.push(ult);
+          if (i % 6 === 0) {
+            log3("Vídeo: quadro " + (i + 1) + " de " + v.frames.length);
+            await new Promise((r22) => setTimeout(r22, 0));
+          }
         }
+      } finally {
+        E4.cancelar.hidden = true;
       }
       FR2 = FRV;
       E4.sl.max = FR2.length - 1;
       E4.sl.value = 0;
       mostrarQuadro(0);
-      log3("Vídeo do name: " + FR2.length + " quadros (" + v.duracao.toFixed(1) + " s). Toque ou exporte (GIF/WebM)." + (r.erros.length ? " Há " + r.erros.length + " erro(s) no name." : ""));
+      log3("Vídeo do name: " + FR2.length + " quadros a " + v.fps + " fps (" + v.desenhos + " desenhos, " + v.duracao.toFixed(1) + " s). Toque ou exporte (GIF/WebM)." + (v.avisos.length ? " Avisos: " + v.avisos.slice(0, 3).join("; ") : "") + (r.erros.length ? " Há " + r.erros.length + " erro(s) no name." : ""));
     } catch (e) {
       log3(e.message, true);
     }
@@ -40408,7 +41276,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     if (!an) return;
     if (a === "ver") {
       ED = Object.assign(novoEd(), { base: anSemCamera(it().params) });
-      FR2 = prepararQuadros(an);
+      FR2 = await prepararQuadros(an);
       E4.sl.max = FR2.length - 1;
       E4.sl.value = 0;
       mostrarQuadro(0);
@@ -40423,17 +41291,8 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       render2();
       log3("“" + nome + "” aplicada no manequim (fim do movimento).");
     } else if (a === "editar") {
-      const x = it();
-      ED = { nome: an.nome, duracao: an.duracao, fps: an.fps || 12, modo: an.modo, curva: an.curva, loop: !!an.loop, tags: an.tags || [], base: anSemCamera(x.params), chaves: an.chaves.map((c) => ({ t: c.t, valores: an.modo === "relativa" ? Object.fromEntries(Object.entries(c.valores).map(([k, v]) => [k, (x.params[k] || 0) + v])) : Object.assign({}, c.valores), mover: c.mover, curva: c.curva, rosto: c.rosto })) };
-      E4.nome.value = an.origem === "pronta" ? an.nome + " (minha)" : an.nome;
-      E4.dur.value = an.duracao;
-      E4.curva.value = an.curva || "suave";
-      E4.loop.checked = !!an.loop;
-      E4.rel.checked = an.modo === "relativa";
-      E4.tags.value = (an.tags || []).join(", ");
-      FR2 = null;
-      T = 0;
-      desenharLinha();
+      carregarNoEditor(an);
+      if (an.origem === "pronta") E4.nome.value = an.nome + " (minha)";
       log3("Editando “" + nome + "”.");
     } else if (a === "del") {
       if (el2.dataset.c !== "1") {
@@ -40454,8 +41313,11 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     const b = document.getElementById("animBtn");
     if (b) b.setAttribute("aria-pressed", "true");
     E4.quem.innerHTML = SCN.list.map((x, i) => '<option value="' + i + '"' + (i === SCN.active ? " selected" : "") + ">" + esc7(x.name) + "</option>").join("");
+    const oa = E4.area.querySelector('[data-a="oAlvo"]');
+    if (oa) oa.innerHTML = '<option value="camera">câmera</option>' + SCN.list.map((x) => "<option>" + esc7(x.name) + "</option>").join("");
     desenharLinha();
     lista2();
+    estimativa();
   }
   function fechar3() {
     E4.area.hidden = true;
@@ -40476,7 +41338,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     area.setAttribute("role", "dialog");
     area.setAttribute("aria-label", "Animação");
     const poses = todasPoses().map((p) => "<option>" + p + "</option>").join("");
-    area.innerHTML = '<header class="qd-cab"><h2>Animação</h2><label>Manequim <select data-a="quem"></select></label><input data-a="nome" value="minha animação" aria-label="Nome da animação" maxlength="80"><label>Duração <input data-a="dur" type="number" min="0.1" max="60" step="0.1" value="1"> s</label><label>fps <input data-a="fps" type="number" min="2" max="30" value="12"></label><label>Curva <select data-a="curva">' + Object.keys(CURVAS).map((c) => "<option" + (c === "suave" ? " selected" : "") + ">" + c + "</option>").join("") + '</select></label><label><input type="checkbox" data-a="rel"> relativa</label><label><input type="checkbox" data-a="loop"> loop</label><input data-a="tags" placeholder="tags: Locomocao/Passo, Conversa/Explicar" aria-label="Tags"><button type="button" class="primario" data-a="salvar">Salvar na biblioteca</button><button type="button" data-a="fechar" aria-label="Fechar">✕</button></header><div class="qd-corpo"><div class="qd-ed"><div class="qd-barra"><button type="button" class="primario" data-a="gravar" title="Grava a pose atual do manequim do palco no instante marcado">● Gravar chave</button><label>em <input data-a="t" type="number" min="0" step="0.05" value="0"> s</label><button type="button" data-a="palco" title="Põe o manequim do palco neste instante da animação">Ver no palco</button><button type="button" data-a="apagar">Apagar chave</button><button type="button" data-a="copiar">Copiar</button><button type="button" data-a="colar">Colar</button><button type="button" data-a="nova">Nova</button></div><div class="an-chaves"></div><div class="an-linha" aria-label="Linha do tempo"></div><fieldset class="qd-opc"><legend>Pose A → pose B</legend><select data-a="pA">' + poses + '</select> → <select data-a="pB">' + poses + '</select><button type="button" data-a="ab">Criar</button><small>usa as poses prontas; ajuste depois gravando chaves</small></fieldset><fieldset class="qd-opc an-partes"><legend>Partes que a animação mexe (nenhuma marcada = todas)</legend>' + Object.keys(AN_PARTES).map((p) => '<label><input type="checkbox" value="' + p + '"> ' + p + "</label>").join("") + '</fieldset><fieldset class="qd-opc"><legend>Exportar</legend><label>Largura <input data-a="larg" type="number" min="160" max="1600" value="480"> px</label><button type="button" data-x="gif">GIF</button><button type="button" data-x="webm">Vídeo WebM</button><button type="button" data-x="png">PNGs (.zip)</button><button type="button" data-x="openpose">OpenPose por quadro</button><button type="button" data-x="json">JSON</button><button type="button" data-a="video" title="Toca o name da aba Name: durações, animações e movimentos de câmera">Vídeo do name</button></fieldset><p class="qd-out"></p></div><div class="qd-lado"><div class="an-prev qd-prev"></div><div class="qd-barra"><button type="button" data-a="prep">Preparar</button><button type="button" class="primario" data-a="play">▶ Tocar</button><button type="button" data-a="ant">⏮</button><button type="button" data-a="prox">⏭</button><select data-a="vel" aria-label="Velocidade"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select><label><input type="checkbox" data-a="repetir" checked> repetir</label><label><input type="checkbox" data-a="onion"> fantasma</label><span class="an-tempo"></span></div><input type="range" data-a="sl" min="0" max="0" value="0" aria-label="Quadro"><h3 class="qd-sub">Biblioteca de animações</h3><div class="qd-barra"><input type="search" data-a="busca" placeholder="Buscar"><select data-a="tagF"></select><select data-a="parteF"><option value="">Todas as partes</option>' + Object.keys(AN_PARTES).map((p) => "<option>" + p + "</option>").join("") + '</select><button type="button" data-a="imp">Importar…</button><input type="file" accept=".json,.gmanim" data-a="impArq" hidden><button type="button" data-a="expTodas">Exportar as minhas</button><span class="qd-cont"></span></div><ul class="an-lista"></ul></div></div>';
+    area.innerHTML = '<header class="qd-cab"><h2>Animação</h2><label>Manequim <select data-a="quem"></select></label><input data-a="nome" value="minha animação" aria-label="Nome da animação" maxlength="80"><label>Duração <input data-a="dur" type="number" min="0.1" max="60" step="0.1" value="1"> s</label><label>fps <input data-a="fps" type="number" min="1" max="60" value="12" list="anFpsLista"></label><datalist id="anFpsLista"><option value="6"><option value="8"><option value="12"><option value="24"><option value="30"><option value="60"></datalist><label title="Repete cada desenho 2 ou 3 quadros (animação tradicional)">Desenhos <select data-a="passo"><option value="1">em um</option><option value="2">em dois</option><option value="3">em três</option></select></label><label title="2 = duas vezes mais rápido">Velocidade <input data-a="velA" type="number" min="0.1" max="8" step="0.1" value="1">×</label><label>Curva <select data-a="curva">' + Object.keys(CURVAS).map((c) => "<option" + (c === "suave" ? " selected" : "") + ">" + c + "</option>").join("") + '</select></label><label><input type="checkbox" data-a="rel"> relativa</label><label><input type="checkbox" data-a="loop"> loop</label><input data-a="tags" placeholder="tags: Locomocao/Passo, Conversa/Explicar" aria-label="Tags"><button type="button" class="primario" data-a="salvar">Salvar na biblioteca</button><button type="button" data-a="fechar" aria-label="Fechar">✕</button></header><div class="qd-corpo"><div class="qd-ed"><div class="qd-barra"><button type="button" class="primario" data-a="gravar" title="Grava a pose atual do manequim do palco no instante marcado">● Gravar chave</button><label>em <input data-a="t" type="number" min="0" step="0.05" value="0"> s</label><button type="button" data-a="palco" title="Põe o manequim do palco neste instante da animação">Ver no palco</button><button type="button" data-a="apagar">Apagar chave</button><button type="button" data-a="copiar">Copiar</button><button type="button" data-a="colar">Colar</button><button type="button" data-a="nova">Nova</button><button type="button" data-a="desf" title="Desfazer (Ctrl+Z)">↶</button><button type="button" data-a="refa" title="Refazer (Ctrl+Y)">↷</button><label title="Curva só da chave escolhida (do anterior até ela)">Curva da chave <select data-a="curvaK"><option value="">(a da animação)</option>' + Object.keys(CURVAS).map((c) => "<option>" + c + "</option>").join("") + '</select></label><label title="O pé de apoio não escorrega (giros, passos)"><input type="checkbox" data-a="trav"> pés presos</label></div><div class="an-chaves"></div><div class="an-linha" aria-label="Linha do tempo"></div><fieldset class="qd-opc"><legend>Girar, andar, olhar</legend><label>Girar <input data-a="gAng" type="number" min="-1080" max="1080" step="15" value="360">°</label><select data-a="gEst"><option value="passos">com passos</option><option value="pivo">pivô (pirueta)</option><option value="luta">base de luta</option><option value="salto">no ar</option></select><select data-a="gDir"><option value="1">para a esquerda</option><option value="-1">para a direita</option></select><button type="button" data-a="gCriar">Criar giro</button> <label>Andar até <input data-a="aX" type="number" step="0.5" value="2" aria-label="x (m)"> , <input data-a="aZ" type="number" step="0.5" value="2" aria-label="z (m)"> m</label><label><input type="checkbox" data-a="aCorre"> correndo</label><button type="button" data-a="aCriar">Criar caminhada</button> <label>Olhar para <select data-a="oAlvo"></select></label><select data-a="oModo"><option value="natural">natural (olhos→cabeça→corpo)</option><option value="so-cabeca">só a cabeça</option><option value="so-olhos">só os olhos</option><option value="corpo">o corpo todo</option></select><button type="button" data-a="oFazer">Olhar</button></fieldset><fieldset class="qd-opc"><legend>Pose A → pose B</legend><select data-a="pA">' + poses + '</select> → <select data-a="pB">' + poses + '</select><button type="button" data-a="ab">Criar</button><small>usa as poses prontas; ajuste depois gravando chaves</small></fieldset><fieldset class="qd-opc an-partes"><legend>Partes que a animação mexe (nenhuma marcada = todas)</legend>' + Object.keys(AN_PARTES).map((p) => '<label><input type="checkbox" value="' + p + '"> ' + p + "</label>").join("") + '</fieldset><fieldset class="qd-opc"><legend>Exportar</legend><label>Largura <input data-a="larg" type="number" min="160" max="1600" value="480"> px</label><button type="button" data-x="gif">GIF</button><button type="button" data-x="webm">Vídeo WebM</button><button type="button" data-x="png">PNGs (.zip)</button><button type="button" data-x="openpose">OpenPose por quadro</button><button type="button" data-x="json">JSON</button><button type="button" data-a="video" title="Toca o name da aba Name: durações, animações e movimentos de câmera">Vídeo do name</button></fieldset><p class="qd-out"></p></div><div class="qd-lado"><div class="an-prev qd-prev"></div><div class="qd-barra"><button type="button" data-a="prep">Preparar</button><button type="button" class="primario" data-a="play">▶ Tocar</button><button type="button" data-a="cancelar" hidden>Cancelar</button><button type="button" data-a="palcoPlay" title="Toca no palco, no manequim de verdade">▶ No palco</button><button type="button" data-a="ant">⏮</button><button type="button" data-a="prox">⏭</button><select data-a="vel" aria-label="Velocidade"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select><label><input type="checkbox" data-a="repetir" checked> repetir</label><label><input type="checkbox" data-a="onion"> fantasma</label><label title="Caminho visto de cima, com as pisadas (azul = esquerdo, vermelho = direito)"><input type="checkbox" data-a="traj" checked> trajeto</label><label title="Pisca e respira sozinho"><input type="checkbox" data-a="vida"> vida</label><span class="an-tempo"></span></div><p class="an-est" aria-live="polite"></p><input type="range" data-a="sl" min="0" max="0" value="0" aria-label="Quadro"><h3 class="qd-sub">Biblioteca de animações</h3><div class="qd-barra"><input type="search" data-a="busca" placeholder="Buscar"><select data-a="tagF"></select><select data-a="parteF"><option value="">Todas as partes</option>' + Object.keys(AN_PARTES).map((p) => "<option>" + p + "</option>").join("") + '</select><button type="button" data-a="imp">Importar…</button><input type="file" accept=".json,.gmanim" data-a="impArq" hidden><button type="button" data-a="expTodas">Exportar as minhas</button><span class="qd-cont"></span></div><ul class="an-lista"></ul></div></div>';
     document.body.appendChild(area);
     const q = (s) => area.querySelector(s), b = (k) => q('[data-a="' + k + '"]');
     Object.assign(E4, {
@@ -40506,7 +41368,16 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       tagF: b("tagF"),
       parteF: b("parteF"),
       lista: q(".an-lista"),
-      cont: q(".qd-cont")
+      cont: q(".qd-cont"),
+      passo: b("passo"),
+      velA: b("velA"),
+      cancelar: b("cancelar"),
+      palcoPlay: b("palcoPlay"),
+      traj: b("traj"),
+      vida: b("vida"),
+      est: q(".an-est"),
+      curvaK: b("curvaK"),
+      trav: b("trav")
     });
     const mudou2 = () => {
       ED.modo = E4.rel.checked ? "relativa" : "absoluta";
@@ -40514,7 +41385,69 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       FR2 = null;
       desenharLinha();
     };
-    [E4.dur, E4.fps, E4.curva, E4.rel, E4.loop].forEach((x) => x.addEventListener("change", mudou2));
+    [E4.dur, E4.fps, E4.curva, E4.rel, E4.loop, E4.passo, E4.velA].forEach((x) => x.addEventListener("change", () => {
+      mudou2();
+      estimativa();
+    }));
+    [E4.fps, E4.passo].forEach((x) => x.addEventListener("change", () => {
+      x.dataset.mexido = "1";
+      if (+E4.fps.value > 60) E4.fps.value = 60;
+      if (+E4.fps.value < 1) E4.fps.value = 1;
+    }));
+    E4.cancelar.addEventListener("click", () => {
+      CANCELAR = true;
+    });
+    E4.palcoPlay.addEventListener("click", tocarNoPalco);
+    E4.traj.addEventListener("change", () => mostrarQuadro(+E4.sl.value));
+    E4.vida.addEventListener("change", () => {
+      FR2 = null;
+    });
+    b("desf").addEventListener("click", () => desfazer(false));
+    b("refa").addEventListener("click", () => desfazer(true));
+    E4.curvaK.addEventListener("change", () => {
+      if (chaveSel < 0) return log3("Escolha uma chave (clique nela) para dar a curva só dela.", true);
+      marcar2();
+      ED.chaves[chaveSel].curva = E4.curvaK.value || void 0;
+      FR2 = null;
+      log3("Curva da chave " + ED.chaves[chaveSel].t.toFixed(2) + " s: " + (E4.curvaK.value || "a da animação"));
+    });
+    E4.trav.addEventListener("change", () => {
+      ED.travarPes = E4.trav.checked;
+      FR2 = null;
+    });
+    b("gCriar").addEventListener("click", () => {
+      try {
+        const an = animacaoGiro({ angulo: Math.abs(+b("gAng").value || 360) * (+b("gDir").value || 1), estilo: b("gEst").value });
+        carregarNoEditor(an);
+        E4.trav.checked = true;
+        preparar();
+        log3(an.descricao + " — ajuste as chaves e salve, se quiser.");
+      } catch (e) {
+        log3(e.message, true);
+      }
+    });
+    b("aCriar").addEventListener("click", () => {
+      try {
+        const x = it(), an = animacaoAndarAte(x, [(+b("aX").value || 0) / 0.114, (+b("aZ").value || 0) / 0.114], { correndo: b("aCorre").checked });
+        carregarNoEditor(an);
+        preparar();
+        log3(an.descricao + ".");
+      } catch (e) {
+        log3(e.message, true);
+      }
+    });
+    b("oFazer").addEventListener("click", () => {
+      try {
+        const x = it(), al = b("oAlvo").value;
+        const r = olharNatural(x, al === "camera" ? "camera" : al, { modo: b("oModo").value });
+        refreshScene2 && refreshScene2();
+        syncControls2 && syncControls2();
+        render2();
+        log3(r.alcancou ? "Olhando para " + al + (r.virouCorpo ? " (o corpo virou " + r.virouCorpo + "°)" : "") + "." : "Não alcança " + al + " (faltam " + r.erro + "°): use “o corpo todo” ou gire.", !r.alcancou);
+      } catch (e) {
+        log3(e.message, true);
+      }
+    });
     E4.partes.addEventListener("change", () => {
       FR2 = null;
     });
@@ -40523,6 +41456,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     b("palco").addEventListener("click", poseNoPalco);
     b("apagar").addEventListener("click", () => {
       if (chaveSel >= 0) {
+        marcar2();
         ED.chaves.splice(chaveSel, 1);
         chaveSel = -1;
         FR2 = null;
@@ -40538,6 +41472,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     b("colar").addEventListener("click", () => {
       if (!copia2) return;
       const c = Object.assign(JSON.parse(JSON.stringify(copia2)), { t: +T.toFixed(3) });
+      marcar2();
       ED.chaves = ED.chaves.filter((k) => Math.abs(k.t - c.t) > 1e-3).concat([c]).sort((a, b2) => a.t - b2.t);
       FR2 = null;
       desenharLinha();
@@ -40571,6 +41506,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       const t = e.target.closest("[data-i]");
       if (!t) return;
       chaveSel = +t.dataset.i;
+      E4.curvaK.value = ED.chaves[chaveSel].curva || "";
       irPara4(ED.chaves[chaveSel].t);
     });
     let arr2 = null;
@@ -40580,6 +41516,8 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       const r = tr.getBoundingClientRect(), D3 = +E4.dur.value || ED.duracao, tAt = Math.max(0, Math.min(D3, (e.clientX - r.left) / r.width * D3));
       if (ch) {
         chaveSel = +ch.dataset.i;
+        marcar2();
+        E4.curvaK.value = ED.chaves[chaveSel].curva || "";
         arr2 = { i: chaveSel, r, D: D3 };
         tr.setPointerCapture && tr.setPointerCapture(e.pointerId);
       } else irPara4(tAt);
@@ -40643,6 +41581,11 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       log3(r === "ok" ? "Exportadas." : "Não deu para baixar (" + r + ").", r !== "ok");
     });
     area.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "y") && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) {
+        e.preventDefault();
+        desfazer(e.key === "y" || e.shiftKey);
+        return;
+      }
       if (e.key === "Escape") fechar3();
       if (e.key === " " && e.target === area) {
         e.preventDefault();
@@ -40655,6 +41598,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     void L2;
     void sceneState;
     void anPoseValores;
+    void retimar;
   }
 
   // src/ui/orbita.js

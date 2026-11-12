@@ -7,18 +7,19 @@
      interação, efeitos); figurantes procedurais (quantidade sorteada, distribuição, orientação por probabilidade).
    - legenda: escrita ou automática (o que acontece no quadro, quem é quem pela cor) — vai no retângulo vermelho da ficha.
    Tudo determinístico pela semente. Unidade padrão: metros (1 m ≈ 8,77 R). */
-import { SCN, P, addInst, delInst, sceneList } from "./modelo.js";
+import { SCN, P, CAMK, addInst, delInst, sceneList, atualizarApoios } from "./modelo.js";
 import { sceneState, loadScene } from "./estado.js";
 import { L } from "./modos.js";
 import { cena, camera, apiFor } from "./comandos.js";
-import { adicionarObjeto, removerObjeto, acharObjeto } from "./cenario.js";
+import { adicionarObjeto, removerObjeto, acharObjeto, olharNatural } from "./cenario.js";
 import { mdSorteio, separar, posicoesArranjo, olharParaPonto } from "./multidao.js";
 import { todasPoses, nomePose, EXPRESSOES, chaveExpressao, misturarExpressoes } from "./poses.js";
 import { INTERACOES, PARES } from "./interacoes.js";
 import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { leituraBlocking } from "./blocking.js";
-import { anSemCamera, GESTOS_CONVERSA, ATITUDES, TONS_FALA, PAPEIS_CONVERSA, aplicarGestoConversa, aplicarAtitude, ajusteFino, falar, aplicarPapel, aplicarAnimacao, bibliotecaAnimacoes, criarAnimacao, encadear, anPoseValores } from "./animacao.js";
+import { travarPes, apoioNoTempo, animacaoGiro, animacaoAndarAte } from "./movimento.js";
+import { anSemCamera, GESTOS_CONVERSA, ATITUDES, TONS_FALA, PAPEIS_CONVERSA, aplicarGestoConversa, aplicarAtitude, ajusteFino, falar, aplicarPapel, aplicarAnimacao, bibliotecaAnimacoes, criarAnimacao, encadear, anPoseValores, retimar, instantesVideo, linhaDaFala, falarNoTempo } from "./animacao.js";
 import { POSEKEYS } from "./parametros.js";
 import { renderizarQuadro, paginaQuadros, recorteQuadro } from "./quadros.js";
 import { restGround, telaDoMundo, effScale, TIPOS_OBJETO, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
@@ -55,7 +56,7 @@ function nmLev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => 
 class NmErro extends Error { constructor(msg, linha) { super(msg); this.linha = linha; } }
 
 /* ===================== estrutura: linhas → blocos ===================== */
-const NM_TOPO = /^(animacao|animação|animation|elenco|cast|local|location|lugar|modelo|macro|pagina|página|page|quadro|panel|frame|painel|transicao|transição|transition|semente|seed|define|variavel|variável|legenda-auto|formato-padrao|leitura)\b/i;
+const NM_TOPO = /^(animacao|animação|animation|elenco|cast|local|location|lugar|modelo|macro|pagina|página|page|quadro|panel|frame|painel|transicao|transição|transition|semente|seed|define|variavel|variável|legenda-auto|formato-padrao|leitura|video|vídeo)\b/i;
 function nmBlocos(texto) {
   const linhas = String(texto || "").replace(/\r/g, "").split("\n"), blocos = []; let atual = null;
   linhas.forEach((raw, i) => {
@@ -414,6 +415,7 @@ function nmCabQuadro(cab, linha) {
     else if (w === "elevacao" || w === "elevação") q.elevacao = toks[++k].v;
     else if (w === "hora" || w === "luz") { q.hora = toks[++k].v; }
     else if (w === "duracao" || w === "duração") { q.duracao = toks[++k].v; }
+    else if (w === "velocidade") { q.velocidade = toks[++k].v; }
     else if (w === "camera-move" || w === "movimento") { q.movCamera = nmNorm(toks[++k].v); if (toks[k + 1] && toks[k + 1].t === "num") q.movValor = toks[++k].v; }
     else if (w === "camera" || w === "câmera") { q.camera = toks[++k].v; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "olhando") { k++; q.olhando = toks[++k].v; } }
     else if (t.t === "num" && k === 0) q.n = t.v;
@@ -422,8 +424,8 @@ function nmCabQuadro(cab, linha) {
   return q;
 }
 const NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
-const NM_CHAVES_Q = new Set(["duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
-const NM_CHAVES_P = new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
+const NM_CHAVES_Q = new Set(["velocidade", "duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
+const NM_CHAVES_P = new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
 /* ponto do mundo (R) para um alvo: personagem, marca, região, (x,z) em metros, objeto */
 function nmPontoDe(ctx, tok, toks, k) {
   if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
@@ -439,6 +441,8 @@ function nmXZ(v) { const d = (SCN.localAtual && SCN.localAtual.desloc) || [0, 0]
 function nmFrenteDe(it) { const a = (it.params.wRot || 0) * Math.PI / 180; return [Math.sin(a), Math.cos(a)]; }
 function nmVirarPara(it, p) { const dx = p[0] - it.params.wx, dz = p[1] - it.params.wz; if (Math.hypot(dx, dz) > 0.2) it.params.wRot = Math.round(Math.atan2(dx, dz) * 180 / Math.PI); }
 /* uma linha de personagem(ns) no quadro */
+/* toca uma animação num manequim do quadro: fica na pose final (ou no instante) e entra na lista do vídeo */
+function nmTocar(Q, x, an, inst) { const base = { params: anSemCamera(x.params) }; aplicarAnimacao(x, an, inst === null || inst === undefined ? an.duracao : Math.min(an.duracao, inst), { base }); delete x._animBase; (Q.animacoes = Q.animacoes || []).push({ quem: x.name, anim: an, base: base.params, instante: inst ?? null }); }
 function nmPersonagem(ctx, l, Q) {
   const toks = nmTokens(l.txt); let k = 0; const nomes = [];
   while (toks[k] && (toks[k].t === "pal" || toks[k].t === "str")) { const n = nmQuem(ctx, toks[k].v); if (!n) break; nomes.push(n); k++; if (toks[k] && toks[k].v === ",") k++; else if (toks[k] && nmNorm(toks[k].v) === "e" && toks[k + 1] && nmQuem(ctx, toks[k + 1].v)) k++; }
@@ -461,12 +465,33 @@ function nmPersonagem(ctx, l, Q) {
       its.forEach((x, i) => { x.params.wx = p[0] + v[0] * d * (1 + i * 0.8); x.params.wz = p[1] + v[1] * d * (1 + i * 0.8); if (w === "frente-de") nmVirarPara(x, p); });
       k = kk - 1; }
     else if (w === "nivel" || w === "nível" || w === "sobre") { const nv = nx.v; k++; depois.push(() => { const N = SCN.localAtual && SCN.localAtual.niveis[nv]; if (N) its.forEach(x => { x.params.bodyLift = N.altura; x.params.ground = 0; }); else { const o = acharObjeto(nv); if (!o) throw new NmErro("Nível/objeto “" + nv + "” não existe.", l.linha); its.forEach(x => { x.params.bodyLift = (o.base || 0) + o.alt; x.params.wx = o.x; x.params.wz = o.z; x.params.ground = 0; }); } }); }
-    else if (w === "gira") { its.forEach(x => x.params.wRot = nx.v); k++; }
-    else if (w === "vira-para" || w === "virado-para") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (p) depois.unshift(() => its.forEach(x => nmVirarPara(x, p))); else if (nmNorm(nx.v) === "camera" || nmNorm(nx.v) === "câmera") Q.viraCamera = (Q.viraCamera || []).concat(its); k = (p ? k2 : k + 2) - 1; }
+    else if (w === "gira" || w === "girar") { /* “gira 90” = fica virado a 90° (instantâneo); “gira 360 passos [direita]” = anima o giro com passos, pivô, luta ou salto */
+      let ang = nx.v, est = null, dir = null; k++; feito.vira = true;
+      while (toks[k + 1] && toks[k + 1].t === "pal" && /^(passos|passo|pivo|pirueta|luta|salto|pulo|direita|esquerda|horario|anti-horario)$/.test(nmNorm(toks[k + 1].v))) { const q = nmNorm(toks[k + 1].v); if (/^(direita|horario)$/.test(q)) dir = -1; else if (/^(esquerda|anti-horario)$/.test(q)) dir = 1; else est = q === "passo" ? "passos" : q === "pirueta" ? "pivo" : q === "pulo" ? "salto" : q; k++; }
+      if (typeof ang !== "number") throw new NmErro("“gira” precisa de um ângulo em graus, ex.: “gira 180” ou “gira 360 passos direita”.", l.linha);
+      if (!est && dir === null) its.forEach(x => x.params.wRot = ang);
+      else { const A = Math.abs(ang) * (dir ?? (ang < 0 ? -1 : 1)), an = animacaoGiro({ angulo: A, estilo: est || "passos" }); depois.push(() => its.forEach(x => nmTocar(Q, x, an, null))); feito.anima = "gira " + Math.abs(A) + "° " + (A > 0 ? "para a esquerda" : "para a direita") + " (" + (est || "passos") + ")"; } }
+    else if (w === "anda-ate" || w === "anda-até" || w === "caminha-ate" || w === "corre-ate") { /* anda até alguém, um ponto, uma marca ou um objeto (vira com passos, desvia do que estiver no caminho) */
+      const tok0 = nx, k0 = k + 1; let [p0, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p0) throw new NmErro("“anda-ate " + (nx && nx.v) + "”: use alguém do elenco, (x,z), marca \"nome\" ou um objeto.", l.linha); k = k2 - 1;
+      let correndo = w === "corre-ate", parar = null; while (toks[k + 1] && /^(correndo|parar|distancia|distância)$/.test(nmNorm(toks[k + 1].v))) { const q = nmNorm(toks[k + 1].v); if (q === "correndo") { correndo = true; k++; } else { parar = toks[k + 2].v * (toks[k + 2].u === "R" ? 1 / NM_M : 1); k += 2; } }
+      depois.push(() => its.forEach(x => { let [p] = nmPontoDe(ctx, tok0, toks, k0); const alvoP = nmQuem(ctx, tok0.v) || acharObjeto(tok0.v); const st = parar ?? (alvoP ? 0.9 : 0);
+        if (st) { const dx = p[0] - x.params.wx, dz = p[1] - x.params.wz, L = Math.hypot(dx, dz) || 1, r = Math.max(0, L - st * NM_M); p = [x.params.wx + dx / L * r, x.params.wz + dz / L * r]; }
+        nmTocar(Q, x, animacaoAndarAte(x, p, { correndo }), null); if (nmQuem(ctx, tok0.v)) { try { olharNatural(x, nmQuem(ctx, tok0.v)); } catch (e) { } } }));
+      feito.anima = (correndo ? "corre até " : "anda até ") + tok0.v; }
+    else if (w === "vira-para" || w === "virado-para") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); const tok0 = nx, k0 = k + 1; feito.vira = true;
+      if (p) { k = k2 - 1; let est = null; if (toks[k + 1] && toks[k + 1].t === "pal" && /^(passos|passo|pivo|luta|salto)$/.test(nmNorm(toks[k + 1].v))) { est = nmNorm(toks[k + 1].v).replace(/^passo$/, "passos"); k++; }
+        if (!est) depois.unshift(() => its.forEach(x => nmVirarPara(x, p)));
+        else { depois.push(() => its.forEach(x => { const [p1] = nmPontoDe(ctx, tok0, toks, k0), ang = Math.atan2(p1[0] - x.params.wx, p1[1] - x.params.wz) * 180 / Math.PI, rel = ((ang - (x.params.wRot || 0)) % 360 + 540) % 360 - 180; if (Math.abs(rel) > 3) nmTocar(Q, x, animacaoGiro({ angulo: Math.round(rel), estilo: est }), null); })); feito.anima = "vira para " + tok0.v + " (" + est + ")"; } }
+      else if (nmNorm(nx.v) === "camera") { Q.viraCamera = (Q.viraCamera || []).concat(its); k++; } else k++; }
     else if (w === "pose") { const pz = nmPoseValida(nx.v, l.linha); its.forEach(x => apiFor(x).poseRapida(pz, { molejo: Q.molejo ?? 0.5, semente: x.name + Q.indice })); feito.pose = pz; k++; }
     else if (w === "acao" || w === "ação") { const a = nx.v; if (!ACOES_LUTA[a]) { const s = nmParecida(a, Object.keys(ACOES_LUTA)); throw new NmErro("Ação “" + a + "” não existe." + (s ? " Quis dizer “" + s + "”?" : ""), l.linha); } its.forEach(x => { cena.marcarEstado = cena.marcarEstado || (() => { }); apiFor(x).acao(a, { efeitos: Q.efeitos !== false }); }); feito.acao = a; k++; }
     else if (w === "expressao" || w === "expressão" || w === "rosto") { const ex = nmExpressaoValida(nx.v, l.linha); let int = 1; if (toks[k + 2] && nmNorm(toks[k + 2].v) === "intensidade") { int = toks[k + 3].v; k += 2; } its.forEach(x => apiFor(x).expressao(ex, int)); feito.expressao = ex; k++; }
-    else if (w === "olha" || w === "olha-para" || w === "olhando") { const alvo = nx; k++; depois.push(() => { const n2 = nmQuem(ctx, alvo.v); its.forEach(x => { try { if (n2) apiFor(x).olhar(n2); else if (alvo.t === "tupla") { const p = nmXZ(alvo.v); apiFor(x).olhar([p[0], 14, p[1]]); } else apiFor(x).olhar(nmNorm(alvo.v)); } catch (e) { Q.avisos.push(x.name + " olhar: " + e.message); } }); }); feito.olha = alvo.v; }
+    else if (w === "olha" || w === "olha-para" || w === "olhando") { const alvo = nx; k++; let modo = "natural";
+      if (toks[k + 1] && toks[k + 1].t === "pal" && /^(so-cabeca|so-olhos|corpo|natural|so-a-cabeca|so-os-olhos)$/.test(nmNorm(toks[k + 1].v))) { modo = nmNorm(toks[k + 1].v).replace("-a-", "-").replace("-os-", "-"); k++; }
+      depois.push(() => { const n2 = nmQuem(ctx, alvo.v); its.forEach(x => { try { const a = n2 ? n2 : alvo.t === "tupla" ? (p => [p[0], 14, p[1]])(nmXZ(alvo.v)) : /^(camera|câmera)$/.test(nmNorm(alvo.v)) ? "camera" : (acharObjeto(alvo.v) ? (o => [o.x, (o.base || 0) + o.alt, o.z])(acharObjeto(alvo.v)) : null);
+        if (a === null) { apiFor(x).olhar(nmNorm(alvo.v)); return; }
+        const r = olharNatural(x, a, { modo }); (Q.olhares = Q.olhares || []).push(Object.assign({ quem: x.name, alvo: String(alvo.v), modo }, r)); feito.olhaR = r;
+        if (!r.alcancou) Q.avisos.push(x.name + " não consegue olhar direto para " + alvo.v + " (" + modo + "): faltam " + r.erro + "° — use “olha " + alvo.v + " corpo” ou “vira-para " + alvo.v + "”."); } catch (e) { Q.avisos.push(x.name + " olhar: " + e.message); } }); }); feito.olha = alvo.v; feito.olhaModo = modo; }
     else if (w === "segura" || w === "carrega" || w === "levanta" || w === "puxa" || w === "empurra" || w === "arrasta") { const ob = nx.v; let peg = null; k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "como") { peg = toks[k + 2].v; k += 2; }
       const pegada = peg || { segura: "aFrente", carrega: "abracado", levanta: "levantarDoChao", puxa: "puxarCorda", empurra: "empurrar", arrasta: "arrastar" }[w];
       if (!ACOES[pegada] && !/^(duasMaos|gancho|empurrando)$/.test(pegada)) { const s = nmParecida(pegada, Object.keys(ACOES)); throw new NmErro("Pegada “" + pegada + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Use: " + Object.keys(ACOES).join(", ") + "."), l.linha); }
@@ -508,7 +533,7 @@ function nmPersonagem(ctx, l, Q) {
       const an = lista.length > 1 ? encadear(lista) : lista[0];
       depois.push(() => its.forEach(x => { const base = { params: anSemCamera(x.params) }; aplicarAnimacao(x, an, inst === null ? an.duracao : Math.min(an.duracao, inst), { base }); delete x._animBase; (Q.animacoes = Q.animacoes || []).push({ quem: x.name, anim: an, base: base.params, instante: inst }); }));
       feito.anima = nomes.join(" depois "); }
-    else if (w === "fala" || w === "diz" || w === "pensa") { const txt = nx.v; Q.falas.push({ quem: it.name, texto: txt, tipo: w }); k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") { feito.tom = nmNorm(toks[k + 2].v); k += 2; }
+    else if (w === "fala" || w === "diz" || w === "pensa") { const txt = nx.v; Q.falas.push({ quem: it.name, texto: txt, tipo: w }); k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") { feito.tom = nmNorm(toks[k + 2].v); k += 2; } Q.falas[Q.falas.length - 1].tom = feito.tom || null;
       if (w !== "pensa") { feito.fala = true; depois.push(() => its.forEach(x => { if (!temGesto && !feito.semGesto) { const lista = PAPEIS_CONVERSA[feito.tom === "raiva" ? "discutindo" : feito.tom === "pergunta" ? "perguntando" : "falante"].gestos.filter(Boolean), r = mdSorteio(ctx.semente + ":" + Q.indice + x.name); aplicarGestoConversa(x, lista[Math.floor(r() * lista.length)], { intensidade: 0.75, mao: r() < 0.7 ? "direita" : "esquerda" }); }
         falar(x, feito.tom || "calmo", txt, Q.indice); })); } }
     else if (w === "sai" || w === "some" || w === "oculto" || w === "fora") { its.forEach(x => { x.oculto = true; Q.presentes.delete(x.name); }); }
@@ -693,7 +718,7 @@ function nmLegenda(ctx, Q) {
     if (f.gesto) acts.push("gesto " + nmFrase(f.gesto));
     if (f.atitudes) acts.push(f.atitudes.map(nmFrase).join(", "));
     if (f.expressao) acts.push("expressão " + nmFrase(f.expressao));
-    if (f.olha) acts.push("olhando para " + f.olha);
+    if (f.olha) acts.push(f.olhaR && !f.olhaR.alcancou ? "tentando olhar para " + f.olha + " (fora do alcance)" : (f.olhaModo === "so-olhos" ? "só os olhos em " : f.olhaModo === "so-cabeca" ? "virando a cabeça para " : "olhando para ") + f.olha);
     partes.push(quem + (acts.length ? ": " + acts.join(", ") : "") + "."); }
   for (const m of Q.multidoes) partes.push(m.n + " figurantes (cinza)" + (m.regras.length ? ", " + m.regras.join(", ") : "") + ".");
   return partes.join(" ").replace(/\s+/g, " ").trim();
@@ -717,6 +742,7 @@ function nmCompilar(texto, opts = {}) {
   /* semente e variáveis primeiro (valem para tudo) */
   for (const b of blocos) { const t = nmTokens(b.cab), w = nmNorm(t[0].v);
     if (w === "semente" || w === "seed") ctx.semente = t[1] ? (t[1].t === "num" ? t[1].v : String(t[1].v).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) : 1;
+    if (w === "video" || w === "vídeo") { const v = ctx.video = { fps: 12, passo: 1, vida: true }; for (let k = 1; k < t.length; k++) { const q = nmNorm(t[k].v); if (q === "fps") v.fps = Math.max(1, Math.min(60, t[++k].v)); else if (q === "em-dois") v.passo = 2; else if (q === "em-tres") v.passo = 3; else if (q === "passo") v.passo = t[++k].v; else if (q === "sem-vida") v.vida = false; else if (q === "velocidade") v.velocidade = t[++k].v; } }
     if (w === "define" || w === "variavel" || w === "variável") { const v = t[2]; ctx.vars[t[1].v] = v.t === "num" ? v.v * (v.u === "R" ? 1 / NM_M : v.u === "cm" ? 0.01 : 1) : v.v; } }
   if (opts.semente !== undefined) ctx.semente = opts.semente;
   ctx.rnd = mdSorteio(ctx.semente);
@@ -770,8 +796,15 @@ function nmCompilar(texto, opts = {}) {
           if (w0 === "efeito") { try { cena.efeitos.adicionar(tk[1].v, {}); } catch (e) { Q.avisos.push("efeito: " + e.message); } continue; }
           if (w0 === "molejo") { Q.molejo = tk[1].v; continue; }
           if (w0 === "legenda") { Q.cab.legenda = tk[1].v; continue; }
-          if (w0 === "dialogo" || w0 === "diálogo") { const nomes = []; let tom = null; for (let kk = 1; kk < tk.length; kk++) { if (tk[kk].v === ",") continue; if (nmNorm(tk[kk].v) === "tom") { tom = nmNorm(tk[++kk].v); continue; } const n = nmQuem(ctx, tk[kk].v); if (!n) throw new NmErro("diálogo: “" + tk[kk].v + "” não está no elenco.", l.linha); nomes.push(n); }
-            if (nomes.length < 2) throw new NmErro("diálogo: diga quem conversa (ex.: dialogo Kai, Mira tom tenso).", l.linha); Q.dialogo = { nomes, tom }; continue; }
+          if (w0 === "camera-chave" || ((w0 === "camera" || w0 === "câmera") && tk[1] && tk[1].t === "num" && /^(s|ms)$/.test(tk[1].u || ""))) { /* câmera no tempo: camera 1.5s plano close alvo Kai lado 60 */
+            const ck = { t: tk[1].v * (tk[1].u === "ms" ? 0.001 : 1) }; for (let kk = 2; kk < tk.length; kk++) { const q = nmNorm(tk[kk].v);
+              if (q === "plano") { let p = nmNorm(tk[++kk].v); if (p === "primeiro" && tk[kk + 1] && nmNorm(tk[kk + 1].v) === "plano") { p = "primeiro plano"; kk++; } ck.plano = p; }
+              else if (q === "alvo") { ck.alvo = []; while (tk[kk + 1] && (tk[kk + 1].v === "," || nmQuem(ctx, tk[kk + 1].v))) { kk++; if (tk[kk].v !== ",") ck.alvo.push(tk[kk].v); } }
+              else if (q === "lado" || q === "azimute") ck.lado = tk[++kk].v; else if (q === "elevacao") ck.elevacao = tk[++kk].v; else if (q === "lente") ck.lente = tk[++kk].v; else if (q === "angulo") ck.angulo = nmNorm(tk[++kk].v);
+              else throw new NmErro("camera 1s …: use plano, alvo, lado, elevacao, lente, angulo (ex.: camera 1.5s plano close alvo Kai lado 60).", l.linha); }
+            (Q.camChaves = Q.camChaves || []).push(ck); continue; }
+          if (w0 === "dialogo" || w0 === "diálogo") { const nomes = []; let tom = null, arranjo = "de-frente"; for (let kk = 1; kk < tk.length; kk++) { if (tk[kk].v === ",") continue; if (nmNorm(tk[kk].v) === "tom") { tom = nmNorm(tk[++kk].v); continue; } if (/^(de-frente|frente-a-frente|lado-a-lado|aberto|aberto-para-camera|livre)$/.test(nmNorm(tk[kk].v))) { arranjo = nmNorm(tk[kk].v).replace("frente-a-frente", "de-frente").replace("aberto-para-camera", "aberto"); continue; } const n = nmQuem(ctx, tk[kk].v); if (!n) throw new NmErro("diálogo: “" + tk[kk].v + "” não está no elenco.", l.linha); nomes.push(n); }
+            if (nomes.length < 2) throw new NmErro("diálogo: diga quem conversa (ex.: dialogo Kai, Mira tom tenso).", l.linha); Q.dialogo = { nomes, tom, arranjo }; continue; }
           if (w0 === "fala" || w0 === "narracao" || w0 === "narração") { Q.falas.push({ quem: null, texto: tk[1].v, tipo: w0 }); continue; }
           if (!nmPersonagem(ctx, l, Q)) { const s = nmParecida(tk[0].v, [...ctx.elenco.keys()]); throw new NmErro("“" + tk[0].v + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : " Declare no bloco elenco."), l.linha); }
         } catch (e) { erros.push({ linha: (e instanceof NmErro && e.linha) || l.linha, erro: e.message, quadro: indice + 1 }); } }
@@ -779,11 +812,20 @@ function nmCompilar(texto, opts = {}) {
         /* diálogo: quem fala (a fala do quadro ou a vez, alternando) gesticula; os outros ouvem, olhando para ele */
         if (Q.dialogo) { const D = Q.dialogo, ctxD = ctx.dialogos = ctx.dialogos || {}, chave = D.nomes.join("|"), vez = ctxD[chave] = (ctxD[chave] ?? -1) + 1;
           const comFala = Q.falas.find(f => D.nomes.includes(f.quem)), fal = comFala ? comFala.quem : D.nomes[vez % D.nomes.length];
+          /* corpos: de frente um para o outro (padrão), lado a lado (ombro a ombro, cabeças viradas) ou abertos para a câmera (3/4, como no teatro) */
+          const ms = D.nomes.map(n => nmManequim(ctx, n)), cx = ms.reduce((a, m) => a + m.params.wx, 0) / ms.length, cz = ms.reduce((a, m) => a + m.params.wz, 0) / ms.length;
+          if (D.arranjo !== "livre") ms.forEach((x, i) => { const f0 = Q.feitos.find(f => f.nome.split(" e ").includes(x.name)); if (f0 && (f0.vira || f0.anima)) return;
+            const o = ms.length === 2 ? ms[1 - i] : null, ox = o ? o.params.wx : cx, oz = o ? o.params.wz : cz, ang = Math.atan2(ox - x.params.wx, oz - x.params.wz) * 180 / Math.PI;
+            if (Math.hypot(ox - x.params.wx, oz - x.params.wz) < 0.5) return;
+            if (D.arranjo === "de-frente") x.params.wRot = Math.round(ang);
+            else if (D.arranjo === "lado-a-lado") { const w = (a => ((a % 360) + 540) % 360 - 180); x.params.wRot = Math.round(Math.abs(w(ang - 70)) < Math.abs(w(ang + 70)) ? w(ang - 70) : w(ang + 70)); }
+            else if (D.arranjo === "aberto") { const rel = ((0 - ang) % 360 + 540) % 360 - 180; x.params.wRot = Math.round(ang + Math.max(-40, Math.min(40, rel * 0.45))); } });
           for (const n of D.nomes) { const x = nmManequim(ctx, n); x.oculto = false; Q.presentes.add(n); const f0 = Q.feitos.find(f => f.nome.split(" e ").includes(n));
-            if (f0 && (f0.gesto || f0.papel || f0.fala)) continue;
+            const alvoOlhar = n === fal ? D.nomes.find(y => y !== n) : fal;
+            if (f0 && (f0.gesto || f0.papel || f0.fala)) { if (!f0.olha) { try { const r = olharNatural(x, alvoOlhar, { limite: D.arranjo === "lado-a-lado" ? 80 : 60 }); Object.assign(f0, { olha: alvoOlhar, olhaR: r }); (Q.olhares = Q.olhares || []).push(Object.assign({ quem: n, alvo: alvoOlhar, modo: "natural" }, r)); } catch (e) { } } continue; }
             const papel = n === fal ? (D.tom === "raiva" || D.tom === "tenso" ? "discutindo" : "falante") : (D.tom === "tenso" ? "ouvinteCetico" : "ouvinte");
-            try { const r = aplicarPapel(x, papel, { semente: ctx.semente + ":" + Q.indice + n, tom: D.tom && TONS_FALA[D.tom] ? D.tom : undefined, texto: comFala && comFala.quem === n ? comFala.texto : "" }); try { apiFor(x).olhar(n === fal ? D.nomes.find(y => y !== n) : fal); } catch (e) { }
-              if (f0) Object.assign(f0, { papel, papelR: r }); else Q.feitos.push({ nome: n, papel, papelR: r, texto: [] }); } catch (e) { Q.avisos.push("diálogo: " + e.message); } } }
+            try { const r = aplicarPapel(x, papel, { semente: ctx.semente + ":" + Q.indice + n, tom: D.tom && TONS_FALA[D.tom] ? D.tom : undefined, texto: comFala && comFala.quem === n ? comFala.texto : "" }); let ro = null; try { ro = olharNatural(x, alvoOlhar, { limite: D.arranjo === "lado-a-lado" ? 80 : 60 }); (Q.olhares = Q.olhares || []).push(Object.assign({ quem: n, alvo: alvoOlhar, modo: "natural" }, ro)); if (!ro.alcancou) Q.avisos.push(n + " não consegue olhar direto para " + alvoOlhar + " (faltam " + ro.erro + "°)."); } catch (e) { }
+              if (f0) Object.assign(f0, { papel, papelR: r, olha: f0.olha || alvoOlhar, olhaR: f0.olhaR || ro }); else Q.feitos.push({ nome: n, papel, papelR: r, texto: [], olha: alvoOlhar, olhaR: ro }); } catch (e) { Q.avisos.push("diálogo: " + e.message); } } }
         /* ninguém dentro de parede, poço, banca…: sai pelo lado mais perto (e avisa) */
         SCN.list.forEach(it => { if (it.oculto || it.name === "__vazio__") return; let o = nmDentroDe(it, Q.segurados);
           /* em cima de um nível (plataforma, mezanino, passarela): sobe para o topo em vez de sair */
@@ -800,12 +842,19 @@ function nmCompilar(texto, opts = {}) {
         if (Q.cab.hora) { const hh = NM_HORAS[nmNorm(Q.cab.hora).replace(/\s+/g, "-")]; if (hh) { P.lightAz = hh[0]; P.lightEl = hh[1]; } ctx.hora = hh ? hh[2] : String(Q.cab.hora); }
         Q.hora = ctx.hora || null;
         const plano = nmCamera(ctx, Q);
+        /* câmera no tempo: guarda a câmera de cada chave (a câmera do quadro é a do instante 0) */
+        let camChaves = null;
+        if (Q.camChaves && Q.camChaves.length) { const cam0 = {}; CAMK.forEach(k => cam0[k] = P[k]); const piv0 = [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera], cab0 = Object.assign({}, Q.cab);
+          camChaves = [{ t: 0, cam: Object.assign({}, cam0) }];
+          for (const ck of Q.camChaves.sort((a, b) => a.t - b.t)) { Object.assign(Q.cab, { plano: ck.plano || cab0.plano, alvo: ck.alvo || cab0.alvo, lado: ck.lado ?? cab0.lado, elevacao: ck.elevacao ?? cab0.elevacao, lente: ck.lente ?? cab0.lente, angulo: ck.angulo ?? cab0.angulo });
+            try { nmCamera(ctx, Q); } catch (e) { Q.avisos.push("câmera " + ck.t + "s: " + e.message); } const c = {}; CAMK.forEach(k => c[k] = P[k]); if (ck.t === 0) camChaves[0].cam = c; else camChaves.push({ t: ck.t, cam: c }); }
+          Q.cab = cab0; CAMK.forEach(k => P[k] = camChaves[0].cam[k]); [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera] = piv0; }
         /* quem olha / vira para a câmera (depois da câmera posta) */
         const camW = () => { const a = (P.yaw || 0) * Math.PI / 180, d = Math.max(10, P.camDist || 30); return [(P.tx || 0) + Math.sin(a) * d, (P.tz || 0) + Math.cos(a) * d]; };
         (Q.viraCamera || []).forEach(it => nmVirarPara(it, camW())); (Q.costasCamera || []).forEach(it => { nmVirarPara(it, camW()); it.params.wRot = ((it.params.wRot + 360) % 360) - 180 + 180; });
         SCN.recorte = salvoRecorte; SCN.active = 0; /* o reserva escondido fica ativo: sem alças de seleção no quadro */
         const legenda = Q.cab.legenda || nmLegenda(ctx, Q);
-        quadros.push({ duracao: Q.cab.duracao || null, movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null, animacoes: (Q.animacoes || []).map(a => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante })), indice, n: Q.cab.n || indice + 1, titulo: Q.cab.titulo || "", formato: Q.cab.formato || "16:9", tamanho: NM_TAMANHOS[Q.cab.tamanho] || (Q.cab.funcao && /climax|clímax|impacto|revela/i.test(Q.cab.funcao) ? 2 : 1), funcao: Q.cab.funcao, plano, local: Q.localNome, transicao: Q.tipoTransicao || null,
+        quadros.push({ camChaves, velocidade: Q.cab.velocidade || null, duracao: Q.cab.duracao || null, movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null, animacoes: (Q.animacoes || []).map(a => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante })), indice, n: Q.cab.n || indice + 1, titulo: Q.cab.titulo || "", formato: Q.cab.formato || "16:9", tamanho: NM_TAMANHOS[Q.cab.tamanho] || (Q.cab.funcao && /climax|clímax|impacto|revela/i.test(Q.cab.funcao) ? 2 : 1), funcao: Q.cab.funcao, plano, local: Q.localNome, transicao: Q.tipoTransicao || null,
           legenda, falas: Q.falas, personagens: [...Q.presentes].map(n => ({ nome: n, cor: (ctx.elenco.get(n) || {}).nomeCor, hex: (ctx.elenco.get(n) || {}).hex })), figurantes: Q.multidoes.reduce((s, m) => s + m.n, 0),
           avisos: Q.avisos, linha: b.linha, estado: JSON.parse(JSON.stringify(sceneState())), L: Object.assign(JSON.parse(JSON.stringify(L)), { girdle: false, prop: false, grid: false }), pagina: pagina.n });
         pagina.quadros.push(indice);
@@ -820,7 +869,7 @@ function nmCompilar(texto, opts = {}) {
       return { par: [A.name, B.name].sort().join("|"), s: Math.sign((B.params.wx - A.params.wx) * (cz - A.params.wz) - (B.params.wz - A.params.wz) * (cx - A.params.wx)) }; };
     const la = lado(a), lb = lado(b); if (la && lb && la.par === lb.par && la.s && lb.s && la.s !== lb.s) b.avisos.push("a câmera cruzou o eixo de " + la.par.replace("|", " e ") + " (regra dos 180°): quem estava à esquerda agora aparece à direita"); }
   avisos.push(...quadros.flatMap(q => q.avisos.map(a => "quadro " + (q.indice + 1) + ": " + a)));
-  return { animacoes: [...ctx.animacoes.values()], ok: !erros.length, erros, avisos, quadros, paginas: paginas.filter(p => p.quadros.length),
+  return { video: ctx.video || null, animacoes: [...ctx.animacoes.values()], ok: !erros.length, erros, avisos, quadros, paginas: paginas.filter(p => p.quadros.length),
     elenco: [...ctx.elenco.values()].map(e => ({ nome: e.nome, papel: e.papel, cor: e.nomeCor, hex: e.hex, corpo: e.corpo, visual: e.visual || null })),
     locais: [...ctx.locais.values()].map(l => ({ nome: l.nome, pecas: l.itens.length, marcas: Object.keys(l.marcas), regioes: Object.keys(l.regioes), niveis: Object.keys(l.niveis), codigo: l.codigo, daBiblioteca: l.daBiblioteca || null })) };
 }
@@ -841,10 +890,12 @@ function nmLerAnimacao(bloco, ctx) {
   const cab = nmTokens(bloco.cab); cab.shift(); const o = { nome: cab[0] ? cab[0].v : "animação " + (ctx.animacoes.size + 1), duracao: null, modo: "absoluta", loop: false, curva: "suave", tags: [], fps: 12 }; let salvar = false;
   for (let k = 1; k < cab.length; k++) { const w = nmNorm(cab[k].v);
     if (w === "duracao" || w === "duração") o.duracao = cab[++k].v * (cab[k].u === "ms" ? 0.001 : 1); else if (w === "relativa") o.modo = "relativa"; else if (w === "absoluta") o.modo = "absoluta"; else if (w === "loop" || w === "repete") o.loop = true;
-    else if (w === "curva") o.curva = nmNorm(cab[++k].v); else if (w === "fps") o.fps = cab[++k].v; else if (w === "tags") o.tags = String(cab[++k].v).split(",").map(x => x.trim()).filter(Boolean); else if (w === "salvar") salvar = true;
-    else if (w === "descricao" || w === "descrição") o.descricao = cab[++k].v; else throw new NmErro("animacao: não entendi “" + cab[k].v + "” (use duracao 1s, relativa, loop, curva suave, tags \"a, b\", salvar).", bloco.linha); }
+    else if (w === "curva") o.curva = nmNorm(cab[++k].v); else if (w === "fps") { o.fps = cab[++k].v; if (!(o.fps >= 1 && o.fps <= 60)) throw new NmErro("fps vai de 1 a 60 (12 = animatic, 24 = cinema, 30/60 = vídeo).", bloco.linha); } else if (w === "tags") o.tags = String(cab[++k].v).split(",").map(x => x.trim()).filter(Boolean); else if (w === "salvar") salvar = true;
+    else if (w === "descricao" || w === "descrição") o.descricao = cab[++k].v;
+    else if (w === "velocidade") o.velocidade = cab[++k].v; else if (w === "em-dois" || w === "em-2") o.passo = 2; else if (w === "em-tres" || w === "em-3") o.passo = 3; else if (w === "passo") o.passo = cab[++k].v; else if (w === "travar-pes" || w === "pes-travados") o.travarPes = true;
+    else throw new NmErro("animacao: não entendi “" + cab[k].v + "” (use duracao 1s, relativa, loop, curva suave, fps 24, velocidade 1.5, em-dois, tags \"a, b\", salvar).", bloco.linha); }
   const tmp = { name: "_anim", params: Object.assign({}, SCN.list[0].params) }; Object.assign(tmp.params, anPoseValores("empe", tmp.params));
-  const chaves = []; let primeira = null;
+  const chaves = [], segurar = {}; let primeira = null;
   for (const l of nmExpandir(bloco.corpo, ctx.vars, ctx.rnd)) {
     const toks = nmTokens(l.txt); if (!toks.length) continue; if (!/^(chave|key|quadro-chave)$/.test(nmNorm(toks[0].v))) throw new NmErro("Na animação, cada linha começa com “chave 0.5s …”.", l.linha);
     const tt = toks[1]; if (!tt || tt.t !== "num") throw new NmErro("chave: diga o instante (ex.: chave 0.5s pose passo).", l.linha);
@@ -856,12 +907,14 @@ function nmLerAnimacao(bloco, ctx) {
       else if (w === "atitude") { let I = 1; k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") { I = toks[k + 2].v; k += 2; } aplicarAtitude(tmp, nx.v, { intensidade: I }); }
       else if (w === "move" || w === "anda" || w === "desloca") { const mv = { frente: 0, lado: 0, giro: 0 }; while (toks[k + 1] && /^(frente|lado|giro|tras|trás)$/.test(nmNorm(toks[k + 1].v))) { const f = nmNorm(toks[k + 1].v), v = toks[k + 2].v; if (f === "tras" || f === "trás") mv.frente = -v; else mv[f] = v; k += 2; } c.mover = mv; }
       else if (w === "curva") { c.curva = nmNorm(nx.v); k++; }
+      else if (w === "olha" || w === "olha-para") { c.olha = /^(camera|câmera)$/.test(nmNorm(nx.v)) ? "camera" : nx.t === "tupla" ? (p => [p[0], 14, p[1]])(nmXZ(nx.v)) : nx.v; k++; if (toks[k + 1] && /^(so-cabeca|so-olhos|corpo|natural)$/.test(nmNorm(toks[k + 1].v))) { c.olhaModo = nmNorm(toks[k + 1].v); k++; } }
+      else if (w === "segurar" || w === "segura-por" || w === "pausa") { const v = nx; if (!v || v.t !== "num") throw new NmErro("segurar: diga quanto tempo (ex.: segurar 0.3s).", l.linha); segurar[c.t] = v.v * (v.u === "ms" ? 0.001 : 1); k++; }
       else if (w === "fala") { /* fala "texto" [tom raiva] · ou só "fala tom raiva" (boca genérica) */ let texto = "a e o a i o", tom = "calmo"; if (nx && nx.t === "str") { texto = nx.v; k++; } if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") { tom = nmNorm(toks[k + 2].v); k += 2; } c.fala = { texto, tom }; }
       else if (/^(pescoco|pescoço|cabeca|cabeça|coluna|tronco|ombros|ombro|perna|pe|pé|braco|braço)$/.test(w)) { let parte = w; if (/^(ombro|perna|pe|braco)$/.test(parte) && nx && /^(direit[oa]|esquerd[oa])$/.test(nmNorm(nx.v))) { parte += "-" + nmNorm(nx.v); k++; }
         while (toks[k + 1] && (toks[k + 1].t === "num" || /^(inclina|abaixa|levanta|ergue|gira|lado|flexiona|estende|torce|caidos|afasta|junta|joelho|frente|tras|abre|cotovelo|punho)$/.test(nmNorm(toks[k + 1].v)))) { const o0 = toks[k + 1];
           if (o0.t === "num") { k++; let dir = null; if (toks[k + 1] && /^(para|pra)$/.test(nmNorm(toks[k + 1].v))) k++; if (toks[k + 1] && toks[k + 1].t === "pal") { dir = toks[k + 1].v; k++; } ajusteFino(tmp, parte, "pe", o0.v, dir); continue; }
           k++; let v = 0; if (toks[k + 1] && toks[k + 1].t === "num") { v = toks[k + 1].v; k++; } ajusteFino(tmp, parte, nmNorm(o0.v), v); } }
-      else throw new NmErro("Na chave, não entendi “" + toks[k].v + "” (use pose, expressao, gesto, atitude, ajustes como “pe direito 15cm para direita”, move frente 0.5, curva, fala).", l.linha); }
+      else throw new NmErro("Na chave, não entendi “" + toks[k].v + "” (use pose, expressao, gesto, atitude, olha Mira, segurar 0.3s, ajustes como “pe direito 15cm para direita”, move frente 0.5, curva, fala).", l.linha); }
     const vals = {}; for (const kk of Object.keys(tmp.params)) if ((POSEKEYS.has(kk) || /^(jawOpen|smile|eyeLid|browUp|browIn|eyeYaw|eyePitch|blush|tears)$/.test(kk)) && Number.isFinite(tmp.params[kk])) vals[kk] = tmp.params[kk];
     if (!primeira) primeira = Object.assign({}, vals);
     if (o.modo === "relativa") { for (const kk of Object.keys(vals)) vals[kk] -= primeira[kk] || 0; for (const kk of Object.keys(vals)) if (Math.abs(vals[kk]) < 1e-4 && chaves.length && !(kk in chaves[chaves.length - 1].valores)) delete vals[kk]; }
@@ -871,7 +924,8 @@ function nmLerAnimacao(bloco, ctx) {
   /* só os parâmetros que mudam em alguma chave (animação parcial, reutilizável) */
   const muda = new Set(); for (const kk of Object.keys(chaves[0].valores)) if (chaves.some(c => Math.abs((c.valores[kk] ?? chaves[0].valores[kk]) - chaves[0].valores[kk]) > 1e-3)) muda.add(kk);
   chaves.forEach(c => { for (const kk of Object.keys(c.valores)) if (!muda.has(kk)) delete c.valores[kk]; });
-  const a = criarAnimacao(Object.assign(o, { duracao: o.duracao || chaves[chaves.length - 1].t, chaves }));
+  let a = criarAnimacao(Object.assign(o, { duracao: o.duracao || chaves[chaves.length - 1].t, chaves }));
+  if (o.velocidade || Object.keys(segurar).length) a = retimar(a, { velocidade: o.velocidade, segurar });
   ctx.animacoes.set(a.nome, a); if (salvar) bibliotecaAnimacoes().salvar(a, { tags: a.tags, origem: "dsl" });
   return a;
 }
@@ -994,32 +1048,71 @@ function nmMoverCamera(mv, u) {
   else if (mv.tipo === "desce") P.pitch = Math.min(89, (P.pitch || 0) + (v || 15) * e);
   else if (mv.tipo === "treme" || mv.tipo === "tremer") { P.panX += Math.sin(u * 80) * (v || 0.4); P.panY += Math.cos(u * 67) * (v || 0.4); }
 }
+/* vida automática: piscar (a cada ~3,5 s, cada um num tempo) e respirar (bem de leve) */
+function nmVida(it, t) { const Q = it.params, h = [...it.name].reduce((a, c) => a * 31 + c.charCodeAt(0) | 0, 7), fase = ((h >>> 0) % 1000) / 1000 * 3.4, ciclo = 3.1 + ((h >>> 3) % 7) / 10, u = ((t + fase) % ciclo);
+  if (u < 0.14) Q.eyeLid = Math.max(Q.eyeLid || 0, Math.sin(Math.PI * u / 0.14));
+  Q.spineFlex = (Q.spineFlex || 0) + 0.7 * Math.sin(2 * Math.PI * (t + fase) / 3.8); }
+/* câmera entre chaves (suave; ângulos pelo caminho mais curto) */
+function nmCameraNoTempo(ch, t) { if (!ch || !ch.length) return; let i = 0; while (i < ch.length - 1 && ch[i + 1].t <= t) i++;
+  const a = ch[i], b = ch[Math.min(ch.length - 1, i + 1)], u0 = b === a ? 1 : Math.max(0, Math.min(1, (t - a.t) / (b.t - a.t))), u = u0 * u0 * (3 - 2 * u0);
+  for (const k of CAMK) { const va = a.cam[k], vb = b.cam[k]; if (typeof va !== "number" || typeof vb !== "number") { if (va !== undefined) P[k] = u < 0.5 ? va : vb; continue; }
+    if (k === "yaw" || k === "lightAz") { const d = ((vb - va) % 360 + 540) % 360 - 180; P[k] = va + d * u; } else P[k] = va + (vb - va) * u; }
+  SCN.pivo = null; SCN.orbitaArea = null; SCN.seguirCamera = null; }
+/* esbarrões: duas pessoas a menos de 30 cm (centro a centro) num quadro do vídeo */
+function nmEsbarroes(t, quadro, vistos, avisos) { const vis = SCN.list.filter(x => !x.oculto && x.name !== "__vazio__");
+  for (let a = 0; a < vis.length; a++) for (let b = a + 1; b < vis.length; b++) { const A = vis[a].params, B = vis[b].params, d = Math.hypot(A.wx - B.wx, A.wz - B.wz) / NM_M, lim = 0.3 * Math.min(A.tamanho || 1, B.tamanho || 1);
+    const ch = quadro + ":" + vis[a].name + "|" + vis[b].name; if (d < lim && !vistos.has(ch) && Math.abs((A.bodyLift || 0) - (B.bodyLift || 0)) < 8) { vistos.add(ch); avisos.push("quadro " + quadro + ", " + t.toFixed(2) + " s: " + vis[a].name + " e " + vis[b].name + " se atravessam (" + Math.round(d * 100) + " cm)"); } } }
+/* vídeo do name: fps 1–60 (padrão: “video fps …” do name, ou 8); passo 2/3 = em dois/em três; vida = piscar e respirar;
+   cada quadro dura “duracao” (ou a animação mais longa, ou 1,5 s) × 1/velocidade; câmera com chaves; boca no ritmo das falas; pés travados nos giros */
 function videoDoName(r, o = {}) {
-  const fps = o.fps || 8, frames = [], salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L));
+  const V = r.video || {}, fps = Math.max(1, Math.min(60, Math.round(o.fps || V.fps || 8))), passo = Math.max(1, Math.round(o.passo || (o.emDois ? 2 : o.emTres ? 3 : V.passo || 1))), vida = o.vida ?? V.vida ?? true, velG = o.velocidade || V.velocidade || 1;
+  const frames = [], avisos = [], salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L)), vistos = new Set();
   const qs = o.quadros ? r.quadros.filter(q => o.quadros.includes(q.indice + 1)) : r.quadros;
+  const durQ = q => { const vel = (q.velocidade || 1) * velG, durA = Math.max(0, ...(q.animacoes || []).map(a => a.anim.loop ? 0 : (a.instante ?? a.anim.duracao))), durF = Math.max(0, ...(q.falas || []).filter(f => f.quem && f.tipo !== "pensa").map(f => linhaDaFala(f.texto).duracao)), durC = Math.max(0, ...(q.camChaves || []).map(c => c.t)); return +q.duracao || Math.max(durA / vel + 0.3, durF + 0.3, durC + 0.2, 1.5) * (durA || durF || durC ? 1 : 1); };
+  const total = qs.reduce((s0, q) => s0 + Math.max(1, Math.round(durQ(q) * fps)), 0); let feitos = 0, cancelado = false;
   try { for (const q of qs) {
-      const durA = Math.max(0, ...(q.animacoes || []).map(a => a.anim.loop ? 0 : a.anim.duracao)), d = +q.duracao || (durA ? durA + 0.3 : 1.5), n = Math.max(1, Math.round(d * fps));
-      for (let i = 0; i < n; i++) { loadScene(JSON.parse(JSON.stringify(q.estado))); const t = i / fps;
-        for (const a of q.animacoes || []) { const it = SCN.list.find(x => x.name === a.quem); if (!it) continue; Object.assign(it.params, anSemCamera(a.base)); aplicarAnimacao(it, a.anim, a.anim.loop ? t : Math.min(t, a.instante ?? a.anim.duracao), { base: { params: Object.assign({}, a.base) } }); delete it._animBase; }
+      const d = durQ(q), n = Math.max(1, Math.round(d * fps)), vel = (q.velocidade || 1) * velG, mems = {}, linhas = (q.falas || []).filter(f => f.quem && f.tipo !== "pensa").map(f => ({ f, L: linhaDaFala(f.texto) }));
+      let ultimo = null;
+      for (let i = 0; i < n; i++) { if (o.cancelar && o.cancelar()) { cancelado = true; break; }
+        if (passo > 1 && i % passo && ultimo) { frames.push(Object.assign({}, ultimo, { t: i / fps, repetido: true })); feitos++; continue; }
+        loadScene(JSON.parse(JSON.stringify(q.estado))); const t = i / fps, ta = t * vel;
+        for (const a of q.animacoes || []) { const it = SCN.list.find(x => x.name === a.quem); if (!it) continue; Object.assign(it.params, anSemCamera(a.base)); aplicarAnimacao(it, a.anim, a.anim.loop ? ta : Math.min(ta, a.instante ?? a.anim.duracao), { base: { params: Object.assign({}, a.base) } }); delete it._animBase;
+          if (a.anim.travarPes) { const k = a.quem + ":" + a.anim.nome, m = mems[k]; if (m && m.acc) { it.params.wx += m.acc[0]; it.params.wz += m.acc[1]; } mems[k] = travarPes(it, m, { apoio: apoioNoTempo(a.anim, Math.min(ta, a.instante ?? a.anim.duracao)) }); } }
+        for (const { f, L: lf } of linhas) { const it = SCN.list.find(x => x.name === f.quem); if (it) falarNoTempo(it, f.tom, f.texto, t, { linha: lf }); }
+        if (vida) SCN.list.forEach(it => { if (!it.oculto && it.name !== "__vazio__") nmVida(it, t + q.indice * 1.7); });
+        try { atualizarApoios(); } catch (e) { }
+        if (q.camChaves) nmCameraNoTempo(q.camChaves, t);
         if (q.movCamera) nmMoverCamera(q.movCamera, n > 1 ? i / (n - 1) : 1);
-        frames.push({ estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, t, legenda: q.legenda }); } }
+        nmEsbarroes(t, q.indice + 1, vistos, avisos);
+        ultimo = { estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, t, legenda: q.legenda }; frames.push(ultimo); feitos++;
+        if (o.progresso) try { o.progresso(feitos, total); } catch (e) { } }
+      if (cancelado) break; }
   } finally { loadScene(JSON.parse(salvo)); Object.keys(L).forEach(k => { if (!(k in salvoL)) delete L[k]; }); Object.assign(L, salvoL); }
-  return { fps, frames, duracao: frames.length / fps };
+  return { fps, passo, frames, duracao: frames.length / fps, desenhos: frames.filter(f => !f.repetido).length, avisos, cancelado, estimativaMB: +(frames.length * 0.035).toFixed(1) };
 }
-/* uma animação num manequim da cena aberta, quadro a quadro (a cena volta como estava) */
+/* uma animação num manequim da cena aberta, quadro a quadro (a cena volta como estava) · fps 1–60, passo (em dois/três), velocidade, vida */
 function framesDaAnimacao(quem, a, o = {}) {
   const it = typeof quem === "object" ? quem : SCN.list.find(x => x.name === quem) || SCN.list[SCN.active] || SCN.list[0]; if (!it) throw new Error("Manequim não encontrado.");
-  const an = typeof a === "string" ? bibliotecaAnimacoes().obter(a) : a; if (!an) throw new Error("Animação “" + a + "” não existe.");
-  const fps = o.fps || an.fps || 12, n = Math.max(2, Math.round((o.duracao || an.duracao) * fps) + 1), salvo = anSemCamera(it.params), base = { params: anSemCamera(it.params) }, frames = [], Lq = Object.assign(JSON.parse(JSON.stringify(L)), { girdle: false, prop: false });
+  let an = typeof a === "string" ? bibliotecaAnimacoes().obter(a) : a; if (!an) throw new Error("Animação “" + a + "” não existe.");
+  if (o.velocidade && o.velocidade !== 1) an = retimar(an, { velocidade: o.velocidade });
+  const dur = o.duracao || an.duracao, I = instantesVideo(dur, { fps: o.fps || an.fps || 12, passo: o.passo || an.passo, emDois: o.emDois, emTres: o.emTres }), fps = I.fps;
+  const salvo = anSemCamera(it.params), base = { params: anSemCamera(it.params) }, frames = [], Lq = Object.assign(JSON.parse(JSON.stringify(L)), { girdle: false, prop: false });
   const camSalva = JSON.stringify(P), pivo = [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera];
   try {
-    /* câmera: o corpo inteiro no começo e no fim do movimento (se pedido ou se a câmera atual não mostra a pessoa) */
-    if (o.enquadrar !== false) { const pts = []; for (const tt of [0, an.duracao / 2, an.duracao]) { Object.assign(it.params, base.params); aplicarAnimacao(it, an, tt, { base }); pts.push(...nmPtsDe([it.name], "inteiro")); }
+    /* câmera: o corpo inteiro no começo, no meio e no fim do movimento */
+    if (o.enquadrar !== false) { const pts = []; for (const tt of [0, an.duracao / 4, an.duracao / 2, an.duracao * 3 / 4, an.duracao]) { Object.assign(it.params, base.params); aplicarAnimacao(it, an, tt, { base }); pts.push(...nmPtsDe([it.name], "inteiro")); }
       Object.assign(it.params, base.params); SCN.pivo = null; SCN.orbitaArea = null; SCN.seguirCamera = null; const c = [0, 1, 2].map(k => pts.reduce((s0, p) => s0 + p[k], 0) / pts.length); P.tx = c[0]; P.ty = c[1]; P.tz = c[2]; P.panX = 0; P.panY = 0; if (!P.persp) P.persp = 1;
       if (o.lado !== undefined) P.yaw = (it.params.wRot || 0) + o.lado; nmCentrar(recorteQuadro(o.formato || "16:9"), 0.85, pts); }
-    for (let i = 0; i < n; i++) { const t = (o.duracao || an.duracao) * i / (n - 1); Object.assign(it.params, base.params); aplicarAnimacao(it, an, t, { base }); frames.push({ estado: JSON.parse(JSON.stringify(sceneState())), L: Lq, formato: o.formato || "16:9", t }); } }
-  finally { Object.assign(it.params, salvo); delete it._animBase; Object.assign(P, JSON.parse(camSalva)); [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera] = pivo; }
-  return { fps, frames, duracao: an.duracao, nome: an.nome };
+    let mem = null, ultimo = null, tAnt = -1; const travar = o.travarPes ?? an.travarPes;
+    for (let i = 0; i < I.tempos.length; i++) { if (o.cancelar && o.cancelar()) break; const t = I.tempos[i];
+      if (t === tAnt && ultimo) { frames.push(Object.assign({}, ultimo, { t: i / fps, repetido: true })); continue; } tAnt = t;
+      Object.assign(it.params, base.params); aplicarAnimacao(it, an, t, { base });
+      if (travar) { if (mem && mem.acc) { it.params.wx += mem.acc[0]; it.params.wz += mem.acc[1]; } mem = travarPes(it, mem, { apoio: apoioNoTempo(an, t) }); }
+      if (o.vida) nmVida(it, t);
+      try { atualizarApoios(); } catch (e) { }
+      ultimo = { estado: JSON.parse(JSON.stringify(sceneState())), L: Lq, formato: o.formato || "16:9", t }; frames.push(ultimo); if (o.progresso) try { o.progresso(i + 1, I.tempos.length); } catch (e) { } } }
+  finally { Object.assign(it.params, salvo); delete it._animBase; Object.assign(P, JSON.parse(camSalva)); [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera] = pivo; try { atualizarApoios(); } catch (e) { } }
+  return { fps, passo: I.passo, frames, desenhos: frames.filter(f => !f.repetido).length, duracao: an.duracao, nome: an.nome };
 }
 /* também no código do editor: cena.name.compilar(texto), cena.name.ficha(quadro), cena.name.locais()… */
 cena.name = { video: videoDoName, framesDaAnimacao, compilar: compilarName, validar: validarName, ficha: fichaDoQuadro, paginas: paginasDoName, cores: legendaDeCores, manifesto: manifestoName, locais: bibliotecaLocais, abrirLocal: abrirLocalNoPalco, localDoPalco };

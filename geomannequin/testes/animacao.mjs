@@ -80,12 +80,13 @@ quadro 4 continua plano inteiro alvo Leo
   ok(r.ok && r.quadros.length === 4, "name com gestos, atitudes, diálogo, ajustes e animações compila (" + JSON.stringify(r.erros) + ")");
   ok(/falando \(raiva\)/.test(r.quadros[0].legenda) && /ouvinte cetico/.test(r.quadros[0].legenda), "legenda: quem fala (tom) e quem ouve (papel)");
   ok(w.bibliotecaAnimacoes().obter("chegar") && r.animacoes.find(a => a.nome === "olharDeLado").modo === "relativa", "bloco animacao: salva na biblioteca; relativa só com o que muda");
-  const leo3 = r.quadros[2].estado.list.find(m => m.name === "Leo").params, leo4 = r.quadros[3].estado.list.find(m => m.name === "Leo").params;
-  ok(leo3.wz - r.quadros[1].estado.list.find(m => m.name === "Leo").params.wz > 0.7 * M && Math.abs(leo3.headYaw) > 20, "anima … depois …: andou 80 cm e virou a cabeça");
-  ok(Math.abs(leo4.wz - r.quadros[2].estado.list.find(m => m.name === "Leo").params.wz - 0.4 * M) < 0.6, "anima … instante 0.7s: meio do caminho (40 cm)");
+  const leo = i => r.quadros[i].estado.list.find(m => m.name === "Leo").params, dist = (a, b) => Math.hypot(a.wx - b.wx, a.wz - b.wz);
+  const leo3 = leo(2), leo4 = leo(3);
+  ok(dist(leo3, leo(1)) > 0.7 * M && Math.abs(leo3.headYaw) > 20, "anima … depois …: andou 80 cm e virou a cabeça");
+  ok(Math.abs(dist(leo4, leo3) - 0.4 * M) < 0.6, "anima … instante 0.7s: meio do caminho (40 cm)");
   const v = w.videoDoName(r, { fps: 6 }); const q2 = v.frames.filter(f => f.quadro === 2);
   ok(v.frames.length >= 6 * 3 && q2[q2.length - 1].estado.camera.camDist < q2[0].estado.camera.camDist * 0.8, "vídeo do name: " + v.frames.length + " quadros; câmera aproxima no quadro 2");
-  const q3 = v.frames.filter(f => f.quadro === 3), z = q3.map(f => f.estado.list.find(m => m.name === "Leo").params.wz); ok(z[z.length - 1] - z[0] > 0.6 * M, "vídeo: a animação toca dentro do quadro 3");
+  const q3 = v.frames.filter(f => f.quadro === 3), pz = q3.map(f => f.estado.list.find(m => m.name === "Leo").params); ok(Math.hypot(pz[pz.length - 1].wx - pz[0].wx, pz[pz.length - 1].wz - pz[0].wz) > 0.6 * M, "vídeo: a animação toca dentro do quadro 3");
   const e = w.compilarName("elenco\n  A relevante\nquadro\n  A gesto explicr atitude cabecaBaxa anima chegr\n"); ok(e.erros.length >= 1 && /explicar/.test(e.erros[0].erro), "erros com sugestão: " + e.erros.map(x => x.erro).join(" | "));
   const rgba = new Uint8Array(40 * 30 * 4).fill(200), gif = w.criarGif([rgba, rgba, rgba], 40, 30, { atraso: 100 });
   ok(String.fromCharCode(...gif.slice(0, 6)) === "GIF89a" && gif[gif.length - 1] === 0x3b, "GIF animado válido");

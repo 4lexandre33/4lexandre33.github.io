@@ -320,7 +320,13 @@ async function suite(client, tag) {
     r = await call("aplicar_animacao", { nome: "peDireito15cmDireita" }); check(!r.isError, "aplicar_animacao (relativa)");
     r = await call("exportar_animacao", { nome: "aceno curto", fps: 6, largura: 240 }); check(!r.isError && r.content[0].resource.blob.length > 5000, "exportar_animacao: zip com GIF, PNGs, OpenPose" + (r.isError ? ": " + text(r) : ""));
     r = await call("video_name", { name: 'elenco\n  Ana relevante\nlocal S unidade m\n  chao retangulo -3,-3 a 3,3\nquadro local S plano inteiro alvo Ana duracao 1s camera-move aproxima\n  Ana em (0,0) anima passoFrente\n', fps: 4, largura: 200 });
-    check(!r.isError && r.structuredContent.quadros >= 4, "video_name: animatic com animação e câmera" + (r.isError ? ": " + text(r) : "")); }
+    check(!r.isError && r.structuredContent.quadros >= 4, "video_name: animatic com animação e câmera" + (r.isError ? ": " + text(r) : ""));
+    r = await call("girar", { angulo: 180, estilo: "passos", fps: 4, aplicar: true });
+    check(!r.isError && r.content[0].type === "image" && r.structuredContent.quadros > 4, "girar 180 com passos (tira + GIF)" + (r.isError ? ": " + text(r) : ""));
+    r = await call("olhar", { ponto: [0, 1.6, 3], modo: "natural" });
+    check(!r.isError && r.structuredContent.alcancou === true, "olhar para um ponto atrás: vira o corpo e alcança" + (r.isError ? ": " + text(r) : ""));
+    r = await call("andar_ate", { ponto: [1.5, 1], fps: 4, aplicar: true });
+    check(!r.isError && r.structuredContent.duracao > 1, "andar_ate um ponto" + (r.isError ? ": " + text(r) : "")); }
   return link;
 }
 

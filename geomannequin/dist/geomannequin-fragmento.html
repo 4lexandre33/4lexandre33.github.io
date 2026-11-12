@@ -519,6 +519,7 @@ body.qd-aberto{overflow:hidden}
 .an-cab{position:absolute;top:0;bottom:-400px;width:2px;background:var(--coral);pointer-events:none;z-index:2}
 .an-chave{position:absolute;top:3px;width:10px;height:10px;margin-left:-5px;transform:rotate(45deg);background:var(--cobalt);border:1px solid var(--ink);cursor:grab}.an-chave.sel{background:var(--coral)}
 .an-prev{min-height:260px;position:relative}.an-pilha{position:relative;width:100%}.an-pilha svg{display:block;width:100%;height:auto;max-height:46vh}
+.an-prev .an-traj{position:absolute;right:6px;bottom:6px;width:120px;height:auto;max-height:120px;background:var(--panel,#fff);border:1px solid var(--line,#ccc);border-radius:6px;color:var(--ink,#333);opacity:.92}.an-est{margin:.2rem 0;font-size:.8rem;opacity:.75}
 .an-fant{position:absolute;inset:0;pointer-events:none}.an-frente{position:relative}
 .an-tempo{font:12px var(--font-mono);color:var(--muted)}
 .an-lista{list-style:none;margin:0;padding:0;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
@@ -17805,6 +17806,41 @@ pre.cmdout .ok{color:var(--cobalt)}
     const tw = clamp(yaw - clamp(yaw, -75, 75), -40, 40);
     Object.assign(Q, { headYaw: clamp(yaw - tw, -80, 80), headPitch: clamp(pit * 0.7, -60, 50), neckFlex: clamp(pit * 0.3, -40, 40), spineTwist: clamp((Q.spineTwist || 0) + tw, -45, 45) });
   }
+  function alvoDoOlhar(alvo) {
+    const s = String(alvo).toLowerCase();
+    if (Array.isArray(alvo)) return alvo.length === 2 ? [alvo[0], 13, alvo[1]] : alvo;
+    if (s === "camera" || s === "câmera") {
+      const yaw = P2.yaw * D, pit = P2.pitch * D, d = Math.max(3, P2.camDist || 30);
+      return [P2.tx + Math.sin(yaw) * Math.cos(pit) * d, P2.ty - Math.sin(pit) * d, P2.tz + Math.cos(yaw) * Math.cos(pit) * d];
+    }
+    const o = SCN.list.find((x) => x.name.toLowerCase() === s);
+    if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+    const po = pMundo(o), ch = chainSetup(o.params, shape(o.params));
+    return paraMundo(po)(applyA(ch.A3, [0, 0, 0]));
+  }
+  function anguloNaCabeca(it2, W4) {
+    const Q = it2.params, pw = pMundo(it2), ch = chainSetup(Q, shape(Q)), cab = applyA(ch.A3, [0, 0, 0]), al = doMundo(pw)(W4), dl = mv(mT(ch.A3.M), [al[0] - cab[0], al[1] - cab[1], al[2] - cab[2]]);
+    return { yaw: Math.atan2(dl[0], dl[2]) / D, pit: -Math.atan2(dl[1], Math.hypot(dl[0], dl[2])) / D };
+  }
+  function olharNatural(it2, alvo, o = {}) {
+    const Q = it2.params, modo = String(o.modo || "natural").toLowerCase().replace(/ó/g, "o"), W4 = alvoDoOlhar(alvo);
+    const dx = W4[0] - (Q.wx || 0), dz = W4[2] - (Q.wz || 0), angAlvo = Math.atan2(dx, dz) / D, rel = ((angAlvo - (Q.wRot || 0)) % 360 + 540) % 360 - 180;
+    let virou = 0;
+    if (modo === "corpo") {
+      virou = rel;
+      Q.wRot = Math.round(angAlvo);
+    } else if (modo === "natural" && Math.abs(rel) > (o.limite ?? 60) && Math.hypot(dx, dz) > 0.5) {
+      virou = rel - Math.sign(rel) * 35;
+      Q.wRot = Math.round(((Q.wRot || 0) + virou + 540) % 360 - 180);
+    }
+    if (modo !== "so-olhos") olharPara(it2, W4);
+    const r = anguloNaCabeca(it2, W4);
+    Q.eyeYaw = clamp(r.yaw / 35, -1, 1);
+    Q.eyePitch = clamp(-r.pit / 25, -1, 1);
+    const erroYaw = Math.max(0, Math.abs(r.yaw) - 35), erroPit = Math.max(0, Math.abs(r.pit) - 25), erro = Math.hypot(erroYaw, erroPit);
+    it2.olharAlvo = typeof alvo === "string" ? alvo : null;
+    return { alcancou: erro < 10, erro: Math.round(erro), virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
+  }
   function maoEm(it2, lado2, W4) {
     const Q = it2.params, S = shape(Q), pw = pMundo(it2), alvo = doMundo(pw)(W4), r = ikArm(Q, S, lado2, alvo), L_ = lado2 > 0 ? "L" : "R";
     Object.assign(Q, { ["armAbd" + L_]: r.abd, ["armFlex" + L_]: r.flex, ["armRot" + L_]: r.rot, ["elbow" + L_]: r.elbow });
@@ -19296,13 +19332,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (q.direcao && q.direcao.alvo && typeof q.direcao.alvo === "object") nomeDe(q.direcao.alvo);
     return q;
   }
-  function criarApiEfeitos(marcar2) {
+  function criarApiEfeitos(marcar3) {
     const api = {
       /* cena.efeitos.adicionar("explosao", {em: {manequim: "Ana", parte: "maoDir"}, elemento: "fogo", raio: 6}) → id */
       adicionar(tipo, opts) {
         if (fxLista().length >= FX_MAX) throw new Error("Limite de " + FX_MAX + " efeitos na cena.");
         const e = fxMontar(tipo, opts);
-        marcar2();
+        marcar3();
         fxLista().push(e);
         return e.id;
       },
@@ -19316,25 +19352,25 @@ pre.cmdout .ok{color:var(--cobalt)}
       editar(id, opts, silencioso) {
         const i = fxAchar(id), atual2 = fxLista()[i];
         const e = fxMontar(opts && opts.tipo || atual2.tipo, opts, { ...atual2, id: atual2.id });
-        if (!silencioso) marcar2();
+        if (!silencioso) marcar3();
         fxLista()[i] = e;
         return e.id;
       },
       remover(id) {
         const i = fxAchar(id);
-        marcar2();
+        marcar3();
         fxLista().splice(i, 1);
       },
       limpar() {
         if (!fxLista().length) return;
-        marcar2();
+        marcar3();
         fxLista().length = 0;
       },
       /* cena.efeitos.colorir(false) → todos em preto e branco; colorir(true, "fx3") → só um */
       colorir(sim = true, id) {
         const alvos = id ? [fxAchar(id)] : fxLista().map((_, i) => i);
         if (!alvos.length) return 0;
-        marcar2();
+        marcar3();
         alvos.forEach((i) => {
           fxLista()[i] = validarEfeito({ ...fxLista()[i], colorido: !!sim });
         });
@@ -19348,13 +19384,13 @@ pre.cmdout .ok{color:var(--cobalt)}
         const i = fxAchar(id), b = JSON.parse(JSON.stringify(fxLista()[i]));
         delete b.id;
         const e = fxMontar(b.tipo, { ...opts || {}, semente: (opts && opts.semente) ?? b.semente + 1 }, b);
-        marcar2();
+        marcar3();
         fxLista().splice(i + 1, 0, e);
         return e.id;
       },
       mostrar(id, sim = true) {
         const i = fxAchar(id);
-        marcar2();
+        marcar3();
         fxLista()[i].visivel = !!sim;
       },
       ordem(id, onde) {
@@ -19402,7 +19438,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       /* efeitos antigos (referências de explosão, chama, fumaça, rastro, linhas, impacto) → sistema novo */
       converterAntigos() {
         let n2 = 0;
-        marcar2();
+        marcar3();
         SCN.list.forEach((it2) => {
           const refs = it2.referencias || [], fica = [];
           refs.forEach((r) => {
