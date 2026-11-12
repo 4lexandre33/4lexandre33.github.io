@@ -211,7 +211,7 @@ const punhos=Q=>{aplicarGesto(Q,1,"punho");aplicarGesto(Q,-1,"punho")};
 const POSES_CORPO={
   sentado:(Q,s)=>{Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:88,kneeFlexR:84,hipAbdL:6,hipAbdR:8,ankleFlexL:2,ankleFlexR:4,spineFlex:6,pronL:-40,pronR:-40,handCurlL:0.35,handCurlR:0.35,headPitch:4});
     [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[t].Th,[0,-pe[t].A.L1*0.62,0.62*pe[t].A.k])))},
-  sentadoChao:(Q,s)=>Object.assign(Q,{hipFlexL:84,hipFlexR:84,hipAbdL:42,hipAbdR:42,hipRotL:38,hipRotR:38,kneeFlexL:148,kneeFlexR:142,ankleFlexL:20,ankleFlexR:20,ankleTiltL:20,ankleTiltR:20,spineFlex:14,armFlexL:40,armFlexR:40,elbowL:35,elbowR:35,armAbdL:16,armAbdR:16,handCurlL:0.4,handCurlR:0.4,headPitch:6}),
+  sentadoChao:(Q,s)=>Object.assign(Q,{hipFlexL:84,hipFlexR:84,hipAbdL:30,hipAbdR:30,hipRotL:45,hipRotR:45,kneeFlexL:148,kneeFlexR:142,ankleFlexL:20,ankleFlexR:20,ankleTiltL:20,ankleTiltR:20,spineFlex:14,armFlexL:40,armFlexR:40,elbowL:35,elbowR:35,armAbdL:16,armAbdR:16,handCurlL:0.4,handCurlR:0.4,headPitch:6}),
   pernasEsticadas:(Q,s)=>Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:0,kneeFlexR:0,ankleFlexL:18,ankleFlexR:18,spineFlex:-12,armFlexL:-45,armFlexR:-45,armAbdL:18,armAbdR:18,elbowL:0,elbowR:0,wristL:-70,wristR:-70,handCurlL:0.05,handCurlR:0.05,headPitch:-6}),
   abracandoJoelhos:(Q,s)=>{Object.assign(Q,{hipFlexL:118,hipFlexR:118,kneeFlexL:140,kneeFlexR:140,ankleFlexL:10,ankleFlexR:10,hipAbdL:4,hipAbdR:4,spineFlex:30,headPitch:14,handCurlL:0.55,handCurlR:0.55});
     [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[-t].Cf,[t*0.35,-pe[-t].A.L2*0.3,0.55*pe[-t].A.k]),{["pron"+(t>0?"L":"R")]:60}))},
@@ -255,7 +255,7 @@ const POSES_CORPO={
   camelo:(Q,s)=>{gin(Q);Object.assign(Q,{kneeFlexL:90,kneeFlexR:90,hipFlexL:-15,hipFlexR:-15,ankleFlexL:45,ankleFlexR:45,spineFlex:-50,lumFlex:-25,thoFlex:-15,neckFlex:-20,headPitch:-40,pelvisTilt:-10});
     [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[t].Cf,[0,-pe[t].A.L2-0.35,-0.45]),{["pron"+(t>0?"L":"R")]:0}))},
   agachamentoProfundo:(Q,s)=>{if(nivelFlex(Q)<1)Q.flex=1;Object.assign(Q,{hipFlexL:128,hipFlexR:128,kneeFlexL:150,kneeFlexR:150,hipAbdL:20,hipAbdR:20,hipRotL:-10,hipRotR:-10,ankleFlexL:-32,ankleFlexR:-32,
-    spineFlex:28,headPitch:-22,armFlexL:80,armFlexR:80,elbowL:10,elbowR:10,armAbdL:8,armAbdR:8})},
+    spineFlex:28,headPitch:-22,armFlexL:96,armFlexR:96,elbowL:10,elbowR:10,armAbdL:14,armAbdR:14})},
   prancha:(Q,s)=>{Object.assign(Q,{bodyPitch:90,armFlexL:90,armFlexR:90,elbowL:0,elbowR:0,ankleFlexL:30,ankleFlexR:30,toesL:-60,toesR:-60,headPitch:-20});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos pes")},
   quatroApoios:(Q,s)=>{Object.assign(Q,{bodyPitch:90,armFlexL:90,armFlexR:90,elbowL:0,elbowR:0,hipFlexL:90,hipFlexR:90,kneeFlexL:90,kneeFlexR:90,ankleFlexL:40,ankleFlexR:40,headPitch:-30});
     aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");apoiarContatos(Q,"maos joelhos")},
@@ -288,7 +288,7 @@ const POSES_CORPO={
   arremessadoCostas:(Q,s)=>Object.assign(Q,{bodyPitch:-62,bodyLift:5,spineFlex:30,headPitch:28,armFlexL:62,armFlexR:48,armAbdL:42,armAbdR:30,elbowL:30,elbowR:42,hipFlexL:62,hipFlexR:40,kneeFlexL:42,kneeFlexR:24,ankleFlexL:30,ankleFlexR:30,handCurlL:0.2,handCurlR:0.2}),
   girandoNoAr:(Q,s)=>Object.assign(Q,{bodyPitch:-130,bodyRoll:s*30,bodyLift:6,spineFlex:30,armAbdL:120,armAbdR:92,elbowL:40,elbowR:28,hipFlexL:72,hipFlexR:32,kneeFlexL:92,kneeFlexR:42,headPitch:30,handCurlL:0.2,handCurlR:0.2}),
   deCabecaParaBaixo:(Q,s)=>Object.assign(Q,{bodyPitch:158,bodyLift:7,armFlexL:150,armFlexR:140,armAbdL:20,armAbdR:28,elbowL:15,elbowR:25,hipAbdL:28,hipAbdR:18,kneeFlexL:32,kneeFlexR:62,hipFlexL:10,hipFlexR:35,spineFlex:-12,headPitch:-30,handCurlL:0.1,handCurlR:0.1}),
-  rolando:(Q,s)=>Object.assign(Q,{bodyRoll:s*80,spineFlex:66,headPitch:40,hipFlexL:122,hipFlexR:118,kneeFlexL:142,kneeFlexR:140,armFlexL:78,armFlexR:78,armAbdL:-15,armAbdR:-15,elbowL:110,elbowR:110,handCurlL:0.6,handCurlR:0.6}),
+  rolando:(Q,s)=>Object.assign(Q,{bodyRoll:s*80,spineFlex:62,headPitch:40,hipFlexL:108,hipFlexR:104,kneeFlexL:142,kneeFlexR:140,armFlexL:78,armFlexR:78,armAbdL:-15,armAbdR:-15,elbowL:110,elbowR:110,handCurlL:0.6,handCurlR:0.6}),
   deslizandoSentado:(Q,s)=>{Object.assign(Q,{hipFlexL:90,hipFlexR:84,kneeFlexL:8,kneeFlexR:52,ankleFlexL:-10,ankleFlexR:12,spineFlex:-14,bodyPitch:-24,armFlexL:-48,armFlexR:-48,armAbdL:24,armAbdR:24,elbowL:8,elbowR:8,headPitch:12,headYaw:s*-20});aplicarGesto(Q,1,"espalmada");aplicarGesto(Q,-1,"espalmada");Q.wristL=-70;Q.wristR=-70},
   estatelado:(Q,s)=>Object.assign(Q,{bodyPitch:-90,armAbdL:112,armAbdR:78,elbowL:32,elbowR:12,hipAbdL:28,hipAbdR:18,kneeFlexL:22,kneeFlexR:0,ankleFlexL:30,ankleFlexR:25,headRoll:s*28,headYaw:s*20,handCurlL:0.35,handCurlR:0.35}),
   levantandoDeQuatro:(Q,s)=>{POSES_CORPO.umJoelho(Q,s);Object.assign(Q,{spineFlex:48,headPitch:-28,[lad(s,"armFlex")]:62,[lad(s,"armAbd")]:-8,[lad(s,"elbow")]:42,[opo(s,"armFlex")]:42,[opo(s,"armAbd")]:8,[opo(s,"elbow")]:0});aplicarGesto(Q,-s,"espalmada");Q[opo(s,"wrist")]=-70},

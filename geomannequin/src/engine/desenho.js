@@ -499,7 +499,7 @@ function scene(p,L,pal,fast,mode){
     /* glúteo máximo: borda de fora (do sacro, descendo em diagonal para fora até o trocânter) e glúteo médio acima, no lado */
     {const gk=clamp(F.B.glute/0.21,0,2.5),hw=F.B.hip;
      if(gk>0.25)[-1,1].forEach(s=>{
-       lineT("divisao",arr(k=>{const y=lerp(F.yHip+0.02,F.yJ-5.40,k)-0.055*Math.sin(Math.PI*k),ax=lerp(0.12,0.72*hw,k*k*(3-2*k))-0.045*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb,L.cel?0.90:0.52);
+       lineT("divisao",arr(k=>{const y=lerp(F.yHip+0.02,F.yAt(5.40),k)-0.055*Math.sin(Math.PI*k),ax=lerp(0.12,0.72*hw,k*k*(3-2*k))-0.045*Math.sin(Math.PI*k);return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0.04,1,22),xb,L.cel?0.90:0.52);
        if(L.cel||L.fibras)lineT("fibra",arr(k=>{const y=lerp(F.yHip+0.42,F.yHip-0.25,k),ax=lerp(0.62*hw,0.88*hw,Math.pow(k,0.8));return bp(y,bustTh(y,s*ax,false,p,F),0.012)},0,1,12),xb,0.65);
      });
     }

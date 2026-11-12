@@ -50,7 +50,7 @@ const SL=[
   {k:"eyeGap",g:"slFeat",label:"Posição dos olhos",min:16,max:30,step:1,u:"°"},
   {k:"shW",g:"slProp",label:"Largura dos ombros",min:1.3,max:2.3,step:0.01,u:" R"},
   {k:"shDrop",g:"slProp",label:"Queda do trapézio",min:0.2,max:0.9,step:0.01,u:" R"},
-  {k:"neckLen",g:"slProp",label:"Altura do pescoço",min:0.7,max:1.35,step:0.01,u:"×"},
+  {k:"neckLen",g:"slProp",label:"Altura do pescoço",min:0.5,max:1.35,step:0.01,u:"×"},
   {k:"chestF",g:"slProp",label:"Peito feminino",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"adam",g:"slProp",label:"Pomo de adão",min:0,max:1,step:0.01,u:"%",pct:true},
   {k:"fem",g:"slBody",label:"Masculino ↔ feminino",min:0,max:1,step:0.01,u:"%",pct:true},

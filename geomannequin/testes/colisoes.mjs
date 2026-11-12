@@ -48,7 +48,7 @@ const mudanca = (w, antes) => w.SCN.list.reduce((s, it, i) => s + Math.hypot(it.
   const w = createWorld(); w.cena.adicionar({ x: 4.5, nome: "B" });
   const it = w.SCN.list[1]; it.params.wx = 0.6;
   w.resolverPar(0, 1, "distancia", "b");
-  ok(w.cena.colisoes().length === 0 && Math.abs(it.params.wx) > 1.5, `afastar o arrastado: x 0,6 → ${it.params.wx.toFixed(2)}`);
+  const d = Math.hypot(it.params.wx, it.params.wz); ok(w.cena.colisoes().length === 0 && d > 1.5 && w.SCN.list[0].params.wx === 0, `afastar o arrastado (só ele se move): distância 0,6 → ${d.toFixed(2)}`);
 }
 /* desempenho da detecção: 12 manequins */
 {

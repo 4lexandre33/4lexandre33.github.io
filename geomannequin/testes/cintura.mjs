@@ -30,7 +30,7 @@ for (const [nome, p] of [
 ]) {
   const { F, meiaLargura } = perfil(p);
   for (let ang = 20; ang <= 160; ang += 20) {
-    for (const y of [F.yWst, F.yNav, F.yJ - 4.1, F.yHip]) {
+    for (const y of [F.yWst, F.yNav, F.yAt(4.1), F.yHip]) {
       const a = ang * Math.PI / 180, direita = E.bustLocal(y, a, p, F);
       const esquerda = E.bustLocal(y, -a, p, F);
       assert.ok(Number.isFinite(direita[0]) && Number.isFinite(esquerda[0]), `${nome}: coordenada inválida`);

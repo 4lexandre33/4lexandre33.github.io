@@ -43,7 +43,7 @@ for(const sexo of [0,1])for(const tipo of NOMES_BIOTIPOS){
     assert.ok(err<0.015,`${sexo}/${tipo} descontinuidade de tangente na altura ${y}: ${err}`);
   }
   for(const th of [0,Math.PI/4,Math.PI/2,3*Math.PI/4,Math.PI]){
-    for(const y of [F.yWst,F.yHip+0.38,F.yHip,F.yJ-5.4]){
+    for(const y of [F.yWst,F.yHip+0.38,F.yHip,F.yAt(5.4)]){
       const r=bustR(y,th,p,F);assert.ok(Number.isFinite(r)&&r>0,`${sexo}/${tipo} raio 3D inválido`);
     }
   }

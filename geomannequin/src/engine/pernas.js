@@ -1,5 +1,5 @@
 /* GeoMannequin — pernas: coxa, joelho, perna, tornozelo, pé, dedos e glúteo */
-import { bodyEff } from "./corpo.js";
+import { bodyEff, SOBE_QUADRIL } from "./corpo.js";
 import { D, clamp, comp, gauss, lerp, rotM, rotP, sstep } from "./matematica.js";
 import { blobMesh, fingerMesh, tubeMesh } from "./malhas.js";
 
@@ -7,7 +7,7 @@ import { blobMesh, fingerMesh, tubeMesh } from "./malhas.js";
 /* medidas: coxa e perna em proporção de figura de ~7,5 cabeças; pé com ~1 cabeça de comprimento */
 function legDims(p){
   const B=bodyEff(p),L=p.legLen;
-  return {L1:3.85*L,L2:3.7*L,k:B.thighK,mus:B.mus,fat:B.fat,fem:B.fem,glute:B.glute,f:L*(1+0.04*B.fat)*(0.97+0.06*(1-B.fem)),hA:0.62*L};
+  return {L1:(3.85+SOBE_QUADRIL)*L,L2:3.7*L,k:B.thighK,mus:B.mus,fat:B.fat,fem:B.fem,glute:B.glute,f:L*(1+0.04*B.fat)*(0.97+0.06*(1-B.fem)),hA:0.62*L};
 }
 /* coxa: quadríceps na frente, vasto medial (gota) acima do joelho por dentro, isquiotibiais atrás, adutores no alto por dentro */
 function thighR(u,th,A,s){

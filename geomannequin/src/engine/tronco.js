@@ -52,7 +52,7 @@ function bustBump(x,y,th,p,F){
     /* linha inguinal em "V" e crista ilíaca */
     const d=segDist(ax,y,0.78*B.hip,F.yHip+0.45,0.05,F.yCr+0.12);
     dz-=0.024*cf*gauss(d,0,0.04);
-    dz+=0.02*gauss(ax,0.72*B.hip,0.12)*gauss(y,F.yJ-4.3,0.12)*(0.4+0.6*cf)*(1-B.fat);
+    dz+=0.02*gauss(ax,0.72*B.hip,0.12)*gauss(y,F.yAt(4.3),0.12)*(0.4+0.6*cf)*(1-B.fat);
   }
   /* costas: escápulas, dorsais, coluna, covinhas sacrais, glúteos */
   if(cb>0){
@@ -61,7 +61,7 @@ function bustBump(x,y,th,p,F){
     dz+=cb*(0.025+0.03*mu)*gauss(ax,0.45,0.3)*gauss(y,F.yJ+0.05,0.3);
     dz-=0.035*cb*gauss(x,0,0.08)*clamp((F.yC7-y)/0.4,0,1)*sstep((y-(F.yHip-0.1))/0.3);
     if(y<F.yC7&&y>F.yHip-0.2)dz+=cb*0.014*gauss(x,0,0.035)*Math.pow(0.5+0.5*Math.cos(2*Math.PI*(F.yC7-y)/0.3),2);
-    dz-=0.02*cb*gauss(ax,0.2,0.05)*gauss(y,F.yJ-4.45,0.06);
+    dz-=0.02*cb*gauss(ax,0.2,0.05)*gauss(y,F.yAt(4.45),0.06);
     /* glúteo: curva suave e baixa da lombar até a dobra; fenda no meio */
     /* glúteo máximo: massa mais cheia embaixo e por fora; glúteo médio no alto do lado; fenda no meio */
     const gl=0.04+0.85*B.glute;

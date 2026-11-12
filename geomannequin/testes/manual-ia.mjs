@@ -34,7 +34,7 @@ const palma = (pron) => { m.poseRapida("empe"); m.pose({ armFlexL: 90, pronL: pr
   const dd = [0, 1, 2].map(i => a[0][i] - a[1][i]), ac = [0, 1, 2].map(i => a[2][i] - a[3][i]); return dd[2] * ac[0] - dd[0] * ac[2]; }; /* componente vertical da normal da palma (mão esquerda) */
 ok(palma(-80) < -0.1 && palma(80) > 0.1, "antebracoEsqGirar −80 = palma para baixo; +80 = palma para cima");
 /* coxa girada + com o joelho dobrado (sentado) cruza as pernas */
-{ m.poseRapida("empe"); m.pose({ hipFlexL: 84, hipFlexR: 84, hipAbdL: 42, hipAbdR: 42, hipRotL: 38, hipRotR: 38, kneeFlexL: 148, kneeFlexR: 142 }); const g = J(); ok(g("tornozelo", 1)[0] < g("tornozelo", -1)[0] + 0.6, "coxaGirar + com joelhos dobrados cruza as pernas (pernas cruzadas)"); }
+{ m.poseRapida("empe"); m.pose({ hipFlexL: 84, hipFlexR: 84, hipAbdL: 30, hipAbdR: 30, hipRotL: 45, hipRotR: 45, kneeFlexL: 148, kneeFlexR: 142 }); const g = J(); ok(g("tornozelo", 1)[0] < g("tornozelo", -1)[0] + 0.6, "coxaGirar + com joelhos dobrados cruza as pernas (pernas cruzadas)"); }
 /* 2. o manual cita todas as poses e todos os controles de pose (menos as falanges, descritas em grupo) */
 const man = w.cena.manualIA();
 const faltaPose = w.todasPoses().filter(k => !man.includes("`" + k + "`"));

@@ -210,7 +210,7 @@ function manualPosesIA(opts = {}) {
   add("- **Mirar um alvo**: o chute/soco sai para o lado/frente do próprio manequim. Gire o manequim (`m.girar`) até o lado certo apontar para o alvo: para atingir quem está em +x com um chute lateral de DIREITA, a direita dele precisa apontar para +x → `m.girar(180)` (ele fica de costas para a câmera inicial). Então reposicione a câmera: `camera.orbitar(\"Ana\", {azimute: \"3/4 direita\", elevacao: 10})`. Ou use a outra perna.");
   add("- **Saltar / voar**: `altura` (bodyLift) 3–7. No ar o apoio no chão continua ligado: a altura é medida a partir do chão.");
   add("- **Deitar**: `corpoInclinar: -90` (de costas) ou `90` (de bruços); de lado: `corpoRolar: ±90`. Cabeça para baixo: `corpoInclinar: 160–180`.");
-  add("- **Sentar no chão**: `sentadoChao` (pernas cruzadas: coxas `Frente 84, Abrir 42, Girar +38`, joelhos 145). Numa cadeira: `m.sentar(\"cadeira\")`.");
+  add("- **Sentar no chão**: `sentadoChao` (pernas cruzadas: coxas `Frente 84, Abrir 30, Girar +45`, joelhos 145). Numa cadeira: `m.sentar(\"cadeira\")`.");
   add("- **Ajoelhar**: `ajoelhado` (dois joelhos) ou `umJoelho`. **Agachar**: `agachar` ou `agachamentoProfundo`.");
   add("- **Inclinar o tronco**: `colunaFrente` (+ à frente); muito: some `corpoInclinar` (o corpo todo gira na base).");
   add("- **Olhar**: `cabecaGirar` (+ para a esquerda dele), `cabecaInclinar` (+ para baixo), `cabecaLado` (+ ombro direito). Ou `m.olhar(\"câmera\")`.");

@@ -32,7 +32,7 @@ function chainSetup(p,S){
   const F=bustFrame(p,S),po=poseSetup(p,S);
   const flex=p.spineFlex,side=p.spineSide,tw=p.spineTwist;
   const tilt=p.pelvisTilt+0.45*Math.max(0,flex-35);
-  const Pp=[0,F.yHip,-0.48],Lp=[0,F.yJ-3.6,-0.7],Tp=[0,F.yJ-1.9,-0.85];
+  const Pp=[0,F.yHip,-0.48],Lp=[0,F.yAt(3.6),-0.7],Tp=[0,F.yJ-1.9,-0.85];
   /* corpo inteiro: inclinar (deitar de costas/bruços, de cabeça para baixo) e rolar (deitar de lado), em volta da pelve */
   const bp=(p.bodyPitch||0)*D,br=(p.bodyRoll||0)*D,raiz=bp||br?rotP(rotM(0,bp,br),Pp):null;
   const PelL=rotP(rotM(p.pelvisTwist*D,tilt*D,p.pelvisSide*D),Pp);
@@ -150,7 +150,7 @@ function flatAnkle(p,S,s){
 }
 function handOnHip(p,S,s){
   const ch=chainSetup(p,S),F=ch.F;
-  const T0=[s*(F.B.hip+0.14),F.yJ-4.0,-0.46];
+  const T0=[s*(F.B.hip+0.14),F.yAt(4.0),-0.46];
   const r=ikArm(p,S,s,applyA(quadroTronco(ch,T0[1]),T0));
   return r;
 }

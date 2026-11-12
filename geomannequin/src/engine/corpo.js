@@ -26,14 +26,20 @@ function bodyEff(p){
     breast:p.chestF
   };
 }
+/* compressão da pelve (1 = proporção antiga) e o quanto a articulação do quadril sobe com ela */
+const PELVE_K=0.8,SOBE_QUADRIL=(4.85+0.3-3.05)*(1-PELVE_K);
 function bustFrame(p,S){
   const B=bodyEff(p),yJ=S.chinY-1.05*p.neckLen,W=B.W,yAc=yJ+0.02;
   /* O trecho cilíndrico do pescoço continua abaixo da mandíbula antes de
      abrir para os trapézios. Antes a rampa do ombro começava quase na
      altura do queixo, fazendo o pescoço desaparecer na vista frontal. */
-  const yTr=yAc+clamp(p.shDrop*0.67,0.34,0.59);
+  /* com pescoço curto a rampa não pode subir até a mandíbula: começa sempre um pouco abaixo do queixo */
+  const yTr=Math.min(yAc+clamp(p.shDrop*0.67,0.34,0.59),S.chinY-0.24);
+  /* abaixo da cintura (3,05 abaixo da base do pescoço) as alturas são comprimidas: a virilha fica perto da metade
+     da altura (cânone de 8 cabeças) e o que sai da pelve vai para a coxa (legDims soma o mesmo na coxa) */
+  const yAt=d=>yJ-(d<=3.05?d:3.05+(d-3.05)*PELVE_K);
   return {B,yJ,W,yAc,yTr,zT:-0.47,yTop:-0.42,v3Head:p.headModel==="v3_microgeometry"||p.headModel==="v5_anime"||p.headModel==="v4_anatomical",yC7:yJ+0.42,chestW:B.chest,
-    yUB:yJ-1.7,yWst:yJ-3.05,yNav:yJ-3.35,yHip:yJ-4.85,yCr:yJ-5.85,yB:yJ-6.08};
+    yUB:yJ-1.7,yWst:yJ-3.05,yNav:yAt(3.35),yHip:yAt(4.85),yCr:yAt(5.85),yB:yAt(6.08),yAt};
 }
 /* perfil vertical do tronco: [y, meia-largura, frente, trás, centro z, expoente] interpolado por Catmull-Rom */
 function torsoProfile(F){
@@ -51,12 +57,12 @@ function torsoProfile(F){
     /* Flanco aberto e transição progressiva: costelas inferiores → cintura → crista ilíaca. */
     [F.yWst,lerp(cintura*0.96,Math.max(c0*0.90,B.hip*0.90),mf),0.78+0.2*f,0.68+0.08*f,-0.42,2.2],
     [F.yNav,lerp(cintura,Math.max(c0*0.91,B.hip*0.94),mf),0.8+0.28*f,0.7+0.08*f,-0.42,2.2],
-    [yJ-4.1,lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf)*(1+0.027*B.fem),0.84+0.2*f,0.82,-0.45,2.3],
+    [F.yAt(4.1),lerp((cintura+B.hip)/2,Math.max(c0*0.88,B.hip*0.94),mf)*(1+0.027*B.fem),0.84+0.2*f,0.82,-0.45,2.3],
     /* Crista ilíaca com abertura própria, acima da articulação do fêmur.
        O perfil se fecha gradualmente na virilha e mantém volume em 3/4 e perfil. */
     [F.yHip+0.38,B.hip*(1.03+0.012*B.fem),0.85+0.12*f,0.90+0.18*gk,-0.47,2.35],
     [F.yHip,B.hip*(1.00-0.015*B.fem),0.85+0.10*f,0.98+0.22*gk,-0.48,2.3],
-    [yJ-5.4,B.hip*(0.70+0.06*gk+0.03*B.fem),0.68,0.82+0.28*gk,-0.50,2.2],
+    [F.yAt(5.4),B.hip*(0.70+0.06*gk+0.03*B.fem),0.68,0.82+0.28*gk,-0.50,2.2],
     [F.yCr,0.3+0.12*gk,0.4,0.42+0.22*gk,-0.46,2.1],
     [F.yB,0.02,0.02,0.02,-0.46,2]
   ];
@@ -131,4 +137,4 @@ function segDist(px,py,ax,ay,bx,by){const ex=bx-ax,ey=by-ay,t=clamp(((px-ax)*ex+
    tau: 0 = pelve, 1 = meio (lombar → torácica), 2 = caixa torácica; 2..3 = pescoço */
 function faixaColuna(F){return {yA:F.yHip+0.35,yB:F.yJ-1.2,zc:-0.55}}
 function tauTronco(y,F){const c=faixaColuna(F);return 2*clamp((y-c.yA)/(c.yB-c.yA),0,1)}
-export { faixaColuna, tauTronco, bodyEff, bustFrame, torsoProfile, crInterp, bustZc, bustR, sdTri, scapTri, segDist };
+export { PELVE_K, SOBE_QUADRIL, faixaColuna, tauTronco, bodyEff, bustFrame, torsoProfile, crInterp, bustZc, bustR, sdTri, scapTri, segDist };

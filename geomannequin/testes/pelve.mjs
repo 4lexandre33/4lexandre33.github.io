@@ -8,7 +8,7 @@ const fatiar = p => {
   const F = E.bustFrame(p, { chinY: 0 });
   const largura = y => E.bustR(y, Math.PI / 2, p, F);
   return { p, F, largura, cintura: largura(F.yWst), crista: largura(F.yHip + 0.38),
-    bacia: largura(F.yHip), virilha: largura(F.yJ - 5.4) };
+    bacia: largura(F.yHip), virilha: largura(F.yAt(5.4)) };
 };
 const padrao = fatiar(corpo());
 assert.ok(padrao.bacia > 1.08 * padrao.cintura && padrao.bacia < 1.22 * padrao.cintura,
@@ -34,7 +34,7 @@ for (const [nome, p] of casos) {
   /* A curva lateral e o volume frontal/dorsal devem permanecer contínuos. */
   let anterior = null;
   for (let i = 0; i <= 140; i++) {
-    const y = F.yJ - 2.4 + (F.yJ - 5.4 - (F.yJ - 2.4)) * i / 140;
+    const y = F.yJ - 2.4 + (F.yAt(5.4) - (F.yJ - 2.4)) * i / 140;
     const meia = largura(y);
     assert.ok(meia > 0 && Number.isFinite(meia), nome + ": largura inválida");
     if (anterior !== null) assert.ok(Math.abs(meia - anterior) < 0.08,
