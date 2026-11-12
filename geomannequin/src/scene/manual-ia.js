@@ -235,7 +235,7 @@ function manualPosesIA(opts = {}) {
   add("- `pernaEsquerda/pernaDireita`: pé no chão ou levantado, posição do pé, direção da coxa e da canela, joelho, ponta do pé.");
   add("- `controles`: cada controle fora do neutro, com o valor, a faixa e o que ele está fazendo.");
   add("- `naImagem`: onde cabeça, mãos, cotovelos, joelhos e pés aparecem na foto (0–1). Use para conferir a imagem com o estado.");
-  add("- `codigo`: o código que recria a pose atual. Para corrigir, mude só os números necessários.");
+  add("- `codigo`: o código que recria a pose atual (com o rosto e, se for pose de atleta/ginasta, a linha `flexibilidade: 1–3`). Para corrigir, mude só os números necessários.");
   add("- **Erros comuns**: trocar esquerda/direita (lado do manequim ≠ lado da imagem); palma do soco para cima (use antebraço −80); tombar o corpo no chute sem abrir a perna de apoio; somar valores (são absolutos); esquecer `altura` em saltos; pedir mais que o limite (veja a faixa).\n");
   add("## 11. Exemplo de resposta");
   add("Pedido: “Ana dá um soco de direita em Leo, que se dobra de dor.”");

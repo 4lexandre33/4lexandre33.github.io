@@ -802,7 +802,7 @@ TIPOS.fios_energia = fx => {
   for (let i = 0; i < quant(fx, P.fios); i++) {
     const [x, y] = ini(), L = T.h * P.altura * r.entre(0.25, 0.6) * (0.3 + 0.7 * fx.t), fase = r() * 6, amp = T.h * r.entre(0.02, 0.06), pts = [];
     for (let k = 0; k <= 12; k++) { const t = k / 12; pts.push([x + Math.sin(fase + t * 6) * amp * t, y - L * t]); }
-    const d = pincelada(pts, T.h * r.entre(0.025, 0.055), t => Math.sin(Math.PI * Math.pow(t, 0.7)));
+    const d = pincelada(pts, T.h * r.entre(0.04, 0.08), t => Math.sin(Math.PI * Math.pow(t, 0.7)));
     if (r() < 0.6) claroD += d; else escD += d;
   }
   return fx.ink ? forma(claroD, PAPEL, ct(fx, 0.9)) + forma(escD, INK, { op: 0.85 }) : forma(claroD, fx.cores[1], { op: 0.8, ...ct(fx, 0.6) }) + forma(escD, medio(fx), { op: 0.7 });
