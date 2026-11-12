@@ -115,6 +115,26 @@ camera.orbitar("Ana", {area:"cabeca", azimute:"3/4 esquerda", elevacao:25});
 log(camera.vista());
 camera.area("mao esquerda"); // ajusta o foco preservando o ângulo
 camera.focar("Caixa", "superior", {azimute:45, elevacao:60, folga:0.9});`,
+  "Luta com efeitos (mangá)":`// soco de fogo: aura, arco do golpe, impacto, pós-imagem de quem cai, linhas de concentração e onomatopeia
+cena.limpar();
+const a = cena.ativo.renomear("Ana").poseRapida("socando").girar(90).expressao("raiva");
+const b = cena.adicionar({ nome: "Leo", x: 9, z: 0 }).girar(-90).poseRapida("caindo").expressao("dor");
+a.efeito("aura", { elemento: "fogo", intensidade: 0.8 });
+a.efeito("arco_movimento", { em: "maoDir", elemento: "fogo" });
+efeito("impacto_contato", { em: "Leo.rosto", elemento: "raio" });
+b.efeito("pos_imagem", { para: 0 });
+efeito("concentracao", { camada: "fundo" });
+efeito("onomatopeia", { texto: "BAM!", em: { modo: "tela", x: 0.72, y: 0.18 } });
+camera.girar(20, 8); camera.enquadrar();`,
+  "Magia com efeitos (anime)":`// conjuração: círculo de runas, feixe de gelo com anéis até a parede, que racha
+cena.limpar();
+const m = cena.ativo.poseRapida("apontando").girar(90).expressao("determinacao");
+cena.objeto("parede", { x: 16, z: -2, giro: 90 });
+m.efeito("circulo_magico", { em: "pes", elemento: "gelo", raio: 5 });
+m.efeito("feixe", { em: "maoDir", para: { objeto: "parede" }, elemento: "gelo", aneis: 4 });
+efeito("parede_quebrada", { em: { objeto: "parede" } });
+efeito("cristais_chao", { em: "pes", elemento: "cristal", para: [1, 0, 0] });
+camera.girar(-35, 10); camera.mirar(8, 6, 0); camera.distancia(75);`,
   "Mãos, dedos e rosto":`// cada falange, o dedão do pé, a mandíbula, o olhar e as expressões
 cena.limpar();
 const m = cena.ativo;
@@ -231,7 +251,14 @@ export function iniciarAjuda(){
   Seção da pega: obj.medidasDaBase() · obj.mostrarBase("guia") · obj.mostrarBase("modelo")
   Modelos na mão: cena.objetoNaMao("cadeira",{mao:"direita"}) · modelos mesa, bastao, cajado, espada, circular e retangular
   Roupa e cabelo: cena.referencia("paleto",{cor:"#354962"}) · cena.referencia("longo",{raizes:[{angulo:90,altura:.8,comprimento:2}]})
-  Efeitos: cena.referencia("impacto",{inicio:8,duracao:12}) · cena.amostrarRastro(indice,{mao:"direita"})
+  Efeitos especiais: cena.efeito("explosao", {em: {chao: true, x: 4, z: 0}, elemento: "fogo", raio: 5}) · efeito(...) direto no editor e nos quadros
+    m.efeito("aura", {elemento: "vazio"}) · m.efeito("feixe", {em: "maoDir", para: "Leo", elemento: "raio"}) · cena.efeito("concentracao") (centra no personagem)
+    em: parte do manequim ("maoDir", "Ana.punhoEsq", "olhos", "pes"…) · {chao: true, x, z} · {x, y, z} (y = altura) · {objeto: "parede"} · {modo: "tela", x, y}
+    para: (sem nada = pela pose) · "Leo" · {alvo: "auto"} (o mais perto) · [x, y, z] · graus na tela · "camera"
+    opções: elemento (fogo, gelo, raio, vento, vazio, sagrado, prisma, cristal, terra, sombra, tinta) · cores · escala · intensidade · progresso 0–1 · reverso · camada (auto, atras, frente, fundo) · semente · inicio/duracao
+    cena.efeitos.lista() · .editar(id, {...}) · .remover(id) · .duplicar(id) · .catalogo() · .salvarModelo(id, "nome") · .usarModelo("nome", {em: "maoEsq"}) · .converterAntigos()
+    personalizado: cena.efeito("personalizado", {svg: "<circle r='30' fill='#f60'/>"}) · no app também {codigo: "return fx.forma(fx.circulo(fx.x, fx.y, 20), fx.cores[1])"}
+  Efeitos antigos (PR #20): cena.referencia("impacto",{inicio:8,duracao:12}) · cena.amostrarRastro(indice,{mao:"direita"})
   Vento por quadro: cena.ventoChave(24,{x:1,z:0,rajada:.4}) · cena.ventoChave(48,{x:-1,z:0})
   Vento e tempo: cena.vento({x:1,z:0,rajada:.4}) · cena.quadroSimulado(12)
   Camadas de referência: cena.referencias() · cena.referencia("paleto",{indice:0,ativo:false}) · cena.removerReferencia(0)

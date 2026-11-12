@@ -148,6 +148,15 @@ function mundoPlano(fx) {
   fx.plano = true; fx.UP = norm([0, -0.94, 0.35]);
 }
 const UPW = fx => fx.UP || [0, 1, 0];
+/* elementos com estrelas (vazio/cosmos): pontinhos e faíscas brancas por cima dos traços */
+function estrelas(fx, pts, n) {
+  if (!ELEMENTOS[fx.e.elemento] || !ELEMENTOS[fx.e.elemento].estrelas || !pts.length) return "";
+  const r = rng(fx.e.semente + 99); let d = "", f = "";
+  for (let i = 0; i < n; i++) { const q = pts[Math.floor(r() * pts.length)], ox = r.entre(-6, 6), oy = r.entre(-6, 6); if (r() < 0.82) d += circulo(q[0] + ox, q[1] + oy, r.entre(0.5, 1.6)); else f += faisca(q[0] + ox, q[1] + oy, r.entre(2.5, 5), r() * 0.8); }
+  return forma(d, "#FFFFFF", { op: 0.9 }) + forma(f, "#FFFFFF");
+}
+/* contorno de nanquim nos traços (como nas referências de mangá) */
+const tinta = fx => ({ stroke: misturar(fx.cores[fx.cores.length - 1], "#1A1030", 0.45), sw: 0.7 });
 const escalaW = (fx, v) => v * fx.e.escala * (fx.kd || 1) * (fx.plano ? 10 : 1); /* em unidades do mundo (no plano: px); kd = altura do dono / altura padrão */
 
 /* ---------- tipos: tela ---------- */
@@ -228,7 +237,8 @@ TIPOS.feixe = fx => {
   const eixo = Array.from({ length: 12 }, (_, k) => T2(fx, add(O, mul(u, L * k / 11))));
   let svg = forma(pincelada(eixo, Wd * 3.4 * s / (fx.plano ? 10 : 1), "pincel"), cores[cores.length - 2] || cores[1], { op: 0.35, filtro: g });
   const fios = fiosNoEixo(fx, O, u, L, Wd * 0.25, Wd * 1.15, P.fios, Wd * 0.5 * s / (fx.plano ? 10 : 1), 0.5);
-  fios.forEach(f => { svg += forma(f.d, corEm(cores, 0.2 + 0.75 * f.rr), { op: 0.9 }); });
+  fios.forEach(f => { svg += forma(f.d, corEm(cores, 0.2 + 0.75 * f.rr), { op: 0.9, ...tinta(fx) }); });
+  svg += estrelas(fx, eixo, 40);
   /* anéis em volta do feixe */
   for (let k = 0; k < P.aneis; k++) {
     const tk = (k + 1) / (P.aneis + 1); if (tk > fx.t + 0.05) continue;
@@ -242,26 +252,29 @@ TIPOS.feixe = fx => {
 };
 TIPOS.cone = fx => {
   const { P, cores, A, D, r } = fx, O = A.mundo, B = base(D.mundo), L = escalaW(fx, P.comprimento) * (0.15 + 0.85 * fx.t), ab = P.abertura * Math.PI / 180 / 2, s = fx.A.s / (fx.plano ? 10 : 1);
-  const cristalino = ["gelo", "cristal"].includes(fx.e.elemento), itens = [];
+  const cristalino = ["gelo", "cristal"].includes(fx.e.elemento), itens = [], curvaLeque = 0.12 * r.sinal();
   for (let i = 0; i < P.fios; i++) {
     const a = r.entre(-ab, ab), b = r() * 6.28, dir = norm(add(mul(B.u, Math.cos(a)), add(mul(B.v, Math.sin(a) * Math.cos(b)), mul(B.w, Math.sin(a) * Math.sin(b)))));
     const Li = L * r.entre(0.5, 1), p0 = add(O, mul(dir, Li * r.entre(0.05, 0.25))), p1 = add(O, mul(dir, Li)), a0 = T2(fx, p0), a1 = T2(fx, p1);
     const z = fx.proj(p1)[2], cor = corEm(cores, r.entre(0.15, 0.95));
     if (cristalino) { const dx = a1[0] - a0[0], dy = a1[1] - a0[1], l = Math.hypot(dx, dy) || 1; itens.push({ z, s: forma(cristal(a0[0], a0[1], dx / l, dy / l, l, l * r.entre(0.08, 0.16)), cor, { stroke: corEm(cores, 1), sw: 0.6 }) }); }
-    else itens.push({ z, s: forma(pincelada([a0, [(a0[0] + a1[0]) / 2, (a0[1] + a1[1]) / 2], a1], escalaW(fx, 0.5) * s * r.entre(0.6, 1.5), "pincel"), cor, { op: 0.9 }) });
+    else { /* leque que varre: cada fio curva para o mesmo lado */
+      const dx = a1[0] - a0[0], dy = a1[1] - a0[1], k = curvaLeque * Math.hypot(dx, dy), m = [(a0[0] + a1[0]) / 2 - dy / (Math.hypot(dx, dy) || 1) * k, (a0[1] + a1[1]) / 2 + dx / (Math.hypot(dx, dy) || 1) * k];
+      itens.push({ z, pts: [a0, m, a1], s: forma(pincelada([a0, [(a0[0] + m[0]) / 2, (a0[1] + m[1]) / 2], m, [(m[0] + a1[0]) / 2, (m[1] + a1[1]) / 2], a1], escalaW(fx, 0.5) / Math.sqrt(Math.max(1, fx.e.escala)) * s * r.entre(0.6, 1.5), "pincel"), cor, { op: 0.92, ...tinta(fx) }) }); }
   }
   const o = T2(fx, O);
-  return forma(circulo(o[0], o[1], escalaW(fx, 1.2) * s), cores[1], { op: 0.7, filtro: brilho(fx) }) + itens.sort((a, b) => a.z - b.z).map(q => q.s).join("");
+  return forma(circulo(o[0], o[1], escalaW(fx, 1.2) * s), cores[1], { op: 0.7, filtro: brilho(fx) }) + itens.sort((a, b) => a.z - b.z).map(q => q.s).join("") + estrelas(fx, itens.flatMap(q => q.pts || []), 60);
 };
 TIPOS.espiral = fx => {
   const { P, cores, A, D } = fx, O = A.mundo, B = base(D.mundo), L = escalaW(fx, P.comprimento) * (0.15 + 0.85 * fx.t), Rw = escalaW(fx, P.largura), s = fx.A.s / (fx.plano ? 10 : 1), N = Math.round(P.voltas * 24);
   /* hélice que abre ao longo do eixo; cada meia volta vira uma pincelada (as de trás mais escuras, desenhadas antes) */
   const pts = []; for (let i = 0; i <= N; i++) { const t = i / N, a = 2 * Math.PI * P.voltas * t, ra = Rw * (0.25 + 0.75 * Math.pow(t, 0.8)); pts.push(add(add(O, mul(B.u, L * t)), add(mul(B.v, Math.cos(a) * ra), mul(B.w, Math.sin(a) * ra)))); }
-  const seg = []; for (let i = 0; i < N; i += 12) { const q = pts.slice(i, Math.min(N, i + 13)); if (q.length < 3) continue; const z = fx.proj(q[6] || q[0])[2] - fx.proj(add(O, mul(B.u, L * (i + 6) / N)))[2]; seg.push({ z, q, t: i / N }); }
+  /* meias voltas sobrepostas um pouco, com largura constante: viram anéis de um tubo (de trás mais escuros) */
+  const seg = []; for (let i = 0; i < N; i += 12) { const q = pts.slice(Math.max(0, i - 1), Math.min(N + 1, i + 14)); if (q.length < 3) continue; const z = fx.proj(q[6] || q[0])[2] - fx.proj(add(O, mul(B.u, L * (i + 6) / N)))[2]; seg.push({ z, q, t: i / N }); }
   seg.sort((a, b) => a.z - b.z);
   let svg = forma(pincelada(Array.from({ length: 8 }, (_, k) => T2(fx, add(O, mul(B.u, L * k / 7)))), Rw * 1.5 * s, "pincel"), cores[cores.length - 2] || cores[1], { op: 0.25, filtro: brilho(fx) });
-  seg.forEach(g => { const atras = g.z < 0, d = pincelada(g.q.map(q => T2(fx, q)), Rw * (0.2 + 0.35 * g.t) * s, "fuso"); svg += forma(d, corEm(cores, atras ? 1 : 0.65), { op: atras ? 0.8 : 1 }) + (atras ? "" : forma(pincelada(g.q.map(q => T2(fx, q)), Rw * (0.07 + 0.12 * g.t) * s, "fuso"), cores[0], { op: 0.9 })); });
-  return svg;
+  seg.forEach(g => { const atras = g.z < 0, d = pincelada(g.q.map(q => T2(fx, q)), Rw * (0.16 + 0.22 * g.t) * s, "cheio"); svg += forma(d, corEm(cores, atras ? 1 : 0.65), { op: atras ? 0.8 : 1, ...tinta(fx) }) + (atras ? "" : forma(pincelada(g.q.map(q => T2(fx, q)), Rw * (0.05 + 0.07 * g.t) * s, "fuso"), cores[0], { op: 0.85 })); });
+  return svg + estrelas(fx, pts.map(q => T2(fx, q)), 50);
 };
 TIPOS.tornado = fx => {
   const { P, cores, A, r } = fx, O = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0, A.mundo[2]], up = UPW(fx), Hh = escalaW(fx, P.altura) * (0.2 + 0.8 * fx.t), Rw = escalaW(fx, P.largura), s = fx.A.s / (fx.plano ? 10 : 1);
@@ -357,8 +370,9 @@ TIPOS.chuva_meteoros = fx => {
     const alvo = fx.plano ? [C[0] + r.entre(-1, 1) * area, C[1], 0] : [C[0] + r.entre(-1, 1) * area, C[1], C[2] + r.entre(-1, 1) * area];
     const fase = Math.min(1, Math.max(0, fx.t * 1.6 - r() * 0.6)), ini = sub(alvo, mul(queda, Hh / Math.abs(queda[1] || 1)));
     const cab = add(ini, mul(sub(alvo, ini), fase)), cauda = add(cab, mul(queda, -Hh * 0.35));
-    const a = T2(fx, cauda), b = T2(fx, cab), w = escalaW(fx, 0.55) * s * r.entre(0.6, 1.3);
-    let sv = forma(pincelada([a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], b], w * 2.2, "agulha"), cores[2] || cores[1], { op: 0.4, filtro: g }) + forma(pincelada([a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], b], w, (t => Math.pow(t, 1.2))), corEm(cores, r.entre(0.2, 0.6)));
+    const a = T2(fx, cauda), b = T2(fx, cab), w = escalaW(fx, 0.32) * s * r.entre(0.6, 1.3), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, m = [(a[0] + b[0]) / 2 + dy / l * l * 0.06, (a[1] + b[1]) / 2 - dx / l * l * 0.06];
+    const trilha = [a, [(a[0] + m[0]) / 2, (a[1] + m[1]) / 2], m, [(m[0] + b[0]) / 2, (m[1] + b[1]) / 2], b];
+    let sv = forma(pincelada(trilha, w * 2.4, "agulha"), cores[2] || cores[1], { op: 0.35, filtro: g }) + forma(pincelada(trilha, w, (t => Math.pow(t, 1.1))), corEm(cores, r.entre(0.55, 0.95)), tinta(fx)) + forma(pincelada(trilha, w * 0.35, (t => Math.pow(t, 1.4))), cores[0], { op: 0.8 });
     if (fase > 0.97) { const q = T2(fx, alvo); sv += forma(estrela(q[0], q[1], w * 3, w * 1.2, 9, r() * 6, r, 0.7), cores[1], { op: 0.9 }); }
     itens.push({ z: fx.proj(cab)[2], s: sv });
   }
@@ -430,6 +444,13 @@ TIPOS.aura = fx => {
   const { P, cores, r } = fx, caps = capsulasTela(fx); if (!caps.length) return "";
   const [ux, uy] = cimaTela(fx, fx.A.mundo), camadas = [[1, cores[cores.length - 1], 1], [0.7, cores[2] || cores[1], 0.95], [0.42, cores[1], 0.95]];
   let svg = "";
+  if (fx.e.elemento === "raio") { /* aura elétrica: raios ramificados que contornam o corpo, com brilho */
+    let lg = ""; const n = Math.round(10 * P.densidade * Math.min(1.4, fx.X));
+    for (let i = 0; i < n; i++) { const c = caps[Math.floor(r() * caps.length)], t = r(), sd = r.sinal(), dx = c.b[0] - c.a[0], dy = c.b[1] - c.a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * sd, ny = dx / l * sd;
+      const x = c.a[0] + dx * t + nx * c.r * 1.6, y = c.a[1] + dy * t + ny * c.r * 1.6, L = fx.A.s * P.altura * r.entre(2.8, 5.5), ang = Math.atan2(ny * 0.4 + uy * 0.8 * r.sinal(), nx * 0.4 + ux * 0.2);
+      raioRamificado([x, y], [x + Math.cos(ang) * L, y + Math.sin(ang) * L], r, 0.3, 5, 1).forEach(q => lg += caminho(q)); }
+    return forma(lg, "none", { stroke: cores[cores.length - 1], sw: 4, op: 0.5, filtro: brilho(fx) }) + forma(lg, "none", { stroke: cores[2] || cores[1], sw: 2 }) + forma(lg, "none", { stroke: cores[0], sw: 0.8 });
+  }
   /* contorno brilhante grosso em volta das cápsulas (o corpo cobre o meio) */
   let gl = ""; caps.forEach(c => gl += pincelada([[c.a[0], c.a[1]], [(c.a[0] + c.b[0]) / 2, (c.a[1] + c.b[1]) / 2], [c.b[0], c.b[1]]], c.r * 2 + fx.A.s * 0.9 * P.altura, "cheio"));
   svg += forma(gl, cores[2] || cores[1], { op: 0.35 * fx.X, filtro: brilho(fx) });
@@ -467,13 +488,15 @@ TIPOS.arco_movimento = fx => {
     if (!ey) ey = base(ex).v;
   }
   else { C = A.mundo; R0 = escalaW(fx, 6); ex = [Math.cos(fx.D.ang), Math.sin(fx.D.ang), 0]; ey = [-ex[1], ex[0], 0]; C = sub(A.mundo, mul(ex, R0)); }
-  const ab = P.abertura * Math.PI / 180 * (0.25 + 0.75 * fx.t), lista = [];
-  for (let i = 0; i < P.fios; i++) {
-    const kr = r.entre(0.72, 1.18), a0 = -ab * r.entre(0.55, 1), a1 = r.entre(-0.08, 0.06), pts = [];
-    for (let k = 0; k <= 16; k++) { const a = a0 + (a1 - a0) * k / 16; pts.push(T2(fx, add(C, mul(add(mul(ex, Math.cos(a)), mul(ey, Math.sin(a))), R0 * kr)))); }
-    lista.push({ kr, d: pincelada(pts, escalaW(fx, P.largura) * s * r.entre(0.35, 1) * (1.25 - Math.abs(kr - 0.95)), t => Math.pow(t, 0.9) * Math.min(1, (1 - t) / 0.06)) });
+  /* muitos fios finos com raios e comprimentos diferentes (pinceladas do mangá); cor varia de fio para fio */
+  const ab = P.abertura * Math.PI / 180 * (0.25 + 0.75 * fx.t), lista = [], nF = Math.round(P.fios * 2.2);
+  for (let i = 0; i < nF; i++) {
+    const kr = r.entre(0.62, 1.32), a0 = -ab * r.entre(0.45, 1), a1 = r.entre(-0.1, 0.08) - (r() < 0.3 ? r.entre(0, 0.4) : 0), pts = [];
+    for (let k = 0; k <= 18; k++) { const a = a0 + (a1 - a0) * k / 18; pts.push(T2(fx, add(C, mul(add(mul(ex, Math.cos(a)), mul(ey, Math.sin(a))), R0 * kr)))); }
+    lista.push({ kr, c: r(), d: pincelada(pts, escalaW(fx, P.largura) * s * r.entre(0.12, 0.55) * (1.3 - Math.abs(kr - 0.97)), t => Math.pow(t, 0.8) * Math.min(1, (1 - t) / 0.08)) });
   }
-  let svg = ""; lista.sort((a, b) => b.kr - a.kr).forEach((f, i) => svg += forma(f.d, corEm(cores, 0.15 + 0.8 * Math.abs(f.kr - 0.95) / 0.25), { op: 0.92 }));
+  let svg = ""; lista.sort((a, b) => b.kr - a.kr).forEach(f => svg += forma(f.d, corEm(cores, fx.e.elemento === "prisma" ? f.c : 0.1 + 0.85 * f.c), { op: 0.93, ...(f.c > 0.7 ? tinta(fx) : {}) }));
+  { let db = ""; for (let i = 0; i < 10; i++) { const a = -ab * r(), q = T2(fx, add(C, mul(add(mul(ex, Math.cos(a)), mul(ey, Math.sin(a))), R0 * r.entre(1.2, 1.45)))); db += lasca(q[0], q[1], s * r.entre(0.12, 0.28), r); } svg += forma(db, misturar(cores[cores.length - 1], "#3A2A20", 0.4), { op: 0.8 }); }
   const [px, py] = A.tela; let sp = ""; for (let i = 0; i < 6; i++) { const a = r() * 6.28, dd = s * r.entre(0.6, 2.2); sp += faisca(px + Math.cos(a) * dd, py + Math.sin(a) * dd, s * r.entre(0.25, 0.6), r()); }
   return forma(circulo(px, py, s * 1.2), cores[1], { op: 0.5, filtro: g }) + svg + forma(sp, cores[0]);
 };
@@ -583,7 +606,9 @@ TIPOS.parede_quebrada = fx => {
   const { P, cores, A, r } = fx; if (!fx.objeto || fx.plano) return TIPOS.rachaduras({ ...fx, P: { raio: P.raio, ramos: P.ramos } });
   /* face do objeto mais virada para a câmera: plano pelo centro dessa face */
   const { mn, mx } = fx.objeto, c = mul(add(mn, mx), 0.5), faces = [[[1, 0, 0], mx[0]], [[-1, 0, 0], mn[0]], [[0, 0, 1], mx[2]], [[0, 0, -1], mn[2]], [[0, 1, 0], mx[1]]];
-  let best = null; for (const [n, v] of faces) { const fc = n[0] ? [v, c[1], c[2]] : n[1] ? [c[0], v, c[2]] : [c[0], c[1], v], z = fx.proj(add(fc, n))[2] - fx.proj(fc)[2]; if (!best || z > best.z) best = { n, fc: add(fc, mul(n, 0.02)), z }; }
+  /* face que mais aparece: virada para a câmera × área (a borda fina de uma parede não conta) */
+  const ext = [mx[0] - mn[0], mx[1] - mn[1], mx[2] - mn[2]];
+  let best = null; for (const [n, v] of faces) { const fc = n[0] ? [v, c[1], c[2]] : n[1] ? [c[0], v, c[2]] : [c[0], c[1], v], vira = fx.proj(add(fc, n))[2] - fx.proj(fc)[2], area = n[0] ? ext[1] * ext[2] : n[1] ? ext[0] * ext[2] : ext[0] * ext[1], z = vira > 0 ? vira * area : -1e9 + vira; if (!best || z > best.z) best = { n, fc: add(fc, mul(n, 0.02)), z }; }
   const s = fx.A.s, R = escalaW(fx, P.raio), B = base(best.n);
   const buraco = Array.from({ length: 11 }, (_, i) => { const a = i / 11 * 6.28, rr = R * 0.32 * r.entre(0.6, 1.2) * fx.t; return T2(fx, add(best.fc, add(mul(B.v, Math.cos(a) * rr), mul(B.w, Math.sin(a) * rr)))); });
   let d = ""; rachar(fx, best.fc, best.n, R * 1.6, Math.round(P.ramos), fx.t, r).forEach(l => d += pincelada(l.pts.map(q => T2(fx, q)), s * 0.4 * l.w * fx.e.escala * 1.6, "agulha"));

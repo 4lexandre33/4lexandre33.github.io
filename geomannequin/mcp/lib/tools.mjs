@@ -119,6 +119,7 @@ function docs(w) {
   d.push({ id: "camera-orbita", title: "Câmera em órbita, planos de quadrinhos e ângulos", text: docCamera(w) });
   d.push({ id: "controlnet", title: "Referências para ControlNet: OpenPose (corpo, mãos, rosto), profundidade, normais, máscara, partes, canny", text: docControlNet(w) });
   d.push({ id: "roteiro", title: "Roteiro de quadros (storyboard de mangá): sintaxe, #orbita e #ficha", text: docRoteiro() });
+  for (const c of w.cena.efeitos.catalogo()) d.push({ id: "efeito/" + c.tipo, title: "Efeito especial: " + c.nome + " (" + c.tipo + ")", text: `efeitos {acao: "adicionar", tipo: "${c.tipo}"} — cena.efeito("${c.tipo}", {...})\nCategoria: ${c.categoria}; elemento padrão: ${c.elemento}; âncora padrão: ${c.ancora}; camada: ${c.camada}\nParâmetros: ${JSON.stringify(c.parametros)}` + (c.simbolos ? "\nSímbolos: " + c.simbolos.join(", ") : "") + (c.texto ? "\nUsa o campo texto." : "") });
   for (const [k, v] of Object.entries(w.EXPRESSOES)) d.push({ id: "expressao/" + k, title: "Expressão do rosto: " + k, text: `m.expressao("${k}") — editar_manequim {expressao: "${k}"}\nValores: ${JSON.stringify(v)}` });
   for (const [k, v] of Object.entries(w.GESTOS)) d.push({ id: "gesto/" + k, title: "Gesto da mão: " + k, text: `m.gesto("direita", "${k}") — editar_manequim {gesto: {lado: "direita", nome: "${k}"}}\nValores: ${JSON.stringify(v)}` });
   d.push({ id: "mcp-controle", title: "MCP tipado V3: preensão, física, câmera e segurança", text:
