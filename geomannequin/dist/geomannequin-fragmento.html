@@ -5117,14 +5117,14 @@ pre.cmdout .ok{color:var(--cobalt)}
     const foot = { M: Mf, T: [K[0] + w[0], K[1] + w[1], K[2] + w[2]] };
     return { thigh: { M, T: J }, knee, calf, foot };
   }
-  function ikLeg(p, S, s, Pw) {
+  function ikLeg(p, S, s, Pw, joelho) {
     const ch = chainSetup(p, S), F2 = ch.F, A = legDims(p), Pel = ch.Pel;
     const MT = mT(Pel.M), q = [Pw[0] - Pel.T[0], Pw[1] - Pel.T[1], Pw[2] - Pel.T[2]], P3 = mv(MT, q);
     const J = hipJoint(F2, s), L1 = A.L1, L22 = A.L2;
     const dv = [P3[0] - J[0], P3[1] - J[1], P3[2] - J[2]], d = Math.hypot(dv[0], dv[1], dv[2]) || 1e-6;
     const dc = clamp(d, Math.abs(L1 - L22) + 0.05, L1 + L22 - 5e-3), dir = dv.map((c) => c / d);
     const a = (L1 * L1 - L22 * L22 + dc * dc) / (2 * dc), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
-    let pole = [0, 0, 1];
+    let pole = joelho ? [s * joelho[0], joelho[1], joelho[2]] : [0, 0, 1];
     const pd = pole[0] * dir[0] + pole[1] * dir[1] + pole[2] * dir[2];
     pole = [pole[0] - pd * dir[0], pole[1] - pd * dir[1], pole[2] - pd * dir[2]];
     const pl = Math.hypot(pole[0], pole[1], pole[2]) || 1;
@@ -13322,28 +13322,58 @@ pre.cmdout .ok{color:var(--cobalt)}
   };
   var lad = (s, k) => k + (s > 0 ? "L" : "R");
   var opo = (s, k) => k + (s > 0 ? "R" : "L");
-  var guardaBase = (Q, s) => Object.assign(Q, {
-    [lad(s, "hipFlex")]: 18,
-    [lad(s, "kneeFlex")]: 28,
-    [lad(s, "hipAbd")]: 8,
-    [opo(s, "hipFlex")]: -14,
-    [opo(s, "kneeFlex")]: 22,
-    [opo(s, "hipAbd")]: 8,
-    [opo(s, "ankleFlex")]: 12,
-    [opo(s, "toes")]: -25,
-    pelvisTwist: s * -12,
-    spineTwist: s * -8,
-    spineFlex: 8,
-    headPitch: 6,
-    [lad(s, "armFlex")]: 62,
-    [lad(s, "armAbd")]: 12,
-    [lad(s, "elbow")]: 105,
-    [lad(s, "pron")]: -20,
-    [opo(s, "armFlex")]: 42,
-    [opo(s, "armAbd")]: 14,
-    [opo(s, "elbow")]: 135,
-    [opo(s, "pron")]: -10
-  });
+  function soleY(q, ch, t) {
+    const A = legDims(q), L_ = t > 0 ? "L" : "R", Af = comp(ch.Pel, legPose(q, ch.F, ch, t).foot), f = A.f, cd = ((q["toes" + L_] || 0) + (q["hallux" + L_] || 0)) * D;
+    return Math.min(...[[0, -A.hA, -0.42 * f], [-t * 0.42 * f, -A.hA, 1.25 * f], [t * 0.4 * f, -A.hA, 1.12 * f], [-t * 0.29 * f, -0.47 * f - 0.48 * f * Math.sin(cd) - 0.11 * f, 1.36 * f + 0.48 * f * Math.cos(cd)]].map((v) => applyA(Af, v)[1]));
+  }
+  function pesEm(Q, alvos, queda, joelho) {
+    const S = shape(Q), A = legDims(Q), base2 = Object.assign({}, Q, { ground: 0, bodyLift: 0 }), ch = chainSetup(base2, S), perna = A.L1 + A.L2, C2 = ch.Pel.T;
+    const g0 = hipJoint(chainSetup(Object.assign({}, Q, { ground: 0, bodyLift: 0, bodyPitch: 0, bodyRoll: 0 }), S).F, 1)[1] - perna - A.hA, yChao = g0 + queda * perna;
+    for (const [L_, [la, fr2]] of Object.entries(alvos)) {
+      const t = L_ === "L" ? 1 : -1, ponta = (Q["ankleFlex" + L_] || 0) >= 15;
+      let y = yChao + A.hA;
+      for (let it = 0; it < 4; it++) {
+        const r = ikLeg(base2, S, t, [C2[0] + t * la * perna, y, C2[2] + fr2 * perna], joelho), v = { ["hipFlex" + L_]: r.hipFlex, ["hipAbd" + L_]: r.hipAbd, ["hipRot" + L_]: r.hipRot, ["kneeFlex" + L_]: r.knee };
+        if (!ponta) v["ankleFlex" + L_] = r.ankle;
+        for (const k in v) {
+          const [mn, mx] = faixa(k, Q.flex);
+          v[k] = Math.round(Math.min(mx, Math.max(mn, v[k])) * 10) / 10;
+        }
+        Object.assign(Q, v);
+        Object.assign(base2, v);
+        const erro = soleY(base2, chainSetup(base2, S), t) - yChao;
+        if (Math.abs(erro) < 0.03) break;
+        y -= erro;
+      }
+    }
+    Q.ground = 1;
+    Q.bodyLift = 0;
+  }
+  var cavalo = (Q, w, queda) => pesEm(Q, { L: [w, 0.02], R: [w, 0.02] }, queda, [0.75, 0, 0.66]);
+  var guardaBase = (Q, s, prof = 0) => {
+    Object.assign(Q, {
+      [opo(s, "ankleFlex")]: 18 + 6 * prof,
+      [opo(s, "toes")]: -40,
+      [lad(s, "tibiaRot")]: -6,
+      [opo(s, "tibiaRot")]: 20,
+      bodyPitch: 6 + 14 * prof,
+      pelvisTwist: s * -24,
+      spineTwist: s * -8,
+      spineFlex: 12 + 2 * prof,
+      headPitch: -10 - 18 * prof,
+      headYaw: s * 14,
+      [lad(s, "armFlex")]: 62,
+      [lad(s, "armAbd")]: 12,
+      [lad(s, "elbow")]: 105,
+      [lad(s, "pron")]: -20,
+      [opo(s, "armFlex")]: 42,
+      [opo(s, "armAbd")]: 14,
+      [opo(s, "elbow")]: 135,
+      [opo(s, "pron")]: -10
+    });
+    pesEm(Q, { [lad(s, "")]: [0.2, 0.36 + 0.22 * prof], [opo(s, "")]: [0.24, -0.6 - 0.2 * prof] }, 0.17 + 0.1 * prof);
+    return Q;
+  };
   var punhos = (Q) => {
     aplicarGesto(Q, 1, "punho");
     aplicarGesto(Q, -1, "punho");
@@ -13367,15 +13397,23 @@ pre.cmdout .ok{color:var(--cobalt)}
     sentadoCalcanhares: (Q, s) => Object.assign(Q, { kneeFlexL: 150, kneeFlexR: 150, hipFlexL: 30, hipFlexR: 30, ankleFlexL: 48, ankleFlexR: 48, spineFlex: -4, armFlexL: 30, armFlexR: 30, elbowL: 55, elbowR: 55, handCurlL: 0.3, handCurlR: 0.3 }),
     umJoelho: (Q, s) => Object.assign(Q, { [lad(s, "hipFlex")]: 88, [lad(s, "kneeFlex")]: 92, [lad(s, "ankleFlex")]: -4, [opo(s, "hipFlex")]: -6, [opo(s, "kneeFlex")]: 92, [opo(s, "ankleFlex")]: 10, [opo(s, "toes")]: -55, spineFlex: 6, [lad(s, "armFlex")]: 30, [lad(s, "elbow")]: 60, [opo(s, "armAbd")]: 10, [opo(s, "elbow")]: 15, handCurlL: 0.35, handCurlR: 0.35 }),
     cocoras: (Q, s) => Object.assign(Q, { hipFlexL: 112, hipFlexR: 112, kneeFlexL: 150, kneeFlexR: 150, hipAbdL: 28, hipAbdR: 28, hipRotL: -12, hipRotR: -12, ankleFlexL: -20, ankleFlexR: -20, spineFlex: 18, headPitch: -14, armFlexL: 55, armFlexR: 55, elbowL: 35, elbowR: 35, armAbdL: -6, armAbdR: -6 }),
-    correndo: (Q, s) => Object.assign(Q, { [lad(s, "hipFlex")]: 62, [lad(s, "kneeFlex")]: 95, [lad(s, "ankleFlex")]: 10, [opo(s, "hipFlex")]: -25, [opo(s, "kneeFlex")]: 45, [opo(s, "ankleFlex")]: 30, [opo(s, "toes")]: -35, spineFlex: 12, [lad(s, "armFlex")]: -45, [lad(s, "elbow")]: 95, [opo(s, "armFlex")]: 55, [opo(s, "elbow")]: 90, armAbdL: 10, armAbdR: 10, handCurlL: 0.6, handCurlR: 0.6, headPitch: -6, spineTwist: s * -8, pelvisTwist: s * 8 }),
+    correndo: (Q, s) => {
+      Object.assign(Q, { bodyPitch: 14, [lad(s, "hipFlex")]: 82, [lad(s, "kneeFlex")]: 105, [lad(s, "ankleFlex")]: 14, [opo(s, "ankleFlex")]: 30, [opo(s, "toes")]: -40, spineFlex: 6, [lad(s, "armFlex")]: -55, [lad(s, "elbow")]: 95, [opo(s, "armFlex")]: 68, [opo(s, "elbow")]: 88, armAbdL: 10, armAbdR: 10, handCurlL: 0.6, handCurlR: 0.6, headPitch: -18, spineTwist: s * -12, pelvisTwist: s * 10 });
+      pesEm(Q, { [opo(s, "")]: [0.06, -0.52] }, 0.05);
+    },
     impulso: (Q, s) => Object.assign(Q, { hipFlexL: 70, hipFlexR: 70, kneeFlexL: 85, kneeFlexR: 85, ankleFlexL: -12, ankleFlexR: -12, spineFlex: 32, armFlexL: -55, armFlexR: -55, elbowL: 10, elbowR: 10, headPitch: -20 }),
     saltando: (Q, s) => Object.assign(Q, { hipFlexL: 35, hipFlexR: 28, kneeFlexL: 70, kneeFlexR: 62, ankleFlexL: 35, ankleFlexR: 35, toesL: 10, toesR: 10, armAbdL: 150, armAbdR: 150, armFlexL: 20, armFlexR: 20, elbowL: 10, elbowR: 10, spineFlex: -10, headPitch: -12, handCurlL: 0.1, handCurlR: 0.1, bodyLift: 3.5 }),
     aterrissando: (Q, s) => Object.assign(Q, { hipFlexL: 60, hipFlexR: 60, kneeFlexL: 80, kneeFlexR: 80, ankleFlexL: -10, ankleFlexR: -10, spineFlex: 25, armFlexL: 60, armFlexR: 60, armAbdL: 30, armAbdR: 30, elbowL: 20, elbowR: 20, headPitch: -10 }),
-    chutando: (Q, s) => Object.assign(Q, { [lad(s, "hipFlex")]: 88, [lad(s, "kneeFlex")]: 8, [lad(s, "ankleFlex")]: 35, [opo(s, "kneeFlex")]: 14, [opo(s, "hipFlex")]: 8, spineFlex: -14, armAbdL: 50, armAbdR: 50, armFlexL: 20, armFlexR: -10, elbowL: 30, elbowR: 30, handCurlL: 0.7, handCurlR: 0.7 }),
+    chutando: (Q, s) => {
+      Object.assign(Q, { bodyPitch: -12, spineFlex: -2, [lad(s, "hipFlex")]: 100, [lad(s, "kneeFlex")]: 6, [lad(s, "ankleFlex")]: -12, [lad(s, "hipAbd")]: 4, [opo(s, "hipRot")]: 24, [opo(s, "ankleFlex")]: 0, [lad(s, "armFlex")]: 40, [lad(s, "armAbd")]: 20, [lad(s, "elbow")]: 115, [opo(s, "armFlex")]: -20, [opo(s, "armAbd")]: 30, [opo(s, "elbow")]: 40, headPitch: 14 });
+      pesEm(Q, { [opo(s, "")]: [0.1, 0.02] }, 0.05);
+      punhos(Q);
+    },
     socando: (Q, s) => {
-      Object.assign(Q, { [opo(s, "armFlex")]: 88, [opo(s, "armAbd")]: -6, [opo(s, "elbow")]: 0, [opo(s, "pron")]: -80, [lad(s, "armFlex")]: 55, [lad(s, "elbow")]: 125, [lad(s, "armAbd")]: -10, [lad(s, "pron")]: -20, spineTwist: s * 22, pelvisTwist: s * -8, [lad(s, "hipFlex")]: 22, [lad(s, "kneeFlex")]: 20, [opo(s, "hipFlex")]: -12, [opo(s, "kneeFlex")]: 10, headPitch: 4 });
-      aplicarGesto(Q, 1, "punho");
-      aplicarGesto(Q, -1, "punho");
+      guardaBase(Q, s, 0.55);
+      Object.assign(Q, { bodyPitch: 14, [opo(s, "armFlex")]: 100, [opo(s, "armAbd")]: -10, [opo(s, "elbow")]: 0, [opo(s, "pron")]: -80, [opo(s, "shProt")]: 0.8, [lad(s, "armFlex")]: 30, [lad(s, "armAbd")]: 20, [lad(s, "elbow")]: 120, spineTwist: s * 34, pelvisTwist: s * -2, spineFlex: 8, headPitch: -22, [opo(s, "ankleFlex")]: 26, [opo(s, "toes")]: -45 });
+      pesEm(Q, { [lad(s, "")]: [0.2, 0.52], [opo(s, "")]: [0.2, -0.76] }, 0.24);
+      punhos(Q);
     },
     alongando: (Q, s) => Object.assign(Q, { armAbdL: 172, armAbdR: 172, elbowL: 0, elbowR: 0, armRotL: 40, armRotR: 40, spineFlex: -12, headPitch: -22, ankleFlexL: 38, ankleFlexR: 38, toesL: -45, toesR: -45, handCurlL: 0.1, handCurlR: 0.1 }),
     paradaDeMao: (Q, s) => {
@@ -13578,23 +13616,27 @@ pre.cmdout .ok{color:var(--cobalt)}
       punhos(Q);
     },
     jab: (Q, s) => {
-      guardaBase(Q, s);
-      Object.assign(Q, { [lad(s, "armFlex")]: 90, [lad(s, "armAbd")]: -4, [lad(s, "elbow")]: 2, [lad(s, "pron")]: -80, spineTwist: s * -20, headPitch: 4 });
+      guardaBase(Q, s, 0.35);
+      Object.assign(Q, { bodyPitch: 12, [lad(s, "armFlex")]: 92, [lad(s, "armAbd")]: -6, [lad(s, "elbow")]: 2, [lad(s, "pron")]: -80, [lad(s, "shProt")]: 0.7, spineTwist: s * -30, pelvisTwist: s * -25, headYaw: s * 20, headRoll: s * 6 });
+      pesEm(Q, { [lad(s, "")]: [0.2, 0.48], [opo(s, "")]: [0.24, -0.74] }, 0.2);
       punhos(Q);
     },
     direto: (Q, s) => {
-      guardaBase(Q, s);
-      Object.assign(Q, { [opo(s, "armFlex")]: 88, [opo(s, "armAbd")]: -8, [opo(s, "elbow")]: 0, [opo(s, "pron")]: -80, [lad(s, "armFlex")]: 40, [lad(s, "elbow")]: 135, spineTwist: s * 24, pelvisTwist: s * 10, [lad(s, "kneeFlex")]: 35, [opo(s, "ankleFlex")]: 32, [opo(s, "toes")]: -45 });
+      guardaBase(Q, s, 0.7);
+      Object.assign(Q, { bodyPitch: 20, [opo(s, "armFlex")]: 92, [opo(s, "armAbd")]: -12, [opo(s, "elbow")]: 0, [opo(s, "pron")]: -80, [opo(s, "shProt")]: 0.8, [lad(s, "armFlex")]: 48, [lad(s, "armAbd")]: 6, [lad(s, "elbow")]: 130, spineTwist: s * 30, pelvisTwist: s * -4, spineFlex: 10, spineSide: s * -6, headYaw: s * -10, [opo(s, "ankleFlex")]: 26, [opo(s, "toes")]: -45, [opo(s, "tibiaRot")]: 30 });
+      pesEm(Q, { [lad(s, "")]: [0.2, 0.56], [opo(s, "")]: [0.18, -0.84] }, 0.25);
       punhos(Q);
     },
     gancho: (Q, s) => {
-      guardaBase(Q, s);
-      Object.assign(Q, { [lad(s, "armAbd")]: 82, [lad(s, "armFlex")]: 22, [lad(s, "elbow")]: 95, [lad(s, "armRot")]: 0, [lad(s, "pron")]: -60, spineTwist: s * -28, pelvisTwist: s * -18, [lad(s, "kneeFlex")]: 35, [opo(s, "ankleFlex")]: 25 });
+      guardaBase(Q, s, 0.35);
+      Object.assign(Q, { bodyPitch: 10, [lad(s, "armAbd")]: 84, [lad(s, "armFlex")]: 24, [lad(s, "elbow")]: 92, [lad(s, "armRot")]: 0, [lad(s, "pron")]: -60, spineTwist: s * -40, pelvisTwist: s * -25, spineSide: s * 8, headYaw: s * 24, [lad(s, "ankleFlex")]: 18 });
+      pesEm(Q, { [lad(s, "")]: [0.24, 0.4], [opo(s, "")]: [0.26, -0.68] }, 0.22);
       punhos(Q);
     },
     uppercut: (Q, s) => {
-      guardaBase(Q, s);
-      Object.assign(Q, { [opo(s, "armFlex")]: 62, [opo(s, "armAbd")]: 6, [opo(s, "elbow")]: 100, [opo(s, "pron")]: 70, [opo(s, "armRot")]: -10, spineTwist: s * 22, pelvisTwist: s * 10, spineSide: s * 8, kneeFlexL: 38, kneeFlexR: 38, hipFlexL: 22, hipFlexR: 10, [opo(s, "ankleFlex")]: 30, [opo(s, "toes")]: -40 });
+      guardaBase(Q, s, 0.5);
+      Object.assign(Q, { bodyPitch: 8, [opo(s, "armFlex")]: 72, [opo(s, "armAbd")]: 4, [opo(s, "elbow")]: 95, [opo(s, "pron")]: 70, [opo(s, "armRot")]: -10, spineTwist: s * 24, pelvisTwist: s * -6, spineSide: s * -10, spineFlex: 4, headPitch: -14, [opo(s, "ankleFlex")]: 24, [opo(s, "toes")]: -45 });
+      pesEm(Q, { [lad(s, "")]: [0.24, 0.42], [opo(s, "")]: [0.24, -0.6] }, 0.23);
       punhos(Q);
     },
     socoParaCima: (Q, s) => {
@@ -13602,21 +13644,25 @@ pre.cmdout .ok{color:var(--cobalt)}
       punhos(Q);
     },
     cotovelada: (Q, s) => {
-      guardaBase(Q, s);
-      Object.assign(Q, { [opo(s, "armAbd")]: 88, [opo(s, "armFlex")]: 62, [opo(s, "elbow")]: 148, [opo(s, "pron")]: -40, spineTwist: s * 34, pelvisTwist: s * 14, [opo(s, "ankleFlex")]: 30, [opo(s, "toes")]: -40, [lad(s, "kneeFlex")]: 38 });
+      guardaBase(Q, s, 0.45);
+      Object.assign(Q, { bodyPitch: 16, [opo(s, "armAbd")]: 88, [opo(s, "armFlex")]: 62, [opo(s, "elbow")]: 148, [opo(s, "pron")]: -40, spineTwist: s * 36, pelvisTwist: s * -4, spineFlex: 10, [opo(s, "ankleFlex")]: 24, [opo(s, "toes")]: -45 });
+      pesEm(Q, { [lad(s, "")]: [0.22, 0.5], [opo(s, "")]: [0.2, -0.78] }, 0.24);
       punhos(Q);
     },
     joelhada: (Q, s) => {
-      Object.assign(Q, { [lad(s, "hipFlex")]: 108, [lad(s, "kneeFlex")]: 118, [lad(s, "ankleFlex")]: 42, [opo(s, "kneeFlex")]: 6, [opo(s, "ankleFlex")]: 22, [opo(s, "toes")]: -30, armFlexL: 72, armFlexR: 72, armAbdL: 6, armAbdR: 6, elbowL: 85, elbowR: 85, pronL: -60, pronR: -60, spineFlex: 14, headPitch: 12, shProtL: 0.4, shProtR: 0.4 });
+      Object.assign(Q, { bodyPitch: -8, spineFlex: 10, [lad(s, "hipFlex")]: 112, [lad(s, "kneeFlex")]: 124, [lad(s, "ankleFlex")]: 42, [opo(s, "ankleFlex")]: 22, [opo(s, "toes")]: -35, armFlexL: 70, armFlexR: 70, armAbdL: 8, armAbdR: 8, elbowL: 85, elbowR: 85, pronL: -70, pronR: -70, headPitch: 8, shProtL: 0.5, shProtR: 0.5 });
+      pesEm(Q, { [opo(s, "")]: [0.1, 0] }, 0.04);
       aplicarGesto(Q, 1, "garra");
       aplicarGesto(Q, -1, "garra");
     },
     chuteLateral: (Q, s) => {
-      Object.assign(Q, { bodyRoll: s * 36, [lad(s, "hipAbd")]: 45, [lad(s, "hipFlex")]: 12, [lad(s, "kneeFlex")]: 2, [lad(s, "ankleFlex")]: -12, [opo(s, "hipAbd")]: 30, [opo(s, "kneeFlex")]: 16, spineSide: s * -18, headRoll: s * -30, [lad(s, "armFlex")]: 55, [lad(s, "elbow")]: 110, [lad(s, "armAbd")]: 20, [opo(s, "armFlex")]: 45, [opo(s, "elbow")]: 120, [opo(s, "armAbd")]: 25 });
+      Object.assign(Q, { flex: Math.max(Q.flex || 0, 1), bodyRoll: s * 46, spineSide: s * -10, headRoll: s * -30, headYaw: s * 30, [lad(s, "hipAbd")]: 60, [lad(s, "hipFlex")]: 20, [lad(s, "hipRot")]: -20, [lad(s, "kneeFlex")]: 4, [lad(s, "ankleFlex")]: -14, [opo(s, "hipRot")]: 30, [opo(s, "tibiaRot")]: 24, [lad(s, "armFlex")]: 50, [lad(s, "elbow")]: 110, [lad(s, "armAbd")]: 24, [opo(s, "armFlex")]: 30, [opo(s, "elbow")]: 100, [opo(s, "armAbd")]: 40 });
+      pesEm(Q, { [opo(s, "")]: [0.04, 0] }, 0.05);
       punhos(Q);
     },
     chuteAlto: (Q, s) => {
-      Object.assign(Q, { bodyRoll: s * 28, [lad(s, "hipFlex")]: 82, [lad(s, "hipAbd")]: 45, [lad(s, "hipRot")]: -25, [lad(s, "kneeFlex")]: 8, [lad(s, "ankleFlex")]: 45, [opo(s, "hipAbd")]: 26, [opo(s, "kneeFlex")]: 14, spineSide: s * -14, headRoll: s * -22, spineTwist: s * -10, [lad(s, "armFlex")]: -25, [lad(s, "armAbd")]: 35, [lad(s, "elbow")]: 30, [opo(s, "armFlex")]: 55, [opo(s, "elbow")]: 125, [opo(s, "armAbd")]: -10 });
+      Object.assign(Q, { flex: Math.max(Q.flex || 0, 1), bodyRoll: s * 38, spineSide: s * -14, spineTwist: s * -14, pelvisTwist: s * 20, [lad(s, "hipFlex")]: 58, [lad(s, "hipAbd")]: 60, [lad(s, "hipRot")]: -40, [lad(s, "kneeFlex")]: 12, [lad(s, "ankleFlex")]: 48, [opo(s, "hipRot")]: 34, [opo(s, "tibiaRot")]: 20, [lad(s, "armFlex")]: -30, [lad(s, "armAbd")]: 38, [lad(s, "elbow")]: 25, [opo(s, "armFlex")]: 62, [opo(s, "armAbd")]: 12, [opo(s, "elbow")]: 120, headRoll: s * -16, headYaw: s * 20 });
+      pesEm(Q, { [opo(s, "")]: [0.06, 0] }, 0.05);
       punhos(Q);
     },
     chuteGiratorio: (Q, s) => {
@@ -13633,21 +13679,24 @@ pre.cmdout .ok{color:var(--cobalt)}
       Q[opo(s, "wrist")] = -70;
     },
     palma: (Q, s) => {
-      guardaBase(Q, s);
-      Object.assign(Q, { [opo(s, "armFlex")]: 88, [opo(s, "armAbd")]: -6, [opo(s, "elbow")]: 0, [opo(s, "pron")]: -80, [opo(s, "wrist")]: -70, [lad(s, "armFlex")]: 40, [lad(s, "elbow")]: 135, spineTwist: s * 25, pelvisTwist: s * 10, [opo(s, "ankleFlex")]: 30, [opo(s, "toes")]: -40 });
+      guardaBase(Q, s, 0.7);
+      Object.assign(Q, { bodyPitch: 20, [opo(s, "armFlex")]: 90, [opo(s, "armAbd")]: -8, [opo(s, "elbow")]: 0, [opo(s, "pron")]: -80, [opo(s, "wrist")]: -70, [opo(s, "shProt")]: 0.8, [lad(s, "armFlex")]: 44, [lad(s, "elbow")]: 130, spineTwist: s * 28, pelvisTwist: s * -4, spineFlex: 10, [opo(s, "ankleFlex")]: 26, [opo(s, "toes")]: -45 });
+      pesEm(Q, { [lad(s, "")]: [0.2, 0.56], [opo(s, "")]: [0.18, -0.84] }, 0.25);
       aplicarGesto(Q, s, "punho");
       aplicarGesto(Q, -s, "espalmada");
       Q[opo(s, "wrist")] = -70;
     },
     palmaDupla: (Q, s) => {
-      Object.assign(Q, { armFlexL: 88, armFlexR: 88, armAbdL: -10, armAbdR: -10, elbowL: 4, elbowR: 4, pronL: -80, pronR: -80, [lad(s, "hipFlex")]: 48, [lad(s, "kneeFlex")]: 55, [opo(s, "hipFlex")]: -28, [opo(s, "kneeFlex")]: 5, [opo(s, "ankleFlex")]: -15, [opo(s, "toes")]: -40, spineFlex: 16, headPitch: -12, shProtL: 0.6, shProtR: 0.6 });
+      Object.assign(Q, { armFlexL: 86, armFlexR: 86, armAbdL: -12, armAbdR: -12, elbowL: 6, elbowR: 6, pronL: -80, pronR: -80, [lad(s, "ankleFlex")]: 0, [opo(s, "ankleFlex")]: 24, [opo(s, "toes")]: -45, [opo(s, "tibiaRot")]: 24, bodyPitch: 18, pelvisTwist: s * -18, spineTwist: s * 14, spineFlex: 8, headPitch: -30, shProtL: 0.7, shProtR: 0.7 });
+      pesEm(Q, { [lad(s, "")]: [0.26, 0.6], [opo(s, "")]: [0.26, -0.84] }, 0.3);
       aplicarGesto(Q, 1, "espalmada");
       aplicarGesto(Q, -1, "espalmada");
       Q.wristL = -70;
       Q.wristR = -70;
     },
     defesaCruzada: (Q, s) => {
-      Object.assign(Q, { armFlexL: 78, armFlexR: 78, armAbdL: -38, armAbdR: -34, elbowL: 100, elbowR: 104, pronL: -10, pronR: -10, hipFlexL: 28, hipFlexR: 20, kneeFlexL: 32, kneeFlexR: 28, hipAbdL: 12, hipAbdR: 12, spineFlex: 16, headPitch: 16, shElevL: 0.4, shElevR: 0.4 });
+      Object.assign(Q, { armFlexL: 80, armFlexR: 80, armAbdL: -38, armAbdR: -34, elbowL: 100, elbowR: 104, pronL: -10, pronR: -10, spineFlex: 24, headPitch: 22, shElevL: 0.4, shElevR: 0.4, shProtL: 0.5, shProtR: 0.5, hipRotL: 14, hipRotR: 14 });
+      pesEm(Q, { L: [0.32, 0.12], R: [0.32, -0.12] }, 0.24);
       punhos(Q);
     },
     aterrissagemHeroi: (Q, s) => {
@@ -13661,7 +13710,10 @@ pre.cmdout .ok{color:var(--cobalt)}
       aplicarGesto(Q, -1, "espalmada");
     },
     esquiva: (Q, s) => {
-      Object.assign(Q, { spineFlex: -26, bodyPitch: -14, hipFlexL: 22, hipFlexR: 12, kneeFlexL: 48, kneeFlexR: 40, spineSide: s * 12, armAbdL: 62, armAbdR: 55, armFlexL: 20, armFlexR: 10, elbowL: 45, elbowR: 35, headPitch: -14, headYaw: s * -15, handCurlL: 0.25, handCurlR: 0.25 });
+      guardaBase(Q, s, 0.3);
+      Object.assign(Q, { bodyPitch: 14, spineFlex: 22, spineSide: s * -20, spineTwist: s * 14, headPitch: -14, headRoll: s * -10, [lad(s, "armFlex")]: 70, [lad(s, "elbow")]: 120, [opo(s, "armFlex")]: 62, [opo(s, "elbow")]: 130 });
+      pesEm(Q, { [lad(s, "")]: [0.3, 0.38], [opo(s, "")]: [0.26, -0.5] }, 0.28);
+      punhos(Q);
     },
     provocando: (Q, s) => {
       guardaBase(Q, s);
@@ -13670,8 +13722,14 @@ pre.cmdout .ok{color:var(--cobalt)}
       aplicarGesto(Q, -s, "punho");
     },
     /* ===== reação a golpes e quedas ===== */
-    golpeRosto: (Q, s) => Object.assign(Q, { headPitch: -45, neckFlex: -25, headYaw: s * 22, spineFlex: -24, bodyPitch: -10, armAbdL: 72, armAbdR: 50, armFlexL: 30, armFlexR: -18, elbowL: 42, elbowR: 20, handCurlL: 0.15, handCurlR: 0.15, [lad(s, "hipFlex")]: 35, [lad(s, "kneeFlex")]: 52, [opo(s, "kneeFlex")]: 16, [opo(s, "ankleFlex")]: 22 }),
-    golpeEstomago: (Q, s) => Object.assign(Q, { spineFlex: 62, thoFlex: 12, headPitch: -12, bodyLift: 0.8, armFlexL: 52, armFlexR: 48, armAbdL: -32, armAbdR: -28, elbowL: 112, elbowR: 105, pronL: -20, pronR: -20, handCurlL: 0.55, handCurlR: 0.55, hipFlexL: 34, hipFlexR: 28, kneeFlexL: 40, kneeFlexR: 30, [lad(s, "ankleFlex")]: 28 }),
+    golpeRosto: (Q, s) => {
+      Object.assign(Q, { headPitch: -48, neckFlex: -25, headYaw: s * 26, headRoll: s * -12, spineFlex: -26, spineTwist: s * -18, spineSide: s * 8, bodyPitch: -14, armAbdL: 78, armAbdR: 56, armFlexL: 30, armFlexR: -24, elbowL: 46, elbowR: 22, handCurlL: 0.15, handCurlR: 0.15, [opo(s, "ankleFlex")]: 0, [lad(s, "ankleFlex")]: 20, [lad(s, "toes")]: -30 });
+      pesEm(Q, { [lad(s, "")]: [0.18, 0.28], [opo(s, "")]: [0.22, -0.34] }, 0.16);
+    },
+    golpeEstomago: (Q, s) => {
+      Object.assign(Q, { bodyPitch: 20, spineFlex: 48, thoFlex: 12, headPitch: -22, armFlexL: 52, armFlexR: 48, armAbdL: -32, armAbdR: -28, elbowL: 112, elbowR: 105, pronL: -20, pronR: -20, handCurlL: 0.55, handCurlR: 0.55, [opo(s, "ankleFlex")]: 24, [opo(s, "toes")]: -30 });
+      pesEm(Q, { [lad(s, "")]: [0.18, 0.14], [opo(s, "")]: [0.18, -0.18] }, 0.2);
+    },
     arremessadoCostas: (Q, s) => Object.assign(Q, { bodyPitch: -62, bodyLift: 5, spineFlex: 30, headPitch: 28, armFlexL: 62, armFlexR: 48, armAbdL: 42, armAbdR: 30, elbowL: 30, elbowR: 42, hipFlexL: 62, hipFlexR: 40, kneeFlexL: 42, kneeFlexR: 24, ankleFlexL: 30, ankleFlexR: 30, handCurlL: 0.2, handCurlR: 0.2 }),
     girandoNoAr: (Q, s) => Object.assign(Q, { bodyPitch: -130, bodyRoll: s * 30, bodyLift: 6, spineFlex: 30, armAbdL: 120, armAbdR: 92, elbowL: 40, elbowR: 28, hipFlexL: 72, hipFlexR: 32, kneeFlexL: 92, kneeFlexR: 42, headPitch: 30, handCurlL: 0.2, handCurlR: 0.2 }),
     deCabecaParaBaixo: (Q, s) => Object.assign(Q, { bodyPitch: 158, bodyLift: 7, armFlexL: 150, armFlexR: 140, armAbdL: 20, armAbdR: 28, elbowL: 15, elbowR: 25, hipAbdL: 28, hipAbdR: 18, kneeFlexL: 32, kneeFlexR: 62, hipFlexL: 10, hipFlexR: 35, spineFlex: -12, headPitch: -30, handCurlL: 0.1, handCurlR: 0.1 }),
@@ -13690,9 +13748,13 @@ pre.cmdout .ok{color:var(--cobalt)}
       aplicarGesto(Q, -s, "espalmada");
       Q[opo(s, "wrist")] = -70;
     },
-    atordoado: (Q, s) => Object.assign(Q, { kneeFlexL: 26, kneeFlexR: 12, hipFlexL: 16, hipFlexR: 6, [lad(s, "hipAbd")]: 12, spineFlex: 16, spineSide: s * 12, pelvisSide: s * -6, headRoll: s * 26, headPitch: 18, armAbdL: 16, armAbdR: 12, elbowL: 26, elbowR: 18, handCurlL: 0.45, handCurlR: 0.45, shElevL: -0.4, shElevR: -0.4, [opo(s, "ankleFlex")]: 16 }),
+    atordoado: (Q, s) => {
+      Object.assign(Q, { spineFlex: 18, spineSide: s * 14, pelvisSide: s * -8, headRoll: s * 30, headPitch: 22, armAbdL: 16, armAbdR: 12, elbowL: 26, elbowR: 18, handCurlL: 0.45, handCurlR: 0.45, shElevL: -0.4, shElevR: -0.4, [opo(s, "ankleFlex")]: 18, [lad(s, "ankleTilt")]: 12 });
+      pesEm(Q, { [lad(s, "")]: [0.24, 0.08], [opo(s, "")]: [0.12, -0.14] }, 0.13, [0.2, 0, 1]);
+    },
     recuando: (Q, s) => {
-      Object.assign(Q, { [opo(s, "hipFlex")]: -22, [opo(s, "kneeFlex")]: 12, [opo(s, "ankleFlex")]: 22, [opo(s, "toes")]: -35, [lad(s, "hipFlex")]: 30, [lad(s, "kneeFlex")]: 30, spineFlex: -14, bodyPitch: -8, armFlexL: 72, armFlexR: 66, armAbdL: -8, armAbdR: -4, elbowL: 100, elbowR: 92, pronL: -80, pronR: -80, headPitch: 8, headYaw: s * -12 });
+      Object.assign(Q, { [opo(s, "ankleFlex")]: 22, [opo(s, "toes")]: -35, spineFlex: -16, bodyPitch: -10, armFlexL: 76, armFlexR: 66, armAbdL: -8, armAbdR: -4, elbowL: 100, elbowR: 92, pronL: -80, pronR: -80, headPitch: 8, headYaw: s * -12 });
+      pesEm(Q, { [lad(s, "")]: [0.18, 0.34], [opo(s, "")]: [0.22, -0.46] }, 0.16);
       aplicarGesto(Q, 1, "espalmada");
       aplicarGesto(Q, -1, "espalmada");
       Q.wristL = -55;
@@ -13713,7 +13775,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       Q.ground = 1;
     },
     baseGritando: (Q, s) => {
-      Object.assign(Q, { hipAbdL: 45, hipAbdR: 45, hipFlexL: 50, hipFlexR: 50, hipRotL: -25, hipRotR: -25, kneeFlexL: 72, kneeFlexR: 72, ankleFlexL: -8, ankleFlexR: -8, spineFlex: -14, headPitch: -26, armAbdL: 32, armAbdR: 32, armFlexL: 8, armFlexR: 8, elbowL: 72, elbowR: 72, armRotL: -30, armRotR: -30, pronL: -40, pronR: -40, shElevL: 0.45, shElevR: 0.45, shProtL: -0.3, shProtR: -0.3 });
+      Object.assign(Q, { armAbdL: 40, armAbdR: 40, armFlexL: 12, armFlexR: 12, elbowL: 80, elbowR: 80, armRotL: -34, armRotR: -34, pronL: -40, pronR: -40, shElevL: 0.5, shElevR: 0.5, shProtL: -0.3, shProtR: -0.3, spineFlex: -12, headPitch: -30 });
+      cavalo(Q, 0.42, 0.3);
       punhos(Q);
     },
     agachadoCerrando: (Q, s) => {
@@ -13726,7 +13789,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       aplicarGesto(Q, -1, "aberta");
     },
     maosEmPrece: (Q, s) => {
-      Object.assign(Q, { hipAbdL: 16, hipAbdR: 16, kneeFlexL: 10, kneeFlexR: 10, headPitch: 16 });
+      Object.assign(Q, { headPitch: 16 });
+      cavalo(Q, 0.2, 0.06);
       [1, -1].forEach((t) => maoNoCorpo(Q, t, (ch) => applyA(ch.A2, [t * 0.18, ch.F.yJ - 1.7, ch.F.zT + 1.35]), { ["pron" + (t > 0 ? "L" : "R")]: 0, ["wrist" + (t > 0 ? "L" : "R")]: -55 }));
       aplicarGesto(Q, 1, "espalmada");
       aplicarGesto(Q, -1, "espalmada");
@@ -13734,7 +13798,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       Q.wristR = -55;
     },
     bracosCruzadosPeito: (Q, s) => {
-      Object.assign(Q, { hipAbdL: 22, hipAbdR: 22, hipFlexL: 30, hipFlexR: 30, kneeFlexL: 40, kneeFlexR: 40, spineFlex: 22, headPitch: 14, shProtL: 0.5, shProtR: 0.5 });
+      Object.assign(Q, { spineFlex: 18, headPitch: 12, shProtL: 0.5, shProtR: 0.5 });
+      cavalo(Q, 0.34, 0.2);
       [1, -1].forEach((t) => maoNoCorpo(Q, t, (ch) => applyA(ch.A2, [-t * (ch.F.W - 0.45), ch.F.yAc - 0.2 + (t > 0 ? 0.25 : 0), ch.F.zT + 0.95 + (t > 0 ? 0.35 : 0)]), { ["pron" + (t > 0 ? "L" : "R")]: -10 }));
       punhos(Q);
     },
@@ -13746,7 +13811,8 @@ pre.cmdout .ok{color:var(--cobalt)}
       aplicarGesto(Q, s, "punho");
     },
     esferaDeLado: (Q, s) => {
-      Object.assign(Q, { [lad(s, "hipFlex")]: 44, [lad(s, "kneeFlex")]: 52, [lad(s, "hipAbd")]: 14, [opo(s, "hipFlex")]: -10, [opo(s, "kneeFlex")]: 22, [opo(s, "hipAbd")]: 14, spineTwist: s * -34, pelvisTwist: s * -14, spineFlex: 12, headYaw: s * 30 });
+      Object.assign(Q, { bodyPitch: 6, [opo(s, "ankleFlex")]: 16, [opo(s, "toes")]: -35, spineTwist: s * -40, pelvisTwist: s * -25, spineFlex: 14, spineSide: s * 6, headYaw: s * 40, headPitch: -8 });
+      pesEm(Q, { [lad(s, "")]: [0.3, 0.42], [opo(s, "")]: [0.3, -0.56] }, 0.27, [0.45, 0, 0.9]);
       [1, -1].forEach((t) => maoNoCorpo(Q, t, (ch, pe) => {
         const b = pe[-s].Th.T;
         return [b[0] - s * 1.15, b[1] + 0.9 + (t === -s ? 0.55 : -0.35), b[2] + 0.75];
@@ -13755,15 +13821,18 @@ pre.cmdout .ok{color:var(--cobalt)}
       aplicarGesto(Q, -1, "garra");
     },
     bracoAosCeus: (Q, s) => {
-      Object.assign(Q, { [lad(s, "armAbd")]: 168, [lad(s, "armFlex")]: 12, [lad(s, "elbow")]: 6, [opo(s, "armAbd")]: 22, [opo(s, "armFlex")]: 12, [opo(s, "elbow")]: 92, [opo(s, "pron")]: -30, hipAbdL: 24, hipAbdR: 24, hipFlexL: 20, hipFlexR: 20, kneeFlexL: 26, kneeFlexR: 26, headPitch: -36, spineFlex: -10, spineSide: s * -6 });
+      Object.assign(Q, { [lad(s, "armAbd")]: 168, [lad(s, "armFlex")]: 12, [lad(s, "elbow")]: 6, [opo(s, "armAbd")]: 30, [opo(s, "armFlex")]: -4, [opo(s, "elbow")]: 100, [opo(s, "armRot")]: -28, [opo(s, "pron")]: -30, headPitch: -36, spineFlex: -10, spineSide: s * -8 });
+      cavalo(Q, 0.3, 0.15);
       punhos(Q);
     },
     concentrando: (Q, s) => {
-      Object.assign(Q, { armFlexL: 40, armFlexR: 40, armAbdL: -22, armAbdR: -22, elbowL: 120, elbowR: 120, pronL: -30, pronR: -30, headPitch: 30, spineFlex: 10, kneeFlexL: 12, kneeFlexR: 12, hipFlexL: 6, hipFlexR: 6, hipAbdL: 10, hipAbdR: 10 });
+      Object.assign(Q, { armAbdL: 30, armAbdR: 30, armFlexL: -4, armFlexR: -4, elbowL: 100, elbowR: 100, armRotL: -28, armRotR: -28, pronL: -30, pronR: -30, shElevL: 0.35, shElevR: 0.35, spineFlex: 4, headPitch: 18, shProtL: -0.2, shProtR: -0.2 });
+      cavalo(Q, 0.3, 0.18);
       punhos(Q);
     },
     cargaDuasMaos: (Q, s) => {
-      Object.assign(Q, { armAbdL: 162, armAbdR: 162, armFlexL: 28, armFlexR: 28, elbowL: 16, elbowR: 16, wristL: -30, wristR: -30, headPitch: -38, spineFlex: -12, hipAbdL: 16, hipAbdR: 16, kneeFlexL: 14, kneeFlexR: 14 });
+      Object.assign(Q, { armAbdL: 162, armAbdR: 162, armFlexL: 28, armFlexR: 28, elbowL: 16, elbowR: 16, wristL: -30, wristR: -30, headPitch: -38, spineFlex: -12 });
+      cavalo(Q, 0.3, 0.1);
       aplicarGesto(Q, 1, "aberta");
       aplicarGesto(Q, -1, "aberta");
     },

@@ -84,6 +84,7 @@ function aplicarValoresDePose(it,valores,opts={}){
   let v=filtrarPartes(valores,opts.partes);if(opts.espelhar)v=espelharValores(v);
   if(!Object.keys(v).length)throw new Error("Nenhum ângulo dessa pose pertence às partes pedidas ("+opts.partes+").");
   const antes={...it.params};
+  if("flex" in v){applyParams(it,{flex:v.flex},false);v={...v};delete v.flex}
   applyParams(it,v,true).forEach(t=>LOG.push(["aviso",t]));limitesAcoplados(it.params).forEach(t=>LOG.push(["aviso",t]));
   withInst(it,guardArms);guardarContatoV2(it,antes);
 }

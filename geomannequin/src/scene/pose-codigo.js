@@ -89,6 +89,8 @@ function codigoDaPose(params, opts = {}) {
     (opts.expressao ? "   Rosto: partiu de “" + String(opts.expressao).replace(/\*\//g, "") + "” (os valores estão no grupo “rosto” abaixo)." : "   O rosto (expressão) vai junto, no grupo “rosto”; para só o rosto use m.rostoCodigo()."),
     "   Cole em “Código da pose”, no editor de comandos ou em Minhas poses › Importar. */"];
   const linhas = [];
+  /* pose de atleta/ginasta: o perfil de flexibilidade vai na frente (sem ele os ângulos além do normal seriam cortados) */
+  if (!sel && params.flex > 0) linhas.push("  flexibilidade: " + Math.round(params.flex) + ", // 0 normal · 1 atleta · 2 ginasta · 3 contorcionista");
   Object.keys(PARTES_POSE).forEach(p => {
     const g = grupos[p]; if (!g) return;
     if (com) linhas.push("  // " + PARTES_POSE[p].toLowerCase());
@@ -125,6 +127,7 @@ function lerCodigoDePose(texto) {
   for (let j = a; j < limpo.length; j++) { if (limpo[j] === "{") prof++; else if (limpo[j] === "}") { prof--; if (!prof) { b = j; break; } } }
   if (b < 0) throw erroLinha(txt, a, "falta fechar a chave “}” do bloco da pose.");
   const corpo = limpo.slice(a + 1, b), base = a + 1, valores = {}, partes = new Set();
+  let flex = null;
   const ITEM = /^(["']?)([A-Za-z_$][\w$]*)\1\s*:\s*([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)$/;
   let ini = 0;
   for (const pedaco of corpo.split(",")) {
@@ -134,6 +137,8 @@ function lerCodigoDePose(texto) {
     const m = ITEM.exec(item);
     if (!m) throw erroLinha(txt, pos, "não entendi “" + item.split(/\s+/).slice(0, 3).join(" ") + "”. Use nome: número, separados por vírgula.");
     const k = chaveInterna(m[2]);
+    /* perfil de flexibilidade (0 normal · 1 atleta · 2 ginasta · 3 contorcionista): vale antes dos ângulos */
+    if (k === "flex" || m[2] === "flexibilidade") { flex = Math.max(0, Math.min(3, Math.round(Number(m[3])))); continue; }
     if (!POSEKEYS.has(k)) {
       const sug = Object.keys(ALIAS).filter(x => POSEKEYS.has(ALIAS[x]) && x.toLowerCase().startsWith(m[2].toLowerCase().slice(0, 4))).slice(0, 4);
       throw erroLinha(txt, pos, "“" + m[2] + "” não é um ângulo de pose." + (sug.length ? " Talvez: " + sug.join(", ") + "." : ""));
@@ -141,12 +146,14 @@ function lerCodigoDePose(texto) {
     valores[k] = Number(m[3]); partes.add(parteDaChave(k));
   }
   if (!Object.keys(valores).length) throw new Error("O bloco da pose não tem nenhum ângulo.");
+  /* a flexibilidade viaja junto dos valores (chave flex), para quem aplica ajustar a faixa antes */
+  if (flex !== null) valores.flex = flex;
   return { nome, valores, partes: [...partes] };
 }
 /* recorte de um conjunto de valores para algumas partes */
 function filtrarPartes(valores, partes) {
   const sel = partesPedidas(partes); if (!sel) return { ...valores };
-  const o = {}; Object.entries(valores).forEach(([k, v]) => { if (sel.has(parteDaChave(k))) o[k] = v; }); return o;
+  const o = {}; Object.entries(valores).forEach(([k, v]) => { if (k === "flex" || sel.has(parteDaChave(k))) o[k] = v; }); return o;
 }
 /* troca esquerda ↔ direita (para aplicar uma pose de mão direita na esquerda, por exemplo) */
 const NEGA_ESPELHO = /^(headYaw|headRoll|neckSide|neckTwist|spineSide|spineTwist|lumSide|lumTwist|thoSide|thoTwist|pelvisSide|pelvisTwist|bodyRoll|jawSide|eyeYaw)$/;

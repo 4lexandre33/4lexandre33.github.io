@@ -101,14 +101,15 @@ function legPose(p,F,ch,s){
 }
 /* cinemática inversa da perna: leva o tornozelo a um ponto (mundo, antes da câmera); o joelho aponta para a frente
    e o pé é ajustado para continuar paralelo ao chão */
-function ikLeg(p,S,s,Pw){
+function ikLeg(p,S,s,Pw,joelho){
   const ch=chainSetup(p,S),F=ch.F,A=legDims(p),Pel=ch.Pel;
   const MT=mT(Pel.M),q=[Pw[0]-Pel.T[0],Pw[1]-Pel.T[1],Pw[2]-Pel.T[2]],P=mv(MT,q);
   const J=hipJoint(F,s),L1=A.L1,L2=A.L2;
   const dv=[P[0]-J[0],P[1]-J[1],P[2]-J[2]],d=Math.hypot(dv[0],dv[1],dv[2])||1e-6;
   const dc=clamp(d,Math.abs(L1-L2)+0.05,L1+L2-0.005),dir=dv.map(c=>c/d);
   const a=(L1*L1-L2*L2+dc*dc)/(2*dc),h=Math.sqrt(Math.max(0,L1*L1-a*a));
-  let pole=[0,0,1];const pd=pole[0]*dir[0]+pole[1]*dir[1]+pole[2]*dir[2];
+  /* joelho (opcional): direção para onde o joelho aponta, no referencial da pelve ([lado, cima, frente]; lado + = para fora) */
+  let pole=joelho?[s*joelho[0],joelho[1],joelho[2]]:[0,0,1];const pd=pole[0]*dir[0]+pole[1]*dir[1]+pole[2]*dir[2];
   pole=[pole[0]-pd*dir[0],pole[1]-pd*dir[1],pole[2]-pd*dir[2]];const pl=Math.hypot(pole[0],pole[1],pole[2])||1;pole=pole.map(c=>c/pl);
   const K=[J[0]+dir[0]*a+pole[0]*h,J[1]+dir[1]*a+pole[1]*h,J[2]+dir[2]*a+pole[2]*h];
   const Pc=[J[0]+dir[0]*dc,J[1]+dir[1]*dc,J[2]+dir[2]*dc];
