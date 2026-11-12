@@ -42,8 +42,8 @@ async function suite(client, tag) {
   check(!r.isError, "expressão misturada com intensidade e unidades de ação por lado" + (r.isError ? ": " + text(r) : ""));
   r = await call("editar_manequim", { manequim: "Ana", expressao: "xyz" });
   check(r.isError && /não existe|Expressão/.test(text(r)), "expressão desconhecida → erro em português");
-  r = await call("efeitos", { acao: "catalogo", categoria: "personagem" });
-  check(!r.isError && r.structuredContent.resultado.catalogo.some(c => c.tipo === "aura"), "efeitos: catálogo por categoria");
+  r = await call("efeitos", { acao: "catalogo", categoria: "carga" });
+  check(!r.isError && r.structuredContent.resultado.catalogo.some(c => c.tipo === "aura") && r.structuredContent.resultado.catalogo.some(c => c.tipo === "aura_explosiva"), "efeitos: catálogo por categoria");
   r = await call("efeitos", { acao: "adicionar", tipo: "aura", em: { manequim: "Ana", parte: "corpo" }, elemento: "vazio" });
   const fxImg = (r.content || []).some(c => c.type === "image");
   check(!r.isError && fxImg && r.structuredContent.resultado.efeitos.length === 1, "efeitos: aura no manequim, com imagem" + (r.isError ? ": " + text(r) : ""));

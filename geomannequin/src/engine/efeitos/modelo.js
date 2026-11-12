@@ -18,6 +18,11 @@ const ELEMENTOS = {
   sombra: { nome: "Sombra", cores: ["#C8C8DA", "#6E6E86", "#2E2E3E", "#0B0B12"] },
   tinta: { nome: "Nanquim (preto e branco)", cores: ["#FFFFFF", "#D8D8D8", "#5A5A5A", "#111111"] }
 };
+/* padrão: preto e branco (nanquim, como nas referências de mangá); cor é opcional (colorido: true).
+   Do núcleo à borda: papel branco, cinza claro de aguada, cinza médio, nanquim. */
+const TINTA = ["#FFFFFF", "#ECECEC", "#A8A8A8", "#141414"];
+/* nível de poder 1 a 5: tamanho, intensidade e quantidade de detalhes */
+const NIVEIS = { 1: { escala: 0.62, x: 0.75, dens: 0.6 }, 2: { escala: 0.8, x: 0.88, dens: 0.8 }, 3: { escala: 1, x: 1, dens: 1 }, 4: { escala: 1.3, x: 1.12, dens: 1.3 }, 5: { escala: 1.7, x: 1.25, dens: 1.7 } };
 
 /* catálogo: categoria, nome, elemento padrão, camada padrão e parâmetros próprios (com faixa) */
 const P = (padrao, min, max, rotulo) => ({ padrao, min, max, rotulo });
@@ -71,8 +76,8 @@ const CATALOGO = {
   chama: { cat: "cena", nome: "Chama", elem: "fogo", camada: "auto", ancora: "maoDir",
     params: { altura: P(3, 0.3, 20, "altura"), largura: P(1.4, 0.2, 10, "largura") } },
   /* ---- personagem (preso ao manequim) ---- */
-  aura: { cat: "personagem", nome: "Aura", elem: "fogo", camada: "atras", ancora: "corpo",
-    params: { altura: P(1.6, 0.3, 6, "altura das labaredas"), densidade: P(1, 0.3, 3, "densidade") } },
+  aura: { cat: "carga", nome: "Aura de chamas", elem: "fogo", camada: "atras", ancora: "corpo",
+    params: { altura: P(2.6, 0.3, 6, "altura das labaredas"), densidade: P(1, 0.3, 3, "densidade") } },
   arco_movimento: { cat: "personagem", nome: "Arco de movimento (soco, chute)", elem: "gelo", camada: "atras", ancora: "maoDir",
     params: { abertura: P(150, 30, 330, "abertura (graus)"), fios: P(14, 3, 40, "fios"), largura: P(1.6, 0.3, 6, "largura") } },
   rastro_membro: { cat: "personagem", nome: "Rastro do membro", elem: "fogo", camada: "atras", ancora: "maoDir",
@@ -84,7 +89,7 @@ const CATALOGO = {
   velocidade_corpo: { cat: "personagem", nome: "Linhas de velocidade no corpo", elem: "tinta", camada: "atras", ancora: "corpo",
     params: { linhas: P(26, 4, 80, "linhas"), comprimento: P(10, 2, 40, "comprimento") } },
   impacto_contato: { cat: "personagem", nome: "Impacto no ponto de contato", elem: "raio", camada: "frente", ancora: "maoDir",
-    params: { raio: P(2.2, 0.3, 12, "raio"), pontas: P(14, 6, 40, "pontas") } },
+    params: { raio: P(3.2, 0.3, 12, "raio"), pontas: P(16, 6, 40, "pontas") } },
   emote: { cat: "personagem", nome: "Símbolo de emoção (mangá)", elem: "tinta", camada: "frente", ancora: "cabeca",
     params: { tamanho: P(1, 0.3, 3, "tamanho") }, simbolo: true },
   /* ---- destruição (e reverso) ---- */
@@ -98,15 +103,47 @@ const CATALOGO = {
     params: { raio: P(6, 1, 40, "raio"), altura: P(2.5, 0.3, 15, "altura") } },
   parede_quebrada: { cat: "destruicao", nome: "Rachar objeto / parede", elem: "tinta", camada: "frente", ancora: "objeto",
     params: { raio: P(2.5, 0.3, 20, "tamanho"), ramos: P(9, 3, 30, "rachaduras") } },
+  buraco_chao: { cat: "destruicao", nome: "Buraco no chão", elem: "terra", camada: "auto", ancora: "pes",
+    params: { raio: P(4, 0.5, 30, "raio"), lajes: P(9, 0, 30, "lajes quebradas") } },
+  objeto_quebrando: { cat: "destruicao", nome: "Caixas / blocos quebrando", elem: "terra", camada: "auto", ancora: "mundo",
+    params: { pedacos: P(9, 2, 40, "pedaços"), tamanho: P(2.2, 0.4, 10, "tamanho dos pedaços"), alcance: P(7, 1, 40, "alcance"), caixote: P(1, 0, 1, "tábuas de caixote") } },
+  rastro_fumaca: { cat: "destruicao", nome: "Rastro de fumaça (voando)", elem: "sombra", camada: "atras", ancora: "corpo",
+    params: { comprimento: P(16, 2, 60, "comprimento"), largura: P(3.2, 0.5, 15, "largura"), escura: P(1, 0, 1, "fumaça preta") } },
+  sulco_poeira: { cat: "destruicao", nome: "Poeira de quem desliza no chão", elem: "terra", camada: "auto", ancora: "pes",
+    params: { comprimento: P(14, 2, 60, "comprimento"), altura: P(3.5, 0.5, 15, "altura") } },
+  /* ---- carga de energia / poder ---- */
+  aura_explosiva: { cat: "carga", nome: "Aura explosiva (espinhos para cima)", elem: "sagrado", camada: "atras", ancora: "corpo",
+    params: { altura: P(1.15, 0.4, 4, "altura"), pontas: P(24, 8, 70, "pontas"), detritos: P(14, 0, 60, "detritos") } },
+  aura_vento: { cat: "carga", nome: "Aura de vento (anéis)", elem: "vento", camada: "auto", ancora: "corpo",
+    params: { aneis: P(4, 1, 10, "anéis"), raio: P(1.2, 0.4, 4, "largura"), inclinacao: P(18, 0, 70, "inclinação") } },
+  esfera_energia: { cat: "carga", nome: "Esfera / bolha de energia", elem: "sagrado", camada: "auto", ancora: "corpo",
+    params: { raio: P(0.95, 0.4, 4, "raio (alturas do corpo)"), linhas: P(18, 0, 60, "linhas de força") } },
+  fios_energia: { cat: "carga", nome: "Fios de energia subindo", elem: "sombra", camada: "atras", ancora: "corpo",
+    params: { fios: P(16, 2, 50, "fios"), altura: P(1, 0.3, 3, "altura") } },
+  pedras_levitando: { cat: "carga", nome: "Pedras levitando", elem: "terra", camada: "auto", ancora: "pes",
+    params: { quantidade: P(16, 2, 60, "pedras"), raio: P(6, 1, 30, "alcance"), altura: P(9, 1, 40, "altura") } },
+  ondas_chao: { cat: "carga", nome: "Ondas no chão (poça de energia)", elem: "gelo", camada: "auto", ancora: "pes",
+    params: { raio: P(6, 1, 30, "raio"), aneis: P(5, 1, 12, "anéis") } },
+  carga_maos: { cat: "carga", nome: "Energia entre as mãos", elem: "sagrado", camada: "frente", ancora: "maos",
+    params: { raio: P(1.6, 0.2, 8, "raio"), raios: P(22, 0, 80, "raios de luz") } },
+  redemoinho: { cat: "carga", nome: "Redemoinho em volta", elem: "vento", camada: "auto", ancora: "corpo",
+    params: { voltas: P(4, 1, 10, "voltas"), raio: P(1.1, 0.3, 4, "largura"), altura: P(1, 0.2, 2, "altura") } },
+  /* ---- golpe ---- */
+  aneis_impacto: { cat: "personagem", nome: "Anéis de impacto (soco/chute)", elem: "vento", camada: "frente", ancora: "maoDir",
+    params: { aneis: P(3, 1, 8, "anéis"), raio: P(2.6, 0.3, 12, "raio") } },
+  salpicos: { cat: "personagem", nome: "Salpicos de nanquim", elem: "tinta", camada: "frente", ancora: "maoDir",
+    params: { quantidade: P(40, 5, 160, "gotas"), alcance: P(5, 0.5, 25, "alcance"), abertura: P(70, 10, 360, "abertura (graus)") } },
+  aneis_orbitais: { cat: "personagem", nome: "Anéis em volta do corpo", elem: "vento", camada: "auto", ancora: "corpo",
+    params: { aneis: P(2, 1, 5, "anéis"), raio: P(1.1, 0.4, 3, "largura"), espessura: P(1, 0.3, 3, "espessura") } },
   /* ---- personalizado (código ou SVG próprio) ---- */
   personalizado: { cat: "tela", nome: "Personalizado (código ou SVG)", elem: "tinta", camada: "auto", ancora: "tela", params: {}, personalizado: true }
 };
-const CATEGORIAS = { tela: "Tela (plano do quadro)", cena: "Cena (no mundo, com perspectiva)", personagem: "No personagem", destruicao: "Destruição" };
+const CATEGORIAS = { tela: "Tela (plano do quadro)", cena: "Cena (no mundo, com perspectiva)", personagem: "No personagem (golpe)", carga: "Carga de energia / poder", destruicao: "Destruição e queda" };
 const SIMBOLOS = ["veia", "gota", "tristeza", "brilho", "exclamacao", "interrogacao", "coracao", "sono", "vapor", "susto"];
 /* partes do manequim que servem de âncora */
 const PARTES = ["corpo", "centro", "cabeca", "topoCabeca", "rosto", "olhos", "olhoEsq", "olhoDir", "pescoco", "peito", "cintura", "pelve", "pes",
   "ombroEsq", "ombroDir", "cotoveloEsq", "cotoveloDir", "punhoEsq", "punhoDir", "maoEsq", "maoDir",
-  "quadrilEsq", "quadrilDir", "joelhoEsq", "joelhoDir", "tornozeloEsq", "tornozeloDir", "peEsq", "peDir"];
+  "quadrilEsq", "quadrilDir", "joelhoEsq", "joelhoDir", "tornozeloEsq", "tornozeloDir", "peEsq", "peDir", "maos"];
 /* tipos antigos (referências da PR #20) → tipo novo */
 const LEGADO = { linhas: "velocidade", impacto: "concentracao", explosao: "explosao", fumaca: "fumaca", chama: "chama", rastro: "rastro_membro" };
 
@@ -173,14 +210,17 @@ function validarEfeito(e) {
     escala: num(e.escala, 0.05, 20, 1), intensidade: num(e.intensidade, 0, 1.5, 1),
     camada: ["auto", "atras", "frente", "fundo"].includes(e.camada) ? e.camada : C.camada,
     semente: Math.round(num(e.semente, 0, 1e6, 1)), inicio: Math.round(num(e.inicio, 0, 1e5, 0)), duracao: Math.round(num(e.duracao, 1, 1e5 + 1, 1e5 + 1)),
-    visivel: e.visivel !== false, reverso: !!e.reverso, opacidade: num(e.opacidade, 0.05, 1, 1), brilho: e.brilho !== false
+    visivel: e.visivel !== false, reverso: !!e.reverso, opacidade: num(e.opacidade, 0.05, 1, 1), brilho: e.brilho !== false,
+    nivel: Math.round(num(e.nivel, 1, 5, 3)),
+    /* cor é opcional: sem "colorido", o efeito sai em nanquim; passar cores próprias liga a cor */
+    colorido: e.colorido !== undefined ? !!e.colorido : Array.isArray(e.cores) && e.cores.some(cor)
   };
   if (e.progresso !== undefined) out.progresso = num(e.progresso, 0, 1, 1);
   if (Array.isArray(e.cores)) { const cs = e.cores.map(cor).filter(Boolean).slice(0, 8); if (cs.length) out.cores = cs; }
   const prm = {};
   for (const [k, d] of Object.entries(C.params)) prm[k] = num(e.params && e.params[k], d.min, d.max, d.padrao);
   out.params = prm;
-  if (C.texto) out.texto = texto(e.texto || "BOOM!", 24);
+  if (C.texto) { out.texto = texto(e.texto || "BOOM!", 24); out.estiloTexto = ["latino", "katakana"].includes(e.estiloTexto) ? e.estiloTexto : /[\u30A0-\u30FF]/.test(out.texto) ? "katakana" : "latino"; }
   if (C.simbolo) out.simbolo = SIMBOLOS.includes(e.simbolo) ? e.simbolo : "veia";
   if (C.personalizado) {
     if (typeof e.svg === "string") out.svg = limparSvg(e.svg);
@@ -217,6 +257,17 @@ function progressoNoQuadro(e, quadro) {
   return e.reverso ? 1 - t : t;
 }
 const ativoNoQuadro = (e, q) => e.visivel && q >= e.inicio && q < e.inicio + e.duracao;
-function coresDe(e) { return e.cores && e.cores.length ? e.cores : ELEMENTOS[e.elemento].cores; }
+/* tamanho aproximado do efeito em alturas do corpo (1 = um manequim de altura padrão), para mostrar a escala */
+const REL_CORPO = { aura_explosiva: ["altura", 1], aura_vento: ["raio", 0.5], esfera_energia: ["raio", 1], fios_energia: ["altura", 0.5], redemoinho: ["altura", 1], aneis_orbitais: ["raio", 0.55], aura: ["altura", 0.12] };
+const MEDIDA = ["comprimento", "altura", "alcance", "area", "raio", "cauda", "largura", "tamanho"];
+function tamanhoEmCorpos(e) {
+  const C = CATALOGO[e.tipo]; if (!C || C.cat === "tela") return null;
+  const k = e.escala * ((NIVEIS[e.nivel] || NIVEIS[3]).escala);
+  if (REL_CORPO[e.tipo]) { const [p, f] = REL_CORPO[e.tipo]; return { medida: p, corpos: +(e.params[p] * f * k).toFixed(2) }; }
+  const p = MEDIDA.find(q => e.params[q] !== undefined); if (!p) return null;
+  const v = e.params[p] * k * (["raio"].includes(p) ? 2 : 1);
+  return { medida: p === "raio" ? "diâmetro" : p, corpos: +(v / 16.5).toFixed(2) };
+}
+function coresDe(e) { if (!e.colorido) return TINTA; return e.cores && e.cores.length ? e.cores : ELEMENTOS[e.elemento].cores; }
 
-export { ELEMENTOS, CATALOGO, CATEGORIAS, SIMBOLOS, PARTES as PARTES_EFEITO, LEGADO, validarEfeito, validarAncora, validarDirecao, normTipo, normParte, limparSvg, deReferencia, progressoNoQuadro, ativoNoQuadro, coresDe };
+export { tamanhoEmCorpos, ELEMENTOS, TINTA, NIVEIS, CATALOGO, CATEGORIAS, SIMBOLOS, PARTES as PARTES_EFEITO, LEGADO, validarEfeito, validarAncora, validarDirecao, normTipo, normParte, limparSvg, deReferencia, progressoNoQuadro, ativoNoQuadro, coresDe };

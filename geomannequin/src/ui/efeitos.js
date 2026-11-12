@@ -6,7 +6,7 @@ import { cena } from "../scene/comandos.js";
 import { render } from "./palco.js";
 import { setOverlay } from "./palco.js";
 import { svgPt } from "./arrastar.js";
-import { W, H, CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, validarEfeito, desenharEfeitos, contextoCena, resolverAncora, resolverDirecao, telaParaChao, partesNaTela, setPermitirCodigoEfeito } from "../engine/index.js";
+import { W, H, CATALOGO, CATEGORIAS, ELEMENTOS, tamanhoEmCorpos, SIMBOLOS, PARTES_EFEITO, validarEfeito, desenharEfeitos, contextoCena, resolverAncora, resolverDirecao, telaParaChao, partesNaTela, setPermitirCodigoEfeito } from "../engine/index.js";
 
 const NOMES_PARTES = { corpo: "corpo inteiro", centro: "centro", cabeca: "cabeça", topoCabeca: "topo da cabeça", rosto: "rosto", olhos: "olhos", olhoEsq: "olho esquerdo", olhoDir: "olho direito", pescoco: "pescoço", peito: "peito", cintura: "cintura", pelve: "pelve", pes: "pés (chão)",
   ombroEsq: "ombro esquerdo", ombroDir: "ombro direito", cotoveloEsq: "cotovelo esquerdo", cotoveloDir: "cotovelo direito", punhoEsq: "punho esquerdo", punhoDir: "punho direito", maoEsq: "mão esquerda", maoDir: "mão direita",
@@ -38,7 +38,7 @@ function miniatura(tipo) {
   } catch (err) { corpo = ""; }
   /* efeitos que precisam de um corpo (aura, pós-imagens, linhas no corpo): figura simples */
   if (!corpo || !/<path|<text|<rect/.test(corpo)) corpo = '<g fill="#B9BCCB" stroke="#555" stroke-width="6"><circle cx="300" cy="230" r="45"/><path d="M255 290h90l20 170h-40l-10 150h-30l-10-150h-30l-10 150h-30l-10-150h-40z"/></g>' +
-    '<g fill="none" stroke="' + ELEMENTOS[CATALOGO[tipo].elem].cores[2] + '" stroke-width="14" stroke-linecap="round"><path d="M215 600C170 470 190 330 240 240"/><path d="M385 600C430 470 410 330 360 240"/></g>';
+    '<g fill="none" stroke="#141414" stroke-width="14" stroke-linecap="round"><path d="M215 600C170 470 190 330 240 240"/><path d="M385 600C430 470 410 330 360 240"/></g>';
   /* enquadra a miniatura no desenho (efeitos de tela ocupam o quadro todo) */
   let vb = "60 110 480 480";
   if (tipo === "barreira") vb = "175 260 250 250"; else if (tipo === "emote") vb = "240 290 140 140";
@@ -71,7 +71,7 @@ function atualizarOnde() {
 }
 
 /* ---------- inserir ---------- */
-function opcoesInsercao() { const o = { elemento: $("fxElemento").value }; if (CATALOGO[TIPO].personalizado) { o.svg = $("fxSvgTexto").value.trim() || undefined; o.codigo = o.svg ? undefined : $("fxCodigo").value; } return o; }
+function opcoesInsercao() { const o = { elemento: $("fxElemento").value, colorido: !!($("fxColorido") && $("fxColorido").checked), nivel: +(($("fxNivel") && $("fxNivel").value) || 3) }; if (CATALOGO[TIPO].personalizado) { o.svg = $("fxSvgTexto").value.trim() || undefined; o.codigo = o.svg ? undefined : $("fxCodigo").value; } return o; }
 function inserir() {
   const onde = $("fxOnde").value, o = opcoesInsercao();
   if (onde === "clique") { COLOCAR = { tipo: TIPO, o }; msg("Clique no palco: num manequim (prende na parte mais perto), no chão ou em qualquer ponto da tela."); $("stage").classList.add("fx-colocando"); return; }
@@ -113,6 +113,9 @@ function propriedades() {
   const C = CATALOGO[e.tipo], add = (r, el) => box.appendChild(controle(r, el)), marcarFim = () => cena.marcarEstado();
   const nome = document.createElement("input"); nome.type = "text"; nome.maxLength = 60; nome.value = e.nome; nome.addEventListener("change", () => editar({ nome: nome.value }));
   add("Nome", nome);
+  { const c = document.createElement("input"); c.type = "checkbox"; c.checked = !!e.colorido; c.addEventListener("change", () => editar({ colorido: c.checked })); add("Colorido (desligado = preto e branco)", c); }
+  add("Nível de poder (1 a 5)", faixa(e.nivel || 3, 1, 5, 1, (v, s) => editar({ nivel: v }, s)));
+  { const tm = tamanhoEmCorpos(e); if (tm) { const o = document.createElement("output"); o.className = "fx-escala"; o.textContent = "≈ " + tm.corpos.toLocaleString("pt-BR") + " × a altura do corpo (" + tm.medida + ")"; add("Tamanho", o); } }
   add("Elemento", escolha(e.cores ? "" : e.elemento, [["", "(cores próprias)"], ...Object.entries(ELEMENTOS).map(([k, v]) => [k, v.nome])], v => editar(v ? { elemento: v, cores: [] } : {})));
   { const cs = (e.cores || ELEMENTOS[e.elemento].cores).slice(0, 4), linha = document.createElement("span"); linha.className = "fx-cores";
     cs.forEach((c, i) => { const inp = document.createElement("input"); inp.type = "color"; inp.value = c; inp.title = ["núcleo", "meio", "borda", "contorno"][i] || ""; inp.addEventListener("change", () => { const n = [...linha.querySelectorAll("input")].map(x => x.value); editar({ cores: n }); }); linha.appendChild(inp); });
@@ -132,7 +135,9 @@ function propriedades() {
   { const b = document.createElement("button"); b.type = "button"; b.textContent = "Reposicionar clicando no palco"; b.addEventListener("click", () => { COLOCAR = { mover: SEL }; $("stage").classList.add("fx-colocando"); msg("Clique no palco para a nova posição."); }); box.appendChild(b); }
   /* parâmetros do tipo */
   Object.entries(C.params).forEach(([k, d]) => add(d.rotulo[0].toUpperCase() + d.rotulo.slice(1), faixa(e.params[k], d.min, d.max, d.max - d.min > 20 ? 1 : 0.05, (v, s) => editar({ params: { [k]: v } }, s))));
-  if (C.texto) { const t = document.createElement("input"); t.type = "text"; t.maxLength = 24; t.value = e.texto; t.addEventListener("input", () => editar({ texto: t.value }, true)); t.addEventListener("change", () => { marcarFim(); }); add("Texto", t); }
+  if (C.texto) { const t = document.createElement("input"); t.type = "text"; t.maxLength = 24; t.value = e.texto; t.addEventListener("input", () => editar({ texto: t.value }, true)); t.addEventListener("change", () => { marcarFim(); }); add("Texto", t);
+    add("Letras", escolha(e.estiloTexto || "latino", [["latino", "latinas (BOOM!)"], ["katakana", "katakana de mangá (ドッ, ゴゴゴ)"]], v => editar(v === "katakana" && !/[ァ-ヿ]/.test(e.texto) ? { estiloTexto: v, texto: "ドッ" } : { estiloTexto: v })));
+    const atalhos = document.createElement("span"); ["ドッ", "ゴゴゴ", "ズドン", "バキッ", "ドドド", "ガッ"].forEach(k => { const b = document.createElement("button"); b.type = "button"; b.textContent = k; b.addEventListener("click", () => editar({ texto: k, estiloTexto: "katakana" })); atalhos.appendChild(b); }); add("Katakana pronto", atalhos); }
   if (C.simbolo) add("Símbolo", escolha(e.simbolo, SIMBOLOS.map(s => [s, NOMES_SIMBOLOS[s] || s]), v => editar({ simbolo: v })));
   { const r = document.createElement("input"); r.type = "checkbox"; r.checked = e.reverso; r.addEventListener("change", () => editar({ reverso: r.checked })); add("Reverso (implodir, juntar, fechar)", r); }
   { const sm = document.createElement("input"); sm.type = "number"; sm.min = 0; sm.max = 1e6; sm.value = e.semente; sm.addEventListener("change", () => editar({ semente: +sm.value })); const b = document.createElement("button"); b.type = "button"; b.textContent = "Sortear"; b.addEventListener("click", () => editar({ semente: Math.floor(Math.random() * 1e5) }));
@@ -203,6 +208,8 @@ export function iniciarEfeitos() {
   $("fxMostrar").addEventListener("click", () => { if (SEL) acao(() => cena.efeitos.mostrar(SEL, !cena.efeitos.obter(SEL).visivel)); });
   $("fxRemover").addEventListener("click", () => { if (SEL) { acao(() => cena.efeitos.remover(SEL)); SEL = null; sincronizar(); } });
   $("fxConverter").addEventListener("click", () => acao(() => { const n = cena.efeitos.converterAntigos(); msg(n + " efeito(s) convertido(s)."); }));
+  $("fxTodosPB").addEventListener("click", () => acao(() => { const n = cena.efeitos.colorir(false); msg(n + " efeito(s) em preto e branco."); }));
+  $("fxTodosCor").addEventListener("click", () => acao(() => { const n = cena.efeitos.colorir(true); msg(n + " efeito(s) coloridos."); }));
   $("fxSalvarModelo").addEventListener("click", () => { if (!SEL) return; const n = acao(() => cena.efeitos.salvarModelo(SEL, $("fxNomeModelo").value)); if (n) { guardarModelosLocais(); msg("Salvo em Meus efeitos: " + n); } });
   $("fxUsarModelo").addEventListener("click", () => { const n = $("fxModelos").value; if (!n) return; const id = acao(() => cena.efeitos.usarModelo(n, { ancora: $("fxParte").value })); if (id) { SEL = id; sincronizar(); } });
   $("fxApagarModelo").addEventListener("click", () => { const n = $("fxModelos").value; if (n) { acao(() => cena.efeitos.apagarModelo(n)); guardarModelosLocais(); } });

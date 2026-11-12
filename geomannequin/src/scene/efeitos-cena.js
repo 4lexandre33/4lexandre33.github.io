@@ -1,7 +1,7 @@
 /* GeoMannequin — efeitos especiais na cena: criar, editar, remover, catálogo e salvar/carregar.
    Os efeitos ficam em SCN.efeitos; a âncora guarda o id do manequim/objeto (no arquivo, o índice). */
 import { SCN } from "./modelo.js";
-import { CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, LEGADO, validarEfeito, normTipo, normParte, deReferencia, registrarEfeito } from "../engine/index.js";
+import { CATALOGO, CATEGORIAS, ELEMENTOS, SIMBOLOS, PARTES_EFEITO, LEGADO, validarEfeito, normTipo, normParte, deReferencia, registrarEfeito, tamanhoEmCorpos } from "../engine/index.js";
 
 const FX_MAX = 64;
 const fxLista = () => (SCN.efeitos || (SCN.efeitos = []));
@@ -60,6 +60,8 @@ function fxMontar(tipo, o, base) {
   const e = { ...(base || {}), tipo: t };
   const ali = { em: "ancora", onde: "ancora", para: "direcao", cor: "cores", quadro: "inicio" };
   for (const [k, v] of Object.entries(o)) { const kk = ali[k] || k; if (kk === "cores" && typeof v === "string") e.cores = [v]; else e[kk] = v; }
+  /* passar cores próprias liga a cor (o padrão é preto e branco) */
+  if ((o.cores !== undefined || o.cor !== undefined) && o.colorido === undefined) e.colorido = Array.isArray(e.cores) ? e.cores.length > 0 : !!e.cores;
   if (o.params || base) e.params = { ...((base && base.params) || {}), ...(o.params || {}) };
   /* parâmetros do tipo também podem vir soltos: {raio: 6} */
   for (const k of Object.keys(CATALOGO[t].params)) if (o[k] !== undefined) { e.params = e.params || {}; e.params[k] = o[k]; delete e[k]; }
@@ -86,6 +88,10 @@ function criarApiEfeitos(marcar) {
     editar(id, opts, silencioso) { const i = fxAchar(id), atual = fxLista()[i]; const e = fxMontar((opts && opts.tipo) || atual.tipo, opts, { ...atual, id: atual.id }); if (!silencioso) marcar(); fxLista()[i] = e; return e.id; },
     remover(id) { const i = fxAchar(id); marcar(); fxLista().splice(i, 1); },
     limpar() { if (!fxLista().length) return; marcar(); fxLista().length = 0; },
+    /* cena.efeitos.colorir(false) → todos em preto e branco; colorir(true, "fx3") → só um */
+    colorir(sim = true, id) { const alvos = id ? [fxAchar(id)] : fxLista().map((_, i) => i); if (!alvos.length) return 0; marcar(); alvos.forEach(i => { fxLista()[i] = validarEfeito({ ...fxLista()[i], colorido: !!sim }); }); return alvos.length; },
+    /* tamanho do efeito em alturas do corpo (para conferir a escala) */
+    tamanho(id) { return tamanhoEmCorpos(fxLista()[fxAchar(id)]); },
     duplicar(id, opts) { const i = fxAchar(id), b = JSON.parse(JSON.stringify(fxLista()[i])); delete b.id; const e = fxMontar(b.tipo, { ...(opts || {}), semente: (opts && opts.semente) ?? b.semente + 1 }, b); marcar(); fxLista().splice(i + 1, 0, e); return e.id; },
     mostrar(id, sim = true) { const i = fxAchar(id); marcar(); fxLista()[i].visivel = !!sim; },
     ordem(id, onde) { const i = fxAchar(id), [e] = fxLista().splice(i, 1); if (onde === "frente") fxLista().push(e); else fxLista().unshift(e); },

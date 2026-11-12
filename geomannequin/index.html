@@ -160,12 +160,15 @@
           </select></label>
           <label>Parte <select id="fxParte" aria-label="Parte do manequim"></select></label>
           <label>Elemento <select id="fxElemento" aria-label="Elemento e cores"></select></label>
+          <label>Nível <select id="fxNivel" aria-label="Nível de poder"><option value="1">1 · leve</option><option value="2">2</option><option value="3" selected>3 · normal</option><option value="4">4</option><option value="5">5 · máximo</option></select></label>
+          <label class="check-linha"><input type="checkbox" id="fxColorido"> Colorido</label>
           <button type="button" id="fxInserir">Inserir efeito</button>
         </div>
         <label class="fx-lista-rot">Na cena <select id="fxLista" size="5" aria-label="Efeitos na cena"></select></label>
         <div class="group poses">
           <button type="button" id="fxDuplicar">Duplicar</button><button type="button" id="fxMostrar">Mostrar / ocultar</button><button type="button" id="fxRemover">Remover</button>
           <button type="button" id="fxConverter" hidden>Converter efeitos antigos</button>
+          <button type="button" id="fxTodosPB" title="Todos os efeitos da cena em preto e branco (nanquim)">Todos P&amp;B</button><button type="button" id="fxTodosCor" title="Todos os efeitos da cena coloridos">Todos coloridos</button>
         </div>
         <div class="fx-props" id="fxProps"></div>
         <details class="fino"><summary>Meus efeitos</summary>

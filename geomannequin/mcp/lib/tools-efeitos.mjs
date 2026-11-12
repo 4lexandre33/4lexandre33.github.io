@@ -19,12 +19,14 @@ export function registerEffectsTools(server, W) {
     description: "Põe efeitos especiais na cena e devolve a imagem. Tipos: " + lista + ". " +
       "Âncora (em): numa parte do manequim ({manequim: \"Ana\", parte: \"maoDir\"}), no chão ({modo: \"chao\", x, z}), num ponto do mundo ({modo: \"mundo\", x, y, z}, y = altura), num objeto ({objeto: \"parede\"}) ou na tela ({modo: \"tela\", x, y} de 0 a 1; sem x/y centra no personagem). " +
       "Direção (para): sem nada = pela pose (antebraço no soco, perna no chute); {manequim: \"Leo\"} aponta para outro; {maisPerto: true}; {x, y, z} vetor; {graus} na tela; {camera: true}. " +
-      "Os efeitos presos a um manequim acompanham a pose e o tamanho dele e ficam atrás ou na frente pela profundidade. reverso = implosão, destroços voltando, rachaduras fechando. progresso 0 → 1 = estágio do efeito.",
+      "Os efeitos presos a um manequim acompanham a pose e o tamanho dele e ficam atrás ou na frente pela profundidade; os do chão (cratera, círculo mágico, rachaduras, ondas, buraco) ficam abaixo de todos os manequins; anéis, tornado e redemoinho passam atrás e na frente do corpo. " +
+      "Padrão: preto e branco (nanquim de mangá); colorido: true liga a cor do elemento (ou passe cores). nivel 1 a 5 = força (tamanho, intensidade e detalhes). reverso = implosão, destroços voltando, rachaduras fechando. progresso 0 → 1 = estágio do efeito. " +
+      "Onomatopeia aceita katakana (texto \"ドッ\", \"ゴゴゴ\", \"ズドン\", \"バキッ\").",
     inputSchema: {
-      acao: z.enum(["catalogo", "adicionar", "editar", "remover", "listar", "duplicar", "limpar", "converter_antigos", "salvar_modelo", "usar_modelo", "modelos"]).describe("O que fazer."),
+      acao: z.enum(["catalogo", "adicionar", "editar", "remover", "listar", "duplicar", "limpar", "converter_antigos", "salvar_modelo", "usar_modelo", "modelos", "colorir"]).describe("O que fazer. colorir: liga (colorido: true) ou desliga a cor de um efeito (id) ou de todos."),
       id: z.string().optional().describe("Efeito a editar, remover ou duplicar (ex.: \"fx3\"), da lista."),
       tipo: z.enum(TIPOS).optional().describe("Tipo do efeito (adicionar) ou categoria do catálogo."),
-      categoria: z.enum(["tela", "cena", "personagem", "destruicao"]).optional().describe("Só no catálogo: filtra a categoria."),
+      categoria: z.enum(["tela", "cena", "personagem", "carga", "destruicao"]).optional().describe("Só no catálogo: filtra a categoria."),
       em: z.object({
         modo: z.enum(["manequim", "chao", "mundo", "tela", "objeto"]).optional(),
         manequim: z.string().optional().describe("Nome do manequim (vazio = o ativo)."),
@@ -41,7 +43,9 @@ export function registerEffectsTools(server, W) {
         x: N.optional(), y: N.optional(), z: N.optional()
       }).optional().describe("Para onde aponta (feixe, cone, rastro, meteoro…)."),
       elemento: z.enum(Object.keys(ELEMENTOS)).optional().describe("Paleta: " + Object.entries(ELEMENTOS).map(([k, v]) => k + " = " + v.nome).join(", ") + "."),
-      cores: z.array(z.string()).optional().describe("Cores próprias #RRGGBB, do núcleo (claro) à borda (escuro)."),
+      colorido: z.boolean().optional().describe("false (padrão) = preto e branco de nanquim; true = cores do elemento."),
+      nivel: z.number().int().min(1).max(5).optional().describe("Nível de poder 1 (leve) a 5 (máximo). Padrão 3."),
+      cores: z.array(z.string()).optional().describe("Cores próprias #RRGGBB, do núcleo (claro) à borda (escuro); ligam a cor."),
       escala: N.optional().describe("Tamanho (1 = padrão; 0.05 a 20)."),
       intensidade: N.optional().describe("0 a 1.5."),
       progresso: N.optional().describe("Estágio 0 (começando) a 1 (formado)."),
@@ -50,7 +54,8 @@ export function registerEffectsTools(server, W) {
       reverso: z.boolean().optional().describe("Implosão / destroços voltando / rachaduras fechando."),
       semente: N.optional().describe("Varia a forma (mesmo número = mesmo desenho)."),
       inicio: N.optional().describe("Quadro em que aparece."), duracao: N.optional().describe("Quantos quadros dura (100001 = sempre)."),
-      texto: z.string().max(24).optional().describe("Onomatopeia: o texto (\"BOOM!\", \"DON\")."),
+      texto: z.string().max(24).optional().describe("Onomatopeia: o texto (\"BOOM!\", \"DON\", ou katakana \"ドッ\", \"ゴゴゴ\")."),
+      estiloTexto: z.enum(["latino", "katakana"]).optional().describe("Letras da onomatopeia: latinas ou katakana em pincel."),
       simbolo: z.enum(SIMBOLOS).optional().describe("Símbolo de emoção: " + SIMBOLOS.join(", ") + "."),
       svg: z.string().max(60000).optional().describe("Efeito personalizado: SVG próprio (formas), centrado em 0,0; script e links são removidos."),
       params: z.object(PARAMS).optional().describe("Parâmetros do tipo (raio, comprimento, largura, aneis, fios, pontas…); o catálogo mostra quais cada tipo usa."),
@@ -65,7 +70,7 @@ export function registerEffectsTools(server, W) {
       if (em && em.modo === "manequim") delete em.modo;
       const p = a.para; const para = !p ? undefined : p.maisPerto ? { alvo: "auto" } : p.camera ? "camera" : p.manequim ? p.manequim : p.objeto ? { objeto: p.objeto } : p.graus !== undefined ? p.graus : (p.x !== undefined || p.y !== undefined || p.z !== undefined) ? [p.x || 0, p.y || 0, p.z || 0] : undefined;
       const opts = {};
-      for (const k of ["elemento", "cores", "escala", "intensidade", "progresso", "opacidade", "camada", "reverso", "semente", "inicio", "duracao", "texto", "simbolo", "svg", "params", "nome"]) if (a[k] !== undefined) opts[k] = a[k];
+      for (const k of ["elemento", "colorido", "nivel", "estiloTexto", "cores", "escala", "intensidade", "progresso", "opacidade", "camada", "reverso", "semente", "inicio", "duracao", "texto", "simbolo", "svg", "params", "nome"]) if (a[k] !== undefined) opts[k] = a[k];
       if (em) opts.ancora = em; if (para !== undefined) opts.direcao = para;
       let resultado, desenhar = false;
       switch (a.acao) {
@@ -79,9 +84,10 @@ export function registerEffectsTools(server, W) {
         case "salvar_modelo": if (!a.id) throw new Error("Informe o id do efeito."); resultado = { modelo: fx.salvarModelo(a.id, a.nome) }; break;
         case "usar_modelo": if (!a.nome) throw new Error("Informe o nome do modelo."); resultado = { id: fx.usarModelo(a.nome, opts) }; desenhar = true; break;
         case "modelos": resultado = { modelos: fx.modelos() }; break;
+        case "colorir": resultado = { alterados: fx.colorir(a.colorido !== false, a.id) }; desenhar = true; break;
         default: resultado = {};
       }
-      resultado.efeitos = fx.lista().map(e => ({ id: e.id, tipo: e.tipo, nome: e.nome, elemento: e.elemento, ancora: e.ancora, visivel: e.visivel }));
+      resultado.efeitos = fx.lista().map(e => ({ id: e.id, tipo: e.tipo, nome: e.nome, elemento: e.elemento, colorido: e.colorido, nivel: e.nivel, tamanho: fx.tamanho(e.id), ancora: e.ancora, visivel: e.visivel }));
       const link = sceneLink(w), content = [];
       if (desenhar && a.mostrar !== false) { const png = await toPng(renderSvg(w, {}).svg, 900); content.push({ type: "image", data: png.toString("base64"), mimeType: "image/png" }); }
       content.push({ type: "text", text: JSON.stringify({ resultado, link }) });
