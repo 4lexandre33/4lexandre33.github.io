@@ -192,6 +192,13 @@ export function iniciarColisoes() {
   });
   $("colAutoPrever")?.addEventListener("click",()=>executarAutoGrip(false));
   $("colAutoEncaixar")?.addEventListener("click",()=>executarAutoGrip(true));
+  /* dois manequins: abraços e apoios */
+  {const tp=$("intTipo"),ot=$("intOutro"),msg=$("intMsg");if(tp&&ot){cena.interacoes().forEach(q=>tp.add(new Option(q.descricao.split(":")[0],q.tipo)));
+    const encher=()=>{const atual=ot.value;ot.replaceChildren(...SCN.list.filter((it,i)=>i!==SCN.active).map(it=>new Option(it.name,it.name)));if([...ot.options].some(o=>o.value===atual))ot.value=atual};
+    $("intPainel").addEventListener("toggle",encher);ot.addEventListener("focus",encher);encher();
+    $("intAplicar").addEventListener("click",()=>{encher();if(!ot.value){msg.textContent="Adicione um segundo manequim na cena.";return}
+      try{const r=cena.interagir(SCN.list[SCN.active].name,ot.value,tp.value);msg.textContent="✓ "+r.a+" e "+r.b+": "+tp.selectedOptions[0].textContent+(r.alcance!=="ok"?" ("+r.alcance+")":"")+". Ctrl+Z desfaz.";
+        refreshScene();syncControls();render();}catch(e){msg.textContent="Não deu: "+e.message}});}}
   /* segurar de um jeito (pegadas): abraçado, no ombro, acima da cabeça… */
   {const sel=$("pegTipo");if(sel){cena.pegadas().forEach(q=>sel.add(new Option(q.tipo+" — "+q.descricao.split(" (")[0],q.tipo)));
     $("pegSegurar").addEventListener("click",()=>{const obj=SCN.objetos.find(o=>o.id===SCN.objSel);

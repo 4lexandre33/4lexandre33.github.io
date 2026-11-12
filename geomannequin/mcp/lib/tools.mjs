@@ -206,7 +206,7 @@ const INVOCA = {
   roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
   aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"],
   efeitos: ["Desenhando os efeitos…", "Efeitos prontos"],
-  estado_pose: ["Lendo a pose…", "Estado da pose"], manual_poses_ia: ["Abrindo o manual…", "Manual de poses"], rosto: ["Mexendo no rosto…", "Rosto"], biblioteca_item: ["Preparando o item…", "Item da Biblioteca"], descanso: ["Voltando ao descanso…", "Pose de descanso"], segurar_como: ["Segurando…", "Objeto na mão"]
+  estado_pose: ["Lendo a pose…", "Estado da pose"], manual_poses_ia: ["Abrindo o manual…", "Manual de poses"], rosto: ["Mexendo no rosto…", "Rosto"], biblioteca_item: ["Preparando o item…", "Item da Biblioteca"], descanso: ["Voltando ao descanso…", "Pose de descanso"], segurar_como: ["Segurando…", "Objeto na mão"], interagir: ["Juntando os dois…", "Interação"]
 };
 const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena", "efeitos", "estado_pose"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
 function metaChatGPT(nome) {

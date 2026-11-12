@@ -5,6 +5,7 @@ import { SL, POSEKEYS } from "./parametros.js";
 import { POSE_GRUPOS, NOMES_EXPRESSOES, BPOSES, EXPRESSOES } from "./poses.js";
 import { GRUPOS_ROSTO, chavesRosto, chavesFormato } from "./rosto-codigo.js";
 import { PEGADAS } from "./pegadas.js";
+import { INTERACOES } from "./interacoes.js";
 import { REF } from "./ajuda.js";
 import { iaControle, estadoParaIA } from "./estado-ia.js";
 import { GESTOS, AU, CATALOGO, CATEGORIAS, PARTES_EFEITO, MODELOS_CABECA } from "../engine/index.js";
@@ -250,6 +251,10 @@ function manualPosesIA(opts = {}) {
   Object.entries(PEGADAS).forEach(([k, d]) => add("   - `" + k + "`: " + d + "."));
   add("4. Soltar: `m.soltar(\"Caixa\")`. Mudar de jeito: chame `segurarComo` de novo com outra pegada. Uma mão só segura uma coisa por vez.");
   add("5. Dicas: objeto grande demais para os braços → use `abracado` ou `acimaDaCabeca`; longo e pesado → `noOmbro`; fino → `pinca`; com alça → `gancho`. Para virar o corpo enquanto segura, gire o manequim (`m.girar`) depois de segurar.\n");
+  add("## 7c. Dois manequins: abraços e apoios");
+  add("`cena.interagir(\"Ana\", \"Leo\", \"abracoFrente\")`: Ana (A) fica onde está; Leo (B) é posto e girado junto dela; os braços vão por IK até as costas, ombros ou cintura do outro, e o contato entre os dois deixa de contar como colisão. Depois ajuste rosto, cabeça e pernas com `m.pose` (não mexa nos braços se quiser manter o abraço). Tipos:");
+  Object.entries(INTERACOES).forEach(([k, d]) => add("- `" + k + "`: " + d + "."));
+  add("- Para a cena andar junto, posicione A antes (`m.posicao`, `m.girar`) e só então chame `interagir`.\n");
   add("## 9. Efeitos especiais (opcional)");
   add("Padrão em preto e branco (nanquim de mangá); `colorido: true` liga a cor. `nivel` 1–5. Presos a uma parte: `m.efeito(\"impacto_contato\", { em: \"peDir\" })`; no chão: `cena.efeito(\"cratera\", { em: { modo: \"chao\", x: 0, z: 0 } })`; na tela: `cena.efeito(\"concentracao\")`; de outro manequim: `em: \"Leo.peito\"`. Direção: `para: \"Leo\"`.");
   add("- Partes para `em`: " + PARTES_EFEITO.map(p => "`" + p + "`").join(", ") + ".");

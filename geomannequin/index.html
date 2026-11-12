@@ -198,6 +198,13 @@
       <label class="sel-linha">Solução preferida
         <select id="colPref"><option value="auto">Automática (muda o mínimo)</option><option value="distancia">Afastar no chão</option><option value="giro">Girar no chão</option><option value="pose">Ajustar a pose</option></select></label>
       <label class="check-linha"><input type="checkbox" id="colComp"> Avisar composição: tangências e cabeça escondida</label>
+      <details class="fino" id="intPainel"><summary>Dois manequins: abraçar e apoiar</summary>
+        <p class="hint">O manequim ativo (A) fica onde está; o outro (B) é posto junto dele. Os braços vão por IK até as costas, ombros ou cintura do outro, e o contato entre os dois deixa de contar como colisão.</p>
+        <div class="sel-linha"><label for="intOutro">Com</label><select id="intOutro"></select></div>
+        <div class="sel-linha"><label for="intTipo">Como</label><select id="intTipo"></select></div>
+        <button type="button" id="intAplicar" class="primary">Aplicar</button>
+        <p id="intMsg" class="hint" role="status" aria-live="polite"></p>
+      </details>
       <label class="check-linha"><input type="checkbox" id="colV2"> Colisão anatômica detalhada V2 (dedos + autocolisão, experimental)</label>
       <p class="hint camadas-dica">No modo Bloquear, a V2 limita o movimento em 3D; o contato permitido não desativa os sólidos. Esta fase ainda usa aproximações geométricas e não simula forças físicas.</p>
       <button type="button" id="colV2Consultar">Inspecionar contatos 3D detalhados</button>

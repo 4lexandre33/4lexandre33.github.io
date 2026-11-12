@@ -110,6 +110,16 @@ export function registerIaTools(server, W) {
       return { content: [{ type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
     catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
   });
+  server.registerTool("interagir", {
+    title: "Dois manequins: abraçar e apoiar",
+    description: "Põe dois manequins juntos numa interação com contato: abracoFrente, abracoLado, abracoPorTras, ombroAOmbro, maoNoOmbro, apoiandoFerido. A fica onde está; B é posicionado e girado junto de A; os braços vão por IK até as costas/ombros/cintura do outro e o contato entre os dois passa a ser permitido.",
+    inputSchema: { a: z.string().describe("Nome do manequim A (fica no lugar)."), b: z.string().describe("Nome do manequim B (é posicionado)."), tipo: z.string().describe("Tipo de interação.") },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+  }, async a => {
+    try { const w = W(), r = w.cena.interagir(a.a, a.b, a.tipo); const png = await toPng(renderSvg(w, {}).svg, 900);
+      return { content: [{ type: "image", data: png.toString("base64"), mimeType: "image/png" }, { type: "text", text: JSON.stringify(r) }], structuredContent: { ...r, link: sceneLink(w) } }; }
+    catch (e) { return { isError: true, content: [{ type: "text", text: "Erro: " + e.message }] }; }
+  });
   server.registerResource("manual-ia", "geomannequin://manual-ia", { title: "Manual de poses para IA", mimeType: "text/markdown", description: "Manual completo para qualquer IA montar e corrigir poses no GeoMannequin." },
     async uri => { const w = W(); return { contents: [{ uri: uri.href, mimeType: "text/markdown", text: w.cena.manualIA() }] }; });
 }

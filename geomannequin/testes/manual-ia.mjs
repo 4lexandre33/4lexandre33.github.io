@@ -101,5 +101,10 @@ ok(E("saltando").geral.noAr, "saltando: no ar");
     try { const r = m8.segurarComo("Obj", peg); if (r.alcance !== "ok" || r.atravessa.length) ruins.push(peg + ": " + r.alcance + " " + r.atravessa.join(","));
       m8.pose({ bracoDirFrente: (w8.SCN.list[0].params.armFlexR || 0) + 10 }); /* o objeto segue a mão */ } catch (e) { ruins.push(peg + ": " + e.message); } }
   ok(!ruins.length, "12 pegadas: mão alcança e o objeto não atravessa o corpo" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
+/* 10. dois manequins: cada interação alcança e não deixa braço atravessando fundo o tronco do outro */
+{ const ruins = [];
+  for (const t of ["abracoFrente", "abracoLado", "abracoPorTras", "ombroAOmbro", "maoNoOmbro", "apoiandoFerido"]) { const w9 = createWorld(); w9.cena.ativo.renomear("Ana"); w9.cena.adicionar({ nome: "Leo", x: 6 });
+    try { const r = w9.cena.interagir("Ana", "Leo", t); if (/ficou a ([2-9]\d|\d{3}) cm/.test(r.alcance)) ruins.push(t + ": " + r.alcance); if (w9.cena.colisoes().length) ruins.push(t + ": colisão avisada"); } catch (e) { ruins.push(t + ": " + e.message); } }
+  ok(!ruins.length, "6 interações entre dois manequins (mão a menos de 20 cm do ponto, contato permitido)" + (ruins.length ? " (" + ruins.join("; ") + ")" : "")); }
 console.log(falhou ? "FALHOU." : "Tudo certo.");
 process.exit(falhou ? 1 : 0);
