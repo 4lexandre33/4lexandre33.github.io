@@ -123,7 +123,7 @@ function nmLerLocal(bloco, ctx) {
   let base = [];
   if (plano.herda) { const pai = ctx.locais.get(plano.herda) || (bibliotecaLocais().obter(plano.herda) ? nmLerLocal({ cab: 'local "' + plano.herda + '"', corpo: [], linha: bloco.linha }, ctx) : null);
     if (!pai) throw new NmErro("“herda " + plano.herda + "”: local pai não encontrado.", bloco.linha);
-    base = pai.itens.map(x => Object.assign({}, x)); plano.desloc = (pai.desloc || [0, 0]).slice(); Object.assign(plano.marcas, pai.marcas); Object.assign(plano.regioes, pai.regioes); Object.assign(plano.niveis, pai.niveis); Object.assign(plano.salas, pai.salas); plano.origem = "pronto"; }
+    base = pai.itens.map(x => Object.assign({}, x)); plano.desloc = (pai.desloc || [0, 0]).slice(); Object.assign(plano.marcas, pai.marcas); plano.marcasNivel = Object.assign({}, pai.marcasNivel || {}); Object.assign(plano.regioes, pai.regioes); Object.assign(plano.niveis, pai.niveis); Object.assign(plano.salas, pai.salas); plano.origem = "pronto"; }
   if (plano.planta) {
     const img = (ctx.imagens || {})[plano.planta]; if (!img) throw new NmErro("Imagem de planta “" + plano.planta + "” não foi anexada (passe-a junto com o name).", bloco.linha);
     const an = analisarFolha(img, plano.largura ? { larguraMetros: plano.largura } : {}), lin = an.linhas[(plano.linha || 1) - 1] || (an.linhas.find(l => l.itens)) || { linha: 0, ...analisarImagemUnica(img, {}) };
@@ -208,14 +208,16 @@ function nmLerLocal(bloco, ctx) {
         const r = [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1])], w = r[2] - r[0], d = r[3] - r[1];
         const dir = o.sobe || (w > d ? (b[0] > a[0] ? "leste" : "oeste") : (b[1] > a[1] ? "norte" : "sul")), aoLongoZ = dir === "norte" || dir === "sul";
         const giro = { norte: 0, sul: 180, leste: 90, oeste: -90 }[dir] * (plano.norte > 0 ? 1 : -1);
-        add({ tipo: cmd === "rampa" ? "rampaDegraus" : "rampaDegraus", x: (r[0] + r[2]) / 2, z: (r[1] + r[3]) / 2, larg: aoLongoZ ? w : d, prof: aoLongoZ ? d : w, alt: o.alt || 2.8 * NM_M, giro, classe: o.classe || "madeira", nome: o.nome || "escada" });
+        const baseE = o.base || (o.nivel && plano.niveis[o.nivel] ? plano.niveis[o.nivel].altura : 0);
+        add({ tipo: "rampaDegraus", x: (r[0] + r[2]) / 2, z: (r[1] + r[3]) / 2, larg: aoLongoZ ? w : d, prof: aoLongoZ ? d : w, alt: (o.alt || 2.8 * NM_M) - baseE, giro, base: baseE || undefined, classe: o.classe || "madeira", nome: o.nome || "escada", escada: true });
       } else if (cmd === "nivel" || cmd === "nível" || cmd === "terraco" || cmd === "terraço" || cmd === "mezanino" || cmd === "plataforma" || cmd === "palco") {
         let k = 1, nomeN = null; if (toks[k] && toks[k].t === "str") nomeN = toks[k++].v; let o = opc(toks, k); const alt = o.alt || 1 * NM_M;
         let kr = toks.findIndex(t => /^(retangulo|retângulo)$/i.test(t.v)); if (kr < 0) throw new NmErro(cmd + ": \"nome\" altura 3 retangulo x0,z0 a x1,z1", l.linha);
         const [r] = ret(toks, kr + 1); nomeN = nomeN || cmd + " " + (Object.keys(plano.niveis).length + 1); plano.niveis[nomeN] = { altura: alt, ret: r }; plano.regioes[nomeN] = r;
         add({ tipo: "caixa", x: (r[0] + r[2]) / 2, z: (r[1] + r[3]) / 2, larg: r[2] - r[0], prof: r[3] - r[1], alt, classe: o.classe || "pedra", nome: nomeN, nivel: nomeN });
       } else if (cmd === "marca" || cmd === "ponto") {
-        const nm = toks[1].v; let k = 2; if (toks[k] && nmNorm(toks[k].v) === "em") k++; const [p] = ponto(toks, k); if (!p) throw new NmErro("marca \"nome\" em (x,z)", l.linha); plano.marcas[nm] = p;
+        const nm = toks[1].v; let k = 2; if (toks[k] && nmNorm(toks[k].v) === "em") k++; const [p, kk] = ponto(toks, k); if (!p) throw new NmErro("marca \"nome\" em (x,z) [nivel \"Terraço\"]", l.linha); plano.marcas[nm] = p;
+        const om = opc(toks, kk); if (om.nivel) (plano.marcasNivel = plano.marcasNivel || {})[nm] = om.nivel;
       } else if (cmd === "regiao" || cmd === "região" || cmd === "area" || cmd === "área" || cmd === "zona") {
         const nm = toks[1].v; let k = 2; if (toks[k] && /^(retangulo|retângulo)$/i.test(toks[k].v)) k++; const [r] = ret(toks, k); if (!r) throw new NmErro("regiao \"nome\" retangulo x0,z0 a x1,z1", l.linha); plano.regioes[nm] = r;
       } else if (cmd === "fileira" || cmd === "linha-de" || cmd === "grade-de" || cmd === "circulo-de" || cmd === "círculo-de") {
@@ -267,7 +269,7 @@ function nmLerLocal(bloco, ctx) {
 /* conferência geométrica do local: fora dos limites, peças atravessadas, escada que não chega a nenhum nível, porta tapada */
 function nmValidarLocal(pl) {
   const av = [], it = pl.itens, M = v => (v / NM_M).toFixed(1) + " m";
-  it.forEach(o => { if (Math.abs(o.x) + o.larg / 2 > 200 || Math.abs(o.z) + o.prof / 2 > 200) av.push("“" + o.nome + "” passa do limite do palco (±22 m do centro)"); });
+  it.forEach(o => { if (Math.abs(o.x) + o.larg / 2 > 400 || Math.abs(o.z) + o.prof / 2 > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
   if (it.length > 300) av.push("mais de 300 peças: só as 300 primeiras entram");
   const altas = it.filter(o => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel), caixa = o => { const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g)); return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2]; };
   for (let i = 0; i < altas.length && av.length < 30; i++) for (let j = i + 1; j < altas.length; j++) { const a = altas[i], b = altas[j]; if (a.tipo === "parede" && b.tipo === "parede") continue; if ((a.base || 0) >= (b.base || 0) + b.alt || (b.base || 0) >= (a.base || 0) + a.alt) continue;
@@ -292,14 +294,14 @@ function nmMontarLocal(plano) {
     try { cont[it.nome] = (cont[it.nome] || 0) + 1;
       const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: Math.max(0.2, it.larg), prof: Math.max(0.2, it.prof), alt: Math.max(0.2, it.alt), giro: it.giro || 0, nome: (it.nome + (cont[it.nome] > 1 ? " " + cont[it.nome] : "")).slice(0, 24) });
       if (it.base) { q.emAr = true; q.base = it.base; q.sobre = null; }
-      q.grupo = "local:" + plano.nome; if (it.chao) q.chao = true;
+      q.grupo = "local:" + plano.nome; if (it.chao) q.chao = true; if (it.nivel && it.tipo === "caixa") q.nivel = it.nivel;
       const base = it.cor && /^#[0-9a-f]{6}$/i.test(it.cor) ? null : NM_CLASSE_COR[it.classe];
       if (it.cor && /^#[0-9a-f]{6}$/i.test(it.cor)) q.col = { fill: it.cor.toLowerCase(), ink: nmTinta(it.cor) };
       else if (base) { const v = ((cont[it.nome] * 37) % 17) - 8, hx = c => Math.max(0, Math.min(255, c + v)).toString(16).padStart(2, "0"); q.col = { fill: "#" + base.map(hx).join(""), ink: "#" + base.map(c => Math.round(c * 0.42).toString(16).padStart(2, "0")).join("") }; }
     } catch (e) { avisos.push(it.nome + ": " + e.message); }
   }
   if (plano.itens.length > 300) avisos.push("O local tem " + plano.itens.length + " peças; só as 300 primeiras entram.");
-  SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
+  SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcasNivel: plano.marcasNivel || {}, marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
   return avisos;
 }
 
@@ -354,6 +356,7 @@ function nmLerElenco(bloco, ctx) {
       else if (w === "cor") { e.cor = toks[++k].v; }
       else if (w === "tamanho") { e.tamanho = toks[++k].v; }
       else if (w === "apelido" || w === "=" ) { e.apelidos.push(toks[++k].v); }
+      else if (w === "veste" || w === "visual" || w === "roupa" || w === "usa") { e.visual = toks[++k].v; }
       else if (/^(masculino|feminino)$/.test(w)) e.corpo = w + (toks[k + 1] && /^(magro|medio|atletico|musculoso|cheio)$/i.test(toks[k + 1].v) ? " " + toks[++k].v : "");
       else if (/^(magro|medio|atletico|musculoso|cheio)$/.test(w)) e.corpo = (e.corpo || "masculino") + " " + w;
     }
@@ -386,7 +389,7 @@ function nmCabQuadro(cab, linha) {
   const toks = nmTokens(cab); toks.shift(); const q = { local: null, continua: true, plano: null, angulo: null, alvo: null, lado: null, lente: null, formato: null, tamanho: null, funcao: null, legenda: null, titulo: null, camera: null, olhando: null, elevacao: null, linha };
   q.erros = [];
   for (let k = 0; k < toks.length; k++) { const t = toks[k], w = nmNorm(t.v); try {
-    if (t.t === "str" && q.titulo === null && k === 0) { q.titulo = t.v; continue; }
+    if (t.t === "str" && q.titulo === null && (k === 0 || (k === 1 && toks[0].t === "num"))) { q.titulo = t.v; continue; }
     if (w === "local" || w === "em" || w === "lugar") { q.local = toks[++k].v; q.continua = false; }
     else if (w === "continua" || w === "mesmo") q.continua = true;
     else if (w === "novo" || w === "corte") q.continua = false;
@@ -405,13 +408,15 @@ function nmCabQuadro(cab, linha) {
     else if (w === "legenda") q.legenda = toks[++k].v;
     else if (w === "titulo" || w === "título") q.titulo = toks[++k].v;
     else if (w === "elevacao" || w === "elevação") q.elevacao = toks[++k].v;
+    else if (w === "hora" || w === "luz") { q.hora = toks[++k].v; }
     else if (w === "camera" || w === "câmera") { q.camera = toks[++k].v; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "olhando") { k++; q.olhando = toks[++k].v; } }
     else if (t.t === "num" && k === 0) q.n = t.v;
     else throw new NmErro("No quadro, não entendi “" + t.v + "”." + (nmParecida(t.v, [...NM_CHAVES_Q]) ? " Quis dizer “" + nmParecida(t.v, [...NM_CHAVES_Q]) + "”?" : ""), linha);
   } catch (e) { q.erros.push({ linha, erro: e.message }); } }
   return q;
 }
-const NM_CHAVES_Q = new Set(["local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
+const NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
+const NM_CHAVES_Q = new Set(["hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
 const NM_CHAVES_P = new Set(["em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
 /* ponto do mundo (R) para um alvo: personagem, marca, região, (x,z) em metros, objeto */
 function nmPontoDe(ctx, tok, toks, k) {
@@ -480,7 +485,7 @@ function nmPersonagem(ctx, l, Q) {
   Q.feitos.push(feito); Q.depois.push(...depois);
   return true;
 }
-function nmPoseValida(p, linha) { const ok = todasPoses(), k = nomePose(p); if (ok.includes(k)) return k; const s = nmParecida(p, ok); throw new NmErro("Pose “" + p + "” não existe." + (s ? " Quis dizer “" + s + "”?" : ""), linha); }
+function nmPoseValida(p, linha) { const ok = todasPoses(); let k = nomePose(p); if (!ok.includes(k)) { const k2 = nomePose(String(p).replace(/-/g, "")); if (ok.includes(k2)) k = k2; } if (ok.includes(k)) return k; const s = nmParecida(p, ok); throw new NmErro("Pose “" + p + "” não existe." + (s ? " Quis dizer “" + s + "”?" : ""), linha); }
 function nmExpressaoValida(e, linha) { const k = chaveExpressao(e); if (k && EXPRESSOES[k]) return k; const s = nmParecida(e, Object.keys(EXPRESSOES)); throw new NmErro("Expressão “" + e + "” não existe." + (s ? " Quis dizer “" + s + "”?" : ""), linha); }
 function nmLimites() { const xs = [], zs = []; SCN.objetos.forEach(o => { xs.push(o.x - o.larg / 2, o.x + o.larg / 2); zs.push(o.z - o.prof / 2, o.z + o.prof / 2); }); if (!xs.length) return [-20, -20, 20, 20]; return [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)]; }
 /* figurantes: povo 20..30 multidao em regiao "praça" olham: 60% Kai, 20% costas, resto aleatorio poses: empe:3|caminhando expressoes: alegria|neutra */
@@ -552,7 +557,7 @@ function nmCamera(ctx, Q) {
     const ref = alvos.length ? SCN.list.find(x => x.name === alvos[0]) : null, yawBase = ref ? (ref.params.wRot || 0) + lado : -45;
     const pit = Q.cab.angulo === "contra-plongée" ? 12 : Q.cab.angulo === "zenital" ? -70 : Q.cab.angulo === "normal" ? -8 : -30;
     P.persp = 1; P.lens = 35; cena.enquadrarTudo({ yaw: yawBase, pitch: pit });
-    if (P.camDist >= 399) { P.lens = 20; cena.enquadrarTudo({ yaw: yawBase, pitch: pit }); }
+    if (P.camDist >= 1199) { P.lens = 20; cena.enquadrarTudo({ yaw: yawBase, pitch: pit }); }
     SCN.pivo = null; SCN.orbitaArea = null; SCN.seguirCamera = null; nmCentrar(recorteQuadro(Q.cab.formato || "16:9"));
     if (Q.cab.lente) try { camera.lente(Q.cab.lente, true); } catch (e) { }
     if (Q.cab.angulo === "holandês") camera.angulo("holandês", Q.cab.anguloGraus);
@@ -587,7 +592,7 @@ function nmCentrar(rc, folga = 0.9, pts0, soPan) {
     P.panX = +(P.panX - ((x0 + x1) / 2 - xc) / Sc).toFixed(3); P.panY = +(P.panY + ((y0 + y1) / 2 - yc) / Sc).toFixed(3);
     const f = Math.max((x1 - x0) / (rc.w * folga), (y1 - y0) / (rc.h * folga));
     if (k < 8 && soPan && P.persp) P.lens = Math.max(18, Math.min(200, P.lens / Math.max(0.7, Math.min(1.4, f))));
-    else if (k < 8) { if (P.persp) P.camDist = Math.min(400, Math.max(6, P.camDist * Math.max(0.7, Math.min(1.4, f)))); else P.zoom = Math.max(0.01, Math.min(12, P.zoom / Math.max(0.7, Math.min(1.4, f)))); } }
+    else if (k < 8) { if (P.persp) P.camDist = Math.min(1200, Math.max(6, P.camDist * Math.max(0.7, Math.min(1.4, f)))); else P.zoom = Math.max(0.01, Math.min(12, P.zoom / Math.max(0.7, Math.min(1.4, f)))); } }
 }
 /* o manequim está dentro de um objeto alto (e não em cima dele)? */
 function nmDentroDe(it, ignorar) {
@@ -643,7 +648,7 @@ function nmBloqueada() {
 function nmLegenda(ctx, Q) {
   const partes = [], loc = Q.localNome ? Q.localNome : null, cor = n => { const e = ctx.elenco.get(n); return e ? e.nomeCor : "cinza"; };
   if (Q.transicao) partes.push(Q.transicao);
-  if (loc) partes.push(loc + (Q.cab.funcao ? " — " + Q.cab.funcao : "") + ".");
+  if (loc) partes.push(loc + (Q.hora ? ", " + Q.hora : "") + (Q.cab.funcao ? " — " + Q.cab.funcao : "") + ".");
   for (const f of Q.feitos) { const nomes = f.nome.split(" e "), quem = nomes.map(n => n + " (" + cor(n) + ")").join(" e "), acts = [];
     if (f.acao) acts.push(nmFrase(f.acao)); else if (f.pose) acts.push(nmFrase(f.pose));
     if (f.segura) acts.push("segura " + f.segura.replace(/\s*\(.*\)/, ""));
@@ -705,7 +710,7 @@ function nmCompilar(texto, opts = {}) {
           if (!pl) { const s = nmParecida(Q.cab.local, [...ctx.locais.keys(), ...bibliotecaLocais().listar().map(x => x.nome)]); throw new NmErro("Local “" + Q.cab.local + "” não foi declarado nem salvo." + (s ? " Quis dizer “" + s + "”?" : ""), b.linha); }
           ctx.locais.set(pl.nome, pl);
           SCN.list.slice(1).forEach(it => delInst(it)); SCN.list[0].oculto = true; SCN.list[0].name = "__vazio__"; if (cena.efeitos && cena.efeitos.limpar) try { cena.efeitos.limpar(); } catch (e) { }
-          Q.avisos.push(...nmMontarLocal(pl)); localAtual = pl;
+          Q.avisos.push(...nmMontarLocal(pl)); localAtual = pl; ctx.hora = null;
         } else if (!Q.cab.continua && localAtual) { SCN.list.slice(1).forEach(it => delInst(it)); SCN.list[0].oculto = true; SCN.list[0].name = "__vazio__"; }
         Q.localNome = nomeLocal;
         if (transicao) { Q.transicao = transicao.texto ? transicao.texto + "." : { tempo: "Passagem de tempo.", lugar: "Mudança de lugar.", corte: "Corte.", flashback: "Flashback (lembrança)." }[transicao.tipo] || ""; Q.tipoTransicao = transicao.tipo; transicao = null; }
@@ -730,12 +735,20 @@ function nmCompilar(texto, opts = {}) {
         } catch (e) { erros.push({ linha: (e instanceof NmErro && e.linha) || l.linha, erro: e.message, quadro: indice + 1 }); } }
         for (const f of Q.depois) try { f(); } catch (e) { erros.push({ linha: e.linha || b.linha, erro: e.message, quadro: indice + 1 }); }
         /* ninguém dentro de parede, poço, banca…: sai pelo lado mais perto (e avisa) */
-        SCN.list.forEach(it => { if (it.oculto || it.name === "__vazio__") return; const o = nmDentroDe(it, Q.segurados); if (o) { nmTirarDe(it, o); Q.avisos.push(it.name + " estava dentro de “" + (o.nome || o.tipo) + "”; foi para fora"); } });
+        SCN.list.forEach(it => { if (it.oculto || it.name === "__vazio__") return; let o = nmDentroDe(it, Q.segurados);
+          /* em cima de um nível (plataforma, mezanino, passarela): sobe para o topo em vez de sair */
+          if (o && o.nivel && o.chao !== true) { it.params.bodyLift = (o.base || 0) + o.alt; it.params.ground = 0; o = nmDentroDe(it, Q.segurados); }
+          /* numa escada: fica no degrau da altura daquele ponto */
+          if (o && o.tipo === "rampaDegraus") { const g = (o.giro || 0) * Math.PI / 180, dx = it.params.wx - o.x, dz = it.params.wz - o.z, lz = dx * Math.sin(g) + dz * Math.cos(g), t = Math.max(0, Math.min(1, (lz + o.prof / 2) / o.prof));
+            it.params.bodyLift = (o.base || 0) + o.alt * t; it.params.ground = 0; o = null; }
+          if (o) { nmTirarDe(it, o); Q.avisos.push(it.name + " estava dentro de “" + (o.nome || o.tipo) + "”; foi para fora"); } });
         /* ninguém sobreposto (os relevantes ficam; os figurantes se afastam) */
         try { const fixos = SCN.list.filter(x => x.papel === "relevante").map(x => x.name); separar({ folga: 0.25, fixos }); } catch (e) { }
         if (!SCN.list.some(x => !x.oculto && x.name !== "__vazio__")) { SCN.list[0].oculto = true; }
         SCN.active = Math.max(0, SCN.list.findIndex(x => !x.oculto));
         const fq = Q.cab.formato; SCN.recorte = fq ? recorteQuadro(fq) : null;
+        if (Q.cab.hora) { const hh = NM_HORAS[nmNorm(Q.cab.hora).replace(/\s+/g, "-")]; if (hh) { P.lightAz = hh[0]; P.lightEl = hh[1]; } ctx.hora = hh ? hh[2] : String(Q.cab.hora); }
+        Q.hora = ctx.hora || null;
         const plano = nmCamera(ctx, Q);
         /* quem olha / vira para a câmera (depois da câmera posta) */
         const camW = () => { const a = (P.yaw || 0) * Math.PI / 180, d = Math.max(10, P.camDist || 30); return [(P.tx || 0) + Math.sin(a) * d, (P.tz || 0) + Math.cos(a) * d]; };
@@ -758,7 +771,7 @@ function nmCompilar(texto, opts = {}) {
     const la = lado(a), lb = lado(b); if (la && lb && la.par === lb.par && la.s && lb.s && la.s !== lb.s) b.avisos.push("a câmera cruzou o eixo de " + la.par.replace("|", " e ") + " (regra dos 180°): quem estava à esquerda agora aparece à direita"); }
   avisos.push(...quadros.flatMap(q => q.avisos.map(a => "quadro " + (q.indice + 1) + ": " + a)));
   return { ok: !erros.length, erros, avisos, quadros, paginas: paginas.filter(p => p.quadros.length),
-    elenco: [...ctx.elenco.values()].map(e => ({ nome: e.nome, papel: e.papel, cor: e.nomeCor, hex: e.hex, corpo: e.corpo })),
+    elenco: [...ctx.elenco.values()].map(e => ({ nome: e.nome, papel: e.papel, cor: e.nomeCor, hex: e.hex, corpo: e.corpo, visual: e.visual || null })),
     locais: [...ctx.locais.values()].map(l => ({ nome: l.nome, pecas: l.itens.length, marcas: Object.keys(l.marcas), regioes: Object.keys(l.regioes), niveis: Object.keys(l.niveis), codigo: l.codigo, daBiblioteca: l.daBiblioteca || null })) };
 }
 /* abre um local (salvo ou em código DSL) no palco: troca os objetos, mantém os manequins */
@@ -820,7 +833,7 @@ function nmVistas(q) {
     /* isométrica: sem perspectiva, 45° de lado e 35° de cima, tudo no quadro */
     const cam = ["persp", "yaw", "pitch", "roll", "tx", "ty", "tz", "camDist", "zoom", "panX", "panY", "lens"].reduce((o, k) => (o[k] = P[k], o), {});
     cena.enquadrarTudo({ yaw: 45 + ((cam.yaw || 0) > 90 || (cam.yaw || 0) < -90 ? 180 : 0), pitch: -35, orto: true }); { const ih0 = W / 1.15; nmCentrar({ x: 0, y: H / 2 - ih0 / 2, w: W, h: ih0 }, 0.92); }
-    const list = sceneList(true);
+    const list = sceneList(true); list.efeitos = []; /* a isométrica mostra só o espaço */
     const r = renderScene(list, Object.assign({}, L, { grid: false, floor: false, horizon: false }), true, 0, { canal: "ficha-iso" });
     const ih = Math.round(W / 1.15), iy = Math.round(H / 2 - ih / 2); /* recorte largo, do jeito do painel */
     const iso = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ' + iy + " " + W + " " + ih + '" width="' + W + '" height="' + ih + '"><rect y="' + iy + '" width="' + W + '" height="' + ih + '" fill="#ffffff"/>' + r.svg + "</svg>";
@@ -866,9 +879,9 @@ function paginasDoName(r, fotos, o = {}) {
 /* legenda das cores: quem é quem (para a finalização: "o manequim roxo é o personagem X") */
 function legendaDeCores(r) {
   const usos = {}; r.quadros.forEach(q => q.personagens.forEach(p => { (usos[p.nome] = usos[p.nome] || []).push(q.indice + 1); }));
-  const lista = r.elenco.map(e => ({ nome: e.nome, papel: e.papel, cor: e.cor, hex: e.hex, quadros: usos[e.nome] || [] }));
+  const lista = r.elenco.map(e => ({ nome: e.nome, papel: e.papel, cor: e.cor, hex: e.hex, visual: e.visual || null, quadros: usos[e.nome] || [] }));
   const h = 70 + lista.length * 46, svg = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 ' + h + '" width="760" height="' + h + '"><rect width="760" height="' + h + '" fill="#fff"/><text x="24" y="44" font-family="Arial" font-weight="700" font-size="26" fill="#111">Elenco por cor</text>'];
-  lista.forEach((e, i) => { const y = 70 + i * 46; svg.push('<rect x="24" y="' + y + '" width="64" height="34" rx="6" fill="' + e.hex + '" stroke="#111" stroke-width="2"/><text x="104" y="' + (y + 25) + '" font-family="Arial" font-size="22" fill="#111">' + nmEsc(e.cor + " = " + e.nome + (e.papel === "figurante" ? " (figurantes)" : "") + (e.quadros.length ? " · quadros " + e.quadros.join(", ") : "")) + "</text>"); });
+  lista.forEach((e, i) => { const y = 70 + i * 46; svg.push('<rect x="24" y="' + y + '" width="64" height="34" rx="6" fill="' + e.hex + '" stroke="#111" stroke-width="2"/><text x="104" y="' + (y + 25) + '" font-family="Arial" font-size="22" fill="#111">' + nmEsc(e.cor + " = " + e.nome + (e.visual ? " (" + e.visual + ")" : "") + (e.papel === "figurante" ? " (figurantes)" : "") + (e.quadros.length ? " · quadros " + e.quadros.join(", ") : "")) + "</text>"); });
   svg.push("</svg>");
   return { lista, svg: svg.join("") };
 }

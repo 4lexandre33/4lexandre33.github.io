@@ -108,7 +108,7 @@ function loadScene(sc){
   SCN.exato=!!sc.exato;
   /* objetos da cena */
   SCN.objetos.length=0;SCN.objSel=null;
-  if(Array.isArray(sc.objetos))sc.objetos.slice(0,300).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo),LIM={x:[-200,200],z:[-200,200],giro:[-180,180],larg:[0.2,160],prof:[0.2,160],alt:[0.2,120],encosto:[0.5,12],cabeceira:[0.5,12],raio:[0.1,20]};Object.keys(LIM).forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],LIM[k][0],LIM[k][1])});
+  if(Array.isArray(sc.objetos))sc.objetos.slice(0,300).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo),LIM={x:[-400,400],z:[-400,400],giro:[-180,180],larg:[0.2,450],prof:[0.2,450],alt:[0.2,120],encosto:[0.5,12],cabeceira:[0.5,12],raio:[0.1,20]};Object.keys(LIM).forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],LIM[k][0],LIM[k][1])});
     if(o.perfilPega)q.perfilPega=normalizarPerfil(o.perfilPega);
     if(typeof o.modeloMao==="string"&&o.modeloMao.length<=16)q.modeloMao=o.modeloMao;
     if(o.gestoAnterior)q.gestoAnterior=Object.fromEntries(Object.entries(o.gestoAnterior).filter(([k,v])=>

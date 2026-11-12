@@ -59,6 +59,8 @@ imagem fazer a arte final. Não há texto dentro dos quadros: o texto vai na leg
 - Comentários: "// texto", "-- texto" ou "# texto" (com espaço depois do #). Cores "#a1b2c3" não são comentário.
 - Unidade padrão: METROS. Também: 30cm, 2.5m, 12R (R = unidade do manequim, 1 R ≈ 11,4 cm). Ângulos em graus.
 - Coordenadas (x,z) vistas DE CIMA: x cresce para a DIREITA (leste), z cresce para CIMA na planta (norte, "para o fundo").
+- Direção ("gira"): gira 0 = virado para o NORTE (+z); gira 90 = LESTE (+x); 180 = sul; -90 (ou 270) = oeste.
+  Vale para pessoas e objetos (num objeto, gira 90 deita o comprimento dele ao longo de x).
   Altura é sempre separada (altura 3, base 1). Um ponto pode ser (x,z) ou (x,altura,z) quando a altura importa (câmera).
 - Faixa sorteada: 3..6 (inteiro entre 3 e 6). Porcentagem: 60%. Texto com espaços: "entre aspas".
 - Palavras-chave sem acento também valem (plongee, angulo, transicao). Nomes com espaço vão entre aspas.
@@ -69,14 +71,18 @@ imagem fazer a arte final. Não há texto dentro dos quadros: o texto vai na leg
 elenco
   Kai relevante corpo masculino atletico      ← cada relevante ganha uma cor fixa a história toda
   Mira relevante corpo feminino cor roxo       ← cor escolhida (opcional)
+  Dom relevante corpo masculino veste "capuz preto"   ← aparência (vai para a legenda de cores e o manifesto)
   Tomo relevante corpo crianca                 ← crianca | menino | menina
   povo figurante                               ← TODOS os figurantes têm a mesma cor neutra (cinza)
+  guardas figurante                            ← pode haver vários grupos (um por tipo de gente); cada um tem a sua linha no quadro
 Cores dos relevantes, na ordem: ${NM_CORES.map(c => c[0]).join(", ")} (até 12). Figurantes: cinza.
 Corpos: masculino | feminino [magro | medio | atletico | musculoso | cheio] · crianca | menino | menina. "tamanho 0.9" muda a escala.
-"apelido Kaizinho" deixa usar outro nome. A legenda das cores (manifesto + cartão) diz "vermelho = Kai".
+"apelido Kaizinho" deixa usar outro nome. Nomes podem ter acento (Téo); nomes com espaço vão entre aspas.
+A legenda das cores (manifesto + cartão) diz "vermelho = Kai".
 
 3. LOCAL (o cenário, descrito com geometria)
 local "Nome" [unidade m|R] [origem (x,z)|auto] [norte -z] [herda "Outro local"] [planta "imagem" linha N largura 20]
+  norte -z: inverte o eixo z (use quando o "para cima" da imagem for z negativo); o padrão é norte = +z.
   A origem: se a IA escolheu um ponto (0,0) na imagem, escreva "origem (0,0)" e use as MESMAS coordenadas para os
   personagens. "auto" (padrão) centraliza o desenho, mas os personagens continuam na mesma conta: tudo bate.
   herda "Rua": copia o outro local e acrescenta o que vier (ex.: a mesma rua à noite, com lixo e um carro).
@@ -87,20 +93,25 @@ Peças do local (uma por linha):
   chao retangulo x0,z0 a x1,z1 [classe areia|grama|pedra|piso|terra|madeira]
   chao circulo em (x,z) raio 8
   parede linha (x,z)-(x,z)-(x,z) [altura 3] [espessura 0.25] [vao porta (x,z) largura 1] [vao janela (x,z) largura 1.2]
+       ("vao" pode repetir quantas vezes quiser na mesma linha)
   muro linha …   ·   cerca linha … (cerca = 1,1 m, fina, de madeira)
   sala "Cozinha" retangulo x0,z0 a x1,z1 [altura 3] [porta lado sul [em 2] [largura 1]] [janela lado norte] [telhado]
-       (os lados são norte = z maior, sul = z menor, leste = x maior, oeste = x menor; "em 2" = a 2 m do canto)
+       (os lados são norte = z maior, sul = z menor, leste = x maior, oeste = x menor; "em 2" = a 2 m do canto de x menor
+        nos lados norte/sul, ou do canto de z menor nos lados leste/oeste; sem "em", a porta fica no meio)
   casa "Casa do Kai" retangulo … altura 6     ·   predio "Torre" retangulo … altura 20   (bloco fechado)
   escada de (x,z) ate (x,z) sobe-para norte altura 3      (escadaria: sobe de A para B; a altura é a do topo)
+  escada de (x,z) ate (x,z) sobe-para leste base 1.6 altura 3.2   (lanço que COMEÇA a 1,6 m: escada em L = dois lanços
+       e um nivel "patamar" altura 1.6 entre eles; "nivel "Patamar"" no lugar de "base" também vale)
   escada em (x,z)                                          (escada de mão, objeto)
   rampa de (x,z) ate (x,z) altura 1
   nivel "Terraço" altura 2 retangulo x0,z0 a x1,z1         (plataforma, mezanino, palco; "terraco", "palco" também)
-  marca "porta" em (x,z)                                   (ponto com nome, para usar nos quadros)
+  marca "porta" em (x,z) [nivel "Terraço"]                 (ponto com nome, para usar nos quadros)
   regiao "feira" retangulo x0,z0 a x1,z1                   (área com nome: figurantes "em regiao "feira"")
   <objeto> ["nome"] em (x,z) [gira 30] [tamanho LxPxA] [raio r] [altura h] [base h] [classe madeira] [cor #8a5a2b] [nivel "Terraço"]
   <objeto> encostado-em "Cozinha" lado norte [aos 2]       (encosta na parede de dentro da sala/região)
   <objeto> centro-de "Cozinha"   ·   <objeto> entre (x,z) e (x,z)   ·   <objeto> em marca "fonte"
-  fileira 6 banca de (x,z) ate (x,z) [tamanho …] [variar 0.2]   (N objetos em linha)
+  fileira 6 banca de (x,z) ate (x,z) [tamanho …] [variar 0.2]   (N objetos em linha; aceita as mesmas opções de um objeto:
+       altura, classe, cor, gira…)
   grade-de 3x4 coluna de (x,z) ate (x,z)                         (grade C colunas × L linhas)
   circulo-de 8 arvore em (x,z) raio 6                             (N objetos em roda, virados para o centro)
   repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
@@ -108,12 +119,16 @@ Objetos: ${mnLista(O)}.
   Também valem: banca/balcão/barraca (caixas com nome), pilar (= coluna), "árvore", "poço".
   "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus, anti-horário visto de cima).
   Cores: por classe (parede, madeira, vegetacao, agua, pedra, areia, piso, grama, terra, tecido, metal, telhado) ou "cor #hex".
+  Dois "chao" que se cobrem: o escrito DEPOIS fica por cima (ex.: piso de pedra e, depois, um tapete de grama).
+  Limites: o palco vai até ±45 m do centro; uma peça tem no máximo 51 m de lado (divida um chão maior em partes).
+  O que não existe (trem, trilho, carro, poste…): use caixa/cilindro/coluna com nome e tamanho ("caixa "vagão" em … tamanho 15x3x3.5").
 
 4. QUADRO (um momento: um painel do name)
 quadro [n] ["título"] [local "Nome" | continua | novo] [plano …] [angulo … [graus]] [alvo A, B] [lado …] [lente 35]
-       [formato 16:9] [tamanho grande] [funcao "…"] [legenda "…"] [camera (x,y,z) olhando (x,y,z)]
+       [formato 16:9] [tamanho grande] [funcao "…"] [legenda "…"] [hora tarde] [camera (x,y,z) olhando (x,y,z)]
 - local "X": troca de cenário (corte): tira personagens e figurantes do quadro anterior.
-- continua (padrão): mesmo local, mesmas pessoas onde estavam; escreva só o que muda.
+- continua (padrão): mesmo local, mesmas pessoas onde estavam (inclusive em cima de nível); escreva só o que muda.
+  Figurantes também ficam; escrever de novo a linha de um grupo TROCA esse grupo ("mantem" acrescenta em vez de trocar).
 - novo: mesmo local, mas começa vazio.
 - plano: geral (o lugar todo) | conjunto | inteiro (corpo inteiro) | americano (joelhos para cima) | medio (cintura) |
          primeiro-plano (peito) | close (rosto) | detalhe | pov.
@@ -122,6 +137,7 @@ quadro [n] ["título"] [local "Nome" | continua | novo] [plano …] [angulo … 
 - alvo: em quem a câmera mira (padrão: quem está no quadro).
 - formato: 16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal, quadrado.
 - tamanho (na página): grande | largo | alto | normal | pequeno | inserto. Função de clímax/impacto/revelação → grande.
+- hora: manha | dia | meio-dia | tarde | entardecer | noite | interior (muda a luz e entra na legenda; vale até trocar de local).
 - funcao: a função narrativa do quadro (estabelecimento, reação, ação, clímax, transição, detalhe, revelação…).
 - A câmera foge sozinha de parede entre ela e o alvo (gira para o lado livre mais perto e avisa).
 
@@ -133,7 +149,12 @@ Personagem (uma linha por pessoa ou por grupo "Kai, Mira"):
        [acao nome] [expressao nome [intensidade 0.7]] [olha Outro | olha (x,z) | olha camera]
        [segura objeto [como pegada]] [carrega | levanta | puxa | empurra | arrasta objeto]
        [interacao tipo com Outro] [efeito tipo [em maoDir]] [molejo 0.6] [fala "…"] [sai]
-  "frente-de Kai" = na frente de Kai (para onde ele olha), virado para ele.
+  "frente-de Kai" = na frente de Kai (para onde ele olha), virado para ele. frente-de/atras-de/ao-lado-de/perto-de aceitam
+  pessoa, marca ou objeto pelo nome ("ao-lado-de "coluna 3"").
+  Posição dentro de um "nivel" (plataforma, passarela) = a pessoa fica EM CIMA dele, sozinha.
+  segura/empurra/carrega <objeto>: o nome dado no local (com aspas se tiver espaço) ou um TIPO da lista (aí um objeto novo,
+  do tamanho da pessoa, aparece nas mãos). "como" escolhe a pegada (lista abaixo).
+  interacao <tipo> com Outro: basta posicionar o primeiro; o outro vai para o ponto certo da interação.
   Se a posição cair dentro de parede/objeto, a pessoa sai pelo lado mais perto (aviso).
 Figurantes (procedurais):
   povo 20..30 [multidao | grade | circulo | fila | arco] [em regiao "feira" | em fundo | em area (x,z) (x,z) | em (x,z) | em marca "m"]
@@ -151,15 +172,16 @@ Outras linhas do quadro:
   usar conversa(Kai, Mira)     (modelo definido antes: "modelo conversa(a, b)" + linhas com a e b)
 
 Listas:
-  Poses (${P.length}): ${mnLista(P)}.
+  Poses (${P.length}): ${mnLista(P)}. (com ou sem hífen: empe = em-pe)
   Expressões (${X.length}): ${mnLista(X)}.
   Ações com efeito (acao): ${mnLista(A)}.
   Interações a dois (${I.length}): ${mnLista(I)}.
   Pegadas (segura … como …): ${mnLista(G)}.
-  Efeitos (efeito …): ${mnLista(F, 60)}.
+  Efeitos (efeito …): ${mnLista(F)}.
 
 5. TRANSIÇÃO, PÁGINA, SEMENTE, VARIÁVEIS, MODELOS
-transicao tempo ["Mais tarde"] | lugar | corte | flashback   (vale para o quadro seguinte; entra na legenda e no manifesto)
+transicao tempo ["Mais tarde"] | lugar | corte | flashback   (vale para o quadro seguinte; entra na legenda e no manifesto;
+          é informação para a montagem e para a IA de imagem: não muda a cena sozinha)
 pagina [grade 2x2|3|4|…] [leitura ocidental|japonesa]       (os quadros seguintes vão para uma página nova; japonesa = da direita)
 semente 12                                                   (sorteios reproduzíveis)
 define altura 3   →  use $altura
@@ -188,6 +210,8 @@ modelo conversa(a, b)
 - Tempo passou? "transicao tempo". Mudou de lugar? "transicao lugar" + novo local. Lembrança? "transicao flashback".
 - Relevantes sempre com o mesmo nome do elenco; multidões como figurantes (um grupo por tipo de gente).
 - Pense em 4 a 7 quadros por página; use "pagina" para cortar.
+- "tamanho" tem dois sentidos: no QUADRO é o tamanho na página (grande, pequeno…); num OBJETO é LxPxA em metros.
+- O que a DSL não tem (roupa detalhada, chuva, expressão muito específica): escreva na "legenda" do quadro.
 
 9. LER UMA IMAGEM E DESCREVER O CENÁRIO (para a IA que olha uma foto, desenho ou planta)
 Objetivo: transformar a imagem num "local" com números. Passo a passo:

@@ -15265,18 +15265,18 @@ pre.cmdout .ok{color:var(--cobalt)}
     { k: "zoom", g: "slOrient", label: "Zoom (sem perspectiva)", min: 0.01, max: 12, step: 0.01, u: "×" },
     { k: "panY", g: "slOrient", label: "Deslocar na vertical", min: -200, max: 200, step: 0.05, u: " R" },
     { k: "panX", g: "slOrient", label: "Deslocar na horizontal", min: -200, max: 200, step: 0.05, u: " R" },
-    { k: "tx", g: "slCam", label: "Alvo da câmera: X", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "tx", g: "slCam", label: "Alvo da câmera: X", min: -400, max: 400, step: 0.1, u: " R" },
     { k: "ty", g: "slCam", label: "Alvo da câmera: altura", min: -20, max: 60, step: 0.1, u: " R" },
-    { k: "tz", g: "slCam", label: "Alvo da câmera: Z", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "tz", g: "slCam", label: "Alvo da câmera: Z", min: -400, max: 400, step: 0.1, u: " R" },
     { k: "persp", g: "slCam", label: "Perspectiva (0 = desligada, 1 = ligada)", min: 0, max: 1, step: 1, u: "" },
-    { k: "camDist", g: "slCam", label: "Distância da câmera (perspectiva)", min: 4, max: 400, step: 0.5, u: " R" },
+    { k: "camDist", g: "slCam", label: "Distância da câmera (perspectiva)", min: 4, max: 1200, step: 0.5, u: " R" },
     { k: "lens", g: "slCam", label: "Lente: grande-angular (18) a teleobjetiva (200)", min: 18, max: 200, step: 1, u: " mm" },
     { k: "atmo", g: "slCam", label: "Perspectiva atmosférica (longe = mais claro)", min: 0, max: 1, step: 0.05, u: "" },
     { k: "bodyPitch", g: "slScene", label: "Corpo inteiro: deitar de costas (−) / de bruços (+)", min: -180, max: 180, step: 1, u: "°" },
     { k: "bodyRoll", g: "slScene", label: "Corpo inteiro: deitar de lado", min: -180, max: 180, step: 1, u: "°" },
     { k: "bodyLift", g: "slScene", label: "Altura (salto, flutuar)", min: -2, max: 120, step: 0.1, u: " R" },
-    { k: "wx", g: "slScene", label: "Posição no chão: X", min: -200, max: 200, step: 0.1, u: " R" },
-    { k: "wz", g: "slScene", label: "Posição no chão: Z", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "wx", g: "slScene", label: "Posição no chão: X", min: -400, max: 400, step: 0.1, u: " R" },
+    { k: "wz", g: "slScene", label: "Posição no chão: Z", min: -400, max: 400, step: 0.1, u: " R" },
     { k: "wRot", g: "slScene", label: "Girar no chão", min: -180, max: 180, step: 1, u: "°" },
     { k: "headYaw", g: "slPose", label: "Girar o pescoço (rotação)", min: -80, max: 80, step: 1, u: "°" },
     { k: "headPitch", g: "slPose", label: "Baixar (+) / levantar (−) a cabeça", min: -60, max: 50, step: 1, u: "°" },
@@ -17522,7 +17522,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const n2 = (v, mn, mx) => typeof v === "number" && isFinite(v) ? clamp(v, mn, mx) : void 0, cil = ehCilindro(q);
     const sin = { larg: "largura", prof: "profundidade", alt: "altura", raio: "diametro" };
     const ox = q.x, oz = q.z;
-    [["x", -200, 200], ["z", -200, 200], ["giro", -180, 180], ["larg", 0.2, 160], ["prof", 0.2, 160], ["alt", 0.2, 120], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
+    [["x", -400, 400], ["z", -400, 400], ["giro", -180, 180], ["larg", 0.2, 450], ["prof", 0.2, 450], ["alt", 0.2, 120], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
       let v0 = o[k] !== void 0 ? o[k] : o[sin[k]];
       if (k === "raio" && o.raio === void 0 && typeof o.diametro === "number") v0 = o.diametro / 2;
       const v = n2(v0, a, b);
@@ -18244,9 +18244,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     const explicito = Object.prototype.hasOwnProperty.call(opts, "area") || Object.prototype.hasOwnProperty.call(opts, "regiao");
     const area = explicito ? Object.prototype.hasOwnProperty.call(opts, "area") ? opts.area : opts.regiao : mesmaChaveOrb(SCN.pivo, alvo) ? SCN.orbitaArea : null;
     const A = resolverAlvo(alvo, { area });
-    P2.tx = clamp(A.c[0], -200, 200);
+    P2.tx = clamp(A.c[0], -400, 400);
     P2.ty = clamp(A.c[1], -20, 60);
-    P2.tz = clamp(A.c[2], -200, 200);
+    P2.tz = clamp(A.c[2], -400, 400);
     if (opts.enquadrar) enquadrarPivo(A, -(P2.pitch || 0), opts.folga);
     centrarPivo();
     SCN.pivo = A.chave;
@@ -18276,9 +18276,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (SCN.pivo === void 0 || SCN.pivo === null) return null;
     try {
       const A = resolverAlvo(SCN.pivo, { area: SCN.orbitaArea });
-      P2.tx = clamp(A.c[0], -200, 200);
+      P2.tx = clamp(A.c[0], -400, 400);
       P2.ty = clamp(A.c[1], -20, 60);
-      P2.tz = clamp(A.c[2], -200, 200);
+      P2.tz = clamp(A.c[2], -400, 400);
       return A;
     } catch (e) {
       SCN.pivo = null;

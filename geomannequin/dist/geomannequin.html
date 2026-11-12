@@ -15272,18 +15272,18 @@ pre.cmdout .ok{color:var(--cobalt)}
     { k: "zoom", g: "slOrient", label: "Zoom (sem perspectiva)", min: 0.01, max: 12, step: 0.01, u: "×" },
     { k: "panY", g: "slOrient", label: "Deslocar na vertical", min: -200, max: 200, step: 0.05, u: " R" },
     { k: "panX", g: "slOrient", label: "Deslocar na horizontal", min: -200, max: 200, step: 0.05, u: " R" },
-    { k: "tx", g: "slCam", label: "Alvo da câmera: X", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "tx", g: "slCam", label: "Alvo da câmera: X", min: -400, max: 400, step: 0.1, u: " R" },
     { k: "ty", g: "slCam", label: "Alvo da câmera: altura", min: -20, max: 60, step: 0.1, u: " R" },
-    { k: "tz", g: "slCam", label: "Alvo da câmera: Z", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "tz", g: "slCam", label: "Alvo da câmera: Z", min: -400, max: 400, step: 0.1, u: " R" },
     { k: "persp", g: "slCam", label: "Perspectiva (0 = desligada, 1 = ligada)", min: 0, max: 1, step: 1, u: "" },
-    { k: "camDist", g: "slCam", label: "Distância da câmera (perspectiva)", min: 4, max: 400, step: 0.5, u: " R" },
+    { k: "camDist", g: "slCam", label: "Distância da câmera (perspectiva)", min: 4, max: 1200, step: 0.5, u: " R" },
     { k: "lens", g: "slCam", label: "Lente: grande-angular (18) a teleobjetiva (200)", min: 18, max: 200, step: 1, u: " mm" },
     { k: "atmo", g: "slCam", label: "Perspectiva atmosférica (longe = mais claro)", min: 0, max: 1, step: 0.05, u: "" },
     { k: "bodyPitch", g: "slScene", label: "Corpo inteiro: deitar de costas (−) / de bruços (+)", min: -180, max: 180, step: 1, u: "°" },
     { k: "bodyRoll", g: "slScene", label: "Corpo inteiro: deitar de lado", min: -180, max: 180, step: 1, u: "°" },
     { k: "bodyLift", g: "slScene", label: "Altura (salto, flutuar)", min: -2, max: 120, step: 0.1, u: " R" },
-    { k: "wx", g: "slScene", label: "Posição no chão: X", min: -200, max: 200, step: 0.1, u: " R" },
-    { k: "wz", g: "slScene", label: "Posição no chão: Z", min: -200, max: 200, step: 0.1, u: " R" },
+    { k: "wx", g: "slScene", label: "Posição no chão: X", min: -400, max: 400, step: 0.1, u: " R" },
+    { k: "wz", g: "slScene", label: "Posição no chão: Z", min: -400, max: 400, step: 0.1, u: " R" },
     { k: "wRot", g: "slScene", label: "Girar no chão", min: -180, max: 180, step: 1, u: "°" },
     { k: "headYaw", g: "slPose", label: "Girar o pescoço (rotação)", min: -80, max: 80, step: 1, u: "°" },
     { k: "headPitch", g: "slPose", label: "Baixar (+) / levantar (−) a cabeça", min: -60, max: 50, step: 1, u: "°" },
@@ -17529,7 +17529,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     const n2 = (v, mn, mx) => typeof v === "number" && isFinite(v) ? clamp(v, mn, mx) : void 0, cil = ehCilindro(q);
     const sin = { larg: "largura", prof: "profundidade", alt: "altura", raio: "diametro" };
     const ox = q.x, oz = q.z;
-    [["x", -200, 200], ["z", -200, 200], ["giro", -180, 180], ["larg", 0.2, 160], ["prof", 0.2, 160], ["alt", 0.2, 120], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
+    [["x", -400, 400], ["z", -400, 400], ["giro", -180, 180], ["larg", 0.2, 450], ["prof", 0.2, 450], ["alt", 0.2, 120], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
       let v0 = o[k] !== void 0 ? o[k] : o[sin[k]];
       if (k === "raio" && o.raio === void 0 && typeof o.diametro === "number") v0 = o.diametro / 2;
       const v = n2(v0, a, b);
@@ -18251,9 +18251,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     const explicito = Object.prototype.hasOwnProperty.call(opts, "area") || Object.prototype.hasOwnProperty.call(opts, "regiao");
     const area = explicito ? Object.prototype.hasOwnProperty.call(opts, "area") ? opts.area : opts.regiao : mesmaChaveOrb(SCN.pivo, alvo) ? SCN.orbitaArea : null;
     const A = resolverAlvo(alvo, { area });
-    P2.tx = clamp(A.c[0], -200, 200);
+    P2.tx = clamp(A.c[0], -400, 400);
     P2.ty = clamp(A.c[1], -20, 60);
-    P2.tz = clamp(A.c[2], -200, 200);
+    P2.tz = clamp(A.c[2], -400, 400);
     if (opts.enquadrar) enquadrarPivo(A, -(P2.pitch || 0), opts.folga);
     centrarPivo();
     SCN.pivo = A.chave;
@@ -18283,9 +18283,9 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (SCN.pivo === void 0 || SCN.pivo === null) return null;
     try {
       const A = resolverAlvo(SCN.pivo, { area: SCN.orbitaArea });
-      P2.tx = clamp(A.c[0], -200, 200);
+      P2.tx = clamp(A.c[0], -400, 400);
       P2.ty = clamp(A.c[1], -20, 60);
-      P2.tz = clamp(A.c[2], -200, 200);
+      P2.tz = clamp(A.c[2], -400, 400);
       return A;
     } catch (e) {
       SCN.pivo = null;
@@ -25673,7 +25673,7 @@ log(cena.vinculos());`,
     if (Array.isArray(sc.objetos)) sc.objetos.slice(0, 300).forEach((o) => {
       try {
         if (o && TIPOS_OBJETO[o.tipo]) {
-          const q = objetoPadrao(o.tipo), LIM = { x: [-200, 200], z: [-200, 200], giro: [-180, 180], larg: [0.2, 160], prof: [0.2, 160], alt: [0.2, 120], encosto: [0.5, 12], cabeceira: [0.5, 12], raio: [0.1, 20] };
+          const q = objetoPadrao(o.tipo), LIM = { x: [-400, 400], z: [-400, 400], giro: [-180, 180], larg: [0.2, 450], prof: [0.2, 450], alt: [0.2, 120], encosto: [0.5, 12], cabeceira: [0.5, 12], raio: [0.1, 20] };
           Object.keys(LIM).forEach((k) => {
             if (typeof o[k] === "number" && isFinite(o[k])) q[k] = clamp(o[k], LIM[k][0], LIM[k][1]);
           });
@@ -26758,9 +26758,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function aplicarCameraBlk(pos, alvo) {
     const r = direcaoPara(pos, alvo);
     if (r.d < 1) return false;
-    P2.tx = clamp(alvo[0], -200, 200);
+    P2.tx = clamp(alvo[0], -400, 400);
     P2.ty = clamp(alvo[1], -20, 60);
-    P2.tz = clamp(alvo[2], -200, 200);
+    P2.tz = clamp(alvo[2], -400, 400);
     P2.yaw = Math.round(r.yaw * 10) / 10;
     P2.pitch = clamp(Math.round(r.pitch * 10) / 10, -89, 89);
     P2.roll = 0;
@@ -26802,7 +26802,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function moverObjeto(id, x, z, apoiar) {
     const o = achaObj(id);
     if (!o) return;
-    editarObjeto(o, { x: r2(clamp(x, -200, 200)), z: r2(clamp(z, -200, 200)) });
+    editarObjeto(o, { x: r2(clamp(x, -400, 400)), z: r2(clamp(z, -400, 400)) });
     if (apoiar !== false) {
       const s = apoioSob(o, o.x, o.z);
       o.sobre = s && cabeEmCima(o, s) ? s.id : null;
@@ -28302,7 +28302,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       if (op.orto) P2.persp = 0;
       const raio = Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2;
       if (P2.persp) {
-        P2.camDist = clamp(raio * 2.4, 8, 400);
+        P2.camDist = clamp(raio * 2.4, 8, 1200);
         for (let k = 0; k < 6; k++) {
           const c = { ...SCN.list[0].params, ...P2 };
           let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
@@ -28316,7 +28316,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           const f = Math.max((x1 - x0) / (W * 0.9), (y1 - y0) / (op.alturaTela || H * 0.86)), Sc = Math.max(0.01, effScale(c));
           P2.panX = +(P2.panX - ((x0 + x1) / 2 - W / 2) / Sc).toFixed(3);
           P2.panY = +(P2.panY + ((y0 + y1) / 2 - H / 2) / Sc).toFixed(3);
-          P2.camDist = clamp(P2.camDist * Math.max(0.6, Math.min(1.8, f)), 6, 400);
+          P2.camDist = clamp(P2.camDist * Math.max(0.6, Math.min(1.8, f)), 6, 1200);
         }
       } else {
         const c = { ...SCN.list[0].params, ...P2 };
@@ -29475,9 +29475,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       pararSeguimentoCamera();
       SCN.ultimaVistaOrientada = null;
       SCN.pivo = null;
-      camSet("tx", x, -200, 200, "x");
+      camSet("tx", x, -400, 400, "x");
       camSet("ty", y, -20, 60, "y");
-      camSet("tz", z, -200, 200, "z");
+      camSet("tz", z, -400, 400, "z");
       P2.panX = 0;
       P2.panY = 0;
       return camera;
@@ -29635,9 +29635,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const it = alvos[0], po = pMundo(it), os = ossosDoCorpo(po), M2 = paraMundo(po), cr = os.ossos.find((x) => x.nome === "crânio"), cab = M2(cr.a), pel = M2(os.juntas.find((x) => x.nome === "pelve").P);
       const Hs = 1 - restGround(SCN.list[0].params), hreg = f * Hs, topo = cab[1] + cr.r * 1.05, b = Math.min(1, Math.max(0, (f - 0.3) / 0.7));
       const c = [cab[0] + (pel[0] - cab[0]) * b, topo - hreg / 2, cab[2] + (pel[2] - cab[2]) * b];
-      P2.tx = clamp(c[0], -200, 200);
+      P2.tx = clamp(c[0], -400, 400);
       P2.ty = clamp(c[1], -20, 60);
-      P2.tz = clamp(c[2], -200, 200);
+      P2.tz = clamp(c[2], -400, 400);
       const S = (SCN.recorte ? SCN.recorte.h : H) * 0.86 / (hreg * 1.08);
       if (P2.persp) {
         let d = W / 2 * (P2.lens || 50) / (18 * S);
@@ -30257,6 +30257,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       base2 = pai.itens.map((x) => Object.assign({}, x));
       plano.desloc = (pai.desloc || [0, 0]).slice();
       Object.assign(plano.marcas, pai.marcas);
+      plano.marcasNivel = Object.assign({}, pai.marcasNivel || {});
       Object.assign(plano.regioes, pai.regioes);
       Object.assign(plano.niveis, pai.niveis);
       Object.assign(plano.salas, pai.salas);
@@ -30516,7 +30517,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           const r = [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1])], w = r[2] - r[0], d = r[3] - r[1];
           const dir = o.sobe || (w > d ? b[0] > a[0] ? "leste" : "oeste" : b[1] > a[1] ? "norte" : "sul"), aoLongoZ = dir === "norte" || dir === "sul";
           const giro = { norte: 0, sul: 180, leste: 90, oeste: -90 }[dir] * (plano.norte > 0 ? 1 : -1);
-          add3({ tipo: cmd === "rampa" ? "rampaDegraus" : "rampaDegraus", x: (r[0] + r[2]) / 2, z: (r[1] + r[3]) / 2, larg: aoLongoZ ? w : d, prof: aoLongoZ ? d : w, alt: o.alt || 2.8 * NM_M, giro, classe: o.classe || "madeira", nome: o.nome || "escada" });
+          const baseE = o.base || (o.nivel && plano.niveis[o.nivel] ? plano.niveis[o.nivel].altura : 0);
+          add3({ tipo: "rampaDegraus", x: (r[0] + r[2]) / 2, z: (r[1] + r[3]) / 2, larg: aoLongoZ ? w : d, prof: aoLongoZ ? d : w, alt: (o.alt || 2.8 * NM_M) - baseE, giro, base: baseE || void 0, classe: o.classe || "madeira", nome: o.nome || "escada", escada: true });
         } else if (cmd === "nivel" || cmd === "nível" || cmd === "terraco" || cmd === "terraço" || cmd === "mezanino" || cmd === "plataforma" || cmd === "palco") {
           let k = 1, nomeN = null;
           if (toks[k] && toks[k].t === "str") nomeN = toks[k++].v;
@@ -30533,9 +30535,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           const nm = toks[1].v;
           let k = 2;
           if (toks[k] && nmNorm(toks[k].v) === "em") k++;
-          const [p] = ponto(toks, k);
-          if (!p) throw new NmErro('marca "nome" em (x,z)', l.linha);
+          const [p, kk] = ponto(toks, k);
+          if (!p) throw new NmErro('marca "nome" em (x,z) [nivel "Terraço"]', l.linha);
           plano.marcas[nm] = p;
+          const om = opc(toks, kk);
+          if (om.nivel) (plano.marcasNivel = plano.marcasNivel || {})[nm] = om.nivel;
         } else if (cmd === "regiao" || cmd === "região" || cmd === "area" || cmd === "área" || cmd === "zona") {
           const nm = toks[1].v;
           let k = 2;
@@ -30629,7 +30633,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function nmValidarLocal(pl) {
     const av = [], it = pl.itens, M2 = (v) => (v / NM_M).toFixed(1) + " m";
     it.forEach((o) => {
-      if (Math.abs(o.x) + o.larg / 2 > 200 || Math.abs(o.z) + o.prof / 2 > 200) av.push("“" + o.nome + "” passa do limite do palco (±22 m do centro)");
+      if (Math.abs(o.x) + o.larg / 2 > 400 || Math.abs(o.z) + o.prof / 2 > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)");
+      if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes");
     });
     if (it.length > 300) av.push("mais de 300 peças: só as 300 primeiras entram");
     const altas = it.filter((o) => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel), caixa2 = (o) => {
@@ -30675,6 +30680,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         }
         q.grupo = "local:" + plano.nome;
         if (it.chao) q.chao = true;
+        if (it.nivel && it.tipo === "caixa") q.nivel = it.nivel;
         const base2 = it.cor && /^#[0-9a-f]{6}$/i.test(it.cor) ? null : NM_CLASSE_COR[it.classe];
         if (it.cor && /^#[0-9a-f]{6}$/i.test(it.cor)) q.col = { fill: it.cor.toLowerCase(), ink: nmTinta(it.cor) };
         else if (base2) {
@@ -30686,7 +30692,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       }
     }
     if (plano.itens.length > 300) avisos.push("O local tem " + plano.itens.length + " peças; só as 300 primeiras entram.");
-    SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
+    SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcasNivel: plano.marcasNivel || {}, marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
     return avisos;
   }
   var nmAoMudar = null;
@@ -30793,6 +30799,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           e.tamanho = toks[++k].v;
         } else if (w === "apelido" || w === "=") {
           e.apelidos.push(toks[++k].v);
+        } else if (w === "veste" || w === "visual" || w === "roupa" || w === "usa") {
+          e.visual = toks[++k].v;
         } else if (/^(masculino|feminino)$/.test(w)) e.corpo = w + (toks[k + 1] && /^(magro|medio|atletico|musculoso|cheio)$/i.test(toks[k + 1].v) ? " " + toks[++k].v : "");
         else if (/^(magro|medio|atletico|musculoso|cheio)$/.test(w)) e.corpo = (e.corpo || "masculino") + " " + w;
       }
@@ -30857,7 +30865,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     for (let k = 0; k < toks.length; k++) {
       const t = toks[k], w = nmNorm(t.v);
       try {
-        if (t.t === "str" && q.titulo === null && k === 0) {
+        if (t.t === "str" && q.titulo === null && (k === 0 || k === 1 && toks[0].t === "num")) {
           q.titulo = t.v;
           continue;
         }
@@ -30898,7 +30906,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         else if (w === "legenda") q.legenda = toks[++k].v;
         else if (w === "titulo" || w === "título") q.titulo = toks[++k].v;
         else if (w === "elevacao" || w === "elevação") q.elevacao = toks[++k].v;
-        else if (w === "camera" || w === "câmera") {
+        else if (w === "hora" || w === "luz") {
+          q.hora = toks[++k].v;
+        } else if (w === "camera" || w === "câmera") {
           q.camera = toks[++k].v;
           if (toks[k + 1] && nmNorm(toks[k + 1].v) === "olhando") {
             k++;
@@ -30912,7 +30922,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     return q;
   }
-  var NM_CHAVES_Q = /* @__PURE__ */ new Set(["local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
+  var NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
+  var NM_CHAVES_Q = /* @__PURE__ */ new Set(["hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
   var NM_CHAVES_P = /* @__PURE__ */ new Set(["em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
   function nmPontoDe(ctx, tok, toks, k) {
     if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
@@ -31183,7 +31194,12 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return true;
   }
   function nmPoseValida(p, linha) {
-    const ok3 = todasPoses(), k = nomePose(p);
+    const ok3 = todasPoses();
+    let k = nomePose(p);
+    if (!ok3.includes(k)) {
+      const k2 = nomePose(String(p).replace(/-/g, ""));
+      if (ok3.includes(k2)) k = k2;
+    }
     if (ok3.includes(k)) return k;
     const s = nmParecida(p, ok3);
     throw new NmErro("Pose “" + p + "” não existe." + (s ? " Quis dizer “" + s + "”?" : ""), linha);
@@ -31377,7 +31393,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       P2.persp = 1;
       P2.lens = 35;
       cena.enquadrarTudo({ yaw: yawBase, pitch: pit });
-      if (P2.camDist >= 399) {
+      if (P2.camDist >= 1199) {
         P2.lens = 20;
         cena.enquadrarTudo({ yaw: yawBase, pitch: pit });
       }
@@ -31494,7 +31510,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const f = Math.max((x1 - x0) / (rc.w * folga), (y1 - y0) / (rc.h * folga));
       if (k < 8 && soPan && P2.persp) P2.lens = Math.max(18, Math.min(200, P2.lens / Math.max(0.7, Math.min(1.4, f))));
       else if (k < 8) {
-        if (P2.persp) P2.camDist = Math.min(400, Math.max(6, P2.camDist * Math.max(0.7, Math.min(1.4, f))));
+        if (P2.persp) P2.camDist = Math.min(1200, Math.max(6, P2.camDist * Math.max(0.7, Math.min(1.4, f))));
         else P2.zoom = Math.max(0.01, Math.min(12, P2.zoom / Math.max(0.7, Math.min(1.4, f))));
       }
     }
@@ -31586,7 +31602,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       return e ? e.nomeCor : "cinza";
     };
     if (Q.transicao) partes2.push(Q.transicao);
-    if (loc) partes2.push(loc + (Q.cab.funcao ? " — " + Q.cab.funcao : "") + ".");
+    if (loc) partes2.push(loc + (Q.hora ? ", " + Q.hora : "") + (Q.cab.funcao ? " — " + Q.cab.funcao : "") + ".");
     for (const f of Q.feitos) {
       const nomes = f.nome.split(" e "), quem = nomes.map((n2) => n2 + " (" + cor2(n2) + ")").join(" e "), acts = [];
       if (f.acao) acts.push(nmFrase(f.acao));
@@ -31719,6 +31735,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
             }
             Q.avisos.push(...nmMontarLocal(pl));
             localAtual = pl;
+            ctx.hora = null;
           } else if (!Q.cab.continua && localAtual) {
             SCN.list.slice(1).forEach((it) => delInst(it));
             SCN.list[0].oculto = true;
@@ -31798,7 +31815,18 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           }
           SCN.list.forEach((it) => {
             if (it.oculto || it.name === "__vazio__") return;
-            const o = nmDentroDe(it, Q.segurados);
+            let o = nmDentroDe(it, Q.segurados);
+            if (o && o.nivel && o.chao !== true) {
+              it.params.bodyLift = (o.base || 0) + o.alt;
+              it.params.ground = 0;
+              o = nmDentroDe(it, Q.segurados);
+            }
+            if (o && o.tipo === "rampaDegraus") {
+              const g = (o.giro || 0) * Math.PI / 180, dx = it.params.wx - o.x, dz = it.params.wz - o.z, lz = dx * Math.sin(g) + dz * Math.cos(g), t = Math.max(0, Math.min(1, (lz + o.prof / 2) / o.prof));
+              it.params.bodyLift = (o.base || 0) + o.alt * t;
+              it.params.ground = 0;
+              o = null;
+            }
             if (o) {
               nmTirarDe(it, o);
               Q.avisos.push(it.name + " estava dentro de “" + (o.nome || o.tipo) + "”; foi para fora");
@@ -31815,6 +31843,15 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           SCN.active = Math.max(0, SCN.list.findIndex((x) => !x.oculto));
           const fq = Q.cab.formato;
           SCN.recorte = fq ? recorteQuadro(fq) : null;
+          if (Q.cab.hora) {
+            const hh = NM_HORAS[nmNorm(Q.cab.hora).replace(/\s+/g, "-")];
+            if (hh) {
+              P2.lightAz = hh[0];
+              P2.lightEl = hh[1];
+            }
+            ctx.hora = hh ? hh[2] : String(Q.cab.hora);
+          }
+          Q.hora = ctx.hora || null;
           const plano = nmCamera(ctx, Q);
           const camW = () => {
             const a = (P2.yaw || 0) * Math.PI / 180, d = Math.max(10, P2.camDist || 30);
@@ -31882,7 +31919,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       avisos,
       quadros,
       paginas: paginas.filter((p) => p.quadros.length),
-      elenco: [...ctx.elenco.values()].map((e) => ({ nome: e.nome, papel: e.papel, cor: e.nomeCor, hex: e.hex, corpo: e.corpo })),
+      elenco: [...ctx.elenco.values()].map((e) => ({ nome: e.nome, papel: e.papel, cor: e.nomeCor, hex: e.hex, corpo: e.corpo, visual: e.visual || null })),
       locais: [...ctx.locais.values()].map((l) => ({ nome: l.nome, pecas: l.itens.length, marcas: Object.keys(l.marcas), regioes: Object.keys(l.regioes), niveis: Object.keys(l.niveis), codigo: l.codigo, daBiblioteca: l.daBiblioteca || null }))
     };
   }
@@ -31993,6 +32030,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         nmCentrar({ x: 0, y: H / 2 - ih0 / 2, w: W, h: ih0 }, 0.92);
       }
       const list = sceneList(true);
+      list.efeitos = [];
       const r = renderScene(list, Object.assign({}, L2, { grid: false, floor: false, horizon: false }), true, 0, { canal: "ficha-iso" });
       const ih = Math.round(W / 1.15), iy = Math.round(H / 2 - ih / 2);
       const iso = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ' + iy + " " + W + " " + ih + '" width="' + W + '" height="' + ih + '"><rect y="' + iy + '" width="' + W + '" height="' + ih + '" fill="#ffffff"/>' + r.svg + "</svg>";
@@ -32070,11 +32108,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     r.quadros.forEach((q) => q.personagens.forEach((p) => {
       (usos[p.nome] = usos[p.nome] || []).push(q.indice + 1);
     }));
-    const lista2 = r.elenco.map((e) => ({ nome: e.nome, papel: e.papel, cor: e.cor, hex: e.hex, quadros: usos[e.nome] || [] }));
+    const lista2 = r.elenco.map((e) => ({ nome: e.nome, papel: e.papel, cor: e.cor, hex: e.hex, visual: e.visual || null, quadros: usos[e.nome] || [] }));
     const h = 70 + lista2.length * 46, svg = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 ' + h + '" width="760" height="' + h + '"><rect width="760" height="' + h + '" fill="#fff"/><text x="24" y="44" font-family="Arial" font-weight="700" font-size="26" fill="#111">Elenco por cor</text>'];
     lista2.forEach((e, i) => {
       const y = 70 + i * 46;
-      svg.push('<rect x="24" y="' + y + '" width="64" height="34" rx="6" fill="' + e.hex + '" stroke="#111" stroke-width="2"/><text x="104" y="' + (y + 25) + '" font-family="Arial" font-size="22" fill="#111">' + nmEsc(e.cor + " = " + e.nome + (e.papel === "figurante" ? " (figurantes)" : "") + (e.quadros.length ? " · quadros " + e.quadros.join(", ") : "")) + "</text>");
+      svg.push('<rect x="24" y="' + y + '" width="64" height="34" rx="6" fill="' + e.hex + '" stroke="#111" stroke-width="2"/><text x="104" y="' + (y + 25) + '" font-family="Arial" font-size="22" fill="#111">' + nmEsc(e.cor + " = " + e.nome + (e.visual ? " (" + e.visual + ")" : "") + (e.papel === "figurante" ? " (figurantes)" : "") + (e.quadros.length ? " · quadros " + e.quadros.join(", ") : "")) + "</text>");
     });
     svg.push("</svg>");
     return { lista: lista2, svg: svg.join("") };
@@ -32149,6 +32187,8 @@ imagem fazer a arte final. Não há texto dentro dos quadros: o texto vai na leg
 - Comentários: "// texto", "-- texto" ou "# texto" (com espaço depois do #). Cores "#a1b2c3" não são comentário.
 - Unidade padrão: METROS. Também: 30cm, 2.5m, 12R (R = unidade do manequim, 1 R ≈ 11,4 cm). Ângulos em graus.
 - Coordenadas (x,z) vistas DE CIMA: x cresce para a DIREITA (leste), z cresce para CIMA na planta (norte, "para o fundo").
+- Direção ("gira"): gira 0 = virado para o NORTE (+z); gira 90 = LESTE (+x); 180 = sul; -90 (ou 270) = oeste.
+  Vale para pessoas e objetos (num objeto, gira 90 deita o comprimento dele ao longo de x).
   Altura é sempre separada (altura 3, base 1). Um ponto pode ser (x,z) ou (x,altura,z) quando a altura importa (câmera).
 - Faixa sorteada: 3..6 (inteiro entre 3 e 6). Porcentagem: 60%. Texto com espaços: "entre aspas".
 - Palavras-chave sem acento também valem (plongee, angulo, transicao). Nomes com espaço vão entre aspas.
@@ -32159,14 +32199,18 @@ imagem fazer a arte final. Não há texto dentro dos quadros: o texto vai na leg
 elenco
   Kai relevante corpo masculino atletico      ← cada relevante ganha uma cor fixa a história toda
   Mira relevante corpo feminino cor roxo       ← cor escolhida (opcional)
+  Dom relevante corpo masculino veste "capuz preto"   ← aparência (vai para a legenda de cores e o manifesto)
   Tomo relevante corpo crianca                 ← crianca | menino | menina
   povo figurante                               ← TODOS os figurantes têm a mesma cor neutra (cinza)
+  guardas figurante                            ← pode haver vários grupos (um por tipo de gente); cada um tem a sua linha no quadro
 Cores dos relevantes, na ordem: ${NM_CORES.map((c) => c[0]).join(", ")} (até 12). Figurantes: cinza.
 Corpos: masculino | feminino [magro | medio | atletico | musculoso | cheio] · crianca | menino | menina. "tamanho 0.9" muda a escala.
-"apelido Kaizinho" deixa usar outro nome. A legenda das cores (manifesto + cartão) diz "vermelho = Kai".
+"apelido Kaizinho" deixa usar outro nome. Nomes podem ter acento (Téo); nomes com espaço vão entre aspas.
+A legenda das cores (manifesto + cartão) diz "vermelho = Kai".
 
 3. LOCAL (o cenário, descrito com geometria)
 local "Nome" [unidade m|R] [origem (x,z)|auto] [norte -z] [herda "Outro local"] [planta "imagem" linha N largura 20]
+  norte -z: inverte o eixo z (use quando o "para cima" da imagem for z negativo); o padrão é norte = +z.
   A origem: se a IA escolheu um ponto (0,0) na imagem, escreva "origem (0,0)" e use as MESMAS coordenadas para os
   personagens. "auto" (padrão) centraliza o desenho, mas os personagens continuam na mesma conta: tudo bate.
   herda "Rua": copia o outro local e acrescenta o que vier (ex.: a mesma rua à noite, com lixo e um carro).
@@ -32177,20 +32221,25 @@ Peças do local (uma por linha):
   chao retangulo x0,z0 a x1,z1 [classe areia|grama|pedra|piso|terra|madeira]
   chao circulo em (x,z) raio 8
   parede linha (x,z)-(x,z)-(x,z) [altura 3] [espessura 0.25] [vao porta (x,z) largura 1] [vao janela (x,z) largura 1.2]
+       ("vao" pode repetir quantas vezes quiser na mesma linha)
   muro linha …   ·   cerca linha … (cerca = 1,1 m, fina, de madeira)
   sala "Cozinha" retangulo x0,z0 a x1,z1 [altura 3] [porta lado sul [em 2] [largura 1]] [janela lado norte] [telhado]
-       (os lados são norte = z maior, sul = z menor, leste = x maior, oeste = x menor; "em 2" = a 2 m do canto)
+       (os lados são norte = z maior, sul = z menor, leste = x maior, oeste = x menor; "em 2" = a 2 m do canto de x menor
+        nos lados norte/sul, ou do canto de z menor nos lados leste/oeste; sem "em", a porta fica no meio)
   casa "Casa do Kai" retangulo … altura 6     ·   predio "Torre" retangulo … altura 20   (bloco fechado)
   escada de (x,z) ate (x,z) sobe-para norte altura 3      (escadaria: sobe de A para B; a altura é a do topo)
+  escada de (x,z) ate (x,z) sobe-para leste base 1.6 altura 3.2   (lanço que COMEÇA a 1,6 m: escada em L = dois lanços
+       e um nivel "patamar" altura 1.6 entre eles; "nivel "Patamar"" no lugar de "base" também vale)
   escada em (x,z)                                          (escada de mão, objeto)
   rampa de (x,z) ate (x,z) altura 1
   nivel "Terraço" altura 2 retangulo x0,z0 a x1,z1         (plataforma, mezanino, palco; "terraco", "palco" também)
-  marca "porta" em (x,z)                                   (ponto com nome, para usar nos quadros)
+  marca "porta" em (x,z) [nivel "Terraço"]                 (ponto com nome, para usar nos quadros)
   regiao "feira" retangulo x0,z0 a x1,z1                   (área com nome: figurantes "em regiao "feira"")
   <objeto> ["nome"] em (x,z) [gira 30] [tamanho LxPxA] [raio r] [altura h] [base h] [classe madeira] [cor #8a5a2b] [nivel "Terraço"]
   <objeto> encostado-em "Cozinha" lado norte [aos 2]       (encosta na parede de dentro da sala/região)
   <objeto> centro-de "Cozinha"   ·   <objeto> entre (x,z) e (x,z)   ·   <objeto> em marca "fonte"
-  fileira 6 banca de (x,z) ate (x,z) [tamanho …] [variar 0.2]   (N objetos em linha)
+  fileira 6 banca de (x,z) ate (x,z) [tamanho …] [variar 0.2]   (N objetos em linha; aceita as mesmas opções de um objeto:
+       altura, classe, cor, gira…)
   grade-de 3x4 coluna de (x,z) ate (x,z)                         (grade C colunas × L linhas)
   circulo-de 8 arvore em (x,z) raio 6                             (N objetos em roda, virados para o centro)
   repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
@@ -32198,12 +32247,16 @@ Objetos: ${mnLista(O)}.
   Também valem: banca/balcão/barraca (caixas com nome), pilar (= coluna), "árvore", "poço".
   "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus, anti-horário visto de cima).
   Cores: por classe (parede, madeira, vegetacao, agua, pedra, areia, piso, grama, terra, tecido, metal, telhado) ou "cor #hex".
+  Dois "chao" que se cobrem: o escrito DEPOIS fica por cima (ex.: piso de pedra e, depois, um tapete de grama).
+  Limites: o palco vai até ±45 m do centro; uma peça tem no máximo 51 m de lado (divida um chão maior em partes).
+  O que não existe (trem, trilho, carro, poste…): use caixa/cilindro/coluna com nome e tamanho ("caixa "vagão" em … tamanho 15x3x3.5").
 
 4. QUADRO (um momento: um painel do name)
 quadro [n] ["título"] [local "Nome" | continua | novo] [plano …] [angulo … [graus]] [alvo A, B] [lado …] [lente 35]
-       [formato 16:9] [tamanho grande] [funcao "…"] [legenda "…"] [camera (x,y,z) olhando (x,y,z)]
+       [formato 16:9] [tamanho grande] [funcao "…"] [legenda "…"] [hora tarde] [camera (x,y,z) olhando (x,y,z)]
 - local "X": troca de cenário (corte): tira personagens e figurantes do quadro anterior.
-- continua (padrão): mesmo local, mesmas pessoas onde estavam; escreva só o que muda.
+- continua (padrão): mesmo local, mesmas pessoas onde estavam (inclusive em cima de nível); escreva só o que muda.
+  Figurantes também ficam; escrever de novo a linha de um grupo TROCA esse grupo ("mantem" acrescenta em vez de trocar).
 - novo: mesmo local, mas começa vazio.
 - plano: geral (o lugar todo) | conjunto | inteiro (corpo inteiro) | americano (joelhos para cima) | medio (cintura) |
          primeiro-plano (peito) | close (rosto) | detalhe | pov.
@@ -32212,6 +32265,7 @@ quadro [n] ["título"] [local "Nome" | continua | novo] [plano …] [angulo … 
 - alvo: em quem a câmera mira (padrão: quem está no quadro).
 - formato: 16:9, 4:3, 3:4, 9:16, 1:1, 2:1, 21:9, vertical, horizontal, quadrado.
 - tamanho (na página): grande | largo | alto | normal | pequeno | inserto. Função de clímax/impacto/revelação → grande.
+- hora: manha | dia | meio-dia | tarde | entardecer | noite | interior (muda a luz e entra na legenda; vale até trocar de local).
 - funcao: a função narrativa do quadro (estabelecimento, reação, ação, clímax, transição, detalhe, revelação…).
 - A câmera foge sozinha de parede entre ela e o alvo (gira para o lado livre mais perto e avisa).
 
@@ -32223,7 +32277,12 @@ Personagem (uma linha por pessoa ou por grupo "Kai, Mira"):
        [acao nome] [expressao nome [intensidade 0.7]] [olha Outro | olha (x,z) | olha camera]
        [segura objeto [como pegada]] [carrega | levanta | puxa | empurra | arrasta objeto]
        [interacao tipo com Outro] [efeito tipo [em maoDir]] [molejo 0.6] [fala "…"] [sai]
-  "frente-de Kai" = na frente de Kai (para onde ele olha), virado para ele.
+  "frente-de Kai" = na frente de Kai (para onde ele olha), virado para ele. frente-de/atras-de/ao-lado-de/perto-de aceitam
+  pessoa, marca ou objeto pelo nome ("ao-lado-de "coluna 3"").
+  Posição dentro de um "nivel" (plataforma, passarela) = a pessoa fica EM CIMA dele, sozinha.
+  segura/empurra/carrega <objeto>: o nome dado no local (com aspas se tiver espaço) ou um TIPO da lista (aí um objeto novo,
+  do tamanho da pessoa, aparece nas mãos). "como" escolhe a pegada (lista abaixo).
+  interacao <tipo> com Outro: basta posicionar o primeiro; o outro vai para o ponto certo da interação.
   Se a posição cair dentro de parede/objeto, a pessoa sai pelo lado mais perto (aviso).
 Figurantes (procedurais):
   povo 20..30 [multidao | grade | circulo | fila | arco] [em regiao "feira" | em fundo | em area (x,z) (x,z) | em (x,z) | em marca "m"]
@@ -32241,15 +32300,16 @@ Outras linhas do quadro:
   usar conversa(Kai, Mira)     (modelo definido antes: "modelo conversa(a, b)" + linhas com a e b)
 
 Listas:
-  Poses (${P3.length}): ${mnLista(P3)}.
+  Poses (${P3.length}): ${mnLista(P3)}. (com ou sem hífen: empe = em-pe)
   Expressões (${X.length}): ${mnLista(X)}.
   Ações com efeito (acao): ${mnLista(A)}.
   Interações a dois (${I.length}): ${mnLista(I)}.
   Pegadas (segura … como …): ${mnLista(G)}.
-  Efeitos (efeito …): ${mnLista(F3, 60)}.
+  Efeitos (efeito …): ${mnLista(F3)}.
 
 5. TRANSIÇÃO, PÁGINA, SEMENTE, VARIÁVEIS, MODELOS
-transicao tempo ["Mais tarde"] | lugar | corte | flashback   (vale para o quadro seguinte; entra na legenda e no manifesto)
+transicao tempo ["Mais tarde"] | lugar | corte | flashback   (vale para o quadro seguinte; entra na legenda e no manifesto;
+          é informação para a montagem e para a IA de imagem: não muda a cena sozinha)
 pagina [grade 2x2|3|4|…] [leitura ocidental|japonesa]       (os quadros seguintes vão para uma página nova; japonesa = da direita)
 semente 12                                                   (sorteios reproduzíveis)
 define altura 3   →  use $altura
@@ -32278,6 +32338,8 @@ modelo conversa(a, b)
 - Tempo passou? "transicao tempo". Mudou de lugar? "transicao lugar" + novo local. Lembrança? "transicao flashback".
 - Relevantes sempre com o mesmo nome do elenco; multidões como figurantes (um grupo por tipo de gente).
 - Pense em 4 a 7 quadros por página; use "pagina" para cortar.
+- "tamanho" tem dois sentidos: no QUADRO é o tamanho na página (grande, pequeno…); num OBJETO é LxPxA em metros.
+- O que a DSL não tem (roupa detalhada, chuva, expressão muito específica): escreva na "legenda" do quadro.
 
 9. LER UMA IMAGEM E DESCREVER O CENÁRIO (para a IA que olha uma foto, desenho ou planta)
 Objetivo: transformar a imagem num "local" com números. Passo a passo:

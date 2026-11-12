@@ -99,7 +99,7 @@ function pivoCamera(alvo,opts={}) {
   const area=explicito?(Object.prototype.hasOwnProperty.call(opts,"area")?opts.area:opts.regiao):
     (mesmaChaveOrb(SCN.pivo,alvo)?SCN.orbitaArea:null);
   const A=resolverAlvo(alvo,{area});
-  P.tx=clamp(A.c[0],-200,200);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-200,200);
+  P.tx=clamp(A.c[0],-400,400);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-400,400);
   if(opts.enquadrar)enquadrarPivo(A,-(P.pitch||0),opts.folga);
   centrarPivo();SCN.pivo=A.chave;SCN.orbitaArea=A.area;
   return A;
@@ -122,7 +122,7 @@ function atualizarFocoOrbita(){
   if(SCN.pivo===undefined||SCN.pivo===null)return null;
   try{
     const A=resolverAlvo(SCN.pivo,{area:SCN.orbitaArea});
-    P.tx=clamp(A.c[0],-200,200);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-200,200);
+    P.tx=clamp(A.c[0],-400,400);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-400,400);
     return A;
   }catch(e){SCN.pivo=null;SCN.orbitaArea=null;return null;}
 }
