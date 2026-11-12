@@ -4,7 +4,7 @@ import { $ } from "../scene/ambiente.js";
 import { P } from "../scene/modelo.js";
 import { SL, POSEKEYS } from "../scene/parametros.js";
 import { L } from "../scene/modos.js";
-import { doBodyPose, guardArms, limitesAcoplados, todasPoses } from "../scene/poses.js";
+import { doBodyPose, guardArms, limitesAcoplados, todasPoses, POSE_GRUPOS } from "../scene/poses.js";
 import { espelharPoseP } from "../scene/comandos.js";
 import { ARTICULACOES, GESTOS, aplicarGesto, clamp, paramsDaArticulacao } from "../engine/index.js";
 import { lastInfo, render, svgEl } from "./palco.js";
@@ -73,7 +73,9 @@ function arrastarJunta(drag, q) {
 let copia = null;
 export function iniciarArticulacoes() {
   const lib = $("poseLib"); if (!lib) return;
-  lib.innerHTML = '<option value="">— escolha uma pose —</option>' + todasPoses().map(k => '<option value="' + k + '">' + nomeBonito(k) + "</option>").join("");
+  { const todas = new Set(todasPoses()), usadas = new Set();
+    lib.innerHTML = '<option value="">— escolha uma pose —</option>' + Object.entries(POSE_GRUPOS).map(([g, ks]) => '<optgroup label="' + g + '">' + ks.filter(k => todas.has(k)).map(k => { usadas.add(k); return '<option value="' + k + '">' + nomeBonito(k) + "</option>"; }).join("") + "</optgroup>").join("") +
+      [...todas].filter(k => !usadas.has(k)).map(k => '<option value="' + k + '">' + nomeBonito(k) + "</option>").join(""); }
   lib.addEventListener("change", () => { if (!lib.value) return; doBodyPose(lib.value, { lado: $("poseLado").value }); syncControls(); render(); });
   ["gestoE", "gestoD"].forEach((id, i) => {
     const el = $(id); el.innerHTML = '<option value="">—</option>' + Object.keys(GESTOS).map(k => '<option value="' + k + '">' + k + "</option>").join("");

@@ -81,7 +81,7 @@ const trios = a => { const o = []; for (let i = 0; i < a.length; i += 3) o.push(
   ok(ruins === 0, "200 poses ao acaso: todos os 137 pontos finitos");
   ok(atravessa > 0 && atravessa < 200, "a autocolisão separa poses possíveis das que atravessam (" + atravessa + " de 200 atravessam)");
   /* poses prontas: só as de contato proposital passam da tolerância */
-  const contato = new Set(["sentado", "abracandoJoelhos", "escorpiao", "camelo"]), ruinsP = [];
+  const contato = new Set(["sentado", "abracandoJoelhos", "escorpiao", "camelo", "sentadoChao", "meditando", "lotusFlutuando", "maosEmPrece", "bracosCruzadosPeito"]), ruinsP = [];
   w.todasPoses().forEach(n => { const w2 = createWorld(); try { w2.cena.ativo.poseRapida(n); } catch (e) { return; } if (!w2.cena.ativo.validarPose().ok && !contato.has(n)) ruinsP.push(n); });
   ok(!ruinsP.length, "poses prontas sem partes atravessando (fora as de contato proposital)" + (ruinsP.length ? ": " + ruinsP.join(", ") : "")); }
 /* gestos novos */
