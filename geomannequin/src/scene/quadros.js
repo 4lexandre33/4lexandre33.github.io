@@ -90,7 +90,7 @@ function rodarBloco(codigo, linhaInicial) {
   LOG.length = 0; const saida = [];
   const log = (...a) => saida.push(a.map(x => typeof x === "object" ? JSON.stringify(x) : String(x)).join(" "));
   try {
-    if (codigo.trim()) new Function("cena", "camera", "tema", "log", "pose", '"use strict";\n' + codigo)(cena, camera, tema, log, poseCmd);
+    if (codigo.trim()) new Function("cena", "camera", "tema", "log", "pose", "efeito", '"use strict";\n' + codigo)(cena, camera, tema, log, poseCmd, (t, o) => cena.efeito(t, o));
     return { ok: true, saida, avisos: LOG.filter(x => x[0] === "aviso").map(x => x[1]) };
   } catch (err) {
     /* a linha do erro dentro do bloco: o quadro do código do usuário (função criada em rodarBloco) */
@@ -222,11 +222,13 @@ function renderizarQuadro(q, opts) {
     const out = { n: q.n, titulo: q.titulo, formato: q.formato, recorte: rc, svg: svgRecortado(r.svg, rc, fundo) };
     if (opts.passes === false) return out;
     const passes = opts.passes || Object.fromEntries(PASSES_QUADRO.map(k => [k, true]));
-    if (passes.contorno) { const lst2 = sceneList(true); lst2.forEach(o => { o.pal = Object.assign({}, o.pal, { fill: "#FFFFFF", shade1: "#FFFFFF", shade2: "#FFFFFF", shade3: "#FFFFFF", ink: "#111111" }); }); if (lst2.palObjetos) lst2.palObjetos = Object.assign({}, lst2.palObjetos, { fill: "#FFFFFF", shade1: "#FFFFFF", shade2: "#FFFFFF", shade3: "#FFFFFF", ink: "#111111" }); lst2.objetos = (lst2.objetos || []).map(o => Object.assign({}, o, { _cor: { fill: "#FFFFFF", ink: "#111111" } }));
+    /* efeitos especiais ficam fora das referências do ControlNet (contorno, profundidade…), a não ser com opts.efeitosNasReferencias */
+    const semFx = l => { if (!opts.efeitosNasReferencias) l.efeitos = []; return l; };
+    if (passes.contorno) { const lst2 = semFx(sceneList(true)); lst2.forEach(o => { o.pal = Object.assign({}, o.pal, { fill: "#FFFFFF", shade1: "#FFFFFF", shade2: "#FFFFFF", shade3: "#FFFFFF", ink: "#111111" }); }); if (lst2.palObjetos) lst2.palObjetos = Object.assign({}, lst2.palObjetos, { fill: "#FFFFFF", shade1: "#FFFFFF", shade2: "#FFFFFF", shade3: "#FFFFFF", ink: "#111111" }); lst2.objetos = (lst2.objetos || []).map(o => Object.assign({}, o, { _cor: { fill: "#FFFFFF", ink: "#111111" } }));
       const rl = renderScene(lst2, Object.assign({}, L, { grid: false, floor: false, horizon: false, shadow: false, fill: true, shade: false, cel: false, rings: false, merid: false, girdle: false, prop: false, sphere: false, planes: false, hidden: false, ocultas: 0, ossos: false, fibras: false }), false, 0, { canal: "quadros-linha" }); out.contorno = svgRecortado(rl.svg, rc, "#FFFFFF"); }
     const precisaZ = ["openpose", "profundidade", "mascara", "normal", "partes", "canny"].some(k => passes[k]);
     if (!precisaZ) return comCena(out, list);
-    const { U, zt, id, pt } = capturarPasses(sceneList(true));
+    const { U, zt, id, pt } = capturarPasses(semFx(sceneList(true)));
     const x0 = Math.max(0, Math.floor(rc.x)), y0 = Math.max(0, Math.floor(rc.y)), w = Math.min(W - x0, Math.round(rc.w)), h = Math.min(H - y0, Math.round(rc.h)), C = 1;
     const at = (x, y) => (y0 + y) * W + x0 + x;
     if (passes.openpose) {

@@ -34,6 +34,9 @@ function render(){
    Durante um arraste, a camada do manequim ativo é refeita aqui mesmo (resposta imediata); as outras vão para os
    Web Workers (vários núcleos) e entram na tela quando ficam prontas — até lá aparece a foto anterior. */
 let camadasInfo=[],ULT={S:0,panX:0,panY:0};
+/* desenho extra por cima da cena, só na tela (alças do efeito selecionado) */
+let OVERLAY=null;
+export function setOverlay(fn){OVERLAY=fn}
 function draw(){
   const lst=sceneList(),rapido=!!drag||quick,floor=L.floor?16:0;
   let r;
@@ -48,7 +51,7 @@ function draw(){
     });
     r=comporCamadas(plan);camadasInfo=r.camadas;
   }else{r=renderScene(lst,L,rapido,floor,{exato:true});camadasInfo=[]}
-  svgEl.innerHTML=(L.grid?GRID:"")+'<g id="gm-cena">'+wrapStyle(r.svg)+marcasColisao(lst)+'</g>';
+  svgEl.innerHTML=(L.grid?GRID:"")+'<g id="gm-cena">'+wrapStyle(r.svg)+marcasColisao(lst)+'</g>'+(OVERLAY?OVERLAY(lst):"");
   ULT={S:effScale(P),panX:P.panX,panY:P.panY};
   lastInfo=r.infos[SCN.active]||r.infos[0];
   const i=lastInfo;

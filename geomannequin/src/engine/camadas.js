@@ -236,6 +236,7 @@ function comporCamadas(plan, opts) {
   /* efeitos especiais: os de cena e de personagem entram na pilha pela profundidade (atrás/na frente do dono);
      os de tela vão para o fundo de tudo ou para a frente de tudo; pós-imagens copiam a camada do dono */
   let efeitosFundo = "", efeitosFrente = "", defsEfeitos = "";
+  const efeitosCena = [];
   if (list0.efeitos && list0.efeitos.length) {
     const R = desenharEfeitos(list0, list0.efeitos, list0.quadroEfeitos || 0, { prefixo: uid, exportacao: !!list0.exportacao });
     defsEfeitos = R.defs;
@@ -269,7 +270,7 @@ function comporCamadas(plan, opts) {
     const M = mascaraEscondida(c, outros);
     let attrs = "";
     if (M) { defs += '<clipPath id="' + uid + 'r' + k + '"><path clip-rule="evenodd" d="' + caminhoRecorte(c.res.z, M) + '"/></clipPath>'; attrs += ' clip-path="url(#' + uid + 'r' + k + ')"'; }
-    if(c.efeito){ corpo+='<g id="efeito-'+c.efeito+'" data-camada="'+c.nome+'">'+c.res.svg+'</g>'; return; }
+    if(c.efeito){ corpo+='<g id="efeito-'+c.efeito+'" data-camada="'+c.nome+'"'+(opts.inkscape?' inkscape:label="Efeito: '+c.nome+'"'+ink:'')+'>'+c.res.svg+'</g>'; efeitosCena.push({id:c.efeito,tipo:c.nome,svg:c.res.svg}); return; }
     if(c.referencia){
       corpo+='<g id="'+c.referencia+'" data-camada="'+c.nome+'"'+attrs+'>'+c.res.svg+'</g>';
       sombras+=c.res.sombra;
@@ -298,7 +299,7 @@ function comporCamadas(plan, opts) {
   defs += defsEfeitos;
   const svg = (defs ? "<defs>" + defs + "</defs>" : "") + lay("efeitos-fundo", "Efeitos (fundo)", efeitosFundo) + lay("chao", "Chão", floorStr) + lay("sombras", "Sombras", sombras) + corpo + lay("guias", "Horizonte e pontos de fuga", guias) + lay("vfx-quadro","VFX de quadro",efeitosQuadro) + lay("efeitos-frente", "Efeitos (frente)", efeitosFrente);
   if (!opts.semUltima) setUltima({ cams: cams.map(c => ({ z: c.res.z, membros: c.objeto ? [-1] : c.g.membros, obj: c.objeto ? c.g.obj : undefined })) });
-  return { svg, infos, chao: floorStr, guias, camadas: cams.filter(c => !c.objeto&&!c.referencia&&!c.efeito).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
+  return { svg, infos, chao: floorStr, guias, efeitos: { fundo: efeitosFundo, frente: efeitosFrente, cena: efeitosCena, defs: defsEfeitos }, camadas: cams.filter(c => !c.objeto&&!c.referencia&&!c.efeito).map(c => ({ indice: c.g.membros[0], nome: nomeCamada(list0, c.g.membros[0]), profundidade: c.prof, ordem: c.ordem, velho: c.g.velho, congelado: c.g.congelado, sombraDe: c.g.lanc.slice() })) };
 }
 /* qual manequim está no ponto (x, y) da tela: o mais perto entre as camadas */
 function pickCamadas(x, y) {

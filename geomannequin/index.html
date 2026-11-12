@@ -151,6 +151,37 @@
       <button id="mangaAplicarVento" type="button">Aplicar vento</button><button id="mangaVentoChave" type="button">Marcar vento neste quadro</button>
       <label>Quadro <input id="mangaTempo" type="number" min="0" max="100000" value="0"></label>
       <button id="mangaPlay" type="button">Simular</button><p id="mangaAviso" role="status"></p></details>
+      <details id="fxPainel"><summary>Efeitos especiais</summary>
+        <div class="group poses fx-cats" id="fxCats" role="group" aria-label="Categorias de efeito"></div>
+        <div class="fx-grade" id="fxGrade" role="group" aria-label="Catálogo de efeitos"></div>
+        <div class="fx-inserir">
+          <label>Onde <select id="fxOnde" aria-label="Onde colocar o efeito">
+            <option value="parte">No manequim ativo</option><option value="clique">Clicar no palco</option><option value="objeto">No objeto</option><option value="tela">Na tela (centrado no personagem)</option>
+          </select></label>
+          <label>Parte <select id="fxParte" aria-label="Parte do manequim"></select></label>
+          <label>Elemento <select id="fxElemento" aria-label="Elemento e cores"></select></label>
+          <button type="button" id="fxInserir">Inserir efeito</button>
+        </div>
+        <label class="fx-lista-rot">Na cena <select id="fxLista" size="5" aria-label="Efeitos na cena"></select></label>
+        <div class="group poses">
+          <button type="button" id="fxDuplicar">Duplicar</button><button type="button" id="fxMostrar">Mostrar / ocultar</button><button type="button" id="fxRemover">Remover</button>
+          <button type="button" id="fxConverter" hidden>Converter efeitos antigos</button>
+        </div>
+        <div class="fx-props" id="fxProps"></div>
+        <details class="fino"><summary>Meus efeitos</summary>
+          <label>Nome <input type="text" id="fxNomeModelo" maxlength="40" placeholder="ex.: Soco de fogo"></label>
+          <button type="button" id="fxSalvarModelo">Salvar o selecionado</button>
+          <label>Modelos <select id="fxModelos"></select></label>
+          <button type="button" id="fxUsarModelo">Usar na parte escolhida</button><button type="button" id="fxApagarModelo">Apagar</button>
+        </details>
+        <details class="fino"><summary>Efeito personalizado (código ou SVG)</summary>
+          <label>Código <textarea id="fxCodigo" rows="9" spellcheck="false" aria-label="Código do efeito"></textarea></label>
+          <label>ou SVG (centrado em 0,0) <textarea id="fxSvgTexto" rows="3" spellcheck="false" placeholder='&lt;circle r="40" fill="#f60"/&gt;'></textarea></label>
+          <button type="button" id="fxAplicarCodigo">Aplicar (prévia ao vivo enquanto digita)</button>
+        </details>
+        <p class="hint">No palco: arraste o ponto branco para mover, a bolinha azul para apontar e o anel tracejado para mudar o tamanho.</p>
+        <p class="msg" id="fxAviso" role="status"></p>
+      </details>
       <section id="colSecao" class="col-secao" aria-labelledby="colSecaoTitulo" tabindex="-1">
       <h2 id="colSecaoTitulo">Colisões e contato 3D</h2>
       <p class="hint camadas-dica">Quando um manequim atravessa outro (mão no quadril do vizinho, braços cruzando), escolha como corrigir: afastar, girar, ajustar a pose ou automático.</p>

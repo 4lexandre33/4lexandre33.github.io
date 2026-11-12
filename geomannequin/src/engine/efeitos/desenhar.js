@@ -14,7 +14,7 @@ let PERMITIR_CODIGO = false;
 /* código JavaScript dentro de um efeito só roda onde o app permite (no navegador); no servidor MCP, só SVG */
 function setPermitirCodigoEfeito(v) { PERMITIR_CODIGO = !!v; }
 const REGISTRO = new Map();
-function registrarEfeito(nome, fn) { if (typeof fn !== "function") throw new Error("registrarEfeito: passe uma função (fx) => svg."); REGISTRO.set(String(nome), fn); }
+function registrarEfeito(nome, fn) { if (!PERMITIR_CODIGO) throw new Error("Efeitos por código só funcionam no app (no servidor MCP, use um efeito personalizado com svg)."); if (typeof fn !== "function") throw new Error("registrarEfeito: passe uma função (fx) => svg."); REGISTRO.set(String(nome), fn); }
 
 /* ---------- vetores ---------- */
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
@@ -52,6 +52,9 @@ function pontoParte(K, i, parte) {
   const J = (n, s = 0) => junta(K, i, n, s);
   if (PARTE_JUNTA[base0] && lado) { let q = J(PARTE_JUNTA[base0], lado); if (base0 === "pe" && q) q = add(q, [0, -0.5, 0]); if (base0 === "mao" && q) { const pu = J("punho", lado); if (pu) q = add(q, mul(sub(q, pu), 0.25)); } return q; }
   const at = J("cabeça (atlas)"), ro = J("rosto"), meio = at && ro ? mul(add(at, ro), 0.5) : at;
+  if (base0 === "olho" || base0 === "olhos") { /* olhos: na frente da cabeça, girando com ela */
+    if (!at || !ro) return null; const c = add(meio, [0, 0.6, 0]), f = norm(sub(ro, at)), l = norm(cross([0, 1, 0], f)), e = add(c, add(mul(f, 0.8), [0, 0.05, 0]));
+    return lado ? add(e, mul(l, 0.34 * lado)) : e; }
   switch (base0) {
     case "cabeca": return meio ? add(meio, [0, 0.6, 0]) : null;
     case "topoCabeca": return meio ? add(meio, [0, 1.75, 0]) : null;
@@ -66,7 +69,10 @@ function pontoParte(K, i, parte) {
 }
 /* âncora → ponto na tela, profundidade, px por unidade e ponto do mundo */
 function resolverAncora(K, a, fx) {
-  if (a.modo === "tela" || !K.p0) return { tela: [a.x !== undefined ? a.x * W : W / 2, a.y !== undefined ? a.y * H : H * 0.45], z: null, s: W / 60, mundo: null, dono: -1 };
+  if (a.modo === "tela" || !K.p0) {
+    if (a.alvo !== undefined && K.p0) { const i = acharManequim(K, a.alvo), q = i >= 0 && pontoParte(K, i, a.parte || "peito"); if (q) { const t = K.proj(q); return { tela: [t[0], t[1]], z: null, s: W / 60, mundo: null, dono: -1 }; } }
+    return { tela: [a.x !== undefined ? a.x * W : W / 2, a.y !== undefined ? a.y * H : H * 0.45], z: null, s: W / 60, mundo: null, dono: -1 };
+  }
   let w = null, dono = -1;
   if (a.modo === "mundo") w = [a.x, a.absoluto ? a.y : K.g0 + a.y, a.z];
   else if (a.modo === "chao") w = [a.x, K.g0, a.z];
@@ -142,7 +148,7 @@ function mundoPlano(fx) {
   fx.plano = true; fx.UP = norm([0, -0.94, 0.35]);
 }
 const UPW = fx => fx.UP || [0, 1, 0];
-const escalaW = (fx, v) => v * fx.e.escala * (fx.plano ? 10 : 1); /* em unidades do mundo (no plano: px) */
+const escalaW = (fx, v) => v * fx.e.escala * (fx.kd || 1) * (fx.plano ? 10 : 1); /* em unidades do mundo (no plano: px); kd = altura do dono / altura padrão */
 
 /* ---------- tipos: tela ---------- */
 const TIPOS = {};
@@ -377,7 +383,7 @@ TIPOS.onda_choque = fx => {
     const ext = aroMundo(fx, C, up, rr, 56), int = aroMundo(fx, C, up, rr * (0.86 - 0.04 * k), 56).reverse();
     svg += forma(suave(ext.concat(int), true), corEm(cores, 0.2 + 0.25 * k), { op: (0.85 - 0.22 * k) * (1 - 0.5 * fx.t) + 0.15, filtro: k === 0 ? g : undefined });
   }
-  let d = ""; for (let i = 0; i < 28; i++) { const a = r() * 6.28, r0 = Rw * fx.t * r.entre(0.75, 1), r1 = r0 + Rw * r.entre(0.12, 0.3); const B = base(up); const p0 = T2(fx, add(C, add(mul(B.v, Math.cos(a) * r0), mul(B.w, Math.sin(a) * r0)))), p1 = T2(fx, add(C, add(mul(B.v, Math.cos(a) * r1), mul(B.w, Math.sin(a) * r1)))); d += pincelada([p0, p1], fx.A.s * 0.2 * r.entre(0.5, 1.5) / (fx.plano ? 10 : 1) * 4, "agulha"); }
+  let d = ""; for (let i = 0; i < 28; i++) { const a = r() * 6.28, r0 = Rw * fx.t * r.entre(0.75, 1), r1 = r0 + Rw * r.entre(0.12, 0.3); const B = base(up); const p0 = T2(fx, add(C, add(mul(B.v, Math.cos(a) * r0), mul(B.w, Math.sin(a) * r0)))), p1 = T2(fx, add(C, add(mul(B.v, Math.cos(a) * r1), mul(B.w, Math.sin(a) * r1)))); d += pincelada([p0, p1], escalaW(fx, 0.8 * r.entre(0.5, 1.5)) * fx.A.s / (fx.plano ? 10 : 1), "agulha"); }
   return svg + forma(d, cores[cores.length - 1], { op: 0.6 });
 };
 TIPOS.cristais_chao = fx => {
@@ -511,7 +517,7 @@ TIPOS.impacto_contato = fx => {
 };
 /* símbolos de emoção do mangá, em volta da cabeça */
 TIPOS.emote = fx => {
-  const { P, r, A } = fx, s = 1.3 * fx.A.s * P.tamanho * fx.e.escala / (fx.plano ? 10 : 1), [x0, y0] = A.tela, k = s, sim = fx.e.simbolo, tinta = "#1A1A22";
+  const { P, r, A } = fx, s = 1.3 * (fx.plano ? 16 : fx.A.s) * P.tamanho * fx.e.escala * (fx.kd || 1), [x0, y0] = A.tela, k = s, sim = fx.e.simbolo, tinta = "#1A1A22";
   const X = x0 + 1.25 * k, Y = y0 - 1.35 * k, ec = fx.e.cores;
   if (sim === "veia") { /* veia de raiva: quatro arcos em cruz */
     const c = ec ? ec[0] : "#D9262E"; let d = "";
@@ -546,15 +552,15 @@ function rachar(fx, C, up, R, ramos, prog, r) {
 }
 TIPOS.rachaduras = fx => {
   const { P, cores, A, r } = fx, up = UPW(fx), C = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], s = fx.A.s / (fx.plano ? 10 : 1);
-  let d = ""; rachar(fx, C, up, escalaW(fx, P.raio), Math.round(P.ramos), fx.t, r).forEach(l => d += pincelada(l.pts.map(q => T2(fx, q)), s * 0.55 * l.w * fx.e.escala * Math.min(1.4, fx.X) * 1.6, "agulha"));
+  let d = ""; rachar(fx, C, up, escalaW(fx, P.raio), Math.round(P.ramos), fx.t, r).forEach(l => d += pincelada(l.pts.map(q => T2(fx, q)), escalaW(fx, 0.88 * l.w) * s * Math.min(1.4, fx.X), "agulha"));
   return forma(d, cores[cores.length - 1]);
 };
 TIPOS.cratera = fx => {
   const { P, cores, A, r } = fx, up = UPW(fx), C = fx.plano ? A.mundo : [A.mundo[0], fx.K.g0 + 0.02, A.mundo[2]], R = escalaW(fx, P.raio) * (0.2 + 0.8 * fx.t), s = fx.A.s / (fx.plano ? 10 : 1), B = base(up);
   const borda = k => Array.from({ length: 30 }, (_, i) => { const a = i / 30 * 6.2832, rr = R * k * (1 + 0.12 * Math.sin(a * 5 + fx.e.semente) + 0.06 * Math.sin(a * 11)); return T2(fx, add(C, add(mul(B.v, Math.cos(a) * rr), mul(B.w, Math.sin(a) * rr)))); });
   let svg = forma(suave(borda(1.18), true), cores[1], { stroke: cores[cores.length - 1], sw: 1.2 }) + forma(suave(borda(0.88), true), cores[2] || cores[1]) + forma(suave(borda(0.62), true), cores[cores.length - 1], { op: 0.75 });
-  let d = ""; rachar(fx, C, up, R * 2.1, Math.round(P.rachaduras), Math.min(1, fx.t * 1.2), r).forEach(l => d += pincelada(l.pts.map(q => T2(fx, q)), s * 0.5 * l.w * fx.e.escala * 1.6, "agulha"));
-  let db = ""; for (let i = 0; i < 18; i++) { const a = r() * 6.28, rr = R * r.entre(1.05, 1.45), q = T2(fx, add(C, add(mul(B.v, Math.cos(a) * rr), mul(B.w, Math.sin(a) * rr)))); db += lasca(q[0], q[1], s * r.entre(0.25, 0.6) * fx.e.escala, r); }
+  let d = ""; rachar(fx, C, up, R * 2.1, Math.round(P.rachaduras), Math.min(1, fx.t * 1.2), r).forEach(l => d += pincelada(l.pts.map(q => T2(fx, q)), escalaW(fx, 0.8 * l.w) * s, "agulha"));
+  let db = ""; for (let i = 0; i < 18; i++) { const a = r() * 6.28, rr = R * r.entre(1.05, 1.45), q = T2(fx, add(C, add(mul(B.v, Math.cos(a) * rr), mul(B.w, Math.sin(a) * rr)))); db += lasca(q[0], q[1], escalaW(fx, r.entre(0.25, 0.6)) * s, r); }
   return svg + forma(d, cores[cores.length - 1]) + forma(db, cores[2] || cores[1], { stroke: cores[cores.length - 1], sw: 0.8 });
 };
 TIPOS.destrocos = fx => {
@@ -562,7 +568,7 @@ TIPOS.destrocos = fx => {
   for (let i = 0; i < P.quantidade; i++) {
     const a = r() * 6.28, h = r.entre(0.4, 1.4), v = [Math.cos(a) * r.entre(0.4, 1), 0, Math.sin(a) * r.entre(0.4, 1)];
     const pos = q => add(add(C, mul(fx.plano ? [v[0], v[2] * 0.3, 0] : v, alc * q)), mul(up, alc * h * (q - q * q) * 1.6));
-    const p = pos(t), pa = pos(Math.max(0, t - 0.12)), a0 = T2(fx, pa), a1 = T2(fx, p), tam = s * r.entre(0.25, 0.75) * fx.e.escala;
+    const p = pos(t), pa = pos(Math.max(0, t - 0.12)), a0 = T2(fx, pa), a1 = T2(fx, p), tam = escalaW(fx, r.entre(0.25, 0.75)) * s;
     itens.push({ z: fx.proj(p)[2], s: forma(pincelada([a0, [(a0[0] + a1[0]) / 2, (a0[1] + a1[1]) / 2], a1], tam * 0.8, t2 => Math.pow(t2, 1.5)), cores[1], { op: 0.5 }) + forma(lasca(a1[0], a1[1], tam, r), corEm(cores, r.entre(0.3, 0.8)), { stroke: cores[cores.length - 1], sw: 0.7 }) });
   }
   return itens.sort((a, b) => a.z - b.z).map(q => q.s).join("");
@@ -610,6 +616,8 @@ function desenharEfeitos(list0, efeitos, quadro = 0, opts = {}) {
     try {
       fx.A = resolverAncora(K, e.ancora, fx); if (!fx.A) return;
       fx.D = resolverDirecao(K, e, fx.A, fx);
+      /* efeito preso a um manequim acompanha o tamanho dele (criança, gigante, escala da cabeça/pernas) */
+      if (fx.A.dono >= 0) { const t = pontoParte(K, fx.A.dono, "topoCabeca"), b = pontoParte(K, fx.A.dono, "pes"); if (t && b) fx.kd = Math.max(0.3, Math.min(3, (t[1] - b[1]) / 16.5)); }
       const tela = e.categoria === "tela" || e.ancora.modo === "tela";
       if (!tela && fx.A.z === null) return;
       if (tela && e.categoria !== "tela") mundoPlano(fx);
@@ -637,4 +645,24 @@ function desenharEfeitos(list0, efeitos, quadro = 0, opts = {}) {
   return { itens: out, defs: defs.join("") };
 }
 
-export { desenharEfeitos, setPermitirCodigoEfeito, registrarEfeito, TIPOS as TIPOS_EFEITO, resolverAncora, contextoCena };
+/* clique na tela → ponto do chão (Newton em x, z; vale em perspectiva e ortográfica) */
+function telaParaChao(K, sx, sy, y) {
+  if (!K.p0) return null; const yy = y === undefined ? K.g0 : y; let x = K.p0.tx || 0, z = K.p0.tz || 0;
+  for (let it = 0; it < 14; it++) {
+    const f = K.proj([x, yy, z]), fx = K.proj([x + 0.5, yy, z]), fz = K.proj([x, yy, z + 0.5]);
+    const a = (fx[0] - f[0]) / 0.5, b = (fz[0] - f[0]) / 0.5, c = (fx[1] - f[1]) / 0.5, d = (fz[1] - f[1]) / 0.5, det = a * d - b * c;
+    if (Math.abs(det) < 1e-9) break;
+    const ex = sx - f[0], ey = sy - f[1], dx = (d * ex - b * ey) / det, dz = (-c * ex + a * ey) / det, st = Math.min(1, 20 / (Math.hypot(dx, dz) || 1));
+    x += dx * st; z += dz * st; if (Math.hypot(ex, ey) < 0.3) break;
+  }
+  return [x, yy, z];
+}
+/* partes de um manequim na tela (para escolher a mais perto do clique) */
+function partesNaTela(K, i) {
+  const out = [];
+  for (const parte of ["cabeca", "olhos", "peito", "pelve", "pes", "ombroEsq", "ombroDir", "cotoveloEsq", "cotoveloDir", "maoEsq", "maoDir", "joelhoEsq", "joelhoDir", "peEsq", "peDir"]) {
+    const q = pontoParte(K, i, parte); if (!q) continue; const t = K.proj(q); out.push({ parte, x: t[0], y: t[1], z: t[2] });
+  }
+  return out;
+}
+export { desenharEfeitos, setPermitirCodigoEfeito, registrarEfeito, TIPOS as TIPOS_EFEITO, resolverAncora, resolverDirecao, contextoCena, telaParaChao, partesNaTela };

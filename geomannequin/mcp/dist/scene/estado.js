@@ -9,7 +9,7 @@ import {normalizarPerfil} from "../engine/objetos.js";
 import { validarReferencia, ventoManga, DEF, TIPOS_OBJETO, clamp, objetoPadrao, zoomToDist, normalizarModeloCabeca } from "../engine/index.js";
 import { COL, setModoColisao, setPreferir } from "./colisoes.js";
 import {CONTATO_V2,setContatoV2} from "./contato-v2.js";
-import { efeitosParaSalvar, efeitosDoArquivo } from "./efeitos-cena.js";
+import { efeitosParaSalvar, efeitosDoArquivo, importarModelosEfeito } from "./efeitos-cena.js";
 
 function modeloCabecaEstadoOrb(v){return normalizarModeloCabeca(v,"v1");}
 function salvarPivoOrbita(){
@@ -51,7 +51,7 @@ function sceneState(){
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const fxs=efeitosParaSalvar();
-  return {...(fxs?{efeitos:fxs}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
+  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
     if(o.gripV3){
       const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
       q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
@@ -182,6 +182,7 @@ function loadScene(sc){
   });
   /* efeitos especiais: depois dos manequins e objetos (a âncora guarda o índice deles) */
   efeitosDoArquivo(sc.efeitos);
+  SCN.meusEfeitos=[];if(Array.isArray(sc.meusEfeitos))importarModelosEfeito(sc.meusEfeitos);
   /* apoio (sentado em um objeto) guardado pelo índice do objeto */
   sc.list.slice(0,MAXM).forEach((o,i)=>{if(Number.isInteger(o.apoioEm)&&SCN.objetos[o.apoioEm])SCN.list[i].apoioEm=SCN.objetos[o.apoioEm].id});
   /* contatos permitidos (abraço, aperto de mão): guardados como índices na lista */

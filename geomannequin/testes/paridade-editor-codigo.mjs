@@ -43,6 +43,6 @@ const root=join(dirname(fileURLToPath(import.meta.url)),"..");
 const scene=JSON.parse(readFileSync(join(root,"src/scene/ordem.json"),"utf8"));
 assert.ok(scene.modulos.indexOf("orientacao-frames.js")>=0&&scene.modulos.indexOf("orientacao-frames.js")<scene.modulos.indexOf("orbita.js"),"Headless sem orientação 3D");
 const editor=readFileSync(join(root,"src/ui/editor.js"),"utf8");
-assert.ok(editor.includes("async function runCode()")&&/await fn\(cena,camera,tema,log(,poseCmd)?\)/.test(editor));
+assert.ok(editor.includes("async function runCode()")&&/await fn\(cena,camera,tema,log(,poseCmd)?(,\(t,o\)=>cena\.efeito\(t,o\))?\)/.test(editor));
 assert.ok(editor.includes("cena.restaurarCompleto(snapshot)"));
 console.log("PARIDADE API PASS: câmera, camadas, estilos, dados, Quadros, undo/redo, editor async, UI e headless.");

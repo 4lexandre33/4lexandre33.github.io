@@ -27,3 +27,22 @@ textarea{width:100%;min-height:200px;max-height:360px;font-family:var(--font-mon
 .mistura select{flex:1;min-width:0}
 .mistura input[type=range]{flex:1;min-width:80px}
 .mistura output{font-variant-numeric:tabular-nums;font-size:11px;opacity:.8}
+
+/* efeitos especiais: catálogo em miniaturas, propriedades em linhas */
+.fx-cats{margin:6px 0}
+.fx-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px;margin:6px 0 10px}
+.fx-mini{display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:4px;min-width:0;font-size:10.5px;line-height:1.15;text-align:center}
+.fx-mini svg{width:100%;aspect-ratio:1;background:var(--paper, #fff);border-radius:4px}
+.fx-mini[aria-pressed="true"]{outline:2px solid var(--g-blue,#2F6BFF);outline-offset:1px}
+.fx-inserir{display:grid;gap:6px;margin-bottom:8px}
+.fx-inserir label,.fx-lista-rot{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px}
+.fx-inserir select,.fx-lista-rot select{flex:1;min-width:0}
+.fx-props{display:grid;gap:5px;margin:8px 0;font-size:12px}
+.fx-prop{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fx-faixa{display:flex;align-items:center;gap:6px;flex:1;min-width:140px}
+.fx-faixa input{flex:1;min-width:60px}
+.fx-faixa output{font-variant-numeric:tabular-nums;font-size:11px;min-width:3ch;opacity:.8}
+.fx-cores{display:flex;gap:4px}
+.fx-cores input{width:30px;height:24px;padding:0}
+#fxCodigo,#fxSvgTexto{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px}
+.stage.fx-colocando{cursor:crosshair}

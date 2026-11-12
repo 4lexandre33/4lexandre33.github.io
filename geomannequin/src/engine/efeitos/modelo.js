@@ -104,7 +104,7 @@ const CATALOGO = {
 const CATEGORIAS = { tela: "Tela (plano do quadro)", cena: "Cena (no mundo, com perspectiva)", personagem: "No personagem", destruicao: "Destruição" };
 const SIMBOLOS = ["veia", "gota", "tristeza", "brilho", "exclamacao", "interrogacao", "coracao", "sono", "vapor", "susto"];
 /* partes do manequim que servem de âncora */
-const PARTES = ["corpo", "centro", "cabeca", "topoCabeca", "rosto", "pescoco", "peito", "cintura", "pelve", "pes",
+const PARTES = ["corpo", "centro", "cabeca", "topoCabeca", "rosto", "olhos", "olhoEsq", "olhoDir", "pescoco", "peito", "cintura", "pelve", "pes",
   "ombroEsq", "ombroDir", "cotoveloEsq", "cotoveloDir", "punhoEsq", "punhoDir", "maoEsq", "maoDir",
   "quadrilEsq", "quadrilDir", "joelhoEsq", "joelhoDir", "tornozeloEsq", "tornozeloDir", "peEsq", "peDir"];
 /* tipos antigos (referências da PR #20) → tipo novo */
@@ -119,7 +119,7 @@ function normParte(s) {
   const achou = PARTES.find(p => p.toLowerCase() === k.toLowerCase());
   if (achou) return achou;
   /* "mão direita", "pe esquerdo" */
-  const m = /^(ombro|cotovelo|punho|mao|quadril|joelho|tornozelo|pe)(esquerd[oa]|direit[oa]|esq|dir)$/i.exec(k);
+  const m = /^(ombro|cotovelo|punho|mao|quadril|joelho|tornozelo|pe|olho)(esquerd[oa]|direit[oa]|esq|dir)$/i.exec(k);
   if (m) return m[1].toLowerCase() + (/^esq/i.test(m[2]) ? "Esq" : "Dir");
   return null;
 }
@@ -128,7 +128,12 @@ function validarAncora(a, padrao) {
   if (a === undefined || a === null) a = padrao;
   if (typeof a === "string") a = PARTES.includes(normParte(a)) ? { modo: "manequim", parte: normParte(a) } : { modo: a };
   const modo = a.modo || (a.parte ? "manequim" : a.z !== undefined ? "mundo" : "tela");
-  if (modo === "tela") return { modo, x: num(a.x, -0.5, 1.5, 0.5), y: num(a.y, -0.5, 1.5, 0.45) };
+  if (modo === "tela") {
+    const o = { modo, x: num(a.x, -0.5, 1.5, 0.5), y: num(a.y, -0.5, 1.5, 0.45) };
+    /* sem x e y, com um manequim: centra nele (o personagem do enquadramento) */
+    if (a.x === undefined && a.y === undefined && a.alvo !== undefined && a.alvo !== null) { o.alvo = typeof a.alvo === "number" ? a.alvo : texto(a.alvo, 60); o.parte = normParte(a.parte) || "peito"; }
+    return o;
+  }
   if (modo === "mundo") { const o = { modo, x: num(a.x, -200, 200, 0), y: num(a.y, -200, 200, 6), z: num(a.z, -200, 200, 0) }; if (a.absoluto) o.absoluto = true; return o; }
   if (modo === "chao") return { modo, x: num(a.x, -200, 200, 0), z: num(a.z, -200, 200, 0) };
   if (modo === "manequim") {

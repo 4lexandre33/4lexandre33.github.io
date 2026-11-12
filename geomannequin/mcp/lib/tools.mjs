@@ -13,6 +13,7 @@ const ENGINE_VP = { ossosDoCorpo, svgVistaPose, VISTAS_POSE, REGIOES_POSE };
 import { registerControlTools } from "./tools-control.mjs";
 import { registerDeclarativeStoryboard } from "./tools-storyboard.mjs";
 import { registerAnatomyTools } from "./tools-anatomy.mjs";
+import { registerEffectsTools } from "./tools-efeitos.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -199,9 +200,10 @@ const INVOCA = {
   contato_fisico: ["Analisando contatos…","Contatos processados"],
   artefatos_mcp: ["Gerando arquivo…","Arquivo gerado"],
   roteiro_declarativo: ["Gerando storyboard seguro…","Storyboard gerado"], anatomia_mcp:["Ajustando anatomia…","Anatomia pronta"],
-  aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"]
+  aparencia_mcp:["Ajustando aparência…","Aparência pronta"], operacoes_lote:["Executando lote validado…","Lote processado"],
+  efeitos: ["Desenhando os efeitos…", "Efeitos prontos"]
 };
-const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
+const VISUAIS = new Set(["renderizar", "roteiro_quadros", "referencias_controlnet", "vistas_em_volta", "planta_da_cena", "efeitos"]), DO_WIDGET = new Set(["renderizar", "camera", "preensao", "fisica"]);
 function metaChatGPT(nome) {
   const m = {}, t = INVOCA[nome]; if (t) { m["openai/toolInvocation/invoking"] = t[0]; m["openai/toolInvocation/invoked"] = t[1]; }
   if (VISUAIS.has(nome)) m["openai/outputTemplate"] = WIDGET_URI;
@@ -868,7 +870,7 @@ export function registerAll(server, getWorld, opts = {}) {
     const w = W(), snap = JSON.stringify({ scene: w.sceneState(), layers: w.L, style: w.style }), logs = [];
     w.LOG.length = 0;
     const log = (...x) => logs.push(x.map(v => typeof v === "object" ? JSON.stringify(v) : String(v)).join(" "));
-    const ctx = vm.createContext({ cena: w.cena, camera: w.camera, tema: w.tema, pose: w.poseCmd, log, Math, JSON });
+    const ctx = vm.createContext({ cena: w.cena, camera: w.camera, tema: w.tema, pose: w.poseCmd, efeito: (t, o) => w.cena.efeito(t, o), log, Math, JSON });
     try {
       vm.runInContext('"use strict";\n' + a.codigo, ctx, { timeout: 3000, filename: "cena.js" });
     } catch (e) {
@@ -910,6 +912,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerControlTools(server, W);
   registerDeclarativeStoryboard(server, W);
   registerAnatomyTools(server, W);
+  registerEffectsTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

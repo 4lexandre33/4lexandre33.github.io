@@ -22,6 +22,8 @@ function fxObjetoPorRef(ref) {
 function fxAncoraDe(a, tipo, donoPadrao) {
   const C = CATALOGO[tipo];
   if (a === undefined || a === null) a = C.ancora;
+  /* "Ana.punhoDir" → manequim Ana, parte punhoDir */
+  if (typeof a === "string" && a.includes(".")) { const [n, p] = a.split("."); a = { modo: "manequim", alvo: n, parte: normParte(p) || p }; }
   if (typeof a === "string") {
     const parte = normParte(a);
     if (parte) a = { modo: "manequim", parte };
@@ -33,6 +35,9 @@ function fxAncoraDe(a, tipo, donoPadrao) {
   if (a.manequim !== undefined) { a.modo = "manequim"; a.alvo = a.manequim; delete a.manequim; }
   if (a.objeto !== undefined) { a.modo = "objeto"; a.alvo = a.objeto; delete a.objeto; }
   if (!a.modo) a.modo = a.parte ? "manequim" : a.z !== undefined && a.y === undefined ? "chao" : a.z !== undefined ? "mundo" : "tela";
+  /* efeito de tela sem posição: centra no personagem (o dono, ou o manequim ativo) */
+  if (a.modo === "tela" && a.x === undefined && a.y === undefined && a.alvo === undefined) { const it = fxManequimPorRef(donoPadrao); if (it) { a.alvo = it.id; a.parte = a.parte || "peito"; } }
+  if (a.modo === "tela" && a.alvo !== undefined && typeof a.alvo !== "number") { const it = fxManequimPorRef(a.alvo); if (it) a.alvo = it.id; }
   if (a.modo === "manequim") { const it = fxManequimPorRef(a.alvo ?? donoPadrao); if (!it) throw new Error("Manequim “" + a.alvo + "” não existe."); a.alvo = it.id; if (!a.parte) a.parte = normParte(C.ancora) ? C.ancora : "corpo"; }
   if (a.modo === "objeto") { const o = fxObjetoPorRef(a.alvo); if (!o) throw new Error("Não há objeto na cena para ancorar o efeito."); a.alvo = o.id; }
   return a;
@@ -77,7 +82,8 @@ function criarApiEfeitos(marcar) {
     adicionar(tipo, opts) { if (fxLista().length >= FX_MAX) throw new Error("Limite de " + FX_MAX + " efeitos na cena."); const e = fxMontar(tipo, opts); marcar(); fxLista().push(e); return e.id; },
     lista() { return fxLista().map(fxLegivel); },
     obter(id) { return fxLegivel(fxLista()[fxAchar(id)]); },
-    editar(id, opts) { const i = fxAchar(id), atual = fxLista()[i]; const e = fxMontar((opts && opts.tipo) || atual.tipo, opts, { ...atual, id: atual.id }); marcar(); fxLista()[i] = e; return e.id; },
+    /* silencioso: sem marcar no desfazer (arrastar um controle; a interface marca uma vez ao soltar) */
+    editar(id, opts, silencioso) { const i = fxAchar(id), atual = fxLista()[i]; const e = fxMontar((opts && opts.tipo) || atual.tipo, opts, { ...atual, id: atual.id }); if (!silencioso) marcar(); fxLista()[i] = e; return e.id; },
     remover(id) { const i = fxAchar(id); marcar(); fxLista().splice(i, 1); },
     limpar() { if (!fxLista().length) return; marcar(); fxLista().length = 0; },
     duplicar(id, opts) { const i = fxAchar(id), b = JSON.parse(JSON.stringify(fxLista()[i])); delete b.id; const e = fxMontar(b.tipo, { ...(opts || {}), semente: (opts && opts.semente) ?? b.semente + 1 }, b); marcar(); fxLista().splice(i + 1, 0, e); return e.id; },
@@ -94,25 +100,43 @@ function criarApiEfeitos(marcar) {
     /* efeitos antigos (referências de explosão, chama, fumaça, rastro, linhas, impacto) → sistema novo */
     converterAntigos() {
       let n = 0; marcar();
-      SCN.list.forEach(it => { const refs = it.referencias || []; for (let i = refs.length - 1; i >= 0; i--) { if (!LEGADO[refs[i].tipo]) continue; const e = deReferencia(refs[i], it.id); if (e && fxLista().length < FX_MAX) { fxLista().push(e); refs.splice(i, 1); n++; } } });
+      /* na ordem em que foram criados */
+      SCN.list.forEach(it => { const refs = it.referencias || [], fica = []; refs.forEach(r => { const e = LEGADO[r.tipo] && fxLista().length < FX_MAX ? deReferencia(r, it.id) : null; if (e) { fxLista().push(e); n++; } else fica.push(r); }); if (it.referencias) it.referencias = fica; });
       return n;
     },
     /* efeito desenhado por uma função sua: cena.efeitos.registrar("meu", fx => fx.forma(fx.circulo(fx.x, fx.y, 20), "#f00")) */
-    registrar(nome, fn) { registrarEfeito(nome, fn); return nome; }
+    registrar(nome, fn) { registrarEfeito(nome, fn); return nome; },
+    /* Meus efeitos: guarda a configuração (sem a âncora) para usar de novo em qualquer manequim ou cena */
+    salvarModelo(id, nome) {
+      const e = JSON.parse(JSON.stringify(fxLista()[fxAchar(id)])), n = String(nome || e.nome).slice(0, 40).trim() || e.tipo;
+      delete e.id; delete e.ancora; delete e.direcao; const L = SCN.meusEfeitos || (SCN.meusEfeitos = []), i = L.findIndex(q => q.nome === n);
+      if (i >= 0) L[i] = { nome: n, efeito: e }; else { if (L.length >= 100) throw new Error("Limite de 100 modelos de efeito."); L.push({ nome: n, efeito: e }); }
+      return n;
+    },
+    modelos() { return (SCN.meusEfeitos || []).map(q => ({ nome: q.nome, tipo: q.efeito.tipo, elemento: q.efeito.elemento })); },
+    usarModelo(nome, opts) { const q = (SCN.meusEfeitos || []).find(m => m.nome === nome); if (!q) throw new Error("Modelo de efeito “" + nome + "” não existe."); return api.adicionar(q.efeito.tipo, { ...JSON.parse(JSON.stringify(q.efeito)), ...(opts || {}) }); },
+    apagarModelo(nome) { const L = SCN.meusEfeitos || [], i = L.findIndex(q => q.nome === nome); if (i < 0) throw new Error("Modelo de efeito “" + nome + "” não existe."); L.splice(i, 1); },
+    importarModelos(lista) { return importarModelosEfeito(lista); }
   };
   return api;
+}
+/* modelos salvos (de um arquivo ou do navegador): só os válidos, sem repetir nome */
+function importarModelosEfeito(lista) {
+  let n = 0;
+  (Array.isArray(lista) ? lista : []).forEach(q => { try { if (q && q.nome && q.efeito && q.efeito.tipo) { validarEfeito({ ...q.efeito, ancora: { modo: "tela" } }); const L = SCN.meusEfeitos || (SCN.meusEfeitos = []); if (!L.some(m => m.nome === q.nome) && L.length < 100) { L.push({ nome: String(q.nome).slice(0, 40), efeito: q.efeito }); n++; } } } catch (e) { } });
+  return n;
 }
 /* salvar: id do manequim/objeto → índice; carregar: índice → id */
 function efeitosParaSalvar() {
   if (!SCN.efeitos || !SCN.efeitos.length) return null;
-  const conv = a => { if (!a) return a; a = { ...a }; if (a.modo === "manequim") { const j = SCN.list.findIndex(m => m.id === a.alvo); a.alvo = j < 0 ? 0 : j; a.indice = true; } if (a.modo === "objeto") { const j = SCN.objetos.findIndex(o => o.id === a.alvo); a.alvo = j < 0 ? 0 : j; a.indice = true; } return a; };
+  const conv = a => { if (!a) return a; a = { ...a }; if (a.modo === "tela" && a.alvo !== undefined) { const j = SCN.list.findIndex(m => m.id === a.alvo); a.alvo = j < 0 ? 0 : j; a.indice = true; } if (a.modo === "manequim") { const j = SCN.list.findIndex(m => m.id === a.alvo); a.alvo = j < 0 ? 0 : j; a.indice = true; } if (a.modo === "objeto") { const j = SCN.objetos.findIndex(o => o.id === a.alvo); a.alvo = j < 0 ? 0 : j; a.indice = true; } return a; };
   return SCN.efeitos.map(e => { const q = JSON.parse(JSON.stringify(e)); q.ancora = conv(q.ancora); if (q.direcao && q.direcao.alvo && typeof q.direcao.alvo === "object") q.direcao.alvo = conv(q.direcao.alvo); return q; });
 }
 function efeitosDoArquivo(arr) {
   const out = [];
   (Array.isArray(arr) ? arr : []).slice(0, FX_MAX).forEach(e => {
     try {
-      const conv = a => { if (!a || !a.indice) return a; a = { ...a }; delete a.indice; if (a.modo === "manequim") { const it = SCN.list[a.alvo]; a.alvo = it ? it.id : undefined; } if (a.modo === "objeto") { const o = SCN.objetos[a.alvo]; a.alvo = o ? o.id : undefined; } return a; };
+      const conv = a => { if (!a || !a.indice) return a; a = { ...a }; delete a.indice; if (a.modo === "tela" || a.modo === "manequim") { const it = SCN.list[a.alvo]; a.alvo = it ? it.id : undefined; } if (a.modo === "objeto") { const o = SCN.objetos[a.alvo]; a.alvo = o ? o.id : undefined; } return a; };
       const q = { ...e, ancora: conv(e.ancora) }; if (q.direcao && q.direcao.alvo && typeof q.direcao.alvo === "object") q.direcao = { ...q.direcao, alvo: conv(q.direcao.alvo) };
       out.push(validarEfeito(q));
     } catch (err) { /* efeito inválido no arquivo: ignorado */ }
@@ -120,4 +144,4 @@ function efeitosDoArquivo(arr) {
   SCN.efeitos = out;
 }
 
-export { criarApiEfeitos, efeitosParaSalvar, efeitosDoArquivo, fxManequimPorRef };
+export { criarApiEfeitos, efeitosParaSalvar, efeitosDoArquivo, importarModelosEfeito, fxManequimPorRef };

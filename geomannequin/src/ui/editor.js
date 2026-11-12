@@ -23,8 +23,8 @@ async function runCode(){
   try{
     // Executa scripts síncronos antigos e scripts com await na mesma API.
     // Não é sandbox de segurança: só execute código que você conhece.
-    const fn=new Function("cena","camera","tema","log","pose",'"use strict";return (async()=>{\n'+code+'\n})();');
-    await fn(cena,camera,tema,log,poseCmd);
+    const fn=new Function("cena","camera","tema","log","pose","efeito",'"use strict";return (async()=>{\n'+code+'\n})();');
+    await fn(cena,camera,tema,log,poseCmd,(t,o)=>cena.efeito(t,o));
     if(!/cena\.(?:desfazer|refazer|marcarEstado)\s*\(/.test(code))cena.marcarEstado(snapshot);
     LOG.forEach(([k,t])=>outLine((k==="aviso"?"⚠ ":"")+t,k==="aviso"?"err":""));
     outLine("✓ Executado: "+SCN.list.length+" manequim(ns). Comandos com await finalizados.","ok");
