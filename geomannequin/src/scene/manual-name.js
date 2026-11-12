@@ -56,7 +56,7 @@ imagem fazer a arte final. Não há texto dentro dos quadros: o texto vai na leg
 
 1. REGRAS GERAIS
 - Um bloco começa numa linha SEM recuo; as linhas do bloco têm recuo (2 espaços).
-- Blocos: semente · define · elenco · local · modelo · quadro · transicao · pagina.
+- Blocos: semente · define · elenco · animacao · local · modelo · quadro · transicao · pagina.
 - Comentários: "// texto", "-- texto" ou "# texto" (com espaço depois do #). Cores "#a1b2c3" não são comentário.
 - Unidade padrão: METROS. Também: 30cm, 2.5m, 12R (R = unidade do manequim, 1 R ≈ 11,4 cm). Ângulos em graus.
 - Coordenadas (x,z) vistas DE CIMA: x cresce para a DIREITA (leste), z cresce para CIMA na planta (norte, "para o fundo").
@@ -127,6 +127,7 @@ Objetos: ${mnLista(O)}.
 4. QUADRO (um momento: um painel do name)
 quadro [n] ["título"] [local "Nome" | continua | novo] [plano …] [angulo … [graus]] [alvo A, B] [lado …] [lente 35]
        [formato 16:9] [tamanho grande] [funcao "…"] [legenda "…"] [hora tarde] [camera (x,y,z) olhando (x,y,z)]
+       [duracao 2s] [camera-move aproxima|afasta|panoramica-esquerda|panoramica-direita|orbita|sobe|desce|treme [quanto]]   (vídeo: cap. 12)
 - local "X": troca de cenário (corte): tira personagens e figurantes do quadro anterior.
 - continua (padrão): mesmo local, mesmas pessoas onde estavam (inclusive em cima de nível); escreva só o que muda.
   Figurantes também ficam; escrever de novo a linha de um grupo TROCA esse grupo ("mantem" acrescenta em vez de trocar).
@@ -149,7 +150,8 @@ Personagem (uma linha por pessoa ou por grupo "Kai, Mira"):
        [pose nome] [sentado | deitado | ajoelhado | agachado | correndo | caminhando | em-pe]
        [acao nome] [expressao nome [intensidade 0.7]] [olha Outro | olha (x,z) | olha camera]
        [segura objeto [como pegada]] [carrega | levanta | puxa | empurra | arrasta objeto]
-       [interacao tipo com Outro] [efeito tipo [em maoDir]] [molejo 0.6] [fala "…"] [sai]
+       [interacao tipo com Outro] [efeito tipo [em maoDir]] [molejo 0.6] [fala "…" [tom raiva]] [sai]
+       [gesto … ] [atitude … ] [papel … ] [ajustes finos] [anima … ]     (conversa e animação: cap. 11 e 12)
   "frente-de Kai" = na frente de Kai (para onde ele olha), virado para ele. frente-de/atras-de/ao-lado-de/perto-de aceitam
   pessoa, marca ou objeto pelo nome ("ao-lado-de "coluna 3"").
   Posição dentro de um "nivel" (plataforma, passarela) = a pessoa fica EM CIMA dele, sozinha.
@@ -167,7 +169,8 @@ Figurantes (procedurais):
   "povo em (3,4)" sem número = 1 figurante ali. Ninguém fica sobreposto (os figurantes se afastam).
 Outras linhas do quadro:
   objeto caixa em (1,2)        (objeto só deste quadro em diante)
-  legenda "Kai percebe a armadilha."   ·   fala "texto" (narração, fica no manifesto)
+  legenda "Kai percebe a armadilha."   ·   fala "texto" (linha SOZINHA = narração, fica no manifesto; "Kai fala "…"" = Kai falando)
+  dialogo Kai, Mira [tom tenso]   (cap. 11)
   escolha 60% Kai expressao raiva | 40% Kai expressao medo | nada
   repetir 3: povo em (1+i*2, 5)
   usar conversa(Kai, Mira)     (modelo definido antes: "modelo conversa(a, b)" + linhas com a e b)
@@ -262,7 +265,13 @@ Quem conversa gesticula, mexe a cabeça e muda o peso do corpo. Na linha do pers
 Ajustes finos (graus; cm onde diz):
   pescoco inclina 15 abaixa 10 gira 5 · coluna inclina 8 lado 5 torce 10 · ombros caidos 0.5 · ombro direito abaixa 0.4
   perna esquerda afasta 10cm joelho 12 frente 5cm · pe direito 15cm para direita|esquerda|frente|tras · braco direito levanta 20 abre 10 cotovelo 30
-No quadro: dialogo Kai, Mira [tom tenso] → quem fala (a "fala" do quadro, ou a vez, alternando) gesticula; os outros ouvem olhando para ele.
+No quadro: dialogo Kai, Mira [tom tenso] → quem fala (quem tem "fala" na linha dele, ou a vez, alternando) gesticula; os outros ouvem olhando para ele.
+Quem manda (do mais forte para o mais fraco): gesto/atitude escritos na linha > papel > dialogo > gesto sorteado da fala. Quem já tem gesto ou papel na linha não é mexido pelo dialogo.
+Unidades e sentidos: ângulos em graus; "ombros caidos 0.5" e "ombro direito abaixa 0.4" vão de 0 a 1 (fração do movimento máximo);
+  "pescoco inclina" e "coluna lado": positivo = para o lado DIREITO do personagem, negativo = para o esquerdo; abaixa/inclina (coluna) positivo = para frente;
+  "mao direita", "mao esquerda" ou "mao ambas" (lado do personagem). Ajustes somam à pose: escreva depois da pose.
+Partes do corpo (para filtros e biblioteca): cabeca (pescoço e cabeça), tronco (coluna e pelve), ombros, bracoDireito/bracoEsquerdo, maoDireita/maoEsquerda,
+  pernaDireita/pernaEsquerda, rosto, corpo (deitar, altura), lugar (posição e giro no chão).
 Gestos (${Object.keys(GESTOS_CONVERSA).length}): ${Object.entries(GESTOS_CONVERSA).map(([k, g]) => k + " [" + g.tag + "]").join(", ")}.
 Atitudes (${Object.keys(ATITUDES).length}): ${Object.entries(ATITUDES).map(([k, g]) => k + " [" + g.tag + "]").join(", ")}.
 Tons de fala: ${Object.keys(TONS_FALA).join(", ")}.
@@ -274,12 +283,18 @@ Bloco de animação (sem recuo), chaves com recuo:
     chave 0s pose empe
     chave 0.7s pose passo move frente 0.4
     chave 1.4s pose empe gesto acenar move frente 0.8
-  Numa chave: pose, expressao [intensidade], gesto [mao], atitude, ajustes finos (como no capítulo 11), move frente/lado (m) giro (graus),
-  curva (até a próxima chave), fala "…" tom ….  Só o que muda entre as chaves entra na animação (ela fica parcial e reutilizável).
-  "relativa" = guarda as diferenças (vale a partir de qualquer pose: "pe direito 15cm para direita" funciona em pé, agachado…).
+  Numa chave: pose, expressao [intensidade], gesto [mao …] [intensidade], atitude [intensidade], ajustes finos (cap. 11), move frente/lado (m) giro (graus),
+  curva (até a próxima chave), fala ["texto"] [tom raiva] (sem texto = boca falando genérica, reutilizável).
+  As chaves se ACUMULAM: cada chave parte da anterior (só a "pose" recomeça do zero). "chave 0s" sozinha (vazia) vale: é o ponto de partida.
+  "move" é a posição em relação ao COMEÇO (move frente 0.4 e depois move frente 0.8 = andou 40 cm e depois mais 40 cm).
+  Só o que muda entre as chaves entra na animação (ela fica parcial e reutilizável).
+  "relativa" = guarda as diferenças para a primeira chave (vale a partir de qualquer pose: "pe direito 15cm para direita" funciona em pé, agachado…).
+  Numa relativa, pose/gesto/expressão também viram diferenças (ex.: o quanto o braço sobe do começo ao gesto).
+  Repetir um trecho (acenar 3 vezes): escreva as chaves de ida e volta, ou use "loop" na animação inteira. "olha" não vai em chave (use no quadro).
   "salvar" = vai para a biblioteca de animações.
 No quadro:  Kai anima chegar [depois acenarSim] [instante 0.5s]   (o quadro mostra o fim, ou o instante; o vídeo toca tudo)
 Cabeçalho do quadro:  duracao 2s  ·  camera-move aproxima|afasta|panoramica-esquerda|panoramica-direita|orbita 30|sobe|desce|treme
+  (o número opcional é o quanto: aproxima 40 = 40% mais perto; orbita 30 = 30 graus; padrão: aproxima 40, afasta 60, panorâmica 20, orbita 30, sobe/desce 15)
 Vídeo (animatic): cada quadro dura "duracao"; as animações tocam e a câmera se move → GIF/WebM/PNG (site: Animação → Vídeo do name; MCP: video_name).
 Curvas: ${Object.keys(CURVAS).join(", ")}. Partes do corpo: ${Object.keys(AN_PARTES).join(", ")}.
 Animações prontas (${bibliotecaAnimacoes().listar().length}): ${bibliotecaAnimacoes().listar().map(a => a.nome).join(", ")}.

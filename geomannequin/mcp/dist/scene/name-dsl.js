@@ -236,6 +236,8 @@ function nmLerLocal(bloco, ctx) {
         let k = 1, nomeO = null; if (toks[k] && toks[k].t === "str") nomeO = toks[k++].v; if (toks[k] && /^(em|at)$/i.test(toks[k].v)) k++;
         let [p, k2] = ponto(toks, k);
         const o = opc(toks, p ? k2 : k); if (nomeO) o.nome = nomeO;
+        const sob = toks.findIndex(t => nmNorm(t.v) === "sobre" || nmNorm(t.v) === "em-cima-de");
+        if (sob >= 0 && !p) { const alvo = toks[sob + 1] && toks[sob + 1].v, ob = [...base].reverse().find(x => nmNorm(x.nome) === nmNorm(alvo)) || [...base].reverse().find(x => nmNorm(x.tipo) === nmNorm(alvo)); if (!ob) throw new NmErro("sobre “" + alvo + "”: esse objeto ainda não existe no local (escreva-o antes).", l.linha); p = [ob.x, ob.z]; o.base = (ob.base || 0) + ob.alt; }
         const enc = toks.findIndex(t => nmNorm(t.v) === "encostado-em");
         if (enc >= 0) { /* encostado na parede de uma sala/região, lado norte/sul/leste/oeste, a t metros do canto */
           const r = plano.regioes[toks[enc + 1].v] || (plano.salas[toks[enc + 1].v] || {}).ret; const ld = toks.findIndex(t => nmNorm(t.v) === "lado"), lado = ld >= 0 ? nmNorm(toks[ld + 1].v) : "norte";
@@ -850,11 +852,11 @@ function nmLerAnimacao(bloco, ctx) {
     for (let k = 2; k < toks.length; k++) { const w = nmNorm(toks[k].v), nx = toks[k + 1];
       if (w === "pose") { Object.assign(tmp.params, anPoseValores(nmPoseValida(nx.v, l.linha), tmp.params)); k++; }
       else if (w === "expressao" || w === "expressão" || w === "rosto") { const ex = nmExpressaoValida(nx.v, l.linha); k++; let I = 1; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") { I = toks[k + 2].v; k += 2; } c.rosto = { expressao: ex, intensidade: I }; Object.assign(tmp.params, misturarExpressoes({ [ex]: 1 }, I)); }
-      else if (w === "gesto") { let mao = null; k++; if (toks[k + 1] && /^(mao|mão)$/.test(nmNorm(toks[k + 1].v))) { mao = toks[k + 2].v; k += 2; } aplicarGestoConversa(tmp, nx.v, { mao }); }
-      else if (w === "atitude") { aplicarAtitude(tmp, nx.v); k++; }
+      else if (w === "gesto") { let mao = null, I = 1; k++; while (toks[k + 1] && /^(mao|mão|intensidade)$/.test(nmNorm(toks[k + 1].v))) { if (nmNorm(toks[k + 1].v) === "intensidade") I = toks[k + 2].v; else mao = toks[k + 2].v; k += 2; } aplicarGestoConversa(tmp, nx.v, { mao, intensidade: I }); }
+      else if (w === "atitude") { let I = 1; k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") { I = toks[k + 2].v; k += 2; } aplicarAtitude(tmp, nx.v, { intensidade: I }); }
       else if (w === "move" || w === "anda" || w === "desloca") { const mv = { frente: 0, lado: 0, giro: 0 }; while (toks[k + 1] && /^(frente|lado|giro|tras|trás)$/.test(nmNorm(toks[k + 1].v))) { const f = nmNorm(toks[k + 1].v), v = toks[k + 2].v; if (f === "tras" || f === "trás") mv.frente = -v; else mv[f] = v; k += 2; } c.mover = mv; }
       else if (w === "curva") { c.curva = nmNorm(nx.v); k++; }
-      else if (w === "fala") { c.fala = { texto: nx.v, tom: toks[k + 2] && nmNorm(toks[k + 2].v) === "tom" ? nmNorm(toks[k + 3].v) : "calmo" }; k += c.fala.tom !== "calmo" || (toks[k + 2] && nmNorm(toks[k + 2].v) === "tom") ? 3 : 1; }
+      else if (w === "fala") { /* fala "texto" [tom raiva] · ou só "fala tom raiva" (boca genérica) */ let texto = "a e o a i o", tom = "calmo"; if (nx && nx.t === "str") { texto = nx.v; k++; } if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") { tom = nmNorm(toks[k + 2].v); k += 2; } c.fala = { texto, tom }; }
       else if (/^(pescoco|pescoço|cabeca|cabeça|coluna|tronco|ombros|ombro|perna|pe|pé|braco|braço)$/.test(w)) { let parte = w; if (/^(ombro|perna|pe|braco)$/.test(parte) && nx && /^(direit[oa]|esquerd[oa])$/.test(nmNorm(nx.v))) { parte += "-" + nmNorm(nx.v); k++; }
         while (toks[k + 1] && (toks[k + 1].t === "num" || /^(inclina|abaixa|levanta|ergue|gira|lado|flexiona|estende|torce|caidos|afasta|junta|joelho|frente|tras|abre|cotovelo|punho)$/.test(nmNorm(toks[k + 1].v)))) { const o0 = toks[k + 1];
           if (o0.t === "num") { k++; let dir = null; if (toks[k + 1] && /^(para|pra)$/.test(nmNorm(toks[k + 1].v))) k++; if (toks[k + 1] && toks[k + 1].t === "pal") { dir = toks[k + 1].v; k++; } ajusteFino(tmp, parte, "pe", o0.v, dir); continue; }
