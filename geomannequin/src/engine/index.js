@@ -65,3 +65,4 @@ export * from "./efeitos/primitivas.js";
 export * from "./efeitos/desenhar.js";
 export * from "./efeitos/camadas-vfx.js";
 export * from "./planta-imagem.js";
+export * from "./gif.js";

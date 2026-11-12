@@ -6,6 +6,7 @@ import { INTERACOES } from "./interacoes.js";
 import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { TIPOS_OBJETO, CATALOGO } from "../engine/index.js";
+import { GESTOS_CONVERSA, ATITUDES, TONS_FALA, PAPEIS_CONVERSA, CURVAS, AN_PARTES, bibliotecaAnimacoes } from "./animacao.js";
 
 const mnLista = (a, n) => { const l = [...a]; return l.slice(0, n || l.length).join(", ") + (n && l.length > n ? "… (" + l.length + " no total)" : ""); };
 
@@ -251,7 +252,39 @@ Planta colorida (do próprio app): anexe a imagem e escreva  local "Quintal" pla
   quadro local "Praça do mercado" … · local "Praça à noite" herda "Praça do mercado" (+ peças novas).
 - No site: aba Name → Locais (salvar, abrir no palco, duplicar, exportar/importar). Pela IA (MCP): salvar_local, listar_locais, abrir_local.
 
-11. EXEMPLO COMPLETO
+11. CONVERSA E LINGUAGEM CORPORAL (gestos, atitudes, fala)
+Quem conversa gesticula, mexe a cabeça e muda o peso do corpo. Na linha do personagem:
+  gesto explicar [mao direita|esquerda|ambas] [intensidade 0.8]
+  atitude cabecaInclinada [intensidade 0.6]        (várias atitudes podem somar)
+  fala "Você mentiu!" tom raiva                     (boca de fala no tom + um gesto sorteado, se não houver gesto)
+  papel ouvinteCetico   ·   conversa com Mira papel falante   (escolhe gesto + atitude + rosto pelas tags)
+  tom pergunta                                       (tom da fala/rosto)
+Ajustes finos (graus; cm onde diz):
+  pescoco inclina 15 abaixa 10 gira 5 · coluna inclina 8 lado 5 torce 10 · ombros caidos 0.5 · ombro direito abaixa 0.4
+  perna esquerda afasta 10cm joelho 12 frente 5cm · pe direito 15cm para direita|esquerda|frente|tras · braco direito levanta 20 abre 10 cotovelo 30
+No quadro: dialogo Kai, Mira [tom tenso] → quem fala (a "fala" do quadro, ou a vez, alternando) gesticula; os outros ouvem olhando para ele.
+Gestos (${Object.keys(GESTOS_CONVERSA).length}): ${Object.entries(GESTOS_CONVERSA).map(([k, g]) => k + " [" + g.tag + "]").join(", ")}.
+Atitudes (${Object.keys(ATITUDES).length}): ${Object.entries(ATITUDES).map(([k, g]) => k + " [" + g.tag + "]").join(", ")}.
+Tons de fala: ${Object.keys(TONS_FALA).join(", ")}.
+Papéis: ${Object.keys(PAPEIS_CONVERSA).join(", ")}.
+
+12. ANIMAÇÃO (quadros-chave) E VÍDEO
+Bloco de animação (sem recuo), chaves com recuo:
+  animacao "chegar" duracao 1.4s [relativa] [loop] [curva suave] [tags "Locomocao/Chegar"] [salvar]
+    chave 0s pose empe
+    chave 0.7s pose passo move frente 0.4
+    chave 1.4s pose empe gesto acenar move frente 0.8
+  Numa chave: pose, expressao [intensidade], gesto [mao], atitude, ajustes finos (como no capítulo 11), move frente/lado (m) giro (graus),
+  curva (até a próxima chave), fala "…" tom ….  Só o que muda entre as chaves entra na animação (ela fica parcial e reutilizável).
+  "relativa" = guarda as diferenças (vale a partir de qualquer pose: "pe direito 15cm para direita" funciona em pé, agachado…).
+  "salvar" = vai para a biblioteca de animações.
+No quadro:  Kai anima chegar [depois acenarSim] [instante 0.5s]   (o quadro mostra o fim, ou o instante; o vídeo toca tudo)
+Cabeçalho do quadro:  duracao 2s  ·  camera-move aproxima|afasta|panoramica-esquerda|panoramica-direita|orbita 30|sobe|desce|treme
+Vídeo (animatic): cada quadro dura "duracao"; as animações tocam e a câmera se move → GIF/WebM/PNG (site: Animação → Vídeo do name; MCP: video_name).
+Curvas: ${Object.keys(CURVAS).join(", ")}. Partes do corpo: ${Object.keys(AN_PARTES).join(", ")}.
+Animações prontas (${bibliotecaAnimacoes().listar().length}): ${bibliotecaAnimacoes().listar().map(a => a.nome).join(", ")}.
+
+13. EXEMPLO COMPLETO
 ${EXEMPLO_NAME}`;
 }
 

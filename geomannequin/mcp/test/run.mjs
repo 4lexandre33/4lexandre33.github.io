@@ -308,6 +308,19 @@ async function suite(client, tag) {
     r = await call("legenda_cores", { name: ex }); check(!r.isError && r.structuredContent.elenco.length === 4, "legenda_cores");
     r = await call("validar_name", { name: 'elenco\n  Ana relevante\nlocal "Q" planta "p1"\nquadro local "Q" plano geral\n  Ana em marca vermelho1\n', imagens: [{ nome: "p1", imagem: png }] }); check(!r.isError && r.structuredContent.ok && r.structuredContent.locais[0].pecas > 5, "name com planta anexada" + (r.isError ? ": " + text(r) : JSON.stringify(r.structuredContent.erros)));
   }
+  /* conversa e animação */
+  { r = await call("nova_cena", {});
+    r = await call("linguagem_corporal", { gesto: "explicar", atitudes: ["cabecaInclinada"], fala: "Olha só isso", tom: "alegre", ajustes: [{ parte: "pe direito", operacao: "pe", valor: 15, direcao: "direita" }] });
+    check(!r.isError && r.structuredContent.gesto && r.structuredContent.ajustes.length === 1, "linguagem_corporal: gesto + atitude + fala + pé 15 cm" + (r.isError ? ": " + text(r) : ""));
+    r = await call("manual_animacao", {}); check(!r.isError && /ANIMAÇÃO/.test(text(r)) && /bracosCruzados/.test(text(r)), "manual_animacao");
+    r = await call("listar_animacoes", { tags: ["Ajuste/Pe"] }); check(!r.isError && r.structuredContent.animacoes.length === 8, "listar_animacoes por tag (8 ajustes de pé)");
+    r = await call("criar_animacao", { dsl: 'animacao "aceno curto" duracao 1s tags "Conversa/Cumprimento"\n  chave 0s pose empe\n  chave 0.5s gesto acenar\n  chave 1s gesto acenar pescoco inclina 10', salvar: true, fps: 6 });
+    check(!r.isError && r.content.some(c => c.type === "resource" && c.resource.mimeType === "image/gif") && r.structuredContent.salvo, "criar_animacao (DSL) + GIF + salvar" + (r.isError ? ": " + text(r) : ""));
+    r = await call("criar_animacao", { poses: ["empe", "agachar"], duracao: 0.8, nome: "abaixar" }); check(!r.isError && r.structuredContent.chaves === 2, "criar_animacao de poses");
+    r = await call("aplicar_animacao", { nome: "peDireito15cmDireita" }); check(!r.isError, "aplicar_animacao (relativa)");
+    r = await call("exportar_animacao", { nome: "aceno curto", fps: 6, largura: 240 }); check(!r.isError && r.content[0].resource.blob.length > 5000, "exportar_animacao: zip com GIF, PNGs, OpenPose" + (r.isError ? ": " + text(r) : ""));
+    r = await call("video_name", { name: 'elenco\n  Ana relevante\nlocal S unidade m\n  chao retangulo -3,-3 a 3,3\nquadro local S plano inteiro alvo Ana duracao 1s camera-move aproxima\n  Ana em (0,0) anima passoFrente\n', fps: 4, largura: 200 });
+    check(!r.isError && r.structuredContent.quadros >= 4, "video_name: animatic com animação e câmera" + (r.isError ? ": " + text(r) : "")); }
   return link;
 }
 
