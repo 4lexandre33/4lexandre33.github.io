@@ -6,6 +6,7 @@ import { SCN } from "../scene/modelo.js";
 import { amostrar, aplicarAnimacao, anSemCamera } from "../scene/animacao.js";
 import { PD_DOC, PD_JUNTAS, PD_TRECHOS, pdCompletar, pdMiniatura, pdMiniaturaAnimacao, pdMiniaturaItem, pdBase, pdNorm } from "../scene/pose-dsl.js";
 import { framesDaAnimacao } from "../scene/name-dsl.js";
+import { EXEMPLO_FILME } from "../scene/manual-name.js";
 import { renderizarQuadro } from "../scene/quadros.js";
 import { refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
@@ -125,6 +126,7 @@ const LICOES = [
   ["7. Animação por chaves", '# Lição 7 — chaves com juntas. Arraste a barra de tempo da prévia.\nanimacao "levantar-braco" duracao 1.2s\n  chave 0s pose empe\n  chave 0.6s ombro.direito(frente 150) cotovelo.direito(dobra 10)\n  chave 1.2s pose empe\n'],
   ["8. Derivar: a mesma animação, de joelhos", '# Lição 8 — “de” cria uma animação a partir de outra; “troca pernas por pose …” muda só as pernas.\nanimacao "girar-ajoelhado" de girar360E\n  troca pernas por pose ajoelhado\n\nanimacao "girar-curvado" de girar360E\n  soma tronco(frente 25)\n'],
   ["9. Picotar e repetir", '# Lição 9 — “ate 90” corta o giro em 90° (15, 30, 45, 60, 180…) e pousa os pés. trecho, reverte, espelha, repete, vai-e-volta.\nanimacao "giro90" de girar360E\n  ate 90\n\nanimacao "giro90-ida-e-volta" de giro90\n  vai-e-volta\n'],
-  ["10. Juntar e usar no quadro", '# Lição 10 — junta (uma depois da outra) e camada (partes de duas juntas). Depois use no quadro.\nanimacao "combo" junta acenarTchau, giro90E, puloFrente mistura 0.2s\nanimacao "giro90E" de girar360E\n  ate 90\nanimacao "andar-acenando" camada andarCiclo + acenarTchau bracos\n\nelenco\n  Kai relevante\nquadro\n  Kai em (0,0) anima combo\n']
+  ["10. Juntar e usar no quadro", '# Lição 10 — junta (uma depois da outra) e camada (partes de duas juntas). Depois use no quadro.\nanimacao "combo" junta acenarTchau, giro90E, puloFrente mistura 0.2s\nanimacao "giro90E" de girar360E\n  ate 90\nanimacao "andar-acenando" camada andarCiclo + acenarTchau bracos\n\nelenco\n  Kai relevante\nquadro\n  Kai em (0,0) anima combo\n'],
+  ["11. Filme: planos, tempo e câmera", "# Lição 11 — um filme curto: 3 planos com câmera fixa vendo chegar, sobre o ombro e visão de Mira.\n# Ponha o cursor dentro de um plano e veja a aba Filme. Exercício: mude “camera fixa frente-de Kai 14m” para “camera segue Kai atras” e “2s camera orbita 180 em 3s”.\n# Depois: Filme → MP4.\n" + EXEMPLO_FILME]
 ];
 export { posCursor, posicionar, completar, htmlItens, preencherMinis, htmlDestaque, palavraNoCursor, ajudaHtml, rolarNumero, expandirTrecho, defNoCursor, previaDef, parar, LICOES };

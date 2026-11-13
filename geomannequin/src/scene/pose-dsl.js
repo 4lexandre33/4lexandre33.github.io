@@ -457,6 +457,66 @@ function pdMiniaturaItem(mini, ctx) {
   if (PD_MINI_CACHE.size > 400) PD_MINI_CACHE.clear(); PD_MINI_CACHE.set(ch, s); return s;
 }
 
-export { PD_JUNTAS, PD_LADOS, PD_PARTES, PD_DOC, PD_TRECHOS, PD_ATALHOS, PD_NADOS, pdNorm, pdJunta, pdFaixaMov, pdAplicarJunta, pdExtrairJuntas, pdBase, pdTodasPoses, pdValoresPose, pdChavesDasPartes, pdLerPartes, pdAtalho,
+/* ===================== pose e animação → CÓDIGO (a mesma linguagem; ida e volta) ===================== */
+const PD_ROSTO_K = /^(jawOpen|smile|eyeLid|browUp|browIn|eyeYaw|eyePitch|blush|tears)$/;
+function pdQ(nome) { return /^[\wÀ-ÿ-]+$/.test(nome) ? '"' + nome + '"' : JSON.stringify(String(nome)); }
+function pdN(v, d = 2) { const x = +(+v).toFixed(d); return Object.is(x, -0) ? "0" : String(x); }
+/* comandos que levam o estado R (params) aos valores V; devolve as linhas e o novo estado */
+function pdComandos(V, R, o = {}) {
+  const tol = o.tol ?? 0.05, out = [], usados = new Set(), S = Object.assign({}, R), dif = k => Number.isFinite(V[k]) && Math.abs(V[k] - (S[k] ?? 0)) > (/^(handCurl|shElev|shProt)/.test(k) || PD_ROSTO_K.test(k) ? 0.004 : tol);
+  if (dif("flex")) { out.push("valor flex " + pdN(V.flex)); S.flex = V.flex; usados.add("flex"); }
+  for (const [jn, J] of Object.entries(PD_JUNTAS)) {
+    const porLado = {};
+    for (const L of J.lado ? ["R", "L"] : [""]) { const args = [];
+      const bases = [...new Set(Object.values(J.mov).map(m => m[0]))];
+      for (const b of bases) { const k = b + L; if (usados.has(k) || !dif(k) || (!(k in SLK) && !POSEKEYS.has(k))) continue;
+        const v = V[k], movs = Object.entries(J.mov).filter(([, m]) => m[0] === b && (m[2] || "g") !== "zero"), sinal = v >= 0 ? 1 : -1, esc = movs.find(([, m]) => m[1] === sinal) || (Math.abs(v) < 1e-9 ? movs[0] : null);
+        if (!esc) continue; const [nm, m] = esc, tipo = m[2] || "g", [a, z] = faixa(k, S.flex ?? V.flex ?? 0); if (v < a - 1e-6 || v > z + 1e-6) continue;
+        const x = Math.abs(v); args.push(nm + " " + (tipo === "p" ? pdN(x * 100, 1) + "%" : tipo === "cm" ? pdN(x / PD_M * 100, 1) + "cm" : pdN(x, 1))); usados.add(k); S[k] = v; }
+      if (args.length) porLado[L] = args.join(" "); }
+    if (J.lado && porLado.R && porLado.R === porLado.L) out.push(jn + "(" + porLado.R + ")");
+    else for (const [L, a] of Object.entries(porLado)) out.push(jn + (L === "R" ? ".direito" : L === "L" ? ".esquerdo" : "") + "(" + a + ")");
+  }
+  const resto = Object.keys(V).filter(k => !usados.has(k) && (POSEKEYS.has(k) || PD_ROSTO_K.test(k)) && dif(k));
+  for (let i = 0; i < resto.length; i += 4) out.push("valor " + resto.slice(i, i + 4).map(k => { S[k] = V[k]; return k + " " + pdN(V[k], 3); }).join(" "));
+  return { linhas: out, estado: S };
+}
+function pdNeutro() { return pdParams({}); }
+/* pose → bloco "pose" (de empe) */
+function pdCodigoPose(valores, o = {}) {
+  const R = pdNeutro(); let deEmpe = R; try { deEmpe = Object.assign({}, R, pdValoresPose("empe", R, null, 0).valores); } catch (e) { }
+  const { linhas } = pdComandos(valores, deEmpe, o);
+  return (o.comentario ? "# " + o.comentario + "\n" : "") + "pose " + pdQ(o.nome || "minha-pose") + " de empe" + (o.salvar ? " salvar" : "") + (o.tags && o.tags.length ? " tags " + JSON.stringify(o.tags.join(", ")) : "") + "\n" + (linhas.length ? linhas.map(l => "  " + l).join("\n") : "  # (igual à pose em pé)") + "\n";
+}
+/* animação → bloco "animacao" com uma chave por chave original (valores completos, ida e volta) */
+function pdCodigoAnimacao(a, o = {}) {
+  const B = pdBase(), rel = a.modo === "relativa" && !(a.absolutos && a.absolutos.length), N = pdNeutro(), linhas = [];
+  const cab = ["animacao " + pdQ(o.nome || a.nome || "animacao"), "duracao " + pdN(a.duracao, 3) + "s"]; if (rel) cab.push("relativa desde-neutra"); cab.push("mantem"); if (a.loop) cab.push("loop");
+  const temMover = a.chaves.some(c => c.mover && (c.mover.frente || c.mover.lado || c.mover.giro));
+  if (a.fps && a.fps !== 12) cab.push("fps " + a.fps); if (a.curva && a.curva !== "suave") cab.push("curva " + a.curva); if (a.travarPes) cab.push("travar-pes"); if (a.passo === 2) cab.push("em-dois"); else if (a.passo === 3) cab.push("em-tres");
+  if (a.tags && a.tags.length) cab.push("tags " + JSON.stringify(a.tags.join(", "))); if (o.salvar) cab.push("salvar");
+  let S = Object.assign({}, N);
+  const tempos = [...new Set(a.chaves.map(c => +c.t.toFixed(4)))].sort((x, y) => x - y);
+  for (const t of tempos) { const orig = a.chaves.find(c => Math.abs(c.t - t) < 1e-4) || {}, ck = pdChaveEm(Object.assign({}, a, { loop: false }), t, B), abs = {};
+    for (const [k, v] of Object.entries(ck.valores || {})) abs[k] = a.modo === "relativa" && !(a.absolutos || []).includes(k) ? (rel ? (N[k] || 0) : (B[k] || 0)) + v : v;
+    const r = pdComandos(abs, S, { tol: 0.05 }); S = r.estado; const extra = [];
+    const mv = temMover ? (ck.mover || orig.mover) : null; if (mv && (mv.frente || mv.lado || mv.giro || t > 0)) extra.push("move" + (mv.frente ? " frente " + pdN(mv.frente, 3) : "") + (mv.lado ? " lado " + pdN(mv.lado, 3) : "") + (mv.giro ? " giro " + pdN(mv.giro, 1) : ""));
+    if (orig.olha && typeof orig.olha === "string") extra.push("olha " + (/^camera$/.test(orig.olha) ? "camera" : pdQ(orig.olha)) + (orig.olhaModo ? " " + orig.olhaModo : ""));
+    if (orig.curva) extra.push("curva " + orig.curva); if (orig.fala && orig.fala.texto) extra.push("fala " + JSON.stringify(orig.fala.texto) + (orig.fala.tom ? " tom " + orig.fala.tom : ""));
+    linhas.push("  chave " + pdN(t, 3) + "s " + r.linhas.concat(extra).join(" ")); }
+  const notas = []; if (a.modo === "relativa" && !rel) notas.push("tinha partes absolutas: exportada como absoluta");
+  if (a.descricao) notas.unshift(a.descricao);
+  return (notas.length ? "# " + notas.join(" · ") + "\n" : "") + cab.join(" ") + "\n" + linhas.join("\n") + "\n";
+}
+
+/* sobreposição (overlap / follow-through): cabeça, punhos, mãos e antebraços chegam um pouco DEPOIS do resto */
+const PD_SOBRA = /^(head|neck|eye|wrist|hand|forearm|finger|thumb|fing)/;
+function pdSobrepor(a, atraso = 0.1, o = {}) { const B = pdBase(), a0 = Object.assign({}, a, { loop: false }), ks = [...new Set(a.chaves.flatMap(c => Object.keys(c.valores)))];
+  if (!ks.some(k => PD_SOBRA.test(k))) return a;
+  const ts = [...new Set(a.chaves.flatMap(c => [+c.t.toFixed(4), +Math.min(a.duracao + atraso, c.t + atraso).toFixed(4)]))].sort((x, y) => x - y);
+  const ch = ts.map(t => { const c0 = pdChaveEm(a0, Math.min(t, a.duracao), B), c1 = pdChaveEm(a0, Math.max(0, Math.min(a.duracao, t - atraso)), B), v = {}; ks.forEach(k => { const x = (PD_SOBRA.test(k) ? c1 : c0).valores[k]; if (Number.isFinite(x)) v[k] = x; }); const c = { t, valores: v }; if (c0.mover) c.mover = c0.mover; return c; });
+  return Object.assign(criarAnimacao(Object.assign({}, a, { chaves: ch, duracao: a.duracao + atraso, versoes: undefined, origem: undefined })), { tipo: a.tipo, volta: a.volta, nome: o.nome || a.nome }); }
+
+export { pdSobrepor, pdCodigoPose, pdCodigoAnimacao, pdComandos, PD_JUNTAS, PD_LADOS, PD_PARTES, PD_DOC, PD_TRECHOS, PD_ATALHOS, PD_NADOS, pdNorm, pdJunta, pdFaixaMov, pdAplicarJunta, pdExtrairJuntas, pdBase, pdTodasPoses, pdValoresPose, pdChavesDasPartes, pdLerPartes, pdAtalho,
   pdMiniatura, pdMiniaturaJunta, pdMiniaturaAnimacao, pdMiniaturaItem, pdParams, pdChaveEm, pdTrecho, pdAteAngulo, pdReverter, pdEspelharAnim, pdAbsoluta, pdJuntar, pdRepetir, pdVaiEVolta, pdAmplitude, pdEsticar, pdTroca, pdSoma, pdTira, pdFixar, pdCamada,
   pdCiclo, pdCompletar, pdRebase, pdCompor };

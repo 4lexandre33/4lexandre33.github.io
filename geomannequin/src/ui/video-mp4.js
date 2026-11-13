@@ -2,6 +2,7 @@
    Um filme vira filme.mp4 e, ao mesmo tempo, um MP4 por plano (o quadro é desenhado uma vez só e vai para os dois codificadores).
    Sem WebCodecs (navegador antigo ou página sem https): o chamador cai para os quadros em PNG num .zip. */
 import { renderizarQuadro } from "../scene/quadros.js";
+import { svgComLegenda } from "../scene/name-dsl.js";
 import { criarMp4 } from "../engine/index.js";
 
 export function temMp4() { return typeof VideoEncoder === "function" && typeof VideoFrame === "function" && (typeof isSecureContext === "undefined" || isSecureContext); }
@@ -27,7 +28,7 @@ function medidas(svg, largura) { const m = /viewBox="([^"]+)"/.exec(svg), vb = m
 
 /* o quadro desenhado no canvas, com véu (escurece/clareia) e fusão com um quadro anterior guardado */
 async function desenhar(g, f, W, H, guardados, ultimo) {
-  let img = f.repetido && ultimo ? ultimo : await imagem(renderizarQuadro(f, { passes: false }).svg);
+  let img = ultimo; if (!(f.repetido && ultimo)) { try { img = await imagem(svgComLegenda(renderizarQuadro(f, { passes: false }).svg, f.fala)); } catch (e) { if (!ultimo) throw e; } }
   g.globalAlpha = 1; g.fillStyle = "#fff"; g.fillRect(0, 0, W, H); g.drawImage(img, 0, 0, W, H);
   if (f.fusao && guardados.has(f.fusao.com)) { g.globalAlpha = Math.max(0, Math.min(1, f.fusao.u)); g.drawImage(guardados.get(f.fusao.com), 0, 0, W, H); g.globalAlpha = 1; }
   if (f.veu) { g.globalAlpha = Math.max(0, Math.min(1, f.veu.u)); g.fillStyle = f.veu.cor || "#000"; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
@@ -56,9 +57,9 @@ export async function codificarFilme(v, o = {}) {
 }
 
 /* prévia leve de um plano: imagens pequenas para animar no painel */
-export async function previaPlano(v, largura = 360, max = 48) {
-  const fr = v.frames, passo = Math.max(1, Math.ceil(fr.length / max)), out = [];
-  for (let i = 0; i < fr.length; i += passo) { const svg = renderizarQuadro(fr[i], { passes: false }).svg; out.push({ t: fr[i].tl != null ? fr[i].tl : fr[i].t, url: URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })), legenda: fr[i].legenda || "" }); await new Promise(r => setTimeout(r, 0)); }
+export async function previaPlano(v, largura = 360, max = 32, o = {}) {
+  const fr = v.frames, passo = Math.max(1, Math.ceil(fr.length / max)), out = o.quadros || [];
+  for (let i = 0; i < fr.length; i += passo) { if (o.parar && o.parar()) break; const svg = svgComLegenda(renderizarQuadro(fr[i], { passes: false }).svg, fr[i].fala); out.push({ t: fr[i].tl != null ? fr[i].tl : fr[i].t, url: URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })), legenda: fr[i].legenda || "" }); if (o.aoQuadro) o.aoQuadro(out.length); await new Promise(r => setTimeout(r, 0)); }
   return { quadros: out, intervalo: 1000 * passo / v.fps };
 }
 export function tempoTexto(s) { if (s == null) return ""; s = Math.round(s); return s >= 60 ? Math.floor(s / 60) + " min " + (s % 60) + " s" : s + " s"; }

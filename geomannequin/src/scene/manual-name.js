@@ -6,7 +6,9 @@ import { INTERACOES } from "./interacoes.js";
 import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { TIPOS_OBJETO, CATALOGO } from "../engine/index.js";
-import { PD_JUNTAS, PD_PARTES, PD_DOC, pdFaixaMov } from "./pose-dsl.js";
+import { PD_JUNTAS, PD_PARTES, PD_DOC, pdFaixaMov, pdCodigoPose, pdCodigoAnimacao, pdValoresPose, pdParams } from "./pose-dsl.js";
+import { posesSalvas } from "./pose-codigo.js";
+import { AD_ACOES, AD_ESPERAS, adTipoDe } from "./acoes-dia.js";
 import { LC_NADO, LC_PULOS } from "./locomocao.js";
 import { GESTOS_CONVERSA, ATITUDES, TONS_FALA, PAPEIS_CONVERSA, CURVAS, AN_PARTES, bibliotecaAnimacoes } from "./animacao.js";
 
@@ -48,6 +50,35 @@ quadro 4 continua plano close alvo Tomo lado frente tamanho grande
   Tomo expressao choro intensidade 0.8
 `;
 
+const EXEMPLO_FILME = `filme "O Pedido" fps 24 legendas
+elenco
+  Kai relevante corpo masculino
+  Mira relevante corpo feminino
+local "Praça" unidade m
+  chao retangulo -15,-15 a 15,15 classe pedra
+  banco "banco" em (3,4)
+  mesa "mesinha" em (-0.45,-5.5) tamanho 0.5x0.5x0.8
+  caixa "presente" em (-0.4,-5.55) tamanho 0.2x0.2x0.15 sobre mesinha
+cena "Praça" local "Praça" hora tarde
+  plano 1 duracao 9s
+    Kai em (0,-6) vira-para (0,4)
+    Mira em (1.2,4) vira-para Kai
+    camera fixa frente-de Kai 14m altura 1.6m olha Kai
+    0s Kai pega presente
+    1s Kai anda-ate Mira
+    0s Mira espera impaciente
+  plano 2 corte duracao 5s
+    camera sobre-o-ombro Kai alvo Mira
+    0s Kai oferece para Mira sobreposicao
+    0.4s Mira expressao surpresa
+    1.2s Mira fala "Para mim?"
+    3s Kai entrega presente para Mira
+  plano 3 fusao 0.5s duracao 4s
+    camera pov Mira olha Kai
+    0s camera aproxima 30 em 2s
+    1s Kai expressao alegria
+    2s Kai acena
+`;
 function manualName() {
   const P = todasPoses(), X = Object.keys(EXPRESSOES), O = Object.keys(TIPOS_OBJETO), I = Object.keys(INTERACOES), G = Object.keys(ACOES), A = Object.keys(ACOES_LUTA), F = Object.keys(CATALOGO);
   return `MANUAL DA DSL DO NAME — GeoMannequin
@@ -424,11 +455,155 @@ MOVIMENTOS PRONTOS (no quadro, como "gira" e "anda-ate"):
 LIMITES: a água é só desenho (sem respingo físico nem empuxo); nado e mergulho são ciclos animados; rolar e engatinhar não desviam de nada;
   "troca pernas" numa animação com pés presos gira no lugar (os joelhos não ficam presos no chão como os pés).
 
-15. EXEMPLO COMPLETO
-${EXEMPLO_NAME}`;
+15. FILME: filme → cena → plano (vídeo longo por texto)
+Um FILME é uma sequência de PLANOS (shots). Cada plano tem duração, câmera e linhas com TEMPO. O fim de um plano é o começo do
+seguinte (continuidade): quem andou continua onde parou; quem foi cortado no meio de uma ação começa o próximo plano do ponto do corte.
+  filme "O Pedido" fps 24 [16:9] [legendas] [ouvintes fixos] [em-dois] [sem-vida]
+  elenco / local …                       (como no name)
+  cena "Praça" local "Praça" hora tarde
+    plano 1 [corte | fusao 0.5s | escurece 0.8s | clareia 0.6s] [duracao 6s]
+      Kai em (0,-6)                       linhas SEM tempo = arrumação do começo do plano (posição, pose, vira-para…)
+      camera …                            câmera do plano (capítulo 16)
+      0s Kai anda-ate Mira                linha com TEMPO = acontece nesse segundo do plano
+      1.5s-3s Mira expressao alegria      intervalo: a mudança dura de 1,5 s a 3 s
+      depois Kai oferece para Mira        começa quando a anterior (do mesmo personagem) termina
+      junto Mira olha Kai                 começa junto com a linha anterior
+      4s Mira fala "Obrigada!"            fala com boca no tempo (e legenda, se o filme tiver "legendas")
+      marca "virada" 5s                   marca de tempo (vai para a lista de planos)
+  Sem "duracao": o plano dura até a última coisa terminar + 0,6 s. Com "duracao" e uma ação mais longa: o plano corta no meio (aviso) e o
+  PLANO SEGUINTE CONTINUA a ação de onde parou (Teo corre no plano 2 e segue correndo no plano 3), a não ser que nele essa pessoa receba outra
+  ordem antes de terminar ou seja reposicionada ("Teo em (x,z)"). Não repita a ação no plano seguinte: ela já continua.
+  Saída: "plano 9 sai escurece 1s" (o fim do plano vai para o preto; clareia = branco). Fim do filme: "filme … fim escurece 1.5s".
+  Comandos instantâneos (expressao, olha, vira-para, pose) viram transições suaves de 0,45 s; "lento" (0,8 s), "rapido" (0,25), "seco" (0,15).
+  Transições entre planos: corte (seco), fusao (um plano some sobre o outro), escurece (sai e entra pelo preto), clareia (pelo branco).
+  Tudo que existe no name também vale numa linha de plano (gesto, atitude, segura, efeito, pula, nada, cai, levanta-se…).
+
+16. CÂMERA DE CINEMA (no plano: a câmera do plano e mudanças no meio dele)
+  BASES (onde a câmera está):
+    camera plano medio alvo Kai [lado 3/4] [elevacao 10] [lente 50]   enquadramento clássico, parado (close, medio, americano, inteiro, geral, detalhe…)
+    camera segue Kai [atras|frente|esquerda|direita] [distancia 3m] [altura 1.7m] [suave 0.4]   acompanha (com atraso natural)
+    camera fixa frente-de Kai 12m [altura 1.6m] [olha Kai]           fixa LONGE na frente dele: vê-lo chegar
+    camera fixa em (x,altura,z) olha Kai                              fixa num ponto do local (metros)
+    camera pov Mira [olha Kai]                                        visão de Mira (dos olhos dela; ela some do quadro); "olha" fixa o olhar
+    camera sobre-o-ombro Kai alvo Mira [lado esquerdo]                plano e contraplano de conversa
+    camera presa-em Kai                                               presa no corpo (câmera de ação)
+  ENQUADRAMENTO ("camera plano …"): é calculado com as pessoas no começo do plano (ou no instante da linha "Ns camera …"); quem anda pode sair
+  do quadro — para acompanhar use "segue". "lado frente|3/4|perfil|costas" conta a partir de para onde o alvo está virado nesse instante.
+  MUDANÇAS NO TEMPO (numa linha "camera Ns …" ou "Ns camera …"; "em 2s" = quanto dura):
+    orbita 90 · eleva 20 · abaixa 15 · sobe 1m · desce 0.5m · grua 2m · aproxima 30 · afasta 40 · travelling frente|tras|esquerda|direita 2m
+    panoramica 30 · inclina 10 · lente 85 · zoom 2 · tremida 0.6 · alvo Mira (troca o foco) · corte (troca de uma vez, sem movimento)
+  UNIDADES: orbita/eleva/panoramica/inclina em GRAUS (eleva + = câmera mais alta olhando para baixo; inclina + = aponta mais para cima, − = mais para baixo;
+    orbita e panoramica: + e − giram em sentidos opostos); sobe/desce/grua em metros (grua sobe a câmera e meio tanto o alvo); aproxima/afasta em %
+    da distância; zoom = fator da lente (2 = dobra os mm); lente em mm (24 aberta, 50 normal, 85 retrato); tremida 0 a 1. Bases aceitam "lente N" (camera pov Mira lente 24).
+  Exemplos:
+    camera fixa frente-de Kai 12m altura 1.6m olha Kai        (Kai vem andando em direção à câmera)
+    2s camera orbita 180 em 3s                                 (dá meia volta em torno do alvo durante 3 s)
+    4s camera corte plano close alvo Mira                       (corte seco para o close de Mira)
+    camera 3s eleva 30 em 1s                                    (sobe o ângulo: vira plongée)
+  A câmera nunca entra num corpo: se fosse entrar, é puxada para fora (e avisa). Na POV, aproxima/afasta viram zoom de lente.
+  Uma base em 0 s sem "em" é corte (a câmera do plano começa nela); bases depois de 0 s vão suavemente, a não ser com "corte".
+
+17. AÇÕES, CICLOS E ESPERAS (o que se repete e o que segura)
+  AÇÃO acontece uma vez e SEGURA a pose final até a próxima coisa: oferece, pede, entrega, recebe, aponta, cruza-bracos, cai-de-joelhos…
+  As passageiras voltam sozinhas: acena, cumprimenta, bebe, le, atende, olha-relogio, encolhe-ombros, chora, ri, coca-cabeca, espreguica, boceja, comemora, suspira, bate-palmas.
+    1s Kai oferece para Mira        (vira para Mira, olha e oferece)
+    Kai acena mao-esquerda · Kai aponta (3,4) · Kai acena volta (força a voltar) · Kai aponta segura (força a segurar)
+  ANDAR E CORRER (deslocam a pessoa): Kai anda [4m] [para (x,z)|Mira|marca "x"] · Kai corre [8m] [para …] · Kai anda-ate Mira · Kai corre-ate (0,10) parar 1.2
+    sem "para": anda para a frente dele. Velocidade: andar ≈ 1,3 m/s, correr ≈ 2,1 m/s (10 m correndo ≈ 5 s; planos curtos cortam e o seguinte continua).
+  CICLO no lugar repete até o fim do plano, até a próxima animação da pessoa ou "por 3s": Kai anima correrCiclo por 3s (corre parado: esteira), nada, engatinha…
+  ESPERA é viva (respira, troca o peso, olha em volta, nunca igual) e dura o que precisar:
+    0s Mira espera [${Object.keys(AD_ESPERAS).join("|")}] [por 5s]
+  TRANSIÇÃO de postura: senta, levanta-se, ajoelha, deita, cai (posturas mudam o corpo inteiro).
+  OBJETOS NO TEMPO:
+    0s Kai pega copo                 estica o braço e segura (o copo vem para a mão no meio do gesto; ponha o objeto a até ~0,8 m, na frente dele —
+                                     o "pega" não anda até o objeto: use antes "anda-ate copo")
+    2s Kai entrega copo para Mira    passa de mão: Mira recebe com as duas mãos
+    4s Mira larga copo               cai no chão (com gravidade)
+    1s Kai joga bola para Mira       voa em arco; se for para alguém, ele pega. "joga bola para (3,2)" = cai no ponto
+    3s Kai efeito energia_mao em mao-direita     efeito aparece no tempo dele (efeitos: catálogo)
+  Objetos no local: copo "copo" em (0.8,0) sobre mesa (fica em cima da mesa).
+
+18. PRINCÍPIOS DE ANIMAÇÃO (o que o texto faz por você e o que você pode pedir)
+  Já automático: ANTECIPAÇÃO (as ações vão um pouco para trás antes de ir), ASSENTAMENTO (passam um pouco e voltam), TEMPO e
+  ESPAÇAMENTO (curvas suaves, saída/entrada), ARCOS (cada junta gira: mãos e pés andam em arco naturalmente), ENCAIXE entre ações
+  (0,25 s de mistura), VIDA (respiração, piscar, peso), QUEM ESCUTA OLHA para quem fala.
+  Você pede no fim da linha:
+    exagera 140%      mais amplitude (cartoon); 70% = contido
+    sobreposicao      cabeça, punhos e mãos chegam ~0,1 s depois do resto (follow-through); "solto" = 0,16 s
+    lento · rapido · seco · pesado      ritmo (pesado = mais lento e assentado)
+    volta · segura · por 3s             volta para a pose de antes / fica / dura isso
+  SILHUETA: se uma mão ficar na frente do corpo vista desta câmera, aparece aviso com a sugestão (orbita 30 ou abrir o braço).
+  LIMITE HONESTO: o manequim é rígido — não há squash & stretch (esticar/achatar o corpo). Use exagera e poses mais abertas.
+
+19. FALAS, ROSTO E SOM
+  4s Mira fala "Você veio!" [tom alegre]     boca no ritmo das letras; quem escuta vira a cabeça para quem fala (desliga: filme … ouvintes fixos)
+  1s-2s Kai expressao surpresa intensidade 0.8 · 2s Kai olha Mira · 3s Kai olha camera
+  "legendas" no cabeçalho do filme: a fala aparece embaixo do vídeo. O pacote leva falas.srt (tempo de cada fala) para dublar ou pôr áudio.
+  Som de verdade não é gerado: o vídeo é mudo; o .srt e a lista de planos dão o tempo exato para quem fizer o áudio.
+
+20. EXPORTAR: MP4, PACOTE PARA A IA DE VÍDEO E CÓDIGO
+  Site → Texto → aba Filme: o plano onde está o cursor, animado, com a lista do que acontece. Botões: "Filme → MP4" (H.264),
+  "MP4 do plano", "Pacote para IA" (.zip com filme.mp4, um MP4 por plano, roteiro-de-planos.md, planos.json, prompts.txt, falas.srt, folha).
+  Navegador sem WebCodecs (ou página fora de https): baixa os quadros em PNG com o comando ffmpeg para juntar.
+  MCP: filme_texto (compila e mostra os planos), plano_previa (tira de quadros de um plano), exportar_filme (MP4 ou pacote; usa o ffmpeg do computador).
+  Tempo: cada quadro leva ~0,1–0,3 s; 1 minuto a 24 fps ≈ 1440 quadros. Para rascunho: fps 12 e largura 640.
+  CÓDIGO: toda pose e animação (prontas e suas) vira texto desta linguagem e volta igual:
+    site → Texto → aba Biblioteca → "Ver código" / "Copiar" / "Catálogo .md" (tudo num arquivo, sempre atualizado)
+    MCP: catalogo_dsl, codigo_de_pose, codigo_de_animacao.   Comandos que aparecem no código gerado:
+    valor PARAM N [PARAM N…]   (um parâmetro direto, quando não há junta para ele) · animacao … relativa desde-neutra mantem
+    (desde-neutra = os deltas contam a partir da pose neutra; mantem = guarda também o que fica parado)
+  VÁRIAS DE UMA VEZ: escreva vários blocos pose/animacao no mesmo texto e "Salvar no catálogo" (Ctrl+S) grava todos os marcados com "salvar".
+
+21. EXEMPLO COMPLETO
+${EXEMPLO_NAME}
+
+EXEMPLO DE FILME
+${EXEMPLO_FILME}`;
+}
+
+/* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */
+const CAT_TIPO = { acao: "ação (acontece e segura)", ciclo: "ciclo (repete)", espera: "espera viva", transicao: "transição de postura" };
+function catalogoItens() {
+  const poses = [], vistas = new Set();
+  for (const nome of todasPoses()) { if (vistas.has(nome)) continue; vistas.add(nome); try { poses.push({ nome, origem: "pronta", valores: pdValoresPose(nome, pdParams({}), null, 0).valores }); } catch (e) { } }
+  for (const p of posesSalvas()) poses.push({ nome: p.nome, origem: "minha", valores: p.valores, tags: p.tags || [] });
+  const lib = bibliotecaAnimacoes(), anims = lib.listar().map(x => { const a = lib.obter(x.nome || x); return a ? { nome: a.nome, anim: a, tipo: adTipoDe(a), origem: a.origem === "pronta" || a.versao === 0 ? "pronta" : "minha" } : null; }).filter(Boolean);
+  return { poses, anims };
+}
+function catalogoDsl(o = {}) {
+  const { poses, anims } = catalogoItens(), comCodigo = o.codigo !== false, cont = {}; anims.forEach(a => { cont[a.tipo] = (cont[a.tipo] || 0) + 1; });
+  const data = o.data || new Date().toISOString().slice(0, 10), bloco = t => "```gm\n" + t.trimEnd() + "\n```", L = [];
+  L.push("# Catálogo DSL do GeoMannequin", "", "Gerado em " + data + " · **" + poses.length + " poses** · **" + anims.length + " animações** (" + Object.entries(cont).map(([k, n]) => n + " " + ({ acao: "ações", ciclo: "ciclos", espera: "esperas vivas", transicao: "transições de postura" }[k] || k)).join(", ") + ") · " + Object.keys(AD_ACOES).length + " verbos do dia a dia · " + Object.keys(AD_ESPERAS).length + " estilos de espera · " + Object.keys(EXPRESSOES).length + " expressões · " + Object.keys(CATALOGO).length + " efeitos · " + Object.keys(TIPOS_OBJETO).length + " objetos.", "",
+    "Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.", "",
+    "Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `manual_name` do MCP). Parâmetros de câmera de cinema, planos e MP4 estão nos capítulos 15 a 20 do manual.", "");
+  L.push("## Índice", "", "**Poses:** " + poses.map(p => "`" + p.nome + "`").join(", "), "");
+  for (const t of ["acao", "ciclo", "espera", "transicao"]) { const g = anims.filter(a => a.tipo === t); if (g.length) L.push("**Animações — " + CAT_TIPO[t] + ":** " + g.map(a => "`" + a.nome + "`").join(", "), ""); }
+  L.push("**Verbos do dia a dia (numa linha de plano: `1s Kai VERBO [para Mira]`):** " + Object.keys(AD_ACOES).map(v => "`" + v + "`").join(", "), "", "**Esperas (`0s Kai espera ESTILO`):** " + Object.keys(AD_ESPERAS).map(v => "`" + v + "`").join(", "), "",
+    "**Expressões (`expressao NOME`):** " + Object.keys(EXPRESSOES).join(", "), "", "**Efeitos (`Kai efeito NOME em mao-direita`):** " + Object.keys(CATALOGO).join(", "), "", "**Objetos (no local: `copo \"copo\" em (1,0) sobre mesa`):** " + Object.keys(TIPOS_OBJETO).join(", "), "");
+  L.push("## Poses", "");
+  for (const p of poses) { L.push("### " + p.nome + (p.origem === "minha" ? " · minha" : ""), ""); if (comCodigo) L.push(bloco(pdCodigoPose(p.valores, { nome: p.nome, tags: p.tags })), ""); }
+  L.push("## Animações", "");
+  for (const a of anims) { const A = a.anim; L.push("### " + a.nome + " — " + (CAT_TIPO[a.tipo] || a.tipo) + ", " + A.duracao.toFixed(2).replace(".", ",") + " s" + (A.loop ? ", loop" : "") + (a.origem === "minha" ? " · minha" : ""), "");
+    if (A.descricao && A.descricao !== a.nome) L.push(A.descricao, ""); L.push("No filme: `0s Kai anima " + a.nome + "`" + (a.tipo === "ciclo" ? " (repete até o fim do plano ou `por 4s`)" : ""), "");
+    if (comCodigo) { try { L.push(bloco(pdCodigoAnimacao(A, { nome: a.nome })), ""); } catch (e) { L.push("(não deu para escrever o código: " + e.message + ")", ""); } } }
+  L.push("## Verbos do dia a dia", "", "| verbo | o que faz | duração |", "|---|---|---|");
+  for (const v of Object.keys(AD_ACOES)) { try { const a = AD_ACOES[v](); L.push("| `" + v + "` | " + (a.descricao || a.nome) + (a.volta ? " (e volta)" : " (segura)") + " | " + a.duracao.toFixed(1).replace(".", ",") + " s |"); } catch (e) { } }
+  L.push("", "Com alguém ou um ponto: `2s Kai aponta Mira` (vira, olha e aponta). Mão esquerda: `Kai acena mao-esquerda`. Objetos: `Kai pega copo`, `Kai entrega copo para Mira`, `Mira larga copo`, `Kai joga bola para Mira`.", "");
+  return L.join("\n") + "\n";
 }
 
 const PROMPTS_NAME = {
+  "História → filme": `Você vai transformar a história abaixo num FILME curto escrito na linguagem do GeoMannequin (manequins geométricos), que vira um vídeo MP4 de referência e uma lista de planos para uma IA de vídeo.
+Siga o MANUAL (capítulos 15 a 20: filme, cena, plano, câmera de cinema, ações, princípios, falas, exportar) À RISCA: só palavras, verbos, poses, expressões, efeitos e objetos das listas.
+1) Liste o elenco (um por linha) e monte UM local com o que a história pede (objetos que alguém vai pegar: em cima de mesa/banco com "sobre").
+2) Divida a história em CENAS e cada cena em PLANOS curtos (2 a 8 s). Um plano = um ponto de vista. Varie: plano geral para situar, sobre-o-ombro na conversa, close na emoção, POV para o que alguém vê, câmera fixa à frente para ver alguém chegar, segue para acompanhar.
+3) Em cada plano: linhas sem tempo arrumam (posição, vira-para); linhas com tempo contam a ação ("0s", "1.5s", "depois", "junto"). Ações (oferece, aponta, pede…) seguram a pose; ciclos (anda, corre) e esperas (espera impaciente) duram até a próxima coisa.
+4) Dê vida: quem não age espera (espera empe/olhando-em-volta), olhares ("olha Mira"), expressões no tempo, falas com "fala" (o filme com "legendas").
+5) Use os princípios quando ajudarem: "exagera 130%" em momentos fortes, "sobreposicao" em gestos, transições "fusao 0.5s" para passagem de tempo e "escurece 0.8s" no fim.
+6) Duração: a que a história pedir (ou cerca de 1 minuto). Responda SÓ com o código, num bloco de código, começando por: filme "Título" fps 24 legendas
+
+HISTÓRIA:
+`,
   "História → name": `Você vai converter a história abaixo em um NAME (storyboard de mangá) escrito na DSL do GeoMannequin.
 Siga o "Manual da DSL do NAME" (abaixo ou anexado) À RISCA: só palavras, poses, expressões e objetos das listas.
 1) Leia a história e liste: personagens relevantes (elenco, um por linha) e grupos de figurantes.
@@ -484,4 +659,4 @@ MOVIMENTO:
 Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço. Mantenha o estilo pedido e a continuidade entre os quadros.`
 };
 
-export { manualName, PROMPTS_NAME, EXEMPLO_NAME };
+export { manualName, PROMPTS_NAME, EXEMPLO_NAME, EXEMPLO_FILME, catalogoDsl, catalogoItens };

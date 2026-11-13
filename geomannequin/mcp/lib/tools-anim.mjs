@@ -35,7 +35,7 @@ export function registerAnimTools(server, W) {
     title: "Manual de conversa (gestos, atitudes, fala) e animação",
     description: "Como fazer manequins conversarem (gestos de braço/mão, atitudes de cabeça/coluna/pernas, boca de fala no tom, papéis como falante/ouvinte/cético, ajustes finos em graus ou cm) e como criar ANIMAÇÕES por quadros-chave (DSL “animacao … chave 0s …”, curvas, relativa/absoluta, biblioteca com tags) , olhar natural (olhos → cabeça → corpo), girar 360° com passos/pivô/luta/salto, andar até, fps 1–60, em dois, velocidade e o vídeo-rascunho do name. Traz as listas e os limites.",
     inputSchema: {}, annotations: RO
-  }, async () => { const w = W(), m = w.manualName(), i = m.indexOf("11. CONVERSA"), j = m.indexOf("15. EXEMPLO");
+  }, async () => { const w = W(), m = w.manualName(), i = m.indexOf("11. CONVERSA"), j = m.indexOf("15. FILME");
     return { content: [{ type: "text", text: m.slice(i, j) + "\nFORMATO JSON (criar_animacao): {nome, duracao (s), modo: absoluta|relativa, loop, curva, tags:[…], chaves:[{t, valores:{parâmetro: número}, expressao, intensidade, frente, lado, giro, curva}]}. Parâmetros (graus): headYaw, headPitch, headRoll, neckFlex, spineFlex, spineSide, spineTwist, armFlexR/L, armAbdR/L, armRotR/L, elbowR/L, pronR/L, wristR/L, hipFlexR/L, hipAbdR/L, kneeFlexR/L, ankleFlexR/L, shElevR/L (−1..1), jawOpen (0..1)…" }] }; });
 
   server.registerTool("linguagem_corporal", {

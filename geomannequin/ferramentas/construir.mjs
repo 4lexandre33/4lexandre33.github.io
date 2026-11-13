@@ -44,3 +44,11 @@ const head = /<head>([\s\S]*?)<\/head>/.exec(page)[1]
 const body = /<body>([\s\S]*?)<\/body>/.exec(page)[1];
 writeFileSync(join(ROOT, "dist", "geomannequin-fragmento.html"), head.trim() + "\n" + body.trim() + "\n");
 console.log("dist/geomannequin.html", Math.round(page.length / 1024), "KB");
+
+/* catálogo DSL (todas as poses e animações em código) e manual — sempre atualizados a cada construção, para mandar à IA de fora */
+try {
+  const { createWorld } = await import("../mcp/lib/core.mjs"), w = createWorld();
+  writeFileSync(join(ROOT, "docs", "catalogo-dsl.md"), w.catalogoDsl({ data: new Date().toISOString().slice(0, 10) }));
+  writeFileSync(join(ROOT, "docs", "manual-dsl.md"), "```text\n" + w.manualName() + "\n```\n");
+  console.log("docs/catalogo-dsl.md e docs/manual-dsl.md atualizados");
+} catch (e) { console.warn("catálogo DSL não gerado:", e.message); }

@@ -7,6 +7,9 @@ import { criarAnimacao, anPoseValores, registrarProntas } from "./animacao.js";
 import { pdAplicarJunta, pdExtrairJuntas, pdBase, pdParams, pdEspelharAnim } from "./pose-dsl.js";
 import { mdSorteio } from "./multidao.js";
 import { EXPRESSOES } from "./poses.js";
+import { POSEKEYS } from "./parametros.js";
+/* só o que anima (pose e rosto): nunca a anatomia (olhos, proporções) de quem toca a animação */
+const AD_ANIMA = k => POSEKEYS.has(k) || /^(jawOpen|smile|eyeLid|browUp|browIn|eyeYaw|eyePitch|blush|tears)$/.test(k);
 
 /* valores de uma linha só de juntas ("ombro.direito(frente 60) cotovelo.direito(dobra 20)") sobre em pé */
 function adJuntas(txt, base) { const Q = Object.assign({}, base || pdParams({})), ex = pdExtrairJuntas(txt); ex.juntas.forEach(j => pdAplicarJunta(Q, j.junta, j.lado, j.args, 0)); return Q; }
@@ -14,7 +17,7 @@ function adPoseDelta(nome) { const B = pdBase(), v = anPoseValores(nome, pdParam
 /* chaves [t, "juntas", {rosto, pose}] → animação relativa (diferenças para em pé), com antecipação e assentamento */
 function adAcao(nome, chaves, o = {}) {
   const B = pdParams({}), E0 = pdBase(), lista = chaves.map(([t, txt, x]) => { let Q = adJuntas(txt || "", B); if (x && x.pose) { const d = adPoseDelta(x.pose); for (const [k, v] of Object.entries(d)) Q[k] = (E0[k] || 0) + v; Q = adJuntas(txt || "", Q); }
-    const v = {}; for (const k of Object.keys(Q)) if (Number.isFinite(Q[k]) && Math.abs((Q[k] || 0) - (E0[k] || 0)) > 1e-3 && !/^(wx|wz|wRot)$/.test(k)) v[k] = Q[k] - (E0[k] || 0); return { t, v, x: x || {} }; });
+    const v = {}; for (const k of Object.keys(Q)) if (Number.isFinite(Q[k]) && Math.abs((Q[k] || 0) - (E0[k] || 0)) > 1e-3 && !/^(wx|wz|wRot)$/.test(k) && AD_ANIMA(k)) v[k] = Q[k] - (E0[k] || 0); return { t, v, x: x || {} }; });
   const ks = [...new Set(lista.flatMap(c => Object.keys(c.v)))]; lista.forEach(c => ks.forEach(k => { if (!(k in c.v)) c.v[k] = 0; }));
   let ch = lista.map(c => ({ t: c.t, valores: c.v, rosto: c.x.rosto ? { expressao: c.x.rosto, intensidade: c.x.intensidade || 0.8 } : undefined, curva: c.x.curva }));
   ch.forEach(c => { if (!c.rosto) delete c.rosto; if (!c.curva) delete c.curva; });
@@ -33,6 +36,9 @@ const AD_ACOES = {
   pede: () => adAcao("pedir", [[0, ""], [0.8, "ombro.ambos(frente 38 abre 10) cotovelo.ambos(dobra 70) antebraco.ambos(palma-cima 80) mao.ambos(fecha 10%) cabeca(inclina-direita 8 baixa 4) tronco(frente 6)", { rosto: "tristeza", intensidade: 0.4 }]], { desc: "palmas para cima, pedindo", tags: ["Acao/Pedir"] }),
   entrega: () => adAcao("entregar", [[0, ""], [0.7, "ombro.direito(frente 78 abre 6) cotovelo.direito(dobra 10) antebraco.direito(palma-cima 35) mao.direito(fecha 45%) tronco(frente 10)"]], { desc: "estica o braço entregando algo", tags: ["Acao/Dar/Entregar"] }),
   recebe: () => adAcao("receber", [[0, ""], [0.6, "ombro.ambos(frente 55) cotovelo.ambos(dobra 35) antebraco.ambos(palma-cima 80) mao.ambos(abre)"], [1.05, "ombro.ambos(frente 38) cotovelo.ambos(dobra 75) antebraco.ambos(palma-cima 70) mao.ambos(fecha 45%) cabeca(baixa 10)"]], { desc: "recebe com as duas mãos e traz para si", tags: ["Acao/Receber"] }),
+  pega: () => adAcao("pegar", [[0, ""], [0.5, "ombro.direito(frente 62 abre 6) cotovelo.direito(dobra 12) mao.direito(fecha 25%) tronco(frente 16) cabeca(baixa 18)"], [1.0, "ombro.direito(frente 28) cotovelo.direito(dobra 78) mao.direito(fecha 70%) cabeca(baixa 6)"]], { desc: "estica o braço, pega e traz para perto", tags: ["Acao/Pegar"] }),
+  joga: () => adAcao("jogar", [[0, ""], [0.32, "ombro.direito(frente 150 abre 10) cotovelo.direito(dobra 95) tronco(tras 8 gira-direita 18)"], [0.5, "ombro.direito(frente 70) cotovelo.direito(dobra 5) mao.direito(fecha 0%) tronco(frente 14 gira-esquerda 10)"], [0.75, "ombro.direito(frente 45) cotovelo.direito(dobra 20) tronco(frente 6)"]], { antecipa: 0, desc: "joga (braço por cima: arma, solta, acompanha)", volta: true, segura: 0.1, duracaoVolta: 0.5, tags: ["Acao/Jogar"] }),
+  larga: () => adAcao("largar", [[0, ""], [0.35, "mao.direito(fecha 0%) punho.direito(dobra 10)"]], { antecipa: 0, assenta: 0, desc: "abre a mão e larga", volta: true, segura: 0.15, duracaoVolta: 0.4, tags: ["Acao/Largar"] }),
   aponta: () => adAcao("apontar", [[0, ""], [0.5, "ombro.direito(frente 85 abre 10) cotovelo.direito(dobra 4) antebraco.direito(palma-baixo 10) mao.direito(fecha 95% indicador -100% polegar 40%) cabeca(gira-direita 6)"]], { desc: "aponta para a frente", tags: ["Acao/Apontar"] }),
   acena: () => adAcao("acenar", [[0, ""], [0.45, "ombro.direito(abre 120 frente 20) cotovelo.direito(dobra 75) antebraco.direito(palma-baixo 0) mao.direito(abre)"], ...adOscila("ombro.direito(abre 120 frente 20) antebraco.direito(palma-baixo 0) mao.direito(abre)", 0.65, 3, 0.36, "cotovelo.direito(dobra 45)", "cotovelo.direito(dobra 80)")], { volta: true, segura: 0.2, desc: "acena (tchau / oi) e baixa a mão", tags: ["Acao/Cumprimento/Acenar"] }),
   cumprimenta: () => adAcao("cumprimentar", [[0, ""], [0.55, "ombro.direito(frente 45 abre 5) cotovelo.direito(dobra 35) antebraco.direito(palma-cima 10) mao.direito(fecha 40%) tronco(frente 6)"], ...adOscila("ombro.direito(frente 45 abre 5) cotovelo.direito(dobra 35) antebraco.direito(palma-cima 10) mao.direito(fecha 60%) tronco(frente 6)", 0.75, 3, 0.24, "punho.direito(dobra 12)", "punho.direito(levanta 12)")], { volta: true, segura: 0.15, desc: "aperto de mão", tags: ["Acao/Cumprimento/ApertoDeMao"] }),
@@ -54,7 +60,7 @@ const AD_ACOES = {
   "bate-palmas": () => adAcao("baterPalmas", [[0, ""], ...adOscila("ombro.ambos(frente 45 cruza 8) antebraco.ambos(palma-cima 0) mao.ambos(abre)", 0.35, 5, 0.3, "cotovelo.ambos(dobra 70) ombro.ambos(cruza 18)", "cotovelo.ambos(dobra 95) ombro.ambos(cruza 4)")], { volta: true, segura: 0.1, desc: "bate palmas", tags: ["Acao/Emocao/Palmas"] })
 };
 /* nome da biblioteca de cada ação (ex.: oferece → oferecer) */
-function adAcaoPara(verbo, o = {}) { const g = AD_ACOES[verbo]; if (!g) return null; let a = g(); if (o.mao === "esquerda") a = Object.assign(pdEspelharAnim(a, { nome: a.nome + "Esq" }), { tipo: "acao", volta: a.volta }); return a; }
+function adAcaoPara(verbo, o = {}) { const g = AD_ACOES[verbo]; if (!g) return null; let a = g(o); if (o.mao === "esquerda") a = Object.assign(pdEspelharAnim(a, { nome: a.nome + "Esq" }), { tipo: "acao", volta: a.volta }); return a; }
 
 /* ===================== ciclos de espera ===================== */
 const AD_ESPERAS = { empe: [null, "em pé esperando"], impaciente: [null, "impaciente (bate o pé, olha o relógio)"], "bracos-cruzados": ["cruza", "braços cruzados"], sentado: ["sentado", "sentado relaxado"], "sentado-inquieto": ["sentado", "sentado, inquieto"],
@@ -80,7 +86,7 @@ function adEspera(estilo = "empe", dur = 6, o = {}) {
   }
   ch.push({ t: +dur.toFixed(3), valores: Object.assign({}, ch[ch.length - 1].valores) });
   const ks = new Set(ch.flatMap(c => Object.keys(c.valores))); for (const c of ch) for (const k of ks) if (!(k in c.valores)) c.valores[k] = base[k] || 0;
-  for (const c of ch) for (const k of Object.keys(c.valores)) if (!Number.isFinite(c.valores[k]) || /^(wx|wz|wRot|ground)$/.test(k)) delete c.valores[k];
+  for (const c of ch) for (const k of Object.keys(c.valores)) if (!Number.isFinite(c.valores[k]) || /^(wx|wz|wRot|ground)$/.test(k) || !AD_ANIMA(k)) delete c.valores[k];
   /* os valores valem por si (absolutos): quem está sentado continua sentado, quem está em pé fica em pé */
   return Object.assign(criarAnimacao({ nome: o.nome || "espera" + estilo.replace(/(^|-)(\w)/g, (m, a, b) => b.toUpperCase()), duracao: dur, modo: "absoluta", curva: "suave", pesFixos: true, chaves: ch, tipo: "espera", tags: ["Espera/" + estilo], descricao: "espera — " + AD_ESPERAS[estilo][1] + " (não repete igual)" }), { gerar: d => adEspera(estilo, d, o) });
 }

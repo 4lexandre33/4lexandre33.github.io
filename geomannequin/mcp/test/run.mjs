@@ -344,6 +344,12 @@ async function suite(client, tag) {
       r = await call("filme_texto", { codigo: FILME }); check(!r.isError && r.structuredContent.planos === 2 && r.content.some(c => c.type === "image"), "filme_texto: 2 planos + folha" + (r.isError ? ": " + text(r) : ""));
       r = await call("plano_previa", { codigo: FILME, n: 2, quadros: 4, largura: 200 }); check(!r.isError && r.content[0].type === "image", "plano_previa" + (r.isError ? ": " + text(r) : ""));
       r = await call("exportar_filme", { codigo: FILME, fps: 6, largura: 240, pacote: true }); check(!r.isError && (r.structuredContent.ffmpeg ? r.structuredContent.arquivos.includes("planos/plano-02.mp4") && r.structuredContent.quadros === 12 : r.structuredContent.quadros === 12), "exportar_filme: pacote (" + (r.isError ? text(r) : (r.structuredContent.arquivos || ["sem ffmpeg"]).join(", ")) + ")"); }
+    r = await call("catalogo_dsl", { codigo: false }); check(!r.isError && r.structuredContent.poses > 100 && r.structuredContent.animacoes > 100, "catalogo_dsl: índice (" + (r.structuredContent || {}).poses + " poses, " + (r.structuredContent || {}).animacoes + " animações)");
+    r = await call("codigo_de_animacao", { nome: "acenarTchau" }); check(!r.isError && /^animacao "acenarTchau"/m.test(r.structuredContent.codigo), "codigo_de_animacao");
+    r = await call("codigo_de_pose", { nome: "ajoelhado" }); check(!r.isError && /joelho\(dobra 90\)/.test(r.structuredContent.codigo), "codigo_de_pose");
+    r = await call("lote", { codigo: 'pose "lt1" de empe\n  ombro(frente 90)\nanimacao "lt-anim" duracao 1s\n  chave 0s pose lt1\n  chave 1s pose empe\n' }); check(!r.isError && r.structuredContent.criados.length === 2, "lote: 2 criados");
+    r = await call("codigo_de_animacao", { nome: "lt-anim" }); check(!r.isError, "lote salvou a animação na sessão");
+    r = await call("manual_filme", {}); check(!r.isError && /16\. CÂMERA DE CINEMA/.test(text(r)), "manual_filme");
     r = await call("completar", { antes: 'pose "x"\n  ombro.direito(', miniaturas: true });
     check(!r.isError && r.structuredContent.itens.some(i => i.rotulo === "frente") && r.structuredContent.itens[0].svg && /0–180°/.test(r.structuredContent.ajuda), "completar: movimentos da junta com limites e miniatura" + (r.isError ? ": " + text(r) : "")); }
   return link;

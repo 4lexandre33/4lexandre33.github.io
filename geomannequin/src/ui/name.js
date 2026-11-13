@@ -5,7 +5,8 @@ import { SCN } from "../scene/modelo.js";
 import { videoDoFilme, roteiroDoFilme } from "../scene/name-dsl.js";
 import { temMp4, codificarFilme, previaPlano, tempoTexto } from "./video-mp4.js";
 import { compilarName, fichaDoQuadro, pecasDaFicha, paginasDoName, legendaDeCores, manifestoName, bibliotecaLocais, localDoPalco, abrirLocalNoPalco, NM_CORES } from "../scene/name-dsl.js";
-import { manualName, PROMPTS_NAME, EXEMPLO_NAME } from "../scene/manual-name.js";
+import { manualName, PROMPTS_NAME, EXEMPLO_NAME, EXEMPLO_FILME, catalogoDsl, catalogoItens } from "../scene/manual-name.js";
+import { pdCodigoPose, pdCodigoAnimacao } from "../scene/pose-dsl.js";
 import { renderizarQuadro } from "../scene/quadros.js";
 import { todasPoses, EXPRESSOES } from "../scene/poses.js";
 import { INTERACOES } from "../scene/interacoes.js";
@@ -26,6 +27,7 @@ const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(
 let R = null, compT = 0, prevT = 0, ultimaQ = -2, aba = "ficha", FICHAS = [], rodando = null, AC = { itens: [], i: 0, ini: 0, rico: false };
 const MODELOS = {
   "Exemplo completo": EXEMPLO_NAME,
+  "Filme: O Pedido (3 planos, câmera, MP4)": EXEMPLO_FILME,
   "Poses e animações (começar)": LICOES[0][1] + "\n" + LICOES[5][1] + "\n" + LICOES[7][1],
   "Começar do zero": "semente 1\nelenco\n  Ana relevante corpo feminino\n  Leo relevante corpo masculino\n  povo figurante\n\nlocal \"Sala\" unidade m origem (0,0)\n  chao retangulo -4,-3 a 4,3 classe madeira\n  sala \"Sala\" retangulo -4,-3 a 4,3 altura 2.8 porta lado sul janela lado norte\n  mesa centro-de \"Sala\"\n\nquadro 1 local \"Sala\" plano geral funcao \"estabelecimento\"\n  Ana em (-1,0) olha Leo\n  Leo em (1.2,0.5) olha Ana expressao alegria\n",
   "Diálogo (campo e contracampo)": "elenco\n  Ana relevante corpo feminino\n  Leo relevante corpo masculino\nlocal \"Café\" unidade m\n  chao retangulo -3,-3 a 3,3 classe piso\n  mesaRedonda \"mesa\" em (0,0)\nquadro 1 local \"Café\" plano americano alvo Ana, Leo lado 3/4\n  Ana em (-0.8,0) sentado olha Leo\n  Leo em (0.8,0) sentado olha Ana\nquadro 2 continua plano close alvo Ana lado 3/4\n  Ana expressao alegria\nquadro 3 continua plano close alvo Leo lado 3/4-direita\n  Leo expressao surpresa\n",
@@ -84,20 +86,44 @@ async function previaFilme() {
   const q = planoDoCursor(); if (!q) { E.prevTit.textContent = "Filme"; E.prev.innerHTML = '<p class="qd-vazio">Sem planos. Escreva <code>filme "Nome"</code>, <code>cena "…"</code> e <code>plano 1</code> com linhas de tempo (Aprender… ou Modelos… → Filme; Manual, capítulo 15).</p>'; return; }
   const n = q.filme.n, chave = E.code.value.length + ":" + n + ":" + R.quadros.length; if (FILME_PREV && FILME_PREV.chave === chave) return;
   pararFilme(); E.prevTit.textContent = "Plano " + n + " · " + q.filme.duracao.toFixed(1).replace(".", ",") + " s" + (q.filme.cena ? " · " + q.filme.cena : ""); E.prev.innerHTML = '<p class="qd-vazio">Desenhando o plano…</p>';
-  try { const v = videoDoFilme(R, { fps: 8, planos: [n], vida: true }), pv = await previaPlano(v, 360, 40); if (aba !== "filme") { pv.quadros.forEach(x => URL.revokeObjectURL(x.url)); return; }
+  try { const v = videoDoFilme(R, { fps: 8, planos: [n], vida: true }), passo = Math.max(1, Math.ceil(v.frames.length / 32)), meu = { quadros: [], chave, intervalo: 1000 * passo / v.fps }; FILME_PREV = meu;
     const ro = roteiroDoFilme(R).json.planos.find(p => p.n === n), fmt = t => t.toFixed(1).replace(".", ",") + " s";
-    const lin = ro ? [...ro.eventos.map(e => [e.t, (e.quem ? e.quem + ": " : "") + e.texto]), ...ro.camera.map(c => [c.t, "câmera: " + c.texto])].sort((a, b) => a[0] - b[0]) : [];
-    FILME_PREV = Object.assign(pv, { chave }); E.prev.innerHTML = '<figure class="nm-filme"><img alt="Plano ' + n + '" src="' + pv.quadros[0].url + '"><figcaption><span class="nm-filme-t">0,0 s</span> <input type="range" min="0" max="' + (pv.quadros.length - 1) + '" value="0" aria-label="Tempo do plano"></figcaption></figure><ol class="nm-filme-lista">' + lin.map(x => "<li><b>" + fmt(x[0]) + "</b> " + esc(x[1]) + "</li>").join("") + "</ol>";
-    const img = E.prev.querySelector("img"), rg = E.prev.querySelector("input"), tt = E.prev.querySelector(".nm-filme-t"); let i = 0, solto = true;
-    const ir = j => { i = j; const x = pv.quadros[i]; img.src = x.url; rg.value = i; tt.textContent = fmt(x.t); };
+    const lin = ro ? [...ro.eventos.map(e => [e.t, e.texto]), ...ro.camera.map(c => [c.t, "câmera: " + c.texto])].sort((a, b) => a[0] - b[0]) : [];
+    E.prev.innerHTML = '<div class="nm-bibwrap"><figure class="nm-filme"><img alt="Plano ' + n + '"><figcaption><span class="nm-filme-t">0,0 s</span> <input type="range" min="0" max="0" value="0" aria-label="Tempo do plano"><small class="nm-filme-carga"></small></figcaption></figure><ol class="nm-filme-lista">' + lin.map(x => "<li><b>" + fmt(x[0]) + "</b> " + esc(x[1]) + "</li>").join("") + "</ol></div>";
+    const img = E.prev.querySelector("img"), rg = E.prev.querySelector("input"), tt = E.prev.querySelector(".nm-filme-t"), cg = E.prev.querySelector(".nm-filme-carga"); let i = 0, solto = true;
+    const ir = j => { const q0 = meu.quadros; if (!q0.length) return; i = Math.min(j, q0.length - 1); const x = q0[i]; img.src = x.url; rg.value = i; tt.textContent = fmt(x.t); };
     rg.addEventListener("input", () => { solto = false; ir(+rg.value); }); rg.addEventListener("change", () => { solto = true; });
-    FILME_T = setInterval(() => { if (solto) ir((i + 1) % pv.quadros.length); }, Math.max(60, pv.intervalo));
+    FILME_T = setInterval(() => { if (solto && meu.quadros.length) ir((i + 1) % meu.quadros.length); }, Math.max(60, meu.intervalo));
+    const total = Math.ceil(v.frames.length / passo);
+    await previaPlano(v, 360, 32, { quadros: meu.quadros, parar: () => FILME_PREV !== meu || aba !== "filme", aoQuadro: k => { rg.max = k - 1; if (k === 1) ir(0); cg.textContent = k < total ? " desenhando " + k + "/" + total : ""; } });
   } catch (e) { E.prev.innerHTML = '<p class="qd-vazio">' + esc(e.message) + "</p>"; }
 }
+/* ===== aba Biblioteca: toda pose e animação vira código (ver, copiar, inserir) + catálogo .md ===== */
+let BIB = null, bibFiltro = "";
+function listaBiblioteca() {
+  if (!BIB) BIB = catalogoItens(); const q = bibFiltro.toLowerCase(), tem = n => !q || n.toLowerCase().includes(q);
+  const ps = BIB.poses.filter(p => tem(p.nome)), as = BIB.anims.filter(a => tem(a.nome) || (a.anim.tags || []).join(" ").toLowerCase().includes(q));
+  const TP = { acao: "ação", ciclo: "ciclo", espera: "espera", transicao: "transição" };
+  E.prevTit.textContent = "Biblioteca · " + BIB.poses.length + " poses · " + BIB.anims.length + " animações";
+  E.prev.innerHTML = '<div class="nm-bibwrap"><div class="nm-bib-bar"><input type="search" data-bib="busca" placeholder="Buscar pose ou animação" value="' + esc(bibFiltro) + '" aria-label="Buscar na biblioteca"><button type="button" data-bib="md" class="primario" title="Todas as poses e animações em código, num arquivo .md (para mandar à IA)">Catálogo .md</button><button type="button" data-bib="copiarTudo">Copiar catálogo</button></div>' +
+    '<h4 class="nm-bib-h">Poses (' + ps.length + ')</h4><ul class="nm-bib">' + ps.map(p => '<li data-tipo="pose" data-n="' + esc(p.nome) + '"><b>' + esc(p.nome) + "</b>" + (p.origem === "minha" ? " <small>minha</small>" : "") + '<span><button type="button" data-bib="ver">Código</button><button type="button" data-bib="inserir">Inserir</button><button type="button" data-bib="copiar">Copiar</button></span></li>').join("") + "</ul>" +
+    '<h4 class="nm-bib-h">Animações (' + as.length + ')</h4><ul class="nm-bib">' + as.map(a => '<li data-tipo="anim" data-n="' + esc(a.nome) + '"><b>' + esc(a.nome) + "</b> <small>" + TP[a.tipo] + " · " + a.anim.duracao.toFixed(1).replace(".", ",") + " s" + (a.origem === "minha" ? " · minha" : "") + '</small><span><button type="button" data-bib="ver">Código</button><button type="button" data-bib="inserir">Inserir</button><button type="button" data-bib="copiar">Copiar</button></span></li>').join("") + "</ul></div>";
+}
+function codigoBib(tipo, nome) { if (!BIB) BIB = catalogoItens(); if (tipo === "pose") { const p = BIB.poses.find(x => x.nome === nome); return p ? pdCodigoPose(p.valores, { nome: p.nome + (p.origem === "pronta" ? "-minha" : ""), salvar: true }) : ""; }
+  const a = BIB.anims.find(x => x.nome === nome); return a ? pdCodigoAnimacao(a.anim, { nome: a.nome + (a.origem === "pronta" ? "-minha" : ""), salvar: true }) : ""; }
+function inserirNoTexto(cod, msg) { const v = E.code.value.replace(/\s*$/, ""); E.code.value = v + "\n\n" + cod; const fim = E.code.value.length - cod.length; E.code.selectionStart = E.code.selectionEnd = fim; E.code.focus(); realcar(); ls.gravar("texto", E.code.value); compilar(); irPara(E.code.value.slice(0, fim).split("\n").length + 1); log(msg || "Inserido no fim do texto."); }
+async function acaoBib(e) { const bt = e.target.closest("[data-bib]"); if (!bt) return; const k = bt.dataset.bib;
+  if (k === "md") { log("Gerando o catálogo…"); await new Promise(r => setTimeout(r, 10)); const r = await baixar("catalogo-dsl.md", catalogoDsl(), "text/markdown"); log(r === "ok" ? "Catálogo baixado (catalogo-dsl.md)." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err"); return; }
+  if (k === "copiarTudo") { copiar(catalogoDsl(), "Catálogo inteiro copiado (" + BIB.poses.length + " poses, " + BIB.anims.length + " animações)."); return; }
+  const li = bt.closest("li[data-n]"); if (!li) return; const cod = codigoBib(li.dataset.tipo, li.dataset.n);
+  if (k === "ver") { E.texto.hidden = false; E.textoArea.value = cod; E.textoArea.scrollTop = 0; log("Código de “" + li.dataset.n + "” abaixo do editor."); }
+  else if (k === "copiar") copiar(cod, "Código de “" + li.dataset.n + "” copiado.");
+  else if (k === "inserir") inserirNoTexto(cod, "“" + li.dataset.n + "” no fim do texto: mude o que quiser e Ctrl+S salva como sua."); }
 function previa() {
   E.tabs.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.aba === aba));
   if (aba !== "filme") pararFilme();
   if (aba === "locais") { parar(); listaLocais(); return; }
+  if (aba === "biblioteca") { parar(); if (!E.prev.querySelector("[data-bib]")) listaBiblioteca(); return; }
   if (!R) return;
   if (aba === "filme") { parar(); previaFilme(); return; }
   { const d = aba !== "cores" ? defNoCursor(R, linhaDoCursor()) : null; if (d) { previaDef(E.prev, E.prevTit, d, R, log); ultimaQ = -2; return; } parar(); }
@@ -150,7 +176,7 @@ async function exportarFilme(modo) {
     if (modo !== "pacote") { const r = await baixar(nome + (so ? "-plano-" + so[0] : "") + ".mp4", out.filme, "video/mp4"); log(r === "ok" ? "MP4 baixado: " + v.frames.length + " quadros, " + v.duracao.toFixed(1).replace(".", ",") + " s, " + out.largura + "×" + out.altura + "." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err"); return; }
     log("Montando o pacote…"); const ro = roteiroDoFilme(R), arq = [{ nome: nome + ".mp4", texto: new Uint8Array(await out.filme.arrayBuffer()) }];
     for (const p of out.planos) arq.push({ nome: "planos/plano-" + String(p.n).padStart(2, "0") + ".mp4", texto: new Uint8Array(await p.blob.arrayBuffer()) });
-    arq.push({ nome: "roteiro-de-planos.md", texto: ro.md }, { nome: "planos.json", texto: JSON.stringify(ro.json, null, 1) }, { nome: "prompts.txt", texto: ro.prompts.join("\n\n") }, { nome: "filme.gmn", texto: gmn() });
+    arq.push({ nome: "roteiro-de-planos.md", texto: ro.md }, { nome: "planos.json", texto: JSON.stringify(ro.json, null, 1) }, { nome: "prompts.txt", texto: ro.prompts.join("\n\n") }, { nome: "filme.gmn", texto: gmn() }); if (ro.srt) arq.push({ nome: "falas.srt", texto: ro.srt });
     for (const p of v.planos) { const f = v.frames[Math.round((p.quadros[0] + p.quadros[1]) / 2)]; try { arq.push({ nome: "folha/plano-" + String(p.n).padStart(2, "0") + ".png", texto: await svgParaPng(renderizarQuadro(f, { passes: false }).svg, 1) }); } catch (e) { } }
     const r = await baixar(nome + "-pacote.zip", criarZip(arq), "application/zip"); log(r === "ok" ? "Pacote baixado: filme + " + out.planos.length + " planos em MP4, lista de planos, prompts e folha." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err");
   } catch (e) { log(e.message === "Cancelado." ? "Exportação cancelada." : "Vídeo: " + e.message, "err"); }
@@ -264,7 +290,7 @@ function aceitarAC(i) { const c = AC.itens[i]; if (!c) return; const p = E.code.
   E.code.value = E.code.value.slice(0, AC.ini) + txt + E.code.value.slice(p); E.code.selectionStart = E.code.selectionEnd = AC.ini + txt.length; fecharAC(); pedirCompilar(); realcar();
   if (/[.(]$/.test(txt)) setTimeout(() => abrirAC(true, txt.slice(-1)), 0); }
 /* Ctrl+S / “Salvar no catálogo”: grava poses e animações marcadas com “salvar” (ou a do cursor, se nada estiver marcado) */
-function salvarCatalogo() {
+function salvarCatalogo() { BIB = null;
   const txt = E.code.value, marcados = txt.split("\n").filter(l => /^(pose|ciclo|animacao|animação)\s+.*\bsalvar\b/.test(l)).length;
   try { const r = compilarName(txt, { imagens: IMAGENS, salvar: true, semCache: true });
     if (marcados) { log(marcados + " bloco(s) com “salvar” gravados no catálogo (Minhas poses / animações)" + (r.erros.length ? " — " + r.erros.length + " erro(s) no texto." : ".")); return; }
@@ -291,7 +317,7 @@ export function iniciarName() {
     '<div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress>' +
     '<label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p>' +
     '<div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div>' +
-    '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button></nav>' +
+    '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button><button type="button" data-aba="biblioteca" title="Todas as poses e animações em código">Biblioteca</button></nav>' +
     '<div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div>' +
     '<h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div>' +
     '<div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div>' +
@@ -329,6 +355,9 @@ export function iniciarName() {
   E.tabs.addEventListener("click", e => { const t = e.target.closest("[data-aba]"); if (t) { abaEscolhida = true; aba = t.dataset.aba; ultimaQ = -2; area.classList.toggle("nm-em-locais", aba === "locais"); previa(); } });
   E.prev.addEventListener("click", e => { if (e.target.closest('[data-pd="salvar"]')) { salvarCatalogo(); return; } const a = e.target.closest("[data-a]"), art = e.target.closest(".nm-local"); if (a && art && a.tagName === "BUTTON") acaoLocal(art.dataset.nome, a.dataset.a, a); });
   E.busca.addEventListener("input", () => listaLocais());
+  E.prev.addEventListener("click", acaoBib);
+  E.prev.addEventListener("input", e => { if (e.target.dataset && e.target.dataset.bib === "busca") { bibFiltro = e.target.value; const pos = e.target.selectionStart; listaBiblioteca(); const nb = E.prev.querySelector('[data-bib="busca"]'); nb.focus(); nb.selectionStart = nb.selectionEnd = pos; } });
+  window.addEventListener("gm-texto-abrir", e => { const d = e.detail || {}; if (E.area.hidden) abrir(); if (d.codigo) inserirNoTexto(d.codigo, d.msg); });
   b("gerar").addEventListener("click", gerarTodas); b("zip").addEventListener("click", baixarZip); b("cancelar").addEventListener("click", () => { if (rodando) rodando.cancelar = true; });
   b("fechar").addEventListener("click", fechar);
   b0 = b; b("mp4").addEventListener("click", () => exportarFilme("filme")); b("mp4plano").addEventListener("click", () => exportarFilme("plano")); b("pacote").addEventListener("click", () => exportarFilme("pacote"));
