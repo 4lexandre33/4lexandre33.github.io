@@ -340,6 +340,10 @@ async function suite(client, tag) {
     r = await call("nadar", { estilo: "peito", distancia: 2, fps: 4 }); check(!r.isError, "nadar peito" + (r.isError ? ": " + text(r) : ""));
     r = await call("mergulhar", { fps: 4 }); check(!r.isError, "mergulhar" + (r.isError ? ": " + text(r) : ""));
     r = await call("movimento", { tipo: "rola", direcao: "esquerda", voltas: 1, fps: 4 }); check(!r.isError, "movimento: rolar" + (r.isError ? ": " + text(r) : ""));
+    { const FILME = 'filme "T" fps 6\nelenco\n  Kai relevante\n  Mira relevante\nlocal "P" unidade m\n  chao retangulo -10,-10 a 10,10\ncena "P" local "P"\n  plano 1 duracao 1s\n    Kai em (0,0)\n    Mira em (0,2) vira-para Kai\n    camera sobre-o-ombro Kai alvo Mira\n    0s Kai oferece para Mira\n  plano 2 fusao 0.3s duracao 1s\n    camera pov Mira\n    0s Mira recebe\n';
+      r = await call("filme_texto", { codigo: FILME }); check(!r.isError && r.structuredContent.planos === 2 && r.content.some(c => c.type === "image"), "filme_texto: 2 planos + folha" + (r.isError ? ": " + text(r) : ""));
+      r = await call("plano_previa", { codigo: FILME, n: 2, quadros: 4, largura: 200 }); check(!r.isError && r.content[0].type === "image", "plano_previa" + (r.isError ? ": " + text(r) : ""));
+      r = await call("exportar_filme", { codigo: FILME, fps: 6, largura: 240, pacote: true }); check(!r.isError && (r.structuredContent.ffmpeg ? r.structuredContent.arquivos.includes("planos/plano-02.mp4") && r.structuredContent.quadros === 12 : r.structuredContent.quadros === 12), "exportar_filme: pacote (" + (r.isError ? text(r) : (r.structuredContent.arquivos || ["sem ffmpeg"]).join(", ")) + ")"); }
     r = await call("completar", { antes: 'pose "x"\n  ombro.direito(', miniaturas: true });
     check(!r.isError && r.structuredContent.itens.some(i => i.rotulo === "frente") && r.structuredContent.itens[0].svg && /0–180°/.test(r.structuredContent.ajuda), "completar: movimentos da junta com limites e miniatura" + (r.isError ? ": " + text(r) : "")); }
   return link;

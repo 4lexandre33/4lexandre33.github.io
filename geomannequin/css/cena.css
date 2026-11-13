@@ -365,3 +365,11 @@ body.qd-aberto{overflow:hidden}
 .pd-tira svg{display:block;width:100%;height:auto;color:var(--ink)}.pd-info{margin:0;font:11.5px/1.4 var(--font-mono);color:var(--muted)}
 .pd-acoes{display:flex;gap:6px;flex-wrap:wrap}
 .pd-quadros{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}.pd-quadros svg{width:100%;height:auto}
+/* Texto → aba Filme: o plano animado e a lista do que acontece */
+.nm-filme { margin: 0; display: grid; gap: 6px; }
+.nm-filme img { width: 100%; height: auto; background: #fff; border: 1px solid var(--line, #ccc); border-radius: 6px; }
+.nm-filme figcaption { display: flex; gap: 8px; align-items: center; font-variant-numeric: tabular-nums; }
+.nm-filme figcaption input { flex: 1; min-width: 0; }
+.nm-filme-lista { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.45; max-height: 40vh; overflow: auto; }
+.nm-filme-lista b { font-variant-numeric: tabular-nums; }
+.nm-filmebtns { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }

@@ -66,3 +66,4 @@ export * from "./efeitos/desenhar.js";
 export * from "./efeitos/camadas-vfx.js";
 export * from "./planta-imagem.js";
 export * from "./gif.js";
+export * from "./mp4.js";

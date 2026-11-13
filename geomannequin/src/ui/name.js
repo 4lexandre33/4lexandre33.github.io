@@ -2,6 +2,8 @@
    do local e da página; gerar todas as fichas em segundo plano; baixar o pacote .zip; biblioteca de LOCAIS (navegador,
    banco do artefato no claude.ai quando houver, arquivo); manual e prompts prontos para copiar. */
 import { SCN } from "../scene/modelo.js";
+import { videoDoFilme, roteiroDoFilme } from "../scene/name-dsl.js";
+import { temMp4, codificarFilme, previaPlano, tempoTexto } from "./video-mp4.js";
 import { compilarName, fichaDoQuadro, pecasDaFicha, paginasDoName, legendaDeCores, manifestoName, bibliotecaLocais, localDoPalco, abrirLocalNoPalco, NM_CORES } from "../scene/name-dsl.js";
 import { manualName, PROMPTS_NAME, EXEMPLO_NAME } from "../scene/manual-name.js";
 import { renderizarQuadro } from "../scene/quadros.js";
@@ -64,8 +66,10 @@ function compilar() {
   E.erros.innerHTML = R.erros.map(e => { const m = /“([^”]+)”[^“]*Quis dizer “([^”]+)”/.exec(e.erro); return '<li data-l="' + e.linha + '" class="err">linha ' + e.linha + ": " + esc(e.erro) + (m ? ' <button type="button" class="nm-fix" data-l="' + e.linha + '" data-de="' + esc(m[1]) + '" data-para="' + esc(m[2]) + '">Trocar por “' + esc(m[2]) + "”</button>" : "") + "</li>"; }).join("") + R.avisos.slice(0, 20).map(a => '<li class="aviso">' + esc(a) + "</li>").join("");
   E.chips.innerHTML = R.quadros.map((q, i) => '<button type="button" data-l="' + q.linha + '" title="' + esc(q.legenda) + '">' + (q.indice + 1) + (q.plano ? " · " + esc(q.plano) : "") + "</button>").join("");
   E.cont.textContent = R.quadros.length + " quadro(s) · " + R.elenco.length + " no elenco · " + R.locais.length + " local(is)" + (R.erros.length ? " · " + R.erros.length + " erro(s)" : "");
+  { const temF = R.quadros.some(q => q.filme), fb = E.area.querySelector(".nm-filmebtns"); if (fb) fb.hidden = !temF; if (temF && !abaEscolhida && aba === "ficha") aba = "filme"; }
   realcar(); ultimaQ = -2; pedirPrevia();
 }
+let abaEscolhida = false;
 function pedirCompilar() { clearTimeout(compT); compT = setTimeout(compilar, 650); ls.gravar("texto", E.code.value); FICHAS = []; }
 function linhaDoCursor() { return E.code.value.slice(0, E.code.selectionStart).split("\n").length; }
 function quadroDoCursor() { if (!R || !R.quadros.length) return -1; const ln = linhaDoCursor(); let k = 0; R.quadros.forEach((q, i) => { if (q.linha <= ln) k = i; }); return k; }
@@ -73,10 +77,29 @@ function irPara(linha) { const L0 = E.code.value.split("\n"); let pos = 0; for (
 
 /* ===== prévias: ficha do quadro do cursor, local, página, cores, locais ===== */
 function pedirPrevia() { clearTimeout(prevT); prevT = setTimeout(previa, 450); }
+let FILME_T = 0, FILME_PREV = null;
+function pararFilme() { clearInterval(FILME_T); FILME_T = 0; if (FILME_PREV) FILME_PREV.quadros.forEach(x => URL.revokeObjectURL(x.url)); FILME_PREV = null; }
+function planoDoCursor() { const k = quadroDoCursor(); const q = k >= 0 ? R.quadros[k] : null; return q && q.filme ? q : (R.quadros.find(x => x.filme) || null); }
+async function previaFilme() {
+  const q = planoDoCursor(); if (!q) { E.prevTit.textContent = "Filme"; E.prev.innerHTML = '<p class="qd-vazio">Sem planos. Escreva <code>filme "Nome"</code>, <code>cena "…"</code> e <code>plano 1</code> com linhas de tempo (Aprender… ou Modelos… → Filme; Manual, capítulo 15).</p>'; return; }
+  const n = q.filme.n, chave = E.code.value.length + ":" + n + ":" + R.quadros.length; if (FILME_PREV && FILME_PREV.chave === chave) return;
+  pararFilme(); E.prevTit.textContent = "Plano " + n + " · " + q.filme.duracao.toFixed(1).replace(".", ",") + " s" + (q.filme.cena ? " · " + q.filme.cena : ""); E.prev.innerHTML = '<p class="qd-vazio">Desenhando o plano…</p>';
+  try { const v = videoDoFilme(R, { fps: 8, planos: [n], vida: true }), pv = await previaPlano(v, 360, 40); if (aba !== "filme") { pv.quadros.forEach(x => URL.revokeObjectURL(x.url)); return; }
+    const ro = roteiroDoFilme(R).json.planos.find(p => p.n === n), fmt = t => t.toFixed(1).replace(".", ",") + " s";
+    const lin = ro ? [...ro.eventos.map(e => [e.t, (e.quem ? e.quem + ": " : "") + e.texto]), ...ro.camera.map(c => [c.t, "câmera: " + c.texto])].sort((a, b) => a[0] - b[0]) : [];
+    FILME_PREV = Object.assign(pv, { chave }); E.prev.innerHTML = '<figure class="nm-filme"><img alt="Plano ' + n + '" src="' + pv.quadros[0].url + '"><figcaption><span class="nm-filme-t">0,0 s</span> <input type="range" min="0" max="' + (pv.quadros.length - 1) + '" value="0" aria-label="Tempo do plano"></figcaption></figure><ol class="nm-filme-lista">' + lin.map(x => "<li><b>" + fmt(x[0]) + "</b> " + esc(x[1]) + "</li>").join("") + "</ol>";
+    const img = E.prev.querySelector("img"), rg = E.prev.querySelector("input"), tt = E.prev.querySelector(".nm-filme-t"); let i = 0, solto = true;
+    const ir = j => { i = j; const x = pv.quadros[i]; img.src = x.url; rg.value = i; tt.textContent = fmt(x.t); };
+    rg.addEventListener("input", () => { solto = false; ir(+rg.value); }); rg.addEventListener("change", () => { solto = true; });
+    FILME_T = setInterval(() => { if (solto) ir((i + 1) % pv.quadros.length); }, Math.max(60, pv.intervalo));
+  } catch (e) { E.prev.innerHTML = '<p class="qd-vazio">' + esc(e.message) + "</p>"; }
+}
 function previa() {
   E.tabs.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.aba === aba));
+  if (aba !== "filme") pararFilme();
   if (aba === "locais") { parar(); listaLocais(); return; }
   if (!R) return;
+  if (aba === "filme") { parar(); previaFilme(); return; }
   { const d = aba !== "cores" ? defNoCursor(R, linhaDoCursor()) : null; if (d) { previaDef(E.prev, E.prevTit, d, R, log); ultimaQ = -2; return; } parar(); }
   const k = quadroDoCursor();
   if (aba === "cores") { E.prev.innerHTML = R.elenco.length ? legendaDeCores(R).svg : '<p class="qd-vazio">Sem elenco.</p>'; return; }
@@ -113,6 +136,33 @@ async function baixarZip() {
   t("manifesto.json", JSON.stringify(manifestoName(R, E.code.value), null, 1)); t("name.gmn", gmn()); t("LEIA-ME.txt", PROMPTS_NAME["Explicar a ficha para a IA de imagem"]);
   const r = await baixar("name.zip", criarZip(arq), "application/zip"); log(r === "ok" ? "Pacote baixado (name.zip)." : "Não deu para baixar aqui (" + r + ").", r === "ok" ? "" : "err");
 }
+/* ===== filme → MP4 / pacote para a IA de vídeo ===== */
+async function exportarFilme(modo) {
+  if (rodando) return; compilar(); if (!R || !R.quadros.some(q => q.filme)) { log("O texto não tem planos de filme (filme / cena / plano).", "err"); return; }
+  const larg = +b0("vidLarg").value || 960, so = modo === "plano" ? [planoDoCursor().filme.n] : null;
+  rodando = { cancelar: false }; E.prog.hidden = false; E.prog.value = 0;
+  try { log("Preparando os quadros…"); await new Promise(r => setTimeout(r, 20));
+    const v = videoDoFilme(R, { planos: so || undefined, cancelar: () => rodando && rodando.cancelar }), nome = String((R.filme && R.filme.nome) || "filme").replace(/[^\w-]+/g, "_");
+    if (v.frames.length > 24 * 60 * 12) throw new Error("Filme longo demais para o navegador (" + v.frames.length + " quadros). Exporte por planos, baixe o fps ou use o MCP.");
+    E.prog.max = v.frames.length; const prog = (i, n, resta) => { E.prog.value = i; log("Quadro " + i + " de " + n + (resta != null ? " · falta ~" + tempoTexto(resta) : "") + " · Cancelar para parar."); };
+    if (!temMp4()) { await quadrosPng(v, nome, larg, prog); return; }
+    const out = await codificarFilme(v, { largura: larg, porPlano: modo === "pacote", progresso: prog, cancelado: () => rodando && rodando.cancelar });
+    if (modo !== "pacote") { const r = await baixar(nome + (so ? "-plano-" + so[0] : "") + ".mp4", out.filme, "video/mp4"); log(r === "ok" ? "MP4 baixado: " + v.frames.length + " quadros, " + v.duracao.toFixed(1).replace(".", ",") + " s, " + out.largura + "×" + out.altura + "." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err"); return; }
+    log("Montando o pacote…"); const ro = roteiroDoFilme(R), arq = [{ nome: nome + ".mp4", texto: new Uint8Array(await out.filme.arrayBuffer()) }];
+    for (const p of out.planos) arq.push({ nome: "planos/plano-" + String(p.n).padStart(2, "0") + ".mp4", texto: new Uint8Array(await p.blob.arrayBuffer()) });
+    arq.push({ nome: "roteiro-de-planos.md", texto: ro.md }, { nome: "planos.json", texto: JSON.stringify(ro.json, null, 1) }, { nome: "prompts.txt", texto: ro.prompts.join("\n\n") }, { nome: "filme.gmn", texto: gmn() });
+    for (const p of v.planos) { const f = v.frames[Math.round((p.quadros[0] + p.quadros[1]) / 2)]; try { arq.push({ nome: "folha/plano-" + String(p.n).padStart(2, "0") + ".png", texto: await svgParaPng(renderizarQuadro(f, { passes: false }).svg, 1) }); } catch (e) { } }
+    const r = await baixar(nome + "-pacote.zip", criarZip(arq), "application/zip"); log(r === "ok" ? "Pacote baixado: filme + " + out.planos.length + " planos em MP4, lista de planos, prompts e folha." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err");
+  } catch (e) { log(e.message === "Cancelado." ? "Exportação cancelada." : "Vídeo: " + e.message, "err"); }
+  finally { rodando = null; E.prog.hidden = true; }
+}
+async function quadrosPng(v, nome, larg, prog) {
+  const arq = []; for (let i = 0; i < v.frames.length; i++) { if (rodando && rodando.cancelar) throw new Error("Cancelado."); const svg = renderizarQuadro(v.frames[i], { passes: false }).svg, vb = /viewBox="[^"]*?\s([\d.]+)\s[\d.]+"/.exec(svg);
+    arq.push({ nome: "quadros/" + String(i + 1).padStart(5, "0") + ".png", texto: await svgParaPng(svg, vb ? larg / +vb[1] : 1) }); if (i % 3 === 0) prog(i + 1, v.frames.length); }
+  arq.push({ nome: "JUNTAR.txt", texto: "Este navegador não grava MP4 aqui (precisa de WebCodecs e de página https). Para juntar os quadros:\nffmpeg -framerate " + v.fps + " -i quadros/%05d.png -c:v libx264 -pix_fmt yuv420p " + nome + ".mp4\n" });
+  const r = await baixar(nome + "-quadros.zip", criarZip(arq), "application/zip"); log(r === "ok" ? "Sem MP4 neste navegador: baixei os quadros em PNG (.zip) com o comando para juntar." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err");
+}
+let b0 = () => null;
 function log(t, cls) { E.out.textContent = t || ""; E.out.className = "qd-out" + (cls ? " " + cls : ""); }
 
 /* ===== arquivo .gmn (texto do name + imagens de planta) ===== */
@@ -238,10 +288,10 @@ export function iniciarName() {
     '<button type="button" data-n="manual">Manual</button><select data-n="prompts" aria-label="Prompts prontos"><option value="">Prompts para IA…</option>' + Object.keys(PROMPTS_NAME).map(k => "<option>" + esc(k) + "</option>").join("") + '</select><span class="qd-cont"></span><button type="button" data-n="fechar" aria-label="Fechar">✕</button></header>' +
     '<div class="qd-corpo"><div class="qd-ed"><nav class="qd-chips" aria-label="Quadros"></nav><div class="qd-codewrap"><pre class="qd-gut" aria-hidden="true">1</pre><div class="nm-hlwrap"><pre class="nm-hl" aria-hidden="true"></pre><textarea spellcheck="false" wrap="off" aria-label="Texto do name, poses e animações"></textarea><ul class="nm-ac" hidden role="listbox"></ul><div class="nm-ac-lado" hidden></div><div class="nm-sig" hidden role="tooltip"></div><div class="nm-ajuda" hidden role="note"></div></div></div>' +
     '<ul class="nm-erros" aria-label="Erros e avisos"></ul><p class="nm-imgs"></p>' +
-    '<div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress>' +
+    '<div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress>' +
     '<label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p>' +
     '<div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div>' +
-    '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button></nav>' +
+    '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button></nav>' +
     '<div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div>' +
     '<h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div>' +
     '<div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div>' +
@@ -276,11 +326,12 @@ export function iniciarName() {
   b("catalogo").addEventListener("click", salvarCatalogo);
   b("aprender").addEventListener("change", e => { const i = e.target.value; e.target.value = ""; if (i === "") return; if (!ls.ler("antesDasLicoes", "")) ls.gravar("antesDasLicoes", E.code.value);
     E.code.value = LICOES[+i][1]; realcar(); compilar(); irPara(3); log("Lição carregada. O seu texto anterior ficou guardado: Modelos… → “Meu texto antes das lições”."); });
-  E.tabs.addEventListener("click", e => { const t = e.target.closest("[data-aba]"); if (t) { aba = t.dataset.aba; ultimaQ = -2; area.classList.toggle("nm-em-locais", aba === "locais"); previa(); } });
+  E.tabs.addEventListener("click", e => { const t = e.target.closest("[data-aba]"); if (t) { abaEscolhida = true; aba = t.dataset.aba; ultimaQ = -2; area.classList.toggle("nm-em-locais", aba === "locais"); previa(); } });
   E.prev.addEventListener("click", e => { if (e.target.closest('[data-pd="salvar"]')) { salvarCatalogo(); return; } const a = e.target.closest("[data-a]"), art = e.target.closest(".nm-local"); if (a && art && a.tagName === "BUTTON") acaoLocal(art.dataset.nome, a.dataset.a, a); });
   E.busca.addEventListener("input", () => listaLocais());
   b("gerar").addEventListener("click", gerarTodas); b("zip").addEventListener("click", baixarZip); b("cancelar").addEventListener("click", () => { if (rodando) rodando.cancelar = true; });
   b("fechar").addEventListener("click", fechar);
+  b0 = b; b("mp4").addEventListener("click", () => exportarFilme("filme")); b("mp4plano").addEventListener("click", () => exportarFilme("plano")); b("pacote").addEventListener("click", () => exportarFilme("pacote"));
   b("modelos").addEventListener("change", e => { const k = e.target.value; e.target.value = ""; if (!k) return; E.code.value = k === "Meu texto antes das lições" ? ls.ler("antesDasLicoes", E.code.value) : MODELOS[k]; realcar(); compilar(); ls.gravar("texto", E.code.value); });
   b("prompts").addEventListener("change", e => { const k = e.target.value; e.target.value = ""; if (!k) return; let t = PROMPTS_NAME[k]; if (/\{locais\}/.test(t)) t = t.replace("{locais}", bibliotecaLocais().listar().map(l => "- " + l.nome).join("\n") || "(nenhum)"); copiar(t + (/manual/i.test(t) ? "\n\n" + manualName() : ""), "Prompt “" + k + "” copiado (com o manual junto).") });
   b("manual").addEventListener("click", () => { E.texto.hidden = false; E.textoArea.value = manualName(); E.textoArea.scrollTop = 0; log("Manual aberto abaixo do editor (copie tudo para mandar à IA)."); });

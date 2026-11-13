@@ -37,6 +37,8 @@ export * from "./animacao.js";
 export * from "./movimento.js";
 export * from "./pose-dsl.js";
 export * from "./locomocao.js";
+export * from "./acoes-dia.js";
+export * from "./camera-filme.js";
 export * from "./name-dsl.js";
 export * from "./manual-name.js";
 

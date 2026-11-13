@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
 await build({
-  entryPoints: { server: "server.mjs", "png-worker": "lib/png-worker.mjs" },
+  entryPoints: { server: "server.mjs", "png-worker": "lib/png-worker.mjs", "quadro-worker": "lib/quadro-worker.mjs" },
   outdir: "dist", outExtension: { ".js": ".mjs" },
   bundle: true, platform: "node", format: "esm", target: "node18", minify: true, legalComments: "linked",
   banner: { js: "import{createRequire as __cr}from'node:module';const require=__cr(import.meta.url);" },

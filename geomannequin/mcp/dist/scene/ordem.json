@@ -42,6 +42,8 @@
   "movimento.js",
   "pose-dsl.js",
   "locomocao.js",
+  "acoes-dia.js",
+  "camera-filme.js",
   "name-dsl.js",
   "manual-name.js"
  ],
