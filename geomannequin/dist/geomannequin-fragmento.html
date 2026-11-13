@@ -525,6 +525,29 @@ body.qd-aberto{overflow:hidden}
 .an-lista{list-style:none;margin:0;padding:0;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
 .an-lista li{display:flex;flex-direction:column;gap:2px;border:1px solid var(--rule);border-radius:6px;padding:5px 8px;background:var(--panel)}.an-lista small{color:var(--muted)}
 .an-partes{display:flex;flex-wrap:wrap;gap:4px 10px}.an-partes label{font-size:12px}
+/* editor de texto: poses e animações (popup com miniatura, ajuda dos parênteses, F1, prévia ao vivo) */
+.nm-ac.rico{width:300px;max-height:300px;padding:4px;font:12px/1.35 var(--font-mono)}
+.nm-ac.rico li{display:flex;gap:8px;align-items:center;padding:3px 6px;white-space:normal}
+.nm-ac-mini{flex:none;width:36px;height:36px;color:var(--ink);border-radius:4px;background:var(--paper)}
+.nm-ac.rico li.sel .nm-ac-mini{color:var(--ink)}
+.nm-ac-mini.vazio{display:none}.nm-ac-mini svg{width:100%;height:100%;display:block}
+.nm-ac-tx{display:flex;flex-direction:column;min-width:0}.nm-ac-tx b{font-weight:600}.nm-ac-tx small{opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.nm-ac-lado{position:absolute;z-index:6;width:184px;padding:8px;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);font:12px/1.4 var(--font-mono);display:flex;flex-direction:column;gap:3px}
+.nm-ac-lado small{color:var(--muted)}.nm-ac-big{color:var(--ink);background:var(--paper);border-radius:4px}.nm-ac-big svg{display:block;width:100%;height:auto;max-height:168px}
+.nm-sig{position:absolute;z-index:6;max-width:min(560px,92%);padding:5px 9px;border-radius:5px;background:var(--ink);color:var(--paper);font:11.5px/1.45 var(--font-mono);white-space:normal;pointer-events:none}
+.nm-ajuda{position:absolute;right:8px;bottom:8px;z-index:7;width:min(440px,92%);max-height:65%;overflow:auto;padding:8px 30px 8px 10px;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);font:12.5px/1.45 var(--font-mono)}
+.nm-ajuda p{margin:.2em 0}.nm-ajuda pre{margin:.2em 0;padding:4px 6px;background:var(--field);border-radius:4px;white-space:pre-wrap}.nm-ajuda-x{position:absolute;top:4px;right:4px;padding:0 6px}
+.nm-j{color:var(--coral);font-weight:600}
+.nm-fix{margin-left:6px;font-size:11px;padding:0 6px}
+.pd-prev{width:100%;display:flex;flex-direction:column;gap:8px;padding:8px;color:var(--ink)}
+.pd-vistas{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.pd-vistas figure,.pd-quadros figure{margin:0;text-align:center;font:11px var(--font-mono);color:var(--muted)}
+.pd-vistas svg{width:150px;height:150px;color:var(--ink)}
+.pd-tela{position:relative;display:flex;justify-content:center}.pd-tela svg{width:220px;height:220px;color:var(--ink)}
+.pd-mov{position:absolute;left:4px;bottom:2px;font:11px var(--font-mono);color:var(--muted)}
+.pd-ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pd-ctl input[type=range]{flex:1;min-width:120px}.pd-ctl output{font:12px var(--font-mono);min-width:56px}
+.pd-tira svg{display:block;width:100%;height:auto;color:var(--ink)}.pd-info{margin:0;font:11.5px/1.4 var(--font-mono);color:var(--muted)}
+.pd-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.pd-quadros{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}.pd-quadros svg{width:100%;height:auto}
 
 /* GeoMannequin — modo de estudo anatômico V4.2 (folha técnica vetorial).
  * Responsivo, acessível e isolado do palco/editor existentes. */
@@ -8173,6 +8196,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         if (h.length > 2) svg += '<path d="M' + h.map((q) => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>';
       }
     }
+    if (o.tipo === "agua" || o.classe === "agua") svg = '<g opacity="0.5">' + svg + "</g>";
     return { svg, sombra, z: (() => {
       const z = zDasFaces(faces);
       if (z && FINO) z.fino = zDasFaces(faces, 1);
@@ -10442,8 +10466,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         d = vNorm(p);
       } else if (c.repetir.modo === "aleatorio") p = vAdd(p, [(r() - 0.5) * c.repetir.raio, (r() - 0.5) * c.repetir.raio, (r() - 0.5) * c.repetir.raio]);
       else if (j > 0 && c.forma !== "aneis" && c.forma !== "degraus") {
-        const esc8 = (c.caminho.raio || 1) * 0.5 + c.caminho.comprimento * 0.08;
-        p = vAdd(p, [(r() - 0.5) * j * esc8, (r() - 0.5) * 2 * j * esc8, (r() - 0.5) * 2 * j * esc8]);
+        const esc9 = (c.caminho.raio || 1) * 0.5 + c.caminho.comprimento * 0.08;
+        p = vAdd(p, [(r() - 0.5) * j * esc9, (r() - 0.5) * 2 * j * esc9, (r() - 0.5) * 2 * j * esc9]);
       }
       lugares.push({ t, p, d, i });
     }
@@ -12573,13 +12597,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (p._ativo || FINO || lanc && lanc.length || L3.instancias === false) return null;
     const v = visada(p), k = chaveInstancia(L3, o, v) + (fast ? "§r" : ""), ent = INST.get(k);
     if (!ent || ent.p._id !== void 0 && ent.p._id === p._id) return { k };
-    const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc8 = b[3] / a[3], r = ent.res;
-    const tr = (s) => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc8.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
+    const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc9 = b[3] / a[3], r = ent.res;
+    const tr = (s) => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc9.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
     ESTAT.instancias = (ESTAT.instancias || 0) + 1;
     let bb = null;
     const S = effScale(p);
     if (r.info.bb && S > 0) {
-      const X = (v2) => ((CX + S * v2 - a[0]) * esc8 + b[0] - CX) / S, Y = (v2) => (CY - ((CY - S * v2 - a[1]) * esc8 + b[1])) / S;
+      const X = (v2) => ((CX + S * v2 - a[0]) * esc9 + b[0] - CX) / S, Y = (v2) => (CY - ((CY - S * v2 - a[1]) * esc9 + b[1])) / S;
       bb = [X(r.info.bb[0]), X(r.info.bb[1]), Y(r.info.bb[2]), Y(r.info.bb[3])];
     }
     return { pronta: { svg: tr(r.svg), sombra: tr(r.sombra), info: Object.assign({}, r.info, { depth: r.info.depth + (b[2] - a[2]), handles: [], bb, instancia: true }), z: null, fast: r.fast } };
@@ -17487,17 +17511,17 @@ pre.cmdout .ok{color:var(--cobalt)}
     const out = [], vistos = /* @__PURE__ */ new Set();
     for (let i = 0; i < vis.length; i++) for (let j = 0; j < vis.length; j++) {
       if (i === j || contatoPermitido(vis[i], vis[j])) continue;
-      let tang = null, esc8 = null;
+      let tang = null, esc9 = null;
       for (const a of T3[i]) {
         if (!EXTREM.test(a.nome)) continue;
         for (const b of T3[j]) {
           const r = segSeg(a.a, a.b, b.a, b.b), gap = r.d - (a.r + b.r);
           if (Math.abs(gap) < 2.5 && (!tang || Math.abs(gap) < tang.gap)) tang = { gap: Math.abs(gap), pa: a.nome, pb: b.nome, pt: r.p };
-          if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc8 = { pb: b.nome, pt: a.a };
+          if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc9 = { pb: b.nome, pt: a.a };
         }
       }
       const A = SCN.list.indexOf(vis[i]), B3 = SCN.list.indexOf(vis[j]);
-      if (esc8) out.push({ tipo: "escondida", a: A, b: B3, pt: esc8.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc8.pb] + " de " + vis[j].name });
+      if (esc9) out.push({ tipo: "escondida", a: A, b: B3, pt: esc9.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc9.pb] + " de " + vis[j].name });
       else if (tang && !vistos.has(Math.min(i, j) + "-" + Math.max(i, j)) && vistos.add(Math.min(i, j) + "-" + Math.max(i, j))) out.push({ tipo: "tangencia", a: A, b: B3, pt: tang.pt, texto: PARTES[tang.pa] + " de " + vis[i].name + " encosta no contorno de " + PARTES[tang.pb] + " de " + vis[j].name + " (tangência)" });
     }
     return out;

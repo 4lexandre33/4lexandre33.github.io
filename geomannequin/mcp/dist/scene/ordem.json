@@ -40,6 +40,8 @@
   "quadros.js",
   "animacao.js",
   "movimento.js",
+  "pose-dsl.js",
+  "locomocao.js",
   "name-dsl.js",
   "manual-name.js"
  ],

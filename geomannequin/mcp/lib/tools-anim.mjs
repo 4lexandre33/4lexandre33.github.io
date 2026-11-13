@@ -35,7 +35,7 @@ export function registerAnimTools(server, W) {
     title: "Manual de conversa (gestos, atitudes, fala) e animação",
     description: "Como fazer manequins conversarem (gestos de braço/mão, atitudes de cabeça/coluna/pernas, boca de fala no tom, papéis como falante/ouvinte/cético, ajustes finos em graus ou cm) e como criar ANIMAÇÕES por quadros-chave (DSL “animacao … chave 0s …”, curvas, relativa/absoluta, biblioteca com tags) , olhar natural (olhos → cabeça → corpo), girar 360° com passos/pivô/luta/salto, andar até, fps 1–60, em dois, velocidade e o vídeo-rascunho do name. Traz as listas e os limites.",
     inputSchema: {}, annotations: RO
-  }, async () => { const w = W(), m = w.manualName(), i = m.indexOf("11. CONVERSA"), j = m.indexOf("14. EXEMPLO");
+  }, async () => { const w = W(), m = w.manualName(), i = m.indexOf("11. CONVERSA"), j = m.indexOf("15. EXEMPLO");
     return { content: [{ type: "text", text: m.slice(i, j) + "\nFORMATO JSON (criar_animacao): {nome, duracao (s), modo: absoluta|relativa, loop, curva, tags:[…], chaves:[{t, valores:{parâmetro: número}, expressao, intensidade, frente, lado, giro, curva}]}. Parâmetros (graus): headYaw, headPitch, headRoll, neckFlex, spineFlex, spineSide, spineTwist, armFlexR/L, armAbdR/L, armRotR/L, elbowR/L, pronR/L, wristR/L, hipFlexR/L, hipAbdR/L, kneeFlexR/L, ankleFlexR/L, shElevR/L (−1..1), jawOpen (0..1)…" }] }; });
 
   server.registerTool("linguagem_corporal", {
@@ -186,4 +186,103 @@ export function registerAnimTools(server, W) {
       return { content: [{ type: "image", data: faixa.toString("base64"), mimeType: "image/png" }, { type: "resource", resource: { uri: "geomannequin://arquivo/andar.gif", mimeType: "image/gif", blob: im.gif.toString("base64") } }, { type: "text", text: an.descricao + " · " + an.duracao.toFixed(2) + " s" }], structuredContent: { duracao: an.duracao, descricao: an.descricao, salvo, link: sceneLink(w) } }; }
     catch (e) { return ERRO(e); }
   });
+
+  /* ===== poses e animações por TEXTO (capítulo 14 do manual) ===== */
+  const responderAnim = async (w, it, an, a, extra = {}) => {
+    const fr = w.framesDaAnimacao(it, an, { fps: a.fps || 10, emDois: a.emDois, velocidade: a.velocidade, lado: a.lado ?? 30 }); if (fr.frames.length > 600) throw new Error("Quadros demais: baixe o fps.");
+    const im = await framesParaImagens(w, fr.frames, { gif: true, fps: fr.fps, largura: 300 }), faixa = await tira(w, im.pngs, 8);
+    if (a.aplicar) { w.cena.marcarEstado && w.cena.marcarEstado(); const base = { params: Object.assign({}, it.params) }; w.aplicarAnimacao(it, an, an.duracao, { base }); delete it._animBase; }
+    const salvo = a.salvar ? w.bibliotecaAnimacoes().salvar(an, { tags: an.tags, origem: "mcp" }) : null;
+    const nome = String(an.nome).replace(/[^\w-]+/g, "_");
+    return { content: [{ type: "image", data: faixa.toString("base64"), mimeType: "image/png" }, { type: "resource", resource: { uri: "geomannequin://arquivo/" + nome + ".gif", mimeType: "image/gif", blob: im.gif.toString("base64") } },
+      { type: "text", text: (an.descricao ? an.descricao + " · " : "") + an.nome + " · " + an.duracao.toFixed(2) + " s · " + fr.frames.length + " quadros a " + fr.fps + " fps" + (extra.avisos && extra.avisos.length ? "\nAvisos: " + extra.avisos.join(" | ") : "") }],
+      structuredContent: Object.assign({ nome: an.nome, duracao: +an.duracao.toFixed(3), quadros: fr.frames.length, fps: fr.fps, modo: an.modo, loop: !!an.loop, chaves: an.chaves.length, salvo: salvo ? salvo.versao : null }, extra) };
+  };
+  const compilarDefs = (w, codigo, salvar) => { const r = w.compilarName(String(codigo).trim() + "\n", { semCache: true, salvar: !!salvar }); if (r.erros.length) throw new Error(r.erros.map(e => "linha " + e.linha + ": " + e.erro).join(" | ")); return r; };
+  const so = (w, v) => { const B = w.pdBase(), o = {}; for (const [k, x] of Object.entries(v)) if (Math.abs((x || 0) - (B[k] || 0)) > 0.01) o[k] = +x.toFixed(2); return o; };
+
+  server.registerTool("pose_texto", {
+    title: "Pose por texto (juntas e atalhos)",
+    description: "Compila um bloco de pose da linguagem de juntas e mostra o manequim nela. Ex.: pose \"pedido\" de empe\\n  ajoelha direito\\n  ombro.direito(frente 70) cotovelo.direito(dobra 20)\\n  olha cima 15. Juntas: ombro, cotovelo, antebraco, punho, mao, quadril, joelho, canela, tornozelo, dedos-pe, tronco, lombar, peito, pelve, pescoco, cabeca, olhos, boca, corpo (.direito/.esquerdo/.ambos). Valor sozinho = fica nele; +10/-10 = soma. salvar: true manda para Minhas poses (com miniatura). aplicar: true deixa o manequim na pose. Veja manual_animacao (capítulo 14).",
+    inputSchema: { codigo: z.string().min(4).max(20000), manequim: z.string().optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => {
+    try { const w = W(), it = quem(w, a.manequim), r = compilarDefs(w, a.codigo, false), d = (r.defs || []).filter(x => x.tipo === "pose").pop(); if (!d) throw new Error("Nenhum bloco “pose” no código.");
+      if (a.salvar) w.salvarPose ? w.salvarPose(d.nome, d.valores, { substituir: true, miniatura: w.pdMiniatura(d.valores) }) : compilarDefs(w, a.codigo, true);
+      const an = w.criarAnimacao({ nome: d.nome, duracao: 0.01, modo: "absoluta", chaves: [{ t: 0, valores: d.valores }, { t: 0.01, valores: d.valores }] }), fr = w.framesDaAnimacao(it, an, { fps: 1, lado: a.lado ?? 35 });
+      const im = await framesParaImagens(w, [fr.frames[fr.frames.length - 1]], { largura: 420 });
+      if (a.aplicar) { w.cena.marcarEstado && w.cena.marcarEstado(); Object.assign(it.params, d.valores); }
+      return { content: [{ type: "image", data: im.pngs[0].toString("base64"), mimeType: "image/png" }, { type: "text", text: "Pose “" + d.nome + "”" + (a.salvar ? " salva em Minhas poses" : "") + (r.avisos.length ? "\nAvisos: " + r.avisos.join(" | ") : "") + "\nMuda (em relação a em pé): " + JSON.stringify(so(w, d.valores)) }],
+        structuredContent: { nome: d.nome, valores: so(w, d.valores), avisos: r.avisos, miniaturaSvg: w.pdMiniatura(d.valores) } }; }
+    catch (e) { return ERRO(e); }
+  });
+
+  server.registerTool("animacao_texto", {
+    title: "Animação por texto (chaves, ciclo, derivar, juntar, camada)",
+    description: "Compila blocos da linguagem (pose, ciclo, animacao) e toca o ÚLTIMO bloco ciclo/animacao: devolve tira + GIF. Aceita tudo do capítulo 14: chaves com juntas (chave 0.4s ombro.direito(frente 90)), ciclo \"andar\" de POSE, animacao \"x\" de OUTRA + troca PARTES por pose X · soma · tira · trecho · ate 90 · reverte · espelha · repete 3 · vai-e-volta · amplitude 70% · estica 2s, e no cabeçalho junta A, B mistura 0.2s · camada A + B bracos. salvar: true grava os blocos marcados com “salvar”.",
+    inputSchema: { codigo: z.string().min(4).max(40000), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), emDois: z.boolean().optional(), velocidade: z.number().min(0.1).max(8).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => {
+    try { const w = W(), it = quem(w, a.manequim), r = compilarDefs(w, a.codigo, a.salvar), d = (r.defs || []).filter(x => x.anim).pop(); if (!d) throw new Error("Nenhum bloco “animacao” ou “ciclo” no código.");
+      return await responderAnim(w, it, d.anim, Object.assign({}, a, { salvar: false }), { avisos: r.avisos, blocos: (r.defs || []).map(x => x.tipo + " " + x.nome) }); }
+    catch (e) { return ERRO(e); }
+  });
+
+  server.registerTool("derivar_animacao", {
+    title: "Nova animação a partir de outra",
+    description: "Cria uma animação a partir de outra (da biblioteca) com operações em ordem, uma por item: \"troca pernas por pose ajoelhado\" (a mesma animação, de joelhos) · \"troca bracos por anima acenarTchau\" · \"soma tronco(frente 20)\" · \"tira bracos\" · \"chave 0.5s ombro.ambos(abre 60)\" · \"trecho 0.2s a 0.8s\" · \"ate 90\" (giros: para no ângulo exato e pousa os pés) · \"ate metade\" · \"reverte\" · \"espelha\" · \"repete 3\" · \"vai-e-volta\" · \"amplitude 70% bracos\" · \"estica 2s\".",
+    inputSchema: { base: z.string().min(1), operacoes: z.array(z.string()).min(1).max(30), nome: z.string().optional(), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => {
+    try { const w = W(), it = quem(w, a.manequim), nome = a.nome || a.base + "-derivada", r = compilarDefs(w, 'animacao "' + nome + '" de ' + (/\s/.test(a.base) ? '"' + a.base + '"' : a.base) + "\n" + a.operacoes.map(o => "  " + o).join("\n"), false);
+      return await responderAnim(w, it, r.animacoes[r.animacoes.length - 1], a, { avisos: r.avisos }); }
+    catch (e) { return ERRO(e); }
+  });
+
+  server.registerTool("ciclo_de_pose", {
+    title: "Ciclo (andar, correr…) a partir de UMA pose",
+    description: "Faz um ciclo em loop a partir de uma pose: A → passagem → A espelhada → passagem espelhada → A. pose: nome (pronta, salva) ou um bloco \"pose …\" em codigo. corre: ciclo de corrida (com voo). anda: metros por ciclo. Devolve tira + GIF.",
+    inputSchema: { pose: z.string().optional(), codigo: z.string().max(20000).optional(), nome: z.string().optional(), duracao: z.number().min(0.2).max(10).optional(), corre: z.boolean().optional(), anda: z.number().min(0).max(10).optional(), passagem: z.string().optional(), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => {
+    try { const w = W(), it = quem(w, a.manequim); let pose = a.pose, pre = "";
+      if (a.codigo) { pre = String(a.codigo).trim() + "\n\n"; const m = /^\s*pose\s+(?:"([^"]+)"|(\S+))/m.exec(a.codigo); if (!pose && m) pose = m[1] || m[2]; }
+      if (!pose) throw new Error("Diga a pose (nome) ou mande um bloco pose em codigo.");
+      const nome = a.nome || "ciclo-" + pose, r = compilarDefs(w, pre + 'ciclo "' + nome + '" de "' + pose + '"' + (a.duracao ? " duracao " + a.duracao + "s" : "") + (a.corre ? " corre" : "") + (a.anda !== undefined ? " anda " + a.anda + "m" : "") + (a.passagem ? ' passagem "' + a.passagem + '"' : ""), false);
+      return await responderAnim(w, it, r.animacoes[r.animacoes.length - 1], a, { avisos: r.avisos }); }
+    catch (e) { return ERRO(e); }
+  });
+
+  server.registerTool("pular", {
+    title: "Pular",
+    description: "Pulo com antecipação (agacha), impulso, voo no tempo da gravidade (altura → tempo de voo), aterrissagem amortecida. estilo: lugar, frente, alto, lado, corrida. distancia em metros; altura em metros; sentido direita/esquerda (pulo de lado).",
+    inputSchema: { estilo: z.enum(["lugar", "frente", "alto", "lado", "corrida"]).optional(), distancia: z.number().min(0).max(6).optional(), altura: z.number().min(0.05).max(2).optional(), sentido: z.enum(["direita", "esquerda"]).optional(), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => { try { const w = W(); return await responderAnim(w, quem(w, a.manequim), w.lcPulo({ estilo: a.estilo || "lugar", distancia: a.distancia, altura: a.altura, sentido: a.sentido }), a, { lado: a.lado ?? 70 }); } catch (e) { return ERRO(e); } });
+
+  server.registerTool("nadar", {
+    title: "Nadar",
+    description: "Nado (corpo deitado na água): crawl, peito, costas, cachorrinho, boia, pernada; distancia em metros (de costas ele vai na direção da cabeça). Se o manequim estiver dentro de uma peça “agua” do local, fica na linha da água.",
+    inputSchema: { estilo: z.enum(["crawl", "peito", "costas", "cachorrinho", "boia", "pernada"]).optional(), distancia: z.number().min(0.5).max(50).optional(), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => { try { const w = W(), it = quem(w, a.manequim), an = w.lcNadar(a.estilo || "crawl", { distancia: a.distancia }), A = w.lcNaLinhaDaAgua(it, an);
+      return await responderAnim(w, it, an, a, { naAgua: !!A, lado: a.lado ?? 70 }); } catch (e) { return ERRO(e); } });
+
+  server.registerTool("mergulhar", {
+    title: "Mergulhar",
+    description: "Mergulho de cabeça da borda: braços acima, agacha, salta, entra na água e desliza. altura = da borda até a água (m); fundo = profundidade do mergulho (m).",
+    inputSchema: { altura: z.number().min(0).max(5).optional(), fundo: z.number().min(0.2).max(5).optional(), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => { try { const w = W(); return await responderAnim(w, quem(w, a.manequim), w.lcMergulho({ altura: a.altura, fundo: a.fundo }), a, { lado: a.lado ?? 70 }); } catch (e) { return ERRO(e); } });
+
+  server.registerTool("movimento", {
+    title: "Movimentos de chão: engatinhar, rastejar, andar agachado, cair, levantar, rolar",
+    description: "tipo: engatinha, rasteja, anda-agachado (distancia em m), cai (direcao frente/tras/lado), levanta-se (de costas ou brucos), rola (direcao direita/esquerda, voltas).",
+    inputSchema: { tipo: z.enum(["engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola"]), distancia: z.number().min(0.2).max(20).optional(), direcao: z.enum(["frente", "tras", "lado", "direita", "esquerda"]).optional(), de: z.enum(["costas", "brucos"]).optional(), voltas: z.number().min(0.25).max(10).optional(), manequim: z.string().optional(), fps: z.number().int().min(1).max(60).optional(), aplicar: z.boolean().optional(), salvar: z.boolean().optional(), lado: z.number().optional() }, annotations: MUDA
+  }, async a => { try { const w = W(), it = quem(w, a.manequim), t = a.tipo; let an;
+      if (t === "engatinha" || t === "rasteja" || t === "anda-agachado") an = w.lcPorDistancia(t === "engatinha" ? w.lcEngatinharCiclo() : t === "rasteja" ? w.lcRastejarCiclo() : w.lcAgachadoCiclo(), a.distancia ?? 1.5, t);
+      else if (t === "cai") an = w.lcCair(/^(frente|tras|lado)$/.test(a.direcao || "") ? a.direcao : "frente"); else if (t === "levanta-se") an = w.lcLevantar(a.de || "brucos"); else an = w.lcRolar(a.direcao === "esquerda" ? "esquerda" : "direita", a.voltas ?? 1);
+      return await responderAnim(w, it, an, a, { lado: a.lado ?? 70 }); } catch (e) { return ERRO(e); } });
+
+  server.registerTool("completar", {
+    title: "O que pode vir depois (autocompletar da linguagem)",
+    description: "Dado o texto até o cursor, diz o que pode vir depois — o mesmo popup do editor: depois de \"ombro.\" os lados; depois de \"ombro.direito(\" os movimentos com os limites; depois de \"pose.\"/\"pose \" as poses (prontas e salvas); \"anima \" as animações; começo de linha num bloco pose as juntas e atalhos. miniaturas: true inclui o SVG (esqueleto) dos 8 primeiros.",
+    inputSchema: { antes: z.string().max(20000), miniaturas: z.boolean().optional() }, annotations: RO
+  }, async a => { try { const w = W(), r = w.pdCompletar(a.antes, {}) || { itens: [], de: a.antes.length };
+      const itens = r.itens.slice(0, 60).map((x, i) => Object.assign({ texto: x.v, rotulo: x.r, tipo: x.tipo, detalhe: x.d }, a.miniaturas && i < 8 && x.mini ? { svg: w.pdMiniaturaItem(x.mini) } : {}));
+      return { content: [{ type: "text", text: (r.ajuda ? "Ajuda: " + r.ajuda + "\n" : "") + (itens.length ? itens.map(x => x.rotulo + (x.detalhe ? " — " + x.detalhe : "")).join("\n") : "(nada específico aqui: veja o manual)") }], structuredContent: { substituirDesde: r.de, ajuda: r.ajuda || null, itens } }; }
+    catch (e) { return ERRO(e); } });
 }

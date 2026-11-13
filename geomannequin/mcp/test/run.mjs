@@ -326,7 +326,22 @@ async function suite(client, tag) {
     r = await call("olhar", { ponto: [0, 1.6, 3], modo: "natural" });
     check(!r.isError && r.structuredContent.alcancou === true, "olhar para um ponto atrás: vira o corpo e alcança" + (r.isError ? ": " + text(r) : ""));
     r = await call("andar_ate", { ponto: [1.5, 1], fps: 4, aplicar: true });
-    check(!r.isError && r.structuredContent.duracao > 1, "andar_ate um ponto" + (r.isError ? ": " + text(r) : "")); }
+    check(!r.isError && r.structuredContent.duracao > 1, "andar_ate um ponto" + (r.isError ? ": " + text(r) : ""));
+    r = await call("pose_texto", { codigo: 'pose "pedido" de empe\n  ajoelha direito\n  ombro.direito(frente 70) cotovelo.direito(dobra 20)\n' });
+    check(!r.isError && r.content[0].type === "image" && r.structuredContent.valores.armFlexR === 70, "pose_texto: juntas e atalhos" + (r.isError ? ": " + text(r) : ""));
+    r = await call("animacao_texto", { codigo: 'pose "pl" de empe\n  quadril.direito(frente 35)\n  quadril.esquerdo(tras 15)\nciclo "andar-pl" de pl duracao 1s\n', fps: 4 });
+    check(!r.isError && r.structuredContent.loop === true && r.structuredContent.chaves === 5, "animacao_texto: ciclo de uma pose" + (r.isError ? ": " + text(r) : ""));
+    r = await call("derivar_animacao", { base: "girar360E", operacoes: ["troca pernas por pose ajoelhado", "ate 90"], fps: 4 });
+    check(!r.isError && r.structuredContent.duracao < 2, "derivar_animacao: de joelhos e só 90°" + (r.isError ? ": " + text(r) : ""));
+    r = await call("ciclo_de_pose", { pose: "correndo", corre: true, fps: 4 });
+    check(!r.isError && r.structuredContent.loop === true, "ciclo_de_pose correndo" + (r.isError ? ": " + text(r) : ""));
+    r = await call("pular", { estilo: "frente", distancia: 1, fps: 6 });
+    check(!r.isError && r.structuredContent.duracao > 1, "pular para frente" + (r.isError ? ": " + text(r) : ""));
+    r = await call("nadar", { estilo: "peito", distancia: 2, fps: 4 }); check(!r.isError, "nadar peito" + (r.isError ? ": " + text(r) : ""));
+    r = await call("mergulhar", { fps: 4 }); check(!r.isError, "mergulhar" + (r.isError ? ": " + text(r) : ""));
+    r = await call("movimento", { tipo: "rola", direcao: "esquerda", voltas: 1, fps: 4 }); check(!r.isError, "movimento: rolar" + (r.isError ? ": " + text(r) : ""));
+    r = await call("completar", { antes: 'pose "x"\n  ombro.direito(', miniaturas: true });
+    check(!r.isError && r.structuredContent.itens.some(i => i.rotulo === "frente") && r.structuredContent.itens[0].svg && /0–180°/.test(r.structuredContent.ajuda), "completar: movimentos da junta com limites e miniatura" + (r.isError ? ": " + text(r) : "")); }
   return link;
 }
 

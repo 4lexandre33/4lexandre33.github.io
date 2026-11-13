@@ -377,6 +377,8 @@ function desenharObjeto(o, p, pal0, g0, L) {
     if (g.malha && g.malha.contorno) svg += '<path d="' + g.malha.contorno + '" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linecap:round"/>';
     if (g.cil) { const h = cascaConvexa(g.cil.pts); if (h.length > 2) svg += '<path d="M' + h.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>'; }
   }
+  /* água: translúcida — quem está dentro aparece por baixo da superfície */
+  if (o.tipo === "agua" || o.classe === "agua") svg = '<g opacity="0.5">' + svg + "</g>";
   return { svg, sombra, z: (() => { const z = zDasFaces(faces); if (z && FINO) z.fino = zDasFaces(faces, 1); return z; })(), info: { depth: faces.length ? Math.max(...faces.map(f => f.z)) : -1e6, hidden: false, handles: [], ordemPartes: ordem.map(g => grupos.indexOf(g)) } };
 }
 /* ===== ordem de desenho entre as peças de um objeto =====

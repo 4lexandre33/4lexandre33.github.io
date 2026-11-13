@@ -80,7 +80,7 @@ function animacaoGiro0(o = {}) {
       }
     }
     { const vf = Object.assign(pose(th, null, 0), { hipRotL: 0, hipRotR: 0 }), pf = mvRot(th, peLocal(vf, lead === "L" ? "R" : "L")); const lst = lead === "L" ? "R" : "L"; add(t + 0.15, vf, th, [F[lst][0] - pf[0], F[lst][1] - pf[1]], { apoio: "ambos" }); }
-    return criarAnimacao({ nome, duracao: t + 0.15, modo: "relativa", curva: "suave", pesFixos: true, travarPes: true, escalarPeloCorpo: true, tags: ["Locomocao/Virar/" + (estilo === "luta" ? "Luta" : "Passos")], descricao: "gira " + Math.abs(A) + "° para a " + (sg > 0 ? "esquerda" : "direita") + " com " + n + " passos", chaves });
+    return criarAnimacao({ nome, duracao: t + 0.15, modo: "relativa", curva: "suave", pesFixos: true, travarPes: true, escalarPeloCorpo: true, tags: ["Locomocao/Virar/" + (estilo === "luta" ? "Luta" : "Passos")], descricao: "gira " + Math.abs(A) + "° para a " + (sg > 0 ? "esquerda" : "direita") + " com " + n + (n > 1 ? " passos" : " passo"), chaves });
   }
   if (estilo === "pivo" || estilo === "pirueta") {
     /* pivô na ponta do pé de apoio, a outra perna recolhida (passé); a cabeça fica presa num ponto e vira de uma vez */
@@ -114,7 +114,7 @@ function animacaoAndarAte(it, destino, o = {}) {
   const local = p => mvRot(-g0, [p[0] / MV_M, p[1] / MV_M]); /* mundo (R) → sistema do começo (m) */
   let pontos = [[0, 0], local([dxW, dzW])];
   /* desvio: o primeiro objeto alto entre a pessoa e o destino → contorna pelo lado mais curto */
-  const obs = SCN.objetos.find(ob => { if (ob.chao || ob.alt < 3) return false; for (let k = 1; k < 10; k++) { const u = k / 10, x = (Q.wx || 0) + dxW * u, z = (Q.wz || 0) + dzW * u; if (Math.abs(x - ob.x) < (ob.larg || 2) / 2 + 2.5 && Math.abs(z - ob.z) < (ob.prof || 2) / 2 + 2.5) return true; } return false; });
+  const obs = SCN.objetos.find(ob => { if (ob.chao || ob.tipo === "agua" || ob.alt < 3) return false; for (let k = 1; k < 10; k++) { const u = k / 10, x = (Q.wx || 0) + dxW * u, z = (Q.wz || 0) + dzW * u; if (Math.abs(x - ob.x) < (ob.larg || 2) / 2 + 2.5 && Math.abs(z - ob.z) < (ob.prof || 2) / 2 + 2.5) return true; } return false; });
   if (obs && o.desviar !== false) { const r = Math.max(obs.larg || 2, obs.prof || 2) / 2 + 4, nx = -dzW, nz = dxW, nl = Math.hypot(nx, nz) || 1, lado = ((obs.x - Q.wx) * nx + (obs.z - Q.wz) * nz) > 0 ? -1 : 1;
     const w1 = [obs.x + lado * nx / nl * r - (Q.wx || 0), obs.z + lado * nz / nl * r - (Q.wz || 0)]; pontos = [[0, 0], local(w1), local([dxW, dzW])]; }
   const passada = (o.passada || 0.68) * tam, ds = o.duracaoPasso || 0.5 / Math.sqrt(tam) * (o.correndo ? 0.6 : 1);

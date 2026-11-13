@@ -210,9 +210,9 @@ function instantesVideo(duracao, o = {}) {
 }
 /* valores no instante t (só as chaves que a animação mexe); base = parâmetros do começo */
 function amostrar(a, t, base) {
-  const tt = a.loop ? ((t % a.duracao) + a.duracao) % a.duracao : Math.max(0, Math.min(a.duracao, t)), ch = a.chaves, out = {}, rel = a.modo === "relativa";
+  const tt = a.loop ? ((t % a.duracao) + a.duracao) % a.duracao : Math.max(0, Math.min(a.duracao, t)), ch = a.chaves, out = {}, rel0 = a.modo === "relativa", absK = new Set(a.absolutos || []);
   const chavesUsadas = new Set(ch.flatMap(c => Object.keys(c.valores)));
-  for (const k of chavesUsadas) {
+  for (const k of chavesUsadas) { const rel = rel0 && !absK.has(k); /* "absolutos": parâmetros que valem por si mesmo numa animação relativa (ex.: pernas trocadas por uma pose) */
     /* a chave anterior e a seguinte que têm este parâmetro */
     let i0 = -1, i1 = -1; for (let i = 0; i < ch.length; i++) if (k in ch[i].valores) { if (ch[i].t <= tt) i0 = i; else if (i1 < 0) i1 = i; }
     const v0 = i0 >= 0 ? ch[i0].valores[k] : (rel ? 0 : base[k] || 0), t0 = i0 >= 0 ? ch[i0].t : 0;

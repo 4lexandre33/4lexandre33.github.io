@@ -35,6 +35,8 @@ export * from "./ajuda.js";
 export * from "./quadros.js";
 export * from "./animacao.js";
 export * from "./movimento.js";
+export * from "./pose-dsl.js";
+export * from "./locomocao.js";
 export * from "./name-dsl.js";
 export * from "./manual-name.js";
 

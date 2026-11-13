@@ -6,6 +6,8 @@ import { INTERACOES } from "./interacoes.js";
 import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { TIPOS_OBJETO, CATALOGO } from "../engine/index.js";
+import { PD_JUNTAS, PD_PARTES, PD_DOC, pdFaixaMov } from "./pose-dsl.js";
+import { LC_NADO, LC_PULOS } from "./locomocao.js";
 import { GESTOS_CONVERSA, ATITUDES, TONS_FALA, PAPEIS_CONVERSA, CURVAS, AN_PARTES, bibliotecaAnimacoes } from "./animacao.js";
 
 const mnLista = (a, n) => { const l = [...a]; return l.slice(0, n || l.length).join(", ") + (n && l.length > n ? "… (" + l.length + " no total)" : ""); };
@@ -334,7 +336,8 @@ GIRAR NO LUGAR (anima, com os pés; até 360° e além, ex.: 720 pivo):
   Kai gira 360 luta             — base baixa (joelhos dobrados), 3 passos curtos e rápidos
   Kai gira 360 salto            — impulso, giro no ar, aterrissa dobrando os joelhos
   Ordem do corpo ao virar: olhos e cabeça ANTECIPAM → ombros/tronco → pelve → pés (a cabeça chega antes).
-  Sentido: esquerda = para a esquerda DO PRÓPRIO PERSONAGEM (ângulo positivo: virado para o norte, "gira 90 passos esquerda" termina virado para o leste);
+  Sentido: esquerda = para a esquerda DO PRÓPRIO PERSONAGEM (ângulo positivo; ele termina virado para o mesmo lado que "gira 90" absoluto, +x);
+  pense sempre na esquerda/direita do PERSONAGEM, não na bússola da planta (a planta é vista de cima, e de cima a esquerda dele aparece do outro lado);
   direita = para a direita dele (negativo). Sem sentido escrito: vale o sinal do número (360 = esquerda, −360 = direita). Use sempre "esquerda/direita" do personagem, não "horário".
   Prontas na biblioteca: girar45E/D, girar90E/D, girar180E/D, girar360E/D, girar360E/D_pivo, girar720E_pivo, girar360E/D_luta, girar360E/D_salto.
 ANDAR ATÉ:
@@ -359,7 +362,69 @@ LIMITES (o que ainda NÃO faz, para ninguém prometer):
   - esbarrão é só aviso (centro a centro < 30 cm), não desvia;
   - boca: ritmo por letra (não é fonema de verdade), em português.
 
-14. EXEMPLO COMPLETO
+14. POSES E ANIMAÇÕES POR TEXTO (juntas, atalhos, ciclo, derivar, picotar, juntar, pular, nadar…)
+EDITOR (site → Texto): digite uma junta e um PONTO (ombro.) → aparecem os lados com a junta acesa na miniatura; depois do "(" aparecem os movimentos com os limites;
+  pose. / anima. / expressao. / gesto. → listas com miniatura: as poses e animações escritas no próprio texto e as já salvas no catálogo (Ctrl+S salva as marcadas com "salvar"). F1 = ajuda da palavra; Alt+↑/↓ = muda o número
+  sob o cursor (Shift = passo maior); Tab no começo da linha (pose, ciclo, animacao, derivar, picotar, juntar, camada) = trecho pronto; Ctrl+S = salvar no catálogo.
+  Com o cursor dentro de um bloco pose/ciclo/animacao a prévia ao lado mostra a pose em 3 vistas ou a animação tocando (barra de tempo, "Ver no boneco", "No palco").
+POSE:
+  pose "nome" [de OUTRA-POSE] [salvar] [tags "A/B"]
+    junta.lado(movimento valor, movimento valor …)      (lado: direito | esquerdo | ambos; sem lado = os dois)
+  Valor sozinho = a junta fica NESSE valor; "+10" / "-10" = soma ao que já estava. Graus; mão/olhos/boca em % (fecha 80%); corpo(sobe 30cm).
+  Passou do limite da articulação → fica no limite e aparece um aviso. "salvar" = Minhas poses, com miniatura (usa em qualquer quadro: Kai pose nome).
+JUNTAS (movimento: faixa):
+${Object.entries(PD_JUNTAS).map(([j, J]) => "  " + j + (J.lado ? ".lado" : "") + (J.apelidos ? " (= " + J.apelidos.join(", ") + ")" : "") + ": " + Object.keys(J.mov).map(m => m + " " + pdFaixaMov(j, m, "R")).join(" · ")).join("\n")}
+ATALHOS (numa pose, numa chave ou depois de "soma"):
+  agacha [60%] · ajoelha direito|esquerdo|os-dois · senta chao|cadeira|calcanhares|cocoras · peso direito|esquerdo [70%] · inclina frente|tras|direita|esquerda [graus]
+  olha baixo|cima|direita|esquerda|frente [graus] · sobe 30cm · deita costas|brucos|lado · espelha [PARTES] · mistura POSE 50% · copia PARTES de POSE · zera [PARTES]
+  PARTES: ${Object.keys(PD_PARTES).join(", ")}.
+  Exemplo:
+    pose "pedido" de empe salvar
+      ajoelha direito
+      ombro.direito(frente 70) cotovelo.direito(dobra 20)
+      olha cima 15
+CHAVES COM JUNTAS:  chave 0.4s ombro.direito(frente 90) cotovelo.direito(dobra 20) agacha 30%
+  "move frente/lado/giro" numa chave: frente + = para onde ele olha; lado + = para a ESQUERDA dele; giro + = vira para a esquerda dele (metros e graus).
+  Um atalho ou junta escrito depois de outro na mesma pose vale por cima (ex.: cabeca(gira-esquerda 30) e depois "olha frente" = a cabeça volta à frente).
+CICLO A PARTIR DE UMA POSE (andar, correr, engatinhar…):
+  ciclo "nome" de POSE [duracao 1s] [corre] [passagem POSE|auto] [anda 1.4m] [voo 5cm] [salvar]
+    (linhas com recuo ajustam a pose antes, como num bloco pose)
+  Faz A → passagem → A ESPELHADA → passagem espelhada → A, em loop. "troca pernas por pose X" leva junto a altura do corpo da pose (ajoelhado fica no chão). A passagem automática: a perna de trás passa dobrada, a de apoio estica (em pé).
+  O pé da frente de A é o apoio até a passagem (pés presos). "anda" = metros por ciclo (padrão: a distância entre os pés da pose × 2).
+ANIMAÇÃO A PARTIR DE OUTRA (derivar):
+  animacao "nova" de OUTRA [salvar]        e, com recuo, uma operação por linha (valem em ordem):
+    troca PARTES por pose POSE [fixo]      as partes partem da pose, com o movimento original por cima ("fixo" = paradas). Trocar as pernas tira os pés presos e gira no lugar.
+    troca PARTES por anima OUTRA           as partes vêm de outra animação
+    soma junta(…) | soma ATALHO             soma um ajuste na animação toda (soma tronco(frente 25))
+    tira PARTES                             tira partes (ficam como o personagem estiver)
+    chave 0.5s junta(…)                     uma chave nova só com o que for dito
+    trecho 0.2s a 0.8s | trecho 25% a 75%   fica só com um pedaço (lugar e giro recomeçam dali)
+    ate 90 | ate metade | ate 0.5s          nos giros: corta no ângulo exato (15, 30, 45, 60, 90, 180…) e pousa os dois pés
+    reverte · espelha · repete 3 · vai-e-volta · amplitude 70% [PARTES] · estica 2s · velocidade 1.5
+  Exemplos:
+    animacao "girar-ajoelhado" de girar360E salvar
+      troca pernas por pose ajoelhado
+    animacao "giro45" de girar360D
+      ate 45
+JUNTAR E CAMADA (no cabeçalho):
+  animacao "combo" junta A, B, C [mistura 0.2s]          uma depois da outra; o lugar e o giro continuam de onde a anterior parou
+  animacao "andar-acenando" camada A [PARTES] + B [PARTES]  ao mesmo tempo: B manda nas partes dele (ou nas pedidas), A no resto
+  Animação relativa + absoluta juntas: tudo vira absoluto a partir de em pé. Um ciclo em loop (andarCiclo) dentro de "camada" continua andando enquanto a outra toca.
+  PARTES valem com hífen ou juntas: braco-direito = bracoDireito. Nos modelos de sintaxe, [colchetes] = opcional (não se escreve o colchete).
+  Uma animação pode usar outra escrita mais abaixo no texto (é lida numa segunda volta).
+MOVIMENTOS PRONTOS (no quadro, como "gira" e "anda-ate"):
+  Kai pula [${Object.keys(LC_PULOS).join("|")}] [1m] [altura 40cm] [direita|esquerda]   (antecipação, voo no tempo da gravidade, aterrissagem amortecida)
+  Kai mergulha [altura 0.5m] [fundo 1m]     (da borda, de cabeça)
+  Kai nada [${Object.keys(LC_NADO).join("|")}] [3m]   (de costas ele se deita para trás e vai na direção da CABEÇA = para trás de onde estava virado:
+    para nadar de costas rumo ao norte, vire-o para o sul antes — "gira 180 nada costas 4m"). Ele parte em pé (deitar é com ele); se terminar fora da água, aviso.
+  Kai engatinha [2m] · Kai rasteja [2m] · Kai anda-agachado [2m] · Kai cai frente|tras|lado · Kai levanta-se [de costas|brucos] · Kai rola direita|esquerda [2 voltas]
+  Na biblioteca: puloLugar, puloFrente, puloAlto, puloLado, puloCorrida, mergulhar, nadarCrawl…, engatinhar, rastejar, andarAgachado, cairFrente…, levantarDeBrucos, levantarDeCostas, rolarDireita, rolarEsquerda.
+ÁGUA: no local, a peça "agua" (ex.: agua "piscina" em (0,0) tamanho 6x10x1.4) tem a superfície no TOPO dela. Quem "nada" dentro dela fica na linha da água;
+  a legenda diz até onde a água chega (tornozelos, joelhos, cintura, peito, pescoço, submerso, nadando, boiando). Nadar fora da água vira aviso.
+LIMITES: a água é só desenho (sem respingo físico nem empuxo); nado e mergulho são ciclos animados; rolar e engatinhar não desviam de nada;
+  "troca pernas" numa animação com pés presos gira no lugar (os joelhos não ficam presos no chão como os pés).
+
+15. EXEMPLO COMPLETO
 ${EXEMPLO_NAME}`;
 }
 
@@ -390,11 +455,22 @@ LOCAIS SALVOS (nome, marcas, regiões):
 
 HISTÓRIA:
 `,
+  "Pose em texto → código": `Escreva a pose descrita abaixo como um bloco "pose" da DSL do GeoMannequin (capítulo 14 do manual).
+- Comece de uma pose pronta parecida (pose "nome" de passo / de guardaLuta / de empe …).
+- Ajuste junta por junta: ombro.direito(frente 40, abre 10) · cotovelo.esquerdo(dobra 90) · quadril.direito(frente 30) · joelho.esquerdo(dobra 25) · tronco(gira-esquerda 10) · cabeca(baixa 15) · mao.direito(fecha 80%).
+- Use os atalhos quando couber: agacha 50% · ajoelha direito · peso esquerdo · inclina frente 20 · olha baixo · espelha bracos.
+- Lado = do PERSONAGEM (direito dele). Valor sozinho = fica nele; +10/-10 = soma. Respeite os limites da tabela de juntas.
+- Termine o cabeçalho com "salvar" se a pose for para a biblioteca.
+Responda SÓ com o código, num bloco de código.
+
+POSE:
+`,
   "Movimento em texto → animação": `Converta a descrição de movimento abaixo numa ANIMAÇÃO na DSL do GeoMannequin (capítulos 12 e 13 do manual).
 - Se for virar ou girar, use as palavras prontas: "gira 360 passos direita", "vira-para Mira passos", "gira 360 pivo|luta|salto". Se for ir até alguém: "anda-ate Mira [correndo]". Para olhar: "olha Mira [so-cabeca|so-olhos|corpo]".
 - Se for um movimento próprio, escreva um bloco: animacao "nome" duracao Xs [relativa] [fps 24] [em-dois] [velocidade 1] tags "Categoria/Sub" salvar
   com linhas "chave Ts …" (pose, gesto, atitude, expressao, ajustes como "pe direito 15cm para direita", move frente/lado/giro, olha, segurar 0.3s, fala).
 - Pense na ordem do corpo: olhos e cabeça antes, depois ombros/tronco, pelve e pés; antecipação (um pouco para o lado contrário) antes do movimento grande e um pequeno exagero no fim.
+- Para ciclos (andar, correr, engatinhar): faça UMA pose e "ciclo "nome" de POSE". Para variar uma animação existente: animacao "nova" de OUTRA + troca/soma/ate/trecho/espelha (capítulo 14). Pular/nadar/mergulhar/rolar: use as palavras prontas.
 - Use "relativa" quando o movimento deve valer a partir de qualquer pose (ex.: abaixar a cabeça). Tags hierárquicas (Locomocao/Virar, Conversa/Explicar, Ajuste/Pe).
 Responda SÓ com o código, num bloco de código.
 

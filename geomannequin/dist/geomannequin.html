@@ -530,6 +530,29 @@ body.qd-aberto{overflow:hidden}
 .an-lista{list-style:none;margin:0;padding:0;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:4px}
 .an-lista li{display:flex;flex-direction:column;gap:2px;border:1px solid var(--rule);border-radius:6px;padding:5px 8px;background:var(--panel)}.an-lista small{color:var(--muted)}
 .an-partes{display:flex;flex-wrap:wrap;gap:4px 10px}.an-partes label{font-size:12px}
+/* editor de texto: poses e animações (popup com miniatura, ajuda dos parênteses, F1, prévia ao vivo) */
+.nm-ac.rico{width:300px;max-height:300px;padding:4px;font:12px/1.35 var(--font-mono)}
+.nm-ac.rico li{display:flex;gap:8px;align-items:center;padding:3px 6px;white-space:normal}
+.nm-ac-mini{flex:none;width:36px;height:36px;color:var(--ink);border-radius:4px;background:var(--paper)}
+.nm-ac.rico li.sel .nm-ac-mini{color:var(--ink)}
+.nm-ac-mini.vazio{display:none}.nm-ac-mini svg{width:100%;height:100%;display:block}
+.nm-ac-tx{display:flex;flex-direction:column;min-width:0}.nm-ac-tx b{font-weight:600}.nm-ac-tx small{opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.nm-ac-lado{position:absolute;z-index:6;width:184px;padding:8px;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);font:12px/1.4 var(--font-mono);display:flex;flex-direction:column;gap:3px}
+.nm-ac-lado small{color:var(--muted)}.nm-ac-big{color:var(--ink);background:var(--paper);border-radius:4px}.nm-ac-big svg{display:block;width:100%;height:auto;max-height:168px}
+.nm-sig{position:absolute;z-index:6;max-width:min(560px,92%);padding:5px 9px;border-radius:5px;background:var(--ink);color:var(--paper);font:11.5px/1.45 var(--font-mono);white-space:normal;pointer-events:none}
+.nm-ajuda{position:absolute;right:8px;bottom:8px;z-index:7;width:min(440px,92%);max-height:65%;overflow:auto;padding:8px 30px 8px 10px;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);font:12.5px/1.45 var(--font-mono)}
+.nm-ajuda p{margin:.2em 0}.nm-ajuda pre{margin:.2em 0;padding:4px 6px;background:var(--field);border-radius:4px;white-space:pre-wrap}.nm-ajuda-x{position:absolute;top:4px;right:4px;padding:0 6px}
+.nm-j{color:var(--coral);font-weight:600}
+.nm-fix{margin-left:6px;font-size:11px;padding:0 6px}
+.pd-prev{width:100%;display:flex;flex-direction:column;gap:8px;padding:8px;color:var(--ink)}
+.pd-vistas{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.pd-vistas figure,.pd-quadros figure{margin:0;text-align:center;font:11px var(--font-mono);color:var(--muted)}
+.pd-vistas svg{width:150px;height:150px;color:var(--ink)}
+.pd-tela{position:relative;display:flex;justify-content:center}.pd-tela svg{width:220px;height:220px;color:var(--ink)}
+.pd-mov{position:absolute;left:4px;bottom:2px;font:11px var(--font-mono);color:var(--muted)}
+.pd-ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.pd-ctl input[type=range]{flex:1;min-width:120px}.pd-ctl output{font:12px var(--font-mono);min-width:56px}
+.pd-tira svg{display:block;width:100%;height:auto;color:var(--ink)}.pd-info{margin:0;font:11.5px/1.4 var(--font-mono);color:var(--muted)}
+.pd-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.pd-quadros{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}.pd-quadros svg{width:100%;height:auto}
 
 /* GeoMannequin — modo de estudo anatômico V4.2 (folha técnica vetorial).
  * Responsivo, acessível e isolado do palco/editor existentes. */
@@ -8180,6 +8203,7 @@ pre.cmdout .ok{color:var(--cobalt)}
         if (h.length > 2) svg += '<path d="M' + h.map((q) => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:none;stroke:' + pal.ink + ';stroke-width:1.6;stroke-linejoin:round"/>';
       }
     }
+    if (o.tipo === "agua" || o.classe === "agua") svg = '<g opacity="0.5">' + svg + "</g>";
     return { svg, sombra, z: (() => {
       const z = zDasFaces(faces);
       if (z && FINO) z.fino = zDasFaces(faces, 1);
@@ -10449,8 +10473,8 @@ pre.cmdout .ok{color:var(--cobalt)}
         d = vNorm(p);
       } else if (c.repetir.modo === "aleatorio") p = vAdd(p, [(r() - 0.5) * c.repetir.raio, (r() - 0.5) * c.repetir.raio, (r() - 0.5) * c.repetir.raio]);
       else if (j > 0 && c.forma !== "aneis" && c.forma !== "degraus") {
-        const esc8 = (c.caminho.raio || 1) * 0.5 + c.caminho.comprimento * 0.08;
-        p = vAdd(p, [(r() - 0.5) * j * esc8, (r() - 0.5) * 2 * j * esc8, (r() - 0.5) * 2 * j * esc8]);
+        const esc9 = (c.caminho.raio || 1) * 0.5 + c.caminho.comprimento * 0.08;
+        p = vAdd(p, [(r() - 0.5) * j * esc9, (r() - 0.5) * 2 * j * esc9, (r() - 0.5) * 2 * j * esc9]);
       }
       lugares.push({ t, p, d, i });
     }
@@ -12580,13 +12604,13 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (p._ativo || FINO || lanc && lanc.length || L3.instancias === false) return null;
     const v = visada(p), k = chaveInstancia(L3, o, v) + (fast ? "§r" : ""), ent = INST.get(k);
     if (!ent || ent.p._id !== void 0 && ent.p._id === p._id) return { k };
-    const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc8 = b[3] / a[3], r = ent.res;
-    const tr = (s) => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc8.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
+    const a = telaDoMundo(ent.p, [ent.p.wx || 0, 0, ent.p.wz || 0]), b = telaDoMundo(p, [p.wx || 0, 0, p.wz || 0]), esc9 = b[3] / a[3], r = ent.res;
+    const tr = (s) => s ? '<g transform="translate(' + b[0].toFixed(1) + " " + b[1].toFixed(1) + ") scale(" + esc9.toFixed(4) + ") translate(" + (-a[0]).toFixed(1) + " " + (-a[1]).toFixed(1) + ')">' + s + "</g>" : "";
     ESTAT.instancias = (ESTAT.instancias || 0) + 1;
     let bb = null;
     const S = effScale(p);
     if (r.info.bb && S > 0) {
-      const X = (v2) => ((CX + S * v2 - a[0]) * esc8 + b[0] - CX) / S, Y = (v2) => (CY - ((CY - S * v2 - a[1]) * esc8 + b[1])) / S;
+      const X = (v2) => ((CX + S * v2 - a[0]) * esc9 + b[0] - CX) / S, Y = (v2) => (CY - ((CY - S * v2 - a[1]) * esc9 + b[1])) / S;
       bb = [X(r.info.bb[0]), X(r.info.bb[1]), Y(r.info.bb[2]), Y(r.info.bb[3])];
     }
     return { pronta: { svg: tr(r.svg), sombra: tr(r.sombra), info: Object.assign({}, r.info, { depth: r.info.depth + (b[2] - a[2]), handles: [], bb, instancia: true }), z: null, fast: r.fast } };
@@ -17494,17 +17518,17 @@ pre.cmdout .ok{color:var(--cobalt)}
     const out = [], vistos = /* @__PURE__ */ new Set();
     for (let i = 0; i < vis.length; i++) for (let j = 0; j < vis.length; j++) {
       if (i === j || contatoPermitido(vis[i], vis[j])) continue;
-      let tang = null, esc8 = null;
+      let tang = null, esc9 = null;
       for (const a of T3[i]) {
         if (!EXTREM.test(a.nome)) continue;
         for (const b of T3[j]) {
           const r = segSeg(a.a, a.b, b.a, b.b), gap = r.d - (a.r + b.r);
           if (Math.abs(gap) < 2.5 && (!tang || Math.abs(gap) < tang.gap)) tang = { gap: Math.abs(gap), pa: a.nome, pb: b.nome, pt: r.p };
-          if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc8 = { pb: b.nome, pt: a.a };
+          if (a.nome === "cabeca" && b.z > a.z + 0.5 && r.d < b.r - 0.25 * a.r) esc9 = { pb: b.nome, pt: a.a };
         }
       }
       const A = SCN.list.indexOf(vis[i]), B3 = SCN.list.indexOf(vis[j]);
-      if (esc8) out.push({ tipo: "escondida", a: A, b: B3, pt: esc8.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc8.pb] + " de " + vis[j].name });
+      if (esc9) out.push({ tipo: "escondida", a: A, b: B3, pt: esc9.pt, texto: "cabeça de " + vis[i].name + " fica escondida atrás de " + PARTES[esc9.pb] + " de " + vis[j].name });
       else if (tang && !vistos.has(Math.min(i, j) + "-" + Math.max(i, j)) && vistos.add(Math.min(i, j) + "-" + Math.max(i, j))) out.push({ tipo: "tangencia", a: A, b: B3, pt: tang.pt, texto: PARTES[tang.pa] + " de " + vis[i].name + " encosta no contorno de " + PARTES[tang.pb] + " de " + vis[j].name + " (tangência)" });
     }
     return out;
@@ -25338,6 +25362,10 @@ log(cena.vinculos());`,
     add3('- Olhar natural (olhos ±35° → cabeça ±60° → tronco → corpo): `olharNatural(it, "Mira" | "camera" | [x,y,z], { modo: "natural" | "so-cabeca" | "so-olhos" | "corpo" })` → `{ alcancou, erro, virouCorpo }`. MCP: `olhar`. DSL: `Kai olha Mira [so-cabeca|so-olhos|corpo]`; `dialogo A, B [de-frente|lado-a-lado|aberto|livre]` já vira os corpos e confere os olhares (aviso se faltar mais de 10°).');
     add3('- Girar no lugar com os pés: `animacaoGiro({ angulo: 360, estilo: "passos" | "pivo" | "luta" | "salto" })` (+ = esquerda do personagem); o pé de apoio fica preso (`travarPes`, chave `apoio`). Andar até: `animacaoAndarAte(it, [x, z])`. MCP: `girar`, `andar_ate`. DSL: `gira 360 passos direita`, `vira-para Mira passos`, `anda-ate Mira [correndo]`.');
     add3("- Tempo: fps 1–60, `em-dois`/`em-tres`, `velocidade`, `segurar 0.3s`, `video fps 24 em-dois` no topo do name, `camera 1.5s plano close alvo Kai` (câmera no tempo). No vídeo a boca segue a fala, todos piscam e respiram e esbarrões viram aviso.\n");
+    add3("## 7l. Poses e animações por texto");
+    add3('Linguagem de juntas (capítulo 14 do manual do name): pose "nome" de OUTRA salvar + linhas junta.lado(movimento valor) — ombro.direito(frente 40), joelho.esquerdo(dobra 30), tronco(gira-esquerda 10); valor sozinho = fica nele, +10/-10 = soma. Atalhos: agacha 50%, ajoelha direito, peso esquerdo, inclina frente 20, olha baixo, sobe 30cm, deita costas, espelha bracos, mistura POSE 50%, copia PARTES de POSE, zera PARTES.');
+    add3('Ciclo de UMA pose: ciclo "andar" de POSE [duracao 1s] [corre] (A → passagem → A espelhada → passagem, loop). Derivar: animacao "nova" de OUTRA + troca PARTES por pose X [fixo] · soma junta(…) · tira PARTES · chave 0.5s … · trecho 0.2s a 0.8s · ate 90 (giros: corta no ângulo e pousa os pés) · reverte · espelha · repete 3 · vai-e-volta · amplitude 70% · estica 2s. Cabeçalho: junta A, B mistura 0.2s · camada A + B bracos.');
+    add3('Movimentos: Kai pula frente 1m altura 40cm · mergulha · nada crawl|peito|costas|cachorrinho|boia|pernada 3m · engatinha · rasteja · anda-agachado · cai frente|tras|lado · levanta-se · rola direita 2 voltas. Água = peça "agua" do local (superfície no topo). Funções: pdAplicarJunta, pdCiclo, pdTroca, pdAteAngulo, pdJuntar, pdCamada, lcPulo, lcNadar, pdCompletar (o que vem depois do ponto). MCP: pose_texto, animacao_texto, derivar_animacao, ciclo_de_pose, pular, nadar, mergulhar, movimento, completar.');
     add3("## 7h. Corpo: cinta, criança e tamanho");
     add3("- `cinta` (0–1, padrão 1): glúteos e virilha lisos com um cós, como peça de manequim (sem sugerir nudez); 0 volta à anatomia com a fenda.");
     add3('- `m.corpo("crianca" | "menino" | "menina")`: proporções de criança (≈ 6 cabeças, ombros estreitos, sem músculo) e o corpo menor (`tamanho` ≈ 0,66). `tamanho` (0,45–1,3) escala o corpo inteiro com os pés no chão (gigante, anão, criança).');
@@ -30535,9 +30563,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return { fps, passo, tempos: out, quadros: n2, desenhos: Math.ceil(n2 / passo) };
   }
   function amostrar(a, t, base2) {
-    const tt = a.loop ? (t % a.duracao + a.duracao) % a.duracao : Math.max(0, Math.min(a.duracao, t)), ch = a.chaves, out = {}, rel = a.modo === "relativa";
+    const tt = a.loop ? (t % a.duracao + a.duracao) % a.duracao : Math.max(0, Math.min(a.duracao, t)), ch = a.chaves, out = {}, rel0 = a.modo === "relativa", absK = new Set(a.absolutos || []);
     const chavesUsadas = new Set(ch.flatMap((c) => Object.keys(c.valores)));
     for (const k of chavesUsadas) {
+      const rel = rel0 && !absK.has(k);
       let i0 = -1, i1 = -1;
       for (let i = 0; i < ch.length; i++) if (k in ch[i].valores) {
         if (ch[i].t <= tt) i0 = i;
@@ -30918,7 +30947,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         const lst = lead === "L" ? "R" : "L";
         add3(t + 0.15, vf, th, [F3[lst][0] - pf[0], F3[lst][1] - pf[1]], { apoio: "ambos" });
       }
-      return criarAnimacao({ nome, duracao: t + 0.15, modo: "relativa", curva: "suave", pesFixos: true, travarPes: true, escalarPeloCorpo: true, tags: ["Locomocao/Virar/" + (estilo === "luta" ? "Luta" : "Passos")], descricao: "gira " + Math.abs(A) + "° para a " + (sg > 0 ? "esquerda" : "direita") + " com " + n2 + " passos", chaves });
+      return criarAnimacao({ nome, duracao: t + 0.15, modo: "relativa", curva: "suave", pesFixos: true, travarPes: true, escalarPeloCorpo: true, tags: ["Locomocao/Virar/" + (estilo === "luta" ? "Luta" : "Passos")], descricao: "gira " + Math.abs(A) + "° para a " + (sg > 0 ? "esquerda" : "direita") + " com " + n2 + (n2 > 1 ? " passos" : " passo"), chaves });
     }
     if (estilo === "pivo" || estilo === "pirueta") {
       const piv = sg > 0 ? "R" : "L", liv = piv === "R" ? "L" : "R", P0 = piv === "R" ? PE_R : PE_L, voltas = Math.abs(A), dGiro = o.duracaoGiro || Math.max(0.5, voltas / 360 * 0.8);
@@ -30961,7 +30990,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     const local = (p) => mvRot(-g0, [p[0] / MV_M, p[1] / MV_M]);
     let pontos = [[0, 0], local([dxW, dzW])];
     const obs = SCN.objetos.find((ob) => {
-      if (ob.chao || ob.alt < 3) return false;
+      if (ob.chao || ob.tipo === "agua" || ob.alt < 3) return false;
       for (let k = 1; k < 10; k++) {
         const u = k / 10, x = (Q.wx || 0) + dxW * u, z = (Q.wz || 0) + dzW * u;
         if (Math.abs(x - ob.x) < (ob.larg || 2) / 2 + 2.5 && Math.abs(z - ob.z) < (ob.prof || 2) / 2 + 2.5) return true;
@@ -31020,6 +31049,1231 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return L3;
   }
   registrarProntas(registrarGiros);
+
+  // src/scene/pose-dsl.js
+  var PD_M = 1 / 0.114;
+  var pdNorm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[_\s]+/g, "-");
+  function pdErro(msg6, linha) {
+    const e = new Error(msg6);
+    e.linha = linha;
+    return e;
+  }
+  var PD_JUNTAS = {
+    ombro: {
+      apelidos: ["braco", "braço"],
+      lado: true,
+      k: "ombro",
+      regiao: "braco",
+      desc: "o braço inteiro, a partir do ombro",
+      mov: { frente: ["armFlex", 1], tras: ["armFlex", -1], abre: ["armAbd", 1], cruza: ["armAbd", -1], "gira-fora": ["armRot", 1], "gira-dentro": ["armRot", -1], sobe: ["shElev", 1, "p"], desce: ["shElev", -1, "p"], avanca: ["shProt", 1, "p"], recua: ["shProt", -1, "p"] }
+    },
+    cotovelo: { lado: true, k: "cotovelo", regiao: "braco", desc: "dobrar o braço", mov: { dobra: ["elbow", 1], estica: ["elbow", 0, "zero"] } },
+    antebraco: { apelidos: ["antebraço"], lado: true, k: "cotovelo", regiao: "braco", desc: "virar a palma", mov: { "palma-cima": ["pron", 1], "palma-baixo": ["pron", -1] } },
+    punho: { lado: true, k: "punho", regiao: "mao", desc: "a mão em relação ao antebraço", mov: { dobra: ["wrist", 1], levanta: ["wrist", -1], "lado-polegar": ["wristDev", 1], "lado-minimo": ["wristDev", -1] } },
+    mao: {
+      apelidos: ["mão"],
+      lado: true,
+      k: "punho",
+      regiao: "mao",
+      desc: "abrir, fechar e cada dedo (100% = fechado)",
+      mov: { fecha: ["handCurl", 1, "p"], abre: ["handCurl", 0, "zero"], afasta: ["fSpread", 1, "p"], polegar: ["fTh", 1, "p"], indicador: ["fIn", 1, "p"], medio: ["fMe", 1, "p"], anelar: ["fAn", 1, "p"], minimo: ["fMi", 1, "p"], opoe: ["thumbOpp", 1, "p"] }
+    },
+    quadril: {
+      apelidos: ["coxa", "perna"],
+      lado: true,
+      k: "quadril",
+      regiao: "perna",
+      desc: "a perna inteira, a partir do quadril",
+      mov: { frente: ["hipFlex", 1], tras: ["hipFlex", -1], abre: ["hipAbd", 1], fecha: ["hipAbd", -1], "gira-fora": ["hipRot", 1], "gira-dentro": ["hipRot", -1] }
+    },
+    joelho: { lado: true, k: "joelho", regiao: "perna", desc: "dobrar a perna", mov: { dobra: ["kneeFlex", 1], estica: ["kneeFlex", 0, "zero"] } },
+    canela: { lado: true, k: "joelho", regiao: "perna", desc: "girar a canela (com o joelho dobrado)", mov: { gira: ["tibiaRot", 1] } },
+    tornozelo: {
+      apelidos: ["pe", "pé"],
+      lado: true,
+      k: "tornozelo",
+      regiao: "pe",
+      desc: "o pé em relação à perna",
+      mov: { aponta: ["ankleFlex", 1], "levanta-ponta": ["ankleFlex", -1], "sola-dentro": ["ankleTilt", 1], "sola-fora": ["ankleTilt", -1], "ponta-dentro": ["footAdd", 1], "ponta-fora": ["footAdd", -1] }
+    },
+    "dedos-pe": { apelidos: ["dedos-do-pe"], lado: true, k: "tornozelo", regiao: "pe", desc: "os dedos do pé", mov: { dobra: ["toes", 1], levanta: ["toes", -1] } },
+    tronco: {
+      apelidos: ["coluna"],
+      k: "toracica",
+      regiao: "tronco",
+      desc: "a coluna inteira",
+      mov: { frente: ["spineFlex", 1], tras: ["spineFlex", -1], direita: ["spineSide", 1], esquerda: ["spineSide", -1], "gira-esquerda": ["spineTwist", 1], "gira-direita": ["spineTwist", -1] }
+    },
+    lombar: { k: "lombar", regiao: "tronco", desc: "só a parte de baixo da coluna", mov: { frente: ["lumFlex", 1], tras: ["lumFlex", -1], direita: ["lumSide", 1], esquerda: ["lumSide", -1], "gira-esquerda": ["lumTwist", 1], "gira-direita": ["lumTwist", -1] } },
+    peito: { apelidos: ["toracica", "torácica"], k: "toracica", regiao: "tronco", desc: "só a parte de cima da coluna", mov: { frente: ["thoFlex", 1], tras: ["thoFlex", -1], direita: ["thoSide", 1], esquerda: ["thoSide", -1], "gira-esquerda": ["thoTwist", 1], "gira-direita": ["thoTwist", -1] } },
+    pelve: { apelidos: ["bacia"], k: "pelve", regiao: "tronco", desc: "a bacia", mov: { frente: ["pelvisTilt", 1], tras: ["pelvisTilt", -1], direita: ["pelvisSide", 1], esquerda: ["pelvisSide", -1], "gira-esquerda": ["pelvisTwist", 1], "gira-direita": ["pelvisTwist", -1] } },
+    pescoco: { apelidos: ["pescoço"], k: "cervical", regiao: "cabeca", desc: "o pescoço", mov: { frente: ["neckFlex", 1], tras: ["neckFlex", -1], direita: ["neckSide", 1], esquerda: ["neckSide", -1], "gira-esquerda": ["neckTwist", 1], "gira-direita": ["neckTwist", -1] } },
+    cabeca: { apelidos: ["cabeça"], k: "cabeca", regiao: "cabeca", desc: "a cabeça", mov: { baixa: ["headPitch", 1], sobe: ["headPitch", -1], "gira-esquerda": ["headYaw", 1], "gira-direita": ["headYaw", -1], "inclina-direita": ["headRoll", 1], "inclina-esquerda": ["headRoll", -1] } },
+    olhos: { k: "rosto", regiao: "cabeca", desc: "para onde os olhos olham (100% = o máximo)", mov: { esquerda: ["eyeYaw", 1, "p"], direita: ["eyeYaw", -1, "p"], cima: ["eyePitch", 1, "p"], baixo: ["eyePitch", -1, "p"], fecha: ["eyeLid", 1, "p"] } },
+    boca: { k: "rosto", regiao: "cabeca", desc: "boca", mov: { abre: ["jawOpen", 1, "p"], sorri: ["smile", 1, "p"], triste: ["smile", -1, "p"] } },
+    corpo: { k: "pelve", regiao: "tronco", desc: "o corpo inteiro (deitar, rolar, subir do chão)", mov: { "deita-costas": ["bodyPitch", -1], "deita-brucos": ["bodyPitch", 1], rola: ["bodyRoll", 1], sobe: ["bodyLift", 1, "cm"] } }
+  };
+  var PD_JUNTA_DE = {};
+  for (const [k, j] of Object.entries(PD_JUNTAS)) {
+    PD_JUNTA_DE[k] = k;
+    (j.apelidos || []).forEach((a) => {
+      PD_JUNTA_DE[pdNorm(a)] = k;
+    });
+  }
+  var PD_LADOS = { direito: "R", direita: "R", dir: "R", d: "R", r: "R", esquerdo: "L", esquerda: "L", esq: "L", e: "L", l: "L", ambos: "LR", "os-dois": "LR", dois: "LR" };
+  function pdJunta(nome) {
+    return PD_JUNTA_DE[pdNorm(nome)] || null;
+  }
+  function pdFaixaMov(junta2, mov, lado2) {
+    const j = PD_JUNTAS[junta2], m = j && j.mov[mov];
+    if (!m) return "";
+    const k = m[0] + (j.lado ? lado2 === "L" ? "L" : "R" : ""), [a, b] = faixa(k, 0), u = m[2] || "g";
+    if (u === "zero") return "volta a 0";
+    if (u === "cm") return "0–" + Math.round(b / PD_M * 100) + " cm";
+    const lim = m[1] >= 0 ? b : -a;
+    return u === "p" ? "0–" + Math.round(lim * 100) + "%" : "0–" + Math.round(lim) + "°";
+  }
+  function pdAplicarJunta(Q, junta0, lado0, args, linha) {
+    const junta2 = pdJunta(junta0);
+    if (!junta2) throw pdErro("Junta “" + junta0 + "” não existe. Juntas: " + Object.keys(PD_JUNTAS).join(", ") + ".", linha);
+    const J = PD_JUNTAS[junta2], avisos = [];
+    let lados = [""];
+    if (J.lado) {
+      const l = lado0 ? PD_LADOS[pdNorm(lado0)] : "LR";
+      if (!l) throw pdErro(junta2 + "." + lado0 + ": o lado é direito, esquerdo ou ambos.", linha);
+      lados = l.split("");
+    } else if (lado0) throw pdErro("“" + junta2 + "” não tem lado (escreva só " + junta2 + "(…)).", linha);
+    const pal = String(args || "").replace(/,/g, " ").trim().split(/\s+/).filter(Boolean);
+    if (!pal.length) throw pdErro(junta2 + "(…): diga o movimento, ex.: " + junta2 + (J.lado ? ".direito" : "") + "(" + Object.keys(J.mov)[0] + " 30).", linha);
+    for (let i = 0; i < pal.length; i++) {
+      const w = pdNorm(pal[i]), m = J.mov[w];
+      if (!m) {
+        let sug = null, bd = 1e9;
+        for (const x of Object.keys(J.mov)) {
+          const d = pdLev(w, x);
+          if (d < bd) {
+            bd = d;
+            sug = x;
+          }
+        }
+        if (bd > Math.max(2, w.length * 0.4)) sug = null;
+        throw pdErro(junta2 + ": movimento “" + pal[i] + "” não existe." + (sug ? " Quis dizer “" + sug + "”?" : "") + " Movimentos: " + Object.keys(J.mov).join(", ") + ".", linha);
+      }
+      let num3 = null, rel = false, pct = false, cm = false;
+      const nx = pal[i + 1], mm = nx && /^([+-]?)(\d+(?:[.,]\d+)?)(%|°|º|cm|m)?$/.exec(nx);
+      if (mm) {
+        num3 = parseFloat(mm[2].replace(",", "."));
+        rel = !!mm[1];
+        if (mm[1] === "-") num3 = -num3;
+        pct = mm[3] === "%";
+        cm = mm[3] === "cm" || mm[3] === "m";
+        if (mm[3] === "m") num3 *= 100;
+        i++;
+      }
+      const tipo = m[2] || "g";
+      for (const L3 of lados) {
+        const k = m[0] + L3;
+        if (!(k in SLK) && !POSEKEYS.has(k)) continue;
+        let v;
+        if (tipo === "zero") {
+          const ehP = /^(handCurl)$/.test(m[0]);
+          v = num3 === null ? 0 : Math.max(0, (Q[k] || 0) - Math.abs(ehP ? pct || Math.abs(num3) > 1 ? num3 / 100 : num3 : num3));
+        } else {
+          if (num3 === null) {
+            if (tipo === "p") num3 = 1;
+            else throw pdErro(junta2 + " " + w + ": diga quanto (ex.: " + w + " 30" + (tipo === "cm" ? "cm" : "") + ").", linha);
+          }
+          let x = tipo === "p" ? pct || Math.abs(num3) > 1 ? num3 / 100 : num3 : tipo === "cm" ? num3 / 100 * PD_M : num3;
+          v = rel ? (Q[k] || 0) + m[1] * x : m[1] * x;
+        }
+        const [a, b] = faixa(k, Q.flex);
+        if (v < a - 1e-6 || v > b + 1e-6) {
+          avisos.push(junta2 + (J.lado ? "." + (L3 === "R" ? "direito" : "esquerdo") : "") + " " + w + ": passou do limite — fica em " + (v < a ? a : b).toFixed(tipo === "p" ? 2 : 0) + (tipo === "p" ? "" : "°"));
+          v = Math.max(a, Math.min(b, v));
+        }
+        Q[k] = v;
+      }
+    }
+    return avisos;
+  }
+  var PD_RX_JUNTA = /(^|[\s,;])([A-Za-zÀ-ÿ-]+)(?:\.([A-Za-zÀ-ÿ-]+))?\(([^)]*)\)/g;
+  function pdExtrairJuntas(txt) {
+    const juntas = [];
+    const out = String(txt).replace(PD_RX_JUNTA, (m0, pre, j, l, a) => {
+      if (!pdJunta(j)) return m0;
+      juntas.push({ junta: j, lado: l || null, args: a });
+      return pre + "§J" + (juntas.length - 1) + " ";
+    });
+    return { txt: out, juntas };
+  }
+  function pdBase() {
+    const b = SCN.list && SCN.list[0] ? anSemCamera(SCN.list[0].params) : {};
+    return anPoseValores("empe", b);
+  }
+  function pdTodasPoses(ctx) {
+    return [...ctx && ctx.poses ? [...ctx.poses.keys()] : [], ...posesSalvas().map((p) => p.nome), ...todasPoses()];
+  }
+  function pdValoresPose(nome, base2, ctx, linha) {
+    const n2 = pdNorm(nome);
+    if (ctx && ctx.poses) {
+      for (const [k2, v] of ctx.poses) if (pdNorm(k2) === n2) return { nome: k2, valores: Object.assign({}, v), origem: "texto" };
+    }
+    const s = posesSalvas().find((p) => pdNorm(p.nome) === n2);
+    if (s) return { nome: s.nome, valores: Object.assign(anPoseValores("empe", base2 || {}), s.valores), origem: "salva" };
+    const ok3 = todasPoses();
+    let k = nomePose(nome);
+    if (!ok3.includes(k)) {
+      const k2 = ok3.find((x) => pdNorm(x) === n2 || pdNorm(x) === n2.replace(/-/g, ""));
+      if (k2) k = k2;
+    }
+    if (ok3.includes(k)) return { nome: k, valores: anPoseValores(k, base2 || {}), origem: "pronta" };
+    const todas = pdTodasPoses(ctx);
+    let melhor = null, bd = 1e9;
+    for (const x of todas) {
+      const d = pdLev(n2, pdNorm(x));
+      if (d < bd) {
+        bd = d;
+        melhor = x;
+      }
+    }
+    throw pdErro("Pose “" + nome + "” não existe." + (melhor && bd <= Math.max(2, n2.length * 0.4) ? " Quis dizer “" + melhor + "”?" : ""), linha);
+  }
+  function pdLev(a, b) {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+  var PD_PARTES = {
+    pernas: ["pernaDireita", "pernaEsquerda"],
+    bracos: ["bracoDireito", "bracoEsquerdo", "ombros"],
+    maos: ["maoDireita", "maoEsquerda"],
+    tronco: ["tronco"],
+    cabeca: ["cabeca"],
+    ombros: ["ombros"],
+    rosto: ["rosto"],
+    corpo: ["corpo"],
+    lugar: ["lugar"],
+    "perna-direita": ["pernaDireita"],
+    "perna-esquerda": ["pernaEsquerda"],
+    "braco-direito": ["bracoDireito"],
+    "braco-esquerdo": ["bracoEsquerdo"],
+    "mao-direita": ["maoDireita"],
+    "mao-esquerda": ["maoEsquerda"],
+    "corpo-de-cima": ["tronco", "cabeca", "ombros", "bracoDireito", "bracoEsquerdo", "maoDireita", "maoEsquerda"],
+    tudo: ["cabeca", "tronco", "ombros", "bracoDireito", "bracoEsquerdo", "maoDireita", "maoEsquerda", "pernaDireita", "pernaEsquerda", "corpo"]
+  };
+  for (const k of Object.keys(AN_PARTES)) if (!PD_PARTES[pdNorm(k)]) PD_PARTES[pdNorm(k)] = [k];
+  var PD_EXTRA_PARTE = { pernaDireita: ["hipRotR", "footAddR", "tibiaRotR", "halluxR"], pernaEsquerda: ["hipRotL", "footAddL", "tibiaRotL", "halluxL"], corpo: ["ground"] };
+  function pdChavesDasPartes(lista3, linha) {
+    const out = /* @__PURE__ */ new Set();
+    for (const p0 of lista3) {
+      const p = pdNorm(p0).replace(/ç/g, "c"), ps = PD_PARTES[p] || (AN_PARTES[p0] ? [p0] : null);
+      if (!ps) throw pdErro("Parte “" + p0 + "” não existe. Partes: " + Object.keys(PD_PARTES).join(", ") + ".", linha);
+      ps.forEach((q) => {
+        (AN_PARTES[q] || []).forEach((k) => out.add(k));
+        (PD_EXTRA_PARTE[q] || []).forEach((k) => out.add(k));
+      });
+    }
+    return out;
+  }
+  function pdLerPartes(toks, k) {
+    const l = [];
+    while (toks[k] && toks[k].t === "pal" && (PD_PARTES[pdNorm(toks[k].v)] || toks[k].v === "e")) {
+      if (toks[k].v !== "e") l.push(toks[k].v);
+      k++;
+      if (toks[k] && toks[k].v === ",") k++;
+    }
+    return [l, k];
+  }
+  var PD_ATALHOS = ["agacha", "ajoelha", "senta", "peso", "inclina", "olha", "sobe", "deita", "espelha", "mistura", "copia", "so", "zera"];
+  function pdAtalho(Q, toks, k, linha, ctx) {
+    const w = pdNorm(toks[k].v), nx = toks[k + 1], nw = nx ? pdNorm(nx.v) : "", num3 = (t) => t && t.t === "num" ? t : null;
+    const misturar2 = (vals, f, chaves) => {
+      for (const [kk, v] of Object.entries(vals)) if (!chaves || chaves.has(kk)) {
+        if (Number.isFinite(v)) Q[kk] = (Q[kk] || 0) + (v - (Q[kk] || 0)) * f;
+      }
+    };
+    const pct = (t) => t.u === "%" || t.v > 1 ? t.v / 100 : t.v;
+    if (w === "agacha") {
+      let f = 1, kk = k;
+      if (num3(nx)) {
+        f = pct(nx);
+        kk++;
+      }
+      misturar2(anPoseValores("agachar", Q), f, pdChavesDasPartes(["pernas", "tronco", "corpo"]));
+      return kk + 1;
+    }
+    if (w === "ajoelha") {
+      let lado2 = "os-dois", kk = k;
+      if (nx && /^(direito|esquerdo|direita|esquerda|os-dois|ambos)$/.test(nw)) {
+        lado2 = nw;
+        kk++;
+      }
+      let v = anPoseValores(/^(os-dois|ambos)$/.test(lado2) ? "ajoelhado" : "umJoelho", Q);
+      if (!/^(os-dois|ambos)$/.test(lado2)) {
+        const baixo = (v.hipFlexL || 0) < (v.hipFlexR || 0) ? "L" : "R", quer = /^dir/.test(lado2) ? "R" : "L";
+        if (baixo !== quer) v = espelharValores(v);
+      }
+      misturar2(v, 1, pdChavesDasPartes(["pernas", "tronco", "corpo"]));
+      return kk + 1;
+    }
+    if (w === "senta") {
+      let p = "sentadoChao", kk = k;
+      if (nx && /^(chao|cadeira|calcanhares|cocoras)$/.test(nw)) {
+        p = { chao: "sentadoChao", cadeira: "sentado", calcanhares: "sentadoCalcanhares", cocoras: "cocoras" }[nw];
+        kk++;
+      }
+      misturar2(anPoseValores(p, Q), 1, pdChavesDasPartes(["pernas", "tronco", "corpo"]));
+      return kk + 1;
+    }
+    if (w === "peso") {
+      if (!nx || !/^(direito|esquerdo|direita|esquerda)$/.test(nw)) throw pdErro("peso: diga o lado (peso direito / peso esquerdo [70%]).", linha);
+      let I = 1, kk = k + 1;
+      if (num3(toks[kk + 1])) {
+        I = pct(toks[kk + 1]);
+        kk++;
+      }
+      aplicarAtitude({ name: "_pd", params: Q }, /^dir/.test(nw) ? "pesoNaPernaDireita" : "pesoNaPernaEsquerda", { intensidade: I });
+      return kk + 1;
+    }
+    if (w === "inclina") {
+      if (!nx || !/^(frente|tras|direita|esquerda)$/.test(nw)) throw pdErro("inclina: frente, tras, direita ou esquerda + graus (ex.: inclina frente 20).", linha);
+      const v = num3(toks[k + 2]) ? toks[k + 2].v : 15;
+      if (nw === "frente") Q.spineFlex = (Q.spineFlex || 0) + v;
+      else if (nw === "tras") Q.spineFlex = (Q.spineFlex || 0) - v;
+      else Q.spineSide = (Q.spineSide || 0) + (nw === "direita" ? v : -v);
+      return k + (num3(toks[k + 2]) ? 3 : 2);
+    }
+    if (w === "olha" && nx && /^(baixo|cima|direita|esquerda|frente)$/.test(nw)) {
+      const v = num3(toks[k + 2]) ? toks[k + 2].v : 25;
+      if (nw === "frente") {
+        Q.headYaw = 0;
+        Q.headPitch = 0;
+        Q.eyeYaw = 0;
+        Q.eyePitch = 0;
+      } else if (nw === "baixo" || nw === "cima") {
+        const s = nw === "baixo" ? 1 : -1;
+        Q.headPitch = s * v;
+        Q.neckFlex = s * v * 0.3;
+        Q.eyePitch = -s * 0.4;
+      } else {
+        const s = nw === "esquerda" ? 1 : -1;
+        Q.headYaw = s * v;
+        Q.eyeYaw = s * 0.5;
+      }
+      return k + (num3(toks[k + 2]) ? 3 : 2);
+    }
+    if (w === "sobe") {
+      const t = num3(nx);
+      if (!t) throw pdErro("sobe: diga quanto (ex.: sobe 30cm).", linha);
+      Q.bodyLift = (t.u === "m" ? t.v : t.u === "R" ? t.v / PD_M : t.v / 100) * PD_M;
+      Q.ground = 0;
+      return k + 2;
+    }
+    if (w === "deita") {
+      const p = { costas: "deitadoCostas", brucos: "deBrucos", "de-brucos": "deBrucos", lado: "deitadoLado" }[nw];
+      if (!p) throw pdErro("deita: costas, brucos ou lado.", linha);
+      Object.assign(Q, anPoseValores(p, Q));
+      return k + 2;
+    }
+    if (w === "espelha") {
+      const [l, k2] = pdLerPartes(toks, k + 1), ch = l.length ? pdChavesDasPartes(l, linha) : null, esp = espelharValores(Object.fromEntries([...POSEKEYS].filter((kk) => Number.isFinite(Q[kk])).map((kk) => [kk, Q[kk]])));
+      for (const [kk, v] of Object.entries(esp)) {
+        const orig = kk.replace(/L$/, "R").replace(/R$/, "L");
+        if (!ch || ch.has(kk) || ch.has(orig)) Q[kk] = v;
+      }
+      return k2;
+    }
+    if (w === "mistura") {
+      if (!nx) throw pdErro("mistura: mistura POSE 50%.", linha);
+      const p = pdValoresPose(nx.v, Q, ctx, linha), f = num3(toks[k + 2]) ? pct(toks[k + 2]) : 0.5;
+      misturar2(p.valores, f);
+      return k + (num3(toks[k + 2]) ? 3 : 2);
+    }
+    if (w === "copia" || w === "so") {
+      const [l, k2] = pdLerPartes(toks, k + 1);
+      if (!l.length || !toks[k2] || pdNorm(toks[k2].v) !== "de" || !toks[k2 + 1]) throw pdErro(w + ": " + w + " pernas de POSE (ex.: copia bracos de acenando).", linha);
+      const p = pdValoresPose(toks[k2 + 1].v, Q, ctx, linha);
+      misturar2(p.valores, 1, pdChavesDasPartes(l, linha));
+      return k2 + 2;
+    }
+    if (w === "zera") {
+      const [l, k2] = pdLerPartes(toks, k + 1);
+      misturar2(pdBase(), 1, pdChavesDasPartes(l.length ? l : ["tudo"], linha));
+      return k2;
+    }
+    return -1;
+  }
+  var PD_COR_HI = "#e8662c";
+  function pdOssos(params) {
+    try {
+      return ossosDoCorpo(params);
+    } catch (e) {
+      return null;
+    }
+  }
+  function pdParams(valores) {
+    const b = SCN.list && SCN.list[0] ? anSemCamera(SCN.list[0].params) : {};
+    return Object.assign({}, b, pdBase(), valores || {});
+  }
+  function pdProjetar(P3, Q, yaw) {
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), x = P3[0], y = P3[1], z = P3[2];
+    return [x * cy + z * sy, y + (Q.ground === 0 ? Q.bodyLift || 0 : 0), z * cy - x * sy];
+  }
+  function pdDesenho(params, o = {}) {
+    const E5 = pdOssos(params);
+    if (!E5) return null;
+    const yaw = (o.yaw ?? 32) * Math.PI / 180, hi = o.destaque || null, P3 = (q) => pdProjetar(q, params, yaw);
+    const linhas = [], dots = [];
+    let ymin = 1e9;
+    for (const b of E5.ossos) {
+      if (b.tipo === "costela" || b.tipo === "dedo" || b.tipo === "curto" || b.tipo === "plano" && b.nome !== "ílio") continue;
+      const a = P3(b.a), c = P3(b.b), h = hi && b.regiao === hi.regiao && (hi.s === void 0 || b.s === hi.s || b.s === 0 && hi.regiao === "tronco");
+      ymin = Math.min(ymin, a[1], c[1]);
+      linhas.push({ a, c, h, cr: b.tipo === "cranio" ? b.r : 0, w: b.tipo === "coluna" ? 1.4 : /mão|metacarpo|metatarso/.test(b.nome) ? 1.2 : 2.1, z: (a[2] + c[2]) / 2 });
+    }
+    if (hi && hi.k) {
+      for (const j of E5.juntas) if (j.k === hi.k && (hi.s === void 0 || j.s === hi.s || j.s === 0)) dots.push(P3(j.P));
+    }
+    return { linhas, dots, ymin };
+  }
+  function pdSvgCorpo(D3, ox, oy, s, cls) {
+    const X = (p) => (ox + p[0] * s).toFixed(1), Y = (p) => (oy - p[1] * s).toFixed(1);
+    const ord = D3.linhas.slice().sort((a, b) => a.z - b.z);
+    return ord.map((l) => l.cr ? '<circle cx="' + X(l.a) + '" cy="' + Y(l.a) + '" r="' + Math.max(2.2, l.cr * s * 0.95).toFixed(1) + '" fill="none" stroke="' + (l.h ? PD_COR_HI : "currentColor") + '" stroke-width="1.5"/>' : '<line x1="' + X(l.a) + '" y1="' + Y(l.a) + '" x2="' + X(l.c) + '" y2="' + Y(l.c) + '" stroke="' + (l.h ? PD_COR_HI : "currentColor") + '" stroke-width="' + (l.h ? l.w + 1 : l.w) + '" stroke-linecap="round" opacity="' + (l.z < -0.2 && !l.h ? 0.55 : 1) + '"/>').join("") + D3.dots.map((p) => '<circle cx="' + X(p) + '" cy="' + Y(p) + '" r="2.6" fill="' + PD_COR_HI + '"/>').join("");
+  }
+  function pdMiniatura(valores, o = {}) {
+    const Q = pdParams(valores), D3 = pdDesenho(Q, o);
+    if (!D3) return "";
+    const W4 = o.tam || 72, s = W4 / 18, chao2 = W4 - 5, xs = D3.linhas.flatMap((l) => [l.a[0], l.c[0]]), ys = D3.linhas.flatMap((l) => [l.a[1], l.c[1]]);
+    const cx = (Math.min(...xs) + Math.max(...xs)) / 2, topo = Math.max(...ys), no_ar = Q.ground === 0 && (Q.bodyLift || 0) > 0.3;
+    let oy = no_ar ? chao2 + -15.3 * s : chao2 + D3.ymin * s;
+    oy = Math.max(oy, 3 + topo * s);
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W4 + " " + W4 + '" class="pd-mini" role="img" aria-label="' + String(o.rotulo || "miniatura").replace(/"/g, "'") + '"><line x1="4" y1="' + chao2 + '" x2="' + (W4 - 4) + '" y2="' + chao2 + '" stroke="currentColor" stroke-width="0.8" opacity="0.35"/>' + pdSvgCorpo(D3, W4 / 2 - cx * s, oy, s) + "</svg>";
+  }
+  function pdMiniaturaJunta(junta0, lado2, mov) {
+    const junta2 = pdJunta(junta0);
+    if (!junta2) return "";
+    const J = PD_JUNTAS[junta2], L3 = lado2 ? PD_LADOS[pdNorm(lado2)] : null, s = J.lado ? L3 === "L" ? 1 : L3 === "R" ? -1 : void 0 : void 0;
+    const v = {};
+    if (mov && J.mov[mov]) {
+      const m = J.mov[mov], t = m[2] || "g", ks = J.lado ? L3 === "LR" || !L3 ? ["L", "R"] : [L3] : [""];
+      ks.forEach((x) => {
+        const k = m[0] + x, [a, b] = faixa(k, 0);
+        v[k] = t === "zero" ? 0 : t === "cm" ? 30 / 100 * PD_M : m[1] * (m[1] > 0 ? b : -a) * 0.65;
+      });
+      if (m[0] === "bodyLift") v.ground = 0;
+    }
+    return pdMiniatura(v, { destaque: { regiao: J.regiao, s, k: J.k }, yaw: J.lado && s === 1 ? -40 : 40, rotulo: junta2 + (lado2 ? "." + lado2 : "") + (mov ? " " + mov : "") });
+  }
+  function pdMiniaturaAnimacao(a, o = {}) {
+    if (!a || !a.chaves) return "";
+    const n2 = o.quadros || 4, W4 = 72, B3 = pdBase(), partes2 = [];
+    for (let i = 0; i < n2; i++) {
+      const t = a.duracao * i / (n2 - 1), s = amostrar(a, t, B3), v = Object.assign({}, B3, s.valores);
+      partes2.push(pdMiniatura(v, { rotulo: a.nome + " " + t.toFixed(2) + "s" }).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, ""));
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W4 * n2 + " " + W4 + '" class="pd-mini pd-tira" role="img" aria-label="' + String(a.nome).replace(/"/g, "'") + '">' + partes2.map((p, i) => '<g transform="translate(' + W4 * i + ',0)">' + p + "</g>").join("") + "</svg>";
+  }
+  var PD_M0 = { frente: 0, lado: 0, giro: 0 };
+  function pdRebase(m, m0) {
+    const g = (m0.giro || 0) * Math.PI / 180, x = (m.lado || 0) - (m0.lado || 0), y = (m.frente || 0) - (m0.frente || 0);
+    return { frente: x * Math.sin(g) + y * Math.cos(g), lado: x * Math.cos(g) - y * Math.sin(g), giro: (m.giro || 0) - (m0.giro || 0) };
+  }
+  function pdCompor(m0, m) {
+    const g = (m0.giro || 0) * Math.PI / 180, f = m.frente || 0, l = m.lado || 0;
+    return { frente: (m0.frente || 0) + f * Math.cos(g) - l * Math.sin(g), lado: (m0.lado || 0) + f * Math.sin(g) + l * Math.cos(g), giro: (m0.giro || 0) + (m.giro || 0) };
+  }
+  var pdCopia = (c) => JSON.parse(JSON.stringify(c));
+  function pdNova(a, extra) {
+    const b = Object.assign({}, a, { partes: null, versoes: void 0, versao: void 0, origem: void 0, data: void 0, _animBase: void 0 }, extra);
+    return criarAnimacao(b);
+  }
+  function pdBaseDe(a, B3) {
+    if (a.modo !== "relativa") return B3;
+    const o = {};
+    (a.absolutos || []).forEach((k) => {
+      o[k] = B3[k] || 0;
+    });
+    return o;
+  }
+  function pdChaveEm(a, t, B3) {
+    if (a.loop && t >= a.duracao - 1e-9) a = Object.assign({}, a, { loop: false });
+    const s = amostrar(a, t, pdBaseDe(a, B3 || pdBase())), c = { t, valores: Object.assign({}, s.valores) };
+    if (s.mover) c.mover = Object.assign({}, s.mover);
+    const ap = apoioNoTempo(a, t);
+    if (ap) c.apoio = ap;
+    for (const k of a.chaves) {
+      if (k.t > t + 1e-6) break;
+      if (k.rosto) c.rosto = k.rosto;
+      if (k.olha) {
+        c.olha = k.olha;
+        c.olhaModo = k.olhaModo;
+      }
+    }
+    return c;
+  }
+  function pdTrecho(a, t0, t1, o = {}) {
+    t0 = Math.max(0, Math.min(a.duracao, t0));
+    t1 = Math.max(t0 + 0.01, Math.min(a.duracao, t1));
+    const B3 = pdBase(), ini = pdChaveEm(a, t0, B3), fim = pdChaveEm(a, t1, B3), meio = a.chaves.filter((c) => c.t > t0 + 1e-4 && c.t < t1 - 1e-4).map(pdCopia), m0 = ini.mover;
+    const ch = [ini, ...meio, fim];
+    ch.forEach((c) => {
+      c.t = +(c.t - t0).toFixed(4);
+      delete c.fala;
+      if (c.mover && m0) c.mover = pdRebase(c.mover, m0);
+    });
+    return pdNova(a, { nome: o.nome || a.nome + " (" + t0.toFixed(2) + "–" + t1.toFixed(2) + "s)", chaves: ch, duracao: t1 - t0, loop: false });
+  }
+  function pdAteAngulo(a, graus2, o = {}) {
+    const alvo = Math.abs(graus2), giro = (t2) => {
+      const s = amostrar(a, t2, {});
+      return s.mover ? Math.abs(s.mover.giro || 0) : 0;
+    }, N = 400;
+    let t = null;
+    for (let i = 1; i <= N; i++) {
+      const u = a.duracao * i / N;
+      if (giro(u) >= alvo - 1e-6) {
+        let lo = a.duracao * (i - 1) / N, hi = u;
+        for (let k = 0; k < 30; k++) {
+          const m = (lo + hi) / 2;
+          if (giro(m) >= alvo) hi = m;
+          else lo = m;
+        }
+        t = hi;
+        break;
+      }
+    }
+    if (t === null) {
+      const max = giro(a.duracao);
+      throw pdErro("“" + a.nome + "” só gira " + Math.round(max) + "° — não chega a " + alvo + "°.", o.linha);
+    }
+    const tr = pdTrecho(a, 0, t, { nome: o.nome || a.nome + " até " + alvo + "°" }), fim = tr.chaves[tr.chaves.length - 1], B3 = pdBase();
+    const sg = Math.sign(fim.mover ? fim.mover.giro : 1) || 1;
+    if (fim.mover) fim.mover.giro = sg * alvo;
+    const ultimo2 = { t: +(tr.duracao + 0.3).toFixed(4), valores: {}, apoio: "ambos" };
+    for (const k of Object.keys(fim.valores)) ultimo2.valores[k] = tr.modo === "relativa" && !(tr.absolutos || []).includes(k) ? 0 : tr.chaves[0].valores[k] ?? B3[k] ?? 0;
+    if (fim.mover) ultimo2.mover = Object.assign({}, fim.mover);
+    return pdNova(tr, { chaves: [...tr.chaves, ultimo2], duracao: ultimo2.t });
+  }
+  function pdComPontas(a, B3) {
+    const ch = a.chaves.map(pdCopia), i0 = pdChaveEm(a, 0, B3), i1 = pdChaveEm(a, a.duracao, B3);
+    if (ch[0].t > 1e-4) ch.unshift(i0);
+    else ch[0] = Object.assign(ch[0], { valores: Object.assign({}, i0.valores, ch[0].valores) }, i0.mover && !ch[0].mover ? { mover: i0.mover } : {});
+    const L3 = ch[ch.length - 1];
+    if (L3.t < a.duracao - 1e-4) ch.push(Object.assign(i1, { t: a.duracao }));
+    else Object.assign(L3, { valores: Object.assign({}, i1.valores, L3.valores) }, i1.mover && !L3.mover ? { mover: i1.mover } : {});
+    return ch;
+  }
+  function pdReverter(a, o = {}) {
+    const B3 = pdBase(), ch = pdComPontas(a, B3), D3 = a.duracao, mFim = pdChaveEm(a, D3, B3).mover, troca = { entrada: "saida", saida: "entrada" }, out = [];
+    for (let i = ch.length - 1; i >= 0; i--) {
+      const c = pdCopia(ch[i]);
+      c.t = +(D3 - c.t).toFixed(4);
+      delete c.fala;
+      if (c.mover && mFim) c.mover = pdRebase(c.mover, mFim);
+      const ant = ch[i - 1];
+      c.curva = ant && ant.curva ? troca[ant.curva] || ant.curva : void 0;
+      if (!c.curva) delete c.curva;
+      c.apoio = ant ? apoioNoTempo(a, ant.t) || void 0 : c.apoio;
+      if (!c.apoio) delete c.apoio;
+      out.push(c);
+    }
+    return pdNova(a, { nome: o.nome || a.nome + " (ao contrário)", chaves: out });
+  }
+  function pdEspelharAnim(a, o = {}) {
+    const ap = { L: "R", R: "L" };
+    const ch = a.chaves.map((c) => {
+      const n2 = pdCopia(c);
+      n2.valores = anEspelhar(c.valores);
+      if (n2.mover) n2.mover = { frente: n2.mover.frente || 0, lado: -(n2.mover.lado || 0), giro: -(n2.mover.giro || 0) };
+      if (n2.apoio && ap[n2.apoio]) n2.apoio = ap[n2.apoio];
+      return n2;
+    });
+    return pdNova(a, { nome: o.nome || a.nome + " (espelhada)", chaves: ch, absolutos: (a.absolutos || []).map((k) => /L$/.test(k) ? k.replace(/L$/, "R") : /R$/.test(k) ? k.replace(/R$/, "L") : k) });
+  }
+  function pdAbsoluta(a, B3) {
+    if (a.modo !== "relativa") return a;
+    const ab = new Set(a.absolutos || []);
+    return pdNova(a, { modo: "absoluta", absolutos: [], chaves: a.chaves.map((c) => {
+      const n2 = pdCopia(c);
+      for (const k of Object.keys(n2.valores)) if (!ab.has(k)) n2.valores[k] = (B3[k] || 0) + n2.valores[k];
+      return n2;
+    }) });
+  }
+  function pdJuntar(lista3, o = {}) {
+    if (!lista3.length) throw pdErro("Nada para juntar.", o.linha);
+    const mis = o.mistura ?? 0.15, B3 = pdBase(), rel = lista3.every((a) => a.modo === "relativa" && !(a.absolutos || []).length), L22 = lista3.map((a) => a.loop ? Object.assign({}, a, { loop: false }) : a).map((a) => rel ? a : pdAbsoluta(a, B3));
+    const temMov = L22.some((a) => a.chaves.some((c) => c.mover)), out = [];
+    let T3 = 0, prev = rel ? {} : Object.assign({}, B3), mPrev = Object.assign({}, PD_M0);
+    L22.forEach((a, i) => {
+      const t0 = T3 + (i ? mis : 0), base2 = Object.assign({}, prev), ch = pdComPontas(a, B3), ini = amostrar(a, 0, {}), d0 = rel ? ini.valores : {}, m0 = ini.mover || PD_M0;
+      ch.forEach((c, j) => {
+        const n2 = pdCopia(c), ponta = j === 0 || j === ch.length - 1;
+        n2.t = +(t0 + c.t).toFixed(4);
+        if (rel) {
+          const v = ponta ? amostrar(a, c.t, {}).valores : n2.valores;
+          n2.valores = ponta ? Object.assign({}, base2) : {};
+          for (const k of Object.keys(v)) n2.valores[k] = (base2[k] || 0) + v[k] - (d0[k] || 0);
+        } else if (ponta) n2.valores = Object.assign({}, base2, amostrar(a, c.t, base2).valores);
+        if (temMov) {
+          const mv2 = c.mover || (ponta ? amostrar(a, c.t, {}).mover || PD_M0 : null);
+          if (mv2) n2.mover = pdCompor(mPrev, pdRebase(mv2, m0));
+          else delete n2.mover;
+        }
+        out.push(n2);
+      });
+      const fim = out[out.length - 1];
+      prev = Object.assign({}, fim.valores);
+      if (fim.mover) mPrev = Object.assign({}, fim.mover);
+      T3 = t0 + a.duracao;
+    });
+    return criarAnimacao({
+      nome: o.nome || lista3.map((a) => a.nome).join(" + "),
+      duracao: T3,
+      modo: rel ? "relativa" : "absoluta",
+      curva: lista3[0].curva || "suave",
+      chaves: out,
+      loop: false,
+      travarPes: lista3.some((a) => a.travarPes),
+      pesFixos: lista3.every((a) => a.pesFixos !== false),
+      escalarPeloCorpo: true,
+      tags: [...new Set(lista3.flatMap((a) => a.tags || []))],
+      descricao: lista3.map((a) => a.nome).join(" → ")
+    });
+  }
+  function pdRepetir(a, n2, o = {}) {
+    const k = Math.max(1, Math.min(50, Math.round(n2)));
+    return pdJuntar(Array(k).fill(a), { mistura: o.mistura ?? 0, nome: o.nome || a.nome + " ×" + k });
+  }
+  function pdVaiEVolta(a, o = {}) {
+    return pdJuntar([a, pdReverter(a)], { mistura: o.mistura ?? 0, nome: o.nome || a.nome + " (vai e volta)" });
+  }
+  function pdAmplitude(a, f, o = {}) {
+    const ch = a.chaves.map(pdCopia), ks = o.partes ? pdChavesDasPartes(o.partes, o.linha) : null, v0 = {};
+    for (const c of ch) for (const [k, v] of Object.entries(c.valores)) {
+      if (ks && !ks.has(k)) continue;
+      const rel = a.modo === "relativa" && !(a.absolutos || []).includes(k);
+      if (!(k in v0)) v0[k] = rel ? 0 : v;
+      c.valores[k] = v0[k] + (v - v0[k]) * f;
+    }
+    if (!ks || ks.has("wx")) ch.forEach((c) => {
+      if (c.mover && o.lugar) c.mover = { frente: c.mover.frente * f, lado: c.mover.lado * f, giro: c.mover.giro * f };
+    });
+    return pdNova(a, { chaves: ch, nome: o.nome || a.nome + " (" + Math.round(f * 100) + "%)" });
+  }
+  function pdEsticar(a, dur, o = {}) {
+    return retimar(a, { velocidade: a.duracao / Math.max(0.05, dur), nome: o.nome || a.nome });
+  }
+  function pdDensificar(a, ks, B3) {
+    const ch = a.chaves;
+    for (const c of ch) {
+      let s = null;
+      for (const k of ks) if (!(k in c.valores)) {
+        s = s || amostrar(a, c.t, pdBaseDe(a, B3)).valores;
+        c.valores[k] = k in s ? s[k] : a.modo === "relativa" && !(a.absolutos || []).includes(k) ? 0 : B3[k] || 0;
+      }
+    }
+  }
+  function pdTroca(a, partes2, pose, o = {}) {
+    const B3 = pdBase(), ks = pdChavesDasPartes(partes2, o.linha), b = pdNova(a, { chaves: a.chaves.map(pdCopia) });
+    if (b.chaves[0].t > 1e-4) b.chaves.unshift(pdChaveEm(a, 0, B3));
+    for (const k of ["bodyPitch", "bodyRoll", "bodyLift", "ground"]) if (Math.abs((pose[k] || 0) - (B3[k] || 0)) > 1e-3) ks.add(k);
+    const usados = [...ks].filter((k) => Number.isFinite(pose[k]) || b.chaves.some((c) => k in c.valores));
+    pdDensificar(b, usados, B3);
+    const rel = b.modo === "relativa", ab = new Set(b.absolutos || []), v0 = {};
+    for (const k of usados) v0[k] = b.chaves[0].valores[k];
+    for (const c of b.chaves) for (const k of usados) {
+      const d = o.fixo ? 0 : c.valores[k] - v0[k];
+      c.valores[k] = (Number.isFinite(pose[k]) ? pose[k] : rel && !ab.has(k) ? B3[k] || 0 : v0[k]) + d;
+    }
+    if (rel) usados.forEach((k) => ab.add(k));
+    const out = { chaves: b.chaves, absolutos: [...ab], nome: o.nome || a.nome };
+    if (["hipFlexL", "kneeFlexL"].some((k) => ks.has(k)) && a.chaves.some((c) => c.mover)) {
+      const fim = pdChaveEm(a, a.duracao, B3).mover || PD_M0;
+      out.travarPes = false;
+      out.chaves.forEach((c) => {
+        delete c.apoio;
+        if (c.mover) {
+          const u = c.t / Math.max(1e-6, a.duracao);
+          c.mover = { frente: fim.frente * u, lado: fim.lado * u, giro: c.mover.giro };
+        }
+      });
+    }
+    return pdNova(b, out);
+  }
+  function pdSoma(a, deltas, o = {}) {
+    const B3 = pdBase(), b = pdNova(a, { chaves: a.chaves.map(pdCopia) }), ks = Object.keys(deltas);
+    pdDensificar(b, ks, B3);
+    b.chaves.forEach((c) => ks.forEach((k) => {
+      c.valores[k] = (c.valores[k] || 0) + deltas[k];
+    }));
+    return pdNova(b, { nome: o.nome || a.nome });
+  }
+  function pdTira(a, partes2, o = {}) {
+    const ks = pdChavesDasPartes(partes2, o.linha), lugar = partes2.some((p) => pdNorm(p) === "lugar");
+    return pdNova(a, { nome: o.nome || a.nome, chaves: a.chaves.map((c) => {
+      const n2 = pdCopia(c);
+      for (const k of Object.keys(n2.valores)) if (ks.has(k)) delete n2.valores[k];
+      if (lugar) delete n2.mover;
+      return n2;
+    }) });
+  }
+  function pdFixar(a, t, valores, o = {}) {
+    const B3 = pdBase(), b = pdNova(a, { chaves: a.chaves.map(pdCopia) }), ks = Object.keys(valores);
+    pdDensificar(b, ks, B3);
+    let c = b.chaves.find((x) => Math.abs(x.t - t) < 1e-3);
+    if (!c) {
+      c = { t, valores: {} };
+      b.chaves.push(c);
+      b.chaves.sort((x, y) => x.t - y.t);
+    }
+    const rel = b.modo === "relativa";
+    for (const k of ks) c.valores[k] = rel && !(b.absolutos || []).includes(k) ? valores[k] - (B3[k] || 0) : valores[k];
+    if (o.mover) c.mover = o.mover;
+    return pdNova(b, { duracao: Math.max(b.duracao, t) });
+  }
+  function pdCamada(A, pA, Bn, pB, o = {}) {
+    const B3 = pdBase(), rel = A.modo === "relativa" && Bn.modo === "relativa", a1 = rel ? A : pdAbsoluta(A, B3), b1 = rel ? Bn : pdAbsoluta(Bn, B3), D3 = Math.max(a1.duracao, b1.duracao);
+    const kA = pA && pA.length ? pdChavesDasPartes(pA, o.linha) : null, kB = pB && pB.length ? pdChavesDasPartes(pB, o.linha) : null;
+    const ts = /* @__PURE__ */ new Set([0, D3]);
+    a1.chaves.forEach((c) => ts.add(c.t));
+    b1.chaves.forEach((c) => ts.add(c.t));
+    for (let t = 0; t < D3; t += 1 / 12) ts.add(+t.toFixed(4));
+    const tt = (a, t) => a.loop && t > a.duracao ? t % a.duracao : Math.min(t, a.duracao);
+    const lugar = (a, t) => {
+      const m = (s0) => amostrar(a, s0, {}).mover;
+      if (!a.chaves.some((c) => c.mover)) return null;
+      if (!a.loop || t <= a.duracao) return m(Math.min(t, a.duracao));
+      const fim = (a.chaves.filter((c) => c.mover).pop() || {}).mover || PD_M0, k = Math.floor(t / a.duracao);
+      let r = Object.assign({}, PD_M0);
+      for (let i = 0; i < k; i++) r = pdCompor(r, fim);
+      return pdCompor(r, m(t - k * a.duracao) || PD_M0);
+    };
+    const ch = [...ts].sort((x, y) => x - y).map((t) => {
+      const ca = pdChaveEm(a1, tt(a1, t), B3), cb = pdChaveEm(b1, tt(b1, t), B3), v = {};
+      for (const [k, x] of Object.entries(ca.valores)) if (!kA || kA.has(k)) v[k] = x;
+      for (const [k, x] of Object.entries(cb.valores)) if (!kB || kB.has(k)) v[k] = x;
+      const c = { t, valores: v, curva: "linear" };
+      const mv2 = lugar(a1, t) || lugar(b1, t);
+      if (mv2) c.mover = mv2;
+      if (ca.apoio) c.apoio = ca.apoio;
+      if (cb.rosto || ca.rosto) c.rosto = cb.rosto || ca.rosto;
+      return c;
+    });
+    return criarAnimacao({ nome: o.nome || A.nome + " + " + Bn.nome, duracao: D3, modo: rel ? "relativa" : "absoluta", curva: "linear", chaves: ch, absolutos: [.../* @__PURE__ */ new Set([...a1.absolutos || [], ...b1.absolutos || []])], travarPes: !!A.travarPes, pesFixos: A.pesFixos !== false, tags: [.../* @__PURE__ */ new Set([...A.tags || [], ...Bn.tags || []])], descricao: "camada: " + A.nome + " por baixo, " + Bn.nome + " por cima" });
+  }
+  function pdCiclo(A0, o = {}) {
+    const B3 = pdBase(), A = Object.assign({}, B3, A0), A2 = espelharValores(A), corre = !!o.corre;
+    const medir = (v) => {
+      try {
+        const p = pesDoManequim({ name: "_ciclo", params: Object.assign(pdParams(v), { wx: 0, wz: 0, wRot: 0, bodyLift: 0, tamanho: 1 }) });
+        return p;
+      } catch (e) {
+        return null;
+      }
+    };
+    const pe = medir(A), frenteA = pe && pe.L && pe.R ? pe.L.z > pe.R.z ? "L" : "R" : (A.hipFlexL || 0) > (A.hipFlexR || 0) ? "L" : "R", tras = frenteA === "L" ? "R" : "L";
+    const passo = o.passo ?? (pe && pe.L && pe.R ? Math.max(0.15, Math.abs(pe.L.z - pe.R.z) / PD_M) : 0.6);
+    let P3;
+    if (o.passagem) P3 = Object.assign({}, B3, o.passagem);
+    else {
+      P3 = {};
+      for (const k of /* @__PURE__ */ new Set([...Object.keys(A), ...Object.keys(A2)])) if (Number.isFinite(A[k]) && Number.isFinite(A2[k])) P3[k] = (A[k] + A2[k]) / 2;
+      P3["hipFlex" + tras] = (P3["hipFlex" + tras] || 0) + (corre ? 25 : 12);
+      P3["kneeFlex" + tras] = Math.max(P3["kneeFlex" + tras] || 0, corre ? 95 : 48);
+      P3["ankleFlex" + tras] = Math.min(P3["ankleFlex" + tras] || 0, corre ? 10 : -6);
+      if ((P3["kneeFlex" + frenteA] || 0) < 40) {
+        P3["kneeFlex" + frenteA] = corre ? 28 : Math.min(P3["kneeFlex" + frenteA] || 0, 6);
+        P3["hipFlex" + frenteA] = (P3["hipFlex" + frenteA] || 0) - (corre ? 5 : 2);
+      }
+    }
+    const P22 = espelharValores(P3), d = o.duracao || (corre ? 0.6 : 1), ida = o.anda !== void 0 ? o.anda / 2 : passo;
+    const ch = [{ t: 0, valores: A, apoio: frenteA, mover: { frente: 0, lado: 0, giro: 0 } }, { t: d / 4, valores: P3, mover: { frente: ida / 2, lado: 0, giro: 0 } }, { t: d / 2, valores: A2, apoio: tras, mover: { frente: ida, lado: 0, giro: 0 } }, { t: 3 * d / 4, valores: P22, mover: { frente: 1.5 * ida, lado: 0, giro: 0 } }, { t: d, valores: A, apoio: frenteA, mover: { frente: 2 * ida, lado: 0, giro: 0 } }];
+    ch.forEach((c) => {
+      c.curva = "suave";
+    });
+    if (corre && o.voo !== 0) {
+      const h = (o.voo ?? 0.05) * PD_M, mix3 = (x, y) => {
+        const r = {};
+        for (const k of Object.keys(x)) r[k] = Number.isFinite(y[k]) ? (x[k] + y[k]) / 2 : x[k];
+        return r;
+      };
+      ch.push({ t: 3 * d / 8, valores: Object.assign(mix3(P3, A2), { bodyLift: h, ground: 0 }), mover: { frente: 0.75 * ida, lado: 0, giro: 0 }, curva: "suave" }, { t: 7 * d / 8, valores: Object.assign(mix3(P22, A), { bodyLift: h, ground: 0 }), mover: { frente: 1.75 * ida, lado: 0, giro: 0 }, curva: "suave" });
+      ch.forEach((c) => {
+        if (!("bodyLift" in c.valores) || c.valores.ground !== 0) {
+          c.valores.bodyLift = 0;
+          c.valores.ground = 1;
+        }
+      });
+      ch.sort((x, y) => x.t - y.t);
+    }
+    return criarAnimacao({ nome: o.nome || "ciclo", duracao: d, modo: "absoluta", curva: "linear", loop: o.loop !== false, travarPes: !corre, pesFixos: true, escalarPeloCorpo: true, chaves: ch, tags: o.tags && o.tags.length ? o.tags : [corre ? "Locomocao/Correr/Ciclo" : "Locomocao/Andar/Ciclo"], descricao: "ciclo a partir de uma pose: " + (o.de || "") + " · " + (2 * ida).toFixed(2) + " m por ciclo" });
+  }
+  var PD_DOC = {
+    pose: { s: 'pose "nome" [de outra-pose] [salvar] [substituir] [tags "A/B"]', d: "Bloco de pose: cada linha com recuo mexe numa junta ou usa um atalho. “salvar” manda para Minhas poses (com miniatura).", ex: 'pose "passo-largo" de empe salvar\n  ombro.direito(frente 40)\n  ombro.esquerdo(tras 30)\n  quadril.direito(frente 35)\n  joelho.esquerdo(dobra 25)' },
+    ciclo: { s: 'ciclo "nome" de POSE [duracao 1s] [corre] [passagem POSE] [anda 1.4m] [voo 5cm] [salvar]', d: "Faz um ciclo (loop) a partir de UMA pose: A → passagem → A espelhada → passagem → A. Serve para andar, correr, engatinhar.", ex: 'ciclo "andar-largo" de passo-largo duracao 1s salvar' },
+    animacao: { s: 'animacao "nome" [de OUTRA | junta A, B mistura 0.2s | camada A [partes] + B [partes]] [duracao] [salvar]', d: "Animação por chaves, ou nascida de outra (de), ou várias em sequência (junta), ou partes de duas ao mesmo tempo (camada).", ex: 'animacao "girar-ajoelhado" de girar360E salvar\n  troca pernas por pose ajoelhado' },
+    chave: { s: "chave 0.5s [pose X] [junta(…)] [atalhos] [expressao] [gesto] [move frente 0.4] [olha Mira] [segurar 0.3s]", d: "Um instante da animação. As chaves se acumulam.", ex: "chave 0.4s ombro.direito(frente 90) cotovelo.direito(dobra 20)" },
+    troca: { s: "troca PARTES por pose POSE [fixo]", d: "Na animação derivada: as partes passam a partir da pose, com o movimento original por cima (ou parado, com “fixo”).", ex: "troca pernas por pose ajoelhado" },
+    soma: { s: "soma junta(…)", d: "Soma um ajuste na animação toda.", ex: "soma tronco(frente 20)" },
+    tira: { s: "tira PARTES", d: "Tira as partes da animação (elas ficam como o personagem estiver).", ex: "tira bracos" },
+    trecho: { s: "trecho 0.2s a 0.8s  ·  trecho 25% a 75%", d: "Fica só com um pedaço da animação (o lugar e o giro recomeçam dali).", ex: "trecho 0s a 0.5s" },
+    ate: { s: "ate 90  ·  ate metade", d: "Nos giros: corta quando chega ao ângulo e pousa os dois pés (15, 30, 45, 60, 90, 180…). “ate metade” = primeira metade.", ex: "ate 45" },
+    reverte: { s: "reverte", d: "Toca de trás para frente.", ex: "reverte" },
+    espelha: { s: "espelha [PARTES]", d: "Na animação: troca esquerda e direita (gira para o outro lado). Na pose: troca os lados (todas as partes ou só as pedidas).", ex: "espelha bracos" },
+    repete: { s: "repete 3", d: "Repete a animação, uma depois da outra, continuando do lugar onde parou.", ex: "repete 3" },
+    "vai-e-volta": { s: "vai-e-volta", d: "Toca para frente e depois de volta.", ex: "vai-e-volta" },
+    amplitude: { s: "amplitude 70% [PARTES]", d: "Movimento maior ou menor (100% = igual).", ex: "amplitude 60% bracos" },
+    estica: { s: "estica 2s", d: "Muda a duração inteira (mais lenta ou mais rápida).", ex: "estica 2s" },
+    agacha: { s: "agacha [60%]", d: "Agacha (pernas, tronco) a partir da pose.", ex: "agacha 50%" },
+    ajoelha: { s: "ajoelha [direito|esquerdo|os-dois]", d: "Um joelho no chão (o lado dito) ou os dois.", ex: "ajoelha direito" },
+    senta: { s: "senta [chao|cadeira|calcanhares|cocoras]", d: "Senta.", ex: "senta cadeira" },
+    peso: { s: "peso direito|esquerdo [70%]", d: "Põe o peso numa perna (quadril sai para o lado).", ex: "peso esquerdo" },
+    inclina: { s: "inclina frente|tras|direita|esquerda [graus]", d: "Inclina o tronco.", ex: "inclina frente 20" },
+    olha: { s: "olha baixo|cima|direita|esquerda|frente [graus]  ·  olha Mira", d: "Direção da cabeça e dos olhos (ou para alguém).", ex: "olha baixo 30" },
+    sobe: { s: "sobe 30cm", d: "Tira o corpo do chão (salto, flutuar).", ex: "sobe 40cm" },
+    deita: { s: "deita costas|brucos|lado", d: "Deita.", ex: "deita brucos" },
+    mistura: { s: "mistura POSE 50%", d: "Fica no meio do caminho entre a pose atual e outra.", ex: "mistura correndo 30%" },
+    copia: { s: "copia PARTES de POSE", d: "Copia só algumas partes de outra pose.", ex: "copia bracos de guardaLuta" },
+    zera: { s: "zera [PARTES]", d: "Volta as partes para em pé.", ex: "zera bracos" },
+    pula: { s: "Kai pula [lugar|frente|alto|lado|corrida] [80cm] [altura 40cm]", d: "Pulo com antecipação, voo no tempo da gravidade e aterrissagem amortecida.", ex: "Kai pula frente 1m altura 40cm" },
+    mergulha: { s: "Kai mergulha [altura 0.5m] [fundo 1m]", d: "Mergulho de cabeça: braços acima, salto, entrada na água e deslize.", ex: "Kai mergulha" },
+    nada: { s: "Kai nada crawl|peito|costas|cachorrinho|boia|pernada [3m]", d: "Nado (corpo deitado na água). Dentro de uma peça “agua”, o corpo fica na linha da água.", ex: "Kai nada crawl 4m" },
+    engatinha: { s: "Kai engatinha [2m]", d: "De quatro: mão e joelho do lado oposto juntos.", ex: "Kai engatinha 1.5m" },
+    rasteja: { s: "Kai rasteja [2m]", d: "Rastejar (militar): cotovelos e um joelho.", ex: "Kai rasteja 2m" },
+    "anda-agachado": { s: "Kai anda-agachado [2m]", d: "Andar agachado.", ex: "Kai anda-agachado 2m" },
+    cai: { s: "Kai cai frente|tras|lado", d: "Cai no chão.", ex: "Kai cai tras" },
+    "levanta-se": { s: "Kai levanta-se", d: "Do chão até em pé (passa por quatro apoios e um joelho).", ex: "Kai levanta-se" },
+    rola: { s: "Kai rola direita|esquerda [2 voltas]", d: "Rola deitado no chão.", ex: "Kai rola direita 2" }
+  };
+  for (const [j, J] of Object.entries(PD_JUNTAS)) PD_DOC[j] = { s: j + (J.lado ? ".direito|esquerdo|ambos" : "") + "(" + Object.keys(J.mov).join(" | ") + " VALOR)", d: J.desc + ". Valor sozinho = fica nele; +10/-10 = soma. " + (J.lado ? "Sem lado = os dois lados." : ""), ex: j + (J.lado ? ".direito" : "") + "(" + Object.keys(J.mov)[0] + " 30)" };
+  var PD_TRECHOS = {
+    pose: 'pose "minha-pose" de empe salvar\n  ombro.direito(frente 40)\n  ombro.esquerdo(tras 30)\n  quadril.direito(frente 30)\n  joelho.esquerdo(dobra 25)\n',
+    ciclo: 'ciclo "meu-ciclo" de passo duracao 1s salvar\n',
+    animacao: 'animacao "minha-animacao" duracao 1s salvar\n  chave 0s pose empe\n  chave 0.5s ombro.direito(frente 90)\n  chave 1s pose empe\n',
+    derivar: 'animacao "nova" de girar360E salvar\n  troca pernas por pose ajoelhado\n',
+    picotar: 'animacao "giro90" de girar360E salvar\n  ate 90\n',
+    juntar: 'animacao "combo" junta acenarTchau, girar90E mistura 0.2s salvar\n',
+    camada: 'animacao "andar-acenando" camada andarCiclo + acenarTchau bracos salvar\n'
+  };
+  function pdCompletar(antes, info = {}) {
+    const linha = antes.split("\n").pop(), item = (v, tipo, d, mini) => ({ v, r: v.trim().replace(/^"|"$/g, ""), tipo, d: d || "", mini: mini || null });
+    const blocos2 = antes.split("\n").filter((l) => /^\S/.test(l)), bloco = pdNorm((/^(\S+)/.exec(blocos2[blocos2.length - 1] || "") || [])[1] || ""), recuo = /^\s+/.test(linha);
+    let m = /([A-Za-zÀ-ÿ-]+)(?:\.([A-Za-zÀ-ÿ-]+))?\(([^)]*)$/.exec(linha);
+    if (m && pdJunta(m[1])) {
+      const j = pdJunta(m[1]), J = PD_JUNTAS[j], L3 = m[2] ? PD_LADOS[pdNorm(m[2])] : null, args = m[3], pref2 = (/([A-Za-zÀ-ÿ-]*)$/.exec(args) || ["", ""])[1], ultimo2 = args.trim().split(/[\s,]+/).pop();
+      const ajuda = j + (m[2] ? "." + m[2] : "") + "( " + Object.keys(J.mov).map((x) => x + " " + pdFaixaMov(j, x, L3)).join(" · ") + " )";
+      if (J.mov[pdNorm(ultimo2)] && /\s$/.test(args)) return { itens: [], de: antes.length, ajuda };
+      const usados = new Set(args.split(/[\s,]+/).slice(0, -1).map(pdNorm));
+      return { itens: Object.keys(J.mov).filter((x) => x.startsWith(pdNorm(pref2)) && !usados.has(x)).map((x) => item(x + " ", "movimento", pdFaixaMov(j, x, L3), { tipo: "mov", junta: j, lado: m[2] || null, mov: x })), de: antes.length - pref2.length, ajuda };
+    }
+    m = /([A-Za-zÀ-ÿ-]+)\.([A-Za-zÀ-ÿ-]*)$/.exec(linha);
+    if (m && pdJunta(m[1])) {
+      const J = PD_JUNTAS[pdJunta(m[1])];
+      if (!J.lado) return { itens: [item("(", "junta", "esta junta não tem lado")], de: antes.length - m[2].length - 1 };
+      return { itens: ["direito", "esquerdo", "ambos"].filter((x) => x.startsWith(pdNorm(m[2]))).map((x) => item(x + "(", "lado", x === "ambos" ? "os dois lados" : "lado " + x + " do personagem", { tipo: "junta", junta: pdJunta(m[1]), lado: x })), de: antes.length - m[2].length };
+    }
+    m = /(^|[\s(])([A-Za-zÀ-ÿ-]+)([. ])("[^"]*|[A-Za-zÀ-ÿ0-9_-]*)$/.exec(linha);
+    if (!m && /^(animacao|animação)\b.*\b(junta|camada)\b.*[,+]\s*("[^"]*|[A-Za-zÀ-ÿ0-9_-]*)$/i.test(linha)) {
+      const pre = /([A-Za-zÀ-ÿ0-9_-]*)$/.exec(linha)[1];
+      m = [null, " ", "junta", " ", pre];
+    }
+    if (m) {
+      const w = pdNorm(m[2]), pre = pdNorm(m[4].replace(/^"/, "")), de = antes.length - m[4].length - (m[3] === "." ? 1 : 0), pv = m[3] === "." ? " " : "", filtra = (l) => {
+        const vistos = /* @__PURE__ */ new Set();
+        return l.filter((x) => {
+          const k = pdNorm(x.r);
+          if (vistos.has(k)) return false;
+          vistos.add(k);
+          return k.startsWith(pre) || k.includes(pre) && pre.length > 2;
+        }).slice(0, 60);
+      };
+      const q = (s) => /[\s"]/.test(s) || !/^[\wÀ-ÿ-]+$/.test(s) ? '"' + s + '"' : s;
+      const poses = () => filtra([...(info.poses || []).map((n2) => item(pv + q(n2) + " ", "pose", "deste texto", { tipo: "pose", nome: n2 })), ...posesSalvas().map((p) => item(pv + q(p.nome) + " ", "pose", "minha pose", { tipo: "pose", nome: p.nome, svg: p.miniatura })), ...todasPoses().map((n2) => item(pv + n2 + " ", "pose", "pronta", { tipo: "pose", nome: n2 }))]);
+      const anims = () => filtra([...(info.animacoes || []).map((n2) => item(pv + q(n2) + " ", "animacao", "deste texto", { tipo: "anim", nome: n2 })), ...bibliotecaAnimacoes().listar().map((a) => item(pv + q(a.nome) + " ", "animacao", a.duracao.toFixed(1) + " s" + (a.descricao ? " · " + a.descricao : ""), { tipo: "anim", nome: a.nome }))]);
+      const fix = (l, tipo, d) => filtra(l.map((x) => item(pv + x + " ", tipo, typeof d === "function" ? d(x) : d || "")));
+      const partes2 = () => fix(Object.keys(PD_PARTES), "parte", (x) => (PD_PARTES[x] || []).join(", "));
+      const fixa = {
+        pose: poses,
+        mistura: poses,
+        de: () => bloco === "animacao" ? anims() : poses(),
+        por: () => poses(),
+        anima: anims,
+        junta: () => bloco === "animacao" ? anims() : null,
+        camada: anims,
+        "+": anims,
+        expressao: () => fix(Object.keys(EXPRESSOES), "expressao"),
+        gesto: () => fix(Object.keys(GESTOS_CONVERSA), "gesto", (x) => GESTOS_CONVERSA[x].desc),
+        atitude: () => fix(Object.keys(ATITUDES), "atitude", (x) => ATITUDES[x].desc || ""),
+        curva: () => fix(Object.keys(CURVAS), "curva"),
+        troca: partes2,
+        tira: partes2,
+        copia: partes2,
+        so: partes2,
+        zera: partes2,
+        espelha: partes2,
+        amplitude: null,
+        ajoelha: () => fix(["direito", "esquerdo", "os-dois"], "lado"),
+        peso: () => fix(["direito", "esquerdo"], "lado"),
+        inclina: () => fix(["frente", "tras", "direita", "esquerda"], "direcao"),
+        deita: () => fix(["costas", "brucos", "lado"], "direcao"),
+        senta: () => fix(["chao", "cadeira", "calcanhares", "cocoras"], "como"),
+        nada: () => fix(Object.keys(PD_NADOS), "estilo", (x) => PD_NADOS[x]),
+        pula: () => fix(["lugar", "frente", "alto", "lado", "corrida"], "estilo"),
+        cai: () => fix(["frente", "tras", "lado"], "direcao"),
+        rola: () => fix(["direita", "esquerda"], "direcao")
+      };
+      if (w in fixa && fixa[w] && !(w === "olha" || w === "de" && bloco !== "animacao" && bloco !== "pose" && bloco !== "ciclo")) {
+        const r = fixa[w]();
+        if (r && (r.length || m[3] === ".")) return { itens: r, de, ponto: m[3] === "." };
+      }
+    }
+    if (recuo && /^\s+[A-Za-zÀ-ÿ-]*$/.test(linha)) {
+      const pre = pdNorm(linha.trim()), de = antes.length - linha.trim().length;
+      const juntas = Object.keys(PD_JUNTAS).map((j) => item(j + (PD_JUNTAS[j].lado ? "." : "("), "junta", PD_JUNTAS[j].desc, { tipo: "junta", junta: j }));
+      const at = PD_ATALHOS.map((a) => item(a + " ", "atalho", (PD_DOC[a] || {}).s || ""));
+      let l = null;
+      if (bloco === "pose") l = [...juntas, ...at, item("pose ", "palavra", "recomeça de uma pose"), item("expressao ", "palavra"), item("gesto ", "palavra"), item("atitude ", "palavra")];
+      else if (bloco === "animacao" || bloco === "animação") l = [item("chave ", "palavra", "chave 0.5s …"), ...["troca", "soma", "tira", "trecho", "ate", "reverte", "espelha", "repete", "vai-e-volta", "amplitude", "estica"].map((x) => item(x + " ", "operacao", (PD_DOC[x] || {}).s || ""))];
+      if (l) return { itens: l.filter((x) => pdNorm(x.r).startsWith(pre)), de };
+    }
+    if (/^\s+chave\s+\S+\s+(.*\s)?[A-Za-zÀ-ÿ-]*$/.test(linha)) {
+      const pre = (/([A-Za-zÀ-ÿ-]*)$/.exec(linha) || ["", ""])[1];
+      if (pre.length || /\s$/.test(linha)) {
+        const juntas = Object.keys(PD_JUNTAS).filter((j) => j.startsWith(pdNorm(pre))).map((j) => item(j + (PD_JUNTAS[j].lado ? "." : "("), "junta", PD_JUNTAS[j].desc, { tipo: "junta", junta: j }));
+        const at = PD_ATALHOS.filter((a) => a.startsWith(pdNorm(pre))).map((a) => item(a + " ", "atalho", (PD_DOC[a] || {}).s || ""));
+        if (juntas.length + at.length && pre.length >= 1) return { itens: [...juntas, ...at], de: antes.length - pre.length };
+      }
+    }
+    return null;
+  }
+  var PD_NADOS = { crawl: "nado livre, braços alternados", peito: "braçada de peito e pernada de sapo", costas: "deitado de costas, braços alternados", cachorrinho: "cabeça fora, patinhas", boia: "boiando de costas", pernada: "braços à frente, só as pernas" };
+  var PD_MINI_CACHE = /* @__PURE__ */ new Map();
+  function pdMiniaturaItem(mini, ctx) {
+    if (!mini) return "";
+    if (mini.svg) return mini.svg;
+    const ch = JSON.stringify(mini);
+    if (PD_MINI_CACHE.has(ch)) return PD_MINI_CACHE.get(ch);
+    let s = "";
+    try {
+      if (mini.tipo === "pose") s = pdMiniatura(pdValoresPose(mini.nome, pdParams({}), ctx).valores, { rotulo: mini.nome });
+      else if (mini.tipo === "junta") s = pdMiniaturaJunta(mini.junta, mini.lado);
+      else if (mini.tipo === "mov") s = pdMiniaturaJunta(mini.junta, mini.lado || "direito", mini.mov);
+      else if (mini.tipo === "anim") {
+        const a = ctx && ctx.animacoes && ctx.animacoes.get(mini.nome) || bibliotecaAnimacoes().obter(mini.nome);
+        s = a ? pdMiniaturaAnimacao(a) : "";
+      }
+    } catch (e) {
+      s = "";
+    }
+    if (PD_MINI_CACHE.size > 400) PD_MINI_CACHE.clear();
+    PD_MINI_CACHE.set(ch, s);
+    return s;
+  }
+
+  // src/scene/locomocao.js
+  var LC_M = 1 / 0.114;
+  var LC_G = 9.81;
+  var lcPose = (n2) => anPoseValores(n2, pdParams({}));
+  function lcCiclo(nome, dur, n2, f, o = {}) {
+    const ch = [];
+    for (let i = 0; i <= n2; i++) {
+      const p = i / n2, v = f(p);
+      ch.push({ t: +(dur * p).toFixed(4), valores: v, mover: { frente: (o.anda || 0) * p, lado: 0, giro: 0 }, curva: "suave" });
+    }
+    return criarAnimacao({ nome, duracao: dur, modo: "relativa", curva: "linear", loop: true, pesFixos: o.pesFixos ?? false, escalarPeloCorpo: true, chaves: ch, tags: o.tags || [], descricao: o.desc || "", absolutos: o.absolutos || [] });
+  }
+  function lcCurva(pts, p) {
+    p = (p % 1 + 1) % 1;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [a, va] = pts[i], [b, vb] = pts[i + 1];
+      if (p >= a && p <= b) {
+        const u = (p - a) / Math.max(1e-6, b - a), s = u * u * (3 - 2 * u);
+        return va + (vb - va) * s;
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  var LC_PULOS = { lugar: [0.3, 0], frente: [0.35, 1], alto: [0.55, 0], lado: [0.25, 0.6], corrida: [0.45, 1.8] };
+  function lcPulo(o = {}) {
+    const est2 = LC_PULOS[o.estilo] ? o.estilo : "lugar", h = Math.max(0.05, o.altura ?? LC_PULOS[est2][0]), dist = o.distancia ?? LC_PULOS[est2][1], T3 = 2 * Math.sqrt(2 * h / LC_G), lado2 = est2 === "lado" ? o.sentido === "direita" ? -1 : 1 : 0, longe = est2 === "frente" || est2 === "corrida";
+    const dois = (v) => {
+      const r = {};
+      for (const [k, x] of Object.entries(v)) {
+        if (/^(knee|hip|ankle|arm|elbow)/.test(k)) {
+          r[k + "L"] = x;
+          r[k + "R"] = x;
+        } else r[k] = x;
+      }
+      return r;
+    };
+    const ant = dois({ kneeFlex: 70, hipFlex: 62, ankleFlex: -22, spineFlex: 25, armFlex: -45, elbow: 15, headPitch: -8 });
+    const imp = dois({ kneeFlex: 0, hipFlex: -5, ankleFlex: 35, spineFlex: -4, armFlex: est2 === "alto" ? 165 : 110, elbow: 10, headPitch: -5 });
+    const ar = dois(longe ? { kneeFlex: 62, hipFlex: 80, ankleFlex: 10, spineFlex: 28, armFlex: 75, elbow: 20, headPitch: -10 } : { kneeFlex: 50, hipFlex: 45, ankleFlex: 25, spineFlex: 8, armFlex: est2 === "alto" ? 165 : 60, elbow: 18, headPitch: -5 });
+    const pouso = dois({ kneeFlex: 25, hipFlex: longe ? 45 : 25, ankleFlex: 5, spineFlex: 14, armFlex: 55, elbow: 25, headPitch: 0 }), amort = dois({ kneeFlex: 78, hipFlex: 68, ankleFlex: -22, spineFlex: 32, armFlex: 45, elbow: 30, headPitch: -6 });
+    const zero = Object.fromEntries(Object.keys(amort).map((k) => [k, 0])), mv2 = (fr2, u) => ({ frente: lado2 ? 0 : fr2 * u, lado: lado2 * dist * u, giro: 0 });
+    const ch = [{ t: 0, valores: Object.assign({}, zero, { bodyLift: 0, ground: 0 }), mover: mv2(dist, 0) }, { t: 0.32, valores: Object.assign({}, ant, { bodyLift: 0, ground: 0 }), mover: mv2(dist, 0) }, { t: 0.46, valores: Object.assign({}, imp, { bodyLift: 0, ground: 0 }), mover: mv2(dist, 0) }];
+    const N = 8, t1 = 0.46;
+    for (let i = 1; i <= N; i++) {
+      const u = i / N, v = {};
+      const fase = u < 0.5 ? u * 2 : (1 - u) * 2;
+      for (const k of Object.keys(imp)) v[k] = u < 0.5 ? imp[k] + (ar[k] - imp[k]) * fase : pouso[k] + (ar[k] - pouso[k]) * fase;
+      ch.push({ t: +(t1 + T3 * u).toFixed(4), valores: Object.assign(v, { bodyLift: h * LC_M * 4 * u * (1 - u), ground: i === N ? 0 : -1 }), mover: mv2(dist, u), curva: "linear" });
+    }
+    const t2 = t1 + T3;
+    ch.push({ t: +(t2 + 0.16).toFixed(4), valores: Object.assign({}, amort, { bodyLift: 0, ground: 0 }), mover: mv2(dist, 1) }, { t: +(t2 + 0.6).toFixed(4), valores: Object.assign({}, zero, { bodyLift: 0, ground: 0 }), mover: mv2(dist, 1) });
+    const a = criarAnimacao({
+      nome: o.nome || "pulo" + est2[0].toUpperCase() + est2.slice(1),
+      duracao: t2 + 0.6,
+      modo: "relativa",
+      curva: "suave",
+      pesFixos: true,
+      escalarPeloCorpo: true,
+      chaves: ch,
+      tags: ["Locomocao/Salto/" + est2[0].toUpperCase() + est2.slice(1)],
+      descricao: "pulo " + est2 + ": " + Math.round(h * 100) + " cm de altura" + (dist ? ", " + dist.toFixed(1) + " m" : "") + " · voo " + T3.toFixed(2) + " s (gravidade)"
+    });
+    if (est2 !== "corrida") return a;
+    const corrida = pdCiclo(lcPose("correndo"), { corre: true, loop: false, nome: "corrida" });
+    return pdJuntar([corrida, a], { mistura: 0.08, nome: o.nome || "puloCorrida" });
+  }
+  function lcAguaEm(x, z) {
+    for (const o of SCN.objetos || []) {
+      if (o.tipo !== "agua" && o.classe !== "agua") continue;
+      const g = -(o.giro || 0) * Math.PI / 180, dx = x - o.x, dz = z - o.z, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
+      if (Math.abs(lx) <= (o.larg || 1) / 2 && Math.abs(lz) <= (o.prof || 1) / 2) return { obj: o, sup: (o.base || 0) + (o.alt || 0), fundo: o.base || 0 };
+    }
+    return null;
+  }
+  function lcCaps(params) {
+    const cs = capsulas(pMundo({ name: "_m", params }));
+    return cs.caps || cs;
+  }
+  function lcMeio(params) {
+    const ys = lcCaps(params).filter((c) => !/mao|dedo|braco|ante/i.test(c.nome || "")).map((c) => (c.a[1] + c.b[1]) / 2);
+    return ys.reduce((s0, y) => s0 + y, 0) / Math.max(1, ys.length);
+  }
+  function lcChaoY(params) {
+    const p = Object.assign({}, params, anPoseValores("empe", params), { bodyLift: 0, ground: 1, bodyPitch: 0, bodyRoll: 0 });
+    return Math.min(...lcCaps(p).map((c) => Math.min(c.a[1], c.b[1])));
+  }
+  function lcNaLinhaDaAgua(it2, an) {
+    const A = lcAguaEm(it2.params.wx || 0, it2.params.wz || 0);
+    if (!A) return null;
+    it2.params.ground = 0;
+    it2.params.bodyLift = 0;
+    const tmp = { name: "_agua", params: Object.assign({}, it2.params) };
+    aplicarAnimacao(tmp, an, an.duracao * 0.5, { base: { params: Object.assign({}, it2.params) } });
+    const alvo = lcChaoY(it2.params) + A.sup - 0.06 * LC_M;
+    it2.params.bodyLift = Math.max(-2, (tmp.params.bodyLift || 0) - (tmp.params.bodyLift || 0) + (alvo - lcMeio(tmp.params)));
+    return A;
+  }
+  function lcNivelAgua(it2) {
+    const Q = it2.params, A = lcAguaEm(Q.wx || 0, Q.wz || 0);
+    if (!A) return null;
+    const H2 = 15.3 * (Q.tamanho || 1), pe = Q.ground === 0 ? Q.bodyLift || 0 : 0, deitado = Math.abs(Q.bodyPitch || 0) > 55;
+    if (deitado) {
+      let meio = pe + 1;
+      try {
+        meio = lcMeio(Q) - lcChaoY(Q);
+      } catch (e) {
+      }
+      return meio < A.sup - 0.35 * LC_M ? "submerso" : (Q.bodyPitch || 0) < -55 ? "boiando na água" : "nadando na água";
+    }
+    const f = (A.sup - pe) / H2;
+    if (f <= 0) return null;
+    return f < 0.1 ? "com a água nos tornozelos" : f < 0.3 ? "com a água até os joelhos" : f < 0.46 ? "com a água até as coxas" : f < 0.62 ? "com a água até a cintura" : f < 0.77 ? "com a água até o peito" : f < 0.88 ? "com a água até o pescoço" : "submerso";
+  }
+  function lcMergulho(o = {}) {
+    const alt = (o.altura ?? 0.3) * LC_M, fundo = (o.fundo ?? 1) * LC_M, dois = (v) => {
+      const r = {};
+      for (const [k, x] of Object.entries(v)) {
+        if (/^(knee|hip|ankle|arm|elbow)/.test(k)) {
+          r[k + "L"] = x;
+          r[k + "R"] = x;
+        } else r[k] = x;
+      }
+      return r;
+    };
+    const z = dois({ kneeFlex: 0, hipFlex: 0, ankleFlex: 0, armFlex: 0, armAbd: 0, elbow: 0, spineFlex: 0, headPitch: 0 });
+    const prep = dois({ kneeFlex: 42, hipFlex: 50, ankleFlex: -15, armFlex: 172, armAbd: -4, elbow: 0, spineFlex: 35, headPitch: 22 });
+    const imp = dois({ kneeFlex: 0, hipFlex: 10, ankleFlex: 38, armFlex: 175, armAbd: -4, elbow: 0, spineFlex: 10, headPitch: 18 });
+    const corpo = (p, l) => ({ bodyPitch: p, bodyLift: l, ground: -1 });
+    const ch = [{ t: 0, valores: Object.assign({}, z, corpo(0, 0), { ground: 0 }), mover: { frente: 0, lado: 0, giro: 0 } }, { t: 0.45, valores: Object.assign({}, prep, corpo(0, 0), { ground: 0 }), mover: { frente: 0, lado: 0, giro: 0 } }, { t: 0.62, valores: Object.assign({}, imp, corpo(18, 0)), mover: { frente: 0.15, lado: 0, giro: 0 } }];
+    const T3 = 0.62, voo = 0.55 + Math.sqrt(alt / LC_M) * 0.25;
+    for (let i = 1; i <= 6; i++) {
+      const u = i / 6;
+      ch.push({ t: +(T3 + voo * u).toFixed(4), valores: Object.assign({}, imp, corpo(18 + 100 * u * u, 0.35 * LC_M * 4 * u * (1 - u) * (1 - u) - alt * u * u - (u === 1 ? 0.3 * LC_M : 0))), mover: { frente: 1.6 * u, lado: 0, giro: 0 }, curva: "linear" });
+    }
+    const t2 = T3 + voo;
+    ch.push({ t: +(t2 + 0.45).toFixed(4), valores: Object.assign({}, imp, corpo(108, -alt - fundo * 0.7)), mover: { frente: 2.6, lado: 0, giro: 0 } }, { t: +(t2 + 1.3).toFixed(4), valores: Object.assign({}, imp, corpo(90, -alt - fundo * 0.35)), mover: { frente: 4, lado: 0, giro: 0 } });
+    return criarAnimacao({ nome: o.nome || "mergulhar", duracao: t2 + 1.3, modo: "relativa", curva: "suave", pesFixos: true, escalarPeloCorpo: true, chaves: ch, tags: ["Agua/Mergulho", "Locomocao/Salto"], descricao: "mergulho de cabeça da borda (" + Math.round(alt / LC_M * 100) + " cm acima da água)" });
+  }
+  var LC_NADO = {
+    crawl: { dur: 1.2, anda: 1.5, pitch: 90, f: (p) => {
+      const braco = (q) => ({ armFlex: lcCurva([[0, 175], [0.25, 110], [0.5, 20], [0.75, 95], [1, 175]], q), elbow: lcCurva([[0, 10], [0.25, 45], [0.5, 10], [0.75, 100], [1, 10]], q), armAbd: lcCurva([[0, 5], [0.5, 10], [0.75, 35], [1, 5]], q) });
+      const R2 = braco(p), L3 = braco(p + 0.5), k = Math.sin(2 * Math.PI * 3 * p);
+      return {
+        armFlexR: R2.armFlex,
+        elbowR: R2.elbow,
+        armAbdR: R2.armAbd,
+        armFlexL: L3.armFlex,
+        elbowL: L3.elbow,
+        armAbdL: L3.armAbd,
+        bodyRoll: 32 * Math.sin(2 * Math.PI * p),
+        headYaw: lcCurva([[0, 0], [0.38, 0], [0.5, -55], [0.62, -55], [0.75, 0], [1, 0]], p),
+        headPitch: -12,
+        hipFlexL: 12 * k,
+        hipFlexR: -12 * k,
+        kneeFlexL: 8 + 8 * Math.max(0, k),
+        kneeFlexR: 8 + 8 * Math.max(0, -k),
+        ankleFlexL: 40,
+        ankleFlexR: 40
+      };
+    } },
+    peito: { dur: 1.4, anda: 1.2, pitch: 85, f: (p) => {
+      const af = lcCurva([[0, 175], [0.3, 150], [0.5, 80], [0.65, 120], [0.8, 175], [1, 175]], p), ab = lcCurva([[0, 0], [0.3, 60], [0.5, 30], [0.65, 0], [1, 0]], p), el2 = lcCurva([[0, 0], [0.3, 20], [0.5, 110], [0.65, 120], [0.8, 0], [1, 0]], p);
+      const hf = lcCurva([[0, 0], [0.45, 45], [0.7, 15], [0.85, 0], [1, 0]], p), kf = lcCurva([[0, 0], [0.45, 120], [0.7, 30], [0.85, 0], [1, 0]], p), ha = lcCurva([[0, 0], [0.45, 25], [0.7, 40], [0.85, 0], [1, 0]], p), an = lcCurva([[0, 35], [0.45, -20], [0.7, -15], [0.85, 35], [1, 35]], p);
+      return {
+        armFlexR: af,
+        armFlexL: af,
+        armAbdR: ab,
+        armAbdL: ab,
+        elbowR: el2,
+        elbowL: el2,
+        headPitch: lcCurva([[0, -5], [0.5, -38], [0.65, -30], [0.8, -5], [1, -5]], p),
+        spineFlex: lcCurva([[0, 0], [0.5, -15], [0.8, 0], [1, 0]], p),
+        hipFlexL: hf,
+        hipFlexR: hf,
+        kneeFlexL: kf,
+        kneeFlexR: kf,
+        hipAbdL: ha,
+        hipAbdR: ha,
+        hipRotL: ha * 0.8,
+        hipRotR: ha * 0.8,
+        ankleFlexL: an,
+        ankleFlexR: an
+      };
+    } },
+    costas: { dur: 1.3, anda: -1.3, pitch: -90, f: (p) => {
+      const braco = (q) => ({ armFlex: lcCurva([[0, 175], [0.25, 120], [0.5, 0], [0.75, 90], [1, 175]], q), armAbd: lcCurva([[0, 0], [0.25, 70], [0.5, 15], [0.75, 0], [1, 0]], q), elbow: lcCurva([[0, 0], [0.25, 60], [0.5, 0], [1, 0]], q) });
+      const R2 = braco(p), L3 = braco(p + 0.5), k = Math.sin(2 * Math.PI * 3 * p);
+      return {
+        armFlexR: R2.armFlex,
+        armAbdR: R2.armAbd,
+        elbowR: R2.elbow,
+        armFlexL: L3.armFlex,
+        armAbdL: L3.armAbd,
+        elbowL: L3.elbow,
+        bodyRoll: 22 * Math.sin(2 * Math.PI * p),
+        headPitch: 10,
+        hipFlexL: 12 * k,
+        hipFlexR: -12 * k,
+        kneeFlexL: 10 + 10 * Math.max(0, k),
+        kneeFlexR: 10 + 10 * Math.max(0, -k),
+        ankleFlexL: 40,
+        ankleFlexR: 40
+      };
+    } },
+    cachorrinho: { dur: 1, anda: 0.45, pitch: 50, f: (p) => {
+      const s = Math.sin(2 * Math.PI * p), c = Math.cos(2 * Math.PI * p);
+      return { headPitch: -40, neckFlex: -18, armFlexR: 85 + 25 * s, elbowR: 65 - 25 * c, armFlexL: 85 - 25 * s, elbowL: 65 + 25 * c, hipFlexL: 40 + 20 * s, kneeFlexL: 60 + 30 * s, hipFlexR: 40 - 20 * s, kneeFlexR: 60 - 30 * s };
+    } },
+    boia: { dur: 3, anda: 0, pitch: -88, f: (p) => ({ armAbdR: 60, armAbdL: 60, hipAbdL: 15, hipAbdR: 15, spineFlex: -3 + 2 * Math.sin(2 * Math.PI * p), headPitch: 8 }) },
+    pernada: { dur: 1, anda: 0.6, pitch: 90, f: (p) => {
+      const k = Math.sin(2 * Math.PI * 3 * p);
+      return { armFlexR: 175, armFlexL: 175, elbowR: 5, elbowL: 5, headPitch: -15, hipFlexL: 14 * k, hipFlexR: -14 * k, kneeFlexL: 10 + 10 * Math.max(0, k), kneeFlexR: 10 + 10 * Math.max(0, -k), ankleFlexL: 40, ankleFlexR: 40 };
+    } }
+  };
+  function lcNadoCiclo(estilo) {
+    const E5 = LC_NADO[estilo];
+    if (!E5) throw new Error("Nado: " + Object.keys(LC_NADO).join(", ") + ".");
+    return lcCiclo("nadar" + estilo[0].toUpperCase() + estilo.slice(1), E5.dur, 12, (p) => Object.assign({ bodyPitch: E5.pitch, ground: -1 }, E5.f(p)), { anda: E5.anda, tags: ["Agua/Nado/" + estilo[0].toUpperCase() + estilo.slice(1)], desc: "nado " + estilo + " (loop, " + Math.abs(E5.anda).toFixed(1) + " m por ciclo)" });
+  }
+  function lcNadar(estilo, o = {}) {
+    const c = lcNadoCiclo(estilo), E5 = LC_NADO[estilo], dist = o.distancia ?? Math.abs(E5.anda) * 2, n2 = E5.anda ? Math.max(1, Math.round(dist / Math.abs(E5.anda))) : Math.max(1, Math.round((o.duracao || 3) / E5.dur));
+    const v0 = c.chaves[0].valores, entra = criarAnimacao({ nome: "entra", duracao: 0.4, modo: "relativa", chaves: [{ t: 0, valores: Object.fromEntries(Object.keys(v0).map((k) => [k, 0])), mover: { frente: 0, lado: 0, giro: 0 } }, { t: 0.4, valores: v0, mover: { frente: 0, lado: 0, giro: 0 } }] });
+    const a = pdJuntar([entra, pdRepetir(Object.assign({}, c, { loop: false }), n2)], { mistura: 0, nome: o.nome || "nada" + estilo[0].toUpperCase() + estilo.slice(1) });
+    return Object.assign(a, { tags: c.tags, descricao: "nada " + estilo + (E5.anda ? " " + (Math.abs(E5.anda) * n2).toFixed(1) + " m" : ""), pesFixos: false });
+  }
+  function lcEngatinharCiclo() {
+    return pdCiclo(lcPose("engatinhando"), { nome: "engatinhar", duracao: 1.3, anda: 0.6, tags: ["Locomocao/Chao/Engatinhar"] });
+  }
+  function lcRastejarCiclo() {
+    const base2 = lcPose("deBrucos"), A = Object.assign({}, base2, { armFlexR: 165, elbowR: 105, armAbdR: 20, armFlexL: 120, elbowL: 125, armAbdL: 30, hipFlexL: 45, hipAbdL: 35, kneeFlexL: 75, hipRotL: 25, hipFlexR: 0, kneeFlexR: 5, headPitch: -25 });
+    const c = pdCiclo(A, { nome: "rastejar", duracao: 1.8, anda: 0.5, tags: ["Locomocao/Chao/Rastejar"] });
+    c.travarPes = false;
+    return c;
+  }
+  function lcAgachadoCiclo() {
+    const A = Object.assign({}, lcPose("caminhando"));
+    for (const l of ["L", "R"]) {
+      A["kneeFlex" + l] = (A["kneeFlex" + l] || 0) + 55;
+      A["hipFlex" + l] = (A["hipFlex" + l] || 0) + 40;
+      A["ankleFlex" + l] = (A["ankleFlex" + l] || 0) - 18;
+    }
+    A.spineFlex = (A.spineFlex || 0) + 28;
+    A.headPitch = -20;
+    return pdCiclo(A, { nome: "andarAgachado", duracao: 1.2, anda: 0.9, tags: ["Locomocao/Andar/Agachado"] });
+  }
+  function lcPorDistancia(c, dist, nome) {
+    const anda = Math.abs(c.chaves[c.chaves.length - 1].mover ? c.chaves[c.chaves.length - 1].mover.frente : 1) || 1, n2 = Math.max(1, Math.round(dist / anda));
+    return Object.assign(pdRepetir(Object.assign({}, c, { loop: false }), n2, { nome }), { travarPes: c.travarPes });
+  }
+  function lcCair(dir = "frente", o = {}) {
+    const v = lcPose, [meio, fim, fr2] = { frente: ["quedaDeFrente", "deBrucos", 0.9], tras: ["quedaDeCostas", "deitadoCostas", -0.7], lado: ["caindo", "deitadoLado", 0] }[dir] || ["quedaDeFrente", "deBrucos", 0.9];
+    return criarAnimacao({
+      nome: o.nome || "cair" + dir[0].toUpperCase() + dir.slice(1),
+      duracao: 1,
+      modo: "absoluta",
+      curva: "entrada",
+      pesFixos: true,
+      escalarPeloCorpo: true,
+      tags: ["Reacao/Queda"],
+      descricao: "cai para " + dir,
+      chaves: [{ t: 0, valores: v("empe"), mover: { frente: 0, lado: 0, giro: 0 } }, { t: 0.45, valores: v(meio), mover: { frente: fr2 * 0.5, lado: dir === "lado" ? 0.3 : 0, giro: 0 } }, { t: 1, valores: v(fim), mover: { frente: fr2, lado: dir === "lado" ? 0.5 : 0, giro: 0 }, curva: "saida" }]
+    });
+  }
+  function lcLevantar(de = "brucos", o = {}) {
+    const v = lcPose, seq2 = de === "costas" ? ["deitadoCostas", "sentadoChao", "umJoelho", "empe"] : ["deBrucos", "quatroApoios", "levantandoDeQuatro", "umJoelho", "empe"], d = 0.55;
+    return criarAnimacao({ nome: o.nome || "levantarDe" + (de === "costas" ? "Costas" : "Brucos"), duracao: d * (seq2.length - 1), modo: "absoluta", curva: "suave", pesFixos: true, tags: ["Postura/Levantar"], descricao: "do chão (" + de + ") até em pé", chaves: seq2.map((n2, i) => ({ t: d * i, valores: v(n2) })) });
+  }
+  function lcRolar(sentido = "direita", voltas = 1, o = {}) {
+    const base2 = lcPose("deitadoCostas"), s = sentido === "direita" ? -1 : 1, n2 = Math.max(1, Math.round(voltas * 4)), ch = [], d = 0.35;
+    for (let i = 0; i <= n2; i++) {
+      let ang = s * 90 * i % 360;
+      if (ang > 180) ang -= 360;
+      if (ang <= -180) ang += 360;
+      const v = Object.assign({}, base2, { bodyRoll: (base2.bodyRoll || 0) + ang, armFlexL: 170, armFlexR: 170, elbowL: 0, elbowR: 0 });
+      if (i && Math.abs(ang - ch[ch.length - 1].valores.bodyRoll) > 180) {
+        const prev = ch[ch.length - 1];
+        ch.push({ t: +(prev.t + d / 2).toFixed(4), valores: Object.assign({}, v, { bodyRoll: s > 0 ? 179.9 : -179.9 }), mover: { frente: 0, lado: s * 0.26 * (i - 0.5), giro: 0 }, curva: "linear" });
+        ch.push({ t: +(prev.t + d / 2 + 1e-3).toFixed(4), valores: Object.assign({}, v, { bodyRoll: s > 0 ? -179.9 : 179.9 }), mover: { frente: 0, lado: s * 0.26 * (i - 0.5), giro: 0 }, curva: "linear" });
+      }
+      ch.push({ t: +(d * i).toFixed(4), valores: v, mover: { frente: 0, lado: s * 0.26 * i, giro: 0 }, curva: "linear" });
+    }
+    return criarAnimacao({ nome: o.nome || "rolar" + (s < 0 ? "Direita" : "Esquerda"), duracao: d * n2, modo: "absoluta", curva: "linear", pesFixos: true, tags: ["Locomocao/Chao/Rolar"], descricao: "rola " + voltas + " volta(s) para a " + sentido, chaves: ch });
+  }
+  function registrarLocomocao() {
+    const L3 = {}, add3 = (a) => {
+      L3[a.nome] = Object.assign(a, { origem: "pronta", versao: 0 });
+    };
+    for (const e of Object.keys(LC_PULOS)) add3(lcPulo({ estilo: e }));
+    add3(lcMergulho());
+    for (const e of Object.keys(LC_NADO)) add3(lcNadoCiclo(e));
+    add3(lcEngatinharCiclo());
+    add3(lcRastejarCiclo());
+    add3(lcAgachadoCiclo());
+    for (const d of ["frente", "tras", "lado"]) add3(lcCair(d));
+    add3(lcLevantar("brucos"));
+    add3(lcLevantar("costas"));
+    add3(lcRolar("direita"));
+    add3(lcRolar("esquerda"));
+    return L3;
+  }
+  registrarProntas(registrarLocomocao);
 
   // src/scene/name-dsl.js
   var NM_M = 1 / 0.114;
@@ -31090,7 +32344,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       this.linha = linha;
     }
   };
-  var NM_TOPO = /^(animacao|animação|animation|elenco|cast|local|location|lugar|modelo|macro|pagina|página|page|quadro|panel|frame|painel|transicao|transição|transition|semente|seed|define|variavel|variável|legenda-auto|formato-padrao|leitura|video|vídeo)\b/i;
+  var NM_TOPO = /^(animacao|animação|animation|elenco|cast|local|location|lugar|modelo|macro|pagina|página|page|quadro|panel|frame|painel|transicao|transição|transition|semente|seed|define|variavel|variável|legenda-auto|formato-padrao|leitura|video|vídeo|pose|ciclo)\b/i;
   function nmBlocos(texto2) {
     const linhas = String(texto2 || "").replace(/\r/g, "").split("\n"), blocos2 = [];
     let atual2 = null;
@@ -31117,9 +32371,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         for (let i = 0; i < n2; i++) out.push({ txt: nmSubst(rep[2], Object.assign({}, vars, { i })), linha: l.linha });
         continue;
       }
-      const esc8 = /^escolha\s*:?\s*(.+)$/i.exec(l.txt);
-      if (esc8) {
-        const ops = esc8[1].split("|").map((s) => {
+      const esc9 = /^escolha\s*:?\s*(.+)$/i.exec(l.txt);
+      if (esc9) {
+        const ops = esc9[1].split("|").map((s) => {
           const m = /^\s*(\d+(?:\.\d+)?)%\s*(.+)$/.exec(s);
           return m ? [parseFloat(m[1]), m[2]] : [null, s.trim()];
         });
@@ -31902,7 +33156,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   var NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
   var NM_CHAVES_Q = /* @__PURE__ */ new Set(["velocidade", "duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
-  var NM_CHAVES_P = /* @__PURE__ */ new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
+  var NM_CHAVES_P = /* @__PURE__ */ new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
   function nmPontoDe(ctx, tok, toks, k) {
     if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
     const w = nmNorm(tok.v), LA = SCN.localAtual || { marcas: {}, regioes: {} };
@@ -31949,7 +33203,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
   }
   function nmPersonagem(ctx, l, Q) {
-    const toks = nmTokens(l.txt);
+    const exJ = pdExtrairJuntas(l.txt), toks = nmTokens(exJ.txt);
     let k = 0;
     const nomes = [];
     while (toks[k] && (toks[k].t === "pal" || toks[k].t === "str")) {
@@ -32057,21 +33311,21 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         let [p0, k2] = nmPontoDe(ctx, nx, toks, k + 1);
         if (!p0) throw new NmErro("“anda-ate " + (nx && nx.v) + '”: use alguém do elenco, (x,z), marca "nome" ou um objeto.', l.linha);
         k = k2 - 1;
-        let correndo = w === "corre-ate", parar2 = null;
+        let correndo = w === "corre-ate", parar3 = null;
         while (toks[k + 1] && /^(correndo|parar|distancia|distância)$/.test(nmNorm(toks[k + 1].v))) {
           const q = nmNorm(toks[k + 1].v);
           if (q === "correndo") {
             correndo = true;
             k++;
           } else {
-            parar2 = toks[k + 2].v * (toks[k + 2].u === "R" ? 1 / NM_M : 1);
+            parar3 = toks[k + 2].v * (toks[k + 2].u === "R" ? 1 / NM_M : 1);
             k += 2;
           }
         }
         depois4.push(() => its.forEach((x) => {
           let [p] = nmPontoDe(ctx, tok0, toks, k0);
           const alvoP = nmQuem(ctx, tok0.v) || acharObjeto(tok0.v);
-          const st = parar2 ?? (alvoP ? 0.9 : 0);
+          const st = parar3 ?? (alvoP ? 0.9 : 0);
           if (st) {
             const dx = p[0] - x.params.wx, dz = p[1] - x.params.wz, L3 = Math.hypot(dx, dz) || 1, r = Math.max(0, L3 - st * NM_M);
             p = [x.params.wx + dx / L3 * r, x.params.wz + dz / L3 * r];
@@ -32108,10 +33362,74 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           Q.viraCamera = (Q.viraCamera || []).concat(its);
           k++;
         } else k++;
+      } else if (/^§j\d+$/.test(w)) {
+        const j = exJ.juntas[+w.slice(2)];
+        depois4.unshift(() => its.forEach((x) => pdAplicarJunta(x.params, j.junta, j.lado, j.args, l.linha).forEach((a) => Q.avisos.push(x.name + ": " + a))));
+        (feito.ajustes = feito.ajustes || []).push(j.junta + (j.lado ? "." + j.lado : "") + "(" + j.args + ")");
+      } else if (/^(pula|pular|salta|mergulha|mergulhar|nada|nadar|engatinha|engatinhar|rasteja|rastejar|anda-agachado|cai|cair|levanta-se|levantar-se|rola|rolar)$/.test(w)) {
+        const V2 = { pula: "pula", pular: "pula", salta: "pula", mergulha: "mergulha", mergulhar: "mergulha", nada: "nada", nadar: "nada", engatinha: "engatinha", engatinhar: "engatinha", rasteja: "rasteja", rastejar: "rasteja", "anda-agachado": "anda-agachado", cai: "cai", cair: "cai", "levanta-se": "levanta-se", "levantar-se": "levanta-se", rola: "rola", rolar: "rola" }[w];
+        const op = {};
+        let estilo = null, dist = null;
+        while (toks[k + 1] && (toks[k + 1].t === "num" || toks[k + 1].t === "pal" && /^(lugar|frente|alto|lado|corrida|direita|esquerda|tras|altura|fundo|voltas|volta|de|costas|brucos|crawl|peito|cachorrinho|boia|pernada)$/.test(nmNorm(toks[k + 1].v)))) {
+          const q = toks[++k];
+          if (q.t === "num") {
+            if (dist === null) dist = q.u === "cm" ? q.v / 100 : q.u === "R" ? q.v / NM_M : q.v;
+            continue;
+          }
+          const qq = nmNorm(q.v);
+          if (qq === "altura" || qq === "fundo") {
+            const t2 = toks[++k];
+            if (!t2 || t2.t !== "num") throw new NmErro(qq + ": diga quanto (ex.: " + qq + " 40cm).", l.linha);
+            op[qq] = t2.u === "cm" ? t2.v / 100 : t2.v;
+            continue;
+          }
+          if (/^(voltas|volta|de)$/.test(qq)) continue;
+          if (/^(direita|esquerda)$/.test(qq)) op.sentido = qq;
+          if (!estilo) estilo = qq;
+        }
+        let an, frase;
+        if (V2 === "pula") {
+          const e = LC_PULOS[estilo] ? estilo : /^(direita|esquerda)$/.test(estilo || "") ? "lado" : dist ? "frente" : "lugar";
+          an = lcPulo({ estilo: e, distancia: dist ?? void 0, altura: op.altura, sentido: op.sentido });
+          frase = "pula (" + e + ")";
+        } else if (V2 === "mergulha") {
+          an = lcMergulho({ altura: op.altura, fundo: op.fundo });
+          frase = "mergulha de cabeça";
+        } else if (V2 === "nada") {
+          const e = LC_NADO[estilo] ? estilo : "crawl";
+          an = lcNadar(e, { distancia: dist ?? void 0 });
+          frase = "nada " + e;
+        } else if (V2 === "engatinha" || V2 === "rasteja" || V2 === "anda-agachado") {
+          const c = V2 === "engatinha" ? lcEngatinharCiclo() : V2 === "rasteja" ? lcRastejarCiclo() : lcAgachadoCiclo();
+          an = lcPorDistancia(c, dist ?? 1.5, V2);
+          frase = V2.replace("-", " ") + " " + (dist ?? 1.5) + " m";
+        } else if (V2 === "cai") {
+          const d = /^(frente|tras|lado)$/.test(estilo || "") ? estilo : "frente";
+          an = lcCair(d);
+          frase = "cai para " + (d === "tras" ? "trás" : d === "lado" ? "o lado" : "frente");
+        } else if (V2 === "levanta-se") {
+          an = (x) => lcLevantar(estilo === "costas" || estilo === "brucos" ? estilo : (x.params.bodyPitch || 0) < -45 ? "costas" : "brucos");
+          frase = "levanta-se do chão";
+        } else {
+          const sent = estilo === "esquerda" ? "esquerda" : "direita";
+          an = lcRolar(sent, dist ?? 1);
+          frase = "rola para a " + sent;
+        }
+        depois4.push(() => its.forEach((x) => {
+          if (V2 === "nada") {
+            Object.assign(x.params, anPoseValores("empe", x.params), { bodyPitch: 0, bodyRoll: 0 });
+            if (!lcNaLinhaDaAgua(x, an)) Q.avisos.push(x.name + " nada fora da água (não há peça “agua” onde ele está).");
+          }
+          nmTocar(Q, x, typeof an === "function" ? an(x) : an, null);
+          if (V2 === "nada" && lcAguaEm(x.params.wx || 0, x.params.wz || 0) === null) Q.avisos.push(x.name + " termina o nado FORA da água — nade menos ou comece mais para dentro (de costas ele vai na direção da cabeça).");
+        }));
+        feito.anima = frase;
       } else if (w === "pose") {
-        const pz = nmPoseValida(nx.v, l.linha);
-        its.forEach((x) => apiFor(x).poseRapida(pz, { molejo: Q.molejo ?? 0.5, semente: x.name + Q.indice }));
-        feito.pose = pz;
+        if (!nx) throw new NmErro("pose: qual?", l.linha);
+        const pv = pdValoresPose(nx.v, it2.params, ctx, l.linha);
+        if (pv.origem === "pronta") its.forEach((x) => apiFor(x).poseRapida(pv.nome, { molejo: Q.molejo ?? 0.5, semente: x.name + Q.indice }));
+        else its.forEach((x) => Object.assign(x.params, pv.valores));
+        feito.pose = pv.nome;
         k++;
       } else if (w === "acao" || w === "ação") {
         const a = nx.v;
@@ -32404,6 +33722,13 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         throw new NmErro("Em “" + nomes.join(", ") + "”, não entendi “" + t.v + "”." + (s ? " Quis dizer “" + s + "”?" : ""), l.linha);
       }
     }
+    depois4.push(() => {
+      try {
+        const n2 = lcNivelAgua(it2);
+        if (n2) feito.agua = n2;
+      } catch (e) {
+      }
+    });
     Q.feitos.push(feito);
     Q.depois.push(...depois4);
     return true;
@@ -32733,7 +34058,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function nmDentroDe(it2, ignorar) {
     const x = it2.params.wx || 0, z = it2.params.wz || 0, h = it2.params.bodyLift || 0;
     for (const o of SCN.objetos) {
-      if (o.chao || o.alt < 2 || ignorar && ignorar.has(o.id) || o.grip || o.gripV3 || o.emAr && (o.base || 0) > 15) continue;
+      if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || ignorar && ignorar.has(o.id) || o.grip || o.gripV3 || o.emAr && (o.base || 0) > 15) continue;
       if (h >= (o.base || 0) + o.alt - 0.5) continue;
       const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
       if (o.raio && Math.hypot(dx, dz) < o.raio + 1.2) return o;
@@ -32827,7 +34152,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         const [t, o] = f.interacao.split(" com ");
         acts.push(nomes.includes(o) ? nmFrase(t) : nmFrase(t) + " com " + o + " (" + cor2(o) + ")");
       }
-      if (f.anima) acts.push(/^(gira |vira para |anda até |corre até )/.test(f.anima) ? f.anima : nmFrase(f.anima));
+      if (f.anima) acts.push(/^(gira |vira para |anda até |corre até |pula|mergulha|nada |engatinha|rasteja|anda agachado|cai |levanta-se|rola )/.test(f.anima) ? f.anima : nmFrase(f.anima));
+      if (f.agua) acts.push(f.agua);
       if (f.papel) acts.push(nmFrase(f.papel) + (f.papelR && f.papelR.gesto ? " (" + nmFrase(f.papelR.gesto) + ")" : ""));
       else if (f.fala) acts.push("falando" + (f.tom ? " (" + f.tom + ")" : "") + (f.gesto ? "" : ", gesticulando"));
       if (f.gesto) acts.push("gesto " + nmFrase(f.gesto));
@@ -32846,7 +34172,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   var NM_CACHE = /* @__PURE__ */ new Map();
   function compilarName(texto2, opts = {}) {
-    const chave = opts.imagens ? null : String(opts.semente ?? "") + "\0" + JSON.stringify(bibliotecaLocais().listar().map((x) => x.nome + x.versao)) + "\0" + texto2;
+    const chave = opts.imagens ? null : String(opts.semente ?? "") + (opts.salvar === false ? "" : "") + "\0" + JSON.stringify(bibliotecaLocais().listar().map((x) => x.nome + x.versao)) + "\0" + texto2;
     if (chave && NM_CACHE.has(chave) && !opts.semCache) return NM_CACHE.get(chave);
     const r = nmCompilar(texto2, opts);
     if (chave) {
@@ -32856,7 +34182,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return r;
   }
   function nmCompilar(texto2, opts = {}) {
-    const ctx = { elenco: /* @__PURE__ */ new Map(), apelidos: /* @__PURE__ */ new Map(), coresUsadas: /* @__PURE__ */ new Set(), locais: /* @__PURE__ */ new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: /* @__PURE__ */ new Map(), locaisRuins: /* @__PURE__ */ new Set(), animacoes: /* @__PURE__ */ new Map() };
+    const ctx = { elenco: /* @__PURE__ */ new Map(), apelidos: /* @__PURE__ */ new Map(), coresUsadas: /* @__PURE__ */ new Set(), locais: /* @__PURE__ */ new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: /* @__PURE__ */ new Map(), locaisRuins: /* @__PURE__ */ new Set(), animacoes: /* @__PURE__ */ new Map(), poses: /* @__PURE__ */ new Map(), defs: [], salvar: opts.salvar !== false };
     const erros = [], avisos = [], quadros = [], paginas = [];
     ctx.erros = erros;
     let blocos2;
@@ -32900,11 +34226,30 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           erros.push({ linha: e.linha || b.linha, erro: e.message });
         }
       }
-      for (const b of blocos2) if (/^(animacao|animação|animation)\b/i.test(b.cab)) {
+      for (const b of blocos2) if (/^pose\b/i.test(b.cab)) {
         try {
-          nmLerAnimacao(b, ctx);
+          nmLerPose(b, ctx, avisos);
         } catch (e) {
           erros.push({ linha: e.linha || b.linha, erro: e.message });
+        }
+      }
+      {
+        let pend = blocos2.filter((b) => /^(animacao|animação|animation|ciclo)\b/i.test(b.cab));
+        for (let volta = 0; volta < 4 && pend.length; volta++) {
+          const falhas = [];
+          for (const b of pend) {
+            try {
+              if (/^ciclo\b/i.test(b.cab)) nmLerCiclo(b, ctx, avisos);
+              else nmLerAnimacao(b, ctx, avisos);
+            } catch (e) {
+              falhas.push([b, e]);
+            }
+          }
+          if (falhas.length === pend.length || volta === 3) {
+            falhas.forEach(([b, e]) => erros.push({ linha: e.linha || b.linha, erro: e.message }));
+            break;
+          }
+          pend = falhas.map((f) => f[0]);
         }
       }
       for (const b of blocos2) if (/^(local|lugar|location)\b/i.test(b.cab)) {
@@ -33281,6 +34626,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return {
       video: ctx.video || null,
       animacoes: [...ctx.animacoes.values()],
+      poses: [...ctx.poses.keys()],
+      defs: ctx.defs,
       ok: !erros.length,
       erros,
       avisos,
@@ -33314,11 +34661,288 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     return { nome: pl.nome, pecas: pl.itens.length, marcas: Object.keys(pl.marcas), regioes: Object.keys(pl.regioes), niveis: Object.keys(pl.niveis), salas: Object.keys(pl.salas), erros: ctx.erros, avisos, codigo: pl.codigo };
   }
-  function nmLerAnimacao(bloco, ctx) {
+  function nmItens(tmp, toks, k0, l, ctx, juntas, c, segurar, avisos, modo) {
+    const soChave = (w) => {
+      if (modo === "pose") throw new NmErro("Numa pose não cabe “" + w + "” (isso é de animação: use dentro de “chave …”).", l.linha);
+    };
+    for (let k = k0; k < toks.length; k++) {
+      const w = nmNorm(toks[k].v), nx = toks[k + 1];
+      if (/^§j\d+$/.test(w)) {
+        const j = juntas[+w.slice(2)];
+        pdAplicarJunta(tmp.params, j.junta, j.lado, j.args, l.linha).forEach((a) => avisos && avisos.push("linha " + l.linha + ": " + a));
+        continue;
+      }
+      if (w === "pose") {
+        if (!nx) throw new NmErro("pose: qual? (ex.: pose passo)", l.linha);
+        Object.assign(tmp.params, pdValoresPose(nx.v, tmp.params, ctx, l.linha).valores);
+        k++;
+        continue;
+      }
+      {
+        const r = pdAtalho(tmp.params, toks, k, l.linha, ctx);
+        if (r >= 0) {
+          k = r - 1;
+          continue;
+        }
+      }
+      if (w === "expressao" || w === "expressão" || w === "rosto") {
+        const ex = nmExpressaoValida(nx.v, l.linha);
+        k++;
+        let I = 1;
+        if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") {
+          I = toks[k + 2].v;
+          k += 2;
+        }
+        c.rosto = { expressao: ex, intensidade: I };
+        Object.assign(tmp.params, misturarExpressoes({ [ex]: 1 }, I));
+      } else if (w === "gesto") {
+        let mao = null, I = 1;
+        k++;
+        while (toks[k + 1] && /^(mao|mão|intensidade)$/.test(nmNorm(toks[k + 1].v))) {
+          if (nmNorm(toks[k + 1].v) === "intensidade") I = toks[k + 2].v;
+          else mao = toks[k + 2].v;
+          k += 2;
+        }
+        aplicarGestoConversa(tmp, nx.v, { mao, intensidade: I });
+      } else if (w === "atitude") {
+        let I = 1;
+        k++;
+        if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") {
+          I = toks[k + 2].v;
+          k += 2;
+        }
+        aplicarAtitude(tmp, nx.v, { intensidade: I });
+      } else if (w === "move" || w === "anda" || w === "desloca") {
+        soChave(w);
+        const mv2 = { frente: 0, lado: 0, giro: 0 };
+        while (toks[k + 1] && /^(frente|lado|giro|tras|trás)$/.test(nmNorm(toks[k + 1].v))) {
+          const f = nmNorm(toks[k + 1].v), v = toks[k + 2].v;
+          if (f === "tras" || f === "trás") mv2.frente = -v;
+          else mv2[f] = v;
+          k += 2;
+        }
+        c.mover = mv2;
+      } else if (w === "curva") {
+        soChave(w);
+        c.curva = nmNorm(nx.v);
+        k++;
+      } else if (w === "olha" || w === "olha-para") {
+        soChave(w);
+        c.olha = /^(camera|câmera)$/.test(nmNorm(nx.v)) ? "camera" : nx.t === "tupla" ? ((p) => [p[0], 14, p[1]])(nmXZ(nx.v)) : nx.v;
+        k++;
+        if (toks[k + 1] && /^(so-cabeca|so-olhos|corpo|natural)$/.test(nmNorm(toks[k + 1].v))) {
+          c.olhaModo = nmNorm(toks[k + 1].v);
+          k++;
+        }
+      } else if (w === "segurar" || w === "segura-por" || w === "pausa") {
+        soChave(w);
+        const v = nx;
+        if (!v || v.t !== "num") throw new NmErro("segurar: diga quanto tempo (ex.: segurar 0.3s).", l.linha);
+        segurar[c.t] = v.v * (v.u === "ms" ? 1e-3 : 1);
+        k++;
+      } else if (w === "fala") {
+        soChave(w);
+        let texto2 = "a e o a i o", tom = "calmo";
+        if (nx && nx.t === "str") {
+          texto2 = nx.v;
+          k++;
+        }
+        if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") {
+          tom = nmNorm(toks[k + 2].v);
+          k += 2;
+        }
+        c.fala = { texto: texto2, tom };
+      } else if (/^(pescoco|pescoço|cabeca|cabeça|coluna|tronco|ombros|ombro|perna|pe|pé|braco|braço)$/.test(w)) {
+        let parte = w;
+        if (/^(ombro|perna|pe|braco)$/.test(parte) && nx && /^(direit[oa]|esquerd[oa])$/.test(nmNorm(nx.v))) {
+          parte += "-" + nmNorm(nx.v);
+          k++;
+        }
+        while (toks[k + 1] && (toks[k + 1].t === "num" || /^(inclina|abaixa|levanta|ergue|gira|lado|flexiona|estende|torce|caidos|afasta|junta|joelho|frente|tras|abre|cotovelo|punho)$/.test(nmNorm(toks[k + 1].v)))) {
+          const o0 = toks[k + 1];
+          if (o0.t === "num") {
+            k++;
+            let dir = null;
+            if (toks[k + 1] && /^(para|pra)$/.test(nmNorm(toks[k + 1].v))) k++;
+            if (toks[k + 1] && toks[k + 1].t === "pal") {
+              dir = toks[k + 1].v;
+              k++;
+            }
+            ajusteFino(tmp, parte, "pe", o0.v, dir);
+            continue;
+          }
+          k++;
+          let v = 0;
+          if (toks[k + 1] && toks[k + 1].t === "num") {
+            v = toks[k + 1].v;
+            k++;
+          }
+          ajusteFino(tmp, parte, nmNorm(o0.v), v);
+        }
+      } else throw new NmErro((modo === "pose" ? "Na pose" : "Na chave") + ", não entendi “" + toks[k].v + "” (use juntas como ombro.direito(frente 40), pose X, atalhos como agacha 50% · ajoelha direito · peso esquerdo · inclina frente 20 · espelha bracos" + (modo === "pose" ? "" : ", move frente 0.5, olha Mira, segurar 0.3s, curva, fala") + ").", l.linha);
+    }
+  }
+  var NM_ROSTO_K = /^(jawOpen|smile|eyeLid|browUp|browIn|eyeYaw|eyePitch|blush|tears)$/;
+  function nmValoresDe(params) {
+    const vals = {};
+    for (const kk of Object.keys(params)) if ((POSEKEYS.has(kk) || NM_ROSTO_K.test(kk)) && Number.isFinite(params[kk])) vals[kk] = params[kk];
+    return vals;
+  }
+  function nmCabNome(cab, bloco, tipo) {
+    const t = cab[0];
+    if (!t || t.t !== "str" && t.t !== "pal") throw new NmErro(tipo + ": dê um nome, ex.: " + tipo + ' "meu-' + tipo + '".', bloco.linha);
+    return String(t.v);
+  }
+  function nmFimDoBloco(bloco) {
+    return bloco.corpo.length ? bloco.corpo[bloco.corpo.length - 1].linha : bloco.linha;
+  }
+  function nmLerPose(bloco, ctx, avisos) {
+    const cab = nmTokens(bloco.cab);
+    cab.shift();
+    const nome = nmCabNome(cab, bloco, "pose");
+    let de = "empe", salvar = false, tags = [];
+    for (let k = 1; k < cab.length; k++) {
+      const w = nmNorm(cab[k].v);
+      if (w === "de" || w === "a-partir-de") {
+        if (!cab[k + 1]) throw new NmErro("pose: de qual pose? (ex.: de passo)", bloco.linha);
+        de = cab[++k].v;
+      } else if (w === "salvar" || w === "substituir") salvar = true;
+      else if (w === "tags") tags = String(cab[++k].v).split(",").map((x) => x.trim()).filter(Boolean);
+      else throw new NmErro("pose: não entendi “" + cab[k].v + '” (use de OUTRA-POSE, salvar, tags "A/B").', bloco.linha);
+    }
+    const tmp = { name: "_pose", params: pdParams({}) };
+    Object.assign(tmp.params, pdValoresPose(de, tmp.params, ctx, bloco.linha).valores);
+    for (const l of nmExpandir(bloco.corpo, ctx.vars, ctx.rnd)) {
+      const ex = pdExtrairJuntas(l.txt), toks = nmTokens(ex.txt);
+      if (toks.length) nmItens(tmp, toks, 0, l, ctx, ex.juntas, {}, {}, avisos, "pose");
+    }
+    const vals = nmValoresDe(tmp.params);
+    ctx.poses.set(nome, vals);
+    ctx.defs.push({ tipo: "pose", nome, linha: bloco.linha, ate: nmFimDoBloco(bloco), valores: vals });
+    if (salvar && ctx.salvar) salvarPose(nome, vals, { substituir: true, miniatura: pdMiniatura(vals, { rotulo: nome }), tags });
+    return vals;
+  }
+  function nmLerCiclo(bloco, ctx, avisos) {
+    const cab = nmTokens(bloco.cab);
+    cab.shift();
+    const nome = nmCabNome(cab, bloco, "ciclo"), o = { nome, tags: [] };
+    let de = null, salvar = false, passagem = null;
+    for (let k = 1; k < cab.length; k++) {
+      const w = nmNorm(cab[k].v), nx = cab[k + 1], seg = (t) => t.v * (t.u === "ms" ? 1e-3 : 1), met = (t) => t.u === "cm" ? t.v / 100 : t.u === "R" ? t.v / NM_M : t.v;
+      if (w === "de" || w === "a-partir-de") de = cab[++k].v;
+      else if (w === "duracao" || w === "duração") {
+        o.duracao = seg(nx);
+        k++;
+      } else if (w === "corre" || w === "correndo" || w === "corrida") o.corre = true;
+      else if (w === "passagem") {
+        const v = cab[++k].v;
+        if (nmNorm(v) !== "auto") passagem = v;
+      } else if (w === "anda") {
+        o.anda = met(nx);
+        k++;
+      } else if (w === "voo") {
+        o.voo = met(nx);
+        k++;
+      } else if (w === "salvar") salvar = true;
+      else if (w === "tags") o.tags = String(cab[++k].v).split(",").map((x) => x.trim()).filter(Boolean);
+      else if (w === "sem-loop") o.loop = false;
+      else throw new NmErro("ciclo: não entendi “" + cab[k].v + "” (use de POSE, duracao 1s, corre, passagem POSE, anda 1.4m, voo 5cm, salvar).", bloco.linha);
+    }
+    if (!de) throw new NmErro('ciclo: de qual pose? (ex.: ciclo "andar" de passo).', bloco.linha);
+    const tmp = { name: "_ciclo", params: pdParams({}) };
+    Object.assign(tmp.params, pdValoresPose(de, tmp.params, ctx, bloco.linha).valores);
+    for (const l of nmExpandir(bloco.corpo, ctx.vars, ctx.rnd)) {
+      const ex = pdExtrairJuntas(l.txt), toks = nmTokens(ex.txt);
+      if (toks.length) nmItens(tmp, toks, 0, l, ctx, ex.juntas, {}, {}, avisos, "pose");
+    }
+    if (passagem) o.passagem = pdValoresPose(passagem, tmp.params, ctx, bloco.linha).valores;
+    const a = pdCiclo(nmValoresDe(tmp.params), Object.assign(o, { de }));
+    ctx.animacoes.set(nome, a);
+    ctx.defs.push({ tipo: "ciclo", nome, linha: bloco.linha, ate: nmFimDoBloco(bloco), anim: a });
+    if (salvar && ctx.salvar) bibliotecaAnimacoes().salvar(a, { tags: a.tags, origem: "dsl" });
+    return a;
+  }
+  var NM_ANIM_CAB = /* @__PURE__ */ new Set(["duracao", "duração", "relativa", "absoluta", "loop", "repete", "curva", "fps", "tags", "salvar", "descricao", "descrição", "velocidade", "em-dois", "em-2", "em-tres", "em-3", "passo", "travar-pes", "pes-travados", "mistura"]);
+  function nmAcharAnim(ctx, n2, linha) {
+    const a = ctx.animacoes.get(n2) || ctx.animacoes.get([...ctx.animacoes.keys()].find((k) => nmNorm(k) === nmNorm(n2))) || bibliotecaAnimacoes().obter(n2);
+    if (!a) {
+      const sg = nmParecida(n2, bibliotecaAnimacoes().listar().map((x) => x.nome).concat([...ctx.animacoes.keys()]));
+      throw new NmErro("Animação “" + n2 + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), linha);
+    }
+    return a;
+  }
+  function nmOperacao(a, toks, juntas, l, ctx, avisos) {
+    const w = nmNorm(toks[0].v), seg = (t) => t.u === "%" ? a.duracao * t.v / 100 : t.v * (t.u === "ms" ? 1e-3 : 1);
+    if (w === "troca") {
+      const [ps, k2] = pdLerPartes(toks, 1);
+      if (toks[k2] && nmNorm(toks[k2].v) !== "por" && toks[k2].t === "pal") throw new NmErro("troca: “" + toks[k2].v + "” não é uma parte do corpo. Partes: pernas, bracos, maos, tronco, cabeca, ombros, rosto, corpo, braco-direito, perna-esquerda…", l.linha);
+      if (!ps.length || !toks[k2] || nmNorm(toks[k2].v) !== "por") throw new NmErro("troca: troca PARTES por pose POSE (ex.: troca pernas por pose ajoelhado).", l.linha);
+      let k = k2 + 1;
+      const qual = toks[k] && nmNorm(toks[k].v);
+      if (qual === "pose") k++;
+      if (qual === "anima" || qual === "animacao") return pdCamada(a, null, nmAcharAnim(ctx, toks[k + 1].v, l.linha), ps, { nome: a.nome, linha: l.linha });
+      if (!toks[k]) throw new NmErro("troca: por qual pose?", l.linha);
+      const fixo = toks[k + 1] && nmNorm(toks[k + 1].v) === "fixo";
+      return pdTroca(a, ps, pdValoresPose(toks[k].v, pdParams({}), ctx, l.linha).valores, { fixo, linha: l.linha, nome: a.nome });
+    }
+    if (w === "soma") {
+      const tmp = { name: "_soma", params: pdParams({}) }, antes = Object.assign({}, tmp.params);
+      nmItens(tmp, toks, 1, l, ctx, juntas, {}, {}, avisos, "pose");
+      const d = {};
+      for (const k of Object.keys(tmp.params)) if (Number.isFinite(tmp.params[k]) && Math.abs(tmp.params[k] - (antes[k] || 0)) > 1e-6) d[k] = tmp.params[k] - (antes[k] || 0);
+      if (!Object.keys(d).length) throw new NmErro("soma: nada mudou (ex.: soma tronco(frente 20)).", l.linha);
+      return pdSoma(a, d);
+    }
+    if (w === "tira") {
+      const [ps] = pdLerPartes(toks, 1);
+      if (!ps.length) throw new NmErro("tira: quais partes? (ex.: tira bracos)", l.linha);
+      return pdTira(a, ps, { linha: l.linha });
+    }
+    if (w === "trecho") {
+      const n2 = toks.slice(1).filter((t) => t.t === "num" || t.t === "faixa");
+      let t0, t1;
+      if (n2[0] && n2[0].t === "faixa") {
+        t0 = n2[0].v[0];
+        t1 = n2[0].v[1];
+      } else if (n2.length >= 2) {
+        t0 = seg(n2[0]);
+        t1 = seg(n2[1]);
+      } else throw new NmErro("trecho: trecho 0.2s a 0.8s (ou 25% a 75%).", l.linha);
+      return pdTrecho(a, t0, t1, { nome: a.nome });
+    }
+    if (w === "ate" || w === "até") {
+      const t = toks[1];
+      if (!t) throw new NmErro("ate: ate 90 (graus, nos giros) · ate metade · ate 0.5s · ate 50%.", l.linha);
+      if (t.t === "pal" && nmNorm(t.v) === "metade") return pdTrecho(a, 0, a.duracao / 2, { nome: a.nome });
+      if (t.u === "s" || t.u === "ms" || t.u === "%") return pdTrecho(a, 0, seg(t), { nome: a.nome });
+      return pdAteAngulo(a, t.v, { nome: a.nome, linha: l.linha });
+    }
+    if (w === "reverte" || w === "ao-contrario") return pdReverter(a, { nome: a.nome });
+    if (w === "espelha") return pdEspelharAnim(a, { nome: a.nome });
+    if (w === "repete") {
+      const n2 = toks[1] && toks[1].t === "num" ? toks[1].v : 2;
+      return pdRepetir(a, n2, { nome: a.nome });
+    }
+    if (w === "vai-e-volta") return pdVaiEVolta(a, { nome: a.nome });
+    if (w === "amplitude") {
+      const t = toks[1];
+      if (!t || t.t !== "num") throw new NmErro("amplitude: amplitude 70% [partes].", l.linha);
+      const [ps] = pdLerPartes(toks, 2);
+      return pdAmplitude(a, t.u === "%" || t.v > 2 ? t.v / 100 : t.v, { partes: ps.length ? ps : null, nome: a.nome, linha: l.linha });
+    }
+    if (w === "estica") {
+      const t = toks[1];
+      if (!t || t.t !== "num") throw new NmErro("estica: estica 2s (a nova duração).", l.linha);
+      return pdEsticar(a, seg(t), { nome: a.nome });
+    }
+    if (w === "velocidade") return retimar(a, { velocidade: toks[1].v, nome: a.nome });
+    throw new NmErro("Na animação, não entendi “" + toks[0].v + "” (use chave 0.5s …, troca, soma, tira, trecho, ate, reverte, espelha, repete, vai-e-volta, amplitude, estica).", l.linha);
+  }
+  function nmLerAnimacao(bloco, ctx, avisos) {
     const cab = nmTokens(bloco.cab);
     cab.shift();
     const o = { nome: cab[0] ? cab[0].v : "animação " + (ctx.animacoes.size + 1), duracao: null, modo: "absoluta", loop: false, curva: "suave", tags: [], fps: 12 };
-    let salvar = false;
+    let salvar = false, fonte = null;
     for (let k = 1; k < cab.length; k++) {
       const w = nmNorm(cab[k].v);
       if (w === "duracao" || w === "duração") o.duracao = cab[++k].v * (cab[k].u === "ms" ? 1e-3 : 1);
@@ -33337,135 +34961,95 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       else if (w === "em-tres" || w === "em-3") o.passo = 3;
       else if (w === "passo") o.passo = cab[++k].v;
       else if (w === "travar-pes" || w === "pes-travados") o.travarPes = true;
-      else throw new NmErro("animacao: não entendi “" + cab[k].v + '” (use duracao 1s, relativa, loop, curva suave, fps 24, velocidade 1.5, em-dois, tags "a, b", salvar).', bloco.linha);
+      else if (w === "de" || w === "a-partir-de") {
+        if (!cab[k + 1]) throw new NmErro("animacao … de QUAL? (ex.: de girar360E)", bloco.linha);
+        fonte = { de: cab[++k].v };
+      } else if (w === "junta" || w === "juntar") {
+        const l0 = [];
+        while (cab[k + 1] && (cab[k + 1].t === "pal" || cab[k + 1].t === "str") && !NM_ANIM_CAB.has(nmNorm(cab[k + 1].v))) {
+          l0.push(cab[++k].v);
+          if (cab[k + 1] && cab[k + 1].v === ",") k++;
+        }
+        if (l0.length < 2) throw new NmErro("junta: junta A, B[, C] [mistura 0.2s].", bloco.linha);
+        fonte = { junta: l0 };
+      } else if (w === "mistura") {
+        o.mistura = cab[++k].v * (cab[k].u === "ms" ? 1e-3 : 1);
+      } else if (w === "camada") {
+        const A = cab[++k] && cab[k].v;
+        let [pA, k2] = pdLerPartes(cab, k + 1);
+        k = k2;
+        if (!cab[k] || cab[k].v !== "+" || !cab[k + 1]) throw new NmErro("camada: camada A [partes] + B [partes] (ex.: camada andarCiclo + acenarTchau bracos).", bloco.linha);
+        const B0 = cab[++k].v;
+        const [pB, k3] = pdLerPartes(cab, k + 1);
+        k = k3 - 1;
+        fonte = { camada: { A, pA, B: B0, pB } };
+      } else throw new NmErro("animacao: não entendi “" + cab[k].v + '” (use duracao 1s, relativa, loop, curva suave, fps 24, velocidade 1.5, em-dois, tags "a, b", salvar, de OUTRA, junta A, B, camada A + B).', bloco.linha);
     }
-    const tmp = { name: "_anim", params: Object.assign({}, SCN.list[0].params) };
-    Object.assign(tmp.params, anPoseValores("empe", tmp.params));
-    const chaves = [], segurar = {};
-    let primeira = null;
-    for (const l of nmExpandir(bloco.corpo, ctx.vars, ctx.rnd)) {
-      const toks = nmTokens(l.txt);
-      if (!toks.length) continue;
-      if (!/^(chave|key|quadro-chave)$/.test(nmNorm(toks[0].v))) throw new NmErro("Na animação, cada linha começa com “chave 0.5s …”.", l.linha);
-      const tt = toks[1];
-      if (!tt || tt.t !== "num") throw new NmErro("chave: diga o instante (ex.: chave 0.5s pose passo).", l.linha);
-      const c = { t: tt.v * (tt.u === "ms" ? 1e-3 : 1), valores: {} };
-      for (let k = 2; k < toks.length; k++) {
-        const w = nmNorm(toks[k].v), nx = toks[k + 1];
-        if (w === "pose") {
-          Object.assign(tmp.params, anPoseValores(nmPoseValida(nx.v, l.linha), tmp.params));
-          k++;
-        } else if (w === "expressao" || w === "expressão" || w === "rosto") {
-          const ex = nmExpressaoValida(nx.v, l.linha);
-          k++;
-          let I = 1;
-          if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") {
-            I = toks[k + 2].v;
-            k += 2;
-          }
-          c.rosto = { expressao: ex, intensidade: I };
-          Object.assign(tmp.params, misturarExpressoes({ [ex]: 1 }, I));
-        } else if (w === "gesto") {
-          let mao = null, I = 1;
-          k++;
-          while (toks[k + 1] && /^(mao|mão|intensidade)$/.test(nmNorm(toks[k + 1].v))) {
-            if (nmNorm(toks[k + 1].v) === "intensidade") I = toks[k + 2].v;
-            else mao = toks[k + 2].v;
-            k += 2;
-          }
-          aplicarGestoConversa(tmp, nx.v, { mao, intensidade: I });
-        } else if (w === "atitude") {
-          let I = 1;
-          k++;
-          if (toks[k + 1] && nmNorm(toks[k + 1].v) === "intensidade") {
-            I = toks[k + 2].v;
-            k += 2;
-          }
-          aplicarAtitude(tmp, nx.v, { intensidade: I });
-        } else if (w === "move" || w === "anda" || w === "desloca") {
-          const mv2 = { frente: 0, lado: 0, giro: 0 };
-          while (toks[k + 1] && /^(frente|lado|giro|tras|trás)$/.test(nmNorm(toks[k + 1].v))) {
-            const f = nmNorm(toks[k + 1].v), v = toks[k + 2].v;
-            if (f === "tras" || f === "trás") mv2.frente = -v;
-            else mv2[f] = v;
-            k += 2;
-          }
-          c.mover = mv2;
-        } else if (w === "curva") {
-          c.curva = nmNorm(nx.v);
-          k++;
-        } else if (w === "olha" || w === "olha-para") {
-          c.olha = /^(camera|câmera)$/.test(nmNorm(nx.v)) ? "camera" : nx.t === "tupla" ? ((p) => [p[0], 14, p[1]])(nmXZ(nx.v)) : nx.v;
-          k++;
-          if (toks[k + 1] && /^(so-cabeca|so-olhos|corpo|natural)$/.test(nmNorm(toks[k + 1].v))) {
-            c.olhaModo = nmNorm(toks[k + 1].v);
-            k++;
-          }
-        } else if (w === "segurar" || w === "segura-por" || w === "pausa") {
-          const v = nx;
-          if (!v || v.t !== "num") throw new NmErro("segurar: diga quanto tempo (ex.: segurar 0.3s).", l.linha);
-          segurar[c.t] = v.v * (v.u === "ms" ? 1e-3 : 1);
-          k++;
-        } else if (w === "fala") {
-          let texto2 = "a e o a i o", tom = "calmo";
-          if (nx && nx.t === "str") {
-            texto2 = nx.v;
-            k++;
-          }
-          if (toks[k + 1] && nmNorm(toks[k + 1].v) === "tom") {
-            tom = nmNorm(toks[k + 2].v);
-            k += 2;
-          }
-          c.fala = { texto: texto2, tom };
-        } else if (/^(pescoco|pescoço|cabeca|cabeça|coluna|tronco|ombros|ombro|perna|pe|pé|braco|braço)$/.test(w)) {
-          let parte = w;
-          if (/^(ombro|perna|pe|braco)$/.test(parte) && nx && /^(direit[oa]|esquerd[oa])$/.test(nmNorm(nx.v))) {
-            parte += "-" + nmNorm(nx.v);
-            k++;
-          }
-          while (toks[k + 1] && (toks[k + 1].t === "num" || /^(inclina|abaixa|levanta|ergue|gira|lado|flexiona|estende|torce|caidos|afasta|junta|joelho|frente|tras|abre|cotovelo|punho)$/.test(nmNorm(toks[k + 1].v)))) {
-            const o0 = toks[k + 1];
-            if (o0.t === "num") {
-              k++;
-              let dir = null;
-              if (toks[k + 1] && /^(para|pra)$/.test(nmNorm(toks[k + 1].v))) k++;
-              if (toks[k + 1] && toks[k + 1].t === "pal") {
-                dir = toks[k + 1].v;
-                k++;
-              }
-              ajusteFino(tmp, parte, "pe", o0.v, dir);
-              continue;
-            }
-            k++;
-            let v = 0;
-            if (toks[k + 1] && toks[k + 1].t === "num") {
-              v = toks[k + 1].v;
-              k++;
-            }
-            ajusteFino(tmp, parte, nmNorm(o0.v), v);
-          }
-        } else throw new NmErro("Na chave, não entendi “" + toks[k].v + "” (use pose, expressao, gesto, atitude, olha Mira, segurar 0.3s, ajustes como “pe direito 15cm para direita”, move frente 0.5, curva, fala).", l.linha);
+    const chaves = [], segurar = {}, linhas = nmExpandir(bloco.corpo, ctx.vars, ctx.rnd), ops = [];
+    let primeira = null, a;
+    if (fonte) {
+      a = fonte.de ? nmAcharAnim(ctx, fonte.de, bloco.linha) : fonte.junta ? pdJuntar(fonte.junta.map((n2) => nmAcharAnim(ctx, n2, bloco.linha)), { mistura: o.mistura ?? 0.15 }) : pdCamada(nmAcharAnim(ctx, fonte.camada.A, bloco.linha), fonte.camada.pA, nmAcharAnim(ctx, fonte.camada.B, bloco.linha), fonte.camada.pB, { linha: bloco.linha });
+      a = Object.assign(criarAnimacao(Object.assign({}, a, { versoes: void 0, origem: void 0 })), {});
+      for (const l of linhas) {
+        const ex = pdExtrairJuntas(l.txt), toks = nmTokens(ex.txt);
+        if (!toks.length) continue;
+        if (/^(chave|key|quadro-chave)$/.test(nmNorm(toks[0].v))) {
+          const tt = toks[1];
+          if (!tt || tt.t !== "num") throw new NmErro("chave: diga o instante (ex.: chave 0.5s ombro.direito(frente 90)).", l.linha);
+          const t = tt.v * (tt.u === "ms" ? 1e-3 : 1), B3 = pdBase(), ck = pdChaveEm(a, Math.min(t, a.duracao), B3), abs = {};
+          const rel = a.modo === "relativa", ab = new Set(a.absolutos || []);
+          for (const [k, v] of Object.entries(ck.valores)) abs[k] = rel && !ab.has(k) ? (B3[k] || 0) + v : v;
+          const tmp = { name: "_anim", params: pdParams(abs) }, antes = Object.assign({}, tmp.params), c = { t };
+          nmItens(tmp, toks, 2, l, ctx, ex.juntas, c, segurar, avisos, "chave");
+          const mud = {};
+          for (const k of Object.keys(tmp.params)) if (Number.isFinite(tmp.params[k]) && Math.abs(tmp.params[k] - (antes[k] || 0)) > 1e-6 && (POSEKEYS.has(k) || NM_ROSTO_K.test(k))) mud[k] = tmp.params[k];
+          a = pdFixar(a, t, mud, { mover: c.mover });
+          const kc = a.chaves.find((x) => Math.abs(x.t - t) < 1e-3);
+          if (kc) ["rosto", "olha", "olhaModo", "fala", "curva"].forEach((f) => {
+            if (c[f]) kc[f] = c[f];
+          });
+        } else a = nmOperacao(a, toks, ex.juntas, l, ctx, avisos);
       }
-      const vals = {};
-      for (const kk of Object.keys(tmp.params)) if ((POSEKEYS.has(kk) || /^(jawOpen|smile|eyeLid|browUp|browIn|eyeYaw|eyePitch|blush|tears)$/.test(kk)) && Number.isFinite(tmp.params[kk])) vals[kk] = tmp.params[kk];
-      if (!primeira) primeira = Object.assign({}, vals);
-      if (o.modo === "relativa") {
-        for (const kk of Object.keys(vals)) vals[kk] -= primeira[kk] || 0;
-        for (const kk of Object.keys(vals)) if (Math.abs(vals[kk]) < 1e-4 && chaves.length && !(kk in chaves[chaves.length - 1].valores)) delete vals[kk];
+      if (o.duracao) a = pdEsticar(a, o.duracao);
+      a = Object.assign(a, { nome: o.nome, loop: o.loop || false, tags: o.tags.length ? o.tags : a.tags, descricao: o.descricao || a.descricao, fps: o.fps });
+      if (o.travarPes) a.travarPes = true;
+    } else {
+      const tmp = { name: "_anim", params: pdParams({}) };
+      for (const l of linhas) {
+        const ex = pdExtrairJuntas(l.txt), toks = nmTokens(ex.txt);
+        if (!toks.length) continue;
+        if (!/^(chave|key|quadro-chave)$/.test(nmNorm(toks[0].v))) {
+          if (!chaves.length) throw new NmErro("Na animação, cada linha começa com “chave 0.5s …” (ou, depois das chaves, uma operação: espelha, repete 2, reverte…).", l.linha);
+          ops.push([toks, ex.juntas, l]);
+          continue;
+        }
+        const tt = toks[1];
+        if (!tt || tt.t !== "num") throw new NmErro("chave: diga o instante (ex.: chave 0.5s pose passo).", l.linha);
+        const c = { t: tt.v * (tt.u === "ms" ? 1e-3 : 1), valores: {} };
+        nmItens(tmp, toks, 2, l, ctx, ex.juntas, c, segurar, avisos, "chave");
+        const vals = nmValoresDe(tmp.params);
+        if (!primeira) primeira = Object.assign({}, vals);
+        if (o.modo === "relativa") {
+          for (const kk of Object.keys(vals)) vals[kk] -= primeira[kk] || 0;
+          for (const kk of Object.keys(vals)) if (Math.abs(vals[kk]) < 1e-4 && chaves.length && !(kk in chaves[chaves.length - 1].valores)) delete vals[kk];
+        }
+        c.valores = vals;
+        chaves.push(c);
       }
-      c.valores = vals;
-      chaves.push(c);
+      if (!chaves.length) throw new NmErro("A animação “" + o.nome + "” não tem chaves.", bloco.linha);
+      const muda = /* @__PURE__ */ new Set();
+      for (const kk of Object.keys(chaves[0].valores)) if (chaves.some((c) => Math.abs((c.valores[kk] ?? chaves[0].valores[kk]) - chaves[0].valores[kk]) > 1e-3)) muda.add(kk);
+      chaves.forEach((c) => {
+        for (const kk of Object.keys(c.valores)) if (!muda.has(kk)) delete c.valores[kk];
+      });
+      a = criarAnimacao(Object.assign(o, { duracao: o.duracao || chaves[chaves.length - 1].t, chaves }));
+      for (const [toks, juntas, l] of ops) a = Object.assign(nmOperacao(a, toks, juntas, l, ctx, avisos), { nome: o.nome });
     }
-    if (!chaves.length) throw new NmErro("A animação “" + o.nome + "” não tem chaves.", bloco.linha);
-    const muda = /* @__PURE__ */ new Set();
-    for (const kk of Object.keys(chaves[0].valores)) if (chaves.some((c) => Math.abs((c.valores[kk] ?? chaves[0].valores[kk]) - chaves[0].valores[kk]) > 1e-3)) muda.add(kk);
-    chaves.forEach((c) => {
-      for (const kk of Object.keys(c.valores)) if (!muda.has(kk)) delete c.valores[kk];
-    });
-    let a = criarAnimacao(Object.assign(o, { duracao: o.duracao || chaves[chaves.length - 1].t, chaves }));
     if (o.velocidade || Object.keys(segurar).length) a = retimar(a, { velocidade: o.velocidade, segurar });
+    if (o.passo) a.passo = o.passo;
     ctx.animacoes.set(a.nome, a);
-    if (salvar) bibliotecaAnimacoes().salvar(a, { tags: a.tags, origem: "dsl" });
+    ctx.defs.push({ tipo: "animacao", nome: a.nome, linha: bloco.linha, ate: nmFimDoBloco(bloco), anim: a });
+    if (salvar && ctx.salvar) bibliotecaAnimacoes().salvar(a, { tags: a.tags, origem: "dsl" });
     return a;
   }
   function validarName(texto2, opts) {
@@ -34185,7 +35769,8 @@ GIRAR NO LUGAR (anima, com os pés; até 360° e além, ex.: 720 pivo):
   Kai gira 360 luta             — base baixa (joelhos dobrados), 3 passos curtos e rápidos
   Kai gira 360 salto            — impulso, giro no ar, aterrissa dobrando os joelhos
   Ordem do corpo ao virar: olhos e cabeça ANTECIPAM → ombros/tronco → pelve → pés (a cabeça chega antes).
-  Sentido: esquerda = para a esquerda DO PRÓPRIO PERSONAGEM (ângulo positivo: virado para o norte, "gira 90 passos esquerda" termina virado para o leste);
+  Sentido: esquerda = para a esquerda DO PRÓPRIO PERSONAGEM (ângulo positivo; ele termina virado para o mesmo lado que "gira 90" absoluto, +x);
+  pense sempre na esquerda/direita do PERSONAGEM, não na bússola da planta (a planta é vista de cima, e de cima a esquerda dele aparece do outro lado);
   direita = para a direita dele (negativo). Sem sentido escrito: vale o sinal do número (360 = esquerda, −360 = direita). Use sempre "esquerda/direita" do personagem, não "horário".
   Prontas na biblioteca: girar45E/D, girar90E/D, girar180E/D, girar360E/D, girar360E/D_pivo, girar720E_pivo, girar360E/D_luta, girar360E/D_salto.
 ANDAR ATÉ:
@@ -34210,7 +35795,69 @@ LIMITES (o que ainda NÃO faz, para ninguém prometer):
   - esbarrão é só aviso (centro a centro < 30 cm), não desvia;
   - boca: ritmo por letra (não é fonema de verdade), em português.
 
-14. EXEMPLO COMPLETO
+14. POSES E ANIMAÇÕES POR TEXTO (juntas, atalhos, ciclo, derivar, picotar, juntar, pular, nadar…)
+EDITOR (site → Texto): digite uma junta e um PONTO (ombro.) → aparecem os lados com a junta acesa na miniatura; depois do "(" aparecem os movimentos com os limites;
+  pose. / anima. / expressao. / gesto. → listas com miniatura: as poses e animações escritas no próprio texto e as já salvas no catálogo (Ctrl+S salva as marcadas com "salvar"). F1 = ajuda da palavra; Alt+↑/↓ = muda o número
+  sob o cursor (Shift = passo maior); Tab no começo da linha (pose, ciclo, animacao, derivar, picotar, juntar, camada) = trecho pronto; Ctrl+S = salvar no catálogo.
+  Com o cursor dentro de um bloco pose/ciclo/animacao a prévia ao lado mostra a pose em 3 vistas ou a animação tocando (barra de tempo, "Ver no boneco", "No palco").
+POSE:
+  pose "nome" [de OUTRA-POSE] [salvar] [tags "A/B"]
+    junta.lado(movimento valor, movimento valor …)      (lado: direito | esquerdo | ambos; sem lado = os dois)
+  Valor sozinho = a junta fica NESSE valor; "+10" / "-10" = soma ao que já estava. Graus; mão/olhos/boca em % (fecha 80%); corpo(sobe 30cm).
+  Passou do limite da articulação → fica no limite e aparece um aviso. "salvar" = Minhas poses, com miniatura (usa em qualquer quadro: Kai pose nome).
+JUNTAS (movimento: faixa):
+${Object.entries(PD_JUNTAS).map(([j, J]) => "  " + j + (J.lado ? ".lado" : "") + (J.apelidos ? " (= " + J.apelidos.join(", ") + ")" : "") + ": " + Object.keys(J.mov).map((m) => m + " " + pdFaixaMov(j, m, "R")).join(" · ")).join("\n")}
+ATALHOS (numa pose, numa chave ou depois de "soma"):
+  agacha [60%] · ajoelha direito|esquerdo|os-dois · senta chao|cadeira|calcanhares|cocoras · peso direito|esquerdo [70%] · inclina frente|tras|direita|esquerda [graus]
+  olha baixo|cima|direita|esquerda|frente [graus] · sobe 30cm · deita costas|brucos|lado · espelha [PARTES] · mistura POSE 50% · copia PARTES de POSE · zera [PARTES]
+  PARTES: ${Object.keys(PD_PARTES).join(", ")}.
+  Exemplo:
+    pose "pedido" de empe salvar
+      ajoelha direito
+      ombro.direito(frente 70) cotovelo.direito(dobra 20)
+      olha cima 15
+CHAVES COM JUNTAS:  chave 0.4s ombro.direito(frente 90) cotovelo.direito(dobra 20) agacha 30%
+  "move frente/lado/giro" numa chave: frente + = para onde ele olha; lado + = para a ESQUERDA dele; giro + = vira para a esquerda dele (metros e graus).
+  Um atalho ou junta escrito depois de outro na mesma pose vale por cima (ex.: cabeca(gira-esquerda 30) e depois "olha frente" = a cabeça volta à frente).
+CICLO A PARTIR DE UMA POSE (andar, correr, engatinhar…):
+  ciclo "nome" de POSE [duracao 1s] [corre] [passagem POSE|auto] [anda 1.4m] [voo 5cm] [salvar]
+    (linhas com recuo ajustam a pose antes, como num bloco pose)
+  Faz A → passagem → A ESPELHADA → passagem espelhada → A, em loop. "troca pernas por pose X" leva junto a altura do corpo da pose (ajoelhado fica no chão). A passagem automática: a perna de trás passa dobrada, a de apoio estica (em pé).
+  O pé da frente de A é o apoio até a passagem (pés presos). "anda" = metros por ciclo (padrão: a distância entre os pés da pose × 2).
+ANIMAÇÃO A PARTIR DE OUTRA (derivar):
+  animacao "nova" de OUTRA [salvar]        e, com recuo, uma operação por linha (valem em ordem):
+    troca PARTES por pose POSE [fixo]      as partes partem da pose, com o movimento original por cima ("fixo" = paradas). Trocar as pernas tira os pés presos e gira no lugar.
+    troca PARTES por anima OUTRA           as partes vêm de outra animação
+    soma junta(…) | soma ATALHO             soma um ajuste na animação toda (soma tronco(frente 25))
+    tira PARTES                             tira partes (ficam como o personagem estiver)
+    chave 0.5s junta(…)                     uma chave nova só com o que for dito
+    trecho 0.2s a 0.8s | trecho 25% a 75%   fica só com um pedaço (lugar e giro recomeçam dali)
+    ate 90 | ate metade | ate 0.5s          nos giros: corta no ângulo exato (15, 30, 45, 60, 90, 180…) e pousa os dois pés
+    reverte · espelha · repete 3 · vai-e-volta · amplitude 70% [PARTES] · estica 2s · velocidade 1.5
+  Exemplos:
+    animacao "girar-ajoelhado" de girar360E salvar
+      troca pernas por pose ajoelhado
+    animacao "giro45" de girar360D
+      ate 45
+JUNTAR E CAMADA (no cabeçalho):
+  animacao "combo" junta A, B, C [mistura 0.2s]          uma depois da outra; o lugar e o giro continuam de onde a anterior parou
+  animacao "andar-acenando" camada A [PARTES] + B [PARTES]  ao mesmo tempo: B manda nas partes dele (ou nas pedidas), A no resto
+  Animação relativa + absoluta juntas: tudo vira absoluto a partir de em pé. Um ciclo em loop (andarCiclo) dentro de "camada" continua andando enquanto a outra toca.
+  PARTES valem com hífen ou juntas: braco-direito = bracoDireito. Nos modelos de sintaxe, [colchetes] = opcional (não se escreve o colchete).
+  Uma animação pode usar outra escrita mais abaixo no texto (é lida numa segunda volta).
+MOVIMENTOS PRONTOS (no quadro, como "gira" e "anda-ate"):
+  Kai pula [${Object.keys(LC_PULOS).join("|")}] [1m] [altura 40cm] [direita|esquerda]   (antecipação, voo no tempo da gravidade, aterrissagem amortecida)
+  Kai mergulha [altura 0.5m] [fundo 1m]     (da borda, de cabeça)
+  Kai nada [${Object.keys(LC_NADO).join("|")}] [3m]   (de costas ele se deita para trás e vai na direção da CABEÇA = para trás de onde estava virado:
+    para nadar de costas rumo ao norte, vire-o para o sul antes — "gira 180 nada costas 4m"). Ele parte em pé (deitar é com ele); se terminar fora da água, aviso.
+  Kai engatinha [2m] · Kai rasteja [2m] · Kai anda-agachado [2m] · Kai cai frente|tras|lado · Kai levanta-se [de costas|brucos] · Kai rola direita|esquerda [2 voltas]
+  Na biblioteca: puloLugar, puloFrente, puloAlto, puloLado, puloCorrida, mergulhar, nadarCrawl…, engatinhar, rastejar, andarAgachado, cairFrente…, levantarDeBrucos, levantarDeCostas, rolarDireita, rolarEsquerda.
+ÁGUA: no local, a peça "agua" (ex.: agua "piscina" em (0,0) tamanho 6x10x1.4) tem a superfície no TOPO dela. Quem "nada" dentro dela fica na linha da água;
+  a legenda diz até onde a água chega (tornozelos, joelhos, cintura, peito, pescoço, submerso, nadando, boiando). Nadar fora da água vira aviso.
+LIMITES: a água é só desenho (sem respingo físico nem empuxo); nado e mergulho são ciclos animados; rolar e engatinhar não desviam de nada;
+  "troca pernas" numa animação com pés presos gira no lugar (os joelhos não ficam presos no chão como os pés).
+
+15. EXEMPLO COMPLETO
 ${EXEMPLO_NAME}`;
   }
   var PROMPTS_NAME = {
@@ -34240,11 +35887,22 @@ LOCAIS SALVOS (nome, marcas, regiões):
 
 HISTÓRIA:
 `,
+    "Pose em texto → código": `Escreva a pose descrita abaixo como um bloco "pose" da DSL do GeoMannequin (capítulo 14 do manual).
+- Comece de uma pose pronta parecida (pose "nome" de passo / de guardaLuta / de empe …).
+- Ajuste junta por junta: ombro.direito(frente 40, abre 10) · cotovelo.esquerdo(dobra 90) · quadril.direito(frente 30) · joelho.esquerdo(dobra 25) · tronco(gira-esquerda 10) · cabeca(baixa 15) · mao.direito(fecha 80%).
+- Use os atalhos quando couber: agacha 50% · ajoelha direito · peso esquerdo · inclina frente 20 · olha baixo · espelha bracos.
+- Lado = do PERSONAGEM (direito dele). Valor sozinho = fica nele; +10/-10 = soma. Respeite os limites da tabela de juntas.
+- Termine o cabeçalho com "salvar" se a pose for para a biblioteca.
+Responda SÓ com o código, num bloco de código.
+
+POSE:
+`,
     "Movimento em texto → animação": `Converta a descrição de movimento abaixo numa ANIMAÇÃO na DSL do GeoMannequin (capítulos 12 e 13 do manual).
 - Se for virar ou girar, use as palavras prontas: "gira 360 passos direita", "vira-para Mira passos", "gira 360 pivo|luta|salto". Se for ir até alguém: "anda-ate Mira [correndo]". Para olhar: "olha Mira [so-cabeca|so-olhos|corpo]".
 - Se for um movimento próprio, escreva um bloco: animacao "nome" duracao Xs [relativa] [fps 24] [em-dois] [velocidade 1] tags "Categoria/Sub" salvar
   com linhas "chave Ts …" (pose, gesto, atitude, expressao, ajustes como "pe direito 15cm para direita", move frente/lado/giro, olha, segurar 0.3s, fala).
 - Pense na ordem do corpo: olhos e cabeça antes, depois ombros/tronco, pelve e pés; antecipação (um pouco para o lado contrário) antes do movimento grande e um pequeno exagero no fim.
+- Para ciclos (andar, correr, engatinhar): faça UMA pose e "ciclo "nome" de POSE". Para variar uma animação existente: animacao "nova" de OUTRA + troca/soma/ate/trecho/espelha (capítulo 14). Pular/nadar/mergulhar/rolar: use as palavras prontas.
 - Use "relativa" quando o movimento deve valer a partir de qualquer pose (ex.: abaixar a cabeça). Tags hierárquicas (Locomocao/Virar, Conversa/Explicar, Ajuste/Pe).
 Responda SÓ com o código, num bloco de código.
 
@@ -35151,8 +36809,8 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
       const d = SLD[k] || SLD[k.replace(/[LR]$/, "")];
       return d ? [d.min, d.max] : [-180, 180];
     };
-    const [a0, a1] = lim(drag2.h), [b0, b1] = lim(drag2.v), esc8 = a1 - a0 > 3 ? 0.6 : 6e-3;
-    P2[drag2.h] = +clamp(drag2.h0 + dx * esc8, a0, a1).toFixed(3);
+    const [a0, a1] = lim(drag2.h), [b0, b1] = lim(drag2.v), esc9 = a1 - a0 > 3 ? 0.6 : 6e-3;
+    P2[drag2.h] = +clamp(drag2.h0 + dx * esc9, a0, a1).toFixed(3);
     P2[drag2.v] = +clamp(drag2.v0 - dy * (b1 - b0 > 3 ? 0.6 : 6e-3), b0, b1).toFixed(3);
     limitesAcoplados(P2);
     guardArms();
@@ -35441,8 +37099,8 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
       const plan = prepararCamadas(lst, L2, rapido, floor, { canal: "tela" }), par = paraleloAtivo();
       plan.grupos.forEach((g) => {
         if (g.pronto || instanciaPronta(plan, g)) return;
-        const ativo2 = g.membros[0] === SCN.active;
-        if (!par || !g.res || rapido && ativo2) {
+        const ativo3 = g.membros[0] === SCN.active;
+        if (!par || !g.res || rapido && ativo3) {
           renderGrupoLocal(plan, g);
           return;
         }
@@ -39780,6 +41438,267 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     };
   }
 
+  // src/ui/texto-pose.js
+  var esc6 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var CW = 0;
+  function larguraLetra(ta) {
+    if (CW) return CW;
+    try {
+      const c = document.createElement("canvas").getContext("2d"), cs = getComputedStyle(ta);
+      c.font = cs.fontSize + " " + cs.fontFamily;
+      CW = c.measureText("M".repeat(40)).width / 40 || 7.5;
+    } catch (e) {
+      CW = 7.5;
+    }
+    return CW;
+  }
+  function posCursor(ta) {
+    const p = ta.selectionStart, antes = ta.value.slice(0, p), linhas = antes.split("\n"), lin = linhas.length - 1, col = linhas[lin].length, cs = getComputedStyle(ta), lh = parseFloat(cs.lineHeight) || 18, pl = parseFloat(cs.paddingLeft) || 10, pt2 = parseFloat(cs.paddingTop) || 8;
+    return { x: pl + col * larguraLetra(ta) - ta.scrollLeft, y: pt2 + lin * lh - ta.scrollTop, lh };
+  }
+  function posicionar(caixa2, ta, larg) {
+    const c = posCursor(ta), W4 = ta.clientWidth, H2 = ta.clientHeight, h = Math.min(caixa2.offsetHeight || 260, 300);
+    caixa2.style.left = Math.max(2, Math.min(W4 - (larg || 300) - 4, c.x)) + "px";
+    caixa2.style.top = (c.y + c.lh + h > H2 && c.y - h > 0 ? c.y - h - 2 : c.y + c.lh + 2) + "px";
+  }
+  function ctxDe(R2) {
+    const poses = /* @__PURE__ */ new Map(), animacoes = /* @__PURE__ */ new Map();
+    if (R2) {
+      (R2.defs || []).forEach((d) => {
+        if (d.tipo === "pose") poses.set(d.nome, d.valores);
+      });
+      (R2.animacoes || []).forEach((a) => animacoes.set(a.nome, a));
+    }
+    return { poses, animacoes };
+  }
+  function completar(antes, R2) {
+    const ctx = ctxDe(R2);
+    return pdCompletar(antes, { poses: [...ctx.poses.keys()], animacoes: [...ctx.animacoes.keys()], nomes: R2 ? R2.elenco.map((e) => e.nome) : [] });
+  }
+  function htmlItens(itens) {
+    return itens.map((c, i) => '<li data-i="' + i + '" class="' + (i ? "" : "sel") + '" title="' + esc6(c.d || "") + '"><span class="nm-ac-mini" data-m="' + i + '"></span><span class="nm-ac-tx"><b>' + esc6(c.r) + "</b>" + (c.d ? "<small>" + esc6(c.d) + "</small>" : "") + "</span></li>").join("");
+  }
+  var MINI_T = 0;
+  function preencherMinis(ul, itens, R2) {
+    clearTimeout(MINI_T);
+    const ctx = ctxDe(R2), alvo = [...ul.querySelectorAll(".nm-ac-mini")];
+    let i = 0;
+    const passo = () => {
+      const t0 = performance.now();
+      while (i < alvo.length && performance.now() - t0 < 12) {
+        const el2 = alvo[i], it2 = itens[+el2.dataset.m];
+        if (it2 && it2.mini) el2.innerHTML = pdMiniaturaItem(it2.mini, ctx);
+        else el2.classList.add("vazio");
+        i++;
+      }
+      if (i < alvo.length) MINI_T = setTimeout(passo, 0);
+    };
+    passo();
+  }
+  function htmlDestaque(it2, R2) {
+    if (!it2) return "";
+    const ctx = ctxDe(R2);
+    let svg = "";
+    try {
+      if (it2.mini && it2.mini.tipo === "anim") {
+        const a = ctx.animacoes.get(it2.mini.nome) || null;
+        svg = a ? pdMiniaturaAnimacao(a, { quadros: 4 }) : pdMiniaturaItem(it2.mini, ctx);
+      } else svg = it2.mini ? pdMiniaturaItem(it2.mini, ctx) : "";
+    } catch (e) {
+      svg = "";
+    }
+    const doc = PD_DOC[pdNorm(it2.r)];
+    return '<div class="nm-ac-big">' + svg + "</div><b>" + esc6(it2.r) + "</b>" + (it2.d ? "<small>" + esc6(it2.d) + "</small>" : "") + (doc ? "<small>" + esc6(doc.d) + "</small>" : "");
+  }
+  function palavraNoCursor(ta) {
+    const v = ta.value, p = ta.selectionStart;
+    let a = p, b = p;
+    while (a > 0 && /[\wÀ-ÿ-]/.test(v[a - 1])) a--;
+    while (b < v.length && /[\wÀ-ÿ-]/.test(v[b])) b++;
+    return v.slice(a, b);
+  }
+  function ajudaHtml(w0) {
+    const w = pdNorm(w0), d = PD_DOC[w] || PD_DOC[w.replace(/a$/, "")];
+    if (!d) {
+      const em = Object.entries(PD_JUNTAS).filter(([, J]) => J.mov[w]).map(([j, J]) => j + (J.lado ? ".lado" : "") + "(" + w + " …) — " + J.desc);
+      if (em.length) return "<p><b>" + esc6(w0) + "</b> é um movimento de junta:</p><pre>" + esc6(em.join("\n")) + "</pre><p>Valor sozinho = fica nele; +10 / -10 = soma ao que já está.</p>";
+      return w0 ? "<p>Sem ajuda para “" + esc6(w0) + "”. Abra o <b>Manual</b> (capítulo 14) ou use <b>Aprender</b>.</p>" : "";
+    }
+    return "<p><b>" + esc6(w0) + "</b> — " + esc6(d.d) + "</p><pre>" + esc6(d.s) + "</pre><p>Exemplo:</p><pre>" + esc6(d.ex) + "</pre>";
+  }
+  function rolarNumero(ta, dir, grande) {
+    const v = ta.value, p = ta.selectionStart, ini = v.lastIndexOf("\n", p - 1) + 1, fim = (v.indexOf("\n", p) + 1 || v.length + 1) - 1, linha = v.slice(ini, fim), rx = /[+-]?\d+(?:\.\d+)?/g;
+    let m;
+    while (m = rx.exec(linha)) {
+      const a = ini + m.index, b = a + m[0].length;
+      if (p >= a && p <= b) {
+        const dec = (m[0].split(".")[1] || "").length, passo = dec ? Math.pow(10, -dec) * (grande ? 10 : 1) : grande ? 10 : 1, sinal = /^[+]/.test(m[0]) ? "+" : "";
+        let n2 = +(parseFloat(m[0]) + dir * passo).toFixed(dec);
+        const txt = (sinal && n2 >= 0 ? "+" : "") + String(n2.toFixed(dec));
+        ta.value = v.slice(0, a) + txt + v.slice(b);
+        ta.selectionStart = ta.selectionEnd = a + txt.length;
+        return true;
+      }
+    }
+    return false;
+  }
+  function expandirTrecho(ta) {
+    const p = ta.selectionStart, v = ta.value, ini = v.lastIndexOf("\n", p - 1) + 1, palavra = v.slice(ini, p);
+    if (!/^[a-z-]+$/.test(palavra) || !PD_TRECHOS[palavra]) return false;
+    const t = PD_TRECHOS[palavra];
+    ta.value = v.slice(0, ini) + t + v.slice(p);
+    const q = ta.value.indexOf('"', ini);
+    ta.selectionStart = q + 1;
+    ta.selectionEnd = ta.value.indexOf('"', q + 1);
+    return true;
+  }
+  var PLAY = null;
+  function parar2() {
+    if (PLAY) {
+      cancelAnimationFrame(PLAY.raf);
+      if (PLAY.palco) PLAY.palco();
+      PLAY = null;
+    }
+  }
+  function defNoCursor(R2, ln) {
+    return R2 && R2.defs ? R2.defs.find((d) => ln >= d.linha && ln <= d.ate) : null;
+  }
+  function valoresNoTempo(a, t, B3) {
+    const s = amostrar(a, t, a.modo === "relativa" ? (() => {
+      const o = {};
+      (a.absolutos || []).forEach((k) => {
+        o[k] = B3[k] || 0;
+      });
+      return o;
+    })() : B3), rel = a.modo === "relativa", ab = new Set(a.absolutos || []), v = Object.assign({}, B3);
+    for (const [k, x] of Object.entries(s.valores)) v[k] = rel && !ab.has(k) ? (B3[k] || 0) + x : x;
+    return { v, mover: s.mover };
+  }
+  function ativo2() {
+    return SCN.list[SCN.active] || SCN.list[0];
+  }
+  function previaDef(caixa2, tit, d, R2, log4) {
+    const chave = d.tipo + ":" + d.nome + ":" + JSON.stringify(d.valores || d.anim && d.anim.chaves).length + ":" + (d.anim ? d.anim.duracao : 0);
+    if (PLAY && PLAY.chave === chave && caixa2.querySelector(".pd-prev")) return;
+    parar2();
+    tit.textContent = (d.tipo === "pose" ? "Pose" : d.tipo === "ciclo" ? "Ciclo" : "Animação") + " “" + d.nome + "” (prévia ao vivo)";
+    const botoes = '<div class="pd-acoes"><button type="button" data-pd="boneco" title="Desenha o manequim de verdade">Ver no boneco</button><button type="button" data-pd="palco" title="' + (d.tipo === "pose" ? "Põe a pose no manequim ativo" : "Toca no manequim ativo do palco") + '">' + (d.tipo === "pose" ? "Aplicar no palco" : "▶ No palco") + '</button><button type="button" data-pd="salvar" title="Salva poses e animações marcadas com “salvar” (Ctrl+S)">Salvar no catálogo</button></div><div class="pd-boneco"></div>';
+    if (d.tipo === "pose") {
+      caixa2.innerHTML = '<div class="pd-prev"><div class="pd-vistas">' + [0, 40, 90].map((y) => "<figure>" + pdMiniatura(d.valores, { tam: 150, yaw: y, rotulo: d.nome }) + "<figcaption>" + (y === 0 ? "frente" : y === 90 ? "lado" : "3/4") + "</figcaption></figure>").join("") + "</div>" + botoes + "</div>";
+      PLAY = { chave, raf: 0 };
+    } else {
+      const a = d.anim, B3 = pdBase();
+      caixa2.innerHTML = '<div class="pd-prev"><div class="pd-tela" aria-live="off"></div><div class="pd-ctl"><button type="button" data-pd="play" aria-label="Pausar">⏸</button><input type="range" min="0" max="1000" value="0" aria-label="Tempo"><output>0,00 s</output><select data-pd="vista" aria-label="Vista"><option value="40">3/4</option><option value="0">frente</option><option value="90">lado</option></select></div><div class="pd-tira">' + pdMiniaturaAnimacao(a, { quadros: 6 }) + '</div><p class="pd-info">' + a.duracao.toFixed(2) + " s · " + (a.modo === "relativa" ? "relativa" : "absoluta") + (a.loop ? " · loop" : "") + (a.descricao ? " · " + esc6(a.descricao) : "") + "</p>" + botoes + "</div>";
+      const tela = caixa2.querySelector(".pd-tela"), rg = caixa2.querySelector("input[type=range]"), out = caixa2.querySelector("output"), bt = caixa2.querySelector('[data-pd="play"]'), vista2 = caixa2.querySelector('[data-pd="vista"]');
+      PLAY = { chave, raf: 0, t0: performance.now(), pausa: false, t: 0, ult: 0 };
+      const desenhar4 = (t) => {
+        const { v, mover } = valoresNoTempo(a, t, B3), dx = mover ? mover.lado || 0 : 0, dz = mover ? mover.frente || 0 : 0;
+        tela.innerHTML = pdMiniatura(v, { tam: 220, yaw: +vista2.value + (mover ? mover.giro || 0 : 0), rotulo: a.nome }) + (mover ? '<span class="pd-mov">' + (dz >= 0 ? "frente " : "trás ") + Math.abs(dz).toFixed(2) + " m · lado " + dx.toFixed(2) + " m · giro " + Math.round(mover.giro || 0) + "°</span>" : "");
+        rg.value = Math.round(t / a.duracao * 1e3);
+        out.textContent = t.toFixed(2).replace(".", ",") + " s";
+      };
+      const quadro = (now) => {
+        if (!PLAY) return;
+        if (!PLAY.pausa && now - PLAY.ult > 45) {
+          PLAY.t = (now - PLAY.t0) / 1e3 % Math.max(0.05, a.duracao);
+          desenhar4(PLAY.t);
+          PLAY.ult = now;
+        }
+        PLAY.raf = requestAnimationFrame(quadro);
+      };
+      PLAY.raf = requestAnimationFrame(quadro);
+      bt.addEventListener("click", () => {
+        PLAY.pausa = !PLAY.pausa;
+        bt.textContent = PLAY.pausa ? "▶" : "⏸";
+        bt.setAttribute("aria-label", PLAY.pausa ? "Tocar" : "Pausar");
+        if (!PLAY.pausa) PLAY.t0 = performance.now() - PLAY.t * 1e3;
+      });
+      rg.addEventListener("input", () => {
+        PLAY.pausa = true;
+        bt.textContent = "▶";
+        PLAY.t = rg.value / 1e3 * a.duracao;
+        desenhar4(PLAY.t);
+      });
+      vista2.addEventListener("change", () => desenhar4(PLAY.t));
+      desenhar4(0);
+    }
+    caixa2.querySelectorAll("[data-pd]").forEach((b) => {
+      if (b.dataset.pd === "boneco") b.addEventListener("click", () => verNoBoneco(caixa2.querySelector(".pd-boneco"), d, log4));
+      else if (b.dataset.pd === "palco") b.addEventListener("click", () => noPalco(d, b, log4));
+    });
+  }
+  async function verNoBoneco(alvo, d, log4) {
+    const x = ativo2(), salvo = anSemCamera(x.params);
+    alvo.innerHTML = "<p>Desenhando…</p>";
+    try {
+      const a = d.tipo === "pose" ? { nome: d.nome, duracao: 0.01, modo: "absoluta", curva: "linear", chaves: [{ t: 0, valores: d.valores }, { t: 0.01, valores: d.valores }] } : d.anim;
+      const fr2 = framesDaAnimacao(x.name, a, { fps: d.tipo === "pose" ? 1 : Math.max(2, Math.ceil(5 / Math.max(0.1, a.duracao))) }), n2 = d.tipo === "pose" ? 1 : 6, idx2 = Array.from({ length: n2 }, (_, i) => Math.round(i * (fr2.frames.length - 1) / Math.max(1, n2 - 1)));
+      let html = "";
+      for (const i of idx2) {
+        html += "<figure>" + renderizarQuadro(fr2.frames[i], { passes: false }).svg + "<figcaption>" + fr2.frames[i].t.toFixed(2) + " s</figcaption></figure>";
+        await new Promise((r) => setTimeout(r, 0));
+      }
+      alvo.innerHTML = '<div class="pd-quadros">' + html + "</div>";
+    } catch (e) {
+      alvo.innerHTML = "<p>" + esc6(e.message) + "</p>";
+      if (log4) log4(e.message, "err");
+    } finally {
+      Object.assign(x.params, salvo);
+    }
+  }
+  function noPalco(d, bt, log4) {
+    const x = ativo2();
+    if (d.tipo === "pose") {
+      Object.assign(x.params, d.valores);
+      refreshScene2 && refreshScene2();
+      syncControls2 && syncControls2();
+      render2();
+      if (log4) log4("Pose “" + d.nome + "” aplicada em " + x.name + ".");
+      return;
+    }
+    if (PLAY && PLAY.palco) {
+      PLAY.palco();
+      return;
+    }
+    const base2 = { params: anSemCamera(x.params) }, a = d.anim, t0 = performance.now();
+    let raf = 0;
+    bt.textContent = "■ Parar";
+    const fim = () => {
+      cancelAnimationFrame(raf);
+      Object.assign(x.params, base2.params);
+      delete x._animBase;
+      render2();
+      bt.textContent = "▶ No palco";
+      if (PLAY) PLAY.palco = null;
+    };
+    const passo = (now) => {
+      const t = (now - t0) / 1e3;
+      if (!a.loop && t > a.duracao + 0.4) {
+        fim();
+        return;
+      }
+      Object.assign(x.params, base2.params);
+      aplicarAnimacao(x, a, a.loop ? t % a.duracao : Math.min(t, a.duracao), { base: base2 });
+      render2();
+      raf = requestAnimationFrame(passo);
+    };
+    raf = requestAnimationFrame(passo);
+    if (PLAY) PLAY.palco = fim;
+    else PLAY = { chave: "", raf: 0, palco: fim };
+  }
+  var LICOES = [
+    ["1. A primeira pose", '# Lição 1 — uma pose por juntas. Mude os números (Alt+↑/↓ em cima do número) e veja a prévia ao lado.\n# Exercício: levante o braço esquerdo também (digite ombro. e escolha o lado).\npose "minha-pose" de empe\n  ombro.direito(frente 90)\n  cotovelo.direito(dobra 30)\n'],
+    ["2. O ponto mostra as opções", '# Lição 2 — digite “joelho.” numa linha nova: aparece a lista dos lados com a junta acesa na miniatura.\n# Depois de “(”, aparecem os movimentos e os limites. Exercício: dobre os dois joelhos 40° e incline o tronco.\npose "sentando" de empe\n  quadril(frente 60)\n  \n'],
+    ["3. Atalhos de corpo inteiro", '# Lição 3 — atalhos: agacha 60%, ajoelha direito, peso esquerdo, inclina frente 20, olha baixo, sobe 30cm, deita costas.\n# Exercício: troque “ajoelha direito” por “ajoelha esquerdo” e compare.\npose "pedido" de empe\n  ajoelha direito\n  ombro.direito(frente 70)\n  olha cima 15\n'],
+    ["4. Partir de outra pose e espelhar", '# Lição 4 — “de” começa de outra pose (digite pose. para ver as miniaturas). “espelha bracos” troca os lados dos braços.\npose "guarda-canhota" de guardaLuta\n  espelha tudo\n'],
+    ["5. Salvar no catálogo", '# Lição 5 — “salvar” manda a pose para Minhas poses com miniatura (Ctrl+S ou o botão “Salvar no catálogo”).\n# Depois ela aparece no ponto de qualquer lugar: digite pose. e procure “aceno-alto”.\npose "aceno-alto" de empe salvar\n  ombro.direito(abre 160)\n  cotovelo.direito(dobra 25)\n  mao.direito(abre)\n'],
+    ["6. Ciclo de caminhada de UMA pose", '# Lição 6 — uma pose de passo vira um ciclo: A → passagem → A espelhada → passagem (loop).\npose "passo-largo" de empe\n  ombro.direito(frente 35)\n  ombro.esquerdo(tras 30)\n  quadril.direito(frente 35)\n  quadril.esquerdo(tras 15)\n  joelho.esquerdo(dobra 20)\n\nciclo "andar-largo" de passo-largo duracao 1s\n\n# Exercício: troque por “corre” no ciclo (ciclo … de passo-largo corre duracao 0.6s).\n'],
+    ["7. Animação por chaves", '# Lição 7 — chaves com juntas. Arraste a barra de tempo da prévia.\nanimacao "levantar-braco" duracao 1.2s\n  chave 0s pose empe\n  chave 0.6s ombro.direito(frente 150) cotovelo.direito(dobra 10)\n  chave 1.2s pose empe\n'],
+    ["8. Derivar: a mesma animação, de joelhos", '# Lição 8 — “de” cria uma animação a partir de outra; “troca pernas por pose …” muda só as pernas.\nanimacao "girar-ajoelhado" de girar360E\n  troca pernas por pose ajoelhado\n\nanimacao "girar-curvado" de girar360E\n  soma tronco(frente 25)\n'],
+    ["9. Picotar e repetir", '# Lição 9 — “ate 90” corta o giro em 90° (15, 30, 45, 60, 180…) e pousa os pés. trecho, reverte, espelha, repete, vai-e-volta.\nanimacao "giro90" de girar360E\n  ate 90\n\nanimacao "giro90-ida-e-volta" de giro90\n  vai-e-volta\n'],
+    ["10. Juntar e usar no quadro", '# Lição 10 — junta (uma depois da outra) e camada (partes de duas juntas). Depois use no quadro.\nanimacao "combo" junta acenarTchau, giro90E, puloFrente mistura 0.2s\nanimacao "giro90E" de girar360E\n  ate 90\nanimacao "andar-acenando" camada andarCiclo + acenarTchau bracos\n\nelenco\n  Kai relevante\nquadro\n  Kai em (0,0) anima combo\n']
+  ];
+
   // src/ui/name.js
   var E3 = {};
   var IMAGENS = {};
@@ -39796,7 +41715,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     } catch (e) {
     }
   } };
-  var esc6 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var esc7 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var R = null;
   var compT = 0;
   var prevT = 0;
@@ -39804,9 +41723,10 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
   var aba = "ficha";
   var FICHAS = [];
   var rodando2 = null;
-  var AC = { itens: [], i: 0, ini: 0 };
+  var AC = { itens: [], i: 0, ini: 0, rico: false };
   var MODELOS = {
     "Exemplo completo": EXEMPLO_NAME,
+    "Poses e animações (começar)": LICOES[0][1] + "\n" + LICOES[5][1] + "\n" + LICOES[7][1],
     "Começar do zero": 'semente 1\nelenco\n  Ana relevante corpo feminino\n  Leo relevante corpo masculino\n  povo figurante\n\nlocal "Sala" unidade m origem (0,0)\n  chao retangulo -4,-3 a 4,3 classe madeira\n  sala "Sala" retangulo -4,-3 a 4,3 altura 2.8 porta lado sul janela lado norte\n  mesa centro-de "Sala"\n\nquadro 1 local "Sala" plano geral funcao "estabelecimento"\n  Ana em (-1,0) olha Leo\n  Leo em (1.2,0.5) olha Ana expressao alegria\n',
     "Diálogo (campo e contracampo)": 'elenco\n  Ana relevante corpo feminino\n  Leo relevante corpo masculino\nlocal "Café" unidade m\n  chao retangulo -3,-3 a 3,3 classe piso\n  mesaRedonda "mesa" em (0,0)\nquadro 1 local "Café" plano americano alvo Ana, Leo lado 3/4\n  Ana em (-0.8,0) sentado olha Leo\n  Leo em (0.8,0) sentado olha Ana\nquadro 2 continua plano close alvo Ana lado 3/4\n  Ana expressao alegria\nquadro 3 continua plano close alvo Leo lado 3/4-direita\n  Leo expressao surpresa\n',
     "Multidão e chegada": 'semente 4\nelenco\n  Kai relevante corpo masculino atletico\n  povo figurante\nlocal "Arena" unidade m\n  chao circulo em (0,0) raio 14 classe areia\n  circulo-de 12 coluna em (0,0) raio 13 altura 4\nquadro 1 local "Arena" plano geral funcao "estabelecimento"\n  Kai em (0,0) acao baseGritando\n  povo 30..40 circulo em-volta-de Kai raio 9 olham: 70% Kai, 10% camera, resto aleatorio poses: empe:3 | caminhando\nquadro 2 continua plano close alvo Kai angulo contra-plongee tamanho grande\n  Kai expressao furia\n'
@@ -39946,6 +41866,53 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     "aleatorio",
     "costas",
     "mantem",
+    "ciclo",
+    "chave",
+    "animacao",
+    "de",
+    "salvar",
+    "troca",
+    "por",
+    "soma",
+    "tira",
+    "trecho",
+    "ate",
+    "reverte",
+    "espelha",
+    "repete",
+    "vai-e-volta",
+    "amplitude",
+    "estica",
+    "junta",
+    "camada",
+    "mistura",
+    "agacha",
+    "ajoelha",
+    "senta",
+    "peso",
+    "inclina",
+    "sobe",
+    "deita",
+    "copia",
+    "zera",
+    "pula",
+    "mergulha",
+    "nada",
+    "engatinha",
+    "rasteja",
+    "anda-agachado",
+    "cai",
+    "levanta-se",
+    "rola",
+    "passagem",
+    "corre",
+    "anda",
+    "voo",
+    "fixo",
+    "pernas",
+    "bracos",
+    "maos",
+    "tronco",
     "tempo",
     "lugar",
     "corte",
@@ -39963,7 +41930,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     "fundo",
     "centro"
   ];
-  var RX_BLOCO = /^(semente|define|elenco|local|lugar|modelo|quadro|transicao|transição|pagina|página)\b/;
+  var RX_BLOCO = /^(semente|define|elenco|local|lugar|modelo|quadro|transicao|transição|pagina|página|pose|ciclo|animacao|animação|video)\b/;
   function realcar() {
     const elenco = R ? new Map(R.elenco.map((e) => [e.nome, e.hex])) : /* @__PURE__ */ new Map(), erros = new Set((R ? R.erros : []).map((e) => e.linha));
     const out = E3.code.value.split("\n").map((l, i) => {
@@ -39974,13 +41941,14 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
         cmt = resto.slice(com.index);
         resto = resto.slice(0, com.index);
       }
-      h = esc6(resto).replace(/(&quot;[^&]*?&quot;|"[^"]*")/g, '<span class="nm-s">$1</span>').replace(/(?<![\w#-])(-?\d+(?:\.\d+)?(?:%|cm|m|R)?)(?![\w])/g, '<span class="nm-n">$1</span>').replace(/(?<![\w-])([\wÀ-ÿ\/:-]+)/g, (w0, w) => {
+      h = esc7(resto).replace(/(&quot;[^&]*?&quot;|"[^"]*")/g, '<span class="nm-s">$1</span>').replace(/(?<![\w#-])(-?\d+(?:\.\d+)?(?:%|cm|m|R)?)(?![\w])/g, '<span class="nm-n">$1</span>').replace(/(?<![\w-])([\wÀ-ÿ\/:-]+)(?=\.(?:direit|esquerd|ambos)|\()/g, (w0, w) => PD_JUNTAS[w] ? "§JJ" + w + "§JF" : w0).replace(/(?<![\w-§])([\wÀ-ÿ\/:-]+)/g, (w0, w) => {
         if (/^\d/.test(w) || /^span$|^class$|^nm-/.test(w)) return w0;
         if (elenco.has(w)) return '<span class="nm-p" style="--c:' + elenco.get(w) + '">' + w + "</span>";
         return PALAVRAS.includes(w.replace(/:$/, "")) ? '<span class="nm-k">' + w + "</span>" : w0;
       });
+      h = h.replace(/§JJ([\wÀ-ÿ-]+)§JF/g, '<span class="nm-j">$1</span>');
       if (!ind && RX_BLOCO.test(resto)) h = '<span class="nm-b">' + h.replace(/^(<span class="nm-k">)?(\w+)(<\/span>)?/, "$2").replace(/^(\w+)/, "<b>$1</b>") + "</span>";
-      return (erros.has(i + 1) ? '<span class="nm-err">' : "") + ind + h + (cmt ? '<span class="nm-c">' + esc6(cmt) + "</span>" : "") + (erros.has(i + 1) ? "</span>" : "");
+      return (erros.has(i + 1) ? '<span class="nm-err">' : "") + ind + h + (cmt ? '<span class="nm-c">' + esc7(cmt) + "</span>" : "") + (erros.has(i + 1) ? "</span>" : "");
     });
     E3.hl.innerHTML = out.join("\n") + "\n";
     E3.hl.scrollTop = E3.code.scrollTop;
@@ -39994,12 +41962,15 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
   }
   function compilar() {
     try {
-      R = compilarName(E3.code.value, { imagens: IMAGENS });
+      R = compilarName(E3.code.value, { imagens: IMAGENS, salvar: false });
     } catch (e) {
       R = { ok: false, erros: [{ linha: 0, erro: e.message }], avisos: [], quadros: [], paginas: [], elenco: [], locais: [] };
     }
-    E3.erros.innerHTML = R.erros.map((e) => '<li data-l="' + e.linha + '" class="err">linha ' + e.linha + ": " + esc6(e.erro) + "</li>").join("") + R.avisos.slice(0, 20).map((a) => '<li class="aviso">' + esc6(a) + "</li>").join("");
-    E3.chips.innerHTML = R.quadros.map((q, i) => '<button type="button" data-l="' + q.linha + '" title="' + esc6(q.legenda) + '">' + (q.indice + 1) + (q.plano ? " · " + esc6(q.plano) : "") + "</button>").join("");
+    E3.erros.innerHTML = R.erros.map((e) => {
+      const m = /“([^”]+)”[^“]*Quis dizer “([^”]+)”/.exec(e.erro);
+      return '<li data-l="' + e.linha + '" class="err">linha ' + e.linha + ": " + esc7(e.erro) + (m ? ' <button type="button" class="nm-fix" data-l="' + e.linha + '" data-de="' + esc7(m[1]) + '" data-para="' + esc7(m[2]) + '">Trocar por “' + esc7(m[2]) + "”</button>" : "") + "</li>";
+    }).join("") + R.avisos.slice(0, 20).map((a) => '<li class="aviso">' + esc7(a) + "</li>").join("");
+    E3.chips.innerHTML = R.quadros.map((q, i) => '<button type="button" data-l="' + q.linha + '" title="' + esc7(q.legenda) + '">' + (q.indice + 1) + (q.plano ? " · " + esc7(q.plano) : "") + "</button>").join("");
     E3.cont.textContent = R.quadros.length + " quadro(s) · " + R.elenco.length + " no elenco · " + R.locais.length + " local(is)" + (R.erros.length ? " · " + R.erros.length + " erro(s)" : "");
     realcar();
     ultimaQ = -2;
@@ -40039,17 +42010,28 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
   function previa3() {
     E3.tabs.querySelectorAll("button").forEach((b) => b.classList.toggle("sel", b.dataset.aba === aba));
     if (aba === "locais") {
+      parar2();
       listaLocais();
       return;
     }
     if (!R) return;
+    {
+      const d = aba !== "cores" ? defNoCursor(R, linhaDoCursor2()) : null;
+      if (d) {
+        previaDef(E3.prev, E3.prevTit, d, R, log2);
+        ultimaQ = -2;
+        return;
+      }
+      parar2();
+    }
     const k = quadroDoCursor();
     if (aba === "cores") {
       E3.prev.innerHTML = R.elenco.length ? legendaDeCores(R).svg : '<p class="qd-vazio">Sem elenco.</p>';
       return;
     }
     if (k < 0) {
-      E3.prev.innerHTML = '<p class="qd-vazio">Escreva um quadro (veja Modelos ou o Manual).</p>';
+      E3.prevTit.textContent = "Prévia";
+      E3.prev.innerHTML = '<p class="qd-vazio">Escreva um quadro, ou ponha o cursor dentro de um bloco pose / ciclo / animacao (veja Modelos, Aprender ou o Manual).</p>';
       return;
     }
     if (aba === "ficha" && k === ultimaQ) return;
@@ -40071,7 +42053,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
         E3.prevTit.textContent = "Página do quadro " + (q.indice + 1);
       }
     } catch (e) {
-      E3.prev.innerHTML = '<p class="qd-vazio">' + esc6(e.message) + "</p>";
+      E3.prev.innerHTML = '<p class="qd-vazio">' + esc7(e.message) + "</p>";
     }
   }
   async function gerarTodas() {
@@ -40333,7 +42315,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     E3.prevTit.textContent = "Locais salvos (" + B3.listar().length + ")" + (NUVEM ? " · na nuvem do artefato" : " · neste navegador");
     E3.prev.innerHTML = '<div class="nm-locais">' + (lista3.length ? lista3.map((l) => {
       const s = B3.obter(l.nome);
-      return '<article class="nm-local" data-nome="' + esc6(l.nome) + '"><div class="nm-mini">' + (s.miniatura || "") + '</div><div class="nm-info"><b>' + esc6(l.nome) + "</b><small>v" + l.versao + " · " + new Date(l.data).toLocaleDateString("pt-BR") + (l.tags && l.tags.length ? " · " + esc6(l.tags.join(", ")) : "") + '</small><select data-a="versao" aria-label="Versão">' + s.versoes.slice().reverse().map((v) => '<option value="' + v.versao + '">v' + v.versao + "</option>").join("") + '</select><div class="nm-bts"><button type="button" data-a="usar" title="Pôr no texto">Usar</button><button type="button" data-a="abrir" title="Montar no palco">Palco</button><button type="button" data-a="ver" title="Ver o código">Código</button><button type="button" data-a="dup">Duplicar</button><button type="button" data-a="tags">Tags</button><button type="button" data-a="exp">Exportar</button><button type="button" data-a="del" class="perigo">Apagar</button></div></div></article>';
+      return '<article class="nm-local" data-nome="' + esc7(l.nome) + '"><div class="nm-mini">' + (s.miniatura || "") + '</div><div class="nm-info"><b>' + esc7(l.nome) + "</b><small>v" + l.versao + " · " + new Date(l.data).toLocaleDateString("pt-BR") + (l.tags && l.tags.length ? " · " + esc7(l.tags.join(", ")) : "") + '</small><select data-a="versao" aria-label="Versão">' + s.versoes.slice().reverse().map((v) => '<option value="' + v.versao + '">v' + v.versao + "</option>").join("") + '</select><div class="nm-bts"><button type="button" data-a="usar" title="Pôr no texto">Usar</button><button type="button" data-a="abrir" title="Montar no palco">Palco</button><button type="button" data-a="ver" title="Ver o código">Código</button><button type="button" data-a="dup">Duplicar</button><button type="button" data-a="tags">Tags</button><button type="button" data-a="exp">Exportar</button><button type="button" data-a="del" class="perigo">Apagar</button></div></div></article>';
     }).join("") : '<p class="qd-vazio">Nenhum local salvo. Escreva um bloco “local …” e clique em “Salvar local do cursor”, ou salve o cenário do palco.</p>') + "</div>";
   }
   async function acaoLocal(nome, a, el2) {
@@ -40434,8 +42416,51 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     const nomes = R ? R.elenco.map((e) => e.nome) : [], locais = bibliotecaLocais().listar().map((l) => '"' + l.nome + '"'), marcas = R ? R.locais.flatMap((l) => l.marcas.concat(l.regioes).map((m) => '"' + m + '"')) : [];
     return [.../* @__PURE__ */ new Set([...nomes, ...PALAVRAS, ...todasPoses(), ...Object.keys(EXPRESSOES), ...Object.keys(TIPOS_OBJETO), ...Object.keys(INTERACOES), ...Object.keys(ACOES), ...Object.keys(ACOES_LUTA), ...Object.keys(CATALOGO), ...locais, ...marcas])];
   }
-  function abrirAC(forcar) {
-    const p = E3.code.selectionStart, antes = E3.code.value.slice(0, p), m = /["\wÀ-ÿ\/-]*$/.exec(antes), pre = m[0];
+  function mostrarAC(itens, ini, rico) {
+    AC = { itens, i: 0, ini, rico };
+    E3.ac.innerHTML = rico ? htmlItens(itens) : itens.map((c, i) => '<li data-i="' + i + '" class="' + (i ? "" : "sel") + '"><span class="nm-ac-tx"><b>' + esc7(c) + "</b></span></li>").join("");
+    E3.ac.classList.toggle("rico", !!rico);
+    E3.ac.hidden = false;
+    posicionar(E3.ac, E3.code, rico ? 300 : 180);
+    if (rico) {
+      preencherMinis(E3.ac, itens, R);
+      destacar2();
+    } else E3.acBig.hidden = true;
+  }
+  function destacar2() {
+    if (!AC.rico || E3.ac.hidden) {
+      E3.acBig.hidden = true;
+      return;
+    }
+    const it2 = AC.itens[AC.i];
+    E3.acBig.innerHTML = htmlDestaque(it2, R);
+    E3.acBig.hidden = !it2;
+    const r = E3.ac.getBoundingClientRect(), w = E3.code.closest(".nm-hlwrap").getBoundingClientRect();
+    E3.acBig.style.top = r.top - w.top + "px";
+    E3.acBig.style.left = Math.min(w.width - 190, r.right - w.left + 6) + "px";
+    const li = E3.ac.querySelector('li[data-i="' + AC.i + '"]');
+    if (li) li.scrollIntoView({ block: "nearest" });
+  }
+  function abrirAC(forcar, gatilho) {
+    const p = E3.code.selectionStart, antes = E3.code.value.slice(0, p);
+    let pc = null;
+    try {
+      pc = completar(antes, R);
+    } catch (e) {
+      pc = null;
+    }
+    if (pc && pc.ajuda) {
+      E3.sig.textContent = pc.ajuda;
+      E3.sig.hidden = false;
+      posicionar(E3.sig, E3.code, 420);
+      E3.sig.style.top = Math.max(0, parseFloat(E3.sig.style.top) - 46) + "px";
+    } else E3.sig.hidden = true;
+    if (pc) {
+      if (pc.itens.length) mostrarAC(pc.itens, pc.de, true);
+      else fecharAC();
+      return;
+    }
+    const m = /["\wÀ-ÿ\/-]*$/.exec(antes), pre = m[0];
     if (!forcar && pre.length < 2) {
       fecharAC();
       return;
@@ -40446,26 +42471,44 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       fecharAC();
       return;
     }
-    AC = { itens: lista3, i: 0, ini: p - pre.length };
-    const linhas = antes.split("\n"), lin = linhas.length - 1, col = linhas[lin].length, cw = 7.5;
-    E3.ac.style.left = Math.min(E3.code.clientWidth - 160, 10 + col * cw - E3.code.scrollLeft) + "px";
-    E3.ac.style.top = 8 + (lin + 1) * 18 - E3.code.scrollTop + "px";
-    E3.ac.innerHTML = lista3.map((c, i) => '<li data-i="' + i + '" class="' + (i ? "" : "sel") + '">' + esc6(c) + "</li>").join("");
-    E3.ac.hidden = false;
+    mostrarAC(lista3, p - pre.length, false);
+    void gatilho;
   }
   function fecharAC() {
     E3.ac.hidden = true;
     AC.itens = [];
+    if (E3.acBig) E3.acBig.hidden = true;
   }
   function aceitarAC(i) {
     const c = AC.itens[i];
     if (!c) return;
-    const p = E3.code.selectionStart;
-    E3.code.value = E3.code.value.slice(0, AC.ini) + c + " " + E3.code.value.slice(p);
-    E3.code.selectionStart = E3.code.selectionEnd = AC.ini + c.length + 1;
+    const p = E3.code.selectionStart, txt = AC.rico ? c.v : c + " ";
+    E3.code.value = E3.code.value.slice(0, AC.ini) + txt + E3.code.value.slice(p);
+    E3.code.selectionStart = E3.code.selectionEnd = AC.ini + txt.length;
     fecharAC();
     pedirCompilar();
     realcar();
+    if (/[.(]$/.test(txt)) setTimeout(() => abrirAC(true, txt.slice(-1)), 0);
+  }
+  function salvarCatalogo() {
+    const txt = E3.code.value, marcados = txt.split("\n").filter((l) => /^(pose|ciclo|animacao|animação)\s+.*\bsalvar\b/.test(l)).length;
+    try {
+      const r = compilarName(txt, { imagens: IMAGENS, salvar: true, semCache: true });
+      if (marcados) {
+        log2(marcados + " bloco(s) com “salvar” gravados no catálogo (Minhas poses / animações)" + (r.erros.length ? " — " + r.erros.length + " erro(s) no texto." : "."));
+        return;
+      }
+      const d = defNoCursor(r, linhaDoCursor2());
+      if (!d) {
+        log2("Nada marcado com “salvar”. Escreva “salvar” no cabeçalho de uma pose ou animação, ou ponha o cursor dentro do bloco.", "err");
+        return;
+      }
+      if (d.tipo === "pose") salvarPose(d.nome, d.valores, { substituir: true, miniatura: pdMiniatura(d.valores, { rotulo: d.nome }) });
+      else bibliotecaAnimacoes().salvar(d.anim, { tags: d.anim.tags, origem: "dsl" });
+      log2((d.tipo === "pose" ? "Pose" : "Animação") + " “" + d.nome + "” salva no catálogo — já aparece no ponto (pose. / anima.) com miniatura.");
+    } catch (e) {
+      log2(e.message, "err");
+    }
   }
   function abrir2() {
     E3.area.hidden = false;
@@ -40475,6 +42518,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     E3.code.focus();
   }
   function fechar2() {
+    parar2();
     E3.area.hidden = true;
     const b = document.getElementById("nameBtn");
     if (b) b.setAttribute("aria-pressed", "false");
@@ -40498,7 +42542,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     area.hidden = true;
     area.setAttribute("role", "dialog");
     area.setAttribute("aria-label", "Name (DSL)");
-    area.innerHTML = '<header class="qd-cab"><h2>Name (DSL)</h2><select data-n="modelos" aria-label="Modelos"><option value="">Modelos…</option>' + Object.keys(MODELOS).map((k) => "<option>" + esc6(k) + "</option>").join("") + '</select><button type="button" data-n="abrirArq">Abrir…</button><input type="file" accept=".gmn,.txt,.json,text/plain,application/json" data-n="arquivo" hidden><button type="button" data-n="salvarArq">Salvar .gmn</button><button type="button" data-n="imgBtn" title="Anexar imagens de planta (usadas por local … planta &quot;nome&quot;)">Plantas…</button><input type="file" accept="image/png,image/jpeg" multiple data-n="imgs" hidden><button type="button" data-n="manual">Manual</button><select data-n="prompts" aria-label="Prompts prontos"><option value="">Prompts para IA…</option>' + Object.keys(PROMPTS_NAME).map((k) => "<option>" + esc6(k) + "</option>").join("") + '</select><span class="qd-cont"></span><button type="button" data-n="fechar" aria-label="Fechar">✕</button></header><div class="qd-corpo"><div class="qd-ed"><nav class="qd-chips" aria-label="Quadros"></nav><div class="qd-codewrap"><pre class="qd-gut" aria-hidden="true">1</pre><div class="nm-hlwrap"><pre class="nm-hl" aria-hidden="true"></pre><textarea spellcheck="false" wrap="off" aria-label="Texto do name"></textarea><ul class="nm-ac" hidden role="listbox"></ul></div></div><ul class="nm-erros" aria-label="Erros e avisos"></ul><p class="nm-imgs"></p><div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress><label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p><div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div><div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button></nav><div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div><h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div><div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div><div class="nm-dlg nm-tags" hidden><label>Tags (separadas por vírgula) <input data-n="tagsIn" maxlength="200"></label><button type="button" class="primario" data-n="tagsOk">Gravar</button><button type="button" data-n="tagsNao">Cancelar</button></div></div></div>';
+    area.innerHTML = '<header class="qd-cab"><h2>Texto · name, poses e animações</h2><select data-n="aprender" aria-label="Aprender"><option value="">Aprender…</option>' + LICOES.map((l, i) => '<option value="' + i + '">' + esc7(l[0]) + "</option>").join("") + '</select><button type="button" data-n="catalogo" title="Grava no catálogo as poses e animações marcadas com “salvar” (Ctrl+S)">Salvar no catálogo</button><select data-n="modelos" aria-label="Modelos"><option value="">Modelos…</option>' + Object.keys(MODELOS).concat(["Meu texto antes das lições"]).map((k) => "<option>" + esc7(k) + "</option>").join("") + '</select><button type="button" data-n="abrirArq">Abrir…</button><input type="file" accept=".gmn,.txt,.json,text/plain,application/json" data-n="arquivo" hidden><button type="button" data-n="salvarArq">Salvar .gmn</button><button type="button" data-n="imgBtn" title="Anexar imagens de planta (usadas por local … planta &quot;nome&quot;)">Plantas…</button><input type="file" accept="image/png,image/jpeg" multiple data-n="imgs" hidden><button type="button" data-n="manual">Manual</button><select data-n="prompts" aria-label="Prompts prontos"><option value="">Prompts para IA…</option>' + Object.keys(PROMPTS_NAME).map((k) => "<option>" + esc7(k) + "</option>").join("") + '</select><span class="qd-cont"></span><button type="button" data-n="fechar" aria-label="Fechar">✕</button></header><div class="qd-corpo"><div class="qd-ed"><nav class="qd-chips" aria-label="Quadros"></nav><div class="qd-codewrap"><pre class="qd-gut" aria-hidden="true">1</pre><div class="nm-hlwrap"><pre class="nm-hl" aria-hidden="true"></pre><textarea spellcheck="false" wrap="off" aria-label="Texto do name, poses e animações"></textarea><ul class="nm-ac" hidden role="listbox"></ul><div class="nm-ac-lado" hidden></div><div class="nm-sig" hidden role="tooltip"></div><div class="nm-ajuda" hidden role="note"></div></div></div><ul class="nm-erros" aria-label="Erros e avisos"></ul><p class="nm-imgs"></p><div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress><label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p><div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div><div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button></nav><div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div><h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div><div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div><div class="nm-dlg nm-tags" hidden><label>Tags (separadas por vírgula) <input data-n="tagsIn" maxlength="200"></label><button type="button" class="primario" data-n="tagsOk">Gravar</button><button type="button" data-n="tagsNao">Cancelar</button></div></div></div>';
     document.body.appendChild(area);
     const q = (s) => area.querySelector(s), b = (k) => q('[data-n="' + k + '"]');
     Object.assign(E3, {
@@ -40516,6 +42560,9 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       cont: q(".qd-cont"),
       tabs: q(".nm-tabs"),
       ac: q(".nm-ac"),
+      acBig: q(".nm-ac-lado"),
+      sig: q(".nm-sig"),
+      ajuda: q(".nm-ajuda"),
       busca: b("busca"),
       semLat: b("semLat"),
       semLeg: b("semLeg"),
@@ -40527,10 +42574,12 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       textoArea: q(".nm-texto textarea")
     });
     E3.code.value = ls3.ler("texto", EXEMPLO_NAME);
-    E3.code.addEventListener("input", () => {
+    E3.code.addEventListener("input", (e) => {
       realcar();
       pedirCompilar();
-      abrirAC(false);
+      const ch = E3.code.value[E3.code.selectionStart - 1];
+      abrirAC(false, e.inputType === "insertText" && /[.( ]/.test(ch) ? ch : null);
+      E3.ajuda.hidden = true;
     });
     E3.code.addEventListener("scroll", () => {
       E3.hl.scrollTop = E3.code.scrollTop;
@@ -40542,11 +42591,47 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       pedirPrevia2();
     }));
     E3.code.addEventListener("keydown", (e) => {
+      if (e.altKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        e.preventDefault();
+        if (rolarNumero(E3.code, e.key === "ArrowUp" ? 1 : -1, e.shiftKey)) {
+          realcar();
+          ls3.gravar("texto", E3.code.value);
+          compilar();
+        }
+        return;
+      }
+      if (e.key === "Escape" && (!E3.ajuda.hidden || !E3.sig.hidden)) {
+        e.preventDefault();
+        e.stopPropagation();
+        E3.ajuda.hidden = true;
+        E3.sig.hidden = true;
+        return;
+      }
+      if (e.key === "F1") {
+        e.preventDefault();
+        const w = palavraNoCursor(E3.code);
+        E3.ajuda.innerHTML = ajudaHtml(w) + '<button type="button" class="nm-ajuda-x" aria-label="Fechar ajuda">✕</button>';
+        E3.ajuda.hidden = false;
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        salvarCatalogo();
+        return;
+      }
+      if (e.key === "Tab" && !e.shiftKey && expandirTrecho(E3.code)) {
+        e.preventDefault();
+        fecharAC();
+        realcar();
+        pedirCompilar();
+        return;
+      }
       if (!E3.ac.hidden) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           AC.i = (AC.i + (e.key === "ArrowDown" ? 1 : -1) + AC.itens.length) % AC.itens.length;
           E3.ac.querySelectorAll("li").forEach((li, i) => li.classList.toggle("sel", i === AC.i));
+          destacar2();
           return;
         }
         if (e.key === "Enter" || e.key === "Tab") {
@@ -40556,6 +42641,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
         }
         if (e.key === "Escape") {
           e.preventDefault();
+          e.stopPropagation();
           fecharAC();
           return;
         }
@@ -40583,7 +42669,10 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
         }
       }
     });
-    E3.code.addEventListener("blur", () => setTimeout(fecharAC, 150));
+    E3.code.addEventListener("blur", () => setTimeout(() => {
+      fecharAC();
+      E3.sig.hidden = true;
+    }, 150));
     E3.ac.addEventListener("mousedown", (e) => {
       const li = e.target.closest("li");
       if (li) {
@@ -40600,8 +42689,43 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       }
     });
     E3.erros.addEventListener("click", (e) => {
+      const fx = e.target.closest(".nm-fix");
+      if (fx) {
+        const L0 = E3.code.value.split("\n"), i = +fx.dataset.l - 1;
+        if (L0[i] !== void 0 && L0[i].includes(fx.dataset.de)) {
+          L0[i] = L0[i].replace(fx.dataset.de, fx.dataset.para);
+          E3.code.value = L0.join("\n");
+          realcar();
+          compilar();
+          log2("Trocado por “" + fx.dataset.para + "”.");
+        }
+        return;
+      }
       const t = e.target.closest("[data-l]");
       if (t && +t.dataset.l) irPara3(+t.dataset.l);
+    });
+    E3.ajuda.addEventListener("click", (e) => {
+      if (e.target.closest(".nm-ajuda-x")) E3.ajuda.hidden = true;
+    });
+    E3.ac.addEventListener("mousemove", (e) => {
+      const li = e.target.closest("li");
+      if (li && +li.dataset.i !== AC.i) {
+        AC.i = +li.dataset.i;
+        E3.ac.querySelectorAll("li").forEach((x, i) => x.classList.toggle("sel", i === AC.i));
+        destacar2();
+      }
+    });
+    b("catalogo").addEventListener("click", salvarCatalogo);
+    b("aprender").addEventListener("change", (e) => {
+      const i = e.target.value;
+      e.target.value = "";
+      if (i === "") return;
+      if (!ls3.ler("antesDasLicoes", "")) ls3.gravar("antesDasLicoes", E3.code.value);
+      E3.code.value = LICOES[+i][1];
+      realcar();
+      compilar();
+      irPara3(3);
+      log2("Lição carregada. O seu texto anterior ficou guardado: Modelos… → “Meu texto antes das lições”.");
     });
     E3.tabs.addEventListener("click", (e) => {
       const t = e.target.closest("[data-aba]");
@@ -40613,6 +42737,10 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       }
     });
     E3.prev.addEventListener("click", (e) => {
+      if (e.target.closest('[data-pd="salvar"]')) {
+        salvarCatalogo();
+        return;
+      }
       const a = e.target.closest("[data-a]"), art = e.target.closest(".nm-local");
       if (a && art && a.tagName === "BUTTON") acaoLocal(art.dataset.nome, a.dataset.a, a);
     });
@@ -40627,7 +42755,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       const k = e.target.value;
       e.target.value = "";
       if (!k) return;
-      E3.code.value = MODELOS[k];
+      E3.code.value = k === "Meu texto antes das lições" ? ls3.ler("antesDasLicoes", E3.code.value) : MODELOS[k];
       realcar();
       compilar();
       ls3.gravar("texto", E3.code.value);
@@ -40747,7 +42875,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
 
   // src/ui/animacao.js
   var E4 = {};
-  var esc7 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var esc8 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var ROSTO = ["jawOpen", "smile", "eyeLid", "browUp", "browIn", "eyeYaw", "eyePitch", "blush", "tears"];
   var ED = null;
   var T = 0;
@@ -40759,7 +42887,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
   var gravT2 = 0;
   var CANCELAR = false;
   var CACHE3 = /* @__PURE__ */ new Map();
-  var noPalco = null;
+  var noPalco2 = null;
   var DESF = [];
   var REF2 = [];
   function marcar2() {
@@ -40982,10 +43110,10 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     }
   }
   function tocarNoPalco() {
-    if (noPalco) {
-      cancelAnimationFrame(noPalco.raf);
-      Object.assign(noPalco.x.params, noPalco.salvo);
-      noPalco = null;
+    if (noPalco2) {
+      cancelAnimationFrame(noPalco2.raf);
+      Object.assign(noPalco2.x.params, noPalco2.salvo);
+      noPalco2 = null;
       render2();
       E4.palcoPlay.textContent = "▶ No palco";
       return;
@@ -40998,17 +43126,17 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     }
     const x = it(), salvo = anSemCamera(x.params), base2 = ED.base ? anSemCamera(ED.base) : anSemCamera(x.params), op = opcTempo();
     let t0 = performance.now(), mem = null;
-    noPalco = { x, salvo };
+    noPalco2 = { x, salvo };
     E4.palcoPlay.textContent = "■ Parar";
     const passo = () => {
-      if (!noPalco) return;
+      if (!noPalco2) return;
       let t = (performance.now() - t0) / 1e3 * op.velocidade * (+E4.vel.value || 1);
       if (op.passo > 1) t = Math.floor(t * op.fps / op.passo) * op.passo / op.fps;
       if (t > a.duracao) {
         if (E4.repetir.checked) {
           t0 = performance.now();
           mem = null;
-          noPalco.raf = requestAnimationFrame(passo);
+          noPalco2.raf = requestAnimationFrame(passo);
           return;
         }
         tocarNoPalco();
@@ -41025,9 +43153,9 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
         mem = travarPes(x, mem, { apoio: apoioNoTempo(a, t) });
       }
       render2();
-      noPalco.raf = requestAnimationFrame(passo);
+      noPalco2.raf = requestAnimationFrame(passo);
     };
-    noPalco.raf = requestAnimationFrame(passo);
+    noPalco2.raf = requestAnimationFrame(passo);
   }
   function carregarNoEditor(an) {
     const x = it();
@@ -41278,11 +43406,11 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     const tags = [...new Set(B3.listar().flatMap((a) => (a.tags || []).map((t) => t.split("/").slice(0, 2).join("/"))))].sort();
     if (E4.tagF.options.length !== tags.length + 1) {
       const v = E4.tagF.value;
-      E4.tagF.innerHTML = '<option value="">Todas as tags</option>' + tags.map((t) => "<option>" + esc7(t) + "</option>").join("");
+      E4.tagF.innerHTML = '<option value="">Todas as tags</option>' + tags.map((t) => "<option>" + esc8(t) + "</option>").join("");
       E4.tagF.value = v;
     }
     E4.cont.textContent = l.length + " de " + B3.listar().length + " animações" + (NUVEM2 ? " · nuvem do artefato" : " · neste navegador");
-    E4.lista.innerHTML = l.map((a) => '<li data-n="' + esc7(a.nome) + '"><b>' + esc7(a.nome) + "</b> <small>" + a.duracao.toFixed(2) + " s · " + (a.modo === "relativa" ? "relativa" : "absoluta") + (a.loop ? " · loop" : "") + (a.origem === "pronta" ? " · pronta" : " · v" + a.versao) + "</small><small>" + esc7((a.tags || []).join(", ")) + (a.descricao ? " — " + esc7(a.descricao) : "") + '</small><span class="nm-bts"><button type="button" data-a="ver">Prévia</button><button type="button" data-a="aplicar" title="Põe o manequim no fim do movimento">Aplicar</button><button type="button" data-a="editar">Editar</button>' + (a.origem === "pronta" ? "" : '<button type="button" data-a="del" class="perigo">Apagar</button>') + "</span></li>").join("");
+    E4.lista.innerHTML = l.map((a) => '<li data-n="' + esc8(a.nome) + '"><b>' + esc8(a.nome) + "</b> <small>" + a.duracao.toFixed(2) + " s · " + (a.modo === "relativa" ? "relativa" : "absoluta") + (a.loop ? " · loop" : "") + (a.origem === "pronta" ? " · pronta" : " · v" + a.versao) + "</small><small>" + esc8((a.tags || []).join(", ")) + (a.descricao ? " — " + esc8(a.descricao) : "") + '</small><span class="nm-bts"><button type="button" data-a="ver">Prévia</button><button type="button" data-a="aplicar" title="Põe o manequim no fim do movimento">Aplicar</button><button type="button" data-a="editar">Editar</button>' + (a.origem === "pronta" ? "" : '<button type="button" data-a="del" class="perigo">Apagar</button>') + "</span></li>").join("");
   }
   async function acaoLista(nome, a, el2) {
     const B3 = bibliotecaAnimacoes(), an = B3.obter(nome);
@@ -41325,9 +43453,9 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     E4.area.hidden = false;
     const b = document.getElementById("animBtn");
     if (b) b.setAttribute("aria-pressed", "true");
-    E4.quem.innerHTML = SCN.list.map((x, i) => '<option value="' + i + '"' + (i === SCN.active ? " selected" : "") + ">" + esc7(x.name) + "</option>").join("");
+    E4.quem.innerHTML = SCN.list.map((x, i) => '<option value="' + i + '"' + (i === SCN.active ? " selected" : "") + ">" + esc8(x.name) + "</option>").join("");
     const oa = E4.area.querySelector('[data-a="oAlvo"]');
-    if (oa) oa.innerHTML = '<option value="camera">câmera</option>' + SCN.list.map((x) => "<option>" + esc7(x.name) + "</option>").join("");
+    if (oa) oa.innerHTML = '<option value="camera">câmera</option>' + SCN.list.map((x) => "<option>" + esc8(x.name) + "</option>").join("");
     desenharLinha();
     lista2();
     estimativa();
