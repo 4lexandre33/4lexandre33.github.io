@@ -1,6 +1,6 @@
 # Catálogo DSL do GeoMannequin
 
-Gerado em 2026-11-14 · **306 poses** · **144 animações** (111 ações, 13 ciclos, 11 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 130 efeitos · 117 objetos.
+Gerado em 2026-11-14 · **413 poses** · **179 animações** (144 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 130 efeitos · 117 objetos.
 
 Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.
 
@@ -8,15 +8,15 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 ## Índice
 
-**Poses:** `empe`, `contrapposto`, `caminhando`, `frente`, `torcao`, `passo`, `joelho`, `ponta`, `erguido`, `alcancar`, `lateral`, `agachar`, `cintura`, `cruzar`, `ombro`, `sentado`, `sentadoChao`, `pernasEsticadas`, `abracandoJoelhos`, `deitadoCostas`, `deitadoLado`, `deBrucos`, `apoiadoCotovelos`, `ajoelhado`, `sentadoCalcanhares`, `umJoelho`, `cocoras`, `correndo`, `impulso`, `saltando`, `aterrissando`, `chutando`, `socando`, `alongando`, `paradaDeMao`, `engatinhando`, `apontando`, `acenando`, `carregando`, `empurrando`, `pensando`, `encostado`, `caindo`, `ponte`, `ponteUmaPerna`, `paradaAbertura`, `escorpiao`, `arabesque`, `espacateSaltado`, `camelo`, `agachamentoProfundo`, `prancha`, `quatroApoios`, `meditando`, `guardaLuta`, `jab`, `direto`, `gancho`, `uppercut`, `socoParaCima`, `cotovelada`, `joelhada`, `chuteLateral`, `chuteAlto`, `chuteGiratorio`, `chuteVoador`, `rasteira`, `palma`, `palmaDupla`, `defesaCruzada`, `aterrissagemHeroi`, `investida`, `esquiva`, `provocando`, `golpeRosto`, `golpeEstomago`, `arremessadoCostas`, `girandoNoAr`, `deCabecaParaBaixo`, `rolando`, `deslizandoSentado`, `estatelado`, `levantandoDeQuatro`, `atordoado`, `recuando`, `ajoelhadoFerido`, `atravessandoParede`, `caindoDeCostas`, `lotusFlutuando`, `baseGritando`, `agachadoCerrando`, `bracosAbertosLevitando`, `maosEmPrece`, `bracosCruzadosPeito`, `joelhoMaoNoChao`, `esferaDeLado`, `bracoAosCeus`, `concentrando`, `cargaDuasMaos`, `saltoSobreCaixa`, `subindoDegrau`, `saltoLongo`, `desviando`, `escalando`, `vitoria`, `corridaSuperRapida`, `corridaNinja`, `arrancada`, `puloAlto`, `saltoAtaque`, `socoCarregado`, `socoDescendente`, `investidaDeOmbro`, `chuteMachado`, `bloqueioAlto`, `defesaComBracos`, `esquivaBaixa`, `esquivaParaTras`, `quedaDeCostas`, `quedaDeFrente`, `lancandoMagia`, `disparoDuasMaos`, `guardaBoxe`, `guardaKarate`, `guardaKungFuGarca`, `guardaMuayThai`, `guardaBaixaProvocando`, `posturaSumo`, `guardaEsgrima`, `guardaCapoeira`, `guardaNinja`, `guardaLutaLivre`, `jabBaixo`, `diretoAoCorpo`, `cruzado`, `ganchoBaixo`, `socoGiratorio`, `socoMartelo`, `socoSuperman`, `socoDuplo`, `socoNoChao`, `chuteFrontal`, `chuteEmpurrao`, `chuteCircularBaixo`, `chuteCircularMedio`, `chuteGancho`, `chuteCrescente`, `chuteParaTras`, `joelhadaVoadora`, `pisao`, `bloqueioBaixo`, `bloqueioInterno`, `aparar`, `cobertura`, `esquivaLateral`, `rolamentoParaTras`, `protegendoRosto`, `espadaGuardaMedia`, `espadaGuardaAlta`, `espadaEstocada`, `espadaCorteDescendente`, `espadaCorteHorizontal`, `espadaDefesa`, `espadaSaque`, `espadaEmbainhando`, `espadaApoiadaNoChao`, `lancaGuarda`, `lancaEstocada`, `bastaoGirando`, `arcoPuxando`, `arcoSacandoFlecha`, `armaDuasMaos`, `armaUmaMao`, `armaCoberturaParede`, `armaRecarregando`, `atingidoCostas`, `atingidoLado`, `caindoDeJoelhos`, `nocauteadoSentado`, `cuspindoSangue`, `arremessadoAlto`, `entradaHeroica`, `apontandoInimigo`, `punhoAFrente`, `viloesBracosCruzados`, `risadaVila`, `transformacao`, `pousoAgachadoMaoNoChao`, `vitoriaPunhoErguido`, `vitoriaAjoelhada`, `costasParaCamera`, `energiaConchaLado`, `energiaRajadaUmBraco`, `energiaDuasMaosAFrente`, `energiaAuraConcentrando`, `energiaEsferaUmaMao`, `selosDeMao`, `saltoComEspada`, `voadoraDupla`, `cambalhotaNoAr`, `saltoDesviando`, `explicandoComMaos`, `contandoNosDedos`, `apontandoParaSi`, `maosAbertasSinceras`, `encolhendoOmbros`, `maoNoPeitoJuramento`, `maoNoQueixo`, `bracosCruzadosOuvindo`, `inclinadoAtento`, `cochichandoMaoNaBoca`, `dedoNosLabios`, `maoNaTesta`, `cocandoACabeca`, `maosNaCinturaBravo`, `apontandoAcusando`, `gesticulandoBravo`, `pedindoMaoEstendida`, `implorandoMaosJuntas`, `acenandoDeLonge`, `chamandoComAMao`, `dispensandoComAMao`, `polegarParaCima`, `sinalOk`, `maoNoBolsoRelaxado`, `maosNosBolsos`, `encostadoBracosCruzados`, `celularNoOuvido`, `olhandoOCelular`, `maoAtrasDaCabeca`, `maosAtrasDasCostas`, `reverenciaJaponesa`, `reverenciaLeve`, `continencia`, `negandoComDedo`, `apresentandoBracoAberto`, `discursando`, `olharDeLado`, `maoEstendidaApertar`, `abracoAberto`, `desesperoMaosNaCabeca`, `ajoelhadoChorando`, `encolhidoComMedo`, `abracandoASiMesmo`, `cabisbaixoAndando`, `bracosParaCimaAlegria`, `pulandoDeAlegria`, `dancandoAlegre`, `cansadoMaosNosJoelhos`, `deitadoOlhandoOCeu`, `sentadoNaEscadaPensativo`, `sentadoLendo`, `sentadoNoCelular`, `espreguicando`, `bocejando`, `olhandoORelogio`, `procurandoMaoNosOlhos`, `espiando`, `escondidoAgachado`, `correndoAssustado`, `tropecando`, `escorregando`, `carregandoCaixa`, `empurrandoPesado`, `puxandoCorda`, `varrendo`, `cozinhandoMexendo`, `escrevendoEmPe`, `digitandoSentado`, `pintandoCavalete`, `tocandoViolaoSentado`, `cantandoMicrofone`, `fotografando`, `bebendoGarrafa`, `comendoSanduiche`, `dormindoSentado`, `deitadoDeBrucosLendo`, `rezando`, `ajoelhadoRezando`, `tirandoSelfie`, `segurandoGuardaChuva`, `acenandoAdeusTriste`, `maosNoVidro`, `saltitando`, `girandoBracosAbertos`, `timidaPesParaDentro`, `maosNoRostoVergonha`, `derrotadoOmbrosCaidos`, `punhoCerradoDeterminado`, `modeloMaoNoQuadril`, `sentadoPernasCruzadas`, `sentadoEncostadoParede`, `deitadoFetal`, `correndoBracosAbertos`, `bracosCruzadosEmburrado`, `chocadoMaosNaBoca`, `apontandoRindo`, `segurandoBarrigaRindo`, `bocejandoSentado`, `esperandoImpaciente`, `ofereceFlor`, `ajoelhadoPedido`, `debrucadoNaMesa`, `maosAoAlto`, `ajoelhadoRendido`, `estendendoAMaoAjuda`
+**Poses:** `empe`, `contrapposto`, `caminhando`, `frente`, `torcao`, `passo`, `joelho`, `ponta`, `erguido`, `alcancar`, `lateral`, `agachar`, `cintura`, `cruzar`, `ombro`, `sentado`, `sentadoChao`, `pernasEsticadas`, `abracandoJoelhos`, `deitadoCostas`, `deitadoLado`, `deBrucos`, `apoiadoCotovelos`, `ajoelhado`, `sentadoCalcanhares`, `umJoelho`, `cocoras`, `correndo`, `impulso`, `saltando`, `aterrissando`, `chutando`, `socando`, `alongando`, `paradaDeMao`, `engatinhando`, `apontando`, `acenando`, `carregando`, `empurrando`, `pensando`, `encostado`, `caindo`, `ponte`, `ponteUmaPerna`, `paradaAbertura`, `escorpiao`, `arabesque`, `espacateSaltado`, `camelo`, `agachamentoProfundo`, `prancha`, `quatroApoios`, `meditando`, `guardaLuta`, `jab`, `direto`, `gancho`, `uppercut`, `socoParaCima`, `cotovelada`, `joelhada`, `chuteLateral`, `chuteAlto`, `chuteGiratorio`, `chuteVoador`, `rasteira`, `palma`, `palmaDupla`, `defesaCruzada`, `aterrissagemHeroi`, `investida`, `esquiva`, `provocando`, `golpeRosto`, `golpeEstomago`, `arremessadoCostas`, `girandoNoAr`, `deCabecaParaBaixo`, `rolando`, `deslizandoSentado`, `estatelado`, `levantandoDeQuatro`, `atordoado`, `recuando`, `ajoelhadoFerido`, `atravessandoParede`, `caindoDeCostas`, `lotusFlutuando`, `baseGritando`, `agachadoCerrando`, `bracosAbertosLevitando`, `maosEmPrece`, `bracosCruzadosPeito`, `joelhoMaoNoChao`, `esferaDeLado`, `bracoAosCeus`, `concentrando`, `cargaDuasMaos`, `saltoSobreCaixa`, `subindoDegrau`, `saltoLongo`, `desviando`, `escalando`, `vitoria`, `corridaSuperRapida`, `corridaNinja`, `arrancada`, `puloAlto`, `saltoAtaque`, `socoCarregado`, `socoDescendente`, `investidaDeOmbro`, `chuteMachado`, `bloqueioAlto`, `defesaComBracos`, `esquivaBaixa`, `esquivaParaTras`, `quedaDeCostas`, `quedaDeFrente`, `lancandoMagia`, `disparoDuasMaos`, `guardaBoxe`, `guardaKarate`, `guardaKungFuGarca`, `guardaMuayThai`, `guardaBaixaProvocando`, `posturaSumo`, `guardaEsgrima`, `guardaCapoeira`, `guardaNinja`, `guardaLutaLivre`, `jabBaixo`, `diretoAoCorpo`, `cruzado`, `ganchoBaixo`, `socoGiratorio`, `socoMartelo`, `socoSuperman`, `socoDuplo`, `socoNoChao`, `chuteFrontal`, `chuteEmpurrao`, `chuteCircularBaixo`, `chuteCircularMedio`, `chuteGancho`, `chuteCrescente`, `chuteParaTras`, `joelhadaVoadora`, `pisao`, `bloqueioBaixo`, `bloqueioInterno`, `aparar`, `cobertura`, `esquivaLateral`, `rolamentoParaTras`, `protegendoRosto`, `espadaGuardaMedia`, `espadaGuardaAlta`, `espadaEstocada`, `espadaCorteDescendente`, `espadaCorteHorizontal`, `espadaDefesa`, `espadaSaque`, `espadaEmbainhando`, `espadaApoiadaNoChao`, `lancaGuarda`, `lancaEstocada`, `bastaoGirando`, `arcoPuxando`, `arcoSacandoFlecha`, `armaDuasMaos`, `armaUmaMao`, `armaCoberturaParede`, `armaRecarregando`, `atingidoCostas`, `atingidoLado`, `caindoDeJoelhos`, `nocauteadoSentado`, `cuspindoSangue`, `arremessadoAlto`, `entradaHeroica`, `apontandoInimigo`, `punhoAFrente`, `viloesBracosCruzados`, `risadaVila`, `transformacao`, `pousoAgachadoMaoNoChao`, `vitoriaPunhoErguido`, `vitoriaAjoelhada`, `costasParaCamera`, `energiaConchaLado`, `energiaRajadaUmBraco`, `energiaDuasMaosAFrente`, `energiaAuraConcentrando`, `energiaEsferaUmaMao`, `selosDeMao`, `saltoComEspada`, `voadoraDupla`, `cambalhotaNoAr`, `saltoDesviando`, `explicandoComMaos`, `contandoNosDedos`, `apontandoParaSi`, `maosAbertasSinceras`, `encolhendoOmbros`, `maoNoPeitoJuramento`, `maoNoQueixo`, `bracosCruzadosOuvindo`, `inclinadoAtento`, `cochichandoMaoNaBoca`, `dedoNosLabios`, `maoNaTesta`, `cocandoACabeca`, `maosNaCinturaBravo`, `apontandoAcusando`, `gesticulandoBravo`, `pedindoMaoEstendida`, `implorandoMaosJuntas`, `acenandoDeLonge`, `chamandoComAMao`, `dispensandoComAMao`, `polegarParaCima`, `sinalOk`, `maoNoBolsoRelaxado`, `maosNosBolsos`, `encostadoBracosCruzados`, `celularNoOuvido`, `olhandoOCelular`, `maoAtrasDaCabeca`, `maosAtrasDasCostas`, `reverenciaJaponesa`, `reverenciaLeve`, `continencia`, `negandoComDedo`, `apresentandoBracoAberto`, `discursando`, `olharDeLado`, `maoEstendidaApertar`, `abracoAberto`, `desesperoMaosNaCabeca`, `ajoelhadoChorando`, `encolhidoComMedo`, `abracandoASiMesmo`, `cabisbaixoAndando`, `bracosParaCimaAlegria`, `pulandoDeAlegria`, `dancandoAlegre`, `cansadoMaosNosJoelhos`, `deitadoOlhandoOCeu`, `sentadoNaEscadaPensativo`, `sentadoLendo`, `sentadoNoCelular`, `espreguicando`, `bocejando`, `olhandoORelogio`, `procurandoMaoNosOlhos`, `espiando`, `escondidoAgachado`, `correndoAssustado`, `tropecando`, `escorregando`, `carregandoCaixa`, `empurrandoPesado`, `puxandoCorda`, `varrendo`, `cozinhandoMexendo`, `escrevendoEmPe`, `digitandoSentado`, `pintandoCavalete`, `tocandoViolaoSentado`, `cantandoMicrofone`, `fotografando`, `bebendoGarrafa`, `comendoSanduiche`, `dormindoSentado`, `deitadoDeBrucosLendo`, `rezando`, `ajoelhadoRezando`, `tirandoSelfie`, `segurandoGuardaChuva`, `acenandoAdeusTriste`, `maosNoVidro`, `saltitando`, `girandoBracosAbertos`, `timidaPesParaDentro`, `maosNoRostoVergonha`, `derrotadoOmbrosCaidos`, `punhoCerradoDeterminado`, `modeloMaoNoQuadril`, `sentadoPernasCruzadas`, `sentadoEncostadoParede`, `deitadoFetal`, `correndoBracosAbertos`, `bracosCruzadosEmburrado`, `chocadoMaosNaBoca`, `apontandoRindo`, `segurandoBarrigaRindo`, `bocejandoSentado`, `esperandoImpaciente`, `ofereceFlor`, `ajoelhadoPedido`, `debrucadoNaMesa`, `maosAoAlto`, `ajoelhadoRendido`, `estendendoAMaoAjuda`, `esquivaMatrix`, `esquivaAbaixando`, `esquivaPendulo`, `esquivaGiro`, `esquivaRolamento`, `esquivaMergulho`, `esquivaCambalhotaTras`, `esquivaPorUmTriz`, `esquivaPuloLado`, `esquivaInclinarCabeca`, `defesaCoberto`, `defesaEncolhido`, `defesaEmpurrando`, `defesaBarreira`, `defesaBarreiraDupla`, `defesaChute`, `defesaAgarrandoPunho`, `defesaDesviandoBraco`, `defesaProtegendoOutro`, `puloImpulso`, `puloDecolando`, `puloEstrela`, `puloEncolhido`, `puloAltoEsticado`, `puloEmDistancia`, `puloTesoura`, `puloAterrissagem`, `puloAterrissagemHeroi`, `puloParede`, `puloCambalhota`, `puloQueda`, `flutuandoMeditacao`, `flutuandoRelaxado`, `flutuandoBracosAbertos`, `flutuandoAmeaca`, `flutuandoSubmerso`, `flutuandoGravidadeZero`, `flutuandoAdormecido`, `vooSuperHeroi`, `vooDecolando`, `vooPlanando`, `vooMergulho`, `vooPairando`, `fugaOlhandoTras`, `fugaDesesperada`, `fugaEsgueirando`, `fugaRastejando`, `fugaTropecando`, `fugaPulandoMuro`, `fugaEscondendo`, `fugaColadoParede`, `fugaCarregandoAlguem`, `perseguicaoSprint`, `perseguicaoAlcancando`, `perseguicaoAgarrando`, `perseguicaoApontando`, `perseguicaoOfegante`, `perseguicaoDerrapando`, `perseguicaoProcurando`, `parkourVault`, `parkourPendurado`, `parkourEscalando`, `parkourCorridaParede`, `parkourDeslizando`, `parkourEquilibrio`, `parkourAgachadoBeirada`, `impactoNoRosto`, `impactoNoEstomago`, `arremessadoParaTras`, `caidoDeCostas`, `caidoDeBrucos`, `levantandoComEsforco`, `ajoelhadoExausto`, `cambaleando`, `atordoadoEstrelinhas`, `escorregaoComico`, `quedaSentado`, `poderCarregando`, `poderKamehameha`, `poderBolaPreparo`, `poderAoCeu`, `poderSocoChao`, `poderTelecinese`, `poderTransformacao`, `poderSelamento`, `giganteAgachando`, `gigantePisando`, `giganteRugindo`, `giganteOlhandoBaixo`, `giganteSegurandoNaPalma`, `giganteDerrubandoPredio`, `minusculoOlhandoCima`, `minusculoAcenando`, `minusculoEscalando`, `minusculoEsmagado`, `minusculoNaPalma`, `minusculoEmpurrando`, `entradaVilao`, `encaraRival`, `desafioChamando`, `costasComCostas`, `cercadoOlhandoVolta`, `vitoriaPunhoAlto`, `vitoriaCostasViradas`, `derrotaDeJoelhos`, `juramento`, `estendendoMaoRival`
 
-**Animações — ação (acontece e segura):** `passoFrente`, `passoTras`, `passoLadoDireito`, `passoLadoEsquerdo`, `virarEsquerda`, `virarDireita`, `meiaVolta`, `peDireito15cmDireita`, `peDireito15cmEsquerda`, `peDireito15cmFrente`, `peDireito15cmTras`, `peEsquerdo15cmDireita`, `peEsquerdo15cmEsquerda`, `peEsquerdo15cmFrente`, `peEsquerdo15cmTras`, `inclinarCabecaDireita`, `inclinarCabecaEsquerda`, `abaixarCabeca`, `erguerQueixo`, `acenarSim`, `acenarNao`, `inclinarTroncoFrente`, `recuarTronco`, `encolherOmbrosRapido`, `pesoParaDireita`, `pesoParaEsquerda`, `ombrosCairem`, `encolher`, `gestoExplicar`, `gestoOferecer`, `gestoEnfatizar`, `gestoContarDedos`, `gestoApontar`, `gestoDedoEmRiste`, `gestoNegarComMao`, `gestoMaoNoPeito`, `gestoEncolherOmbros`, `gestoMaoNoQueixo`, `gestoBracosCruzados`, `gestoMaosNaCintura`, `gestoMaosNoAr`, `gestoMaoNaNuca`, `gestoCocarCabeca`, `gestoMaosJuntas`, `gestoSegurarCabeca`, `gestoAcenar`, `gestoJoinha`, `gestoBracosAbertos`, `acenarTchau`, `piscar`, `sorrir`, `ficarComRaiva`, `assustar`, `socarJab`, `socoDireto`, `defender`, `esquivar`, `chutar`, `entrarEmGuarda`, `apontarAlgo`, `acenarPose`, `pular`, `girar45E`, `girar45D`, `girar90E`, `girar90D`, `girar180E`, `girar180D`, `girar360E`, `girar360D`, `girar360E_pivo`, `girar360D_pivo`, `girar360E_luta`, `girar360D_luta`, `girar360E_salto`, `girar360D_salto`, `girar720E_pivo`, `puloLugar`, `puloFrente`, `puloAlto`, `puloLado`, `puloCorrida`, `mergulhar`, `rolarDireita`, `rolarEsquerda`, `oferecer`, `pedir`, `entregar`, `receber`, `pegar`, `jogar`, `largar`, `apontar`, `acenar`, `cumprimentar`, `abrirPorta`, `beber`, `ler`, `atenderCelular`, `olharRelogio`, `encolherOmbros`, `chorar`, `rir`, `cairDeJoelhos`, `cocarCabeca`, `cruzarBracos`, `espreguicar`, `bocejar`, `comemorar`, `suspirar`, `baterPalmas`
+**Animações — ação (acontece e segura):** `passoFrente`, `passoTras`, `passoLadoDireito`, `passoLadoEsquerdo`, `virarEsquerda`, `virarDireita`, `meiaVolta`, `peDireito15cmDireita`, `peDireito15cmEsquerda`, `peDireito15cmFrente`, `peDireito15cmTras`, `peEsquerdo15cmDireita`, `peEsquerdo15cmEsquerda`, `peEsquerdo15cmFrente`, `peEsquerdo15cmTras`, `inclinarCabecaDireita`, `inclinarCabecaEsquerda`, `abaixarCabeca`, `erguerQueixo`, `acenarSim`, `acenarNao`, `inclinarTroncoFrente`, `recuarTronco`, `encolherOmbrosRapido`, `pesoParaDireita`, `pesoParaEsquerda`, `ombrosCairem`, `encolher`, `gestoExplicar`, `gestoOferecer`, `gestoEnfatizar`, `gestoContarDedos`, `gestoApontar`, `gestoDedoEmRiste`, `gestoNegarComMao`, `gestoMaoNoPeito`, `gestoEncolherOmbros`, `gestoMaoNoQueixo`, `gestoBracosCruzados`, `gestoMaosNaCintura`, `gestoMaosNoAr`, `gestoMaoNaNuca`, `gestoCocarCabeca`, `gestoMaosJuntas`, `gestoSegurarCabeca`, `gestoAcenar`, `gestoJoinha`, `gestoBracosAbertos`, `acenarTchau`, `piscar`, `sorrir`, `ficarComRaiva`, `assustar`, `socarJab`, `socoDireto`, `defender`, `esquivar`, `chutar`, `entrarEmGuarda`, `apontarAlgo`, `acenarPose`, `pular`, `girar45E`, `girar45D`, `girar90E`, `girar90D`, `girar180E`, `girar180D`, `girar360E`, `girar360D`, `girar360E_pivo`, `girar360D_pivo`, `girar360E_luta`, `girar360D_luta`, `girar360E_salto`, `girar360D_salto`, `girar720E_pivo`, `puloLugar`, `puloFrente`, `puloAlto`, `puloLado`, `puloCorrida`, `mergulhar`, `rolarDireita`, `rolarEsquerda`, `oferecer`, `pedir`, `entregar`, `receber`, `pegar`, `jogar`, `largar`, `apontar`, `acenar`, `cumprimentar`, `abrirPorta`, `beber`, `ler`, `atenderCelular`, `olharRelogio`, `encolherOmbros`, `chorar`, `rir`, `cairDeJoelhos`, `cocarCabeca`, `cruzarBracos`, `espreguicar`, `bocejar`, `comemorar`, `suspirar`, `baterPalmas`, `esquivaLateralAnim`, `esquivaParaTrasAnim`, `esquivaAbaixandoAnim`, `esquivaMatrixAnim`, `esquivaRolamentoAnim`, `esquivaMergulhoAnim`, `defesaCruzadaAnim`, `defesaBarreiraAnim`, `puloCompleto`, `puloEmDistanciaAnim`, `pousoDeHeroi`, `mortalParaTras`, `levitar`, `flutuarMeditando`, `decolarHeroi`, `fugaOlhandoTrasAnim`, `esconderAnim`, `perseguicaoAgarrao`, `perseguicaoParouCansado`, `parkourVaultAnim`, `levarSocoNoRosto`, `levarSocoNoEstomago`, `serArremessado`, `nocaute`, `carregarPoder`, `dispararRaio`, `socoNoChaoPoder`, `gigantePisao`, `giganteAbaixaPega`, `minusculoFogePisao`, `confrontoEncarar`, `vitoriaAnim`, `derrotaAnim`
 
 **Animações — ciclo (repete):** `andarCiclo`, `correrCiclo`, `respirar`, `falarCiclo`, `nadarCrawl`, `nadarPeito`, `nadarCostas`, `nadarCachorrinho`, `nadarBoia`, `nadarPernada`, `engatinhar`, `rastejar`, `andarAgachado`
 
 **Animações — espera viva:** `esperaEmpe`, `esperaImpaciente`, `esperaBracosCruzados`, `esperaSentado`, `esperaSentadoInquieto`, `esperaDeitado`, `esperaGuarda`, `esperaOlhandoEmVolta`, `esperaPensando`
 
-**Animações — transição de postura:** `sentarNoChao`, `levantarDoChao`, `agachar`, `levantarDeAgachado`, `ajoelhar`, `deitar`, `cairFrente`, `cairTras`, `cairLado`, `levantarDeBrucos`, `levantarDeCostas`
+**Animações — transição de postura:** `sentarNoChao`, `levantarDoChao`, `agachar`, `levantarDeAgachado`, `ajoelhar`, `deitar`, `cairFrente`, `cairTras`, `cairLado`, `levantarDeBrucos`, `levantarDeCostas`, `fugaTropecaoAnim`, `levantarDoChaoLuta`
 
 **Verbos do dia a dia (numa linha de plano: `1s Kai VERBO [para Mira]`):** `oferece`, `pede`, `entrega`, `recebe`, `pega`, `joga`, `larga`, `aponta`, `acena`, `cumprimenta`, `abre-porta`, `bebe`, `le`, `atende`, `olha-relogio`, `encolhe-ombros`, `chora`, `ri`, `cai-de-joelhos`, `coca-cabeca`, `cruza-bracos`, `espreguica`, `boceja`, `comemora`, `suspira`, `bate-palmas`
 
@@ -2092,19 +2092,15 @@ pose "palmaDupla" de empe
 
 ```gm
 pose "defesaCruzada" de empe
-  ombro.direito(frente 80 cruza 34 sobe 40% avanca 50%)
-  ombro.esquerdo(frente 80 cruza 38 sobe 40% avanca 50%)
-  cotovelo.direito(dobra 104)
-  cotovelo.esquerdo(dobra 100)
-  antebraco(palma-baixo 10)
+  ombro(frente 95 abre 10 gira-fora 40)
+  cotovelo(dobra 120)
   mao(fecha 100% afasta 20% opoe 75%)
-  quadril.direito(frente 39.2 abre 28.1)
-  quadril.esquerdo(frente 49 abre 19.3 gira-dentro 4.3)
-  joelho.direito(dobra 89.8)
-  joelho.esquerdo(dobra 72.9)
-  tornozelo(levanta-ponta 20)
-  tronco(frente 24)
-  cabeca(baixa 22)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 14)
+  cabeca(baixa 14)
   valor fThL -0.1 fThR -0.1
 ```
 
@@ -3045,16 +3041,20 @@ pose "esquivaBaixa" de empe
 
 ```gm
 pose "esquivaParaTras" de empe
-  ombro(frente 40 abre 50)
-  cotovelo(dobra 60)
-  mao(fecha 0% afasta 85%)
-  quadril.direito(tras 10)
-  quadril.esquerdo(frente 20)
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
   joelho.direito(dobra 30)
-  joelho.esquerdo(dobra 45)
-  cabeca(sobe 25)
-  corpo(deita-costas 15)
-  valor spineFlex -35
+  joelho.esquerdo(dobra 70)
+  tornozelo.esquerdo(aponta 20)
+  tronco(tras 14)
+  cabeca(sobe 10)
+  corpo(deita-costas 22)
+  valor fThL -0.1 fThR -0.1
 ```
 
 ### quedaDeCostas
@@ -3739,18 +3739,18 @@ pose "cobertura" de empe
 
 ```gm
 pose "esquivaLateral" de empe
-  ombro.direito(frente 60 abre 20)
-  ombro.esquerdo(frente 70 abre 20)
-  cotovelo.direito(dobra 125)
-  cotovelo.esquerdo(dobra 120)
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 60 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 100)
   mao(fecha 100% afasta 20% opoe 75%)
-  quadril.direito(frente 10 abre 20)
-  quadril.esquerdo(frente 30 abre 10)
-  joelho.direito(dobra 25)
-  joelho.esquerdo(dobra 40)
-  tronco(frente 10 esquerda 28)
-  cabeca(baixa 6 inclina-esquerda 10)
-  valor fThL -0.1 fThR -0.1
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 30 abre 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 50)
+  tronco(esquerda 28)
+  cabeca(gira-esquerda 20 inclina-direita 10)
+  valor fThL -0.1 fThR -0.1 bodyRoll -8
 ```
 
 ### rolamentoParaTras
@@ -4188,15 +4188,17 @@ pose "arremessadoAlto" de empe
 
 ```gm
 pose "entradaHeroica" de empe
-  ombro(abre 30)
-  cotovelo(dobra 10)
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 10 abre 25)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
   mao(fecha 100% afasta 20% opoe 75%)
-  quadril.direito(tras 6 abre 14)
-  quadril.esquerdo(frente 8 abre 14)
+  quadril.direito(tras 4 abre 12)
+  quadril.esquerdo(frente 10 abre 10)
   joelho.direito(dobra 4)
-  joelho.esquerdo(dobra 6)
-  tronco(tras 4)
-  cabeca(sobe 10)
+  joelho.esquerdo(dobra 8)
+  tronco(tras 6)
+  cabeca(sobe 6)
   valor fThL -0.1 fThR -0.1
 ```
 
@@ -5930,6 +5932,1781 @@ pose "estendendoAMaoAjuda" de empe
   cabeca(baixa 10)
 ```
 
+### esquivaMatrix
+
+```gm
+pose "esquivaMatrix" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 70)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 90)
+  tronco(tras 20)
+  cabeca(sobe 20)
+  corpo(deita-costas 55)
+```
+
+### esquivaAbaixando
+
+```gm
+pose "esquivaAbaixando" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 70 abre 20)
+  quadril.esquerdo(frente 90 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 45)
+  cabeca(sobe 30)
+  corpo(deita-brucos 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### esquivaPendulo
+
+```gm
+pose "esquivaPendulo" de empe
+  ombro(frente 80 abre 15)
+  cotovelo(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 30 direita 20)
+  cabeca(gira-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### esquivaGiro
+
+```gm
+pose "esquivaGiro" de empe
+  ombro.direito(frente 90 abre 40)
+  ombro.esquerdo(frente 40 abre 70)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 50)
+  cabeca(gira-direita 60)
+  valor spineTwist -50 pelvisTwist -30 fThR -0.1
+```
+
+### esquivaRolamento
+
+```gm
+pose "esquivaRolamento" de empe
+  ombro(frente 90 abre 20)
+  cotovelo(dobra 130)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 120)
+  quadril.esquerdo(frente 125)
+  joelho(dobra 140)
+  tronco(frente 80)
+  cabeca(baixa 40)
+  corpo(deita-brucos 95)
+  valor fThL -0.1 fThR -0.1
+```
+
+### esquivaMergulho
+
+```gm
+pose "esquivaMergulho" de empe
+  ombro.direito(frente 150 abre 30)
+  ombro.esquerdo(frente 170 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  cabeca(sobe 20)
+  corpo(deita-brucos 70 sobe 45.6cm)
+  valor bodyRoll -30
+```
+
+### esquivaCambalhotaTras
+
+```gm
+pose "esquivaCambalhotaTras" de empe
+  ombro(frente 60 abre 30)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 120)
+  joelho(dobra 140)
+  cabeca(baixa 30)
+  corpo(deita-costas 120 sobe 68.4cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### esquivaPorUmTriz
+
+```gm
+pose "esquivaPorUmTriz" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 80 abre 90)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(esquerda 18)
+  cabeca(sobe 4 gira-esquerda 40)
+  corpo(deita-costas 12)
+```
+
+### esquivaPuloLado
+
+```gm
+pose "esquivaPuloLado" de empe
+  ombro.direito(frente 80 abre 40)
+  ombro.esquerdo(frente 40 abre 60)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 60 abre 30)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  cabeca(gira-esquerda 30)
+  corpo(sobe 34.2cm)
+  valor bodyRoll -14
+```
+
+### esquivaInclinarCabeca
+
+```gm
+pose "esquivaInclinarCabeca" de empe
+  ombro(frente 70 abre 15)
+  cotovelo(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 14)
+  tronco(esquerda 10)
+  pescoco(tras 6)
+  cabeca(gira-esquerda 25 inclina-esquerda 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### defesaCoberto
+
+```gm
+pose "defesaCoberto" de empe
+  ombro(frente 120 abre 20)
+  cotovelo(dobra 150)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 30)
+  cabeca(baixa 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### defesaEncolhido
+
+```gm
+pose "defesaEncolhido" de empe
+  ombro(frente 110 abre 25)
+  cotovelo(dobra 150)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 70)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 50)
+  cabeca(baixa 40)
+  corpo(deita-brucos 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### defesaEmpurrando
+
+```gm
+pose "defesaEmpurrando" de empe
+  ombro(frente 90 abre 10)
+  cotovelo(dobra 20)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 40)
+  cabeca(baixa 4)
+  corpo(deita-brucos 10)
+```
+
+### defesaBarreira
+
+```gm
+pose "defesaBarreira" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 90 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(frente 6)
+  cabeca(baixa 4)
+  valor fThR -0.1
+```
+
+### defesaBarreiraDupla
+
+```gm
+pose "defesaBarreiraDupla" de empe
+  ombro(frente 90 abre 25)
+  cotovelo(dobra 15)
+  punho(levanta 70)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 45)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 50)
+  cabeca(baixa 6)
+  corpo(deita-brucos 8)
+```
+
+### defesaChute
+
+```gm
+pose "defesaChute" de empe
+  ombro(frente 90 abre 15)
+  cotovelo(dobra 125)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 4 abre 10)
+  quadril.esquerdo(frente 80 abre 30 gira-dentro 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 100)
+  cabeca(baixa 6)
+  valor fThL -0.1 fThR -0.1
+```
+
+### defesaAgarrandoPunho
+
+```gm
+pose "defesaAgarrandoPunho" de empe
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(frente 90 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 40)
+  tronco(gira-esquerda 20)
+  cabeca(baixa 4)
+  valor fThL -0.2 fThR -0.1
+```
+
+### defesaDesviandoBraco
+
+```gm
+pose "defesaDesviandoBraco" de empe
+  ombro.direito(frente 50 abre 20)
+  ombro.esquerdo(frente 80 abre 50)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 30)
+  tronco(gira-direita 25)
+  cabeca(gira-direita 10)
+  valor fThR -0.1
+```
+
+### defesaProtegendoOutro
+
+```gm
+pose "defesaProtegendoOutro" de empe
+  ombro.direito(frente 40 abre 30)
+  ombro.esquerdo(frente 20 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(frente 4)
+  cabeca(gira-direita 20)
+  valor fThR -0.1
+```
+
+### puloImpulso
+
+```gm
+pose "puloImpulso" de empe
+  ombro(tras 50 abre 20)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 90)
+  joelho(dobra 110)
+  tornozelo(aponta 30)
+  tronco(frente 30)
+  cabeca(sobe 20)
+  corpo(deita-brucos 20)
+```
+
+### puloDecolando
+
+```gm
+pose "puloDecolando" de empe
+  ombro(frente 160 abre 15)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  dedos-pe(levanta 40)
+  cabeca(sobe 20)
+  corpo(deita-brucos 10 sobe 22.8cm)
+  valor ankleFlexL -30 ankleFlexR -30
+```
+
+### puloEstrela
+
+```gm
+pose "puloEstrela" de empe
+  ombro(frente 150 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril(abre 40)
+  joelho(dobra 10)
+  cabeca(sobe 20)
+  corpo(sobe 57cm)
+```
+
+### puloEncolhido
+
+```gm
+pose "puloEncolhido" de empe
+  ombro(frente 60 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 120)
+  joelho(dobra 140)
+  tronco(frente 20)
+  cabeca(sobe 6)
+  corpo(sobe 68.4cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### puloAltoEsticado
+
+```gm
+pose "puloAltoEsticado" de empe
+  ombro.direito(frente 40 abre 30)
+  ombro.esquerdo(frente 175 abre 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tornozelo.direito(levanta-ponta 20)
+  tronco(tras 10)
+  cabeca(sobe 30)
+  corpo(sobe 68.4cm)
+  valor ankleFlexL -30
+```
+
+### puloEmDistancia
+
+```gm
+pose "puloEmDistancia" de empe
+  ombro.direito(frente 140 abre 20)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 30)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 40)
+  cabeca(sobe 10)
+  corpo(deita-brucos 20 sobe 57cm)
+```
+
+### puloTesoura
+
+```gm
+pose "puloTesoura" de empe
+  ombro.direito(tras 30 abre 30)
+  ombro.esquerdo(frente 90 abre 40)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 94)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 10)
+  cabeca(sobe 4)
+  corpo(deita-brucos 10 sobe 57cm)
+```
+
+### puloAterrissagem
+
+```gm
+pose "puloAterrissagem" de empe
+  ombro.direito(tras 30 abre 60)
+  ombro.esquerdo(frente 40 abre 30)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 40 abre 30)
+  quadril.esquerdo(frente 100 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 130)
+  tronco(frente 40)
+  cabeca(sobe 10)
+  corpo(deita-brucos 20)
+```
+
+### puloAterrissagemHeroi
+
+```gm
+pose "puloAterrissagemHeroi" de empe
+  ombro.direito(tras 20 abre 50)
+  ombro.esquerdo(frente 70 abre 10)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 110)
+  joelho.esquerdo(dobra 130)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 30)
+  tronco(frente 50)
+  cabeca(sobe 20)
+  corpo(deita-brucos 25)
+  valor fThL -0.1
+```
+
+### puloParede
+
+```gm
+pose "puloParede" de empe
+  ombro.direito(frente 60 abre 60)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 100)
+  cabeca(gira-esquerda 30)
+  corpo(deita-costas 10 sobe 45.6cm)
+```
+
+### puloCambalhota
+
+```gm
+pose "puloCambalhota" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 120)
+  joelho(dobra 140)
+  tronco(frente 40)
+  cabeca(baixa 30)
+  corpo(deita-brucos 100 sobe 79.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### puloQueda
+
+```gm
+pose "puloQueda" de empe
+  ombro.direito(frente 130 abre 70)
+  ombro.esquerdo(frente 150 abre 60)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 50)
+  cabeca(sobe 20)
+  corpo(deita-costas 20 sobe 68.4cm)
+```
+
+### flutuandoMeditacao
+
+```gm
+pose "flutuandoMeditacao" de empe
+  ombro(frente 20 abre 18)
+  cotovelo(dobra 30)
+  mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
+  quadril(frente 84 abre 30 gira-fora 45)
+  joelho.direito(dobra 142)
+  joelho.esquerdo(dobra 148)
+  cabeca(baixa 5)
+  corpo(sobe 68.4cm)
+  valor pronL -90 pronR -90
+```
+
+### flutuandoRelaxado
+
+```gm
+pose "flutuandoRelaxado" de empe
+  ombro.direito(frente 40 abre 50)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 30)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 30)
+  cabeca(sobe 14 inclina-direita 10)
+  corpo(deita-costas 30 sobe 79.8cm)
+```
+
+### flutuandoBracosAbertos
+
+```gm
+pose "flutuandoBracosAbertos" de empe
+  ombro(frente 20 abre 70)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 4)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 20)
+  corpo(sobe 91.2cm)
+  valor ankleFlexL -30 ankleFlexR -30
+```
+
+### flutuandoAmeaca
+
+```gm
+pose "flutuandoAmeaca" de empe
+  ombro(frente 30 abre 25)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 6)
+  cabeca(baixa 6)
+  corpo(sobe 91.2cm)
+  valor ankleFlexL -30 ankleFlexR -30 fThL -0.2 fThR -0.2
+```
+
+### flutuandoSubmerso
+
+```gm
+pose "flutuandoSubmerso" de empe
+  ombro.direito(frente 70 abre 60)
+  ombro.esquerdo(frente 110 abre 50)
+  cotovelo.direito(dobra 50)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  cabeca(sobe 10)
+  corpo(deita-brucos 20 sobe 68.4cm)
+```
+
+### flutuandoGravidadeZero
+
+```gm
+pose "flutuandoGravidadeZero" de empe
+  ombro.direito(frente 120 abre 30)
+  ombro.esquerdo(frente 70 abre 60)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 70)
+  cabeca(sobe 10 inclina-esquerda 10)
+  corpo(deita-brucos 25 rola 20 sobe 79.8cm)
+```
+
+### flutuandoAdormecido
+
+```gm
+pose "flutuandoAdormecido" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 50)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 50)
+  cabeca(baixa 10 inclina-direita 15)
+  corpo(deita-costas 70 sobe 79.8cm)
+```
+
+### vooSuperHeroi
+
+```gm
+pose "vooSuperHeroi" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 170 abre 5)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 5)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  cabeca(sobe 60)
+  corpo(deita-brucos 85 sobe 91.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### vooDecolando
+
+```gm
+pose "vooDecolando" de empe
+  ombro.direito(frente 20 abre 15)
+  ombro.esquerdo(frente 175 abre 5)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 5)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 60)
+  cabeca(sobe 30)
+  corpo(sobe 68.4cm)
+  valor ankleFlexL -30 ankleFlexR -30 fThL -0.1 fThR -0.1
+```
+
+### vooPlanando
+
+```gm
+pose "vooPlanando" de empe
+  ombro(frente 20 abre 85)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril(tras 5)
+  joelho(dobra 10)
+  cabeca(sobe 55)
+  corpo(deita-brucos 80 sobe 91.2cm)
+```
+
+### vooMergulho
+
+```gm
+pose "vooMergulho" de empe
+  ombro(frente 170 abre 10)
+  cotovelo(dobra 5)
+  mao(fecha 0% afasta 85%)
+  quadril(tras 10)
+  joelho(dobra 5)
+  cabeca(sobe 40)
+  corpo(deita-brucos 130 sobe 91.2cm)
+```
+
+### vooPairando
+
+```gm
+pose "vooPairando" de empe
+  ombro(frente 40 abre 30)
+  cotovelo(dobra 50)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  cabeca(baixa 4)
+  corpo(sobe 91.2cm)
+  valor ankleFlexL -30 ankleFlexR -30 fThL -0.1 fThR -0.1
+```
+
+### fugaOlhandoTras
+
+```gm
+pose "fugaOlhandoTras" de empe
+  ombro.direito(frente 80 abre 25)
+  ombro.esquerdo(tras 60 abre 25)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 70)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 30)
+  quadril.esquerdo(frente 85)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+  corpo(deita-brucos 22)
+  valor headYaw -110
+```
+
+### fugaDesesperada
+
+```gm
+pose "fugaDesesperada" de empe
+  ombro.direito(frente 120 abre 60)
+  ombro.esquerdo(frente 150 abre 50)
+  cotovelo.direito(dobra 50)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 30)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  cabeca(sobe 20)
+  corpo(deita-brucos 15)
+```
+
+### fugaEsgueirando
+
+```gm
+pose "fugaEsgueirando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 30 abre 30)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tornozelo.esquerdo(levanta-ponta 20)
+  dedos-pe(levanta 30)
+  tronco(frente 20)
+  cabeca(gira-esquerda 30)
+  corpo(deita-brucos 10)
+```
+
+### fugaRastejando
+
+```gm
+pose "fugaRastejando" de empe
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 40 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 70)
+  tronco(tras 20)
+  cabeca(sobe 50)
+  corpo(deita-brucos 85)
+  valor fThL -0.2 fThR -0.2
+```
+
+### fugaTropecando
+
+```gm
+pose "fugaTropecando" de empe
+  ombro.direito(frente 110 abre 40)
+  ombro.esquerdo(frente 130 abre 40)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 70)
+  quadril.esquerdo(tras 30)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 20)
+  cabeca(sobe 30)
+  corpo(deita-brucos 50)
+```
+
+### fugaPulandoMuro
+
+```gm
+pose "fugaPulandoMuro" de empe
+  ombro(frente 150 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 120)
+  cabeca(sobe 30)
+  corpo(deita-brucos 20 sobe 45.6cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### fugaEscondendo
+
+```gm
+pose "fugaEscondendo" de empe
+  ombro.direito(frente 80 abre 15)
+  ombro.esquerdo(frente 40 abre 30)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 100)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 80 abre 20)
+  joelho(dobra 110)
+  tronco(frente 20)
+  cabeca(sobe 6 gira-direita 30)
+```
+
+### fugaColadoParede
+
+```gm
+pose "fugaColadoParede" de empe
+  ombro(tras 10 abre 20)
+  cotovelo(dobra 10)
+  punho(levanta 40)
+  mao(fecha 2% afasta 60%)
+  tronco(tras 10)
+  cabeca(sobe 10 gira-direita 50)
+```
+
+### fugaCarregandoAlguem
+
+```gm
+pose "fugaCarregandoAlguem" de empe
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(tras 40 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 30)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  cabeca(gira-direita 60)
+  corpo(deita-brucos 18)
+  valor fThL -0.1
+```
+
+### perseguicaoSprint
+
+```gm
+pose "perseguicaoSprint" de empe
+  ombro.direito(frente 85)
+  ombro.esquerdo(tras 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 95)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 95)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 100)
+  tornozelo.direito(aponta 35)
+  tornozelo.esquerdo(aponta 15)
+  tronco(frente 6)
+  cabeca(sobe 20)
+  corpo(deita-brucos 30)
+  valor hipFlexR -35 fThL -0.1 fThR -0.1
+```
+
+### perseguicaoAlcancando
+
+```gm
+pose "perseguicaoAlcancando" de empe
+  ombro.direito(tras 40 abre 20)
+  ombro.esquerdo(frente 160 abre 15)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 5)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 30)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  cabeca(sobe 24)
+  corpo(deita-brucos 30)
+  valor fThR -0.1
+```
+
+### perseguicaoAgarrando
+
+```gm
+pose "perseguicaoAgarrando" de empe
+  ombro(frente 160 abre 20)
+  cotovelo(dobra 10)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 40)
+  corpo(deita-brucos 70 sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### perseguicaoApontando
+
+```gm
+pose "perseguicaoApontando" de empe
+  ombro.direito(tras 40 abre 20)
+  ombro.esquerdo(frente 95 abre 15)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 5)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 25)
+  quadril.esquerdo(frente 75)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  cabeca(sobe 14)
+  corpo(deita-brucos 20)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### perseguicaoOfegante
+
+```gm
+pose "perseguicaoOfegante" de empe
+  ombro(frente 50 abre 15)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 40)
+  joelho(dobra 35)
+  tronco(frente 55)
+  cabeca(sobe 20)
+  corpo(deita-brucos 10)
+```
+
+### perseguicaoDerrapando
+
+```gm
+pose "perseguicaoDerrapando" de empe
+  ombro.direito(frente 100 abre 40)
+  ombro.esquerdo(frente 40 abre 60)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 60 abre 30)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 70)
+  tronco(direita 20)
+  cabeca(gira-esquerda 40)
+  corpo(deita-costas 20)
+```
+
+### perseguicaoProcurando
+
+```gm
+pose "perseguicaoProcurando" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 30 abre 25)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 6)
+  cabeca(sobe 4 gira-direita 60)
+  valor fThR -0.1
+```
+
+### parkourVault
+
+```gm
+pose "parkourVault" de empe
+  ombro.direito(frente 40 abre 60)
+  ombro.esquerdo(frente 90 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 80 abre 30)
+  quadril.esquerdo(frente 100 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  cabeca(gira-esquerda 20)
+  corpo(deita-brucos 20 sobe 45.6cm)
+  valor bodyRoll -20
+```
+
+### parkourPendurado
+
+```gm
+pose "parkourPendurado" de empe
+  ombro(frente 175 abre 15)
+  cotovelo(dobra 20)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 4)
+  cabeca(sobe 30)
+  corpo(sobe 91.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### parkourEscalando
+
+```gm
+pose "parkourEscalando" de empe
+  ombro.direito(frente 100 abre 30)
+  ombro.esquerdo(frente 170 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 90 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 6)
+  cabeca(sobe 30)
+  corpo(sobe 57cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### parkourCorridaParede
+
+```gm
+pose "parkourCorridaParede" de empe
+  ombro.direito(frente 80 abre 40)
+  ombro.esquerdo(tras 40 abre 20)
+  cotovelo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 100)
+  cabeca(gira-esquerda 30)
+  corpo(deita-brucos 20 sobe 45.6cm)
+  valor bodyRoll -40
+```
+
+### parkourDeslizando
+
+```gm
+pose "parkourDeslizando" de empe
+  ombro.direito(tras 30 abre 40)
+  ombro.esquerdo(frente 70 abre 40)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 10)
+  cabeca(baixa 20)
+  corpo(deita-costas 50)
+```
+
+### parkourEquilibrio
+
+```gm
+pose "parkourEquilibrio" de empe
+  ombro(frente 10 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 4 gira-fora 30)
+  quadril.esquerdo(frente 10 gira-dentro 30)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 10)
+  cabeca(baixa 20)
+```
+
+### parkourAgachadoBeirada
+
+```gm
+pose "parkourAgachadoBeirada" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 120 abre 30)
+  joelho(dobra 150)
+  tronco(frente 40)
+  cabeca(sobe 30)
+```
+
+### impactoNoRosto
+
+```gm
+pose "impactoNoRosto" de empe
+  ombro.direito(frente 20 abre 60)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(tras 14)
+  cabeca(sobe 30 gira-esquerda 30 inclina-direita 20)
+  corpo(deita-costas 14)
+```
+
+### impactoNoEstomago
+
+```gm
+pose "impactoNoEstomago" de empe
+  ombro(frente 50 abre 10)
+  cotovelo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 55)
+  cabeca(baixa 30)
+  corpo(deita-brucos 10)
+```
+
+### arremessadoParaTras
+
+```gm
+pose "arremessadoParaTras" de empe
+  ombro.direito(frente 90 abre 70)
+  ombro.esquerdo(frente 110 abre 60)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 70)
+  tronco(tras 20)
+  cabeca(baixa 20)
+  corpo(deita-costas 50 sobe 68.4cm)
+```
+
+### caidoDeCostas
+
+```gm
+pose "caidoDeCostas" de empe
+  ombro.direito(frente 90 abre 90)
+  ombro.esquerdo(frente 20 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 10 inclina-direita 20)
+  corpo(deita-costas 88)
+```
+
+### caidoDeBrucos
+
+```gm
+pose "caidoDeBrucos" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 30)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 20)
+  quadril.direito(frente 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 50 inclina-esquerda 20)
+  corpo(deita-brucos 88)
+```
+
+### levantandoComEsforco
+
+```gm
+pose "levantandoComEsforco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 100)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(frente 40)
+  cabeca(sobe 20)
+  valor fThR -0.1
+```
+
+### ajoelhadoExausto
+
+```gm
+pose "ajoelhadoExausto" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 90)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 40)
+  tronco(frente 40)
+  cabeca(baixa 30)
+```
+
+### cambaleando
+
+```gm
+pose "cambaleando" de empe
+  ombro.direito(frente 40 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 30)
+  quadril.direito(tras 6 abre 8)
+  quadril.esquerdo(frente 20 abre 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 20)
+  cabeca(baixa 10 inclina-direita 25)
+  corpo(deita-costas 6)
+```
+
+### atordoadoEstrelinhas
+
+```gm
+pose "atordoadoEstrelinhas" de empe
+  ombro(frente 10 abre 20)
+  cotovelo(dobra 20)
+  quadril(frente 10)
+  joelho(dobra 20)
+  tronco(tras 6 esquerda 10)
+  cabeca(sobe 14 inclina-esquerda 20)
+```
+
+### escorregaoComico
+
+```gm
+pose "escorregaoComico" de empe
+  ombro.direito(frente 60 abre 80)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 94)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  cabeca(baixa 20)
+  corpo(deita-costas 75 sobe 57cm)
+```
+
+### quedaSentado
+
+```gm
+pose "quedaSentado" de empe
+  ombro(frente 40 abre 50)
+  cotovelo(dobra 20)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 90 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 40)
+  cabeca(baixa 10)
+```
+
+### poderCarregando
+
+```gm
+pose "poderCarregando" de empe
+  ombro(frente 40 abre 30)
+  cotovelo(dobra 110)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 60 abre 30)
+  joelho(dobra 80)
+  tronco(frente 10)
+  cabeca(sobe 4)
+  valor fThL -0.2 fThR -0.2
+```
+
+### poderKamehameha
+
+```gm
+pose "poderKamehameha" de empe
+  ombro(frente 90 abre 10)
+  cotovelo(dobra 10)
+  punho(levanta 70)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tronco(gira-direita 20)
+  cabeca(baixa 4)
+  corpo(deita-brucos 10)
+```
+
+### poderBolaPreparo
+
+```gm
+pose "poderBolaPreparo" de empe
+  ombro.direito(frente 20 abre 20 gira-dentro 60)
+  ombro.esquerdo(frente 20 abre 20 gira-fora 60)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tronco(gira-direita 40)
+  pelve(gira-direita 20)
+  cabeca(gira-esquerda 20)
+  valor fThL -0.2 fThR -0.2
+```
+
+### poderAoCeu
+
+```gm
+pose "poderAoCeu" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 175 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 5)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 35)
+  valor fThR -0.1
+```
+
+### poderSocoChao
+
+```gm
+pose "poderSocoChao" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 50 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40 abre 30)
+  quadril.esquerdo(frente 110 abre 30)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 120)
+  tronco(frente 60)
+  cabeca(baixa 30)
+  valor fThL -0.1
+```
+
+### poderTelecinese
+
+```gm
+pose "poderTelecinese" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 80 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 20)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 4)
+  cabeca(sobe 6 inclina-direita 8)
+  valor fThL -0.2
+```
+
+### poderTransformacao
+
+```gm
+pose "poderTransformacao" de empe
+  ombro(frente 40 abre 45)
+  cotovelo(dobra 80)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 30 abre 30)
+  joelho(dobra 40)
+  tronco(tras 20)
+  cabeca(sobe 35)
+  valor fThL -0.1 fThR -0.1
+```
+
+### poderSelamento
+
+```gm
+pose "poderSelamento" de empe
+  ombro(frente 70 abre 5)
+  cotovelo(dobra 130)
+  mao(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 4)
+  cabeca(baixa 4)
+  valor fThL -0.2 fInL -1 fMeL -1 fThR -0.2
+  valor fInR -1 fMeR -1
+```
+
+### giganteAgachando
+
+```gm
+pose "giganteAgachando" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 70 abre 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(frente 40)
+  cabeca(baixa 30)
+```
+
+### gigantePisando
+
+```gm
+pose "gigantePisando" de empe
+  ombro(frente 40 abre 35)
+  cotovelo(dobra 80)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tornozelo.esquerdo(levanta-ponta 10)
+  tronco(frente 10)
+  cabeca(baixa 35)
+  valor fThL -0.1 fThR -0.1
+```
+
+### giganteRugindo
+
+```gm
+pose "giganteRugindo" de empe
+  ombro(frente 70 abre 60)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 20)
+  quadril.esquerdo(frente 20 abre 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20)
+  cabeca(sobe 30)
+  valor fThL -0.2 fThR -0.2
+```
+
+### giganteOlhandoBaixo
+
+```gm
+pose "giganteOlhandoBaixo" de empe
+  ombro(frente 20 abre 15)
+  cotovelo(dobra 30)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(frente 25)
+  pescoco(frente 20)
+  cabeca(baixa 50 inclina-direita 10)
+```
+
+### giganteSegurandoNaPalma
+
+```gm
+pose "giganteSegurandoNaPalma" de empe
+  ombro.direito(frente 10)
+  ombro.esquerdo(frente 60 abre 20 gira-fora 60)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 80)
+  antebraco.esquerdo(palma-cima 90)
+  mao.esquerdo(fecha 0% afasta 85%)
+  tronco(frente 8)
+  cabeca(baixa 35)
+```
+
+### giganteDerrubandoPredio
+
+```gm
+pose "giganteDerrubandoPredio" de empe
+  ombro(frente 110 abre 20)
+  cotovelo(dobra 20)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 40)
+  cabeca(sobe 10)
+  corpo(deita-brucos 20)
+```
+
+### minusculoOlhandoCima
+
+```gm
+pose "minusculoOlhandoCima" de empe
+  ombro(frente 30 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 20)
+  pescoco(tras 20)
+  cabeca(sobe 55)
+```
+
+### minusculoAcenando
+
+```gm
+pose "minusculoAcenando" de empe
+  ombro.direito(frente 20 abre 15)
+  ombro.esquerdo(frente 170 abre 30)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 14)
+  cabeca(sobe 45)
+```
+
+### minusculoEscalando
+
+```gm
+pose "minusculoEscalando" de empe
+  ombro.direito(frente 110 abre 30)
+  ombro.esquerdo(frente 170 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 100)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 120)
+  tronco(frente 10)
+  cabeca(sobe 40)
+  corpo(sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### minusculoEsmagado
+
+```gm
+pose "minusculoEsmagado" de empe
+  ombro(frente 150 abre 30)
+  cotovelo(dobra 105)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20)
+  cabeca(sobe 40)
+```
+
+### minusculoNaPalma
+
+```gm
+pose "minusculoNaPalma" de empe
+  ombro(frente 20 abre 20)
+  cotovelo(dobra 30)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+  cabeca(sobe 30)
+  valor pronL -90 pronR -90
+```
+
+### minusculoEmpurrando
+
+```gm
+pose "minusculoEmpurrando" de empe
+  ombro(frente 130 abre 10)
+  cotovelo(dobra 30)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 10)
+  cabeca(sobe 15)
+  corpo(deita-brucos 35)
+  valor hipFlexR -40
+```
+
+### entradaVilao
+
+```gm
+pose "entradaVilao" de empe
+  ombro(tras 30 abre 10 gira-dentro 40)
+  cotovelo(dobra 90)
+  tronco(tras 4)
+  cabeca(sobe 8 gira-esquerda 10)
+```
+
+### encaraRival
+
+```gm
+pose "encaraRival" de empe
+  ombro(frente 10 abre 20)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 10)
+  tronco(frente 10)
+  pescoco(tras 8)
+  cabeca(sobe 6)
+  corpo(deita-brucos 4)
+  valor fThL -0.1 fThR -0.1
+```
+
+### desafioChamando
+
+```gm
+pose "desafioChamando" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 80 abre 15)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  punho.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(tras 6)
+  cabeca(sobe 8)
+  valor fThR -0.1
+```
+
+### costasComCostas
+
+```gm
+pose "costasComCostas" de empe
+  ombro(frente 70 abre 25)
+  cotovelo(dobra 110)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 6 abre 14)
+  quadril.esquerdo(frente 30 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(frente 4)
+  cabeca(gira-esquerda 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### cercadoOlhandoVolta
+
+```gm
+pose "cercadoOlhandoVolta" de empe
+  ombro(frente 60 abre 35)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 35 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 45)
+  tronco(frente 10)
+  cabeca(gira-direita 70)
+  valor fThL -0.1 fThR -0.1
+```
+
+### vitoriaPunhoAlto
+
+```gm
+pose "vitoriaPunhoAlto" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 175 abre 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 5)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10)
+  cabeca(sobe 30)
+  valor fThL -0.1
+```
+
+### vitoriaCostasViradas
+
+```gm
+pose "vitoriaCostasViradas" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(tras 10 abre 10)
+  cotovelo(dobra 20)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  cabeca(baixa 4 gira-direita 30)
+```
+
+### derrotaDeJoelhos
+
+```gm
+pose "derrotaDeJoelhos" de empe
+  ombro(frente 60 abre 15)
+  cotovelo(dobra 10)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 20)
+  joelho(dobra 100)
+  tornozelo(aponta 40)
+  tronco(frente 50)
+  cabeca(baixa 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### juramento
+
+```gm
+pose "juramento" de empe
+  ombro.direito(frente 5 abre 10)
+  ombro.esquerdo(frente 60 abre 30 gira-fora 60)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  tronco(frente 2)
+  cabeca(sobe 4)
+  valor fThL -0.1
+```
+
+### estendendoMaoRival
+
+```gm
+pose "estendendoMaoRival" de empe
+  ombro.direito(frente 5 abre 10)
+  ombro.esquerdo(frente 70)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 0% afasta 85%)
+  tronco(frente 10)
+  cabeca(baixa 6)
+```
+
 ## Animações
 
 ### passoFrente — ação (acontece e segura), 0,70 s
@@ -6869,7 +8646,7 @@ No filme: `0s Kai anima defender`
 # guardaLuta → defesaCruzada
 animacao "defender" duracao 0.6s mantem tags "Combate/Defesa"
   chave 0s ombro.direito(frente 42 abre 14) ombro.esquerdo(frente 62) cotovelo.direito(dobra 135) cotovelo.esquerdo(dobra 105) antebraco.direito(palma-baixo 10) antebraco.esquerdo(palma-baixo 20) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 13 abre 23.4 gira-dentro 28.1) quadril.esquerdo(frente 48.3 abre 23.5 gira-dentro 16.2) joelho.direito(dobra 61) joelho.esquerdo(dobra 34.8) canela.direito(gira 20) tornozelo.direito(aponta 18) tornozelo.esquerdo(aponta 10) dedos-pe.direito(levanta 40) tronco(frente 12 gira-direita 8) pelve(gira-direita 24) cabeca(sobe 10 gira-esquerda 14) corpo(deita-brucos 6) valor fThL -0.1 fThR -0.1 tibiaRotL -6
-  chave 0.6s ombro.direito(frente 80 cruza 34 sobe 40% avanca 50%) ombro.esquerdo(frente 80 cruza 38 sobe 40% avanca 50%) cotovelo.direito(dobra 104) cotovelo.esquerdo(dobra 100) antebraco.esquerdo(palma-baixo 10) quadril.direito(frente 39.2 abre 28.1 gira-fora 0) quadril.esquerdo(frente 49 abre 19.3 gira-dentro 4.3) joelho.direito(dobra 89.8) joelho.esquerdo(dobra 72.9) canela(gira 0) tornozelo(levanta-ponta 20) dedos-pe.direito(dobra 0) tronco(frente 24 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(baixa 22 gira-esquerda 0) corpo(deita-brucos 0)
+  chave 0.6s ombro(frente 95 abre 10 gira-fora 40) cotovelo(dobra 120) antebraco(palma-cima 0) quadril.direito(tras 6 abre 3 gira-fora 0) quadril.esquerdo(frente 30 abre 3 gira-fora 0) joelho.direito(dobra 15) joelho.esquerdo(dobra 40) canela(gira 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 14 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(baixa 14 gira-esquerda 0) corpo(deita-brucos 0)
 ```
 
 ### esquivar — ação (acontece e segura), 0,60 s
@@ -8501,6 +10278,521 @@ animacao "esperaPensando" duracao 8s mantem tags "Espera/pensando"
   chave 3.424s ombro(desce 3%) joelho.direito(dobra 6.9) joelho.esquerdo(dobra 0) tronco(frente 8.4 direita 3) pelve(direita 0.8) cabeca(baixa 7.9 gira-esquerda 5.7) olhos(esquerda 40%) curva suave
   chave 6.059s ombro(desce 9.1%) joelho.direito(dobra 6.6) tronco(frente 9.1) pelve(esquerda 0.1) cabeca(baixa 14 gira-esquerda 0) olhos(esquerda 0%) curva suave
   chave 8s
+```
+
+### esquivaLateralAnim — ação (acontece e segura), 0,60 s
+
+guarda → esquiva para o lado → volta à guarda
+
+No filme: `0s Kai anima esquivaLateralAnim`
+
+```gm
+# guarda → esquiva para o lado → volta à guarda
+animacao "esquivaLateralAnim" duracao 0.6s mantem curva saida tags "Combate/Esquiva/Lateral"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.18s ombro.direito(frente 40 abre 40 gira-fora 0) ombro.esquerdo(frente 60 abre 30 gira-fora 0) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 100) quadril.direito(tras 10) quadril.esquerdo(frente 30 abre 30) joelho.direito(dobra 10) joelho.esquerdo(dobra 50) tronco(frente 0 esquerda 28 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(baixa 0 gira-esquerda 20 inclina-direita 10) valor bodyRoll -8 move lado 0.35
+  chave 0.6s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) quadril.direito(tras 6) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 direita 0 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8 gira-esquerda 0 inclina-direita 0) corpo(rola 0) move lado 0.35
+```
+
+### esquivaParaTrasAnim — ação (acontece e segura), 0,60 s
+
+guarda → salto curto para trás → guarda
+
+No filme: `0s Kai anima esquivaParaTrasAnim`
+
+```gm
+# guarda → salto curto para trás → guarda
+animacao "esquivaParaTrasAnim" duracao 0.6s mantem curva saida tags "Combate/Esquiva/Recuo"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.2s ombro.direito(frente 60 abre 30 gira-fora 0) ombro.esquerdo(frente 70 abre 20 gira-fora 0) cotovelo.direito(dobra 100) cotovelo.esquerdo(dobra 110) quadril.direito(tras 20 abre 3) quadril.esquerdo(frente 50 abre 3) joelho.direito(dobra 30) joelho.esquerdo(dobra 70) tornozelo.esquerdo(aponta 20) tronco(tras 14 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(sobe 10) corpo(deita-costas 22) move frente -0.5
+  chave 0.6s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tornozelo.esquerdo(aponta 0) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) corpo(deita-brucos 0) move frente -0.6
+```
+
+### esquivaAbaixandoAnim — ação (acontece e segura), 0,55 s
+
+abaixa sob o golpe e sobe
+
+No filme: `0s Kai anima esquivaAbaixandoAnim`
+
+```gm
+# abaixa sob o golpe e sobe
+animacao "esquivaAbaixandoAnim" duracao 0.55s mantem curva saida tags "Combate/Esquiva/Abaixar"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.2s ombro.direito(frente 70 gira-fora 0) ombro.esquerdo(frente 70 abre 20 gira-fora 0) cotovelo(dobra 120) quadril.direito(frente 70 abre 20) quadril.esquerdo(frente 90 abre 20) joelho.direito(dobra 90) joelho.esquerdo(dobra 110) tronco(frente 45 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(sobe 30) corpo(deita-brucos 20)
+  chave 0.55s ombro.direito(frente 48 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) corpo(deita-brucos 0)
+```
+
+### esquivaMatrixAnim — ação (acontece e segura), 2,00 s
+
+inclina para trás em câmera lenta e volta
+
+No filme: `0s Kai anima esquivaMatrixAnim`
+
+```gm
+# inclina para trás em câmera lenta e volta
+animacao "esquivaMatrixAnim" duracao 2s mantem tags "Combate/Esquiva/Matrix"
+  chave 0s 
+  chave 0.6s ombro(frente 40 abre 70) cotovelo(dobra 30) mao(fecha 0% afasta 85%) quadril.direito(frente 60) quadril.esquerdo(frente 70) joelho.direito(dobra 80) joelho.esquerdo(dobra 90) tronco(tras 20) cabeca(sobe 20) corpo(deita-costas 55)
+  chave 1.4s 
+  chave 2s ombro(frente 0 abre 12) cotovelo(dobra 0) mao(fecha 30% afasta 40%) quadril(frente 0) joelho(dobra 0) tronco(frente 0) cabeca(baixa 0) corpo(deita-brucos 0)
+```
+
+### esquivaRolamentoAnim — ação (acontece e segura), 1,20 s
+
+rola no chão e levanta mais à frente
+
+No filme: `0s Kai anima esquivaRolamentoAnim`
+
+```gm
+# rola no chão e levanta mais à frente
+animacao "esquivaRolamentoAnim" duracao 1.2s mantem curva saida tags "Combate/Esquiva/Rolamento"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.2s ombro.direito(frente 70 gira-fora 0) ombro.esquerdo(frente 70 abre 20 gira-fora 0) cotovelo(dobra 120) quadril.direito(frente 70 abre 20) quadril.esquerdo(frente 90 abre 20) joelho.direito(dobra 90) joelho.esquerdo(dobra 110) tronco(frente 45 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(sobe 30) corpo(deita-brucos 20) move frente 0.3
+  chave 0.5s ombro(frente 90) cotovelo(dobra 130) quadril.direito(frente 120 abre 3) quadril.esquerdo(frente 125 abre 3) joelho(dobra 140) tronco(frente 80) cabeca(baixa 40) corpo(deita-brucos 95) move frente 1
+  chave 0.85s ombro.direito(frente 10) ombro.esquerdo(frente 60) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 2% afasta 60% polegar 0% opoe 0%) quadril.direito(frente 10) quadril.esquerdo(frente 100) joelho.direito(dobra 90) joelho.esquerdo(dobra 110) tornozelo.direito(aponta 20) tornozelo.esquerdo(aponta 30) tronco(frente 40) cabeca(sobe 20) corpo(deita-brucos 0) move frente 1.6
+  chave 1.2s ombro.direito(frente 48 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao.esquerdo(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tornozelo(aponta 0) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 move frente 1.7
+```
+
+### esquivaMergulhoAnim — ação (acontece e segura), 0,75 s
+
+mergulho de proteção para o lado
+
+No filme: `0s Kai anima esquivaMergulhoAnim`
+
+```gm
+# mergulho de proteção para o lado
+animacao "esquivaMergulhoAnim" duracao 0.75s mantem curva saida tags "Combate/Esquiva/Mergulho"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.15s ombro.direito(tras 50 gira-fora 0) ombro.esquerdo(tras 50 abre 20 gira-fora 0) cotovelo(dobra 20) mao(fecha 0% afasta 85% polegar 0% opoe 0%) quadril(frente 90 abre 3) joelho(dobra 110) tornozelo(aponta 30) tronco(frente 30 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(sobe 20) corpo(deita-brucos 20) move lado 0.609
+  chave 0.4s ombro.direito(frente 150 abre 30) ombro.esquerdo(frente 170) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 10) quadril.direito(frente 40) quadril.esquerdo(tras 10) joelho.direito(dobra 60) joelho.esquerdo(dobra 10) tornozelo(aponta 0) tronco(frente 0) corpo(deita-brucos 70 sobe 45.6cm) valor bodyRoll -30 move lado 1
+  chave 0.75s ombro.direito(frente 30 abre 40) ombro.esquerdo(abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) mao(fecha 30% afasta 40%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88 rola 0 sobe 0cm) move lado 1.8
+```
+
+### defesaCruzadaAnim — ação (acontece e segura), 0,80 s
+
+fecha os braços em X para segurar o golpe e recua um pouco
+
+No filme: `0s Kai anima defesaCruzadaAnim`
+
+```gm
+# fecha os braços em X para segurar o golpe e recua um pouco
+animacao "defesaCruzadaAnim" duracao 0.8s mantem curva saida tags "Combate/Defesa/Braços"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.12s ombro(frente 95 abre 10 gira-fora 40) cotovelo(dobra 120) quadril.direito(abre 3) quadril.esquerdo(frente 30 abre 3) joelho.direito(dobra 15) joelho.esquerdo(dobra 40) tronco(frente 14 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(baixa 14) move frente -0.142
+  chave 0.35s move frente -0.25
+  chave 0.8s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) quadril.direito(abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) move frente -0.25
+```
+
+### defesaBarreiraAnim — ação (acontece e segura), 1,20 s
+
+ergue a barreira de energia e segura
+
+No filme: `0s Kai anima defesaBarreiraAnim`
+
+```gm
+# ergue a barreira de energia e segura
+animacao "defesaBarreiraAnim" duracao 1.2s mantem curva saida tags "Combate/Defesa/Poder"
+  chave 0s 
+  chave 0.25s ombro.direito(frente 30 abre 30) ombro.esquerdo(frente 90 abre 10) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 10) punho.esquerdo(levanta 70) mao.direito(fecha 100% afasta 20% opoe 75%) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(tras 10) quadril.esquerdo(frente 30) joelho.direito(dobra 15) joelho.esquerdo(dobra 35) tronco(frente 6) cabeca(baixa 4) valor fThR -0.1 move frente -0.066
+  chave 0.6s ombro.direito(frente 90 abre 25) ombro.esquerdo(abre 25) cotovelo(dobra 15) punho.direito(levanta 70) mao.direito(fecha 2% afasta 60% polegar 0% opoe 0%) quadril.direito(tras 20) quadril.esquerdo(frente 45) joelho.direito(dobra 20) joelho.esquerdo(dobra 50) tronco(frente 0) cabeca(baixa 6) corpo(deita-brucos 8) move frente -0.1
+  chave 1.2s move frente -0.2
+```
+
+### puloCompleto — ação (acontece e segura), 1,45 s
+
+agacha, decola, encolhe no alto e aterrissa
+
+No filme: `0s Kai anima puloCompleto`
+
+```gm
+# agacha, decola, encolhe no alto e aterrissa
+animacao "puloCompleto" duracao 1.45s mantem curva saida tags "Movimento/Pulo/Completo"
+  chave 0s 
+  chave 0.25s ombro(tras 50 abre 20) cotovelo(dobra 20) mao(fecha 0% afasta 85%) quadril(frente 90) joelho(dobra 110) tornozelo(aponta 30) tronco(frente 30) cabeca(sobe 20) corpo(deita-brucos 20)
+  chave 0.4s ombro(frente 160 abre 15) cotovelo(dobra 10) quadril.direito(tras 10) quadril.esquerdo(frente 20) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) dedos-pe(levanta 40) tronco(frente 0) corpo(deita-brucos 10 sobe 22.8cm) valor ankleFlexL -30 ankleFlexR -30
+  chave 0.65s ombro(frente 60 abre 20) cotovelo(dobra 100) mao(fecha 100% afasta 20% opoe 75%) quadril(frente 120) joelho(dobra 140) tornozelo(aponta 0) dedos-pe(dobra 0) tronco(frente 20) cabeca(sobe 6) corpo(deita-brucos 0 sobe 68.4cm) valor fThL -0.1 fThR -0.1
+  chave 0.9s ombro(frente 160 abre 15) cotovelo(dobra 10) mao(fecha 0% afasta 85% polegar 0% opoe 0%) quadril.direito(tras 10) quadril.esquerdo(frente 20) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) dedos-pe(levanta 40) tronco(frente 0) cabeca(sobe 20) corpo(deita-brucos 10 sobe 22.8cm) valor ankleFlexL -30 ankleFlexR -30
+  chave 1.05s ombro.direito(tras 30 abre 60) ombro.esquerdo(frente 40 abre 30) cotovelo(dobra 20) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 40 abre 30) quadril.esquerdo(frente 100 abre 20) joelho.direito(dobra 60) joelho.esquerdo(dobra 130) tornozelo(aponta 0) dedos-pe(dobra 0) tronco(frente 40) cabeca(sobe 10) corpo(deita-brucos 20 sobe 0cm)
+  chave 1.45s ombro(frente 0 abre 12) cotovelo(dobra 0) mao(fecha 30% afasta 40%) quadril(frente 0 abre 3) joelho(dobra 0) tronco(frente 0) cabeca(baixa 0) corpo(deita-brucos 0)
+```
+
+### puloEmDistanciaAnim — ação (acontece e segura), 1,25 s
+
+corre, salta longe e aterrissa
+
+No filme: `0s Kai anima puloEmDistanciaAnim`
+
+```gm
+# corre, salta longe e aterrissa
+animacao "puloEmDistanciaAnim" duracao 1.25s mantem curva saida tags "Movimento/Pulo/Distância"
+  chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14)
+  chave 0.25s ombro(tras 50 abre 20) cotovelo(dobra 20) mao(fecha 0% afasta 85%) quadril.direito(frente 90 abre 3 gira-fora 0) quadril.esquerdo(frente 90) joelho(dobra 110) tornozelo.esquerdo(aponta 30) dedos-pe.direito(dobra 0) tronco(frente 30 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(sobe 20) corpo(deita-brucos 20) move frente 0.6
+  chave 0.55s ombro.direito(frente 140) ombro.esquerdo(frente 150) quadril.direito(tras 30) quadril.esquerdo(frente 80) joelho.direito(dobra 60) joelho.esquerdo(dobra 40) tornozelo(aponta 0) tronco(frente 0) cabeca(sobe 10) corpo(sobe 57cm) move frente 2
+  chave 0.85s ombro.direito(tras 30 abre 60) ombro.esquerdo(frente 40 abre 30) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 40 abre 30) quadril.esquerdo(frente 100 abre 20) joelho.esquerdo(dobra 130) tronco(frente 40) corpo(sobe 0cm) move frente 3.2
+  chave 1.25s ombro(frente 0 abre 12) cotovelo(dobra 0) mao(fecha 30% afasta 40%) quadril(frente 0 abre 3) joelho(dobra 0) tronco(frente 0) cabeca(baixa 0) corpo(deita-brucos 0) move frente 3.4
+```
+
+### pousoDeHeroi — ação (acontece e segura), 1,60 s
+
+cai do alto e pousa em três apoios, depois se ergue
+
+No filme: `0s Kai anima pousoDeHeroi`
+
+```gm
+# cai do alto e pousa em três apoios, depois se ergue
+animacao "pousoDeHeroi" duracao 1.6s mantem curva saida tags "Movimento/Pulo/Aterrissar"
+  chave 0s ombro.direito(frente 130 abre 70) ombro.esquerdo(frente 150 abre 60) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 30) mao(fecha 0% afasta 85%) quadril.direito(frente 10) quadril.esquerdo(frente 30) joelho.direito(dobra 20) joelho.esquerdo(dobra 50) cabeca(sobe 20) corpo(deita-costas 20 sobe 68.4cm)
+  chave 0.3s ombro.direito(tras 20 abre 50) ombro.esquerdo(frente 70 abre 10) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 20) quadril.esquerdo(frente 110) joelho.direito(dobra 110) joelho.esquerdo(dobra 130) tornozelo.direito(aponta 40) tornozelo.esquerdo(aponta 30) tronco(frente 50) corpo(deita-brucos 25 sobe 0cm) valor fThL -0.1
+  chave 1.1s 
+  chave 1.6s ombro.direito(frente 20 abre 30) ombro.esquerdo(frente 10 abre 25) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 20) mao.direito(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 4 abre 12) quadril.esquerdo(frente 10 abre 10) joelho.direito(dobra 4) joelho.esquerdo(dobra 8) tornozelo(aponta 0) tronco(tras 6) cabeca(sobe 6) corpo(deita-brucos 0) valor fThR -0.1
+```
+
+### mortalParaTras — ação (acontece e segura), 1,00 s
+
+mortal para trás
+
+No filme: `0s Kai anima mortalParaTras`
+
+```gm
+# mortal para trás
+animacao "mortalParaTras" duracao 1s mantem curva saida tags "Movimento/Pulo/Acrobacia"
+  chave 0s ombro(tras 50 abre 20) cotovelo(dobra 20) mao(fecha 0% afasta 85%) quadril(frente 90) joelho(dobra 110) tornozelo(aponta 30) tronco(frente 30) cabeca(sobe 20) corpo(deita-brucos 20)
+  chave 0.2s ombro(frente 160 abre 15) cotovelo(dobra 10) quadril.direito(tras 10) quadril.esquerdo(frente 20) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) dedos-pe(levanta 40) tronco(frente 0) corpo(deita-brucos 10 sobe 22.8cm) valor ankleFlexL -30 ankleFlexR -30 move frente -0.2
+  chave 0.45s ombro(frente 60 abre 30) cotovelo(dobra 90) mao(fecha 100% afasta 20% opoe 75%) quadril(frente 120) joelho(dobra 140) tornozelo(aponta 0) dedos-pe(dobra 0) cabeca(baixa 30) corpo(deita-costas 120 sobe 68.4cm) valor fThL -0.1 fThR -0.1 move frente -0.6
+  chave 0.7s ombro.direito(tras 30 abre 60) ombro.esquerdo(frente 40) cotovelo(dobra 20) mao.direito(fecha 0% afasta 85% polegar 0% opoe 0%) mao.esquerdo(fecha 2% afasta 60% polegar 0% opoe 0%) quadril.direito(frente 40 abre 30) quadril.esquerdo(frente 100 abre 20) joelho.direito(dobra 60) joelho.esquerdo(dobra 130) tronco(frente 40) cabeca(sobe 10) corpo(deita-brucos 20 sobe 0cm) move frente -1
+  chave 1s ombro(frente 0 abre 12) cotovelo(dobra 0) mao(fecha 30% afasta 40%) quadril(frente 0 abre 3) joelho(dobra 0) tronco(frente 0) cabeca(baixa 0) corpo(deita-brucos 0) move frente -1
+```
+
+### levitar — ação (acontece e segura), 2,40 s
+
+sai do chão devagar até flutuar de braços abertos
+
+No filme: `0s Kai anima levitar`
+
+```gm
+# sai do chão devagar até flutuar de braços abertos
+animacao "levitar" duracao 2.4s mantem tags "Movimento/Flutuar/Subir"
+  chave 0s 
+  chave 1.2s ombro.direito(frente 40 abre 50) ombro.esquerdo(frente 30 abre 40) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 30) quadril.direito(frente 30) quadril.esquerdo(frente 20) joelho.direito(dobra 40) joelho.esquerdo(dobra 30) cabeca(sobe 14 inclina-direita 10) corpo(deita-costas 30 sobe 79.8cm)
+  chave 2.4s ombro(frente 20 abre 70) cotovelo(dobra 10) mao(fecha 0% afasta 85%) quadril.direito(frente 4) quadril.esquerdo(frente 10) joelho.direito(dobra 30) joelho.esquerdo(dobra 20) cabeca(sobe 20 inclina-direita 0) corpo(deita-brucos 0 sobe 91.2cm) valor ankleFlexL -30 ankleFlexR -30
+```
+
+### flutuarMeditando — ação (acontece e segura), 2,00 s
+
+senta no ar e sobe meditando
+
+No filme: `0s Kai anima flutuarMeditando`
+
+```gm
+# senta no ar e sobe meditando
+animacao "flutuarMeditando" duracao 2s mantem tags "Movimento/Flutuar/Meditação"
+  chave 0s ombro(frente 20 abre 18) cotovelo(dobra 30) mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%) quadril(frente 84 abre 30 gira-fora 45) joelho.direito(dobra 142) joelho.esquerdo(dobra 148) cabeca(baixa 5) valor pronL -90 pronR -90
+  chave 2s corpo(sobe 68.4cm)
+```
+
+### decolarHeroi — ação (acontece e segura), 0,90 s
+
+agacha e decola com o punho para cima
+
+No filme: `0s Kai anima decolarHeroi`
+
+```gm
+# agacha e decola com o punho para cima
+animacao "decolarHeroi" duracao 0.9s mantem curva saida tags "Movimento/Voar/Decolar"
+  chave 0s ombro(tras 50 abre 20) cotovelo(dobra 20) mao(fecha 0% afasta 85%) quadril(frente 90) joelho(dobra 110) tornozelo(aponta 30) tronco(frente 30) cabeca(sobe 20) corpo(deita-brucos 20)
+  chave 0.3s ombro.direito(frente 20 abre 15) ombro.esquerdo(frente 175 abre 5) cotovelo.esquerdo(dobra 5) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 30) quadril.esquerdo(frente 0) joelho.direito(dobra 60) joelho.esquerdo(dobra 0) tronco(frente 0) cabeca(sobe 30) corpo(deita-brucos 0 sobe 68.4cm) valor ankleFlexL -30 ankleFlexR -30 fThL -0.1 fThR -0.1 move frente 0.833
+  chave 0.9s ombro.direito(frente 10 abre 10) ombro.esquerdo(frente 170) cotovelo.direito(dobra 10) quadril.direito(frente 10) quadril.esquerdo(tras 5) joelho.direito(dobra 30) joelho.esquerdo(dobra 10) tornozelo(aponta 0) cabeca(sobe 60) corpo(deita-brucos 85 sobe 91.2cm) move frente 1.5
+```
+
+### fugaOlhandoTrasAnim — ação (acontece e segura), 1,20 s
+
+corre olhando para trás
+
+No filme: `0s Kai anima fugaOlhandoTrasAnim`
+
+```gm
+# corre olhando para trás
+animacao "fugaOlhandoTrasAnim" duracao 1.2s mantem curva saida tags "Movimento/Fuga/Olhar para trás"
+  chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14)
+  chave 0.4s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) mao(fecha 0% afasta 85%) quadril.direito(tras 30 abre 3 gira-fora 0) quadril.esquerdo(frente 85) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tornozelo.esquerdo(aponta 10) dedos-pe.direito(dobra 0) tronco(frente 10 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110 move frente 2
+  chave 0.8s ombro.direito(frente 120 abre 60) ombro.esquerdo(frente 150 abre 50) cotovelo.direito(dobra 50) cotovelo.esquerdo(dobra 40) quadril.esquerdo(frente 80) tornozelo(aponta 0) tronco(frente 0) cabeca(sobe 20 gira-esquerda 0) corpo(deita-brucos 15) move frente 4
+  chave 1.2s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) quadril.esquerdo(frente 85) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 10) tronco(frente 10) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110 move frente 6
+```
+
+### fugaTropecaoAnim — transição de postura, 0,70 s
+
+foge, tropeça e cai
+
+No filme: `0s Kai anima fugaTropecaoAnim`
+
+```gm
+# foge, tropeça e cai
+animacao "fugaTropecaoAnim" duracao 0.7s mantem curva saida tags "Movimento/Fuga/Queda"
+  chave 0s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) mao(fecha 0% afasta 85%) quadril.direito(tras 30) quadril.esquerdo(frente 85) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 10) tronco(frente 10) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110
+  chave 0.35s ombro.direito(frente 110 abre 40) ombro.esquerdo(frente 130 abre 40) cotovelo(dobra 20) quadril.direito(frente 70) quadril.esquerdo(tras 30) joelho.direito(dobra 80) joelho.esquerdo(dobra 20) tornozelo(aponta 0) tronco(frente 20) cabeca(sobe 30 gira-esquerda 0) corpo(deita-brucos 50) move frente 1.4
+  chave 0.7s ombro.direito(frente 30) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) mao(fecha 30% afasta 40%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) tronco(frente 0) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88) move frente 2.4
+```
+
+### esconderAnim — ação (acontece e segura), 1,80 s
+
+corre, cola na parede e prende a respiração
+
+No filme: `0s Kai anima esconderAnim`
+
+```gm
+# corre, cola na parede e prende a respiração
+animacao "esconderAnim" duracao 1.8s mantem curva saida tags "Movimento/Fuga/Esconder"
+  chave 0s ombro.direito(frente 40 abre 20) ombro.esquerdo(frente 30 abre 30) cotovelo.direito(dobra 60) cotovelo.esquerdo(dobra 80) mao(fecha 0% afasta 85%) quadril.direito(tras 10) quadril.esquerdo(frente 50) joelho.direito(dobra 20) joelho.esquerdo(dobra 60) tornozelo.esquerdo(levanta-ponta 20) dedos-pe(levanta 30) tronco(frente 20) cabeca(gira-esquerda 30) corpo(deita-brucos 10)
+  chave 0.5s ombro.direito(tras 10) ombro.esquerdo(tras 10 abre 20) cotovelo(dobra 10) punho(levanta 40) mao(fecha 2% afasta 60%) quadril(frente 0) joelho(dobra 0) tornozelo.esquerdo(aponta 0) dedos-pe(dobra 0) tronco(tras 10) cabeca(sobe 10 gira-direita 50) corpo(deita-brucos 0) move lado 0.3
+  chave 1.8s move lado 0.3
+```
+
+### perseguicaoAgarrao — ação (acontece e segura), 1,10 s
+
+corre atrás e mergulha para agarrar
+
+No filme: `0s Kai anima perseguicaoAgarrao`
+
+```gm
+# corre atrás e mergulha para agarrar
+animacao "perseguicaoAgarrao" duracao 1.1s mantem curva saida tags "Movimento/Perseguição/Agarrar"
+  chave 0s ombro.direito(frente 85) ombro.esquerdo(tras 60) cotovelo.direito(dobra 100) cotovelo.esquerdo(dobra 95) mao(fecha 100% afasta 20% opoe 75%) quadril.esquerdo(frente 95) joelho.direito(dobra 40) joelho.esquerdo(dobra 100) tornozelo.direito(aponta 35) tornozelo.esquerdo(aponta 15) tronco(frente 6) cabeca(sobe 20) corpo(deita-brucos 30) valor hipFlexR -35 fThL -0.1 fThR -0.1
+  chave 0.4s ombro.direito(tras 40 abre 20) ombro.esquerdo(frente 160 abre 15) cotovelo.direito(dobra 80) cotovelo.esquerdo(dobra 5) mao.esquerdo(fecha 0% afasta 85% polegar 0% opoe 0%) quadril.direito(tras 30) quadril.esquerdo(frente 80) joelho.esquerdo(dobra 80) tornozelo(aponta 0) tronco(frente 0) cabeca(sobe 24) move frente 2
+  chave 0.75s ombro.direito(frente 160) ombro.esquerdo(abre 20) cotovelo(dobra 10) mao(fecha 55% afasta 70% opoe 30%) quadril.direito(frente 40) quadril.esquerdo(tras 10) joelho.direito(dobra 60) joelho.esquerdo(dobra 20) cabeca(sobe 40) corpo(deita-brucos 70 sobe 34.2cm) valor fThL -0.2 fThR -0.2 move frente 3.6
+  chave 1.1s ombro.direito(frente 30 abre 40) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) mao(fecha 30% afasta 40% polegar 0% opoe 0%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88 sobe 0cm) move frente 4.2
+```
+
+### perseguicaoParouCansado — ação (acontece e segura), 2,20 s
+
+corre, para e se curva ofegante
+
+No filme: `0s Kai anima perseguicaoParouCansado`
+
+```gm
+# corre, para e se curva ofegante
+animacao "perseguicaoParouCansado" duracao 2.2s mantem curva saida tags "Movimento/Perseguição/Cansaço"
+  chave 0s ombro.direito(frente 85) ombro.esquerdo(tras 60) cotovelo.direito(dobra 100) cotovelo.esquerdo(dobra 95) mao(fecha 100% afasta 20% opoe 75%) quadril.esquerdo(frente 95) joelho.direito(dobra 40) joelho.esquerdo(dobra 100) tornozelo.direito(aponta 35) tornozelo.esquerdo(aponta 15) tronco(frente 6) cabeca(sobe 20) corpo(deita-brucos 30) valor hipFlexR -35 fThL -0.1 fThR -0.1
+  chave 0.5s ombro.direito(frente 100 abre 40) ombro.esquerdo(frente 40 abre 60) cotovelo.direito(dobra 80) cotovelo.esquerdo(dobra 40) mao(fecha 0% afasta 85% polegar 0% opoe 0%) quadril.direito(tras 10 abre 10) quadril.esquerdo(frente 60 abre 30) joelho.direito(dobra 30) joelho.esquerdo(dobra 70) tornozelo(aponta 0) tronco(frente 0 direita 20) cabeca(baixa 0 gira-esquerda 40) corpo(deita-costas 20) move frente 1.6
+  chave 1s ombro(frente 50 abre 15) cotovelo(dobra 20) quadril(frente 40 abre 3) joelho(dobra 35) tronco(frente 55 direita 0) cabeca(sobe 20 gira-esquerda 0) corpo(deita-brucos 10) move frente 1.9
+  chave 2.2s ombro.direito(frente 60 abre 20) ombro.esquerdo(frente 30 abre 25) cotovelo.direito(dobra 110) cotovelo.esquerdo(dobra 60) mao.direito(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6) quadril.esquerdo(frente 20) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) tronco(frente 6) cabeca(sobe 4 gira-direita 60) corpo(deita-brucos 0) valor fThR -0.1 move frente 1.9
+```
+
+### parkourVaultAnim — ação (acontece e segura), 0,90 s
+
+corre e passa por cima do obstáculo
+
+No filme: `0s Kai anima parkourVaultAnim`
+
+```gm
+# corre e passa por cima do obstáculo
+animacao "parkourVaultAnim" duracao 0.9s mantem curva saida tags "Movimento/Parkour/Passar"
+  chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14)
+  chave 0.3s ombro.direito(frente 40 abre 60) ombro.esquerdo(frente 90 abre 20) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 10) mao.direito(fecha 0% afasta 85%) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 80 abre 30 gira-fora 0) quadril.esquerdo(frente 100 abre 20) joelho.direito(dobra 60) joelho.esquerdo(dobra 100) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(baixa 0 gira-esquerda 20) corpo(deita-brucos 20 sobe 45.6cm) valor bodyRoll -20 move frente 1.4
+  chave 0.6s ombro.direito(tras 30) ombro.esquerdo(frente 40 abre 30) cotovelo(dobra 20) quadril.direito(frente 40) joelho.esquerdo(dobra 130) tronco(frente 40) cabeca(sobe 10 gira-esquerda 0) corpo(rola 0 sobe 0cm) move frente 2.6
+  chave 0.9s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60% afasta 40%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82 abre 3) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14) move frente 3.4
+```
+
+### levarSocoNoRosto — ação (acontece e segura), 1,10 s
+
+a cabeça vai para trás com o impacto e ele cambaleia
+
+No filme: `0s Kai anima levarSocoNoRosto`
+
+```gm
+# a cabeça vai para trás com o impacto e ele cambaleia
+animacao "levarSocoNoRosto" duracao 1.1s mantem curva saida tags "Combate/Reação/Golpe no rosto"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.1s ombro.direito(frente 20 abre 60 gira-fora 0) ombro.esquerdo(frente 30 abre 40 gira-fora 0) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 40) mao(fecha 0% afasta 85% polegar 0% opoe 0%) quadril.direito(tras 10 abre 3) quadril.esquerdo(frente 20 abre 3) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) tronco(tras 14 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(sobe 30 gira-esquerda 30 inclina-direita 20) corpo(deita-costas 14) move frente -0.2
+  chave 0.6s ombro.direito(frente 40 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 30) mao(fecha 30% afasta 40%) quadril.direito(tras 6 abre 8) quadril.esquerdo(abre 20) tronco(frente 0 direita 20) cabeca(baixa 10 gira-esquerda 0 inclina-direita 25) corpo(deita-costas 6) move frente -0.5
+  chave 1.1s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 direita 0 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8 inclina-direita 0) corpo(deita-brucos 0) valor fThL -0.1 fThR -0.1 move frente -0.5
+```
+
+### levarSocoNoEstomago — ação (acontece e segura), 1,40 s
+
+dobra ao meio com o soco
+
+No filme: `0s Kai anima levarSocoNoEstomago`
+
+```gm
+# dobra ao meio com o soco
+animacao "levarSocoNoEstomago" duracao 1.4s mantem curva saida tags "Combate/Reação/Golpe no corpo"
+  chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
+  chave 0.12s ombro(frente 50 abre 10 gira-fora 0) cotovelo(dobra 90) mao(fecha 0% afasta 85% polegar 0% opoe 0%) quadril.direito(frente 30 abre 3) quadril.esquerdo(frente 40 abre 3) joelho.direito(dobra 30) joelho.esquerdo(dobra 40) tronco(frente 55 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(baixa 30) corpo(deita-brucos 10) move frente -0.15
+  chave 0.9s move frente -0.2
+  chave 1.4s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) corpo(deita-brucos 0) valor fThL -0.1 fThR -0.1 move frente -0.2
+```
+
+### serArremessado — ação (acontece e segura), 0,70 s
+
+é jogado para trás e cai de costas
+
+No filme: `0s Kai anima serArremessado`
+
+```gm
+# é jogado para trás e cai de costas
+animacao "serArremessado" duracao 0.7s mantem curva saida tags "Combate/Reação/Arremessado"
+  chave 0s ombro.direito(frente 20 abre 60) ombro.esquerdo(frente 30 abre 40) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 40) mao(fecha 0% afasta 85%) quadril.direito(tras 10) quadril.esquerdo(frente 20) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) tronco(tras 14) cabeca(sobe 30 gira-esquerda 30 inclina-direita 20) corpo(deita-costas 14)
+  chave 0.25s ombro.direito(frente 90 abre 70) ombro.esquerdo(frente 110 abre 60) cotovelo.esquerdo(dobra 30) quadril.direito(frente 40) quadril.esquerdo(frente 60) joelho.direito(dobra 40) joelho.esquerdo(dobra 70) tronco(tras 20) cabeca(baixa 20 gira-esquerda 0 inclina-direita 0) corpo(deita-costas 50 sobe 68.4cm) move frente -1.5
+  chave 0.7s ombro.direito(abre 90) ombro.esquerdo(frente 20) cotovelo.esquerdo(dobra 20) mao(fecha 30% afasta 40%) quadril.direito(frente 20 abre 10) quadril.esquerdo(frente 10 abre 15) joelho.direito(dobra 30) joelho.esquerdo(dobra 20) tronco(frente 0) cabeca(sobe 10 inclina-direita 20) corpo(deita-costas 88 sobe 0cm) move frente -3
+```
+
+### nocaute — ação (acontece e segura), 1,60 s
+
+cambaleia e desaba
+
+No filme: `0s Kai anima nocaute`
+
+```gm
+# cambaleia e desaba
+animacao "nocaute" duracao 1.6s mantem curva saida tags "Combate/Reação/No chão"
+  chave 0s ombro(frente 10 abre 20) cotovelo(dobra 20) quadril(frente 10) joelho(dobra 20) tronco(tras 6 esquerda 10) cabeca(sobe 14 inclina-esquerda 20)
+  chave 0.6s ombro.direito(frente 40 abre 30) ombro.esquerdo(frente 30 abre 40) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 30) quadril.direito(tras 6 abre 8) quadril.esquerdo(frente 20 abre 20) joelho.direito(dobra 10) tronco(frente 0 direita 20) cabeca(baixa 10 inclina-direita 25) corpo(deita-costas 6) move lado 0.2
+  chave 1.1s ombro.direito(frente 10 abre 10) ombro.esquerdo(frente 60 abre 20) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 90 abre 3) quadril.esquerdo(abre 3) joelho.direito(dobra 90) joelho.esquerdo(dobra 100) tornozelo.esquerdo(aponta 40) tronco(frente 40 direita 0) cabeca(baixa 30 inclina-direita 0) corpo(deita-brucos 0) move lado 0.3
+  chave 1.6s ombro.direito(frente 30 abre 40) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) mao.esquerdo(fecha 30% afasta 40%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) tornozelo.esquerdo(aponta 0) tronco(frente 0) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88) move frente 0.4 lado 0.3
+```
+
+### levantarDoChaoLuta — transição de postura, 1,80 s
+
+levanta do chão com esforço e volta à guarda
+
+No filme: `0s Kai anima levantarDoChaoLuta`
+
+```gm
+# levanta do chão com esforço e volta à guarda
+animacao "levantarDoChaoLuta" duracao 1.8s mantem curva saida tags "Combate/Reação/Levantar"
+  chave 0s ombro.direito(frente 30 abre 40) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) quadril.direito(frente 10) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88)
+  chave 0.6s ombro.direito(frente 10 abre 10) ombro.esquerdo(frente 60 abre 20) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 90) quadril.esquerdo(frente 20) joelho.direito(dobra 90) joelho.esquerdo(dobra 100) tornozelo.esquerdo(aponta 40) tronco(frente 40) cabeca(baixa 30 inclina-direita 0) corpo(deita-brucos 0)
+  chave 1.2s ombro.direito(abre 20) cotovelo.direito(dobra 30) mao.direito(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 10) quadril.esquerdo(frente 100) joelho.esquerdo(dobra 110) tornozelo.direito(aponta 20) tornozelo.esquerdo(aponta 30) cabeca(sobe 20) valor fThR -0.1
+  chave 1.8s ombro.direito(frente 48 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao.esquerdo(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tornozelo(aponta 0) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1
+```
+
+### carregarPoder — ação (acontece e segura), 1,90 s
+
+concentra e explode em aura
+
+No filme: `0s Kai anima carregarPoder`
+
+```gm
+# concentra e explode em aura
+animacao "carregarPoder" duracao 1.9s mantem curva saida tags "Combate/Poder/Carregar"
+  chave 0s 
+  chave 0.5s ombro(frente 40 abre 30) cotovelo(dobra 110) mao(fecha 55% afasta 70% opoe 30%) quadril(frente 60 abre 30) joelho(dobra 80) tronco(frente 10) cabeca(sobe 4) valor fThL -0.2 fThR -0.2
+  chave 1.6s 
+  chave 1.9s ombro(abre 45) cotovelo(dobra 80) mao(fecha 100% afasta 20% opoe 75%) quadril(frente 30) joelho(dobra 40) tronco(tras 20) cabeca(sobe 35) valor fThL -0.1 fThR -0.1
+```
+
+### dispararRaio — ação (acontece e segura), 1,80 s
+
+prepara a esfera ao lado e dispara à frente
+
+No filme: `0s Kai anima dispararRaio`
+
+```gm
+# prepara a esfera ao lado e dispara à frente
+animacao "dispararRaio" duracao 1.8s mantem curva saida tags "Combate/Poder/Raio"
+  chave 0s ombro.direito(frente 20 abre 20 gira-dentro 60) ombro.esquerdo(frente 20 abre 20 gira-fora 60) cotovelo(dobra 90) mao(fecha 55% afasta 70% opoe 30%) quadril.direito(tras 20) quadril.esquerdo(frente 50) joelho.direito(dobra 20) joelho.esquerdo(dobra 60) tronco(gira-direita 40) pelve(gira-direita 20) cabeca(gira-esquerda 20) valor fThL -0.2 fThR -0.2
+  chave 0.9s move frente -0.098
+  chave 1.05s ombro(frente 90 abre 10 gira-fora 0) cotovelo(dobra 10) punho(levanta 70) mao(fecha 2% afasta 60% polegar 0% opoe 0%) tronco(gira-direita 20) pelve(gira-esquerda 0) cabeca(baixa 4 gira-esquerda 0) corpo(deita-brucos 10) move frente -0.1
+  chave 1.8s move frente -0.3
+```
+
+### socoNoChaoPoder — ação (acontece e segura), 1,30 s
+
+pula e soca o chão (onda de choque)
+
+No filme: `0s Kai anima socoNoChaoPoder`
+
+```gm
+# pula e soca o chão (onda de choque)
+animacao "socoNoChaoPoder" duracao 1.3s mantem curva saida tags "Combate/Poder/Terremoto"
+  chave 0s ombro(tras 50 abre 20) cotovelo(dobra 20) mao(fecha 0% afasta 85%) quadril(frente 90) joelho(dobra 110) tornozelo(aponta 30) tronco(frente 30) cabeca(sobe 20) corpo(deita-brucos 20)
+  chave 0.25s ombro(frente 60) cotovelo(dobra 100) mao(fecha 100% afasta 20% opoe 75%) quadril(frente 120) joelho(dobra 140) tornozelo(aponta 0) tronco(frente 20) cabeca(sobe 6) corpo(deita-brucos 0 sobe 68.4cm) valor fThL -0.1 fThR -0.1
+  chave 0.55s ombro.direito(frente 40 abre 40) ombro.esquerdo(frente 50) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 10) mao.direito(fecha 2% afasta 60% polegar 0% opoe 0%) quadril.direito(frente 40 abre 30) quadril.esquerdo(frente 110 abre 30) joelho.direito(dobra 100) joelho.esquerdo(dobra 120) tronco(frente 60) cabeca(baixa 30) corpo(sobe 0cm)
+  chave 1.3s
+```
+
+### gigantePisao — ação (acontece e segura), 1,00 s
+
+o gigante ergue o pé e pisa
+
+No filme: `0s Kai anima gigantePisao`
+
+```gm
+# o gigante ergue o pé e pisa
+animacao "gigantePisao" duracao 1s mantem tags "Escala/Gigante/Pisar"
+  chave 0s 
+  chave 0.6s ombro(frente 40 abre 35) cotovelo(dobra 80) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6) quadril.esquerdo(frente 80) joelho.direito(dobra 10) joelho.esquerdo(dobra 60) tornozelo.esquerdo(levanta-ponta 10) tronco(frente 10) cabeca(baixa 35) valor fThL -0.1 fThR -0.1 move frente 0.259
+  chave 1s ombro(frente 0 abre 12) cotovelo(dobra 0) mao(fecha 30% afasta 40% polegar 0% opoe 0%) quadril(frente 0) joelho(dobra 0) tornozelo.esquerdo(aponta 0) tronco(frente 0) cabeca(baixa 0) move frente 0.4
+```
+
+### giganteAbaixaPega — ação (acontece e segura), 1,60 s
+
+o gigante se abaixa para pegar algo pequeno
+
+No filme: `0s Kai anima giganteAbaixaPega`
+
+```gm
+# o gigante se abaixa para pegar algo pequeno
+animacao "giganteAbaixaPega" duracao 1.6s mantem tags "Escala/Gigante/Pegar"
+  chave 0s ombro(frente 20 abre 15) cotovelo(dobra 30) quadril(frente 10) joelho(dobra 10) tronco(frente 25) pescoco(frente 20) cabeca(baixa 50 inclina-direita 10)
+  chave 0.9s ombro.direito(abre 20) ombro.esquerdo(frente 70) cotovelo.direito(dobra 60) cotovelo.esquerdo(dobra 20) mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%) quadril.direito(frente 30) quadril.esquerdo(frente 80) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tronco(frente 40) pescoco(frente 0) cabeca(baixa 30 inclina-direita 0)
+  chave 1.6s ombro.direito(frente 10 abre 12) ombro.esquerdo(frente 60 abre 20 gira-fora 60) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 80) antebraco.esquerdo(palma-cima 90) mao.esquerdo(fecha 0% afasta 85% polegar 0% indicador 0% anelar 0% minimo 0% opoe 0%) quadril(frente 0) joelho(dobra 0) tronco(frente 8) cabeca(baixa 35)
+```
+
+### minusculoFogePisao — ação (acontece e segura), 0,70 s
+
+o pequeno corre se protegendo do pisão
+
+No filme: `0s Kai anima minusculoFogePisao`
+
+```gm
+# o pequeno corre se protegendo do pisão
+animacao "minusculoFogePisao" duracao 0.7s mantem curva saida tags "Escala/Minúsculo/Fugir"
+  chave 0s ombro(frente 30 abre 20) cotovelo(dobra 60) mao(fecha 0% afasta 85%) quadril.direito(tras 4) quadril.esquerdo(frente 10) joelho.direito(dobra 4) joelho.esquerdo(dobra 10) tronco(tras 20) pescoco(tras 20) cabeca(sobe 55)
+  chave 0.3s ombro(frente 150 abre 30) cotovelo(dobra 105) quadril.direito(tras 20) quadril.esquerdo(frente 50) joelho.direito(dobra 20) joelho.esquerdo(dobra 60) tronco(frente 20) pescoco(frente 0) cabeca(sobe 40) move frente 0.5
+  chave 0.7s ombro.direito(frente 120 abre 60) ombro.esquerdo(abre 50) cotovelo.direito(dobra 50) cotovelo.esquerdo(dobra 40) quadril.direito(tras 30) quadril.esquerdo(frente 80) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tronco(frente 0) cabeca(sobe 20) corpo(deita-brucos 15) move frente 1.6
+```
+
+### confrontoEncarar — ação (acontece e segura), 1,50 s
+
+dá um passo à frente e encara
+
+No filme: `0s Kai anima confrontoEncarar`
+
+```gm
+# dá um passo à frente e encara
+animacao "confrontoEncarar" duracao 1.5s mantem tags "Narrativa/Oposição/Encarar"
+  chave 0s 
+  chave 0.5s ombro(frente 10 abre 20) cotovelo(dobra 30) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 4) quadril.esquerdo(frente 10) joelho.direito(dobra 4) joelho.esquerdo(dobra 10) tronco(frente 10) pescoco(tras 8) cabeca(sobe 6) corpo(deita-brucos 4) valor fThL -0.1 fThR -0.1 move frente 0.4
+  chave 1.5s move frente 0.4
+```
+
+### vitoriaAnim — ação (acontece e segura), 1,40 s
+
+ergue o punho de vitória
+
+No filme: `0s Kai anima vitoriaAnim`
+
+```gm
+# ergue o punho de vitória
+animacao "vitoriaAnim" duracao 1.4s mantem curva saida tags "Narrativa/Desfecho/Vitória"
+  chave 0s ombro.direito(frente 10 abre 10) ombro.esquerdo(frente 60 abre 20) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 90) quadril.esquerdo(frente 20) joelho.direito(dobra 90) joelho.esquerdo(dobra 100) tornozelo.esquerdo(aponta 40) tronco(frente 40) cabeca(baixa 30)
+  chave 0.8s ombro.direito(abre 20) cotovelo.direito(dobra 30) mao.direito(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 10) quadril.esquerdo(frente 100) joelho.esquerdo(dobra 110) tornozelo.direito(aponta 20) tornozelo.esquerdo(aponta 30) cabeca(sobe 20) valor fThR -0.1
+  chave 1.4s ombro.direito(abre 10) ombro.esquerdo(frente 175 abre 10) cotovelo.direito(dobra 10) cotovelo.esquerdo(dobra 5) mao.direito(fecha 30% afasta 40% polegar 0% opoe 0%) mao.esquerdo(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 4) quadril.esquerdo(frente 10) joelho.direito(dobra 4) joelho.esquerdo(dobra 10) tornozelo(aponta 0) tronco(tras 10) cabeca(sobe 30) valor fThL -0.1
+```
+
+### derrotaAnim — ação (acontece e segura), 2,00 s
+
+cai de joelhos derrotado
+
+No filme: `0s Kai anima derrotaAnim`
+
+```gm
+# cai de joelhos derrotado
+animacao "derrotaAnim" duracao 2s mantem tags "Narrativa/Desfecho/Derrota"
+  chave 0s ombro.direito(frente 40 abre 30) ombro.esquerdo(frente 30 abre 40) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 30) quadril.direito(tras 6 abre 8) quadril.esquerdo(frente 20 abre 20) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) tronco(direita 20) cabeca(baixa 10 inclina-direita 25) corpo(deita-costas 6)
+  chave 0.7s ombro(frente 60 abre 15) cotovelo(dobra 10) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 20 abre 3) quadril.esquerdo(abre 3) joelho(dobra 100) tornozelo(aponta 40) tronco(frente 50 direita 0) cabeca(baixa 40 inclina-direita 0) corpo(deita-brucos 0) valor fThL -0.1 fThR -0.1
+  chave 2s
 ```
 
 ## Verbos do dia a dia

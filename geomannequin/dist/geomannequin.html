@@ -3693,15 +3693,15 @@ pre.cmdout .ok{color:var(--cobalt)}
     return C2.meshes;
   }
   function poseSetup(p, S) {
-    const ya = p.headYaw * D, pa = p.headPitch * D, ra = p.headRoll * D, nt = (p.neckTwist || 0) * D, nf = (p.neckFlex || 0) * D, ns = (p.neckSide || 0) * D;
+    const ya = p.headYaw * D, pa2 = p.headPitch * D, ra = p.headRoll * D, nt = (p.neckTwist || 0) * D, nf = (p.neckFlex || 0) * D, ns = (p.neckSide || 0) * D;
     const F3 = bustFrame(p, S), yb = F3.yJ + 0.15, B3 = [0, yb, bustZc(yb, F3)], Hs = [0, -0.55, -0.22];
     const kb = [0.4, 0.45, 0.45];
-    const Rb = rotM(ya * kb[0] + nt, pa * kb[1] + nf, ra * kb[2] + ns);
+    const Rb = rotM(ya * kb[0] + nt, pa2 * kb[1] + nf, ra * kb[2] + ns);
     const bh = mv(Rb, [Hs[0] - B3[0], Hs[1] - B3[1], Hs[2] - B3[2]]);
     const H1 = [B3[0] + bh[0], B3[1] + bh[1], B3[2] + bh[2]];
     const aff = (t) => {
-      const R1 = rotM((ya * kb[0] + nt) * t, (pa * kb[1] + nf) * t, (ra * kb[2] + ns) * t);
-      const t2 = t * t, R2 = rotM(ya * (1 - kb[0]) * t2, pa * (1 - kb[1]) * t2, ra * (1 - kb[2]) * t2);
+      const R1 = rotM((ya * kb[0] + nt) * t, (pa2 * kb[1] + nf) * t, (ra * kb[2] + ns) * t);
+      const t2 = t * t, R2 = rotM(ya * (1 - kb[0]) * t2, pa2 * (1 - kb[1]) * t2, ra * (1 - kb[2]) * t2);
       const M2 = [];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) M2.push(R2[i * 3] * R1[j] + R2[i * 3 + 1] * R1[3 + j] + R2[i * 3 + 2] * R1[6 + j]);
       const b1 = mv(R1, B3), d = [B3[0] - b1[0] - H1[0], B3[1] - b1[1] - H1[1], B3[2] - b1[2] - H1[2]], r22 = mv(R2, d);
@@ -5988,13 +5988,13 @@ pre.cmdout .ok{color:var(--cobalt)}
         return proj(m, Mx, S);
       }) : [];
       const fw = mv(A2.M, [0, 0, 1]), k = Ad.k, mid = (P3, Q, o) => [0, 1, 2].map((i2) => (P3[i2] + Q[i2]) / 2 + o[i2]);
-      const pa = applyA(A2, [s * 0.32, F3.yJ - 0.88, -0.22]), pb = applyA(Aa, [-s * 0.1, -0.82, 0.08]);
+      const pa2 = applyA(A2, [s * 0.32, F3.yJ - 0.88, -0.22]), pb = applyA(Aa, [-s * 0.1, -0.82, 0.08]);
       const ab0 = Math.max(s > 0 ? p.armAbdL : p.armAbdR, s > 0 ? p.armFlexL : p.armFlexR), er = clamp((ab0 - 70) / 90, 0, 1);
       const la = applyA(A2, [s * (0.55 + 0.1 * er), F3.yJ - 1.35 - 0.4 * er, -0.5 + 0.02 * er]), lb = applyA(Aa, [-s * 0.06, -0.62 - 0.3 * er, -0.1 - 0.02 * er]);
       const thin = (P3, Q, L0) => Math.pow(clamp(L0 / Math.hypot(P3[0] - Q[0], P3[1] - Q[1], P3[2] - Q[2]), 0.62, 1), 0.8);
-      const tp = thin(pa, pb, 1.3), tl = thin(la, lb, 1.25);
+      const tp = thin(pa2, pb, 1.3), tl = thin(la, lb, 1.25);
       const soft = 1 - 0.12 * (p.fem || 0);
-      const pec = proj(bandMesh(pa, pb, mid(pa, pb, fw.map((c) => c * 0.02)), 0.29 * k * tp * soft, 0.17 * k * tp * soft, fw, 0.2), Mx, S);
+      const pec = proj(bandMesh(pa2, pb, mid(pa2, pb, fw.map((c) => c * 0.02)), 0.29 * k * tp * soft, 0.17 * k * tp * soft, fw, 0.2), Mx, S);
       const lat = proj(bandMesh(la, lb, mid(la, lb, fw.map((c) => -c * 0.12)), (0.32 + 0.06 * er) * k * tl * soft, (0.23 + 0.06 * er) * k * tl * soft, fw, 0.2), Mx, S);
       arms.push({ s, a, f, el: el2, d, ap, Aa, Af, Ah, Ae, hs, pec, lat });
       const wp = Ah.T, ws = xv(wp), ep = Af.T, es = xv(ep);
@@ -13525,7 +13525,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     for (let i = 0; i < quant(fx, P3.quantidade); i++) {
       const a = r() * 6.28, h = r.entre(0.4, 1.4), v = [Math.cos(a) * r.entre(0.4, 1), 0, Math.sin(a) * r.entre(0.4, 1)];
       const pos = (q) => add2(add2(C2, mul2(fx.plano ? [v[0], v[2] * 0.3, 0] : v, alc * q)), mul2(up, alc * h * (q - q * q) * 1.6));
-      const p = pos(t), pa = pos(Math.max(0, t - 0.12)), a0 = T2(fx, pa), a1 = T2(fx, p), tam = escalaW(fx, r.entre(0.25, 0.75)) * s;
+      const p = pos(t), pa2 = pos(Math.max(0, t - 0.12)), a0 = T2(fx, pa2), a1 = T2(fx, p), tam = escalaW(fx, r.entre(0.25, 0.75)) * s;
       const sv = forma(pincelada([a0, [(a0[0] + a1[0]) / 2, (a0[1] + a1[1]) / 2], a1], tam * 0.6, (t2) => Math.pow(t2, 1.5)), fx.ink ? INK2 : cores[1], { op: fx.ink ? 0.6 : 0.5 }) + forma(lasca(a1[0], a1[1], tam, r), fx.ink ? r() < 0.3 ? INK2 : PAPEL2 : corEm(cores, r.entre(0.3, 0.8)), ct(fx, 0.8));
       out[fx.proj(p)[2] < zc ? "atras" : "frente"] += sv;
     }
@@ -14047,8 +14047,8 @@ pre.cmdout .ok{color:var(--cobalt)}
     if (L3.shade && !fast && opts.sombraEntre !== false && idx2.length > 1) {
       const Es = idx2.map((i) => esqueleto(list0[i].p)), LD2 = luzDir(list0[idx2[0]].p);
       const perto = (a, b) => {
-        const pa = list0[idx2[a]].p, pb = list0[idx2[b]].p;
-        return Math.hypot((pa.wx || 0) - (pb.wx || 0), (pa.wz || 0) - (pb.wz || 0)) < 24;
+        const pa2 = list0[idx2[a]].p, pb = list0[idx2[b]].p;
+        return Math.hypot((pa2.wx || 0) - (pb.wx || 0), (pa2.wz || 0) - (pb.wz || 0)) < 24;
       };
       for (let b = 0; b < idx2.length; b++) for (let a = 0; a < idx2.length; a++) if (a !== b && perto(a, b) && fazSombra(Es[a], Es[b], LD2)) lanc[b].push(idx2[a]);
     }
@@ -15430,7 +15430,7 @@ pre.cmdout .ok{color:var(--cobalt)}
       if (C2.persp && dados.alturaPessoa) [1, 0.5, 0.25].forEach((f) => {
         const s = distEscala(C2, g0, dados.alturaPessoa, f);
         if (s === null || s > L3) return;
-        const pa = [C2.pos[0] + fh[0] * s, C2.pos[2] + fh[1] * s], n2 = [-fh[1], fh[0]], cut = cortaPoligono(pe.map((q) => [q[0], q[2]]), pa, n2);
+        const pa2 = [C2.pos[0] + fh[0] * s, C2.pos[2] + fh[1] * s], n2 = [-fh[1], fh[0]], cut = cortaPoligono(pe.map((q) => [q[0], q[2]]), pa2, n2);
         if (!cut) return;
         const a1 = mp(cut[0]), a2 = mp(cut[1]);
         o.push('<path d="M' + f1(a1[0]) + " " + f1(a1[1]) + "L" + f1(a2[0]) + " " + f1(a2[1]) + '" class="blk-escala"/><text x="' + f1(a2[0] + 4) + '" y="' + f1(a2[1]) + '" class="blk-txt blk-escala-txt">' + Math.round(f * 100) + "%</text>");
@@ -18697,13 +18697,13 @@ pre.cmdout .ok{color:var(--cobalt)}
       if (!cs.length) continue;
       const a = SCN.list.indexOf(vis[i]), b = SCN.list.indexOf(vis[j]), c0 = cs[0];
       const troca = MEMBRO[c0.pb] && !MEMBRO[c0.pa];
-      const [pa, na, pb, nb] = troca ? [c0.pb, vis[j].name, c0.pa, vis[i].name] : [c0.pa, vis[i].name, c0.pb, vis[j].name];
+      const [pa2, na, pb, nb] = troca ? [c0.pb, vis[j].name, c0.pa, vis[i].name] : [c0.pa, vis[i].name, c0.pb, vis[j].name];
       out.push({
         a,
         b,
         prof: c0.prof,
         contatos: cs,
-        texto: PARTES[pa] + " de " + na + " entra em " + PARTES[pb] + " de " + nb + " (" + Math.max(1, Math.round(c0.prof * CM)) + " cm)" + (cs.length > 1 ? " · mais " + (cs.length - 1) + " ponto" + (cs.length > 2 ? "s" : "") : "")
+        texto: PARTES[pa2] + " de " + na + " entra em " + PARTES[pb] + " de " + nb + " (" + Math.max(1, Math.round(c0.prof * CM)) + " cm)" + (cs.length > 1 ? " · mais " + (cs.length - 1) + " ponto" + (cs.length > 2 ? "s" : "") : "")
       });
     }
     vis.forEach((it2, i) => SCN.objetos.forEach((o, k) => {
@@ -25071,6 +25071,170 @@ pre.cmdout .ok{color:var(--cobalt)}
     lanca: "lancaInvestida",
     arco: "arcoPuxando"
   };
+  var GL_K = {
+    sf: "spineFlex",
+    ss: "spineSide",
+    st: "spineTwist",
+    pt: "pelvisTwist",
+    bp: "bodyPitch",
+    br: "bodyRoll",
+    bl: "bodyLift",
+    hf: "hipFlex",
+    ha: "hipAbd",
+    hr: "hipRot",
+    kf: "kneeFlex",
+    af: "ankleFlex",
+    ab: "armAbd",
+    fl: "armFlex",
+    ar: "armRot",
+    el: "elbow",
+    hy: "headYaw",
+    hp: "headPitch",
+    hz: "headRoll",
+    nf: "neckFlex",
+    to: "toes"
+  };
+  var GL_LADO = /* @__PURE__ */ new Set(["hf", "ha", "hr", "kf", "af", "ab", "fl", "ar", "el", "to"]);
+  function glCorpo(cod) {
+    return (Q, s) => {
+      const pr = s > 0 ? "L" : "R", ou = s > 0 ? "R" : "L", sg = s > 0 ? 1 : -1;
+      for (const t of String(cod || "").trim().split(/\s+/)) {
+        if (!t) continue;
+        let m = /^P:(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)$/.exec(t);
+        if (m) {
+          pgPasso(Q, s, +m[1], +m[2], +m[3], +m[4]);
+          continue;
+        }
+        m = /^R:(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)$/.exec(t);
+        if (m) {
+          pgPasso(Q, -s, +m[1], +m[2], +m[3], +m[4]);
+          continue;
+        }
+        m = /^A:(-?[\d.]+),(-?[\d.]+)$/.exec(t);
+        if (m) {
+          pgAgachar(Q, +m[1], +m[2]);
+          continue;
+        }
+        m = /^([a-z]{2})(-?[\d.]+)(?:,(-?[\d.]+))?$/.exec(t);
+        if (!m || !GL_K[m[1]]) continue;
+        const k = GL_K[m[1]], a = +m[2], b = m[3] !== void 0 ? +m[3] : a;
+        if (GL_LADO.has(m[1])) {
+          Q[k + pr] = a;
+          Q[k + ou] = b;
+        } else Q[k] = /Yaw|Twist|Side|Roll/.test(k) ? a * sg : a;
+      }
+    };
+  }
+  var glV = (k, v) => pgNorm(pgComb([k.B.frenteChao, v[0]], [UP, v[1]], [k.B.esqChao, v[2] * k.s]));
+  function glBase(k, b) {
+    return b === "o" ? pgOmb(k, k.s) : b === "c" ? k.B.cintura : b === "h" ? k.B.cab : k.B.peito;
+  }
+  var GL_CLASSES = {
+    lamina1: ["espadaCurta", "espada curta, sabre, katana numa mão, maça, machadinha, tocha, varinha"],
+    lamina2: ["katana", "katana, espada longa, montante (duas mãos)"],
+    pesada: ["martelo", "martelo de guerra, machado duplo (duas mãos)"],
+    haste: ["tridente", "lança, tridente, bastão, foice, cajado (duas mãos)"],
+    haste1: ["tridente", "lança, tridente, cajado numa mão"],
+    adaga: ["adaga", "adaga, faca, kunai"],
+    pistola: ["pistola", "pistola, revólver"],
+    rifle: ["rifle", "rifle, fuzil, espingarda"],
+    escudo: ["escudoCavaleiro", "broquel, escudo de cavaleiro, escudo torre"],
+    magia: ["varinha", "varinha, cajado curto, tocha"],
+    cajado: ["cajadoMagico", "cajado mágico, bastão de mago"],
+    orbe: ["orbe", "orbe, esfera, bola de energia"],
+    arremesso: ["kunai", "kunai, shuriken, faca de arremesso, pedra"],
+    chicote: ["chicote", "chicote, corda"],
+    arco: ["arco", "arco"]
+  };
+  var GOLPES = {};
+  function golpe(nome, classe, maos, tag, desc, corpo, H2, Y, N, extra) {
+    GOLPES[nome] = Object.assign({ classe, maos, tag, desc, corpo, H: H2, Y, N }, extra || {});
+  }
+  golpe("espadaPreparaCorte", "lamina1", 1, "Combate/Arma/Espada/Preparação", "Espada erguida atrás da cabeça, pronta para o corte descendente", "st-10 sf-6 hp-4 fl40,40 ab30,30 el90,90 P:.32,-.32,.08,.14", ["o", -0.4, 4, 0.3], [-0.45, 0.8, 0.2], [0, 0, 1]);
+  golpe("espadaCorteDescendente", "lamina1", 1, "Combate/Arma/Espada/Ataque", "Corte de cima para baixo terminado: lâmina à frente e abaixo, corpo projetado", "st14 sf18 bp6 hp6 fl20,30 ab20,25 el40,60 P:.5,-.46,.22,.14", ["o", 3.8, -2.2, -0.6], [0.55, -0.8, -0.1], [0, 0, 1], { de: "espadaPreparaCorte" });
+  golpe("espadaPreparaHorizontal", "lamina1", 1, "Combate/Arma/Espada/Preparação", "Espada recolhida ao lado, ponta para trás, para o corte horizontal", "st-30 pt-10 sf4 fl30,60 ab20,30 el60,90 P:.3,-.34,.12,.16", ["o", 0.6, -0.8, 1.6], [-0.85, 0.15, 0.35], [0, 1, 0]);
+  golpe("espadaCorteHorizontal", "lamina1", 1, "Combate/Arma/Espada/Ataque", "Corte horizontal terminado: braço cruzou o corpo, lâmina na altura do peito", "st40 pt16 sf8 hy-10 fl20,10 ab15,40 el40,40 P:.42,-.4,.14,.16", ["o", 3.8, -1.2, -3.2], [0.3, 0.05, -0.95], [0, 1, 0], { de: "espadaPreparaHorizontal" });
+  golpe("espadaCorteAscendente", "lamina1", 1, "Combate/Arma/Espada/Ataque", "Corte diagonal de baixo para cima terminado: lâmina alta do outro lado", "st24 sf-8 hp-12 fl20,20 ab25,40 el50,40 P:.4,-.38,.1,.15", ["o", 2.8, 2.6, -1.4], [0.35, 0.8, -0.45], [0.3, 0, 0.8], { de: "espadaGuardaBaixa" });
+  golpe("espadaEstocada", "lamina1", 1, "Combate/Arma/Espada/Ataque", "Estocada: braço todo esticado, lâmina horizontal, avanço profundo", "st18 sf10 bp8 hp-2 fl-20,-30 ab20,40 el20,20 P:.6,-.55,.32,.13", ["o", 5, -0.6, -0.4], [1, 0.02, 0], [0, 1, 0], { de: "espadaGuardaMedia" });
+  golpe("espadaGuardaMedia", "lamina1", 1, "Combate/Arma/Espada/Guarda", "Guarda média: ponta à frente na altura do peito, braço meio dobrado", "st-8 sf6 hp2 fl20,40 ab20,30 el60,90 P:.34,-.32,.12,.14", ["o", 3, -1.6, -0.4], [0.85, 0.45, -0.1], [0, 0, 1]);
+  golpe("espadaGuardaAlta", "lamina1", 1, "Combate/Arma/Espada/Guarda", "Guarda alta (boi): mão ao lado da cabeça, ponta para o rival", "st-12 sf2 hp-2 fl60,60 ab30,40 el100,100 P:.3,-.3,.08,.14", ["o", 1.2, 1.4, 0.6], [0.9, -0.25, -0.2], [0, 0, 1]);
+  golpe("espadaGuardaBaixa", "lamina1", 1, "Combate/Arma/Espada/Guarda", "Guarda baixa: ponta para o chão à frente, convidando o ataque", "st-6 sf10 hp6 fl20,30 ab20,25 el30,60 P:.34,-.32,.14,.15", ["o", 2.2, -4, 0.2], [0.6, -0.8, 0], [0, 0, 1]);
+  golpe("espadaAparaAlto", "lamina1", 1, "Combate/Arma/Espada/Defesa", "Aparando por cima: lâmina deitada acima da cabeça", "sf-4 hp-10 fl60,50 ab30,40 el100,90 R:.28,-.3,.14,.16", ["o", 2, 2.2, -1.2], [0.05, 0.25, -0.97], [1, 0, 0]);
+  golpe("espadaAparaLado", "lamina1", 1, "Combate/Arma/Espada/Defesa", "Aparando de lado: lâmina vertical cobrindo o flanco", "st-14 sf6 fl30,40 ab20,30 el70,90 R:.26,-.3,.12,.16", ["o", 2.2, -0.6, 0.6], [0.15, 0.98, 0.1], [1, 0, 0]);
+  golpe("espadaSaudacao", "lamina1", 1, "Combate/Arma/Espada/Cerimônia", "Saudação: guarda-mão na altura do queixo, lâmina vertical diante do rosto", "hp2 fl5,5 ab10,10 el10,10", ["h", 1.6, -1.8, -0.9], [0.05, 1, 0], [0, 0, 1]);
+  golpe("espadaApontaChao", "lamina1", 1, "Combate/Arma/Espada/Pausa", "Espada baixa ao lado, ponta no chão: depois da luta, cansaço ou vitória calma", "sf4 hp6 fl5,5 ab10,10 el10,10", ["o", 1.2, -4.6, 0.5], [0.3, -0.95, 0.1], [0, 0, 1]);
+  golpe("espadaSacada", "lamina1", 1, "Combate/Arma/Espada/Sacar", "Acabou de sacar: braço estendido para o lado e à frente, lâmina horizontal", "st-20 sf2 hy10 fl20,40 ab20,30 el40,80 P:.3,-.34,.1,.18", ["o", 3.4, -0.6, 2.6], [0.6, 0.05, 0.8], [0, 1, 0]);
+  golpe("espadaZanshin", "lamina1", 1, "Combate/Arma/Espada/Ataque", "Depois do golpe (zanshin): lâmina baixa e atrás, corpo ainda de frente", "st10 sf12 hp4 fl20,20 ab20,30 el20,60 P:.46,-.42,.2,.15", ["o", 0.8, -3.6, 1.8], [-0.6, -0.55, 0.55], [0, 0, 1], { de: "espadaCorteHorizontal" });
+  golpe("espadaAereo", "lamina1", 1, "Combate/Arma/Espada/Aéreo", "Salto com a espada erguida para o golpe de cima", "bl5 hf80,20 kf100,70 sf-8 hp-14 fl60,60 ab30,40 el90,90", ["o", 0.2, 4.2, 0.2], [-0.25, 0.95, 0.1], [0, 0, 1]);
+  golpe("espadaGiro", "lamina1", 1, "Combate/Arma/Espada/Ataque", "Corte girando: braço aberto para o lado, lâmina varrendo à altura do peito", "st-40 pt-25 hy-20 fl10,30 ab20,30 el30,90 P:.34,-.36,.16,.2", ["o", 1, -0.4, 4.4], [0.1, 0.05, 1], [0, 1, 0]);
+  golpe("espadaNoOmbro", "lamina1", 1, "Combate/Arma/Espada/Pausa", "Espada apoiada no ombro (descanso, arrogância)", "sf-4 hp-4 ss4 fl5,5 ab10,10 el10,10", ["o", 1.4, -1.2, -0.2], [-0.62, 0.75, 0.15], [0, 0, 1]);
+  golpe("kamaeChudan", "lamina2", 2, "Combate/Arma/Katana/Guarda", "Guarda média (chūdan): duas mãos no cabo, ponta na altura da garganta do rival", "sf4 hp2 P:.3,-.34,.12,.12", ["c", 2.8, 1, -0.3], [0.8, 0.6, -0.05], [0, 0, 1]);
+  golpe("kamaeJodan", "lamina2", 2, "Combate/Arma/Katana/Guarda", "Guarda alta (jōdan): cabo acima da testa, lâmina para trás e para cima", "sf-6 hp-4 P:.32,-.32,.1,.12", ["h", 1.4, 1.8, -0.3], [-0.45, 0.85, 0.1], [0, 0, 1]);
+  golpe("kamaeHasso", "lamina2", 2, "Combate/Arma/Katana/Guarda", "Guarda hassō: cabo ao lado do rosto, lâmina vertical", "st-14 sf2 P:.3,-.3,.1,.13", ["h", 1.4, -1.2, 1.2], [-0.1, 1, 0.05], [1, 0, 0]);
+  golpe("kamaeWaki", "lamina2", 2, "Combate/Arma/Katana/Guarda", "Guarda waki: lâmina baixa e escondida atrás do quadril", "st-26 pt-10 sf6 R:.32,-.36,.14,.15", ["c", 0.8, -0.2, 1.8], [-0.85, -0.3, 0.4], [0, 0, 1]);
+  golpe("kamaeGedan", "lamina2", 2, "Combate/Arma/Katana/Guarda", "Guarda baixa (gedan): ponta para o joelho do rival", "sf10 hp6 P:.32,-.34,.16,.13", ["c", 2.6, -0.8, -0.2], [0.75, -0.62, 0], [0, 0, 1]);
+  golpe("katanaCorteDescendente", "lamina2", 2, "Combate/Arma/Katana/Ataque", "Corte vertical (men) terminado: braços esticados, lâmina à frente", "sf16 bp6 hp4 P:.52,-.48,.24,.12", ["c", 3.4, 0.4, -0.2], [0.85, -0.5, 0], [0, 0, 1], { de: "kamaeJodan" });
+  golpe("katanaKesa", "lamina2", 2, "Combate/Arma/Katana/Ataque", "Corte diagonal (kesa-giri) terminado: lâmina baixa do outro lado", "st26 sf16 hp6 P:.46,-.44,.22,.14", ["c", 2.6, -0.6, -2], [0.4, -0.55, -0.72], [0.4, 0, 0.6], { de: "kamaeHasso" });
+  golpe("katanaEstocada", "lamina2", 2, "Combate/Arma/Katana/Ataque", "Estocada a duas mãos (tsuki)", "sf8 bp6 P:.56,-.5,.26,.12", ["c", 3.6, 1.6, -0.3], [1, 0.05, 0], [0, 1, 0], { de: "kamaeChudan" });
+  golpe("katanaHorizontal", "lamina2", 2, "Combate/Arma/Katana/Ataque", "Corte horizontal (dō) terminado: lâmina varreu de lado", "st36 pt14 sf10 P:.44,-.42,.18,.15", ["c", 3, 0.8, -2.2], [0.25, 0, -0.97], [0, 1, 0], { de: "kamaeWaki" });
+  golpe("katanaBloqueioAlto", "lamina2", 2, "Combate/Arma/Katana/Defesa", "Bloqueio alto: lâmina deitada acima da cabeça, segurando o golpe", "sf-2 hp-10 R:.26,-.3,.16,.16", ["h", 1.6, 1.4, 1], [0.05, 0.15, -0.99], [1, 0, 0]);
+  golpe("katanaFincada", "lamina2", 2, "Combate/Arma/Katana/Pausa", "Duas mãos no cabo, ponta fincada no chão à frente (vigília, juramento)", "sf2 hp8", ["c", 2, 1, -0.2], [0.05, -1, 0], [0, 0, 1]);
+  golpe("katanaAerea", "lamina2", 2, "Combate/Arma/Katana/Aéreo", "Salto com a katana erguida acima da cabeça", "bl6 hf90,30 kf110,80 sf-10 hp-16", ["h", 0.8, 2.6, -0.2], [-0.3, 0.95, 0], [0, 0, 1]);
+  golpe("iaiPreparacao", "lamina2", 1, "Combate/Arma/Katana/Sacar", "Iaijutsu: mão no cabo ainda na cintura, prestes a sacar", "sf14 hp6 st-10 fl20,30 ab20,25 el60,110 A:.32,.3", ["c", 1.9, 0.4, -0.7], [0.8, 0.25, -0.5], [0, 1, 0]);
+  golpe("pesadaErguida", "pesada", 2, "Combate/Arma/Pesada/Preparação", "Martelo/machado erguido atrás da cabeça, tudo pronto para descer", "sf-12 bp-4 hp-8 P:.32,-.34,.1,.16", ["h", 0.4, 2.2, 0.2], [-0.55, 0.8, 0], [0, 0, 1]);
+  golpe("pesadaImpactoChao", "pesada", 2, "Combate/Arma/Pesada/Ataque", "Golpe no chão: cabeça do martelo bate à frente, corpo agachado", "sf34 bp10 hp10 P:.56,-.48,.4,.18", ["c", 2.8, -1.2, -0.2], [0.75, -0.65, 0], [0, 0, 1], { de: "pesadaErguida" });
+  golpe("pesadaVarrida", "pesada", 2, "Combate/Arma/Pesada/Ataque", "Varrida horizontal terminada (girando o corpo)", "st40 pt18 sf10 P:.42,-.42,.2,.18", ["c", 2.6, 0.6, -2.4], [0.3, 0.05, -0.95], [0, 1, 0], { de: "pesadaNoOmbro" });
+  golpe("pesadaNoOmbro", "pesada", 1, "Combate/Arma/Pesada/Pausa", "Martelo/machado no ombro, andando (guerreiro, lenhador)", "sf-2 hp-4 fl10,10 ab10,10 el10,10", ["o", 1.5, -3, 0.3], [-0.6, 0.78, 0], [0, 0, 1]);
+  golpe("pesadaApoiada", "pesada", 1, "Combate/Arma/Pesada/Pausa", "Martelo/machado pendurado ao lado do corpo, cabeça para baixo (descanso)", "ss-4 hp4 fl5,5 ab10,10 el10,10", ["o", 0.9, -4.4, 0.9], [0.1, -0.98, 0.15], [0, 0, 1]);
+  golpe("pesadaGuarda", "pesada", 2, "Combate/Arma/Pesada/Guarda", "Guarda com arma pesada: cabo na diagonal diante do corpo", "sf8 st-10 P:.34,-.34,.14,.16", ["c", 2.2, 0.8, -0.6], [0.35, 0.8, 0.45], [0, 0, 1]);
+  golpe("lancaAltaGolpe", "haste", 2, "Combate/Arma/Lança/Ataque", "Golpe de cima para baixo com a lança (cravando)", "sf18 bp6 hp6 P:.46,-.42,.22,.14", ["c", 2.8, 1.4, 0.2], [0.55, -0.82, 0], [0, 1, 0], { de: "lancaGuardaAlta" });
+  golpe("lancaGuardaAlta", "haste", 2, "Combate/Arma/Lança/Guarda", "Lança acima do ombro, ponta para o rival (falange)", "sf4 st-10 P:.34,-.34,.12,.14", ["o", 1.6, 0.2, -0.6], [0.95, -0.25, 0], [0, 1, 0]);
+  golpe("lancaVarredura", "haste", 2, "Combate/Arma/Lança/Ataque", "Varredura baixa com a haste (derrubar)", "st34 pt14 sf18 hp8 A:.32,.34", ["c", 2.4, -0.8, -1.4], [0.3, -0.35, -0.88], [0, 1, 0], { de: "lancaGuardaAlta" });
+  golpe("bastaoAcima", "haste", 2, "Combate/Arma/Bastão/Defesa", "Bastão deitado acima da cabeça, bloqueando o golpe de cima", "sf-4 hp-12 A:.18,.3", ["h", 1.2, 1.6, 1.6], [0.05, 0.12, -0.99], [1, 0, 0]);
+  golpe("bastaoDiagonal", "haste", 2, "Combate/Arma/Bastão/Guarda", "Bastão na diagonal diante do corpo (guarda de bastão)", "sf6 st-8 P:.3,-.32,.12,.15", ["c", 2.5, 2, 0.4], [0.15, 0.75, -0.65], [1, 0, 0]);
+  golpe("foiceCeifar", "haste", 2, "Combate/Arma/Foice/Ataque", "Ceifando: a lâmina passou rente ao chão de lado", "st30 pt14 sf22 hp8 P:.46,-.42,.3,.18", ["c", 2.4, -0.6, -1.6], [0.35, -0.3, -0.88], [0, 1, 0]);
+  golpe("cajadoErguidoDuas", "haste", 2, "Combate/Arma/Cajado/Magia", "Cajado erguido com as duas mãos acima da cabeça (invocação)", "sf-10 hp-20 P:.24,-.26,.04,.14", ["h", 1, 2.6, 0], [0.12, 0.99, 0], [1, 0, 0]);
+  golpe("lancaArremessoPrep", "haste1", 1, "Combate/Arma/Lança/Arremesso", "Preparando o arremesso: lança acima do ombro, braço atrás", "st-30 pt-14 sf-6 hy10 fl70,90 ab20,60 el20,20 R:.3,-.4,.08,.16", ["o", -1.2, 1.4, 0.8], [0.95, 0.2, 0], [0, 1, 0]);
+  golpe("lancaArremessada", "haste1", 1, "Combate/Arma/Lança/Arremesso", "Arremesso no fim do braço: a lança sai à frente", "st30 sf16 bp8 fl20,-30 ab20,20 el20,20 P:.5,-.5,.2,.14", ["o", 4.2, 0.6, -0.6], [0.95, 0.25, 0], [0, 1, 0], { de: "lancaArremessoPrep" });
+  golpe("lancaEmPe", "haste1", 1, "Combate/Arma/Lança/Pausa", "Lança vertical ao lado do corpo, base no chão (sentinela)", "hp2 fl5,5 ab8,8 el10,10", ["o", 1, -1, 1.2], [0.02, 1, 0], [1, 0, 0]);
+  golpe("adagaFacada", "adaga", 1, "Combate/Arma/Adaga/Ataque", "Facada à frente na altura do estômago", "st16 sf14 bp6 fl30,60 ab25,30 el60,100 P:.44,-.4,.2,.14", ["o", 4.4, -2.4, -0.6], [1, 0.05, 0], [0, 1, 0]);
+  golpe("adagaGuardaFaca", "adaga", 1, "Combate/Arma/Adaga/Guarda", "Guarda de faca: agachado, lâmina à frente e mão livre protegendo", "sf20 hp-6 fl60,90 ab20,30 el90,110 A:.26,.3", ["o", 2.6, -2, -0.2], [0.85, 0.5, 0], [0, 0, 1]);
+  golpe("adagaApunhalar", "adaga", 1, "Combate/Arma/Adaga/Ataque", "Apunhalando de cima (pegada invertida, lâmina para baixo)", "sf20 bp6 hp8 fl40,60 ab20,30 el60,100 P:.36,-.36,.16,.14", ["o", 2.8, -1, -0.6], [0.3, -0.95, 0], [1, 0, 0]);
+  golpe("adagaArremessoPrep", "adaga", 1, "Combate/Arma/Adaga/Arremesso", "Faca segura pela ponta atrás da orelha, prestes a arremessar", "st-20 sf-4 fl60,60 ab20,30 el40,40 R:.28,-.34,.06,.14", ["o", 0.2, 1.8, 0.4], [-0.2, 0.98, 0], [1, 0, 0]);
+  golpe("pistolaParaCima", "pistola", 1, "Combate/Arma/Pistola/Espera", "Pistola ao lado do rosto, cano para cima (encostado na parede, espião)", "ss4 hp-2 hy-20 fl20,10 ab20,10 el20,20", ["o", 1.2, 0.6, -0.2], [-0.95, 0.3, 0], [0.05, 1, 0]);
+  golpe("pistolaBaixa", "pistola", 1, "Combate/Arma/Pistola/Espera", "Pistola baixa, cano para o chão (atenção, sem mirar)", "hp6 fl20,10 ab12,10 el20,20", ["o", 1.8, -3, -0.2], [0, 0.7, 0.3], [0.5, -0.85, 0]);
+  golpe("pistolaDeLado", "pistola", 1, "Combate/Arma/Pistola/Mirar", "Mirando com a pistola deitada (estilo gângster)", "st18 sf2 fl20,10 ab12,10 el20,20 R:.24,-.24,.04,.14", ["o", 4.2, 0.2, -0.6], [0, 0.02, -1], [1, 0, 0]);
+  golpe("pistolaCorrendo", "pistola", 1, "Combate/Arma/Pistola/Movimento", "Correndo com a pistola erguida à frente do peito", "bp14 sf8 hf70,-20 kf80,40 af10,30 fl-40,60 ab15,20 el90,90", ["o", 2, -0.8, -0.8], [0.25, 0.97, 0], [0.97, -0.25, 0]);
+  golpe("rifleQuadril", "rifle", 2, "Combate/Arma/Rifle/Mirar", "Rifle na cintura, atirando de quadril", "st10 sf4 R:.3,-.32,.1,.16", ["c", 1.6, 0.6, 0.8], [0.05, 0.99, 0], [1, 0, 0]);
+  golpe("rifleBaixo", "rifle", 2, "Combate/Arma/Rifle/Espera", "Rifle baixo à frente (posição de alerta)", "sf6 hp4 R:.26,-.28,.06,.15", ["p", 2.7, -1.8, 0.5], [0.1, 0.99, 0], [0.75, -0.65, 0]);
+  golpe("rifleNoOmbro", "rifle", 1, "Combate/Arma/Rifle/Pausa", "Rifle em pé junto ao ombro, cano para cima (marcha, sentinela)", "hp-2 fl10,10 ab10,10 el10,10", ["o", 1.4, -1.6, -0.2], [0.98, 0.15, 0], [0.15, 1, 0]);
+  golpe("escudoAoAlto", "escudo", 1, "Combate/Arma/Escudo/Defesa", "Escudo erguido acima da cabeça (chuva de flechas, pedras)", "sf6 hp-6 A:.3,.3", ["h", 1.2, 2.4, 0.2], [0.98, 0.2, 0], [0, 1, 0]);
+  golpe("escudoInvestida", "escudo", 1, "Combate/Arma/Escudo/Ataque", "Avançando com o escudo à frente (empurrão, investida)", "sf20 bp12 hp2 P:.52,-.48,.24,.14", ["p", 2.8, -0.6, 0.2], [0.05, 1, 0], [1, 0, 0.2]);
+  golpe("escudoAgachado", "escudo", 1, "Combate/Arma/Escudo/Defesa", "Agachado atrás do escudo, só os olhos aparecem", "sf26 hp-8 A:.5,.32", ["p", 2.4, -0.6, 0.3], [0.05, 1, 0], [1, 0, 0.1]);
+  golpe("escudoDescanso", "escudo", 1, "Combate/Arma/Escudo/Pausa", "Escudo baixo ao lado do corpo", "hp4 fl5,5 ab10,10 el10,10", ["o", 0.6, -4.6, 1.3], [0.15, 0.98, 0], [0.1, 0, 1]);
+  golpe("varinhaConjurando", "magia", 1, "Combate/Arma/Magia/Feitiço", "Varinha erguida no fim do movimento do feitiço", "st-10 sf-4 hp-8 fl60,30 ab20,40 el60,50 P:.28,-.3,.06,.15", ["o", 3.2, 2, 0.4], [0.7, 0.68, 0.15], [0, 0, 1]);
+  golpe("varinhaApontandoChao", "magia", 1, "Combate/Arma/Magia/Feitiço", "Varinha apontada para o chão (círculo mágico, invocação no solo)", "sf12 hp12 fl30,20 ab15,20 el30,40", ["o", 3.2, -2.4, -0.6], [0.55, -0.83, 0], [0, 0, 1]);
+  golpe("cajadoBatendoChao", "cajado", 1, "Combate/Arma/Magia/Cajado", 'Cajado batendo no chão à frente ("você não vai passar")', "sf4 hp2 fl40,20 ab15,20 el30,40 P:.3,-.28,.06,.15", ["o", 2.6, 0, -0.6], [0.06, 1, 0], [1, 0, 0]);
+  golpe("cajadoApontado", "cajado", 2, "Combate/Arma/Magia/Cajado", "Cajado apontado para a frente com as duas mãos (raio)", "sf8 st-10 P:.4,-.38,.14,.15", ["c", 2.6, 1.6, -0.2], [0.97, 0.22, 0], [0, 1, 0]);
+  golpe("orbeErguido", "orbe", 1, "Combate/Arma/Magia/Orbe", "Orbe flutuando sobre a palma erguida", "sf-6 hp-14 fl40,20 ab15,20 el30,40", ["o", 2.6, 1.2, 0.9], [0, 1, 0], [1, 0, 0]);
+  golpe("orbeEmpurrado", "orbe", 1, "Combate/Arma/Magia/Orbe", "Orbe empurrado à frente com o braço esticado (disparo)", "st16 sf8 fl40,30 ab15,20 el30,40 P:.42,-.4,.14,.15", ["o", 4.4, -0.2, -0.6], [0, 1, 0], [1, 0, 0]);
+  golpe("arremessoCruzado", "arremesso", 1, "Combate/Arma/Arremesso/Preparação", "Shuriken/kunai na mão do outro lado do corpo, prestes a lançar de lado", "st30 pt10 sf6 fl60,60 ab20,40 el110,100 P:.3,-.32,.1,.15", ["p", 1.4, 0.2, -2.6], [0.2, 0.98, 0], [0, 0, 1]);
+  golpe("arremessoSoltou", "arremesso", 1, "Combate/Arma/Arremesso/Ataque", "Braço aberto para o lado depois de lançar (a arma já voou)", "st-28 pt-10 sf2 hy20 fl20,40 ab20,40 el60,90 P:.34,-.34,.12,.16", ["o", 2.6, -0.4, 3.4], [0.6, 0.1, 0.8], [0, 1, 0], { de: "arremessoCruzado" });
+  golpe("chicoteErguido", "chicote", 1, "Combate/Arma/Chicote/Preparação", "Chicote erguido atrás, pronto para estalar", "st-20 sf-6 hp-6 fl40,40 ab20,30 el60,60 P:.3,-.34,.08,.15", ["o", -0.4, 3.2, 0.6], [-0.3, 0.95, 0], [0, 0, 1]);
+  golpe("chicoteEstalo", "chicote", 1, "Combate/Arma/Chicote/Ataque", "Estalo: braço à frente e abaixo, chicote estendido", "st16 sf14 bp6 fl30,30 ab20,30 el40,40 P:.44,-.42,.18,.15", ["o", 4, -1.6, -0.4], [0.85, -0.5, 0], [0, 0, 1], { de: "chicoteErguido" });
+  for (const [nome, G] of Object.entries(GOLPES)) {
+    const teste = GL_CLASSES[G.classe][0], corpo = glCorpo(G.corpo);
+    const lugar = (k) => pgPorPega(
+      k,
+      G.maos === 2 ? "cabo" : G.classe === "pistola" || G.classe === "rifle" ? "punho" : G.classe === "escudo" ? "alca" : G.classe === "orbe" ? "palma" : "cabo",
+      pgComb([glBase(k, G.H[0]), 1], [k.B.frenteChao, G.H[1]], [UP, G.H[2]], [k.B.esqChao, G.H[3] * k.s]),
+      glV(k, G.Y),
+      glV(k, G.N)
+    );
+    const pega1 = G.classe === "pistola" || G.classe === "rifle" ? "punho" : G.classe === "escudo" ? "alca" : G.classe === "orbe" ? "palma" : "cabo";
+    const contatos = G.maos === 2 ? (k) => [pgNaPega(k, k.s, pega1, { polegar: glV(k, G.Y) }), pgNaPega(k, -k.s, G.classe === "rifle" ? "frente" : G.classe === "haste" && /bastao/.test(k.o.tipo) ? "meio2" : "cabo2", { polegar: glV(k, G.Y) })] : G.classe === "escudo" ? (k) => [pgNaPega(k, k.s, "alca", { polegar: UP, cotovelo: [0.4, -1, 0.3], folga: 0.04 })] : G.classe === "orbe" ? (k) => [pgPalmaEm(k, k.s, [0, 0, 0], DN)] : (k) => [pgNaPega(k, k.s, pega1, { polegar: glV(k, G.Y) })];
+    ACOES[nome] = { desc: G.desc, grupo: "golpe", maos: G.maos, modo: "carregar", teste: [teste, {}], gesto: "segurar", fechar: "envolver", corpo, lugar, contatos, golpe: { classe: G.classe, tag: G.tag, de: G.de || null }, bracoEncosta: G.classe === "escudo" };
+  }
   Object.assign(ALIAS_PEGADA, { empurrando: "empurrar", duasmaos: "aFrente", gancho: "pelaAlca" });
   var PEGADAS = Object.fromEntries(Object.entries(ACOES).map(([k, a]) => [k, a.desc]));
   function pgPenetracao(it2, o, ground, lados, bracoTodo) {
@@ -34836,6 +35000,57 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   registrarProntas(registrarAcoesDia);
 
+  // src/scene/anim-acao2.js
+  var AA2 = [
+    ["esquivaLateralAnim", "Combate/Esquiva/Lateral", "guarda → esquiva para o lado → volta à guarda", [[0, "guardaBoxe"], [0.18, "esquivaLateral", { lado: 0.35 }], [0.6, "guardaBoxe", { lado: 0.35 }]]],
+    ["esquivaParaTrasAnim", "Combate/Esquiva/Recuo", "guarda → salto curto para trás → guarda", [[0, "guardaBoxe"], [0.2, "esquivaParaTras", { frente: -0.5 }], [0.6, "guardaBoxe", { frente: -0.6 }]]],
+    ["esquivaAbaixandoAnim", "Combate/Esquiva/Abaixar", "abaixa sob o golpe e sobe", [[0, "guardaBoxe"], [0.2, "esquivaAbaixando"], [0.55, "guardaBoxe"]]],
+    ["esquivaMatrixAnim", "Combate/Esquiva/Matrix", "inclina para trás em câmera lenta e volta", [[0, "empe"], [0.6, "esquivaMatrix"], [1.4, "esquivaMatrix"], [2, "empe"]], "suave"],
+    ["esquivaRolamentoAnim", "Combate/Esquiva/Rolamento", "rola no chão e levanta mais à frente", [[0, "guardaBoxe"], [0.2, "esquivaAbaixando", { frente: 0.3 }], [0.5, "esquivaRolamento", { frente: 1 }], [0.85, "levantandoComEsforco", { frente: 1.6 }], [1.2, "guardaBoxe", { frente: 1.7 }]]],
+    ["esquivaMergulhoAnim", "Combate/Esquiva/Mergulho", "mergulho de proteção para o lado", [[0, "guardaBoxe"], [0.15, "puloImpulso"], [0.4, "esquivaMergulho", { lado: 1 }], [0.75, "caidoDeBrucos", { lado: 1.8 }]]],
+    ["defesaCruzadaAnim", "Combate/Defesa/Braços", "fecha os braços em X para segurar o golpe e recua um pouco", [[0, "guardaBoxe"], [0.12, "defesaCruzada"], [0.35, "defesaCruzada", { frente: -0.25 }], [0.8, "guardaBoxe", { frente: -0.25 }]]],
+    ["defesaBarreiraAnim", "Combate/Defesa/Poder", "ergue a barreira de energia e segura", [[0, "empe"], [0.25, "defesaBarreira"], [0.6, "defesaBarreiraDupla", { frente: -0.1 }], [1.2, "defesaBarreiraDupla", { frente: -0.2 }]]],
+    ["puloCompleto", "Movimento/Pulo/Completo", "agacha, decola, encolhe no alto e aterrissa", [[0, "empe"], [0.25, "puloImpulso"], [0.4, "puloDecolando"], [0.65, "puloEncolhido"], [0.9, "puloDecolando"], [1.05, "puloAterrissagem"], [1.45, "empe"]]],
+    ["puloEmDistanciaAnim", "Movimento/Pulo/Distância", "corre, salta longe e aterrissa", [[0, "correndo"], [0.25, "puloImpulso", { frente: 0.6 }], [0.55, "puloEmDistancia", { frente: 2 }], [0.85, "puloAterrissagem", { frente: 3.2 }], [1.25, "empe", { frente: 3.4 }]]],
+    ["pousoDeHeroi", "Movimento/Pulo/Aterrissar", "cai do alto e pousa em três apoios, depois se ergue", [[0, "puloQueda"], [0.3, "puloAterrissagemHeroi"], [1.1, "puloAterrissagemHeroi"], [1.6, "entradaHeroica"]]],
+    ["mortalParaTras", "Movimento/Pulo/Acrobacia", "mortal para trás", [[0, "puloImpulso"], [0.2, "puloDecolando", { frente: -0.2 }], [0.45, "esquivaCambalhotaTras", { frente: -0.6 }], [0.7, "puloAterrissagem", { frente: -1 }], [1, "empe", { frente: -1 }]]],
+    ["levitar", "Movimento/Flutuar/Subir", "sai do chão devagar até flutuar de braços abertos", [[0, "empe"], [1.2, "flutuandoRelaxado"], [2.4, "flutuandoBracosAbertos"]], "suave"],
+    ["flutuarMeditando", "Movimento/Flutuar/Meditação", "senta no ar e sobe meditando", [[0, "meditando"], [2, "flutuandoMeditacao"]], "suave"],
+    ["decolarHeroi", "Movimento/Voar/Decolar", "agacha e decola com o punho para cima", [[0, "puloImpulso"], [0.3, "vooDecolando"], [0.9, "vooSuperHeroi", { frente: 1.5 }]]],
+    ["fugaOlhandoTrasAnim", "Movimento/Fuga/Olhar para trás", "corre olhando para trás", [[0, "correndo"], [0.4, "fugaOlhandoTras", { frente: 2 }], [0.8, "fugaDesesperada", { frente: 4 }], [1.2, "fugaOlhandoTras", { frente: 6 }]]],
+    ["fugaTropecaoAnim", "Movimento/Fuga/Queda", "foge, tropeça e cai", [[0, "fugaOlhandoTras"], [0.35, "fugaTropecando", { frente: 1.4 }], [0.7, "caidoDeBrucos", { frente: 2.4 }]]],
+    ["esconderAnim", "Movimento/Fuga/Esconder", "corre, cola na parede e prende a respiração", [[0, "fugaEsgueirando"], [0.5, "fugaColadoParede", { lado: 0.3 }], [1.8, "fugaColadoParede", { lado: 0.3 }]]],
+    ["perseguicaoAgarrao", "Movimento/Perseguição/Agarrar", "corre atrás e mergulha para agarrar", [[0, "perseguicaoSprint"], [0.4, "perseguicaoAlcancando", { frente: 2 }], [0.75, "perseguicaoAgarrando", { frente: 3.6 }], [1.1, "caidoDeBrucos", { frente: 4.2 }]]],
+    ["perseguicaoParouCansado", "Movimento/Perseguição/Cansaço", "corre, para e se curva ofegante", [[0, "perseguicaoSprint"], [0.5, "perseguicaoDerrapando", { frente: 1.6 }], [1, "perseguicaoOfegante", { frente: 1.9 }], [2.2, "perseguicaoProcurando", { frente: 1.9 }]]],
+    ["parkourVaultAnim", "Movimento/Parkour/Passar", "corre e passa por cima do obstáculo", [[0, "correndo"], [0.3, "parkourVault", { frente: 1.4 }], [0.6, "puloAterrissagem", { frente: 2.6 }], [0.9, "correndo", { frente: 3.4 }]]],
+    ["levarSocoNoRosto", "Combate/Reação/Golpe no rosto", "a cabeça vai para trás com o impacto e ele cambaleia", [[0, "guardaBoxe"], [0.1, "impactoNoRosto", { frente: -0.2 }], [0.6, "cambaleando", { frente: -0.5 }], [1.1, "guardaBoxe", { frente: -0.5 }]]],
+    ["levarSocoNoEstomago", "Combate/Reação/Golpe no corpo", "dobra ao meio com o soco", [[0, "guardaBoxe"], [0.12, "impactoNoEstomago", { frente: -0.15 }], [0.9, "impactoNoEstomago", { frente: -0.2 }], [1.4, "guardaBoxe", { frente: -0.2 }]]],
+    ["serArremessado", "Combate/Reação/Arremessado", "é jogado para trás e cai de costas", [[0, "impactoNoRosto"], [0.25, "arremessadoParaTras", { frente: -1.5 }], [0.7, "caidoDeCostas", { frente: -3 }]]],
+    ["nocaute", "Combate/Reação/No chão", "cambaleia e desaba", [[0, "atordoadoEstrelinhas"], [0.6, "cambaleando", { lado: 0.2 }], [1.1, "ajoelhadoExausto", { lado: 0.3 }], [1.6, "caidoDeBrucos", { lado: 0.3, frente: 0.4 }]]],
+    ["levantarDoChaoLuta", "Combate/Reação/Levantar", "levanta do chão com esforço e volta à guarda", [[0, "caidoDeBrucos"], [0.6, "ajoelhadoExausto"], [1.2, "levantandoComEsforco"], [1.8, "guardaBoxe"]]],
+    ["carregarPoder", "Combate/Poder/Carregar", "concentra e explode em aura", [[0, "empe"], [0.5, "poderCarregando"], [1.6, "poderCarregando"], [1.9, "poderTransformacao"]]],
+    ["dispararRaio", "Combate/Poder/Raio", "prepara a esfera ao lado e dispara à frente", [[0, "poderBolaPreparo"], [0.9, "poderBolaPreparo"], [1.05, "poderKamehameha", { frente: -0.1 }], [1.8, "poderKamehameha", { frente: -0.3 }]]],
+    ["socoNoChaoPoder", "Combate/Poder/Terremoto", "pula e soca o chão (onda de choque)", [[0, "puloImpulso"], [0.25, "puloEncolhido"], [0.55, "poderSocoChao"], [1.3, "poderSocoChao"]]],
+    ["gigantePisao", "Escala/Gigante/Pisar", "o gigante ergue o pé e pisa", [[0, "empe"], [0.6, "gigantePisando"], [1, "empe", { frente: 0.4 }]], "suave"],
+    ["giganteAbaixaPega", "Escala/Gigante/Pegar", "o gigante se abaixa para pegar algo pequeno", [[0, "giganteOlhandoBaixo"], [0.9, "giganteAgachando"], [1.6, "giganteSegurandoNaPalma"]], "suave"],
+    ["minusculoFogePisao", "Escala/Minúsculo/Fugir", "o pequeno corre se protegendo do pisão", [[0, "minusculoOlhandoCima"], [0.3, "minusculoEsmagado", { frente: 0.5 }], [0.7, "fugaDesesperada", { frente: 1.6 }]]],
+    ["confrontoEncarar", "Narrativa/Oposição/Encarar", "dá um passo à frente e encara", [[0, "empe"], [0.5, "encaraRival", { frente: 0.4 }], [1.5, "encaraRival", { frente: 0.4 }]], "suave"],
+    ["vitoriaAnim", "Narrativa/Desfecho/Vitória", "ergue o punho de vitória", [[0, "ajoelhadoExausto"], [0.8, "levantandoComEsforco"], [1.4, "vitoriaPunhoAlto"]]],
+    ["derrotaAnim", "Narrativa/Desfecho/Derrota", "cai de joelhos derrotado", [[0, "cambaleando"], [0.7, "derrotaDeJoelhos"], [2, "derrotaDeJoelhos"]], "suave"]
+  ];
+  function registrarAcao2() {
+    const L3 = {}, base2 = Object.assign({}, SCN.list[0] ? SCN.list[0].params : {});
+    for (const [nome, tag, desc, seq2, curva] of AA2) {
+      try {
+        const chaves = seq2.map(([t, pose, mov]) => Object.assign({ t, valores: anPoseValores(pose, base2) }, mov ? { mover: mov } : {}));
+        L3[nome] = Object.assign(criarAnimacao({ nome, duracao: seq2[seq2.length - 1][0], curva: curva || "saida", chaves }), { tags: [tag], descricao: desc, origem: "pronta", versao: 0 });
+      } catch (e) {
+      }
+    }
+    return L3;
+  }
+  registrarProntas(registrarAcao2);
+
   // src/scene/animais.js
   var AM_M = 1 / 0.114;
   var AM_POSES = {
@@ -34917,8 +35132,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     r.pernas = {};
     for (const l of ["de", "dd", "te", "td"]) {
-      const pa = a.pernas && a.pernas[l] || [0, 0, 0], pb = b.pernas && b.pernas[l] || [0, 0, 0];
-      r.pernas[l] = [0, 1, 2].map((i) => (pa[i] || 0) + ((pb[i] || 0) - (pa[i] || 0)) * u);
+      const pa2 = a.pernas && a.pernas[l] || [0, 0, 0], pb = b.pernas && b.pernas[l] || [0, 0, 0];
+      r.pernas[l] = [0, 1, 2].map((i) => (pa2[i] || 0) + ((pb[i] || 0) - (pa2[i] || 0)) * u);
     }
     return r;
   }
@@ -35967,6 +36182,155 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   function listaPosesExtras() {
     return Object.entries(POSES_EXTRA_INFO).map(([nome, i]) => ({ nome, tag: i.tag, apelidos: i.apelidos, expressao: i.expr }));
+  }
+
+  // src/scene/poses-acao2.js
+  function pa2Espelhar(o) {
+    const r = {};
+    for (const [k, v] of Object.entries(o)) {
+      const m = /^(.*)(L|R)$/.exec(k);
+      if (m && k !== "bodyRoll") r[m[1] + (m[2] === "L" ? "R" : "L")] = v;
+      else r[k] = /Yaw|Twist|Side|Roll/.test(k) ? -v : v;
+    }
+    return r;
+  }
+  var POSES_ACAO2 = {};
+  var POSES_ACAO2_INFO = {};
+  function pa(nome, tag, apelidos, cod) {
+    const { o, x } = pxLer(cod);
+    POSES_ACAO2[nome] = (Q, s) => {
+      Object.assign(Q, s < 0 ? pa2Espelhar(o) : o);
+      if (x.maos) x.maos.forEach((g, i) => {
+        if (g && g !== "-") {
+          const lado2 = (i === 0 ? 1 : -1) * (s < 0 ? -1 : 1);
+          try {
+            aplicarGesto(Q, lado2, g);
+          } catch (e) {
+          }
+        }
+      });
+    };
+    POSES_ACAO2_INFO[nome] = { tag, apelidos: apelidos ? apelidos.split("|") : [], desc: "", expr: x.expr || null };
+  }
+  pa("esquivaLateral", "Combate/Esquiva/Lateral", "esquiva lateral|desvio de lado", "ss-28 br-8 hf30,-10 ha30,10 kf50,10 fl60,40 ab30,40 el100,90 hy20 hz10 m:punho,punho e:focoTotal");
+  pa("esquivaParaTras", "Combate/Esquiva/Recuo", "esquiva para trás|recuo rápido", "bp-22 sf-14 hf50,-20 kf70,30 af20,0 fl70,60 ab20,30 el110,100 hp-10 m:punho,punho e:surpresaTotal");
+  pa("esquivaMatrix", "Combate/Esquiva/Matrix", "matrix|esquiva de bala|inclinado para trás", "bp-55 sf-20 hf70,60 kf90,80 fl40,40 ab70,70 el30,30 hp-20 m:aberta,aberta e:focoTotal");
+  pa("esquivaAbaixando", "Combate/Esquiva/Abaixar", "abaixando|esquiva por baixo|duck", "sf45 bp20 hf90,70 kf110,90 ha20,20 fl70,70 ab20,20 el120,120 hp-30 m:punho,punho e:focoTotal");
+  pa("esquivaPendulo", "Combate/Esquiva/Pêndulo", "pêndulo|bob and weave", "sf30 ss20 hf60,30 kf70,40 fl80,80 ab15,15 el120,120 hy-15 m:punho,punho e:determinadoLuta");
+  pa("esquivaGiro", "Combate/Esquiva/Giro", "esquiva girando|pião", "st-50 pt-30 hf40,-10 kf50,20 fl40,90 ab70,40 el60,100 hy-60 m:aberta,punho e:focoTotal");
+  pa("esquivaRolamento", "Combate/Esquiva/Rolamento", "rolamento|rolando no chão", "bp95 sf80 hf130,120 kf140,140 fl90,90 ab20,20 el130,130 hp40 m:punho,punho e:esforco");
+  pa("esquivaMergulho", "Combate/Esquiva/Mergulho", "mergulho para o lado|salto de proteção", "bl4 bp70 br-30 hf-10,40 kf10,60 fl170,150 ab20,30 el10,30 hp-20 m:aberta,aberta e:surpresaTotal");
+  pa("esquivaCambalhotaTras", "Combate/Esquiva/Acrobacia", "cambalhota para trás|mortal para trás", "bl6 bp-120 hf120,120 kf140,140 fl60,60 ab30,30 el90,90 hp30 m:punho,punho e:focoTotal");
+  pa("esquivaPorUmTriz", "Combate/Esquiva/Por um triz", "por um triz|quase acertou", "ss-18 bp-12 hf20,-10 kf30,10 fl80,10 ab90,20 el20,20 hy40 hp-4 m:aberta,aberta e:choqueComico");
+  pa("esquivaPuloLado", "Combate/Esquiva/Pulo", "pulo para o lado", "bl3 br-14 hf60,20 ha30,10 kf90,40 fl40,80 ab60,40 el60,40 hy30 m:aberta,aberta e:surpresaTotal");
+  pa("esquivaInclinarCabeca", "Combate/Esquiva/Cabeça", "desvia a cabeça|soco passando raspando", "ss-10 hf10,-4 kf14,8 fl70,70 ab15,15 el120,120 hz-25 hy25 nf-6 m:punho,punho e:focoTotal");
+  pa("defesaCruzada", "Combate/Defesa/Braços", "braços cruzados na frente|bloqueio em X", "sf14 hf30,-6 kf40,15 fl95,95 ab10,10 el120,120 ar40,40 hp14 m:punho,punho e:esforco");
+  pa("defesaCoberto", "Combate/Defesa/Cobrir", "cobrindo a cabeça|protegendo o rosto", "sf30 hf40,20 kf60,40 fl120,120 ab20,20 el150,150 hp30 m:punho,punho e:medo");
+  pa("defesaEncolhido", "Combate/Defesa/Cobrir", "encolhido|apanhando", "sf50 bp20 hf80,70 kf110,100 fl110,110 ab25,25 el150,150 hp40 m:punho,punho e:dor");
+  pa("defesaEmpurrando", "Combate/Defesa/Afastar", "afastando|empurrando o rival", "bp10 hf40,-20 kf40,10 fl90,90 ab10,10 el20,20 wr-60,-60 hp4 m:espalmada,espalmada e:determinacao");
+  pa("defesaBarreira", "Combate/Defesa/Poder", "barreira|escudo de energia|mão aberta para frente", "sf6 hf30,-10 kf35,15 fl90,30 ab10,30 el10,90 wr-70,0 hp4 m:espalmada,punho e:determinacao");
+  pa("defesaBarreiraDupla", "Combate/Defesa/Poder", "barreira com as duas mãos|segurando o ataque", "bp8 hf45,-20 kf50,20 fl90,90 ab25,25 el15,15 wr-70,-70 hp6 m:espalmada,espalmada e:esforco");
+  pa("defesaChute", "Combate/Defesa/Perna", "bloqueio com a canela|check", "hf80,-4 hr-30,0 kf100,10 ha30,10 fl90,90 ab15,15 el125,125 hp6 m:punho,punho e:focoTotal");
+  pa("defesaAgarrandoPunho", "Combate/Defesa/Agarrar", "segurando o punho do rival|agarrou o soco", "st20 hf30,-10 kf40,15 fl90,60 ab20,30 el20,100 hp4 m:garra,punho e:furia");
+  pa("defesaDesviandoBraco", "Combate/Defesa/Desvio", "desviando o braço|aparar com a mão", "st-25 hf25,-10 kf30,15 fl80,50 ab50,20 el50,120 hy-10 m:espalmada,punho e:focoTotal");
+  pa("defesaProtegendoOutro", "Combate/Defesa/Proteger", "protegendo alguém|braço aberto na frente de outro", "sf4 hf30,-10 kf35,15 fl20,40 ab90,30 el10,90 hy-20 m:aberta,punho e:determinacao");
+  pa("puloImpulso", "Movimento/Pulo/Impulso", "impulso|agachado para pular", "sf30 bp20 hf90,90 kf110,110 af30,30 fl-50,-50 ab20,20 el20,20 hp-20 m:aberta,aberta e:determinacao");
+  pa("puloDecolando", "Movimento/Pulo/Saída", "decolando|saindo do chão", "bl2 bp10 hf20,-10 kf20,10 af-30,-30 to-40,-40 fl160,160 ab15,15 el10,10 hp-20 m:aberta,aberta e:determinacao");
+  pa("puloEstrela", "Movimento/Pulo/Alegria", "pulo estrela|pulo de alegria", "bl5 ha40,40 kf10,10 fl150,150 ab90,90 el10,10 hp-20 m:aberta,aberta e:riso");
+  pa("puloEncolhido", "Movimento/Pulo/Alto", "pulo encolhido|joelhos no peito", "bl6 sf20 hf120,120 kf140,140 fl60,60 ab20,20 el100,100 hp-6 m:punho,punho e:determinacao");
+  pa("puloAltoEsticado", "Movimento/Pulo/Alto", "pulo alto esticado|alcançando no ar", "bl6 sf-10 hf10,-10 kf20,10 af-30,-20 fl175,40 ab10,30 el5,30 hp-30 m:aberta,aberta e:determinacao");
+  pa("puloEmDistancia", "Movimento/Pulo/Distância", "salto em distância|pulando um buraco", "bl5 bp20 hf80,-30 kf40,60 fl150,140 ab20,20 el20,20 hp-10 m:aberta,aberta e:esforco");
+  pa("puloTesoura", "Movimento/Pulo/Obstáculo", "pulando obstáculo|tesoura", "bl5 bp10 hf100,-20 kf10,90 fl90,-30 ab40,30 el30,60 hp-4 m:aberta,aberta e:determinacao");
+  pa("puloAterrissagem", "Movimento/Pulo/Aterrissar", "aterrissagem|caindo de pé|pouso de herói", "sf40 bp20 hf100,40 kf130,60 ha20,30 fl40,-30 ab30,60 el20,20 hp-10 m:espalmada,aberta e:determinacao");
+  pa("puloAterrissagemHeroi", "Movimento/Pulo/Aterrissar", "pouso de super-herói|três apoios", "sf50 bp25 hf110,20 kf130,110 af30,40 fl70,-20 ab10,50 el10,20 hp-20 m:punho,aberta e:determinacao");
+  pa("puloParede", "Movimento/Parkour/Parede", "pulo na parede|wall jump", "bl4 bp-10 hf90,20 kf100,40 fl140,60 ab40,60 el40,60 hy30 m:aberta,aberta e:focoTotal");
+  pa("puloCambalhota", "Movimento/Pulo/Acrobacia", "mortal|cambalhota no ar", "bl7 bp100 sf40 hf120,120 kf140,140 fl80,80 ab20,20 el100,100 hp30 m:punho,punho e:focoTotal");
+  pa("puloQueda", "Movimento/Pulo/Queda", "caindo do alto|em queda livre", "bl6 bp-20 hf30,10 kf50,20 fl150,130 ab60,70 el30,40 hp-20 m:aberta,aberta e:medo");
+  pa("flutuandoMeditacao", "Movimento/Flutuar/Meditação", "levitando sentado|meditação flutuante", "bl6 hf84,84 ha30,30 hr45,45 kf148,142 fl20,20 ab18,18 el30,30 pr-90,-90 hp5 m:ok,ok e:alivio");
+  pa("flutuandoRelaxado", "Movimento/Flutuar/Relaxado", "flutuando|boiando no ar", "bl7 bp-30 hf20,30 kf30,40 fl30,40 ab40,50 el30,40 hp-14 hz10 m:relaxada,relaxada e:alivio");
+  pa("flutuandoBracosAbertos", "Movimento/Flutuar/Poder", "levitando de braços abertos|ascensão", "bl8 hf10,4 kf20,30 af-30,-30 fl20,20 ab70,70 el10,10 hp-20 m:aberta,aberta e:encantado");
+  pa("flutuandoAmeaca", "Movimento/Flutuar/Vilão", "vilão flutuando|pairando ameaçador", "bl8 sf6 hf10,20 kf20,40 af-30,-30 fl30,30 ab25,25 el60,60 hp6 m:garra,garra e:sombrio");
+  pa("flutuandoSubmerso", "Movimento/Flutuar/Água", "debaixo d'água|boiando submerso", "bl6 bp20 hf40,10 kf60,20 fl110,70 ab50,60 el40,50 hp-10 m:aberta,aberta e:surpresaTotal");
+  pa("flutuandoGravidadeZero", "Movimento/Flutuar/Espaço", "gravidade zero|astronauta", "bl7 bp25 br20 hf50,10 kf70,30 fl70,120 ab60,30 el40,60 hp-10 hz-10 m:aberta,aberta e:surpresaTotal");
+  pa("flutuandoAdormecido", "Movimento/Flutuar/Sonho", "dormindo no ar|sonho flutuante", "bl7 bp-70 hf30,40 kf50,60 fl20,30 ab30,40 el50,40 hp10 hz15 m:relaxada,relaxada e:sono");
+  pa("vooSuperHeroi", "Movimento/Voar/Herói", "voando como super-herói|punho à frente", "bl8 bp85 hf-5,10 kf10,30 fl170,10 ab5,10 el5,10 hp-60 m:punho,punho e:determinacao");
+  pa("vooDecolando", "Movimento/Voar/Decolar", "decolando para o céu|punho para cima", "bl6 hf0,30 kf0,60 af-30,-30 fl175,20 ab5,15 el5,20 hp-30 m:punho,punho e:gritoDeGuerra");
+  pa("vooPlanando", "Movimento/Voar/Planar", "planando|braços abertos voando", "bl8 bp80 hf-5,-5 kf10,10 fl20,20 ab85,85 el10,10 hp-55 m:aberta,aberta e:encantado");
+  pa("vooMergulho", "Movimento/Voar/Mergulho", "mergulhando no ar|descendo de cabeça", "bl8 bp130 hf-10,-10 kf5,5 fl170,170 ab10,10 el5,5 hp-40 m:aberta,aberta e:determinacao");
+  pa("vooPairando", "Movimento/Voar/Pairar", "pairando|parado no ar", "bl8 hf20,5 kf40,20 af-30,-30 fl40,40 ab30,30 el50,50 hp4 m:punho,punho e:determinacao");
+  pa("fugaOlhandoTras", "Movimento/Fuga/Olhar para trás", "fugindo olhando para trás|perseguido", "bp22 sf10 hf85,-30 kf90,40 af10,30 fl-60,80 ab25,25 el70,90 hy-110 hp-6 m:aberta,aberta e:medo");
+  pa("fugaDesesperada", "Movimento/Fuga/Desespero", "correndo desesperado|braços para cima", "bp15 hf80,-30 kf90,40 fl150,120 ab50,60 el40,50 hp-20 m:aberta,aberta e:panico");
+  pa("fugaEsgueirando", "Movimento/Fuga/Furtivo", "esgueirando|na ponta dos pés", "sf20 bp10 hf50,-10 kf60,20 af-20,0 to-30,-30 fl30,40 ab30,20 el80,60 hy30 m:aberta,aberta e:medo");
+  pa("fugaRastejando", "Movimento/Fuga/Rastejar", "rastejando|fugindo pelo chão", "bp85 sf-20 hf40,10 ha20,10 kf70,20 fl150,60 ab20,30 el40,110 hp-50 m:garra,garra e:medo");
+  pa("fugaTropecando", "Movimento/Fuga/Queda", "tropeçou fugindo", "bp50 sf20 hf-30,70 kf20,80 fl130,110 ab40,40 el20,20 hp-30 m:aberta,aberta e:panico");
+  pa("fugaPulandoMuro", "Movimento/Fuga/Obstáculo", "pulando o muro|escalando para fugir", "bl4 bp20 hf110,10 kf120,40 fl150,150 ab20,20 el40,40 hp-30 m:garra,garra e:esforco");
+  pa("fugaEscondendo", "Movimento/Fuga/Esconder", "escondido atrás|espiando do esconderijo", "sf20 hf80,80 kf110,110 ha20,20 fl40,80 ab30,15 el100,130 hy-30 hp-6 m:espalmada,aberta e:medo");
+  pa("fugaColadoParede", "Movimento/Fuga/Esconder", "colado na parede|prendendo a respiração", "sf-10 hp-10 hy-50 fl-10,-10 ab20,20 el10,10 wr-40,-40 m:espalmada,espalmada e:medo");
+  pa("fugaCarregandoAlguem", "Movimento/Fuga/Resgate", "fugindo de mãos dadas|puxando alguém", "bp18 hf80,-30 kf80,40 fl-40,60 ab20,30 el20,80 hy-60 m:segurar,aberta e:determinacao");
+  pa("perseguicaoSprint", "Movimento/Perseguição/Sprint", "perseguindo|sprint atrás", "bp30 sf6 hf95,-35 kf100,40 af15,35 fl-60,85 ab12,12 el95,100 hp-20 m:punho,punho e:determinadoLuta");
+  pa("perseguicaoAlcancando", "Movimento/Perseguição/Alcançar", "estendendo a mão para pegar|quase alcançando", "bp30 hf80,-30 kf80,40 fl160,-40 ab15,20 el5,80 hp-24 m:aberta,punho e:esforco");
+  pa("perseguicaoAgarrando", "Movimento/Perseguição/Agarrar", "agarrando o fugitivo|mergulho para agarrar", "bl3 bp70 hf-10,40 kf20,60 fl160,160 ab20,20 el10,10 hp-40 m:garra,garra e:gritoDeGuerra");
+  pa("perseguicaoApontando", "Movimento/Perseguição/Mandar", "pega ele!|apontando correndo", "bp20 hf75,-25 kf80,40 fl95,-40 ab15,20 el5,90 hp-14 m:apontar,punho e:furia");
+  pa("perseguicaoOfegante", "Movimento/Perseguição/Cansaço", "ofegante|mãos nos joelhos", "sf55 bp10 hf40,40 kf35,35 fl50,50 ab15,15 el20,20 hp-20 m:aberta,aberta e:cansaco");
+  pa("perseguicaoDerrapando", "Movimento/Perseguição/Curva", "derrapando na curva|freando", "bp-20 ss20 hf60,-10 ha30,10 kf70,30 fl40,100 ab60,40 el40,80 hy40 m:aberta,aberta e:esforco");
+  pa("perseguicaoProcurando", "Movimento/Perseguição/Procurar", "procurando|para onde ele foi", "sf6 hf20,-6 kf20,10 fl30,60 ab25,20 el60,110 hy-60 hp-4 m:aberta,punho e:raiva");
+  pa("parkourVault", "Movimento/Parkour/Passar", "passando por cima|vault", "bl4 bp20 br-20 hf100,80 ha20,30 kf100,60 fl90,40 ab20,60 el10,40 hy20 m:espalmada,aberta e:focoTotal");
+  pa("parkourPendurado", "Movimento/Parkour/Pendurar", "pendurado na beirada|segurando no parapeito", "bl8 sf4 hf10,30 kf20,50 fl175,175 ab15,15 el20,20 hp-30 m:garra,garra e:esforco");
+  pa("parkourEscalando", "Movimento/Parkour/Escalar", "escalando|subindo a parede", "bl5 sf6 hf90,10 kf110,30 ha20,15 fl170,100 ab20,30 el20,90 hp-30 m:garra,garra e:esforco");
+  pa("parkourCorridaParede", "Movimento/Parkour/Parede", "correndo na parede", "bl4 br-40 bp20 hf90,-20 kf100,40 fl-40,80 ab20,40 el80,80 hy30 m:aberta,aberta e:focoTotal");
+  pa("parkourDeslizando", "Movimento/Parkour/Deslizar", "deslizando no chão|carrinho", "bp-50 hf90,20 kf10,100 fl70,-30 ab40,40 el30,20 hp20 m:aberta,espalmada e:focoTotal");
+  pa("parkourEquilibrio", "Movimento/Parkour/Equilíbrio", "equilibrando na corda|beirada", "hf10,-4 kf10,4 hr-30,30 fl10,10 ab90,90 el10,10 hp20 m:aberta,aberta e:focoTotal");
+  pa("parkourAgachadoBeirada", "Movimento/Parkour/Beirada", "agachado na beirada|gárgula", "sf40 hf120,120 kf150,150 ha30,30 fl40,40 ab20,20 el60,60 hp-30 m:aberta,aberta e:sombrio");
+  pa("impactoNoRosto", "Combate/Reação/Golpe no rosto", "levou um soco no rosto|cabeça para trás", "bp-14 sf-14 hf20,-10 kf20,10 fl30,20 ab40,60 el40,30 hy30 hp-30 hz20 m:aberta,aberta e:dor");
+  pa("impactoNoEstomago", "Combate/Reação/Golpe no corpo", "soco no estômago|dobrado ao meio", "sf55 bp10 hf40,30 kf40,30 fl50,50 ab10,10 el90,90 hp30 m:aberta,aberta e:dor");
+  pa("arremessadoParaTras", "Combate/Reação/Arremessado", "voando para trás|arremessado", "bl6 bp-50 sf-20 hf60,40 kf70,40 fl110,90 ab60,70 el30,30 hp20 m:aberta,aberta e:dor");
+  pa("caidoDeCostas", "Combate/Reação/No chão", "caído de costas|nocauteado", "bp-88 hf10,20 kf20,30 ha15,10 fl20,90 ab60,90 el20,30 hp-10 hz20 m:relaxada,relaxada e:olharVazio");
+  pa("caidoDeBrucos", "Combate/Reação/No chão", "caído de bruços|derrotado no chão", "bp88 hf0,10 kf20,10 fl170,30 ab30,40 el20,40 hp-50 hz-20 m:relaxada,relaxada e:dor");
+  pa("levantandoComEsforco", "Combate/Reação/Levantar", "levantando com esforço|ainda não acabou", "sf40 hf100,10 kf110,90 af30,20 fl60,10 ab20,20 el10,30 hp-20 m:espalmada,punho e:determinacao");
+  pa("ajoelhadoExausto", "Combate/Reação/Exausto", "ajoelhado exausto|apoiado no chão", "sf40 hf20,90 kf100,90 af40,0 fl60,10 ab20,10 el10,20 hp30 m:espalmada,relaxada e:cansaco");
+  pa("cambaleando", "Combate/Reação/Tonto", "cambaleando|tonto", "ss20 bp-6 hf20,-6 ha20,8 kf20,10 fl30,40 ab40,30 el30,40 hz25 hp10 m:relaxada,relaxada e:olharVazio");
+  pa("atordoadoEstrelinhas", "Combate/Reação/Tonto", "atordoado|vendo estrelas", "sf-6 ss-10 hf10,10 kf20,20 fl10,10 ab20,20 el20,20 hz-20 hp-14 m:relaxada,relaxada e:tonto");
+  pa("escorregaoComico", "Comédia/Queda", "escorregão cômico|casca de banana", "bl5 bp-75 hf120,40 kf10,30 fl130,60 ab60,80 el10,20 hp20 m:aberta,aberta e:choqueComico");
+  pa("quedaSentado", "Comédia/Queda", "caiu sentado|bunda no chão", "hf90,90 kf40,30 ha20,20 fl40,40 ab50,50 el20,20 hp10 m:espalmada,espalmada e:choqueComico");
+  pa("poderCarregando", "Combate/Poder/Carregar", "carregando poder|concentrando energia", "sf10 hf60,60 kf80,80 ha30,30 fl40,40 ab30,30 el110,110 hp-4 m:garra,garra e:gritoDeGuerra");
+  pa("poderKamehameha", "Combate/Poder/Raio", "raio de energia com as duas mãos|disparo de energia", "bp10 st-20 hf50,-20 kf60,20 fl90,90 ab10,10 el10,10 wr-70,-70 hp4 m:espalmada,espalmada e:gritoDeGuerra");
+  pa("poderBolaPreparo", "Combate/Poder/Esfera", "esfera de energia ao lado|preparando bola de energia", "st-40 pt-20 hf50,-20 kf60,20 fl20,20 ab20,20 el90,90 ar60,-60 hy20 m:garra,garra e:focoTotal");
+  pa("poderAoCeu", "Combate/Poder/Invocar", "invocando do céu|mão erguida", "hf20,-6 kf20,10 fl175,40 ab10,20 el5,90 hp-35 m:espalmada,punho e:gritoDeGuerra");
+  pa("poderSocoChao", "Combate/Poder/Terremoto", "soco no chão com poder|onda de choque", "sf60 hf110,40 kf120,100 ha30,30 fl50,40 ab20,40 el10,90 hp30 m:punho,espalmada e:gritoDeGuerra");
+  pa("poderTelecinese", "Combate/Poder/Telecinese", "telecinese|mão estendida levantando algo", "sf4 hf20,-6 kf20,10 fl80,20 ab20,20 el20,60 wr40,0 hp-6 hz8 m:garra,relaxada e:focoTotal");
+  pa("poderTransformacao", "Combate/Poder/Transformar", "transformação|gritando com aura", "sf-20 hf30,30 kf40,40 ha30,30 fl40,40 ab45,45 el80,80 hp-35 m:punho,punho e:gritoDeGuerra");
+  pa("poderSelamento", "Combate/Poder/Selo", "selo de mãos|jutsu", "sf4 hf20,-4 kf20,10 fl70,70 ab5,5 el130,130 hp4 m:paz,paz e:focoTotal");
+  pa("giganteAgachando", "Escala/Gigante/Pegar", "gigante se abaixando|pegando algo pequeno do chão", "sf40 hf80,30 kf90,40 fl70,20 ab15,20 el20,60 hp30 m:pinca,relaxada e:curioso");
+  pa("gigantePisando", "Escala/Gigante/Pisar", "gigante pisando|esmagando", "sf10 hf80,-6 kf60,10 af-10,0 fl40,40 ab35,35 el80,80 hp35 m:punho,punho e:furia");
+  pa("giganteRugindo", "Escala/Gigante/Rugir", "gigante rugindo|monstro ameaçando", "sf-20 hf20,-10 kf30,10 ha20,20 fl70,70 ab60,60 el60,60 hp-30 m:garra,garra e:gritoDeGuerra");
+  pa("giganteOlhandoBaixo", "Escala/Gigante/Olhar", "gigante olhando para baixo|curioso com os pequenos", "sf25 hf10,10 kf10,10 fl20,20 ab15,15 el30,30 hp50 nf20 hz10 m:relaxada,relaxada e:curioso");
+  pa("giganteSegurandoNaPalma", "Escala/Gigante/Segurar", "gigante com alguém na palma|palma aberta para cima", "sf8 fl60,10 ab20,12 el80,20 ar60,0 pr90,0 hp35 m:aberta,relaxada e:curioso");
+  pa("giganteDerrubandoPredio", "Escala/Gigante/Destruir", "gigante derrubando|empurrando prédio", "bp20 hf40,-20 kf40,10 fl110,110 ab20,20 el20,20 wr-60,-60 hp-10 m:espalmada,espalmada e:furia");
+  pa("minusculoOlhandoCima", "Escala/Minúsculo/Olhar", "pequenino olhando para cima|maravilhado", "sf-20 hf10,-4 kf10,4 fl30,30 ab20,20 el60,60 hp-55 nf-20 m:aberta,aberta e:surpresaTotal");
+  pa("minusculoAcenando", "Escala/Minúsculo/Chamar", "pequenino acenando|ei, aqui embaixo", "sf-14 hf10,-4 kf10,4 fl170,20 ab30,15 el20,30 hp-45 m:aberta,relaxada e:alegria");
+  pa("minusculoEscalando", "Escala/Minúsculo/Escalar", "escalando o gigante|subindo pela roupa", "bl3 sf10 hf100,20 kf120,40 fl170,110 ab20,30 el30,90 hp-40 m:garra,garra e:esforco");
+  pa("minusculoEsmagado", "Escala/Minúsculo/Fugir", "fugindo do pisão|protegendo-se do gigante", "sf20 hf50,-20 kf60,20 fl150,150 ab30,30 el120,120 hp-40 m:aberta,aberta e:panico");
+  pa("minusculoNaPalma", "Escala/Minúsculo/Na mão", "sentado na palma|em cima da mão", "hf90,90 kf90,90 sf4 fl20,20 ab20,20 el30,30 pr-90,-90 hp-30 m:espalmada,espalmada e:encantado");
+  pa("minusculoEmpurrando", "Escala/Minúsculo/Força", "pequeno empurrando algo enorme", "bp35 sf10 hf60,-40 kf60,10 fl130,130 ab10,10 el30,30 wr-60,-60 hp-15 m:espalmada,espalmada e:esforco");
+  pa("entradaHeroica", "Narrativa/Apresentação/Entrada", "entrada heroica|chegou o herói", "sf-6 hf10,-4 kf8,4 ha10,12 fl10,20 ab25,30 el20,30 hp-6 m:punho,punho e:determinacao");
+  pa("entradaVilao", "Narrativa/Apresentação/Vilão", "entrada do vilão|mãos atrás das costas", "sf-4 fl-30,-30 ab10,10 el90,90 ar-40,-40 hp-8 hy10 m:relaxada,relaxada e:sombrio");
+  pa("encaraRival", "Narrativa/Oposição/Encarar", "encarando o rival|face a face", "sf10 bp4 hf10,-4 kf10,4 fl10,10 ab20,20 el30,30 hp-6 nf-8 m:punho,punho e:raiva");
+  pa("desafioChamando", "Narrativa/Oposição/Desafio", "vem!|chamando para a luta", "sf-6 hf20,-6 kf20,10 fl80,30 ab15,30 el20,110 wr40,0 hp-8 m:chamar,punho e:malicia");
+  pa("costasComCostas", "Narrativa/Cerco/Costas", "costas com costas|cercados", "sf4 hf30,-6 kf35,15 ha12,14 fl70,70 ab25,25 el110,110 hy40 m:punho,punho e:determinacao");
+  pa("cercadoOlhandoVolta", "Narrativa/Cerco/Olhar em volta", "cercado olhando em volta", "sf10 hf35,20 kf45,30 ha20,20 fl60,60 ab35,35 el90,90 hy-70 m:punho,punho e:medo");
+  pa("vitoriaPunhoAlto", "Narrativa/Desfecho/Vitória", "vitória com punho no alto", "sf-10 hf10,-4 kf10,4 fl175,10 ab10,10 el5,10 hp-30 m:punho,relaxada e:gritoDeGuerra");
+  pa("vitoriaCostasViradas", "Narrativa/Desfecho/Vitória", "indo embora de costas|vitória fria", "hf20,-10 kf20,10 fl-10,10 ab10,10 el20,20 hy-30 hp4 m:relaxada,relaxada e:sombrio");
+  pa("derrotaDeJoelhos", "Narrativa/Desfecho/Derrota", "derrota de joelhos|punhos no chão", "sf50 hf20,20 kf100,100 af40,40 fl60,60 ab15,15 el10,10 hp40 m:punho,punho e:choro");
+  pa("juramento", "Narrativa/Decisão/Juramento", "punho no peito|juramento", "sf2 fl60,5 ab30,10 el130,10 ar60,0 hp-4 m:punho,relaxada e:determinacao");
+  pa("estendendoMaoRival", "Narrativa/Reconciliação", "estendendo a mão ao rival|trégua", "sf10 fl70,5 ab12,10 el20,10 hp6 m:aberta,relaxada e:alivio");
+  Object.assign(POSES_CORPO, POSES_ACAO2);
+  Object.assign(POSES_EXTRA, POSES_ACAO2);
+  Object.assign(POSES_EXTRA_INFO, POSES_ACAO2_INFO);
+  for (const [n2, i] of Object.entries(POSES_ACAO2_INFO)) {
+    TAGS_POSES[n2] = i.tag;
+    for (const a of i.apelidos) POSE_ALIAS[a.toLowerCase()] = n2;
+    const g = i.tag.split("/")[0] + ": " + i.tag.split("/")[1];
+    (POSE_GRUPOS["Ação — " + g] = POSE_GRUPOS["Ação — " + g] || []).push(n2);
   }
 
   // src/scene/interacoes-extra.js
@@ -38122,28 +38486,28 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         o.animal.pose = amMisturar(o.animal.pose, s.para, u);
         continue;
       }
-      const de = s.de, pa = s.para, base2 = de.pose || amPose("parado");
+      const de = s.de, pa2 = s.para, base2 = de.pose || amPose("parado");
       let giro, x, z, fase, chegou = false;
       if (tl < s.giroDur) {
         const u = NM_SUAVE(tl / Math.max(0.01, s.giroDur));
-        giro = de.giro + nmAng(de.giro, pa.giro) * u;
+        giro = de.giro + nmAng(de.giro, pa2.giro) * u;
         x = de.x;
         z = de.z;
         fase = tl / s.T;
       } else {
-        const L3 = Math.hypot(pa.x - de.x, pa.z - de.z) / NM_M, v = s.S / s.T, d = Math.min(L3, v * (tl - s.giroDur));
+        const L3 = Math.hypot(pa2.x - de.x, pa2.z - de.z) / NM_M, v = s.S / s.T, d = Math.min(L3, v * (tl - s.giroDur));
         chegou = d >= L3 - 1e-6;
         const k = L3 > 0 ? d / L3 : 1;
-        x = de.x + (pa.x - de.x) * k;
-        z = de.z + (pa.z - de.z) * k;
-        giro = pa.giro;
+        x = de.x + (pa2.x - de.x) * k;
+        z = de.z + (pa2.z - de.z) * k;
+        giro = pa2.giro;
         fase = s.giroDur / s.T + d / s.S;
       }
       o.x = x;
       o.z = z;
       o.giro = giro;
       o.animal.marchaAtual = chegou ? null : s.marcha;
-      const andando = amPoseMarcha(s.marcha, fase % 1, base2, o.animal.especie), fimT = s.giroDur + Math.hypot(pa.x - de.x, pa.z - de.z) / NM_M / (s.S / s.T);
+      const andando = amPoseMarcha(s.marcha, fase % 1, base2, o.animal.especie), fimT = s.giroDur + Math.hypot(pa2.x - de.x, pa2.z - de.z) / NM_M / (s.S / s.T);
       o.animal.pose = chegou ? amMisturar(andando, base2, NM_SUAVE(Math.min(1, (tl - fimT) / 0.45))) : andando;
     }
   }
@@ -43856,13 +44220,13 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
           $("mixIntOut").textContent = int.value + "%";
         };
         const aplicar2 = () => {
-          const pa = +peso.value / 100, w = {};
-          w[A.value] = (w[A.value] || 0) + pa;
-          w[B3.value] = (w[B3.value] || 0) + 1 - pa;
-          if (!(pa > 0 || 1 - pa > 0)) return;
+          const pa2 = +peso.value / 100, w = {};
+          w[A.value] = (w[A.value] || 0) + pa2;
+          w[B3.value] = (w[B3.value] || 0) + 1 - pa2;
+          if (!(pa2 > 0 || 1 - pa2 > 0)) return;
           Object.assign(P2, misturarExpressoes(w, +int.value / 100));
           const it2 = SCN.list[SCN.active];
-          if (it2) it2.exprNome = Math.round(pa * 100) + "% " + A.value + " + " + Math.round((1 - pa) * 100) + "% " + B3.value + (+int.value !== 100 ? " ×" + +int.value / 100 : "");
+          if (it2) it2.exprNome = Math.round(pa2 * 100) + "% " + A.value + " + " + Math.round((1 - pa2) * 100) + "% " + B3.value + (+int.value !== 100 ? " ×" + +int.value / 100 : "");
           syncControls2();
           render2();
         };
