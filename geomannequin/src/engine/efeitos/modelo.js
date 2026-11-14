@@ -17,8 +17,41 @@ const ELEMENTOS = {
   cristal: { nome: "Cristal", cores: ["#FFFFFF", "#C6F3FF", "#6FD6F5", "#B04CE0"] },
   terra: { nome: "Terra/rocha", cores: ["#F2E3C6", "#C9A273", "#8A6440", "#4A3422"] },
   sombra: { nome: "Sombra", cores: ["#C8C8DA", "#6E6E86", "#2E2E3E", "#0B0B12"] },
-  tinta: { nome: "Nanquim (preto e branco)", cores: ["#FFFFFF", "#D8D8D8", "#5A5A5A", "#111111"] }
+  tinta: { nome: "Nanquim (preto e branco)", cores: ["#FFFFFF", "#D8D8D8", "#5A5A5A", "#111111"] },
+  /* paletas novas */
+  lava: { nome: "Lava/magma", cores: ["#FFF2B0", "#FF9A1F", "#E0300B", "#4A0D05"] },
+  plasma: { nome: "Plasma", cores: ["#FFFFFF", "#FFC2F5", "#FF4FD8", "#5B1BB5"] },
+  eletrico: { nome: "Elétrico azul", cores: ["#FFFFFF", "#CFF4FF", "#3FB9FF", "#1B2FA8"] },
+  veneno: { nome: "Veneno/ácido", cores: ["#F4FFD0", "#B9F24A", "#5DB81E", "#24480C"] },
+  natureza: { nome: "Natureza/folhas", cores: ["#F3FFE2", "#9CE07A", "#3F9E3A", "#1E4D24"] },
+  oceano: { nome: "Oceano", cores: ["#E8FFFF", "#7FE0E8", "#1E8FB8", "#0B3260"] },
+  ouro: { nome: "Ouro", cores: ["#FFFBE6", "#FFE27A", "#E0A82E", "#7A4E08"] },
+  trevas: { nome: "Trevas (roxo escuro)", cores: ["#E9D8FF", "#7A4CC2", "#3A1670", "#0E0420"] },
+  sangue: { nome: "Vermelho intenso", cores: ["#FFE0E0", "#FF5A5A", "#B0101A", "#3D0408"] },
+  neon: { nome: "Neon", cores: ["#FFFFFF", "#7CFFF0", "#FF3FD2", "#2A0B5E"] },
+  aurora: { nome: "Aurora", cores: ["#F0FFFA", "#7DFFC5", "#45B5FF", "#9B4DFF"] },
+  metal: { nome: "Metal/aço", cores: ["#FFFFFF", "#D6DCE4", "#8C96A3", "#2E3540"] },
+  sakura: { nome: "Sakura (rosa)", cores: ["#FFF5F8", "#FFC9DA", "#F57FA6", "#A8355E"] },
+  chocolate: { nome: "Terra quente/âmbar", cores: ["#FFF0D6", "#E8B06A", "#A8642A", "#4A260C"] }
 };
+/* TONS: mudam qualquer paleta (quente, frio, pastel, neon, sombrio, sépia, dessaturado, vibrante, noturno, flashback) */
+function fxHsl(h) { const n = parseInt(h.slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let H = 0, S = 0;
+  if (mx !== mn) { const d = mx - mn; S = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); H = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; H /= 6; } return [H, S, l]; }
+function fxHex([H, S, l]) { const f = (p, q, t) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < 1 / 2 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; }; let r, g, b; S = Math.max(0, Math.min(1, S)); l = Math.max(0, Math.min(1, l));
+  if (!S) r = g = b = l; else { const q = l < 0.5 ? l * (1 + S) : l + S - l * S, p = 2 * l - q; r = f(p, q, H + 1 / 3); g = f(p, q, H); b = f(p, q, H - 1 / 3); } return "#" + [r, g, b].map(v => Math.round(v * 255).toString(16).padStart(2, "0")).join("").toUpperCase(); }
+const TONS = {
+  quente: { nome: "Quente (laranja/vermelho)", f: ([h, s, l]) => [(h + (h > 0.5 ? (1.05 - h) * 0.35 : -h * 0.35)) % 1, s * 1.1, l] },
+  frio: { nome: "Frio (azul/ciano)", f: ([h, s, l]) => [h + (0.58 - h) * 0.35, s, l] },
+  pastel: { nome: "Pastel", f: ([h, s, l]) => [h, s * 0.55, l * 0.7 + 0.3] },
+  neon: { nome: "Neon (saturado e claro)", f: ([h, s, l]) => [h, Math.min(1, s * 1.5 + 0.2), l < 0.15 ? l : l * 0.85 + 0.12] },
+  sombrio: { nome: "Sombrio (escuro)", f: ([h, s, l]) => [h, s * 0.85, l * 0.62] },
+  sepia: { nome: "Sépia (antigo)", f: ([h, s, l]) => [0.09, 0.45 * Math.min(1, s + 0.3), l] },
+  dessaturado: { nome: "Dessaturado", f: ([h, s, l]) => [h, s * 0.3, l] },
+  vibrante: { nome: "Vibrante", f: ([h, s, l]) => [h, Math.min(1, s * 1.35), l] },
+  noturno: { nome: "Noturno (azulado escuro)", f: ([h, s, l]) => [h + (0.64 - h) * 0.5, s * 0.7, l * 0.7] },
+  flashback: { nome: "Flashback (lavado)", f: ([h, s, l]) => [h, s * 0.35, l * 0.6 + 0.35] }
+};
+function fxTom(cores, tom) { const T = TONS[tom]; return T ? cores.map(c => /^#[0-9a-f]{6}$/i.test(c) ? fxHex(T.f(fxHsl(c))) : c) : cores; }
 /* padrão: preto e branco (nanquim, como nas referências de mangá); cor é opcional (colorido: true).
    Do núcleo à borda: papel branco, cinza claro de aguada, cinza médio, nanquim. */
 const TINTA = ["#FFFFFF", "#ECECEC", "#A8A8A8", "#141414"];
@@ -220,8 +253,9 @@ function validarEfeito(e) {
     visivel: e.visivel !== false, reverso: !!e.reverso, opacidade: num(e.opacidade, 0.05, 1, 1), brilho: e.brilho !== false,
     nivel: Math.round(num(e.nivel, 1, 5, 3)),
     /* cor é opcional: sem "colorido", o efeito sai em nanquim; passar cores próprias liga a cor */
-    colorido: e.colorido !== undefined ? !!e.colorido : Array.isArray(e.cores) && e.cores.some(cor)
+    colorido: e.colorido !== undefined ? !!e.colorido : (Array.isArray(e.cores) && e.cores.some(cor)) || (!!e.tom && !!TONS[e.tom])
   };
+  if (e.tom !== undefined && e.tom !== null) { if (!TONS[e.tom]) throw new Error("Tom “" + e.tom + "”: use " + Object.keys(TONS).join(", ") + "."); out.tom = e.tom; }
   /* acabamento (opcional): contraste, espessura do traço, suavidade das bordas, contorno branco e inverter preto/branco */
   { const a = e.acabamento && typeof e.acabamento === "object" ? e.acabamento : {}, ac = {
       contraste: num(a.contraste, 0.3, 3, 1), espessura: num(a.espessura, 0.3, 3, 1), suavidade: num(a.suavidade, 0, 1, 0),
@@ -284,6 +318,6 @@ function tamanhoEmCorpos(e) {
   const v = e.params[p] * k * (["raio"].includes(p) ? 2 : 1);
   return { medida: p === "raio" ? "diâmetro" : p, corpos: +(v / 16.5).toFixed(2) };
 }
-function coresDe(e) { if (!e.colorido) return TINTA; return e.cores && e.cores.length ? e.cores : ELEMENTOS[e.elemento].cores; }
+function coresDe(e) { if (!e.colorido) return TINTA; const c = e.cores && e.cores.length ? e.cores : ELEMENTOS[e.elemento].cores; return e.tom ? fxTom(c, e.tom) : c; }
 
-export { tamanhoEmCorpos, ELEMENTOS, TINTA, NIVEIS, CATALOGO, CATEGORIAS, SIMBOLOS, PARTES as PARTES_EFEITO, LEGADO, validarEfeito, validarAncora, validarDirecao, normTipo, normParte, limparSvg, deReferencia, progressoNoQuadro, ativoNoQuadro, coresDe };
+export { TONS, fxTom, tamanhoEmCorpos, ELEMENTOS, TINTA, NIVEIS, CATALOGO, CATEGORIAS, SIMBOLOS, PARTES as PARTES_EFEITO, LEGADO, validarEfeito, validarAncora, validarDirecao, normTipo, normParte, limparSvg, deReferencia, progressoNoQuadro, ativoNoQuadro, coresDe };

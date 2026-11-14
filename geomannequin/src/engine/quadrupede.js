@@ -4,6 +4,8 @@
    Coordenadas locais do objeto (R ≈ 11,4 cm): x = lado (+ esquerda do animal), y = cima, z = FRENTE (para onde ele olha).
    Proporções: o.animal.p (metros); pose: o.animal.pose (graus). Tudo é recalculado do zero a cada desenho. */
 const QM = 1 / 0.114, QD = Math.PI / 180;
+/* a perna de trás (dobrada no jarrete) é um pouco mais comprida, para o casco chegar no mesmo chão que o da frente */
+const QD_KT = 1 / (0.42 * Math.cos(14 * Math.PI / 180) + 0.38 * Math.cos(24 * Math.PI / 180) + 0.2);
 /* espécies: medidas em metros — cernelha (altura), corpo (comprimento), largura, pescoço, ângulo do pescoço, cabeça, focinho,
    orelha, rabo, perna (espessura), corcova (0/1/2), chifre, tromba */
 const QD_ESPECIES = {
@@ -25,7 +27,7 @@ const QD_ESPECIES = {
 const QD_SINONIMOS = { "pônei": "ponei", pony: "ponei", jumento: "burro", mula: "burro", asno: "burro", "dromedário": "dromedario", cabra: "bode", carneiro: "ovelha", vaca: "boi", touro: "boi", "cão": "cachorro", cao: "cachorro", cachorrinho: "cachorroPequeno", "cachorro pequeno": "cachorroPequeno", gatinho: "gato", veado: "cervo", alce: "cervo", rena: "cervo", camela: "camelo" };
 function qdEspecie(nome) { const n = String(nome || "cavalo").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); return QD_ESPECIES[n] ? n : QD_SINONIMOS[n] || QD_SINONIMOS[String(nome || "").toLowerCase()] || (Object.keys(QD_ESPECIES).find(k => k.toLowerCase() === n) || null); }
 /* pose padrão (graus): pernas [ombro/quadril, joelho, boleto] (+ = para a frente), pescoço/cabeça (+ = para cima), rabo, corpo */
-function qdPosePadrao() { return { pescoco: 0, cabeca: 0, cabecaGiro: 0, rabo: 0, corpoInclina: 0, corpoAltura: 0, pernas: { de: [0, 0, 0], dd: [0, 0, 0], te: [0, 0, 0], td: [0, 0, 0] }, deitado: 0, sentado: 0 }; }
+function qdPosePadrao() { return { pescoco: 0, cabeca: 0, cabecaGiro: 0, rabo: 0, raboLado: 0, rolo: 0, voo: 0, corpoInclina: 0, corpoAltura: 0, pernas: { de: [0, 0, 0], dd: [0, 0, 0], te: [0, 0, 0], td: [0, 0, 0] }, deitado: 0, sentado: 0 }; }
 const qdRot = (v, ax, a) => { const c = Math.cos(a), s = Math.sin(a); return ax === "x" ? [v[0], v[1] * c - v[2] * s, v[1] * s + v[2] * c] : ax === "y" ? [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c] : [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]]; };
 const qdAdd = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], qdMul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
 function qdEixo(d, lado) { /* matriz cujo eixo y aponta para d (x fica de lado) */ const L = Math.hypot(...d) || 1, Y = d.map(v => v / L); let X = lado || [1, 0, 0]; const dt = X[0] * Y[0] + X[1] * Y[1] + X[2] * Y[2]; X = [X[0] - Y[0] * dt, X[1] - Y[1] * dt, X[2] - Y[2] * dt]; const lx = Math.hypot(...X) || 1; X = X.map(v => v / lx);
@@ -44,12 +46,12 @@ function qdEsqueleto(o) {
      (coxa para a frente, jarrete para trás, canela de pé) — a pose soma a isso */
   const pernas = {}; for (const [kk, q0] of Object.entries(quadris)) { const ang = pern[kk] || [0, 0, 0], tras = kk[0] === "t", rest = tras ? [14, -38, 24] : [0, 0, 0];
     const a1 = ((ang[0] || 0) + rest[0]) * QD + inc, a2 = a1 + ((ang[1] || 0) + rest[1]) * QD, a3 = a2 + ((ang[2] || 0) + rest[2]) * QD;
-    const q = corpo(q0), dir = a => [0, -Math.cos(a), Math.sin(a)], j1 = qdAdd(q, qdMul(dir(a1), L1)), j2 = qdAdd(j1, qdMul(dir(a2), L2)), j3 = qdAdd(j2, qdMul(dir(a3), L3)); pernas[kk] = [q, j1, j2, j3]; }
+    const kl = tras ? QD_KT : 1, q = corpo(q0), dir = a => [0, -Math.cos(a), Math.sin(a)], j1 = qdAdd(q, qdMul(dir(a1), L1 * kl)), j2 = qdAdd(j1, qdMul(dir(a2), L2 * kl)), j3 = qdAdd(j2, qdMul(dir(a3), L3 * kl)); pernas[kk] = [q, j1, j2, j3]; }
   const frente = corpo([0, yb, c / 2]), tras = corpo([0, yb, -c / 2]), costas = corpo([0, yb + r, 0]);
   const na = (E.na + (P.pescoco || 0)) * QD - inc * 0, gy = (P.cabecaGiro || 0) * QD, nBase = corpo([0, yb + r * 0.35, c * 0.46]);
   const nDir = qdRot([0, Math.sin(na + inc), Math.cos(na + inc)], "y", gy), nTopo = qdAdd(nBase, qdMul(nDir, E.n * k));
   const ca = na + inc - (90 - 10 + (P.cabeca || 0) * -1) * QD + (E.na < 20 ? 40 * QD : 0), cDir = qdRot([0, Math.sin(ca), Math.cos(ca)], "y", gy), cFim = qdAdd(nTopo, qdMul(cDir, E.cab * k));
-  return { E, k, h, c, w, r, yb, inc, corpo, pernas, frente, tras, costas, nBase, nTopo, nDir, cDir, cFim, P, sela: corpo([0, yb + r * 1.02, -c * 0.02]) };
+  return { E, k, h, c, w, r, yb, Lp, inc, corpo, pernas, frente, tras, costas, nBase, nTopo, nDir, cDir, cFim, P, sela: corpo([0, yb + r * 1.02, -c * 0.02]) };
 }
 /* partes desenháveis (caixas, cilindros, elipsoides) — com o chão automático: o casco mais baixo encosta em y = 0 */
 function qdPartes(o) {
@@ -67,24 +69,30 @@ function qdPartes(o) {
     if (E.chifre) { const ch = qdAdd(base, qdMul(cDir, -cw * 0.1)); out.push(qdTubo(ch, qdAdd(ch, qdAdd(qdMul(sobe, E.chifre * k * 0.8), qdAdd(qdMul(lado, s * E.chifre * k * 0.45), qdMul(cDir, -E.chifre * k * 0.35)))), Math.max(0.12, cw * 0.11), 0.03, { cor: esc })); } }
   if (E.tromba) { const a = cFim, b = qdAdd(a, [0, -E.tromba * k * 0.85, E.tromba * k * 0.25]); out.push(qdTubo(a, b, cw * 0.18, cw * 0.1)); }
   /* rabo */
-  const ra = ((E.raboAng ?? -60) + (P.rabo || 0)) * QD - inc, rb = corpo([0, yb + r * 0.5, -c * 0.52]), rd = [0, Math.sin(ra), -Math.cos(ra)]; out.push(qdTubo(rb, qdAdd(rb, qdMul(rd, E.rabo * k)), Math.max(0.1, E.perna * k * 0.5), 0.06));
+  const ra = ((E.raboAng ?? -60) + (P.rabo || 0)) * QD - inc, rb = corpo([0, yb + r * 0.5, -c * 0.52]), rd = qdRot([0, Math.sin(ra), -Math.cos(ra)], "y", -(P.raboLado || 0) * QD); out.push(qdTubo(rb, qdAdd(rb, qdMul(rd, E.rabo * k)), Math.max(0.1, E.perna * k * 0.5), 0.06));
   /* pernas: 3 caixas + casco */
   const pw = Math.max(0.12, E.perna * k * 2), mn = []; for (const [kk, pts] of Object.entries(pernas)) { const [q, j1, j2, j3] = pts;
     out.push(qdCaixaEntre(q, j1, pw * 1.35, pw * 1.6), qdCaixaEntre(j1, j2, pw, pw * 1.05), qdCaixaEntre(j2, j3, pw * 0.85, pw * 0.9), { c: qdAdd(j3, [0, pw * 0.25, pw * 0.15]), h: [pw * 0.55, pw * 0.25, pw * 0.65], cor: esc }); mn.push(j3[1]); }
   /* sela (montaria, com alguém em cima ou "com sela") e carga */
   if (o.animal && (o.animal.sela || o.animal.cavaleiro)) { const s = S.sela; out.push({ c: s, h: [r * 0.75, r * 0.12, r * 0.55], cor: esc }); }
-  /* chão automático: o ponto mais baixo (casco, barriga ou joelhos, deitado) vai para y = 0 */
-  const baixo = Math.min(...mn, ...(P.deitado || P.sentado ? [yb - r * 1.0] : [])), dy = (o.animal && o.animal.noAr) ? 0 : -baixo + 0.12;
+  /* rolar o corpo (de lado, de costas): gira tudo em volta do eixo do corpo */
+  if (P.rolo) { const a = P.rolo * QD, cz = Math.cos(a), sz = Math.sin(a), Rz = [cz, -sz, 0, sz, cz, 0, 0, 0, 1], piv = [0, yb, 0];
+    const mm = (A, B) => [0, 1, 2].flatMap(i => [0, 1, 2].map(j => A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j]));
+    out.forEach(b => { const v = qdRot([b.c[0] - piv[0], b.c[1] - piv[1], b.c[2] - piv[2]], "z", a); b.c = qdAdd(piv, v); b.R = mm(Rz, b.R || [1, 0, 0, 0, 1, 0, 0, 0, 1]); }); }
+  /* chão automático: o ponto mais baixo (casco, barriga ou joelhos, deitado, ou o corpo todo se rolou) vai para y = 0; "voo" levanta (pulo) */
+  const ext = b => { const R = b.R || [1, 0, 0, 0, 1, 0, 0, 0, 1]; if (b.cil) return Math.abs(R[4]) * b.hh + b.r * Math.hypot(R[3], R[5]); if (b.esf) return Array.isArray(b.r) ? b.r[1] : b.r; return Math.abs(R[3]) * b.h[0] + Math.abs(R[4]) * b.h[1] + Math.abs(R[5]) * b.h[2]; };
+  /* andadura: a altura do corpo é a da perna de apoio (não cai no tempo de voo do galope) */
+  const baixo = P.alturaPerna && !P.rolo ? (yb - r * 0.45) - P.alturaPerna * S.Lp : P.rolo ? Math.min(...out.map(b => b.c[1] - ext(b))) - 0.12 + 0.12 : Math.min(...mn, ...(P.deitado || P.sentado ? [yb - r * 1.0] : [])), dy = ((o.animal && o.animal.noAr) ? 0 : -baixo + 0.12) + (P.voo || 0) * QM;
   if (dy) out.forEach(b => { b.c = [b.c[0], b.c[1] + dy, b.c[2]]; });
-  return out;
+  out.dy = dy; return out;
 }
 /* um ponto do animal no MUNDO (sela, cabeça, frente…) — o (x, z, base, giro) do objeto */
 function qdPontoMundo(o, ponto, g0 = 0) {
-  const S = qdEsqueleto(o), partes = qdPartes(o); const mnY = Math.min(...partes.map(b => b.c[1] - (b.h ? b.h[1] : b.r ? (Array.isArray(b.r) ? b.r[1] : b.r) : 0))); void mnY;
-  const dy = (() => { const mn = Math.min(...Object.values(S.pernas).map(p => p[3][1]), ...(S.P.deitado || S.P.sentado ? [S.yb - S.r * 1.0] : [])); return (o.animal && o.animal.noAr) ? 0 : -mn + 0.12; })();
-  const loc = ponto === "sela" ? S.sela : ponto === "cabeca" ? qdMul(qdAdd(S.nTopo, S.cFim), 0.5) : ponto === "frente" ? S.frente : ponto === "tras" ? S.tras : ponto === "costas" ? S.costas : S.sela;
+  const S = qdEsqueleto(o), dy = qdPartes(o).dy || 0;
+  let loc = ponto === "sela" ? S.sela : ponto === "cabeca" ? qdMul(qdAdd(S.nTopo, S.cFim), 0.5) : ponto === "frente" ? S.frente : ponto === "tras" ? S.tras : ponto === "costas" ? S.costas : S.sela;
+  if (S.P.rolo) loc = qdAdd([0, S.yb, 0], qdRot([loc[0], loc[1] - S.yb, loc[2]], "z", S.P.rolo * QD));
   const g = (o.giro || 0) * QD, c = Math.cos(g), s = Math.sin(g), v = [loc[0], loc[1] + dy, loc[2]];
   return [o.x + v[0] * c + v[2] * s, g0 + (o.base || 0) + v[1], o.z - v[0] * s + v[2] * c];
 }
 function qdMedidas(especie, escala = 1) { const E = QD_ESPECIES[qdEspecie(especie) || "cavalo"], k = escala * QM; return { larg: Math.max(E.w * 1.2, (E.ore || 0) * 2) * k, prof: (E.c + E.n * 0.6 + E.cab) * k, alt: (E.h + E.n * 0.5) * k }; }
-export { QD_ESPECIES, QD_SINONIMOS, qdEspecie, qdPosePadrao, qdEsqueleto, qdPartes, qdPontoMundo, qdMedidas };
+export { QD_KT, QD_ESPECIES, QD_SINONIMOS, qdEspecie, qdPosePadrao, qdEsqueleto, qdPartes, qdPontoMundo, qdMedidas };

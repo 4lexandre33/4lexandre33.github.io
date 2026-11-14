@@ -150,7 +150,7 @@ function efeitosDoArquivo(arr) {
     try {
       const conv = a => { if (!a || !a.indice) return a; a = { ...a }; delete a.indice; if (a.modo === "tela" || a.modo === "manequim") { const it = SCN.list[a.alvo]; a.alvo = it ? it.id : undefined; } if (a.modo === "objeto") { const o = SCN.objetos[a.alvo]; a.alvo = o ? o.id : undefined; } return a; };
       const q = { ...e, ancora: conv(e.ancora) }; if (q.direcao && q.direcao.alvo && typeof q.direcao.alvo === "object") q.direcao = { ...q.direcao, alvo: conv(q.direcao.alvo) };
-      out.push(validarEfeito(q));
+      const v = validarEfeito(q); if (e.animNoTempo) v.animNoTempo = JSON.parse(JSON.stringify(e.animNoTempo)); out.push(v);
     } catch (err) { /* efeito inválido no arquivo: ignorado */ }
   });
   SCN.efeitos = out;
