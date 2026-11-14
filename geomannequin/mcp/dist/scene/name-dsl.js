@@ -17,6 +17,7 @@ import { mdSorteio, separar, posicoesArranjo, olharParaPonto } from "./multidao.
 import { todasPoses, nomePose, EXPRESSOES, chaveExpressao, misturarExpressoes } from "./poses.js";
 import { INTERACOES, PARES } from "./interacoes.js";
 import { ACOES, ALIAS_PEGADA, PEGADA_PADRAO, trilhaDoGolpe } from "./pegadas.js";
+import { nrExpandirTexto } from "./narrativa.js";
 import { VT_CAMINHOS, vtPonto, vtAncora, vtCaminho, vtNoCaminho } from "./vfx-trajeto.js";
 import { pontosLocaisDoObjeto } from "../engine/index.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
@@ -891,6 +892,8 @@ function nmPersonagem(ctx, l, Q) {
         if (a === null) { apiFor(x).olhar(nmNorm(alvo.v)); return; }
         const r = olharNatural(x, a, { modo }); (Q.olhares = Q.olhares || []).push(Object.assign({ quem: x.name, alvo: String(alvo.v), modo }, r)); feito.olhaR = r;
         if (!r.alcancou) Q.avisos.push(x.name + " não consegue olhar direto para " + alvo.v + " (" + modo + "): faltam " + r.erro + "°" + (r.vertical ? " na vertical (o alvo está muito acima ou abaixo dos olhos: curve o tronco — “coluna(frente 30)”, “inclina-corpo 20 frente” — ou mude a altura de um dos dois)." : " — use “olha " + alvo.v + " corpo” ou “vira-para " + alvo.v + "”.")); } catch (e) { Q.avisos.push(x.name + " olhar: " + e.message); } }); }); feito.olha = alvo.v; feito.olhaModo = modo; }
+    else if (w === "guarda" || w === "esvazia-maos" || w === "guarda-objetos") { let tipoS = null; if (nx && nx.t === "pal" && (TIPOS_OBJETO[nx.v] || SINONIMOS_COMPOSTOS[String(nx.v).toLowerCase()])) { tipoS = nx.v; k++; } /* guarda (tira de cena) o que tinha na mão — objetos criados por "segura"; "larga" é deixar cair */
+      depois.push(() => { for (let i = SCN.objetos.length - 1; i >= 0; i--) { const q = SCN.objetos[i]; if (q.autoDe === it.name && (!tipoS || nmNorm(q.tipo) === nmNorm(tipoS) || nmNorm(q.nome) === nmNorm(tipoS))) SCN.objetos.splice(i, 1); } }); feito.solta = tipoS || "tudo"; }
     else if (w === "segura" || w === "carrega" || w === "levanta" || w === "puxa" || w === "empurra" || w === "arrasta") { const ob = nx.v; let peg = null; k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "como") { peg = toks[k + 2].v; k += 2; }
       let rastro = null; while (toks[k + 1] && /^(rastro|sem-rastro)$/.test(nmNorm(toks[k + 1].v))) { rastro = nmNorm(toks[k + 1].v) === "rastro"; k++; if (rastro && toks[k + 1] && nmNorm(toks[k + 1].v) === "elemento" && toks[k + 2]) { rastro = { elemento: nmNorm(toks[k + 2].v) }; k += 2; } }
       const T0r = Q.tempoAgora ?? null, planoR = Q.planoN ?? null;
@@ -899,10 +902,11 @@ function nmPersonagem(ctx, l, Q) {
       let pegada = peg || (w === "segura" && tipoSeg && PEGADA_PADRAO[tipoSeg]) || { segura: "aFrente", carrega: "abracado", levanta: "levantarDoChao", puxa: "puxarCorda", empurra: "empurrar", arrasta: "arrastar" }[w];
       if (!ACOES[pegada] && !/^(duasMaos|gancho|empurrando)$/.test(pegada)) { const s = nmParecida(pegada, Object.keys(ACOES)); throw new NmErro("Pegada “" + pegada + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Use: " + Object.keys(ACOES).join(", ") + "."), l.linha); }
       depois.push(() => { if (w === "segura") for (let i = SCN.objetos.length - 1; i >= 0; i--) { const q = SCN.objetos[i]; if (q.autoDe === it.name && nmNorm(q.tipo) !== nmNorm(tipoSeg || ob)) SCN.objetos.splice(i, 1); } /* troca o que tinha na mão (objeto criado por "segura") */
-        let o = SCN.objetos.find(x => !x.chao && nmNorm(x.nome) === nmNorm(ob)) || SCN.objetos.find(x => !x.chao && !String(x.grupo || "").startsWith("local:") && nmNorm(x.tipo) === nmNorm(ob)); if (!o) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)) || SINONIMOS_COMPOSTOS[String(ob).toLowerCase()]; if (!tipo) throw new NmErro("Objeto “" + ob + "” não está no local e não é um tipo de objeto.", l.linha); const f = nmFrenteDe(it); const D0 = TIPOS_OBJETO[tipo], k = Math.min(1, (it.params.tamanho || 1) * 1.1); o = adicionarObjeto(tipo, { x: it.params.wx + f[0] * 3, z: it.params.wz + f[1] * 3, nome: ob, larg: D0.larg * k, prof: D0.prof * k, alt: D0.alt * k }); o.autoDe = it.name; }
+        const deOutro = x => (x.autoDe && x.autoDe !== it.name) || (x.gripV3 && x.gripV3.mannequinId !== it.id);
+        let o = SCN.objetos.find(x => !x.chao && x.autoDe === it.name && (nmNorm(x.nome) === nmNorm(ob) || nmNorm(x.tipo) === nmNorm(ob))) || SCN.objetos.find(x => !x.chao && !deOutro(x) && nmNorm(x.nome) === nmNorm(ob)) || SCN.objetos.find(x => !x.chao && !deOutro(x) && !String(x.grupo || "").startsWith("local:") && nmNorm(x.tipo) === nmNorm(ob)); if (!o) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)) || SINONIMOS_COMPOSTOS[String(ob).toLowerCase()]; if (!tipo) throw new NmErro("Objeto “" + ob + "” não está no local e não é um tipo de objeto.", l.linha); const f = nmFrenteDe(it); const D0 = TIPOS_OBJETO[tipo], k = Math.min(1, (it.params.tamanho || 1) * 1.1); o = adicionarObjeto(tipo, { x: it.params.wx + f[0] * 3, z: it.params.wz + f[1] * 3, nome: ob, larg: D0.larg * k, prof: D0.prof * k, alt: D0.alt * k }); o.autoDe = it.name; }
         (Q.segurados = Q.segurados || new Set()).add(o.id);
         if (!peg && w === "segura" && PEGADA_PADRAO[o.tipo]) pegada = PEGADA_PADRAO[o.tipo];
-        try { const r = apiFor(it).segurarComo(o.nome || o.tipo, pegada, {}); if (r && r.aproximado) Q.avisos.push(it.name + " segura " + ob + ": aproximado"); } catch (e) { Q.avisos.push(it.name + " segura " + ob + ": " + e.message); }
+        try { const r = apiFor(it).segurarComo(o.id, pegada, {}); if (r && r.aproximado) Q.avisos.push(it.name + " segura " + ob + ": aproximado"); } catch (e) { Q.avisos.push(it.name + " segura " + ob + ": " + e.message); }
         /* rastro do golpe (da preparação até aqui): pedido com "rastro"; no filme, automático nos golpes de ataque ("sem-rastro" desliga) */
         const G = ACOES[pegada] && ACOES[pegada].golpe, auto = planoR !== null && G && G.de && /Ataque/.test(G.tag || "") && rastro !== false;
         if (G && G.de && (rastro || auto)) { try { const tr = trilhaDoGolpe(it, o, pegada, {}); if (tr) { const id = cena.efeitos.adicionar("rastro_arma", Object.assign({ em: { objeto: o.id, parte: "ponta" }, trilha: tr }, rastro && rastro.elemento ? { elemento: rastro.elemento, colorido: true } : {}));
@@ -1185,6 +1189,7 @@ function compilarName(texto, opts = {}) {
   return r;
 }
 function nmCompilar(texto, opts = {}) {
+  try { texto = nrExpandirTexto(texto); } catch (e) { return { ok: false, erros: [{ linha: 0, erro: e.message }], avisos: [], quadros: [], paginas: [], elenco: [] }; }
   const ctx = { elenco: new Map(), apelidos: new Map(), coresUsadas: new Set(), locais: new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: new Map(), locaisRuins: new Set(), animacoes: new Map(), poses: new Map(), defs: [], salvar: opts.salvar !== false };
   const erros = [], avisos = [], quadros = [], paginas = []; ctx.erros = erros;
   ctx.diretor = /^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado)\b/im.test(texto);

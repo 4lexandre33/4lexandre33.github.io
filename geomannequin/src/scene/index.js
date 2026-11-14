@@ -56,5 +56,6 @@ iniciarModos();
 iniciarParametros();
 iniciarAjuda();
 export * from "./preconfig.js";
+export * from "./narrativa.js";
 export * from "./autocompletar.js";
 export * from "./aves-anim.js";

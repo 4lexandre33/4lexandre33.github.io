@@ -14,6 +14,8 @@ import { GESTOS_CONVERSA, ATITUDES, CURVAS, TONS_FALA } from "./animacao.js";
 import { AM_POSES, AM_MARCHAS } from "./animais.js";
 import { listaAnimacoesAnimal } from "./animais-anim.js";
 import { PRECONFIG, pcProximos, pcAchar, pcDemoTexto } from "./preconfig.js";
+import { NR, NR_ESTRUTURAS, NR_TONS, NR_VERSOES, NR_FORMATOS, nrProximos, nrDemoTexto } from "./narrativa.js";
+import { listaGolpes } from "./pegadas.js";
 import { TONS_CENA, renderizarQuadro } from "./quadros.js";
 import { compilarName } from "./name-dsl.js";
 import { CATALOGO, TIPOS_OBJETO, QD_ESPECIES, TONS, ELEMENTOS } from "../engine/index.js";
@@ -57,6 +59,9 @@ function acTexto(m) {
     case "aanim": return "elenco\n  Trovao animal cavalo\nquadro 1 alvo Trovao\n  Trovao em (0,0) gira 90\n  Trovao anima " + m.v + "\n";
     case "preset": { const d = pcAchar(m.v); return d ? pcDemoTexto(d) : ""; }
     case "ramo": { const d = pcAchar(m.exemplo); return d ? pcDemoTexto(d) : ""; }
+    case "narrativa": return NR.has(m.v) ? nrDemoTexto(m.v) : "";
+    case "nramo": return NR.has(m.exemplo) ? nrDemoTexto(m.exemplo) : "";
+    case "golpe": { const g = listaGolpes().find(x => x.nome === m.v); return g ? AC_EL1 + "quadro 1 inteiro alvo Kai lado 3/4\n  Kai em (0,0) segura " + g.teste + " como " + g.nome + "\n" : ""; }
   } return ""; }
 /* ===== miniaturas prontas (atlas gerados por ferramentas/miniaturas.mjs): instantâneas; sem atlas, desenha na hora ===== */
 const AC_ATLAS = { indice: null, base: "img/miniaturas/", pedido: false };
@@ -64,7 +69,7 @@ function acCarregarAtlas() { if (AC_ATLAS.pedido || typeof fetch === "undefined"
   /* arquivo único: os atlas vêm embutidos (data: URI) */
   if (typeof window !== "undefined" && window.GM_MINIATURAS) { const G = window.GM_MINIATURAS; AC_ATLAS.indice = G.indice; AC_ATLAS.urls = G.arquivos; return; }
   fetch(AC_ATLAS.base + "indice.json").then(r => r.ok ? r.json() : null).then(j => { AC_ATLAS.indice = j; }).catch(() => { }); }
-function acSprite(m) { acCarregarAtlas(); const I = AC_ATLAS.indice; if (!I) return ""; const tipo = m.tipo === "ramo" ? "preset" : m.tipo, v = m.tipo === "ramo" ? m.exemplo : m.v, A = I[tipo]; if (!A || A.itens[v] === undefined) return "";
+function acSprite(m) { acCarregarAtlas(); const I = AC_ATLAS.indice; if (!I) return ""; const tipo = m.tipo === "ramo" ? "preset" : m.tipo === "nramo" ? "narrativa" : m.tipo, v = m.tipo === "ramo" || m.tipo === "nramo" ? m.exemplo : m.v, A = I[tipo]; if (!A || A.itens[v] === undefined) return "";
   const i = A.itens[v], c = i % A.cols, r = Math.floor(i / A.cols), rows = Math.ceil(A.n / A.cols);
   return '<i class="ac-sp" style="background-image:url(' + (AC_ATLAS.urls ? AC_ATLAS.urls[A.arquivo] : AC_ATLAS.base + A.arquivo) + ");background-size:" + A.cols * 100 + "% " + rows * 100 + "%;background-position:" + (A.cols > 1 ? c / (A.cols - 1) * 100 : 0) + "% " + (rows > 1 ? r / (rows - 1) * 100 : 0) + '%"></i>'; }
 acCarregarAtlas();
@@ -73,7 +78,7 @@ function acTodas() { const out = {}, add = (t, ks) => { out[t] = [...new Set(ks)
   add("enq", Object.keys(AC_ENQ)); add("ang", Object.keys(AC_ANG)); add("lado", Object.keys(AC_LADO)); add("lente", Object.keys(AC_LENTE)); add("tom", Object.keys(TONS_CENA));
   add("expr", Object.keys(EXPRESSOES)); add("gesto", Object.keys(GESTOS_CONVERSA)); add("atitude", Object.keys(ATITUDES)); add("interacao", Object.keys(INTERACOES)); add("efeito", Object.keys(CATALOGO));
   add("objeto", Object.keys(TIPOS_OBJETO)); add("corpo", Object.keys(AC_CORPO)); add("especie", Object.keys(QD_ESPECIES)); add("apose", Object.keys(AM_POSES));
-  add("aanim", listaAnimacoesAnimal().map(a => a.nome || a).concat(Object.keys(AM_MARCHAS))); add("preset", PRECONFIG.map(d => d.id)); return out; }
+  add("aanim", listaAnimacoesAnimal().map(a => a.nome || a).concat(Object.keys(AM_MARCHAS))); add("preset", PRECONFIG.map(d => d.id)); add("narrativa", [...NR.keys()]); add("golpe", listaGolpes().map(g => g.nome)); return out; }
 
 /* ===== diagramas (sem render) ===== */
 const AC_V = (c, w = 120, h = 68) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + " " + h + '" width="' + w + '" height="' + h + '"><rect width="' + w + '" height="' + h + '" rx="6" fill="#f4f1ea"/>' + c + "</svg>";
@@ -124,6 +129,17 @@ PD_AC_ANTES.push((antes, info) => { const linha = antes.split("\n").pop();
     if (k && !/^(pose|animacao|animação|ciclo)$/.test(bloco)) { const pv = k[3] === "." ? " " : "", pre = pdNorm(k[4]);
       const itens = Object.keys(AC_CORPO).filter(x => x.startsWith(pre)).map(x => ({ v: pv + x + " ", r: x, tipo: "corpo", d: AC_CORPO[x], mini: { tipo: "corpo", v: x } }));
       if (itens.length) return { itens, de: antes.length - k[4].length - (k[3] === "." ? 1 : 0), ponto: k[3] === "." }; } }
+  /* funções narrativas: "narrativa " desce na árvore família.função.versão.tom; "historia " lista as estruturas */
+  { const k = /^\s*narrativa\s+([\w.-]*)$/i.exec(linha);
+    if (k) { const cam = k[1], i = cam.lastIndexOf("."), pref = i >= 0 ? cam.slice(0, i) : "", resto = pdNorm(i >= 0 ? cam.slice(i + 1) : cam);
+      const itens = nrProximos(pref).filter(n => n.nome.startsWith(resto) || (resto.length > 2 && n.nome.includes(resto))).slice(0, 80).map(n => ({ v: n.nome + (n.folha ? " com " : "."), r: n.nome, tipo: pref.split(".").filter(Boolean).length === 1 ? "narrativa" : "nramo", d: n.desc, mini: pref.split(".").filter(Boolean).length === 1 ? { tipo: "narrativa", v: n.id } : { tipo: "nramo", exemplo: n.exemplo } }));
+      if (itens.length) return { itens, de: antes.length - (i >= 0 ? cam.length - i - 1 : cam.length), ponto: false }; }
+    const h = /^\s*(historia|história)\s+([\w-]*)$/i.exec(linha);
+    if (h) { const pre = pdNorm(h[2]); const itens = Object.entries(NR_ESTRUTURAS).filter(([k]) => k.startsWith(pre)).map(([k, e]) => ({ v: k + " com ", r: k, tipo: "estrutura", d: e.nome + " · " + e.fonte + " · " + e.passos.length + " passos" }));
+      if (itens.length) return { itens, de: antes.length - h[2].length, ponto: false }; }
+    const o = /^\s*(narrativa|historia|história)\s+\S+.*\s(tom|formato|versao|versão)\s+([\w-]*)$/i.exec(linha);
+    if (o) { const q = pdNorm(o[2]), pre = pdNorm(o[3]), lista = q === "tom" ? Object.entries(NR_TONS).map(([k, t]) => [k, "tom " + t.nome]) : q === "formato" ? Object.entries(NR_FORMATOS) : Object.entries(NR_VERSOES);
+      const itens = lista.filter(([k]) => k.startsWith(pre)).map(([k, d]) => ({ v: k + " ", r: k, tipo: "opcao", d })); if (itens.length) return { itens, de: antes.length - o[3].length, ponto: false }; } }
   /* pré-configurações: preset + caminho com pontos */
   let m = /\bpreset\s+([\w.-]*)$/i.exec(linha);
   if (m) { const cam = m[1], i = cam.lastIndexOf("."), pref = i >= 0 ? cam.slice(0, i) : "", resto = pdNorm(i >= 0 ? cam.slice(i + 1) : cam);

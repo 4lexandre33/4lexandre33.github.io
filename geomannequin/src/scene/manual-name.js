@@ -7,6 +7,13 @@ import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { TIPOS_OBJETO, CATALOGO, QD_ESPECIES, TONS, ELEMENTOS } from "../engine/index.js";
 import { PRECONFIG, pcArvore } from "./preconfig.js";
+import { NR, NR_FAMILIAS, NR_TONS, NR_VERSOES, NR_ESTRUTURAS, nrTotalVariantes } from "./narrativa.js";
+import { listaGolpes, GL_CLASSES } from "./pegadas.js";
+import { listaPosesAcao2 } from "./poses-acao2.js";
+import { listaAnimAcao2 } from "./anim-acao2.js";
+import { AV_ESPECIES } from "../engine/index.js";
+import { AV_POSES } from "./animais.js";
+import { AV_VERBOS } from "./aves-anim.js";
 import { TONS_CENA } from "./quadros.js";
 import { AMA_VERBOS, AMA_POSE_ANIM, listaAnimacoesAnimal, animacaoAnimal, amaAmostrar } from "./animais-anim.js";
 import { listaPosesExtras, EXPRESSOES_EXTRA } from "./poses-extra.js";
@@ -719,7 +726,50 @@ ${EXEMPLO_FILME}
     [nivel 3] [escala 1.5] [colorido|nanquim] [texto "BAM"] [camada frente|tras] [por 2s] [cresce|pulsa|some|pisca|surge] [para Mira]
     Elementos (paletas): ${Object.keys(ELEMENTOS).join(", ")}
     Tons do efeito: ${Object.keys(TONS).join(", ")}
-    No filme, no tempo: "1.5s efeito explosao em (2,0) cresce por 1s" (efeito da cena) ou "1s Kai efeito aura_sombria pulsa por 3s".`;
+    No filme, no tempo: "1.5s efeito explosao em (2,0) cresce por 1s" (efeito da cena) ou "1s Kai efeito aura_sombria pulsa por 3s".
+
+29. FUNÇÕES NARRATIVAS E HISTÓRIA PROCEDURAL (${NR.size} funções × ${Object.keys(NR_VERSOES).length} versões × ${Object.keys(NR_TONS).length} tons = ${nrTotalVariantes()} variantes)
+  Uma linha vira vários quadros (mangá/webtoon) ou planos (animação), com preset de cena e câmera, poses, emoções, efeitos, falas e tamanho do quadro:
+    narrativa FAMILIA.FUNCAO[.VERSAO[.TOM]] com Kai, Mira [formato manga|webtoon|animacao] [tom epico] [versao suspense] [semente 3]
+    historia ESTRUTURA com Kai, Mira [formato manga] [tom sombrio] [quadros 24] [semente 7] [variacoes 4] [funcoes gatilho.chamado,cerco.encurralado,desfecho.vitoria]
+  FAMÍLIAS: ${Object.entries(NR_FAMILIAS).map(([k, v]) => k + " (" + v + ")").join(" · ")}
+  FUNÇÕES: ${[...NR.keys()].join(", ")}
+  VERSÕES: ${Object.entries(NR_VERSOES).map(([k, v]) => k + " = " + v).join(" · ")}
+  TONS: ${Object.entries(NR_TONS).map(([k, t]) => k + (t.cena ? " (cor " + t.cena + ")" : "")).join(" · ")} — mudam as expressões, o ângulo do momento forte, a cor e o efeito de ênfase.
+  ESTRUTURAS: ${Object.entries(NR_ESTRUTURAS).map(([k, e]) => k + " (" + e.nome + ", " + e.passos.length + " passos)").join(" · ")}
+  Papéis: A = protagonista, B = o outro (antagonista, par, mentor), C = terceiro; a ordem dos nomes em "com" dá os papéis. Quem falta no elenco entra sozinho.
+  "historia" sorteia funções, versões e tons pela semente; com "variacoes K" gera K histórias e fica com a de maior NOTA (tensão perto da curva ideal
+  — sobe até ~80% e cai no fim —, variedade de planos e quadros perto do pedido). Para ver todas e escolher: MCP gerar_historia (devolve as K com nota).
+  Cada função começa largando o que estava na mão ("Kai guarda") e em pé, se a primeira batida não diz a pose. Depois de gerar, o texto é seu: edite à vontade.
+  VERIFICAÇÃO NARRATIVA → VISUAL (MCP aplicar_narrativa/gerar_historia): compila, lê os avisos e corrige sozinho — eixo de 180° (espelhado),
+  cabeça cortada (abre o plano), olhar sem espaço, três planos iguais seguidos — e diz o que corrigiu e o que restou.
+
+30. ARMAS, INSTRUMENTOS E GOLPES (objetos de mão sólidos e poses já segurando)
+  Objetos de mão: espadas (katana, espadaLonga, espadaCurta, sabre), adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku,
+    chicote, besta, pistola, rifle, escudos (broquel, escudoCavaleiro, escudoTorre), varinha, cajadoMagico, orbe, tocha, lanterna, instrumentos (violao, guitarra,
+    violino, arcoViolino, flauta, trompete, microfone, baqueta) e do dia a dia (celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave…).
+  Kai segura katana (pegada padrão) · Kai segura katana como kamaeJodan [rastro [elemento fogo]] · Kai guarda (tira da mão) · Kai larga katana (deixa cair).
+  GOLPES (${listaGolpes().length}, pegadas com a arma certa na mão, dedos sem atravessar e arma fora do corpo): ${listaGolpes().map(g => g.nome).join(", ")}
+  Classes: ${Object.entries(GL_CLASSES).map(([k, v]) => k + " = " + v[1]).join(" · ")}
+  No filme, um golpe de ataque depois da preparação desenha o RASTRO da ponta (de onde veio até onde parou): "0s Kai segura katana como kamaeJodan" ·
+    "0.5s Kai segura katana como katanaCorteDescendente rapido" ("sem-rastro" desliga). Num quadro parado, peça "rastro".
+  POSES DE AÇÃO (${listaPosesAcao2().length}): esquiva, defesa, pulo, flutuar, voo, fuga, perseguição, parkour, reação, poder, gigante/minúsculo, confronto —
+    ${listaPosesAcao2().map(p => p.nome).join(", ")}
+  ANIMAÇÕES DE AÇÃO (${listaAnimAcao2().length}, "0s Kai anima NOME"): ${listaAnimAcao2().map(a => a.nome).join(", ")}
+
+31. AVES (bípedes com asas) E QUADRÚPEDES COM OSSOS
+  Elenco: Falcao animal falcao · Roca animal aguia escala 5 sela · Avi animal avestruz sela. Espécies de ave: ${Object.keys(AV_ESPECIES).join(", ")}.
+  Poses de ave: ${Object.keys(AV_POSES).join(", ")}. No filme: ${Object.keys(AV_VERBOS).join(", ")} (ex.: "0s Falcao decola" · "depois Falcao voa 6m").
+  Pousar: Falcao pousa-em Kai ombro|mao|cabeca|braco. Montar: Kai monta Roca — só se a sela estiver a ≥ 0,85 m do chão (ave) ou ≥ 0,55 m (quadrúpede); senão o erro diz a escala mínima.
+  Esqueleto: "Trovao animal cavalo ossos" (ou "Trovao ossos" na linha) mostra os ossos (coluna, costelas, escápula, pelve, patas com boleto e casco).
+
+32. EFEITO DE A ATÉ B (no corpo, no objeto ou na tela)
+  Âncora num PONTO DO OBJETO: efeito raio em Kai.varinha.ponta · efeito chama em Kai.tocha.chama · efeito feixe em katana.ponta para Mira.
+  PROJÉTIL por um caminho: efeito projetil de Kai.maoDir para Mira [reta|arco|balistica|espiral|zigue|onda|teleguiado] [impacto [explosao]] [por 0.8s]
+    No filme ele viaja no tempo e o impacto aparece na chegada; num quadro parado ele fica no meio do caminho (viagem 60) com a cauda atrás.
+  FUMAÇA BRANCA NOS PÉS: Kai arrastado 2m tras · Kai desliza 3m · Kai freia (o corpo desliza, a poeira sai dos dois pés, para trás do movimento) · Kai efeito poeira_pes.
+  EXPLOSÃO EM CAMADAS: efeito explosao_completa em (5,0) [colorido] — clarão, bola de fogo, anel no chão, destroços e fumaça que sobe (no filme, cada camada no seu tempo).
+  Os efeitos são do quadro: no quadro seguinte somem (cabeçalho "mantem-efeitos" guarda os do anterior).`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */
