@@ -387,3 +387,10 @@ body.qd-aberto{overflow:hidden}
 .nm-bib li b { font-weight: 600; } .nm-bib li span { margin-left: auto; display: inline-flex; gap: 4px; }
 .nm-bib li button { font-size: 11px; padding: 1px 6px; }
 .nm-bibwrap { display: block; width: 100%; align-self: stretch; text-align: left; overflow: auto; }
+.nm-ac-mini:has(.ac-sp),.nm-ac-mini:has(img){width:64px}.ac-sp{display:block;width:100%;height:100%;background-repeat:no-repeat;border-radius:3px}.nm-ac-mini img{width:100%;height:100%;object-fit:cover;display:block}
+.nm-ac-big .ac-sp{aspect-ratio:16/9;height:auto}.nm-ac-big img{display:block;width:100%;height:auto}
+.nm-pc-lista{list-style:none;margin:6px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.nm-pc-lista button{display:flex;flex-direction:column;align-items:stretch;gap:2px;width:100%;text-align:left;padding:4px;border:1px solid var(--line,#ccc);border-radius:6px;background:var(--paper);color:var(--ink);cursor:pointer}
+.nm-pc-lista button:hover{border-color:var(--accent,#d0452f)}.nm-pc-lista small{color:var(--muted);font-size:11px;line-height:1.2}.nm-pc-lista b{font-size:12px;word-break:break-word}
+.nm-pc-mini{display:block;aspect-ratio:16/9;background:var(--paper)}.nm-pc-mini .ac-sp,.nm-pc-mini img{width:100%;height:100%;display:block}.nm-pc-mig button{border:0;background:none;color:var(--accent,#d0452f);cursor:pointer;padding:0 2px}
+[data-pc] input[type=search]{width:100%}

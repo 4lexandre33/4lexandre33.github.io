@@ -52,3 +52,5 @@ iniciarModelo();
 iniciarModos();
 iniciarParametros();
 iniciarAjuda();
+export * from "./preconfig.js";
+export * from "./autocompletar.js";

@@ -5,7 +5,7 @@
 import { SCN } from "./modelo.js";
 import { adicionarObjeto } from "./cenario.js";
 import { pMundo } from "./colisoes.js";
-import { capsulas, QD_ESPECIES, qdEspecie, qdPosePadrao, qdPontoMundo, qdMedidas, qdEsqueleto, restGround } from "../engine/index.js";
+import { capsulas, QD_ESPECIES, QD_KT, qdEspecie, qdPosePadrao, qdPontoMundo, qdMedidas, qdEsqueleto, restGround } from "../engine/index.js";
 
 const AM_M = 1 / 0.114;
 /* poses prontas do animal (somam à pose de descanso) */
@@ -33,24 +33,48 @@ function amMisturar(a, b, u) { const r = JSON.parse(JSON.stringify(a)), P0 = qdP
 const AM_MARCHAS = {
   passo: { fase: { te: 0, de: 0.25, td: 0.5, dd: 0.75 }, duty: 0.64, A: 16, K: 55, T: 1.1, balanco: 0 },
   trote: { fase: { de: 0, td: 0, dd: 0.5, te: 0.5 }, duty: 0.46, A: 22, K: 80, T: 0.72, balanco: 1.5 },
-  galope: { fase: { te: 0, td: 0.1, de: 0.36, dd: 0.46 }, duty: 0.36, A: 30, K: 100, T: 0.55, balanco: 6 }
+  galope: { fase: { te: 0, td: 0.1, de: 0.36, dd: 0.46 }, duty: 0.36, A: 30, K: 100, T: 0.55, balanco: 6 },
+  /* andadura (pares do mesmo lado juntos: camelo, elefante, alguns cavalos), meio-galope (cânter, 3 tempos), galope de fuga, esgueirar (baixo, devagar) */
+  andadura: { fase: { te: 0, de: 0, td: 0.5, dd: 0.5 }, duty: 0.52, A: 20, K: 70, T: 0.8, balanco: 1 },
+  "meio-galope": { fase: { td: 0, te: 0.3, dd: 0.3, de: 0.6 }, duty: 0.42, A: 26, K: 90, T: 0.62, balanco: 4 },
+  "galope-fuga": { fase: { te: 0, td: 0.08, de: 0.34, dd: 0.42 }, duty: 0.3, A: 34, K: 112, T: 0.48, balanco: 7 },
+  esgueirar: { fase: { te: 0, de: 0.25, td: 0.5, dd: 0.75 }, duty: 0.72, A: 11, K: 38, T: 1.5, balanco: 0, baixo: true }
 };
-const AM_SIN_MARCHA = { anda: "passo", andar: "passo", caminha: "passo", trota: "trote", trotar: "trote", galopa: "galope", galopar: "galope", corre: "galope", correr: "galope" };
-/* comprimento da perna (m) e passada por ciclo (m): o casco no chão anda para trás o mesmo que o corpo anda para a frente */
-function amPerna(especie, escala = 1) { const E = QD_ESPECIES[qdEspecie(especie) || "cavalo"]; return Math.max(0.1, (E.h - E.w * 0.45 - E.w * 0.28) * escala); }
-function amPassada(especie, escala, marcha) { const M = AM_MARCHAS[marcha] || AM_MARCHAS.passo, L = amPerna(especie, escala); return 2 * L * Math.sin(M.A * Math.PI / 180) / M.duty; }
+const AM_SIN_MARCHA = { anda: "passo", andar: "passo", caminha: "passo", trota: "trote", trotar: "trote", galopa: "galope", galopar: "galope", corre: "galope", correr: "galope",
+  "anda-de-lado": "andadura", andadura: "andadura", amblea: "andadura", "meio-galope": "meio-galope", canter: "meio-galope", cantera: "meio-galope", dispara: "galope-fuga", foge: "galope-fuga", "galopa-rapido": "galope-fuga", esgueira: "esgueirar", "anda-agachado": "esgueirar", espreita: "esgueirar" };
+/* comprimento da perna (m, do quadril ao casco) e passada por ciclo (m): o casco no chão anda para trás, em linha reta e na
+   velocidade do corpo — então não escorrega. As pernas são posicionadas por IK (3 segmentos, o último quase de pé). */
+function amPerna(especie, escala = 1) { const E = QD_ESPECIES[qdEspecie(especie) || "cavalo"]; return Math.max(0.1, (E.h - E.w * 0.45 - E.w * 0.275) * escala); }
+const AM_DELTA = M => 0.95 * Math.sin(M.A * Math.PI / 180) * (M.baixo ? 0.8 : 1);
+function amPassada(especie, escala, marcha) { const M = AM_MARCHAS[marcha] || AM_MARCHAS.passo; return 2 * AM_DELTA(M) / M.duty * amPerna(especie, escala); }
 function amCiclo(especie, escala, marcha) { const M = AM_MARCHAS[marcha] || AM_MARCHAS.passo, E = QD_ESPECIES[qdEspecie(especie) || "cavalo"]; return M.T * Math.sqrt(Math.max(0.05, E.h * escala) / 1.6); }
-/* pose da marcha numa fase do ciclo (0..1) */
-function amPoseMarcha(marcha, fase, base) {
-  const M = AM_MARCHAS[marcha] || AM_MARCHAS.passo, P = base ? JSON.parse(JSON.stringify(base)) : qdPosePadrao(); P.pernas = P.pernas || {};
-  for (const [l, f0] of Object.entries(M.fase)) { const p = ((fase + 1 - f0) % 1 + 1) % 1, b = P.pernas[l] || [0, 0, 0]; let a, k = 0, h = 0;
-    if (p < M.duty) a = M.A - 2 * M.A * (p / M.duty);
-    else { const s = (p - M.duty) / (1 - M.duty), sm = s * s * (3 - 2 * s); a = -M.A + 2 * M.A * sm; k = M.K * Math.sin(Math.PI * s); h = k * 0.45; }
-    P.pernas[l] = [b[0] + a, b[1] - k, b[2] + h]; }
-  P.pescoco = (P.pescoco || 0) + Math.sin(fase * Math.PI * 4) * (marcha === "passo" ? 4 : 3);
-  P.corpoInclina = (P.corpoInclina || 0) + Math.sin(fase * Math.PI * 2) * (M.balanco || 0) * (marcha === "galope" ? 1 : 0);
-  P.rabo = (P.rabo || 0) + (marcha === "galope" ? 25 : marcha === "trote" ? 12 : 0);
-  return P; }
+/* IK de uma perna no plano lateral, em unidades do comprimento da perna (quadril = 0,0; y para baixo negativo):
+   alvo do casco (z, y) e ângulo do último segmento → ângulos da pose (somam ao descanso da perna) */
+const AM_PERNA = { d: { L: [0.42, 0.38, 0.2], rest: [0, 0, 0] }, t: { L: [0.42 * QD_KT, 0.38 * QD_KT, 0.2 * QD_KT], rest: [14, -38, 24] } };
+const AM_Z0 = { d: 0, t: QD_KT * (0.42 * Math.sin(14 * Math.PI / 180) + 0.38 * Math.sin(-24 * Math.PI / 180)) };
+function amIK(tipo, z, y, a3g) { const R = Math.PI / 180, { L, rest } = AM_PERNA[tipo], a3 = (a3g || 0) * R, jz = z - L[2] * Math.sin(a3), jy = y + L[2] * Math.cos(a3);
+  const d = Math.max(Math.abs(L[0] - L[1]) + 1e-3, Math.min(L[0] + L[1] - 1e-4, Math.hypot(jz, jy))), phi = Math.atan2(jz, -jy);
+  const al = Math.acos(Math.max(-1, Math.min(1, (L[0] * L[0] + d * d - L[1] * L[1]) / (2 * L[0] * d)))), be = Math.PI - Math.acos(Math.max(-1, Math.min(1, (L[0] * L[0] + L[1] * L[1] - d * d) / (2 * L[0] * L[1]))));
+  const a1 = phi + al, a2 = a1 - be; return [a1 / R - rest[0], (a2 - a1) / R - rest[1], (a3 - a2) / R - rest[2]]; }
+const AM_ERGUE = { passo: 0.12, andadura: 0.16, trote: 0.22, "meio-galope": 0.26, galope: 0.3, "galope-fuga": 0.34, esgueirar: 0.1 };
+/* parâmetros de uma andadura (para misturar duas nas transições) */
+function amParams(marcha) { const M = AM_MARCHAS[marcha] || AM_MARCHAS.passo; return { fase: Object.assign({}, M.fase), duty: M.duty, D: AM_DELTA(M), lift: AM_ERGUE[marcha] ?? 0.15, bal: /galope/.test(marcha) ? M.balanco || 0 : 0, Y: M.baixo ? -0.8 : -0.99, bob: marcha === "passo" ? 4 : 3, rabo: /galope/.test(marcha) ? 25 : marcha === "trote" || marcha === "andadura" ? 12 : 0, baixo: !!M.baixo }; }
+/* mistura de parâmetros: b = null é "parado" (sem passada) */
+function amParamsMix(a, b, s) { const Z = x => Object.assign({}, x, { D: 0, lift: 0, bal: 0, bob: 0, rabo: 0 }), A = a || Z(b), B = b || Z(a), L = (x, y) => x + (y - x) * s, f = {};
+  for (const k of Object.keys(A.fase)) { let d = (B.fase[k] ?? A.fase[k]) - A.fase[k]; d = ((d + 0.5) % 1 + 1) % 1 - 0.5; f[k] = A.fase[k] + d * s; }
+  return { fase: f, duty: L(A.duty, B.duty), D: L(A.D, B.D), lift: L(A.lift, B.lift), bal: L(A.bal, B.bal), Y: L(A.Y, B.Y), bob: L(A.bob, B.bob), rabo: L(A.rabo, B.rabo), baixo: s < 0.5 ? A.baixo : B.baixo }; }
+/* pose a partir dos parâmetros: casco de apoio anda reto para trás na altura do chão; o de voo sobe num arco */
+function amPoseGait(G, fase, base, especie) { const P = base ? JSON.parse(JSON.stringify(base)) : qdPosePadrao(); P.pernas = P.pernas || {};
+  const E = QD_ESPECIES[qdEspecie(especie) || "cavalo"], cL = E.c / Math.max(0.2, E.h - E.w * 0.725);
+  P.pescoco = (P.pescoco || 0) + Math.sin(fase * Math.PI * 4) * G.bob - (G.baixo ? 22 : 0);
+  P.corpoInclina = (base && base.corpoInclina || 0) + Math.sin(fase * Math.PI * 2) * G.bal; P.rabo = (P.rabo || 0) + G.rabo - (G.baixo ? 15 : 0);
+  for (const [l, f0] of Object.entries(G.fase)) { const p = ((fase + 1 - f0) % 1 + 1) % 1, tp = l[0] === "d" ? "d" : "t", z0 = AM_Z0[tp], dyHip = tp === "d" ? 0.84 * cL * Math.sin(P.corpoInclina * Math.PI / 180) : 0; let z, y, a3 = 0;
+    if (p < G.duty) { z = z0 + G.D * (1 - 2 * p / G.duty); y = G.Y - dyHip; }
+    else { const s = (p - G.duty) / (1 - G.duty), sm = s * s * (3 - 2 * s); z = z0 - G.D + 2 * G.D * sm; y = G.Y - dyHip + G.lift * Math.sin(Math.PI * s); a3 = (tp === "d" ? -35 : -20) * Math.sin(Math.PI * s) * Math.min(1, G.lift / 0.1); }
+    const g = amIK(tp, z, y, a3); P.pernas[l] = [g[0] - P.corpoInclina, g[1], g[2]]; }
+  P.alturaPerna = -G.Y; return P; }
+/* pose da marcha numa fase do ciclo (0..1); especie: para compensar a inclinação do corpo no galope */
+function amPoseMarcha(marcha, fase, base, especie) { return amPoseGait(amParams(marcha), fase, base, especie); }
 /* ===== criar e achar ===== */
 function amAchar(nome) { return SCN.objetos.find(o => o.tipo === "animal" && o.nome === nome) || null; }
 function amCriar(nome, especie, o = {}) {
@@ -69,6 +93,9 @@ function amAssentar(it, o, g0, soPernas) { /* põe a pessoa sentada na sela do a
   const s = qdPontoMundo(o, "sela", g0), tam = it.params.tamanho || 1; for (const [k, v] of Object.entries(AM_MONTADO)) if (!soPernas || /^(hip|knee|ankle)/.test(k)) it.params[k] = v; it.params.wx = s[0]; it.params.wz = s[2]; it.params.wRot = o.giro || 0; it.params.ground = 0; it.params.bodyLift = 0;
   /* o assento (parte de baixo da pelve) encosta na sela */
   try { const cs = capsulas(pMundo(it)), L = cs.caps || cs, pel = L.find(c => c.nome === "pelve"); const yA = pel ? Math.min(pel.a[1], pel.b[1]) - (pel.r || 0) * 0.7 : null; if (yA !== null) it.params.bodyLift = (s[1] - yA) / tam; } catch (e) { }
+  /* o cavaleiro reage à andadura: inclina à frente no galope (e mais no salto), acompanha o empinar */
+  const pz = o.animal.pose || {}, m = o.animal.marchaAtual || "", lean = (/galope/.test(m) ? 22 : m === "trote" || m === "meio-galope" ? 10 : 0) + ((pz.voo || 0) > 0.05 ? 18 : 0) + Math.max(0, (pz.corpoInclina || 0)) * 0.6;
+  it.params.spineFlex = 6 + lean; if (lean) { it.params.neckFlex = -lean * 0.4; it.params.headPitch = -lean * 0.3; }
   it.apoioEm = o.id; it.montadoEm = o.nome; o.animal.cavaleiro = it.name; o.animal.sela = true; }
 function amChao() { const it = SCN.list.find(x => x.name !== "__vazio__") || SCN.list[0]; try { return it ? restGround(SCN.list[0].params) : 0; } catch (e) { return 0; } }
 /* depois de mexer nos animais: cavaleiros acompanham a sela, carga acompanha o lombo */
@@ -82,5 +109,5 @@ function amChaoMundo() { try { const it = SCN.list.find(x => x.name !== "__vazio
 /* pontos do animal para a câmera (como cfPessoa): cabeça, olhos, centro, frente, chão */
 function amPontos(nome) { const o = amAchar(nome); if (!o) return null; const g0 = amChaoMundo(), cab = qdPontoMundo(o, "cabeca", g0), sela = qdPontoMundo(o, "sela", g0), g = (o.giro || 0) * Math.PI / 180, fr = [Math.sin(g), Math.cos(g)];
   return { cabeca: cab, olhos: cab, olhar: [fr[0], 0, fr[1]], peito: sela, centro: sela, frente: fr, chao: g0, animal: true }; }
-export { AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
+export { amParams, amParamsMix, amPoseGait, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
 void qdEsqueleto;

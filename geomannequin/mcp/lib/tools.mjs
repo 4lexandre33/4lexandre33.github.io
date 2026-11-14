@@ -19,6 +19,7 @@ import { registerNameTools } from "./tools-name.mjs";
 import { registerAnimTools } from "./tools-anim.mjs";
 import { registerFilmeTools } from "./tools-filme.mjs";
 import { registerHqTools } from "./tools-hq.mjs";
+import { registerPreconfigTools } from "./tools-preconfig.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -190,6 +191,7 @@ function metaWidget(w, tipo, extra) { return { gm: Object.assign({ tipo, link: s
 
 /* metadados do ChatGPT (Apps SDK): texto enquanto a ferramenta roda e quando termina; as visuais abrem o widget */
 const INVOCA = {
+  preconfiguracoes: ["Abrindo o catálogo de pré-configurações…", "Catálogo pronto"], aplicar_preconfiguracao: ["Montando a pré-configuração…", "Quadro pronto"], animacao_animal: ["Animando o animal…", "Animação pronta"],
   pose_em_codigo: ["Lendo a pose…", "Pose pronta"], vistas_de_pose: ["Desenhando o esqueleto…", "Vistas prontas"],
   nova_cena: ["Limpando a cena…", "Cena nova"], adicionar_manequim: ["Adicionando manequim…", "Manequim adicionado"], editar_manequim: ["Ajustando o manequim…", "Manequim ajustado"],
   copiar_manequim: ["Copiando…", "Copiado"], remover_manequim: ["Removendo…", "Removido"], camera: ["Movendo a câmera…", "Câmera ajustada"], descrever_cena: ["Montando a cena…", "Cena montada"],
@@ -933,6 +935,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerAnimTools(server, W);
   registerFilmeTools(server, W);
   registerHqTools(server, W);
+  registerPreconfigTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

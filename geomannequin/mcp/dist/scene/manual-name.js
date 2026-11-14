@@ -5,7 +5,12 @@ import { todasPoses, EXPRESSOES } from "./poses.js";
 import { INTERACOES } from "./interacoes.js";
 import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
-import { TIPOS_OBJETO, CATALOGO, QD_ESPECIES } from "../engine/index.js";
+import { TIPOS_OBJETO, CATALOGO, QD_ESPECIES, TONS, ELEMENTOS } from "../engine/index.js";
+import { PRECONFIG, pcArvore } from "./preconfig.js";
+import { TONS_CENA } from "./quadros.js";
+import { AMA_VERBOS, AMA_POSE_ANIM, listaAnimacoesAnimal, animacaoAnimal, amaAmostrar } from "./animais-anim.js";
+import { listaPosesExtras, EXPRESSOES_EXTRA } from "./poses-extra.js";
+import { listaInteracoesExtras } from "./interacoes-extra.js";
 import { AM_POSES } from "./animais.js";
 import { PD_JUNTAS, PD_PARTES, PD_DOC, pdFaixaMov, pdCodigoPose, pdCodigoAnimacao, pdValoresPose, pdParams } from "./pose-dsl.js";
 import { posesSalvas } from "./pose-codigo.js";
@@ -643,7 +648,78 @@ ${EXEMPLO_FILME}
     Para soltar o chão: "Kai paira 0.05m" (folga) ou animações de voo.
   AUDITOR: MCP auditar_animacoes (ou site → Texto → "Auditar animações") mede em cada animação quanto o corpo afunda no chão (cm), quanto o pé apoiado
     escorrega (cm/s) e se termina longe da pose de partida. Limites: afunda > 3,5 cm ou escorrega > 12 cm/s (corrida 40, transições 30) = problema.
-  SOM: não há áudio; falas viram legendas e .srt e os tempos ficam na lista de planos.`;
+  SOM: não há áudio; falas viram legendas e .srt e os tempos ficam na lista de planos.
+
+27. PRÉ-CONFIGURAÇÕES DE CENA E CÂMERA (${PRECONFIG.length} prontas, em árvore)
+  São situações comuns de filme, série, anime e quadrinho já resolvidas: onde cada um fica, para onde olha, a pose sugerida e a CÂMERA.
+  A câmera é RELATIVA às pessoas: mudou alguém de lugar, a câmera vem junto (no filme ela acompanha a cada quadro).
+  DUAS FORMAS (dentro de um quadro ou de um plano):
+    cena preset ID com Kai, Mira [em (x,z)] [gira 90] [espelhado] [sem-poses] [lente 50]   — arruma as pessoas (e cadeiras/mesa) E põe a câmera
+    camera preset ID com Kai, Mira [lente 50] [espelhado]                                  — SÓ a câmera (as pessoas ficam onde você pôs)
+    Os nomes entram na ordem dos PAPÉIS (A, B, C…; M = o animal). Sem "com", usa quem está no quadro na ordem em que apareceu.
+    No filme: "2s camera preset … em 1s" troca suave aos 2 s; "corte" troca seco. Os movimentos de câmera (aproxima, orbita…) somam por cima.
+  ID = caminho na árvore, com pontos: dialogo.dois.frente.ombro-a-dir. Basta o fim se for único (ex.: "ombro-a-dir" acha o primeiro).
+  ÁRVORE (grupos de primeiro nível): ${Object.entries(pcArvore().filhos).map(([k, n]) => k + " (" + (function c(x) { return x.itens.length + Object.values(x.filhos).reduce((s, f) => s + c(f), 0); })(n) + ")").join(" · ")}
+  DIÁLOGO A DOIS — arranjos: frente (1,2 m) · perto (0,55 m) · distancia (5 m) · mesa · sentado-em-pe · em-l · lado · andando · banco · costas
+    planos de cada arranjo: mestre-perfil, dois-3-4-a/b, ombro-a-dir/esq, ombro-b-dir/esq (SOBRE O OMBRO / over-the-shoulder, OTS),
+    sujo-a/b (close sujo: "dirty single", um pedaço do ombro do outro na borda), limpo-a/b (close limpo: "clean single"), medio-a/b, pov-a/b,
+    cinquenta (50/50 de perfil), aereo, baixo-a, alto-b. Lado a lado: frontal, frontal-inteiro, costas, perfil-a/b, close-a/b, ombro-a, baixo, aereo, geral, pes.
+  PLANO E CONTRAPLANO: ombro-a-dir (B fala) ↔ ombro-b-esq (A responde) ficam do MESMO lado do eixo (regra dos 180°). Misturar dir com dir cruza o eixo.
+  OUTROS GRUPOS: dialogo.tres.* (triangulo, linha, dois-contra-um, mesa) · grupo.* (equipe em V, roda, fila, marcha, reuniao, cercado, costas) ·
+    combate.* (confronto, guardas, golpe, chute, duelo, impasse, caido, vitoria, energia, impasse-tres, um-contra-todos) · um.ENQUADRAMENTO.ANGULO
+    (olhos|close|primeiro-plano|medio|americano|inteiro|conjunto|geral × frente|tres-quartos|perfil|costas|plongee|contra-plongee|holandes|zenital|nadir) ·
+    emocao.* · estabelecimento.* · movimento.* (e movimento.perseguicao.*) · suspense.* · romance.* · poder.* · objeto.* (inserts) · pov.* ·
+    animal.montaria.* (A monta M) · animal.companheiro.* · escala.* (gigante/pequeno/fada) · anime.* · hq.* · camera-movimento.* (com o movimento sugerido).
+  EIXO (180°) E "espelhado": a câmera de um preset fica de um lado da linha entre A e B. Mantenha A e B na MESMA ordem nos quadros seguidos
+    (com Kai, Mira … com Kai, Mira): os planos "-a"/"-b" já ficam do mesmo lado. Trocar a ordem (com Mira, Kai) inverte o lado e dá o aviso
+    "a câmera cruzou o eixo"; "espelhado" põe a câmera do outro lado (use num quadro para corrigir, ou de propósito para virar a cena).
+  JUNTO COM OUTRAS LINHAS: "cena preset" escreve, naquele ponto, as linhas "Kai em (…) gira … pose …" (e cadeiras/mesa); as linhas DEPOIS dele
+    mudam por cima (Kai pose X, Mira expressao Y, falas). Num quadro "continua" o preset reposiciona quem ele cita. "camera preset" só mexe na câmera
+    e vale para o quadro todo (a última linha de câmera ganha). Planos de olhos/detalhe cortam a cabeça de propósito (sem aviso).
+  TRÊS PESSOAS: dialogo.tres.ARRANJO — triangulo (A na frente, B à direita de A, C diante de A) · linha (três lado a lado) · dois-contra-um
+    (A e B juntos, C de frente para eles) · mesa (A e C nas cabeceiras, B no lado). O eixo principal é A–C: ombro-a-c ↔ ombro-c-a ficam do mesmo lado;
+    ponha em A e C quem DISCUTE e em B quem observa/media. Para B: ombro-b-a, ombro-b-c, dois-ab, dois-bc, close-b. Cadeiras e mesa vêm com o preset (não precisa de local).
+  ANIMAIS: papel M = o animal ("cena preset animal.montaria.perfil com Kai, Trovão" põe Kai montado). Para perseguição a cavalo use
+    movimento.perseguicao.* com os CAVALEIROS (A = quem foge, B = quem persegue): a câmera segue os cavaleiros e, com eles, os cavalos.
+  EXEMPLO: quadro 3 tamanho grande
+             cena preset dialogo.dois.frente.ombro-a-dir com Kai, Mira em (2,0) gira 90
+             Mira fala "Você voltou."
+  VER TODAS: site → Biblioteca → Pré-configurações (árvore com miniaturas); no editor de texto digite "preset " e depois "." para descer na árvore;
+    catálogo (docs/catalogo-dsl.md, seção Pré-configurações); MCP: preconfiguracoes (lista/busca com miniaturas) e aplicar_preconfiguracao.
+
+28. ANIMAIS ANIMADOS, POSES EXTRAS, TONS E EFEITOS NO TEMPO
+  ANIMAÇÕES DE ANIMAL (filme): Trovão anima NOME [por 3s | 10 m | 2 vezes]   (${listaAnimacoesAnimal().length} animações)
+    ${listaAnimacoesAnimal().map(a => a.nome || a).join(", ")}
+    Verbos diretos: 1s Trovão ${Object.keys(AMA_VERBOS).slice(0, 30).join(" · ")} … e ${Object.keys(AMA_POSE_ANIM).join(" · ")} (animados no filme).
+    Marchas: anda (passo) · andadura · trota · meio-galope (canter) · galopa · galopa-fuga (dispara, foge) · esgueira (espreita) · anda-de-re · passo-lateral.
+    Transições sem tranco: passo-para-trote, trote-para-galope, frear-galope, parar, arrancar-*; curvas: curva-esq/dir (-trote/-galope); vira-*, meia-volta, pivo-traseiro.
+  O QUE CADA ANIMAÇÃO ANDA (cavalo escala 1; outras espécies e escalas: proporcional ao tamanho). "anima" ANDA de verdade: o animal termina adiante.
+    ${(function () { const t = []; for (const x of listaAnimacoesAnimal()) { try { const a = animacaoAnimal(x.nome, "cavalo"), mv = (amaAmostrar(a, a.duracao - 1e-3) || {}).mover || {}, f = mv.frente || 0, l = mv.lado || 0, g = mv.giro || 0;
+      t.push(x.nome + " " + a.duracao.toFixed(1).replace(".", ",") + "s" + (a.loop ? " (ciclo)" : "") + (Math.abs(f) > 0.05 ? " " + f.toFixed(1).replace(".", ",") + "m" : "") + (Math.abs(l) > 0.05 ? " lado " + l.toFixed(1).replace(".", ",") + "m" : "") + (Math.abs(g) > 1 ? " gira " + Math.round(g) + "°" : "")); } catch (e) { } } return t.join(" · ").replace(/(.{1,150})( · |$)/g, "$1$2\n    ").trim(); })()}
+    Ciclo + "por 3s" ou "10 m" repete até o tempo/distância; "galopa 25m" é a marcha simples. Posição: o validador (MCP validar_name) e a aba Filme mostram onde cada um está.
+  MONTAR ANIMADO (filme): 2s Kai monta Trovão (pé no estribo, sobe, senta: 1,5 s) · 6s Kai desmonta [esquerda|direita] (1,3 s).
+    O cavaleiro sai de ONDE ESTÁ e vai até a sela: deixe-o em pé ~1 m ao lado esquerdo do animal (ex.: Kai em (−1,0) e Trovão em (0,0) gira 0) para ficar natural.
+    "Kai monta Trovão sem-animacao" põe montado na hora. Montado, o cavaleiro inclina com a marcha e o pulo; olhar para trás: "olha Mira" (o tronco gira até ~60°).
+  EXEMPLO DE PERSEGUIÇÃO (filme):
+    elenco / Kai relevante / Mira relevante / Trovão animal cavalo sela / Sombra animal cavalo sela
+    cena "fuga" tom quente → plano 1: Kai em (-1,0) · Trovão em (0,0) · Sombra em (0,-12) · Mira monta Sombra sem-animacao · camera preset animal.montaria.perfil com Kai, Trovão
+      0s Kai monta Trovão · 1.6s Trovão anima arrancar-galope · 1.6s Sombra anima trote-para-galope
+    plano 2: camera preset movimento.perseguicao.perfil com Kai, Mira · 0s Trovão anima galope por 4s · 0s Sombra anima galope por 4s
+
+  POSES EXTRAS (já incluídas na lista do capítulo 4): ${listaPosesExtras().length} poses novas (combate, conversa, dia a dia, emoção) e ${Object.keys(EXPRESSOES_EXTRA).length} expressões novas.
+    Poses: Kai pose guardaBoxe | espadaGuardaAlta | maosAoAlto | ajoelhadoRendido | discursando | maoNoQueixo | ... (lista inteira no catálogo e no autocomplete)
+    Expressões novas: ${Object.keys(EXPRESSOES_EXTRA).join(", ")}
+  INTERAÇÕES EXTRAS (${listaInteracoesExtras().length}): luta, armas, rendição, equipe, afeto, conversa, treino — Kai interacao NOME com Mira.
+    ${listaInteracoesExtras().map(x => x.nome).join(", ")}
+  TOM DA CENA (cor do quadro inteiro): no cabeçalho "quadro 2 tom sepia" ou na cena "cena \"noite\" tom noite" (vale para os planos dela).
+    Tons: ${Object.keys(TONS_CENA).join(", ")}
+  TRÊS "tom" DIFERENTES (cada um vale para o que vem antes dele na linha): na FALA (fala "…" tom raiva: jeito de falar), no CABEÇALHO do quadro/cena
+    (tom sepia: cor da imagem inteira) e no EFEITO (efeito fogo tom quente: cor do efeito). Mãos: maoDir = mao-direita, maoEsq = mao-esquerda (os dois valem).
+  EFEITOS — cores e tons: Kai efeito NOME [em mao-direita|cabeca|pes|(x,z)|(x,y,z)|objeto "copo"|tela] [elemento fogo] [cor #ff0] [tom quente]
+    [nivel 3] [escala 1.5] [colorido|nanquim] [texto "BAM"] [camada frente|tras] [por 2s] [cresce|pulsa|some|pisca|surge] [para Mira]
+    Elementos (paletas): ${Object.keys(ELEMENTOS).join(", ")}
+    Tons do efeito: ${Object.keys(TONS).join(", ")}
+    No filme, no tempo: "1.5s efeito explosao em (2,0) cresce por 1s" (efeito da cena) ou "1s Kai efeito aura_sombria pulsa por 3s".`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */
@@ -668,6 +744,10 @@ function catalogoDsl(o = {}) {
   L.push("## Animais quadrúpedes (capítulo 22)", "", "**Espécies (`Trovão animal cavalo [sela] [escala 1.2]`):** " + Object.keys(QD_ESPECIES).map(e => "`" + e + "`").join(", "), "", "**Poses (`Trovão pose NOME`):** " + Object.keys(AM_POSES).map(e => "`" + e + "`").join(", "), "",
     "**Marchas:** `anda` (passo), `trota` (trote), `galopa`/`corre` (galope) `[N m] [para X]` · `galopa-ate (x,z)` · `Kai monta Trovão` / `Kai desmonta` · `Trovão carrega \"mala\"` · `Rex segue Kai`", "",
     "## Tipos de corpo e escala (capítulo 23)", "", "`gigante [N]` (3,5×) · `tita` (10×) · `anao` (0,62×, pernas curtas) · `fada` (0,12×, paira) · `miniatura` (0,2×) · `escala N` (0,03–30×) · `paira 1.5m` · `voa-ate X altura 6m` · `pousa` · `sobre-mao|sobre-ombro|sobre-cabeca Outro` · `inclina-corpo 30` · `de-cabeca-para-baixo`", "");
+  L.push("## Pré-configurações de cena e câmera (capítulo 27)", "", PRECONFIG.length + " situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.", "",
+    "Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon Boom, No Film School): over-the-shoulder (OTS), dirty/clean single, two-shot, 50/50, dutch angle, POV, insert, establishing shot.", "");
+  { const grupos = {}; for (const d of PRECONFIG) (grupos[d.grupo] = grupos[d.grupo] || []).push(d);
+    for (const [g, ds] of Object.entries(grupos)) { L.push("### " + g + " (" + ds.length + ")", "", "| id | nome | técnico | papéis | para que serve |", "|---|---|---|---|---|"); for (const d of ds) L.push("| `" + d.id + "` | " + d.nome + " | " + d.tecnico + " | " + d.papeis.join(", ") + " | " + String(d.desc || "").replace(/\|/g, "/") + " |"); L.push(""); } }
   L.push("## Poses", "");
   for (const p of poses) { L.push("### " + p.nome + (p.origem === "minha" ? " · minha" : ""), ""); if (comCodigo) L.push(bloco(pdCodigoPose(p.valores, { nome: p.nome, tags: p.tags })), ""); }
   L.push("## Animações", "");

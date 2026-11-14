@@ -30,11 +30,16 @@ const jsw = rw.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
 /* CSS: os arquivos na ordem em que a página os carrega */
 const css = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(m => readFileSync(join(ROOT, m[1]), "utf8")).join("\n");
 
+/* miniaturas do autocompletar (atlas .webp) embutidas como data: URI */
+let miniaturas = "";
+try { const dir = join(ROOT, "img", "miniaturas"), indice = JSON.parse(readFileSync(join(dir, "indice.json"), "utf8")), arquivos = {};
+  for (const a of Object.values(indice)) arquivos[a.arquivo] = "data:image/webp;base64," + readFileSync(join(dir, a.arquivo)).toString("base64");
+  miniaturas = "<script>window.GM_MINIATURAS=" + JSON.stringify({ indice, arquivos }) + "</script>\n"; } catch (e) { console.warn("sem miniaturas:", e.message); }
 let page = html
   .replace(/<link rel="stylesheet" href="[^"]+">\n?/g, "")
   .replace(/<script type="module" src="[^"]+"><\/script>\n?/, "")
   .replace("</head>", `<style>\n${css}</style>\n</head>`)
-  .replace("</body>", `<script type="text/plain" id="gm-trabalhador">${jsw}</script>\n<script>\n${js}</script>\n</body>`);
+  .replace("</body>", `${miniaturas}<script type="text/plain" id="gm-trabalhador">${jsw}</script>\n<script>\n${js}</script>\n</body>`);
 mkdirSync(join(ROOT, "dist"), { recursive: true });
 writeFileSync(join(ROOT, "dist", "geomannequin.html"), page);
 

@@ -29,6 +29,7 @@ import { AD_ACOES, adAcaoPara, adEspera, AD_ESPERAS } from "./acoes-dia.js";
 import { AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo } from "./animais.js";
 import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo } from "./animais-anim.js";
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
+import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
 import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
@@ -505,6 +506,7 @@ function nmAvisosComposicao(r) {
   r.quadros.forEach((q, i) => { const camLinha = q.filme && (q.filme.cam || []).some(c => c.base && c.base.modo !== "estatica"); if (camLinha) { ant = q; return; } /* plano com linha "camera …": o enquadramento do cabeçalho não é o que aparece */
     const C = q.cabecas || {}, n = (q.filme ? "Plano " + q.filme.n : "Quadro " + (q.indice + 1)) + ": ";
     for (const [nome, c] of Object.entries(C)) { if (!(q.personagens || []).some(p => p.nome === nome)) continue;
+      if (q.preset && (/^(olhos|detalhe)$/.test(q.preset.enq || "") || !q.preset.alvos.includes(nome))) continue; /* preset: só confere quem ele enquadra; olhos/detalhe cortam de propósito */
       if (c.u > -0.05 && c.u < 1.05 && c.v - c.r < -0.02 && c.v > 0) av.push(n + "a cabeça de " + nome + " está cortada no alto (abra um pouco o plano — ex.: close → primeiro-plano — ou mude o alvo/lado).");
       if (Math.abs(c.du) > 0.015 && c.u > 0 && c.u < 1 && ((c.du > 0 && c.u > 0.8) || (c.du < 0 && c.u < 0.2))) av.push(n + nome + " olha para a borda mais perto (pouco espaço na frente do olhar): mude o lado da câmera ou a posição."); }
     if (i >= 2 && q.planoUsado && q.planoUsado === r.quadros[i - 1].planoUsado && q.planoUsado === r.quadros[i - 2].planoUsado) av.push(n + "três quadros seguidos em plano " + q.planoUsado + " (varie: close, médio, geral).");
@@ -595,6 +597,9 @@ function nmSegueAnimais(F, t) {
 }
 /* montar e desmontar ANIMADOS (filme): pé no estribo, sobe, passa a perna por cima e senta — ou o contrário */
 function nmMontagens(F, t) {
+  /* montagens já terminadas: o cavaleiro fica montado (amAtualizarMontaria o leva junto quando o animal anda); desmontagens terminadas soltam */
+  for (const s of F.trilhas) { if ((s.tipo !== "montar" && s.tipo !== "desmontar") || t < s.inicio + s.dur) continue; const it = SCN.list.find(x => x.name === s.quem), o = amAchar(s.animal); if (!it || !o) continue;
+    if (s.tipo === "montar") { it.montadoEm = o.nome; o.animal.cavaleiro = it.name; } else { if (it.montadoEm === o.nome) it.montadoEm = null; if (o.animal.cavaleiro === it.name) o.animal.cavaleiro = null; } }
   for (const s of F.trilhas) { if ((s.tipo !== "montar" && s.tipo !== "desmontar") || t < s.inicio - 1e-9 || t >= s.inicio + s.dur) continue;
     const it = SCN.list.find(x => x.name === s.quem), o = amAchar(s.animal); if (!it || !o) continue;
     const u = Math.max(0, Math.min(1, (t - s.inicio) / s.dur)), g0 = amChaoMundo(), cav = o.animal.cavaleiro, mt = it.montadoEm;
@@ -935,7 +940,33 @@ function nmMultidao(ctx, l, Q, grupo, toks0) {
   return true;
 }
 /* câmera do quadro: lado (órbita em volta do alvo) → ângulo → plano */
+/* pré-configurações: "cena preset ID com Kai, Mira [em (x,z)] [gira G] [espelhado] [sem-poses] [lente N]" e "camera preset ID com Kai, Mira" */
+function nmLerPreset(ctx, txt, linha, validar = true) {
+  const m = /^(cena|camera|câmera)\s+(?:preset|pre-config|preconfig|pré-config|predefinicao|predefinição)\s+(\S+)\s*(.*)$/i.exec(String(txt).trim()); if (!m) return null;
+  const def = pcAchar(m[2]); if (!def) { const ult = m[2].split(".").pop(), pref = m[2].split(".").slice(0, -1).join("."); let s = pcBuscar(ult, 3).map(d => d.id); if (!s.length) s = pcBuscar(ult.split("-")[0], 40).filter(d => !pref || d.id.startsWith(pref)).slice(0, 4).map(d => d.id); throw new NmErro("Pré-configuração “" + m[2] + "” não existe." + (s.length ? " Parecidas: " + s.join(", ") + "." : " Veja o catálogo (Biblioteca → Pré-configurações)."), linha); }
+  let resto = " " + m[3] + " "; const o = {};
+  resto = resto.replace(/\s(?:em|no|na)\s*\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/i, (m0, x, z) => { o.x = +x; o.z = +z; return " "; });
+  resto = resto.replace(/\sgira\s+(-?[\d.]+)/i, (m0, g) => { o.giro = +g; return " "; });
+  resto = resto.replace(/\slente\s+(\d+(?:\.\d+)?)(?:\s*mm)?/i, (m0, l) => { o.lente = +l; return " "; });
+  resto = resto.replace(/\s(espelhad[oa]|invertid[oa]|outro-lado)(?=\s)/i, () => { o.espelhar = true; return " "; });
+  resto = resto.replace(/\ssem-poses?(?=\s)/i, () => { o.semPoses = true; return " "; });
+  let nomes = []; const mc = /\scom\s+(.+?)\s*$/i.exec(resto); if (mc) { nomes = mc[1].split(/\s*,\s*|\s+e\s+/).map(x => x.trim().replace(/^"|"$/g, "")).filter(Boolean); resto = resto.slice(0, mc.index) + " "; }
+  if (resto.trim()) throw new NmErro("preset " + def.id + ": não entendi “" + resto.trim() + "” (use: com Kai, Mira · em (x,z) · gira 90 · espelhado · lente 50 · sem-poses).", linha);
+  const reais = !validar ? nomes : nomes.map(n => { const q = nmQuem(ctx, n); if (!q) throw new NmErro("preset " + def.id + ": “" + n + "” não está no elenco.", linha); return q; });
+  return { tipo: nmNorm(m[1]) === "cena" ? "cena" : "camera", def, nomes: reais, o };
+}
+function nmMapaPreset(ctx, pr, Q, linha) { const papeis = pr.def.papeis, ns = pr.nomes.length ? pr.nomes : [...(Q ? Q.presentes : [])];
+  if (ns.length < papeis.length) throw new NmErro("preset " + pr.def.id + " precisa de " + papeis.length + " (" + papeis.join(", ") + "): escreva “com " + papeis.map((p, i) => (["Kai", "Mira", "Leo", "Ana", "Rui"])[i] || p).join(", ") + "”.", linha);
+  return Object.fromEntries(papeis.map((p, i) => [p, ns[i]])); }
+/* troca cada linha "cena preset" pelas linhas de arranjo + a câmera (mesmo recuo e número de linha) */
+function nmExpandirPresets(blocos, ctx) { for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
+      if (!pr) { out.push(l); continue; }
+      pcArranjoTexto(pr.def, pr.nomes, pr.o).forEach(t => out.push({ txt: t, linha: l.linha, ind: l.ind }));
+      out.push({ txt: "camera preset " + pr.def.id + " com " + pr.nomes.join(", ") + (pr.o.lente ? " lente " + pr.o.lente : "") + (pr.o.espelhar ? " espelhado" : ""), linha: l.linha, ind: l.ind }); }
+    b.corpo = out; } return blocos; }
+const NM_PC_PLANO = { olhos: "detalhe", detalhe: "detalhe", close: "close", "primeiro-plano": "primeiro plano", medio: "medio", americano: "americano", inteiro: "inteiro", conjunto: "conjunto", geral: "geral", "grande-geral": "geral" };
 function nmCamera(ctx, Q) {
+  if (Q.presetCamera) { const pc = Q.presetCamera; pcAplicarCamera(pc.def, pc.mapa, pc.o); return pc.def.cam.tipo === "pov" ? "pov" : NM_PC_PLANO[pc.def.cam.enq] || (pc.def.cam.tipo === "ombro" ? "primeiro plano" : "inteiro"); }
   const alvos = (Q.cab.alvo && Q.cab.alvo.length ? Q.cab.alvo.map(a => nmQuem(ctx, a) || a) : [...Q.presentes]).filter(n => SCN.list.find(x => x.name === n && !x.oculto));
   const plano = Q.cab.plano || (alvos.length > 2 ? "conjunto" : alvos.length ? "inteiro" : "geral");
   { const anA = (Q.cab.alvo || []).map(a => amAchar(nmQuem(ctx, a) || a)).filter(Boolean); if (anA.length && !alvos.length && !Q.cab.camera) { nmCameraAnimal(anA[0], plano === "geral" && !Q.cab.plano ? "inteiro" : plano, Q.cab.lado ?? 40, Q.cab.elevacao); return plano; } }
@@ -994,7 +1025,7 @@ function nmCentrar(rc, folga = 0.9, pts0, soPan) {
 /* o manequim está dentro de um objeto alto (e não em cima dele)? */
 function nmDentroDe(it, ignorar) {
   const x = it.params.wx || 0, z = it.params.wz || 0, h = it.params.bodyLift || 0;
-  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id)) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
+  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
     if (o.raio && Math.hypot(dx, dz) < o.raio + 1.2) return o; if (!o.raio && Math.abs(lx) < o.larg / 2 + 1.2 && Math.abs(lz) < o.prof / 2 + 1.2) return o; }
   return null;
@@ -1078,7 +1109,7 @@ function nmCompilar(texto, opts = {}) {
   const ctx = { elenco: new Map(), apelidos: new Map(), coresUsadas: new Set(), locais: new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: new Map(), locaisRuins: new Set(), animacoes: new Map(), poses: new Map(), defs: [], salvar: opts.salvar !== false };
   const erros = [], avisos = [], quadros = [], paginas = []; ctx.erros = erros;
   ctx.diretor = /^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado)\b/im.test(texto);
-  let blocos; try { blocos = nmFilmeEstrutura(nmBlocos(String(texto).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
+  let blocos; try { blocos = nmFilmeEstrutura(nmExpandirPresets(nmBlocos(String(texto).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
   /* semente e variáveis primeiro (valem para tudo) */
   for (const b of blocos) { const t = nmTokens(b.cab), w = nmNorm(t[0].v);
     if (w === "semente" || w === "seed") ctx.semente = t[1] ? (t[1].t === "num" ? t[1].v : String(t[1].v).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) : 1;
@@ -1140,6 +1171,7 @@ function nmCompilar(texto, opts = {}) {
             const p2 = nmLerLocal(sub, ctx); p2.itens.forEach(it => { const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: it.larg, prof: it.prof, alt: it.alt, giro: it.giro, nome: it.nome }); if (it.base) { q.emAr = true; q.base = it.base; } }); void pl; continue; }
           if (w0 === "efeito") { const tipo = tk[1] && tk[1].v; if (!CATALOGO[tipo]) { const sg = nmParecida(tipo, Object.keys(CATALOGO)); throw new NmErro("Efeito “" + tipo + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), l.linha); }
             const ef = nmEfeitoOpcoes(ctx, tk, 1, l.linha, null); try { cena.efeitos.adicionar(tipo, Object.assign({}, ef.o, ef.o.em ? {} : { em: CATALOGO[tipo].ancora === "tela" ? { modo: "tela" } : { modo: "chao", x: 0, z: 0 } })); } catch (e) { Q.avisos.push("efeito " + tipo + ": " + e.message); } continue; }
+          if ((w0 === "camera" || w0 === "câmera") && tk[1] && /^(preset|pre-?config)$/i.test(nmNorm(tk[1].v))) { const pr = nmLerPreset(ctx, l.txt, l.linha); Q.presetCamera = { def: pr.def, mapa: nmMapaPreset(ctx, pr, Q, l.linha), o: pr.o }; continue; }
           if (w0 === "molejo") { Q.molejo = tk[1].v; continue; }
           if (w0 === "legenda") { Q.cab.legenda = tk[1].v; continue; }
           if (w0 === "camera-chave" || ((w0 === "camera" || w0 === "câmera") && tk[1] && tk[1].t === "num" && /^(s|ms)$/.test(tk[1].u || ""))) { /* câmera no tempo: camera 1.5s plano close alvo Kai lado 60 */
@@ -1210,7 +1242,7 @@ function nmCompilar(texto, opts = {}) {
         (Q.viraCamera || []).forEach(it => nmVirarPara(it, camW())); (Q.costasCamera || []).forEach(it => { nmVirarPara(it, camW()); it.params.wRot = ((it.params.wRot + 360) % 360) - 180 + 180; });
         SCN.recorte = salvoRecorte; SCN.active = 0; /* o reserva escondido fica ativo: sem alças de seleção no quadro */
         const legenda = Q.cab.legenda || nmLegenda(ctx, Q);
-        quadros.push({ tom: Q.cab.tom || null, cabecas: Q.cabecas || {}, planoUsado: plano, diretor: !!(Q.cab.diretor || ctx.diretor), borda: Q.cab.borda || null, bordaGraus: Q.cab.bordaGraus || null, ritmo: Q.cab.ritmo || null, respiro: Q.cab.respiro || null, splash: Q.cab.tamanho === "splash", filme: Q.filme || null, local: Q.localNome || null, hora: Q.hora || null, plano: plano || null, camChaves, velocidade: Q.cab.velocidade || null, duracao: Q.cab.duracao || null, movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null, animacoes: (Q.animacoes || []).map(a => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante, inicio: a.inicio || 0 })), indice, n: Q.cab.n || indice + 1, titulo: Q.cab.titulo || "", formato: Q.cab.formato || "16:9", tamanho: NM_TAMANHOS[Q.cab.tamanho] || (Q.cab.funcao && /climax|clímax|impacto|revela/i.test(Q.cab.funcao) ? 2 : 1), funcao: Q.cab.funcao, plano, local: Q.localNome, transicao: Q.tipoTransicao || null,
+        quadros.push({ preset: Q.presetCamera ? { id: Q.presetCamera.def.id, enq: Q.presetCamera.def.cam.enq || null, alvos: [].concat(Q.presetCamera.def.cam.tipo === "ombro" ? [Q.presetCamera.def.cam.alvo] : Q.presetCamera.def.cam.tipo === "orbita" ? Q.presetCamera.def.cam.alvo || [] : []).map(p => Q.presetCamera.mapa[p]).filter(Boolean) } : null, tom: Q.cab.tom || null, cabecas: Q.cabecas || {}, planoUsado: plano, diretor: !!(Q.cab.diretor || ctx.diretor), borda: Q.cab.borda || null, bordaGraus: Q.cab.bordaGraus || null, ritmo: Q.cab.ritmo || null, respiro: Q.cab.respiro || null, splash: Q.cab.tamanho === "splash", filme: Q.filme || null, local: Q.localNome || null, hora: Q.hora || null, plano: plano || null, camChaves, velocidade: Q.cab.velocidade || null, duracao: Q.cab.duracao || null, movCamera: Q.cab.movCamera ? { tipo: Q.cab.movCamera, valor: Q.cab.movValor } : null, animacoes: (Q.animacoes || []).map(a => ({ quem: a.quem, anim: a.anim, base: a.base, instante: a.instante, inicio: a.inicio || 0 })), indice, n: Q.cab.n || indice + 1, titulo: Q.cab.titulo || "", formato: Q.cab.formato || "16:9", tamanho: NM_TAMANHOS[Q.cab.tamanho] || (Q.cab.funcao && /climax|clímax|impacto|revela/i.test(Q.cab.funcao) ? 2 : 1), funcao: Q.cab.funcao, plano, local: Q.localNome, transicao: Q.tipoTransicao || null,
           legenda, falas: Q.falas, personagens: [...Q.presentes].map(n => ({ nome: n, cor: (ctx.elenco.get(n) || {}).nomeCor, hex: (ctx.elenco.get(n) || {}).hex })), figurantes: Q.multidoes.reduce((s, m) => s + m.n, 0),
           avisos: Q.avisos, linha: b.linha, estado: JSON.parse(JSON.stringify(sceneState())), L: Object.assign(JSON.parse(JSON.stringify(L)), { girdle: false, prop: false, grid: false }), pagina: pagina.n });
         pagina.quadros.push(indice);
@@ -1575,6 +1607,8 @@ const nmAng = (a, b) => ((b - a) % 360 + 540) % 360 - 180;
 const NM_SUAVE = u => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
 /* a câmera de uma linha: base (fixa, segue, pov, sobre-o-ombro, presa-em, enquadramento) e modificadores */
 function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
+  { const tq = nmTokens(txt); if (tq[1] && /^(preset|pre-?config)$/i.test(nmNorm(tq[1].v))) { let t2 = txt, corte = false, dur = ate ? ate - T : null; t2 = t2.replace(/\s+corte\b/i, () => { corte = true; return ""; }).replace(/\s+em\s+(\d+(?:\.\d+)?)\s*s\b/i, (m0, d) => { dur = +d; return ""; });
+    const pr = nmLerPreset(ctx, t2, linha), mapa = nmMapaPreset(ctx, pr, Q, linha), c0 = corte || (T <= 1e-6 && dur === null); return [{ t: T, dur: c0 ? 0 : dur ?? 1, corte: c0, base: { modo: "preset", id: pr.def.id, mapa, o: pr.o } }]; } }
   const tk = nmTokens(txt), quem = v => nmQuem(ctx, v) || v, met = t0 => !t0 || t0.t !== "num" ? null : t0.u === "cm" ? t0.v / 100 : t0.u === "R" ? t0.v / NM_M : t0.v;
   let k = 1, corte = false, dur = ate ? ate - T : null, base = null, curva = null; const mods = [];
   const estatico = tk.slice(1).some(t => { const w = nmNorm(t.v); return /^(plano|angulo|ângulo|heroi|herói|fraco|elevacao|elevação)$/.test(w) || (NM_PLANOS[w] && w !== "pov"); }) && !tk.slice(1).some(t => /^(fixa|segue|pov|sobre-o-ombro|presa-em)$/.test(nmNorm(t.v)));

@@ -20,7 +20,8 @@ import { baixar, refreshScene } from "./painel-cena.js";
 import { syncControls } from "./controles.js";
 import { render } from "./palco.js";
 import { posicionar, completar, htmlItens, preencherMinis, htmlDestaque, palavraNoCursor, ajudaHtml, rolarNumero, expandirTrecho, defNoCursor, previaDef, parar, LICOES } from "./texto-pose.js";
-import { PD_JUNTAS, pdMiniatura } from "../scene/pose-dsl.js";
+import { PD_JUNTAS, pdMiniatura, pdMiniaturaItem } from "../scene/pose-dsl.js";
+import { PRECONFIG, pcProximos, pcAchar, pcBuscar } from "../scene/preconfig.js";
 import { salvarPose } from "../scene/pose-codigo.js";
 import { bibliotecaAnimacoes } from "../scene/animacao.js";
 
@@ -130,6 +131,14 @@ function listaBiblioteca() {
 }
 function codigoBib(tipo, nome) { if (!BIB) BIB = catalogoItens(); if (tipo === "pose") { const p = BIB.poses.find(x => x.nome === nome); return p ? pdCodigoPose(p.valores, { nome: p.nome + (p.origem === "pronta" ? "-minha" : ""), salvar: true }) : ""; }
   const a = BIB.anims.find(x => x.nome === nome); return a ? pdCodigoAnimacao(a.anim, { nome: a.nome + (a.origem === "pronta" ? "-minha" : ""), salvar: true }) : ""; }
+/* ===== aba Presets: a árvore de pré-configurações com miniatura; clicar põe a linha no cursor ===== */
+let pcRamo = "", pcFiltro = "";
+function listaPresets() { E.prevTit.textContent = "Pré-configurações (" + PRECONFIG.length + ")";
+  const migalhas = ['<button type="button" data-pc-ramo="">início</button>'].concat(pcRamo ? pcRamo.split(".").map((p, i, a) => '<button type="button" data-pc-ramo="' + esc(a.slice(0, i + 1).join(".")) + '">' + esc(p) + "</button>") : []).join(" › ");
+  const itens = pcFiltro ? pcBuscar(pcFiltro, 80).map(d => ({ nome: d.id, folha: true, id: d.id, total: 1 })) : pcProximos(pcRamo);
+  const card = n => { const d = n.folha ? pcAchar(n.id) : pcAchar(n.exemplo), mini = d ? pdMiniaturaItem({ tipo: "preset", v: d.id }) : "";
+    return '<li><button type="button" ' + (n.folha ? 'data-pc-usar="' + esc(n.id) + '"' : 'data-pc-ramo="' + esc((pcRamo ? pcRamo + "." : "") + n.nome) + '"') + ' title="' + esc(n.folha ? d.desc + " — " + d.tecnico : n.total + " pré-configurações") + '"><span class="nm-pc-mini">' + mini + "</span><b>" + esc(n.folha && !pcFiltro ? n.nome : n.folha ? n.id : n.nome + " ›") + "</b><small>" + esc(n.folha ? d.nome + " · " + d.papeis.join(", ") : n.total + " itens") + "</small></button></li>"; };
+  E.prev.innerHTML = '<div data-pc><input type="search" data-pc-busca placeholder="Buscar (ombro, close, perseguição, OTS…)" value="' + esc(pcFiltro) + '" aria-label="Buscar pré-configurações"><p class="nm-pc-mig">' + migalhas + '</p><ul class="nm-pc-lista">' + itens.map(card).join("") + "</ul><p class=\"qd-vazio\">Clique numa pré-configuração: a linha <code>cena preset … com A, B</code> entra no cursor (troque A, B pelos seus personagens).</p></div>"; }
 function inserirNoTexto(cod, msg) { const v = E.code.value.replace(/\s*$/, ""); E.code.value = v + "\n\n" + cod; const fim = E.code.value.length - cod.length; E.code.selectionStart = E.code.selectionEnd = fim; E.code.focus(); realcar(); ls.gravar("texto", E.code.value); compilar(); irPara(E.code.value.slice(0, fim).split("\n").length + 1); log(msg || "Inserido no fim do texto."); }
 async function acaoBib(e) { const bt = e.target.closest("[data-bib]"); if (!bt) return; const k = bt.dataset.bib;
   if (k === "md") { log("Gerando o catálogo…"); await new Promise(r => setTimeout(r, 10)); const r = await baixar("catalogo-dsl.md", catalogoDsl(), "text/markdown"); log(r === "ok" ? "Catálogo baixado (catalogo-dsl.md)." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err"); return; }
@@ -144,6 +153,7 @@ function previa() {
   if (aba === "auditoria" || aba === "alternativas") return;
   if (aba === "locais") { parar(); listaLocais(); return; }
   if (aba === "biblioteca") { parar(); if (!E.prev.querySelector("[data-bib]")) listaBiblioteca(); return; }
+  if (aba === "presets") { parar(); if (!E.prev.querySelector("[data-pc]")) listaPresets(); return; }
   if (!R) return;
   if (aba === "filme") { parar(); previaFilme(); return; }
   { const d = aba !== "cores" ? defNoCursor(R, linhaDoCursor()) : null; if (d) { previaDef(E.prev, E.prevTit, d, R, log); ultimaQ = -2; return; } parar(); }
@@ -373,7 +383,7 @@ export function iniciarName() {
     '<div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button></span><select data-n="hq" aria-label="HQ, webtoon e ferramentas" title="Páginas de HQ com balões, webtoon, alternativas do quadro e auditor de animações"><option value="">HQ e mais…</option><option value="png">Páginas PNG (.zip)</option><option value="pdf">Páginas PDF</option><option value="cbz">Páginas CBZ (leitor de quadrinhos)</option><option value="webtoon">Webtoon (tira em fatias)</option><option value="alt">Alternativas do quadro do cursor</option><option value="auditar">Auditar animações</option></select><span class="nm-filmebtns2" hidden><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress>' +
     '<label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p>' +
     '<div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div>' +
-    '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button><button type="button" data-aba="biblioteca" title="Todas as poses e animações em código">Biblioteca</button></nav>' +
+    '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button><button type="button" data-aba="biblioteca" title="Todas as poses e animações em código">Biblioteca</button><button type="button" data-aba="presets" title="Pré-configurações de cena e câmera (mais de 500, em árvore)">Presets</button></nav>' +
     '<div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div>' +
     '<h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div>' +
     '<div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div>' +
@@ -412,6 +422,11 @@ export function iniciarName() {
   E.prev.addEventListener("click", e => { if (e.target.closest('[data-pd="salvar"]')) { salvarCatalogo(); return; } const a = e.target.closest("[data-a]"), art = e.target.closest(".nm-local"); if (a && art && a.tagName === "BUTTON") acaoLocal(art.dataset.nome, a.dataset.a, a); });
   E.busca.addEventListener("input", () => listaLocais());
   E.prev.addEventListener("click", acaoBib);
+  E.prev.addEventListener("click", e => { const r = e.target.closest("[data-pc-ramo]"), u = e.target.closest("[data-pc-usar]"); if (r) { pcRamo = r.dataset.pcRamo; pcFiltro = ""; listaPresets(); return; }
+    if (u) { const d = pcAchar(u.dataset.pcUsar), nomes = R && R.elenco.length ? R.elenco.map(x => x.nome) : []; const ns = d.papeis.map((p, i) => nomes[i] || p), lin = "  cena preset " + d.id + " com " + ns.join(", ");
+      const a = E.code.selectionStart, v = E.code.value, ini = v.lastIndexOf("\n", a - 1) + 1, fimL = v.indexOf("\n", a), fim = fimL < 0 ? v.length : fimL; const vazia = !v.slice(ini, fim).trim();
+      E.code.value = vazia ? v.slice(0, ini) + lin + v.slice(fim) : v.slice(0, fim) + "\n" + lin + v.slice(fim); realcar(); compilar(); log("Pré-configuração “" + d.nome + "” no texto (" + d.tecnico + ")."); } });
+  E.prev.addEventListener("input", e => { if (e.target.matches && e.target.matches("[data-pc-busca]")) { pcFiltro = e.target.value; const pos = e.target.selectionStart; listaPresets(); const nb = E.prev.querySelector("[data-pc-busca]"); nb.focus(); nb.selectionStart = nb.selectionEnd = pos; } });
   E.prev.addEventListener("input", e => { if (e.target.dataset && e.target.dataset.bib === "busca") { bibFiltro = e.target.value; const pos = e.target.selectionStart; listaBiblioteca(); const nb = E.prev.querySelector('[data-bib="busca"]'); nb.focus(); nb.selectionStart = nb.selectionEnd = pos; } });
   window.addEventListener("gm-texto-abrir", e => { const d = e.detail || {}; if (E.area.hidden) abrir(); if (d.codigo) inserirNoTexto(d.codigo, d.msg); });
   b("gerar").addEventListener("click", gerarTodas); b("zip").addEventListener("click", baixarZip); b("cancelar").addEventListener("click", () => { if (rodando) rodando.cancelar = true; });

@@ -407,7 +407,10 @@ const PD_TRECHOS = {
 
 /* ===================== autocompletar ===================== */
 /* antes = texto até o cursor; info = {nomes, poses, animacoes} do texto compilado. Devolve {itens, de, ponto, ajuda} ou null */
+/* ganchos para outros módulos (autocompletar do name/filme): listas por palavra-chave, casos especiais e miniaturas extras */
+const PD_AC_EXTRA = {}, PD_AC_ANTES = [], PD_MINI_EXTRA = { fn: null };
 function pdCompletar(antes, info = {}) {
+  for (const f of PD_AC_ANTES) { try { const r = f(antes, info); if (r) return r; } catch (e) { } }
   const linha = antes.split("\n").pop(), item = (v, tipo, d, mini) => ({ v, r: v.trim().replace(/^"|"$/g, ""), tipo, d: d || "", mini: mini || null });
   const blocos = antes.split("\n").filter(l => /^\S/.test(l)), bloco = pdNorm((/^(\S+)/.exec(blocos[blocos.length - 1] || "") || [])[1] || ""), recuo = /^\s+/.test(linha);
   /* 1) dentro dos parênteses de uma junta: movimentos */
@@ -434,6 +437,7 @@ function pdCompletar(antes, info = {}) {
       troca: partes, tira: partes, copia: partes, so: partes, zera: partes, espelha: partes, amplitude: null,
       ajoelha: () => fix(["direito", "esquerdo", "os-dois"], "lado"), peso: () => fix(["direito", "esquerdo"], "lado"), inclina: () => fix(["frente", "tras", "direita", "esquerda"], "direcao"), deita: () => fix(["costas", "brucos", "lado"], "direcao"), senta: () => fix(["chao", "cadeira", "calcanhares", "cocoras"], "como"),
       nada: () => fix(Object.keys(PD_NADOS), "estilo", x => PD_NADOS[x]), pula: () => fix(["lugar", "frente", "alto", "lado", "corrida"], "estilo"), cai: () => fix(["frente", "tras", "lado"], "direcao"), rola: () => fix(["direita", "esquerda"], "direcao") };
+    for (const [k, f] of Object.entries(PD_AC_EXTRA)) if (!(k in fixa) || !/^(pose|mistura|de|por|anima|junta|camada|\+)$/.test(k)) fixa[k] = () => { const l = f({ pv, item, linha, bloco, info }); return l ? filtra(l) : null; };
     if (w in fixa && fixa[w] && !(w === "olha" || (w === "de" && bloco !== "animacao" && bloco !== "pose" && bloco !== "ciclo"))) { const r = fixa[w](); if (r && (r.length || m[3] === ".")) return { itens: r, de, ponto: m[3] === "." }; } }
   /* 4) começo de linha com recuo dentro de pose / animação: juntas, atalhos, operações */
   if (recuo && /^\s+[A-Za-zÀ-ÿ-]*$/.test(linha)) { const pre = pdNorm(linha.trim()), de = antes.length - linha.trim().length;
@@ -453,12 +457,13 @@ const PD_MINI_CACHE = new Map();
 function pdMiniaturaItem(mini, ctx) {
   if (!mini) return ""; if (mini.svg) return mini.svg; const ch = JSON.stringify(mini); if (PD_MINI_CACHE.has(ch)) return PD_MINI_CACHE.get(ch);
   let s = ""; try {
+    if (PD_MINI_EXTRA.fn && !/^(pose|junta|mov|anim)$/.test(mini.tipo)) s = PD_MINI_EXTRA.fn(mini, ctx) || ""; else
     if (mini.tipo === "pose") s = pdMiniatura(pdValoresPose(mini.nome, pdParams({}), ctx).valores, { rotulo: mini.nome });
     else if (mini.tipo === "junta") s = pdMiniaturaJunta(mini.junta, mini.lado);
     else if (mini.tipo === "mov") s = pdMiniaturaJunta(mini.junta, mini.lado || "direito", mini.mov);
     else if (mini.tipo === "anim") { const a = (ctx && ctx.animacoes && ctx.animacoes.get(mini.nome)) || bibliotecaAnimacoes().obter(mini.nome); s = a ? pdMiniaturaAnimacao(a) : ""; }
   } catch (e) { s = ""; }
-  if (PD_MINI_CACHE.size > 400) PD_MINI_CACHE.clear(); PD_MINI_CACHE.set(ch, s); return s;
+  if (PD_MINI_CACHE.size > 400) PD_MINI_CACHE.clear(); if (s) PD_MINI_CACHE.set(ch, s); return s;
 }
 
 /* ===================== pose e animação → CÓDIGO (a mesma linguagem; ida e volta) ===================== */
@@ -521,6 +526,6 @@ function pdSobrepor(a, atraso = 0.1, o = {}) { const B = pdBase(), a0 = Object.a
   const ch = ts.map(t => { const c0 = pdChaveEm(a0, Math.min(t, a.duracao), B), c1 = pdChaveEm(a0, Math.max(0, Math.min(a.duracao, t - atraso)), B), v = {}; ks.forEach(k => { const x = (PD_SOBRA.test(k) ? c1 : c0).valores[k]; if (Number.isFinite(x)) v[k] = x; }); const c = { t, valores: v }; if (c0.mover) c.mover = c0.mover; return c; });
   return Object.assign(criarAnimacao(Object.assign({}, a, { chaves: ch, duracao: a.duracao + atraso, versoes: undefined, origem: undefined })), { tipo: a.tipo, volta: a.volta, nome: o.nome || a.nome }); }
 
-export { pdSobrepor, pdCodigoPose, pdCodigoAnimacao, pdComandos, PD_JUNTAS, PD_LADOS, PD_PARTES, PD_DOC, PD_TRECHOS, PD_ATALHOS, PD_NADOS, pdNorm, pdJunta, pdFaixaMov, pdAplicarJunta, pdExtrairJuntas, pdBase, pdTodasPoses, pdValoresPose, pdChavesDasPartes, pdLerPartes, pdAtalho,
+export { PD_AC_EXTRA, PD_AC_ANTES, PD_MINI_EXTRA, pdSobrepor, pdCodigoPose, pdCodigoAnimacao, pdComandos, PD_JUNTAS, PD_LADOS, PD_PARTES, PD_DOC, PD_TRECHOS, PD_ATALHOS, PD_NADOS, pdNorm, pdJunta, pdFaixaMov, pdAplicarJunta, pdExtrairJuntas, pdBase, pdTodasPoses, pdValoresPose, pdChavesDasPartes, pdLerPartes, pdAtalho,
   pdMiniatura, pdMiniaturaJunta, pdMiniaturaAnimacao, pdMiniaturaItem, pdParams, pdChaveEm, pdTrecho, pdAteAngulo, pdReverter, pdEspelharAnim, pdAbsoluta, pdJuntar, pdRepetir, pdVaiEVolta, pdAmplitude, pdEsticar, pdTroca, pdSoma, pdTira, pdFixar, pdCamada,
   pdCiclo, pdCompletar, pdRebase, pdCompor };

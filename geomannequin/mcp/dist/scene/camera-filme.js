@@ -46,9 +46,12 @@ function cfPonto(ref, o = {}) {
   const ob = cfObjeto(ref); return ob ? ob.centro : null;
 }
 /* ===== bases ===== */
+/* bases extras registradas por outros módulos (ex.: pré-configurações: "preset") */
+const CF_BASES = {};
 function cfBase(b, t, anc) {
   const m = v => v * CF_M;
-  if (b.modo === "estatica") return { pos: b.pos.slice(), alvo: b.alvo.slice(), lente: b.lente, pan: b.pan };
+  if (CF_BASES[b.modo]) return CF_BASES[b.modo](b, t, anc);
+  if (b.modo === "estatica") return { pos: b.pos.slice(), alvo: b.alvo.slice(), lente: b.lente, pan: b.pan, roll: b.roll || 0 };
   if (b.modo === "pov") { const p = cfPessoa(b.quem); if (!p) return null; const o = b.olha && b.olha !== "frente" ? cfPonto(b.olha, { cabeca: true }) : null;
     return { pos: p.olhos, alvo: o || [p.olhos[0] + p.olhar[0] * m(3), p.olhos[1] + p.olhar[1] * m(3), p.olhos[2] + p.olhar[2] * m(3)], lente: b.lente || 28, esconder: b.quem }; }
   if (b.modo === "segue") { const p = cfPessoa(b.quem) || null, ob = p ? null : cfObjeto(b.quem); if (!p && !ob) return null;
@@ -98,7 +101,7 @@ function cfCameraNoTempo(ev, t, anc = {}) {
   if (i > 0 && !b.corte && t < b.t + (b.dur || 1)) { const pb = bases[i - 1], pc = cfComMods(ev, pb, cfBase(pb.base, t, anc), t, b.t); if (pc) { const u = cfSuave((t - b.t) / (b.dur || 1)); cam = { pos: cfLerp(pc.pos, cam.pos, u), alvo: cfLerp(pc.alvo, cam.alvo, u), lente: pc.lente + (cam.lente - pc.lente) * u, esconder: u > 0.5 ? cam.esconder : pc.esconder, pan: (pc.pan || cam.pan) ? [0, 1].map(j => ((pc.pan || [0, 0])[j]) * (1 - u) + ((cam.pan || [0, 0])[j]) * u) : undefined }; } }
   return cfComMods(ev, b, cam, t, Infinity);
 }
-function cfComMods(ev, b, cam, t, ate) { if (!cam) return null; const c = { pos: cam.pos.slice(), alvo: cam.alvo.slice(), lente: cam.lente, esconder: cam.esconder, pan: cam.pan };
+function cfComMods(ev, b, cam, t, ate) { if (!cam) return null; const c = { pos: cam.pos.slice(), alvo: cam.alvo.slice(), lente: cam.lente, esconder: cam.esconder, pan: cam.pan, roll: cam.roll };
   for (const e of ev) { if (!e.mod || e.t < b.t - 1e-9 || e.t > t + 1e-9 || e.t > ate) continue; const u = e.corte || !e.dur ? 1 : cfCurva(e.mod.curva, (Math.min(t, ate) - e.t) / e.dur);
     /* nos olhos de alguém (POV) aproximar/afastar é zoom: a câmera não sai da cabeça */
     if (b.base && b.base.modo === "pov" && (e.mod.tipo === "aproxima" || e.mod.tipo === "afasta")) { const p = (e.mod.pct || 30) / 100 * u; c.lente = c.lente * (e.mod.tipo === "aproxima" ? 1 / Math.max(0.1, 1 - p) : Math.max(0.2, 1 - p)); continue; }
@@ -113,12 +116,12 @@ function cfAplicar(cam, avisos) {
   /* dentro de algo: primeiro chega para perto do alvo (parede entre); se não sair, recua (gente na frente) */
   const q0 = dentro(pos); if (q0) { let quem = q0; for (let k = 1; k <= 20 && quem; k++) { pos = cfLerp(cam.pos, alvo, k / 40); quem = dentro(pos); }
     if (quem) for (let k = 1; k <= 30 && quem; k++) { pos = cfLerp(cam.pos, alvo, -k / 20); quem = dentro(pos); } if (avisos) avisos.add("cam:" + q0); }
-  P.persp = 1; aplicarCameraBlk(pos, alvo); P.lens = Math.max(14, Math.min(200, Math.round(cam.lente || 50))); P.panX = cam.pan ? cam.pan[0] : 0; P.panY = cam.pan ? cam.pan[1] : 0; P.roll = 0;
+  P.persp = 1; aplicarCameraBlk(pos, alvo); P.lens = Math.max(14, Math.min(200, Math.round(cam.lente || 50))); P.panX = cam.pan ? cam.pan[0] : 0; P.panY = cam.pan ? cam.pan[1] : 0; P.roll = cam.roll || 0;
   if (cam.esconder) { const it = SCN.list.find(x => x.name === cam.esconder); if (it) it.oculto = true; }
   return { pos, alvo };
 }
 /* a câmera estática que está no P agora (para começar o plano dela) */
-function cfEstaticaAtual() { const C = cameraNoMundo(P); return { modo: "estatica", pos: C.pos.slice(), alvo: C.alvo.slice(), lente: P.lens || 50, pan: [P.panX || 0, P.panY || 0] }; }
+function cfEstaticaAtual() { const C = cameraNoMundo(P); return { modo: "estatica", pos: C.pos.slice(), alvo: C.alvo.slice(), lente: P.lens || 50, pan: [P.panX || 0, P.panY || 0], roll: P.roll || 0 }; }
 /* a posição de uma câmera fixa "frente-de Kai 8m altura 1.6m lado 20": calculada no começo do evento (com a pessoa daquele instante) */
 function cfFixaFrente(b) { const p = cfPessoa(b.de); if (!p) return null; const g = Math.atan2(p.frente[0], p.frente[2]) + (b.ladoGraus || 0) * CF_D, d = (b.distancia ?? 6) * CF_M;
   return [p.centro[0] + Math.sin(g) * d, p.chao + (b.altura ?? 1.6) * CF_M, p.centro[2] + Math.cos(g) * d]; }
@@ -139,4 +142,4 @@ function cfSilhueta(nome) { const it = SCN.list.find(x => x.name === nome); if (
     if (ph[2] > 0 && ph[2] < pt[2] - 0.6 && Math.hypot(ph[0] - pt[0], ph[1] - pt[1]) < lt) out.push(lado); }
   return out; }
 
-export { cfSilhueta, cfCameraNoTempo, cfAplicar, cfEstaticaAtual, cfFixaFrente, cfPessoa, cfPonto, cfObjeto, cfChao, cfDescrever, CF_M };
+export { CF_BASES, cfSilhueta, cfCameraNoTempo, cfAplicar, cfEstaticaAtual, cfFixaFrente, cfPessoa, cfPonto, cfObjeto, cfChao, cfDescrever, CF_M };

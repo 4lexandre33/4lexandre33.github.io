@@ -641,4 +641,85 @@ cena "Praça" local "Praça" hora tarde
   AUDITOR: MCP auditar_animacoes (ou site → Texto → "Auditar animações") mede em cada animação quanto o corpo afunda no chão (cm), quanto o pé apoiado
     escorrega (cm/s) e se termina longe da pose de partida. Limites: afunda > 3,5 cm ou escorrega > 12 cm/s (corrida 40, transições 30) = problema.
   SOM: não há áudio; falas viram legendas e .srt e os tempos ficam na lista de planos.
+
+27. PRÉ-CONFIGURAÇÕES DE CENA E CÂMERA (611 prontas, em árvore)
+  São situações comuns de filme, série, anime e quadrinho já resolvidas: onde cada um fica, para onde olha, a pose sugerida e a CÂMERA.
+  A câmera é RELATIVA às pessoas: mudou alguém de lugar, a câmera vem junto (no filme ela acompanha a cada quadro).
+  DUAS FORMAS (dentro de um quadro ou de um plano):
+    cena preset ID com Kai, Mira [em (x,z)] [gira 90] [espelhado] [sem-poses] [lente 50]   — arruma as pessoas (e cadeiras/mesa) E põe a câmera
+    camera preset ID com Kai, Mira [lente 50] [espelhado]                                  — SÓ a câmera (as pessoas ficam onde você pôs)
+    Os nomes entram na ordem dos PAPÉIS (A, B, C…; M = o animal). Sem "com", usa quem está no quadro na ordem em que apareceu.
+    No filme: "2s camera preset … em 1s" troca suave aos 2 s; "corte" troca seco. Os movimentos de câmera (aproxima, orbita…) somam por cima.
+  ID = caminho na árvore, com pontos: dialogo.dois.frente.ombro-a-dir. Basta o fim se for único (ex.: "ombro-a-dir" acha o primeiro).
+  ÁRVORE (grupos de primeiro nível): dialogo (237) · grupo (49) · combate (79) · um (83) · emocao (12) · estabelecimento (12) · movimento (22) · suspense (14) · romance (12) · poder (12) · objeto (8) · pov (6) · animal (14) · escala (9) · anime (16) · hq (10) · camera-movimento (16)
+  DIÁLOGO A DOIS — arranjos: frente (1,2 m) · perto (0,55 m) · distancia (5 m) · mesa · sentado-em-pe · em-l · lado · andando · banco · costas
+    planos de cada arranjo: mestre-perfil, dois-3-4-a/b, ombro-a-dir/esq, ombro-b-dir/esq (SOBRE O OMBRO / over-the-shoulder, OTS),
+    sujo-a/b (close sujo: "dirty single", um pedaço do ombro do outro na borda), limpo-a/b (close limpo: "clean single"), medio-a/b, pov-a/b,
+    cinquenta (50/50 de perfil), aereo, baixo-a, alto-b. Lado a lado: frontal, frontal-inteiro, costas, perfil-a/b, close-a/b, ombro-a, baixo, aereo, geral, pes.
+  PLANO E CONTRAPLANO: ombro-a-dir (B fala) ↔ ombro-b-esq (A responde) ficam do MESMO lado do eixo (regra dos 180°). Misturar dir com dir cruza o eixo.
+  OUTROS GRUPOS: dialogo.tres.* (triangulo, linha, dois-contra-um, mesa) · grupo.* (equipe em V, roda, fila, marcha, reuniao, cercado, costas) ·
+    combate.* (confronto, guardas, golpe, chute, duelo, impasse, caido, vitoria, energia, impasse-tres, um-contra-todos) · um.ENQUADRAMENTO.ANGULO
+    (olhos|close|primeiro-plano|medio|americano|inteiro|conjunto|geral × frente|tres-quartos|perfil|costas|plongee|contra-plongee|holandes|zenital|nadir) ·
+    emocao.* · estabelecimento.* · movimento.* (e movimento.perseguicao.*) · suspense.* · romance.* · poder.* · objeto.* (inserts) · pov.* ·
+    animal.montaria.* (A monta M) · animal.companheiro.* · escala.* (gigante/pequeno/fada) · anime.* · hq.* · camera-movimento.* (com o movimento sugerido).
+  EIXO (180°) E "espelhado": a câmera de um preset fica de um lado da linha entre A e B. Mantenha A e B na MESMA ordem nos quadros seguidos
+    (com Kai, Mira … com Kai, Mira): os planos "-a"/"-b" já ficam do mesmo lado. Trocar a ordem (com Mira, Kai) inverte o lado e dá o aviso
+    "a câmera cruzou o eixo"; "espelhado" põe a câmera do outro lado (use num quadro para corrigir, ou de propósito para virar a cena).
+  JUNTO COM OUTRAS LINHAS: "cena preset" escreve, naquele ponto, as linhas "Kai em (…) gira … pose …" (e cadeiras/mesa); as linhas DEPOIS dele
+    mudam por cima (Kai pose X, Mira expressao Y, falas). Num quadro "continua" o preset reposiciona quem ele cita. "camera preset" só mexe na câmera
+    e vale para o quadro todo (a última linha de câmera ganha). Planos de olhos/detalhe cortam a cabeça de propósito (sem aviso).
+  TRÊS PESSOAS: dialogo.tres.ARRANJO — triangulo (A na frente, B à direita de A, C diante de A) · linha (três lado a lado) · dois-contra-um
+    (A e B juntos, C de frente para eles) · mesa (A e C nas cabeceiras, B no lado). O eixo principal é A–C: ombro-a-c ↔ ombro-c-a ficam do mesmo lado;
+    ponha em A e C quem DISCUTE e em B quem observa/media. Para B: ombro-b-a, ombro-b-c, dois-ab, dois-bc, close-b. Cadeiras e mesa vêm com o preset (não precisa de local).
+  ANIMAIS: papel M = o animal ("cena preset animal.montaria.perfil com Kai, Trovão" põe Kai montado). Para perseguição a cavalo use
+    movimento.perseguicao.* com os CAVALEIROS (A = quem foge, B = quem persegue): a câmera segue os cavaleiros e, com eles, os cavalos.
+  EXEMPLO: quadro 3 tamanho grande
+             cena preset dialogo.dois.frente.ombro-a-dir com Kai, Mira em (2,0) gira 90
+             Mira fala "Você voltou."
+  VER TODAS: site → Biblioteca → Pré-configurações (árvore com miniaturas); no editor de texto digite "preset " e depois "." para descer na árvore;
+    catálogo (docs/catalogo-dsl.md, seção Pré-configurações); MCP: preconfiguracoes (lista/busca com miniaturas) e aplicar_preconfiguracao.
+
+28. ANIMAIS ANIMADOS, POSES EXTRAS, TONS E EFEITOS NO TEMPO
+  ANIMAÇÕES DE ANIMAL (filme): Trovão anima NOME [por 3s | 10 m | 2 vezes]   (62 animações)
+    passo, andadura, trote, meio-galope, galope, galope-fuga, esgueirar, re, passo-lateral-direita, passo-lateral-esquerda, passo-para-trote, trote-para-galope, passo-para-galope, galope-para-trote, trote-para-passo, galope-para-fuga, arrancar-trote, arrancar-galope, parar, frear-galope, vira-esquerda, vira-direita, meia-volta, pivo-traseiro, rodopio, curva-esquerda, curva-direita, curva-trote-esquerda, curva-trote-direita, curva-galope-esquerda, curva-galope-direita, pulo-no-lugar, salto-frente, salto-obstaculo, pulo-gato, assustar, empinar, coice, deitar, levantar, sentar, levantar-sentado, deitar-de-lado, rolar, sacudir, espreguicar, bocejar, cheirar, comer, beber, uivar, latir, relinchar, abanar-rabo, cocar, patear, cabecada, recuar-assustado, olhar-em-volta, respirar, ataque-mordida, rosnar
+    Verbos diretos: 1s Trovão pula · pular · salta · saltar · salta-obstaculo · pula-obstaculo · pula-alto · vira-esquerda · vira-direita · meia-volta · da-meia-volta · pivota · rodopia · rola · rolar · sacode · sacode-se · espreguica · boceja · cheira · bebe · late · ladra · relincha · abana · abana-rabo · coca · coca-se · pateia · da-cabecada … e empina · deita · senta · come · pasta · uiva · coice · da-coice (animados no filme).
+    Marchas: anda (passo) · andadura · trota · meio-galope (canter) · galopa · galopa-fuga (dispara, foge) · esgueira (espreita) · anda-de-re · passo-lateral.
+    Transições sem tranco: passo-para-trote, trote-para-galope, frear-galope, parar, arrancar-*; curvas: curva-esq/dir (-trote/-galope); vira-*, meia-volta, pivo-traseiro.
+  O QUE CADA ANIMAÇÃO ANDA (cavalo escala 1; outras espécies e escalas: proporcional ao tamanho). "anima" ANDA de verdade: o animal termina adiante.
+    passo 1,1s (ciclo) 1,0m · andadura 0,8s (ciclo) 1,5m · trote 0,7s (ciclo) 1,8m · meio-galope 0,6s (ciclo) 2,3m · galope 0,6s (ciclo) 3,1m · 
+    galope-fuga 0,5s (ciclo) 4,2m · esgueirar 1,5s (ciclo) 0,5m · re 1,4s (ciclo) -1,0m · passo-lateral-direita 1,1s (ciclo) lado 0,4m · 
+    passo-lateral-esquerda 1,1s (ciclo) lado -0,4m · passo-para-trote 1,8s 2,9m · trote-para-galope 1,3s 5,0m · passo-para-galope 1,7s 4,5m · 
+    galope-para-trote 1,3s 4,9m · trote-para-passo 1,8s 2,8m · galope-para-fuga 1,0s 7,3m · arrancar-trote 1,7s 2,0m · arrancar-galope 1,6s 4,3m · 
+    parar 1,9s 0,7m · frear-galope 1,4s 3,6m · vira-esquerda 0,9s -0,7m lado -0,7m gira 90° · vira-direita 0,9s -0,7m lado 0,7m gira -90° · 
+    meia-volta 1,6s -1,4m gira 180° · pivo-traseiro 1,2s -1,4m gira 180° · rodopio 1,1s (ciclo) gira 360° · curva-esquerda 2,2s 1,2m lado -1,2m gira 90° · 
+    curva-direita 2,2s 1,2m lado 1,2m gira -90° · curva-trote-esquerda 1,4s 2,3m lado -2,3m gira 90° · curva-trote-direita 1,4s 2,3m lado 2,3m gira -90° · 
+    curva-galope-esquerda 1,7s 5,9m lado -5,9m gira 90° · curva-galope-direita 1,7s 5,9m lado 5,9m gira -90° · pulo-no-lugar 1,1s · salto-frente 1,3s 3,0m · 
+    salto-obstaculo 1,6s 6,1m · pulo-gato 0,9s 1,5m · assustar 0,9s lado 0,9m gira -25° · empinar 1,8s · coice 0,9s · deitar 1,4s · levantar 1,2s · 
+    sentar 1,0s · levantar-sentado 0,8s · deitar-de-lado 1,3s · rolar 2,3s · sacudir 0,9s · espreguicar 2,2s · bocejar 1,4s · cheirar 2,1s · 
+    comer 1,6s (ciclo) · beber 3,0s · uivar 3,2s · latir 0,6s (ciclo) · relinchar 1,3s · abanar-rabo 0,3s (ciclo) · cocar 1,1s · patear 0,7s (ciclo) · 
+    cabecada 0,9s 0,5m · recuar-assustado 1,3s -1,1m · olhar-em-volta 3,2s · respirar 3,6s (ciclo) · ataque-mordida 0,8s 1,5m · rosnar 1,5s
+    Ciclo + "por 3s" ou "10 m" repete até o tempo/distância; "galopa 25m" é a marcha simples. Posição: o validador (MCP validar_name) e a aba Filme mostram onde cada um está.
+  MONTAR ANIMADO (filme): 2s Kai monta Trovão (pé no estribo, sobe, senta: 1,5 s) · 6s Kai desmonta [esquerda|direita] (1,3 s).
+    O cavaleiro sai de ONDE ESTÁ e vai até a sela: deixe-o em pé ~1 m ao lado esquerdo do animal (ex.: Kai em (−1,0) e Trovão em (0,0) gira 0) para ficar natural.
+    "Kai monta Trovão sem-animacao" põe montado na hora. Montado, o cavaleiro inclina com a marcha e o pulo; olhar para trás: "olha Mira" (o tronco gira até ~60°).
+  EXEMPLO DE PERSEGUIÇÃO (filme):
+    elenco / Kai relevante / Mira relevante / Trovão animal cavalo sela / Sombra animal cavalo sela
+    cena "fuga" tom quente → plano 1: Kai em (-1,0) · Trovão em (0,0) · Sombra em (0,-12) · Mira monta Sombra sem-animacao · camera preset animal.montaria.perfil com Kai, Trovão
+      0s Kai monta Trovão · 1.6s Trovão anima arrancar-galope · 1.6s Sombra anima trote-para-galope
+    plano 2: camera preset movimento.perseguicao.perfil com Kai, Mira · 0s Trovão anima galope por 4s · 0s Sombra anima galope por 4s
+
+  POSES EXTRAS (já incluídas na lista do capítulo 4): 187 poses novas (combate, conversa, dia a dia, emoção) e 40 expressões novas.
+    Poses: Kai pose guardaBoxe | espadaGuardaAlta | maosAoAlto | ajoelhadoRendido | discursando | maoNoQueixo | ... (lista inteira no catálogo e no autocomplete)
+    Expressões novas: apaixonado, envergonhadoSorrindo, tsundere, bicudo, gotaDeSuor, veiaDeRaiva, olhosBrilhando, choroCascata, choroContido, sorrisoTriste, sorrisoConfiante, sorrisoMaligno, gargalhadaMaligna, olharMorto, olharFrio, olharPenetrante, susto, panico, horror, nojoExtremo, incredulo, sarcastico, serio, calmo, sonhador, curioso, esperancoso, decepcionado, ciumes, arrogante, frustrado, exausto, tonto, bebado, doente, fome, concentradoLingua, gritoDeDor, gritoDeAlegria, vitoriaSorriso
+  INTERAÇÕES EXTRAS (49): luta, armas, rendição, equipe, afeto, conversa, treino — Kai interacao NOME com Mira.
+    cruzadoNoQueixo, uppercutNoQueixo, ganchoNoFigado, chuteNaBarriga, chuteNoRosto, joelhadaNaBarriga, cotoveladaNoRosto, blocoDeSoco, esquivaDeChute, aparaESoca, agarrandoColarinho, levantandoPeloColarinho, estrangulamentoPorTras, abracoDeUrso, arremessoDeOmbro, socoNoChaoMontado, espadasCruzadas, dueloDeEspadas, estocadaDefendida, impasseArmado, rendicao, rendidoAjoelhado, refem, algemando, costasComCostasEmCombate, ladoALadoHeroico, apoiandoParaSaltar, segurandoAsMaos, maoNoRosto, beijoNaTesta, abracoReencontro, abracoChorando, valsa, puxarParaDancar, pedidoDeCasamento, entregandoPresente, conversaExplicandoOuvindo, discussaoCaraACara, acusandoEDefendendo, cochichoNoOuvido, tapinhaNasCostas, selfieJuntos, apontandoOCaminho, apresentandoAlguem, consolandoEmPe, oferecendoAjuda, carregandoFeridoNosBracos, sparringLuvas, mestreEAprendiz
+  TOM DA CENA (cor do quadro inteiro): no cabeçalho "quadro 2 tom sepia" ou na cena "cena "noite" tom noite" (vale para os planos dela).
+    Tons: pb, sepia, flashback, noite, quente, frio, dessaturado, vibrante, terror, sonho, vinheta
+  TRÊS "tom" DIFERENTES (cada um vale para o que vem antes dele na linha): na FALA (fala "…" tom raiva: jeito de falar), no CABEÇALHO do quadro/cena
+    (tom sepia: cor da imagem inteira) e no EFEITO (efeito fogo tom quente: cor do efeito). Mãos: maoDir = mao-direita, maoEsq = mao-esquerda (os dois valem).
+  EFEITOS — cores e tons: Kai efeito NOME [em mao-direita|cabeca|pes|(x,z)|(x,y,z)|objeto "copo"|tela] [elemento fogo] [cor #ff0] [tom quente]
+    [nivel 3] [escala 1.5] [colorido|nanquim] [texto "BAM"] [camada frente|tras] [por 2s] [cresce|pulsa|some|pisca|surge] [para Mira]
+    Elementos (paletas): fogo, gelo, raio, vento, vazio, sagrado, prisma, cristal, terra, sombra, tinta, lava, plasma, eletrico, veneno, natureza, oceano, ouro, trevas, sangue, neon, aurora, metal, sakura, chocolate
+    Tons do efeito: quente, frio, pastel, neon, sombrio, sepia, dessaturado, vibrante, noturno, flashback
+    No filme, no tempo: "1.5s efeito explosao em (2,0) cresce por 1s" (efeito da cena) ou "1s Kai efeito aura_sombria pulsa por 3s".
 ```

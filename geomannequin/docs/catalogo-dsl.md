@@ -40,6 +40,898 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 `gigante [N]` (3,5×) · `tita` (10×) · `anao` (0,62×, pernas curtas) · `fada` (0,12×, paira) · `miniatura` (0,2×) · `escala N` (0,03–30×) · `paira 1.5m` · `voa-ate X altura 6m` · `pousa` · `sobre-mao|sobre-ombro|sobre-cabeca Outro` · `inclina-corpo 30` · `de-cabeca-para-baixo`
 
+## Pré-configurações de cena e câmera (capítulo 27)
+
+611 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
+
+Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon Boom, No Film School): over-the-shoulder (OTS), dirty/clean single, two-shot, 50/50, dutch angle, POV, insert, establishing shot.
+
+### Diálogo/Dois/frente a frente (de pé) (20)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.frente.mestre-perfil` | plano mestre de perfil — frente a frente (de pé) | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.frente.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — frente a frente (de pé) | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.frente.dois-3-4-a` | dois em quadro, 3/4 por trás de B — frente a frente (de pé) | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.frente.dois-3-4-b` | dois em quadro, 3/4 por trás de A — frente a frente (de pé) | two-shot 3/4 favoring B | A, B | vê o rosto de B e as costas/ombro de A |
+| `dialogo.dois.frente.ombro-a-dir` | sobre o ombro direito de A, olhando B — frente a frente (de pé) | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.frente.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — frente a frente (de pé) | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.frente.ombro-b-dir` | sobre o ombro direito de B, olhando A — frente a frente (de pé) | reverse OTS on B, right | A, B | o contraplano do OTS: agora B de costas, A de frente |
+| `dialogo.dois.frente.ombro-b-esq` | sobre o ombro esquerdo de B, olhando A — frente a frente (de pé) | reverse OTS on B, left | A, B | contraplano pelo outro ombro |
+| `dialogo.dois.frente.sujo-a` | close sujo de B (ombro de A na borda) — frente a frente (de pé) | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.frente.sujo-b` | close sujo de A (ombro de B na borda) — frente a frente (de pé) | dirty single on A | A, B | contraplano do close sujo |
+| `dialogo.dois.frente.limpo-a` | close limpo de A — frente a frente (de pé) | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.frente.limpo-b` | close limpo de B — frente a frente (de pé) | clean single on B | A, B | só B, sem o outro no quadro |
+| `dialogo.dois.frente.medio-a` | plano médio de A — frente a frente (de pé) | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.frente.medio-b` | plano médio de B — frente a frente (de pé) | medium single on B | A, B | B da cintura para cima, de 3/4 |
+| `dialogo.dois.frente.pov-a` | visão de A (POV) olhando B — frente a frente (de pé) | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.frente.pov-b` | visão de B (POV) olhando A — frente a frente (de pé) | POV of B | A, B | o espectador vê pelos olhos de B |
+| `dialogo.dois.frente.cinquenta` | 50/50 de perfil (rosto a rosto) — frente a frente (de pé) | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.frente.aereo` | de cima (vista aérea) — frente a frente (de pé) | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.frente.baixo-a` | A de baixo (contra-plongée) — frente a frente (de pé) | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.frente.alto-b` | B de cima (plongée) — frente a frente (de pé) | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Dois/bem perto (íntimo, tenso) (20)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.perto.mestre-perfil` | plano mestre de perfil — bem perto (íntimo, tenso) | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.perto.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — bem perto (íntimo, tenso) | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.perto.dois-3-4-a` | dois em quadro, 3/4 por trás de B — bem perto (íntimo, tenso) | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.perto.dois-3-4-b` | dois em quadro, 3/4 por trás de A — bem perto (íntimo, tenso) | two-shot 3/4 favoring B | A, B | vê o rosto de B e as costas/ombro de A |
+| `dialogo.dois.perto.ombro-a-dir` | sobre o ombro direito de A, olhando B — bem perto (íntimo, tenso) | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.perto.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — bem perto (íntimo, tenso) | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.perto.ombro-b-dir` | sobre o ombro direito de B, olhando A — bem perto (íntimo, tenso) | reverse OTS on B, right | A, B | o contraplano do OTS: agora B de costas, A de frente |
+| `dialogo.dois.perto.ombro-b-esq` | sobre o ombro esquerdo de B, olhando A — bem perto (íntimo, tenso) | reverse OTS on B, left | A, B | contraplano pelo outro ombro |
+| `dialogo.dois.perto.sujo-a` | close sujo de B (ombro de A na borda) — bem perto (íntimo, tenso) | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.perto.sujo-b` | close sujo de A (ombro de B na borda) — bem perto (íntimo, tenso) | dirty single on A | A, B | contraplano do close sujo |
+| `dialogo.dois.perto.limpo-a` | close limpo de A — bem perto (íntimo, tenso) | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.perto.limpo-b` | close limpo de B — bem perto (íntimo, tenso) | clean single on B | A, B | só B, sem o outro no quadro |
+| `dialogo.dois.perto.medio-a` | plano médio de A — bem perto (íntimo, tenso) | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.perto.medio-b` | plano médio de B — bem perto (íntimo, tenso) | medium single on B | A, B | B da cintura para cima, de 3/4 |
+| `dialogo.dois.perto.pov-a` | visão de A (POV) olhando B — bem perto (íntimo, tenso) | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.perto.pov-b` | visão de B (POV) olhando A — bem perto (íntimo, tenso) | POV of B | A, B | o espectador vê pelos olhos de B |
+| `dialogo.dois.perto.cinquenta` | 50/50 de perfil (rosto a rosto) — bem perto (íntimo, tenso) | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.perto.aereo` | de cima (vista aérea) — bem perto (íntimo, tenso) | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.perto.baixo-a` | A de baixo (contra-plongée) — bem perto (íntimo, tenso) | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.perto.alto-b` | B de cima (plongée) — bem perto (íntimo, tenso) | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Dois/a distância (gritando, chamando) (20)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.distancia.mestre-perfil` | plano mestre de perfil — a distância (gritando, chamando) | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.distancia.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — a distância (gritando, chamando) | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.distancia.dois-3-4-a` | dois em quadro, 3/4 por trás de B — a distância (gritando, chamando) | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.distancia.dois-3-4-b` | dois em quadro, 3/4 por trás de A — a distância (gritando, chamando) | two-shot 3/4 favoring B | A, B | vê o rosto de B e as costas/ombro de A |
+| `dialogo.dois.distancia.ombro-a-dir` | sobre o ombro direito de A, olhando B — a distância (gritando, chamando) | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.distancia.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — a distância (gritando, chamando) | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.distancia.ombro-b-dir` | sobre o ombro direito de B, olhando A — a distância (gritando, chamando) | reverse OTS on B, right | A, B | o contraplano do OTS: agora B de costas, A de frente |
+| `dialogo.dois.distancia.ombro-b-esq` | sobre o ombro esquerdo de B, olhando A — a distância (gritando, chamando) | reverse OTS on B, left | A, B | contraplano pelo outro ombro |
+| `dialogo.dois.distancia.sujo-a` | close sujo de B (ombro de A na borda) — a distância (gritando, chamando) | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.distancia.sujo-b` | close sujo de A (ombro de B na borda) — a distância (gritando, chamando) | dirty single on A | A, B | contraplano do close sujo |
+| `dialogo.dois.distancia.limpo-a` | close limpo de A — a distância (gritando, chamando) | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.distancia.limpo-b` | close limpo de B — a distância (gritando, chamando) | clean single on B | A, B | só B, sem o outro no quadro |
+| `dialogo.dois.distancia.medio-a` | plano médio de A — a distância (gritando, chamando) | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.distancia.medio-b` | plano médio de B — a distância (gritando, chamando) | medium single on B | A, B | B da cintura para cima, de 3/4 |
+| `dialogo.dois.distancia.pov-a` | visão de A (POV) olhando B — a distância (gritando, chamando) | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.distancia.pov-b` | visão de B (POV) olhando A — a distância (gritando, chamando) | POV of B | A, B | o espectador vê pelos olhos de B |
+| `dialogo.dois.distancia.cinquenta` | 50/50 de perfil (rosto a rosto) — a distância (gritando, chamando) | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.distancia.aereo` | de cima (vista aérea) — a distância (gritando, chamando) | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.distancia.baixo-a` | A de baixo (contra-plongée) — a distância (gritando, chamando) | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.distancia.alto-b` | B de cima (plongée) — a distância (gritando, chamando) | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Dois/sentados à mesa, frente a frente (20)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.mesa.mestre-perfil` | plano mestre de perfil — sentados à mesa, frente a frente | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.mesa.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — sentados à mesa, frente a frente | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.mesa.dois-3-4-a` | dois em quadro, 3/4 por trás de B — sentados à mesa, frente a frente | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.mesa.dois-3-4-b` | dois em quadro, 3/4 por trás de A — sentados à mesa, frente a frente | two-shot 3/4 favoring B | A, B | vê o rosto de B e as costas/ombro de A |
+| `dialogo.dois.mesa.ombro-a-dir` | sobre o ombro direito de A, olhando B — sentados à mesa, frente a frente | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.mesa.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — sentados à mesa, frente a frente | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.mesa.ombro-b-dir` | sobre o ombro direito de B, olhando A — sentados à mesa, frente a frente | reverse OTS on B, right | A, B | o contraplano do OTS: agora B de costas, A de frente |
+| `dialogo.dois.mesa.ombro-b-esq` | sobre o ombro esquerdo de B, olhando A — sentados à mesa, frente a frente | reverse OTS on B, left | A, B | contraplano pelo outro ombro |
+| `dialogo.dois.mesa.sujo-a` | close sujo de B (ombro de A na borda) — sentados à mesa, frente a frente | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.mesa.sujo-b` | close sujo de A (ombro de B na borda) — sentados à mesa, frente a frente | dirty single on A | A, B | contraplano do close sujo |
+| `dialogo.dois.mesa.limpo-a` | close limpo de A — sentados à mesa, frente a frente | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.mesa.limpo-b` | close limpo de B — sentados à mesa, frente a frente | clean single on B | A, B | só B, sem o outro no quadro |
+| `dialogo.dois.mesa.medio-a` | plano médio de A — sentados à mesa, frente a frente | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.mesa.medio-b` | plano médio de B — sentados à mesa, frente a frente | medium single on B | A, B | B da cintura para cima, de 3/4 |
+| `dialogo.dois.mesa.pov-a` | visão de A (POV) olhando B — sentados à mesa, frente a frente | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.mesa.pov-b` | visão de B (POV) olhando A — sentados à mesa, frente a frente | POV of B | A, B | o espectador vê pelos olhos de B |
+| `dialogo.dois.mesa.cinquenta` | 50/50 de perfil (rosto a rosto) — sentados à mesa, frente a frente | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.mesa.aereo` | de cima (vista aérea) — sentados à mesa, frente a frente | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.mesa.baixo-a` | A de baixo (contra-plongée) — sentados à mesa, frente a frente | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.mesa.alto-b` | B de cima (plongée) — sentados à mesa, frente a frente | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Dois/um sentado, outro em pé (20)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.sentado-em-pe.mestre-perfil` | plano mestre de perfil — um sentado, outro em pé | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.sentado-em-pe.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — um sentado, outro em pé | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.sentado-em-pe.dois-3-4-a` | dois em quadro, 3/4 por trás de B — um sentado, outro em pé | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.sentado-em-pe.dois-3-4-b` | dois em quadro, 3/4 por trás de A — um sentado, outro em pé | two-shot 3/4 favoring B | A, B | vê o rosto de B e as costas/ombro de A |
+| `dialogo.dois.sentado-em-pe.ombro-a-dir` | sobre o ombro direito de A, olhando B — um sentado, outro em pé | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.sentado-em-pe.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — um sentado, outro em pé | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.sentado-em-pe.ombro-b-dir` | sobre o ombro direito de B, olhando A — um sentado, outro em pé | reverse OTS on B, right | A, B | o contraplano do OTS: agora B de costas, A de frente |
+| `dialogo.dois.sentado-em-pe.ombro-b-esq` | sobre o ombro esquerdo de B, olhando A — um sentado, outro em pé | reverse OTS on B, left | A, B | contraplano pelo outro ombro |
+| `dialogo.dois.sentado-em-pe.sujo-a` | close sujo de B (ombro de A na borda) — um sentado, outro em pé | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.sentado-em-pe.sujo-b` | close sujo de A (ombro de B na borda) — um sentado, outro em pé | dirty single on A | A, B | contraplano do close sujo |
+| `dialogo.dois.sentado-em-pe.limpo-a` | close limpo de A — um sentado, outro em pé | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.sentado-em-pe.limpo-b` | close limpo de B — um sentado, outro em pé | clean single on B | A, B | só B, sem o outro no quadro |
+| `dialogo.dois.sentado-em-pe.medio-a` | plano médio de A — um sentado, outro em pé | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.sentado-em-pe.medio-b` | plano médio de B — um sentado, outro em pé | medium single on B | A, B | B da cintura para cima, de 3/4 |
+| `dialogo.dois.sentado-em-pe.pov-a` | visão de A (POV) olhando B — um sentado, outro em pé | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.sentado-em-pe.pov-b` | visão de B (POV) olhando A — um sentado, outro em pé | POV of B | A, B | o espectador vê pelos olhos de B |
+| `dialogo.dois.sentado-em-pe.cinquenta` | 50/50 de perfil (rosto a rosto) — um sentado, outro em pé | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.sentado-em-pe.aereo` | de cima (vista aérea) — um sentado, outro em pé | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.sentado-em-pe.baixo-a` | A de baixo (contra-plongée) — um sentado, outro em pé | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.sentado-em-pe.alto-b` | B de cima (plongée) — um sentado, outro em pé | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Dois/em L (90°) (20)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.em-l.mestre-perfil` | plano mestre de perfil — em L (90°) | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.em-l.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — em L (90°) | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.em-l.dois-3-4-a` | dois em quadro, 3/4 por trás de B — em L (90°) | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.em-l.dois-3-4-b` | dois em quadro, 3/4 por trás de A — em L (90°) | two-shot 3/4 favoring B | A, B | vê o rosto de B e as costas/ombro de A |
+| `dialogo.dois.em-l.ombro-a-dir` | sobre o ombro direito de A, olhando B — em L (90°) | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.em-l.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — em L (90°) | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.em-l.ombro-b-dir` | sobre o ombro direito de B, olhando A — em L (90°) | reverse OTS on B, right | A, B | o contraplano do OTS: agora B de costas, A de frente |
+| `dialogo.dois.em-l.ombro-b-esq` | sobre o ombro esquerdo de B, olhando A — em L (90°) | reverse OTS on B, left | A, B | contraplano pelo outro ombro |
+| `dialogo.dois.em-l.sujo-a` | close sujo de B (ombro de A na borda) — em L (90°) | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.em-l.sujo-b` | close sujo de A (ombro de B na borda) — em L (90°) | dirty single on A | A, B | contraplano do close sujo |
+| `dialogo.dois.em-l.limpo-a` | close limpo de A — em L (90°) | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.em-l.limpo-b` | close limpo de B — em L (90°) | clean single on B | A, B | só B, sem o outro no quadro |
+| `dialogo.dois.em-l.medio-a` | plano médio de A — em L (90°) | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.em-l.medio-b` | plano médio de B — em L (90°) | medium single on B | A, B | B da cintura para cima, de 3/4 |
+| `dialogo.dois.em-l.pov-a` | visão de A (POV) olhando B — em L (90°) | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.em-l.pov-b` | visão de B (POV) olhando A — em L (90°) | POV of B | A, B | o espectador vê pelos olhos de B |
+| `dialogo.dois.em-l.cinquenta` | 50/50 de perfil (rosto a rosto) — em L (90°) | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.em-l.aereo` | de cima (vista aérea) — em L (90°) | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.em-l.baixo-a` | A de baixo (contra-plongée) — em L (90°) | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.em-l.alto-b` | B de cima (plongée) — em L (90°) | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Dois/lado a lado, conversando (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.lado.frontal` | os dois de frente para a câmera — lado a lado, conversando | frontal two-shot | A, B | conversa lado a lado, vista de frente |
+| `dialogo.dois.lado.frontal-inteiro` | os dois de corpo inteiro, de frente — lado a lado, conversando | frontal full two-shot | A, B | situar os dois e o lugar |
+| `dialogo.dois.lado.costas` | por trás dos dois — lado a lado, conversando | rear two-shot | A, B | os dois olham o que vem pela frente |
+| `dialogo.dois.lado.perfil-a` | de perfil, A na frente — lado a lado, conversando | profile two-shot | A, B | um atrás do outro no quadro, de perfil |
+| `dialogo.dois.lado.perfil-b` | de perfil, B na frente — lado a lado, conversando | profile two-shot reverse | A, B | o outro lado |
+| `dialogo.dois.lado.close-a` | close de A (de 3/4 pela frente) — lado a lado, conversando | single on A | A, B | a fala de A |
+| `dialogo.dois.lado.close-b` | close de B (de 3/4 pela frente) — lado a lado, conversando | single on B | A, B | a fala de B |
+| `dialogo.dois.lado.ombro-a` | por cima do ombro de A, vendo o perfil de B — lado a lado, conversando | OTS profile | A, B | o rosto de B de lado, A desfocado na frente |
+| `dialogo.dois.lado.baixo` | os dois de baixo — lado a lado, conversando | low two-shot | A, B | os dois parecem fortes, decididos |
+| `dialogo.dois.lado.aereo` | de cima — lado a lado, conversando | overhead two-shot | A, B | os dois vistos de cima |
+| `dialogo.dois.lado.geral` | geral, pequenos no lugar — lado a lado, conversando | wide two-shot | A, B | o lugar é o assunto; os dois são pequenos |
+| `dialogo.dois.lado.pes` | detalhe dos pés — lado a lado, conversando | feet insert | A, B | os pés (andando, parados lado a lado) |
+
+### Diálogo/Dois/andando lado a lado (walk and talk) (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.andando.frontal` | os dois de frente para a câmera — andando lado a lado (walk and talk) | frontal two-shot | A, B | conversa lado a lado, vista de frente |
+| `dialogo.dois.andando.frontal-inteiro` | os dois de corpo inteiro, de frente — andando lado a lado (walk and talk) | frontal full two-shot | A, B | situar os dois e o lugar |
+| `dialogo.dois.andando.costas` | por trás dos dois — andando lado a lado (walk and talk) | rear two-shot | A, B | os dois olham o que vem pela frente |
+| `dialogo.dois.andando.perfil-a` | de perfil, A na frente — andando lado a lado (walk and talk) | profile two-shot | A, B | um atrás do outro no quadro, de perfil |
+| `dialogo.dois.andando.perfil-b` | de perfil, B na frente — andando lado a lado (walk and talk) | profile two-shot reverse | A, B | o outro lado |
+| `dialogo.dois.andando.close-a` | close de A (de 3/4 pela frente) — andando lado a lado (walk and talk) | single on A | A, B | a fala de A |
+| `dialogo.dois.andando.close-b` | close de B (de 3/4 pela frente) — andando lado a lado (walk and talk) | single on B | A, B | a fala de B |
+| `dialogo.dois.andando.ombro-a` | por cima do ombro de A, vendo o perfil de B — andando lado a lado (walk and talk) | OTS profile | A, B | o rosto de B de lado, A desfocado na frente |
+| `dialogo.dois.andando.baixo` | os dois de baixo — andando lado a lado (walk and talk) | low two-shot | A, B | os dois parecem fortes, decididos |
+| `dialogo.dois.andando.aereo` | de cima — andando lado a lado (walk and talk) | overhead two-shot | A, B | os dois vistos de cima |
+| `dialogo.dois.andando.geral` | geral, pequenos no lugar — andando lado a lado (walk and talk) | wide two-shot | A, B | o lugar é o assunto; os dois são pequenos |
+| `dialogo.dois.andando.pes` | detalhe dos pés — andando lado a lado (walk and talk) | feet insert | A, B | os pés (andando, parados lado a lado) |
+
+### Diálogo/Dois/sentados num banco, lado a lado (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.banco.frontal` | os dois de frente para a câmera — sentados num banco, lado a lado | frontal two-shot | A, B | conversa lado a lado, vista de frente |
+| `dialogo.dois.banco.frontal-inteiro` | os dois de corpo inteiro, de frente — sentados num banco, lado a lado | frontal full two-shot | A, B | situar os dois e o lugar |
+| `dialogo.dois.banco.costas` | por trás dos dois — sentados num banco, lado a lado | rear two-shot | A, B | os dois olham o que vem pela frente |
+| `dialogo.dois.banco.perfil-a` | de perfil, A na frente — sentados num banco, lado a lado | profile two-shot | A, B | um atrás do outro no quadro, de perfil |
+| `dialogo.dois.banco.perfil-b` | de perfil, B na frente — sentados num banco, lado a lado | profile two-shot reverse | A, B | o outro lado |
+| `dialogo.dois.banco.close-a` | close de A (de 3/4 pela frente) — sentados num banco, lado a lado | single on A | A, B | a fala de A |
+| `dialogo.dois.banco.close-b` | close de B (de 3/4 pela frente) — sentados num banco, lado a lado | single on B | A, B | a fala de B |
+| `dialogo.dois.banco.ombro-a` | por cima do ombro de A, vendo o perfil de B — sentados num banco, lado a lado | OTS profile | A, B | o rosto de B de lado, A desfocado na frente |
+| `dialogo.dois.banco.baixo` | os dois de baixo — sentados num banco, lado a lado | low two-shot | A, B | os dois parecem fortes, decididos |
+| `dialogo.dois.banco.aereo` | de cima — sentados num banco, lado a lado | overhead two-shot | A, B | os dois vistos de cima |
+| `dialogo.dois.banco.geral` | geral, pequenos no lugar — sentados num banco, lado a lado | wide two-shot | A, B | o lugar é o assunto; os dois são pequenos |
+| `dialogo.dois.banco.pes` | detalhe dos pés — sentados num banco, lado a lado | feet insert | A, B | os pés (andando, parados lado a lado) |
+
+### Diálogo/Dois/A fala para as costas de B (13)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.dois.costas.mestre-perfil` | plano mestre de perfil — A fala para as costas de B | two-shot (profile master) | A, B | situar a conversa: os dois de perfil, cada um num lado |
+| `dialogo.dois.costas.mestre-perfil-oposto` | plano mestre de perfil (outro lado) — A fala para as costas de B | reverse master | A, B | o mesmo plano do outro lado do eixo (use só ao trocar de cena: cruza o eixo) |
+| `dialogo.dois.costas.dois-3-4-a` | dois em quadro, 3/4 por trás de B — A fala para as costas de B | two-shot 3/4 favoring A | A, B | vê o rosto de A e as costas/ombro de B |
+| `dialogo.dois.costas.ombro-a-dir` | sobre o ombro direito de A, olhando B — A fala para as costas de B | over-the-shoulder (OTS) on A, right | A, B | o clássico da conversa: nuca/ombro de A em primeiro plano, B de frente |
+| `dialogo.dois.costas.ombro-a-esq` | sobre o ombro esquerdo de A, olhando B — A fala para as costas de B | over-the-shoulder (OTS) on A, left | A, B | OTS pelo outro ombro (respeite o eixo: escolha um lado e mantenha) |
+| `dialogo.dois.costas.sujo-a` | close sujo de B (ombro de A na borda) — A fala para as costas de B | dirty single on B | A, B | B fechado, com um pedaço de A na borda: a conversa fica íntima |
+| `dialogo.dois.costas.limpo-a` | close limpo de A — A fala para as costas de B | clean single on A | A, B | só A, sem o outro no quadro: isola a fala ou a reação |
+| `dialogo.dois.costas.medio-a` | plano médio de A — A fala para as costas de B | medium single on A | A, B | A da cintura para cima, de 3/4 |
+| `dialogo.dois.costas.pov-a` | visão de A (POV) olhando B — A fala para as costas de B | POV of A | A, B | o espectador vê pelos olhos de A |
+| `dialogo.dois.costas.cinquenta` | 50/50 de perfil (rosto a rosto) — A fala para as costas de B | 50/50 shot | A, B | os dois de perfil, perto, ocupando cada metade: confronto ou romance |
+| `dialogo.dois.costas.aereo` | de cima (vista aérea) — A fala para as costas de B | top shot / overhead | A, B | os dois vistos de cima: distância, solidão ou mapa da cena |
+| `dialogo.dois.costas.baixo-a` | A de baixo (contra-plongée) — A fala para as costas de B | low angle on A | A, B | A domina a conversa |
+| `dialogo.dois.costas.alto-b` | B de cima (plongée) — A fala para as costas de B | high angle on B | A, B | B fica menor, vulnerável |
+
+### Diálogo/Três/em triângulo (17)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.tres.triangulo.mestre` | os três em quadro — em triângulo | three-shot | A, B, C | situar o grupo · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.frontal` | os três de frente — em triângulo | frontal three-shot | A, B, C | os três vistos de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.close-a` | close de A — em triângulo | single A | A, B, C | a fala de A · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.close-b` | close de B — em triângulo | single B | A, B, C | a fala de B · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.close-c` | close de C — em triângulo | single C | A, B, C | a fala de C · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-a-b` | sobre o ombro de A, olhando B — em triângulo | OTS A→B | A, B, C | A em primeiro plano, B de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-a-c` | sobre o ombro de A, olhando C — em triângulo | OTS A→C | A, B, C | A em primeiro plano, C de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-c-a` | sobre o ombro de C, olhando A — em triângulo | OTS C→A | A, B, C | C em primeiro plano, A de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-c-b` | sobre o ombro de C, olhando B — em triângulo | OTS C→B | A, B, C | C em primeiro plano, B de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.dois-ab` | A e B juntos — em triângulo | two-shot A+B | A, B, C | a dupla reage junta (C pode aparecer na borda) · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.dois-bc` | B e C juntos — em triângulo | two-shot B+C | A, B, C | a outra dupla · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.dois-ac` | A e C juntos — em triângulo | two-shot A+C | A, B, C | os dois em conflito · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-b-a` | sobre o ombro de B, olhando A — em triângulo | OTS B→A | A, B, C | B em primeiro plano, A de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-b-c` | sobre o ombro de B, olhando C — em triângulo | OTS B→C | A, B, C | B em primeiro plano, C de frente · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-a-b-esq` | sobre o ombro esquerdo de A, olhando B — em triângulo | OTS A→B left | A, B, C | pelo outro ombro · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.ombro-c-a-dir` | sobre o ombro direito de C, olhando A — em triângulo | OTS C→A right | A, B, C | pelo outro ombro · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+| `dialogo.tres.triangulo.aereo` | de cima — em triângulo | overhead three-shot | A, B, C | a geometria do grupo · lugares: A na frente; B à direita de A; C diante de A (de frente para A) |
+
+### Diálogo/Três/três lado a lado (17)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.tres.linha.mestre` | os três em quadro — três lado a lado | three-shot | A, B, C | situar o grupo · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.frontal` | os três de frente — três lado a lado | frontal three-shot | A, B, C | os três vistos de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.close-a` | close de A — três lado a lado | single A | A, B, C | a fala de A · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.close-b` | close de B — três lado a lado | single B | A, B, C | a fala de B · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.close-c` | close de C — três lado a lado | single C | A, B, C | a fala de C · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-a-b` | sobre o ombro de A, olhando B — três lado a lado | OTS A→B | A, B, C | A em primeiro plano, B de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-a-c` | sobre o ombro de A, olhando C — três lado a lado | OTS A→C | A, B, C | A em primeiro plano, C de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-c-a` | sobre o ombro de C, olhando A — três lado a lado | OTS C→A | A, B, C | C em primeiro plano, A de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-c-b` | sobre o ombro de C, olhando B — três lado a lado | OTS C→B | A, B, C | C em primeiro plano, B de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.dois-ab` | A e B juntos — três lado a lado | two-shot A+B | A, B, C | a dupla reage junta (C pode aparecer na borda) · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.dois-bc` | B e C juntos — três lado a lado | two-shot B+C | A, B, C | a outra dupla · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.dois-ac` | A e C juntos — três lado a lado | two-shot A+C | A, B, C | os dois em conflito · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-b-a` | sobre o ombro de B, olhando A — três lado a lado | OTS B→A | A, B, C | B em primeiro plano, A de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-b-c` | sobre o ombro de B, olhando C — três lado a lado | OTS B→C | A, B, C | B em primeiro plano, C de frente · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-a-b-esq` | sobre o ombro esquerdo de A, olhando B — três lado a lado | OTS A→B left | A, B, C | pelo outro ombro · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.ombro-c-a-dir` | sobre o ombro direito de C, olhando A — três lado a lado | OTS C→A right | A, B, C | pelo outro ombro · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+| `dialogo.tres.linha.aereo` | de cima — três lado a lado | overhead three-shot | A, B, C | a geometria do grupo · lugares: da esquerda da câmera para a direita, olhando de frente: C, B, A (A à esquerda deles mesmos) |
+
+### Diálogo/Três/dois contra um (17)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.tres.dois-contra-um.mestre` | os três em quadro — dois contra um | three-shot | A, B, C | situar o grupo · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.frontal` | os três de frente — dois contra um | frontal three-shot | A, B, C | os três vistos de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.close-a` | close de A — dois contra um | single A | A, B, C | a fala de A · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.close-b` | close de B — dois contra um | single B | A, B, C | a fala de B · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.close-c` | close de C — dois contra um | single C | A, B, C | a fala de C · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-a-b` | sobre o ombro de A, olhando B — dois contra um | OTS A→B | A, B, C | A em primeiro plano, B de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-a-c` | sobre o ombro de A, olhando C — dois contra um | OTS A→C | A, B, C | A em primeiro plano, C de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-c-a` | sobre o ombro de C, olhando A — dois contra um | OTS C→A | A, B, C | C em primeiro plano, A de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-c-b` | sobre o ombro de C, olhando B — dois contra um | OTS C→B | A, B, C | C em primeiro plano, B de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.dois-ab` | A e B juntos — dois contra um | two-shot A+B | A, B, C | a dupla reage junta (C pode aparecer na borda) · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.dois-bc` | B e C juntos — dois contra um | two-shot B+C | A, B, C | a outra dupla · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.dois-ac` | A e C juntos — dois contra um | two-shot A+C | A, B, C | os dois em conflito · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-b-a` | sobre o ombro de B, olhando A — dois contra um | OTS B→A | A, B, C | B em primeiro plano, A de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-b-c` | sobre o ombro de B, olhando C — dois contra um | OTS B→C | A, B, C | B em primeiro plano, C de frente · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-a-b-esq` | sobre o ombro esquerdo de A, olhando B — dois contra um | OTS A→B left | A, B, C | pelo outro ombro · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.ombro-c-a-dir` | sobre o ombro direito de C, olhando A — dois contra um | OTS C→A right | A, B, C | pelo outro ombro · lugares: A e B lado a lado, C de frente para os dois |
+| `dialogo.tres.dois-contra-um.aereo` | de cima — dois contra um | overhead three-shot | A, B, C | a geometria do grupo · lugares: A e B lado a lado, C de frente para os dois |
+
+### Diálogo/Três/três à mesa (17)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `dialogo.tres.mesa.mestre` | os três em quadro — três à mesa | three-shot | A, B, C | situar o grupo · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.frontal` | os três de frente — três à mesa | frontal three-shot | A, B, C | os três vistos de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.close-a` | close de A — três à mesa | single A | A, B, C | a fala de A · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.close-b` | close de B — três à mesa | single B | A, B, C | a fala de B · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.close-c` | close de C — três à mesa | single C | A, B, C | a fala de C · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-a-b` | sobre o ombro de A, olhando B — três à mesa | OTS A→B | A, B, C | A em primeiro plano, B de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-a-c` | sobre o ombro de A, olhando C — três à mesa | OTS A→C | A, B, C | A em primeiro plano, C de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-c-a` | sobre o ombro de C, olhando A — três à mesa | OTS C→A | A, B, C | C em primeiro plano, A de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-c-b` | sobre o ombro de C, olhando B — três à mesa | OTS C→B | A, B, C | C em primeiro plano, B de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.dois-ab` | A e B juntos — três à mesa | two-shot A+B | A, B, C | a dupla reage junta (C pode aparecer na borda) · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.dois-bc` | B e C juntos — três à mesa | two-shot B+C | A, B, C | a outra dupla · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.dois-ac` | A e C juntos — três à mesa | two-shot A+C | A, B, C | os dois em conflito · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-b-a` | sobre o ombro de B, olhando A — três à mesa | OTS B→A | A, B, C | B em primeiro plano, A de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-b-c` | sobre o ombro de B, olhando C — três à mesa | OTS B→C | A, B, C | B em primeiro plano, C de frente · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-a-b-esq` | sobre o ombro esquerdo de A, olhando B — três à mesa | OTS A→B left | A, B, C | pelo outro ombro · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.ombro-c-a-dir` | sobre o ombro direito de C, olhando A — três à mesa | OTS C→A right | A, B, C | pelo outro ombro · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+| `dialogo.tres.mesa.aereo` | de cima — três à mesa | overhead three-shot | A, B, C | a geometria do grupo · lugares: A numa cabeceira, C na outra (de frente para A), B no lado entre eles; o eixo principal é A–C |
+
+### Grupo/equipe em V (pose de grupo) (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.equipe.frontal-baixo` | de frente, de baixo (heroico) — equipe em V (pose de grupo) | low angle group shot | A, B, C, D, E | a equipe parece forte |
+| `grupo.equipe.frontal` | de frente — equipe em V (pose de grupo) | group shot | A, B, C, D, E | todos visíveis |
+| `grupo.equipe.aereo` | de cima — equipe em V (pose de grupo) | overhead group | A, B, C, D, E | a formação vista de cima |
+| `grupo.equipe.costas` | por trás do grupo — equipe em V (pose de grupo) | rear group shot | A, B, C, D, E | o grupo olha o que vem |
+| `grupo.equipe.perfil` | de lado — equipe em V (pose de grupo) | profile group | A, B, C, D, E | a fila/roda de perfil |
+| `grupo.equipe.lider` | close do líder (A) com o grupo atrás — equipe em V (pose de grupo) | leader close | A, B, C, D, E | A na frente, os outros desfocados atrás |
+| `grupo.equipe.geral` | geral alto — equipe em V (pose de grupo) | wide establishing group | A, B, C, D, E | o grupo pequeno no lugar |
+
+### Grupo/roda (todos para o centro) (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.roda.frontal-baixo` | de frente, de baixo (heroico) — roda (todos para o centro) | low angle group shot | A, B, C, D, E | a equipe parece forte |
+| `grupo.roda.frontal` | de frente — roda (todos para o centro) | group shot | A, B, C, D, E | todos visíveis |
+| `grupo.roda.aereo` | de cima — roda (todos para o centro) | overhead group | A, B, C, D, E | a formação vista de cima |
+| `grupo.roda.costas` | por trás do grupo — roda (todos para o centro) | rear group shot | A, B, C, D, E | o grupo olha o que vem |
+| `grupo.roda.perfil` | de lado — roda (todos para o centro) | profile group | A, B, C, D, E | a fila/roda de perfil |
+| `grupo.roda.lider` | close do líder (A) com o grupo atrás — roda (todos para o centro) | leader close | A, B, C, D, E | A na frente, os outros desfocados atrás |
+| `grupo.roda.geral` | geral alto — roda (todos para o centro) | wide establishing group | A, B, C, D, E | o grupo pequeno no lugar |
+
+### Grupo/em fila indiana (andando) (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.fila.frontal-baixo` | de frente, de baixo (heroico) — em fila indiana (andando) | low angle group shot | A, B, C, D | a equipe parece forte |
+| `grupo.fila.frontal` | de frente — em fila indiana (andando) | group shot | A, B, C, D | todos visíveis |
+| `grupo.fila.aereo` | de cima — em fila indiana (andando) | overhead group | A, B, C, D | a formação vista de cima |
+| `grupo.fila.costas` | por trás do grupo — em fila indiana (andando) | rear group shot | A, B, C, D | o grupo olha o que vem |
+| `grupo.fila.perfil` | de lado — em fila indiana (andando) | profile group | A, B, C, D | a fila/roda de perfil |
+| `grupo.fila.lider` | close do líder (A) com o grupo atrás — em fila indiana (andando) | leader close | A, B, C, D | A na frente, os outros desfocados atrás |
+| `grupo.fila.geral` | geral alto — em fila indiana (andando) | wide establishing group | A, B, C, D | o grupo pequeno no lugar |
+
+### Grupo/marcha heroica (linha avançando) (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.marcha.frontal-baixo` | de frente, de baixo (heroico) — marcha heroica (linha avançando) | low angle group shot | A, B, C, D, E | a equipe parece forte |
+| `grupo.marcha.frontal` | de frente — marcha heroica (linha avançando) | group shot | A, B, C, D, E | todos visíveis |
+| `grupo.marcha.aereo` | de cima — marcha heroica (linha avançando) | overhead group | A, B, C, D, E | a formação vista de cima |
+| `grupo.marcha.costas` | por trás do grupo — marcha heroica (linha avançando) | rear group shot | A, B, C, D, E | o grupo olha o que vem |
+| `grupo.marcha.perfil` | de lado — marcha heroica (linha avançando) | profile group | A, B, C, D, E | a fila/roda de perfil |
+| `grupo.marcha.lider` | close do líder (A) com o grupo atrás — marcha heroica (linha avançando) | leader close | A, B, C, D, E | A na frente, os outros desfocados atrás |
+| `grupo.marcha.geral` | geral alto — marcha heroica (linha avançando) | wide establishing group | A, B, C, D, E | o grupo pequeno no lugar |
+
+### Grupo/reunião em volta da mesa (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.reuniao.frontal-baixo` | de frente, de baixo (heroico) — reunião em volta da mesa | low angle group shot | A, B, C, D | a equipe parece forte |
+| `grupo.reuniao.frontal` | de frente — reunião em volta da mesa | group shot | A, B, C, D | todos visíveis |
+| `grupo.reuniao.aereo` | de cima — reunião em volta da mesa | overhead group | A, B, C, D | a formação vista de cima |
+| `grupo.reuniao.costas` | por trás do grupo — reunião em volta da mesa | rear group shot | A, B, C, D | o grupo olha o que vem |
+| `grupo.reuniao.perfil` | de lado — reunião em volta da mesa | profile group | A, B, C, D | a fila/roda de perfil |
+| `grupo.reuniao.lider` | close do líder (A) com o grupo atrás — reunião em volta da mesa | leader close | A, B, C, D | A na frente, os outros desfocados atrás |
+| `grupo.reuniao.geral` | geral alto — reunião em volta da mesa | wide establishing group | A, B, C, D | o grupo pequeno no lugar |
+
+### Grupo/um cercado por vários (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.cercado.frontal-baixo` | de frente, de baixo (heroico) — um cercado por vários | low angle group shot | A, B, C, D, E | a equipe parece forte |
+| `grupo.cercado.frontal` | de frente — um cercado por vários | group shot | A, B, C, D, E | todos visíveis |
+| `grupo.cercado.aereo` | de cima — um cercado por vários | overhead group | A, B, C, D, E | a formação vista de cima |
+| `grupo.cercado.costas` | por trás do grupo — um cercado por vários | rear group shot | A, B, C, D, E | o grupo olha o que vem |
+| `grupo.cercado.perfil` | de lado — um cercado por vários | profile group | A, B, C, D, E | a fila/roda de perfil |
+| `grupo.cercado.lider` | close do líder (A) com o grupo atrás — um cercado por vários | leader close | A, B, C, D, E | A na frente, os outros desfocados atrás |
+| `grupo.cercado.geral` | geral alto — um cercado por vários | wide establishing group | A, B, C, D, E | o grupo pequeno no lugar |
+
+### Grupo/quatro de costas (cercados) (7)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `grupo.costas.frontal-baixo` | de frente, de baixo (heroico) — quatro de costas (cercados) | low angle group shot | A, B, C, D | a equipe parece forte |
+| `grupo.costas.frontal` | de frente — quatro de costas (cercados) | group shot | A, B, C, D | todos visíveis |
+| `grupo.costas.aereo` | de cima — quatro de costas (cercados) | overhead group | A, B, C, D | a formação vista de cima |
+| `grupo.costas.costas` | por trás do grupo — quatro de costas (cercados) | rear group shot | A, B, C, D | o grupo olha o que vem |
+| `grupo.costas.perfil` | de lado — quatro de costas (cercados) | profile group | A, B, C, D | a fila/roda de perfil |
+| `grupo.costas.lider` | close do líder (A) com o grupo atrás — quatro de costas (cercados) | leader close | A, B, C, D | A na frente, os outros desfocados atrás |
+| `grupo.costas.geral` | geral alto — quatro de costas (cercados) | wide establishing group | A, B, C, D | o grupo pequeno no lugar |
+
+### Combate/confronto a distância (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.confronto.mestre` | de lado (os dois no quadro) — confronto a distância | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.confronto.baixo` | de baixo, de lado — confronto a distância | low angle fight | A, B | força, peso do golpe |
+| `combate.confronto.ombro-a` | atrás de A, olhando B — confronto a distância | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.confronto.ombro-b` | atrás de B, olhando A — confronto a distância | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.confronto.olhos-a` | olhos de A (extremo close) — confronto a distância | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.confronto.olhos-b` | olhos de B (extremo close) — confronto a distância | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.confronto.aereo` | de cima — confronto a distância | overhead fight | A, B | o espaço da luta |
+| `combate.confronto.holandes` | inclinado (holandês) — confronto a distância | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/guarda contra guarda (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.guardas.mestre` | de lado (os dois no quadro) — guarda contra guarda | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.guardas.baixo` | de baixo, de lado — guarda contra guarda | low angle fight | A, B | força, peso do golpe |
+| `combate.guardas.ombro-a` | atrás de A, olhando B — guarda contra guarda | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.guardas.ombro-b` | atrás de B, olhando A — guarda contra guarda | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.guardas.olhos-a` | olhos de A (extremo close) — guarda contra guarda | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.guardas.olhos-b` | olhos de B (extremo close) — guarda contra guarda | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.guardas.aereo` | de cima — guarda contra guarda | overhead fight | A, B | o espaço da luta |
+| `combate.guardas.holandes` | inclinado (holandês) — guarda contra guarda | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/golpe que chega (A acerta B) (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.golpe.mestre` | de lado (os dois no quadro) — golpe que chega (A acerta B) | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.golpe.baixo` | de baixo, de lado — golpe que chega (A acerta B) | low angle fight | A, B | força, peso do golpe |
+| `combate.golpe.ombro-a` | atrás de A, olhando B — golpe que chega (A acerta B) | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.golpe.ombro-b` | atrás de B, olhando A — golpe que chega (A acerta B) | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.golpe.olhos-a` | olhos de A (extremo close) — golpe que chega (A acerta B) | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.golpe.olhos-b` | olhos de B (extremo close) — golpe que chega (A acerta B) | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.golpe.aereo` | de cima — golpe que chega (A acerta B) | overhead fight | A, B | o espaço da luta |
+| `combate.golpe.holandes` | inclinado (holandês) — golpe que chega (A acerta B) | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/chute (A chuta B) (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.chute.mestre` | de lado (os dois no quadro) — chute (A chuta B) | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.chute.baixo` | de baixo, de lado — chute (A chuta B) | low angle fight | A, B | força, peso do golpe |
+| `combate.chute.ombro-a` | atrás de A, olhando B — chute (A chuta B) | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.chute.ombro-b` | atrás de B, olhando A — chute (A chuta B) | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.chute.olhos-a` | olhos de A (extremo close) — chute (A chuta B) | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.chute.olhos-b` | olhos de B (extremo close) — chute (A chuta B) | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.chute.aereo` | de cima — chute (A chuta B) | overhead fight | A, B | o espaço da luta |
+| `combate.chute.holandes` | inclinado (holandês) — chute (A chuta B) | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/duelo de espadas (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.duelo.mestre` | de lado (os dois no quadro) — duelo de espadas | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.duelo.baixo` | de baixo, de lado — duelo de espadas | low angle fight | A, B | força, peso do golpe |
+| `combate.duelo.ombro-a` | atrás de A, olhando B — duelo de espadas | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.duelo.ombro-b` | atrás de B, olhando A — duelo de espadas | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.duelo.olhos-a` | olhos de A (extremo close) — duelo de espadas | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.duelo.olhos-b` | olhos de B (extremo close) — duelo de espadas | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.duelo.aereo` | de cima — duelo de espadas | overhead fight | A, B | o espaço da luta |
+| `combate.duelo.holandes` | inclinado (holandês) — duelo de espadas | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/impasse armado (dois) (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.impasse.mestre` | de lado (os dois no quadro) — impasse armado (dois) | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.impasse.baixo` | de baixo, de lado — impasse armado (dois) | low angle fight | A, B | força, peso do golpe |
+| `combate.impasse.ombro-a` | atrás de A, olhando B — impasse armado (dois) | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.impasse.ombro-b` | atrás de B, olhando A — impasse armado (dois) | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.impasse.olhos-a` | olhos de A (extremo close) — impasse armado (dois) | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.impasse.olhos-b` | olhos de B (extremo close) — impasse armado (dois) | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.impasse.aereo` | de cima — impasse armado (dois) | overhead fight | A, B | o espaço da luta |
+| `combate.impasse.holandes` | inclinado (holandês) — impasse armado (dois) | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/um caído, outro em pé (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.caido.mestre` | de lado (os dois no quadro) — um caído, outro em pé | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.caido.baixo` | de baixo, de lado — um caído, outro em pé | low angle fight | A, B | força, peso do golpe |
+| `combate.caido.ombro-a` | atrás de A, olhando B — um caído, outro em pé | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.caido.ombro-b` | atrás de B, olhando A — um caído, outro em pé | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.caido.olhos-a` | olhos de A (extremo close) — um caído, outro em pé | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.caido.olhos-b` | olhos de B (extremo close) — um caído, outro em pé | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.caido.aereo` | de cima — um caído, outro em pé | overhead fight | A, B | o espaço da luta |
+| `combate.caido.holandes` | inclinado (holandês) — um caído, outro em pé | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/vitória sobre o derrotado (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.vitoria.mestre` | de lado (os dois no quadro) — vitória sobre o derrotado | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.vitoria.baixo` | de baixo, de lado — vitória sobre o derrotado | low angle fight | A, B | força, peso do golpe |
+| `combate.vitoria.ombro-a` | atrás de A, olhando B — vitória sobre o derrotado | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.vitoria.ombro-b` | atrás de B, olhando A — vitória sobre o derrotado | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.vitoria.olhos-a` | olhos de A (extremo close) — vitória sobre o derrotado | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.vitoria.olhos-b` | olhos de B (extremo close) — vitória sobre o derrotado | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.vitoria.aereo` | de cima — vitória sobre o derrotado | overhead fight | A, B | o espaço da luta |
+| `combate.vitoria.holandes` | inclinado (holandês) — vitória sobre o derrotado | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/choque de energias (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.energia.mestre` | de lado (os dois no quadro) — choque de energias | fight master shot | A, B | ver os dois e a distância entre eles |
+| `combate.energia.baixo` | de baixo, de lado — choque de energias | low angle fight | A, B | força, peso do golpe |
+| `combate.energia.ombro-a` | atrás de A, olhando B — choque de energias | OTS attacker | A, B | o golpe vem do espectador |
+| `combate.energia.ombro-b` | atrás de B, olhando A — choque de energias | OTS defender | A, B | o golpe vem na direção do espectador |
+| `combate.energia.olhos-a` | olhos de A (extremo close) — choque de energias | extreme close-up eyes A | A, B | a decisão antes do golpe |
+| `combate.energia.olhos-b` | olhos de B (extremo close) — choque de energias | extreme close-up eyes B | A, B | medo ou fúria |
+| `combate.energia.aereo` | de cima — choque de energias | overhead fight | A, B | o espaço da luta |
+| `combate.energia.holandes` | inclinado (holandês) — choque de energias | dutch angle fight | A, B | caos, desequilíbrio |
+
+### Combate/impasse a três (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.impasse-tres.mestre` | impasse a três (mexican standoff) — de cima | mexican standoff overhead | A, B, C | três armas apontadas em triângulo |
+| `combate.impasse-tres.close-a` | impasse a três — close de A | standoff close-up | A, B, C | o olhar de cada um |
+| `combate.impasse-tres.close-b` | impasse a três — close de B | standoff close-up | A, B, C | o olhar de cada um |
+| `combate.impasse-tres.close-c` | impasse a três — close de C | standoff close-up | A, B, C | o olhar de cada um |
+
+### Combate/um contra todos (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `combate.um-contra-todos.heroi-baixo` | um contra todos — o herói de baixo, cercado | hero low angle surrounded | A, B, C, D, E | o herói no centro, inimigos em volta |
+| `combate.um-contra-todos.aereo` | um contra todos — de cima | overhead surrounded | A, B, C, D, E | a roda de inimigos vista de cima |
+| `combate.um-contra-todos.ombro-inimigo` | um contra todos — atrás de um inimigo | OTS enemy on hero | A, B, C, D, E | o herói visto entre os inimigos |
+
+### Um personagem/olhos (extremo close) (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.olhos.frente` | olhos (extremo close) de frente | olhos frente | A | enquadramento olhos (extremo close), ângulo de frente |
+| `um.olhos.tres-quartos` | olhos (extremo close) de 3/4 | olhos tres-quartos | A | enquadramento olhos (extremo close), ângulo de 3/4 |
+| `um.olhos.tres-quartos-esq` | olhos (extremo close) de 3/4 (lado esquerdo) | olhos tres-quartos left | A | o mesmo, do outro lado |
+| `um.olhos.perfil` | olhos (extremo close) de perfil | olhos perfil | A | enquadramento olhos (extremo close), ângulo de perfil |
+| `um.olhos.perfil-esq` | olhos (extremo close) de perfil (lado esquerdo) | olhos perfil left | A | o mesmo, do outro lado |
+| `um.olhos.plongee` | olhos (extremo close) de cima (plongée) | olhos plongee | A | enquadramento olhos (extremo close), ângulo de cima (plongée) |
+| `um.olhos.contra-plongee` | olhos (extremo close) de baixo (contra-plongée) | olhos contra-plongee | A | enquadramento olhos (extremo close), ângulo de baixo (contra-plongée) |
+| `um.olhos.holandes` | olhos (extremo close) inclinado (holandês) | olhos holandes | A | enquadramento olhos (extremo close), ângulo inclinado (holandês) |
+
+### Um personagem/close (9)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.close.frente` | close de frente | close frente | A | enquadramento close, ângulo de frente |
+| `um.close.tres-quartos` | close de 3/4 | close tres-quartos | A | enquadramento close, ângulo de 3/4 |
+| `um.close.tres-quartos-esq` | close de 3/4 (lado esquerdo) | close tres-quartos left | A | o mesmo, do outro lado |
+| `um.close.perfil` | close de perfil | close perfil | A | enquadramento close, ângulo de perfil |
+| `um.close.perfil-esq` | close de perfil (lado esquerdo) | close perfil left | A | o mesmo, do outro lado |
+| `um.close.costas` | close de costas | close costas | A | enquadramento close, ângulo de costas |
+| `um.close.plongee` | close de cima (plongée) | close plongee | A | enquadramento close, ângulo de cima (plongée) |
+| `um.close.contra-plongee` | close de baixo (contra-plongée) | close contra-plongee | A | enquadramento close, ângulo de baixo (contra-plongée) |
+| `um.close.holandes` | close inclinado (holandês) | close holandes | A | enquadramento close, ângulo inclinado (holandês) |
+
+### Um personagem/primeiro plano (11)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.primeiro-plano.frente` | primeiro plano de frente | primeiro-plano frente | A | enquadramento primeiro plano, ângulo de frente |
+| `um.primeiro-plano.tres-quartos` | primeiro plano de 3/4 | primeiro-plano tres-quartos | A | enquadramento primeiro plano, ângulo de 3/4 |
+| `um.primeiro-plano.tres-quartos-esq` | primeiro plano de 3/4 (lado esquerdo) | primeiro-plano tres-quartos left | A | o mesmo, do outro lado |
+| `um.primeiro-plano.perfil` | primeiro plano de perfil | primeiro-plano perfil | A | enquadramento primeiro plano, ângulo de perfil |
+| `um.primeiro-plano.perfil-esq` | primeiro plano de perfil (lado esquerdo) | primeiro-plano perfil left | A | o mesmo, do outro lado |
+| `um.primeiro-plano.costas` | primeiro plano de costas | primeiro-plano costas | A | enquadramento primeiro plano, ângulo de costas |
+| `um.primeiro-plano.plongee` | primeiro plano de cima (plongée) | primeiro-plano plongee | A | enquadramento primeiro plano, ângulo de cima (plongée) |
+| `um.primeiro-plano.contra-plongee` | primeiro plano de baixo (contra-plongée) | primeiro-plano contra-plongee | A | enquadramento primeiro plano, ângulo de baixo (contra-plongée) |
+| `um.primeiro-plano.holandes` | primeiro plano inclinado (holandês) | primeiro-plano holandes | A | enquadramento primeiro plano, ângulo inclinado (holandês) |
+| `um.primeiro-plano.zenital` | primeiro plano de cima, a pino (zenital) | primeiro-plano zenital | A | enquadramento primeiro plano, ângulo de cima, a pino (zenital) |
+| `um.primeiro-plano.nadir` | primeiro plano de baixo, a pino (nadir) | primeiro-plano nadir | A | enquadramento primeiro plano, ângulo de baixo, a pino (nadir) |
+
+### Um personagem/plano médio (11)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.medio.frente` | plano médio de frente | medio frente | A | enquadramento plano médio, ângulo de frente |
+| `um.medio.tres-quartos` | plano médio de 3/4 | medio tres-quartos | A | enquadramento plano médio, ângulo de 3/4 |
+| `um.medio.tres-quartos-esq` | plano médio de 3/4 (lado esquerdo) | medio tres-quartos left | A | o mesmo, do outro lado |
+| `um.medio.perfil` | plano médio de perfil | medio perfil | A | enquadramento plano médio, ângulo de perfil |
+| `um.medio.perfil-esq` | plano médio de perfil (lado esquerdo) | medio perfil left | A | o mesmo, do outro lado |
+| `um.medio.costas` | plano médio de costas | medio costas | A | enquadramento plano médio, ângulo de costas |
+| `um.medio.plongee` | plano médio de cima (plongée) | medio plongee | A | enquadramento plano médio, ângulo de cima (plongée) |
+| `um.medio.contra-plongee` | plano médio de baixo (contra-plongée) | medio contra-plongee | A | enquadramento plano médio, ângulo de baixo (contra-plongée) |
+| `um.medio.holandes` | plano médio inclinado (holandês) | medio holandes | A | enquadramento plano médio, ângulo inclinado (holandês) |
+| `um.medio.zenital` | plano médio de cima, a pino (zenital) | medio zenital | A | enquadramento plano médio, ângulo de cima, a pino (zenital) |
+| `um.medio.nadir` | plano médio de baixo, a pino (nadir) | medio nadir | A | enquadramento plano médio, ângulo de baixo, a pino (nadir) |
+
+### Um personagem/plano americano (11)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.americano.frente` | plano americano de frente | americano frente | A | enquadramento plano americano, ângulo de frente |
+| `um.americano.tres-quartos` | plano americano de 3/4 | americano tres-quartos | A | enquadramento plano americano, ângulo de 3/4 |
+| `um.americano.tres-quartos-esq` | plano americano de 3/4 (lado esquerdo) | americano tres-quartos left | A | o mesmo, do outro lado |
+| `um.americano.perfil` | plano americano de perfil | americano perfil | A | enquadramento plano americano, ângulo de perfil |
+| `um.americano.perfil-esq` | plano americano de perfil (lado esquerdo) | americano perfil left | A | o mesmo, do outro lado |
+| `um.americano.costas` | plano americano de costas | americano costas | A | enquadramento plano americano, ângulo de costas |
+| `um.americano.plongee` | plano americano de cima (plongée) | americano plongee | A | enquadramento plano americano, ângulo de cima (plongée) |
+| `um.americano.contra-plongee` | plano americano de baixo (contra-plongée) | americano contra-plongee | A | enquadramento plano americano, ângulo de baixo (contra-plongée) |
+| `um.americano.holandes` | plano americano inclinado (holandês) | americano holandes | A | enquadramento plano americano, ângulo inclinado (holandês) |
+| `um.americano.zenital` | plano americano de cima, a pino (zenital) | americano zenital | A | enquadramento plano americano, ângulo de cima, a pino (zenital) |
+| `um.americano.nadir` | plano americano de baixo, a pino (nadir) | americano nadir | A | enquadramento plano americano, ângulo de baixo, a pino (nadir) |
+
+### Um personagem/corpo inteiro (11)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.inteiro.frente` | corpo inteiro de frente | inteiro frente | A | enquadramento corpo inteiro, ângulo de frente |
+| `um.inteiro.tres-quartos` | corpo inteiro de 3/4 | inteiro tres-quartos | A | enquadramento corpo inteiro, ângulo de 3/4 |
+| `um.inteiro.tres-quartos-esq` | corpo inteiro de 3/4 (lado esquerdo) | inteiro tres-quartos left | A | o mesmo, do outro lado |
+| `um.inteiro.perfil` | corpo inteiro de perfil | inteiro perfil | A | enquadramento corpo inteiro, ângulo de perfil |
+| `um.inteiro.perfil-esq` | corpo inteiro de perfil (lado esquerdo) | inteiro perfil left | A | o mesmo, do outro lado |
+| `um.inteiro.costas` | corpo inteiro de costas | inteiro costas | A | enquadramento corpo inteiro, ângulo de costas |
+| `um.inteiro.plongee` | corpo inteiro de cima (plongée) | inteiro plongee | A | enquadramento corpo inteiro, ângulo de cima (plongée) |
+| `um.inteiro.contra-plongee` | corpo inteiro de baixo (contra-plongée) | inteiro contra-plongee | A | enquadramento corpo inteiro, ângulo de baixo (contra-plongée) |
+| `um.inteiro.holandes` | corpo inteiro inclinado (holandês) | inteiro holandes | A | enquadramento corpo inteiro, ângulo inclinado (holandês) |
+| `um.inteiro.zenital` | corpo inteiro de cima, a pino (zenital) | inteiro zenital | A | enquadramento corpo inteiro, ângulo de cima, a pino (zenital) |
+| `um.inteiro.nadir` | corpo inteiro de baixo, a pino (nadir) | inteiro nadir | A | enquadramento corpo inteiro, ângulo de baixo, a pino (nadir) |
+
+### Um personagem/plano de conjunto (11)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.conjunto.frente` | plano de conjunto de frente | conjunto frente | A | enquadramento plano de conjunto, ângulo de frente |
+| `um.conjunto.tres-quartos` | plano de conjunto de 3/4 | conjunto tres-quartos | A | enquadramento plano de conjunto, ângulo de 3/4 |
+| `um.conjunto.tres-quartos-esq` | plano de conjunto de 3/4 (lado esquerdo) | conjunto tres-quartos left | A | o mesmo, do outro lado |
+| `um.conjunto.perfil` | plano de conjunto de perfil | conjunto perfil | A | enquadramento plano de conjunto, ângulo de perfil |
+| `um.conjunto.perfil-esq` | plano de conjunto de perfil (lado esquerdo) | conjunto perfil left | A | o mesmo, do outro lado |
+| `um.conjunto.costas` | plano de conjunto de costas | conjunto costas | A | enquadramento plano de conjunto, ângulo de costas |
+| `um.conjunto.plongee` | plano de conjunto de cima (plongée) | conjunto plongee | A | enquadramento plano de conjunto, ângulo de cima (plongée) |
+| `um.conjunto.contra-plongee` | plano de conjunto de baixo (contra-plongée) | conjunto contra-plongee | A | enquadramento plano de conjunto, ângulo de baixo (contra-plongée) |
+| `um.conjunto.holandes` | plano de conjunto inclinado (holandês) | conjunto holandes | A | enquadramento plano de conjunto, ângulo inclinado (holandês) |
+| `um.conjunto.zenital` | plano de conjunto de cima, a pino (zenital) | conjunto zenital | A | enquadramento plano de conjunto, ângulo de cima, a pino (zenital) |
+| `um.conjunto.nadir` | plano de conjunto de baixo, a pino (nadir) | conjunto nadir | A | enquadramento plano de conjunto, ângulo de baixo, a pino (nadir) |
+
+### Um personagem/plano geral (pequeno no lugar) (11)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `um.geral.frente` | plano geral (pequeno no lugar) de frente | geral frente | A | enquadramento plano geral (pequeno no lugar), ângulo de frente |
+| `um.geral.tres-quartos` | plano geral (pequeno no lugar) de 3/4 | geral tres-quartos | A | enquadramento plano geral (pequeno no lugar), ângulo de 3/4 |
+| `um.geral.tres-quartos-esq` | plano geral (pequeno no lugar) de 3/4 (lado esquerdo) | geral tres-quartos left | A | o mesmo, do outro lado |
+| `um.geral.perfil` | plano geral (pequeno no lugar) de perfil | geral perfil | A | enquadramento plano geral (pequeno no lugar), ângulo de perfil |
+| `um.geral.perfil-esq` | plano geral (pequeno no lugar) de perfil (lado esquerdo) | geral perfil left | A | o mesmo, do outro lado |
+| `um.geral.costas` | plano geral (pequeno no lugar) de costas | geral costas | A | enquadramento plano geral (pequeno no lugar), ângulo de costas |
+| `um.geral.plongee` | plano geral (pequeno no lugar) de cima (plongée) | geral plongee | A | enquadramento plano geral (pequeno no lugar), ângulo de cima (plongée) |
+| `um.geral.contra-plongee` | plano geral (pequeno no lugar) de baixo (contra-plongée) | geral contra-plongee | A | enquadramento plano geral (pequeno no lugar), ângulo de baixo (contra-plongée) |
+| `um.geral.holandes` | plano geral (pequeno no lugar) inclinado (holandês) | geral holandes | A | enquadramento plano geral (pequeno no lugar), ângulo inclinado (holandês) |
+| `um.geral.zenital` | plano geral (pequeno no lugar) de cima, a pino (zenital) | geral zenital | A | enquadramento plano geral (pequeno no lugar), ângulo de cima, a pino (zenital) |
+| `um.geral.nadir` | plano geral (pequeno no lugar) de baixo, a pino (nadir) | geral nadir | A | enquadramento plano geral (pequeno no lugar), ângulo de baixo, a pino (nadir) |
+
+### Emoção e reação (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `emocao.isolamento` | isolamento: pequeno no vazio, de cima | isolation wide high | A | isolamento: pequeno no vazio, de cima |
+| `emocao.vulneravel` | vulnerável: close de cima | high angle close-up | A | vulnerável: close de cima |
+| `emocao.poder` | poder: corpo inteiro de baixo | low angle power shot | A | poder: corpo inteiro de baixo |
+| `emocao.tensao` | tensão: close inclinado | dutch close-up | A | tensão: close inclinado |
+| `emocao.silhueta` | silhueta de perfil | profile silhouette | A | silhueta de perfil |
+| `emocao.desespero` | desespero: de cima, a pino | top shot despair | A | desespero: de cima, a pino |
+| `emocao.determinacao` | determinação: close de baixo | low close-up determination | A | determinação: close de baixo |
+| `emocao.choque` | choque: aproximação no rosto | push-in shock | A | choque: aproximação no rosto |
+| `emocao.pensativo` | pensativo: 3/4 com espaço à frente | lead room close | A | pensativo: 3/4 com espaço à frente |
+| `emocao.solidao-costas` | solidão: de costas olhando o horizonte | back to camera wide | A | solidão: de costas olhando o horizonte |
+| `emocao.alegria` | alegria: de baixo, braços para cima | low angle joy | A | alegria: de baixo, braços para cima |
+| `emocao.medo-nuca` | medo: pela nuca (algo à frente) | over the back fear | A | medo: pela nuca (algo à frente) |
+
+### Estabelecimento (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `estabelecimento.alto` | geral alto (situar o lugar) | high wide establishing | A | geral alto (situar o lugar) |
+| `estabelecimento.aereo` | aéreo, a pino | aerial top | A | aéreo, a pino |
+| `estabelecimento.horizonte-baixo` | horizonte baixo (céu grande) | low horizon | A | horizonte baixo (céu grande) |
+| `estabelecimento.chegada` | chegada: de costas, entrando no lugar | arrival from behind | A | chegada: de costas, entrando no lugar |
+| `estabelecimento.ponto-de-fuga` | ponto de fuga central (simétrico) | one-point perspective | A | ponto de fuga central (simétrico) |
+| `estabelecimento.panorama` | panorama grande-angular | wide panorama | A | panorama grande-angular |
+| `estabelecimento.pequeno-no-mundo` | pequeno no mundo (céu) | tiny in the world | A | pequeno no mundo (céu) |
+| `estabelecimento.porta` | pela porta (de dentro para fora) | doorway frame | A | pela porta (de dentro para fora) |
+| `estabelecimento.vigilancia` | câmera de vigilância (canto alto) | security cam | A | câmera de vigilância (canto alto) |
+| `estabelecimento.entardecer-contraluz` | contraluz no horizonte | sunset backlight | A | contraluz no horizonte |
+| `estabelecimento.mapa` | vista de mapa (plano zenital alto) | map view | A | vista de mapa (plano zenital alto) |
+| `estabelecimento.janela` | pela janela (de fora para dentro) | through window | A | pela janela (de fora para dentro) |
+
+### Movimento/Um (16)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `movimento.seguindo-atras` | seguindo por trás | follow shot | A | seguindo por trás |
+| `movimento.seguindo-atras-esq` | seguindo por trás (lado esquerdo) | follow shot left | A | seguindo por trás |
+| `movimento.recuando-frente` | câmera recuando na frente (leading) | leading shot | A | câmera recuando na frente (leading) |
+| `movimento.recuando-frente-esq` | câmera recuando na frente (leading) (lado esquerdo) | leading shot left | A | câmera recuando na frente (leading) |
+| `movimento.lateral` | travelling lateral | tracking side | A | travelling lateral |
+| `movimento.lateral-esq` | travelling lateral (lado esquerdo) | tracking side left | A | travelling lateral |
+| `movimento.pes` | câmera baixa nos pés | low feet tracking | A | câmera baixa nos pés |
+| `movimento.pes-esq` | câmera baixa nos pés (lado esquerdo) | low feet tracking left | A | câmera baixa nos pés |
+| `movimento.drone-frente` | drone pela frente, alto | drone leading | A | drone pela frente, alto |
+| `movimento.drone-frente-esq` | drone pela frente, alto (lado esquerdo) | drone leading left | A | drone pela frente, alto |
+| `movimento.corrida-baixo` | corrida de baixo, de 3/4 | low running | A | corrida de baixo, de 3/4 |
+| `movimento.corrida-baixo-esq` | corrida de baixo, de 3/4 (lado esquerdo) | low running left | A | corrida de baixo, de 3/4 |
+| `movimento.corrida-perfil` | corrida de perfil | running profile | A | corrida de perfil |
+| `movimento.corrida-perfil-esq` | corrida de perfil (lado esquerdo) | running profile left | A | corrida de perfil |
+| `movimento.corrida-frente-close` | close correndo de frente | running close | A | close correndo de frente |
+| `movimento.corrida-frente-close-esq` | close correndo de frente (lado esquerdo) | running close left | A | close correndo de frente |
+
+### Movimento/Perseguição (6)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `movimento.perseguicao.perfil` | perseguição de perfil | chase profile | A, B | perseguição de perfil |
+| `movimento.perseguicao.ombro-perseguidor` | atrás do perseguidor | OTS chaser | A, B | atrás do perseguidor |
+| `movimento.perseguicao.frente-fugitivo` | de frente para quem foge (o perseguidor atrás) | chase from the front | A, B | de frente para quem foge (o perseguidor atrás) |
+| `movimento.perseguicao.olhando-para-tras` | close de quem foge olhando para trás | fleeing look back | A, B | close de quem foge olhando para trás |
+| `movimento.perseguicao.aereo` | perseguição de cima | chase overhead | A, B | perseguição de cima |
+| `movimento.perseguicao.baixo` | perseguição de baixo | chase low | A, B | perseguição de baixo |
+
+### Suspense, terror e revelação (14)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `suspense.ameaca-atras` | ameaça atrás (A de frente, B surge ao fundo) | threat behind | A, B | ameaça atrás (A de frente, B surge ao fundo) |
+| `suspense.revelacao-ombro` | revelação por cima do ombro (A vê B ao longe) | OTS reveal | A, B | revelação por cima do ombro (A vê B ao longe) |
+| `suspense.figura-no-fim` | figura no fim do corredor | figure at the end | A, B | figura no fim do corredor |
+| `suspense.espiando-escondido` | espiando escondido (baixo, atrás de algo) | hidden POV | A, B | espiando escondido (baixo, atrás de algo) |
+| `suspense.olhos-arregalados` | olhos arregalados (extremo close) | ECU wide eyes | A | olhos arregalados (extremo close) |
+| `suspense.vitima-de-baixo` | a vítima vista de baixo, ameaçador por trás | low victim shot | A, B | a vítima vista de baixo, ameaçador por trás |
+| `suspense.de-cima-canto` | do canto do teto (alguém observa) | high corner voyeur | A | do canto do teto (alguém observa) |
+| `suspense.holandes-extremo` | inclinação extrema (algo está errado) | extreme dutch | A | inclinação extrema (algo está errado) |
+| `suspense.sombra-na-porta` | silhueta na porta (contraluz) | doorway silhouette | A, B | silhueta na porta (contraluz) |
+| `suspense.nuca-olhando` | pela nuca, olhando o que A vê | over the back look | A | pela nuca, olhando o que A vê |
+| `suspense.pov-escondido-baixo` | POV de baixo da mesa / do chão | under POV | A | POV de baixo da mesa / do chão |
+| `suspense.dolly-zoom` | efeito vertigo (use no filme: camera vertigo) | dolly zoom | A | efeito vertigo (use no filme: camera vertigo) |
+| `suspense.aproximacao-lenta` | aproximação lenta no rosto | slow push-in | A | aproximação lenta no rosto |
+| `suspense.algo-atras-da-porta` | A diante da porta, câmera do outro lado | behind the door | A | A diante da porta, câmera do outro lado |
+
+### Romance e intimidade (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `romance.perfil-close` | perfil, rostos próximos (quase beijo) | intimate 50/50 | A, B | perfil, rostos próximos (quase beijo) |
+| `romance.olhares-a` | olhar de A (OTS fechado) | tight OTS A | A, B | olhar de A (OTS fechado) |
+| `romance.olhares-b` | olhar de B (OTS fechado) | tight OTS B | A, B | olhar de B (OTS fechado) |
+| `romance.maos` | detalhe das mãos dadas | hands insert | A, B | detalhe das mãos dadas |
+| `romance.abraco-ombro` | abraço visto por cima do ombro de A | hug OTS | A, B | abraço visto por cima do ombro de A |
+| `romance.mesa-vela` | jantar à mesa, plano baixo | dinner two-shot | A, B | jantar à mesa, plano baixo |
+| `romance.de-maos-dadas-costas` | andando de mãos dadas, por trás | walking away holding hands | A, B | andando de mãos dadas, por trás |
+| `romance.por-do-sol` | silhuetas no horizonte | sunset silhouettes | A, B | silhuetas no horizonte |
+| `romance.testa-com-testa` | testa com testa (close) | forehead touch | A, B | testa com testa (close) |
+| `romance.olhando-de-longe` | A olha B de longe (B não vê) | longing gaze | A, B | A olha B de longe (B não vê) |
+| `romance.giro-360` | abraço com a câmera girando (filme) | 360 hug | A, B | abraço com a câmera girando (filme) |
+| `romance.declaracao` | declaração: B de frente, A de costas | confession OTS | A, B | declaração: B de frente, A de costas |
+
+### Poder e hierarquia (12)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `poder.trono-baixo` | o rei visto de baixo | throne low angle | A, B | o rei visto de baixo |
+| `poder.trono-ajoelhado` | o súdito visto de cima | kneeling high angle | A, B | o súdito visto de cima |
+| `poder.trono-mestre` | salão do trono, de lado | throne room master | A, B | salão do trono, de lado |
+| `poder.trono-ombro` | por trás do rei, olhando o súdito | OTS king | A, B | por trás do rei, olhando o súdito |
+| `poder.interrogatorio-mestre` | interrogatório, de lado | interrogation master | A, B | interrogatório, de lado |
+| `poder.interrogatorio-alto` | o interrogado de cima | interrogated high angle | A, B | o interrogado de cima |
+| `poder.interrogatorio-baixo` | o interrogador de baixo | interrogator low angle | A, B | o interrogador de baixo |
+| `poder.chefe-mesa` | chefe atrás da mesa, de frente | boss behind desk | A, B | chefe atrás da mesa, de frente |
+| `poder.olhando-de-cima` | A olha B de cima para baixo | looking down at | A, B | A olha B de cima para baixo |
+| `poder.discurso-palanque` | orador no palanque, de baixo | podium low angle | A | orador no palanque, de baixo |
+| `poder.plateia-ombro` | por trás do orador, a plateia | speaker OTS crowd | A, B, C, D | por trás do orador, a plateia |
+| `poder.ajoelhado-diante` | ajoelhado diante de alguém (perfil) | kneeling profile | A, B | ajoelhado diante de alguém (perfil) |
+
+### Objetos e inserts (8)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.maos` | detalhe das mãos de A | hands insert | A | detalhe das mãos de A |
+| `objeto.pes` | detalhe dos pés de A | feet insert | A | detalhe dos pés de A |
+| `objeto.sobre-a-mesa` | algo sobre a mesa (de cima) | table top insert | A | algo sobre a mesa (de cima) |
+| `objeto.na-mao-pov` | o que A segura (POV para baixo) | POV hands | A | o que A segura (POV para baixo) |
+| `objeto.bolso` | a mão no bolso/cintura | pocket insert | A | a mão no bolso/cintura |
+| `objeto.olhar-objeto` | A olhando um objeto (por trás do objeto) | reverse object shot | A | A olhando um objeto (por trás do objeto) |
+| `objeto.relogio` | olhando o relógio (pulso) | watch insert | A | olhando o relógio (pulso) |
+| `objeto.porta-macaneta` | a mão na maçaneta | door handle insert | A | a mão na maçaneta |
+
+### Subjetiva (POV) (6)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `pov.frente` | pelos olhos de A, para a frente | POV forward | A | pelos olhos de A, para a frente |
+| `pov.ceu` | pelos olhos de A, olhando o céu | POV sky | A | pelos olhos de A, olhando o céu |
+| `pov.chao` | pelos olhos de A, olhando o chão / abismo | POV down | A | pelos olhos de A, olhando o chão / abismo |
+| `pov.outro` | pelos olhos de A, olhando B | POV on B | A, B | pelos olhos de A, olhando B |
+| `pov.deitado` | deitado olhando para cima (B se debruça) | POV lying | A, B | deitado olhando para cima (B se debruça) |
+| `pov.pes-do-outro` | de baixo, os pés de B (A caído) | POV feet | A, B | de baixo, os pés de B (A caído) |
+
+### Animais/Montaria (10)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `animal.montaria.perfil` | cavaleiro de perfil | rider profile | A, M | cavaleiro de perfil (A monta M) |
+| `animal.montaria.perfil-esq` | cavaleiro de perfil (outro lado) | rider profile left | A, M | cavaleiro de perfil (outro lado) (A monta M) |
+| `animal.montaria.frente-baixo` | cavalo vindo de frente, de baixo | horse low frontal | A, M | cavalo vindo de frente, de baixo (A monta M) |
+| `animal.montaria.atras-do-cavaleiro` | atrás do cavaleiro (vê o caminho) | rider OTS | A, M | atrás do cavaleiro (vê o caminho) (A monta M) |
+| `animal.montaria.close-cavaleiro` | close do cavaleiro montado | rider close-up | A, M | close do cavaleiro montado (A monta M) |
+| `animal.montaria.aereo` | cavalgada de cima | aerial ride | A, M | cavalgada de cima (A monta M) |
+| `animal.montaria.seguindo` | seguindo o cavalo por trás | follow ride | A, M | seguindo o cavalo por trás (A monta M) |
+| `animal.montaria.cascos` | detalhe dos cascos | hooves insert | A, M | detalhe dos cascos (A monta M) |
+| `animal.montaria.contraluz` | silhueta no horizonte | horizon silhouette | A, M | silhueta no horizonte (A monta M) |
+| `animal.montaria.heroi-empinando` | herói no cavalo empinando, de baixo | rearing hero low | A, M | herói no cavalo empinando, de baixo (A monta M) |
+
+### Animais/Companheiro (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `animal.companheiro.dono-baixo` | dono e cão, câmera na altura do cão | dog height two-shot | A, M | dono e cão, câmera na altura do cão |
+| `animal.companheiro.pov-cao` | visão do cão olhando o dono | dog POV | A, M | visão do cão olhando o dono |
+| `animal.companheiro.cao-close` | close do cão | dog close-up | A, M | close do cão |
+| `animal.companheiro.passeio` | passeando, de perfil | walking the dog | A, M | passeando, de perfil |
+
+### Escala (gigante e pequeno) (9)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `escala.pequeno-olha-gigante` | do pequeno, olhando o gigante (de baixo) | low POV of giant | A, B | do pequeno, olhando o gigante (de baixo) (use A gigante, B normal ou fada) |
+| `escala.gigante-olha-pequeno` | do gigante, olhando o pequeno (de cima) | high POV of small | A, B | do gigante, olhando o pequeno (de cima) (use A gigante, B normal ou fada) |
+| `escala.perfil` | os dois de perfil (diferença de tamanho) | scale profile | A, B | os dois de perfil (diferença de tamanho) (use A gigante, B normal ou fada) |
+| `escala.pes-do-gigante` | o pequeno diante do pé do gigante | giant foot | A, B | o pequeno diante do pé do gigante (use A gigante, B normal ou fada) |
+| `escala.de-longe` | os dois de longe | scale wide | A, B | os dois de longe (use A gigante, B normal ou fada) |
+| `escala.nuca-do-pequeno` | pela nuca do pequeno, o gigante ao fundo | small OTS | A, B | pela nuca do pequeno, o gigante ao fundo (use A gigante, B normal ou fada) |
+| `escala.fada-na-mao` | a fada na mão do gigante (close) | fairy on palm | A, B | a fada na mão do gigante (close) (use sobre-mao / sobre-ombro / voa-ate) |
+| `escala.fada-no-ombro` | a fada no ombro, os dois em quadro | fairy on shoulder | A, B | a fada no ombro, os dois em quadro (use sobre-mao / sobre-ombro / voa-ate) |
+| `escala.fada-voando` | a fada voando diante do rosto | fairy flying close | A, B | a fada voando diante do rosto (use sobre-mao / sobre-ombro / voa-ate) |
+
+### Anime (16)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `anime.pouso-heroico` | pouso heroico (câmera no chão) | hero landing | A | pouso heroico (câmera no chão) |
+| `anime.trunk-shot` | do chão para cima (os dois olham para baixo) | trunk shot | A, B | do chão para cima (os dois olham para baixo) |
+| `anime.vilao-ombro` | por trás do vilão (sombra em primeiro plano) | villain OTS | A, B | por trás do vilão (sombra em primeiro plano) |
+| `anime.olho-perfil` | olho de perfil (extremo close) | profile eye ECU | A | olho de perfil (extremo close) |
+| `anime.sekai` | personagem pequeno sob o céu imenso | sky shot (sekai-kei) | A | personagem pequeno sob o céu imenso |
+| `anime.janela-do-trem` | de perfil na janela (sentado) | train window | A | de perfil na janela (sentado) |
+| `anime.costas-por-do-sol` | de costas no pôr do sol | back at sunset | A | de costas no pôr do sol |
+| `anime.rosto-a-rosto` | rosto a rosto, olhos nos olhos (50/50 extremo) | ECU 50/50 | A, B | rosto a rosto, olhos nos olhos (50/50 extremo) |
+| `anime.andando-explosao` | andando para a câmera (explosão atrás) | walking away from explosion | A | andando para a câmera (explosão atrás) |
+| `anime.olhando-o-ceu` | olhando o céu, de baixo | looking up low | A | olhando o céu, de baixo |
+| `anime.power-up` | carregando poder, de baixo, girando (filme) | power-up orbit | A | carregando poder, de baixo, girando (filme) |
+| `anime.transformacao` | transformação (subindo, contraluz) | transformation | A | transformação (subindo, contraluz) |
+| `anime.impacto-congelado` | impacto congelado (câmera girando, filme) | frozen impact orbit | A, B | impacto congelado (câmera girando, filme) |
+| `anime.sorriso-maligno` | close de baixo, sorriso maligno | evil grin low | A | close de baixo, sorriso maligno |
+| `anime.choque-comico` | choque cômico (zoom rápido) | comic zoom | A | choque cômico (zoom rápido) |
+| `anime.dois-de-costas-ceu` | dois de costas olhando o céu | two backs sky | A, B | dois de costas olhando o céu |
+
+### Quadrinhos (painéis) (10)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `hq.reacao` | painel de reação (close de frente) | reaction panel | A | painel de reação (close de frente) |
+| `hq.faixa-olhos` | faixa dos olhos (painel largo e baixo) | eyes strip panel | A | faixa dos olhos (painel largo e baixo) |
+| `hq.silencioso` | painel silencioso (lugar vazio, pessoa pequena) | silent panel | A | painel silencioso (lugar vazio, pessoa pequena) |
+| `hq.splash-heroi` | página inteira: herói de baixo | splash hero | A | página inteira: herói de baixo |
+| `hq.passos` | sequência de passos (pés) | steps panel | A | sequência de passos (pés) |
+| `hq.vertical-alto` | painel vertical: inteiro de baixo | tall panel low | A | painel vertical: inteiro de baixo |
+| `hq.mao-estendida` | mão estendida para o leitor | hand to reader | A | mão estendida para o leitor |
+| `hq.costas-da-cabeca` | nuca em primeiro plano (o que ele vê) | back of head panel | A | nuca em primeiro plano (o que ele vê) |
+| `hq.dupla-conversa` | dois em quadro, tamanho de painel pequeno | small two-shot panel | A, B | dois em quadro, tamanho de painel pequeno |
+| `hq.chegada-dramatica` | chegada dramática (pés e silhueta) | dramatic arrival | A | chegada dramática (pés e silhueta) |
+
+### Movimentos de câmera (filme) (16)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `camera-movimento.aproxima-lento` | aproximação lenta (push-in) | push-in | A | aproximação lenta (push-in) — no filme use junto: 0s camera aproxima 40 em 4s entra |
+| `camera-movimento.afasta-revelando` | afasta revelando o lugar (pull-out) | pull-out reveal | A | afasta revelando o lugar (pull-out) — no filme use junto: 0s camera afasta 300 em 5s sai |
+| `camera-movimento.orbita-360` | órbita completa no herói | 360 orbit | A | órbita completa no herói — no filme use junto: 0s camera orbita 360 em 6s linear |
+| `camera-movimento.meia-orbita` | meia órbita (revela o rosto) | half orbit | A | meia órbita (revela o rosto) — no filme use junto: 0s camera orbita 180 em 3s |
+| `camera-movimento.grua-sobe` | grua subindo (final) | crane up | A | grua subindo (final) — no filme use junto: 0s camera grua 6m em 6s |
+| `camera-movimento.grua-desce` | grua descendo (chegada) | crane down | A | grua descendo (chegada) — no filme use junto: 0s camera grua -4m em 4s |
+| `camera-movimento.travelling-lateral` | travelling lateral acompanhando | lateral dolly | A | travelling lateral acompanhando — no filme use junto: 0s camera travelling direita 4m em 4s |
+| `camera-movimento.vertigo` | efeito vertigo (dolly zoom) | dolly zoom | A | efeito vertigo (dolly zoom) — no filme use junto: 0s camera vertigo aproxima 50 em 3s |
+| `camera-movimento.panoramica` | panorâmica revelando (pan) | pan reveal | A | panorâmica revelando (pan) — no filme use junto: 0s camera panoramica 60 em 4s |
+| `camera-movimento.inclina-sobe` | tilt de baixo para cima (dos pés à cabeça) | tilt up | A | tilt de baixo para cima (dos pés à cabeça) — no filme use junto: 0s camera inclina 25 em 3s |
+| `camera-movimento.tremida` | câmera na mão (tensão) | handheld | A | câmera na mão (tensão) — no filme use junto: 0s camera tremida 0.8 em 4s |
+| `camera-movimento.zoom-rapido` | zoom rápido (choque) | crash zoom | A | zoom rápido (choque) — no filme use junto: 0s camera zoom 2 em 0.4s sai |
+| `camera-movimento.eleva-plongee` | sobe para plongée (derrota) | rise to high angle | A | sobe para plongée (derrota) — no filme use junto: 0s camera eleva 50 em 4s |
+| `camera-movimento.abaixa-heroi` | desce para contra-plongée (vitória) | drop to low angle | A | desce para contra-plongée (vitória) — no filme use junto: 0s camera abaixa 35 em 3s |
+| `camera-movimento.orbita-lenta-dois` | órbita lenta nos dois (conversa) | slow orbit two-shot | A, B | órbita lenta nos dois (conversa) — no filme use junto: 0s camera orbita 40 em 6s linear |
+| `camera-movimento.ombro-troca` | do ombro de A ao ombro de B (passando) | OTS swing | A, B | do ombro de A ao ombro de B (passando) — no filme use junto: 0s camera orbita 120 em 3s |
+
 ## Poses
 
 ### empe
@@ -2684,8 +3576,8 @@ pose "chuteCircularMedio" de empe
 
 ```gm
 pose "chuteGancho" de empe
-  ombro.direito(frente 70 abre 20)
-  ombro.esquerdo(frente 40 abre 60)
+  ombro.direito(frente 70 abre 30)
+  ombro.esquerdo(frente 40 abre 70)
   cotovelo.direito(dobra 110)
   cotovelo.esquerdo(dobra 80)
   mao(fecha 100% afasta 20% opoe 75%)
@@ -2880,8 +3772,8 @@ pose "rolamentoParaTras" de empe
 
 ```gm
 pose "protegendoRosto" de empe
-  ombro(frente 100 abre 20 gira-dentro 50)
-  cotovelo(dobra 110)
+  ombro(frente 100 cruza 20 gira-dentro 50)
+  cotovelo(dobra 120)
   mao(fecha 0% afasta 85%)
   quadril(frente 15)
   joelho(dobra 20)
@@ -3084,8 +3976,8 @@ pose "lancaEstocada" de empe
 
 ```gm
 pose "bastaoGirando" de empe
-  ombro.direito(frente 95 abre 20)
-  ombro.esquerdo(frente 150 abre 60)
+  ombro.direito(frente 95 abre 30)
+  ombro.esquerdo(frente 150 abre 70)
   cotovelo.direito(dobra 60)
   cotovelo.esquerdo(dobra 20)
   mao(fecha 60% afasta 25% opoe 80%)
@@ -3394,8 +4286,8 @@ pose "transformacao" de empe
 
 ```gm
 pose "pousoAgachadoMaoNoChao" de empe
-  ombro.direito(frente 40 abre 60)
-  ombro.esquerdo(frente 50 abre 20)
+  ombro.direito(frente 40 abre 70)
+  ombro.esquerdo(frente 50 abre 30)
   cotovelo.direito(dobra 20)
   cotovelo.esquerdo(dobra 10)
   mao(fecha 0% afasta 85%)
@@ -3427,7 +4319,7 @@ pose "vitoriaPunhoErguido" de empe
 
 ```gm
 pose "vitoriaAjoelhada" de empe
-  ombro(frente 160 abre 30)
+  ombro(frente 160 abre 10)
   cotovelo(dobra 10)
   mao(fecha 100% afasta 20% opoe 75%)
   quadril.direito(frente 90)
@@ -3589,7 +4481,7 @@ pose "cambalhotaNoAr" de empe
   ombro(frente 80 abre 10)
   cotovelo(dobra 120)
   mao(fecha 100% afasta 20% opoe 75%)
-  quadril(frente 125)
+  quadril(frente 125 abre 30)
   joelho(dobra 140)
   tronco(frente 70)
   cabeca(baixa 40)
@@ -4115,7 +5007,7 @@ pose "abracoAberto" de empe
 
 ```gm
 pose "desesperoMaosNaCabeca" de empe
-  ombro(frente 150 abre 85)
+  ombro(frente 120 abre 20)
   cotovelo(dobra 140)
   mao(fecha 55% afasta 70% opoe 30%)
   tronco(frente 20)
@@ -4242,8 +5134,8 @@ pose "cansadoMaosNosJoelhos" de empe
 
 ```gm
 pose "deitadoOlhandoOCeu" de empe
-  ombro(frente 170 abre 80)
-  cotovelo(dobra 140)
+  ombro(frente 170 abre 0)
+  cotovelo(dobra 130)
   quadril.esquerdo(frente 35)
   joelho.esquerdo(dobra 40)
   cabeca(sobe 5)
@@ -5003,7 +5895,7 @@ pose "debrucadoNaMesa" de empe
 
 ```gm
 pose "maosAoAlto" de empe
-  ombro(frente 160 abre 75)
+  ombro(frente 160 abre 0)
   cotovelo(dobra 70)
   mao(fecha 0% afasta 85%)
   cabeca(baixa 10)
@@ -5013,7 +5905,7 @@ pose "maosAoAlto" de empe
 
 ```gm
 pose "ajoelhadoRendido" de empe
-  ombro(frente 150 abre 85)
+  ombro(frente 120 abre 20)
   cotovelo(dobra 150)
   mao(fecha 0% afasta 85%)
   joelho(dobra 95)

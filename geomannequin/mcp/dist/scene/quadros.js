@@ -143,10 +143,25 @@ function comEstado(q, fn) {
   try { loadScene(JSON.parse(JSON.stringify(q.estado))); aplicarL(q.L); return fn(); }
   finally { loadScene(JSON.parse(salvo)); aplicarL(salvoL); }
 }
-function svgRecortado(corpo, rc, fundo) {
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + [rc.x, rc.y, rc.w, rc.h].map(v => Math.round(v * 100) / 100).join(" ") + '" width="' + Math.round(rc.w) + '" height="' + Math.round(rc.h) + '">' +
-    (fundo ? '<rect x="' + rc.x + '" y="' + rc.y + '" width="' + rc.w + '" height="' + rc.h + '" fill="' + fundo + '"/>' : "") + corpo + "</svg>";
+function svgRecortado(corpo, rc, fundo, tom) {
+  const g = TONS_CENA[tom], ini = g ? '<defs><filter id="gmTom" filterUnits="userSpaceOnUse" x="' + rc.x + '" y="' + rc.y + '" width="' + rc.w + '" height="' + rc.h + '" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="' + g.m + '"/></filter>' + (g.vinheta ? '<radialGradient id="gmVin" cx="50%" cy="50%" r="72%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="' + g.vinheta + '"/></radialGradient>' : "") + '</defs><g filter="url(#gmTom)">' : "";
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + [rc.x, rc.y, rc.w, rc.h].map(v => Math.round(v * 100) / 100).join(" ") + '" width="' + Math.round(rc.w) + '" height="' + Math.round(rc.h) + '">' + ini +
+    (fundo ? '<rect x="' + rc.x + '" y="' + rc.y + '" width="' + rc.w + '" height="' + rc.h + '" fill="' + fundo + '"/>' : "") + corpo + (g ? "</g>" + (g.vinheta ? '<rect x="' + rc.x + '" y="' + rc.y + '" width="' + rc.w + '" height="' + rc.h + '" fill="url(#gmVin)"/>' : "") : "") + "</svg>";
 }
+/* tom da cena (correção de cor do quadro inteiro): matriz 4×5 do feColorMatrix e vinheta */
+const TONS_CENA = {
+  pb: { nome: "Preto e branco", m: "0.3 0.59 0.11 0 0 0.3 0.59 0.11 0 0 0.3 0.59 0.11 0 0 0 0 0 1 0" },
+  sepia: { nome: "Sépia (antigo, memória)", m: "0.393 0.769 0.189 0 0 0.349 0.686 0.168 0 0 0.272 0.534 0.131 0 0 0 0 0 1 0", vinheta: 0.35 },
+  flashback: { nome: "Flashback (lavado, claro)", m: "0.55 0.35 0.1 0 0.12 0.3 0.6 0.1 0 0.12 0.3 0.35 0.35 0 0.12 0 0 0 1 0", vinheta: 0.25 },
+  noite: { nome: "Noite (azulado escuro)", m: "0.45 0.1 0.05 0 0 0.08 0.5 0.1 0 0 0.1 0.15 0.75 0 0.05 0 0 0 1 0", vinheta: 0.45 },
+  quente: { nome: "Quente (entardecer)", m: "1.1 0.05 0 0 0.04 0.02 0.95 0 0 0.02 0 0 0.8 0 0 0 0 0 1 0" },
+  frio: { nome: "Frio (inverno, hospital)", m: "0.85 0 0.05 0 0 0 0.95 0.05 0 0 0.05 0.05 1.12 0 0.03 0 0 0 1 0" },
+  dessaturado: { nome: "Dessaturado (drama)", m: "0.65 0.3 0.05 0 0 0.15 0.8 0.05 0 0 0.15 0.3 0.55 0 0 0 0 0 1 0" },
+  vibrante: { nome: "Vibrante (cores fortes)", m: "1.25 -0.15 -0.1 0 0 -0.1 1.2 -0.1 0 0 -0.1 -0.15 1.25 0 0 0 0 0 1 0" },
+  terror: { nome: "Terror (esverdeado, escuro)", m: "0.5 0.2 0 0 0 0.15 0.65 0.05 0 0.02 0.1 0.2 0.45 0 0 0 0 0 1 0", vinheta: 0.6 },
+  sonho: { nome: "Sonho (rosado e claro)", m: "0.9 0.1 0.1 0 0.12 0.05 0.85 0.1 0 0.08 0.1 0.1 0.9 0 0.12 0 0 0 1 0", vinheta: 0.15 },
+  vinheta: { nome: "Só vinheta (bordas escuras)", m: "1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0", vinheta: 0.5 }
+};
 /* ===== OpenPose completo: corpo (BODY_25, e o COCO 18 derivado), mãos (21 + 21) e rosto (70), da mesma geometria do desenho ===== */
 const OP_NOMES = ["nariz", "pescoço", "ombro direito", "cotovelo direito", "punho direito", "ombro esquerdo", "cotovelo esquerdo", "punho esquerdo", "meio do quadril", "quadril direito", "joelho direito", "tornozelo direito",
   "quadril esquerdo", "joelho esquerdo", "tornozelo esquerdo", "olho direito", "olho esquerdo", "orelha direita", "orelha esquerda", "dedão esquerdo", "dedo mínimo esquerdo", "calcanhar esquerdo", "dedão direito", "dedo mínimo direito", "calcanhar direito"];
@@ -219,7 +234,7 @@ function renderizarQuadro(q, opts) {
     const rc = recorteQuadro(q.formato), exp = opts.tema !== "escuro", list = sceneList(exp,true), Lr = Object.assign({}, L, { grid: false });
     const r = renderScene(list, Lr, !!opts.rapido, Lr.floor ? 16 : 0, { canal: opts.rapido ? "quadros-previa" : "quadros" });
     const fundo = exp ? "#FFFFFF" : (list[0].p.bg || "#0F1620");
-    const out = { n: q.n, titulo: q.titulo, formato: q.formato, recorte: rc, svg: svgRecortado(r.svg, rc, fundo) };
+    const out = { n: q.n, titulo: q.titulo, formato: q.formato, recorte: rc, svg: svgRecortado(r.svg, rc, fundo, q.tom || opts.tom) };
     try { out.cabecas = cabecasNaTela(list, rc); } catch (e) { out.cabecas = {}; }
     if (opts.passes === false) return out;
     const passes = opts.passes || Object.fromEntries(PASSES_QUADRO.map(k => [k, true]));
@@ -464,4 +479,4 @@ cena.ativo.expressao("neutra");
 cena.ativo.expressao("alegria");
 camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("close", "Ana");`
 };
-export { cabecasNaTela, FORMATOS_QUADRO, recorteQuadro, lerRoteiro, executarRoteiro, renderizarQuadro, pontosOpenPose, openPoseSvg, openPoseJson, OP_NOMES, PARTES_SEG, PASSES_QUADRO, manifestoQuadros, pastaQuadro, paginaQuadros, GRADES, folhaDeContato, MODELOS_ROTEIRO, chaveDe };
+export { TONS_CENA, cabecasNaTela, FORMATOS_QUADRO, recorteQuadro, lerRoteiro, executarRoteiro, renderizarQuadro, pontosOpenPose, openPoseSvg, openPoseJson, OP_NOMES, PARTES_SEG, PASSES_QUADRO, manifestoQuadros, pastaQuadro, paginaQuadros, GRADES, folhaDeContato, MODELOS_ROTEIRO, chaveDe };

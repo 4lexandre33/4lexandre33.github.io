@@ -32,7 +32,10 @@ function spawnChild() {
   });
   child.unref(); child.channel && child.channel.unref();
 }
-export function toPng(svg, largura = 900) {
+/* o conversor (resvg) às vezes quebra ("unreachable") com recorte (clip-path) + contorno degenerado de alguém colado na câmera:
+   tenta de novo sem os recortes de oclusão (o desenho fica quase igual; só some o recorte de quem está atrás) */
+export async function toPng(svg, largura = 900) { try { return await toPng0(svg, largura); } catch (e) { if (!/unreachable|RuntimeError|memory/i.test(e.message || "")) throw e; return toPng0(String(svg).replace(/ clip-path="url\(#gmr\d+\)"/g, ""), largura); } }
+function toPng0(svg, largura = 900) {
   if (!child) spawnChild();
   const id = ++seq;
   return new Promise((resolve, reject) => {

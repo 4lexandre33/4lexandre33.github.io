@@ -50,7 +50,7 @@ px("chuteFrontal", "Combate/Ataque/Chute", "chute frontal|mae geri", "sf-10 hf95
 px("chuteEmpurrao", "Combate/Ataque/Chute", "teep|chute empurrão", "sf-22 bp-6 hf85,-4 kf5,15 af-10,0 fl40,70 ab40,20 el60,110 hp-10 m:punho,punho e:determinacao");
 px("chuteCircularBaixo", "Combate/Ataque/Chute", "low kick|chute na perna", "sf-4 hf40,-4 ha55,8 hr30,0 kf20,15 fl50,80 ab50,10 el90,120 st-40 pt-45 hy30 m:punho,punho e:determinadoLuta");
 px("chuteCircularMedio", "Combate/Ataque/Chute", "chute circular|mawashi", "sf-8 ss-25 hf60,-4 ha85,8 hr40,0 kf25,10 fl30,80 ab80,10 el60,120 st-40 pt-60 hy40 m:punho,punho e:gritoDeGuerra");
-px("chuteGancho", "Combate/Ataque/Chute", "chute gancho|hook kick", "ss-35 bp-10 hf45,-2 ha95,6 hr-20,0 kf70,8 fl40,70 ab60,20 el80,110 st30 hy50 m:punho,punho e:focoTotal");
+px("chuteGancho", "Combate/Ataque/Chute", "chute gancho|hook kick", "ss-35 bp-10 hf45,-2 ha95,6 hr-20,0 kf70,8 fl40,70 ab70,30 el80,110 st30 hy50 m:punho,punho e:focoTotal");
 px("chuteCrescente", "Combate/Ataque/Chute", "chute crescente|meia-lua", "sf-6 hf130,-2 ha40,6 kf5,10 fl30,40 ab70,40 el30,80 hp-14 m:aberta,punho e:determinadoLuta");
 px("chuteParaTras", "Combate/Ataque/Chute", "chute para trás|ushiro geri", "bp45 sf10 hf-60,40 kf20,40 af-30,10 fl40,60 ab40,30 el100,110 hy-150 hp-20 m:punho,punho e:focoTotal");
 px("joelhadaVoadora", "Combate/Ataque/Golpe curto", "joelhada voadora|joelhada pulando", "bl6 sf10 hf120,-20 kf140,60 fl110,110 ab25,25 el110,110 hp10 m:garra,garra e:gritoDeGuerra");
@@ -64,7 +64,7 @@ px("cobertura", "Combate/Defesa/Cobertura", "fechar a guarda|tartaruga", "sf28 h
 px("esquivaParaTras", "Combate/Defesa/Esquiva", "esquiva para trás|matrix", "sf-35 bp-15 hf20,-10 kf45,30 fl40,40 ab50,50 el60,60 hp-25 m:aberta,aberta e:surpresa");
 px("esquivaLateral", "Combate/Defesa/Esquiva", "pêndulo|esquiva de lado", "ss-28 sf10 hf30,10 kf40,25 ha10,20 fl70,60 ab20,20 el120,125 hp6 hz-10 m:punho,punho e:focoTotal");
 px("rolamentoParaTras", "Combate/Defesa/Rolamento", "rolamento para trás", "bp-120 sf50 hf120,120 kf120,120 fl60,60 ab20,20 el90,90 hp30 m:punho,punho");
-px("protegendoRosto", "Combate/Defesa/Cobertura", "protegendo o rosto|braços na frente", "sf20 hf15,15 kf20,20 fl100,100 ab20,20 el120,120 ar-50,-50 hp20 hy-20 m:aberta,aberta e:medo");
+px("protegendoRosto", "Combate/Defesa/Cobertura", "protegendo o rosto|braços na frente", "sf20 hf15,15 kf20,20 fl100,100 ab-20,-20 el120,120 ar-50,-50 hp20 hy-20 m:aberta,aberta e:medo");
 /* espada */
 px("espadaGuardaMedia", "Combate/Armas/Espada", "guarda de espada|chudan", "sf4 hf25,-8 kf28,14 fl55,58 ab5,8 el45,50 ar-30,30 wr-30,-30 hp4 m:segurar,segurar e:focoTotal");
 px("espadaGuardaAlta", "Combate/Armas/Espada", "jodan|espada acima da cabeça", "sf-4 hf25,-8 kf28,14 fl165,160 ab5,8 el60,60 wr-20,-20 hp-4 m:segurar,segurar e:determinadoLuta");
@@ -78,7 +78,7 @@ px("espadaApoiadaNoChao", "Combate/Armas/Espada", "espada fincada|apoiado na esp
 /* lança, bastão, arco, arma de fogo */
 px("lancaGuarda", "Combate/Armas/Lança", "guarda de lança|bastão em guarda", "sf6 hf30,-10 kf35,15 fl50,80 ab20,15 el80,30 ar0,-30 st-25 m:segurar,segurar e:focoTotal");
 px("lancaEstocada", "Combate/Armas/Lança", "estocada de lança", "sf16 hf65,-20 kf75,10 fl80,95 ab15,10 el20,40 st-30 pt15 m:segurar,segurar e:gritoDeGuerra");
-px("bastaoGirando", "Combate/Armas/Bastão", "girar o bastão|bastão acima", "sf2 hf20,-6 kf22,10 fl150,95 ab60,20 el20,60 hp-6 m:segurar,segurar e:malicia");
+px("bastaoGirando", "Combate/Armas/Bastão", "girar o bastão|bastão acima", "sf2 hf20,-6 kf22,10 fl150,95 ab70,30 el20,60 hp-6 m:segurar,segurar e:malicia");
 px("arcoPuxando", "Combate/Armas/Arco", "puxando o arco|arco armado", "hf10,-4 kf10,6 fl90,90 ab90,85 el0,150 ar0,-60 st-80 pt-30 hy85 hp4 m:segurar,pinca e:focoTotal");
 px("arcoSacandoFlecha", "Combate/Armas/Arco", "pegando flecha", "fl60,150 ab20,30 el40,140 ar0,-60 hy-20 hp-10 m:segurar,pinca e:determinacao");
 px("armaDuasMaos", "Combate/Armas/Arma de fogo", "mirando com as duas mãos|pistola duas mãos", "sf8 hf15,-6 kf20,12 fl90,90 ab25,30 el5,20 ar-30,30 hp6 m:segurar,segurar e:focoTotal");
@@ -99,9 +99,9 @@ px("punhoAFrente", "Combate/Pose/Desafio", "punho à frente|promessa", "sf-2 hf2
 px("viloesBracosCruzados", "Combate/Pose/Vilão", "vilão de braços cruzados|braços cruzados superior", "sf-8 hf4,-4 fl45,45 ab20,20 el120,120 ar60,60 hp-15 m:cruzados,cruzados e:desprezo");
 px("risadaVila", "Combate/Pose/Vilão", "risada de vilão|ohohoho", "sf-25 fl130,70 ab20,40 el120,100 wr-40,0 hp-35 m:aberta,punho e:sorrisoManiaco");
 px("transformacao", "Combate/Pose/Transformação", "transformação|power up de braços abertos", "sf-20 hf10,10 kf20,20 ha20,20 fl20,20 ab70,70 el40,40 hp-30 m:punho,punho e:gritoDeGuerra");
-px("pousoAgachadoMaoNoChao", "Combate/Pose/Entrada", "pouso agachado|aterrissagem com mão no chão", "sf40 hf110,40 kf130,100 ha25,30 fl50,40 ab20,60 el10,20 hp-20 m:aberta,aberta e:determinadoLuta");
+px("pousoAgachadoMaoNoChao", "Combate/Pose/Entrada", "pouso agachado|aterrissagem com mão no chão", "sf40 hf110,40 kf130,100 ha25,30 fl50,40 ab30,70 el10,20 hp-20 m:aberta,aberta e:determinadoLuta");
 px("vitoriaPunhoErguido", "Combate/Pose/Vitória", "vitória punho para cima|campeão", "sf-10 hf5,-4 fl170,15 ab10,20 el10,30 hp-25 m:punho,relaxada e:riso");
-px("vitoriaAjoelhada", "Combate/Pose/Vitória", "ajoelhado vitorioso", "kf95,20 hf0,90 af45,0 sf-15 fl160,160 ab30,30 el10,10 hp-35 m:punho,punho e:gritoDeGuerra");
+px("vitoriaAjoelhada", "Combate/Pose/Vitória", "ajoelhado vitorioso", "kf95,20 hf0,90 af45,0 sf-15 fl160,160 ab10,10 el10,10 hp-35 m:punho,punho e:gritoDeGuerra");
 px("costasParaCamera", "Combate/Pose/Silhueta", "de costas épico|olhando o horizonte", "hf4,-2 fl5,5 ab15,15 el10,10 hp-6 m:relaxada,punho e:determinacao");
 /* energia */
 px("energiaConchaLado", "Combate/Energia/Concha", "kamehameha carregando|mãos em concha", "sf10 hf40,-10 kf55,25 ha20,20 fl30,40 ab20,30 el100,90 ar60,-60 st-45 hy30 m:garra,garra e:gritoDeGuerra");
@@ -113,7 +113,7 @@ px("selosDeMao", "Combate/Energia/Selos", "selos de mão|jutsu", "sf4 fl60,60 ab
 /* saltos de combate */
 px("saltoComEspada", "Combate/Salto/Espada", "salto com espada|ataque aéreo", "bl10 sf20 hf90,40 kf110,120 fl170,165 ab10,10 el50,50 hp-10 m:segurar,segurar e:gritoDeGuerra");
 px("voadoraDupla", "Combate/Salto/Chute", "voadora|dois pés", "bl10 bp-40 sf-10 hf80,80 kf10,10 fl60,60 ab50,50 el90,90 hp10 m:punho,punho e:gritoDeGuerra");
-px("cambalhotaNoAr", "Combate/Salto/Acrobacia", "cambalhota|mortal", "bl14 bp-160 sf70 hf130,130 kf140,140 fl80,80 ab10,10 el120,120 hp40 m:punho,punho");
+px("cambalhotaNoAr", "Combate/Salto/Acrobacia", "cambalhota|mortal", "bl14 bp-160 sf70 hf130,130 ha30,30 kf140,140 fl80,80 ab10,10 el120,120 hp40 m:punho,punho");
 px("saltoDesviando", "Combate/Salto/Esquiva", "pulando para trás desviando", "bl8 bp-20 sf-10 hf60,10 kf90,40 fl80,40 ab60,80 el40,40 hp10 m:aberta,aberta e:surpresa");
 
 /* ===================== CONVERSA ===================== */
@@ -158,7 +158,7 @@ px("maoEstendidaApertar", "Conversa/Saudação/Aperto", "estendendo a mão|praze
 px("abracoAberto", "Conversa/Saudação/Abraço", "braços abertos para abraçar|vem aqui", "sf-4 fl50,50 ab60,60 el30,30 hp-6 m:aberta,aberta e:riso");
 
 /* ===================== COTIDIANO E EMOÇÃO ===================== */
-px("desesperoMaosNaCabeca", "Emoção/Desespero", "desespero|mãos na cabeça", "sf20 fl150,150 ab40,40 el140,140 hp20 m:garra,garra e:choro");
+px("desesperoMaosNaCabeca", "Emoção/Desespero", "desespero|mãos na cabeça", "sf20 fl120,120 ab20,20 el140,140 hp20 m:garra,garra e:choro");
 px("ajoelhadoChorando", "Emoção/Tristeza/Choro", "ajoelhado chorando", "kf95,95 hf0,0 af40,40 sf40 fl90,90 ab20,20 el145,145 hp45 m:aberta,aberta e:choro");
 px("encolhidoComMedo", "Emoção/Medo", "encolhido de medo|tremendo", "sf35 hf40,40 kf60,60 fl90,90 ab10,10 el140,140 ar60,60 hp30 hy-20 m:punho,punho e:medo");
 px("abracandoASiMesmo", "Emoção/Tristeza/Solidão", "abraçando a si mesmo|com frio", "sf15 fl45,45 ab20,20 el130,130 ar60,60 hp20 m:aberta,aberta e:tristeza");
@@ -167,7 +167,7 @@ px("bracosParaCimaAlegria", "Emoção/Alegria/Celebração", "braços para cima|
 px("pulandoDeAlegria", "Emoção/Alegria/Celebração", "pulando de alegria", "bl6 sf-10 hf40,10 kf90,60 fl160,150 ab30,30 el20,20 hp-25 m:punho,punho e:riso");
 px("dancandoAlegre", "Emoção/Alegria/Dança", "dançando|dancinha", "ss12 hf35,-4 kf40,10 fl110,40 ab40,40 el70,90 hz10 m:apontar,punho e:alegria");
 px("cansadoMaosNosJoelhos", "Emoção/Cansaço", "ofegante|mãos nos joelhos", "sf55 hf35,35 kf30,30 fl60,60 ab10,10 el20,20 hp-10 m:aberta,aberta e:cansaco");
-px("deitadoOlhandoOCeu", "Cotidiano/Descanso", "deitado olhando o céu|mãos atrás da cabeça", "bp-90 fl170,170 ab60,60 el140,140 kf40,0 hf35,0 hp-5 m:relaxada,relaxada e:alivio");
+px("deitadoOlhandoOCeu", "Cotidiano/Descanso", "deitado olhando o céu|mãos atrás da cabeça", "bp-90 fl170,170 ab0,0 el130,130 kf40,0 hf35,0 hp-5 m:relaxada,relaxada e:alivio");
 px("sentadoNaEscadaPensativo", "Cotidiano/Sentado/Pensativo", "sentado pensativo|cotovelos nos joelhos", "hf100,100 kf110,110 sf30 fl70,70 ab20,20 el120,120 hp15 m:punho,aberta e:pensativo");
 px("sentadoLendo", "Cotidiano/Sentado/Ler", "sentado lendo|lendo livro", "hf90,90 kf90,90 sf20 fl50,50 ab18,18 el100,100 pr-60,-60 hp35 m:segurar,segurar e:focoTotal");
 px("sentadoNoCelular", "Cotidiano/Sentado/Celular", "sentado no celular", "hf90,90 kf90,90 sf25 fl40,35 ab15,12 el110,100 pr-50,-40 hp40 m:segurar,apontar e:tedio");
@@ -223,8 +223,8 @@ px("ofereceFlor", "Emoção/Romance", "oferecendo flor|presente", "sf10 fl70,10 
 px("ajoelhadoPedido", "Emoção/Romance", "pedido de casamento|ajoelhado com anel", "kf95,90 hf0,90 af40,0 sf-4 fl80,10 ab10,12 el40,10 hp-15 m:segurar,relaxada e:encantado");
 px("debrucadoNaMesa", "Emoção/Cansaço", "debruçado|cabeça na mesa", "hf90,90 kf90,90 sf55 fl90,90 ab30,30 el150,150 hp30 m:relaxada,relaxada e:cansaco");
 
-px("maosAoAlto", "Combate/Rendição", "mãos ao alto|rendido", "fl160,160 ab40,40 el70,70 hp10 m:aberta,aberta e:medo");
-px("ajoelhadoRendido", "Combate/Rendição", "ajoelhado rendido|mãos na nuca", "kf95,95 hf0,0 af40,40 fl150,150 ab70,70 el150,150 hp20 m:aberta,aberta e:medo");
+px("maosAoAlto", "Combate/Rendição", "mãos ao alto|rendido", "fl160,160 ab0,0 el70,70 hp10 m:aberta,aberta e:medo");
+px("ajoelhadoRendido", "Combate/Rendição", "ajoelhado rendido|mãos na nuca", "kf95,95 hf0,0 af40,40 fl120,120 ab20,20 el150,150 hp20 m:aberta,aberta e:medo");
 px("estendendoAMaoAjuda", "Conversa/Ajuda", "oferecendo ajuda|pegue minha mão", "sf30 hf30,10 kf35,15 fl70,10 ab10,12 el20,10 hp10 m:aberta,relaxada e:determinacao");
 /* registro: catálogo, grupos, etiquetas e apelidos */
 Object.assign(POSES_CORPO, POSES_EXTRA);

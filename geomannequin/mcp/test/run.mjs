@@ -360,6 +360,10 @@ async function suite(client, tag) {
       r = await call("manual_avancado", {}); check(!r.isError && /22\. ANIMAIS/.test(text(r)) && /26\. VÍDEO AVANÇADO/.test(text(r)), "manual_avancado"); }
     r = await call("completar", { antes: 'pose "x"\n  ombro.direito(', miniaturas: true });
     check(!r.isError && r.structuredContent.itens.some(i => i.rotulo === "frente") && r.structuredContent.itens[0].svg && /0–180°/.test(r.structuredContent.ajuda), "completar: movimentos da junta com limites e miniatura" + (r.isError ? ": " + text(r) : "")); }
+  { let r = await call("preconfiguracoes", {}); check(!r.isError && r.structuredContent.total >= 500 && r.structuredContent.niveis.some(n => n.ramo === "dialogo"), "preconfiguracoes: árvore com 500+");
+    r = await call("preconfiguracoes", { busca: "ombro", max: 8 }); check(!r.isError && r.structuredContent.itens.length > 0 && r.content.some(c => c.type === "image"), "preconfiguracoes: busca com miniaturas");
+    r = await call("aplicar_preconfiguracao", { id: "dialogo.dois.frente.ombro-a-dir", nomes: ["Kai", "Mira"] }); check(!r.isError && /cena preset dialogo.dois.frente.ombro-a-dir com Kai, Mira/.test(r.structuredContent.linha) && r.content.some(c => c.type === "image"), "aplicar_preconfiguracao: texto e quadro" + (r.isError ? ": " + text(r) : ""));
+    r = await call("animacao_animal", { nome: "trote", especie: "cavalo", quadros: 4 }); check(!r.isError && /escorrega/i.test(text(r)) && r.content.some(c => c.type === "image"), "animacao_animal: tira e auditoria" + (r.isError ? ": " + text(r) : "")); }
   return link;
 }
 
