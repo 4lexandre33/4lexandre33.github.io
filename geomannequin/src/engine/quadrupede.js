@@ -9,6 +9,7 @@
    "ossos" no animal mostra só o esqueleto (para estudar e conferir a anatomia).
    Coordenadas locais do objeto (R ≈ 11,4 cm): x = lado (+ esquerda do animal), y = cima, z = FRENTE (para onde ele olha).
    Proporções: o.animal.p (metros); pose: o.animal.pose (graus). Tudo é recalculado do zero a cada desenho. */
+import { AV_ESPECIES, AV_SINONIMOS, avPartes, avPontoMundo, avMedidas, avEsqueleto } from "./ave.js";
 const QM = 1 / 0.114, QD = Math.PI / 180;
 /* a perna de trás (dobrada no jarrete) é um pouco mais comprida, para o casco chegar no mesmo chão que o da frente */
 const QD_KT = 1 / (0.42 * Math.cos(14 * Math.PI / 180) + 0.38 * Math.cos(24 * Math.PI / 180) + 0.2);
@@ -37,10 +38,12 @@ const QD_ESPECIES = {
   girafa: { raboAng: -80, h: 3.1, c: 1.6, w: 0.6, n: 2.2, na: 62, cab: 0.55, foc: 0.18, ore: 0.13, rabo: 0.9, perna: 0.1, chifre: 0.12, cor: "#d9a85a", pe: "fendido" },
   rinoceronte: { raboAng: -80, h: 1.7, c: 2.6, w: 1.1, n: 0.4, na: 10, cab: 0.75, foc: 0.25, ore: 0.12, rabo: 0.5, perna: 0.22, cor: "#8a8784", pe: "coluna", corno: 0.5, montaria: true }
 };
+/* AVES entram na mesma lista (classe "ave": desenho e pontos vêm de ave.js) */
+for (const [k, e] of Object.entries(AV_ESPECIES)) QD_ESPECIES[k] = Object.assign({ classe: "ave" }, e);
 /* tipo de pé de cada espécie (o resto é casco) */
 const QD_PE = { cavalo: "casco", ponei: "casco", burro: "casco", camelo: "almofada", dromedario: "almofada", bode: "fendido", ovelha: "fendido", boi: "fendido", cervo: "fendido", cachorro: "pata", cachorroPequeno: "pata", lobo: "pata", gato: "pata" };
 const qdPe = E => E.pe || "casco";
-const QD_SINONIMOS = { "leão": "leao", leoa: "leao", "ursa": "urso", "javali": "porco", rino: "rinoceronte", "rinoceronte": "rinoceronte", onca: "tigre", "onça": "tigre", pantera: "tigre", "pônei": "ponei", pony: "ponei", jumento: "burro", mula: "burro", asno: "burro", "dromedário": "dromedario", cabra: "bode", carneiro: "ovelha", vaca: "boi", touro: "boi", "cão": "cachorro", cao: "cachorro", cachorrinho: "cachorroPequeno", "cachorro pequeno": "cachorroPequeno", gatinho: "gato", veado: "cervo", alce: "cervo", rena: "cervo", camela: "camelo" };
+const QD_SINONIMOS = { ...AV_SINONIMOS, "leão": "leao", leoa: "leao", "ursa": "urso", "javali": "porco", rino: "rinoceronte", "rinoceronte": "rinoceronte", onca: "tigre", "onça": "tigre", pantera: "tigre", "pônei": "ponei", pony: "ponei", jumento: "burro", mula: "burro", asno: "burro", "dromedário": "dromedario", cabra: "bode", carneiro: "ovelha", vaca: "boi", touro: "boi", "cão": "cachorro", cao: "cachorro", cachorrinho: "cachorroPequeno", "cachorro pequeno": "cachorroPequeno", gatinho: "gato", veado: "cervo", alce: "cervo", rena: "cervo", camela: "camelo" };
 function qdEspecie(nome) { const n = String(nome || "cavalo").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); return QD_ESPECIES[n] ? n : QD_SINONIMOS[n] || QD_SINONIMOS[String(nome || "").toLowerCase()] || (Object.keys(QD_ESPECIES).find(k => k.toLowerCase() === n) || null); }
 /* pose padrão (graus): pernas [ombro/quadril, joelho, boleto] (+ = para a frente), pescoço/cabeça (+ = para cima), rabo, corpo */
 function qdPosePadrao() { return { pescoco: 0, cabeca: 0, cabecaGiro: 0, rabo: 0, raboLado: 0, rolo: 0, voo: 0, corpoInclina: 0, corpoAltura: 0, pernas: { de: [0, 0, 0], dd: [0, 0, 0], te: [0, 0, 0], td: [0, 0, 0] }, deitado: 0, sentado: 0, coluna: 0, pescocoCurva: 0, raboCurva: 0, boca: 0 }; }
@@ -52,7 +55,9 @@ const qdCaixaEntre = (a, b, larg, esp, extra) => { const d = [b[0] - a[0], b[1] 
 const qdTubo = (a, b, r, r1, extra) => { const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], L = Math.hypot(...d); return Object.assign({ cil: true, c: qdMul(qdAdd(a, b), 0.5), r, r1: r1 ?? r, hh: L / 2, R: qdEixo(d) }, extra || {}); };
 
 /* esqueleto do animal (pontos-chave em R, locais) — usado para desenhar, para a sela, para quem olha e para o modo "ossos" */
+const qdEhAve = o => { const A = o.animal || {}; const e = QD_ESPECIES[qdEspecie(A.especie) || "cavalo"]; return !!(e && e.classe === "ave"); };
 function qdEsqueleto(o) {
+  if (qdEhAve(o)) return avEsqueleto(o);
   const A = o.animal || {}, E = Object.assign({}, QD_ESPECIES[qdEspecie(A.especie) || "cavalo"], A.p || {}), k = (A.escala || 1) * QM, P = Object.assign(qdPosePadrao(), A.pose || {}), pern = Object.assign(qdPosePadrao().pernas, (A.pose || {}).pernas || {});
   const h = E.h * k, c = E.c * k, w = E.w * k, r = w / 2, yb = h - r * 0.9, Lp = Math.max(0.2, yb - r * 0.55), L1 = Lp * 0.42, L2 = Lp * 0.38, L3 = Lp * 0.2;
   /* coluna: dobra (+ = arqueada para cima, as pontas descem; − = selada) em volta do meio; depois a inclinação do corpo todo (empinar/sentar) */
@@ -96,6 +101,7 @@ function qdPeDesenho(tipo, j, pw, esc) {
 }
 /* partes desenháveis (caixas, cilindros, elipsoides) — com o chão automático: o casco mais baixo encosta em y = 0 */
 function qdPartes(o) {
+  if (qdEhAve(o)) return avPartes(o);
   const S = qdEsqueleto(o), { E, k, c, w, r, yb, corpo, pernas, boletos, anat, nBase, nMeio, nTopo, cDir, cFim, P, inc } = S, out = [], esc = "escuro", ossos = !!(o.animal && o.animal.ossos);
   const pw = Math.max(0.12, E.perna * k * 2), mn = [];
   if (!ossos) {
@@ -164,11 +170,12 @@ function qdPartes(o) {
 }
 /* um ponto do animal no MUNDO (sela, cabeça, frente…) — o (x, z, base, giro) do objeto */
 function qdPontoMundo(o, ponto, g0 = 0) {
+  if (qdEhAve(o)) return avPontoMundo(o, ponto, g0);
   const S = qdEsqueleto(o), dy = qdPartes(o).dy || 0;
   let loc = ponto === "sela" ? S.sela : ponto === "cabeca" ? qdMul(qdAdd(S.nTopo, S.cFim), 0.5) : ponto === "frente" ? S.frente : ponto === "tras" ? S.tras : ponto === "costas" ? S.costas : S.sela;
   if (S.P.rolo) loc = qdAdd([0, S.yb, 0], qdRot([loc[0], loc[1] - S.yb, loc[2]], "z", S.P.rolo * QD));
   const g = (o.giro || 0) * QD, c = Math.cos(g), s = Math.sin(g), v = [loc[0], loc[1] + dy, loc[2]];
   return [o.x + v[0] * c + v[2] * s, g0 + (o.base || 0) + v[1], o.z - v[0] * s + v[2] * c];
 }
-function qdMedidas(especie, escala = 1) { const E = QD_ESPECIES[qdEspecie(especie) || "cavalo"], k = escala * QM; return { larg: Math.max(E.w * 1.2, (E.ore || 0) * 2) * k, prof: (E.c + E.n * 0.6 + E.cab) * k, alt: (E.h + E.n * 0.5) * k }; }
-export { QD_PE, QD_KT, QD_ESPECIES, QD_SINONIMOS, qdEspecie, qdPosePadrao, qdEsqueleto, qdPartes, qdPontoMundo, qdMedidas };
+function qdMedidas(especie, escala = 1) { if ((QD_ESPECIES[qdEspecie(especie)] || {}).classe === "ave") return avMedidas(qdEspecie(especie), escala); const E = QD_ESPECIES[qdEspecie(especie) || "cavalo"], k = escala * QM; return { larg: Math.max(E.w * 1.2, (E.ore || 0) * 2) * k, prof: (E.c + E.n * 0.6 + E.cab) * k, alt: (E.h + E.n * 0.5) * k }; }
+export { qdEhAve, QD_PE, QD_KT, QD_ESPECIES, QD_SINONIMOS, qdEspecie, qdPosePadrao, qdEsqueleto, qdPartes, qdPontoMundo, qdMedidas };

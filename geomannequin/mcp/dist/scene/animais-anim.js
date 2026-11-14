@@ -116,7 +116,7 @@ amaAcao("rosnar", ["Animal/Combate/Ameaca"], "rosna (agachado, cabeça baixa, pr
 const AMA_CACHE = new Map();
 function animacaoAnimal(nome, especie, escala = 1) { const d = AMA[nome]; if (!d) return null; const k = nome + "|" + (qdEspecie(especie) || "cavalo") + "|" + (+escala).toFixed(3); if (AMA_CACHE.has(k)) return AMA_CACHE.get(k);
   const cx = amaContexto(especie, escala), a = Object.assign({ nome, tags: d.tags, descricao: d.descricao, especie: cx.esp, escala }, d.gerar(cx)); a.relativa = !!a.relativa; if (d.ciclo) a.loop = a.loop !== false; AMA_CACHE.set(k, a); return a; }
-function listaAnimacoesAnimal() { return Object.values(AMA).map(d => ({ nome: d.nome, tags: d.tags, descricao: d.descricao, ciclo: !!d.ciclo })); }
+function listaAnimacoesAnimal() { return Object.values(AMA).filter(d => !d.ave).map(d => ({ nome: d.nome, tags: d.tags, descricao: d.descricao, ciclo: !!d.ciclo })); }
 /* amostra no tempo t: { pose (completa se base dada), mover } — nos ciclos o deslocamento acumula a cada volta */
 function amaAmostrar(a, t, base) { const D = a.duracao; let n = 0, tt = t; if (a.loop) { n = Math.floor(t / D); tt = t - n * D; } else tt = Math.max(0, Math.min(D, t));
   const ch = a.chaves; let i = 0; while (i < ch.length - 2 && ch[i + 1].t < tt) i++; const c0 = ch[i], c1 = ch[Math.min(ch.length - 1, i + 1)], u = c1.t > c0.t ? Math.max(0, Math.min(1, (tt - c0.t) / (c1.t - c0.t))) : 1, us = a.loop || a.ciclo ? u : AMA_SM(u);

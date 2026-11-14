@@ -26,12 +26,13 @@ import { salvarPose } from "./pose-codigo.js";
 import { pdSobrepor, pdNorm, pdAplicarJunta, pdExtrairJuntas, pdValoresPose, pdAtalho, pdLerPartes, pdParams, pdBase, pdChaveEm, pdTrecho, pdAteAngulo, pdReverter, pdEspelharAnim, pdJuntar, pdRepetir, pdVaiEVolta, pdAmplitude, pdEsticar, pdTroca, pdSoma, pdTira, pdFixar, pdCamada, pdCiclo, pdMiniatura } from "./pose-dsl.js";
 import { cfSilhueta, cfCameraNoTempo, cfAplicar, cfEstaticaAtual, cfFixaFrente, cfPessoa, cfPonto, cfDescrever } from "./camera-filme.js";
 import { AD_ACOES, adAcaoPara, adEspera, AD_ESPERAS } from "./acoes-dia.js";
-import { AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo } from "./animais.js";
+import { AV_POSES, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amMontavel } from "./animais.js";
 import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo } from "./animais-anim.js";
+import { AV_VERBOS } from "./aves-anim.js";
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
-import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
+import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
 const NM_M = 1 / 0.114; /* R por metro */
 /* ===================== cores do elenco ===================== */
@@ -527,9 +528,15 @@ function nmAnimal(ctx, nome) { let o = amAchar(nome); if (o) return o; const e =
 function nmAnimalEstado(o) { return { x: o.x, z: o.z, giro: o.giro || 0, pose: JSON.parse(JSON.stringify(o.animal.pose || amPose("parado"))) }; }
 const NM_POSTURA_VERBO = { senta: "sentarNoChao", sentar: "sentarNoChao", "senta-se": "sentarNoChao", ajoelha: "ajoelhar", ajoelhar: "ajoelhar", "ajoelha-se": "ajoelhar", deita: "deitar", deitar: "deitar", "deita-se": "deitar", agacha: "agachar", agachar: "agachar", "agacha-se": "agachar", levanta: "levantarDoChao" };
 const NM_ANIMAL_POSE_VERBO = { empina: "empinado", deita: "deitado", senta: "sentado", come: "comendo", pasta: "comendo", levanta: "parado", "levanta-se": "parado", para: "parado", atento: "atento", uiva: "uivando", coice: "coice", "da-coice": "coice", agacha: "agachado" };
+/* ave pousada numa parte de uma pessoa (ombro, mão, cabeça, braço): os pés da ave em cima da parte */
+function nmPousarAveEm(o, it, parte) { if (!o || !it) return; const g0 = amChaoMundo(), cs = capsulas(pMundo(it)), L = cs.caps || cs, s = /esq/.test(parte) ? "E" : "D";
+  const nomeC = /mao/.test(parte) ? ["maoD", "maoE", "antebracoD"] : /cabeca/.test(parte) ? ["cabeca"] : /braco/.test(parte) ? ["antebraco" + s, "antebracoD"] : ["ombro" + s, "bracoD", "bracoE"];
+  const c = nomeC.map(n => L.find(q => q.nome === n)).find(Boolean) || L.find(q => /cabeca/.test(q.nome)); if (!c) return;
+  const top = Math.max(c.a[1], c.b[1]) + (c.r || 0), P = /braco/.test(parte) || /ombro/.test(parte) ? (c.a[1] > c.b[1] ? c.a : c.b) : [(c.a[0] + c.b[0]) / 2, 0, (c.a[2] + c.b[2]) / 2];
+  o.x = P[0]; o.z = P[2]; o.base = top - g0 - 0.05; o.emAr = true; o.sobre = null; o.giro = it.params.wRot || 0; o.animal.pousadoEm = it.name; }
 function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
-  const o = nmAnimal(ctx, nome), feito = { nome }, mudancas = []; (Q.animaisPresentes || (Q.animaisPresentes = new Set())).add(nome);
-  const ang = p => Math.atan2(p[0] - o.x, p[1] - o.z) * 180 / Math.PI, d0 = nmAnimalEstado(o);
+  const o = nmAnimal(ctx, nome), feito = { nome }, mudancas = [], ave = qdEhAve(o); (Q.animaisPresentes || (Q.animaisPresentes = new Set())).add(nome);
+  const ang = p => Math.atan2(p[0] - o.x, p[1] - o.z) * 180 / Math.PI, d0 = nmAnimalEstado(o), depoisAve = [];
   for (; k < toks.length; k++) { const tk = toks[k], w = nmNorm(tk.v), nx = toks[k + 1];
     if (w === "em" || w === "at") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " em ONDE?", l.linha); o.x = p[0]; o.z = p[1]; k = k2 - 1; }
     else if (w === "gira") { o.giro = +nx.v; k++; }
@@ -539,8 +546,12 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
     else if (w === "ossos" || w === "esqueleto") { o.animal.ossos = true; if (!o.colOrig) o.colOrig = o.col || null; o.col = { fill: "#ece4cf", ink: "#4a4034" }; }
     else if (w === "sem-ossos" || w === "corpo") { o.animal.ossos = false; if (o.colOrig !== undefined) { o.col = o.colOrig; delete o.colOrig; } }
     else if (w === "sem-sela") o.animal.sela = false;
-    else if (w === "anima" || w === "animacao" || AMA_VERBOS[w] || (Q.animais && AMA_POSE_ANIM[w] && !(w === "levanta"))) { /* animação de animal: "Trovão anima salto-obstaculo", "Rex late por 3s", "Trovão empina" (no filme) */
-      let an = w === "anima" || w === "animacao" ? (k++, nmNorm(nx.v)) : AMA_VERBOS[w] || AMA_POSE_ANIM[w]; if (!AMA[an]) throw new NmErro("Animação de animal “" + an + "” não existe. Há: " + Object.keys(AMA).join(", ") + ".", l.linha);
+    else if (ave && /^(pousa-em|pousa-no|pousa-na|no-ombro-de|na-mao-de|na-cabeca-de|no-braco-de)$/.test(w)) { /* ave pousada numa pessoa: "Falcão pousa-em Kai ombro" / "Corvo no-ombro-de Mira" */
+      const quem = nmQuem(ctx, nx && nx.v); if (!quem) throw new NmErro(nome + " " + w + " QUEM? (alguém do elenco)", l.linha); k++; let parte = /mao/.test(w) ? "mao" : /cabeca/.test(w) ? "cabeca" : /braco/.test(w) ? "braco" : "ombro";
+      if (toks[k + 1] && /^(ombro|mao|mão|cabeca|cabeça|braco|braço|ombro-esquerdo|ombro-direito|mao-esquerda|mao-direita)$/.test(nmNorm(toks[k + 1].v))) { parte = nmNorm(toks[k + 1].v); k++; }
+      const it = SCN.list.find(x => x.name === quem); depoisAve.push(() => nmPousarAveEm(o, it, parte)); o.animal.pose = amPose("empoleirado", o.animal.especie) || o.animal.pose; feito.pousa = quem + " " + parte; }
+    else if (w === "anima" || w === "animacao" || AMA_VERBOS[w] || (ave && AV_VERBOS[w]) || (Q.animais && AMA_POSE_ANIM[w] && !(w === "levanta"))) { /* animação de animal: "Trovão anima salto-obstaculo", "Rex late por 3s", "Trovão empina" (no filme) */
+      let an = w === "anima" || w === "animacao" ? (k++, nmNorm(nx.v)) : (ave && AV_VERBOS[w]) || AMA_VERBOS[w] || AMA_POSE_ANIM[w]; if (!AMA[an]) throw new NmErro("Animação de animal “" + an + "” não existe. Há: " + Object.keys(AMA).join(", ") + ".", l.linha);
       let por = null, dist = null, vezes = null; while (toks[k + 1] && /^(por|vezes)$/.test(nmNorm(toks[k + 1].v)) || (toks[k + 1] && toks[k + 1].t === "num")) { const q = toks[k + 1]; if (q.t === "num") { if (q.u === "s") por = q.v; else if (q.u === "m" || q.u === "cm") dist = q.u === "cm" ? q.v / 100 : q.v; else vezes = q.v; k++; } else if (nmNorm(q.v) === "por") { const v = toks[k + 2]; if (v && v.t === "num") { if (v.u === "m") dist = v.v; else por = v.v; } k += 2; } else k++; }
       const a = animacaoAnimal(an, o.animal.especie, o.animal.escala || 1), de = nmAnimalEstado(o), fimMov = a.chaves[a.chaves.length - 1].mover, passo = Math.hypot(fimMov.frente || 0, fimMov.lado || 0);
       const dur = a.loop ? (por ?? (dist && passo > 0.01 ? dist / passo * a.duracao : vezes ? vezes * a.duracao : a.passada ? 4 / passo * a.duracao : a.duracao * 2)) : a.duracao;
@@ -548,7 +559,7 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
       if (Q.animais) { mudancas.push({ tipo: "anim", anim: a, de, dur, texto: nome + " " + an + (a.loop ? " (" + dur.toFixed(1) + " s)" : "") }); o.x = pos.x; o.z = pos.z; o.giro = pos.giro; o.animal.pose = a.relativa ? de.pose : fim.pose; }
       else { /* quadro (um instante): o momento-chave da animação */ const pk = amaAmostrar(a, a.pico ?? a.duracao * (a.loop ? 0.3 : 0.5), de.pose), pp = amaNoMundo(de, pk.mover, NM_M); o.x = pp.x; o.z = pp.z; o.giro = pp.giro; o.animal.pose = pk.pose; }
       feito.anima = an; }
-    else if (w === "pose" || AM_POSES[w] || NM_ANIMAL_POSE_VERBO[w]) { const pn = w === "pose" ? (k++, nmNorm(nx.v)) : NM_ANIMAL_POSE_VERBO[w] || w, pp = amPose(pn); if (!pp) throw new NmErro("Pose de animal “" + pn + "” não existe. Há: " + Object.keys(AM_POSES).join(", ") + ".", l.linha);
+    else if (w === "pose" || (!ave && AM_POSES[w]) || (ave && AV_POSES[w]) || NM_ANIMAL_POSE_VERBO[w]) { const pn = w === "pose" ? (k++, nmNorm(nx.v)) : NM_ANIMAL_POSE_VERBO[w] || w, pp = amPose(pn, o.animal.especie); if (!pp) throw new NmErro("Pose de " + (ave ? "ave" : "animal") + " “" + pn + "” não existe. Há: " + Object.keys(ave ? AV_POSES : AM_POSES).join(", ") + ".", l.linha);
       mudancas.push({ tipo: "pose", para: pp, dur: pn === "empinado" ? 0.9 : pn === "deitado" || pn === "sentado" ? 1.4 : 0.7, texto: nome + ": " + pn }); o.animal.pose = pp; }
     else if (w === "olha") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " olha QUEM?", l.linha); k = k2 - 1; const g = ((ang(p) - (o.giro || 0)) % 360 + 540) % 360 - 180, pp = JSON.parse(JSON.stringify(o.animal.pose)); pp.cabecaGiro = Math.max(-70, Math.min(70, g)); mudancas.push({ tipo: "pose", para: pp, dur: 0.5, texto: nome + " olha " + nx.v }); o.animal.pose = pp; }
     else if (w === "carrega" || w === "leva") { const ob = nx && nx.v; k++; let c = SCN.objetos.find(x => !x.chao && nmNorm(x.nome || "") === nmNorm(ob)); if (!c) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)); if (!tipo) throw new NmErro("carrega O QUÊ? (um objeto do local ou um tipo).", l.linha); c = adicionarObjeto(tipo, { nome: ob }); } o.animal.carga = c.nome; }
@@ -569,7 +580,7 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
     else throw new NmErro("Não entendi “" + tk.v + "” para o animal " + nome + ". Use: em, gira, vira-para, pose (" + Object.keys(AM_POSES).join(", ") + "), anda/trota/galopa [N m] [para X], anda-ate/galopa-ate X, olha X, empina, deita, senta, levanta, come, sela, carrega obj, segue X, escala N.", l.linha); }
   /* no filme: cada mudança vira uma trilha no tempo (o estado final já está no objeto) */
   if (Q.animais) { let t0 = 0; for (const m of mudancas) { Q.animais.push(Object.assign({ tipo: "animal", quem: nome, inicio: t0, poseDe: m.tipo === "pose" ? null : null }, m, { tipo: m.tipo === "mov" ? "animalMov" : m.tipo === "anim" ? "animalAnim" : "animalPose", de: m.de || null, poseIni: m.tipo === "pose" ? null : null })); t0 += m.tipo === "mov" || m.tipo === "anim" ? m.dur : 0; } }
-  amAtualizarMontaria(); Q.feitos.push(feito); void d0; return true; }
+  depoisAve.forEach(f => { (Q.depoisPessoas || (Q.depoisPessoas = [])).push(f); }); amAtualizarMontaria(); Q.feitos.push(feito); void d0; return true; }
 /* animais no instante t do plano */
 function nmPlanoAnimais(F, t) {
   const tr = F.trilhas.filter(s => (s.tipo === "animalMov" || s.tipo === "animalPose" || s.tipo === "animalAnim") && t >= s.inicio - 1e-9); if (!tr.length) return;
@@ -693,6 +704,7 @@ function nmPersonagem(ctx, l, Q) {
       k = kk - 1; }
     else if (w === "nivel" || w === "nível" || w === "sobre") { const nv = nx.v; k++; depois.push(() => { const N = SCN.localAtual && SCN.localAtual.niveis[nv]; if (N) its.forEach(x => { x.params.bodyLift = N.altura; x.params.ground = 0; }); else { const o = acharObjeto(nv); if (!o) throw new NmErro("Nível/objeto “" + nv + "” não existe.", l.linha); its.forEach(x => { x.params.bodyLift = (o.base || 0) + o.alt; x.params.wx = o.x; x.params.wz = o.z; x.params.ground = 0; }); } }); }
     else if (w === "monta" || w === "montar" || w === "cavalga") { const an = nx && nx.v; const o = an && amAchar(nmQuem(ctx, an) || an); if (!o) throw new NmErro(w + " EM QUAL animal? (do elenco: “Trovão animal cavalo”).", l.linha); k++;
+      { const mv = amMontavel(o); if (!mv.ok) throw new NmErro(o.nome + " é pequeno demais para montar (sela a " + mv.alturaSela.toFixed(2) + " m do chão). Aumente: “" + o.nome + " animal " + o.animal.especie + " escala " + mv.escalaMin + "” ou mais.", l.linha); }
       if (Q.animais && !/sem-animacao|instantaneo/.test(l.txt || "")) its.forEach(x => Q.animais.push({ tipo: "montar", quem: x.name, animal: o.nome, inicio: 0, dur: 1.5, dePe: JSON.parse(JSON.stringify(x.params)), texto: x.name + " monta " + o.nome }));
       depois.push(() => { const g0 = amChaoMundo(); its.forEach(x => { if (o.animal.cavaleiro && o.animal.cavaleiro !== x.name) { const out = SCN.list.find(y => y.name === o.animal.cavaleiro); if (out) out.montadoEm = null; } amAssentar(x, o, g0); x.montadoEm = o.nome; }); }); feito.anima = "monta " + o.nome; }
     else if (w === "desmonta" || w === "desce-do-cavalo" || w === "apeia") { let lado = 1; if (nx && /^(direita|direito)$/.test(nmNorm(nx.v))) { lado = -1; k++; } else if (nx && /^(esquerda|esquerdo)$/.test(nmNorm(nx.v))) k++;
@@ -1032,7 +1044,7 @@ function nmCentrar(rc, folga = 0.9, pts0, soPan) {
 /* o manequim está dentro de um objeto alto (e não em cima dele)? */
 function nmDentroDe(it, ignorar) {
   const x = it.params.wx || 0, z = it.params.wz || 0, h = it.params.bodyLift || 0;
-  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
+  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.animal && o.animal.pousadoEm === it.name) || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
     if (o.raio && Math.hypot(dx, dz) < o.raio + 1.2) return o; if (!o.raio && Math.abs(lx) < o.larg / 2 + 1.2 && Math.abs(lz) < o.prof / 2 + 1.2) return o; }
   return null;
@@ -1196,6 +1208,7 @@ function nmCompilar(texto, opts = {}) {
           if (!nmPersonagem(ctx, l, Q)) { const s = nmParecida(tk[0].v, [...ctx.elenco.keys()]); throw new NmErro("“" + tk[0].v + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : " Declare no bloco elenco."), l.linha); }
         } catch (e) { if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error(e.stack); erros.push({ linha: (e instanceof NmErro && e.linha) || l.linha, erro: e.message, quadro: indice + 1 }); } }
         for (const f of Q.depois) try { f(); } catch (e) { erros.push({ linha: e.linha || b.linha, erro: e.message, quadro: indice + 1 }); }
+        for (const f of Q.depoisPessoas || []) try { f(); } catch (e) { erros.push({ linha: e.linha || b.linha, erro: e.message, quadro: indice + 1 }); }
         /* diálogo: quem fala (a fala do quadro ou a vez, alternando) gesticula; os outros ouvem, olhando para ele */
         if (Q.dialogo) { const D = Q.dialogo, ctxD = ctx.dialogos = ctx.dialogos || {}, chave = D.nomes.join("|"), vez = ctxD[chave] = (ctxD[chave] ?? -1) + 1;
           const comFala = Q.falas.find(f => D.nomes.includes(f.quem)), fal = comFala ? comFala.quem : D.nomes[vez % D.nomes.length];
@@ -1719,6 +1732,7 @@ function nmRodarPlano(ctx, Q, b, erros, indice) {
     { const cz = nmCenaParte(); if (cz !== ultCena) { F.cenas.push({ t: T + (Qe.cenaAtraso || 0), estado: JSON.parse(cz), mov: Qe.cenaMov || null }); ultCena = cz; } }
     Q.feitos.push(...Qe.feitos); if (Qe.olhares) Q.olhares = Qe.olhares;
     let fim = T + (e.ate ? e.ate - T : 0); const animK = {};
+    for (const a of Qe.animais) { const df = a.inicio + (Number.isFinite(a.dur) ? a.dur : 0); fim = Math.max(fim, df); if (a.quem) fimDe[a.quem] = Math.max(fimDe[a.quem] || 0, df); }
     for (const a of Qe.animacoes) { const s = comoSeg(a, T, fl, txt); F.trilhas.push(s); fim = Math.max(fim, s.inicio + (s.anim.loop || s.anim.gerar ? (s.por || 0) : s.anim.duracao));
       const ks = animK[a.quem] = animK[a.quem] || new Set(); s.anim.chaves.forEach(c => Object.keys(c.valores).forEach(kk => ks.add(kk))); if (s.anim.chaves.some(c => c.mover)) ["wx", "wz", "wRot"].forEach(kk => ks.add(kk)); }
     for (const x of SCN.list) { const A = antes.get(x.name); if (!A) continue; const ks = animK[x.name] || new Set(), de = {}, para = {}, snap = {};

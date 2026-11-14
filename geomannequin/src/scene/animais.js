@@ -5,7 +5,7 @@
 import { SCN } from "./modelo.js";
 import { adicionarObjeto } from "./cenario.js";
 import { pMundo } from "./colisoes.js";
-import { capsulas, QD_ESPECIES, QD_KT, qdEspecie, qdPosePadrao, qdPontoMundo, qdMedidas, qdEsqueleto, restGround } from "../engine/index.js";
+import { capsulas, QD_ESPECIES, QD_KT, qdEspecie, qdPosePadrao, qdPontoMundo, qdMedidas, qdEsqueleto, restGround, avPosePadrao, qdEhAve } from "../engine/index.js";
 
 const AM_M = 1 / 0.114;
 /* poses prontas do animal (somam à pose de descanso) */
@@ -23,9 +23,36 @@ const AM_POSES = {
   uivando: { sentado: 1, corpoInclina: 32, pescoco: 50, cabeca: 45, pernas: { de: [-30, 0, 0], dd: [-30, 0, 0], te: [70, -150, 60], td: [70, -150, 60] } }
 };
 const AM_SIN_POSE = { "em-pe": "parado", empe: "parado", "em pé": "parado", deitada: "deitado", sentada: "sentado", empinada: "empinado", come: "comendo", pastando: "comendo", pasta: "comendo" };
-function amPose(nome) { const n = String(nome || "parado").toLowerCase(); const p = AM_POSES[n] || AM_POSES[AM_SIN_POSE[n]]; if (!p) return null; return amMisturar(qdPosePadrao(), p, 1); }
+/* poses de AVE (somam à pose de descanso da ave) */
+const AV_POSES = {
+  parado: {}, atento: { pescoco: 12, cabeca: 6, caudaAbre: 0.2 }, empoleirado: { agacha: 0.5, corpoInclina: 8 },
+  ciscando: { pescoco: -45, cabeca: -40, corpoInclina: -25, pernas: { pd: [25, -10, 30, 0] } }, bicando: { pescoco: -70, cabeca: -55, corpoInclina: -35 },
+  comendo: { pescoco: -60, cabeca: -45, corpoInclina: -30, bico: 0.4 }, cantando: { pescoco: 25, cabeca: 30, bico: 0.8, corpoInclina: 10 },
+  "asas-abertas": { asaE: { abre: 1, bate: 20 }, asaD: { abre: 1, bate: 20 }, caudaAbre: 0.8, pescoco: 10 },
+  "abrindo-asas": { asaE: { abre: 0.55, bate: 35 }, asaD: { abre: 0.55, bate: 35 }, caudaAbre: 0.4 },
+  ameacando: { asaE: { abre: 0.7, bate: 10, varre: 20 }, asaD: { abre: 0.7, bate: 10, varre: 20 }, pescoco: -30, cabeca: 10, bico: 0.7, corpoInclina: -10, caudaAbre: 1 },
+  "voando-cima": { asaE: { abre: 1, bate: 65 }, asaD: { abre: 1, bate: 65 }, recolhe: 1, voo: 2, corpoInclina: -15, caudaAbre: 0.5 },
+  "voando-baixo": { asaE: { abre: 0.9, bate: -40, varre: -10 }, asaD: { abre: 0.9, bate: -40, varre: -10 }, recolhe: 1, voo: 2, corpoInclina: -15, caudaAbre: 0.5 },
+  planando: { asaE: { abre: 1, bate: 6 }, asaD: { abre: 1, bate: 6 }, recolhe: 1, voo: 3, corpoInclina: -20, caudaAbre: 0.7 },
+  pousando: { asaE: { abre: 1, bate: 45, varre: 15 }, asaD: { abre: 1, bate: 45, varre: 15 }, voo: 0.5, corpoInclina: 25, caudaAbre: 1, pernas: { pe: [35, 0, 0, 0], pd: [35, 0, 0, 0] } },
+  decolando: { asaE: { abre: 0.9, bate: 60 }, asaD: { abre: 0.9, bate: 60 }, agacha: 0.7, corpoInclina: -10, caudaAbre: 0.6 },
+  mergulho: { asaE: { abre: 0.25, bate: 20, varre: -30 }, asaD: { abre: 0.25, bate: 20, varre: -30 }, recolhe: 1, voo: 4, corpoInclina: -60, pescoco: -20 },
+  garras: { asaE: { abre: 1, bate: 50 }, asaD: { abre: 1, bate: 50 }, voo: 1, corpoInclina: 30, caudaAbre: 1, pernas: { pe: [60, 20, 0, -30], pd: [60, 20, 0, -30] } },
+  choco: { agacha: 1, corpoInclina: -5, pescoco: -10 }, dormindo: { agacha: 1, pescoco: -40, pescocoCurva: 60, cabecaGiro: 150, cabeca: -20 },
+  "gira-cabeca": { cabecaGiro: 170 }, inclinando: { cabecaGiro: 20, cabeca: 25 }, "uma-perna": { pernas: { pd: [70, -60, 80, -40] } }
+};
+const amEhAve = esp => !!((QD_ESPECIES[qdEspecie(esp) || ""] || {}).classe === "ave");
+function amPose(nome, especie) { const n = String(nome || "parado").toLowerCase();
+  if (especie && amEhAve(especie)) { const p = AV_POSES[n] || AV_POSES[AM_SIN_POSE[n]]; if (!p) return null; return amMisturar(avPosePadrao(), p, 1); }
+  const p = AM_POSES[n] || AM_POSES[AM_SIN_POSE[n]]; if (!p) return null; return amMisturar(qdPosePadrao(), p, 1); }
 /* mistura de poses (para transições suaves): a + (b − a)·u, inclusive as pernas */
-function amMisturar(a, b, u) { const r = JSON.parse(JSON.stringify(a)), P0 = qdPosePadrao();
+function amMisturar(a, b, u) { const r = JSON.parse(JSON.stringify(a)), ave = !!((a && a.asaE) || (b && b.asaE)), P0 = ave ? avPosePadrao() : qdPosePadrao();
+  if (ave) { /* ave: números misturam, listas por posição, objetos (asaE, asaD, pernas) por dentro; o que falta conta como o descanso */
+    const mx = (x, y, d) => { if (typeof x === "number" || typeof y === "number" || typeof d === "number") { const va = typeof x === "number" ? x : (d || 0), vb = typeof y === "number" ? y : (typeof d === "number" ? d : va); return va + (vb - va) * u; }
+      if (Array.isArray(x) || Array.isArray(y) || Array.isArray(d)) { const A = x || d || [], B = y || d || [], n = Math.max(A.length, B.length); return Array.from({ length: n }, (_, i) => (A[i] || 0) + ((B[i] || 0) - (A[i] || 0)) * u); }
+      if ((x && typeof x === "object") || (y && typeof y === "object")) { const o = {}, X = x || {}, Y = y || {}, D = d || {}; for (const k of new Set([...Object.keys(X), ...Object.keys(Y), ...Object.keys(D)])) o[k] = mx(X[k], Y[k], D[k]); return o; }
+      return y !== undefined ? (u > 0.5 ? y : x) : x; };
+    for (const k of new Set([...Object.keys(a || {}), ...Object.keys(b || {}), ...Object.keys(P0)])) r[k] = mx((a || {})[k], (b || {})[k], P0[k]); return r; }
   for (const k of Object.keys(P0)) { if (k === "pernas") continue; const va = a[k] ?? 0, vb = b[k] ?? P0[k] ?? 0; r[k] = va + (vb - va) * u; }
   r.pernas = {}; for (const l of ["de", "dd", "te", "td"]) { const pa = (a.pernas && a.pernas[l]) || [0, 0, 0], pb = (b.pernas && b.pernas[l]) || [0, 0, 0]; r.pernas[l] = [0, 1, 2].map(i => (pa[i] || 0) + ((pb[i] || 0) - (pa[i] || 0)) * u); }
   return r; }
@@ -82,7 +109,7 @@ function amCriar(nome, especie, o = {}) {
   const escala = o.escala || 1, md = qdMedidas(esp, escala), E = QD_ESPECIES[esp];
   let q = amAchar(nome);
   if (!q) q = adicionarObjeto("animal", { x: o.x || 0, z: o.z || 0, giro: o.giro || 0, larg: Math.min(6000, md.larg), prof: Math.min(6000, md.prof), alt: Math.min(3000, md.alt), nome: String(nome).slice(0, 24) });
-  q.animal = Object.assign({ especie: esp, escala, pose: amPose("parado"), sela: !!o.sela }, q.animal || {}, { especie: esp, escala });
+  q.animal = Object.assign({ especie: esp, escala, pose: amPose("parado", esp), sela: !!o.sela }, q.animal || {}, { especie: esp, escala });
   const cor = o.cor || E.cor; if (cor && /^#[0-9a-f]{6}$/i.test(cor)) q.col = { fill: cor, ink: "#2a2420" };
   q.emAr = true; q.base = 0; q.sobre = null; return q;
 }
@@ -108,6 +135,9 @@ function amAtualizarMontaria() {
 function amChaoMundo() { try { const it = SCN.list.find(x => x.name !== "__vazio__" && !x.oculto) || SCN.list[0]; const p = Object.assign({}, it.params, { bodyLift: 0, ground: 1, bodyPitch: 0, bodyRoll: 0 }); const cs = capsulas(pMundo(it, p)), L = cs.caps || cs; return Math.min(...L.map(c => Math.min(c.a[1], c.b[1]) - (c.r || 0))); } catch (e) { return -15.1; } }
 /* pontos do animal para a câmera (como cfPessoa): cabeça, olhos, centro, frente, chão */
 function amPontos(nome) { const o = amAchar(nome); if (!o) return null; const g0 = amChaoMundo(), cab = qdPontoMundo(o, "cabeca", g0), sela = qdPontoMundo(o, "sela", g0), g = (o.giro || 0) * Math.PI / 180, fr = [Math.sin(g), Math.cos(g)];
-  return { cabeca: cab, olhos: cab, olhar: [fr[0], 0, fr[1]], peito: sela, centro: sela, frente: fr, chao: g0, animal: true }; }
-export { amParams, amParamsMix, amPoseGait, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
+  return { cabeca: cab, olhos: cab, olhar: [fr[0], 0, fr[1]], peito: sela, centro: sela, frente: fr, chao: g0, animal: true, tam: Math.max(o.alt || 0, o.larg || 0, o.prof || 0, (sela[1] - g0) * 1.6) }; }
+/* dá para montar? a sela precisa estar a ≥ 0,55 m do chão (abaixo disso a pessoa esmaga o animal); devolve {ok, alturaSela (m), escalaMin} */
+function amMontavel(o) { const g0 = amChaoMundo(), sela = qdPontoMundo(o, "sela", g0), h = (sela[1] - g0) * 0.114, esc = o.animal.escala || 1, min = qdEhAve(o) ? 0.85 : 0.55;
+  return { ok: h >= min, alturaSela: h, escalaMin: h > 0 ? Math.ceil(esc * min / h * 10) / 10 : 99 }; }
+export { amMontavel, AV_POSES, amEhAve, amParams, amParamsMix, amPoseGait, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
 void qdEsqueleto;
