@@ -30,6 +30,7 @@ const ocToro = (c, R, rt, eixo, ra, extra) => Object.assign({ toro: true, c, Rm:
 const ocPega = (P, N, eixo, extra) => Object.assign({ P, N: ocUnit(N), eixo: ocUnit(eixo) }, extra || {});
 
 import { qdPartes, qdMedidas } from "./quadrupede.js";
+import { OBJ_MAO, SINONIMOS_MAO } from "./objetos-mao.js";
 /* ======== os objetos ======== */
 const COMPOSTOS = {
   /* animal quadrúpede (cavalo, camelo, cachorro…): partes vindas do esqueleto (quadrupede.js) — o.animal = { especie, escala, pose, p } */
@@ -186,6 +187,7 @@ const COMPOSTOS = {
     partes: o => { const c = o.alt * 0.46, sg = 2, R = (c * c + sg * sg) / (2 * sg); return [ocToro([0.4 + R - sg, o.alt / 2, 0], R, 0.13, "z", 0.13, { meio: [-1, 0, 0, (R - sg) / R - 0.01] }), ocTubo([0.4, o.alt / 2 - c, 0], [0.4, o.alt / 2 + c, 0], 0.025)]; },
     pegas: o => ({ punho: ocPega([0.4 - 2, o.alt / 2, 0], [-1, 0, 0], [0, 1, 0]) }) }
 };
+Object.assign(COMPOSTOS, OBJ_MAO);
 /* sinônimos em português para achar o objeto por nome */
 const SINONIMOS_COMPOSTOS = { bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
   tambor: "tambor", "tonel": "tambor", chope: "barrilChope", keg: "barrilChope", botijao: "botijao", "botijão": "botijao", "cilindro de gas": "botijao", galao: "galao", "galão": "galao", "jerry can": "galao", balde: "balde",
@@ -194,5 +196,6 @@ const SINONIMOS_COMPOSTOS = { bola: "bola", "bola de praia": "esfera", rocha: "p
   barra: "barraPesos", haltere: "barraPesos", "barra de pesos": "barraPesos", pa: "pa", "pá": "pa", marreta: "marreta", martelo: "marreta", alavanca: "alavanca", "pe de cabra": "alavanca", "pé de cabra": "alavanca",
   "carrinho de mao": "carrinhoDeMao", "carrinho de mão": "carrinhoDeMao", "carrinho de carga": "carrinhoCarga", diabo: "carrinhoCarga", "carrinho plataforma": "carrinhoPlataforma", cacamba: "cacamba", "caçamba": "cacamba",
   ancora: "ancora", "âncora": "ancora", "pilha de caixas": "pilhaCaixas", lanca: "lanca", "lança": "lanca", machado: "machado", escudo: "escudo", arco: "arco", cone: "cone", toro: "toro", anel: "toro", capsula: "capsula", "cápsula": "capsula", prisma: "prisma", esfera: "esfera", arvore: "arvore", "árvore": "arvore", palmeira: "palmeira", arbusto: "arbusto", poco: "poco", "poço": "poco", agua: "agua", "água": "agua", predio: "predio", "prédio": "predio", casa: "predio", rampa: "rampaDegraus", "escadaria": "rampaDegraus" };
+Object.assign(SINONIMOS_COMPOSTOS, SINONIMOS_MAO);
 function pegasDoObjeto(o) { const t = COMPOSTOS[o.tipo]; return t && t.pegas ? t.pegas(o) : {}; }
 export { COMPOSTOS, SINONIMOS_COMPOSTOS, pegasDoObjeto, rotParaEixo };

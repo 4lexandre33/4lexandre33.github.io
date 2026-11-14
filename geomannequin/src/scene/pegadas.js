@@ -384,7 +384,7 @@ const ACOES = {
     corpo: (Q, s) => { Object.assign(Q, { bodyPitch: 16, spineFlex: 12, headPitch: -16, [pgO(s, "ankleFlex")]: 18, [pgO(s, "toes")]: -40 }); pesEm(Q, { [pgL(s, "")]: [0.14, 0.24], [pgO(s, "")]: [0.14, -0.4] }, 0.16); },
     lugar: k => { const d = pgNorm(pgComb([k.B.frenteChao, -0.55], [UP, 0.83])), ponta = pgComb([k.B.cintura, 1], [k.B.frenteChao, 5.4], [UP, -(k.B.cintura[1] - k.g) + 0.2]); return { C: pgAdd(ponta, pgMul(d, k.meia[1])), ax: pgEixos(d, pgMul(k.B.esqChao, -1)) }; },
     contatos: k => { const a = pgPega(k.o, k.g, "topo"), b = pgPega(k.o, k.g, "meio"); return [pgC(k.s, "forca", { P: a.P, N: pgMul(k.B.frenteChao, -1) }, { eixo: a.eixo, polegar: UP, cotovelo: [0.6, -1, 0] }), pgC(-k.s, "forca", { P: pgAdd(a.P, pgMul(a.eixo, -0.9)), N: pgMul(k.B.frenteChao, -1) }, { eixo: a.eixo, polegar: UP, cotovelo: [0.6, -1, 0] })]; }, gesto: "segurar", fechar: "envolver" },
-  subirDegrauComCarga: { desc: "Subindo um degrau com a carga no ombro (saco, caixa, tábua)", grupo: "carregar", maos: 2, modo: "carregar", teste: ["saco", {}],
+  subirDegrauComCarga: { semAfastar: true, desc: "Subindo um degrau com a carga no ombro (saco, caixa, tábua)", grupo: "carregar", maos: 2, modo: "carregar", teste: ["saco", {}],
     corpo: (Q, s) => { Object.assign(Q, { headRoll: -s * 10, spineFlex: 16, bodyPitch: 10, spineSide: -s * 6, [pgL(s, "hipFlex")]: 62, [pgL(s, "kneeFlex")]: 72, [pgL(s, "ankleFlex")]: -6, [pgO(s, "ankleFlex")]: 18, [pgO(s, "toes")]: -40, [pgO(s, "hipFlex")]: -10 }); },
     lugar: k => ACOES.cargaNoOmbro.lugar(k), contatos: k => ACOES.cargaNoOmbro.contatos(k), gesto: "garra", fechar: "envolver" }
 };
@@ -395,6 +395,136 @@ const ALIAS_PEGADA = { "força": "forca", punho: "forca", cabo: "forca", "pinça
   quadril: "noQuadril", "no quadril": "noQuadril", empurrando: "empurrar", empurrar: "empurrar", puxar: "puxarCorda", corda: "puxarCorda", "cabo de guerra": "puxarCorda", rebocar: "puxarCordaNasCostas", arrastar: "arrastar",
   rolar: "rolar", "levantamento terra": "levantamentoTerra", terra: "levantamentoTerra", "carrinho de mao": "carrinhoDeMao", "carrinho de mão": "carrinhoDeMao", carrinho: "empurrarCarrinho", diabo: "carrinhoCarga", rodinhas: "malaDeRodinhas",
   arremessar: "arremessar", jogar: "arremessar", "pegar no alto": "alcancarAlto", prateleira: "alcancarAlto", cavar: "cavar", "pá": "cavar", alavanca: "alavancar", golpe: "golpeAcima", marretada: "golpeAcima", "na cintura": "vigaNaCintura", degrau: "subirDegrauComCarga", ajoelhado: "ajoelhadoLevantando", "virar pneu": "virarPneu" };
+
+/* ===== objetos de MÃO (armas, escudos, mágicos, instrumentos, dia a dia): o objeto vai para a mão pela PEGA marcada ===== */
+/* põe o objeto com a pega "nome" no ponto H, com o eixo y local ao longo de Y e o z local perto de F (ou eixos ax prontos) */
+function pgPorPega(k, nome, H, Y, F, ax0) {
+  const pgs = pegasDoObjeto(k.o), pg = pgs[nome] || pgs.cabo || pgs.punho || pgs.alca || Object.values(pgs)[0], ax = ax0 || pgEixos(Y, F);
+  const cx = pgCaixaObjeto({ ...k.o, rot3: undefined, x: 0, z: 0, base: 0, giro: 0 }, 0).centroLocal, P = pg ? pg.P : [0, 0, 0], d = pgSub(cx, P);
+  return { C: pgComb([H, 1], [ax[0], d[0]], [ax[1], d[1]], [ax[2], d[2]]), ax };
+}
+/* contato de força numa pega (cabo): ponto na superfície do lado da normal da pega */
+function pgNaPega(k, s, nome, extra) { const q = [nome, "cabo", "punho", "alca", "copo", "palma", ...Object.keys(pegasDoObjeto(k.o))].reduce((a, n) => a || pgPega(k.o, k.g, n), null); if (!q) return pgC(s, "forca", pgMaisPerto(k.S, k.C), Object.assign({ eixo: k.ax[1], polegar: k.ax[1] }, extra || {})); const P = pgMaisPerto(k.S, pgAdd(q.P, pgMul(q.N, 0.6)));
+  return pgC(s, "forca", { P: P.P || P, N: q.N }, Object.assign({ eixo: q.eixo, polegar: q.eixo, cotovelo: [0.8, -1, -0.2] }, extra || {})); }
+/* contato com a palma num ponto local do objeto, vindo de fora pela direção "de" (mundo) */
+function pgPalmaEm(k, s, local, de, extra) { const pose = objectRigidPose(k.o, k.g), Pw = rigidPoint(pose, local), r = pgRaio(k.S, pgAdd(Pw, pgMul(de, 4)), pgMul(de, -1)) || { P: Pw, N: de };
+  return pgC(s, "palma", r, Object.assign({ dedos: UP, cotovelo: [0.6, -1, 0] }, extra || {})); }
+const pgOmb = (k, s) => s > 0 ? k.B.oE : k.B.oD;
+const pgMao1 = (desc, grupo, teste, H, Y, F, extra) => Object.assign({ desc, grupo, maos: 1, modo: "carregar", teste: [teste, {}], gesto: "segurar", fechar: "envolver",
+  lugar: k => pgPorPega(k, (extra && extra.pega) || "cabo", H(k), Y(k), F(k)), contatos: k => [pgNaPega(k, k.s, (extra && extra.pega) || "cabo", extra && extra.contato)] }, extra || {});
+Object.assign(ACOES, {
+  /* ----- lâminas e armas de uma mão ----- */
+  empunharGuarda: pgMao1("Uma mão no cabo, em guarda: ponta à frente e para cima (katana, espada curta, sabre, adaga, maça, machado, varinha)", "empunhar", "espadaCurta",
+    k => pgComb([k.B.cintura, 1], [k.B.frenteChao, 2.3], [UP, 1.5], [k.B.esqChao, k.s * 0.9]), k => pgComb([k.B.frenteChao, 0.62], [UP, 0.78], [k.B.esqChao, -k.s * 0.12]), k => pgMul(k.B.esqChao, -k.s),
+    { corpo: (Q, s) => { Object.assign(Q, { spineTwist: -s * 8, headPitch: -4 }); pgPasso(Q, s, 0.32, -0.3, 0.1, 0.13); } }),
+  adagaReversa: pgMao1("Adaga/kunai em pegada invertida: lâmina para baixo, junto ao antebraço (ninja, assassino)", "empunhar", "adaga",
+    k => pgComb([k.B.peito, 1], [k.B.frenteChao, 2.0], [UP, -0.4], [k.B.esqChao, k.s * 1.2]), k => pgComb([UP, -0.85], [k.B.frenteChao, -0.35]), k => pgMul(k.B.esqChao, k.s),
+    { corpo: (Q, s) => { Object.assign(Q, { spineFlex: 10, bodyPitch: 5 }); pgAgachar(Q, 0.25, 0.26, [0.1, -0.12], [0.8, 0, 0.8]); } }),
+  armaApontada: pgMao1("Braço esticado apontando o objeto para a frente (espada, varinha, lanterna, tocha, cajado, dedo acusador com arma)", "empunhar", "varinha",
+    k => pgComb([pgOmb(k, k.s), 1], [k.B.frenteChao, 4.6], [UP, -0.3], [k.B.esqChao, -k.s * 0.4]), k => pgComb([k.B.frenteChao, 0.97], [UP, 0.1]), k => UP,
+    { corpo: (Q, s) => { Object.assign(Q, { spineTwist: s * 10 }); pgPasso(Q, s, 0.3, -0.26, 0.05, 0.12); } }),
+  armaErguida: pgMao1("Objeto erguido acima da cabeça com o braço esticado (tocha, espada da vitória, cajado, bandeira, orbe)", "empunhar", "tocha",
+    k => pgComb([pgOmb(k, k.s), 1], [UP, 4.9], [k.B.frenteChao, 0.7], [k.B.esqChao, k.s * 0.4]), k => pgComb([UP, 0.95], [k.B.frenteChao, 0.25]), k => k.B.frenteChao,
+    { corpo: (Q, s) => { Object.assign(Q, { headPitch: -14, spineFlex: -6 }); pgPasso(Q, -s, 0.22, -0.2, 0.03, 0.12); } }),
+  cajadoAoLado: pgMao1("Cajado/lança/bandeira em pé ao lado do corpo, mão na altura do peito (guarda, mago parado)", "empunhar", "cajadoMagico",
+    k => pgComb([pgOmb(k, k.s), 1], [k.B.frenteChao, 0.9], [k.B.esqChao, k.s * 0.9], [UP, -2.1]), k => UP, k => pgMul(k.B.esqChao, k.s),
+    { corpo: (Q, s) => { pgPasso(Q, s, 0.1, -0.08, 0.01, 0.12, false); } }),
+  /* ----- duas mãos ----- */
+  lancaInvestida: { desc: "Duas mãos na haste, ponta para a frente na altura da cintura: investida (lança, tridente, bastão, foice, rifle com baioneta)", grupo: "empunhar", maos: 2, modo: "carregar", teste: ["tridente", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { spineFlex: 10, bodyPitch: 6, spineTwist: s * 18 }); pgPasso(Q, s, 0.4, -0.38, 0.14, 0.13); },
+    lugar: k => pgPorPega(k, "cabo", pgComb([k.B.cintura, 1], [k.B.frenteChao, 2.6], [UP, 0.5], [k.B.esqChao, -k.s * 0.2]), pgComb([k.B.frenteChao, 0.97], [UP, 0.12]), UP),
+    contatos: k => [pgNaPega(k, -k.s, "cabo", { polegar: k.B.frenteChao }), pgNaPega(k, k.s, "cabo2", { polegar: k.B.frenteChao })] },
+  bastaoGuarda: { desc: "Bastão na horizontal à frente, duas mãos afastadas (bastão bo, lança, vassoura): guarda de bastão", grupo: "empunhar", maos: 2, modo: "carregar", teste: ["bastaoBo", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { spineFlex: 6 }); pgAgachar(Q, 0.18, 0.3, [0.08, -0.1], [0.6, 0, 0.6]); },
+    lugar: k => pgPorPega(k, "meio", pgComb([k.B.cintura, 1], [k.B.frenteChao, 2.4], [UP, 1.6], [k.B.esqChao, -k.s * 1.4]), pgComb([k.B.esqChao, 0.95], [UP, 0.3]), k.B.frenteChao),
+    contatos: k => [pgNaPega(k, -k.s, "meio", { polegar: k.B.esqChao }), pgNaPega(k, k.s, "meio2", { polegar: k.B.esqChao })] },
+  /* ----- escudo ----- */
+  escudoDefesa: { desc: "Escudo no antebraço à frente do corpo, defendendo (broquel, escudo redondo, de cavaleiro, torre)", grupo: "defender", maos: 1, modo: "carregar", teste: ["escudoCavaleiro", {}], gesto: "segurar", fechar: "envolver", bracoEncosta: true,
+    corpo: (Q, s) => { Object.assign(Q, { spineFlex: 8, bodyPitch: 4, spineTwist: -s * 10, headPitch: 4 }); pgPasso(Q, s, 0.34, -0.32, 0.12, 0.14); },
+    lugar: k => pgPorPega(k, "alca", pgComb([k.B.peito, 1], [k.B.frenteChao, 2.3], [UP, -0.3], [k.B.esqChao, k.s * 0.7]), pgComb([UP, 1], [k.B.frenteChao, -0.1]), pgComb([k.B.frenteChao, 1], [k.B.esqChao, k.s * 0.25])),
+    contatos: k => [pgNaPega(k, k.s, "alca", { polegar: UP, cotovelo: [0.4, -1, 0.3], folga: 0.04 })] },
+  /* ----- armas de fogo e de distância ----- */
+  pistolaMirando: { desc: "Pistola com o braço esticado, mirando à frente na altura dos olhos", grupo: "mirar", maos: 1, modo: "carregar", teste: ["pistola", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headPitch: 2, spineTwist: s * 14 }); pgPasso(Q, -s, 0.24, -0.24, 0.04, 0.14); },
+    lugar: k => pgPorPega(k, "punho", pgComb([pgOmb(k, k.s), 1], [k.B.frenteChao, 4.4], [UP, 0.1], [k.B.esqChao, -k.s * 0.5]), UP, k.B.frenteChao),
+    contatos: k => [pgNaPega(k, k.s, "punho", { polegar: k.B.frenteChao })] },
+  pistolaDuasMaos: { desc: "Pistola com as duas mãos (base Weaver/isósceles), braços à frente", grupo: "mirar", maos: 2, modo: "carregar", teste: ["pistola", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { spineFlex: 6, bodyPitch: 4 }); pgPasso(Q, -s, 0.26, -0.26, 0.08, 0.15); },
+    lugar: k => pgPorPega(k, "punho", pgComb([k.B.peito, 1], [k.B.frenteChao, 4.2], [UP, 1.0]), UP, k.B.frenteChao),
+    contatos: k => [pgNaPega(k, k.s, "punho", { polegar: k.B.frenteChao }), pgPalmaEm(k, -k.s, [0, 0.6, -0.33], pgMul(k.B.esqChao, -k.s), { dedos: pgMul(k.B.esqChao, k.s) })] },
+  rifleMirando: { desc: "Rifle/besta no ombro, mirando (coronha no ombro, mão da frente sob o cano)", grupo: "mirar", maos: 2, modo: "carregar", teste: ["rifle", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headRoll: s * 10, headPitch: 4, spineTwist: s * 22, spineFlex: 6 }); pgPasso(Q, -s, 0.3, -0.3, 0.08, 0.16); },
+    lugar: k => pgPorPega(k, "punho", pgComb([pgOmb(k, k.s), 1], [k.B.frenteChao, 4.5], [UP, -0.75], [k.B.esqChao, -k.s * 0.25]), UP, k.B.frenteChao),
+    contatos: k => [pgNaPega(k, k.s, "punho", { polegar: k.B.frenteChao }), pgNaPega(k, -k.s, "frente", { polegar: k.B.frenteChao, cotovelo: [0.3, -1, 0.3] })] },
+  bestaMirando: { desc: "Besta no ombro, mirando (coronha no ombro, mão da frente sob a besta)", grupo: "mirar", maos: 2, modo: "carregar", teste: ["besta", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headRoll: s * 10, headPitch: 4, spineTwist: s * 22, spineFlex: 6 }); pgPasso(Q, -s, 0.3, -0.3, 0.08, 0.16); },
+    lugar: k => pgPorPega(k, "punho", pgComb([pgOmb(k, k.s), 1], [k.B.frenteChao, 1.9], [UP, -0.7], [k.B.esqChao, -k.s * 0.35]), k.B.frenteChao, UP),
+    contatos: k => [pgNaPega(k, k.s, "punho", { polegar: k.B.frenteChao }), pgNaPega(k, -k.s, "frente", { polegar: k.B.frenteChao, cotovelo: [0.3, -1, 0.3] })] },
+  rifleDescansado: { desc: "Rifle com o cano para baixo, à frente do corpo (pronto baixo, patrulha)", grupo: "mirar", maos: 2, modo: "carregar", teste: ["rifle", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { pgPasso(Q, s, 0.14, -0.12, 0.02, 0.12, false); },
+    lugar: k => pgPorPega(k, "punho", pgComb([k.B.cintura, 1], [k.B.frenteChao, 1.8], [UP, 0.8], [k.B.esqChao, -k.s * 0.9]), UP, pgNorm(pgComb([k.B.frenteChao, 0.6], [UP, -0.55], [k.B.esqChao, k.s * 0.45]))),
+    contatos: k => [pgNaPega(k, k.s, "punho"), pgNaPega(k, -k.s, "frente")] },
+  arcoPuxando: { desc: "Arco com o braço esticado e a outra mão puxando a corda até o rosto (arqueiro)", grupo: "mirar", maos: 2, modo: "carregar", teste: ["arco", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headYaw: -s * 70, spineTwist: s * 12 }); pgPasso(Q, s, 0.26, -0.3, 0.04, 0.2); },
+    lugar: k => { const lado = pgMul(k.B.esqChao, k.s); return pgPorPega(k, "punho", pgComb([pgOmb(k, k.s), 1], [lado, 4.6], [UP, 0.1]), UP, null, [lado, UP, pgNorm(pgCross(lado, UP))]); },
+    contatos: k => { const lado = pgMul(k.B.esqChao, k.s), q = pgPega(k.o, k.g, "punho"); return [q ? pgC(k.s, "forca", { P: pgMaisPerto(k.S, pgAdd(q.P, pgMul(q.N, 0.6))).P || q.P, N: q.N }, { eixo: UP, polegar: UP, cotovelo: [0, -1, 0] }) : null,
+      pgC(-k.s, "forca", { P: pgComb([k.B.cab, 1], [lado, 0.2], [UP, -0.9], [pgMul(lado, -1), 0.9]), N: pgMul(lado, -1) }, { eixo: UP, polegar: lado, cotovelo: [0, 0, -1] })]; } },
+  /* ----- instrumentos ----- */
+  violaoTocando: { desc: "Tocando violão/guitarra: braço do instrumento para o lado, uma mão no braço e a outra nas cordas", grupo: "tocar", maos: 2, modo: "carregar", teste: ["violao", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headPitch: 14, headRoll: s * 6, spineFlex: 6 }); pgPasso(Q, s, 0.12, -0.1, 0.02, 0.13, false); },
+    lugar: k => pgPorPega(k, "corpo", pgComb([k.B.cintura, 1], [k.B.frenteChao, k.B.meiaProf + 1.1], [UP, 0.4], [k.B.esqChao, -k.s * 0.4]), pgComb([k.B.esqChao, k.s * 0.94], [UP, 0.33]), k.B.frenteChao),
+    contatos: k => [pgNaPega(k, k.s, "braco", { polegar: UP, cotovelo: [0.2, -1, 0.3] }), pgPalmaEm(k, -k.s, [0, 2.6, 0.5], k.B.frenteChao, { dedos: DN, cotovelo: [0.6, -1, 0.3] })] },
+  violinoTocando: { desc: "Tocando violino: instrumento no ombro sob o queixo, mão no braço, a outra arqueando", grupo: "tocar", maos: 2, modo: "carregar", teste: ["violino", {}], gesto: "segurar", fechar: "envolver", semColisao: true,
+    corpo: (Q, s) => { Object.assign(Q, { headRoll: s * 14, headYaw: s * 20, headPitch: 10 }); pgPasso(Q, -s, 0.12, -0.12, 0.02, 0.14, false); },
+    lugar: k => { const Y = pgNorm(pgComb([k.B.frenteChao, 0.82], [k.B.esqChao, k.s * 0.55], [UP, 0.12])); return pgPorPega(k, "braco", pgComb([pgOmb(k, k.s), 1], [Y, 4.2], [UP, 0.4]), Y, UP); },
+    contatos: k => [pgNaPega(k, k.s, "braco", { polegar: UP, cotovelo: [0, -1, 0.3] }), pgC(-k.s, "forca", { P: pgComb([pgOmb(k, -k.s), 1], [k.B.frenteChao, 3.0], [UP, 0.2], [k.B.esqChao, k.s * 1.4]), N: UP }, { eixo: k.B.esqChao, polegar: k.B.esqChao, cotovelo: [0.5, 0.3, 0] })] },
+  flautaTocando: { desc: "Tocando flauta transversal: na horizontal, para o lado, bocal na boca, duas mãos", grupo: "tocar", maos: 2, modo: "carregar", teste: ["flauta", {}], gesto: "segurar", fechar: "envolver", semColisao: true,
+    corpo: (Q, s) => { Object.assign(Q, { headYaw: s * 12, headRoll: -s * 6 }); pgPasso(Q, -s, 0.1, -0.1, 0.01, 0.13, false); },
+    lugar: k => { const Y = pgNorm(pgComb([k.B.esqChao, 1], [k.B.frenteChao, 0.25], [UP, 0.1])), boca = pgComb([k.B.cab, 1], [k.B.frenteChao, 1.45], [UP, -1.05]), L = k.o.alt || 6;
+      return pgPorPega(k, "cabo", pgAdd(boca, pgMul(Y, -L * 0.37)), Y, UP); },
+    contatos: k => [pgPalmaEm(k, 1, [0, (k.o.alt || 6) * 0.62, 0], pgMul(k.B.frenteChao, -1), { dedos: UP, cotovelo: [1, -1, 0] }), pgPalmaEm(k, -1, [0, (k.o.alt || 6) * 0.3, 0], pgMul(k.B.frenteChao, -1), { dedos: UP, cotovelo: [1, -1, 0] })] },
+  trompeteTocando: { desc: "Tocando trompete: campana para a frente, bocal nos lábios, mão nos pistões", grupo: "tocar", maos: 2, modo: "carregar", teste: ["trompete", {}], gesto: "segurar", fechar: "envolver", semColisao: true,
+    corpo: (Q, s) => { Object.assign(Q, { headPitch: -6, spineFlex: -6 }); pgPasso(Q, s, 0.12, -0.12, 0.02, 0.13, false); },
+    lugar: k => { const Y = pgNorm(pgComb([k.B.frenteChao, 1], [UP, 0.12])), boca = pgComb([k.B.cab, 1], [k.B.frenteChao, 1.3], [UP, -1.0]);
+      return pgPorPega(k, "cabo", pgComb([boca, 1], [Y, 1.9], [UP, -0.62]), Y, DN); },
+    contatos: k => [pgNaPega(k, k.s, "cabo", { polegar: k.B.frenteChao }), pgPalmaEm(k, -k.s, [0, 2.4, 0], pgMul(k.B.esqChao, -k.s), { dedos: UP })] },
+  microfoneCantando: pgMao1("Microfone na boca, cantando ou discursando", "tocar", "microfone",
+    k => pgComb([k.B.cab, 1], [k.B.frenteChao, 2.4], [UP, -2.6]), k => pgNorm(pgComb([UP, 0.75], [k.B.frenteChao, -0.65])), k => pgMul(k.B.esqChao, -k.s),
+    { semColisao: true, corpo: (Q, s) => { Object.assign(Q, { headPitch: -10, spineFlex: -4 }); pgPasso(Q, s, 0.14, -0.12, 0.02, 0.13, false); } }),
+  baquetaTocando: pgMao1("Baqueta erguida, prestes a bater no tambor", "tocar", "baqueta",
+    k => pgComb([k.B.peito, 1], [k.B.frenteChao, 2.2], [UP, 0.6], [k.B.esqChao, k.s * 1.4]), k => pgNorm(pgComb([k.B.frenteChao, 0.6], [UP, 0.4], [k.B.esqChao, -k.s * 0.6])), k => UP),
+  /* ----- dia a dia ----- */
+  celularOlhando: { desc: "Olhando o celular na frente do peito, tela para o rosto", grupo: "cotidiano", maos: 1, modo: "carregar", teste: ["celular", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headPitch: 24, neckFlex: 12 }); pgPasso(Q, s, 0.08, -0.06, 0.01, 0.12, false); },
+    lugar: k => pgPorPega(k, "palma", pgComb([k.B.peito, 1], [k.B.frenteChao, 2.6], [UP, 0.2], [k.B.esqChao, k.s * 0.4]), pgComb([UP, 0.6], [k.B.frenteChao, 0.35]), pgNorm(pgComb([k.B.frenteChao, -0.6], [UP, 0.75]))),
+    contatos: k => [pgPalmaEm(k, k.s, [0, 0.45, 0], pgMul(pgNorm(pgComb([k.B.frenteChao, -0.6], [UP, 0.75])), -1), { dedos: UP, cotovelo: [0.6, -1, -0.2] })] },
+  celularNaOrelha: { desc: "Falando ao telefone, celular na orelha", grupo: "cotidiano", maos: 1, modo: "carregar", teste: ["celular", {}], gesto: "segurar", fechar: "envolver", semColisao: true,
+    corpo: (Q, s) => { Object.assign(Q, { headRoll: s * 8 }); pgPasso(Q, s, 0.08, -0.06, 0.01, 0.12, false); },
+    lugar: k => pgPorPega(k, "palma", pgComb([k.B.cab, 1], [k.B.esqChao, k.s * 1.25], [UP, -0.7], [k.B.frenteChao, 0.3]), pgComb([UP, 0.5], [k.B.frenteChao, 0.85]), pgMul(k.B.esqChao, -k.s)),
+    contatos: k => [pgPalmaEm(k, k.s, [0, 0.45, 0], pgMul(k.B.esqChao, k.s), { dedos: UP, cotovelo: [1, -1, 0] })] },
+  livroLendo: { desc: "Lendo um livro aberto à frente, duas mãos nas bordas", grupo: "cotidiano", maos: 2, modo: "carregar", teste: ["livro", {}], gesto: "segurar", fechar: "envolver",
+    corpo: (Q, s) => { Object.assign(Q, { headPitch: 22 }); pgPasso(Q, s, 0.08, -0.06, 0.01, 0.12, false); },
+    lugar: k => ({ C: pgComb([k.B.peito, 1], [k.B.frenteChao, 2.5], [UP, -0.2]), ax: pgEixos(pgComb([UP, 0.75], [k.B.frenteChao, 0.4]), pgNorm(pgComb([k.B.frenteChao, -0.55], [UP, 0.8]))) }),
+    contatos: k => [1, -1].map(t => pgC(t, "palma", pgLado(k, t, 0, 0), { dedos: UP, cotovelo: [1, -1, 0] })) },
+  bebendo: pgMao1("Bebendo: xícara/copo/garrafa levado à boca", "cotidiano", "copoBebida",
+    k => pgComb([k.B.cab, 1], [k.B.frenteChao, 1.9], [UP, -1.6], [k.B.esqChao, k.s * 0.35]), k => pgNorm(pgComb([UP, 0.8], [k.B.frenteChao, -0.55])), k => pgMul(k.B.esqChao, k.s),
+    { semColisao: true, pega: "cabo", corpo: (Q, s) => { Object.assign(Q, { headPitch: -18 }); pgPasso(Q, s, 0.08, -0.06, 0.01, 0.12, false); } }),
+  guardaChuvaAberto: pgMao1("Segurando o guarda-chuva aberto acima da cabeça", "cotidiano", "guardaChuva",
+    k => pgComb([k.B.peito, 1], [k.B.frenteChao, 1.6], [UP, 0.6], [k.B.esqChao, k.s * 0.5]), k => pgComb([UP, 0.97], [k.B.esqChao, -k.s * 0.15]), k => k.B.frenteChao,
+    { corpo: (Q, s) => { pgPasso(Q, s, 0.2, -0.2, 0.02, 0.12); } })
+});
+Object.assign(ALIAS_PEGADA, { guarda: "empunharGuarda", "em guarda": "empunharGuarda", empunhar: "empunharGuarda", reversa: "adagaReversa", "pegada invertida": "adagaReversa", apontar: "armaApontada", apontando: "armaApontada", "apontar arma": "armaApontada",
+  erguida: "armaErguida", erguer: "armaErguida", "ao lado": "cajadoAoLado", investida: "lancaInvestida", "guarda de bastão": "bastaoGuarda", defender: "escudoDefesa", escudo: "escudoDefesa", defesa: "escudoDefesa",
+  mirar: "pistolaMirando", mirando: "pistolaMirando", "duas maos na pistola": "pistolaDuasMaos", "no ombro mirando": "rifleMirando", rifle: "rifleMirando", arqueiro: "arcoPuxando", "puxar arco": "arcoPuxando", atirar: "arcoPuxando",
+  tocar: "violaoTocando", violao: "violaoTocando", "violão": "violaoTocando", guitarra: "violaoTocando", violino: "violinoTocando", flauta: "flautaTocando", trompete: "trompeteTocando", cantar: "microfoneCantando", microfone: "microfoneCantando",
+  tambor: "baquetaTocando", celular: "celularOlhando", telefone: "celularNaOrelha", ler: "livroLendo", livro: "livroLendo", beber: "bebendo", "guarda-chuva": "guardaChuvaAberto" });
+/* pegada padrão de cada objeto de mão (quando o texto diz só "segura katana") */
+const PEGADA_PADRAO = { katana: "espada", espadaLonga: "espada", espadaCurta: "empunharGuarda", sabre: "empunharGuarda", adaga: "empunharGuarda", kunai: "adagaReversa", shuriken: "pinca", martelo: "golpeAcima", maca: "empunharGuarda",
+  machadoDuplo: "espada", bastaoBo: "bastaoGuarda", foice: "lancaInvestida", tridente: "lancaInvestida", nunchaku: "empunharGuarda", chicote: "empunharGuarda", besta: "bestaMirando", pistola: "pistolaMirando", rifle: "rifleDescansado",
+  broquel: "escudoDefesa", escudo: "escudoDefesa", escudoCavaleiro: "escudoDefesa", escudoTorre: "escudoDefesa", varinha: "armaApontada", cajadoMagico: "cajadoAoLado", orbe: "bandeja", tocha: "armaErguida", lanterna: "armaApontada",
+  violao: "violaoTocando", guitarra: "violaoTocando", violino: "violinoTocando", arcoViolino: "empunharGuarda", flauta: "flautaTocando", trompete: "trompeteTocando", microfone: "microfoneCantando", baqueta: "baquetaTocando",
+  celular: "celularOlhando", livro: "livroLendo", xicara: "bebendo", garrafa: "bebendo", copoBebida: "bebendo", guardaChuva: "guardaChuvaAberto", bandeira: "cajadoAoLado", vassoura: "bastaoGuarda", carta: "pinca", chave: "pinca", espelhoMao: "armaApontada", lanca: "lancaInvestida", arco: "arcoPuxando" };
+
 /* nomes antigos (v1) continuam valendo */
 Object.assign(ALIAS_PEGADA, { empurrando: "empurrar", duasmaos: "aFrente", gancho: "pelaAlca" });
 const PEGADAS = Object.fromEntries(Object.entries(ACOES).map(([k, a]) => [k, a.desc]));
@@ -471,9 +601,9 @@ function segurarComo(it, o, tipo0, opts = {}) {
     if (A.modo === "ir") { pgIrAte(it, k, A); k.atualizar(); }
     else { const pl = A.lugar(k); pgColocar(o, pl.C, pl.ax, ground); k.atualizar(); }
     const Ad = armDims(Q), alcance = Ad.L1 + Ad.L2 + 0.5 * Ad.LH - 0.25;
-    let res = [], dedos = [], empurrado = 0, aproximado = 0;
-    for (let volta = 0; volta < 7; volta++) {
-      const cs = A.contatos(k).filter(Boolean), alvos = cs.map(c => ({ c, a: pgAlvoDoContato(it, c) }));
+    let res = [], dedos = [], empurrado = 0, aproximado = 0; const folgaExtra = {}; let afastes = 0;
+    for (let volta = 0; volta < 10; volta++) {
+      const cs = A.contatos(k).filter(Boolean).map(c => folgaExtra[c.s] ? Object.assign({}, c, { folga: (c.folga ?? (c.como === "forca" || c.como === "gancho" ? 0.02 : 0.03)) + folgaExtra[c.s] }) : c), alvos = cs.map(c => ({ c, a: pgAlvoDoContato(it, c) }));
       /* alcance: mais longe que o braço → aproxima (o objeto ou o corpo) */
       let falta = 0, dirF = [0, 0, 0];
       for (const { c, a } of alvos) { const sh = c.s > 0 ? k.B.oE : k.B.oD, v = pgSub(a.Pc, sh), d = pgLen(v); if (d > alcance) { falta = Math.max(falta, d - alcance); dirF = pgAdd(dirF, pgMul(pgNorm(v), d - alcance)); } }
@@ -489,6 +619,9 @@ function segurarComo(it, o, tipo0, opts = {}) {
       res = alvos.map(({ c, a }) => pgMelhorMao(it, c, a, ground));
       for (const { c } of alvos) aplicarGesto(Q, c.s, A.gesto || "segurar");
       dedos = A.fechar === "nao" ? [] : alvos.map(({ c }) => pgFecharDedos(it, c.s, k.S, ground, c.como === "palma" && A.fechar === "apoiar" ? "apoiar" : "envolver"));
+      /* SÓLIDO: se algum dedo/palma ainda entra no objeto (> 1 cm), afasta a mão pela normal e refaz (até 4 vezes) */
+      if (A.fechar !== "nao" && !A.semAfastar && afastes < 4) { let refaz = false; alvos.forEach(({ c }, i) => { const e = Math.max(0, ...(dedos[i] || []).map(d => d.entra)); if (e > 1.0 && (folgaExtra[c.s] || 0) < 0.45) { folgaExtra[c.s] = Math.min(0.45, (folgaExtra[c.s] || 0) + Math.min(0.45, e / 11.4 * 0.9)); refaz = true; } });
+        if (refaz) { afastes++; volta--; continue; } }
       if (A.semColisao || volta >= 5) break;
       const hits = pgPenetracao(it, o, ground, alvos.map(x => x.c.s), A.bracoEncosta).filter(h => !/^mao/.test(h.pa));
       if (!hits.length) break;
@@ -556,4 +689,4 @@ function atualizarCordas() {
 SCN.aposApoios = (SCN.aposApoios || []).filter(f => f.name !== "atualizarCordas").concat([atualizarCordas]);
 
 function listaPegadas() { return Object.entries(ACOES).map(([tipo, a]) => ({ tipo, descricao: a.desc, grupo: a.grupo, maos: a.maos, modo: a.modo === "ir" ? "o corpo vai até o objeto" : "o objeto vem para a mão", teste: a.teste[0], testeMedidas: a.teste[1] })); }
-export { PEGADAS, ACOES, ALIAS_PEGADA, segurarComo, listaPegadas, marcosDoCorpo, atualizarCordas, pgResolverMao, pgAlvoDoContato, pgFecharDedos, pgSdf, pgRaio, pgMaisPerto };
+export { PEGADA_PADRAO, PEGADAS, ACOES, ALIAS_PEGADA, segurarComo, listaPegadas, marcosDoCorpo, atualizarCordas, pgResolverMao, pgAlvoDoContato, pgFecharDedos, pgSdf, pgRaio, pgMaisPerto };

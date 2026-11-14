@@ -16,7 +16,7 @@ import { adicionarObjeto, removerObjeto, acharObjeto, olharNatural } from "./cen
 import { mdSorteio, separar, posicoesArranjo, olharParaPonto } from "./multidao.js";
 import { todasPoses, nomePose, EXPRESSOES, chaveExpressao, misturarExpressoes } from "./poses.js";
 import { INTERACOES, PARES } from "./interacoes.js";
-import { ACOES } from "./pegadas.js";
+import { ACOES, ALIAS_PEGADA, PEGADA_PADRAO } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { leituraBlocking, aplicarCameraBlk } from "./blocking.js";
 import { travarPes, apoioNoTempo, animacaoGiro, animacaoAndarAte } from "./movimento.js";
@@ -31,7 +31,7 @@ import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
-import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
+import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
 const NM_M = 1 / 0.114; /* R por metro */
 /* ===================== cores do elenco ===================== */
@@ -823,10 +823,14 @@ function nmPersonagem(ctx, l, Q) {
         const r = olharNatural(x, a, { modo }); (Q.olhares = Q.olhares || []).push(Object.assign({ quem: x.name, alvo: String(alvo.v), modo }, r)); feito.olhaR = r;
         if (!r.alcancou) Q.avisos.push(x.name + " não consegue olhar direto para " + alvo.v + " (" + modo + "): faltam " + r.erro + "°" + (r.vertical ? " na vertical (o alvo está muito acima ou abaixo dos olhos: curve o tronco — “coluna(frente 30)”, “inclina-corpo 20 frente” — ou mude a altura de um dos dois)." : " — use “olha " + alvo.v + " corpo” ou “vira-para " + alvo.v + "”.")); } catch (e) { Q.avisos.push(x.name + " olhar: " + e.message); } }); }); feito.olha = alvo.v; feito.olhaModo = modo; }
     else if (w === "segura" || w === "carrega" || w === "levanta" || w === "puxa" || w === "empurra" || w === "arrasta") { const ob = nx.v; let peg = null; k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "como") { peg = toks[k + 2].v; k += 2; }
-      const pegada = peg || { segura: "aFrente", carrega: "abracado", levanta: "levantarDoChao", puxa: "puxarCorda", empurra: "empurrar", arrasta: "arrastar" }[w];
+      if (peg && !ACOES[peg] && ALIAS_PEGADA[nmNorm(peg)]) peg = ALIAS_PEGADA[nmNorm(peg)]; else if (peg && !ACOES[peg] && ALIAS_PEGADA[String(peg).toLowerCase()]) peg = ALIAS_PEGADA[String(peg).toLowerCase()];
+      const tipoSeg = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)) || SINONIMOS_COMPOSTOS[String(ob).toLowerCase()];
+      let pegada = peg || (w === "segura" && tipoSeg && PEGADA_PADRAO[tipoSeg]) || { segura: "aFrente", carrega: "abracado", levanta: "levantarDoChao", puxa: "puxarCorda", empurra: "empurrar", arrasta: "arrastar" }[w];
       if (!ACOES[pegada] && !/^(duasMaos|gancho|empurrando)$/.test(pegada)) { const s = nmParecida(pegada, Object.keys(ACOES)); throw new NmErro("Pegada “" + pegada + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Use: " + Object.keys(ACOES).join(", ") + "."), l.linha); }
-      depois.push(() => { let o = SCN.objetos.find(x => !x.chao && nmNorm(x.nome) === nmNorm(ob)) || SCN.objetos.find(x => !x.chao && !String(x.grupo || "").startsWith("local:") && nmNorm(x.tipo) === nmNorm(ob)); if (!o) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)); if (!tipo) throw new NmErro("Objeto “" + ob + "” não está no local e não é um tipo de objeto.", l.linha); const f = nmFrenteDe(it); const D0 = TIPOS_OBJETO[tipo], k = Math.min(1, (it.params.tamanho || 1) * 1.1); o = adicionarObjeto(tipo, { x: it.params.wx + f[0] * 3, z: it.params.wz + f[1] * 3, nome: ob, larg: D0.larg * k, prof: D0.prof * k, alt: D0.alt * k }); }
+      depois.push(() => { if (w === "segura") for (let i = SCN.objetos.length - 1; i >= 0; i--) { const q = SCN.objetos[i]; if (q.autoDe === it.name && nmNorm(q.tipo) !== nmNorm(tipoSeg || ob)) SCN.objetos.splice(i, 1); } /* troca o que tinha na mão (objeto criado por "segura") */
+        let o = SCN.objetos.find(x => !x.chao && nmNorm(x.nome) === nmNorm(ob)) || SCN.objetos.find(x => !x.chao && !String(x.grupo || "").startsWith("local:") && nmNorm(x.tipo) === nmNorm(ob)); if (!o) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)) || SINONIMOS_COMPOSTOS[String(ob).toLowerCase()]; if (!tipo) throw new NmErro("Objeto “" + ob + "” não está no local e não é um tipo de objeto.", l.linha); const f = nmFrenteDe(it); const D0 = TIPOS_OBJETO[tipo], k = Math.min(1, (it.params.tamanho || 1) * 1.1); o = adicionarObjeto(tipo, { x: it.params.wx + f[0] * 3, z: it.params.wz + f[1] * 3, nome: ob, larg: D0.larg * k, prof: D0.prof * k, alt: D0.alt * k }); o.autoDe = it.name; }
         (Q.segurados = Q.segurados || new Set()).add(o.id);
+        if (!peg && w === "segura" && PEGADA_PADRAO[o.tipo]) pegada = PEGADA_PADRAO[o.tipo];
         try { const r = apiFor(it).segurarComo(o.nome || o.tipo, pegada, {}); if (r && r.aproximado) Q.avisos.push(it.name + " segura " + ob + ": aproximado"); } catch (e) { Q.avisos.push(it.name + " segura " + ob + ": " + e.message); } });
       feito.segura = ob + " (" + pegada + ")"; }
     else if (w === "interacao" || w === "interação" || w === "interage") { let tipo = nx.v, outro = null; k++; if (toks[k + 1] && /^(com)$/i.test(toks[k + 1].v)) { outro = nmQuem(ctx, toks[k + 2].v); k += 2; } else if (toks[k + 1] && nmQuem(ctx, toks[k + 1].v)) { outro = nmQuem(ctx, toks[k + 1].v); k++; }
