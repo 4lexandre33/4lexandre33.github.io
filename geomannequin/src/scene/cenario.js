@@ -175,7 +175,7 @@ function olharNatural(it, alvo, o = {}) {
   const r = anguloNaCabeca(it, W); Q.eyeYaw = clamp(r.yaw / 35, -1, 1); Q.eyePitch = clamp(-r.pit / 25, -1, 1);
   const erroYaw = Math.max(0, Math.abs(r.yaw) - 35), erroPit = Math.max(0, Math.abs(r.pit) - 25), erro = Math.hypot(erroYaw, erroPit);
   it.olharAlvo = typeof alvo === "string" ? alvo : null;
-  return { alcancou: erro < 10, erro: Math.round(erro), virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
+  return { alcancou: erro < 10, erro: Math.round(erro), vertical: erroPit > erroYaw ? (r.pit > 0 ? "cima" : "baixo") : null, virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
 }
 /* mão (lado 1 = esquerda, −1 = direita) num ponto do mundo [x, y, z] */
 function maoEm(it, lado, W) {

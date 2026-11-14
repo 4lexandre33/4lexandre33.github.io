@@ -18087,7 +18087,7 @@ pre.cmdout .ok{color:var(--cobalt)}
     Q.eyePitch = clamp(-r.pit / 25, -1, 1);
     const erroYaw = Math.max(0, Math.abs(r.yaw) - 35), erroPit = Math.max(0, Math.abs(r.pit) - 25), erro = Math.hypot(erroYaw, erroPit);
     it2.olharAlvo = typeof alvo === "string" ? alvo : null;
-    return { alcancou: erro < 10, erro: Math.round(erro), virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
+    return { alcancou: erro < 10, erro: Math.round(erro), vertical: erroPit > erroYaw ? r.pit > 0 ? "cima" : "baixo" : null, virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
   }
   function maoEm(it2, lado2, W4) {
     const Q = it2.params, S = shape(Q), pw = pMundo(it2), alvo = doMundo(pw)(W4), r = ikArm(Q, S, lado2, alvo), L_ = lado2 > 0 ? "L" : "R";

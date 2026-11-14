@@ -283,7 +283,7 @@ function nmLerLocal(bloco, ctx) {
 /* conferência geométrica do local: fora dos limites, peças atravessadas, escada que não chega a nenhum nível, porta tapada */
 function nmValidarLocal(pl) {
   const av = [], it = pl.itens, M = v => (v / NM_M).toFixed(1) + " m";
-  it.forEach(o => { if (Math.abs(o.x) + o.larg / 2 > 400 || Math.abs(o.z) + o.prof / 2 > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
+  it.forEach(o => { const gg = (o.giro || 0) * Math.PI / 180, ex = Math.abs(Math.cos(gg)) * o.larg / 2 + Math.abs(Math.sin(gg)) * o.prof / 2, ez = Math.abs(Math.sin(gg)) * o.larg / 2 + Math.abs(Math.cos(gg)) * o.prof / 2; if (Math.abs(o.x) + ex > 400 || Math.abs(o.z) + ez > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
   if (it.length > 300) av.push("mais de 300 peças: só as 300 primeiras entram");
   const altas = it.filter(o => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel), caixa = o => { const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g)); return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2]; };
   for (let i = 0; i < altas.length && av.length < 30; i++) for (let j = i + 1; j < altas.length; j++) { const a = altas[i], b = altas[j]; if (a.tipo === "parede" && b.tipo === "parede") continue; if ((a.base || 0) >= (b.base || 0) + b.alt || (b.base || 0) >= (a.base || 0) + a.alt) continue;
@@ -430,7 +430,7 @@ function nmCabQuadro(cab, linha) {
     else if (w === "borda") { const v = nmNorm(toks[++k].v); q.borda = /^(diagonal|inclinada)$/.test(v) ? "diagonal" : /^(nenhuma|sem|sem-borda|aberta)$/.test(v) ? "nenhuma" : /^(grossa)$/.test(v) ? "grossa" : "normal"; if (q.borda === "diagonal" && toks[k + 1] && toks[k + 1].t === "num") q.bordaGraus = toks[++k].v; }
     else if (w === "sem-borda") q.borda = "nenhuma";
     else if (w === "splash") q.tamanho = "splash";
-    else if (w === "transicao-tipo" || w === "ritmo") q.ritmo = nmNorm(toks[++k].v);
+    else if (w === "transicao-tipo" || w === "ritmo") { const v = nmNorm(toks[++k].v).replace("ação", "acao"), ok = { momento: 1, acao: 1, sujeito: 1, aspecto: 1, lugar: 1, tempo: 1, cena: 1, "non-sequitur": 1, "nao-sequitur": 1 }; if (!ok[v]) throw new NmErro("ritmo “" + toks[k].v + "”: use momento, acao, sujeito, aspecto, lugar, tempo, cena ou non-sequitur (McCloud).", linha); q.ritmo = v; }
     else if (w === "respiro") { q.respiro = toks[k + 1] && toks[k + 1].t === "num" ? toks[++k].v : 1; }
     else if (w === "diretor" || (w === "camera" && toks[k + 1] && nmNorm(toks[k + 1].v) === "auto")) { if (w === "camera") k++; q.diretor = true; }
     else if (w === "alternativas") q.alternativas = toks[++k].v;
@@ -500,9 +500,10 @@ function nmDiretor(ctx, Q) {
 /* regras de composição (avisos): cabeça cortada, pouco espaço na frente do olhar, eixo de 180° cruzado entre quadros, plano repetido */
 function nmAvisosComposicao(r) {
   const av = []; let ant = null;
-  r.quadros.forEach((q, i) => { const C = q.cabecas || {}, n = "Quadro " + (q.indice + 1) + ": ";
+  r.quadros.forEach((q, i) => { const camLinha = q.filme && (q.filme.cam || []).some(c => c.base && c.base.modo !== "estatica"); if (camLinha) { ant = q; return; } /* plano com linha "camera …": o enquadramento do cabeçalho não é o que aparece */
+    const C = q.cabecas || {}, n = (q.filme ? "Plano " + q.filme.n : "Quadro " + (q.indice + 1)) + ": ";
     for (const [nome, c] of Object.entries(C)) { if (!(q.personagens || []).some(p => p.nome === nome)) continue;
-      if (c.u > -0.05 && c.u < 1.05 && c.v - c.r < -0.02 && c.v > 0) av.push(n + "a cabeça de " + nome + " está cortada no alto (respiro: afaste um pouco ou use elevacao).");
+      if (c.u > -0.05 && c.u < 1.05 && c.v - c.r < -0.02 && c.v > 0) av.push(n + "a cabeça de " + nome + " está cortada no alto (abra um pouco o plano — ex.: close → primeiro-plano — ou mude o alvo/lado).");
       if (Math.abs(c.du) > 0.015 && c.u > 0 && c.u < 1 && ((c.du > 0 && c.u > 0.8) || (c.du < 0 && c.u < 0.2))) av.push(n + nome + " olha para a borda mais perto (pouco espaço na frente do olhar): mude o lado da câmera ou a posição."); }
     if (i >= 2 && q.planoUsado && q.planoUsado === r.quadros[i - 1].planoUsado && q.planoUsado === r.quadros[i - 2].planoUsado) av.push(n + "três quadros seguidos em plano " + q.planoUsado + " (varie: close, médio, geral).");
     ant = q; });
@@ -519,6 +520,7 @@ function alternativasDeQuadro(texto, nQuadro, n = 3) {
 /* ===================== animais (quadrúpedes) ===================== */
 function nmAnimal(ctx, nome) { let o = amAchar(nome); if (o) return o; const e = ctx.elenco.get(nome) || {}; return amCriar(nome, e.animal || "cavalo", { escala: +e.tamanho || 1, cor: e.hex, sela: !!e.sela }); }
 function nmAnimalEstado(o) { return { x: o.x, z: o.z, giro: o.giro || 0, pose: JSON.parse(JSON.stringify(o.animal.pose || amPose("parado"))) }; }
+const NM_POSTURA_VERBO = { senta: "sentarNoChao", sentar: "sentarNoChao", "senta-se": "sentarNoChao", ajoelha: "ajoelhar", ajoelhar: "ajoelhar", "ajoelha-se": "ajoelhar", deita: "deitar", deitar: "deitar", "deita-se": "deitar", agacha: "agachar", agachar: "agachar", "agacha-se": "agachar", levanta: "levantarDoChao" };
 const NM_ANIMAL_POSE_VERBO = { empina: "empinado", deita: "deitado", senta: "sentado", come: "comendo", pasta: "comendo", levanta: "parado", "levanta-se": "parado", para: "parado", atento: "atento", uiva: "uivando", coice: "coice", "da-coice": "coice", agacha: "agachado" };
 function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
   const o = nmAnimal(ctx, nome), feito = { nome }, mudancas = []; (Q.animaisPresentes || (Q.animaisPresentes = new Set())).add(nome);
@@ -681,6 +683,8 @@ function nmPersonagem(ctx, l, Q) {
         else { depois.push(() => its.forEach(x => { const [p1] = nmPontoDe(ctx, tok0, toks, k0), ang = Math.atan2(p1[0] - x.params.wx, p1[1] - x.params.wz) * 180 / Math.PI, rel = ((ang - (x.params.wRot || 0)) % 360 + 540) % 360 - 180; if (Math.abs(rel) > 3) nmTocar(Q, x, animacaoGiro({ angulo: Math.round(rel), estilo: est }), null); })); feito.anima = "vira para " + tok0.v + " (" + est + ")"; } }
       else if (nmNorm(nx.v) === "camera") { Q.viraCamera = (Q.viraCamera || []).concat(its); k++; } else k++; }
     else if (/^§j\d+$/.test(w)) { const j = exJ.juntas[+w.slice(2)]; depois.unshift(() => its.forEach(x => pdAplicarJunta(x.params, j.junta, j.lado, j.args, l.linha).forEach(a => Q.avisos.push(x.name + ": " + a)))); (feito.ajustes = feito.ajustes || []).push(j.junta + (j.lado ? "." + j.lado : "") + "(" + j.args + ")"); }
+    else if (NM_POSTURA_VERBO[w] && !(nx && nx.t !== "num" && /^(chao|chão|cadeira|calcanhares|cocoras|cócoras|direito|esquerdo|os-dois|em|sobre)$/.test(nmNorm(nx.v)))) { /* transição de postura no filme: senta, ajoelha, deita, agacha, levanta → a animação pronta */
+      const it0 = its[0], nome = w === "levanta" ? ((it0 && (it0.params.kneeFlexL || 0) > 80 && (it0.params.hipFlexL || 0) > 60) ? "levantarDeAgachado" : "levantarDoChao") : NM_POSTURA_VERBO[w]; toks.splice(k, 1, { t: "pal", v: "anima" }, { t: "pal", v: nome }); k--; }
     else if (/^(pula|pular|salta|mergulha|mergulhar|nada|nadar|engatinha|engatinhar|rasteja|rastejar|anda-agachado|cai|cair|levanta-se|levantar-se|rola|rolar)$/.test(w)) {
       const V = { pula: "pula", pular: "pula", salta: "pula", mergulha: "mergulha", mergulhar: "mergulha", nada: "nada", nadar: "nada", engatinha: "engatinha", engatinhar: "engatinha", rasteja: "rasteja", rastejar: "rasteja", "anda-agachado": "anda-agachado", cai: "cai", cair: "cai", "levanta-se": "levanta-se", "levantar-se": "levanta-se", rola: "rola", rolar: "rola" }[w];
       const op = {}; let estilo = null, dist = null;
@@ -747,7 +751,7 @@ function nmPersonagem(ctx, l, Q) {
       depois.push(() => { const n2 = nmQuem(ctx, alvo.v); its.forEach(x => { try { const a = n2 ? n2 : alvo.t === "tupla" ? (p => [p[0], 14, p[1]])(nmXZ(alvo.v)) : /^(camera|câmera)$/.test(nmNorm(alvo.v)) ? "camera" : (acharObjeto(alvo.v) ? (o => [o.x, (o.base || 0) + o.alt, o.z])(acharObjeto(alvo.v)) : null);
         if (a === null) { apiFor(x).olhar(nmNorm(alvo.v)); return; }
         const r = olharNatural(x, a, { modo }); (Q.olhares = Q.olhares || []).push(Object.assign({ quem: x.name, alvo: String(alvo.v), modo }, r)); feito.olhaR = r;
-        if (!r.alcancou) Q.avisos.push(x.name + " não consegue olhar direto para " + alvo.v + " (" + modo + "): faltam " + r.erro + "° — use “olha " + alvo.v + " corpo” ou “vira-para " + alvo.v + "”."); } catch (e) { Q.avisos.push(x.name + " olhar: " + e.message); } }); }); feito.olha = alvo.v; feito.olhaModo = modo; }
+        if (!r.alcancou) Q.avisos.push(x.name + " não consegue olhar direto para " + alvo.v + " (" + modo + "): faltam " + r.erro + "°" + (r.vertical ? " na vertical (o alvo está muito acima ou abaixo dos olhos: curve o tronco — “coluna(frente 30)”, “inclina-corpo 20 frente” — ou mude a altura de um dos dois)." : " — use “olha " + alvo.v + " corpo” ou “vira-para " + alvo.v + "”.")); } catch (e) { Q.avisos.push(x.name + " olhar: " + e.message); } }); }); feito.olha = alvo.v; feito.olhaModo = modo; }
     else if (w === "segura" || w === "carrega" || w === "levanta" || w === "puxa" || w === "empurra" || w === "arrasta") { const ob = nx.v; let peg = null; k++; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "como") { peg = toks[k + 2].v; k += 2; }
       const pegada = peg || { segura: "aFrente", carrega: "abracado", levanta: "levantarDoChao", puxa: "puxarCorda", empurra: "empurrar", arrasta: "arrastar" }[w];
       if (!ACOES[pegada] && !/^(duasMaos|gancho|empurrando)$/.test(pegada)) { const s = nmParecida(pegada, Object.keys(ACOES)); throw new NmErro("Pegada “" + pegada + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Use: " + Object.keys(ACOES).join(", ") + "."), l.linha); }
@@ -886,6 +890,14 @@ function nmCamera(ctx, Q) {
   const mapa = { conjunto: "geral", inteiro: "inteiro", americano: "americano", medio: "medio", "primeiro plano": "primeiro plano", close: "close", detalhe: "detalhe", pov: "close" };
   const enq = () => { if (alvos.length > 1 || /^(conjunto|inteiro|americano|medio)$/.test(plano)) { nmEnquadrarGrupo(alvos, plano, recorteQuadro(Q.cab.formato || "16:9")); return; } try { camera.enquadramento(mapa[plano] || "inteiro", alvos.length ? (alvos.length > 1 && !["close", "detalhe", "primeiro plano"].includes(plano) ? alvos : alvos[0]) : undefined); } catch (e) { Q.avisos.push("enquadramento: " + e.message); } };
   enq();
+  /* planos fechados (close, primeiro plano, detalhe) de UMA pessoa: acerta pela cabeça projetada — cabeça inteira com respiro em cima, até o queixo/peito/ombros */
+  const fechar = () => { if (alvos.length !== 1 || !/^(close|primeiro plano|detalhe)$/.test(plano)) return; const m = leituraBlocking().manequins.find(x => x.nome === alvos[0]); if (!m) return;
+    const cab = m.caps.find(c => c.nome === "cabeca"), tor = m.caps.filter(c => c.nome === "torax"); if (!cab) return;
+    const cc = [0, 1, 2].map(i => (cab.a[i] + cab.b[i]) / 2), topo = Math.max(cab.a[1], cab.b[1]) + cab.r, hc = topo - (Math.min(cab.a[1], cab.b[1]) - cab.r), ty = tor.length ? Math.max(...tor.flatMap(c => [c.a[1], c.b[1]])) : topo - hc * 2;
+    const base = plano === "detalhe" ? topo - hc * 1.05 : plano === "close" ? topo - hc * 1.55 : Math.min(topo - hc * 2.1, ty - hc * 0.2), r = cab.r * (plano === "detalhe" ? 1.1 : 1.5), pts = [];
+    for (const dx of [-r, r]) for (const dz of [-r, r]) { pts.push([cc[0] + dx, topo + hc * 0.1, cc[2] + dz], [cc[0] + dx, base, cc[2] + dz]); }
+    nmCentrar(recorteQuadro(Q.cab.formato || "16:9"), 0.96, pts); };
+  try { fechar(); } catch (e) { if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error("fechar", e.stack); }
   /* câmera dentro de parede, ou parede entre a câmera e o alvo: tenta outros lados (o mais perto do pedido primeiro) */
   const bloq0 = alvos.length ? nmBloqueada() : null;
   if (alvos.length && bloq0) { let ok = false; const qual = typeof bloq0 === "object" ? (bloq0.nome || bloq0.tipo) : typeof bloq0 === "string" ? bloq0 : "";
@@ -911,12 +923,12 @@ function nmCentrar(rc, folga = 0.9, pts0, soPan) {
     P.panX = +(P.panX - ((x0 + x1) / 2 - xc) / Sc).toFixed(3); P.panY = +(P.panY + ((y0 + y1) / 2 - yc) / Sc).toFixed(3);
     const f = Math.max((x1 - x0) / (rc.w * folga), (y1 - y0) / (rc.h * folga));
     if (k < 8 && soPan && P.persp) P.lens = Math.max(18, Math.min(200, P.lens / Math.max(0.7, Math.min(1.4, f))));
-    else if (k < 8) { if (P.persp) P.camDist = Math.min(1200, Math.max(6, P.camDist * Math.max(0.7, Math.min(1.4, f)))); else P.zoom = Math.max(0.01, Math.min(12, P.zoom / Math.max(0.7, Math.min(1.4, f)))); } }
+    else if (k < 8) { if (P.persp) { const nd = P.camDist * Math.max(0.7, Math.min(1.4, f)); if (nd < 6) { P.lens = Math.max(18, Math.min(200, (P.lens || 50) * 6 / Math.max(0.5, nd))); P.camDist = 6; } else P.camDist = Math.min(1200, nd); } else P.zoom = Math.max(0.01, Math.min(12, P.zoom / Math.max(0.7, Math.min(1.4, f)))); } }
 }
 /* o manequim está dentro de um objeto alto (e não em cima dele)? */
 function nmDentroDe(it, ignorar) {
   const x = it.params.wx || 0, z = it.params.wz || 0, h = it.params.bodyLift || 0;
-  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.emAr && (o.base || 0) > 15)) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
+  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id)) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
     if (o.raio && Math.hypot(dx, dz) < o.raio + 1.2) return o; if (!o.raio && Math.abs(lx) < o.larg / 2 + 1.2 && Math.abs(lz) < o.prof / 2 + 1.2) return o; }
   return null;
@@ -935,7 +947,7 @@ function nmLivre() {
   return L0;
 }
 function nmPontoBloqueado(p, g0) {
-  for (const o of SCN.objetos) { if (o.chao || o.alt <= 4 || /^(arbusto|agua)$/.test(o.tipo)) continue; const y0 = g0 + (o.base || 0); if (p[1] < y0 - 0.5 || p[1] > y0 + o.alt + 0.5) continue; const dx = p[0] - o.x, dz = p[2] - o.z, g = (o.giro || 0) * Math.PI / 180;
+  for (const o of SCN.objetos) { if (o.chao || o.alt <= 4 || /^(arbusto|agua|animal)$/.test(o.tipo)) continue; const y0 = g0 + (o.base || 0); if (p[1] < y0 - 0.5 || p[1] > y0 + o.alt + 0.5) continue; const dx = p[0] - o.x, dz = p[2] - o.z, g = (o.giro || 0) * Math.PI / 180;
     if (o.raio && /^(arvore|palmeira|cilindro|poco|coluna)$/.test(o.tipo)) { if (Math.hypot(dx, dz) < (o.raio || o.larg / 2) + 0.6) return o; continue; }
     const lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g); if (Math.abs(lx) < o.larg / 2 + 0.6 && Math.abs(lz) < o.prof / 2 + 0.6) return o; }
   return null;
@@ -1073,6 +1085,8 @@ function nmCompilar(texto, opts = {}) {
           if (w0 === "dialogo" || w0 === "diálogo") { const nomes = []; let tom = null, arranjo = "de-frente"; for (let kk = 1; kk < tk.length; kk++) { if (tk[kk].v === ",") continue; if (nmNorm(tk[kk].v) === "tom") { tom = nmNorm(tk[++kk].v); continue; } if (/^(de-frente|frente-a-frente|lado-a-lado|aberto|aberto-para-camera|livre)$/.test(nmNorm(tk[kk].v))) { arranjo = nmNorm(tk[kk].v).replace("frente-a-frente", "de-frente").replace("aberto-para-camera", "aberto"); continue; } const n = nmQuem(ctx, tk[kk].v); if (!n) throw new NmErro("diálogo: “" + tk[kk].v + "” não está no elenco.", l.linha); nomes.push(n); }
             if (nomes.length < 2) throw new NmErro("diálogo: diga quem conversa (ex.: dialogo Kai, Mira tom tenso).", l.linha); Q.dialogo = { nomes, tom, arranjo }; continue; }
           if (w0 === "fala" || w0 === "narracao" || w0 === "narração" || w0 === "narra" || w0 === "narrador") { Q.falas.push({ quem: null, texto: tk[1].v, tipo: "narra" }); continue; }
+          if (tk[0] && tk[0].t === "num" && (tk[0].u === "s" || tk[0].u === "ms")) throw new NmErro("Linha com tempo (“" + tk[0].v + "s …”) só vale dentro de um PLANO de filme (filme → cena → plano). Num quadro de name, escreva sem o tempo: a pose do quadro é um momento só.", l.linha);
+          if (/^(transicao|transição)$/.test(nmNorm(tk[0].v))) throw new NmErro("“transicao” é um bloco de primeiro nível (sem recuo, entre quadros). Num filme, a transição vai no cabeçalho do plano: plano 3 fusao 0.6s | escurece 0.8s | corte.", l.linha);
           if (!nmPersonagem(ctx, l, Q)) { const s = nmParecida(tk[0].v, [...ctx.elenco.keys()]); throw new NmErro("“" + tk[0].v + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : " Declare no bloco elenco."), l.linha); }
         } catch (e) { if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error(e.stack); erros.push({ linha: (e instanceof NmErro && e.linha) || l.linha, erro: e.message, quadro: indice + 1 }); } }
         for (const f of Q.depois) try { f(); } catch (e) { erros.push({ linha: e.linha || b.linha, erro: e.message, quadro: indice + 1 }); }
@@ -1588,6 +1602,7 @@ function nmRodarPlano(ctx, Q, b, erros, indice) {
     while (mudou) { mudou = false; txt = txt.replace(/\s+(volta|segura|lento|rapido|rápido|seco|pesado|sobreposicao|sobreposição|solto)\s*$/i, (m0, a) => { fl[nmNorm(a).replace("á", "a").replace("ç", "c").replace("ã", "a")] = true; mudou = true; return ""; }); }
     const antes = new Map(SCN.list.map(x => [x.name, { p: Object.assign({}, x.params), oculto: !!x.oculto }])), nFalas = Q.falas.length;
     const Qe = Object.assign({}, Q, { feitos: [], depois: [], animacoes: [], animais: [] });
+    if (/^(transicao|transição)\b/i.test(txt)) throw new NmErro("Num filme, a transição vai no cabeçalho do plano: plano 3 fusao 0.6s | escurece 0.8s | clareia | corte.", e.linha);
     if (!nmPersonagem(ctx, { txt, linha: e.linha }, Qe)) { const s = nmParecida(tk0[0] ? tk0[0].v : "", [...ctx.elenco.keys()]); throw new NmErro("“" + (tk0[0] ? tk0[0].v : txt) + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : ""), e.linha); }
     for (const f of Qe.depois) f();
     for (const a of Qe.animais) { a.inicio = T + (a.inicio || 0); a.ordem = ordem++; F.trilhas.push(a); const fim = a.inicio + (a.dur || 0); F.roteiro.push({ t: a.inicio, ate: fim, quem: a.quem, texto: a.texto || a.quem, linha: e.linha }); }

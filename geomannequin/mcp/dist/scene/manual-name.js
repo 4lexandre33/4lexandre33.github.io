@@ -479,6 +479,10 @@ seguinte (continuidade): quem andou continua onde parou; quem foi cortado no mei
   Transições entre planos: corte (seco), fusao (um plano some sobre o outro), escurece (sai e entra pelo preto), clareia (pelo branco).
   Tudo que existe no name também vale numa linha de plano (gesto, atitude, segura, efeito, pula, nada, cai, levanta-se…).
 
+  CABEÇALHO DO PLANO: plano 3 [corte|fusao 0.6s|escurece 0.8s|clareia] duracao 6s [plano close alvo Kai lado 3/4] [lento 50%] [sai escurece 1s]
+    A transição é SEMPRE no cabeçalho do plano (não existe linha "transicao" dentro da cena). O enquadramento no cabeçalho é a câmera inicial
+    quando o plano não tem linha "camera …"; com linha "camera", ela manda (e os avisos de composição do cabeçalho são ignorados).
+  POSTURA NO TEMPO: 1s Kai senta · ajoelha · deita · agacha · levanta · levanta-se (do chão) · cai [frente|tras|lado]
 16. CÂMERA DE CINEMA (no plano: a câmera do plano e mudanças no meio dele)
   BASES (onde a câmera está):
     camera plano medio alvo Kai [lado 3/4] [elevacao 10] [lente 50]   enquadramento clássico, parado (close, medio, americano, inteiro, geral, detalhe…)
@@ -514,7 +518,7 @@ seguinte (continuidade): quem andou continua onde parou; quem foi cortado no mei
   CICLO no lugar repete até o fim do plano, até a próxima animação da pessoa ou "por 3s": Kai anima correrCiclo por 3s (corre parado: esteira), nada, engatinha…
   ESPERA é viva (respira, troca o peso, olha em volta, nunca igual) e dura o que precisar:
     0s Mira espera [${Object.keys(AD_ESPERAS).join("|")}] [por 5s]
-  TRANSIÇÃO de postura: senta, levanta-se, ajoelha, deita, cai (posturas mudam o corpo inteiro).
+  TRANSIÇÃO de postura: senta, levanta, levanta-se, ajoelha, deita, agacha, cai (posturas mudam o corpo inteiro; "Kai anima ajoelhar" também vale).
   OBJETOS NO TEMPO:
     0s Kai pega copo                 estica o braço e segura (o copo vem para a mão no meio do gesto; ponha o objeto a até ~0,8 m, na frente dele —
                                      o "pega" não anda até o objeto: use antes "anda-ate copo")
@@ -570,18 +574,27 @@ ${EXEMPLO_FILME}
     Trovão pose ${Object.keys(AM_POSES).join("|")}   (ou os verbos: empina, deita, senta, come/pasta, levanta, atento)
     0s Trovão anda|trota|galopa|corre [15m] [para (x,z)|Kai]     0s Trovão galopa-ate (12,4)
     Os cascos ficam plantados: a passada sai do comprimento da perna (passo 4 tempos, trote em diagonais, galope com voo).
+    Velocidades (escala 1): cavalo 0,9 / 2,7 / 5,9 m/s (passo/trote/galope) · camelo 1,1 / 3,2 / 7,1 · cachorro 0,5 / 1,5 / 3,3 · ovelha 0,4 / 1,2 / 2,8.
+    Com escala, a passada cresce junto. Planeje: 15 m a galope ≈ 2,5 s.
   MONTARIA: Kai monta Trovão (senta na sela; com tempo: "1s Kai monta Trovão") · 4s Kai desmonta [direita|esquerda]
     Montado, a pessoa acompanha o balanço da sela, o giro e a andadura; os braços ficam livres para gestos (acena, aponta).
+    "Kai monta Trovão" vale também sem tempo (arruma o começo do plano) e num quadro de name. O cavaleiro continua montado nos planos seguintes,
+    mesmo que o cavalo seja reposicionado ("Trovão em (x,z)"), até "desmonta".
   CARGA E SEGUIR: Trovão carrega "mala" (objeto do local vai no lombo) · Rex segue Kai (anda atrás da pessoa, passo/trote/galope conforme a distância).
+    "segue" só anda no FILME (quadro a quadro). Num quadro de name, que é um instante, ponha o animal onde quer ("Rex em (x,z)").
+    Os animais não entram na legenda de cores das pessoas: cada espécie tem sua cor (troque com "cor #rrggbb").
   CÂMERA: os animais servem de alvo como pessoas: camera segue Trovão lado direita distancia 6m · camera plano inteiro alvo Trovão lado perfil.
   MCP: animais (espécies, poses, marchas e exemplo).
 
 23. ESCALA, VOO E ORIENTAÇÃO (gigantes, anões, fadas; corpos e objetos em qualquer ângulo)
   ELENCO (tipo de corpo):  Golias gigante [4] · Atlas tita · Toco anao · Lumi fada · Pingo miniatura · Kai escala 0.5 · Kai tamanho 2
+    O número depois do tipo É a escala (gigante 4 = 4×; sem número = 3,5×). Valem junto: relevante, cor, veste, corpo.
     gigante = 3,5×, titã = 10×, anão = 0,62× com pernas curtas e cabeça maior, fada = 0,12× pairando, miniatura = 0,2×. Faixa: 0,03× a 30×.
     Tudo acompanha a escala: passada e velocidade de andar, alcance, câmera (enquadramentos, distâncias e limites), chão e apoio.
   NO PLANO: Kai escala 3 (muda no meio da história) · Lumi paira 1.5m · Lumi voa (sobe 1 m) · 0s Lumi voa-ate Golias altura 6m · Lumi pousa
     Lumi sobre-mao Golias [esquerda] (a mão vira de palma para cima e a fada fica de pé nela) · Lumi sobre-ombro Golias · Lumi sobre-cabeca Golias
+    O apoio vale naquele quadro/plano; nos seguintes ("continua") a fada fica onde estava. Se o gigante mudar de pose ou lugar, repita a linha
+    (ex.: "Lumi sobre-ombro Golias" para trocar da mão para o ombro). Para ir voando até a mão: "0s Lumi voa-ate Golias altura 2m" e depois "sobre-mao".
   ORIENTAÇÃO DO CORPO: Kai inclina-corpo 30 [frente|tras] · Kai tomba-corpo 45 · Kai de-lado · Kai de-cabeca-para-baixo (gira o corpo inteiro)
   ORIENTAÇÃO DE OBJETOS (no local): caixa "c" em (2,2) inclina 30 · coluna "tronco" em (-2,2) tamanho 0.4x0.4x3 tomba 90 · deitado · de-pe
     (gira = em volta do eixo vertical; inclina = para a frente; tomba = de lado; a base é recalculada para o objeto encostar no chão).
@@ -589,19 +602,25 @@ ${EXEMPLO_FILME}
 24. PÁGINA, BALÕES E WEBTOON (mangá, comic, A4, quadrado; tira vertical)
   PÁGINA: pagina formato manga|comic|a4|quadrado|webtoon|livre [leitura japonesa|ocidental] [grade 2x3] [margem 40] [calha 14] [sangria] [dupla] [splash]
     manga = B5 (182×257), comic = 6,625×10,25", a4, quadrado. sangria = a arte vai até a borda; dupla = página dupla (spread); splash = 1 quadro na página toda.
-  QUADRO: quadro 3 … tamanho pequeno|medio|grande|splash · borda diagonal [12] | nenhuma | grossa · sem-borda
+  QUADRO (tudo no CABEÇALHO do quadro): quadro 3 … tamanho pequeno|normal|grande|largo|alto|inserto|splash · borda diagonal [12] | nenhuma | grossa
+    "sem-borda" = "borda nenhuma". "tamanho" vale nas páginas; no webtoon a altura de cada quadro segue o formato da imagem.
     Diagonal = painel inclinado (ação); sem borda = quadro aberto (calma, memória). A ordem de leitura segue a leitura da página (japonesa: da direita para a esquerda).
   BALÕES (automáticos a partir das falas, com o rabicho apontando para a BOCA de quem fala e sem cobrir rostos):
     Kai fala "…" (oval) · Kai pensa "…" (nuvem com bolinhas) · Mira grita|berra "…" (estourado) · Kai sussurra|cochicha "…" (tracejado)
     Kai fala-radio|radio "…" (zigue-zague: telefone, rádio, TV) · narra "…" ou narrador "…" (caixa de narração no canto)
     Os balões ficam na ordem de leitura (o primeiro a falar mais acima e no começo da leitura) e perto de quem fala.
-  WEBTOON: o espaço entre quadros é TEMPO. No quadro: ritmo momento|acao|sujeito|aspecto|lugar|tempo|cena · respiro [1.5] (espaço vazio, pausa).
-    Momento → quase colado; troca de cena → espaço grande. Exporta como tira de 800 px de largura em fatias de 1280 px.
+  WEBTOON: o espaço entre quadros é TEMPO. No CABEÇALHO do quadro: ritmo momento|acao|sujeito|aspecto|lugar|tempo|cena · respiro [1.5]
+    Espaço ANTES do quadro (tira de 800 px): momento 50 px · acao 90 · sujeito 120 · aspecto 160 · lugar/tempo 420 · cena 520 · sem ritmo 110
+    (420 depois de uma "transicao"). respiro N soma N × 260 px de vazio (pausa dramática; sem número = 1). Valor de ritmo errado dá erro.
+    Exporta como tira de 800 px de largura em fatias de 1280 px.
   RITMO (McCloud): momento-a-momento (câmera lenta), ação-a-ação, sujeito-a-sujeito (conversa), cena-a-cena (salto), aspecto-a-aspecto (clima, mangá), non-sequitur.
   EXPORTAR: site → Texto → botões "Páginas PNG", "Páginas PDF", "Webtoon", "CBZ". MCP: paginas_hq (PNG/PDF/CBZ) e webtoon (tira e fatias).
 
 25. DIRETOR AUTOMÁTICO E COMPOSIÇÃO
   diretor auto (linha solta no texto, vale para todos) ou "camera auto"/"diretor" no cabeçalho de um quadro ou plano. Também: cobertura auto.
+    O diretor só decide o que você NÃO escreveu: plano/lado/ângulo escritos no cabeçalho ganham dele.
+  EIXO DE 180°: "lado" conta a partir de para onde o ALVO está virado (frente = de frente para ele). Dois personagens frente a frente com o MESMO
+    lado ficam filmados de lados opostos da linha entre eles (cruza o eixo). Na conversa use 3/4 para um e 3/4-direita para o outro (ou diretor auto).
     Escolhe plano, lado e ângulo pela FUNÇÃO e pelo conteúdo: estabelecimento/troca de local → geral; fala → sobre-o-ombro/médio alternando;
     emoção (surpresa, medo, grito) → close; clímax/ação → ângulo baixo; nunca repete o mesmo plano 3 vezes e respeita o EIXO de 180° entre os dois que conversam.
   ALTERNATIVAS: quadro 4 … alternativas 6 (ou MCP quadro_alternativas): 6 versões do mesmo quadro (médio 3/4, close contra-plongée, geral plongée, americano perfil,
@@ -611,9 +630,11 @@ ${EXEMPLO_FILME}
 
 26. VÍDEO AVANÇADO, PÉS NO CHÃO E AUDITOR
   CÂMERA: camera caminho (x,altura,z) (x,altura,z) (x,altura,z)… em 5s [olha Kai]   — percurso suave passando por todos os pontos (metros)
+    Sem tempo na frente começa no início do plano; "2s camera caminho …" começa aos 2 s. As curvas (entra/sai/linear) valem para caminho, vertigo e os movimentos.
     0s camera vertigo aproxima|afasta 50 em 3s   — dolly zoom: a câmera anda e a lente compensa (o alvo fica do mesmo tamanho, o fundo estica)
     Curvas de tempo em qualquer movimento: … em 2s linear | entra (começa devagar) | sai (freia no fim) | suave (padrão)
   TEMPO DO PLANO: plano 2 duracao 3s lento 50% (câmera lenta: a tela dura 6 s) · acelera 200% · congela 1.5s por 1s (a imagem para 1 s nesse ponto)
+    "duracao" é o tempo da AÇÃO escrita (as linhas 0s…3s); o vídeo dura duracao ÷ velocidade + congelamentos (a lista de planos mostra os dois).
   PERCURSO A PÉ: 0s Kai anda por (0,0) (3,1) (3,4) · corre por … (vira nos cantos, passadas do tamanho do corpo)
   PASSES EM VÍDEO: MCP exportar_filme passes ["contorno","openpose","profundidade"] → passes/*.mp4 no .zip (referência para ControlNet de vídeo).
   LINHA DO TEMPO (site → Texto → aba Filme): uma faixa por pessoa/animal e uma da câmera; clique numa barra para ir à linha; arraste para mudar o segundo.
