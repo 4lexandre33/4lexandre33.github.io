@@ -7,6 +7,7 @@ import { ossosDoCorpo } from "../esqueleto.js";
 import { paraMundo, telaDoMundo } from "../colisao-cena.js";
 import { colliderRig } from "../contact-v2.js";
 import { partesDoObjeto } from "../objetos.js";
+import { pontosLocaisDoObjeto, pontoDoObjeto } from "../objetos-mao.js";
 import { CATALOGO, ELEMENTOS, NIVEIS, coresDe, progressoNoQuadro, ativoNoQuadro } from "./modelo.js";
 import { desenharCamadas } from "./construtor.js";
 import { PRESETS_VFX, validarCamadas } from "./camadas-vfx.js";
@@ -88,7 +89,10 @@ function resolverAncora(K, a, fx) {
       for (let q = 0; q < 3; q++) { mn[q] = Math.min(mn[q], b.c[q] - r[q]); mx[q] = Math.max(mx[q], b.c[q] + r[q]); } });
     const c = mul(add(mn, mx), 0.5);
     w = a.parte === "topo" ? [c[0], mx[1], c[2]] : a.parte === "base" ? [c[0], mn[1], c[2]] : c;
-    fx.objeto = { o, mn, mx, bs };
+    /* ponto nomeado do objeto de mão (ponta, lâmina, cano, boca, cristal, chama…): vem da pose rígida do objeto */
+    let eixo = null;
+    if (!["centro", "topo", "base", "frente"].includes(a.parte)) { try { const L = pontosLocaisDoObjeto(o); if (L && L[a.parte]) { w = pontoDoObjeto(o, a.parte, K.g0); const b0 = L.cabo ? pontoDoObjeto(o, "cabo", K.g0) : L.base ? pontoDoObjeto(o, "base", K.g0) : c; const d = sub(w, b0); if (len(d) > 1e-3) eixo = norm(d); } } catch (er) { /* sem ponto: centro */ } }
+    fx.objeto = { o, mn, mx, bs, eixo };
   }
   if (!w || !w.every(Number.isFinite)) return null;
   const q = K.proj(w);
@@ -118,6 +122,8 @@ function resolverDirecao(K, e, A, fx) {
     } else { const B = resolverAncora(K, d.alvo, {}); T = B && B.mundo; }
     if (T) { deMundo(sub(T, A.mundo)); out.alvo = T; out.dist = len(sub(T, A.mundo)); return out; }
   }
+  /* auto num ponto de objeto (ponta da espada, cano, boca do trompete): segue o eixo do objeto */
+  if (A.mundo && e.ancora.modo === "objeto" && fx.objeto && fx.objeto.eixo) { deMundo(fx.objeto.eixo); return out; }
   /* auto: ao longo do membro (mão, pé), para cima (cabeça, chão) ou para a frente do corpo */
   if (A.mundo) {
     const a = e.ancora, i = A.dono;
@@ -996,6 +1002,61 @@ TIPOS.sulco_poeira = fx => {
   return out;
 };
 
+/* ---------- rastro da arma: meia-lua pelos pontos da trilha (de onde a ponta veio até onde está) ---------- */
+TIPOS.rastro_arma = fx => {
+  const { P, cores, r } = fx, s = pxu(fx), tr = fx.e.trilha || null;
+  if (!tr || tr.length < 2 || fx.plano) return fx.A.dono >= 0 || fx.plano ? TIPOS.arco_movimento(Object.assign(fx, { P: Object.assign({ abertura: 150 }, P) })) : "";
+  const n = Math.max(2, Math.round(tr.length * P.cauda)), pts3 = tr.slice(tr.length - n), Wt = escalaW(fx, P.largura) * s;
+  /* reamostra suave (Catmull-Rom) e corta pelo progresso */
+  const fino = []; for (let i = 0; i < pts3.length - 1; i++) { const p0 = pts3[Math.max(0, i - 1)], p1 = pts3[i], p2 = pts3[i + 1], p3 = pts3[Math.min(pts3.length - 1, i + 2)];
+    for (let k = 0; k < 6; k++) { const t = k / 6, t2 = t * t, t3 = t2 * t; fino.push([0, 1, 2].map(j => 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3))); } }
+  fino.push(pts3[pts3.length - 1]);
+  const m = Math.max(2, Math.round(fino.length * (0.2 + 0.8 * fx.t))), tela = fino.slice(fino.length - m).map(q => T2(fx, q));
+  const perfil = t => Math.pow(t, 0.8) * Math.min(1, (1 - t) / 0.06 + 0.2);
+  let svg = "";
+  if (fx.ink) {
+    svg += forma(pincelada(tela, Wt * 1.3, perfil), INK, { op: 0.95 });
+    svg += forma(pincelada(tela.slice(Math.floor(tela.length * 0.25)), Wt * 0.45, "fuso"), PAPEL, { op: 0.95 });
+    for (let i = 0; i < quant(fx, P.fios); i++) { const off = r.entre(-1, 1) * Wt * 0.9, a0 = Math.floor(r.entre(0, 0.5) * tela.length), seg = tela.slice(a0).map((q, j, A0) => { const nx = A0[Math.min(A0.length - 1, j + 1)], pv = A0[Math.max(0, j - 1)], dx = nx[0] - pv[0], dy = nx[1] - pv[1], L0 = Math.hypot(dx, dy) || 1; return [q[0] - dy / L0 * off, q[1] + dx / L0 * off]; });
+      if (seg.length > 2) svg += forma(pincelada(seg, Wt * r.entre(0.06, 0.18), perfil), INK, { op: 0.9 }); }
+  } else {
+    svg += forma(pincelada(tela, Wt * 1.5, perfil), cores[cores.length - 1], { op: 0.35, filtro: brilho(fx) });
+    svg += forma(pincelada(tela, Wt * 1.1, perfil), cores[2] || cores[1], { op: 0.8 });
+    svg += forma(pincelada(tela.slice(Math.floor(tela.length * 0.2)), Wt * 0.5, "fuso"), cores[0], { op: 0.95 });
+    for (let i = 0; i < quant(fx, P.fios); i++) { const off = r.entre(-1, 1) * Wt, a0 = Math.floor(r.entre(0, 0.6) * tela.length), seg = tela.slice(a0).map(q => [q[0], q[1] + off * 0.5]); if (seg.length > 2) svg += forma(pincelada(seg, Wt * r.entre(0.05, 0.15), perfil), corEm(cores, r()), { op: 0.85 }); }
+  }
+  /* faíscas na ponta */
+  const [px, py] = tela[tela.length - 1]; let db = ""; for (let i = 0; i < quant(fx, 6); i++) db += lasca(px + r.entre(-1, 1) * Wt, py + r.entre(-1, 1) * Wt, Wt * r.entre(0.1, 0.25), r);
+  svg += forma(db, fx.ink ? INK : cores[1], { op: 0.9 });
+  return svg;
+};
+/* ---------- projétil: núcleo brilhante na posição atual e cauda pela trilha já percorrida ---------- */
+TIPOS.projetil = fx => {
+  const { P, cores, A, r } = fx, s = pxu(fx), R = escalaW(fx, P.raio) * s, tr = fx.e.trilha || [];
+  const [x, y] = A.tela; let svg = "";
+  if (tr.length >= 2 && P.cauda > 0 && !fx.plano) { const tela = tr.map(q => T2(fx, q)), n = Math.max(2, Math.round(tela.length * P.cauda)), cauda = tela.slice(tela.length - n).concat([[x, y]]);
+    const perf = t => Math.pow(t, 1.2);
+    if (fx.ink) { svg += forma(pincelada(cauda, R * 1.6, perf), INK, { op: 0.9 }); svg += forma(pincelada(cauda.slice(Math.floor(cauda.length / 3)), R * 0.7, perf), PAPEL, { op: 0.95 }); }
+    else { svg += forma(pincelada(cauda, R * 2.2, perf), cores[cores.length - 1], { op: 0.35, filtro: brilho(fx) }); svg += forma(pincelada(cauda, R * 1.4, perf), cores[2] || cores[1], { op: 0.85 }); svg += forma(pincelada(cauda, R * 0.6, perf), cores[0], { op: 0.95 }); } }
+  if (fx.ink) { svg += forma(circulo(x, y, R * 1.1), INK) + forma(circulo(x, y, R * 0.6), PAPEL); }
+  else { svg += forma(circulo(x, y, R * 2.2), cores[cores.length - 1], { op: 0.3, filtro: brilho(fx) }) + forma(circulo(x, y, R * 1.2), cores[1], { op: 0.95 }) + forma(circulo(x, y, R * 0.6), cores[0]); }
+  let fa = ""; for (let i = 0; i < quant(fx, P.faiscas); i++) { const a = r.entre(0, Math.PI * 2), d = R * r.entre(1.2, 2.6); fa += lasca(x + Math.cos(a) * d, y + Math.sin(a) * d, R * r.entre(0.12, 0.3), r); }
+  svg += forma(fa, fx.ink ? INK : cores[1], { op: 0.9 });
+  return svg;
+};
+/* ---------- fumaça branca nos pés: um tufo em cada pé, mais um rastro para trás (arrastado, freada, pouso) ---------- */
+TIPOS.poeira_pes = fx => {
+  const { P, r } = fx, up = UPW(fx), s = pxu(fx), out = { chao: "", atras: "", frente: "" };
+  if (fx.plano || fx.A.dono < 0) return "";
+  const i = fx.A.dono, pes = [pontoParte(fx.K, i, "peEsq"), pontoParte(fx.K, i, "peDir")].filter(Boolean);
+  let u = direcaoRastro(fx); u = [u[0], 0, u[2]]; if (len(u) < 1e-3) u = [-1, 0, 0]; u = norm(u);
+  const Rr = escalaW(fx, P.raio), Hh = escalaW(fx, P.altura), L = escalaW(fx, P.rastro) * (0.3 + 0.7 * fx.t), tras = [], frente = [];
+  for (const pe of pes) { const C = [pe[0], fx.K.g0 + 0.05, pe[2]], zc = fx.proj(C)[2];
+    for (let k = 0; k < quant(fx, 9); k++) { const t = k / 8, p = add(add(add(C, mul(u, L * t * r.entre(0.6, 1))), mul(up, Hh * (0.15 + 0.6 * t) * r.entre(0.6, 1))), mul(norm(cross(up, u)), r.entre(-1, 1) * Rr * 0.6)), q = fx.proj(p);
+      bolhas(q[0], q[1], Rr * s * (0.45 + 0.55 * (1 - t * 0.5)) * (0.4 + 0.6 * fx.t), r, 4).forEach(c => (q[2] < zc ? tras : frente).push(c)); } }
+  out.atras = nuvemTinta(fx, tras.reverse(), r, "claro", 0.95); out.frente = nuvemTinta(fx, frente.reverse(), r, "claro", 0.97);
+  return out;
+};
 /* ---------- personalizado ---------- */
 /* construtor por camadas e os efeitos prontos de mangá: a profundidade de referência é o peito do dono */
 const zcDono = fx => { if (fx.plano || fx.A.dono < 0) return null; const q = pontoParte(fx.K, fx.A.dono, "peito"); return q ? fx.proj(q)[2] : null; };

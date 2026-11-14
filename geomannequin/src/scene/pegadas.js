@@ -20,6 +20,7 @@ import { beginRigidGrip, releaseRigidGrip, handFrameV3, pousarObjetoRigido } fro
 import { medirMao } from "./grip-auto.js";
 import { faixa } from "./parametros.js";
 import { pesEm, POSE0 } from "./poses.js";
+import { pontosLocaisDoObjeto, pontoDoObjeto } from "../engine/index.js";
 
 /* ---------- vetores ---------- */
 const pgAdd = (a, b) => a.map((v, i) => v + b[i]), pgSub = (a, b) => a.map((v, i) => v - b[i]), pgMul = (a, k) => a.map(v => v * k);
@@ -645,6 +646,22 @@ for (const [nome, G] of Object.entries(GOLPES)) {
     : G.classe === "orbe" ? k => [pgPalmaEm(k, k.s, [0, 0, 0], DN)] : k => [pgNaPega(k, k.s, pega1, { polegar: glV(k, G.Y) })];
   ACOES[nome] = { desc: G.desc, grupo: "golpe", maos: G.maos, modo: "carregar", teste: [teste, {}], gesto: "segurar", fechar: "envolver", corpo, lugar, contatos, golpe: { classe: G.classe, tag: G.tag, de: G.de || null }, bracoEncosta: G.classe === "escudo" };
 }
+/* rastro do golpe: por onde a ponta da arma passou, da pose de preparação ("de") até a pose atual (pontos no mundo, R).
+   A preparação é calculada num corpo de mentira (não mexe na cena); o caminho gira em volta do ombro. */
+function trilhaDoGolpe(it, o, tipo, opts = {}) {
+  const A = ACOES[tipo], de = A && A.golpe && A.golpe.de, P0 = de && ACOES[de]; if (!P0 || !P0.lugar) return null;
+  const ground = restGround(SCN.list[0].params), s = String(opts.mao || "direita").toLowerCase().startsWith("e") ? 1 : -1;
+  const ponto = opts.ponto || "ponta", loc = pontosLocaisDoObjeto(o), pl = loc[ponto] || loc.ponta;
+  const tmp = Object.assign({}, it, { params: Object.assign({}, it.params) }); pgPoseBase(tmp.params); if (P0.corpo) P0.corpo(tmp.params, s, {});
+  const k = { it: tmp, o, s, g: ground, opts: {} }, cx = pgCaixaObjeto(o, ground); k.S = cx.S; k.C = cx.centro; k.meia = cx.meia; k.ax = cx.eixos; k.B = marcosDoCorpo(tmp, ground);
+  const L = P0.lugar(k), cl = pgCaixaObjeto(Object.assign({}, o, { rot3: undefined, x: 0, z: 0, base: 0, giro: 0 }), 0).centroLocal, d = pgSub(pl, cl);
+  const p0 = pgComb([L.C, 1], [L.ax[0], d[0]], [L.ax[1], d[1]], [L.ax[2], d[2]]), p1 = pontoDoObjeto(o, ponto, ground);
+  const B = marcosDoCorpo(it, ground), piv = s > 0 ? B.oE : B.oD, v0 = pgSub(p0, piv), v1 = pgSub(p1, piv), r0 = Math.hypot(...v0), r1 = Math.hypot(...v1), u0 = pgNorm(v0), u1 = pgNorm(v1);
+  const ang = Math.acos(Math.max(-1, Math.min(1, pgDot(u0, u1)))), n = Math.max(6, Math.min(24, Math.round(ang * 8))), out = [];
+  for (let i = 0; i <= n; i++) { const t = i / n, sa = Math.sin(ang); const u = sa < 1e-3 ? pgNorm(pgAdd(pgMul(u0, 1 - t), pgMul(u1, t))) : pgAdd(pgMul(u0, Math.sin((1 - t) * ang) / sa), pgMul(u1, Math.sin(t * ang) / sa));
+    out.push(pgAdd(piv, pgMul(u, r0 + (r1 - r0) * t))); }
+  return out;
+}
 function listaGolpes() { return Object.entries(GOLPES).map(([nome, G]) => ({ nome, classe: G.classe, armas: GL_CLASSES[G.classe][1], maos: G.maos, tag: G.tag, desc: G.desc, de: G.de || null, teste: GL_CLASSES[G.classe][0] })); }
 
 /* nomes antigos (v1) continuam valendo */
@@ -811,4 +828,4 @@ function atualizarCordas() {
 SCN.aposApoios = (SCN.aposApoios || []).filter(f => f.name !== "atualizarCordas").concat([atualizarCordas]);
 
 function listaPegadas() { return Object.entries(ACOES).map(([tipo, a]) => ({ tipo, descricao: a.desc, grupo: a.grupo, maos: a.maos, modo: a.modo === "ir" ? "o corpo vai até o objeto" : "o objeto vem para a mão", teste: a.teste[0], testeMedidas: a.teste[1] })); }
-export { GOLPES, GL_CLASSES, listaGolpes, PEGADA_PADRAO, PEGADAS, ACOES, ALIAS_PEGADA, segurarComo, listaPegadas, marcosDoCorpo, atualizarCordas, pgResolverMao, pgAlvoDoContato, pgFecharDedos, pgSdf, pgRaio, pgMaisPerto };
+export { trilhaDoGolpe, GOLPES, GL_CLASSES, listaGolpes, PEGADA_PADRAO, PEGADAS, ACOES, ALIAS_PEGADA, segurarComo, listaPegadas, marcosDoCorpo, atualizarCordas, pgResolverMao, pgAlvoDoContato, pgFecharDedos, pgSdf, pgRaio, pgMaisPerto };

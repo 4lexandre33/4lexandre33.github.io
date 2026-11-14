@@ -31,6 +31,7 @@
     "estado-ia.js",
     "manual-ia.js",
     "pegadas.js",
+    "vfx-trajeto.js",
     "interacoes.js",
     "acoes-luta.js",
     "poses-extra.js",

@@ -143,6 +143,12 @@ const CATALOGO = {
     params: { pedacos: P(9, 2, 40, "pedaços"), tamanho: P(2.2, 0.4, 10, "tamanho dos pedaços"), alcance: P(7, 1, 40, "alcance"), caixote: P(1, 0, 1, "tábuas de caixote") } },
   rastro_fumaca: { cat: "destruicao", nome: "Rastro de fumaça (voando)", elem: "sombra", camada: "atras", ancora: "corpo",
     params: { comprimento: P(16, 2, 60, "comprimento"), largura: P(3.2, 0.5, 15, "largura"), escura: P(1, 0, 1, "fumaça preta") } },
+  rastro_arma: { cat: "personagem", nome: "Rastro da arma (golpe de A até B)", elem: "vento", camada: "atras", ancora: "maoDir",
+    params: { largura: P(1.4, 0.2, 8, "largura"), fios: P(8, 0, 30, "fios"), cauda: P(1, 0.2, 1, "cauda") } },
+  projetil: { cat: "cena", nome: "Projétil viajando de A para B", elem: "raio", camada: "auto", ancora: "mundo",
+    params: { raio: P(1, 0.2, 8, "raio"), cauda: P(1, 0, 1, "cauda"), faiscas: P(10, 0, 40, "faíscas") } },
+  poeira_pes: { cat: "destruicao", nome: "Fumaça branca nos pés (arrastado, freada, pouso)", elem: "tinta", camada: "auto", ancora: "pes",
+    params: { raio: P(2.2, 0.5, 12, "tamanho"), altura: P(1.6, 0.3, 8, "altura"), rastro: P(4, 0, 20, "rastro para trás") } },
   sulco_poeira: { cat: "destruicao", nome: "Poeira de quem desliza no chão", elem: "terra", camada: "auto", ancora: "pes",
     params: { comprimento: P(14, 2, 60, "comprimento"), altura: P(3.5, 0.5, 15, "altura") } },
   /* ---- carga de energia / poder ---- */
@@ -219,7 +225,7 @@ function validarAncora(a, padrao) {
     if (Array.isArray(a.offset) && a.offset.length === 3) o.offset = a.offset.map(v => num(v, -40, 40, 0));
     return o;
   }
-  if (modo === "objeto") { const o = { modo, parte: ["centro", "topo", "frente", "base"].includes(a.parte) ? a.parte : "frente" }; if (a.alvo !== undefined && a.alvo !== null) o.alvo = typeof a.alvo === "number" ? a.alvo : texto(a.alvo, 60); return o; }
+  if (modo === "objeto") { const o = { modo, parte: ["centro", "topo", "frente", "base"].includes(a.parte) || /^[a-zA-Z][a-zA-Z0-9]{0,23}$/.test(a.parte || "") ? a.parte : "frente" }; if (a.alvo !== undefined && a.alvo !== null) o.alvo = typeof a.alvo === "number" ? a.alvo : texto(a.alvo, 60); return o; }
   throw new Error("Âncora: use tela, mundo, chao, manequim ou objeto.");
 }
 /* direção: auto (pelo membro ou para cima) · angulo (graus na tela, 0 = direita, 90 = cima) · vetor {x,y,z} · alvo (outra âncora ou "auto" = manequim mais perto) · camera */
@@ -266,6 +272,8 @@ function validarEfeito(e) {
   const prm = {};
   for (const [k, d] of Object.entries(C.params)) prm[k] = num(e.params && e.params[k], d.min, d.max, d.padrao);
   out.params = prm;
+  /* trilha: pontos do mundo por onde o efeito passou (rastro da arma, caminho do projétil) */
+  if (Array.isArray(e.trilha)) { const tr = e.trilha.filter(q => Array.isArray(q) && q.length === 3 && q.every(Number.isFinite)).slice(0, 64).map(q => q.map(v => Math.max(-1e4, Math.min(1e4, v)))); if (tr.length >= 2) out.trilha = tr; }
   if (C.texto) { out.texto = texto(e.texto || "BOOM!", 24); out.estiloTexto = ["latino", "katakana"].includes(e.estiloTexto) ? e.estiloTexto : /[\u30A0-\u30FF]/.test(out.texto) ? "katakana" : "latino"; }
   if (C.simbolo) out.simbolo = SIMBOLOS.includes(e.simbolo) ? e.simbolo : "veia";
   /* estilo do acabamento (efeitos de camadas e prontos): linha, contorno, chapado, cel, brilho, nanquim */

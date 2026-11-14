@@ -26,6 +26,7 @@ export * from "./blocking.js";
 export * from "./orientacao-frames.js";
 export * from "./orbita.js";
 export * from "./pegadas.js";
+export * from "./vfx-trajeto.js";
 export * from "./acoes-luta.js";
 export * from "./multidao.js";
 export * from "./interacoes.js";
