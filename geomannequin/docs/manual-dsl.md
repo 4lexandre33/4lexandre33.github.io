@@ -67,7 +67,7 @@ Peças do local (uma por linha):
   grade-de 3x4 coluna de (x,z) ate (x,z)                         (grade C colunas × L linhas)
   circulo-de 8 arvore em (x,z) raio 6                             (N objetos em roda, virados para o centro)
   repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
-Objetos: cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco.
+Objetos: cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco.
   Também valem: banca/balcão/barraca (caixas com nome), pilar (= coluna), "árvore", "poço".
   "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus; o mesmo sentido das pessoas: 0 = comprimento norte-sul, 90 = leste-oeste).
   Cores: por classe (parede, madeira, vegetacao, agua, pedra, areia, piso, grama, terra, tecido, metal, telhado) ou "cor #hex".
@@ -340,7 +340,7 @@ JUNTAS (movimento: faixa):
   cabeca (= cabeça): baixa 0–50° · sobe 0–60° · gira-esquerda 0–80° · gira-direita 0–80° · inclina-direita 0–45° · inclina-esquerda 0–45°
   olhos: esquerda 0–100% · direita 0–100% · cima 0–100% · baixo 0–100% · fecha 0–100%
   boca: abre 0–100% · sorri 0–100% · triste 0–100%
-  corpo: deita-costas 0–180° · deita-brucos 0–180° · rola 0–180° · sobe 0–1368 cm
+  corpo: deita-costas 0–180° · deita-brucos 0–180° · rola 0–180° · sobe 0–34200 cm
 ATALHOS (numa pose, numa chave ou depois de "soma"):
   agacha [60%] · ajoelha direito|esquerdo|os-dois · senta chao|cadeira|calcanhares|cocoras · peso direito|esquerdo [70%] · inclina frente|tras|direita|esquerda [graus]
   olha baixo|cima|direita|esquerda|frente [graus] · sobe 30cm · deita costas|brucos|lado · espelha [PARTES] · mistura POSE 50% · copia PARTES de POSE · zera [PARTES]

@@ -26,7 +26,7 @@ const MEMBRO = { bracoE: ["braco", 1], antebracoE: ["braco", 1], maoE: ["braco",
 
 /* corpo → mundo: giro no chão (wRot) e posição (wx, wy, wz) */
 /* tamanho do corpo (p.tamanho): escala em volta do chão local (os pés ficam no chão) */
-function tamanhoDe(p) { const k = Math.max(0.4, Math.min(1.6, p.tamanho || 1)); return k === 1 ? null : { k, g: restGround(p) }; }
+function tamanhoDe(p) { const k = Math.max(0.02, Math.min(40, p.tamanho || 1)); return k === 1 ? null : { k, g: restGround(p) }; }
 function paraMundo(p) {
   const wr = (p.wRot || 0) * Math.PI / 180, c = Math.cos(wr), s = Math.sin(wr), wx = p.wx || 0, wy = p.wy || 0, wz = p.wz || 0, T = tamanhoDe(p);
   if (T) return v => { const x = v[0] * T.k, y = T.g + (v[1] - T.g) * T.k, z = v[2] * T.k; return [x * c + z * s + wx, y + wy, -x * s + z * c + wz]; };
@@ -40,7 +40,7 @@ function doMundo(p) {
 /* cápsulas de um manequim (p com wx, wy, wz, wRot) */
 function capsulas(p) {
   const S = shape(p), ch = chainSetup(p, S), F = ch.F, B = F.B, M = paraMundo(p), out = [];
-  const kT = Math.max(0.4, Math.min(1.6, p.tamanho || 1)), cap = (nome, a, b, r) => out.push({ nome, a: M(a), b: M(b), r: r * kT });
+  const kT = Math.max(0.02, Math.min(40, p.tamanho || 1)), cap = (nome, a, b, r) => out.push({ nome, a: M(a), b: M(b), r: r * kT });
   const zc = -0.46;
   cap("cabeca", applyA(ch.A3, [0, 0.25, 0.1]), applyA(ch.A3, [0, -0.25, 0.15]), 0.95 * (p.skull || 0.82) / 0.82);
   cap("pescoco", applyA(ch.A3, [0, -0.9, -0.1]), applyA(ch.A2, [0, F.yJ + 0.3, zc]), 0.42 * (p.neck || 1));

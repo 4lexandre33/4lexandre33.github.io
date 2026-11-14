@@ -47,9 +47,9 @@ function direcaoPara(pos, alvo) {
 }
 function aplicarCameraBlk(pos, alvo) {
   const r = direcaoPara(pos, alvo); if (r.d < 1) return false;
-  P.tx = clamp(alvo[0], -400, 400); P.ty = clamp(alvo[1], -20, 60); P.tz = clamp(alvo[2], -400, 400);
+  P.tx = clamp(alvo[0], -6000, 6000); P.ty = clamp(alvo[1], -3000, 6000); P.tz = clamp(alvo[2], -6000, 6000);
   P.yaw = Math.round(r.yaw * 10) / 10; P.pitch = clamp(Math.round(r.pitch * 10) / 10, -89, 89); P.roll = 0;
-  if (P.persp) P.camDist = Math.round(clamp(r.d, 4, 200) * 100) / 100; else P.camDist = Math.round(clamp(r.d, 4, 200) * 100) / 100;
+  if (P.persp) P.camDist = Math.round(clamp(r.d, 0.3, 30000) * 100) / 100; else P.camDist = Math.round(clamp(r.d, 0.3, 30000) * 100) / 100;
   return true;
 }
 function moverCamera(x, y, z) { const C = cameraNoMundo(P); aplicarCameraBlk([x, y === undefined ? C.pos[1] : y, z], C.alvo); }
@@ -71,7 +71,7 @@ function cabeEmCima(o, s) { const a = ehCilindro(o) ? Math.PI * o.raio * o.raio 
 /* mover no chão; com "apoiar" (padrão ao arrastar), ao passar sobre um tampo maior o objeto sobe nele, ao sair desce */
 function moverObjeto(id, x, z, apoiar) {
   const o = achaObj(id); if (!o) return;
-  editarObjeto(o, { x: r2(clamp(x, -400, 400)), z: r2(clamp(z, -400, 400)) });
+  editarObjeto(o, { x: r2(clamp(x, -6000, 6000)), z: r2(clamp(z, -6000, 6000)) });
   if (apoiar !== false) { const s = apoioSob(o, o.x, o.z); o.sobre = s && cabeEmCima(o, s) ? s.id : null; atualizarApoios(); }
   if (COL.modo === "bloquear") separarObjeto(o, 6);
 }

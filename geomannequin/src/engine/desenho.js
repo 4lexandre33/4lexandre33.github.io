@@ -37,7 +37,7 @@ function setCasters(v){return CASTERS=v||[]}
 function scene(p,L,pal,fast,mode){
   setLight(p.lightAz,p.lightEl);
   /* tamanho do corpo (criança, gigante): escala tudo em volta do ponto do chão sob o manequim (os pés continuam no chão) */
-  const TK=clamp(p.tamanho||1,0.4,1.6);
+  const TK=clamp(p.tamanho||1,0.02,40);
   {const cam=makeXf(Object.assign({},p,{wRot:0})),T=cam([(p.wx||0)-(p.tx||0),(p.wy||0)-(p.ty||0)+(TK!==1?(1-TK)*restGround(p):0),(p.wz||0)-(p.tz||0)]);setPAN(T);setSPAN([p.panX,p.panY]);setPERSP(p.persp?Math.max(3,p.camDist||20):0)}
   const S=effScale(p),xr0=makeXf(p),xv0=TK===1?xr0:v=>xr0([v[0]*TK,v[1]*TK,v[2]*TK]),xv=v=>camPt(xv0(v)),Mx=TK===1?makeMat(p):makeMat(p).map(c=>c.map(x=>x*TK)),sh=shape(p),M=getMeshes(p,sh);
   /* perspectiva: o manequim mais longe tem linhas mais finas e menos guias */

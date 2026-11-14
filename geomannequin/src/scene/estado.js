@@ -51,7 +51,7 @@ function sceneState(){
   }
   const cam={};CAMK.forEach(k=>cam[k]=P[k]);
   const fxs=efeitosParaSalvar();
-  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasExpressoes?.length?{minhasExpressoes:JSON.parse(JSON.stringify(SCN.minhasExpressoes))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.exprNome)o.exprNome=String(it.exprNome).slice(0,120);if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.grupo)o.grupo=it.grupo;if(it.papel)o.papel=it.papel;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
+  return {...(fxs?{efeitos:fxs}:{}),...(SCN.meusEfeitos?.length?{meusEfeitos:JSON.parse(JSON.stringify(SCN.meusEfeitos))}:{}),...(SCN.minhasExpressoes?.length?{minhasExpressoes:JSON.parse(JSON.stringify(SCN.minhasExpressoes))}:{}),...(SCN.minhasPoses?.length?{minhasPoses:SCN.minhasPoses.map(p=>({nome:p.nome,valores:{...p.valores},criada:p.criada}))}:{}),...(SCN.chavesVento?.length?{chavesVento:structuredClone(SCN.chavesVento)}:{}),...(SCN.frameManga?{frameManga:SCN.frameManga}:{}),...(SCN.vento?{vento:{...SCN.vento}}:{}),active:SCN.active,camera:cam,orbita:salvarPivoOrbita(),seguirCamera:seguir,vistaOrientada:SCN.ultimaVistaOrientada?{...SCN.ultimaVistaOrientada}:null,exato:!!SCN.exato,list:SCN.list.map(it=>{const pr={};SL.forEach(d=>pr[d.k]=it.params[d.k]);if(NOMES_BIOTIPOS.includes(it.params._biotipo))pr._biotipo=it.params._biotipo;pr.headModel=modeloCabecaEstadoOrb(it.params.headModel);const o={name:it.name,params:pr,hue:it.hue,col:it.col};if(it.exprNome)o.exprNome=String(it.exprNome).slice(0,120);if(it.montadoEm)o.montadoEm=String(it.montadoEm).slice(0,24);if(it.modelosGuardados)o.modelosGuardados=structuredClone(it.modelosGuardados);if(it.referencias?.length)o.referencias=structuredClone(it.referencias);if(it.congelado)o.congelado=true;if(it.oculto)o.oculto=true;if(it.ordem)o.ordem=it.ordem;if(it.grupo)o.grupo=it.grupo;if(it.papel)o.papel=it.papel;if(it.apoioEm){const j=SCN.objetos.findIndex(x=>x.id===it.apoioEm);if(j>=0)o.apoioEm=j}if(it.contato&&it.contato.length){const ix=it.contato.map(id=>SCN.list.findIndex(x=>x.id===id)).filter(i=>i>=0);if(ix.length)o.contato=ix}return o}),colisao:{modo:COL.modo,preferir:COL.preferir,composicao:!!COL.composicao,detalhada:!!CONTATO_V2.enabled,nivelV2:CONTATO_V2.level,tolV2:CONTATO_V2.tol},objetos:SCN.objetos.map(o=>{const q=Object.assign({},o);delete q.id;if(!o.emAr&&!o.gripV3)delete q.base;
     if(o.gripV3){
       const j=SCN.list.findIndex(m=>m.id===o.gripV3.mannequinId);
       q.gripV3=j<0?undefined:{...o.gripV3,mannequinIndex:j};
@@ -104,11 +104,11 @@ function loadScene(sc){
       }
     }
     if(refs[SCN.list.length].length)it.referencias=refs[SCN.list.length];
-    if(typeof o.exprNome==="string")it.exprNome=o.exprNome.slice(0,120);it.congelado=!!o.congelado;it.oculto=!!o.oculto;if(typeof o.grupo==="string")it.grupo=o.grupo.slice(0,60);if(typeof o.papel==="string")it.papel=o.papel.slice(0,20);it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
+    if(typeof o.exprNome==="string")it.exprNome=o.exprNome.slice(0,120);if(typeof o.montadoEm==="string")it.montadoEm=o.montadoEm.slice(0,24);it.congelado=!!o.congelado;it.oculto=!!o.oculto;if(typeof o.grupo==="string")it.grupo=o.grupo.slice(0,60);if(typeof o.papel==="string")it.papel=o.papel.slice(0,20);it.ordem=typeof o.ordem==="number"&&isFinite(o.ordem)?clamp(Math.round(o.ordem),-99,99):0;SCN.list.push(it)});
   SCN.exato=!!sc.exato;
   /* objetos da cena */
   SCN.objetos.length=0;SCN.objSel=null;
-  if(Array.isArray(sc.objetos))sc.objetos.slice(0,300).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo),LIM={x:[-400,400],z:[-400,400],giro:[-180,180],larg:[0.2,450],prof:[0.2,450],alt:[0.2,120],encosto:[0.5,12],cabeceira:[0.5,12],raio:[0.1,20]};Object.keys(LIM).forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],LIM[k][0],LIM[k][1])});
+  if(Array.isArray(sc.objetos))sc.objetos.slice(0,300).forEach(o=>{try{if(o&&TIPOS_OBJETO[o.tipo]){const q=objetoPadrao(o.tipo),LIM={x:[-6000,6000],z:[-6000,6000],giro:[-180,180],larg:[0.05,6000],prof:[0.05,6000],alt:[0.05,3000],encosto:[0.5,12],cabeceira:[0.5,12],raio:[0.02,1000]};Object.keys(LIM).forEach(k=>{if(typeof o[k]==="number"&&isFinite(o[k]))q[k]=clamp(o[k],LIM[k][0],LIM[k][1])});
     if(o.perfilPega)q.perfilPega=normalizarPerfil(o.perfilPega);
     if(typeof o.modeloMao==="string"&&o.modeloMao.length<=16)q.modeloMao=o.modeloMao;
     if(o.gestoAnterior)q.gestoAnterior=Object.fromEntries(Object.entries(o.gestoAnterior).filter(([k,v])=>
@@ -122,6 +122,7 @@ function loadScene(sc){
     if(Number.isFinite(o.secaoPega)&&o.secaoPega>0)q.secaoPega=Math.min(o.secaoPega,4);
     if(q.raio!==undefined)q.larg=q.prof=2*q.raio;if(typeof o.nome==="string")q.nome=o.nome.slice(0,24);if(typeof o.grupo==="string")q.grupo=o.grupo.slice(0,60);if(o.chao)q.chao=true;q.id=novoIdObjeto();
     if(Array.isArray(o.rot3)&&o.rot3.length===9&&o.rot3.every(Number.isFinite))q.rot3=o.rot3.slice();
+    if(o.animal&&typeof o.animal==="object"){try{const t=JSON.stringify(o.animal);if(t.length<20000)q.animal=JSON.parse(t);}catch(e){}}if(o.emAr)q.emAr=true;
     // Dinâmica V3 é persistida apenas com valores finitos (sem reexecutar a queda na carga).
     if(o.dinamica&&o.dinamica.versao===1&&
        ["gravidade","restituicao","atrito","tempo"].every(k=>Number.isFinite(o.dinamica[k]))&&
@@ -206,7 +207,7 @@ function loadScene(sc){
   if(SCN.list.length>1&&SCN.list[0].hue===null&&false)SCN.list[0].hue=nextHue();
   SCN.active=clamp(sc.active|0,0,SCN.list.length-1);setP(SCN.list[SCN.active].params);
   if(sc.camera)CAMK.forEach(k=>{const d=SLK[k];if(typeof sc.camera[k]==="number"&&d)P[k]=clamp(sc.camera[k],d.min,d.max)});
-  if(sc.camera&&typeof sc.camera.lens!=="number"){P.persp=1;P.lens=DEF.lens;P.atmo=DEF.atmo;P.camDist=clamp(zoomToDist(P,P.zoom||1),4,200)}
+  if(sc.camera&&typeof sc.camera.lens!=="number"){P.persp=1;P.lens=DEF.lens;P.atmo=DEF.atmo;P.camDist=clamp(zoomToDist(P,P.zoom||1),0.3,30000)}
   /* Restaura o alvo e a região de foco. IDs de objetos mudam no JSON,
      então persistimos seu índice e recuperamos o novo ID aqui. */
   SCN.pivo=null;SCN.orbitaArea=null;

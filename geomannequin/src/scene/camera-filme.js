@@ -6,6 +6,7 @@
 import { SCN, P } from "./modelo.js";
 import { pMundo } from "./colisoes.js";
 import { aplicarCameraBlk } from "./blocking.js";
+import { amPontos } from "./animais.js";
 import { capsulas, cameraNoMundo } from "../engine/index.js";
 
 const CF_M = 1 / 0.114, CF_D = Math.PI / 180;
@@ -20,7 +21,7 @@ function cfChao(it) { const k = (it.params.tamanho || 1).toFixed(3) + ":" + (it.
 function cfChaoGeral() { const it = SCN.list.find(x => x.name !== "__vazio__") || SCN.list[0]; return it ? cfChao(it) : -15.1; }
 /* pontos de uma pessoa no instante: cabeça, olhos (e para onde olham), peito, centro, frente (direção do corpo no chão) */
 function cfPessoa(nome) {
-  const it = SCN.list.find(x => x.name === nome); if (!it) return null;
+  const it = SCN.list.find(x => x.name === nome); if (!it) { const a = amPontos(nome); if (!a) return null; return Object.assign(a, { frente: [a.frente[0], 0, a.frente[1]] }); }
   const cs = cfCaps(it), cab = cs.find(c => c.nome === "cabeca"), tor = cs.filter(c => /torax|abdome|pelve/.test(c.nome || ""));
   const Q = it.params, g = (Q.wRot || 0) * CF_D, frente = [Math.sin(g), 0, Math.cos(g)];
   const cabeca = cab ? [(cab.a[0] + cab.b[0]) / 2, (cab.a[1] + cab.b[1]) / 2, (cab.a[2] + cab.b[2]) / 2] : [Q.wx || 0, -1, Q.wz || 0];

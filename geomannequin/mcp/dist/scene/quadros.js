@@ -15,7 +15,7 @@ import { L } from "./modos.js";
 import { SCN, sceneList, instColors, corObjeto } from "./modelo.js";
 import { pMundo } from "./colisoes.js";
 import { azimutesGiro, nomeVista } from "./orbita.js";
-import { B25_COCO, H, W, paraMundo, pontosDoCorpo, renderScene, renderCamadas, setFino, telaDoMundo, ultimaComposicao } from "../engine/index.js";
+import { capsulas, B25_COCO, H, W, paraMundo, pontosDoCorpo, renderScene, renderCamadas, setFino, telaDoMundo, ultimaComposicao } from "../engine/index.js";
 
 /* ===== formatos de quadro: recorte central da foto do palco (600 × 700) ===== */
 const FORMATOS_QUADRO = { "16:9": 16 / 9, "4:3": 4 / 3, "3:2": 3 / 2, "2:1": 2, "21:9": 21 / 9, "1:1": 1, "3:4": 3 / 4, "2:3": 2 / 3, "9:16": 9 / 16,
@@ -220,6 +220,7 @@ function renderizarQuadro(q, opts) {
     const r = renderScene(list, Lr, !!opts.rapido, Lr.floor ? 16 : 0, { canal: opts.rapido ? "quadros-previa" : "quadros" });
     const fundo = exp ? "#FFFFFF" : (list[0].p.bg || "#0F1620");
     const out = { n: q.n, titulo: q.titulo, formato: q.formato, recorte: rc, svg: svgRecortado(r.svg, rc, fundo) };
+    try { out.cabecas = cabecasNaTela(list, rc); } catch (e) { out.cabecas = {}; }
     if (opts.passes === false) return out;
     const passes = opts.passes || Object.fromEntries(PASSES_QUADRO.map(k => [k, true]));
     /* efeitos especiais ficam fora das referências do ControlNet (contorno, profundidade…), a não ser com opts.efeitosNasReferencias */
@@ -281,6 +282,18 @@ function renderizarQuadro(q, opts) {
     }
     return comCena(out, list);
   });
+}
+/* onde fica a cabeça (e a boca) de cada um NO QUADRO (0..1 do recorte): para o rabicho do balão apontar para quem fala,
+   para não cobrir rostos e para as regras de composição (eixo de 180°, espaço na frente do olhar, cabeça cortada) */
+function cabecasNaTela(list, rc) {
+  const p0 = list[0].p, out = {};
+  for (const it of SCN.list) { if (it.oculto || it.name === "__vazio__") continue;
+    const cs = capsulas(pMundo(it)), Lc = cs.caps || cs, cab = Lc.find(c => c.nome === "cabeca"); if (!cab) continue;
+    const c = [(cab.a[0] + cab.b[0]) / 2, (cab.a[1] + cab.b[1]) / 2, (cab.a[2] + cab.b[2]) / 2], g = (it.params.wRot || 0) * Math.PI / 180 + (it.params.headYaw || 0) * Math.PI / 180;
+    const boca = [c[0] + Math.sin(g) * cab.r * 0.6, c[1] - cab.r * 0.45, c[2] + Math.cos(g) * cab.r * 0.6], fr = [c[0] + Math.sin(g) * 6, c[1], c[2] + Math.cos(g) * 6];
+    const t = telaDoMundo(p0, c), tb = telaDoMundo(p0, boca), tf = telaDoMundo(p0, fr), u = x => (x - rc.x) / rc.w, v = y => (y - rc.y) / rc.h;
+    out[it.name] = { u: +u(t[0]).toFixed(4), v: +v(t[1]).toFixed(4), bu: +u(tb[0]).toFixed(4), bv: +v(tb[1]).toFixed(4), r: +(cab.r * 1.35 * t[3] / rc.h).toFixed(4), du: +(u(tf[0]) - u(t[0])).toFixed(4), dv: +(v(tf[1]) - v(t[1])).toFixed(4), z: +t[2].toFixed(2) }; }
+  return out;
 }
 function comCena(out, list) {
     out.cena = { camera: (() => { const P0 = list[0].p; return { yaw: P0.yaw, pitch: P0.pitch, roll: P0.roll, distancia: P0.camDist, lente: P0.lens, perspectiva: !!P0.persp, alvo: [P0.tx, P0.ty, P0.tz] }; })(),
@@ -451,4 +464,4 @@ cena.ativo.expressao("neutra");
 cena.ativo.expressao("alegria");
 camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("close", "Ana");`
 };
-export { FORMATOS_QUADRO, recorteQuadro, lerRoteiro, executarRoteiro, renderizarQuadro, pontosOpenPose, openPoseSvg, openPoseJson, OP_NOMES, PARTES_SEG, PASSES_QUADRO, manifestoQuadros, pastaQuadro, paginaQuadros, GRADES, folhaDeContato, MODELOS_ROTEIRO, chaveDe };
+export { cabecasNaTela, FORMATOS_QUADRO, recorteQuadro, lerRoteiro, executarRoteiro, renderizarQuadro, pontosOpenPose, openPoseSvg, openPoseJson, OP_NOMES, PARTES_SEG, PASSES_QUADRO, manifestoQuadros, pastaQuadro, paginaQuadros, GRADES, folhaDeContato, MODELOS_ROTEIRO, chaveDe };

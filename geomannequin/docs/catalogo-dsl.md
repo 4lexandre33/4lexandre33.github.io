@@ -1,6 +1,6 @@
 # Catálogo DSL do GeoMannequin
 
-Gerado em 2026-11-13 · **122 poses** · **144 animações** (111 ações, 13 ciclos, 11 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 42 expressões · 101 efeitos · 71 objetos.
+Gerado em 2026-11-14 · **122 poses** · **144 animações** (111 ações, 13 ciclos, 11 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 42 expressões · 101 efeitos · 72 objetos.
 
 Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.
 
@@ -26,7 +26,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 **Efeitos (`Kai efeito NOME em mao-direita`):** concentracao, velocidade, impacto_tela, flash, sombra_dramatica, onomatopeia, reticula, feixe, cone, espiral, tornado, explosao, barreira, circulo_magico, pilar, meteoro, chuva_meteoros, raio, onda_choque, cristais_chao, fogo_chao, fumaca, chama, aura, arco_movimento, rastro_membro, pos_imagem, energia_mao, velocidade_corpo, impacto_contato, emote, cratera, rachaduras, destrocos, poeira, parede_quebrada, buraco_chao, objeto_quebrando, rastro_fumaca, sulco_poeira, aura_explosiva, aura_vento, esfera_energia, fios_energia, pedras_levitando, ondas_chao, carga_maos, redemoinho, aneis_impacto, salpicos, aneis_orbitais, personalizado, composto, raio_galhos, raio_cartoon, arvore_de_raios, cone_de_aneis, torrente_espiral, tunel_de_aneis, foice_de_energia, rajada_de_particulas, leque_de_flechas, enxame_de_flechas, laminas_crescentes, crescente_gigante, laminas_de_vento, onda_gigante, espinhos_do_chao, tentaculos, vinhas_de_espinhos, atomo, vortice_disco, cupula_de_arcos, esfera_jaula, laco_infinito, fita_em_s, serpente_de_energia, discos_serra, ondas_sonoras, explosao_estrelada, bolhas, circulo_magico_flechas, circulo_de_runas, dna, tranca, portais_e_feixes, feixe_com_aneis, cone_de_ondas, esfera_espiral, chamas_nanquim, respingos_de_nanquim, pilar_de_luz_nanquim, redemoinho_de_fumaca, linhas_de_impulso, impacto_com_detritos, anel_de_impacto_no_chao, chuva_de_estrelas, aura_de_espinhos, tornado_espiral, rastro_de_velocidade, arco_de_golpe
 
-**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco
+**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco
 
 ## Poses
 
@@ -2273,7 +2273,7 @@ No filme: `0s Kai anima passoFrente`
 
 ```gm
 # um passo à frente (60 cm)
-animacao "passoFrente" duracao 0.7s mantem tags "Locomocao/Passo/Frente"
+animacao "passoFrente" duracao 0.7s mantem travar-pes tags "Locomocao/Passo/Frente"
   chave 0s 
   chave 0.35s ombro.direito(frente 30) ombro.esquerdo(tras 25) cotovelo.direito(dobra 35) cotovelo.esquerdo(dobra 20) quadril.direito(tras 18) quadril.esquerdo(frente 58) joelho.direito(dobra 12) joelho.esquerdo(dobra 72) tornozelo.direito(aponta 14) tornozelo.esquerdo(levanta-ponta 14) dedos-pe.direito(levanta 26) tronco(frente 6) move frente 0.3
   chave 0.7s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0) move frente 0.6
@@ -2287,7 +2287,7 @@ No filme: `0s Kai anima passoTras`
 
 ```gm
 # um passo para trás
-animacao "passoTras" duracao 0.8s mantem tags "Locomocao/Passo/Tras"
+animacao "passoTras" duracao 0.8s mantem travar-pes tags "Locomocao/Passo/Tras"
   chave 0s 
   chave 0.4s ombro.direito(frente 30) ombro.esquerdo(tras 25) cotovelo.direito(dobra 35) cotovelo.esquerdo(dobra 20) quadril.direito(tras 18) quadril.esquerdo(frente 58) joelho.direito(dobra 12) joelho.esquerdo(dobra 72) tornozelo.direito(aponta 14) tornozelo.esquerdo(levanta-ponta 14) dedos-pe.direito(levanta 26) tronco(frente 6) move frente -0.2
   chave 0.8s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0) move frente -0.45
@@ -2301,7 +2301,7 @@ No filme: `0s Kai anima passoLadoDireito`
 
 ```gm
 # um passo para o lado
-animacao "passoLadoDireito" duracao 0.6s mantem tags "Locomocao/Passo/Lado"
+animacao "passoLadoDireito" duracao 0.6s mantem travar-pes tags "Locomocao/Passo/Lado"
   chave 0s 
   chave 0.3s quadril.direito(abre 14) move lado 0.2
   chave 0.6s quadril.direito(abre 3) move lado 0.4
@@ -2315,38 +2315,82 @@ No filme: `0s Kai anima passoLadoEsquerdo`
 
 ```gm
 # um passo para o lado
-animacao "passoLadoEsquerdo" duracao 0.6s mantem tags "Locomocao/Passo/Lado"
+animacao "passoLadoEsquerdo" duracao 0.6s mantem travar-pes tags "Locomocao/Passo/Lado"
   chave 0s 
   chave 0.3s quadril.esquerdo(abre 14) move lado -0.2
   chave 0.6s quadril.esquerdo(abre 3) move lado -0.4
 ```
 
-### andarCiclo — ciclo (repete), 1,00 s, loop
+### andarCiclo — ciclo (repete), 1,04 s, loop
 
-ciclo de caminhada (1,4 m por ciclo)
+ciclo de caminhada (contato, recepção, passagem, impulso)
 
 No filme: `0s Kai anima andarCiclo` (repete até o fim do plano ou `por 4s`)
 
 ```gm
-# ciclo de caminhada (1,4 m por ciclo)
-animacao "andarCiclo" duracao 1s mantem loop tags "Locomocao/Andar"
-  chave 0s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(tras 14) quadril.esquerdo(frente 24) joelho.direito(dobra 28) joelho.esquerdo(dobra 6) tornozelo.direito(levanta-ponta 4) tornozelo.esquerdo(levanta-ponta 3) dedos-pe.direito(levanta 30) tronco(gira-esquerda 7) pelve(gira-direita 6)
-  chave 0.5s ombro.direito(tras 22) ombro.esquerdo(frente 25) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 30) quadril.direito(frente 24) quadril.esquerdo(tras 14) joelho.direito(dobra 6) joelho.esquerdo(dobra 28) tornozelo.direito(levanta-ponta 3) tornozelo.esquerdo(levanta-ponta 4) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 30) tronco(gira-direita 7) pelve(gira-esquerda 6) move frente 0.7
-  chave 1s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(tras 14) quadril.esquerdo(frente 24) joelho.direito(dobra 28) joelho.esquerdo(dobra 6) tornozelo.direito(levanta-ponta 4) tornozelo.esquerdo(levanta-ponta 3) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(dobra 0) tronco(gira-esquerda 7) pelve(gira-direita 6) move frente 1.4
+# ciclo de caminhada (contato, recepção, passagem, impulso)
+animacao "andarCiclo" duracao 1.04s relativa desde-neutra mantem loop curva linear travar-pes tags "Locomocao/Andar"
+  chave 0s ombro.direito(frente 20) ombro.esquerdo(tras 18) cotovelo.direito(dobra 24) cotovelo.esquerdo(dobra 15) quadril.direito(tras 20) quadril.esquerdo(frente 18) joelho.direito(dobra 24) tornozelo.direito(aponta 16) tornozelo.esquerdo(levanta-ponta 10) tronco(gira-esquerda 5) pelve(gira-direita 5)
+  chave 0.043s ombro.direito(frente 17.8) ombro.esquerdo(tras 15.8) cotovelo.direito(dobra 22.9) quadril.direito(tras 17.8) quadril.esquerdo(frente 17.2) joelho.direito(dobra 29) joelho.esquerdo(dobra 3.9) tornozelo.direito(aponta 16.6) tornozelo.esquerdo(levanta-ponta 7.2) tronco(gira-esquerda 4.4) pelve(gira-direita 4.4) move frente 0.001
+  chave 0.087s ombro.direito(frente 13.8) ombro.esquerdo(tras 11.8) cotovelo.direito(dobra 20.9) quadril.direito(tras 13.8) quadril.esquerdo(frente 15.7) joelho.direito(dobra 38) joelho.esquerdo(dobra 10.9) tornozelo.direito(aponta 17.6) tornozelo.esquerdo(levanta-ponta 2.2) tronco(gira-esquerda 3.4) pelve(gira-direita 3.4) move frente 0.042
+  chave 0.13s ombro.direito(frente 11.9) ombro.esquerdo(tras 10) cotovelo.direito(dobra 20) quadril.direito(tras 11.9) quadril.esquerdo(frente 14.9) joelho.direito(dobra 42.1) joelho.esquerdo(dobra 14) tornozelo.direito(aponta 17.9) tornozelo.esquerdo(aponta 0) tronco(gira-esquerda 3) pelve(gira-direita 3) move frente 0.081
+  chave 0.173s ombro.direito(frente 8.5) ombro.esquerdo(tras 7.1) cotovelo.direito(dobra 18.5) quadril.direito(tras 2.6) quadril.esquerdo(frente 10.6) joelho.direito(dobra 46.7) joelho.esquerdo(dobra 11.6) tornozelo.direito(aponta 10.9) tornozelo.esquerdo(aponta 0.6) tronco(gira-esquerda 2.1) pelve(gira-direita 2.1) move frente 0.135
+  chave 0.217s ombro.direito(frente 2.9) ombro.esquerdo(tras 2.4) cotovelo.direito(dobra 16.2) quadril.direito(frente 12.2) quadril.esquerdo(frente 3.6) joelho.direito(dobra 54.1) joelho.esquerdo(dobra 7.9) tornozelo.direito(levanta-ponta 0.2) tornozelo.esquerdo(aponta 1.5) tronco(gira-esquerda 0.7) pelve(gira-direita 0.7) move frente 0.224
+  chave 0.26s ombro(frente 0) cotovelo.direito(dobra 15) quadril.direito(frente 20) quadril.esquerdo(frente 0) joelho.direito(dobra 58) joelho.esquerdo(dobra 6) tornozelo.direito(levanta-ponta 6) tornozelo.esquerdo(aponta 2) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 0.271
+  chave 0.303s ombro.direito(tras 2.9) ombro.esquerdo(frente 2.9) cotovelo.esquerdo(dobra 16.2) quadril.direito(frente 21) quadril.esquerdo(tras 2.9) joelho.direito(dobra 48.8) joelho.esquerdo(dobra 5.5) tornozelo.direito(levanta-ponta 7.5) tornozelo.esquerdo(aponta 3.5) tronco(gira-direita 0.7) pelve(gira-esquerda 0.7) move frente 0.318
+  chave 0.347s ombro.direito(tras 8.5) ombro.esquerdo(frente 8.5) cotovelo.esquerdo(dobra 18.5) quadril.direito(frente 22.8) quadril.esquerdo(tras 8.5) joelho.direito(dobra 31.2) joelho.esquerdo(dobra 4.6) tornozelo.direito(levanta-ponta 10.2) tornozelo.esquerdo(aponta 6.2) tronco(gira-direita 2.1) pelve(gira-esquerda 2.1) move frente 0.41
+  chave 0.39s ombro.direito(tras 11.9) ombro.esquerdo(frente 11.9) cotovelo.esquerdo(dobra 20) quadril.direito(frente 24) quadril.esquerdo(tras 11.9) joelho.direito(dobra 20.2) joelho.esquerdo(dobra 4) tornozelo.direito(levanta-ponta 12) tornozelo.esquerdo(aponta 8) tronco(gira-direita 3) pelve(gira-esquerda 3) move frente 0.467
+  chave 0.433s ombro.direito(tras 13.3) ombro.esquerdo(frente 13.8) cotovelo.esquerdo(dobra 20.9) quadril.direito(frente 22.7) quadril.esquerdo(tras 13.8) joelho.direito(dobra 15.5) joelho.esquerdo(dobra 8.5) tornozelo.direito(levanta-ponta 11.6) tornozelo.esquerdo(aponta 9.8) tronco(gira-direita 3.4) pelve(gira-esquerda 3.4) move frente 0.537
+  chave 0.477s ombro.direito(tras 16.3) ombro.esquerdo(frente 17.8) cotovelo.esquerdo(dobra 22.9) quadril.direito(frente 19.7) quadril.esquerdo(tras 17.8) joelho.direito(dobra 5.6) joelho.esquerdo(dobra 18.4) tornozelo.direito(levanta-ponta 10.6) tornozelo.esquerdo(aponta 13.8) tronco(gira-direita 4.4) pelve(gira-esquerda 4.4) move frente 0.688
+  chave 0.52s ombro.direito(tras 18) ombro.esquerdo(frente 20) cotovelo.esquerdo(dobra 24) quadril.direito(frente 18) quadril.esquerdo(tras 20) joelho.direito(dobra 0) joelho.esquerdo(dobra 24) tornozelo.direito(levanta-ponta 10) tornozelo.esquerdo(aponta 16) tronco(gira-direita 5) pelve(gira-esquerda 5) move frente 0.766
+  chave 0.563s ombro.direito(tras 15.8) ombro.esquerdo(frente 17.8) cotovelo.esquerdo(dobra 22.9) quadril.direito(frente 17.2) quadril.esquerdo(tras 17.8) joelho.direito(dobra 3.9) joelho.esquerdo(dobra 29) tornozelo.direito(levanta-ponta 7.2) tornozelo.esquerdo(aponta 16.6) tronco(gira-direita 4.4) pelve(gira-esquerda 4.4) move frente 0.767
+  chave 0.607s ombro.direito(tras 11.8) ombro.esquerdo(frente 13.8) cotovelo.esquerdo(dobra 20.9) quadril.direito(frente 15.7) quadril.esquerdo(tras 13.8) joelho.direito(dobra 10.9) joelho.esquerdo(dobra 38) tornozelo.direito(levanta-ponta 2.2) tornozelo.esquerdo(aponta 17.6) tronco(gira-direita 3.4) pelve(gira-esquerda 3.4) move frente 0.808
+  chave 0.65s ombro.direito(tras 10) ombro.esquerdo(frente 11.9) cotovelo.esquerdo(dobra 20) quadril.direito(frente 14.9) quadril.esquerdo(tras 11.9) joelho.direito(dobra 14) joelho.esquerdo(dobra 42.1) tornozelo.direito(aponta 0) tornozelo.esquerdo(aponta 17.9) tronco(gira-direita 3) pelve(gira-esquerda 3) move frente 0.847
+  chave 0.693s ombro.direito(tras 7.1) ombro.esquerdo(frente 8.5) cotovelo.esquerdo(dobra 18.5) quadril.direito(frente 10.6) quadril.esquerdo(tras 2.6) joelho.direito(dobra 11.6) joelho.esquerdo(dobra 46.7) tornozelo.direito(aponta 0.6) tornozelo.esquerdo(aponta 10.9) tronco(gira-direita 2.1) pelve(gira-esquerda 2.1) move frente 0.901
+  chave 0.737s ombro.direito(tras 2.4) ombro.esquerdo(frente 2.9) cotovelo.esquerdo(dobra 16.2) quadril.direito(frente 3.6) quadril.esquerdo(frente 12.2) joelho.direito(dobra 7.9) joelho.esquerdo(dobra 54.1) tornozelo.direito(aponta 1.5) tornozelo.esquerdo(levanta-ponta 0.2) tronco(gira-direita 0.7) pelve(gira-esquerda 0.7) move frente 0.99
+  chave 0.78s ombro(frente 0) cotovelo.esquerdo(dobra 15) quadril.direito(frente 0) quadril.esquerdo(frente 20) joelho.direito(dobra 6) joelho.esquerdo(dobra 58) tornozelo.direito(aponta 2) tornozelo.esquerdo(levanta-ponta 6) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 1.037
+  chave 0.823s ombro.direito(frente 2.9) ombro.esquerdo(tras 2.9) cotovelo.direito(dobra 16.2) quadril.direito(tras 2.9) quadril.esquerdo(frente 21) joelho.direito(dobra 5.5) joelho.esquerdo(dobra 48.8) tornozelo.direito(aponta 3.5) tornozelo.esquerdo(levanta-ponta 7.5) tronco(gira-esquerda 0.7) pelve(gira-direita 0.7) move frente 1.084
+  chave 0.867s ombro.direito(frente 8.5) ombro.esquerdo(tras 8.5) cotovelo.direito(dobra 18.5) quadril.direito(tras 8.5) quadril.esquerdo(frente 22.8) joelho.direito(dobra 4.6) joelho.esquerdo(dobra 31.2) tornozelo.direito(aponta 6.2) tornozelo.esquerdo(levanta-ponta 10.2) tronco(gira-esquerda 2.1) pelve(gira-direita 2.1) move frente 1.176
+  chave 0.91s ombro.direito(frente 11.9) ombro.esquerdo(tras 11.9) cotovelo.direito(dobra 20) quadril.direito(tras 11.9) quadril.esquerdo(frente 24) joelho.direito(dobra 4) joelho.esquerdo(dobra 20.2) tornozelo.direito(aponta 8) tornozelo.esquerdo(levanta-ponta 12) tronco(gira-esquerda 3) pelve(gira-direita 3) move frente 1.233
+  chave 0.953s ombro.direito(frente 13.8) ombro.esquerdo(tras 13.3) cotovelo.direito(dobra 20.9) quadril.direito(tras 13.8) quadril.esquerdo(frente 22.7) joelho.direito(dobra 8.5) joelho.esquerdo(dobra 15.5) tornozelo.direito(aponta 9.8) tornozelo.esquerdo(levanta-ponta 11.6) tronco(gira-esquerda 3.4) pelve(gira-direita 3.4) move frente 1.304
+  chave 0.997s ombro.direito(frente 17.8) ombro.esquerdo(tras 16.3) cotovelo.direito(dobra 22.9) quadril.direito(tras 17.8) quadril.esquerdo(frente 19.7) joelho.direito(dobra 18.4) joelho.esquerdo(dobra 5.6) tornozelo.direito(aponta 13.8) tornozelo.esquerdo(levanta-ponta 10.6) tronco(gira-esquerda 4.4) pelve(gira-direita 4.4) move frente 1.453
+  chave 1.04s ombro.direito(frente 20) ombro.esquerdo(tras 18) cotovelo.direito(dobra 24) quadril.direito(tras 20) quadril.esquerdo(frente 18) joelho.direito(dobra 24) joelho.esquerdo(dobra 0) tornozelo.direito(aponta 16) tornozelo.esquerdo(levanta-ponta 10) tronco(gira-esquerda 5) pelve(gira-direita 5) move frente 1.531
 ```
 
-### correrCiclo — ciclo (repete), 0,60 s, loop
+### correrCiclo — ciclo (repete), 0,64 s, loop
 
-ciclo de corrida
+ciclo de corrida (contato, recepção, passagem, impulso)
 
 No filme: `0s Kai anima correrCiclo` (repete até o fim do plano ou `por 4s`)
 
 ```gm
-# ciclo de corrida
-animacao "correrCiclo" duracao 0.6s mantem loop tags "Locomocao/Correr"
-  chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14)
-  chave 0.3s ombro.direito(tras 55) ombro.esquerdo(frente 68) cotovelo.direito(dobra 95) cotovelo.esquerdo(dobra 88) quadril.direito(frente 82 abre 3 gira-fora 0) quadril.esquerdo(frente 25.2 fecha 2.4 gira-fora 9.6) joelho.direito(dobra 105) joelho.esquerdo(dobra 64.4) tornozelo.direito(aponta 14) tornozelo.esquerdo(aponta 30) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 40) tronco(gira-esquerda 12) pelve(gira-direita 10) move frente 1.2
-  chave 0.6s ombro.direito(frente 68) ombro.esquerdo(tras 55) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82 abre 3 gira-fora 0) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) dedos-pe.esquerdo(dobra 0) tronco(gira-direita 12) pelve(gira-esquerda 10) move frente 2.4
+# ciclo de corrida (contato, recepção, passagem, impulso)
+animacao "correrCiclo" duracao 0.64s relativa desde-neutra mantem loop curva linear travar-pes tags "Locomocao/Correr"
+  chave 0s ombro.direito(frente 50) ombro.esquerdo(tras 40) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 85) mao(fecha 90%) quadril.direito(tras 24) quadril.esquerdo(frente 30) joelho.direito(dobra 46) joelho.esquerdo(dobra 14) tornozelo.direito(aponta 24) tornozelo.esquerdo(levanta-ponta 6) tronco(gira-esquerda 8) pelve(gira-direita 6) corpo(deita-brucos 10)
+  chave 0.027s ombro.direito(frente 44.4) ombro.esquerdo(tras 35.6) quadril.direito(tras 19) quadril.esquerdo(frente 27.2) joelho.direito(dobra 56.6) joelho.esquerdo(dobra 19.6) tornozelo.direito(aponta 22.9) tornozelo.esquerdo(levanta-ponta 3.2) tronco(gira-esquerda 6.9) pelve(gira-direita 5.2) move frente 0.091
+  chave 0.053s ombro.direito(frente 34.5) ombro.esquerdo(tras 27.6) quadril.direito(tras 10) quadril.esquerdo(frente 22.2) joelho.direito(dobra 75.5) joelho.esquerdo(dobra 29.5) tornozelo.direito(aponta 20.9) tornozelo.esquerdo(aponta 1.8) tronco(gira-esquerda 4.9) pelve(gira-direita 3.7) move frente 0.262
+  chave 0.08s ombro.direito(frente 29.9) ombro.esquerdo(tras 23.9) quadril.direito(tras 5.8) quadril.esquerdo(frente 19.9) joelho.direito(dobra 84.1) joelho.esquerdo(dobra 34) tornozelo.direito(aponta 19.9) tornozelo.esquerdo(aponta 4) tronco(gira-esquerda 4) pelve(gira-direita 3) move frente 0.341
+  chave 0.107s ombro.direito(frente 21.2) ombro.esquerdo(tras 16.9) cotovelo.direito(dobra 88.5) quadril.direito(frente 9.9) quadril.esquerdo(frente 14.1) joelho.direito(dobra 88.7) joelho.esquerdo(dobra 31.1) tornozelo.direito(aponta 12.9) tornozelo.esquerdo(aponta 5.8) tronco(gira-esquerda 2.8) pelve(gira-direita 2.1) move frente 0.416
+  chave 0.133s ombro.direito(frente 7.3) ombro.esquerdo(tras 5.8) cotovelo.direito(dobra 86.2) quadril.direito(frente 34.9) quadril.esquerdo(frente 4.8) joelho.direito(dobra 96.1) joelho.esquerdo(dobra 26.4) tornozelo.direito(aponta 1.8) tornozelo.esquerdo(aponta 8.5) tronco(gira-esquerda 1) pelve(gira-direita 0.7) move frente 0.538
+  chave 0.16s ombro(frente 0) cotovelo.direito(dobra 85) quadril.direito(frente 48) quadril.esquerdo(frente 0) joelho.direito(dobra 100) joelho.esquerdo(dobra 24) tornozelo.direito(levanta-ponta 4) tornozelo.esquerdo(aponta 10) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 0.601
+  chave 0.187s ombro.direito(tras 8.2) ombro.esquerdo(frente 10.7) cotovelo.esquerdo(dobra 86.2) quadril.direito(frente 49) quadril.esquerdo(tras 4.4) joelho.direito(dobra 89.3) joelho.esquerdo(dobra 21.1) tornozelo.direito(levanta-ponta 5.5) tornozelo.esquerdo(aponta 12.9) tronco(gira-direita 1.5) pelve(gira-esquerda 1) move frente 0.655
+  chave 0.213s ombro.direito(tras 24) ombro.esquerdo(frente 31.1) cotovelo.esquerdo(dobra 88.5) quadril.direito(frente 50.8) quadril.esquerdo(tras 12.7) joelho.direito(dobra 68.9) joelho.esquerdo(dobra 15.5) tornozelo.direito(levanta-ponta 8.2) tornozelo.esquerdo(aponta 18.5) tronco(gira-direita 4.2) pelve(gira-esquerda 2.8) move frente 0.754
+  chave 0.24s ombro.direito(tras 33.9) ombro.esquerdo(frente 43.8) cotovelo.esquerdo(dobra 90) quadril.direito(frente 52) quadril.esquerdo(tras 17.9) joelho.direito(dobra 56.2) joelho.esquerdo(dobra 12.1) tornozelo.direito(levanta-ponta 10) tornozelo.esquerdo(aponta 21.9) tronco(gira-direita 6) pelve(gira-esquerda 4) move frente 0.814
+  chave 0.267s ombro.direito(tras 35.3) ombro.esquerdo(frente 45.3) quadril.direito(frente 47.1) quadril.esquerdo(tras 19.3) joelho.direito(dobra 46.6) joelho.esquerdo(dobra 19.6) tornozelo.direito(levanta-ponta 9.1) tornozelo.esquerdo(aponta 22.4) tronco(gira-direita 6.4) pelve(gira-esquerda 4.4) move frente 0.888
+  chave 0.293s ombro.direito(tras 38.3) ombro.esquerdo(frente 48.3) quadril.direito(frente 36.1) quadril.esquerdo(tras 22.3) joelho.direito(dobra 25.7) joelho.esquerdo(dobra 36.5) tornozelo.direito(levanta-ponta 7.1) tornozelo.esquerdo(aponta 23.4) tronco(gira-direita 7.4) pelve(gira-esquerda 5.4) move frente 0.889
+  chave 0.32s ombro.direito(tras 40) ombro.esquerdo(frente 50) quadril.direito(frente 30) quadril.esquerdo(tras 24) joelho.direito(dobra 14) joelho.esquerdo(dobra 46) tornozelo.direito(levanta-ponta 6) tornozelo.esquerdo(aponta 24) tronco(gira-direita 8) pelve(gira-esquerda 6) move frente 0.893
+  chave 0.347s ombro.direito(tras 35.6) ombro.esquerdo(frente 44.4) quadril.direito(frente 27.2) quadril.esquerdo(tras 19) joelho.direito(dobra 19.6) joelho.esquerdo(dobra 56.6) tornozelo.direito(levanta-ponta 3.2) tornozelo.esquerdo(aponta 22.9) tronco(gira-direita 6.9) pelve(gira-esquerda 5.2) move frente 0.984
+  chave 0.373s ombro.direito(tras 27.6) ombro.esquerdo(frente 34.5) quadril.direito(frente 22.2) quadril.esquerdo(tras 10) joelho.direito(dobra 29.5) joelho.esquerdo(dobra 75.5) tornozelo.direito(aponta 1.8) tornozelo.esquerdo(aponta 20.9) tronco(gira-direita 4.9) pelve(gira-esquerda 3.7) move frente 1.155
+  chave 0.4s ombro.direito(tras 23.9) ombro.esquerdo(frente 29.9) quadril.direito(frente 19.9) quadril.esquerdo(tras 5.8) joelho.direito(dobra 34) joelho.esquerdo(dobra 84.1) tornozelo.direito(aponta 4) tornozelo.esquerdo(aponta 19.9) tronco(gira-direita 4) pelve(gira-esquerda 3) move frente 1.233
+  chave 0.427s ombro.direito(tras 16.9) ombro.esquerdo(frente 21.2) cotovelo.esquerdo(dobra 88.5) quadril.direito(frente 14.1) quadril.esquerdo(frente 9.9) joelho.direito(dobra 31.1) joelho.esquerdo(dobra 88.7) tornozelo.direito(aponta 5.8) tornozelo.esquerdo(aponta 12.9) tronco(gira-direita 2.8) pelve(gira-esquerda 2.1) move frente 1.31
+  chave 0.453s ombro.direito(tras 5.8) ombro.esquerdo(frente 7.3) cotovelo.esquerdo(dobra 86.2) quadril.direito(frente 4.8) quadril.esquerdo(frente 34.9) joelho.direito(dobra 26.4) joelho.esquerdo(dobra 96.1) tornozelo.direito(aponta 8.5) tornozelo.esquerdo(aponta 1.8) tronco(gira-direita 1) pelve(gira-esquerda 0.7) move frente 1.432
+  chave 0.48s ombro(frente 0) cotovelo.esquerdo(dobra 85) quadril.direito(frente 0) quadril.esquerdo(frente 48) joelho.direito(dobra 24) joelho.esquerdo(dobra 100) tornozelo.direito(aponta 10) tornozelo.esquerdo(levanta-ponta 4) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 1.495
+  chave 0.507s ombro.direito(frente 10.7) ombro.esquerdo(tras 8.2) cotovelo.direito(dobra 86.2) quadril.direito(tras 4.4) quadril.esquerdo(frente 49) joelho.direito(dobra 21.1) joelho.esquerdo(dobra 89.3) tornozelo.direito(aponta 12.9) tornozelo.esquerdo(levanta-ponta 5.5) tronco(gira-esquerda 1.5) pelve(gira-direita 1) move frente 1.548
+  chave 0.533s ombro.direito(frente 31.1) ombro.esquerdo(tras 24) cotovelo.direito(dobra 88.5) quadril.direito(tras 12.7) quadril.esquerdo(frente 50.8) joelho.direito(dobra 15.5) joelho.esquerdo(dobra 68.9) tornozelo.direito(aponta 18.5) tornozelo.esquerdo(levanta-ponta 8.2) tronco(gira-esquerda 4.2) pelve(gira-direita 2.8) move frente 1.648
+  chave 0.56s ombro.direito(frente 43.8) ombro.esquerdo(tras 33.9) cotovelo.direito(dobra 90) quadril.direito(tras 17.9) quadril.esquerdo(frente 52) joelho.direito(dobra 12.1) joelho.esquerdo(dobra 56.2) tornozelo.direito(aponta 21.9) tornozelo.esquerdo(levanta-ponta 10) tronco(gira-esquerda 6) pelve(gira-direita 4) move frente 1.708
+  chave 0.587s ombro.direito(frente 45.3) ombro.esquerdo(tras 35.3) quadril.direito(tras 19.3) quadril.esquerdo(frente 47.1) joelho.direito(dobra 19.6) joelho.esquerdo(dobra 46.6) tornozelo.direito(aponta 22.4) tornozelo.esquerdo(levanta-ponta 9.1) tronco(gira-esquerda 6.4) pelve(gira-direita 4.4) move frente 1.78
+  chave 0.613s ombro.direito(frente 48.3) ombro.esquerdo(tras 38.3) quadril.direito(tras 22.3) quadril.esquerdo(frente 36.1) joelho.direito(dobra 36.5) joelho.esquerdo(dobra 25.7) tornozelo.direito(aponta 23.4) tornozelo.esquerdo(levanta-ponta 7.1) tronco(gira-esquerda 7.4) pelve(gira-direita 5.4) move frente 1.781
+  chave 0.64s ombro.direito(frente 50) ombro.esquerdo(tras 40) quadril.direito(tras 24) quadril.esquerdo(frente 30) joelho.direito(dobra 46) joelho.esquerdo(dobra 14) tornozelo.direito(aponta 24) tornozelo.esquerdo(levanta-ponta 6) tronco(gira-esquerda 8) pelve(gira-direita 6) move frente 1.785
 ```
 
 ### virarEsquerda — ação (acontece e segura), 0,60 s
@@ -2477,9 +2521,10 @@ No filme: `0s Kai anima peDireito15cmDireita`
 
 ```gm
 # move o pé direito 15 cm para a direita
-animacao "peDireito15cmDireita" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Direito, Ajuste/15cm"
+animacao "peDireito15cmDireita" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Direito, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.direito(abre 12.9)
+  chave 0.2s quadril.direito(frente 10 abre 7.9) joelho.direito(dobra 22) tornozelo.direito(levanta-ponta 6)
+  chave 0.4s quadril.direito(frente 0 abre 12.9) joelho.direito(dobra 0) tornozelo.direito(aponta 0)
 ```
 
 ### peDireito15cmEsquerda — ação (acontece e segura), 0,40 s
@@ -2490,9 +2535,10 @@ No filme: `0s Kai anima peDireito15cmEsquerda`
 
 ```gm
 # move o pé direito 15 cm para a esquerda
-animacao "peDireito15cmEsquerda" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Direito, Ajuste/15cm"
+animacao "peDireito15cmEsquerda" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Direito, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.direito(fecha 6.9)
+  chave 0.2s quadril.direito(frente 10 fecha 1.9) joelho.direito(dobra 22) tornozelo.direito(levanta-ponta 6)
+  chave 0.4s quadril.direito(frente 0 fecha 6.9) joelho.direito(dobra 0) tornozelo.direito(aponta 0)
 ```
 
 ### peDireito15cmFrente — ação (acontece e segura), 0,40 s
@@ -2503,9 +2549,10 @@ No filme: `0s Kai anima peDireito15cmFrente`
 
 ```gm
 # move o pé direito 15 cm para a frente
-animacao "peDireito15cmFrente" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Direito, Ajuste/15cm"
+animacao "peDireito15cmFrente" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Direito, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.direito(frente 9.9)
+  chave 0.2s quadril.direito(frente 14.9) joelho.direito(dobra 22) tornozelo.direito(levanta-ponta 6)
+  chave 0.4s quadril.direito(frente 9.9) joelho.direito(dobra 0) tornozelo.direito(aponta 0)
 ```
 
 ### peDireito15cmTras — ação (acontece e segura), 0,40 s
@@ -2516,9 +2563,10 @@ No filme: `0s Kai anima peDireito15cmTras`
 
 ```gm
 # move o pé direito 15 cm para trás
-animacao "peDireito15cmTras" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Direito, Ajuste/15cm"
+animacao "peDireito15cmTras" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Direito, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.direito(tras 9.9)
+  chave 0.2s quadril.direito(frente 5.1) joelho.direito(dobra 22) tornozelo.direito(levanta-ponta 6)
+  chave 0.4s quadril.direito(tras 9.9) joelho.direito(dobra 0) tornozelo.direito(aponta 0)
 ```
 
 ### peEsquerdo15cmDireita — ação (acontece e segura), 0,40 s
@@ -2529,9 +2577,10 @@ No filme: `0s Kai anima peEsquerdo15cmDireita`
 
 ```gm
 # move o pé esquerdo 15 cm para a direita
-animacao "peEsquerdo15cmDireita" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
+animacao "peEsquerdo15cmDireita" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.esquerdo(fecha 6.9)
+  chave 0.2s quadril.esquerdo(frente 10 fecha 1.9) joelho.esquerdo(dobra 22) tornozelo.esquerdo(levanta-ponta 6)
+  chave 0.4s quadril.esquerdo(frente 0 fecha 6.9) joelho.esquerdo(dobra 0) tornozelo.esquerdo(aponta 0)
 ```
 
 ### peEsquerdo15cmEsquerda — ação (acontece e segura), 0,40 s
@@ -2542,9 +2591,10 @@ No filme: `0s Kai anima peEsquerdo15cmEsquerda`
 
 ```gm
 # move o pé esquerdo 15 cm para a esquerda
-animacao "peEsquerdo15cmEsquerda" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
+animacao "peEsquerdo15cmEsquerda" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.esquerdo(abre 12.9)
+  chave 0.2s quadril.esquerdo(frente 10 abre 7.9) joelho.esquerdo(dobra 22) tornozelo.esquerdo(levanta-ponta 6)
+  chave 0.4s quadril.esquerdo(frente 0 abre 12.9) joelho.esquerdo(dobra 0) tornozelo.esquerdo(aponta 0)
 ```
 
 ### peEsquerdo15cmFrente — ação (acontece e segura), 0,40 s
@@ -2555,9 +2605,10 @@ No filme: `0s Kai anima peEsquerdo15cmFrente`
 
 ```gm
 # move o pé esquerdo 15 cm para a frente
-animacao "peEsquerdo15cmFrente" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
+animacao "peEsquerdo15cmFrente" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.esquerdo(frente 9.9)
+  chave 0.2s quadril.esquerdo(frente 14.9) joelho.esquerdo(dobra 22) tornozelo.esquerdo(levanta-ponta 6)
+  chave 0.4s quadril.esquerdo(frente 9.9) joelho.esquerdo(dobra 0) tornozelo.esquerdo(aponta 0)
 ```
 
 ### peEsquerdo15cmTras — ação (acontece e segura), 0,40 s
@@ -2568,9 +2619,10 @@ No filme: `0s Kai anima peEsquerdo15cmTras`
 
 ```gm
 # move o pé esquerdo 15 cm para trás
-animacao "peEsquerdo15cmTras" duracao 0.4s relativa desde-neutra mantem tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
+animacao "peEsquerdo15cmTras" duracao 0.4s relativa desde-neutra mantem travar-pes tags "Ajuste/Pe/Esquerdo, Ajuste/15cm"
   chave 0s 
-  chave 0.4s quadril.esquerdo(tras 9.9)
+  chave 0.2s quadril.esquerdo(frente 5.1) joelho.esquerdo(dobra 22) tornozelo.esquerdo(levanta-ponta 6)
+  chave 0.4s quadril.esquerdo(tras 9.9) joelho.esquerdo(dobra 0) tornozelo.esquerdo(aponta 0)
 ```
 
 ### inclinarCabecaDireita — ação (acontece e segura), 0,40 s
@@ -3832,26 +3884,44 @@ No filme: `0s Kai anima puloCorrida`
 ```gm
 # corrida → puloCorrida
 animacao "puloCorrida" duracao 2.346s mantem curva linear tags "Locomocao/Correr/Ciclo, Locomocao/Salto/Corrida"
-  chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14) curva suave
-  chave 0.15s ombro(frente 6.5) cotovelo(dobra 91.5) quadril.direito(frente 78.6 abre 0.3 gira-fora 4.8) quadril.esquerdo(frente 53.6 abre 0.3 gira-fora 4.8) joelho.direito(dobra 95) joelho.esquerdo(dobra 84.7) tornozelo.direito(aponta 10) tornozelo.esquerdo(aponta 22) dedos-pe(levanta 20) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 0.225 curva suave
-  chave 0.225s ombro.direito(tras 24.3) ombro.esquerdo(frente 37.3) cotovelo.direito(dobra 93.3) cotovelo.esquerdo(dobra 89.8) quadril.direito(frente 80.3 abre 1.6 gira-fora 2.4) quadril.esquerdo(frente 39.4 fecha 1 gira-fora 7.2) joelho.direito(dobra 100) joelho.esquerdo(dobra 74.6) tornozelo.direito(aponta 12) tornozelo.esquerdo(aponta 26) dedos-pe.direito(levanta 10) dedos-pe.esquerdo(levanta 30) tronco(gira-esquerda 6) pelve(gira-direita 5) corpo(sobe 5cm) valor ground 0 move frente 0.337 curva suave
-  chave 0.3s ombro.direito(tras 55) ombro.esquerdo(frente 68) cotovelo.direito(dobra 95) cotovelo.esquerdo(dobra 88) quadril.direito(frente 82 abre 3 gira-fora 0) quadril.esquerdo(frente 25.2 fecha 2.4 gira-fora 9.6) joelho.direito(dobra 105) joelho.esquerdo(dobra 64.4) tornozelo.direito(aponta 14) tornozelo.esquerdo(aponta 30) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 40) tronco(gira-esquerda 12) pelve(gira-direita 10) corpo(sobe 0cm) valor ground 1 move frente 0.45 curva suave
-  chave 0.45s ombro(frente 6.5) cotovelo(dobra 91.5) quadril.direito(frente 53.6 abre 0.3 gira-fora 4.8) quadril.esquerdo(frente 78.6 abre 0.3 gira-fora 4.8) joelho.direito(dobra 84.7) joelho.esquerdo(dobra 95) tornozelo.direito(aponta 22) tornozelo.esquerdo(aponta 10) dedos-pe(levanta 20) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 0.675 curva suave
-  chave 0.525s ombro.direito(frente 37.3) ombro.esquerdo(tras 24.3) cotovelo.direito(dobra 89.8) cotovelo.esquerdo(dobra 93.3) quadril.direito(frente 39.4 fecha 1 gira-fora 7.2) quadril.esquerdo(frente 80.3 abre 1.6 gira-fora 2.4) joelho.direito(dobra 74.6) joelho.esquerdo(dobra 100) tornozelo.direito(aponta 26) tornozelo.esquerdo(aponta 12) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(levanta 10) tronco(gira-direita 6) pelve(gira-esquerda 5) corpo(sobe 5cm) valor ground 0 move frente 0.787 curva suave
-  chave 0.6s ombro.direito(frente 68) ombro.esquerdo(tras 55) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82 abre 3 gira-fora 0) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) dedos-pe.esquerdo(dobra 0) tronco(gira-direita 12) pelve(gira-esquerda 10) corpo(sobe 0cm) valor ground 1 move frente 0.9 curva suave
-  chave 0.68s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0) move frente 0.9
-  chave 1s ombro(tras 45) cotovelo(dobra 15) quadril(frente 62) joelho(dobra 70) tronco(frente 25) cabeca(sobe 8) valor ankleFlexL -22 ankleFlexR -22 move frente 0.9
-  chave 1.14s ombro(frente 110) cotovelo(dobra 10) quadril(tras 5) joelho(dobra 0) tornozelo(aponta 35) tronco(tras 4) cabeca(sobe 5) move frente 0.9
-  chave 1.216s ombro(frente 101.3) cotovelo(dobra 12.5) quadril(frente 16.3) joelho(dobra 15.5) tornozelo(aponta 28.8) tronco(frente 4) cabeca(sobe 6.3) corpo(sobe 19.7cm) valor ground 0 move frente 1.125 curva linear
-  chave 1.291s ombro(frente 92.5) cotovelo(dobra 15) quadril(frente 37.5) joelho(dobra 31) tornozelo(aponta 22.5) tronco(frente 12) cabeca(sobe 7.5) corpo(sobe 33.8cm) move frente 1.35 curva linear
-  chave 1.367s ombro(frente 83.8) cotovelo(dobra 17.5) quadril(frente 58.8) joelho(dobra 46.5) tornozelo(aponta 16.3) tronco(frente 20) cabeca(sobe 8.8) corpo(sobe 42.2cm) move frente 1.575 curva linear
-  chave 1.443s ombro(frente 75) cotovelo(dobra 20) quadril(frente 80) joelho(dobra 62) tornozelo(aponta 10) tronco(frente 28) cabeca(sobe 10) corpo(sobe 45cm) move frente 1.8 curva linear
-  chave 1.519s ombro(frente 70) cotovelo(dobra 21.3) quadril(frente 71.3) joelho(dobra 52.8) tornozelo(aponta 8.8) tronco(frente 24.5) cabeca(sobe 7.5) corpo(sobe 42.2cm) move frente 2.025 curva linear
-  chave 1.594s ombro(frente 65) cotovelo(dobra 22.5) quadril(frente 62.5) joelho(dobra 43.5) tornozelo(aponta 7.5) tronco(frente 21) cabeca(sobe 5) corpo(sobe 33.8cm) move frente 2.25 curva linear
-  chave 1.67s ombro(frente 60) cotovelo(dobra 23.8) quadril(frente 53.8) joelho(dobra 34.3) tornozelo(aponta 6.3) tronco(frente 17.5) cabeca(sobe 2.5) corpo(sobe 19.7cm) move frente 2.475 curva linear
-  chave 1.746s ombro(frente 55) cotovelo(dobra 25) quadril(frente 45) joelho(dobra 25) tornozelo(aponta 5) tronco(frente 14) cabeca(baixa 0) corpo(sobe 0cm) valor ground 1 move frente 2.7 curva linear
-  chave 1.906s ombro(frente 45) cotovelo(dobra 30) quadril(frente 68) joelho(dobra 78) tronco(frente 32) cabeca(sobe 6) valor ankleFlexL -22 ankleFlexR -22 move frente 2.7
-  chave 2.346s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0) move frente 2.7
+  chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14)
+  chave 0.025s ombro.direito(frente 63.4) ombro.esquerdo(tras 50.4) cotovelo.direito(dobra 88.3) cotovelo.esquerdo(dobra 94.7) quadril.direito(frente 29.2 fecha 2.2 gira-fora 9.2) quadril.esquerdo(frente 79.9 abre 2.8 gira-fora 0.4) joelho.direito(dobra 66.7) joelho.esquerdo(dobra 103.5) tornozelo.direito(aponta 28.5) tornozelo.esquerdo(aponta 14.6) dedos-pe.direito(levanta 38.5) dedos-pe.esquerdo(levanta 1.5) tronco(gira-direita 11.1) pelve(gira-esquerda 9.3) move frente -0.044
+  chave 0.05s ombro.direito(frente 52.1) ombro.esquerdo(tras 39.1) cotovelo.direito(dobra 88.9) cotovelo.esquerdo(dobra 94.1) quadril.direito(frente 39 fecha 1.7 gira-fora 8.4) quadril.esquerdo(frente 74.6 abre 2.3 gira-fora 1.2) joelho.direito(dobra 72.3) joelho.esquerdo(dobra 99.7) tornozelo.direito(aponta 24.8) tornozelo.esquerdo(aponta 16.1) dedos-pe.direito(levanta 34.8) dedos-pe.esquerdo(levanta 5.2) tronco(gira-direita 8.9) pelve(gira-esquerda 7.4) move frente -0.153
+  chave 0.075s ombro.direito(frente 37.3) ombro.esquerdo(tras 24.3) cotovelo.direito(dobra 89.8) cotovelo.esquerdo(dobra 93.3) quadril.direito(frente 51.9 fecha 1 gira-fora 7.2) quadril.esquerdo(frente 67.8 abre 1.6 gira-fora 2.4) joelho.direito(dobra 79.7) joelho.esquerdo(dobra 94.8) tornozelo.direito(aponta 20) tornozelo.esquerdo(aponta 18) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(levanta 10) tronco(gira-direita 6) pelve(gira-esquerda 5) move frente -0.29
+  chave 0.1s ombro.direito(frente 22.4) ombro.esquerdo(tras 9.4) cotovelo.direito(dobra 90.6) cotovelo.esquerdo(dobra 92.4) quadril.direito(frente 64.8 fecha 0.4 gira-fora 6) quadril.esquerdo(frente 61 abre 1 gira-fora 3.6) joelho.direito(dobra 87.1) joelho.esquerdo(dobra 90) tornozelo.direito(aponta 15.2) tornozelo.esquerdo(aponta 19.9) dedos-pe.direito(levanta 25.2) dedos-pe.esquerdo(levanta 14.8) tronco(gira-direita 3.1) pelve(gira-esquerda 2.6) move frente -0.356
+  chave 0.125s ombro.direito(frente 11.1) ombro.esquerdo(frente 1.9) cotovelo.direito(dobra 91.2) cotovelo.esquerdo(dobra 91.8) quadril.direito(frente 74.6 abre 0.1 gira-fora 5.2) quadril.esquerdo(frente 55.7 abre 0.5 gira-fora 4.4) joelho.direito(dobra 92.7) joelho.esquerdo(dobra 86.2) tornozelo.direito(aponta 11.5) tornozelo.esquerdo(aponta 21.4) dedos-pe.direito(levanta 21.5) dedos-pe.esquerdo(levanta 18.5) tronco(gira-direita 0.9) pelve(gira-esquerda 0.7) move frente -0.315
+  chave 0.15s ombro(frente 6.5) cotovelo(dobra 91.5) quadril.direito(frente 78.6 abre 0.3 gira-fora 4.8) quadril.esquerdo(frente 53.6 abre 0.3 gira-fora 4.8) joelho.direito(dobra 95) joelho.esquerdo(dobra 84.7) tornozelo.direito(aponta 10) tornozelo.esquerdo(aponta 22) dedos-pe(levanta 20) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente -0.297
+  chave 0.175s ombro.direito(tras 1.5) ombro.esquerdo(frente 14.5) cotovelo.direito(dobra 92) cotovelo.esquerdo(dobra 91) quadril.direito(frente 79 abre 0.7 gira-fora 4.2) quadril.esquerdo(frente 49.9 fecha 0.1 gira-fora 5.4) joelho.direito(dobra 96.3) joelho.esquerdo(dobra 82.1) tornozelo.direito(aponta 10.5) tornozelo.esquerdo(aponta 23) dedos-pe.direito(levanta 17.4) dedos-pe.esquerdo(levanta 22.6) tronco(gira-esquerda 1.6) pelve(gira-direita 1.3) corpo(sobe 1.3cm) valor ground 0.741 move frente -0.265
+  chave 0.2s ombro.direito(tras 16.3) ombro.esquerdo(frente 29.3) cotovelo.direito(dobra 92.8) cotovelo.esquerdo(dobra 90.2) quadril.direito(frente 79.9 abre 1.3 gira-fora 3) quadril.esquerdo(frente 43.1 fecha 0.7 gira-fora 6.6) joelho.direito(dobra 98.7) joelho.esquerdo(dobra 77.2) tornozelo.direito(aponta 11.5) tornozelo.esquerdo(aponta 25) dedos-pe.direito(levanta 12.6) dedos-pe.esquerdo(levanta 27.4) tronco(gira-esquerda 4.4) pelve(gira-direita 3.7) corpo(sobe 3.7cm) valor ground 0.259 move frente -0.234
+  chave 0.225s ombro.direito(tras 24.3) ombro.esquerdo(frente 37.3) cotovelo.direito(dobra 93.3) cotovelo.esquerdo(dobra 89.8) quadril.direito(frente 80.3 abre 1.6 gira-fora 2.4) quadril.esquerdo(frente 39.4 fecha 1 gira-fora 7.2) joelho.direito(dobra 100) joelho.esquerdo(dobra 74.6) tornozelo.direito(aponta 12) tornozelo.esquerdo(aponta 26) dedos-pe.direito(levanta 10) dedos-pe.esquerdo(levanta 30) tronco(gira-esquerda 6) pelve(gira-direita 5) corpo(sobe 5cm) valor ground 0 move frente -0.234
+  chave 0.25s ombro.direito(tras 32.2) ombro.esquerdo(frente 45.2) cotovelo.direito(dobra 93.7) cotovelo.esquerdo(dobra 89.3) quadril.direito(frente 80.7 abre 2 gira-fora 1.8) quadril.esquerdo(frente 35.7 fecha 1.4 gira-fora 7.8) joelho.direito(dobra 101.3) joelho.esquerdo(dobra 71.9) tornozelo.direito(aponta 12.5) tornozelo.esquerdo(aponta 27) dedos-pe.direito(levanta 7.4) dedos-pe.esquerdo(levanta 32.6) tronco(gira-esquerda 7.6) pelve(gira-direita 6.3) corpo(sobe 3.7cm) valor ground 0.259 move frente -0.234
+  chave 0.275s ombro.direito(tras 47) ombro.esquerdo(frente 60) cotovelo.direito(dobra 94.5) cotovelo.esquerdo(dobra 88.5) quadril.direito(frente 81.6 abre 2.6 gira-fora 0.6) quadril.esquerdo(frente 28.9 fecha 2 gira-fora 9) joelho.direito(dobra 103.7) joelho.esquerdo(dobra 67) tornozelo.direito(aponta 13.5) tornozelo.esquerdo(aponta 29) dedos-pe.direito(levanta 2.6) dedos-pe.esquerdo(levanta 37.4) tronco(gira-esquerda 10.4) pelve(gira-direita 8.7) corpo(sobe 1.3cm) valor ground 0.741 move frente -0.199
+  chave 0.3s ombro.direito(tras 55) ombro.esquerdo(frente 68) cotovelo.direito(dobra 95) cotovelo.esquerdo(dobra 88) quadril.direito(frente 82 abre 3 gira-fora 0) quadril.esquerdo(frente 25.2 fecha 2.4 gira-fora 9.6) joelho.direito(dobra 105) joelho.esquerdo(dobra 64.4) tornozelo.direito(aponta 14) tornozelo.esquerdo(aponta 30) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 40) tronco(gira-esquerda 12) pelve(gira-direita 10) corpo(sobe 0cm) valor ground 1 move frente -0.16
+  chave 0.325s ombro.direito(tras 50.4) ombro.esquerdo(frente 63.4) cotovelo.direito(dobra 94.7) cotovelo.esquerdo(dobra 88.3) quadril.direito(frente 79.9 abre 2.8 gira-fora 0.4) quadril.esquerdo(frente 29.2 fecha 2.2 gira-fora 9.2) joelho.direito(dobra 103.5) joelho.esquerdo(dobra 66.7) tornozelo.direito(aponta 14.6) tornozelo.esquerdo(aponta 28.5) dedos-pe.direito(levanta 1.5) dedos-pe.esquerdo(levanta 38.5) tronco(gira-esquerda 11.1) pelve(gira-direita 9.3) move frente -0.205
+  chave 0.35s ombro.direito(tras 39.1) ombro.esquerdo(frente 52.1) cotovelo.direito(dobra 94.1) cotovelo.esquerdo(dobra 88.9) quadril.direito(frente 74.6 abre 2.3 gira-fora 1.2) quadril.esquerdo(frente 39 fecha 1.7 gira-fora 8.4) joelho.direito(dobra 99.7) joelho.esquerdo(dobra 72.3) tornozelo.direito(aponta 16.1) tornozelo.esquerdo(aponta 24.8) dedos-pe.direito(levanta 5.2) dedos-pe.esquerdo(levanta 34.8) tronco(gira-esquerda 8.9) pelve(gira-direita 7.4) move frente -0.315
+  chave 0.375s ombro.direito(tras 24.2) ombro.esquerdo(frente 37.2) cotovelo.direito(dobra 93.3) cotovelo.esquerdo(dobra 89.8) quadril.direito(frente 67.8 abre 1.6 gira-fora 2.4) quadril.esquerdo(frente 51.9 fecha 1 gira-fora 7.2) joelho.direito(dobra 94.8) joelho.esquerdo(dobra 79.7) tornozelo.direito(aponta 18) tornozelo.esquerdo(aponta 20) dedos-pe.direito(levanta 10) dedos-pe.esquerdo(levanta 30) tronco(gira-esquerda 6) pelve(gira-direita 5) move frente -0.453
+  chave 0.4s ombro.direito(tras 9.4) ombro.esquerdo(frente 22.4) cotovelo.direito(dobra 92.4) cotovelo.esquerdo(dobra 90.6) quadril.direito(frente 61 abre 1 gira-fora 3.6) quadril.esquerdo(frente 64.8 fecha 0.4 gira-fora 6) joelho.direito(dobra 90) joelho.esquerdo(dobra 87.1) tornozelo.direito(aponta 19.9) tornozelo.esquerdo(aponta 15.2) dedos-pe.direito(levanta 14.8) dedos-pe.esquerdo(levanta 25.2) tronco(gira-esquerda 3.1) pelve(gira-direita 2.6) move frente -0.519
+  chave 0.425s ombro.direito(frente 1.9) ombro.esquerdo(frente 11.1) cotovelo.direito(dobra 91.8) cotovelo.esquerdo(dobra 91.2) quadril.direito(frente 55.7 abre 0.5 gira-fora 4.4) quadril.esquerdo(frente 74.6 abre 0.1 gira-fora 5.2) joelho.direito(dobra 86.2) joelho.esquerdo(dobra 92.7) tornozelo.direito(aponta 21.4) tornozelo.esquerdo(aponta 11.5) dedos-pe.direito(levanta 18.5) dedos-pe.esquerdo(levanta 21.5) tronco(gira-esquerda 0.9) pelve(gira-direita 0.7) move frente -0.474
+  chave 0.45s ombro(frente 6.5) cotovelo(dobra 91.5) quadril.direito(frente 53.6 abre 0.3 gira-fora 4.8) quadril.esquerdo(frente 78.6 abre 0.3 gira-fora 4.8) joelho.direito(dobra 84.7) joelho.esquerdo(dobra 95) tornozelo.direito(aponta 22) tornozelo.esquerdo(aponta 10) dedos-pe(levanta 20) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente -0.456
+  chave 0.475s ombro.direito(frente 14.5) ombro.esquerdo(tras 1.5) cotovelo.direito(dobra 91) cotovelo.esquerdo(dobra 92) quadril.direito(frente 49.9 fecha 0.1 gira-fora 5.4) quadril.esquerdo(frente 79 abre 0.7 gira-fora 4.2) joelho.direito(dobra 82.1) joelho.esquerdo(dobra 96.3) tornozelo.direito(aponta 23) tornozelo.esquerdo(aponta 10.5) dedos-pe.direito(levanta 22.6) dedos-pe.esquerdo(levanta 17.4) tronco(gira-direita 1.6) pelve(gira-esquerda 1.3) corpo(sobe 1.3cm) valor ground 0.741 move frente -0.422
+  chave 0.5s ombro.direito(frente 29.3) ombro.esquerdo(tras 16.3) cotovelo.direito(dobra 90.2) cotovelo.esquerdo(dobra 92.8) quadril.direito(frente 43.1 fecha 0.7 gira-fora 6.6) quadril.esquerdo(frente 79.9 abre 1.3 gira-fora 3) joelho.direito(dobra 77.2) joelho.esquerdo(dobra 98.7) tornozelo.direito(aponta 25) tornozelo.esquerdo(aponta 11.5) dedos-pe.direito(levanta 27.4) dedos-pe.esquerdo(levanta 12.6) tronco(gira-direita 4.4) pelve(gira-esquerda 3.7) corpo(sobe 3.7cm) valor ground 0.259 move frente -0.39
+  chave 0.525s ombro.direito(frente 37.3) ombro.esquerdo(tras 24.3) cotovelo.direito(dobra 89.8) cotovelo.esquerdo(dobra 93.3) quadril.direito(frente 39.4 fecha 1 gira-fora 7.2) quadril.esquerdo(frente 80.3 abre 1.6 gira-fora 2.4) joelho.direito(dobra 74.6) joelho.esquerdo(dobra 100) tornozelo.direito(aponta 26) tornozelo.esquerdo(aponta 12) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(levanta 10) tronco(gira-direita 6) pelve(gira-esquerda 5) corpo(sobe 5cm) valor ground 0 move frente -0.39
+  chave 0.55s ombro.direito(frente 45.2) ombro.esquerdo(tras 32.2) cotovelo.direito(dobra 89.3) cotovelo.esquerdo(dobra 93.7) quadril.direito(frente 35.7 fecha 1.4 gira-fora 7.8) quadril.esquerdo(frente 80.7 abre 2 gira-fora 1.8) joelho.direito(dobra 71.9) joelho.esquerdo(dobra 101.3) tornozelo.direito(aponta 27) tornozelo.esquerdo(aponta 12.5) dedos-pe.direito(levanta 32.6) dedos-pe.esquerdo(levanta 7.4) tronco(gira-direita 7.6) pelve(gira-esquerda 6.3) corpo(sobe 3.7cm) valor ground 0.259 move frente -0.39
+  chave 0.575s ombro.direito(frente 60) ombro.esquerdo(tras 47) cotovelo.direito(dobra 88.5) cotovelo.esquerdo(dobra 94.5) quadril.direito(frente 28.9 fecha 2 gira-fora 9) quadril.esquerdo(frente 81.6 abre 2.6 gira-fora 0.6) joelho.direito(dobra 67) joelho.esquerdo(dobra 103.7) tornozelo.direito(aponta 29) tornozelo.esquerdo(aponta 13.5) dedos-pe.direito(levanta 37.4) dedos-pe.esquerdo(levanta 2.6) tronco(gira-direita 10.4) pelve(gira-esquerda 8.7) corpo(sobe 1.3cm) valor ground 0.741 move frente -0.356
+  chave 0.6s ombro.direito(frente 68) ombro.esquerdo(tras 55) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82 abre 3 gira-fora 0) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) dedos-pe.esquerdo(dobra 0) tronco(gira-direita 12) pelve(gira-esquerda 10) corpo(sobe 0cm) valor ground 1 move frente -0.319
+  chave 0.68s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0) move frente -0.319
+  chave 1s ombro(tras 45) cotovelo(dobra 15) quadril(frente 62) joelho(dobra 70) tronco(frente 25) cabeca(sobe 8) valor ankleFlexL -22 ankleFlexR -22 move frente -0.319
+  chave 1.14s ombro(frente 110) cotovelo(dobra 10) quadril(tras 5) joelho(dobra 0) tornozelo(aponta 35) tronco(tras 4) cabeca(sobe 5) move frente -0.319
+  chave 1.216s ombro(frente 101.3) cotovelo(dobra 12.5) quadril(frente 16.3) joelho(dobra 15.5) tornozelo(aponta 28.8) tronco(frente 4) cabeca(sobe 6.3) corpo(sobe 19.7cm) valor ground 0 move frente -0.094 curva linear
+  chave 1.291s ombro(frente 92.5) cotovelo(dobra 15) quadril(frente 37.5) joelho(dobra 31) tornozelo(aponta 22.5) tronco(frente 12) cabeca(sobe 7.5) corpo(sobe 33.8cm) move frente 0.131 curva linear
+  chave 1.367s ombro(frente 83.8) cotovelo(dobra 17.5) quadril(frente 58.8) joelho(dobra 46.5) tornozelo(aponta 16.3) tronco(frente 20) cabeca(sobe 8.8) corpo(sobe 42.2cm) move frente 0.356 curva linear
+  chave 1.443s ombro(frente 75) cotovelo(dobra 20) quadril(frente 80) joelho(dobra 62) tornozelo(aponta 10) tronco(frente 28) cabeca(sobe 10) corpo(sobe 45cm) move frente 0.581 curva linear
+  chave 1.519s ombro(frente 70) cotovelo(dobra 21.3) quadril(frente 71.3) joelho(dobra 52.8) tornozelo(aponta 8.8) tronco(frente 24.5) cabeca(sobe 7.5) corpo(sobe 42.2cm) move frente 0.806 curva linear
+  chave 1.594s ombro(frente 65) cotovelo(dobra 22.5) quadril(frente 62.5) joelho(dobra 43.5) tornozelo(aponta 7.5) tronco(frente 21) cabeca(sobe 5) corpo(sobe 33.8cm) move frente 1.031 curva linear
+  chave 1.67s ombro(frente 60) cotovelo(dobra 23.8) quadril(frente 53.8) joelho(dobra 34.3) tornozelo(aponta 6.3) tronco(frente 17.5) cabeca(sobe 2.5) corpo(sobe 19.7cm) move frente 1.256 curva linear
+  chave 1.746s ombro(frente 55) cotovelo(dobra 25) quadril(frente 45) joelho(dobra 25) tornozelo(aponta 5) tronco(frente 14) cabeca(baixa 0) corpo(sobe 0cm) valor ground 1 move frente 1.481 curva linear
+  chave 1.906s ombro(frente 45) cotovelo(dobra 30) quadril(frente 68) joelho(dobra 78) tronco(frente 32) cabeca(sobe 6) valor ankleFlexL -22 ankleFlexR -22 move frente 1.481
+  chave 2.346s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0) move frente 1.481
 ```
 
 ### mergulhar — ação (acontece e segura), 2,61 s
@@ -4029,11 +4099,31 @@ No filme: `0s Kai anima engatinhar` (repete até o fim do plano ou `por 4s`)
 ```gm
 # ciclo a partir de uma pose:  · 0.60 m por ciclo
 animacao "engatinhar" duracao 1.3s mantem loop curva linear travar-pes tags "Locomocao/Chao/Engatinhar"
-  chave 0s ombro.direito(frente 105) ombro.esquerdo(frente 92) punho(levanta 70) mao(fecha 2% afasta 60%) quadril.direito(frente 92) quadril.esquerdo(frente 105) joelho(dobra 92) tornozelo(aponta 40) cabeca(sobe 40) corpo(deita-brucos 90) curva suave
-  chave 0.325s ombro(frente 98.5) quadril.direito(frente 110.5) quadril.esquerdo(frente 98.5) tornozelo.direito(levanta-ponta 6) move frente 0.15 curva suave
-  chave 0.65s ombro.direito(frente 92) ombro.esquerdo(frente 105) quadril.direito(frente 105) quadril.esquerdo(frente 92) tornozelo.direito(aponta 40) move frente 0.3 curva suave
-  chave 0.975s ombro(frente 98.5) quadril.direito(frente 98.5) quadril.esquerdo(frente 110.5) tornozelo.esquerdo(levanta-ponta 6) move frente 0.45 curva suave
-  chave 1.3s ombro.direito(frente 105) ombro.esquerdo(frente 92) quadril.direito(frente 92) quadril.esquerdo(frente 105) tornozelo.esquerdo(aponta 40) move frente 0.6 curva suave
+  chave 0s ombro.direito(frente 105) ombro.esquerdo(frente 92) punho(levanta 70) mao(fecha 2% afasta 60%) quadril.direito(frente 92) quadril.esquerdo(frente 105) joelho(dobra 92) tornozelo(aponta 40) cabeca(sobe 40) corpo(deita-brucos 90)
+  chave 0.054s ombro.direito(frente 104.5) ombro.esquerdo(frente 92.5) quadril.direito(frente 93.4) quadril.esquerdo(frente 104.5) tornozelo.direito(aponta 36.6) move frente 0.005
+  chave 0.108s ombro.direito(frente 103.3) ombro.esquerdo(frente 93.7) quadril.direito(frente 96.8) quadril.esquerdo(frente 103.3) tornozelo.direito(aponta 28.1) move frente 0.018
+  chave 0.163s ombro.direito(frente 101.8) ombro.esquerdo(frente 95.3) quadril.direito(frente 101.3) quadril.esquerdo(frente 101.8) tornozelo.direito(aponta 17) move frente -0.013
+  chave 0.217s ombro.direito(frente 100.2) ombro.esquerdo(frente 96.8) quadril.direito(frente 105.7) quadril.esquerdo(frente 100.2) tornozelo.direito(aponta 5.9) move frente -0.078
+  chave 0.271s ombro.direito(frente 99) ombro.esquerdo(frente 98) quadril.direito(frente 109.1) quadril.esquerdo(frente 99) tornozelo.direito(levanta-ponta 2.6) move frente -0.131
+  chave 0.325s ombro(frente 98.5) quadril.direito(frente 110.5) quadril.esquerdo(frente 98.5) tornozelo.direito(levanta-ponta 6) move frente -0.153
+  chave 0.379s ombro.direito(frente 98) ombro.esquerdo(frente 99) quadril.direito(frente 110.1) quadril.esquerdo(frente 98) tornozelo.direito(levanta-ponta 2.6) move frente -0.142
+  chave 0.433s ombro.direito(frente 96.8) ombro.esquerdo(frente 100.2) quadril.direito(frente 109.1) quadril.esquerdo(frente 96.8) tornozelo.direito(aponta 5.9) move frente -0.117
+  chave 0.487s ombro.direito(frente 95.3) ombro.esquerdo(frente 101.8) quadril.direito(frente 107.8) quadril.esquerdo(frente 95.3) tornozelo.direito(aponta 17) move frente -0.086
+  chave 0.542s ombro.direito(frente 93.7) ombro.esquerdo(frente 103.3) quadril.direito(frente 106.4) quadril.esquerdo(frente 93.7) tornozelo.direito(aponta 28.1) move frente -0.056
+  chave 0.596s ombro.direito(frente 92.5) ombro.esquerdo(frente 104.5) quadril.direito(frente 105.4) quadril.esquerdo(frente 92.5) tornozelo.direito(aponta 36.6) move frente -0.036
+  chave 0.65s ombro.direito(frente 92) ombro.esquerdo(frente 105) quadril.direito(frente 105) quadril.esquerdo(frente 92) tornozelo.direito(aponta 40) move frente -0.029
+  chave 0.704s ombro.direito(frente 92.5) ombro.esquerdo(frente 104.5) quadril.direito(frente 104.5) quadril.esquerdo(frente 93.4) tornozelo.esquerdo(aponta 36.6) move frente -0.023
+  chave 0.758s ombro.direito(frente 93.7) ombro.esquerdo(frente 103.3) quadril.direito(frente 103.3) quadril.esquerdo(frente 96.8) tornozelo.esquerdo(aponta 28.1) move frente -0.011
+  chave 0.813s ombro.direito(frente 95.3) ombro.esquerdo(frente 101.8) quadril.direito(frente 101.8) quadril.esquerdo(frente 101.3) tornozelo.esquerdo(aponta 17) move frente -0.042
+  chave 0.867s ombro.direito(frente 96.8) ombro.esquerdo(frente 100.2) quadril.direito(frente 100.2) quadril.esquerdo(frente 105.7) tornozelo.esquerdo(aponta 5.9) move frente -0.107
+  chave 0.921s ombro.direito(frente 98) ombro.esquerdo(frente 99) quadril.direito(frente 99) quadril.esquerdo(frente 109.1) tornozelo.esquerdo(levanta-ponta 2.6) move frente -0.159
+  chave 0.975s ombro(frente 98.5) quadril.direito(frente 98.5) quadril.esquerdo(frente 110.5) tornozelo.esquerdo(levanta-ponta 6) move frente -0.181
+  chave 1.029s ombro.direito(frente 99) ombro.esquerdo(frente 98) quadril.direito(frente 98) quadril.esquerdo(frente 110.1) tornozelo.esquerdo(levanta-ponta 2.6) move frente -0.171
+  chave 1.083s ombro.direito(frente 100.2) ombro.esquerdo(frente 96.8) quadril.direito(frente 96.8) quadril.esquerdo(frente 109.1) tornozelo.esquerdo(aponta 5.9) move frente -0.146
+  chave 1.137s ombro.direito(frente 101.8) ombro.esquerdo(frente 95.3) quadril.direito(frente 95.3) quadril.esquerdo(frente 107.8) tornozelo.esquerdo(aponta 17) move frente -0.114
+  chave 1.192s ombro.direito(frente 103.3) ombro.esquerdo(frente 93.7) quadril.direito(frente 93.7) quadril.esquerdo(frente 106.4) tornozelo.esquerdo(aponta 28.1) move frente -0.085
+  chave 1.246s ombro.direito(frente 104.5) ombro.esquerdo(frente 92.5) quadril.direito(frente 92.5) quadril.esquerdo(frente 105.4) tornozelo.esquerdo(aponta 36.6) move frente -0.065
+  chave 1.3s ombro.direito(frente 105) ombro.esquerdo(frente 92) quadril.direito(frente 92) quadril.esquerdo(frente 105) tornozelo.esquerdo(aponta 40) move frente -0.057
 ```
 
 ### rastejar — ciclo (repete), 1,80 s, loop
@@ -4045,11 +4135,31 @@ No filme: `0s Kai anima rastejar` (repete até o fim do plano ou `por 4s`)
 ```gm
 # ciclo a partir de uma pose:  · 0.50 m por ciclo
 animacao "rastejar" duracao 1.8s mantem loop curva linear tags "Locomocao/Chao/Rastejar"
-  chave 0s ombro.direito(frente 165 abre 20 gira-dentro 50) ombro.esquerdo(frente 120 abre 30 gira-dentro 50) cotovelo.direito(dobra 105) cotovelo.esquerdo(dobra 125) antebraco(palma-baixo 60) mao(fecha 20%) quadril.esquerdo(frente 45 abre 35 gira-fora 25) joelho.direito(dobra 5) joelho.esquerdo(dobra 75) tornozelo(aponta 45) cabeca(sobe 25 gira-esquerda 70) corpo(deita-brucos 90) curva suave
-  chave 0.45s ombro(frente 142.5 abre 25) cotovelo(dobra 115) quadril.direito(frente 34.5 abre 19 gira-fora 12.5) quadril.esquerdo(frente 22.5 abre 19 gira-fora 12.5) joelho.direito(dobra 48) joelho.esquerdo(dobra 40) tornozelo.direito(levanta-ponta 6) cabeca(gira-esquerda 0) move frente 0.125 curva suave
-  chave 0.9s ombro.direito(frente 120 abre 30) ombro.esquerdo(frente 165 abre 20) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 105) quadril.direito(frente 45 abre 35 gira-fora 25) quadril.esquerdo(frente 0 abre 3 gira-fora 0) joelho.direito(dobra 75) joelho.esquerdo(dobra 5) tornozelo.direito(aponta 45) cabeca(gira-direita 70) move frente 0.25 curva suave
-  chave 1.35s ombro(frente 142.5 abre 25) cotovelo(dobra 115) quadril.direito(frente 22.5 abre 19 gira-fora 12.5) quadril.esquerdo(frente 34.5 abre 19 gira-fora 12.5) joelho.direito(dobra 40) joelho.esquerdo(dobra 48) tornozelo.esquerdo(levanta-ponta 6) cabeca(gira-esquerda 0) move frente 0.375 curva suave
-  chave 1.8s ombro.direito(frente 165 abre 20) ombro.esquerdo(frente 120 abre 30) cotovelo.direito(dobra 105) cotovelo.esquerdo(dobra 125) quadril.direito(frente 0 abre 3 gira-fora 0) quadril.esquerdo(frente 45 abre 35 gira-fora 25) joelho.direito(dobra 5) joelho.esquerdo(dobra 75) tornozelo.esquerdo(aponta 45) cabeca(gira-esquerda 70) move frente 0.5 curva suave
+  chave 0s ombro.direito(frente 165 abre 20 gira-dentro 50) ombro.esquerdo(frente 120 abre 30 gira-dentro 50) cotovelo.direito(dobra 105) cotovelo.esquerdo(dobra 125) antebraco(palma-baixo 60) mao(fecha 20%) quadril.esquerdo(frente 45 abre 35 gira-fora 25) joelho.direito(dobra 5) joelho.esquerdo(dobra 75) tornozelo(aponta 45) cabeca(sobe 25 gira-esquerda 70) corpo(deita-brucos 90)
+  chave 0.075s ombro.direito(frente 163.3 abre 20.4) ombro.esquerdo(frente 121.7 abre 29.6) cotovelo.direito(dobra 105.7) cotovelo.esquerdo(dobra 124.3) quadril.direito(frente 2.6 abre 4.2 gira-fora 0.9) quadril.esquerdo(frente 43.3 abre 33.8 gira-fora 24.1) joelho.direito(dobra 8.2) joelho.esquerdo(dobra 72.4) tornozelo.direito(aponta 41.2) cabeca(gira-esquerda 64.8) move
+  chave 0.15s ombro.direito(frente 159.2 abre 21.3) ombro.esquerdo(frente 125.8 abre 28.7) cotovelo.direito(dobra 107.6) cotovelo.esquerdo(dobra 122.4) quadril.direito(frente 8.9 abre 7.1 gira-fora 3.2) quadril.esquerdo(frente 39.2 abre 30.9 gira-fora 21.8) joelho.direito(dobra 16.1) joelho.esquerdo(dobra 65.9) tornozelo.direito(aponta 31.8) cabeca(gira-esquerda 51.9) move
+  chave 0.225s ombro.direito(frente 153.8 abre 22.5) ombro.esquerdo(frente 131.3 abre 27.5) cotovelo.direito(dobra 110) cotovelo.esquerdo(dobra 120) quadril.direito(frente 17.3 abre 11 gira-fora 6.3) quadril.esquerdo(frente 33.8 abre 27 gira-fora 18.8) joelho.direito(dobra 26.5) joelho.esquerdo(dobra 57.5) tornozelo.direito(aponta 19.5) cabeca(gira-esquerda 35) move
+  chave 0.3s ombro.direito(frente 148.3 abre 23.7) ombro.esquerdo(frente 136.7 abre 26.3) cotovelo.direito(dobra 112.4) cotovelo.esquerdo(dobra 117.6) quadril.direito(frente 25.6 abre 14.9 gira-fora 9.3) quadril.esquerdo(frente 28.3 abre 23.1 gira-fora 15.7) joelho.direito(dobra 36.9) joelho.esquerdo(dobra 49.1) tornozelo.direito(aponta 7.2) cabeca(gira-esquerda 18.1) move
+  chave 0.375s ombro.direito(frente 144.2 abre 24.6) ombro.esquerdo(frente 140.8 abre 25.4) cotovelo.direito(dobra 114.3) cotovelo.esquerdo(dobra 115.7) quadril.direito(frente 31.9 abre 17.8 gira-fora 11.6) quadril.esquerdo(frente 24.2 abre 20.2 gira-fora 13.4) joelho.direito(dobra 44.8) joelho.esquerdo(dobra 42.6) tornozelo.direito(levanta-ponta 2.2) cabeca(gira-esquerda 5.2) move frente -0.042
+  chave 0.45s ombro(frente 142.5 abre 25) cotovelo(dobra 115) quadril.direito(frente 34.5 abre 19 gira-fora 12.5) quadril.esquerdo(frente 22.5 abre 19 gira-fora 12.5) joelho.direito(dobra 48) joelho.esquerdo(dobra 40) tornozelo.direito(levanta-ponta 6) cabeca(gira-esquerda 0) move frente -0.06
+  chave 0.525s ombro.direito(frente 140.8 abre 25.4) ombro.esquerdo(frente 144.2 abre 24.6) cotovelo.direito(dobra 115.7) cotovelo.esquerdo(dobra 114.3) quadril.direito(frente 35.3 abre 20.2 gira-fora 13.4) quadril.esquerdo(frente 20.8 abre 17.8 gira-fora 11.6) joelho.direito(dobra 50) joelho.esquerdo(dobra 37.4) tornozelo.direito(levanta-ponta 2.2) cabeca(gira-direita 5.2) move frente -0.061
+  chave 0.6s ombro.direito(frente 136.7 abre 26.3) ombro.esquerdo(frente 148.3 abre 23.7) cotovelo.direito(dobra 117.6) cotovelo.esquerdo(dobra 112.4) quadril.direito(frente 37.2 abre 23.1 gira-fora 15.7) quadril.esquerdo(frente 16.7 abre 14.9 gira-fora 9.3) joelho.direito(dobra 55) joelho.esquerdo(dobra 30.9) tornozelo.direito(aponta 7.2) cabeca(gira-direita 18.1) move frente -0.068
+  chave 0.675s ombro.direito(frente 131.3 abre 27.5) ombro.esquerdo(frente 153.8 abre 22.5) cotovelo.direito(dobra 120) cotovelo.esquerdo(dobra 110) quadril.direito(frente 39.8 abre 27 gira-fora 18.7) quadril.esquerdo(frente 11.3 abre 11 gira-fora 6.3) joelho.direito(dobra 61.5) joelho.esquerdo(dobra 22.5) tornozelo.direito(aponta 19.5) cabeca(gira-direita 35) move frente -0.073
+  chave 0.75s ombro.direito(frente 125.8 abre 28.7) ombro.esquerdo(frente 159.2 abre 21.3) cotovelo.direito(dobra 122.4) cotovelo.esquerdo(dobra 107.6) quadril.direito(frente 42.3 abre 30.9 gira-fora 21.8) quadril.esquerdo(frente 5.8 abre 7.1 gira-fora 3.2) joelho.direito(dobra 68) joelho.esquerdo(dobra 14.1) tornozelo.direito(aponta 31.8) cabeca(gira-direita 51.9) move frente -0.073
+  chave 0.825s ombro.direito(frente 121.7 abre 29.6) ombro.esquerdo(frente 163.3 abre 20.4) cotovelo.direito(dobra 124.3) cotovelo.esquerdo(dobra 105.7) quadril.direito(frente 44.2 abre 33.8 gira-fora 24.1) quadril.esquerdo(frente 1.7 abre 4.2 gira-fora 0.9) joelho.direito(dobra 73) joelho.esquerdo(dobra 7.6) tornozelo.direito(aponta 41.2) cabeca(gira-direita 64.8) move frente -0.073
+  chave 0.9s ombro.direito(frente 120 abre 30) ombro.esquerdo(frente 165 abre 20) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 105) quadril.direito(frente 45 abre 35 gira-fora 25) quadril.esquerdo(frente 0 abre 3 gira-fora 0) joelho.direito(dobra 75) joelho.esquerdo(dobra 5) tornozelo.direito(aponta 45) cabeca(gira-direita 70) move frente -0.073
+  chave 0.975s ombro.direito(frente 121.7 abre 29.6) ombro.esquerdo(frente 163.3 abre 20.4) cotovelo.direito(dobra 124.3) cotovelo.esquerdo(dobra 105.7) quadril.direito(frente 43.3 abre 33.8 gira-fora 24.1) quadril.esquerdo(frente 2.6 abre 4.2 gira-fora 0.9) joelho.direito(dobra 72.4) joelho.esquerdo(dobra 8.2) tornozelo.esquerdo(aponta 41.2) cabeca(gira-direita 64.8) move frente -0.073
+  chave 1.05s ombro.direito(frente 125.8 abre 28.7) ombro.esquerdo(frente 159.2 abre 21.3) cotovelo.direito(dobra 122.4) cotovelo.esquerdo(dobra 107.6) quadril.direito(frente 39.2 abre 30.9 gira-fora 21.8) quadril.esquerdo(frente 8.9 abre 7.1 gira-fora 3.2) joelho.direito(dobra 65.9) joelho.esquerdo(dobra 16.1) tornozelo.esquerdo(aponta 31.8) cabeca(gira-direita 51.9) move frente -0.073
+  chave 1.125s ombro.direito(frente 131.3 abre 27.5) ombro.esquerdo(frente 153.8 abre 22.5) cotovelo.direito(dobra 120) cotovelo.esquerdo(dobra 110) quadril.direito(frente 33.8 abre 27 gira-fora 18.8) quadril.esquerdo(frente 17.2 abre 11 gira-fora 6.2) joelho.direito(dobra 57.5) joelho.esquerdo(dobra 26.5) tornozelo.esquerdo(aponta 19.5) cabeca(gira-direita 35) move frente -0.073
+  chave 1.2s ombro.direito(frente 136.7 abre 26.3) ombro.esquerdo(frente 148.3 abre 23.7) cotovelo.direito(dobra 117.6) cotovelo.esquerdo(dobra 112.4) quadril.direito(frente 28.3 abre 23.1 gira-fora 15.7) quadril.esquerdo(frente 25.6 abre 14.9 gira-fora 9.3) joelho.direito(dobra 49.1) joelho.esquerdo(dobra 36.9) tornozelo.esquerdo(aponta 7.2) cabeca(gira-direita 18.1) move frente -0.073
+  chave 1.275s ombro.direito(frente 140.8 abre 25.4) ombro.esquerdo(frente 144.2 abre 24.6) cotovelo.direito(dobra 115.7) cotovelo.esquerdo(dobra 114.3) quadril.direito(frente 24.2 abre 20.2 gira-fora 13.4) quadril.esquerdo(frente 31.9 abre 17.8 gira-fora 11.6) joelho.direito(dobra 42.6) joelho.esquerdo(dobra 44.8) tornozelo.esquerdo(levanta-ponta 2.2) cabeca(gira-direita 5.2) move frente -0.115
+  chave 1.35s ombro(frente 142.5 abre 25) cotovelo(dobra 115) quadril.direito(frente 22.5 abre 19 gira-fora 12.5) quadril.esquerdo(frente 34.5 abre 19 gira-fora 12.5) joelho.direito(dobra 40) joelho.esquerdo(dobra 48) tornozelo.esquerdo(levanta-ponta 6) cabeca(gira-esquerda 0) move frente -0.133
+  chave 1.425s ombro.direito(frente 144.2 abre 24.6) ombro.esquerdo(frente 140.8 abre 25.4) cotovelo.direito(dobra 114.3) cotovelo.esquerdo(dobra 115.7) quadril.direito(frente 20.8 abre 17.8 gira-fora 11.6) quadril.esquerdo(frente 35.3 abre 20.2 gira-fora 13.4) joelho.direito(dobra 37.4) joelho.esquerdo(dobra 50) tornozelo.esquerdo(levanta-ponta 2.2) cabeca(gira-esquerda 5.2) move frente -0.135
+  chave 1.5s ombro.direito(frente 148.3 abre 23.7) ombro.esquerdo(frente 136.7 abre 26.3) cotovelo.direito(dobra 112.4) cotovelo.esquerdo(dobra 117.6) quadril.direito(frente 16.7 abre 14.9 gira-fora 9.3) quadril.esquerdo(frente 37.2 abre 23.1 gira-fora 15.7) joelho.direito(dobra 30.9) joelho.esquerdo(dobra 55) tornozelo.esquerdo(aponta 7.2) cabeca(gira-esquerda 18.1) move frente -0.141
+  chave 1.575s ombro.direito(frente 153.8 abre 22.5) ombro.esquerdo(frente 131.3 abre 27.5) cotovelo.direito(dobra 110) cotovelo.esquerdo(dobra 120) quadril.direito(frente 11.2 abre 11 gira-fora 6.2) quadril.esquerdo(frente 39.8 abre 27 gira-fora 18.8) joelho.direito(dobra 22.5) joelho.esquerdo(dobra 61.5) tornozelo.esquerdo(aponta 19.5) cabeca(gira-esquerda 35) move frente -0.147
+  chave 1.65s ombro.direito(frente 159.2 abre 21.3) ombro.esquerdo(frente 125.8 abre 28.7) cotovelo.direito(dobra 107.6) cotovelo.esquerdo(dobra 122.4) quadril.direito(frente 5.8 abre 7.1 gira-fora 3.2) quadril.esquerdo(frente 42.3 abre 30.9 gira-fora 21.8) joelho.direito(dobra 14.1) joelho.esquerdo(dobra 68) tornozelo.esquerdo(aponta 31.8) cabeca(gira-esquerda 51.9) move frente -0.147
+  chave 1.725s ombro.direito(frente 163.3 abre 20.4) ombro.esquerdo(frente 121.7 abre 29.6) cotovelo.direito(dobra 105.7) cotovelo.esquerdo(dobra 124.3) quadril.direito(frente 1.7 abre 4.2 gira-fora 0.9) quadril.esquerdo(frente 44.2 abre 33.8 gira-fora 24.1) joelho.direito(dobra 7.6) joelho.esquerdo(dobra 73) tornozelo.esquerdo(aponta 41.2) cabeca(gira-esquerda 64.8) move frente -0.147
+  chave 1.8s ombro.direito(frente 165 abre 20) ombro.esquerdo(frente 120 abre 30) cotovelo.direito(dobra 105) cotovelo.esquerdo(dobra 125) quadril.direito(frente 0 abre 3 gira-fora 0) quadril.esquerdo(frente 45 abre 35 gira-fora 25) joelho.direito(dobra 5) joelho.esquerdo(dobra 75) tornozelo.esquerdo(aponta 45) cabeca(gira-esquerda 70) move frente -0.147
 ```
 
 ### andarAgachado — ciclo (repete), 1,20 s, loop
@@ -4061,11 +4171,31 @@ No filme: `0s Kai anima andarAgachado` (repete até o fim do plano ou `por 4s`)
 ```gm
 # ciclo a partir de uma pose:  · 0.90 m por ciclo
 animacao "andarAgachado" duracao 1.2s mantem loop curva linear travar-pes tags "Locomocao/Andar/Agachado"
-  chave 0s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(frente 26) quadril.esquerdo(frente 64) joelho.direito(dobra 83) joelho.esquerdo(dobra 61) dedos-pe.direito(levanta 30) tronco(frente 28 gira-esquerda 7) pelve(gira-direita 6) cabeca(sobe 20) valor ankleFlexL -21 ankleFlexR -22 curva suave
-  chave 0.3s ombro(frente 1.5) cotovelo(dobra 22.5) quadril.direito(frente 57) quadril.esquerdo(frente 45) joelho(dobra 72) dedos-pe(levanta 15) tronco(gira-esquerda 0) pelve(gira-esquerda 0) valor ankleFlexL -21.5 ankleFlexR -21.5 move frente 0.225 curva suave
-  chave 0.6s ombro.direito(tras 22) ombro.esquerdo(frente 25) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 30) quadril.direito(frente 64) quadril.esquerdo(frente 26) joelho.direito(dobra 61) joelho.esquerdo(dobra 83) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 30) tronco(gira-direita 7) pelve(gira-esquerda 6) valor ankleFlexL -22 ankleFlexR -21 move frente 0.45 curva suave
-  chave 0.9s ombro(frente 1.5) cotovelo(dobra 22.5) quadril.direito(frente 45) quadril.esquerdo(frente 57) joelho(dobra 72) dedos-pe(levanta 15) tronco(gira-esquerda 0) pelve(gira-direita 0) valor ankleFlexL -21.5 ankleFlexR -21.5 move frente 0.675 curva suave
-  chave 1.2s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(frente 26) quadril.esquerdo(frente 64) joelho.direito(dobra 83) joelho.esquerdo(dobra 61) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(dobra 0) tronco(gira-esquerda 7) pelve(gira-direita 6) valor ankleFlexL -21 ankleFlexR -22 move frente 0.9 curva suave
+  chave 0s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(frente 26) quadril.esquerdo(frente 64) joelho.direito(dobra 83) joelho.esquerdo(dobra 61) tornozelo(levanta-ponta 20) dedos-pe.direito(levanta 30) tronco(frente 28 gira-esquerda 7) pelve(gira-direita 6) cabeca(sobe 20)
+  chave 0.05s ombro.direito(frente 23.3) ombro.esquerdo(tras 20.3) cotovelo.direito(dobra 29.4) cotovelo.esquerdo(dobra 15.6) quadril.direito(frente 28.3) quadril.esquerdo(frente 62.6) joelho.direito(dobra 82.2) joelho.esquerdo(dobra 61.8) dedos-pe.direito(levanta 28.9) dedos-pe.esquerdo(levanta 1.1) tronco(gira-esquerda 6.5) pelve(gira-direita 5.6) move frente -0.034
+  chave 0.1s ombro.direito(frente 18.9) ombro.esquerdo(tras 15.9) cotovelo.direito(dobra 28.1) cotovelo.esquerdo(dobra 16.9) quadril.direito(frente 34) quadril.esquerdo(frente 59.1) joelho.direito(dobra 80.1) joelho.esquerdo(dobra 63.9) dedos-pe.direito(levanta 26.1) dedos-pe.esquerdo(levanta 3.9) tronco(gira-esquerda 5.2) pelve(gira-direita 4.4) move frente -0.123
+  chave 0.15s ombro.direito(frente 13.3) ombro.esquerdo(tras 10.3) cotovelo.direito(dobra 26.3) cotovelo.esquerdo(dobra 18.8) quadril.direito(frente 41.5) quadril.esquerdo(frente 54.5) joelho.direito(dobra 77.5) joelho.esquerdo(dobra 66.5) dedos-pe.direito(levanta 22.5) dedos-pe.esquerdo(levanta 7.5) tronco(gira-esquerda 3.5) pelve(gira-direita 3) move frente -0.241
+  chave 0.2s ombro.direito(frente 7.6) ombro.esquerdo(tras 4.6) cotovelo.direito(dobra 24.4) cotovelo.esquerdo(dobra 20.6) quadril.direito(frente 49) quadril.esquerdo(frente 49.9) joelho.direito(dobra 74.9) joelho.esquerdo(dobra 69.1) dedos-pe.direito(levanta 18.9) dedos-pe.esquerdo(levanta 11.1) tronco(gira-esquerda 1.8) pelve(gira-direita 1.6) move frente -0.361
+  chave 0.25s ombro.direito(frente 3.2) ombro.esquerdo(tras 0.2) cotovelo.direito(dobra 23.1) cotovelo.esquerdo(dobra 21.9) quadril.direito(frente 54.7) quadril.esquerdo(frente 46.4) joelho.direito(dobra 72.8) joelho.esquerdo(dobra 71.2) dedos-pe.direito(levanta 16.1) dedos-pe.esquerdo(levanta 13.9) tronco(gira-esquerda 0.5) pelve(gira-direita 0.4) move frente -0.332
+  chave 0.3s ombro(frente 1.5) cotovelo(dobra 22.5) quadril.direito(frente 57) quadril.esquerdo(frente 45) joelho(dobra 72) dedos-pe(levanta 15) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente -0.306
+  chave 0.35s ombro.direito(tras 0.2) ombro.esquerdo(frente 3.2) cotovelo.direito(dobra 21.9) cotovelo.esquerdo(dobra 23.1) quadril.direito(frente 57.5) quadril.esquerdo(frente 43.6) joelho.direito(dobra 71.2) joelho.esquerdo(dobra 72.8) dedos-pe.direito(levanta 13.9) dedos-pe.esquerdo(levanta 16.1) tronco(gira-direita 0.5) pelve(gira-esquerda 0.4) move frente -0.28
+  chave 0.4s ombro.direito(tras 4.6) ombro.esquerdo(frente 7.6) cotovelo.direito(dobra 20.6) cotovelo.esquerdo(dobra 24.4) quadril.direito(frente 58.8) quadril.esquerdo(frente 40.1) joelho.direito(dobra 69.1) joelho.esquerdo(dobra 74.9) dedos-pe.direito(levanta 11.1) dedos-pe.esquerdo(levanta 18.9) tronco(gira-direita 1.8) pelve(gira-esquerda 1.6) move frente -0.215
+  chave 0.45s ombro.direito(tras 10.2) ombro.esquerdo(frente 13.2) cotovelo.direito(dobra 18.8) cotovelo.esquerdo(dobra 26.3) quadril.direito(frente 60.5) quadril.esquerdo(frente 35.5) joelho.direito(dobra 66.5) joelho.esquerdo(dobra 77.5) dedos-pe.direito(levanta 7.5) dedos-pe.esquerdo(levanta 22.5) tronco(gira-direita 3.5) pelve(gira-esquerda 3) move frente -0.131
+  chave 0.5s ombro.direito(tras 15.9) ombro.esquerdo(frente 18.9) cotovelo.direito(dobra 16.9) cotovelo.esquerdo(dobra 28.1) quadril.direito(frente 62.2) quadril.esquerdo(frente 30.9) joelho.direito(dobra 63.9) joelho.esquerdo(dobra 80.1) dedos-pe.direito(levanta 3.9) dedos-pe.esquerdo(levanta 26.1) tronco(gira-direita 5.2) pelve(gira-esquerda 4.4) move frente -0.049
+  chave 0.55s ombro.direito(tras 20.3) ombro.esquerdo(frente 23.3) cotovelo.direito(dobra 15.6) cotovelo.esquerdo(dobra 29.4) quadril.direito(frente 63.5) quadril.esquerdo(frente 27.4) joelho.direito(dobra 61.8) joelho.esquerdo(dobra 82.2) dedos-pe.direito(levanta 1.1) dedos-pe.esquerdo(levanta 28.9) tronco(gira-direita 6.5) pelve(gira-esquerda 5.6) move frente 0.013
+  chave 0.6s ombro.direito(tras 22) ombro.esquerdo(frente 25) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 30) quadril.direito(frente 64) quadril.esquerdo(frente 26) joelho.direito(dobra 61) joelho.esquerdo(dobra 83) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 30) tronco(gira-direita 7) pelve(gira-esquerda 6) move frente 0.036
+  chave 0.65s ombro.direito(tras 20.3) ombro.esquerdo(frente 23.3) cotovelo.direito(dobra 15.6) cotovelo.esquerdo(dobra 29.4) quadril.direito(frente 62.6) quadril.esquerdo(frente 28.3) joelho.direito(dobra 61.8) joelho.esquerdo(dobra 82.2) dedos-pe.direito(levanta 1.1) dedos-pe.esquerdo(levanta 28.9) tronco(gira-direita 6.5) pelve(gira-esquerda 5.6) move frente 0.001
+  chave 0.7s ombro.direito(tras 15.9) ombro.esquerdo(frente 18.9) cotovelo.direito(dobra 16.9) cotovelo.esquerdo(dobra 28.1) quadril.direito(frente 59.1) quadril.esquerdo(frente 34) joelho.direito(dobra 63.9) joelho.esquerdo(dobra 80.1) dedos-pe.direito(levanta 3.9) dedos-pe.esquerdo(levanta 26.1) tronco(gira-direita 5.2) pelve(gira-esquerda 4.4) move frente -0.091
+  chave 0.75s ombro.direito(tras 10.2) ombro.esquerdo(frente 13.2) cotovelo.direito(dobra 18.8) cotovelo.esquerdo(dobra 26.2) quadril.direito(frente 54.5) quadril.esquerdo(frente 41.5) joelho.direito(dobra 66.5) joelho.esquerdo(dobra 77.5) dedos-pe.direito(levanta 7.5) dedos-pe.esquerdo(levanta 22.5) tronco(gira-direita 3.5) pelve(gira-esquerda 3) move frente -0.212
+  chave 0.8s ombro.direito(tras 4.6) ombro.esquerdo(frente 7.6) cotovelo.direito(dobra 20.6) cotovelo.esquerdo(dobra 24.4) quadril.direito(frente 49.9) quadril.esquerdo(frente 49) joelho.direito(dobra 69.1) joelho.esquerdo(dobra 74.9) dedos-pe.direito(levanta 11.1) dedos-pe.esquerdo(levanta 18.9) tronco(gira-direita 1.8) pelve(gira-esquerda 1.6) move frente -0.334
+  chave 0.85s ombro.direito(tras 0.2) ombro.esquerdo(frente 3.2) cotovelo.direito(dobra 21.9) cotovelo.esquerdo(dobra 23.1) quadril.direito(frente 46.4) quadril.esquerdo(frente 54.7) joelho.direito(dobra 71.2) joelho.esquerdo(dobra 72.8) dedos-pe.direito(levanta 13.9) dedos-pe.esquerdo(levanta 16.1) tronco(gira-direita 0.5) pelve(gira-esquerda 0.4) move frente -0.306
+  chave 0.9s ombro(frente 1.5) cotovelo(dobra 22.5) quadril.direito(frente 45) quadril.esquerdo(frente 57) joelho(dobra 72) dedos-pe(levanta 15) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente -0.28
+  chave 0.95s ombro.direito(frente 3.2) ombro.esquerdo(tras 0.2) cotovelo.direito(dobra 23.1) cotovelo.esquerdo(dobra 21.9) quadril.direito(frente 43.6) quadril.esquerdo(frente 57.5) joelho.direito(dobra 72.8) joelho.esquerdo(dobra 71.2) dedos-pe.direito(levanta 16.1) dedos-pe.esquerdo(levanta 13.9) tronco(gira-esquerda 0.5) pelve(gira-direita 0.4) move frente -0.254
+  chave 1s ombro.direito(frente 7.6) ombro.esquerdo(tras 4.6) cotovelo.direito(dobra 24.4) cotovelo.esquerdo(dobra 20.6) quadril.direito(frente 40.1) quadril.esquerdo(frente 58.8) joelho.direito(dobra 74.9) joelho.esquerdo(dobra 69.1) dedos-pe.direito(levanta 18.9) dedos-pe.esquerdo(levanta 11.1) tronco(gira-esquerda 1.8) pelve(gira-direita 1.6) move frente -0.19
+  chave 1.05s ombro.direito(frente 13.3) ombro.esquerdo(tras 10.3) cotovelo.direito(dobra 26.3) cotovelo.esquerdo(dobra 18.7) quadril.direito(frente 35.5) quadril.esquerdo(frente 60.5) joelho.direito(dobra 77.5) joelho.esquerdo(dobra 66.5) dedos-pe.direito(levanta 22.5) dedos-pe.esquerdo(levanta 7.5) tronco(gira-esquerda 3.5) pelve(gira-direita 3) move frente -0.108
+  chave 1.1s ombro.direito(frente 18.9) ombro.esquerdo(tras 15.9) cotovelo.direito(dobra 28.1) cotovelo.esquerdo(dobra 16.9) quadril.direito(frente 30.9) quadril.esquerdo(frente 62.2) joelho.direito(dobra 80.1) joelho.esquerdo(dobra 63.9) dedos-pe.direito(levanta 26.1) dedos-pe.esquerdo(levanta 3.9) tronco(gira-esquerda 5.2) pelve(gira-direita 4.4) move frente -0.029
+  chave 1.15s ombro.direito(frente 23.3) ombro.esquerdo(tras 20.3) cotovelo.direito(dobra 29.4) cotovelo.esquerdo(dobra 15.6) quadril.direito(frente 27.4) quadril.esquerdo(frente 63.5) joelho.direito(dobra 82.2) joelho.esquerdo(dobra 61.8) dedos-pe.direito(levanta 28.9) dedos-pe.esquerdo(levanta 1.1) tronco(gira-esquerda 6.5) pelve(gira-direita 5.6) move frente 0.029
+  chave 1.2s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(frente 26) quadril.esquerdo(frente 64) joelho.direito(dobra 83) joelho.esquerdo(dobra 61) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(dobra 0) tronco(gira-esquerda 7) pelve(gira-direita 6) move frente 0.052
 ```
 
 ### cairFrente — transição de postura, 1,00 s

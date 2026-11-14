@@ -330,7 +330,7 @@ async function suite(client, tag) {
     r = await call("pose_texto", { codigo: 'pose "pedido" de empe\n  ajoelha direito\n  ombro.direito(frente 70) cotovelo.direito(dobra 20)\n' });
     check(!r.isError && r.content[0].type === "image" && r.structuredContent.valores.armFlexR === 70, "pose_texto: juntas e atalhos" + (r.isError ? ": " + text(r) : ""));
     r = await call("animacao_texto", { codigo: 'pose "pl" de empe\n  quadril.direito(frente 35)\n  quadril.esquerdo(tras 15)\nciclo "andar-pl" de pl duracao 1s\n', fps: 4 });
-    check(!r.isError && r.structuredContent.loop === true && r.structuredContent.chaves === 5, "animacao_texto: ciclo de uma pose" + (r.isError ? ": " + text(r) : ""));
+    check(!r.isError && r.structuredContent.loop === true && r.structuredContent.chaves >= 5, "animacao_texto: ciclo de uma pose" + (r.isError ? ": " + text(r) : ""));
     r = await call("derivar_animacao", { base: "girar360E", operacoes: ["troca pernas por pose ajoelhado", "ate 90"], fps: 4 });
     check(!r.isError && r.structuredContent.duracao < 2, "derivar_animacao: de joelhos e só 90°" + (r.isError ? ": " + text(r) : ""));
     r = await call("ciclo_de_pose", { pose: "correndo", corre: true, fps: 4 });

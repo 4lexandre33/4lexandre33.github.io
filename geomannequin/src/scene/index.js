@@ -39,7 +39,10 @@ export * from "./pose-dsl.js";
 export * from "./locomocao.js";
 export * from "./acoes-dia.js";
 export * from "./camera-filme.js";
+export * from "./animais.js";
 export * from "./name-dsl.js";
+export * from "./auditoria-anim.js";
+export * from "./pagina-hq.js";
 export * from "./manual-name.js";
 
 iniciarModelo();

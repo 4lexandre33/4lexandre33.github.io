@@ -352,7 +352,7 @@ function ANIM_PRONTAS() {
       add(n, { duracao: /soc|jab|chut/.test(n) ? 0.45 : 0.6, curva: /soc|jab|chut/.test(n) ? "rapida" : "suave", chaves: [{ t: 0, valores: anPoseValores(a, base) }, { t: /soc|jab|chut/.test(n) ? 0.2 : 0.6, valores: anPoseValores(b, base) }].concat(/soc|jab|chut/.test(n) ? [{ t: 0.45, valores: anPoseValores(a, base) }] : []) }, [tg], a + " → " + b); }
     add("pular", { duracao: 0.9, chaves: [{ t: 0, valores: Object.assign({}, empe, { bodyLift: 0 }) }, { t: 0.2, valores: Object.assign({}, anPoseValores("agachar", base), { bodyLift: 0 }) }, { t: 0.45, valores: Object.assign({}, anPoseValores("saltando", base), { bodyLift: 6 }) }, { t: 0.7, valores: Object.assign({}, anPoseValores("aterrissando", base), { bodyLift: 0 }) }, { t: 0.9, valores: Object.assign({}, empe, { bodyLift: 0 }) }] }, ["Locomocao/Salto"], "pulo no lugar");
   } catch (e) { L._erro = { nome: "_erro", descricao: e.message, chaves: [{ t: 0, valores: {} }], duracao: 0, tags: [] }; }
-  for (const f of AN_PROVEDORES) try { Object.assign(L, f()); } catch (e) { L._erroProvedor = { nome: "_erroProvedor", descricao: e.message, chaves: [{ t: 0, valores: {} }], duracao: 0, tags: [] }; }
+  for (const f of AN_PROVEDORES) try { Object.assign(L, f(L)); } catch (e) { L._erroProvedor = { nome: "_erroProvedor", descricao: e.message, chaves: [{ t: 0, valores: {} }], duracao: 0, tags: [] }; }
   AN_CACHE = L; return L;
 }
 /* troca esquerda ↔ direita de um conjunto de parâmetros (para o outro passo do ciclo) */

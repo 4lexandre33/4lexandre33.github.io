@@ -5,7 +5,7 @@
 import { SCN } from "./modelo.js";
 import { pMundo } from "./colisoes.js";
 import { capsulas } from "../engine/index.js";
-import { criarAnimacao, anPoseValores, anSemCamera, bibliotecaAnimacoes, registrarProntas } from "./animacao.js";
+import { criarAnimacao, anPoseValores, anSemCamera, bibliotecaAnimacoes, registrarProntas, aplicarAnimacao } from "./animacao.js";
 
 const MV_M = 1 / 0.114;
 /* rotação no plano do chão, no sistema do começo (x = lado/esquerda, z = frente): mesma convenção do wRot */
@@ -133,6 +133,79 @@ function animacaoAndarAte(it, destino, o = {}) {
   add(t + 0.25, D0, { frente: pos[1], lado: pos[0], giro: th });
   return criarAnimacao({ nome: o.nome || "andarAte", duracao: t + 0.25, modo: "relativa", curva: "suave", travarPes: false, tags: ["Locomocao/Andar/AteUmPonto"], descricao: "anda " + Math.hypot(...pontos[pontos.length - 1]).toFixed(1) + " m" + (pontos.length > 2 ? " desviando de “" + (obs.nome || obs.tipo) + "”" : ""), chaves });
 }
+
+/* ===== ciclo de andar e de correr de verdade: contato → recebe o peso → passagem → impulso (4 poses por passo) =====
+   O pé de apoio fica mais baixo do que o outro o passo inteiro (o chão automático encosta nele) e anda para trás em linha;
+   o deslocamento sai calibrado pelo próprio pé (mvCalibrarMover). Valores relativos à pose em pé. */
+const MV_ANDAR = [
+  [0, { hipFlexL: 18, kneeFlexL: 0, ankleFlexL: -10, hipFlexR: -20, kneeFlexR: 24, ankleFlexR: 16, armFlexR: 20, armFlexL: -18, elbowL: 15, elbowR: 24, spineTwist: 5, pelvisTwist: -5 }],
+  [0.12, { hipFlexL: 15, kneeFlexL: 14, ankleFlexL: 0, hipFlexR: -12, kneeFlexR: 42, ankleFlexR: 18, armFlexR: 12, armFlexL: -10, elbowL: 15, elbowR: 20, spineTwist: 3, pelvisTwist: -3 }],
+  [0.25, { hipFlexL: 0, kneeFlexL: 6, ankleFlexL: 2, hipFlexR: 20, kneeFlexR: 58, ankleFlexR: -6, armFlexR: 0, armFlexL: 0, elbowL: 15, elbowR: 15, spineTwist: 0, pelvisTwist: 0 }],
+  [0.38, { hipFlexL: -12, kneeFlexL: 4, ankleFlexL: 8, hipFlexR: 24, kneeFlexR: 20, ankleFlexR: -12, armFlexR: -12, armFlexL: 12, elbowL: 20, elbowR: 15, spineTwist: -3, pelvisTwist: 3 }]];
+const MV_CORRER = [
+  [0, { bodyPitch: 10, hipFlexL: 30, kneeFlexL: 14, ankleFlexL: -6, hipFlexR: -24, kneeFlexR: 46, ankleFlexR: 24, armFlexR: 50, armFlexL: -40, elbowL: 85, elbowR: 90, spineTwist: 8, pelvisTwist: -6, handCurlL: 0.6, handCurlR: 0.6 }],
+  [0.12, { bodyPitch: 10, hipFlexL: 20, kneeFlexL: 34, ankleFlexL: 4, hipFlexR: -6, kneeFlexR: 84, ankleFlexR: 20, armFlexR: 30, armFlexL: -24, elbowL: 85, elbowR: 90, spineTwist: 4, pelvisTwist: -3, handCurlL: 0.6, handCurlR: 0.6 }],
+  [0.25, { bodyPitch: 10, hipFlexL: 0, kneeFlexL: 24, ankleFlexL: 10, hipFlexR: 48, kneeFlexR: 100, ankleFlexR: -4, armFlexR: 0, armFlexL: 0, elbowL: 85, elbowR: 85, spineTwist: 0, pelvisTwist: 0, handCurlL: 0.6, handCurlR: 0.6 }],
+  [0.38, { bodyPitch: 10, hipFlexL: -18, kneeFlexL: 12, ankleFlexL: 22, hipFlexR: 52, kneeFlexR: 56, ankleFlexR: -10, armFlexR: -34, armFlexL: 44, elbowL: 90, elbowR: 85, spineTwist: -6, pelvisTwist: 4, handCurlL: 0.6, handCurlR: 0.6 }]];
+function mvEspelhar(v) { const o = {}; for (const [k, x] of Object.entries(v)) { const m = /^(.*)(L|R)$/.exec(k); o[m ? m[1] + (m[2] === "L" ? "R" : "L") : k] = !m && /Twist|Yaw|Roll|Side/.test(k) ? -x : x; } return o; }
+/* poses de UM passo do lado "L na frente" → [fração, valores]; o passo seguinte é o espelho */
+function mvPassoPoses(correndo, lado) { const K = correndo ? MV_CORRER : MV_ANDAR; return K.map(([u, v]) => [u * 2, lado === "R" ? mvEspelhar(v) : v]); }
+/* ciclo com o deslocamento seguindo o pé de apoio a cada 1/24 do ciclo (o corpo avança no ritmo do pé: sem patinar dentro do passo) */
+function mvDensificar(a) {
+  const b0 = SCN.list[0] ? anSemCamera(SCN.list[0].params) : {}, d = mvDeslocamentoDoPe(a, { amostras: 48 }); if (!d.acum.length) return a;
+  const ks = [...new Set(a.chaves.flatMap(c => Object.keys(c.valores)))], it = { name: "_dens", params: Object.assign({}, b0) }, sem = Object.assign({}, a, { loop: false, chaves: a.chaves.map(c => Object.assign({}, c, { mover: undefined })) });
+  const n = 24, ch = [], tot = d.acum[d.acum.length - 1].frente || 1;
+  for (let i = 0; i <= n; i++) { const t = a.duracao * i / n; Object.assign(it.params, b0); delete it._animBase; aplicarAnimacao(it, sem, t, { base: { params: Object.assign({}, b0) } }); delete it._animBase;
+    const v = {}, abs = a.modo === "absoluta"; ks.forEach(k => { v[k] = abs ? (it.params[k] || 0) : (it.params[k] || 0) - (b0[k] || 0); }); const j = Math.round(i / n * (d.acum.length - 1)); ch.push({ t: +t.toFixed(4), valores: v, mover: { frente: i === n ? tot : d.acum[j].frente, lado: 0, giro: 0 } }); }
+  return Object.assign(criarAnimacao(Object.assign({}, a, { chaves: ch, curva: "linear" })), { calibrada: { frente: +(tot / ((a.chaves[a.chaves.length - 1].mover || {}).frente || tot)).toFixed(3), denso: true } });
+}
+function mvCiclo(o = {}) {
+  const K = o.correndo ? MV_CORRER : MV_ANDAR, T = o.duracao || (o.correndo ? 0.64 : 1.04), ch = [];
+  K.forEach(([u, v]) => ch.push({ t: +(u * T).toFixed(4), valores: Object.assign({}, v) })); K.forEach(([u, v]) => ch.push({ t: +((u + 0.5) * T).toFixed(4), valores: mvEspelhar(v) })); ch.push({ t: T, valores: Object.assign({}, K[0][1]) });
+  const est = o.correndo ? 2.6 : 1.4; ch.forEach(c => { c.mover = { frente: est * c.t / T, lado: 0, giro: 0 }; });
+  const a = criarAnimacao({ nome: o.nome || (o.correndo ? "correrCiclo" : "andarCiclo"), duracao: T, modo: "relativa", curva: "suave", loop: true, travarPes: true, chaves: ch, tags: [o.correndo ? "Locomocao/Correr" : "Locomocao/Andar"], descricao: o.correndo ? "ciclo de corrida (contato, recepção, passagem, impulso)" : "ciclo de caminhada (contato, recepção, passagem, impulso)" });
+  return mvDensificar(a);
+}
+/* meia passada (m) que o ciclo anda por passo (calibrada pelo pé) */
+const MV_PASSADA = {};
+function mvMeiaPassada(correndo) { const k = correndo ? "c" : "a"; if (MV_PASSADA[k] === undefined) { try { const a = mvCiclo({ correndo }), u = a.chaves[a.chaves.length - 1].mover.frente; MV_PASSADA[k] = Math.max(0.3, Math.min(1.6, u / 2)); } catch (e) { MV_PASSADA[k] = correndo ? 1.2 : 0.7; } } return MV_PASSADA[k]; }
+/* ===== passada calibrada: o corpo anda exatamente o que o pé apoiado empurra (sem patinar) =====
+   Toca a animação com o corpo parado, segue o pé que está no chão (o mais baixo, perto do chão) e soma quanto ele vai para trás;
+   o deslocamento (mover) da animação é reescalado para isso. Vale para ciclos de andar/correr e passos. */
+function mvDeslocamentoDoPe(a, o = {}) {
+  const b0 = SCN.list[0] ? anSemCamera(SCN.list[0].params) : {}, it = { name: "_passada", params: Object.assign({}, b0, { wx: 0, wz: 0, wRot: 0, bodyLift: 0, ground: 1, tamanho: o.tamanho || b0.tamanho || 1 }) };
+  const sem = Object.assign({}, a, { loop: false, chaves: a.chaves.map(c => Object.assign({}, c, { mover: undefined })) }), N = o.amostras || Math.max(24, Math.round(a.duracao * 60));
+  let prev = null, frente = 0, lado = 0, yMin = Infinity; const pts = [];
+  for (let i = 0; i <= N; i++) { Object.assign(it.params, b0, { wx: 0, wz: 0, wRot: 0, bodyLift: 0 }); delete it._animBase;
+    aplicarAnimacao(it, sem, a.duracao * i / N, { base: { params: Object.assign({}, b0) } }); delete it._animBase; const p = pesDoManequim(it); if (!p.L || !p.R) continue; pts.push(p); yMin = Math.min(yMin, p.L.y, p.R.y); }
+  const acum = [];
+  for (const p of pts) { const ap = p.L.y <= p.R.y ? "L" : "R", q = p[ap];
+    if (prev && prev.ap === ap && q.y - yMin < 0.35 && prev.y - yMin < 0.35) { frente += -(q.z - prev.z) / MV_M; lado += -(q.x - prev.x) / MV_M; }
+    prev = { ap, z: q.z, x: q.x, y: q.y }; acum.push({ frente, lado }); }
+  return { frente, lado, acum, N };
+}
+function mvCalibrarMover(a, o = {}) {
+  const mv = a.chaves.filter(c => c.mover), ult = mv[mv.length - 1]; if (!ult) return a;
+  const alvoF = ult.mover.frente || 0, alvoL = ult.mover.lado || 0; if (Math.abs(alvoF) < 0.05 && Math.abs(alvoL) < 0.05) return a;
+  const d = mvDeslocamentoDoPe(a, o), kF = Math.abs(alvoF) > 0.05 && Math.sign(d.frente) === Math.sign(alvoF) && Math.abs(d.frente) > 0.05 ? d.frente / alvoF : 1, kL = Math.abs(alvoL) > 0.05 && Math.sign(d.lado) === Math.sign(alvoL) && Math.abs(d.lado) > 0.05 ? d.lado / alvoL : 1;
+  if (Math.abs(kF - 1) < 0.03 && Math.abs(kL - 1) < 0.03) return a;
+  a.chaves.forEach(c => { if (!c.mover) return; c.mover = Object.assign({}, c.mover); if (c.mover.frente) c.mover.frente *= kF; if (c.mover.lado) c.mover.lado *= kL; });
+  a.calibrada = { frente: +kF.toFixed(3), lado: +kL.toFixed(3) }; return a;
+}
+/* passada de uma pose de andar (m): distância entre os pés de frente e de trás */
+function mvPassadaDaPose(nome, Q) { const v = anPoseValores(nome, Q), e = anPoseValores("empe", Q), d = {}; for (const k of Object.keys(v)) if (!/^(wx|wz|wRot|bodyLift|bodyPitch|bodyRoll|ground)$/.test(k)) d[k] = (v[k] || 0) - (e[k] || 0);
+  return Math.abs(peLocal(d, "L")[1] - peLocal(d, "R")[1]); }
+/* os ciclos e passos prontos já saem calibrados */
+registrarProntas(T => { const L = {}, lib = ["passoFrente", "passoTras", "passoLadoDireito", "passoLadoEsquerdo"];
+  try { L.andarCiclo = Object.assign(mvCiclo({}), { origem: "pronta", versao: 0 }); L.correrCiclo = Object.assign(mvCiclo({ correndo: true }), { origem: "pronta", versao: 0 }); } catch (e) { }
+  /* ajustes de pé de 15 cm: o pé sobe no meio (passinho), não arrasta */
+  try { for (const [n, a] of Object.entries(T || {})) { const m = /^pe(Direito|Esquerdo)15cm/.exec(n); if (!m || a.levantado) continue; const S = m[1] === "Direito" ? "R" : "L", c0 = a.chaves[0], c1 = a.chaves[a.chaves.length - 1], meio = {};
+      for (const k of Object.keys(c1.valores)) meio[k] = (c1.valores[k] || 0) * 0.5; meio["kneeFlex" + S] = (meio["kneeFlex" + S] || 0) + 22; meio["hipFlex" + S] = (meio["hipFlex" + S] || 0) + 10; meio["ankleFlex" + S] = (meio["ankleFlex" + S] || 0) - 6;
+      L[n] = Object.assign(criarAnimacao(Object.assign({}, a, { chaves: [c0, { t: a.duracao / 2, valores: meio }, Object.assign({}, c1, { valores: Object.assign({ ["kneeFlex" + S]: 0, ["hipFlex" + S]: 0, ["ankleFlex" + S]: 0 }, c1.valores) })] })), { levantado: true, travarPes: true, origem: "pronta", versao: 0, tags: a.tags, descricao: a.descricao }); }
+    if (T && T.andarAgachado && !T.andarAgachado.calibrada) L.andarAgachado = Object.assign(mvDensificar(JSON.parse(JSON.stringify(T.andarAgachado))), { origem: "pronta", versao: 0, tags: T.andarAgachado.tags, descricao: T.andarAgachado.descricao, travarPes: true }); } catch (e) { }
+  try { for (const n of lib) { const a = T && T[n]; if (a && !a.calibrada) L[n] = Object.assign(mvCalibrarMover(JSON.parse(JSON.stringify(a))), { origem: "pronta", versao: 0, tags: a.tags, descricao: a.descricao }); } } catch (e) { }
+  return L; });
+
 /* animações prontas de giro na biblioteca */
 function registrarGiros() {
   const L = {}; for (const [A, e] of [[45, "passos"], [-45, "passos"], [90, "passos"], [-90, "passos"], [180, "passos"], [-180, "passos"], [360, "passos"], [-360, "passos"], [360, "pivo"], [-360, "pivo"], [360, "luta"], [-360, "luta"], [360, "salto"], [-360, "salto"], [720, "pivo"]]) {
@@ -140,5 +213,5 @@ function registrarGiros() {
   return L;
 }
 registrarProntas(registrarGiros);
-export { apoioNoTempo, pesDoManequim, travarPes, animacaoGiro, animacaoAndarAte, registrarGiros, mvRot };
+export { mvDensificar, mvCiclo, mvMeiaPassada, mvPassoPoses, mvCalibrarMover, mvDeslocamentoDoPe, mvPassadaDaPose, apoioNoTempo, pesDoManequim, travarPes, animacaoGiro, animacaoAndarAte, registrarGiros, mvRot };
 void bibliotecaAnimacoes; void anSemCamera;

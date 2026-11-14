@@ -1124,7 +1124,7 @@ const camera={
     const dx=x-P.tx,dy=y-P.ty,dz=z-P.tz,d=Math.hypot(dx,dy,dz);if(d<0.5)throw new Error("A câmera está colada no alvo; afaste-a.");
     P.yaw=Math.round(-Math.atan2(dx,dz)/D*10)/10;P.pitch=clamp(Math.round(-Math.atan2(dy,Math.hypot(dx,dz))/D*10)/10,-70,70);P.roll=0;
     P.camDist=clamp(d,4,400);P.zoom=clamp(6.2/d,0.01,3);P.panX=0;P.panY=0;return camera},
-  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-400,400,"x");camSet("ty",y,-20,60,"y");camSet("tz",z,-400,400,"z");P.panX=0;P.panY=0;return camera},
+  mirar(x,y,z){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;SCN.pivo=null;camSet("tx",x,-6000,6000,"x");camSet("ty",y,-3000,6000,"y");camSet("tz",z,-6000,6000,"z");P.panX=0;P.panY=0;return camera},
   girar(yaw,pitch,roll){pararSeguimentoCamera();SCN.ultimaVistaOrientada=null;camSet("yaw",yaw,-180,180,"yaw");if(pitch!==undefined)camSet("pitch",pitch,-70,70,"pitch");if(roll!==undefined)camSet("roll",roll,-45,45,"roll");return camera},
   zoom(z){setZoomEff(num(z,"zoom"));return camera},
   perspectiva(on,dist){P.persp=on===false||on===0?0:1;if(dist!==undefined)camSet("camDist",dist,4,200,"distância");return camera},
@@ -1178,7 +1178,7 @@ const camera={
     const Hs=1.0-restGround(SCN.list[0].params),hreg=f*Hs,topo=cab[1]+cr.r*1.05,b=Math.min(1,Math.max(0,(f-0.3)/0.7));
     /* centro: perto da cabeça nos planos fechados; no meio do corpo nos abertos */
     const c=[cab[0]+(pel[0]-cab[0])*b,topo-hreg/2,cab[2]+(pel[2]-cab[2])*b];
-    P.tx=clamp(c[0],-400,400);P.ty=clamp(c[1],-20,60);P.tz=clamp(c[2],-400,400);
+    P.tx=clamp(c[0],-6000,6000);P.ty=clamp(c[1],-3000,6000);P.tz=clamp(c[2],-6000,6000);
     const S=(SCN.recorte?SCN.recorte.h:H)*0.86/(hreg*1.08);
     if(P.persp){let d=(W/2)*(P.lens||50)/(18*S);if(d<6){d=6;P.lens=Math.round(clamp(18*S*d/(W/2),18,200))}P.camDist=+clamp(d,4,400).toFixed(2)}
     else P.zoom=+clamp(S/effScale(Object.assign({},P,{persp:0,zoom:1})),0.05,3).toFixed(3);

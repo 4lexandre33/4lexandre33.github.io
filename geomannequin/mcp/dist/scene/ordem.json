@@ -43,8 +43,11 @@
   "pose-dsl.js",
   "locomocao.js",
   "acoes-dia.js",
+  "animais.js",
   "camera-filme.js",
   "name-dsl.js",
+  "auditoria-anim.js",
+  "pagina-hq.js",
   "manual-name.js"
  ],
  "iniciar": [

@@ -99,7 +99,7 @@ function pivoCamera(alvo,opts={}) {
   const area=explicito?(Object.prototype.hasOwnProperty.call(opts,"area")?opts.area:opts.regiao):
     (mesmaChaveOrb(SCN.pivo,alvo)?SCN.orbitaArea:null);
   const A=resolverAlvo(alvo,{area});
-  P.tx=clamp(A.c[0],-400,400);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-400,400);
+  P.tx=clamp(A.c[0],-6000,6000);P.ty=clamp(A.c[1],-3000,6000);P.tz=clamp(A.c[2],-6000,6000);
   if(opts.enquadrar)enquadrarPivo(A,-(P.pitch||0),opts.folga);
   centrarPivo();SCN.pivo=A.chave;SCN.orbitaArea=A.area;
   return A;
@@ -122,7 +122,7 @@ function atualizarFocoOrbita(){
   if(SCN.pivo===undefined||SCN.pivo===null)return null;
   try{
     const A=resolverAlvo(SCN.pivo,{area:SCN.orbitaArea});
-    P.tx=clamp(A.c[0],-400,400);P.ty=clamp(A.c[1],-20,60);P.tz=clamp(A.c[2],-400,400);
+    P.tx=clamp(A.c[0],-6000,6000);P.ty=clamp(A.c[1],-3000,6000);P.tz=clamp(A.c[2],-6000,6000);
     return A;
   }catch(e){SCN.pivo=null;SCN.orbitaArea=null;return null;}
 }
@@ -134,7 +134,7 @@ function orbitarCamera(alvo, opts) {
   const base = opts.relativo === false || !A.frente ? 0 : Math.atan2(A.frente[0], A.frente[1]) / D;
   let yaw = -(base + az); yaw = ((yaw + 540) % 360) - 180;
   P.yaw = Math.round(yaw * 10) / 10; P.pitch = clamp(-elev, -70, 70); P.roll = opts.rolagem === undefined ? (A.area ? P.roll : 0) : clamp(+opts.rolagem || 0, -45, 45);
-  if (opts.distancia !== undefined) { const d = +opts.distancia; if (!(d > 0)) throw new Error("Distância da órbita: um número em R."); if (P.persp) P.camDist = clamp(d, 4, 200); else P.zoom = clamp(6.2 / d, 0.05, 3); }
+  if (opts.distancia !== undefined) { const d = +opts.distancia; if (!(d > 0)) throw new Error("Distância da órbita: um número em R."); if (P.persp) P.camDist = clamp(d, 0.3, 30000); else P.zoom = clamp(6.2 / d, 0.05, 3); }
   else if (opts.enquadrar !== false) enquadrarPivo(A, elev, opts.folga);
   centrarPivo();
   return {pivo:A.nome,tipo:A.tipo,area:A.area,azimute:az,elevacao:elev,yaw:P.yaw,pitch:P.pitch,distancia:P.camDist,centro:A.c};

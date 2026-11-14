@@ -53,7 +53,7 @@ function editarObjeto(q, o) {
   const n = (v, mn, mx) => typeof v === "number" && isFinite(v) ? clamp(v, mn, mx) : undefined, cil = ehCilindro(q);
   const sin = { larg: "largura", prof: "profundidade", alt: "altura", raio: "diametro" };
   const ox = q.x, oz = q.z;
-  [["x", -400, 400], ["z", -400, 400], ["giro", -180, 180], ["larg", 0.2, 450], ["prof", 0.2, 450], ["alt", 0.2, 120], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
+  [["x", -6000, 6000], ["z", -6000, 6000], ["giro", -180, 180], ["larg", 0.05, 6000], ["prof", 0.05, 6000], ["alt", 0.05, 3000], ["encosto", 0.5, 12], ["cabeceira", 0.5, 12], ["raio", 0.1, 20]].forEach(([k, a, b]) => {
     let v0 = o[k] !== undefined ? o[k] : o[sin[k]]; if (k === "raio" && o.raio === undefined && typeof o.diametro === "number") v0 = o.diametro / 2;
     const v = n(v0, a, b); if (v !== undefined) q[k] = Math.round(v * 1000) / 1000;
   });

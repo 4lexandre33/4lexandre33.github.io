@@ -27,7 +27,7 @@ function adAcao(nome, chaves, o = {}) {
   const fim = o.volta ? null : ch[ch.length - 1];
   if (ass > 0 && fim && ch.length >= 2) { const p = ch[ch.length - 2], v = {}; for (const k of ks) v[k] = fim.valores[k] + (fim.valores[k] - p.valores[k]) * ass; ch.splice(ch.length - 1, 0, { t: fim.t, valores: v, curva: "suave" }); fim.t = +(fim.t + 0.2).toFixed(3); }
   if (o.volta) { const u = ch[ch.length - 1]; ch.push({ t: +(u.t + (o.segura ?? 0.5)).toFixed(3), valores: Object.assign({}, u.valores) }, { t: +(u.t + (o.segura ?? 0.5) + (o.duracaoVolta ?? 0.55)).toFixed(3), valores: Object.fromEntries(ks.map(k => [k, 0])) }); }
-  return criarAnimacao({ nome, duracao: ch[ch.length - 1].t, modo: "relativa", curva: "suave", pesFixos: true, chaves: ch, tipo: "acao", volta: !!o.volta, tags: o.tags || ["Acao/Dia"], descricao: o.desc || nome });
+  return criarAnimacao({ nome, duracao: ch[ch.length - 1].t, modo: "relativa", curva: "suave", pesFixos: true, chaves: ch, tipo: "acao", dia: true, volta: !!o.volta, tags: o.tags || ["Acao/Dia"], descricao: o.desc || nome });
 }
 /* oscila (tremer, rir, palmas): repete pares de chaves */
 function adOscila(base, t0, n, per, a, b) { const out = []; for (let i = 0; i < n; i++) { out.push([+(t0 + per * i).toFixed(3), base + " " + a]); out.push([+(t0 + per * i + per / 2).toFixed(3), base + " " + b]); } return out; }
@@ -60,7 +60,7 @@ const AD_ACOES = {
   "bate-palmas": () => adAcao("baterPalmas", [[0, ""], ...adOscila("ombro.ambos(frente 45 cruza 8) antebraco.ambos(palma-cima 0) mao.ambos(abre)", 0.35, 5, 0.3, "cotovelo.ambos(dobra 70) ombro.ambos(cruza 18)", "cotovelo.ambos(dobra 95) ombro.ambos(cruza 4)")], { volta: true, segura: 0.1, desc: "bate palmas", tags: ["Acao/Emocao/Palmas"] })
 };
 /* nome da biblioteca de cada ação (ex.: oferece → oferecer) */
-function adAcaoPara(verbo, o = {}) { const g = AD_ACOES[verbo]; if (!g) return null; let a = g(o); if (o.mao === "esquerda") a = Object.assign(pdEspelharAnim(a, { nome: a.nome + "Esq" }), { tipo: "acao", volta: a.volta }); return a; }
+function adAcaoPara(verbo, o = {}) { const g = AD_ACOES[verbo]; if (!g) return null; let a = g(o); if (o.mao === "esquerda") a = Object.assign(pdEspelharAnim(a, { nome: a.nome + "Esq" }), { tipo: "acao", dia: true, volta: a.volta }); return a; }
 
 /* ===================== ciclos de espera ===================== */
 const AD_ESPERAS = { empe: [null, "em pé esperando"], impaciente: [null, "impaciente (bate o pé, olha o relógio)"], "bracos-cruzados": ["cruza", "braços cruzados"], sentado: ["sentado", "sentado relaxado"], "sentado-inquieto": ["sentado", "sentado, inquieto"],

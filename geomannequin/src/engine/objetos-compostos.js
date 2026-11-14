@@ -29,8 +29,11 @@ const ocEsf = (c, r, extra) => Object.assign({ esf: true, c, r: Array.isArray(r)
 const ocToro = (c, R, rt, eixo, ra, extra) => Object.assign({ toro: true, c, Rm: R, rt, ra: ra || rt, R: rotParaEixo(EIXO[eixo] || eixo) }, extra || {});
 const ocPega = (P, N, eixo, extra) => Object.assign({ P, N: ocUnit(N), eixo: ocUnit(eixo) }, extra || {});
 
+import { qdPartes, qdMedidas } from "./quadrupede.js";
 /* ======== os objetos ======== */
 const COMPOSTOS = {
+  /* animal quadrúpede (cavalo, camelo, cachorro…): partes vindas do esqueleto (quadrupede.js) — o.animal = { especie, escala, pose, p } */
+  animal: { nome: "animal quadrúpede", larg: 5, prof: 22, alt: 18, grupo: "animal", partes: o => qdPartes(o) },
   /* -- formas puras (medidas pela caixa envolvente) -- */
   /* cenário (plantas): árvore, palmeira, arbusto, poço, água, telhado plano */
   arvore: { nome: "árvore", larg: 8, prof: 8, alt: 24, grupo: "cenario",
