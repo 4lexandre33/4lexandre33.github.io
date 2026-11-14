@@ -19,7 +19,8 @@ function vtPontoPessoa(it, parte) { const p = it.params, g0 = restGround(SCN.lis
   if (b === "pes") { const a = j("tornozelo", 1), c = j("tornozelo", -1); return [(a[0] + c[0]) / 2, g0, (a[2] + c[2]) / 2]; }
   if (b === "cabeca" || b === "olhos" || b === "rosto" || b === "boca") { const c = j("cabeça (atlas)"); return c ? [c[0], c[1] + 0.6, c[2]] : null; }
   if (b === "pelve" || b === "corpo" || b === "centro") return j("pelve");
-  return j("coluna torácica") || j("pelve"); }
+  if (b === "peito" || b === "tronco") return j("coluna torácica") || j("pelve");
+  throw new Error("parte “" + pt + "” não existe (use maoDir, maoEsq, peDir, peEsq, cotoveloDir, joelhoEsq, ombroDir, maos, pes, cabeca, olhos, peito, pelve ou um objeto: Kai.katana.ponta)."); }
 /* referência em texto → ponto no mundo: "Kai.maoDir" · "Kai.katana.ponta" · "katana.ponta" · "Mira" · {x,y,z} */
 function vtPonto(ref, padrao) {
   if (Array.isArray(ref)) return ref.slice(0, 3);

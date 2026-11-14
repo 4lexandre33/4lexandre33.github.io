@@ -741,7 +741,9 @@ ${EXEMPLO_FILME}
   "historia" sorteia funções, versões e tons pela semente; com "variacoes K" gera K histórias e fica com a de maior NOTA (tensão perto da curva ideal
   — sobe até ~80% e cai no fim —, variedade de planos e quadros perto do pedido). Para ver todas e escolher: MCP gerar_historia (devolve as K com nota).
   Cada função começa largando o que estava na mão ("Kai guarda") e em pé, se a primeira batida não diz a pose. Depois de gerar, o texto é seu: edite à vontade.
-  VERIFICAÇÃO NARRATIVA → VISUAL (MCP aplicar_narrativa/gerar_historia): compila, lê os avisos e corrige sozinho — eixo de 180° (espelhado),
+  "quadros N" aproxima o tamanho (troca versões: impacto encurta; suspense/lenta alongam; tira passos do meio se precisar).
+  Mistura com quadros seus: os quadros gerados continuam a cena (quem e onde); escreva os seus depois com "continua". "formato" da linha já põe a página certa.
+  VERIFICAÇÃO NARRATIVA → VISUAL (automática no texto com narrativa/historia — "sem-corrigir" desliga; também no MCP): compila, lê os avisos e corrige sozinho — eixo de 180° (espelhado),
   cabeça cortada (abre o plano), olhar sem espaço, três planos iguais seguidos — e diz o que corrigiu e o que restou.
 
 30. ARMAS, INSTRUMENTOS E GOLPES (objetos de mão sólidos e poses já segurando)
@@ -760,10 +762,16 @@ ${EXEMPLO_FILME}
 31. AVES (bípedes com asas) E QUADRÚPEDES COM OSSOS
   Elenco: Falcao animal falcao · Roca animal aguia escala 5 sela · Avi animal avestruz sela. Espécies de ave: ${Object.keys(AV_ESPECIES).join(", ")}.
   Poses de ave: ${Object.keys(AV_POSES).join(", ")}. No filme: ${Object.keys(AV_VERBOS).join(", ")} (ex.: "0s Falcao decola" · "depois Falcao voa 6m").
+  Olhar e câmera: animais servem de alvo (Kai olha Falcao · camera segue Roca lado; a distância da câmera cresce com o tamanho do animal).
+  Para montar, ponha a pessoa ao lado do animal a uma distância que cresça com a escala (≈ largura do animal/2 + 1 m); "Kai monta X" anima a subida.
   Pousar: Falcao pousa-em Kai ombro|mao|cabeca|braco. Montar: Kai monta Roca — só se a sela estiver a ≥ 0,85 m do chão (ave) ou ≥ 0,55 m (quadrúpede); senão o erro diz a escala mínima.
   Esqueleto: "Trovao animal cavalo ossos" (ou "Trovao ossos" na linha) mostra os ossos (coluna, costelas, escápula, pelve, patas com boleto e casco).
 
 32. EFEITO DE A ATÉ B (no corpo, no objeto ou na tela)
+  Partes do corpo para de/para/em: maoDir, maoEsq, maos, peDir, peEsq, pes, cotoveloDir/Esq, joelhoDir/Esq, ombroDir/Esq, cabeca, olhos, peito, pelve (parte errada dá erro).
+  Pontos dos objetos de mão: ponta, lamina, base, cabo (espadas), cano (armas), boca (trompete, flauta), cristal (cajado), chama (tocha), centro/topo.
+  A linha pode começar pelo nome de quem dispara ("Kai efeito projetil para Mira" sai da mão direita de Kai) ou ser da cena ("efeito projetil de Kai.maoEsq para Mira").
+  "arrastado/desliza … tras|frente|esquerda|direita" conta a partir de para onde a pessoa está virada. Efeito extra além do catálogo: explosao_completa.
   Âncora num PONTO DO OBJETO: efeito raio em Kai.varinha.ponta · efeito chama em Kai.tocha.chama · efeito feixe em katana.ponta para Mira.
   PROJÉTIL por um caminho: efeito projetil de Kai.maoDir para Mira [reta|arco|balistica|espiral|zigue|onda|teleguiado] [impacto [explosao]] [por 0.8s]
     No filme ele viaja no tempo e o impacto aparece na chegada; num quadro parado ele fica no meio do caminho (viagem 60) com a cauda atrás.

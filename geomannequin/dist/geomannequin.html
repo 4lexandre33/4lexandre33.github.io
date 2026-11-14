@@ -19540,15 +19540,25 @@ pre.cmdout .ok{color:var(--cobalt)}
       W4 = [P2.tx + Math.sin(yaw2) * Math.cos(pit2) * d, P2.ty - Math.sin(pit2) * d, P2.tz + Math.cos(yaw2) * Math.cos(pit2) * d];
     } else {
       const o = SCN.list.find((x) => x.name.toLowerCase() === s);
-      if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
-      const po = pMundo(o), ch2 = chainSetup(o.params, shape(o.params));
-      W4 = paraMundo(po)(applyA(ch2.A3, [0, 0, 0]));
+      if (!o) {
+        W4 = olharObjeto(s);
+        if (!W4) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+      } else {
+        const po = pMundo(o), ch2 = chainSetup(o.params, shape(o.params));
+        W4 = paraMundo(po)(applyA(ch2.A3, [0, 0, 0]));
+      }
     }
     const pw = pMundo(it2), ch = chainSetup(Q, shape(Q)), cab = applyA(ch.A3, [0, 0, 0]), alvoC = doMundo(pw)(W4);
     const dl = mv(mT(ch.A2.M), [alvoC[0] - cab[0], alvoC[1] - cab[1], alvoC[2] - cab[2]]);
     let yaw = Math.atan2(dl[0], dl[2]) / D, pit = -Math.atan2(dl[1], Math.hypot(dl[0], dl[2])) / D;
     const tw = clamp(yaw - clamp(yaw, -75, 75), -40, 40);
     Object.assign(Q, { headYaw: clamp(yaw - tw, -80, 80), headPitch: clamp(pit * 0.7, -60, 50), neckFlex: clamp(pit * 0.3, -40, 40), spineTwist: clamp((Q.spineTwist || 0) + tw, -45, 45) });
+  }
+  function olharObjeto(s) {
+    const o = (SCN.objetos || []).find((x) => String(x.nome || "").toLowerCase() === s) || (SCN.objetos || []).find((x) => String(x.tipo || "").toLowerCase() === s);
+    if (!o) return null;
+    const g0 = restGround(SCN.list[0].params), r = (o.giro || 0) * D, fr2 = o.animal ? (o.larg || 0) * 0.35 : 0;
+    return [o.x + Math.sin(r) * fr2, g0 + (o.base || 0) + (o.alt || 1) * (o.animal ? 0.85 : 0.6), o.z + Math.cos(r) * fr2];
   }
   function alvoDoOlhar(alvo) {
     const s = String(alvo).toLowerCase();
@@ -19558,7 +19568,11 @@ pre.cmdout .ok{color:var(--cobalt)}
       return [P2.tx + Math.sin(yaw) * Math.cos(pit) * d, P2.ty - Math.sin(pit) * d, P2.tz + Math.cos(yaw) * Math.cos(pit) * d];
     }
     const o = SCN.list.find((x) => x.name.toLowerCase() === s);
-    if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+    if (!o) {
+      const W4 = olharObjeto(s);
+      if (W4) return W4;
+      throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+    }
     const po = pMundo(o), ch = chainSetup(o.params, shape(o.params));
     return paraMundo(po)(applyA(ch.A3, [0, 0, 0]));
   }
@@ -32602,7 +32616,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       return c ? [c[0], c[1] + 0.6, c[2]] : null;
     }
     if (b === "pelve" || b === "corpo" || b === "centro") return j("pelve");
-    return j("coluna torácica") || j("pelve");
+    if (b === "peito" || b === "tronco") return j("coluna torácica") || j("pelve");
+    throw new Error("parte “" + pt2 + "” não existe (use maoDir, maoEsq, peDir, peEsq, cotoveloDir, joelhoEsq, ombroDir, maos, pes, cabeca, olhos, peito, pelve ou um objeto: Kai.katana.ponta).");
   }
   function vtPonto(ref, padrao) {
     if (Array.isArray(ref)) return ref.slice(0, 3);
@@ -37858,6 +37873,30 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     const tensao = Math.max(0, 10 - 2 * Math.sqrt(erroT / n2)), variedade = Math.min(10, fams.size * 1.2 + versoes * 0.6 - rep), ritmo = alvoQuadros ? Math.max(0, 10 - Math.abs(nq - alvoQuadros) * 0.6) : 7;
     return { total: +(tensao * 0.45 + variedade * 0.3 + ritmo * 0.25).toFixed(2), tensao: +tensao.toFixed(2), variedade: +variedade.toFixed(2), ritmo: +ritmo.toFixed(2), quadros: nq };
   }
+  function nrAjustarTamanho(rcs, alvo, o, sem2) {
+    const tot = () => rcs.reduce((s, rc) => s + rc.beats.length, 0), refaz = (i, versao) => {
+      const rc = rcs[i];
+      rcs[i] = nrReceita(rc.def.id, { versao, tom: rc.tom, formato: rc.formato, nomes: o.nomes, semente: sem2 + i });
+    };
+    for (let g = 0; g < 60; g++) {
+      const t = tot();
+      if (Math.abs(t - alvo) <= 1) break;
+      if (t > alvo) {
+        const c2 = rcs.map((rc, i) => [rc, i]).filter(([rc]) => rc.versao !== "impacto" && rc.beats.length > 2).sort((a, b) => a[0].def.intensidade - b[0].def.intensidade)[0];
+        if (c2) {
+          refaz(c2[1], "impacto");
+          continue;
+        }
+        const d = rcs.map((rc, i) => [rc, i]).filter(([, i]) => i > 0 && i < rcs.length - 1).sort((a, b) => a[0].def.intensidade - b[0].def.intensidade)[0];
+        if (!d || rcs.length <= 3) break;
+        rcs.splice(d[1], 1);
+        continue;
+      }
+      const c = rcs.map((rc, i) => [rc, i]).filter(([rc]) => rc.versao === "direta" || rc.versao === "pov" || rc.versao === "impacto").sort((a, b) => b[0].def.intensidade - a[0].def.intensidade)[0];
+      if (!c) break;
+      refaz(c[1], t + 2 <= alvo ? "lenta" : "suspense");
+    }
+  }
   function nrHistoria(o = {}) {
     const est2 = NR_ESTRUTURAS[o.estrutura || "tres-atos"];
     if (!est2) throw new Error("Estrutura “" + o.estrutura + "”: use " + Object.keys(NR_ESTRUTURAS).join(", ") + ".");
@@ -37875,6 +37914,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         const def = NR.get(id), vers = def.intensidade >= 4 ? nrPega(r, ["direta", "impacto", "lenta", "suspense"]) : nrPega(r, ["direta", "direta", "suspense", "pov"]);
         rcs.push(nrReceita(id, { versao: vers, tom: tom || tomPorTensao(def.intensidade), formato: fmt2, nomes: o.nomes, semente: sem0 * 13 + v * 101 + i }));
       });
+      if (o.quadros) nrAjustarTamanho(rcs, o.quadros, o, sem0 * 13 + v * 101);
       out.push({ variacao: v + 1, semente: sem0 * 1009 + v * 7717, estrutura: o.estrutura || "tres-atos", funcoes: rcs.map((rc) => rc.def.id + "." + rc.versao + "." + rc.tom), nota: nrNota(rcs, o.quadros), receitas: rcs });
     }
     out.sort((a, b) => b.nota.total - a.nota.total);
@@ -37970,6 +38010,56 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       } else out.unshift("elenco", ...add3);
     }
     return out.join("\n");
+  }
+  var NR_ABRE = { olhos: "close", close: "primeiro-plano", "primeiro-plano": "medio", medio: "americano", detalhe: "close" };
+  function nrVerificar(texto2, compilar2, o = {}) {
+    let tx = texto2, r = null;
+    const log4 = [];
+    for (let it2 = 0; it2 < (o.voltas || 6); it2++) {
+      r = compilar2(tx, { semCache: true, salvar: false });
+      if (!r.ok && r.erros.length) break;
+      const L3 = tx.split("\n"), idxQ = [];
+      L3.forEach((l, i) => {
+        const m = /^\s*(quadro|plano)\s+(\d+)/.exec(l);
+        if (m) idxQ.push([+m[2], i]);
+      });
+      const linhaPreset = (n2) => {
+        const q = idxQ.find((x) => x[0] === n2);
+        if (!q) return -1;
+        for (let i = q[1] + 1; i < L3.length && !/^\s*(quadro|plano|pagina|cena\s+")/.test(L3[i]); i++) if (/^\s*(cena|camera) preset /.test(L3[i])) return i;
+        return -1;
+      };
+      let mudou2 = false;
+      for (const a of r.avisos) {
+        const m = /^(?:quadro|plano)\s+(\d+)/i.exec(a);
+        if (!m) continue;
+        const n2 = +m[1], li = linhaPreset(n2);
+        if (li < 0) continue;
+        if (/cruzou o eixo|borda mais perto/.test(a)) {
+          L3[li] = / espelhado\b/.test(L3[li]) ? L3[li].replace(/ espelhado\b/, "") : L3[li] + " espelhado";
+          mudou2 = true;
+          log4.push("quadro " + n2 + ": espelhado (" + (/eixo/.test(a) ? "eixo de 180°" : "espaço do olhar") + ")");
+        } else if (/cortada no alto/.test(a)) {
+          const k = /preset um\.([\w-]+)\./.exec(L3[li]);
+          if (k && NR_ABRE[k[1]]) {
+            L3[li] = L3[li].replace("preset um." + k[1] + ".", "preset um." + NR_ABRE[k[1]] + ".");
+            mudou2 = true;
+            log4.push("quadro " + n2 + ": " + k[1] + " → " + NR_ABRE[k[1]] + " (cabeça cortada)");
+          }
+        } else if (/três quadros seguidos em plano/.test(a)) {
+          const k = /preset um\.([\w-]+)\./.exec(L3[li]);
+          if (k && k[1] !== "medio") {
+            L3[li] = L3[li].replace("preset um." + k[1] + ".", "preset um.medio.");
+            mudou2 = true;
+            log4.push("quadro " + n2 + ": plano médio (variar)");
+          }
+        }
+      }
+      tx = L3.join("\n");
+      if (!mudou2) break;
+    }
+    const restam = r ? r.avisos.filter((a) => /cruzou o eixo|cortada|borda mais perto|três quadros/.test(a)) : [];
+    return { texto: tx, correcoes: log4, avisosRestantes: restam, ok: !!(r && r.ok), erros: r ? r.erros : [] };
   }
   function nrTotalVariantes() {
     return NR.size * Object.keys(NR_VERSOES).length * Object.keys(NR_TONS).length;
@@ -39416,6 +39506,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         o.giro = giro;
         feito.anima = (base2 === "anda" ? "anda" : base2 === "trota" ? "trota" : "galopa") + (alvoTok ? " até " + alvoTok.v : "");
       } else if (w === "," || w === "e") continue;
+      else if (qdEhAve(o)) throw new NmErro("Não entendi “" + tk.v + "” para a ave " + nome + ". Use: em, gira, vira-para, pose (" + Object.keys(AV_POSES).join(", ") + "), " + Object.keys(AV_VERBOS).join(", ") + ", pousa-em QUEM ombro|mao|cabeca|braco, escala N, ossos.", l.linha);
       else throw new NmErro("Não entendi “" + tk.v + "” para o animal " + nome + ". Use: em, gira, vira-para, pose (" + Object.keys(AM_POSES).join(", ") + "), anda/trota/galopa [N m] [para X], anda-ate/galopa-ate X, olha X, empina, deita, senta, levanta, come, sela, carrega obj, segue X, escala N.", l.linha);
     }
     if (Q.animais) {
@@ -39603,6 +39694,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         }
       } else if (w === "elemento") {
         o.elemento = nmNorm(nx.v);
+        if (!ELEMENTOS[o.elemento]) {
+          const sg = nmParecida(o.elemento, Object.keys(ELEMENTOS));
+          throw new NmErro("Elemento “" + nx.v + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : "") + " Use: " + Object.keys(ELEMENTOS).join(", ") + ".", linha);
+        }
         o.colorido = true;
         k += 2;
       } else if (w === "cor" || w === "cores") {
@@ -39652,15 +39747,20 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         k += 2;
       } else if (w === "trajeto" || w === "caminho") {
         o.trajeto = nmNorm(nx.v).replace("balística", "balistica");
+        if (!VT_CAMINHOS.includes(o.trajeto)) {
+          const sg = nmParecida(o.trajeto, VT_CAMINHOS);
+          throw new NmErro("Caminho “" + nx.v + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : "") + " Use: " + VT_CAMINHOS.join(", ") + ".", linha);
+        }
         k += 2;
       } else if (VT_CAMINHOS.includes(w.replace("balística", "balistica"))) {
         o.trajeto = w.replace("balística", "balistica");
         k++;
       } else if (w === "impacto") {
-        if (nx && CATALOGO[nx.v]) {
+        if (nx && (CATALOGO[nx.v] || nx.v === "explosao_completa")) {
           o.impacto = nx.v;
           k += 2;
-        } else {
+        } else if (nx && nx.t === "pal" && /^[a-z_]+$/.test(nx.v) && nmParecida(nx.v, Object.keys(CATALOGO)) && !/^(elemento|cor|tom|nivel|escala|colorido|nanquim|por|para|de|em|viagem|trajeto)$/.test(nmNorm(nx.v)) && !VT_CAMINHOS.includes(nx.v)) throw new NmErro("Efeito de impacto “" + nx.v + "” não existe. Quis dizer “" + nmParecida(nx.v, Object.keys(CATALOGO)) + "”?", linha);
+        else {
           o.impacto = "impacto_contato";
           k++;
         }
@@ -40494,7 +40594,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         let pegada = peg || w === "segura" && tipoSeg && PEGADA_PADRAO[tipoSeg] || { segura: "aFrente", carrega: "abracado", levanta: "levantarDoChao", puxa: "puxarCorda", empurra: "empurrar", arrasta: "arrastar" }[w];
         if (!ACOES[pegada] && !/^(duasMaos|gancho|empurrando)$/.test(pegada)) {
           const s = nmParecida(pegada, Object.keys(ACOES));
-          throw new NmErro("Pegada “" + pegada + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Use: " + Object.keys(ACOES).join(", ") + "."), l.linha);
+          throw new NmErro("Pegada “" + pegada + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Parecidas: " + Object.keys(ACOES).filter((x) => x.toLowerCase().includes(String(pegada).toLowerCase().slice(0, 4))).slice(0, 12).join(", ") + " (todas: MCP pegadas ou capítulo 30)."), l.linha);
         }
         depois4.push(() => {
           if (w === "segura") for (let i = SCN.objetos.length - 1; i >= 0; i--) {
@@ -41322,7 +41422,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   function nmCompilar(texto2, opts = {}) {
     try {
+      const tem = /^(narrativa|historia|história)\s/im.test(texto2), semC = /^(narrativa|historia|história)\s.*\bsem-corrigir\b/im.test(texto2);
       texto2 = nrExpandirTexto(texto2);
+      if (tem && !semC && !opts._narrCorrigindo) texto2 = nrVerificar(texto2, (t, o2) => nmCompilar(t, Object.assign({}, o2, opts, { _narrCorrigindo: true }))).texto;
     } catch (e) {
       return { ok: false, erros: [{ linha: 0, erro: e.message }], avisos: [], quadros: [], paginas: [], elenco: [] };
     }
@@ -41527,6 +41629,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
                   throw new NmErro("Efeito “" + tipo + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), l.linha);
                 }
                 const ef = nmEfeitoOpcoes(ctx, tk, 1, l.linha, null);
+                if (ef.k + 1 < tk.length) throw new NmErro("efeito " + tipo + ": não entendi “" + tk[ef.k + 1].v + "”" + (nmParecida(tk[ef.k + 1].v, VT_CAMINHOS) ? " (caminho: " + nmParecida(tk[ef.k + 1].v, VT_CAMINHOS) + "?)" : "") + ".", l.linha);
                 (Q.efeitosDepois = Q.efeitosDepois || []).push(() => {
                   try {
                     nmEfeitoCriar(tipo, ef, null, null, null, Q);
@@ -42930,6 +43033,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
             throw new NmErro("Efeito “" + tipo + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), e.linha);
           }
           const ef = nmEfeitoOpcoes(ctx, tkE, 1, e.linha, null);
+          if (ef.k + 1 < tkE.length) throw new NmErro("efeito " + tipo + ": não entendi “" + tkE[ef.k + 1].v + "”.", e.linha);
           try {
             nmEfeitoCriar(tipo, ef, null, T3, F3.n, Qe);
           } catch (er) {
@@ -44611,7 +44715,9 @@ ${EXEMPLO_FILME}
   "historia" sorteia funções, versões e tons pela semente; com "variacoes K" gera K histórias e fica com a de maior NOTA (tensão perto da curva ideal
   — sobe até ~80% e cai no fim —, variedade de planos e quadros perto do pedido). Para ver todas e escolher: MCP gerar_historia (devolve as K com nota).
   Cada função começa largando o que estava na mão ("Kai guarda") e em pé, se a primeira batida não diz a pose. Depois de gerar, o texto é seu: edite à vontade.
-  VERIFICAÇÃO NARRATIVA → VISUAL (MCP aplicar_narrativa/gerar_historia): compila, lê os avisos e corrige sozinho — eixo de 180° (espelhado),
+  "quadros N" aproxima o tamanho (troca versões: impacto encurta; suspense/lenta alongam; tira passos do meio se precisar).
+  Mistura com quadros seus: os quadros gerados continuam a cena (quem e onde); escreva os seus depois com "continua". "formato" da linha já põe a página certa.
+  VERIFICAÇÃO NARRATIVA → VISUAL (automática no texto com narrativa/historia — "sem-corrigir" desliga; também no MCP): compila, lê os avisos e corrige sozinho — eixo de 180° (espelhado),
   cabeça cortada (abre o plano), olhar sem espaço, três planos iguais seguidos — e diz o que corrigiu e o que restou.
 
 30. ARMAS, INSTRUMENTOS E GOLPES (objetos de mão sólidos e poses já segurando)
@@ -44630,10 +44736,16 @@ ${EXEMPLO_FILME}
 31. AVES (bípedes com asas) E QUADRÚPEDES COM OSSOS
   Elenco: Falcao animal falcao · Roca animal aguia escala 5 sela · Avi animal avestruz sela. Espécies de ave: ${Object.keys(AV_ESPECIES).join(", ")}.
   Poses de ave: ${Object.keys(AV_POSES).join(", ")}. No filme: ${Object.keys(AV_VERBOS).join(", ")} (ex.: "0s Falcao decola" · "depois Falcao voa 6m").
+  Olhar e câmera: animais servem de alvo (Kai olha Falcao · camera segue Roca lado; a distância da câmera cresce com o tamanho do animal).
+  Para montar, ponha a pessoa ao lado do animal a uma distância que cresça com a escala (≈ largura do animal/2 + 1 m); "Kai monta X" anima a subida.
   Pousar: Falcao pousa-em Kai ombro|mao|cabeca|braco. Montar: Kai monta Roca — só se a sela estiver a ≥ 0,85 m do chão (ave) ou ≥ 0,55 m (quadrúpede); senão o erro diz a escala mínima.
   Esqueleto: "Trovao animal cavalo ossos" (ou "Trovao ossos" na linha) mostra os ossos (coluna, costelas, escápula, pelve, patas com boleto e casco).
 
 32. EFEITO DE A ATÉ B (no corpo, no objeto ou na tela)
+  Partes do corpo para de/para/em: maoDir, maoEsq, maos, peDir, peEsq, pes, cotoveloDir/Esq, joelhoDir/Esq, ombroDir/Esq, cabeca, olhos, peito, pelve (parte errada dá erro).
+  Pontos dos objetos de mão: ponta, lamina, base, cabo (espadas), cano (armas), boca (trompete, flauta), cristal (cajado), chama (tocha), centro/topo.
+  A linha pode começar pelo nome de quem dispara ("Kai efeito projetil para Mira" sai da mão direita de Kai) ou ser da cena ("efeito projetil de Kai.maoEsq para Mira").
+  "arrastado/desliza … tras|frente|esquerda|direita" conta a partir de para onde a pessoa está virada. Efeito extra além do catálogo: explosao_completa.
   Âncora num PONTO DO OBJETO: efeito raio em Kai.varinha.ponta · efeito chama em Kai.tocha.chama · efeito feixe em katana.ponta para Mira.
   PROJÉTIL por um caminho: efeito projetil de Kai.maoDir para Mira [reta|arco|balistica|espiral|zigue|onda|teleguiado] [impacto [explosao]] [por 0.8s]
     No filme ele viaja no tempo e o impacto aparece na chegada; num quadro parado ele fica no meio do caminho (viagem 60) com a cauda atrás.

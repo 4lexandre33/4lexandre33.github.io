@@ -19533,15 +19533,25 @@ pre.cmdout .ok{color:var(--cobalt)}
       W4 = [P2.tx + Math.sin(yaw2) * Math.cos(pit2) * d, P2.ty - Math.sin(pit2) * d, P2.tz + Math.cos(yaw2) * Math.cos(pit2) * d];
     } else {
       const o = SCN.list.find((x) => x.name.toLowerCase() === s);
-      if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
-      const po = pMundo(o), ch2 = chainSetup(o.params, shape(o.params));
-      W4 = paraMundo(po)(applyA(ch2.A3, [0, 0, 0]));
+      if (!o) {
+        W4 = olharObjeto(s);
+        if (!W4) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+      } else {
+        const po = pMundo(o), ch2 = chainSetup(o.params, shape(o.params));
+        W4 = paraMundo(po)(applyA(ch2.A3, [0, 0, 0]));
+      }
     }
     const pw = pMundo(it2), ch = chainSetup(Q, shape(Q)), cab = applyA(ch.A3, [0, 0, 0]), alvoC = doMundo(pw)(W4);
     const dl = mv(mT(ch.A2.M), [alvoC[0] - cab[0], alvoC[1] - cab[1], alvoC[2] - cab[2]]);
     let yaw = Math.atan2(dl[0], dl[2]) / D, pit = -Math.atan2(dl[1], Math.hypot(dl[0], dl[2])) / D;
     const tw = clamp(yaw - clamp(yaw, -75, 75), -40, 40);
     Object.assign(Q, { headYaw: clamp(yaw - tw, -80, 80), headPitch: clamp(pit * 0.7, -60, 50), neckFlex: clamp(pit * 0.3, -40, 40), spineTwist: clamp((Q.spineTwist || 0) + tw, -45, 45) });
+  }
+  function olharObjeto(s) {
+    const o = (SCN.objetos || []).find((x) => String(x.nome || "").toLowerCase() === s) || (SCN.objetos || []).find((x) => String(x.tipo || "").toLowerCase() === s);
+    if (!o) return null;
+    const g0 = restGround(SCN.list[0].params), r = (o.giro || 0) * D, fr2 = o.animal ? (o.larg || 0) * 0.35 : 0;
+    return [o.x + Math.sin(r) * fr2, g0 + (o.base || 0) + (o.alt || 1) * (o.animal ? 0.85 : 0.6), o.z + Math.cos(r) * fr2];
   }
   function alvoDoOlhar(alvo) {
     const s = String(alvo).toLowerCase();
@@ -19551,7 +19561,11 @@ pre.cmdout .ok{color:var(--cobalt)}
       return [P2.tx + Math.sin(yaw) * Math.cos(pit) * d, P2.ty - Math.sin(pit) * d, P2.tz + Math.cos(yaw) * Math.cos(pit) * d];
     }
     const o = SCN.list.find((x) => x.name.toLowerCase() === s);
-    if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+    if (!o) {
+      const W4 = olharObjeto(s);
+      if (W4) return W4;
+      throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+    }
     const po = pMundo(o), ch = chainSetup(o.params, shape(o.params));
     return paraMundo(po)(applyA(ch.A3, [0, 0, 0]));
   }

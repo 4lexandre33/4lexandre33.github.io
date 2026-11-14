@@ -142,7 +142,7 @@ function olharPara(it, alvo) {
   let W;
   if (Array.isArray(alvo)) W = alvo;
   else if (s === "camera" || s === "câmera") { const yaw = P.yaw * D, pit = P.pitch * D, d = Math.max(3, P.camDist || 30); W = [P.tx + Math.sin(yaw) * Math.cos(pit) * d, P.ty - Math.sin(pit) * d, P.tz + Math.cos(yaw) * Math.cos(pit) * d]; }
-  else { const o = SCN.list.find(x => x.name.toLowerCase() === s); if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”."); const po = pMundo(o), ch = chainSetup(o.params, shape(o.params)); W = paraMundo(po)(applyA(ch.A3, [0, 0, 0])); }
+  else { const o = SCN.list.find(x => x.name.toLowerCase() === s); if (!o) { W = olharObjeto(s); if (!W) throw new Error("Não sei para onde olhar: “" + alvo + "”."); } else { const po = pMundo(o), ch = chainSetup(o.params, shape(o.params)); W = paraMundo(po)(applyA(ch.A3, [0, 0, 0])); } }
   const pw = pMundo(it), ch = chainSetup(Q, shape(Q)), cab = applyA(ch.A3, [0, 0, 0]), alvoC = doMundo(pw)(W);
   const dl = mv(mT(ch.A2.M), [alvoC[0] - cab[0], alvoC[1] - cab[1], alvoC[2] - cab[2]]);
   let yaw = Math.atan2(dl[0], dl[2]) / D, pit = -Math.atan2(dl[1], Math.hypot(dl[0], dl[2])) / D;
@@ -150,12 +150,15 @@ function olharPara(it, alvo) {
   const tw = clamp(yaw - clamp(yaw, -75, 75), -40, 40);
   Object.assign(Q, { headYaw: clamp(yaw - tw, -80, 80), headPitch: clamp(pit * 0.7, -60, 50), neckFlex: clamp(pit * 0.3, -40, 40), spineTwist: clamp((Q.spineTwist || 0) + tw, -45, 45) });
 }
+/* alvo do olhar que não é pessoa: um animal ou objeto pelo nome (a cabeça do animal fica perto do alto, na frente) */
+function olharObjeto(s) { const o = (SCN.objetos || []).find(x => String(x.nome || "").toLowerCase() === s) || (SCN.objetos || []).find(x => String(x.tipo || "").toLowerCase() === s); if (!o) return null;
+  const g0 = restGround(SCN.list[0].params), r = (o.giro || 0) * D, fr = o.animal ? (o.larg || 0) * 0.35 : 0; return [o.x + Math.sin(r) * fr, g0 + (o.base || 0) + (o.alt || 1) * (o.animal ? 0.85 : 0.6), o.z + Math.cos(r) * fr]; }
 /* ===== olhar natural: olhos → cabeça → tronco → corpo (como uma pessoa vira para ver alguém) ===== */
 function alvoDoOlhar(alvo) {
   const s = String(alvo).toLowerCase();
   if (Array.isArray(alvo)) return alvo.length === 2 ? [alvo[0], 13, alvo[1]] : alvo;
   if (s === "camera" || s === "câmera") { const yaw = P.yaw * D, pit = P.pitch * D, d = Math.max(3, P.camDist || 30); return [P.tx + Math.sin(yaw) * Math.cos(pit) * d, P.ty - Math.sin(pit) * d, P.tz + Math.cos(yaw) * Math.cos(pit) * d]; }
-  const o = SCN.list.find(x => x.name.toLowerCase() === s); if (!o) throw new Error("Não sei para onde olhar: “" + alvo + "”.");
+  const o = SCN.list.find(x => x.name.toLowerCase() === s); if (!o) { const W = olharObjeto(s); if (W) return W; throw new Error("Não sei para onde olhar: “" + alvo + "”."); }
   const po = pMundo(o), ch = chainSetup(o.params, shape(o.params)); return paraMundo(po)(applyA(ch.A3, [0, 0, 0]));
 }
 /* ângulo (graus) do alvo visto pela cabeça: yaw + = para a esquerda do manequim, pit + = para baixo */

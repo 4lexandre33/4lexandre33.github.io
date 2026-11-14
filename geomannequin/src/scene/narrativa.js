@@ -318,6 +318,13 @@ function nrNota(rcs, alvoQuadros) { const n = rcs.length; let erroT = 0; rcs.for
   const nq = rcs.reduce((s, rc) => s + rc.beats.length, 0), versoes = new Set(rcs.map(rc => rc.versao)).size;
   const tensao = Math.max(0, 10 - 2 * Math.sqrt(erroT / n)), variedade = Math.min(10, fams.size * 1.2 + versoes * 0.6 - rep), ritmo = alvoQuadros ? Math.max(0, 10 - Math.abs(nq - alvoQuadros) * 0.6) : 7;
   return { total: +(tensao * 0.45 + variedade * 0.3 + ritmo * 0.25).toFixed(2), tensao: +tensao.toFixed(2), variedade: +variedade.toFixed(2), ritmo: +ritmo.toFixed(2), quadros: nq }; }
+/* aproxima o número de quadros do pedido: encurta (versão impacto, depois tira passos do meio de menor tensão) ou alonga (suspense, lenta) */
+function nrAjustarTamanho(rcs, alvo, o, sem) { const tot = () => rcs.reduce((s, rc) => s + rc.beats.length, 0), refaz = (i, versao) => { const rc = rcs[i]; rcs[i] = nrReceita(rc.def.id, { versao, tom: rc.tom, formato: rc.formato, nomes: o.nomes, semente: sem + i }); };
+  for (let g = 0; g < 60; g++) { const t = tot(); if (Math.abs(t - alvo) <= 1) break;
+    if (t > alvo) { const c = rcs.map((rc, i) => [rc, i]).filter(([rc]) => rc.versao !== "impacto" && rc.beats.length > 2).sort((a, b) => a[0].def.intensidade - b[0].def.intensidade)[0];
+      if (c) { refaz(c[1], "impacto"); continue; } const d = rcs.map((rc, i) => [rc, i]).filter(([, i]) => i > 0 && i < rcs.length - 1).sort((a, b) => a[0].def.intensidade - b[0].def.intensidade)[0]; if (!d || rcs.length <= 3) break; rcs.splice(d[1], 1); continue; }
+    const c = rcs.map((rc, i) => [rc, i]).filter(([rc]) => rc.versao === "direta" || rc.versao === "pov" || rc.versao === "impacto").sort((a, b) => b[0].def.intensidade - a[0].def.intensidade)[0];
+    if (!c) break; refaz(c[1], t + 2 <= alvo ? "lenta" : "suspense"); } }
 /* gera K variações de uma história e devolve da melhor para a pior */
 function nrHistoria(o = {}) { const est = NR_ESTRUTURAS[o.estrutura || "tres-atos"]; if (!est) throw new Error("Estrutura “" + o.estrutura + "”: use " + Object.keys(NR_ESTRUTURAS).join(", ") + ".");
   const K = Math.max(1, Math.min(12, o.variacoes || 1)), sem0 = o.semente || 1, fmt = o.formato || "manga", tom = o.tom || null, out = [];
@@ -327,6 +334,7 @@ function nrHistoria(o = {}) { const est = NR_ESTRUTURAS[o.estrutura || "tres-ato
     passos.forEach((p, i) => { let ops = o.funcoes && o.funcoes.length ? [nrAchar(p) ? nrAchar(p).def.id : p] : nrOpcoes(p).filter(id => !usados.has(id) && NR.get(id).papeis <= Math.max(1, (o.nomes || []).length || 2)); if (!ops.length) ops = nrOpcoes(p); if (!ops.length) return;
       const id = nrPega(r, ops); usados.add(id); const def = NR.get(id), vers = def.intensidade >= 4 ? nrPega(r, ["direta", "impacto", "lenta", "suspense"]) : nrPega(r, ["direta", "direta", "suspense", "pov"]);
       rcs.push(nrReceita(id, { versao: vers, tom: tom || tomPorTensao(def.intensidade), formato: fmt, nomes: o.nomes, semente: sem0 * 13 + v * 101 + i })); });
+    if (o.quadros) nrAjustarTamanho(rcs, o.quadros, o, sem0 * 13 + v * 101);
     out.push({ variacao: v + 1, semente: sem0 * 1009 + v * 7717, estrutura: o.estrutura || "tres-atos", funcoes: rcs.map(rc => rc.def.id + "." + rc.versao + "." + rc.tom), nota: nrNota(rcs, o.quadros), receitas: rcs }); }
   out.sort((a, b) => b.nota.total - a.nota.total); return out; }
 /* texto completo (elenco + formato + quadros) de uma lista de receitas */
