@@ -451,7 +451,7 @@ function nmCabQuadro(cab, linha) {
 }
 const NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
 const NM_CHAVES_Q = new Set(["velocidade", "duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
-const NM_CHAVES_P = new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "espera", "aguarda", "descansa", "oferece", "pede", "entrega", "recebe", "aponta", "acena", "cumprimenta", "abre-porta", "bebe", "le", "atende", "olha-relogio", "encolhe-ombros", "chora", "ri", "cai-de-joelhos", "coca-cabeca", "cruza-bracos", "espreguica", "boceja", "comemora", "suspira", "bate-palmas", "grita", "sussurra", "berra", "cochicha", "fala-radio", "radio", "monta", "montar", "cavalga", "desmonta", "apeia", "escala", "gigante", "anao", "anão", "fada", "titã", "tita", "miniatura", "paira", "flutua", "voa", "voa-ate", "voa-até", "voa-para", "pousa", "aterrissa", "sobre-mao", "sobre-mão", "sobre-ombro", "sobre-cabeca", "sobre-cabeça", "inclina-corpo", "tomba-corpo", "de-lado", "de-cabeca-para-baixo", "anda", "caminha", "corre", "pega", "pegar", "larga", "largar", "solta", "soltar", "joga", "jogar", "arremessa", "passa", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
+const NM_CHAVES_P = new Set(["anda-por", "corre-por", "caminha-por", "gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "espera", "aguarda", "descansa", "oferece", "pede", "entrega", "recebe", "aponta", "acena", "cumprimenta", "abre-porta", "bebe", "le", "atende", "olha-relogio", "encolhe-ombros", "chora", "ri", "cai-de-joelhos", "coca-cabeca", "cruza-bracos", "espreguica", "boceja", "comemora", "suspira", "bate-palmas", "grita", "sussurra", "berra", "cochicha", "fala-radio", "radio", "monta", "montar", "cavalga", "desmonta", "apeia", "escala", "gigante", "anao", "anão", "fada", "titã", "tita", "miniatura", "paira", "flutua", "voa", "voa-ate", "voa-até", "voa-para", "pousa", "aterrissa", "sobre-mao", "sobre-mão", "sobre-ombro", "sobre-cabeca", "sobre-cabeça", "inclina-corpo", "tomba-corpo", "de-lado", "de-cabeca-para-baixo", "anda", "caminha", "corre", "pega", "pegar", "larga", "largar", "solta", "soltar", "joga", "jogar", "arremessa", "passa", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
 /* ponto do mundo (R) para um alvo: personagem, marca, região, (x,z) em metros, objeto */
 function nmPontoDe(ctx, tok, toks, k) {
   if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
@@ -564,6 +564,20 @@ function nmPlanoAnimais(F, t) {
     const andando = amPoseMarcha(s.marcha, fase % 1, base), fimT = s.giroDur + Math.hypot(pa.x - de.x, pa.z - de.z) / NM_M / (s.S / s.T);
     o.animal.pose = chegou ? amMisturar(andando, base, NM_SUAVE(Math.min(1, (tl - fimT) / 0.45))) : andando; }
 }
+/* animal que segue alguém (cachorro atrás do dono): a cada quadro anda até ficar a "dist" atrás da pessoa, no passo ou no trote, com os cascos/patas no ritmo */
+function nmSegueAnimais(F, t) {
+  const mem = F._segue = F._segue || {};
+  for (const o of SCN.objetos) { if (o.tipo !== "animal" || !o.animal || !o.animal.segue) continue; const alvo = SCN.list.find(x => x.name === o.animal.segue.quem); if (!alvo) continue;
+    if (F.trilhas.some(s => s.tipo === "animalMov" && s.quem === o.nome && t >= s.inicio - 1e-9)) continue;
+    let m = mem[o.nome]; if (!m || t < m.t - 1e-6) m = mem[o.nome] = { x: o.x, z: o.z, giro: o.giro || 0, fase: 0, t };
+    const dt = Math.max(0, t - m.t), esc = o.animal.escala || 1, ga = (alvo.params.wRot || 0) * Math.PI / 180, dist = (o.animal.segue.dist || 2.2) * NM_M * Math.max(0.6, esc);
+    const px = (alvo.params.wx || 0) - Math.sin(ga) * dist, pz = (alvo.params.wz || 0) - Math.cos(ga) * dist, dx = px - m.x, dz = pz - m.z, L = Math.hypot(dx, dz);
+    const marcha = L > 5 * NM_M ? "galope" : L > 1.2 * NM_M ? "trote" : "passo", Smt = amPassada(o.animal.especie, esc, marcha) * NM_M, Tc = amCiclo(o.animal.especie, esc, marcha), v = Smt / Tc;
+    if (L > 0.3 * NM_M) { const d = Math.min(L, v * dt); m.x += dx / L * d; m.z += dz / L * d; const alvoG = Math.atan2(dx, dz) * 180 / Math.PI; m.giro += nmAng(m.giro, alvoG) * Math.min(1, dt * 4); m.fase += d / Smt; m.parado = 0; }
+    else { m.parado = (m.parado || 0) + dt; m.giro += nmAng(m.giro, alvo.params.wRot || 0) * Math.min(1, dt * 2); }
+    m.t = t; o.x = m.x; o.z = m.z; o.giro = m.giro; const base = o.animal.pose || amPose("parado");
+    o.animal.pose = m.parado > 0 ? amMisturar(amPoseMarcha(marcha, m.fase % 1, base), base, Math.min(1, m.parado / 0.4)) : amPoseMarcha(marcha, m.fase % 1, base); }
+}
 /* câmera mirando um animal (quadro do name) */
 function nmCameraAnimal(o, plano, lado, el) {
   const g0 = amChaoMundo(), centro = qdPontoMundo(o, "sela", g0), cab = qdPontoMundo(o, "cabeca", g0), tam = Math.max(o.prof || 10, o.alt || 10), alvo = plano === "close" || plano === "detalhe" ? cab : [(centro[0] + cab[0]) / 2, centro[1] - (o.alt || 10) * 0.15, (centro[2] + cab[2]) / 2];
@@ -640,6 +654,12 @@ function nmPersonagem(ctx, l, Q) {
       if (typeof ang !== "number") throw new NmErro("“gira” precisa de um ângulo em graus, ex.: “gira 180” ou “gira 360 passos direita”.", l.linha);
       if (!est && dir === null) its.forEach(x => x.params.wRot = ang);
       else { const A = Math.abs(ang) * (dir ?? (ang < 0 ? -1 : 1)), an = animacaoGiro({ angulo: A, estilo: est || "passos" }); depois.push(() => its.forEach(x => nmTocar(Q, x, an, null))); feito.anima = "gira " + Math.abs(A) + "° " + (A > 0 ? "para a esquerda" : "para a direita") + " (" + (est || "passos") + ")"; } }
+    else if ((/^(anda|caminha|corre)$/.test(w) && nx && nmNorm(nx.v) === "por") || /^(anda-por|caminha-por|corre-por)$/.test(w)) { /* anda por um percurso: (x,z) (x,z) … ou marcas/pessoas, na ordem */
+      const correndo = /^corre/.test(w); if (nx && nmNorm(nx.v) === "por") k++; const refs = [];
+      while (toks[k + 1] && (toks[k + 1].t === "tupla" || toks[k + 1].v === "," || /^(marca|ponto)$/.test(nmNorm(toks[k + 1].v)) || nmQuem(ctx, toks[k + 1].v) || acharObjeto(toks[k + 1].v))) { if (toks[k + 1].v === ",") { k++; continue; } const j = k + 1, [p0, k2] = nmPontoDe(ctx, toks[j], toks, j); if (!p0) break; refs.push(j); k = k2 - 1; }
+      if (!refs.length) throw new NmErro(w + " por: dê os pontos do percurso, ex.: Kai anda por (0,0) (3,2) (6,0).", l.linha);
+      depois.push(() => its.forEach(x => { const pts = refs.map(j => nmPontoDe(ctx, toks[j], toks, j)[0]); nmTocar(Q, x, animacaoAndarAte(x, pts[pts.length - 1], { correndo, pontos: pts }), null); }));
+      feito.anima = (correndo ? "corre" : "anda") + " por " + refs.length + " pontos"; }
     else if (/^(anda|caminha|corre)$/.test(w) && !(nx && /^(ate|até)$/.test(nmNorm(nx.v)))) { /* anda/corre N metros para a frente (ou "para (x,z)"/alguém): ciclo que desloca */
       const correndo = w === "corre"; let dist = correndo ? 8 : 4, alvoT = null, alvoJ = 0;
       if (nx && nx.t === "num") { dist = nx.u === "cm" ? nx.v / 100 : nx.u === "R" ? nx.v / NM_M : nx.v; k++; }
@@ -979,8 +999,8 @@ function compilarName(texto, opts = {}) {
 function nmCompilar(texto, opts = {}) {
   const ctx = { elenco: new Map(), apelidos: new Map(), coresUsadas: new Set(), locais: new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: new Map(), locaisRuins: new Set(), animacoes: new Map(), poses: new Map(), defs: [], salvar: opts.salvar !== false };
   const erros = [], avisos = [], quadros = [], paginas = []; ctx.erros = erros;
-  ctx.diretor = /^\s*diretor\s+(auto|automatico|automático|ligado)\b/im.test(texto);
-  let blocos; try { blocos = nmFilmeEstrutura(nmBlocos(String(texto).replace(/^\s*diretor\s+\S+.*$/gim, "")), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
+  ctx.diretor = /^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado)\b/im.test(texto);
+  let blocos; try { blocos = nmFilmeEstrutura(nmBlocos(String(texto).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
   /* semente e variáveis primeiro (valem para tudo) */
   for (const b of blocos) { const t = nmTokens(b.cab), w = nmNorm(t[0].v);
     if (w === "semente" || w === "seed") ctx.semente = t[1] ? (t[1].t === "num" ? t[1].v : String(t[1].v).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) : 1;
@@ -1054,7 +1074,7 @@ function nmCompilar(texto, opts = {}) {
             if (nomes.length < 2) throw new NmErro("diálogo: diga quem conversa (ex.: dialogo Kai, Mira tom tenso).", l.linha); Q.dialogo = { nomes, tom, arranjo }; continue; }
           if (w0 === "fala" || w0 === "narracao" || w0 === "narração" || w0 === "narra" || w0 === "narrador") { Q.falas.push({ quem: null, texto: tk[1].v, tipo: "narra" }); continue; }
           if (!nmPersonagem(ctx, l, Q)) { const s = nmParecida(tk[0].v, [...ctx.elenco.keys()]); throw new NmErro("“" + tk[0].v + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : " Declare no bloco elenco."), l.linha); }
-        } catch (e) { erros.push({ linha: (e instanceof NmErro && e.linha) || l.linha, erro: e.message, quadro: indice + 1 }); } }
+        } catch (e) { if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error(e.stack); erros.push({ linha: (e instanceof NmErro && e.linha) || l.linha, erro: e.message, quadro: indice + 1 }); } }
         for (const f of Q.depois) try { f(); } catch (e) { erros.push({ linha: e.linha || b.linha, erro: e.message, quadro: indice + 1 }); }
         /* diálogo: quem fala (a fala do quadro ou a vez, alternando) gesticula; os outros ouvem, olhando para ele */
         if (Q.dialogo) { const D = Q.dialogo, ctxD = ctx.dialogos = ctx.dialogos || {}, chave = D.nomes.join("|"), vez = ctxD[chave] = (ctxD[chave] ?? -1) + 1;
@@ -1440,11 +1460,16 @@ function nmFilmeEstrutura(blocos, ctx) {
     nPlano++; let resto = cab.replace(/^plano\b\s*/i, ""), tr = { tipo: "corte", d: 0 }, sai = null;
     resto = resto.replace(/(^|\s)(?:sai|termina)\s+(escurece|clareia)(\s+(\d+(?:\.\d+)?)\s*s?)?(?=\s|$)/i, (m0, pre, w, x, d) => { sai = { tipo: nmNorm(w), d: d ? +d : 0.8 }; return pre; });
     resto = resto.replace(/(^|\s)(corte|fus[aã]o|dissolve|escurece|clareia)(\s+(\d+(?:\.\d+)?)\s*s?)?(?=\s|$)/i, (m0, pre, w, x, d) => { const k = nmNorm(w); tr = { tipo: k === "dissolve" || k === "fusao" || k === "fusão" ? "fusao" : k, d: d ? +d : k === "corte" ? 0 : 0.6 }; return pre; });
+    /* tempo do plano: lento 50% / acelera 200% (a ação escrita cabe, a tela dura duracao ÷ velocidade); congela Ns [por Ms] (para a imagem) */
+    let vel = 1; const congela = [];
+    resto = resto.replace(/(^|\s)(lento|camera-lenta|câmera-lenta|acelera|rapido|rápido)(\s+(\d+(?:\.\d+)?)\s*%?)?(?=\s|$)/i, (m0, pre, w, x, d) => { const k = nmNorm(w); vel = /^(lento|camera-lenta|câmera-lenta)$/.test(k) ? (d ? +d / 100 : 0.5) : (d ? +d / 100 : 2); if (vel > 1 && /^(lento|camera-lenta)$/.test(k)) vel = 1 / vel; return pre; });
+    resto = resto.replace(/(^|\s)congela(?:\s+em)?\s+(\d+(?:\.\d+)?)\s*s?(?:\s+por\s+(\d+(?:\.\d+)?)\s*s?)?(?=\s|$)/gi, (m0, pre, em, por) => { congela.push({ em: +em, por: por ? +por : 1 }); return pre; });
+    vel = Math.max(0.05, Math.min(8, vel));
     const nm = /^\s*(\d+)\b/.exec(resto), n = nm ? +nm[1] : nPlano; if (nm) resto = resto.slice(nm[0].length);
     const lugar = /\b(local|lugar)\s/.test(resto) ? "" : primeiroDaCena && cena && cena.local ? ' local "' + cena.local + '"' : " continua";
     const hora = primeiroDaCena && cena && cena.hora && !/\bhora\b/.test(resto) ? " hora " + cena.hora : "", fmt = ctx.filme && ctx.filme.formato && !/\d+:\d+|formato/.test(resto) ? " formato " + ctx.filme.formato : "";
     const s = separa((extraSetup || []).concat(corpo), null);
-    out.push({ cab: "quadro " + n + " " + resto.trim() + lugar + hora + fmt, linha, corpo: s.setup, ehPlano: true, eventos: s.ev, marcas: s.marcas, transicao: tr, sai, nPlano: n, cena: cena ? cena.nome : null });
+    out.push({ cab: "quadro " + n + " " + resto.trim() + lugar + hora + fmt, linha, corpo: s.setup, ehPlano: true, eventos: s.ev, marcas: s.marcas, transicao: tr, sai, vel, congela, nPlano: n, cena: cena ? cena.nome : null });
     primeiroDaCena = false; };
   for (const b of blocos) {
     const w = nmNorm((/^(\S+)/.exec(b.cab) || [])[1]);
@@ -1470,7 +1495,7 @@ const NM_SUAVE = u => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 *
 /* a câmera de uma linha: base (fixa, segue, pov, sobre-o-ombro, presa-em, enquadramento) e modificadores */
 function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
   const tk = nmTokens(txt), quem = v => nmQuem(ctx, v) || v, met = t0 => !t0 || t0.t !== "num" ? null : t0.u === "cm" ? t0.v / 100 : t0.u === "R" ? t0.v / NM_M : t0.v;
-  let k = 1, corte = false, dur = ate ? ate - T : null, base = null; const mods = [];
+  let k = 1, corte = false, dur = ate ? ate - T : null, base = null, curva = null; const mods = [];
   const estatico = tk.slice(1).some(t => { const w = nmNorm(t.v); return /^(plano|angulo|ângulo|heroi|herói|fraco|elevacao|elevação)$/.test(w) || (NM_PLANOS[w] && w !== "pov"); }) && !tk.slice(1).some(t => /^(fixa|segue|pov|sobre-o-ombro|presa-em)$/.test(nmNorm(t.v)));
   if (estatico) { const ck = {}; for (; k < tk.length; k++) { const q = nmNorm(tk[k].v);
       if (q === "corte") corte = true; else if (q === "em" && tk[k + 1] && tk[k + 1].t === "num") dur = tk[++k].v;
@@ -1487,6 +1512,9 @@ function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
   for (; k < tk.length; k++) { const w = nmNorm(tk[k].v), nx = tk[k + 1], num = () => { if (!tk[k + 1] || tk[k + 1].t !== "num") throw new NmErro("câmera " + w + ": diga quanto (ex.: " + w + " 30).", linha); return tk[++k]; };
     if (w === "corte") corte = true;
     else if (w === "em" && nx && nx.t === "num") { dur = nx.v; k++; }
+    else if (w === "caminho" || w === "trilho" || w === "percurso") { const pts = []; while (tk[k + 1] && (tk[k + 1].t === "tupla" || tk[k + 1].v === ",")) { k++; if (tk[k].t === "tupla") pts.push(tk[k].v); } if (pts.length < 2) throw new NmErro("camera caminho: dê 2 ou mais pontos (x,altura,z) em metros, ex.: camera caminho (0,1.6,-6) (4,2,-3) (6,3,2) em 5s olha Kai.", linha); base = { modo: "caminho", pts, t0: T }; }
+    else if (w === "vertigo" || w === "dolly-zoom" || w === "efeito-vertigo") { let dir = "aproxima"; if (nx && /^(aproxima|afasta)$/.test(nmNorm(nx.v))) { dir = nmNorm(nx.v); k++; } const pc = tk[k + 1] && tk[k + 1].t === "num" ? tk[++k].v : 40; mods.push({ tipo: "vertigo", dir, pct: Math.max(1, Math.min(90, pc)) }); }
+    else if (/^(linear|entra|sai|suave-entra|suave-sai|acelerando|freando)$/.test(w) || (w === "suave" && !base)) curva = { linear: "linear", entra: "entra", acelerando: "entra", "suave-entra": "entra", sai: "sai", freando: "sai", "suave-sai": "sai", suave: "suave" }[w];
     else if (w === "fixa" || w === "parada") base = { modo: "fixa" };
     else if (w === "segue" || w === "acompanha") { base = { modo: "segue", quem: quem(nx.v) }; k++; }
     else if (w === "pov" || w === "olhos-de") { base = { modo: "pov", quem: quem(nx.v) }; k++; }
@@ -1514,17 +1542,18 @@ function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
     else if (w === "inclina") mods.push({ tipo: "inclina", graus: num().v });
     else if (w === "zoom") mods.push({ tipo: "zoom", fator: num().v });
     else if (w === "tremida" || w === "na-mao" || w === "na-mão") mods.push({ tipo: "tremida", forca: nx && nx.t === "num" ? (k++, nx.v) : 0.5 });
-    else throw new NmErro("câmera: não entendi “" + tk[k].v + "” (use fixa, segue, pov, sobre-o-ombro, presa-em, plano close alvo …, orbita 90, eleva 20, sobe 1m, grua 2m, aproxima 30, afasta 40, travelling frente 2m, panoramica 30, inclina 10, lente 85, zoom 2, tremida, alvo Mira, corte, em 2s).", linha); }
+    else throw new NmErro("câmera: não entendi “" + tk[k].v + "” (use fixa, segue, pov, sobre-o-ombro, presa-em, caminho (x,y,z) (x,y,z)…, vertigo aproxima 40, linear/entra/sai, plano close alvo …, orbita 90, eleva 20, sobe 1m, grua 2m, aproxima 30, afasta 40, travelling frente 2m, panoramica 30, inclina 10, lente 85, zoom 2, tremida, alvo Mira, corte, em 2s).", linha); }
   if (base && /^(segue|pov|ombro|presa)$/.test(base.modo) && !SCN.list.some(x => x.name === base.quem) && !acharObjeto(base.quem)) throw new NmErro("câmera " + base.modo + ": “" + base.quem + "” não está em cena.", linha);
   if (base && base.modo === "ombro" && !base.alvo) throw new NmErro("câmera sobre-o-ombro: diga o alvo (ex.: camera sobre-o-ombro Kai alvo Mira).", linha);
   /* a primeira câmera no começo do plano entra de corte (a não ser que diga "em Ns") */
-  const evs = []; if (base) { const c0 = corte || (T <= 1e-6 && dur === null); evs.push({ t: T, dur: c0 ? 0 : dur ?? 1, corte: c0, base }); }
-  mods.forEach(m => evs.push({ t: T, dur: corte ? 0 : dur ?? 1.5, corte, mod: m }));
+  if (base && base.modo === "caminho") { base.dur = dur ?? 4; base.curva = curva || "suave"; }
+  const evs = []; if (base) { const c0 = corte || (T <= 1e-6 && dur === null) || (base.modo === "caminho" && T <= 1e-6); evs.push({ t: T, dur: c0 ? 0 : base.modo === "caminho" ? 0.4 : dur ?? 1, corte: c0, base }); }
+  mods.forEach(m => { if (curva) m.curva = curva; evs.push({ t: T, dur: corte ? 0 : dur ?? 1.5, corte, mod: m }); });
   if (!evs.length) throw new NmErro("câmera: diga o que fazer (ex.: camera segue Kai · camera 2s orbita 90 em 3s).", linha);
   return evs;
 }
 function nmRodarPlano(ctx, Q, b, erros, indice) {
-  const F = { n: b.nPlano, cena: b.cena, transicao: b.transicao, sai: b.sai || null, marcas: b.marcas || [], estadoInicio: JSON.parse(JSON.stringify(sceneState())), trilhas: [], cenas: [], cam: [{ t: 0, base: cfEstaticaAtual(), corte: true }], roteiro: [] };
+  const F = { n: b.nPlano, cena: b.cena, transicao: b.transicao, sai: b.sai || null, vel: b.vel || 1, congela: b.congela || [], marcas: b.marcas || [], estadoInicio: JSON.parse(JSON.stringify(sceneState())), trilhas: [], cenas: [], cam: [{ t: 0, base: cfEstaticaAtual(), corte: true }], roteiro: [] };
   let ultCena = nmCenaParte();
   const fimDe = {}, KS = k => POSEKEYS.has(k) || NM_ROSTO_K.test(k) || /^(wx|wz|wRot|bodyLift|ground|tamanho|bodyPitch|bodyRoll|legLen|armLen|headScale)$/.test(k); let ult = { t: 0, fim: 0 }, ordem = 0;
   const comoSeg = (a, T, fl, txt) => { let an = a.anim; const vel = fl.lento ? 0.7 : fl.pesado ? 0.8 : fl.rapido ? 1.4 : fl.seco ? 1.6 : 1; if (vel !== 1) an = Object.assign(retimar(an, { velocidade: vel }), { tipo: an.tipo, gerar: an.gerar });
@@ -1577,7 +1606,7 @@ function nmRodarPlano(ctx, Q, b, erros, indice) {
     Q.falas.slice(nFalas).forEach(f => { f.inicio = T; const lf = linhaDaFala(f.texto || ""); fim = Math.max(fim, T + (lf.duracao || 0)); if (f.quem) fimDe[f.quem] = Math.max(fimDe[f.quem] || 0, fim); });
     F.roteiro.push({ t: T, ate: fim, quem: quem0, texto: txt, linha: e.linha }); ult = { t: T, fim };
     if (quem0 && /\bolha(-para)?\b/i.test(txt)) (F.olham = F.olham || []).push(quem0);
-  } catch (er) { erros.push({ linha: er.linha || e.linha, erro: er.message, quadro: indice + 1 }); } }
+  } catch (er) { if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error(er.stack); erros.push({ linha: er.linha || e.linha, erro: er.message, quadro: indice + 1 }); } }
   const fins = F.trilhas.map(s => s.tipo === "anim" ? s.inicio + (s.anim.loop || s.anim.gerar ? (s.por || 0) : s.anim.duracao) : s.inicio + (s.dur || 0)).concat(F.roteiro.map(r => r.ate), F.marcas.map(m => m.t), F.cam.map(c => c.t + (c.dur || 0)));
   F.duracao = +Q.cab.duracao || Math.max(2, Math.max(0, ...fins) + 0.6);
   if (+Q.cab.duracao) for (const s of F.trilhas) if (s.tipo === "anim" && !s.anim.loop && !s.anim.gerar && s.inicio + s.anim.duracao > F.duracao + 0.3) Q.avisos.push("Plano " + F.n + ": " + s.quem + " (" + (s.texto || s.anim.nome || "animação") + ") leva " + (s.inicio + s.anim.duracao).toFixed(1) + " s, mas o plano dura " + F.duracao + " s — o plano corta no meio e o plano seguinte CONTINUA a ação do ponto do corte (se nele essa pessoa não fizer outra coisa antes).");
@@ -1629,11 +1658,15 @@ function nmPlanoPessoas(F, t, mems) {
     if ((s.anim.travarPes || (s.anim.travarPes !== false && !NM_SEM_TRAVA.test(s.anim.nome || ""))) && mems) { const k = s.quem + ":" + s.ordem, m = mems[k]; if (m && m.acc) { it.params.wx += m.acc[0]; it.params.wz += m.acc[1]; } mems[k] = travarPes(it, m, { apoio: apoioNoTempo(s.anim, ta) }); } }
 }
 /* vídeo do filme: plano a plano, com câmera no tempo, transições (corte, fusão, escurece), boca nas falas e vida */
+/* tempo de tela × tempo da história: velocidade (lento/acelera) e congelamentos (congela 2s por 1s) */
+function nmTempoDeTela(F) { const v = F.vel || 1, cg = (F.congela || []).filter(c => c.em >= 0 && c.em <= F.duracao).sort((a, b) => a.em - b.em);
+  const dur = F.duracao / v + cg.reduce((s0, c) => s0 + c.por, 0);
+  return { dur, historia: ts => { let tt = ts; for (const c of cg) { const ini = c.em / v; if (tt <= ini) break; if (tt < ini + c.por) return c.em; tt -= c.por; } return Math.min(F.duracao, tt * v); } }; }
 function videoDoFilme(r, o = {}) {
   const Fm = r.filme || {}, fps = Math.max(1, Math.min(60, Math.round(o.fps || Fm.fps || 24))), passo = Math.max(1, Math.round(o.passo || (o.emDois ? 2 : Fm.passo || 1))), vida = o.vida ?? Fm.vida ?? true;
   const ps = r.quadros.filter(q => q.filme && (!o.planos || o.planos.includes(q.filme.n))); if (!ps.length) throw new Error("Nenhum plano: escreva filme / cena / plano (veja o manual, capítulo 15).");
-  const frames = [], avisos = new Set(), silh = new Set(), salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L)), mapa = [], total = ps.reduce((s0, q) => s0 + Math.max(1, Math.round(q.filme.duracao * fps)), 0); let T0 = 0, feitos = 0, cancelado = false;
-  try { for (const q of ps) { const F = q.filme, n = Math.max(1, Math.round(F.duracao * fps)), cam = JSON.parse(JSON.stringify(F.cam)), hist = {}, mems = {}, linhas = (F.falas || []).map(f => ({ f, L: linhaDaFala(f.texto || "") }));
+  const frames = [], avisos = new Set(), silh = new Set(), salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L)), mapa = [], total = ps.reduce((s0, q) => s0 + Math.max(1, Math.round(nmTempoDeTela(q.filme).dur * fps)), 0); let T0 = 0, feitos = 0, cancelado = false;
+  try { for (const q of ps) { const F = q.filme, tela = nmTempoDeTela(F), n = Math.max(1, Math.round(tela.dur * fps)), cam = JSON.parse(JSON.stringify(F.cam)), hist = {}, mems = {}, linhas = (F.falas || []).map(f => ({ f, L: linhaDaFala(f.texto || "") }));
       const precisaHist = cam.some(c => c.base && c.base.modo === "segue");
       const anc = { ultima: null, passado: (quem, tp) => { const h = hist[quem]; if (!h || !h.length) return null; let r0 = null; for (const x of h) { if (x.t <= tp + 1e-9) r0 = x; else break; } return r0 ? r0.c : h[0].c; },
         fixa: bb => { if (!bb.posFixa) { if (bb.de) { bb.posFixa = cfFixaFrente(bb); const p = cfPessoa(bb.de); bb.alvoFixo = p ? p.centro : null; } else if (bb.posM) bb.posFixa = cfPonto(bb.posM); else bb.posFixa = anc.ultima ? anc.ultima.pos.slice() : cfEstaticaAtual().pos; if (!bb.alvoFixo) bb.alvoFixo = anc.ultima ? anc.ultima.alvo.slice() : cfEstaticaAtual().alvo; } return bb.posFixa; } };
@@ -1641,9 +1674,10 @@ function videoDoFilme(r, o = {}) {
       let ultimo = null, cenaI = -1, movObj = null, objAntes = null;
       for (let i = 0; i < n; i++) { if (o.cancelar && o.cancelar()) { cancelado = true; break; }
         if (passo > 1 && i % passo && ultimo) { frames.push(Object.assign({}, ultimo, { t: T0 + i / fps, tl: i / fps, repetido: true })); feitos++; continue; }
-        const t = i / fps; loadScene(nmEstadoNoTempo(F, t));
+        const t = tela.historia(i / fps); loadScene(nmEstadoNoTempo(F, t));
         nmPlanoAnimais(F, t);
         nmPlanoPessoas(F, t, mems);
+        try { nmSegueAnimais(F, t); } catch (e) { }
         try { amAtualizarMontaria(); } catch (e) { }
         let falaAgora = null;
         for (const { f, L: lf } of linhas) { const it = SCN.list.find(x => x.name === f.quem); if (it && t >= f.inicio && t <= f.inicio + lf.duracao + 0.3) { falarNoTempo(it, f.tom, f.texto, t - f.inicio, { linha: lf }); falaAgora = { quem: f.quem, texto: f.texto };
@@ -1657,7 +1691,7 @@ function videoDoFilme(r, o = {}) {
         const c = cfCameraNoTempo(cam, t, anc); if (c) { const ap = cfAplicar(c, avisos); if (ap) anc.ultima = ap; }
         nmEsbarroes(t, q.indice + 1, new Set(), []);
         for (const s0 of F.trilhas) if (s0.tipo === "anim" && !s0.anim.loop && !s0.anim.gerar && s0.anim.tipo !== "espera") { const tf = s0.inicio + s0.anim.duracao; if (tf > t - 1 / fps + 1e-6 && tf <= t + 1e-6) { const sl = cfSilhueta(s0.quem); if (sl.length) silh.add("Plano " + F.n + ", " + t.toFixed(1).replace(".", ",") + " s: a mão " + sl.join(" e a mão ") + " de " + s0.quem + " fica na frente do corpo — silhueta pouco clara (gire a câmera: “camera " + t.toFixed(1) + "s orbita 30 em 0.5s”, ou abra o braço)."); } }
-        ultimo = { estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, plano: F.n, t: T0 + t, tl: t, legenda: q.legenda, fala: Fm.legendas && falaAgora ? falaAgora : null }; frames.push(ultimo); feitos++;
+        ultimo = { estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, plano: F.n, t: T0 + i / fps, tl: i / fps, th: t, legenda: q.legenda, fala: Fm.legendas && falaAgora ? falaAgora : null }; frames.push(ultimo); feitos++;
         if (o.progresso) try { o.progresso(feitos, total); } catch (e) { } }
       T0 += n / fps; if (cancelado) break; }
   } finally { loadScene(JSON.parse(salvo)); Object.keys(L).forEach(k => { if (!(k in salvoL)) delete L[k]; }); Object.assign(L, salvoL); }
@@ -1683,10 +1717,10 @@ function roteiroDoFilme(r, o = {}) {
     const eventos = F.roteiro.filter(e => e.quem !== "câmera").map(e => ({ t: e.t, ate: e.ate, quem: e.quem, texto: e.texto }));
     const pessoas = q.personagens.map(p => p.nome + " = manequim " + p.cor);
     const linhas = [...eventos.map(e => fmt(e.t) + " s: " + e.texto), ...cam.map(c => fmt(c.t) + " s (câmera): " + c.texto)].sort((a, b) => parseFloat(a.replace(",", ".")) - parseFloat(b.replace(",", ".")));
-    const prompt = "Plano " + F.n + " (" + fmt(F.duracao) + " s" + (F.transicao && F.transicao.tipo !== "corte" ? ", entra com " + F.transicao.tipo : "") + "). " + (q.local ? "Local: " + q.local + (q.hora ? ", " + q.hora : "") + ". " : "") +
+    const prompt = "Plano " + F.n + " (" + fmt(nmTempoDeTela(F).dur) + " s" + ((F.vel || 1) < 1 ? ", câmera lenta " + Math.round(F.vel * 100) + "%" : (F.vel || 1) > 1 ? ", acelerado " + Math.round(F.vel * 100) + "%" : "") + ((F.congela || []).length ? ", imagem congela em " + F.congela.map(c => fmt(c.em) + " s por " + fmt(c.por) + " s").join(", ") : "") + (F.transicao && F.transicao.tipo !== "corte" ? ", entra com " + F.transicao.tipo : "") + "). " + (q.local ? "Local: " + q.local + (q.hora ? ", " + q.hora : "") + ". " : "") +
       "Câmera inicial: " + (q.plano || "plano") + ". " + linhas.join("; ") + ". Quem é quem: " + pessoas.join(", ") + ". Use esta referência para posição, poses, olhares, expressões, tempo e câmera; " + (o.estilo || "estilo final: animação 2D/3D estilizada") + ".";
-    const p = { n: F.n, cena: F.cena, inicio: +T0.toFixed(3), duracao: +F.duracao.toFixed(3), transicao: F.transicao, local: q.local || null, hora: q.hora || null, enquadramento: q.plano || null, personagens: q.personagens, eventos, camera: cam, falas: F.falas, marcas: F.marcas, legenda: q.legenda, prompt };
-    T0 += F.duracao; return p; });
+    const p = { n: F.n, cena: F.cena, inicio: +T0.toFixed(3), duracao: +nmTempoDeTela(F).dur.toFixed(3), velocidade: F.vel || 1, congela: F.congela || [], transicao: F.transicao, local: q.local || null, hora: q.hora || null, enquadramento: q.plano || null, personagens: q.personagens, eventos, camera: cam, falas: F.falas, marcas: F.marcas, legenda: q.legenda, prompt, trilha: F.roteiro.map(e => ({ t: e.t, ate: e.ate ?? e.t, quem: e.quem || "", texto: e.texto, linha: e.linha || null })) };
+    T0 += nmTempoDeTela(F).dur; return p; });
   const md = ["# " + (Fm.nome || "Filme") + " — lista de planos", "", "Duração total: " + fmt(T0) + " s · " + planos.length + " planos · " + (Fm.fps || 24) + " fps. Cada manequim tem uma cor fixa (veja \"Quem é quem\").", "",
     ...planos.flatMap(p => ["## Plano " + p.n + (p.cena ? " · cena “" + p.cena + "”" : "") + " — " + fmt(p.inicio) + " a " + fmt(p.inicio + p.duracao) + " s", "", "- Local: " + (p.local || "—") + (p.hora ? " (" + p.hora + ")" : "") + " · enquadramento: " + (p.enquadramento || "—") + " · entrada: " + (p.transicao ? p.transicao.tipo : "corte"),
       "- Quem é quem: " + p.personagens.map(x => x.nome + " = " + x.cor).join(", "), "", "| tempo | quem | o quê |", "|---|---|---|", ...[...p.eventos.map(e => [e.t, e.quem || "", e.texto]), ...p.camera.map(c => [c.t, "câmera", c.texto])].sort((a, b) => a[0] - b[0]).map(x => "| " + fmt(x[0]) + " s | " + x[1] + " | " + String(x[2]).replace(/\|/g, "/") + " |"),

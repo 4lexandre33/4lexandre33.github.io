@@ -560,6 +560,8 @@ body.qd-aberto{overflow:hidden}
 .nm-filme figcaption input { flex: 1; min-width: 0; }
 .nm-filme-lista { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.45; max-height: 40vh; overflow: auto; }
 .nm-filme-lista b { font-variant-numeric: tabular-nums; }
+.nm-tl { display: block; margin-top: 8px; touch-action: none; user-select: none; }
+.nm-tl-ajuda { margin: 2px 0 0; font-size: 11px; opacity: .7; }
 .nm-filmebtns { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 /* Texto → aba Biblioteca */
 .nm-bib-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
@@ -31244,7 +31246,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       }
       return false;
     });
-    if (obs && o.desviar !== false) {
+    if (o.pontos && o.pontos.length) pontos = [[0, 0]].concat(o.pontos.map((q) => local([q[0] - (Q.wx || 0), q[1] - (Q.wz || 0)])));
+    else if (obs && o.desviar !== false) {
       const r = Math.max(obs.larg || 2, obs.prof || 2) / 2 + 4, nx = -dzW, nz = dxW, nl = Math.hypot(nx, nz) || 1, lado2 = (obs.x - Q.wx) * nx + (obs.z - Q.wz) * nz > 0 ? -1 : 1;
       const w1 = [obs.x + lado2 * nx / nl * r - (Q.wx || 0), obs.z + lado2 * nz / nl * r - (Q.wz || 0)];
       pontos = [[0, 0], local(w1), local([dxW, dzW])];
@@ -31285,7 +31288,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       pos = pontos[i];
     }
     add3(t + 0.25, D0, { frente: pos[1], lado: pos[0], giro: th });
-    return criarAnimacao({ nome: o.nome || "andarAte", duracao: t + 0.25, modo: "relativa", curva: "suave", travarPes: false, tags: ["Locomocao/Andar/AteUmPonto"], descricao: "anda " + Math.hypot(...pontos[pontos.length - 1]).toFixed(1) + " m" + (pontos.length > 2 ? " desviando de “" + (obs.nome || obs.tipo) + "”" : ""), chaves });
+    return criarAnimacao({ nome: o.nome || "andarAte", duracao: t + 0.25, modo: "relativa", curva: "suave", travarPes: false, tags: ["Locomocao/Andar/AteUmPonto"], descricao: "anda " + Math.hypot(...pontos[pontos.length - 1]).toFixed(1) + " m" + (o.pontos ? " por " + o.pontos.length + " pontos" : pontos.length > 2 && obs ? " desviando de “" + (obs.nome || obs.tipo) + "”" : ""), chaves });
   }
   var MV_ANDAR = [
     [0, { hipFlexL: 18, kneeFlexL: 0, ankleFlexL: -10, hipFlexR: -20, kneeFlexR: 24, ankleFlexR: 16, armFlexR: 20, armFlexL: -18, elbowL: 15, elbowR: 24, spineTwist: 5, pelvisTwist: -5 }],
@@ -31406,7 +31409,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     try {
       for (const n2 of lib) {
         const a = T3 && T3[n2];
-        if (a && !a.calibrada) L3[n2] = Object.assign(mvCalibrarMover(JSON.parse(JSON.stringify(a))), { origem: "pronta", versao: 0, tags: a.tags, descricao: a.descricao, travarPes: true });
+        if (a && !a.calibrada) L3[n2] = Object.assign(mvCalibrarMover(JSON.parse(JSON.stringify(a))), { origem: "pronta", versao: 0, tags: a.tags, descricao: a.descricao });
       }
     } catch (e) {
     }
@@ -33104,6 +33107,29 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return u * u * (3 - 2 * u);
   };
   var cfLerp = (a, b, u) => a.map((x, i) => x + (b[i] - x) * u);
+  var cfCurva = (nome, u) => {
+    u = Math.max(0, Math.min(1, u));
+    return nome === "linear" ? u : nome === "entra" ? u * u * u : nome === "sai" ? 1 - Math.pow(1 - u, 3) : u * u * (3 - 2 * u);
+  };
+  function cfSpline(P3, u) {
+    const n2 = P3.length - 1;
+    if (n2 < 1) return P3[0].slice();
+    const L3 = [];
+    let tot = 0;
+    for (let i2 = 0; i2 < n2; i2++) {
+      const d = Math.hypot(...P3[i2 + 1].map((x, j) => x - P3[i2][j])) || 1e-6;
+      L3.push(d);
+      tot += d;
+    }
+    let s0 = Math.max(0, Math.min(1, u)) * tot, i = 0;
+    while (i < n2 - 1 && s0 > L3[i]) {
+      s0 -= L3[i];
+      i++;
+    }
+    const t = Math.min(1, s0 / L3[i]);
+    const p0 = P3[Math.max(0, i - 1)], p1 = P3[i], p2 = P3[i + 1], p3 = P3[Math.min(n2, i + 2)], t2 = t * t, t3 = t2 * t;
+    return [0, 1, 2].map((j) => 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3));
+  }
   function cfCaps(it2) {
     const c = capsulas(pMundo(it2));
     return c.caps || c;
@@ -33178,6 +33204,18 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const ant = anc && anc.passado ? anc.passado(b.quem, Math.max(0, t - (b.suave ?? 0.35))) : null, cc = ant || c;
       return { pos: [cc[0] + dir[0] * d, alt, cc[2] + dir[1] * d], alvo: b.olha ? cfPonto(b.olha) : [c[0], c[1] + (p ? m(0.1) : 0), c[2]], lente: b.lente || 40 };
     }
+    if (b.modo === "caminho") {
+      const P0 = b.pts.map((q) => cfPonto(q)).filter(Boolean);
+      if (P0.length < 2) return null;
+      const u = cfCurva(b.curva, (t - (b.t0 || 0)) / Math.max(0.05, b.dur || 4)), pos = cfSpline(P0, u);
+      let alvo = b.olha && b.olha !== "frente" ? cfPonto(b.olha, { cabeca: b.cabeca }) : null;
+      if (!alvo) {
+        const q = cfSpline(P0, Math.min(1, u + 0.02)), d = q.map((x, j) => x - pos[j]);
+        const L0 = Math.hypot(...d);
+        alvo = L0 > 1e-4 ? pos.map((x, j) => x + d[j] / L0 * 30) : cfSpline(P0, 1).map((x, j) => x + (x - P0[P0.length - 2][j]));
+      }
+      return { pos, alvo, lente: b.lente || 35 };
+    }
     if (b.modo === "fixa") {
       const pos = b.posFixa || anc && anc.fixa && anc.fixa(b), alvo = b.olha ? b.olha === "frente" ? b.alvoFixo : cfPonto(b.olha, { cabeca: b.cabeca }) : b.alvoFixo;
       if (!pos || !alvo) return null;
@@ -33214,6 +33252,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     else if (md.tipo === "grua") {
       cam.pos[1] += m(md.metros || 0) * u;
       cam.alvo[1] += m(md.metros || 0) * u * 0.5;
+    } else if (md.tipo === "vertigo") {
+      const k = Math.max(0.08, 1 + (md.dir === "afasta" ? 1 : -1) * (md.pct || 40) / 100 * u);
+      cam.pos = cam.alvo.map((x, i) => x + rel[i] * k);
+      cam.lente = cam.lente * k;
     } else if (md.tipo === "aproxima" || md.tipo === "afasta") {
       const k = 1 + (md.tipo === "aproxima" ? -1 : 1) * (md.pct || 30) / 100 * u;
       cam.pos = cam.alvo.map((x, i) => x + rel[i] * Math.max(0.05, k));
@@ -33258,7 +33300,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     const c = { pos: cam.pos.slice(), alvo: cam.alvo.slice(), lente: cam.lente, esconder: cam.esconder, pan: cam.pan };
     for (const e of ev) {
       if (!e.mod || e.t < b.t - 1e-9 || e.t > t + 1e-9 || e.t > ate) continue;
-      const u = e.corte || !e.dur ? 1 : cfSuave((Math.min(t, ate) - e.t) / e.dur);
+      const u = e.corte || !e.dur ? 1 : cfCurva(e.mod.curva, (Math.min(t, ate) - e.t) / e.dur);
       if (b.base && b.base.modo === "pov" && (e.mod.tipo === "aproxima" || e.mod.tipo === "afasta")) {
         const p = (e.mod.pct || 30) / 100 * u;
         c.lente = c.lente * (e.mod.tipo === "aproxima" ? 1 / Math.max(0.1, 1 - p) : Math.max(0.2, 1 - p));
@@ -33322,10 +33364,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function cfDescrever(e) {
     if (e.base) {
       const b = e.base;
-      return (e.corte ? "corte → " : "") + ({ estatica: "câmera parada", pov: "visão de " + b.quem + " (POV)", segue: "segue " + b.quem + " (" + (b.lado || "atras") + ", " + (b.distancia ?? 3) + " m)", fixa: "câmera fixa" + (b.de ? " " + (b.distancia ?? 6) + " m à frente de " + b.de : "") + (b.olha ? " olhando " + b.olha : ""), ombro: "sobre o ombro de " + b.quem + " olhando " + b.alvo, presa: "presa em " + b.quem }[b.modo] || b.modo);
+      return (e.corte ? "corte → " : "") + ({ estatica: "câmera parada", caminho: "câmera em percurso por " + (b.pts || []).length + " pontos em " + (b.dur || 4) + " s" + (b.olha ? " olhando " + b.olha : ""), pov: "visão de " + b.quem + " (POV)", segue: "segue " + b.quem + " (" + (b.lado || "atras") + ", " + (b.distancia ?? 3) + " m)", fixa: "câmera fixa" + (b.de ? " " + (b.distancia ?? 6) + " m à frente de " + b.de : "") + (b.olha ? " olhando " + b.olha : ""), ombro: "sobre o ombro de " + b.quem + " olhando " + b.alvo, presa: "presa em " + b.quem }[b.modo] || b.modo);
     }
     const m = e.mod;
-    return { orbita: "orbita " + m.graus + "°", eleva: "eleva " + m.graus + "°", sobe: "sobe " + m.metros + " m", grua: "grua " + m.metros + " m", aproxima: "aproxima " + m.pct + "%", afasta: "afasta " + m.pct + "%", travelling: "travelling " + m.dir + " " + m.metros + " m", panoramica: "panorâmica " + m.graus + "°", inclina: "inclina " + m.graus + "°", lente: "lente " + m.mm + " mm", zoom: "zoom ×" + m.fator, alvo: "foco em " + m.quem, tremida: "câmera na mão" }[m.tipo] + (e.dur ? " em " + e.dur + " s" : "");
+    return { orbita: "orbita " + m.graus + "°", eleva: "eleva " + m.graus + "°", sobe: "sobe " + m.metros + " m", grua: "grua " + m.metros + " m", aproxima: "aproxima " + m.pct + "%", vertigo: "efeito vertigo (" + m.dir + " " + m.pct + "%, lente compensa)", afasta: "afasta " + m.pct + "%", travelling: "travelling " + m.dir + " " + m.metros + " m", panoramica: "panorâmica " + m.graus + "°", inclina: "inclina " + m.graus + "°", lente: "lente " + m.mm + " mm", zoom: "zoom ×" + m.fator, alvo: "foco em " + m.quem, tremida: "câmera na mão" }[m.tipo] + (e.dur ? " em " + e.dur + " s" : "");
   }
   function cfSilhueta(nome) {
     const it2 = SCN.list.find((x) => x.name === nome);
@@ -34291,7 +34333,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   var NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
   var NM_CHAVES_Q = /* @__PURE__ */ new Set(["velocidade", "duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
-  var NM_CHAVES_P = /* @__PURE__ */ new Set(["gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "espera", "aguarda", "descansa", "oferece", "pede", "entrega", "recebe", "aponta", "acena", "cumprimenta", "abre-porta", "bebe", "le", "atende", "olha-relogio", "encolhe-ombros", "chora", "ri", "cai-de-joelhos", "coca-cabeca", "cruza-bracos", "espreguica", "boceja", "comemora", "suspira", "bate-palmas", "grita", "sussurra", "berra", "cochicha", "fala-radio", "radio", "monta", "montar", "cavalga", "desmonta", "apeia", "escala", "gigante", "anao", "anão", "fada", "titã", "tita", "miniatura", "paira", "flutua", "voa", "voa-ate", "voa-até", "voa-para", "pousa", "aterrissa", "sobre-mao", "sobre-mão", "sobre-ombro", "sobre-cabeca", "sobre-cabeça", "inclina-corpo", "tomba-corpo", "de-lado", "de-cabeca-para-baixo", "anda", "caminha", "corre", "pega", "pegar", "larga", "largar", "solta", "soltar", "joga", "jogar", "arremessa", "passa", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
+  var NM_CHAVES_P = /* @__PURE__ */ new Set(["anda-por", "corre-por", "caminha-por", "gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "espera", "aguarda", "descansa", "oferece", "pede", "entrega", "recebe", "aponta", "acena", "cumprimenta", "abre-porta", "bebe", "le", "atende", "olha-relogio", "encolhe-ombros", "chora", "ri", "cai-de-joelhos", "coca-cabeca", "cruza-bracos", "espreguica", "boceja", "comemora", "suspira", "bate-palmas", "grita", "sussurra", "berra", "cochicha", "fala-radio", "radio", "monta", "montar", "cavalga", "desmonta", "apeia", "escala", "gigante", "anao", "anão", "fada", "titã", "tita", "miniatura", "paira", "flutua", "voa", "voa-ate", "voa-até", "voa-para", "pousa", "aterrissa", "sobre-mao", "sobre-mão", "sobre-ombro", "sobre-cabeca", "sobre-cabeça", "inclina-corpo", "tomba-corpo", "de-lado", "de-cabeca-para-baixo", "anda", "caminha", "corre", "pega", "pegar", "larga", "largar", "solta", "soltar", "joga", "jogar", "arremessa", "passa", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
   function nmPontoDe(ctx, tok, toks, k) {
     if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
     const w = nmNorm(tok.v), LA = SCN.localAtual || { marcas: {}, regioes: {} };
@@ -34546,6 +34588,38 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       o.giro = giro;
       const andando = amPoseMarcha(s.marcha, fase % 1, base2), fimT = s.giroDur + Math.hypot(pa.x - de.x, pa.z - de.z) / NM_M / (s.S / s.T);
       o.animal.pose = chegou ? amMisturar(andando, base2, NM_SUAVE(Math.min(1, (tl - fimT) / 0.45))) : andando;
+    }
+  }
+  function nmSegueAnimais(F3, t) {
+    const mem = F3._segue = F3._segue || {};
+    for (const o of SCN.objetos) {
+      if (o.tipo !== "animal" || !o.animal || !o.animal.segue) continue;
+      const alvo = SCN.list.find((x) => x.name === o.animal.segue.quem);
+      if (!alvo) continue;
+      if (F3.trilhas.some((s) => s.tipo === "animalMov" && s.quem === o.nome && t >= s.inicio - 1e-9)) continue;
+      let m = mem[o.nome];
+      if (!m || t < m.t - 1e-6) m = mem[o.nome] = { x: o.x, z: o.z, giro: o.giro || 0, fase: 0, t };
+      const dt = Math.max(0, t - m.t), esc9 = o.animal.escala || 1, ga = (alvo.params.wRot || 0) * Math.PI / 180, dist = (o.animal.segue.dist || 2.2) * NM_M * Math.max(0.6, esc9);
+      const px = (alvo.params.wx || 0) - Math.sin(ga) * dist, pz = (alvo.params.wz || 0) - Math.cos(ga) * dist, dx = px - m.x, dz = pz - m.z, L3 = Math.hypot(dx, dz);
+      const marcha = L3 > 5 * NM_M ? "galope" : L3 > 1.2 * NM_M ? "trote" : "passo", Smt = amPassada(o.animal.especie, esc9, marcha) * NM_M, Tc = amCiclo(o.animal.especie, esc9, marcha), v = Smt / Tc;
+      if (L3 > 0.3 * NM_M) {
+        const d = Math.min(L3, v * dt);
+        m.x += dx / L3 * d;
+        m.z += dz / L3 * d;
+        const alvoG = Math.atan2(dx, dz) * 180 / Math.PI;
+        m.giro += nmAng(m.giro, alvoG) * Math.min(1, dt * 4);
+        m.fase += d / Smt;
+        m.parado = 0;
+      } else {
+        m.parado = (m.parado || 0) + dt;
+        m.giro += nmAng(m.giro, alvo.params.wRot || 0) * Math.min(1, dt * 2);
+      }
+      m.t = t;
+      o.x = m.x;
+      o.z = m.z;
+      o.giro = m.giro;
+      const base2 = o.animal.pose || amPose("parado");
+      o.animal.pose = m.parado > 0 ? amMisturar(amPoseMarcha(marcha, m.fase % 1, base2), base2, Math.min(1, m.parado / 0.4)) : amPoseMarcha(marcha, m.fase % 1, base2);
     }
   }
   function nmCameraAnimal(o, plano, lado2, el2) {
@@ -34839,6 +34913,26 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           depois4.push(() => its.forEach((x) => nmTocar(Q, x, an, null)));
           feito.anima = "gira " + Math.abs(A) + "° " + (A > 0 ? "para a esquerda" : "para a direita") + " (" + (est2 || "passos") + ")";
         }
+      } else if (/^(anda|caminha|corre)$/.test(w) && nx && nmNorm(nx.v) === "por" || /^(anda-por|caminha-por|corre-por)$/.test(w)) {
+        const correndo = /^corre/.test(w);
+        if (nx && nmNorm(nx.v) === "por") k++;
+        const refs = [];
+        while (toks[k + 1] && (toks[k + 1].t === "tupla" || toks[k + 1].v === "," || /^(marca|ponto)$/.test(nmNorm(toks[k + 1].v)) || nmQuem(ctx, toks[k + 1].v) || acharObjeto(toks[k + 1].v))) {
+          if (toks[k + 1].v === ",") {
+            k++;
+            continue;
+          }
+          const j = k + 1, [p0, k2] = nmPontoDe(ctx, toks[j], toks, j);
+          if (!p0) break;
+          refs.push(j);
+          k = k2 - 1;
+        }
+        if (!refs.length) throw new NmErro(w + " por: dê os pontos do percurso, ex.: Kai anda por (0,0) (3,2) (6,0).", l.linha);
+        depois4.push(() => its.forEach((x) => {
+          const pts = refs.map((j) => nmPontoDe(ctx, toks[j], toks, j)[0]);
+          nmTocar(Q, x, animacaoAndarAte(x, pts[pts.length - 1], { correndo, pontos: pts }), null);
+        }));
+        feito.anima = (correndo ? "corre" : "anda") + " por " + refs.length + " pontos";
       } else if (/^(anda|caminha|corre)$/.test(w) && !(nx && /^(ate|até)$/.test(nmNorm(nx.v)))) {
         const correndo = w === "corre";
         let dist = correndo ? 8 : 4, alvoT = null, alvoJ = 0;
@@ -35887,10 +35981,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     const ctx = { elenco: /* @__PURE__ */ new Map(), apelidos: /* @__PURE__ */ new Map(), coresUsadas: /* @__PURE__ */ new Set(), locais: /* @__PURE__ */ new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: /* @__PURE__ */ new Map(), locaisRuins: /* @__PURE__ */ new Set(), animacoes: /* @__PURE__ */ new Map(), poses: /* @__PURE__ */ new Map(), defs: [], salvar: opts.salvar !== false };
     const erros = [], avisos = [], quadros = [], paginas = [];
     ctx.erros = erros;
-    ctx.diretor = /^\s*diretor\s+(auto|automatico|automático|ligado)\b/im.test(texto2);
+    ctx.diretor = /^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado)\b/im.test(texto2);
     let blocos2;
     try {
-      blocos2 = nmFilmeEstrutura(nmBlocos(String(texto2).replace(/^\s*diretor\s+\S+.*$/gim, "")), ctx);
+      blocos2 = nmFilmeEstrutura(nmBlocos(String(texto2).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx);
     } catch (e) {
       return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] };
     }
@@ -36146,6 +36240,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
                 throw new NmErro("“" + tk[0].v + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : " Declare no bloco elenco."), l.linha);
               }
             } catch (e) {
+              if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error(e.stack);
               erros.push({ linha: e instanceof NmErro && e.linha || l.linha, erro: e.message, quadro: indice + 1 });
             }
           }
@@ -37102,12 +37197,25 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         tr = { tipo: k === "dissolve" || k === "fusao" || k === "fusão" ? "fusao" : k, d: d ? +d : k === "corte" ? 0 : 0.6 };
         return pre;
       });
+      let vel = 1;
+      const congela = [];
+      resto = resto.replace(/(^|\s)(lento|camera-lenta|câmera-lenta|acelera|rapido|rápido)(\s+(\d+(?:\.\d+)?)\s*%?)?(?=\s|$)/i, (m0, pre, w, x, d) => {
+        const k = nmNorm(w);
+        vel = /^(lento|camera-lenta|câmera-lenta)$/.test(k) ? d ? +d / 100 : 0.5 : d ? +d / 100 : 2;
+        if (vel > 1 && /^(lento|camera-lenta)$/.test(k)) vel = 1 / vel;
+        return pre;
+      });
+      resto = resto.replace(/(^|\s)congela(?:\s+em)?\s+(\d+(?:\.\d+)?)\s*s?(?:\s+por\s+(\d+(?:\.\d+)?)\s*s?)?(?=\s|$)/gi, (m0, pre, em, por) => {
+        congela.push({ em: +em, por: por ? +por : 1 });
+        return pre;
+      });
+      vel = Math.max(0.05, Math.min(8, vel));
       const nm = /^\s*(\d+)\b/.exec(resto), n2 = nm ? +nm[1] : nPlano;
       if (nm) resto = resto.slice(nm[0].length);
       const lugar = /\b(local|lugar)\s/.test(resto) ? "" : primeiroDaCena && cena2 && cena2.local ? ' local "' + cena2.local + '"' : " continua";
       const hora = primeiroDaCena && cena2 && cena2.hora && !/\bhora\b/.test(resto) ? " hora " + cena2.hora : "", fmt2 = ctx.filme && ctx.filme.formato && !/\d+:\d+|formato/.test(resto) ? " formato " + ctx.filme.formato : "";
       const s = separa((extraSetup || []).concat(corpo), null);
-      out.push({ cab: "quadro " + n2 + " " + resto.trim() + lugar + hora + fmt2, linha, corpo: s.setup, ehPlano: true, eventos: s.ev, marcas: s.marcas, transicao: tr, sai, nPlano: n2, cena: cena2 ? cena2.nome : null });
+      out.push({ cab: "quadro " + n2 + " " + resto.trim() + lugar + hora + fmt2, linha, corpo: s.setup, ehPlano: true, eventos: s.ev, marcas: s.marcas, transicao: tr, sai, vel, congela, nPlano: n2, cena: cena2 ? cena2.nome : null });
       primeiroDaCena = false;
     };
     for (const b of blocos2) {
@@ -37177,7 +37285,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   };
   function nmCameraEventos(ctx, Q, txt, T3, ate, linha) {
     const tk = nmTokens(txt), quem = (v) => nmQuem(ctx, v) || v, met = (t0) => !t0 || t0.t !== "num" ? null : t0.u === "cm" ? t0.v / 100 : t0.u === "R" ? t0.v / NM_M : t0.v;
-    let k = 1, corte = false, dur = ate ? ate - T3 : null, base2 = null;
+    let k = 1, corte = false, dur = ate ? ate - T3 : null, base2 = null, curva = null;
     const mods = [];
     const estatico = tk.slice(1).some((t) => {
       const w = nmNorm(t.v);
@@ -37239,7 +37347,24 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       else if (w === "em" && nx && nx.t === "num") {
         dur = nx.v;
         k++;
-      } else if (w === "fixa" || w === "parada") base2 = { modo: "fixa" };
+      } else if (w === "caminho" || w === "trilho" || w === "percurso") {
+        const pts = [];
+        while (tk[k + 1] && (tk[k + 1].t === "tupla" || tk[k + 1].v === ",")) {
+          k++;
+          if (tk[k].t === "tupla") pts.push(tk[k].v);
+        }
+        if (pts.length < 2) throw new NmErro("camera caminho: dê 2 ou mais pontos (x,altura,z) em metros, ex.: camera caminho (0,1.6,-6) (4,2,-3) (6,3,2) em 5s olha Kai.", linha);
+        base2 = { modo: "caminho", pts, t0: T3 };
+      } else if (w === "vertigo" || w === "dolly-zoom" || w === "efeito-vertigo") {
+        let dir = "aproxima";
+        if (nx && /^(aproxima|afasta)$/.test(nmNorm(nx.v))) {
+          dir = nmNorm(nx.v);
+          k++;
+        }
+        const pc = tk[k + 1] && tk[k + 1].t === "num" ? tk[++k].v : 40;
+        mods.push({ tipo: "vertigo", dir, pct: Math.max(1, Math.min(90, pc)) });
+      } else if (/^(linear|entra|sai|suave-entra|suave-sai|acelerando|freando)$/.test(w) || w === "suave" && !base2) curva = { linear: "linear", entra: "entra", acelerando: "entra", "suave-entra": "entra", sai: "sai", freando: "sai", "suave-sai": "sai", suave: "suave" }[w];
+      else if (w === "fixa" || w === "parada") base2 = { modo: "fixa" };
       else if (w === "segue" || w === "acompanha") {
         base2 = { modo: "segue", quem: quem(nx.v) };
         k++;
@@ -37301,21 +37426,28 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       else if (w === "inclina") mods.push({ tipo: "inclina", graus: num3().v });
       else if (w === "zoom") mods.push({ tipo: "zoom", fator: num3().v });
       else if (w === "tremida" || w === "na-mao" || w === "na-mão") mods.push({ tipo: "tremida", forca: nx && nx.t === "num" ? (k++, nx.v) : 0.5 });
-      else throw new NmErro("câmera: não entendi “" + tk[k].v + "” (use fixa, segue, pov, sobre-o-ombro, presa-em, plano close alvo …, orbita 90, eleva 20, sobe 1m, grua 2m, aproxima 30, afasta 40, travelling frente 2m, panoramica 30, inclina 10, lente 85, zoom 2, tremida, alvo Mira, corte, em 2s).", linha);
+      else throw new NmErro("câmera: não entendi “" + tk[k].v + "” (use fixa, segue, pov, sobre-o-ombro, presa-em, caminho (x,y,z) (x,y,z)…, vertigo aproxima 40, linear/entra/sai, plano close alvo …, orbita 90, eleva 20, sobe 1m, grua 2m, aproxima 30, afasta 40, travelling frente 2m, panoramica 30, inclina 10, lente 85, zoom 2, tremida, alvo Mira, corte, em 2s).", linha);
     }
     if (base2 && /^(segue|pov|ombro|presa)$/.test(base2.modo) && !SCN.list.some((x) => x.name === base2.quem) && !acharObjeto(base2.quem)) throw new NmErro("câmera " + base2.modo + ": “" + base2.quem + "” não está em cena.", linha);
     if (base2 && base2.modo === "ombro" && !base2.alvo) throw new NmErro("câmera sobre-o-ombro: diga o alvo (ex.: camera sobre-o-ombro Kai alvo Mira).", linha);
+    if (base2 && base2.modo === "caminho") {
+      base2.dur = dur ?? 4;
+      base2.curva = curva || "suave";
+    }
     const evs = [];
     if (base2) {
-      const c0 = corte || T3 <= 1e-6 && dur === null;
-      evs.push({ t: T3, dur: c0 ? 0 : dur ?? 1, corte: c0, base: base2 });
+      const c0 = corte || T3 <= 1e-6 && dur === null || base2.modo === "caminho" && T3 <= 1e-6;
+      evs.push({ t: T3, dur: c0 ? 0 : base2.modo === "caminho" ? 0.4 : dur ?? 1, corte: c0, base: base2 });
     }
-    mods.forEach((m) => evs.push({ t: T3, dur: corte ? 0 : dur ?? 1.5, corte, mod: m }));
+    mods.forEach((m) => {
+      if (curva) m.curva = curva;
+      evs.push({ t: T3, dur: corte ? 0 : dur ?? 1.5, corte, mod: m });
+    });
     if (!evs.length) throw new NmErro("câmera: diga o que fazer (ex.: camera segue Kai · camera 2s orbita 90 em 3s).", linha);
     return evs;
   }
   function nmRodarPlano(ctx, Q, b, erros, indice) {
-    const F3 = { n: b.nPlano, cena: b.cena, transicao: b.transicao, sai: b.sai || null, marcas: b.marcas || [], estadoInicio: JSON.parse(JSON.stringify(sceneState())), trilhas: [], cenas: [], cam: [{ t: 0, base: cfEstaticaAtual(), corte: true }], roteiro: [] };
+    const F3 = { n: b.nPlano, cena: b.cena, transicao: b.transicao, sai: b.sai || null, vel: b.vel || 1, congela: b.congela || [], marcas: b.marcas || [], estadoInicio: JSON.parse(JSON.stringify(sceneState())), trilhas: [], cenas: [], cam: [{ t: 0, base: cfEstaticaAtual(), corte: true }], roteiro: [] };
     let ultCena = nmCenaParte();
     const fimDe = {}, KS = (k) => POSEKEYS.has(k) || NM_ROSTO_K.test(k) || /^(wx|wz|wRot|bodyLift|ground|tamanho|bodyPitch|bodyRoll|legLen|armLen|headScale)$/.test(k);
     let ult = { t: 0, fim: 0 }, ordem = 0;
@@ -37459,6 +37591,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         ult = { t: T3, fim };
         if (quem0 && /\bolha(-para)?\b/i.test(txt)) (F3.olham = F3.olham || []).push(quem0);
       } catch (er) {
+        if (typeof process !== "undefined" && process.env && process.env.NM_DEBUG) console.error(er.stack);
         erros.push({ linha: er.linha || e.linha, erro: er.message, quadro: indice + 1 });
       }
     }
@@ -37540,7 +37673,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       }
     });
   }
-  var NM_SEM_TRAVA = /^(voar|nadar|mergulh|rastej|rolar|levantarDe(Brucos|Costas)|cair(Frente|Tras|Lado)|esperaDeitado|deitar|sentarNoChao|levantarDoChao)/;
+  var NM_SEM_TRAVA = /^(voar|nadar|mergulh|rastej|rolar|levantarDe(Brucos|Costas)|cair(Frente|Tras|Lado)|esperaDeitado|deitar|sentarNoChao|levantarDoChao|passo(Frente|Tras|Lado))/;
   var NM_SEGURA_NATUREZA = /^(entrarEmGuarda|cruzarBracos|gestoBracosCruzados|gestoMaosNaCintura|mergulhar|cair|levantar|sentar|deitar|ajoelhar|agachar|esperaImpaciente|puloCorrida)/;
   var NM_FIMDIF = /* @__PURE__ */ new Map();
   function nmFimDifere(a) {
@@ -37619,15 +37752,29 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       }
     }
   }
+  function nmTempoDeTela(F3) {
+    const v = F3.vel || 1, cg = (F3.congela || []).filter((c) => c.em >= 0 && c.em <= F3.duracao).sort((a, b) => a.em - b.em);
+    const dur = F3.duracao / v + cg.reduce((s0, c) => s0 + c.por, 0);
+    return { dur, historia: (ts) => {
+      let tt = ts;
+      for (const c of cg) {
+        const ini = c.em / v;
+        if (tt <= ini) break;
+        if (tt < ini + c.por) return c.em;
+        tt -= c.por;
+      }
+      return Math.min(F3.duracao, tt * v);
+    } };
+  }
   function videoDoFilme(r, o = {}) {
     const Fm = r.filme || {}, fps = Math.max(1, Math.min(60, Math.round(o.fps || Fm.fps || 24))), passo = Math.max(1, Math.round(o.passo || (o.emDois ? 2 : Fm.passo || 1))), vida = o.vida ?? Fm.vida ?? true;
     const ps = r.quadros.filter((q) => q.filme && (!o.planos || o.planos.includes(q.filme.n)));
     if (!ps.length) throw new Error("Nenhum plano: escreva filme / cena / plano (veja o manual, capítulo 15).");
-    const frames = [], avisos = /* @__PURE__ */ new Set(), silh = /* @__PURE__ */ new Set(), salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L2)), mapa = [], total = ps.reduce((s0, q) => s0 + Math.max(1, Math.round(q.filme.duracao * fps)), 0);
+    const frames = [], avisos = /* @__PURE__ */ new Set(), silh = /* @__PURE__ */ new Set(), salvo = JSON.stringify(sceneState()), salvoL = JSON.parse(JSON.stringify(L2)), mapa = [], total = ps.reduce((s0, q) => s0 + Math.max(1, Math.round(nmTempoDeTela(q.filme).dur * fps)), 0);
     let T0 = 0, feitos = 0, cancelado = false;
     try {
       for (const q of ps) {
-        const F3 = q.filme, n2 = Math.max(1, Math.round(F3.duracao * fps)), cam = JSON.parse(JSON.stringify(F3.cam)), hist = {}, mems = {}, linhas = (F3.falas || []).map((f) => ({ f, L: linhaDaFala(f.texto || "") }));
+        const F3 = q.filme, tela = nmTempoDeTela(F3), n2 = Math.max(1, Math.round(tela.dur * fps)), cam = JSON.parse(JSON.stringify(F3.cam)), hist = {}, mems = {}, linhas = (F3.falas || []).map((f) => ({ f, L: linhaDaFala(f.texto || "") }));
         const precisaHist = cam.some((c) => c.base && c.base.modo === "segue");
         const anc = {
           ultima: null,
@@ -37666,10 +37813,14 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
             feitos++;
             continue;
           }
-          const t = i / fps;
+          const t = tela.historia(i / fps);
           loadScene(nmEstadoNoTempo(F3, t));
           nmPlanoAnimais(F3, t);
           nmPlanoPessoas(F3, t, mems);
+          try {
+            nmSegueAnimais(F3, t);
+          } catch (e) {
+          }
           try {
             amAtualizarMontaria();
           } catch (e) {
@@ -37731,7 +37882,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
               if (sl.length) silh.add("Plano " + F3.n + ", " + t.toFixed(1).replace(".", ",") + " s: a mão " + sl.join(" e a mão ") + " de " + s0.quem + " fica na frente do corpo — silhueta pouco clara (gire a câmera: “camera " + t.toFixed(1) + "s orbita 30 em 0.5s”, ou abra o braço).");
             }
           }
-          ultimo2 = { estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, plano: F3.n, t: T0 + t, tl: t, legenda: q.legenda, fala: Fm.legendas && falaAgora ? falaAgora : null };
+          ultimo2 = { estado: JSON.parse(JSON.stringify(sceneState())), L: q.L, formato: q.formato, quadro: q.indice + 1, plano: F3.n, t: T0 + i / fps, tl: i / fps, th: t, legenda: q.legenda, fala: Fm.legendas && falaAgora ? falaAgora : null };
           frames.push(ultimo2);
           feitos++;
           if (o.progresso) try {
@@ -37800,9 +37951,9 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const eventos = F3.roteiro.filter((e) => e.quem !== "câmera").map((e) => ({ t: e.t, ate: e.ate, quem: e.quem, texto: e.texto }));
       const pessoas = q.personagens.map((p2) => p2.nome + " = manequim " + p2.cor);
       const linhas = [...eventos.map((e) => fmt2(e.t) + " s: " + e.texto), ...cam.map((c) => fmt2(c.t) + " s (câmera): " + c.texto)].sort((a, b) => parseFloat(a.replace(",", ".")) - parseFloat(b.replace(",", ".")));
-      const prompt = "Plano " + F3.n + " (" + fmt2(F3.duracao) + " s" + (F3.transicao && F3.transicao.tipo !== "corte" ? ", entra com " + F3.transicao.tipo : "") + "). " + (q.local ? "Local: " + q.local + (q.hora ? ", " + q.hora : "") + ". " : "") + "Câmera inicial: " + (q.plano || "plano") + ". " + linhas.join("; ") + ". Quem é quem: " + pessoas.join(", ") + ". Use esta referência para posição, poses, olhares, expressões, tempo e câmera; " + (o.estilo || "estilo final: animação 2D/3D estilizada") + ".";
-      const p = { n: F3.n, cena: F3.cena, inicio: +T0.toFixed(3), duracao: +F3.duracao.toFixed(3), transicao: F3.transicao, local: q.local || null, hora: q.hora || null, enquadramento: q.plano || null, personagens: q.personagens, eventos, camera: cam, falas: F3.falas, marcas: F3.marcas, legenda: q.legenda, prompt };
-      T0 += F3.duracao;
+      const prompt = "Plano " + F3.n + " (" + fmt2(nmTempoDeTela(F3).dur) + " s" + ((F3.vel || 1) < 1 ? ", câmera lenta " + Math.round(F3.vel * 100) + "%" : (F3.vel || 1) > 1 ? ", acelerado " + Math.round(F3.vel * 100) + "%" : "") + ((F3.congela || []).length ? ", imagem congela em " + F3.congela.map((c) => fmt2(c.em) + " s por " + fmt2(c.por) + " s").join(", ") : "") + (F3.transicao && F3.transicao.tipo !== "corte" ? ", entra com " + F3.transicao.tipo : "") + "). " + (q.local ? "Local: " + q.local + (q.hora ? ", " + q.hora : "") + ". " : "") + "Câmera inicial: " + (q.plano || "plano") + ". " + linhas.join("; ") + ". Quem é quem: " + pessoas.join(", ") + ". Use esta referência para posição, poses, olhares, expressões, tempo e câmera; " + (o.estilo || "estilo final: animação 2D/3D estilizada") + ".";
+      const p = { n: F3.n, cena: F3.cena, inicio: +T0.toFixed(3), duracao: +nmTempoDeTela(F3).dur.toFixed(3), velocidade: F3.vel || 1, congela: F3.congela || [], transicao: F3.transicao, local: q.local || null, hora: q.hora || null, enquadramento: q.plano || null, personagens: q.personagens, eventos, camera: cam, falas: F3.falas, marcas: F3.marcas, legenda: q.legenda, prompt, trilha: F3.roteiro.map((e) => ({ t: e.t, ate: e.ate ?? e.t, quem: e.quem || "", texto: e.texto, linha: e.linha || null })) };
+      T0 += nmTempoDeTela(F3).dur;
       return p;
     });
     const md = [
@@ -44955,6 +45106,61 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     const q = k >= 0 ? R.quadros[k] : null;
     return q && q.filme ? q : R.quadros.find((x) => x.filme) || null;
   }
+  function nmDurTela(F3) {
+    const v = F3.vel || 1;
+    return F3.duracao / v + (F3.congela || []).reduce((s0, c) => s0 + c.por, 0);
+  }
+  function linhaDoTempo(ro, dur) {
+    if (!ro || !ro.trilha || !ro.trilha.length) return "";
+    const quem = [...new Set(ro.trilha.map((e) => e.quem || "—"))].sort((a, b) => (a === "câmera") - (b === "câmera")), H2 = 22, W4 = 600, x0 = 90, k = 500 / Math.max(0.01, dur), cores = ["#c0392b", "#2e6fd8", "#2f9e5a", "#b8860b", "#8e44ad", "#16a085"];
+    const regua = Array.from({ length: Math.floor(dur) + 1 }, (_, s0) => '<line x1="' + (x0 + s0 * k) + '" y1="0" x2="' + (x0 + s0 * k) + '" y2="' + (quem.length * H2 + 14) + '" stroke="currentColor" stroke-opacity=".12"/><text x="' + (x0 + s0 * k + 2) + '" y="' + (quem.length * H2 + 12) + '" font-size="9" fill="currentColor" fill-opacity=".6">' + s0 + "s</text>").join("");
+    const barras = ro.trilha.map((e, j) => {
+      const r = quem.indexOf(e.quem || "—"), x = x0 + e.t * k, w = Math.max(6, ((e.ate ?? e.t) - e.t) * k), c = e.quem === "câmera" ? "#555" : cores[r % cores.length];
+      return '<g class="nm-tl-ev" data-j="' + j + '"' + (e.linha ? ' data-linha="' + e.linha + '"' : "") + ' style="cursor:' + (e.linha ? "grab" : "default") + '"><title>' + esc7(e.texto) + " (" + e.t.toFixed(1) + " s, linha " + (e.linha || "?") + ')</title><rect x="' + x.toFixed(1) + '" y="' + (r * H2 + 3) + '" width="' + Math.min(W4 - x, w).toFixed(1) + '" height="' + (H2 - 6) + '" rx="3" fill="' + c + '" fill-opacity=".75"/><text x="' + (x + 3).toFixed(1) + '" y="' + (r * H2 + 15) + '" font-size="9.5" fill="#fff" pointer-events="none">' + esc7(String(e.texto).slice(0, Math.max(0, Math.floor(w / 5.5)))) + "</text></g>";
+    }).join("");
+    return '<svg class="nm-tl" viewBox="0 0 ' + W4 + " " + (quem.length * H2 + 16) + '" width="100%" role="img" aria-label="Linha do tempo do plano">' + quem.map((q0, r) => '<text x="4" y="' + (r * H2 + 15) + '" font-size="10.5" fill="currentColor">' + esc7(q0).slice(0, 14) + "</text>").join("") + regua + barras + '<line class="nm-tl-cabeca" x1="' + x0 + '" y1="0" x2="' + x0 + '" y2="' + quem.length * H2 + '" stroke="#e33" stroke-width="1.5"/></svg><p class="nm-tl-ajuda">Clique numa barra para ir à linha; arraste para mudar o segundo.</p>';
+  }
+  function ligarLinhaDoTempo(svg, ro, dur) {
+    if (!svg) return;
+    let arr2 = null;
+    const k = 500 / Math.max(0.01, dur), sx = () => svg.getBoundingClientRect().width / 600;
+    svg.addEventListener("pointerdown", (ev) => {
+      const g = ev.target.closest(".nm-tl-ev[data-linha]");
+      if (!g) return;
+      arr2 = { g, x: ev.clientX, j: +g.dataset.j, linha: +g.dataset.linha, dx: 0 };
+      try {
+        svg.setPointerCapture(ev.pointerId);
+      } catch (e) {
+      }
+    });
+    svg.addEventListener("pointermove", (ev) => {
+      if (!arr2) return;
+      arr2.dx = (ev.clientX - arr2.x) / sx();
+      arr2.g.setAttribute("transform", "translate(" + arr2.dx.toFixed(1) + ",0)");
+    });
+    svg.addEventListener("pointerup", () => {
+      if (!arr2) return;
+      const a = arr2;
+      arr2 = null;
+      if (Math.abs(a.dx) < 4) {
+        irPara3(a.linha);
+        return;
+      }
+      const dt = Math.round(a.dx / k * 10) / 10, L0 = E3.code.value.split("\n"), i = a.linha - 1, m = /^(\s*)(\d+(?:[.,]\d+)?)s(?:-(\d+(?:[.,]\d+)?)s)?(?=\s)/.exec(L0[i] || "");
+      if (!m) {
+        a.g.removeAttribute("transform");
+        log2("Essa linha não começa com um segundo (ex.: “2s …”): escreva o tempo para poder arrastar.", "err");
+        return;
+      }
+      const n2 = (v) => Math.max(0, Math.round((parseFloat(v.replace(",", ".")) + dt) * 10) / 10), novo = m[1] + n2(m[2]) + "s" + (m[3] ? "-" + n2(m[3]) + "s" : "");
+      L0[i] = novo + L0[i].slice(m[0].length);
+      E3.code.value = L0.join("\n");
+      realcar();
+      ls3.gravar("texto", E3.code.value);
+      compilar();
+      log2("Linha " + a.linha + ": agora em " + n2(m[2]) + " s.");
+    });
+  }
   async function previaFilme() {
     const q = planoDoCursor();
     if (!q) {
@@ -44972,7 +45178,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
       FILME_PREV = meu;
       const ro = roteiroDoFilme(R).json.planos.find((p) => p.n === n2), fmt2 = (t) => t.toFixed(1).replace(".", ",") + " s";
       const lin = ro ? [...ro.eventos.map((e) => [e.t, e.texto]), ...ro.camera.map((c) => [c.t, "câmera: " + c.texto])].sort((a, b) => a[0] - b[0]) : [];
-      E3.prev.innerHTML = '<div class="nm-bibwrap"><figure class="nm-filme"><img alt="Plano ' + n2 + '"><figcaption><span class="nm-filme-t">0,0 s</span> <input type="range" min="0" max="0" value="0" aria-label="Tempo do plano"><small class="nm-filme-carga"></small></figcaption></figure><ol class="nm-filme-lista">' + lin.map((x) => "<li><b>" + fmt2(x[0]) + "</b> " + esc7(x[1]) + "</li>").join("") + "</ol></div>";
+      E3.prev.innerHTML = '<div class="nm-bibwrap"><figure class="nm-filme"><img alt="Plano ' + n2 + '"><figcaption><span class="nm-filme-t">0,0 s</span> <input type="range" min="0" max="0" value="0" aria-label="Tempo do plano"><small class="nm-filme-carga"></small></figcaption></figure><ol class="nm-filme-lista">' + lin.map((x) => "<li><b>" + fmt2(x[0]) + "</b> " + esc7(x[1]) + "</li>").join("") + "</ol>" + linhaDoTempo(ro, nmDurTela(q.filme)) + "</div>";
       const img = E3.prev.querySelector("img"), rg = E3.prev.querySelector("input"), tt = E3.prev.querySelector(".nm-filme-t"), cg = E3.prev.querySelector(".nm-filme-carga");
       let i = 0, solto = true;
       const ir = (j) => {
@@ -44983,7 +45189,14 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
         img.src = x.url;
         rg.value = i;
         tt.textContent = fmt2(x.t);
+        const cab = E3.prev.querySelector(".nm-tl-cabeca");
+        if (cab) {
+          const X = 90 + x.t / Math.max(0.01, nmDurTela(q.filme)) * 500;
+          cab.setAttribute("x1", X);
+          cab.setAttribute("x2", X);
+        }
       };
+      ligarLinhaDoTempo(E3.prev.querySelector(".nm-tl"), ro, nmDurTela(q.filme));
       rg.addEventListener("input", () => {
         solto = false;
         ir(+rg.value);

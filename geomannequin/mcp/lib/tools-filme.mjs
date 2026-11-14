@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { Worker } from "node:worker_threads";
 import { cpus } from "node:os";
 import { asset } from "./assets.mjs";
+import { quadroPasse } from "./quadro-worker-passe.mjs";
 import { toPng, toPngPar, tamanhoPool } from "./png.mjs";
 import { decodificarImagem } from "./decodificar.mjs";
 import { criarZip as zipBruto } from "../../src/engine/zip.js";
@@ -21,17 +22,17 @@ let FFMPEG = undefined;
 export function acharFfmpeg() { if (FFMPEG !== undefined) return FFMPEG; for (const c of [process.env.GM_FFMPEG, process.env.FFMPEG, "ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg", "/opt/homebrew/bin/ffmpeg", "C:\\ffmpeg\\bin\\ffmpeg.exe"].filter(Boolean)) { try { const r = spawnSync(c, ["-version"], { timeout: 8000 }); if (r.status === 0) return (FFMPEG = c); } catch (e) { } } return (FFMPEG = null); }
 function compilar(w, codigo) { const r = w.compilarName(String(codigo).trim() + "\n", { semCache: true, salvar: false }); if (r.erros.length) throw new Error(r.erros.map(e => "linha " + e.linha + ": " + e.erro).join(" | ")); if (!r.quadros.some(q => q.filme)) throw new Error("O texto não tem planos (escreva filme / cena / plano — manual, capítulo 15)."); return r; }
 /* quadros desenhados em threads (SVG) e convertidos em PNG em paralelo, numa janela adiantada; depois RGBA na ordem */
-function poolSvg(n) {
+function poolSvg(n, pass, larg) {
   const arq = asset("quadro-worker.mjs"), ws = [], esp = new Map(); let seqW = 0, vezW = 0;
-  for (let k = 0; k < n; k++) { const t = new Worker(arq); t.on("message", m => { const e = esp.get(m.id); if (!e) return; esp.delete(m.id); m.erro ? e.rej(new Error(m.erro)) : e.ok(m.svg); }); t.on("error", er => { for (const [id, e] of esp) { esp.delete(id); e.rej(er); } }); ws.push(t); }
-  return { svg: q => new Promise((ok, rej) => { const id = ++seqW; esp.set(id, { ok, rej }); ws[vezW++ % ws.length].postMessage({ id, quadro: q }); }), fechar: () => ws.forEach(t => t.terminate()) };
+  for (let k = 0; k < n; k++) { const t = new Worker(arq); t.on("message", m => { const e = esp.get(m.id); if (!e) return; esp.delete(m.id); m.erro ? e.rej(new Error(m.erro)) : e.ok(m.png ? { png: m.png } : m.svg); }); t.on("error", er => { for (const [id, e] of esp) { esp.delete(id); e.rej(er); } }); ws.push(t); }
+  return { svg: q => new Promise((ok, rej) => { const id = ++seqW; esp.set(id, { ok, rej }); ws[vezW++ % ws.length].postMessage({ id, quadro: q, passe: pass, largura: larg }); }), fechar: () => ws.forEach(t => t.terminate()) };
 }
 function svgSeguro(s) { return String(s).replace(/(-?\d+(?:\.\d+)?e[+-]?\d+|NaN|-?Infinity)/g, "0"); }
-function fabricaPng(w, frames, larg) {
-  const nT = Math.max(1, Math.min(6, (cpus().length || 2) - 1)), pool = frames.length > 12 ? poolSvg(nT) : null, pend = new Map(), janela = Math.max(4, nT * 2 + 2);
-  const svgDe = i => pool ? pool.svg(frames[i]) : Promise.resolve(w.svgComLegenda(w.renderizarQuadro(frames[i], { passes: false }).svg, frames[i].fala));
+function fabricaPng(w, frames, larg, passe) {
+  const nT = Math.max(1, Math.min(6, (cpus().length || 2) - 1)), pool = frames.length > 12 ? poolSvg(nT, passe, larg) : null, pend = new Map(), janela = Math.max(4, nT * 2 + 2);
+  const svgDe = i => pool ? pool.svg(frames[i]) : Promise.resolve(passe ? (r => r.png ? { png: r.png } : r.svg)(quadroPasse(w, frames[i], passe, larg)) : w.svgComLegenda(w.renderizarQuadro(frames[i], { passes: false }).svg, frames[i].fala));
   /* um quadro que o desenhista não consegue (raro: geometria degenerada) repete o anterior em vez de derrubar o vídeo */
-  const pedir = i => { if (i >= frames.length || pend.has(i)) return; pend.set(i, svgDe(i).then(s => toPngPar(s, larg).catch(() => toPng(svgSeguro(s), larg))).catch(() => null)); };
+  const pedir = i => { if (i >= frames.length || pend.has(i)) return; pend.set(i, svgDe(i).then(s => s && s.png ? Buffer.from(s.png, "base64") : toPngPar(s, larg).catch(() => toPng(svgSeguro(s), larg))).catch(() => null)); };
   let ant = null; const f = async i => { for (let k = i; k < i + janela; k++) pedir(k); const p = await pend.get(i); pend.delete(i); if (!p) { f.falhas = (f.falhas || 0) + 1; if (ant) return ant; throw new Error("não deu para desenhar o quadro " + (i + 1)); } ant = await decodificarImagem(p.toString("base64")); return ant; };
   f.fechar = () => pool && pool.fechar(); return f;
 }
@@ -45,9 +46,9 @@ function compor(base, f, cache, W, H) {
 /* quadros → MP4 (ffmpeg, H.264) · ou null sem ffmpeg */
 export async function quadrosParaMp4(w, frames, o = {}) {
   const ff = acharFfmpeg(); if (!ff) return null;
-  const larg = Math.max(160, Math.min(1920, o.largura || 640)), cache = { porIndice: {} }, refs = new Set(frames.filter(f => f.fusao).map(f => f.fusao.com)), rgbaDe = fabricaPng(w, frames, larg);
+  const larg = Math.max(160, Math.min(1920, o.largura || 640)), cache = { porIndice: {} }, refs = new Set(frames.filter(f => f.fusao).map(f => f.fusao.com)), rgbaDe = fabricaPng(w, frames, larg, o.passe);
   const primeiro = await rgbaDe(0), W = primeiro.w - (primeiro.w % 2), H = primeiro.h - (primeiro.h % 2), dir = mkdtempSync(join(tmpdir(), "gm-mp4-")), arq = join(dir, "v.mp4");
-  const p = spawn(ff, ["-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", W + "x" + H, "-r", String(o.fps || 24), "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", String(o.crf ?? 20), "-pix_fmt", "yuv420p", "-movflags", "+faststart", arq], { stdio: ["pipe", "ignore", "pipe"] });
+  const p = spawn(ff, ["-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgba", "-s", W + "x" + H, "-r", String(o.fps || 24), "-i", "-"].concat(o.passe && W !== larg - (larg % 2) ? ["-vf", "scale=" + (larg - (larg % 2)) + ":-2:flags=neighbor"] : []).concat(["-c:v", "libx264", "-preset", "veryfast", "-crf", String(o.crf ?? 20), "-pix_fmt", "yuv420p", "-movflags", "+faststart", arq]), { stdio: ["pipe", "ignore", "pipe"] });
   let erroTxt = ""; p.stderr.on("data", d => { erroTxt += d; }); const fim = new Promise(ok => p.on("close", ok));
   const escrever = b => new Promise(ok => { if (!p.stdin.write(Buffer.from(b.buffer, b.byteOffset, b.byteLength))) p.stdin.once("drain", ok); else ok(); });
   try { for (let i = 0; i < frames.length; i++) { const f = frames[i], im = i === 0 ? primeiro : await rgbaDe(i); if (refs.has(i)) cache.porIndice[i] = { w: im.w, data: im.data };
@@ -79,7 +80,7 @@ export function registerFilmeTools(server, W) {
   server.registerTool("exportar_filme", {
     title: "Exportar o filme: MP4 e pacote para a IA de vídeo",
     description: "Renderiza o filme (ou só alguns planos) e devolve o MP4 (H.264, com o ffmpeg do computador). pacote: true devolve um .zip com filme.mp4, um MP4 por plano, roteiro-de-planos.md, planos.json, prompts.txt e folha.png — para mandar à IA que faz o vídeo final. Sem ffmpeg: um .zip com os quadros em PNG e o comando para juntar. pasta: grava também os arquivos nesta pasta do computador. Vídeos longos levam minutos (largura menor e fps menor = mais rápido).",
-    inputSchema: { codigo: z.string().min(10).max(120000), fps: z.number().int().min(1).max(60).optional(), largura: z.number().int().min(160).max(1920).optional(), planos: z.array(z.number().int()).max(200).optional(), pacote: z.boolean().optional(), pasta: z.string().optional(), estilo: z.string().max(400).optional() }, annotations: MUDA
+    inputSchema: { codigo: z.string().min(10).max(120000), fps: z.number().int().min(1).max(60).optional(), largura: z.number().int().min(160).max(1920).optional(), planos: z.array(z.number().int()).max(200).optional(), pacote: z.boolean().optional(), pasta: z.string().optional(), estilo: z.string().max(400).optional(), passes: z.array(z.enum(["contorno", "openpose", "profundidade"])).max(3).optional().describe("também gera um MP4 de cada passe de referência (contorno, openpose, profundidade) — vai no .zip, pasta passes/") }, annotations: MUDA
   }, async a => { try { const w = W(), r = compilar(w, a.codigo), v = w.videoDoFilme(r, { fps: a.fps, planos: a.planos }), fps = v.fps, larg = a.largura || 640, ro = w.roteiroDoFilme(r, { estilo: a.estilo });
       const filme = await quadrosParaMp4(w, v.frames, { fps, largura: larg });
       const nome = String((r.filme && r.filme.nome) || "filme").replace(/[^\w-]+/g, "_"), arquivos = [];
@@ -92,6 +93,8 @@ export function registerFilmeTools(server, W) {
         rmSync(dir, { recursive: true, force: true });
         arquivos.push({ nome: "roteiro-de-planos.md", texto: ro.md }, { nome: "planos.json", texto: JSON.stringify(ro.json, null, 1) }, { nome: "prompts.txt", texto: ro.prompts.join("\n\n") }, { nome: "filme.gmn", texto: a.codigo }); if (ro.srt) arquivos.push({ nome: "falas.srt", texto: ro.srt });
         const fo = await folhaDe(w, v); if (fo) arquivos.push({ nome: "folha.png", dados: new Uint8Array(fo) }); }
+      for (const ps of a.passes || []) { const m = await quadrosParaMp4(w, v.frames, { fps, largura: larg, passe: ps }); if (m) arquivos.push({ nome: "passes/" + ps + ".mp4", dados: new Uint8Array(m.mp4) }); }
+      if (a.passes && a.passes.length && !a.pacote) a.pacote = true;
       if (a.pasta) { mkdirSync(a.pasta, { recursive: true }); for (const f of arquivos) { const alvo = join(a.pasta, f.nome); mkdirSync(join(alvo, ".."), { recursive: true }); writeFileSync(alvo, f.dados ? Buffer.from(f.dados) : f.texto); } }
       const blob = a.pacote ? Buffer.from(criarZip(arquivos)) : filme.mp4, mime = a.pacote ? "application/zip" : "video/mp4";
       return { content: [{ type: "resource", resource: { uri: "geomannequin://arquivo/" + nome + (a.pacote ? "-pacote.zip" : ".mp4"), mimeType: mime, blob: blob.toString("base64") } },

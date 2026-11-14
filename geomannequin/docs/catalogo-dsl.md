@@ -2273,7 +2273,7 @@ No filme: `0s Kai anima passoFrente`
 
 ```gm
 # um passo à frente (60 cm)
-animacao "passoFrente" duracao 0.7s mantem travar-pes tags "Locomocao/Passo/Frente"
+animacao "passoFrente" duracao 0.7s mantem tags "Locomocao/Passo/Frente"
   chave 0s 
   chave 0.35s ombro.direito(frente 30) ombro.esquerdo(tras 25) cotovelo.direito(dobra 35) cotovelo.esquerdo(dobra 20) quadril.direito(tras 18) quadril.esquerdo(frente 58) joelho.direito(dobra 12) joelho.esquerdo(dobra 72) tornozelo.direito(aponta 14) tornozelo.esquerdo(levanta-ponta 14) dedos-pe.direito(levanta 26) tronco(frente 6) move frente 0.3
   chave 0.7s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0) move frente 0.6
@@ -2287,7 +2287,7 @@ No filme: `0s Kai anima passoTras`
 
 ```gm
 # um passo para trás
-animacao "passoTras" duracao 0.8s mantem travar-pes tags "Locomocao/Passo/Tras"
+animacao "passoTras" duracao 0.8s mantem tags "Locomocao/Passo/Tras"
   chave 0s 
   chave 0.4s ombro.direito(frente 30) ombro.esquerdo(tras 25) cotovelo.direito(dobra 35) cotovelo.esquerdo(dobra 20) quadril.direito(tras 18) quadril.esquerdo(frente 58) joelho.direito(dobra 12) joelho.esquerdo(dobra 72) tornozelo.direito(aponta 14) tornozelo.esquerdo(levanta-ponta 14) dedos-pe.direito(levanta 26) tronco(frente 6) move frente -0.2
   chave 0.8s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0) move frente -0.45
@@ -2301,7 +2301,7 @@ No filme: `0s Kai anima passoLadoDireito`
 
 ```gm
 # um passo para o lado
-animacao "passoLadoDireito" duracao 0.6s mantem travar-pes tags "Locomocao/Passo/Lado"
+animacao "passoLadoDireito" duracao 0.6s mantem tags "Locomocao/Passo/Lado"
   chave 0s 
   chave 0.3s quadril.direito(abre 14) move lado 0.2
   chave 0.6s quadril.direito(abre 3) move lado 0.4
@@ -2315,7 +2315,7 @@ No filme: `0s Kai anima passoLadoEsquerdo`
 
 ```gm
 # um passo para o lado
-animacao "passoLadoEsquerdo" duracao 0.6s mantem travar-pes tags "Locomocao/Passo/Lado"
+animacao "passoLadoEsquerdo" duracao 0.6s mantem tags "Locomocao/Passo/Lado"
   chave 0s 
   chave 0.3s quadril.esquerdo(abre 14) move lado -0.2
   chave 0.6s quadril.esquerdo(abre 3) move lado -0.4

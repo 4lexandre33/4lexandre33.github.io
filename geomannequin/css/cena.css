@@ -372,6 +372,8 @@ body.qd-aberto{overflow:hidden}
 .nm-filme figcaption input { flex: 1; min-width: 0; }
 .nm-filme-lista { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.45; max-height: 40vh; overflow: auto; }
 .nm-filme-lista b { font-variant-numeric: tabular-nums; }
+.nm-tl { display: block; margin-top: 8px; touch-action: none; user-select: none; }
+.nm-tl-ajuda { margin: 2px 0 0; font-size: 11px; opacity: .7; }
 .nm-filmebtns { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 /* Texto → aba Biblioteca */
 .nm-bib-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }

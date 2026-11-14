@@ -115,7 +115,8 @@ function animacaoAndarAte(it, destino, o = {}) {
   let pontos = [[0, 0], local([dxW, dzW])];
   /* desvio: o primeiro objeto alto entre a pessoa e o destino → contorna pelo lado mais curto */
   const obs = SCN.objetos.find(ob => { if (ob.chao || ob.tipo === "agua" || ob.alt < 3) return false; for (let k = 1; k < 10; k++) { const u = k / 10, x = (Q.wx || 0) + dxW * u, z = (Q.wz || 0) + dzW * u; if (Math.abs(x - ob.x) < (ob.larg || 2) / 2 + 2.5 && Math.abs(z - ob.z) < (ob.prof || 2) / 2 + 2.5) return true; } return false; });
-  if (obs && o.desviar !== false) { const r = Math.max(obs.larg || 2, obs.prof || 2) / 2 + 4, nx = -dzW, nz = dxW, nl = Math.hypot(nx, nz) || 1, lado = ((obs.x - Q.wx) * nx + (obs.z - Q.wz) * nz) > 0 ? -1 : 1;
+  if (o.pontos && o.pontos.length) pontos = [[0, 0]].concat(o.pontos.map(q => local([q[0] - (Q.wx || 0), q[1] - (Q.wz || 0)])));
+  else if (obs && o.desviar !== false) { const r = Math.max(obs.larg || 2, obs.prof || 2) / 2 + 4, nx = -dzW, nz = dxW, nl = Math.hypot(nx, nz) || 1, lado = ((obs.x - Q.wx) * nx + (obs.z - Q.wz) * nz) > 0 ? -1 : 1;
     const w1 = [obs.x + lado * nx / nl * r - (Q.wx || 0), obs.z + lado * nz / nl * r - (Q.wz || 0)]; pontos = [[0, 0], local(w1), local([dxW, dzW])]; }
   const passada = (o.passada || 0.68) * tam, ds = o.duracaoPasso || 0.5 / Math.sqrt(tam) * (o.correndo ? 0.6 : 1);
   const empe = anPoseValores("empe", Q), cam = anPoseValores(o.correndo ? "correndo" : "caminhando", Q), esp = {}; for (const [k, v] of Object.entries(cam)) { const m = /^(.*)(L|R)$/.exec(k); esp[m ? m[1] + (m[2] === "L" ? "R" : "L") : k] = /Side|Twist|Yaw|Roll/.test(k) && !m ? -v : v; }
@@ -131,7 +132,7 @@ function animacaoAndarAte(it, destino, o = {}) {
     t += ds * n; pos = pontos[i];
   }
   add(t + 0.25, D0, { frente: pos[1], lado: pos[0], giro: th });
-  return criarAnimacao({ nome: o.nome || "andarAte", duracao: t + 0.25, modo: "relativa", curva: "suave", travarPes: false, tags: ["Locomocao/Andar/AteUmPonto"], descricao: "anda " + Math.hypot(...pontos[pontos.length - 1]).toFixed(1) + " m" + (pontos.length > 2 ? " desviando de “" + (obs.nome || obs.tipo) + "”" : ""), chaves });
+  return criarAnimacao({ nome: o.nome || "andarAte", duracao: t + 0.25, modo: "relativa", curva: "suave", travarPes: false, tags: ["Locomocao/Andar/AteUmPonto"], descricao: "anda " + Math.hypot(...pontos[pontos.length - 1]).toFixed(1) + " m" + (o.pontos ? " por " + o.pontos.length + " pontos" : pontos.length > 2 && obs ? " desviando de “" + (obs.nome || obs.tipo) + "”" : ""), chaves });
 }
 
 /* ===== ciclo de andar e de correr de verdade: contato → recebe o peso → passagem → impulso (4 poses por passo) =====

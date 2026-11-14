@@ -12,6 +12,13 @@ import { capsulas, cameraNoMundo } from "../engine/index.js";
 const CF_M = 1 / 0.114, CF_D = Math.PI / 180;
 const cfSuave = u => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
 const cfLerp = (a, b, u) => a.map((x, i) => x + (b[i] - x) * u);
+/* curvas de tempo dos movimentos: suave (entra e sai devagar), linear, entra (começa devagar, acelera), sai (começa rápido, freia) */
+const cfCurva = (nome, u) => { u = Math.max(0, Math.min(1, u)); return nome === "linear" ? u : nome === "entra" ? u * u * u : nome === "sai" ? 1 - Math.pow(1 - u, 3) : u * u * (3 - 2 * u); };
+/* Catmull-Rom pelos pontos (passa por todos): u 0..1 no percurso inteiro, com velocidade quase constante por trecho */
+function cfSpline(P, u) { const n = P.length - 1; if (n < 1) return P[0].slice(); const L = []; let tot = 0; for (let i = 0; i < n; i++) { const d = Math.hypot(...P[i + 1].map((x, j) => x - P[i][j])) || 1e-6; L.push(d); tot += d; }
+  let s0 = Math.max(0, Math.min(1, u)) * tot, i = 0; while (i < n - 1 && s0 > L[i]) { s0 -= L[i]; i++; } const t = Math.min(1, s0 / L[i]);
+  const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(n, i + 2)], t2 = t * t, t3 = t2 * t;
+  return [0, 1, 2].map(j => 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3)); }
 function cfCaps(it) { const c = capsulas(pMundo(it)); return c.caps || c; }
 /* o chão (y) de quem está em pé com este corpo: pés de uma pose em pé sem salto */
 const CF_CHAO = new Map();
@@ -50,6 +57,9 @@ function cfBase(b, t, anc) {
     /* atraso suave: a câmera vai para onde a pessoa estava "suave" segundos antes (calculado pelo âncora do instante anterior) */
     const ant = anc && anc.passado ? anc.passado(b.quem, Math.max(0, t - (b.suave ?? 0.35))) : null, cc = ant || c;
     return { pos: [cc[0] + dir[0] * d, alt, cc[2] + dir[1] * d], alvo: b.olha ? cfPonto(b.olha) : [c[0], c[1] + (p ? m(0.1) : 0), c[2]], lente: b.lente || 40 }; }
+  if (b.modo === "caminho") { const P0 = b.pts.map(q => cfPonto(q)).filter(Boolean); if (P0.length < 2) return null; const u = cfCurva(b.curva, (t - (b.t0 || 0)) / Math.max(0.05, b.dur || 4)), pos = cfSpline(P0, u);
+    let alvo = b.olha && b.olha !== "frente" ? cfPonto(b.olha, { cabeca: b.cabeca }) : null; if (!alvo) { const q = cfSpline(P0, Math.min(1, u + 0.02)), d = q.map((x, j) => x - pos[j]); const L0 = Math.hypot(...d); alvo = L0 > 1e-4 ? pos.map((x, j) => x + d[j] / L0 * 30) : cfSpline(P0, 1).map((x, j) => x + (x - P0[P0.length - 2][j])); }
+    return { pos, alvo, lente: b.lente || 35 }; }
   if (b.modo === "fixa") { const pos = b.posFixa || (anc && anc.fixa && anc.fixa(b)), alvo = b.olha ? (b.olha === "frente" ? b.alvoFixo : cfPonto(b.olha, { cabeca: b.cabeca })) : b.alvoFixo; if (!pos || !alvo) return null; return { pos: pos.slice(), alvo: alvo.slice(), lente: b.lente || 50 }; }
   if (b.modo === "ombro") { const p = cfPessoa(b.quem), a = cfPonto(b.alvo, { cabeca: true }); if (!p || !a) return null;
     const v = [a[0] - p.cabeca[0], a[2] - p.cabeca[2]], L = Math.hypot(...v) || 1, u = [v[0] / L, v[1] / L], s = b.lado === "esquerdo" ? 1 : -1, lat = [u[1] * s, -u[0] * s];
@@ -67,6 +77,8 @@ function cfAplicarMod(cam, md, u, t) {
     cam.pos = [cam.alvo[0] + Math.sin(az) * Math.cos(e2) * d, cam.alvo[1] + Math.sin(e2) * d, cam.alvo[2] + Math.cos(az) * Math.cos(e2) * d]; }
   else if (md.tipo === "sobe") cam.pos[1] += m(md.metros || 0) * u;
   else if (md.tipo === "grua") { cam.pos[1] += m(md.metros || 0) * u; cam.alvo[1] += m(md.metros || 0) * u * 0.5; }
+  /* dolly zoom (vertigo): a câmera anda e a lente compensa — quem está no alvo fica do mesmo tamanho, o fundo estica ou encolhe */
+  else if (md.tipo === "vertigo") { const k = Math.max(0.08, 1 + (md.dir === "afasta" ? 1 : -1) * (md.pct || 40) / 100 * u); cam.pos = cam.alvo.map((x, i) => x + rel[i] * k); cam.lente = cam.lente * k; }
   else if (md.tipo === "aproxima" || md.tipo === "afasta") { const k = 1 + (md.tipo === "aproxima" ? -1 : 1) * (md.pct || 30) / 100 * u; cam.pos = cam.alvo.map((x, i) => x + rel[i] * Math.max(0.05, k)); }
   else if (md.tipo === "travelling") { const f = [-rel[0], 0, -rel[2]], L = Math.hypot(f[0], f[2]) || 1, fr = [f[0] / L, 0, f[2] / L], di = [fr[2], 0, -fr[0]], d = m(md.metros || 1) * u;
     const v = { frente: fr, tras: fr.map(x => -x), direita: di.map(x => -x), esquerda: di }[md.dir || "frente"] || fr; cam.pos = cam.pos.map((x, i) => x + v[i] * d); cam.alvo = cam.alvo.map((x, i) => x + v[i] * d); }
@@ -87,7 +99,7 @@ function cfCameraNoTempo(ev, t, anc = {}) {
   return cfComMods(ev, b, cam, t, Infinity);
 }
 function cfComMods(ev, b, cam, t, ate) { if (!cam) return null; const c = { pos: cam.pos.slice(), alvo: cam.alvo.slice(), lente: cam.lente, esconder: cam.esconder, pan: cam.pan };
-  for (const e of ev) { if (!e.mod || e.t < b.t - 1e-9 || e.t > t + 1e-9 || e.t > ate) continue; const u = e.corte || !e.dur ? 1 : cfSuave((Math.min(t, ate) - e.t) / e.dur);
+  for (const e of ev) { if (!e.mod || e.t < b.t - 1e-9 || e.t > t + 1e-9 || e.t > ate) continue; const u = e.corte || !e.dur ? 1 : cfCurva(e.mod.curva, (Math.min(t, ate) - e.t) / e.dur);
     /* nos olhos de alguém (POV) aproximar/afastar é zoom: a câmera não sai da cabeça */
     if (b.base && b.base.modo === "pov" && (e.mod.tipo === "aproxima" || e.mod.tipo === "afasta")) { const p = (e.mod.pct || 30) / 100 * u; c.lente = c.lente * (e.mod.tipo === "aproxima" ? 1 / Math.max(0.1, 1 - p) : Math.max(0.2, 1 - p)); continue; }
     cfAplicarMod(c, e.mod, e.mod.tipo === "tremida" ? (t < e.t + (e.dur || 1e9) ? 1 : 0) : u, t); }
@@ -112,8 +124,8 @@ function cfFixaFrente(b) { const p = cfPessoa(b.de); if (!p) return null; const 
   return [p.centro[0] + Math.sin(g) * d, p.chao + (b.altura ?? 1.6) * CF_M, p.centro[2] + Math.cos(g) * d]; }
 /* descrição curta da câmera (lista de planos para a IA de vídeo) */
 function cfDescrever(e) {
-  if (e.base) { const b = e.base; return (e.corte ? "corte → " : "") + ({ estatica: "câmera parada", pov: "visão de " + b.quem + " (POV)", segue: "segue " + b.quem + " (" + (b.lado || "atras") + ", " + (b.distancia ?? 3) + " m)", fixa: "câmera fixa" + (b.de ? " " + (b.distancia ?? 6) + " m à frente de " + b.de : "") + (b.olha ? " olhando " + b.olha : ""), ombro: "sobre o ombro de " + b.quem + " olhando " + b.alvo, presa: "presa em " + b.quem }[b.modo] || b.modo); }
-  const m = e.mod; return { orbita: "orbita " + m.graus + "°", eleva: "eleva " + m.graus + "°", sobe: "sobe " + m.metros + " m", grua: "grua " + m.metros + " m", aproxima: "aproxima " + m.pct + "%", afasta: "afasta " + m.pct + "%", travelling: "travelling " + m.dir + " " + m.metros + " m", panoramica: "panorâmica " + m.graus + "°", inclina: "inclina " + m.graus + "°", lente: "lente " + m.mm + " mm", zoom: "zoom ×" + m.fator, alvo: "foco em " + m.quem, tremida: "câmera na mão" }[m.tipo] + (e.dur ? " em " + e.dur + " s" : "");
+  if (e.base) { const b = e.base; return (e.corte ? "corte → " : "") + ({ estatica: "câmera parada", caminho: "câmera em percurso por " + (b.pts || []).length + " pontos em " + (b.dur || 4) + " s" + (b.olha ? " olhando " + b.olha : ""), pov: "visão de " + b.quem + " (POV)", segue: "segue " + b.quem + " (" + (b.lado || "atras") + ", " + (b.distancia ?? 3) + " m)", fixa: "câmera fixa" + (b.de ? " " + (b.distancia ?? 6) + " m à frente de " + b.de : "") + (b.olha ? " olhando " + b.olha : ""), ombro: "sobre o ombro de " + b.quem + " olhando " + b.alvo, presa: "presa em " + b.quem }[b.modo] || b.modo); }
+  const m = e.mod; return { orbita: "orbita " + m.graus + "°", eleva: "eleva " + m.graus + "°", sobe: "sobe " + m.metros + " m", grua: "grua " + m.metros + " m", aproxima: "aproxima " + m.pct + "%", vertigo: "efeito vertigo (" + m.dir + " " + m.pct + "%, lente compensa)", afasta: "afasta " + m.pct + "%", travelling: "travelling " + m.dir + " " + m.metros + " m", panoramica: "panorâmica " + m.graus + "°", inclina: "inclina " + m.graus + "°", lente: "lente " + m.mm + " mm", zoom: "zoom ×" + m.fator, alvo: "foco em " + m.quem, tremida: "câmera na mão" }[m.tipo] + (e.dur ? " em " + e.dur + " s" : "");
 }
 /* silhueta: a mão na frente do tronco, vista desta câmera, some no desenho (aviso para o animador) */
 function cfSilhueta(nome) { const it = SCN.list.find(x => x.name === nome); if (!it || it.oculto) return [];
