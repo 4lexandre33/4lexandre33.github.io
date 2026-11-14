@@ -1112,6 +1112,9 @@ function nmDentroDe(it, ignorar) {
   const x = it.params.wx || 0, z = it.params.wz || 0, h = it.params.bodyLift || 0;
   for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.animal && o.animal.pousadoEm === it.name) || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
+    /* debaixo da mesa: quem cabe por baixo do tampo não está "dentro" dela */
+    if (/^mesa/i.test(o.tipo || "")) { try { const cp = capsulas(Object.assign({}, it.params, { wx: 0, wz: 0, wRot: 0 })); if (cp.hi[1] - cp.lo[1] < (o.alt || 7) - 0.6) continue; } catch (e) { } }
+    if (/^(arvore|palmeira)$/.test(o.tipo || "")) { if (Math.hypot(dx, dz) < Math.min(o.larg || 3, o.prof || 3) * 0.12 + 1.2) return o; continue; } /* só o tronco conta; a copa fica no alto */
     if (o.raio && Math.hypot(dx, dz) < o.raio + 1.2) return o; if (!o.raio && Math.abs(lx) < o.larg / 2 + 1.2 && Math.abs(lz) < o.prof / 2 + 1.2) return o; }
   return null;
 }

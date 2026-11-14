@@ -162,8 +162,9 @@ function mvDensificar(a) {
 }
 function mvCiclo(o = {}) {
   const K = o.correndo ? MV_CORRER : MV_ANDAR, T = o.duracao || (o.correndo ? 0.64 : 1.04), ch = [];
-  K.forEach(([u, v]) => ch.push({ t: +(u * T).toFixed(4), valores: Object.assign({}, v) })); K.forEach(([u, v]) => ch.push({ t: +((u + 0.5) * T).toFixed(4), valores: mvEspelhar(v) })); ch.push({ t: T, valores: Object.assign({}, K[0][1]) });
-  const est = o.correndo ? 2.6 : 1.4; ch.forEach(c => { c.mover = { frente: est * c.t / T, lado: 0, giro: 0 }; });
+  const aj = v => o.ajuste ? o.ajuste(Object.assign({}, v)) : Object.assign({}, v);
+  K.forEach(([u, v]) => ch.push({ t: +(u * T).toFixed(4), valores: aj(v) })); K.forEach(([u, v]) => ch.push({ t: +((u + 0.5) * T).toFixed(4), valores: aj(mvEspelhar(v)) })); ch.push({ t: T, valores: aj(K[0][1]) });
+  const est = o.passo || (o.correndo ? 2.6 : 1.4); ch.forEach(c => { c.mover = { frente: est * c.t / T, lado: 0, giro: 0 }; });
   const a = criarAnimacao({ nome: o.nome || (o.correndo ? "correrCiclo" : "andarCiclo"), duracao: T, modo: "relativa", curva: "suave", loop: true, travarPes: true, chaves: ch, tags: [o.correndo ? "Locomocao/Correr" : "Locomocao/Andar"], descricao: o.correndo ? "ciclo de corrida (contato, recepção, passagem, impulso)" : "ciclo de caminhada (contato, recepção, passagem, impulso)" });
   return mvDensificar(a);
 }
@@ -203,7 +204,7 @@ registrarProntas(T => { const L = {}, lib = ["passoFrente", "passoTras", "passoL
   try { for (const [n, a] of Object.entries(T || {})) { const m = /^pe(Direito|Esquerdo)15cm/.exec(n); if (!m || a.levantado) continue; const S = m[1] === "Direito" ? "R" : "L", c0 = a.chaves[0], c1 = a.chaves[a.chaves.length - 1], meio = {};
       for (const k of Object.keys(c1.valores)) meio[k] = (c1.valores[k] || 0) * 0.5; meio["kneeFlex" + S] = (meio["kneeFlex" + S] || 0) + 22; meio["hipFlex" + S] = (meio["hipFlex" + S] || 0) + 10; meio["ankleFlex" + S] = (meio["ankleFlex" + S] || 0) - 6;
       L[n] = Object.assign(criarAnimacao(Object.assign({}, a, { chaves: [c0, { t: a.duracao / 2, valores: meio }, Object.assign({}, c1, { valores: Object.assign({ ["kneeFlex" + S]: 0, ["hipFlex" + S]: 0, ["ankleFlex" + S]: 0 }, c1.valores) })] })), { levantado: true, travarPes: true, origem: "pronta", versao: 0, tags: a.tags, descricao: a.descricao }); }
-    if (T && T.andarAgachado && !T.andarAgachado.calibrada) L.andarAgachado = Object.assign(mvDensificar(JSON.parse(JSON.stringify(T.andarAgachado))), { origem: "pronta", versao: 0, tags: T.andarAgachado.tags, descricao: T.andarAgachado.descricao, travarPes: true }); } catch (e) { }
+    if (T && T.andarAgachado && !T.andarAgachado.calibrada) L.andarAgachado = Object.assign(mvDensificar(mvCiclo({ nome: "andarAgachado", duracao: 1.3, passo: 0.9, ajuste: v => { for (const l of ["L", "R"]) { v["kneeFlex" + l] = (v["kneeFlex" + l] || 0) + 50; v["hipFlex" + l] = (v["hipFlex" + l] || 0) + 38; v["ankleFlex" + l] = (v["ankleFlex" + l] || 0) - 16; } v.spineFlex = (v.spineFlex || 0) + 22; v.headPitch = (v.headPitch || 0) - 14; return v; } })), { origem: "pronta", versao: 0, tags: T.andarAgachado.tags, descricao: T.andarAgachado.descricao, travarPes: true }); } catch (e) { }
   try { for (const n of lib) { const a = T && T[n]; if (a && !a.calibrada) L[n] = Object.assign(mvCalibrarMover(JSON.parse(JSON.stringify(a))), { origem: "pronta", versao: 0, tags: a.tags, descricao: a.descricao }); } } catch (e) { }
   return L; });
 

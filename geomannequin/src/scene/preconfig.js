@@ -279,6 +279,35 @@ const PC_SUS = [["ameaca-atras", "ameaça atrás (A de frente, B surge ao fundo)
   ["aproximacao-lenta", "aproximação lenta no rosto", "slow push-in", { tipo: "orbita", alvo: "A", enq: "medio", az: 10, el: 0 }, null, "0s camera aproxima 45 em 4s entra"],
   ["algo-atras-da-porta", "A diante da porta, câmera do outro lado", "behind the door", { tipo: "orbita", alvo: "A", enq: "medio", az: 0, el: 0, lente: 28 }, null]];
 for (const [k, n, t, cam, arr, mov] of PC_SUS) pcAdd("suspense." + k, Object.assign({ grupo: "Suspense, terror e revelação", nome: n, tecnico: t, desc: n, cam, mov }, arr || {}));
+/* ---------- esconder e desviar: cena com o obstáculo, a pose de quem se esconde e a câmera (A se esconde / desvia; B procura / ataca) ---------- */
+const PC_ESCD = {
+  caixa: { nome: "atrás de caixas", arranjo: { A: { x: 0, z: 0, g: 0, pose: "escondidoAgachado" }, B: { x: 0.8, z: 5, g: 180, pose: "perseguicaoProcurando" } }, objetos: [{ tipo: "caixa", x: 0, z: 0.75, tam: "1.3x0.8x1.0" }, { tipo: "caixa", x: 0.9, z: 0.8, tam: "0.7x0.7x0.7" }], close: 75 },
+  muro: { nome: "atrás de um muro baixo", arranjo: { A: { x: 0, z: 0, g: 0, pose: "fugaEscondendo" }, B: { x: -0.8, z: 5, g: 180, pose: "caminhando" } }, objetos: [{ tipo: "caixa", x: 0, z: 0.6, tam: "4x0.3x1.2" }], close: 75 },
+  "sob-a-mesa": { nome: "debaixo da mesa", arranjo: { A: { x: 0, z: 0, g: 90, pose: "deitadoFetal" }, B: { x: 0.4, z: 2.6, g: 180, pose: "caminhando" } }, sem: ["close-a"], objetos: [{ tipo: "mesa", x: 0, z: 0, tam: "1.8x1x0.8" }] },
+  arvore: { nome: "costas na árvore", arranjo: { A: { x: 0, z: 0, g: 180, pose: "fugaColadoParede" }, B: { x: 0.5, z: 5, g: 180, pose: "perseguicaoProcurando" } }, close: 30, objetos: [{ tipo: "arvore", x: 0, z: 0.55 }] },
+  arbusto: { nome: "no meio do mato", arranjo: { A: { x: 0, z: 0, g: 0, pose: "escondidoAgachado" }, B: { x: -0.6, z: 5, g: 180, pose: "caminhando" } }, objetos: [{ tipo: "arbusto", x: 0, z: 0.8, tam: "1.8x1.2x1.4" }], close: 75 },
+  parede: { nome: "colado na parede, prendendo a respiração", arranjo: { A: { x: 0, z: 0, g: 180, pose: "fugaColadoParede" }, B: { x: 3, z: -4, g: 90, pose: "caminhando" } }, close: 30, sem: ["por-cima-do-esconderijo"], objetos: [{ tipo: "caixa", x: 0, z: 0.4, tam: "3x0.3x2.6" }] }
+};
+const PC_ESC_PLANOS = [["mestre", "de lado: quem se esconde e quem procura", "hiding two-shot", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "conjunto", az: 90, el: 8 }],
+  ["pov-b", "o que quem procura vê (o esconderijo)", "seeker POV", { tipo: "pov", de: "B", alvo: "A", lente: 35 }],
+  ["close-a", "o rosto de quem se esconde", "hider close-up", { tipo: "orbita", alvo: "A", enq: "close", az: 110, el: 2 }],
+  ["por-cima-do-esconderijo", "por trás de quem se esconde, vendo quem procura", "over the cover", { tipo: "livre", ref: "A", pos: [-1.1, 1.9, -2.8], olha: "B", olhaAlt: 1.1, lente: 32 }],
+  ["aereo", "de cima: o esconderijo e o perigo", "overhead hide", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "geral", az: 60, el: 70, lente: 28 }]];
+for (const [ak, A] of Object.entries(PC_ESCD)) for (const [sk, nome, tec, cam] of PC_ESC_PLANOS) if (!(A.sem || []).includes(sk)) pcAdd("esconder." + ak + "." + sk, { grupo: "Esconder/" + A.nome, nome: nome + " — " + A.nome, tecnico: tec, desc: nome + " (" + A.nome + ")", papeis: ["A", "B"], arranjo: A.arranjo, objetos: A.objetos, cam: sk === "close-a" && A.close !== undefined ? Object.assign({}, cam, { az: A.close }) : cam });
+const PC_DESV = {
+  soco: { nome: "desvio de soco (pêndulo)", arranjo: { A: { x: 0, z: 0, g: 0, pose: "direto" }, B: { x: 0.15, z: 1.0, g: 180, pose: "esquivaPendulo" } } },
+  chute: { nome: "abaixando do chute", arranjo: { A: { x: 0, z: 0, g: 0, pose: "chuteCircularMedio" }, B: { x: 0, z: 1.3, g: 180, pose: "esquivaAbaixando" } } },
+  espada: { nome: "recuando do corte de espada", arranjo: { A: { x: 0, z: 0, g: 0, pose: "espadaCorteHorizontal" }, B: { x: 0, z: 1.6, g: 180, pose: "esquivaParaTras" } } },
+  tiro: { nome: "mergulhando do tiro", arranjo: { A: { x: 0, z: 0, g: 0, pose: "armaUmaMao" }, B: { x: 0.6, z: 5, g: 180, pose: "esquivaMergulho" } } },
+  investida: { nome: "saindo da investida", arranjo: { A: { x: 0, z: 0, g: 0, pose: "investidaDeOmbro" }, B: { x: 0.4, z: 1.4, g: 180, pose: "esquivaLateral" } } },
+  matrix: { nome: "esquiva de bala para trás", arranjo: { A: { x: 0, z: 0, g: 0, pose: "disparoDuasMaos" }, B: { x: 0, z: 5, g: 180, pose: "esquivaMatrix" } } },
+  "por-um-triz": { nome: "o golpe passa raspando", arranjo: { A: { x: 0, z: 0, g: 0, pose: "socoCarregado" }, B: { x: 0.25, z: 1.0, g: 180, pose: "esquivaInclinarCabeca" } } }
+};
+const PC_DESV_PLANOS = [["mestre", "de lado: golpe e desvio", "dodge two-shot", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "inteiro", az: 90, el: 5 }],
+  ["ombro-a", "por cima do ombro de quem ataca", "attacker OTS", { tipo: "ombro", sobre: "A", alvo: "B", enq: "inteiro", tras: 1.5, lateral: 0.7 }],
+  ["baixo", "de baixo, o desvio heroico", "low angle dodge", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "inteiro", az: 70, el: -22 }],
+  ["medio-b", "quem desvia, em plano médio", "dodger medium", { tipo: "orbita", alvo: "B", enq: "americano", az: 35, el: 0 }]];
+for (const [ak, A] of Object.entries(PC_DESV)) for (const [sk, nome, tec, cam] of PC_DESV_PLANOS) pcAdd("desvio." + ak + "." + sk, { grupo: "Desvio/" + A.nome, nome: nome + " — " + A.nome, tecnico: tec, desc: nome + " (" + A.nome + ")", papeis: ["A", "B"], arranjo: A.arranjo, cam });
 /* ---------- romance ---------- */
 const PC_ROM = { papeis: ["A", "B"], arranjo: { A: { x: 0, z: 0, g: 0 }, B: { x: 0, z: 0.5, g: 180 } } };
 for (const [k, n, t, cam, arr, mov] of [["perfil-close", "perfil, rostos próximos (quase beijo)", "intimate 50/50", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "close", az: 90, el: 0 }, PC_ROM],

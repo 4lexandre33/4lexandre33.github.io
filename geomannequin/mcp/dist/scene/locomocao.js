@@ -7,6 +7,7 @@ import { pMundo } from "./colisoes.js";
 import { capsulas } from "../engine/index.js";
 import { criarAnimacao, anPoseValores, registrarProntas, anSemCamera, aplicarAnimacao } from "./animacao.js";
 import { pdCiclo, pdJuntar, pdRepetir, pdParams } from "./pose-dsl.js";
+import { mvCiclo, mvDensificar } from "./movimento.js";
 
 const LC_M = 1 / 0.114, LC_G = 9.81;
 /* valores de uma pose pronta sobre o corpo do primeiro manequim (proporções inteiras) */
@@ -111,8 +112,8 @@ function lcNadar(estilo, o = {}) {
 function lcEngatinharCiclo() { return pdCiclo(lcPose("engatinhando"), { nome: "engatinhar", duracao: 1.3, anda: 0.6, tags: ["Locomocao/Chao/Engatinhar"] }); }
 function lcRastejarCiclo() { const base = lcPose("deBrucos"), A = Object.assign({}, base, { armFlexR: 165, elbowR: 105, armAbdR: 20, armFlexL: 120, elbowL: 125, armAbdL: 30, hipFlexL: 45, hipAbdL: 35, kneeFlexL: 75, hipRotL: 25, hipFlexR: 0, kneeFlexR: 5, headPitch: -25 });
   const c = pdCiclo(A, { nome: "rastejar", duracao: 1.8, anda: 0.5, tags: ["Locomocao/Chao/Rastejar"] }); c.travarPes = false; return c; }
-function lcAgachadoCiclo() { const A = Object.assign({}, lcPose("caminhando")); for (const l of ["L", "R"]) { A["kneeFlex" + l] = (A["kneeFlex" + l] || 0) + 55; A["hipFlex" + l] = (A["hipFlex" + l] || 0) + 40; A["ankleFlex" + l] = (A["ankleFlex" + l] || 0) - 18; } A.spineFlex = (A.spineFlex || 0) + 28; A.headPitch = -20;
-  return pdCiclo(A, { nome: "andarAgachado", duracao: 1.2, anda: 0.9, tags: ["Locomocao/Andar/Agachado"] }); }
+function lcAgachadoCiclo() { /* andar agachado = o ciclo de andar calibrado com joelhos e quadril dobrados e passada curta (pés presos, sem patinar) */
+  return Object.assign(mvDensificar(mvCiclo({ nome: "andarAgachado", duracao: 1.3, passo: 0.9, ajuste: v => { for (const l of ["L", "R"]) { v["kneeFlex" + l] = (v["kneeFlex" + l] || 0) + 50; v["hipFlex" + l] = (v["hipFlex" + l] || 0) + 38; v["ankleFlex" + l] = (v["ankleFlex" + l] || 0) - 16; } v.spineFlex = (v.spineFlex || 0) + 22; v.headPitch = (v.headPitch || 0) - 14; return v; } })), { tags: ["Locomocao/Andar/Agachado"], descricao: "andar agachado (furtivo)", travarPes: true }); }
 function lcPorDistancia(c, dist, nome) { const anda = Math.abs(c.chaves[c.chaves.length - 1].mover ? c.chaves[c.chaves.length - 1].mover.frente : 1) || 1, n = Math.max(1, Math.round(dist / anda)); return Object.assign(pdRepetir(Object.assign({}, c, { loop: false }), n, { nome }), { travarPes: c.travarPes }); }
 
 /* ===================== cair, levantar, rolar ===================== */

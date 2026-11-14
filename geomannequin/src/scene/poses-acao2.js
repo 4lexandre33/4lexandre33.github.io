@@ -40,7 +40,7 @@ pa("defesaProtegendoOutro", "Combate/Defesa/Proteger", "protegendo alguém|braç
 /* ===== PULO ===== */
 pa("puloImpulso", "Movimento/Pulo/Impulso", "impulso|agachado para pular", "sf30 bp20 hf90,90 kf110,110 af30,30 fl-50,-50 ab20,20 el20,20 hp-20 m:aberta,aberta e:determinacao");
 pa("puloDecolando", "Movimento/Pulo/Saída", "decolando|saindo do chão", "bl2 bp10 hf20,-10 kf20,10 af-30,-30 to-40,-40 fl160,160 ab15,15 el10,10 hp-20 m:aberta,aberta e:determinacao");
-pa("puloEstrela", "Movimento/Pulo/Alegria", "pulo estrela|pulo de alegria", "bl5 ha40,40 kf10,10 fl150,150 ab90,90 el10,10 hp-20 m:aberta,aberta e:riso");
+pa("puloEstrela", "Movimento/Pulo/Alegria", "pulo estrela|pulo de alegria", "bl5 ha40,40 kf10,10 fl25,25 ab140,140 el8,8 hp-20 m:aberta,aberta e:riso");
 pa("puloEncolhido", "Movimento/Pulo/Alto", "pulo encolhido|joelhos no peito", "bl6 sf20 hf120,120 kf140,140 fl60,60 ab20,20 el100,100 hp-6 m:punho,punho e:determinacao");
 pa("puloAltoEsticado", "Movimento/Pulo/Alto", "pulo alto esticado|alcançando no ar", "bl6 sf-10 hf10,-10 kf20,10 af-30,-20 fl175,40 ab10,30 el5,30 hp-30 m:aberta,aberta e:determinacao");
 pa("puloEmDistancia", "Movimento/Pulo/Distância", "salto em distância|pulando um buraco", "bl5 bp20 hf80,-30 kf40,60 fl150,140 ab20,20 el20,20 hp-10 m:aberta,aberta e:esforco");
@@ -67,7 +67,7 @@ pa("vooPairando", "Movimento/Voar/Pairar", "pairando|parado no ar", "bl8 hf20,5 
 pa("fugaOlhandoTras", "Movimento/Fuga/Olhar para trás", "fugindo olhando para trás|perseguido", "bp22 sf10 hf85,-30 kf90,40 af10,30 fl-60,80 ab25,25 el70,90 hy-110 hp-6 m:aberta,aberta e:medo");
 pa("fugaDesesperada", "Movimento/Fuga/Desespero", "correndo desesperado|braços para cima", "bp15 hf80,-30 kf90,40 fl150,120 ab50,60 el40,50 hp-20 m:aberta,aberta e:panico");
 pa("fugaEsgueirando", "Movimento/Fuga/Furtivo", "esgueirando|na ponta dos pés", "sf20 bp10 hf50,-10 kf60,20 af-20,0 to-30,-30 fl30,40 ab30,20 el80,60 hy30 m:aberta,aberta e:medo");
-pa("fugaRastejando", "Movimento/Fuga/Rastejar", "rastejando|fugindo pelo chão", "bp85 sf-20 hf40,10 ha20,10 kf70,20 fl150,60 ab20,30 el40,110 hp-50 m:garra,garra e:medo");
+pa("fugaRastejando", "Movimento/Fuga/Rastejar", "rastejando|fugindo pelo chão", "bp86 sf-12 hf10,0 ha45,8 hr40,0 kf85,10 fl172,165 ab25,30 el70,110 hp-45 m:garra,garra e:medo");
 pa("fugaTropecando", "Movimento/Fuga/Queda", "tropeçou fugindo", "bp50 sf20 hf-30,70 kf20,80 fl130,110 ab40,40 el20,20 hp-30 m:aberta,aberta e:panico");
 pa("fugaPulandoMuro", "Movimento/Fuga/Obstáculo", "pulando o muro|escalando para fugir", "bl4 bp20 hf110,10 kf120,40 fl150,150 ab20,20 el40,40 hp-30 m:garra,garra e:esforco");
 pa("fugaEscondendo", "Movimento/Fuga/Esconder", "escondido atrás|espiando do esconderijo", "sf20 hf80,80 kf110,110 ha20,20 fl40,80 ab30,15 el100,130 hy-30 hp-6 m:espalmada,aberta e:medo");
@@ -76,7 +76,7 @@ pa("fugaCarregandoAlguem", "Movimento/Fuga/Resgate", "fugindo de mãos dadas|pux
 /* ===== PERSEGUIÇÃO ===== */
 pa("perseguicaoSprint", "Movimento/Perseguição/Sprint", "perseguindo|sprint atrás", "bp30 sf6 hf95,-35 kf100,40 af15,35 fl-60,85 ab12,12 el95,100 hp-20 m:punho,punho e:determinadoLuta");
 pa("perseguicaoAlcancando", "Movimento/Perseguição/Alcançar", "estendendo a mão para pegar|quase alcançando", "bp30 hf80,-30 kf80,40 fl160,-40 ab15,20 el5,80 hp-24 m:aberta,punho e:esforco");
-pa("perseguicaoAgarrando", "Movimento/Perseguição/Agarrar", "agarrando o fugitivo|mergulho para agarrar", "bl3 bp70 hf-10,40 kf20,60 fl160,160 ab20,20 el10,10 hp-40 m:garra,garra e:gritoDeGuerra");
+pa("perseguicaoAgarrando", "Movimento/Perseguição/Agarrar", "agarrando o fugitivo|mergulho para agarrar", "bl3 bp70 hf-10,40 kf20,60 fl120,120 ab10,10 el10,10 hp-40 m:garra,garra e:gritoDeGuerra");
 pa("perseguicaoApontando", "Movimento/Perseguição/Mandar", "pega ele!|apontando correndo", "bp20 hf75,-25 kf80,40 fl95,-40 ab15,20 el5,90 hp-14 m:apontar,punho e:furia");
 pa("perseguicaoOfegante", "Movimento/Perseguição/Cansaço", "ofegante|mãos nos joelhos", "sf55 bp10 hf40,40 kf35,35 fl50,50 ab15,15 el20,20 hp-20 m:aberta,aberta e:cansaco");
 pa("perseguicaoDerrapando", "Movimento/Perseguição/Curva", "derrapando na curva|freando", "bp-20 ss20 hf60,-10 ha30,10 kf70,30 fl40,100 ab60,40 el40,80 hy40 m:aberta,aberta e:esforco");
@@ -94,7 +94,7 @@ pa("impactoNoRosto", "Combate/Reação/Golpe no rosto", "levou um soco no rosto|
 pa("impactoNoEstomago", "Combate/Reação/Golpe no corpo", "soco no estômago|dobrado ao meio", "sf55 bp10 hf40,30 kf40,30 fl50,50 ab10,10 el90,90 hp30 m:aberta,aberta e:dor");
 pa("arremessadoParaTras", "Combate/Reação/Arremessado", "voando para trás|arremessado", "bl6 bp-50 sf-20 hf60,40 kf70,40 fl110,90 ab60,70 el30,30 hp20 m:aberta,aberta e:dor");
 pa("caidoDeCostas", "Combate/Reação/No chão", "caído de costas|nocauteado", "bp-88 hf10,20 kf20,30 ha15,10 fl20,90 ab60,90 el20,30 hp-10 hz20 m:relaxada,relaxada e:olharVazio");
-pa("caidoDeBrucos", "Combate/Reação/No chão", "caído de bruços|derrotado no chão", "bp88 hf0,10 kf20,10 fl170,30 ab30,40 el20,40 hp-50 hz-20 m:relaxada,relaxada e:dor");
+pa("caidoDeBrucos", "Combate/Reação/No chão", "caído de bruços|derrotado no chão", "bp88 hf0,8 kf15,30 fl170,5 ab35,12 el25,10 hp-45 hz-20 m:relaxada,relaxada e:dor");
 pa("levantandoComEsforco", "Combate/Reação/Levantar", "levantando com esforço|ainda não acabou", "sf40 hf100,10 kf110,90 af30,20 fl60,10 ab20,20 el10,30 hp-20 m:espalmada,punho e:determinacao");
 pa("ajoelhadoExausto", "Combate/Reação/Exausto", "ajoelhado exausto|apoiado no chão", "sf40 hf20,90 kf100,90 af40,0 fl60,10 ab20,10 el10,20 hp30 m:espalmada,relaxada e:cansaco");
 pa("cambaleando", "Combate/Reação/Tonto", "cambaleando|tonto", "ss20 bp-6 hf20,-6 ha20,8 kf20,10 fl30,40 ab40,30 el30,40 hz25 hp10 m:relaxada,relaxada e:olharVazio");
