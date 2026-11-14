@@ -561,6 +561,9 @@ body.qd-aberto{overflow:hidden}
 .nm-filme-lista { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.45; max-height: 40vh; overflow: auto; }
 .nm-filme-lista b { font-variant-numeric: tabular-nums; }
 .nm-tl { display: block; margin-top: 8px; touch-action: none; user-select: none; }
+.nm-alts { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.nm-alt { margin: 0; } .nm-alt img { width: 100%; display: block; border: 1px solid #ccc; } .nm-alt figcaption { font-size: 11px; display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+.nm-aud { border-collapse: collapse; font-size: 12px; width: 100%; } .nm-aud td, .nm-aud th { border-bottom: 1px solid #ddd; padding: 2px 6px; text-align: left; } .nm-aud tr.ruim td { color: #b3261e; font-weight: 600; }
 .nm-tl-ajuda { margin: 2px 0 0; font-size: 11px; opacity: .7; }
 .nm-filmebtns { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 /* Texto → aba Biblioteca */
@@ -32187,7 +32190,8 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     const cic = criarAnimacao({ nome: o.nome || "ciclo", duracao: d, modo: "absoluta", curva: "linear", loop: o.loop !== false, travarPes: !corre, pesFixos: true, escalarPeloCorpo: true, chaves: ch, tags: o.tags && o.tags.length ? o.tags : [corre ? "Locomocao/Correr/Ciclo" : "Locomocao/Andar/Ciclo"], descricao: "ciclo a partir de uma pose: " + (o.de || "") + " · " + (2 * ida).toFixed(2) + " m por ciclo" });
     if (o.calibrar === false || o.anda !== void 0 && o.calibrarAnda === false) return cic;
     try {
-      return Object.assign(mvDensificar(cic), { tags: cic.tags, descricao: cic.descricao });
+      if (o.calibrar === "denso") return Object.assign(mvDensificar(cic), { tags: cic.tags, descricao: cic.descricao });
+      return mvCalibrarMover(cic);
     } catch (e) {
       return cic;
     }
@@ -34437,6 +34441,26 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       ant = q;
     });
     return av;
+  }
+  function alternativasDeQuadro(texto2, nQuadro, n2 = 3) {
+    const linhas = String(texto2).split("\n");
+    let cont = 0, idx2 = -1;
+    for (let i = 0; i < linhas.length; i++) if (/^\s*(quadro|plano)\b/i.test(linhas[i])) {
+      cont++;
+      if (cont === nQuadro) {
+        idx2 = i;
+        break;
+      }
+    }
+    if (idx2 < 0) throw new Error("Quadro " + nQuadro + " não existe.");
+    const base2 = linhas[idx2].replace(/\s(plano|angulo|lado|elevacao|alvo)\s+("[^"]*"|\S+)(\s+\d+)?/g, " ").replace(/\s+/g, " ").trimEnd(), ehPlano = /^\s*plano\b/i.test(linhas[idx2]);
+    const ops = [" plano medio lado 3/4", " plano close lado frente angulo contra-plongee", " plano geral lado 3/4-direita angulo plongee", " plano americano lado perfil", " plano inteiro lado costas", " plano primeiro-plano lado 3/4-direita angulo holandes 12"];
+    return ops.slice(0, Math.max(1, Math.min(6, n2))).map((op, i) => {
+      const L3 = linhas.slice();
+      L3[idx2] = ehPlano ? linhas[idx2] : base2 + op;
+      if (ehPlano) L3.splice(idx2 + 1, 0, (linhas[idx2 + 1] || "").match(/^\s*/)[0] + "camera" + op);
+      return { n: i + 1, cabecalho: ehPlano ? "camera" + op : (base2 + op).trim(), texto: L3.join("\n") };
+    });
   }
   function nmAnimal(ctx, nome) {
     let o = amAchar(nome);
@@ -38138,8 +38162,288 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   }
   cena.name = { video: videoDoName, framesDaAnimacao, compilar: compilarName, validar: validarName, ficha: fichaDoQuadro, paginas: paginasDoName, cores: legendaDeCores, manifesto: manifestoName, locais: bibliotecaLocais, abrirLocal: abrirLocalNoPalco, localDoPalco };
 
+  // src/scene/auditoria-anim.js
+  var AA_M = 0.114;
+  var AA_SEM_PES = /^(nadar|mergulh|engatinh|rastej|rolar|levantarDe(Brucos|Costas)|cair(Frente|Tras|Lado)|esperaDeitado|deitar)/;
+  function aaMedir(nome, o = {}) {
+    const lib = bibliotecaAnimacoes(), a = lib.obter(nome);
+    if (!a) throw new Error("Animação “" + nome + "” não existe.");
+    const fps = o.fps || 20, dur = Math.min(o.duracaoMax || 6, a.duracao + 1.8);
+    const r = compilarName('filme "auditoria" fps ' + fps + '\nelenco\n  Kai relevante\nlocal "A" unidade m\n  chao retangulo -30,-30 a 30,30\ncena "A" local "A"\n  plano 1 duracao ' + dur.toFixed(2) + "s\n    Kai em (0,0)\n    camera plano inteiro alvo Kai\n    0s Kai anima " + nome + "\n", { semCache: true, salvar: false });
+    if (r.erros.length) return { nome, erro: r.erros[0].erro };
+    const v = videoDoFilme(r, { fps, vida: false }), salvo = JSON.stringify(sceneState());
+    let afunda = 0, escorrega = 0, apoiado = 0, pico = 0, prev = null, fimPose = null, iniPose = null, chao0 = null;
+    const semPes = AA_SEM_PES.test(nome) || /nado|agua|rolar|queda/i.test((a.tags || []).join(" "));
+    try {
+      v.frames.forEach((f, i) => {
+        loadScene(JSON.parse(JSON.stringify(f.estado)));
+        const it2 = SCN.list.find((x) => x.name === "Kai");
+        if (!it2) return;
+        const cs = capsulas(pMundo(it2)), Lc = cs.caps || cs, baixo = Math.min(...Lc.map((c) => Math.min(c.a[1], c.b[1]) - (c.r || 0)));
+        if (chao0 === null) chao0 = baixo;
+        const chao2 = chao0;
+        afunda = Math.min(afunda, (baixo - chao2) * AA_M * 100);
+        const pes = Lc.filter((c) => c.nome === "peE" || c.nome === "peD").map((c) => ({ x: (c.a[0] + c.b[0]) / 2, z: (c.a[2] + c.b[2]) / 2, y: (Math.min(c.a[1], c.b[1]) - (c.r || 0) - chao2) * AA_M * 100 }));
+        if (prev && pes.length === 2 && !semPes) {
+          const ib = pes[0].y <= pes[1].y ? 0 : 1, p = pes[ib], q = prev[ib];
+          if (p.y < 2.5 && q.y < 2.5) {
+            const d = Math.hypot(p.x - q.x, p.z - q.z) * AA_M * 100;
+            apoiado += 1 / fps;
+            if (d > 0.6) {
+              escorrega += d;
+              pico = Math.max(pico, d * fps);
+            }
+          }
+        }
+        prev = pes;
+        const pose = Object.fromEntries(["kneeFlexL", "kneeFlexR", "hipFlexL", "hipFlexR", "armFlexL", "armFlexR", "elbowL", "elbowR", "spineFlex", "headPitch"].map((k) => [k, it2.params[k] || 0]));
+        if (i === 0) iniPose = pose;
+        fimPose = pose;
+      });
+    } finally {
+      loadScene(JSON.parse(salvo));
+    }
+    const difFim = iniPose && fimPose ? Math.max(...Object.keys(iniPose).map((k) => Math.abs(fimPose[k] - iniPose[k]))) : 0;
+    return { nome, duracao: +a.duracao.toFixed(2), afundaCm: +afunda.toFixed(1), escorregaCmS: apoiado ? +(escorrega / apoiado).toFixed(1) : 0, picoCmS: +pico.toFixed(0), terminaLonge: +difFim.toFixed(0), loop: !!a.loop, tipo: a.tipo || null };
+  }
+  function auditarAnimacoes(o = {}) {
+    const lib = bibliotecaAnimacoes(), nomes = o.nomes && o.nomes.length ? o.nomes : lib.listar().map((x) => x.nome || x), lim = Object.assign({ afunda: -3.5, escorrega: 12 }, o.limites || {});
+    const itens = nomes.map((n2) => {
+      try {
+        return aaMedir(n2, o);
+      } catch (e) {
+        return { nome: n2, erro: e.message };
+      }
+    });
+    const limDe = (x) => ({ afunda: /^mergulh/.test(x.nome) ? -99 : lim.afunda, escorrega: /^puloCorrida/.test(x.nome) ? 70 : /^(correr|passo(Frente|Tras|Lado))/.test(x.nome) ? 40 : /^(sentar|levantar|agachar|ajoelhar|defender)/.test(x.nome) ? 30 : lim.escorrega });
+    itens.forEach((x) => {
+      if (!x.erro) x.limite = limDe(x);
+    });
+    const ruins = itens.filter((x) => x.erro || x.afundaCm < x.limite.afunda || x.escorregaCmS > x.limite.escorrega);
+    return { total: itens.length, ruins: ruins.length, limites: lim, itens, problemas: ruins.map((x) => x.erro ? x.nome + ": " + x.erro : x.nome + (x.afundaCm < x.limite.afunda ? " afunda " + -x.afundaCm + " cm" : "") + (x.escorregaCmS > x.limite.escorrega ? " pé escorrega " + x.escorregaCmS + " cm/s" : "")) };
+  }
+
   // src/scene/pagina-hq.js
   var HQ_FORMATOS = { manga: { razao: 257 / 182, margem: 0.05, calha: 0.018 }, comic: { razao: 10.188 / 6.625, margem: 0.055, calha: 0.02 }, a4: { razao: 297 / 210, margem: 0.05, calha: 0.018 }, quadrado: { razao: 1, margem: 0.05, calha: 0.02 }, livre: { razao: 1.414, margem: 0.04, calha: 0.016 } };
+  var hqEsc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  function hqB64(t) {
+    if (typeof Buffer !== "undefined") return Buffer.from(t, "utf8").toString("base64");
+    return btoa(unescape(encodeURIComponent(t)));
+  }
+  function hqQuebrar(t, n2) {
+    const out = [];
+    let l = "";
+    String(t).split(/\s+/).forEach((w) => {
+      if ((l + " " + w).trim().length > n2 && l) {
+        out.push(l);
+        l = w;
+      } else l = (l + " " + w).trim();
+    });
+    if (l) out.push(l);
+    return out;
+  }
+  function hqEncaixe(svg, cel) {
+    const m = /viewBox="([^"]+)"/.exec(svg), vb = m ? m[1].split(/\s+/).map(Number) : [0, 0, cel.w, cel.h], iw = vb[2], ih = vb[3], k = Math.max(cel.w / iw, cel.h / ih), w = iw * k, h = ih * k, alto = ih / iw > cel.h / cel.w;
+    return { x: cel.x + (cel.w - w) / 2, y: alto ? cel.y : cel.y + (cel.h - h) / 2, w, h, alto };
+  }
+  function hqPoligono(c, q, i) {
+    if (q && q.borda === "diagonal") {
+      const d = Math.min(c.w * 0.25, Math.tan((q.bordaGraus || 12) * Math.PI / 180) * c.h), dir = i % 2 ? 1 : -1;
+      return dir > 0 ? [[c.x, c.y], [c.x + c.w, c.y], [c.x + c.w - d, c.y + c.h], [c.x, c.y + c.h]] : [[c.x, c.y], [c.x + c.w - d, c.y], [c.x + c.w, c.y + c.h], [c.x, c.y + c.h]];
+    }
+    return [[c.x, c.y], [c.x + c.w, c.y], [c.x + c.w, c.y + c.h], [c.x, c.y + c.h]];
+  }
+  var hqPts = (P3) => P3.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+  function hqForma(tipo, x, y, w, h, sem2) {
+    const cx = x + w / 2, cy = y + h / 2, st = 'fill="#fff" stroke="#111" stroke-width="2.6"';
+    if (tipo === "pensa") {
+      let s = "";
+      const n2 = 11;
+      for (let i = 0; i < n2; i++) {
+        const a = i / n2 * Math.PI * 2, r = 0.22 * Math.min(w, h) + (sem2 + i) % 3 * 3;
+        s += '<circle cx="' + (cx + Math.cos(a) * (w / 2 - r * 0.55)).toFixed(1) + '" cy="' + (cy + Math.sin(a) * (h / 2 - r * 0.55)).toFixed(1) + '" r="' + r.toFixed(1) + '" ' + st + "/>";
+      }
+      return s + '<ellipse cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" rx="' + (w / 2 - 6).toFixed(1) + '" ry="' + (h / 2 - 6).toFixed(1) + '" fill="#fff"/>';
+    }
+    if (tipo === "grita") {
+      const n2 = 18, P3 = [];
+      for (let i = 0; i < n2 * 2; i++) {
+        const a = i / (n2 * 2) * Math.PI * 2, f = i % 2 ? 0.78 : 1.12 + (sem2 + i) % 3 * 0.04;
+        P3.push([cx + Math.cos(a) * w / 2 * f, cy + Math.sin(a) * h / 2 * f]);
+      }
+      return '<polygon points="' + hqPts(P3) + '" ' + st + ' stroke-linejoin="miter"/>';
+    }
+    if (tipo === "narra") return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="#fffbe6" stroke="#111" stroke-width="2.2"/>';
+    if (tipo === "radio") {
+      const P3 = [];
+      const n2 = 14;
+      for (let i = 0; i < n2; i++) {
+        const a = i / n2 * Math.PI * 2;
+        P3.push([cx + Math.cos(a) * w / 2 * (i % 2 ? 0.94 : 1.04), cy + Math.sin(a) * h / 2 * (i % 2 ? 0.94 : 1.04)]);
+      }
+      return '<polygon points="' + hqPts(P3) + '" ' + st + "/>";
+    }
+    return '<ellipse cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" rx="' + (w / 2).toFixed(1) + '" ry="' + (h / 2).toFixed(1) + '" ' + st + (tipo === "sussurra" ? ' stroke-dasharray="7 5"' : "") + "/>";
+  }
+  function hqRabicho(tipo, b, alvo, raio = 20) {
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, dx = alvo[0] - cx, dy = alvo[1] - cy, L3 = Math.hypot(dx, dy) || 1, ux = dx / L3, uy = dy / L3;
+    const ex = cx + ux * b.w / 2 * 0.9, ey = cy + uy * b.h / 2 * 0.9, pare = Math.min(L3 * 0.45, Math.max(14, raio * (tipo === "pensa" ? 1.4 : 0.75))), fim = [alvo[0] - ux * pare, alvo[1] - uy * pare], px = -uy, py = ux, lb = Math.min(b.w, b.h) * 0.16;
+    if (tipo === "pensa") {
+      let s = "";
+      for (let i = 1; i <= 3; i++) {
+        const u = i / 4, r = 7 - i * 1.6;
+        s += '<circle cx="' + (ex + (fim[0] - ex) * u).toFixed(1) + '" cy="' + (ey + (fim[1] - ey) * u).toFixed(1) + '" r="' + r.toFixed(1) + '" fill="#fff" stroke="#111" stroke-width="2"/>';
+      }
+      return s;
+    }
+    if (tipo === "radio") {
+      const P3 = [[ex + px * lb, ey + py * lb]];
+      for (let i = 1; i <= 4; i++) {
+        const u = i / 5, s0 = i % 2 ? 1 : -1;
+        P3.push([ex + (fim[0] - ex) * u + px * lb * 0.6 * s0, ey + (fim[1] - ey) * u + py * lb * 0.6 * s0]);
+      }
+      P3.push(fim, [ex - px * lb, ey - py * lb]);
+      return '<polygon points="' + hqPts(P3) + '" fill="#fff" stroke="#111" stroke-width="2.4"/>';
+    }
+    return '<polygon points="' + hqPts([[ex + px * lb, ey + py * lb], fim, [ex - px * lb, ey - py * lb]]) + '" fill="#fff" stroke="#111" stroke-width="2.4"' + (tipo === "sussurra" ? ' stroke-dasharray="6 4"' : "") + "/>";
+  }
+  function hqBaloes(falas, cabecas, cel, enc, o = {}) {
+    const jp = o.leitura !== "ocidental", fs = o.fonte || Math.max(12, Math.min(22, cel.w / 26)), lh = fs * 1.22, pad = fs * 0.9, ocupados2 = [], out = [];
+    const rostos = Object.entries(cabecas || {}).map(([n2, c]) => ({ n: n2, x: enc.x + c.u * enc.w, y: enc.y + c.v * enc.h, bx: enc.x + c.bu * enc.w, by: enc.y + c.bv * enc.h, r: Math.max(18, c.r * enc.h) }));
+    const dentro2 = (b) => b.x >= cel.x + 6 && b.y >= cel.y + 6 && b.x + b.w <= cel.x + cel.w - 6 && b.y + b.h <= cel.y + cel.h - 6;
+    const sobre = (a, b) => !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+    const custoRosto = (b) => rostos.reduce((s, r) => {
+      const dx = Math.max(b.x - r.x, 0, r.x - (b.x + b.w)), dy = Math.max(b.y - r.y, 0, r.y - (b.y + b.h)), d = Math.hypot(dx, dy);
+      return s + (d < r.r * 1.15 ? (r.r * 1.15 - d) * 40 : 0);
+    }, 0);
+    (falas || []).forEach((f, i) => {
+      const tipo = f.quem ? f.tipo || "fala" : "narra", txt = String(f.texto || ""), linhas = hqQuebrar(txt, Math.max(8, Math.floor(cel.w * (tipo === "narra" ? 0.55 : 0.42) / (fs * 0.56)))).slice(0, 7);
+      const w = Math.min(cel.w * 0.8, Math.max(...linhas.map((t) => t.length)) * fs * 0.56 + pad * 2 + (tipo === "grita" ? fs * 1.6 : 0)), h = linhas.length * lh + pad * 1.6 + (tipo === "grita" ? fs * 1.2 : tipo === "pensa" ? fs * 0.8 : 0);
+      const quem = f.quem && rostos.find((r) => r.n === f.quem), alvo = quem ? tipo === "pensa" ? [quem.x, quem.y - quem.r * 0.5] : [quem.bx, quem.by] : null;
+      let melhor = null;
+      for (let gy = 0; gy < 6; gy++) for (let gx = 0; gx < 7; gx++) {
+        const b2 = { x: cel.x + 8 + (cel.w - w - 16) * (gx / 6), y: cel.y + 8 + (cel.h - h - 16) * (gy / 5) * 0.65, w, h };
+        if (!dentro2(b2)) continue;
+        let c = custoRosto(b2) + (ocupados2.some((o2) => sobre(b2, o2)) ? 1e5 : 0) + gy * 18;
+        const ordem = jp ? cel.x + cel.w - (b2.x + b2.w) : b2.x - cel.x;
+        c += ordem * 0.12 * (1 - i * 0.15) + (ocupados2.length && ocupados2.some((o2) => (jp ? b2.x > o2.x + 4 : b2.x + b2.w < o2.x + o2.w - 4) && b2.y <= o2.y) ? 120 : 0);
+        if (alvo) {
+          const d = Math.hypot(b2.x + w / 2 - alvo[0], b2.y + h - alvo[1]);
+          c += d * 0.9;
+          const outro = rostos.find((r22) => r22 !== quem && Math.abs(r22.x - (b2.x + w / 2)) < Math.abs(alvo[0] - (b2.x + w / 2)) && Math.sign(r22.x - alvo[0]) === Math.sign(b2.x + w / 2 - alvo[0]));
+          if (outro) c += 400;
+          if (b2.y + h > alvo[1] - 10) c += 600;
+        }
+        if (tipo === "narra") c = gy * 50 + (jp ? cel.x + cel.w - (b2.x + b2.w) : b2.x - cel.x) * 0.5 + (ocupados2.some((o2) => sobre(b2, o2)) ? 1e5 : 0) + custoRosto(b2) * 0.5;
+        if (!melhor || c < melhor.c) melhor = { b: b2, c };
+      }
+      if (!melhor) melhor = { b: { x: cel.x + 8, y: cel.y + 8 + i * (h + 6), w, h } };
+      const b = melhor.b;
+      ocupados2.push(b);
+      let s = hqForma(tipo, b.x, b.y, b.w, b.h, i);
+      if (alvo && tipo !== "narra") s = hqRabicho(tipo, b, alvo, quem.r) + s + (tipo === "pensa" ? "" : '<rect x="0" y="0" width="0" height="0"/>');
+      const cy0 = b.y + b.h / 2 - (linhas.length - 1) * lh / 2 + fs * 0.35, peso = tipo === "grita" ? "800" : "500", ital = tipo === "sussurra" ? ' font-style="italic"' : "";
+      s += linhas.map((t, j) => '<text x="' + (b.x + b.w / 2).toFixed(1) + '" y="' + (cy0 + j * lh).toFixed(1) + '" font-family="Comic Neue, Comic Sans MS, Arial, sans-serif" font-size="' + (tipo === "grita" ? fs * 1.12 : tipo === "sussurra" ? fs * 0.9 : fs).toFixed(1) + '" font-weight="' + peso + '"' + ital + ' text-anchor="middle" fill="#111">' + hqEsc(tipo === "grita" ? t.toUpperCase() : t) + "</text>").join("");
+      out.push(s);
+    });
+    return out.join("");
+  }
+  function hqGrade(qs, pg) {
+    if (pg && pg.grade) {
+      const g2 = String(pg.grade).split(/[x×]/).map(Number);
+      if (g2.length === 2 && g2.every((n3) => n3 > 0)) return Array.from({ length: g2[1] }, () => Array(g2[0]).fill(1));
+      const n2 = +pg.grade;
+      if (n2 > 0) return Array.from({ length: n2 }, () => [1]);
+    }
+    const g = [];
+    let linha = [];
+    qs.forEach((q) => {
+      const t = q.tamanho || 1;
+      if (q.splash) {
+        if (linha.length) g.push(linha);
+        linha = [];
+        g.push([{ splash: 1 }]);
+        return;
+      }
+      if (t >= 1.6) {
+        if (linha.length) {
+          g.push(linha);
+          linha = [];
+        }
+        g.push([t >= 2 ? 1 : 1]);
+      } else {
+        linha.push(t);
+        if (linha.length === 2 || t <= 0.7 && linha.length === 3) {
+          g.push(linha);
+          linha = [];
+        }
+      }
+    });
+    if (linha.length) g.push(linha);
+    return g;
+  }
+  function hqPaginas(r, fotos, o = {}) {
+    const out = [];
+    for (const pg of r.paginas || [{ quadros: r.quadros.map((q) => q.indice) }]) {
+      const qi = pg.quadros.map((i) => r.quadros.findIndex((q) => q.indice === i)).filter((k2) => k2 >= 0 && fotos[k2]);
+      if (!qi.length) continue;
+      const F3 = HQ_FORMATOS[pg.formato || o.formato || "manga"] || HQ_FORMATOS.manga, base2 = o.largura || 1200, PW = base2 * (pg.dupla ? 2 : 1), PH = Math.round(base2 * F3.razao);
+      const m = pg.sangria ? 0 : pg.margem ?? F3.margem * base2, cal = pg.calha ?? F3.calha * base2, jp = (pg.leitura || o.leitura || "japonesa") !== "ocidental";
+      const qs = qi.map((k2) => r.quadros[k2]), g = pg.splash ? [[1]] : hqGrade(qs, pg), pesoLinha = g.map((l) => Math.max(...l.map((w, j) => {
+        const q = qs[g.slice(0, g.indexOf(l)).reduce((s2, x) => s2 + x.length, 0) + j];
+        return q ? Math.min(2.2, q.tamanho >= 1.4 ? q.tamanho * 0.8 : 1) : 1;
+      })));
+      const totP = pesoLinha.reduce((a, b) => a + b, 0), altUtil = PH - 2 * m - cal * (g.length - 1);
+      let s = "", k = 0, y = m;
+      g.forEach((lin, li) => {
+        const ah = altUtil * pesoLinha[li] / totP, tot = lin.reduce((a, b) => a + (typeof b === "number" ? b : 1), 0), larg = PW - 2 * m - cal * (lin.length - 1);
+        let x = m;
+        const cel = lin.map((w) => {
+          const c = { x, y, w: larg * (typeof w === "number" ? w : 1) / tot, h: ah };
+          x += c.w + cal;
+          return c;
+        });
+        if (jp) cel.reverse();
+        cel.forEach((c) => {
+          const kk = qi[k], q = r.quadros[kk], f = fotos[kk];
+          k++;
+          if (!f) return;
+          const id = "c" + out.length + "_" + k, poly = hqPoligono(c, q, k), enc = hqEncaixe(f.svg, c);
+          s += '<clipPath id="' + id + '"><polygon points="' + hqPts(poly) + '"/></clipPath><g clip-path="url(#' + id + ')"><image x="' + enc.x.toFixed(1) + '" y="' + enc.y.toFixed(1) + '" width="' + enc.w.toFixed(1) + '" height="' + enc.h.toFixed(1) + '" preserveAspectRatio="none" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/></g>';
+          if (!q || q.borda !== "nenhuma") s += '<polygon points="' + hqPts(poly) + '" fill="none" stroke="#111" stroke-width="' + (q && q.borda === "grossa" ? 7 : 4) + '" stroke-linejoin="miter"/>';
+          if (o.baloes !== false) s += "<g>" + hqBaloes(q && q.falas || [], f.cabecas, c, enc, { leitura: jp ? "japonesa" : "ocidental", fonte: o.fonte }) + "</g>";
+          if (o.numeros) s += '<text x="' + (c.x + 8).toFixed(1) + '" y="' + (c.y + c.h - 8).toFixed(1) + '" font-family="Arial" font-size="14" fill="#c00">' + (q.indice + 1) + "</text>";
+        });
+        y += ah + cal;
+      });
+      out.push({ svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + PW + " " + PH + '" width="' + PW + '" height="' + PH + '"><rect width="' + PW + '" height="' + PH + '" fill="#fff"/>' + s + "</svg>", quadros: qi.map((kk) => r.quadros[kk].indice + 1), formato: pg.formato || o.formato || "manga", largura: PW, altura: PH });
+    }
+    return out;
+  }
+  function hqWebtoon(r, fotos, o = {}) {
+    const W4 = o.largura || 800, m = o.margem ?? 0, items = [];
+    let y = 60, s = "";
+    r.quadros.forEach((q, k) => {
+      const f = fotos[k];
+      if (!f) return;
+      const vb = (/viewBox="([^"]+)"/.exec(f.svg) || [0, "0 0 16 9"])[1].split(/\s+/).map(Number), h = Math.round((W4 - 2 * m) * vb[3] / vb[2]);
+      const gap = k === 0 ? 0 : (q.respiro ? 260 * q.respiro : 0) + ({ cena: 520, tempo: 420, lugar: 420, aspecto: 160, sujeito: 120, acao: 90, momento: 50 }[q.ritmo] ?? (q.tipoTransicao ? 420 : 110));
+      y += gap;
+      const cel = { x: m, y, w: W4 - 2 * m, h }, enc = hqEncaixe(f.svg, cel);
+      s += '<image x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" preserveAspectRatio="xMidYMid slice" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/>';
+      if (q.borda !== "nenhuma" && m > 0) s += '<rect x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" fill="none" stroke="#111" stroke-width="3"/>';
+      if (o.baloes !== false) s += hqBaloes(q.falas || [], f.cabecas, cel, enc, { leitura: "ocidental", fonte: o.fonte || 22 });
+      items.push({ quadro: q.indice + 1, y, h });
+      y += h;
+    });
+    y += 120;
+    const fatias = [], maxH = o.alturaFatia || 1280;
+    for (let y0 = 0; y0 < y; y0 += maxH) fatias.push({ y: y0, h: Math.min(maxH, y - y0) });
+    return { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W4 + " " + y + '" width="' + W4 + '" height="' + y + '"><rect width="' + W4 + '" height="' + y + '" fill="' + (o.fundo || "#fff") + '"/>' + s + "</svg>", largura: W4, altura: y, quadros: items, fatias };
+  }
+  function hqFatia(tira, f) {
+    return tira.svg.replace(/viewBox="[^"]+" width="(\d+)" height="(\d+)"/, 'viewBox="0 ' + f.y + " " + tira.largura + " " + f.h + '" width="' + tira.largura + '" height="' + f.h + '"');
+  }
 
   // src/scene/manual-name.js
   var mnLista = (a, n2) => {
@@ -38689,7 +38993,70 @@ seguinte (continuidade): quem andou continua onde parou; quem foi cortado no mei
 ${EXEMPLO_NAME}
 
 EXEMPLO DE FILME
-${EXEMPLO_FILME}`;
+${EXEMPLO_FILME}
+
+22. ANIMAIS QUADRÚPEDES E MONTARIA
+  Manequim simplificado: tronco (cilindro com peito e anca), pescoço, cabeça com focinho, orelhas, rabo e 4 pernas de 3 segmentos com casco.
+  Espécies: ${Object.keys(QD_ESPECIES).join(", ")} (também pônei, burro, dromedário, cabra, vaca, cão, lobo, gata…).
+  ELENCO:   Trovão animal cavalo [sela] [escala 1.2] [cor #8a5a2b]        Rex animal cachorro        Duna animal camelo escala 0.9
+  NO QUADRO OU PLANO (sem tempo = arruma; com tempo = acontece):
+    Trovão em (0,0) gira 90 · Trovão vira-para Kai · Trovão olha Mira · Trovão escala 1.5 · Trovão sela
+    Trovão pose ${Object.keys(AM_POSES).join("|")}   (ou os verbos: empina, deita, senta, come/pasta, levanta, atento)
+    0s Trovão anda|trota|galopa|corre [15m] [para (x,z)|Kai]     0s Trovão galopa-ate (12,4)
+    Os cascos ficam plantados: a passada sai do comprimento da perna (passo 4 tempos, trote em diagonais, galope com voo).
+  MONTARIA: Kai monta Trovão (senta na sela; com tempo: "1s Kai monta Trovão") · 4s Kai desmonta [direita|esquerda]
+    Montado, a pessoa acompanha o balanço da sela, o giro e a andadura; os braços ficam livres para gestos (acena, aponta).
+  CARGA E SEGUIR: Trovão carrega "mala" (objeto do local vai no lombo) · Rex segue Kai (anda atrás da pessoa, passo/trote/galope conforme a distância).
+  CÂMERA: os animais servem de alvo como pessoas: camera segue Trovão lado direita distancia 6m · camera plano inteiro alvo Trovão lado perfil.
+  MCP: animais (espécies, poses, marchas e exemplo).
+
+23. ESCALA, VOO E ORIENTAÇÃO (gigantes, anões, fadas; corpos e objetos em qualquer ângulo)
+  ELENCO (tipo de corpo):  Golias gigante [4] · Atlas tita · Toco anao · Lumi fada · Pingo miniatura · Kai escala 0.5 · Kai tamanho 2
+    gigante = 3,5×, titã = 10×, anão = 0,62× com pernas curtas e cabeça maior, fada = 0,12× pairando, miniatura = 0,2×. Faixa: 0,03× a 30×.
+    Tudo acompanha a escala: passada e velocidade de andar, alcance, câmera (enquadramentos, distâncias e limites), chão e apoio.
+  NO PLANO: Kai escala 3 (muda no meio da história) · Lumi paira 1.5m · Lumi voa (sobe 1 m) · 0s Lumi voa-ate Golias altura 6m · Lumi pousa
+    Lumi sobre-mao Golias [esquerda] (a mão vira de palma para cima e a fada fica de pé nela) · Lumi sobre-ombro Golias · Lumi sobre-cabeca Golias
+  ORIENTAÇÃO DO CORPO: Kai inclina-corpo 30 [frente|tras] · Kai tomba-corpo 45 · Kai de-lado · Kai de-cabeca-para-baixo (gira o corpo inteiro)
+  ORIENTAÇÃO DE OBJETOS (no local): caixa "c" em (2,2) inclina 30 · coluna "tronco" em (-2,2) tamanho 0.4x0.4x3 tomba 90 · deitado · de-pe
+    (gira = em volta do eixo vertical; inclina = para a frente; tomba = de lado; a base é recalculada para o objeto encostar no chão).
+
+24. PÁGINA, BALÕES E WEBTOON (mangá, comic, A4, quadrado; tira vertical)
+  PÁGINA: pagina formato manga|comic|a4|quadrado|webtoon|livre [leitura japonesa|ocidental] [grade 2x3] [margem 40] [calha 14] [sangria] [dupla] [splash]
+    manga = B5 (182×257), comic = 6,625×10,25", a4, quadrado. sangria = a arte vai até a borda; dupla = página dupla (spread); splash = 1 quadro na página toda.
+  QUADRO: quadro 3 … tamanho pequeno|medio|grande|splash · borda diagonal [12] | nenhuma | grossa · sem-borda
+    Diagonal = painel inclinado (ação); sem borda = quadro aberto (calma, memória). A ordem de leitura segue a leitura da página (japonesa: da direita para a esquerda).
+  BALÕES (automáticos a partir das falas, com o rabicho apontando para a BOCA de quem fala e sem cobrir rostos):
+    Kai fala "…" (oval) · Kai pensa "…" (nuvem com bolinhas) · Mira grita|berra "…" (estourado) · Kai sussurra|cochicha "…" (tracejado)
+    Kai fala-radio|radio "…" (zigue-zague: telefone, rádio, TV) · narra "…" ou narrador "…" (caixa de narração no canto)
+    Os balões ficam na ordem de leitura (o primeiro a falar mais acima e no começo da leitura) e perto de quem fala.
+  WEBTOON: o espaço entre quadros é TEMPO. No quadro: ritmo momento|acao|sujeito|aspecto|lugar|tempo|cena · respiro [1.5] (espaço vazio, pausa).
+    Momento → quase colado; troca de cena → espaço grande. Exporta como tira de 800 px de largura em fatias de 1280 px.
+  RITMO (McCloud): momento-a-momento (câmera lenta), ação-a-ação, sujeito-a-sujeito (conversa), cena-a-cena (salto), aspecto-a-aspecto (clima, mangá), non-sequitur.
+  EXPORTAR: site → Texto → botões "Páginas PNG", "Páginas PDF", "Webtoon", "CBZ". MCP: paginas_hq (PNG/PDF/CBZ) e webtoon (tira e fatias).
+
+25. DIRETOR AUTOMÁTICO E COMPOSIÇÃO
+  diretor auto (linha solta no texto, vale para todos) ou "camera auto"/"diretor" no cabeçalho de um quadro ou plano. Também: cobertura auto.
+    Escolhe plano, lado e ângulo pela FUNÇÃO e pelo conteúdo: estabelecimento/troca de local → geral; fala → sobre-o-ombro/médio alternando;
+    emoção (surpresa, medo, grito) → close; clímax/ação → ângulo baixo; nunca repete o mesmo plano 3 vezes e respeita o EIXO de 180° entre os dois que conversam.
+  ALTERNATIVAS: quadro 4 … alternativas 6 (ou MCP quadro_alternativas): 6 versões do mesmo quadro (médio 3/4, close contra-plongée, geral plongée, americano perfil,
+    inteiro de costas, primeiro plano holandês) para escolher.
+  AVISOS DE COMPOSIÇÃO (aparecem com os erros): cabeça cortada pela borda, olhar sem espaço à frente (lead room), três quadros seguidos no mesmo plano,
+    câmera que cruza o eixo de 180°, mão na frente do corpo (silhueta).
+
+26. VÍDEO AVANÇADO, PÉS NO CHÃO E AUDITOR
+  CÂMERA: camera caminho (x,altura,z) (x,altura,z) (x,altura,z)… em 5s [olha Kai]   — percurso suave passando por todos os pontos (metros)
+    0s camera vertigo aproxima|afasta 50 em 3s   — dolly zoom: a câmera anda e a lente compensa (o alvo fica do mesmo tamanho, o fundo estica)
+    Curvas de tempo em qualquer movimento: … em 2s linear | entra (começa devagar) | sai (freia no fim) | suave (padrão)
+  TEMPO DO PLANO: plano 2 duracao 3s lento 50% (câmera lenta: a tela dura 6 s) · acelera 200% · congela 1.5s por 1s (a imagem para 1 s nesse ponto)
+  PERCURSO A PÉ: 0s Kai anda por (0,0) (3,1) (3,4) · corre por … (vira nos cantos, passadas do tamanho do corpo)
+  PASSES EM VÍDEO: MCP exportar_filme passes ["contorno","openpose","profundidade"] → passes/*.mp4 no .zip (referência para ControlNet de vídeo).
+  LINHA DO TEMPO (site → Texto → aba Filme): uma faixa por pessoa/animal e uma da câmera; clique numa barra para ir à linha; arraste para mudar o segundo.
+  PÉS NO CHÃO: o ciclo de andar tem 4 poses por passo (contato, recepção, passagem, impulso) e o corpo avança no ritmo do pé de apoio (pé parado no chão).
+    As animações prendem o pé de apoio automaticamente no filme (menos nado, rolar, cair, deitar, voo). Gestos passageiros voltam sozinhos à pose de antes.
+    Para soltar o chão: "Kai paira 0.05m" (folga) ou animações de voo.
+  AUDITOR: MCP auditar_animacoes (ou site → Texto → "Auditar animações") mede em cada animação quanto o corpo afunda no chão (cm), quanto o pé apoiado
+    escorrega (cm/s) e se termina longe da pose de partida. Limites: afunda > 3,5 cm ou escorrega > 12 cm/s (corrida 40, transições 30) = problema.
+  SOM: não há áudio; falas viram legendas e .srt e os tempos ficam na lista de planos.`;
   }
   var CAT_TIPO = { acao: "ação (acontece e segura)", ciclo: "ciclo (repete)", espera: "espera viva", transicao: "transição de postura" };
   function catalogoItens() {
@@ -38742,6 +39109,20 @@ ${EXEMPLO_FILME}`;
       '**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** ' + Object.keys(TIPOS_OBJETO).join(", "),
       ""
     );
+    L3.push(
+      "## Animais quadrúpedes (capítulo 22)",
+      "",
+      "**Espécies (`Trovão animal cavalo [sela] [escala 1.2]`):** " + Object.keys(QD_ESPECIES).map((e) => "`" + e + "`").join(", "),
+      "",
+      "**Poses (`Trovão pose NOME`):** " + Object.keys(AM_POSES).map((e) => "`" + e + "`").join(", "),
+      "",
+      '**Marchas:** `anda` (passo), `trota` (trote), `galopa`/`corre` (galope) `[N m] [para X]` · `galopa-ate (x,z)` · `Kai monta Trovão` / `Kai desmonta` · `Trovão carrega "mala"` · `Rex segue Kai`',
+      "",
+      "## Tipos de corpo e escala (capítulo 23)",
+      "",
+      "`gigante [N]` (3,5×) · `tita` (10×) · `anao` (0,62×, pernas curtas) · `fada` (0,12×, paira) · `miniatura` (0,2×) · `escala N` (0,03–30×) · `paira 1.5m` · `voa-ate X altura 6m` · `pousa` · `sobre-mao|sobre-ombro|sobre-cabeca Outro` · `inclina-corpo 30` · `de-cabeca-para-baixo`",
+      ""
+    );
     L3.push("## Poses", "");
     for (const p of poses) {
       L3.push("### " + p.nome + (p.origem === "minha" ? " · minha" : ""), "");
@@ -38774,13 +39155,33 @@ ${EXEMPLO_FILME}`;
   }
   var PROMPTS_NAME = {
     "História → filme": `Você vai transformar a história abaixo num FILME curto escrito na linguagem do GeoMannequin (manequins geométricos), que vira um vídeo MP4 de referência e uma lista de planos para uma IA de vídeo.
-Siga o MANUAL (capítulos 15 a 20: filme, cena, plano, câmera de cinema, ações, princípios, falas, exportar) À RISCA: só palavras, verbos, poses, expressões, efeitos e objetos das listas.
+Siga o MANUAL (capítulos 15 a 20 e 22, 23, 26: filme, cena, plano, câmera de cinema, ações, princípios, falas, exportar; animais e montaria; escala e voo; vídeo avançado) À RISCA: só palavras, verbos, poses, expressões, efeitos e objetos das listas.
 1) Liste o elenco (um por linha) e monte UM local com o que a história pede (objetos que alguém vai pegar: em cima de mesa/banco com "sobre").
 2) Divida a história em CENAS e cada cena em PLANOS curtos (2 a 8 s). Um plano = um ponto de vista. Varie: plano geral para situar, sobre-o-ombro na conversa, close na emoção, POV para o que alguém vê, câmera fixa à frente para ver alguém chegar, segue para acompanhar.
 3) Em cada plano: linhas sem tempo arrumam (posição, vira-para); linhas com tempo contam a ação ("0s", "1.5s", "depois", "junto"). Ações (oferece, aponta, pede…) seguram a pose; ciclos (anda, corre) e esperas (espera impaciente) duram até a próxima coisa.
 4) Dê vida: quem não age espera (espera empe/olhando-em-volta), olhares ("olha Mira"), expressões no tempo, falas com "fala" (o filme com "legendas").
 5) Use os princípios quando ajudarem: "exagera 130%" em momentos fortes, "sobreposicao" em gestos, transições "fusao 0.5s" para passagem de tempo e "escurece 0.8s" no fim.
 6) Duração: a que a história pedir (ou cerca de 1 minuto). Responda SÓ com o código, num bloco de código, começando por: filme "Título" fps 24 legendas
+
+HISTÓRIA:
+`,
+    "História → página de mangá/HQ": `Você vai transformar a história abaixo em PÁGINAS de mangá (ou HQ) escritas na linguagem do GeoMannequin, que viram páginas com quadros e balões.
+Siga o MANUAL (capítulos 1 a 8, 22 a 25) À RISCA: só palavras, poses, expressões, objetos e animais das listas.
+1) Elenco (um por linha; animais com "animal ESPECIE"; gigantes/anões/fadas com "gigante", "anao", "fada") e UM local geométrico por lugar.
+2) "pagina formato manga leitura japonesa" (ou "comic leitura ocidental"). 5 a 7 quadros por página; um quadro "tamanho grande" ou "splash" no momento forte.
+3) Varie os planos (geral para situar, médio na conversa, close na emoção; "borda diagonal" na ação; "sem-borda" em memória). Ou use "diretor auto".
+4) Falas: "Kai fala", "Kai pensa", "Mira grita", "Kai sussurra", "radio", e "narra" para o narrador. Frases curtas (até ~12 palavras por balão).
+5) Cada quadro: posições (em, vira-para), pose/gesto/expressão. Responda SÓ com o código num bloco.
+
+HISTÓRIA:
+`,
+    "História → webtoon": `Você vai transformar a história abaixo num EPISÓDIO DE WEBTOON (tira vertical) escrito na linguagem do GeoMannequin.
+Siga o MANUAL (capítulos 1 a 8, 22 a 25) À RISCA.
+1) Elenco e locais como no name. "pagina formato webtoon".
+2) 20 a 40 quadros. O ESPAÇO entre quadros é TEMPO: no cabeçalho do quadro use "ritmo momento" (colado, câmera lenta), "ritmo acao", "ritmo sujeito"
+   (conversa), "ritmo lugar"/"ritmo tempo" (salto) e "ritmo cena" (troca de cena), e "respiro 1.5" para pausas dramáticas.
+3) Comece com um quadro de estabelecimento (plano geral), alterne closes na emoção, termine num gancho (close + pausa).
+4) Falas com fala/pensa/grita/sussurra/narra, curtas. Responda SÓ com o código num bloco.
 
 HISTÓRIA:
 `,
@@ -45053,8 +45454,9 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     E3.chips.innerHTML = R.quadros.map((q, i) => '<button type="button" data-l="' + q.linha + '" title="' + esc7(q.legenda) + '">' + (q.indice + 1) + (q.plano ? " · " + esc7(q.plano) : "") + "</button>").join("");
     E3.cont.textContent = R.quadros.length + " quadro(s) · " + R.elenco.length + " no elenco · " + R.locais.length + " local(is)" + (R.erros.length ? " · " + R.erros.length + " erro(s)" : "");
     {
-      const temF = R.quadros.some((q) => q.filme), fb = E3.area.querySelector(".nm-filmebtns");
+      const temF = R.quadros.some((q) => q.filme), fb = E3.area.querySelector(".nm-filmebtns"), fb2 = E3.area.querySelector(".nm-filmebtns2");
       if (fb) fb.hidden = !temF;
+      if (fb2) fb2.hidden = !temF;
       if (temF && !abaEscolhida && aba === "ficha") aba = "filme";
     }
     realcar();
@@ -45277,6 +45679,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
   function previa3() {
     E3.tabs.querySelectorAll("button").forEach((b) => b.classList.toggle("sel", b.dataset.aba === aba));
     if (aba !== "filme") pararFilme();
+    if (aba === "auditoria" || aba === "alternativas") return;
     if (aba === "locais") {
       parar2();
       listaLocais();
@@ -45423,6 +45826,171 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     t("LEIA-ME.txt", PROMPTS_NAME["Explicar a ficha para a IA de imagem"]);
     const r = await baixar("name.zip", criarZip(arq), "application/zip");
     log2(r === "ok" ? "Pacote baixado (name.zip)." : "Não deu para baixar aqui (" + r + ").", r === "ok" ? "" : "err");
+  }
+  async function fotosHq(escala) {
+    const fs = [];
+    for (const q of R.quadros) {
+      const f = renderizarQuadro(q, { passes: false });
+      try {
+        const b = await svgParaPng2(f.svg, escala || 1);
+        f.png = "data:image/png;base64," + b64(b);
+      } catch (e) {
+      }
+      fs.push(f);
+      await new Promise((r) => setTimeout(r, 0));
+    }
+    return fs;
+  }
+  function b64(u8) {
+    let s0 = "";
+    for (let i = 0; i < u8.length; i += 32768) s0 += String.fromCharCode.apply(null, u8.subarray(i, i + 32768));
+    return btoa(s0);
+  }
+  function svgParaJpeg(svg, larg) {
+    return new Promise((ok3, erro) => {
+      const vb = /viewBox="([^"]+)"/.exec(svg)[1].split(/\s+/).map(Number), url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })), img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = larg;
+        c.height = Math.round(larg * vb[3] / vb[2]);
+        const g = c.getContext("2d");
+        g.fillStyle = "#fff";
+        g.fillRect(0, 0, c.width, c.height);
+        g.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => b ? b.arrayBuffer().then((a) => ok3({ w: c.width, h: c.height, jpg: new Uint8Array(a) })) : erro(new Error("jpeg")), "image/jpeg", 0.9);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        erro(new Error("imagem"));
+      };
+      img.src = url;
+    });
+  }
+  function pdfDeJpegs(ims, titulo) {
+    const enc = new TextEncoder(), partes2 = [], off = [];
+    let pos = 0;
+    const push = (b) => {
+      const u = typeof b === "string" ? enc.encode(b) : b;
+      partes2.push(u);
+      pos += u.length;
+    };
+    const n2 = ims.length, obj = (i, corpo, stream) => {
+      off[i] = pos;
+      push(i + " 0 obj\n" + corpo + "\n");
+      if (stream) {
+        push("stream\n");
+        push(stream);
+        push("\nendstream\n");
+      }
+      push("endobj\n");
+    };
+    push("%PDF-1.4\n");
+    obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+    obj(2, "<< /Type /Pages /Kids [" + ims.map((_, i) => 3 + i * 3 + " 0 R").join(" ") + "] /Count " + n2 + " >>");
+    ims.forEach((im, i) => {
+      const k = 3 + i * 3, W4 = 595, H2 = Math.round(595 * im.h / im.w), ct2 = enc.encode("q " + W4 + " 0 0 " + H2 + " 0 0 cm /Im0 Do Q");
+      obj(k, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + W4 + " " + H2 + "] /Resources << /XObject << /Im0 " + (k + 1) + " 0 R >> >> /Contents " + (k + 2) + " 0 R >>");
+      obj(k + 1, "<< /Type /XObject /Subtype /Image /Width " + im.w + " /Height " + im.h + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + im.jpg.length + " >>", im.jpg);
+      obj(k + 2, "<< /Length " + ct2.length + " >>", ct2);
+    });
+    const tot = 3 + n2 * 3, x = pos;
+    push("xref\n0 " + tot + "\n0000000000 65535 f \n" + Array.from({ length: tot - 1 }, (_, i) => String(off[i + 1]).padStart(10, "0") + " 00000 n \n").join("") + "trailer\n<< /Size " + tot + " /Root 1 0 R /Info << /Title (" + String(titulo || "HQ").replace(/[()\\]/g, "") + ") >> >>\nstartxref\n" + x + "\n%%EOF\n");
+    const out = new Uint8Array(pos);
+    let o = 0;
+    for (const p of partes2) {
+      out.set(p, o);
+      o += p.length;
+    }
+    return out;
+  }
+  async function acaoHq(k) {
+    if (rodando2) return;
+    compilar();
+    if (!R || !R.quadros.length) {
+      log2("Escreva quadros (ou planos) primeiro.", "err");
+      return;
+    }
+    const nome = String(R.filme && R.filme.nome || "hq").replace(/[^\w-]+/g, "_");
+    if (k === "auditar") {
+      aba = "auditoria";
+      E3.prevTit.textContent = "Auditor de animações";
+      E3.prev.innerHTML = '<p class="qd-vazio">Tocando cada animação e medindo pés e chão… (alguns segundos)</p>';
+      await new Promise((r) => setTimeout(r, 30));
+      try {
+        const r = auditarAnimacoes({ fps: 20 });
+        E3.prev.innerHTML = '<div class="nm-bibwrap"><p>' + r.total + " animações · <b>" + r.ruins + " fora do limite</b> (afunda &gt; " + -r.limites.afunda + " cm; pé escorrega &gt; " + r.limites.escorrega + ' cm/s)</p><table class="nm-aud"><thead><tr><th>animação</th><th>afunda cm</th><th>pé cm/s</th><th>termina longe °</th></tr></thead><tbody>' + r.itens.sort((a, b) => (b.escorregaCmS || 0) - (a.escorregaCmS || 0)).map((x) => "<tr" + (r.problemas.some((p) => p.startsWith(x.nome + " ") || p.startsWith(x.nome + ":")) ? ' class="ruim"' : "") + "><td>" + esc7(x.nome) + "</td><td>" + (x.erro ? esc7(x.erro) : x.afundaCm) + "</td><td>" + (x.escorregaCmS ?? "") + "</td><td>" + (x.terminaLonge ?? "") + "</td></tr>").join("") + "</tbody></table></div>";
+        log2("Auditoria: " + r.ruins + " de " + r.total + " fora do limite.");
+      } catch (e) {
+        E3.prev.innerHTML = '<p class="qd-vazio">' + esc7(e.message) + "</p>";
+      }
+      return;
+    }
+    if (k === "alt") {
+      const n2 = quadroDoCursor() + 1;
+      if (n2 < 1) {
+        log2("Ponha o cursor dentro de um quadro.", "err");
+        return;
+      }
+      aba = "alternativas";
+      E3.prevTit.textContent = "Alternativas do quadro " + n2;
+      E3.prev.innerHTML = '<p class="qd-vazio">Desenhando 6 versões…</p>';
+      try {
+        const alts = alternativasDeQuadro(E3.code.value, n2, 6), cel = [];
+        for (const a of alts) {
+          try {
+            const r = compilarName(a.texto, { semCache: true, salvar: false }), q = r.quadros[n2 - 1];
+            const png = await svgParaPng2(renderizarQuadro(q, { passes: false }).svg, 0.5);
+            cel.push('<figure class="nm-alt"><img alt="" src="data:image/png;base64,' + b64(png) + '"><figcaption>' + esc7(a.cabecalho) + '<button type="button" data-alt="' + (a.n - 1) + '">Usar</button></figcaption></figure>');
+          } catch (e) {
+          }
+        }
+        E3.prev.innerHTML = '<div class="nm-alts">' + cel.join("") + "</div>";
+        E3.prev.querySelectorAll("[data-alt]").forEach((b) => b.addEventListener("click", () => {
+          E3.code.value = alts[+b.dataset.alt].texto;
+          realcar();
+          ls3.gravar("texto", E3.code.value);
+          compilar();
+          log2("Quadro " + n2 + " trocado pela alternativa " + (+b.dataset.alt + 1) + ".");
+        }));
+      } catch (e) {
+        E3.prev.innerHTML = '<p class="qd-vazio">' + esc7(e.message) + "</p>";
+      }
+      return;
+    }
+    rodando2 = { cancelar: false };
+    E3.prog.hidden = false;
+    E3.prog.removeAttribute("value");
+    try {
+      log2("Desenhando os quadros…");
+      const fotos = await fotosHq(1);
+      if (k === "webtoon") {
+        const t = hqWebtoon(R, fotos, {}), arq2 = [];
+        for (let i = 0; i < t.fatias.length; i++) arq2.push({ nome: "webtoon/" + String(i + 1).padStart(3, "0") + ".png", texto: await svgParaPng2(hqFatia(t, t.fatias[i]), 1) });
+        const r3 = await baixar(nome + "-webtoon.zip", criarZip(arq2), "application/zip");
+        log2(r3 === "ok" ? "Webtoon baixado: " + t.fatias.length + " fatia(s) de 800 px." : "Não deu para baixar (" + r3 + ").", r3 === "ok" ? "" : "err");
+        return;
+      }
+      const pgs = hqPaginas(R, fotos, { largura: 1200 });
+      if (!pgs.length) throw new Error("Nenhuma página.");
+      if (k === "pdf") {
+        const ims = [];
+        for (const p of pgs) ims.push(await svgParaJpeg(p.svg, 1200));
+        const r3 = await baixar(nome + ".pdf", pdfDeJpegs(ims, nome), "application/pdf");
+        log2(r3 === "ok" ? "PDF baixado: " + pgs.length + " página(s)." : "Não deu para baixar (" + r3 + ").", r3 === "ok" ? "" : "err");
+        return;
+      }
+      const arq = [];
+      for (let i = 0; i < pgs.length; i++) arq.push({ nome: (k === "cbz" ? "" : "paginas/pagina-") + String(i + 1).padStart(3, "0") + ".png", texto: await svgParaPng2(pgs[i].svg, 1) });
+      if (k === "cbz") arq.push({ nome: "ComicInfo.xml", texto: '<?xml version="1.0" encoding="utf-8"?>\n<ComicInfo><Title>' + nome + "</Title><PageCount>" + pgs.length + "</PageCount><Notes>GeoMannequin (rascunho)</Notes></ComicInfo>\n" });
+      const r = await baixar(nome + (k === "cbz" ? ".cbz" : "-paginas.zip"), criarZip(arq), k === "cbz" ? "application/vnd.comicbook+zip" : "application/zip");
+      log2(r === "ok" ? pgs.length + " página(s) baixada(s)." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err");
+    } catch (e) {
+      log2("HQ: " + e.message, "err");
+    } finally {
+      rodando2 = null;
+      E3.prog.hidden = true;
+    }
   }
   async function exportarFilme(modo) {
     if (rodando2) return;
@@ -45886,7 +46454,7 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     area.hidden = true;
     area.setAttribute("role", "dialog");
     area.setAttribute("aria-label", "Name (DSL)");
-    area.innerHTML = '<header class="qd-cab"><h2>Texto · name, poses e animações</h2><select data-n="aprender" aria-label="Aprender"><option value="">Aprender…</option>' + LICOES.map((l, i) => '<option value="' + i + '">' + esc7(l[0]) + "</option>").join("") + '</select><button type="button" data-n="catalogo" title="Grava no catálogo as poses e animações marcadas com “salvar” (Ctrl+S)">Salvar no catálogo</button><select data-n="modelos" aria-label="Modelos"><option value="">Modelos…</option>' + Object.keys(MODELOS).concat(["Meu texto antes das lições"]).map((k) => "<option>" + esc7(k) + "</option>").join("") + '</select><button type="button" data-n="abrirArq">Abrir…</button><input type="file" accept=".gmn,.txt,.json,text/plain,application/json" data-n="arquivo" hidden><button type="button" data-n="salvarArq">Salvar .gmn</button><button type="button" data-n="imgBtn" title="Anexar imagens de planta (usadas por local … planta &quot;nome&quot;)">Plantas…</button><input type="file" accept="image/png,image/jpeg" multiple data-n="imgs" hidden><button type="button" data-n="manual">Manual</button><select data-n="prompts" aria-label="Prompts prontos"><option value="">Prompts para IA…</option>' + Object.keys(PROMPTS_NAME).map((k) => "<option>" + esc7(k) + "</option>").join("") + '</select><span class="qd-cont"></span><button type="button" data-n="fechar" aria-label="Fechar">✕</button></header><div class="qd-corpo"><div class="qd-ed"><nav class="qd-chips" aria-label="Quadros"></nav><div class="qd-codewrap"><pre class="qd-gut" aria-hidden="true">1</pre><div class="nm-hlwrap"><pre class="nm-hl" aria-hidden="true"></pre><textarea spellcheck="false" wrap="off" aria-label="Texto do name, poses e animações"></textarea><ul class="nm-ac" hidden role="listbox"></ul><div class="nm-ac-lado" hidden></div><div class="nm-sig" hidden role="tooltip"></div><div class="nm-ajuda" hidden role="note"></div></div></div><ul class="nm-erros" aria-label="Erros e avisos"></ul><p class="nm-imgs"></p><div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress><label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p><div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div><div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button><button type="button" data-aba="biblioteca" title="Todas as poses e animações em código">Biblioteca</button></nav><div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div><h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div><div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div><div class="nm-dlg nm-tags" hidden><label>Tags (separadas por vírgula) <input data-n="tagsIn" maxlength="200"></label><button type="button" class="primario" data-n="tagsOk">Gravar</button><button type="button" data-n="tagsNao">Cancelar</button></div></div></div>';
+    area.innerHTML = '<header class="qd-cab"><h2>Texto · name, poses e animações</h2><select data-n="aprender" aria-label="Aprender"><option value="">Aprender…</option>' + LICOES.map((l, i) => '<option value="' + i + '">' + esc7(l[0]) + "</option>").join("") + '</select><button type="button" data-n="catalogo" title="Grava no catálogo as poses e animações marcadas com “salvar” (Ctrl+S)">Salvar no catálogo</button><select data-n="modelos" aria-label="Modelos"><option value="">Modelos…</option>' + Object.keys(MODELOS).concat(["Meu texto antes das lições"]).map((k) => "<option>" + esc7(k) + "</option>").join("") + '</select><button type="button" data-n="abrirArq">Abrir…</button><input type="file" accept=".gmn,.txt,.json,text/plain,application/json" data-n="arquivo" hidden><button type="button" data-n="salvarArq">Salvar .gmn</button><button type="button" data-n="imgBtn" title="Anexar imagens de planta (usadas por local … planta &quot;nome&quot;)">Plantas…</button><input type="file" accept="image/png,image/jpeg" multiple data-n="imgs" hidden><button type="button" data-n="manual">Manual</button><select data-n="prompts" aria-label="Prompts prontos"><option value="">Prompts para IA…</option>' + Object.keys(PROMPTS_NAME).map((k) => "<option>" + esc7(k) + "</option>").join("") + '</select><span class="qd-cont"></span><button type="button" data-n="fechar" aria-label="Fechar">✕</button></header><div class="qd-corpo"><div class="qd-ed"><nav class="qd-chips" aria-label="Quadros"></nav><div class="qd-codewrap"><pre class="qd-gut" aria-hidden="true">1</pre><div class="nm-hlwrap"><pre class="nm-hl" aria-hidden="true"></pre><textarea spellcheck="false" wrap="off" aria-label="Texto do name, poses e animações"></textarea><ul class="nm-ac" hidden role="listbox"></ul><div class="nm-ac-lado" hidden></div><div class="nm-sig" hidden role="tooltip"></div><div class="nm-ajuda" hidden role="note"></div></div></div><ul class="nm-erros" aria-label="Erros e avisos"></ul><p class="nm-imgs"></p><div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button></span><select data-n="hq" aria-label="HQ, webtoon e ferramentas" title="Páginas de HQ com balões, webtoon, alternativas do quadro e auditor de animações"><option value="">HQ e mais…</option><option value="png">Páginas PNG (.zip)</option><option value="pdf">Páginas PDF</option><option value="cbz">Páginas CBZ (leitor de quadrinhos)</option><option value="webtoon">Webtoon (tira em fatias)</option><option value="alt">Alternativas do quadro do cursor</option><option value="auditar">Auditar animações</option></select><span class="nm-filmebtns2" hidden><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress><label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p><div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div><div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button><button type="button" data-aba="biblioteca" title="Todas as poses e animações em código">Biblioteca</button></nav><div class="nm-locbar"><input type="search" placeholder="Buscar locais ou tags" data-n="busca" aria-label="Buscar locais"><button type="button" data-n="salvarCursor" title="Salva o bloco local onde está o cursor">Salvar local do cursor</button><button type="button" data-n="salvarPalco" title="Salva os objetos do palco como um local">Salvar cenário do palco</button><button type="button" data-n="importar">Importar…</button><input type="file" accept=".json,.gmlocal,.gmn" data-n="impArq" hidden><button type="button" data-n="exportar">Exportar todos</button></div><h3 class="qd-prev-tit">Prévia</h3><div class="qd-prev nm-prev"></div><div class="nm-dlg" hidden><label>Nome do local <input data-n="nomeIn" maxlength="80"></label><button type="button" class="primario" data-n="nomeOk">Salvar</button><button type="button" data-n="nomeNao">Cancelar</button></div><div class="nm-dlg nm-tags" hidden><label>Tags (separadas por vírgula) <input data-n="tagsIn" maxlength="200"></label><button type="button" class="primario" data-n="tagsOk">Gravar</button><button type="button" data-n="tagsNao">Cancelar</button></div></div></div>';
     document.body.appendChild(area);
     const q = (s) => area.querySelector(s), b = (k) => q('[data-n="' + k + '"]');
     Object.assign(E3, {
@@ -46114,6 +46682,11 @@ Teclas: Ctrl+Enter renderiza o quadro do cursor · Ctrl+Shift+Enter renderiza to
     b("fechar").addEventListener("click", fechar2);
     b0 = b;
     b("mp4").addEventListener("click", () => exportarFilme("filme"));
+    b("hq").addEventListener("change", (e) => {
+      const v = e.target.value;
+      e.target.value = "";
+      if (v) acaoHq(v);
+    });
     b("mp4plano").addEventListener("click", () => exportarFilme("plano"));
     b("pacote").addEventListener("click", () => exportarFilme("pacote"));
     b("modelos").addEventListener("change", (e) => {

@@ -13,7 +13,7 @@ import { SLK, POSEKEYS, faixa } from "./parametros.js";
 import { todasPoses, nomePose, EXPRESSOES } from "./poses.js";
 import { espelharValores, posesSalvas } from "./pose-codigo.js";
 import { AN_PARTES, ATITUDES, GESTOS_CONVERSA, CURVAS, criarAnimacao, amostrar, anPoseValores, anEspelhar, bibliotecaAnimacoes, retimar, aplicarAtitude, anSemCamera } from "./animacao.js";
-import { apoioNoTempo, pesDoManequim, mvDensificar } from "./movimento.js";
+import { apoioNoTempo, pesDoManequim, mvDensificar, mvCalibrarMover } from "./movimento.js";
 import { ossosDoCorpo } from "../engine/index.js";
 
 const PD_M = 1 / 0.114; /* R por metro */
@@ -351,7 +351,8 @@ function pdCiclo(A0, o = {}) {
   const cic = criarAnimacao({ nome: o.nome || "ciclo", duracao: d, modo: "absoluta", curva: "linear", loop: o.loop !== false, travarPes: !corre, pesFixos: true, escalarPeloCorpo: true, chaves: ch, tags: o.tags && o.tags.length ? o.tags : [corre ? "Locomocao/Correr/Ciclo" : "Locomocao/Andar/Ciclo"], descricao: "ciclo a partir de uma pose: " + (o.de || "") + " · " + (2 * ida).toFixed(2) + " m por ciclo" });
   /* o corpo anda o que o pé de apoio empurra (sem patinar); o cálculo pode ser desligado com calibrar: false */
   if (o.calibrar === false || o.anda !== undefined && o.calibrarAnda === false) return cic;
-  try { return Object.assign(mvDensificar(cic), { tags: cic.tags, descricao: cic.descricao }); } catch (e) { return cic; }
+  /* o deslocamento é calibrado pelo pé de apoio (sem patinar); "calibrar denso" refaz o ciclo em 24 chaves seguindo o pé */
+  try { if (o.calibrar === "denso") return Object.assign(mvDensificar(cic), { tags: cic.tags, descricao: cic.descricao }); return mvCalibrarMover(cic); } catch (e) { return cic; }
 }
 
 /* ===================== documentação de cada palavra (F1 no editor, manual, MCP) ===================== */

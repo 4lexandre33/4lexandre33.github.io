@@ -35,7 +35,7 @@ console.log("3. ciclo a partir de UMA pose");
   ok(Object.keys(A).every(k => perto(A[k], F[k])), "o fim é igual ao começo (o loop fecha sem salto)");
   ok(perto(M.hipFlexL, A.hipFlexR) && perto(M.armFlexL, A.armFlexR), "no meio: a mesma pose espelhada");
   const P = a.chaves[1].valores; ok(P.kneeFlexL > A.kneeFlexL && P.kneeFlexL >= 40, "passagem: a perna de trás passa dobrada");
-  ok(a.chaves[0].apoio === "R" && a.chaves[2].apoio === "L" && a.chaves[4].mover.frente > 0.3, "apoio troca de pé e o corpo anda (" + a.chaves[4].mover.frente.toFixed(2) + " m por ciclo)"); }
+  ok(a.chaves[0].apoio === "R" && a.chaves[2].apoio === "L" && a.chaves[4].mover.frente > 0.2, "apoio troca de pé e o corpo anda (calibrado pelo pé) (" + a.chaves[4].mover.frente.toFixed(2) + " m por ciclo)"); }
 
 console.log("4. derivar, picotar, juntar, camada");
 { const w = createWorld(), g = w.bibliotecaAnimacoes().obter("girar360E");
@@ -81,7 +81,7 @@ console.log("5b. teste cego: correções");
   ok(r.ok && m.frente > 1.5, "camada com ciclo em loop: anda de verdade (" + m.frente.toFixed(2) + " m em " + aa.duracao.toFixed(1) + " s)");
   ok(r.animacoes.length === 2, "partes com hífen ou juntas (braco-direito = bracoDireito)");
   const jn = w.pdJuntar([w.bibliotecaAnimacoes().obter("andarCiclo"), w.bibliotecaAnimacoes().obter("acenarTchau")], { mistura: 0.1 }), mj = jn.chaves[jn.chaves.length - 1].mover;
-  ok(mj && perto(mj.frente, 1.4, 0.02), "junta com um ciclo em loop: o aceno começa onde o andar terminou (" + (mj ? mj.frente.toFixed(2) : "-") + " m)");
+  const fa = w.bibliotecaAnimacoes().obter("andarCiclo").chaves.at(-1).mover.frente; ok(mj && perto(mj.frente, fa, 0.02), "junta com um ciclo em loop: o aceno começa onde o andar terminou (" + (mj ? mj.frente.toFixed(2) : "-") + " m)");
   const r2 = w.compilarName('local "P" unidade m\n  chao retangulo -10,-10 a 10,10\n  agua "piscina" em (0,0) tamanho 6x12x1.4\nelenco\n  Kai relevante\nquadro local "P" plano geral\n  Kai em (0,4) nada crawl 4m\n', { salvar: false });
   ok(r2.avisos.some(a => /termina o nado FORA da água/.test(a)), "terminar o nado fora da água avisa");
   const r3 = w.compilarName('local "P" unidade m\n  chao retangulo -10,-10 a 10,10\n  agua "piscina" em (0,0) tamanho 6x12x1.4\nelenco\n  Kai relevante\nquadro local "P" plano geral\n  Kai em (0,2) nada costas 2m\nquadro continua\n  Kai nada crawl 2m\n', { salvar: false });

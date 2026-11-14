@@ -18,6 +18,7 @@ import { registerIaTools } from "./tools-ia.mjs";
 import { registerNameTools } from "./tools-name.mjs";
 import { registerAnimTools } from "./tools-anim.mjs";
 import { registerFilmeTools } from "./tools-filme.mjs";
+import { registerHqTools } from "./tools-hq.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -212,7 +213,7 @@ const INVOCA = {
   manual_name: ["Abrindo o manual do name…", "Manual do name"], validar_name: ["Conferindo o name…", "Name conferido"], gerar_name: ["Gerando as fichas…", "Name pronto"],
   ficha_quadro: ["Montando a ficha…", "Ficha pronta"], previa_local: ["Montando o local…", "Local pronto"], salvar_local: ["Salvando o local…", "Local salvo"],
   manual_animacao: ["Abrindo o manual…", "Manual de animação"], linguagem_corporal: ["Gesticulando…", "Gesto aplicado"], criar_animacao: ["Animando…", "Animação pronta"], listar_animacoes: ["Lendo as animações…", "Animações"],
-  olhar: ["Olhando…", "Olhar ajustado"], girar: ["Girando…", "Giro pronto"], andar_ate: ["Andando…", "Chegou"], pose_texto: ["Montando a pose…", "Pose pronta"], animacao_texto: ["Animando…", "Animação pronta"], derivar_animacao: ["Derivando…", "Nova animação"], ciclo_de_pose: ["Fazendo o ciclo…", "Ciclo pronto"], pular: ["Pulando…", "Pulo pronto"], nadar: ["Nadando…", "Nado pronto"], mergulhar: ["Mergulhando…", "Mergulho pronto"], movimento: ["Movendo…", "Movimento pronto"], completar: ["Procurando opções…", "Opções"], filme_texto: ["Lendo o filme…", "Planos prontos"], exportar_filme: ["Renderizando o filme…", "Filme pronto"], plano_previa: ["Prévia do plano…", "Prévia pronta"], catalogo_dsl: ["Montando o catálogo…", "Catálogo pronto"], codigo_de_pose: ["Escrevendo a pose…", "Código da pose"], codigo_de_animacao: ["Escrevendo a animação…", "Código da animação"], lote: ["Criando em lote…", "Criados"], camera_plano: ["Calculando a câmera…", "Trajetória pronta"], manual_filme: ["Abrindo o manual…", "Manual de filme"],
+  olhar: ["Olhando…", "Olhar ajustado"], girar: ["Girando…", "Giro pronto"], andar_ate: ["Andando…", "Chegou"], pose_texto: ["Montando a pose…", "Pose pronta"], animacao_texto: ["Animando…", "Animação pronta"], derivar_animacao: ["Derivando…", "Nova animação"], ciclo_de_pose: ["Fazendo o ciclo…", "Ciclo pronto"], pular: ["Pulando…", "Pulo pronto"], nadar: ["Nadando…", "Nado pronto"], mergulhar: ["Mergulhando…", "Mergulho pronto"], movimento: ["Movendo…", "Movimento pronto"], completar: ["Procurando opções…", "Opções"], filme_texto: ["Lendo o filme…", "Planos prontos"], exportar_filme: ["Renderizando o filme…", "Filme pronto"], plano_previa: ["Prévia do plano…", "Prévia pronta"], catalogo_dsl: ["Montando o catálogo…", "Catálogo pronto"], codigo_de_pose: ["Escrevendo a pose…", "Código da pose"], codigo_de_animacao: ["Escrevendo a animação…", "Código da animação"], lote: ["Criando em lote…", "Criados"], camera_plano: ["Calculando a câmera…", "Trajetória pronta"], manual_filme: ["Abrindo o manual…", "Manual de filme"], paginas_hq: ["Montando as páginas…", "Páginas prontas"], webtoon: ["Montando a tira…", "Webtoon pronto"], quadro_alternativas: ["Testando ângulos…", "Alternativas"], auditar_animacoes: ["Auditando as animações…", "Auditoria pronta"], animais: ["Chamando os animais…", "Animais"], manual_avancado: ["Abrindo o manual…", "Manual avançado"],
   salvar_animacao: ["Salvando a animação…", "Animação salva"], aplicar_animacao: ["Aplicando o movimento…", "Movimento aplicado"], exportar_animacao: ["Exportando a animação…", "Animação exportada"], video_name: ["Montando o vídeo…", "Vídeo pronto"],
   listar_locais: ["Lendo a biblioteca…", "Locais"], abrir_local: ["Abrindo o local…", "Local aberto"], legenda_cores: ["Montando a legenda…", "Legenda de cores"],
   estado_pose: ["Lendo a pose…", "Estado da pose"], manual_poses_ia: ["Abrindo o manual…", "Manual de poses"], rosto: ["Mexendo no rosto…", "Rosto"], biblioteca_item: ["Preparando o item…", "Item da Biblioteca"], descanso: ["Voltando ao descanso…", "Pose de descanso"], segurar_como: ["Segurando…", "Objeto na mão"], interagir: ["Juntando os dois…", "Interação"], acao: ["Montando a ação…", "Ação"], molejo: ["Soltando a pose…", "Molejo"], poses_por_funcao: ["Buscando poses…", "Poses por função"], planta_para_cena: ["Lendo a planta…", "Cenário montado"], arranjo_em_massa: ["Arrumando…", "Arranjo"], olhar_para_ponto: ["Virando…", "Olhar para o ponto"], registro_da_cena: ["Lendo o registro…", "Registro da cena"]
@@ -931,6 +932,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerNameTools(server, W);
   registerAnimTools(server, W);
   registerFilmeTools(server, W);
+  registerHqTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

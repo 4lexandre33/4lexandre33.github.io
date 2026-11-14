@@ -2,7 +2,9 @@
    do local e da página; gerar todas as fichas em segundo plano; baixar o pacote .zip; biblioteca de LOCAIS (navegador,
    banco do artefato no claude.ai quando houver, arquivo); manual e prompts prontos para copiar. */
 import { SCN } from "../scene/modelo.js";
-import { videoDoFilme, roteiroDoFilme } from "../scene/name-dsl.js";
+import { videoDoFilme, roteiroDoFilme, alternativasDeQuadro } from "../scene/name-dsl.js";
+import { hqPaginas, hqWebtoon, hqFatia } from "../scene/pagina-hq.js";
+import { auditarAnimacoes } from "../scene/auditoria-anim.js";
 import { temMp4, codificarFilme, previaPlano, tempoTexto } from "./video-mp4.js";
 import { compilarName, fichaDoQuadro, pecasDaFicha, paginasDoName, legendaDeCores, manifestoName, bibliotecaLocais, localDoPalco, abrirLocalNoPalco, NM_CORES } from "../scene/name-dsl.js";
 import { manualName, PROMPTS_NAME, EXEMPLO_NAME, EXEMPLO_FILME, catalogoDsl, catalogoItens } from "../scene/manual-name.js";
@@ -68,7 +70,7 @@ function compilar() {
   E.erros.innerHTML = R.erros.map(e => { const m = /“([^”]+)”[^“]*Quis dizer “([^”]+)”/.exec(e.erro); return '<li data-l="' + e.linha + '" class="err">linha ' + e.linha + ": " + esc(e.erro) + (m ? ' <button type="button" class="nm-fix" data-l="' + e.linha + '" data-de="' + esc(m[1]) + '" data-para="' + esc(m[2]) + '">Trocar por “' + esc(m[2]) + "”</button>" : "") + "</li>"; }).join("") + R.avisos.slice(0, 20).map(a => '<li class="aviso">' + esc(a) + "</li>").join("");
   E.chips.innerHTML = R.quadros.map((q, i) => '<button type="button" data-l="' + q.linha + '" title="' + esc(q.legenda) + '">' + (q.indice + 1) + (q.plano ? " · " + esc(q.plano) : "") + "</button>").join("");
   E.cont.textContent = R.quadros.length + " quadro(s) · " + R.elenco.length + " no elenco · " + R.locais.length + " local(is)" + (R.erros.length ? " · " + R.erros.length + " erro(s)" : "");
-  { const temF = R.quadros.some(q => q.filme), fb = E.area.querySelector(".nm-filmebtns"); if (fb) fb.hidden = !temF; if (temF && !abaEscolhida && aba === "ficha") aba = "filme"; }
+  { const temF = R.quadros.some(q => q.filme), fb = E.area.querySelector(".nm-filmebtns"), fb2 = E.area.querySelector(".nm-filmebtns2"); if (fb) fb.hidden = !temF; if (fb2) fb2.hidden = !temF; if (temF && !abaEscolhida && aba === "ficha") aba = "filme"; }
   realcar(); ultimaQ = -2; pedirPrevia();
 }
 let abaEscolhida = false;
@@ -139,6 +141,7 @@ async function acaoBib(e) { const bt = e.target.closest("[data-bib]"); if (!bt) 
 function previa() {
   E.tabs.querySelectorAll("button").forEach(b => b.classList.toggle("sel", b.dataset.aba === aba));
   if (aba !== "filme") pararFilme();
+  if (aba === "auditoria" || aba === "alternativas") return;
   if (aba === "locais") { parar(); listaLocais(); return; }
   if (aba === "biblioteca") { parar(); if (!E.prev.querySelector("[data-bib]")) listaBiblioteca(); return; }
   if (!R) return;
@@ -180,6 +183,42 @@ async function baixarZip() {
   const r = await baixar("name.zip", criarZip(arq), "application/zip"); log(r === "ok" ? "Pacote baixado (name.zip)." : "Não deu para baixar aqui (" + r + ").", r === "ok" ? "" : "err");
 }
 /* ===== filme → MP4 / pacote para a IA de vídeo ===== */
+/* ===== HQ: páginas com balões (PNG/PDF/CBZ), webtoon, alternativas, auditor ===== */
+async function fotosHq(escala) { const fs = []; for (const q of R.quadros) { const f = renderizarQuadro(q, { passes: false }); try { const b = await svgParaPng(f.svg, escala || 1); f.png = "data:image/png;base64," + b64(b); } catch (e) { } fs.push(f); await new Promise(r => setTimeout(r, 0)); } return fs; }
+function b64(u8) { let s0 = ""; for (let i = 0; i < u8.length; i += 0x8000) s0 += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s0); }
+function svgParaJpeg(svg, larg) { return new Promise((ok, erro) => { const vb = /viewBox="([^"]+)"/.exec(svg)[1].split(/\s+/).map(Number), url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })), img = new Image();
+  img.onload = () => { const c = document.createElement("canvas"); c.width = larg; c.height = Math.round(larg * vb[3] / vb[2]); const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+    c.toBlob(b => b ? b.arrayBuffer().then(a => ok({ w: c.width, h: c.height, jpg: new Uint8Array(a) })) : erro(new Error("jpeg")), "image/jpeg", 0.9); }; img.onerror = () => { URL.revokeObjectURL(url); erro(new Error("imagem")); }; img.src = url; }); }
+/* PDF com uma imagem JPEG por página (o navegador já comprime) */
+function pdfDeJpegs(ims, titulo) { const enc = new TextEncoder(), partes = [], off = []; let pos = 0; const push = b => { const u = typeof b === "string" ? enc.encode(b) : b; partes.push(u); pos += u.length; };
+  const n = ims.length, obj = (i, corpo, stream) => { off[i] = pos; push(i + " 0 obj\n" + corpo + "\n"); if (stream) { push("stream\n"); push(stream); push("\nendstream\n"); } push("endobj\n"); };
+  push("%PDF-1.4\n"); obj(1, "<< /Type /Catalog /Pages 2 0 R >>"); obj(2, "<< /Type /Pages /Kids [" + ims.map((_, i) => (3 + i * 3) + " 0 R").join(" ") + "] /Count " + n + " >>");
+  ims.forEach((im, i) => { const k = 3 + i * 3, W = 595, H = Math.round(595 * im.h / im.w), ct = enc.encode("q " + W + " 0 0 " + H + " 0 0 cm /Im0 Do Q");
+    obj(k, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + W + " " + H + "] /Resources << /XObject << /Im0 " + (k + 1) + " 0 R >> >> /Contents " + (k + 2) + " 0 R >>");
+    obj(k + 1, "<< /Type /XObject /Subtype /Image /Width " + im.w + " /Height " + im.h + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + im.jpg.length + " >>", im.jpg); obj(k + 2, "<< /Length " + ct.length + " >>", ct); });
+  const tot = 3 + n * 3, x = pos; push("xref\n0 " + tot + "\n0000000000 65535 f \n" + Array.from({ length: tot - 1 }, (_, i) => String(off[i + 1]).padStart(10, "0") + " 00000 n \n").join("") + "trailer\n<< /Size " + tot + " /Root 1 0 R /Info << /Title (" + String(titulo || "HQ").replace(/[()\\]/g, "") + ") >> >>\nstartxref\n" + x + "\n%%EOF\n");
+  const out = new Uint8Array(pos); let o = 0; for (const p of partes) { out.set(p, o); o += p.length; } return out; }
+async function acaoHq(k) {
+  if (rodando) return; compilar(); if (!R || !R.quadros.length) { log("Escreva quadros (ou planos) primeiro.", "err"); return; }
+  const nome = String((R.filme && R.filme.nome) || "hq").replace(/[^\w-]+/g, "_");
+  if (k === "auditar") { aba = "auditoria"; E.prevTit.textContent = "Auditor de animações"; E.prev.innerHTML = '<p class="qd-vazio">Tocando cada animação e medindo pés e chão… (alguns segundos)</p>'; await new Promise(r => setTimeout(r, 30));
+    try { const r = auditarAnimacoes({ fps: 20 }); E.prev.innerHTML = '<div class="nm-bibwrap"><p>' + r.total + " animações · <b>" + r.ruins + " fora do limite</b> (afunda &gt; " + (-r.limites.afunda) + " cm; pé escorrega &gt; " + r.limites.escorrega + ' cm/s)</p><table class="nm-aud"><thead><tr><th>animação</th><th>afunda cm</th><th>pé cm/s</th><th>termina longe °</th></tr></thead><tbody>' + r.itens.sort((a, b) => (b.escorregaCmS || 0) - (a.escorregaCmS || 0)).map(x => "<tr" + (r.problemas.some(p => p.startsWith(x.nome + " ") || p.startsWith(x.nome + ":")) ? ' class="ruim"' : "") + "><td>" + esc(x.nome) + "</td><td>" + (x.erro ? esc(x.erro) : x.afundaCm) + "</td><td>" + (x.escorregaCmS ?? "") + "</td><td>" + (x.terminaLonge ?? "") + "</td></tr>").join("") + "</tbody></table></div>"; log("Auditoria: " + r.ruins + " de " + r.total + " fora do limite."); }
+    catch (e) { E.prev.innerHTML = '<p class="qd-vazio">' + esc(e.message) + "</p>"; } return; }
+  if (k === "alt") { const n = quadroDoCursor() + 1; if (n < 1) { log("Ponha o cursor dentro de um quadro.", "err"); return; } aba = "alternativas"; E.prevTit.textContent = "Alternativas do quadro " + n; E.prev.innerHTML = '<p class="qd-vazio">Desenhando 6 versões…</p>';
+    try { const alts = alternativasDeQuadro(E.code.value, n, 6), cel = []; for (const a of alts) { try { const r = compilarName(a.texto, { semCache: true, salvar: false }), q = r.quadros[n - 1]; const png = await svgParaPng(renderizarQuadro(q, { passes: false }).svg, 0.5); cel.push('<figure class="nm-alt"><img alt="" src="data:image/png;base64,' + b64(png) + '"><figcaption>' + esc(a.cabecalho) + '<button type="button" data-alt="' + (a.n - 1) + '">Usar</button></figcaption></figure>'); } catch (e) { } }
+      E.prev.innerHTML = '<div class="nm-alts">' + cel.join("") + "</div>"; E.prev.querySelectorAll("[data-alt]").forEach(b => b.addEventListener("click", () => { E.code.value = alts[+b.dataset.alt].texto; realcar(); ls.gravar("texto", E.code.value); compilar(); log("Quadro " + n + " trocado pela alternativa " + (+b.dataset.alt + 1) + "."); })); }
+    catch (e) { E.prev.innerHTML = '<p class="qd-vazio">' + esc(e.message) + "</p>"; } return; }
+  rodando = { cancelar: false }; E.prog.hidden = false; E.prog.removeAttribute("value");
+  try { log("Desenhando os quadros…"); const fotos = await fotosHq(1);
+    if (k === "webtoon") { const t = hqWebtoon(R, fotos, {}), arq = []; for (let i = 0; i < t.fatias.length; i++) arq.push({ nome: "webtoon/" + String(i + 1).padStart(3, "0") + ".png", texto: await svgParaPng(hqFatia(t, t.fatias[i]), 1) });
+      const r = await baixar(nome + "-webtoon.zip", criarZip(arq), "application/zip"); log(r === "ok" ? "Webtoon baixado: " + t.fatias.length + " fatia(s) de 800 px." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err"); return; }
+    const pgs = hqPaginas(R, fotos, { largura: 1200 }); if (!pgs.length) throw new Error("Nenhuma página.");
+    if (k === "pdf") { const ims = []; for (const p of pgs) ims.push(await svgParaJpeg(p.svg, 1200)); const r = await baixar(nome + ".pdf", pdfDeJpegs(ims, nome), "application/pdf"); log(r === "ok" ? "PDF baixado: " + pgs.length + " página(s)." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err"); return; }
+    const arq = []; for (let i = 0; i < pgs.length; i++) arq.push({ nome: (k === "cbz" ? "" : "paginas/pagina-") + String(i + 1).padStart(3, "0") + ".png", texto: await svgParaPng(pgs[i].svg, 1) });
+    if (k === "cbz") arq.push({ nome: "ComicInfo.xml", texto: '<?xml version="1.0" encoding="utf-8"?>\n<ComicInfo><Title>' + nome + "</Title><PageCount>" + pgs.length + "</PageCount><Notes>GeoMannequin (rascunho)</Notes></ComicInfo>\n" });
+    const r = await baixar(nome + (k === "cbz" ? ".cbz" : "-paginas.zip"), criarZip(arq), k === "cbz" ? "application/vnd.comicbook+zip" : "application/zip"); log(r === "ok" ? pgs.length + " página(s) baixada(s)." : "Não deu para baixar (" + r + ").", r === "ok" ? "" : "err");
+  } catch (e) { log("HQ: " + e.message, "err"); } finally { rodando = null; E.prog.hidden = true; }
+}
 async function exportarFilme(modo) {
   if (rodando) return; compilar(); if (!R || !R.quadros.some(q => q.filme)) { log("O texto não tem planos de filme (filme / cena / plano).", "err"); return; }
   const larg = +b0("vidLarg").value || 960, so = modo === "plano" ? [planoDoCursor().filme.n] : null;
@@ -331,7 +370,7 @@ export function iniciarName() {
     '<button type="button" data-n="manual">Manual</button><select data-n="prompts" aria-label="Prompts prontos"><option value="">Prompts para IA…</option>' + Object.keys(PROMPTS_NAME).map(k => "<option>" + esc(k) + "</option>").join("") + '</select><span class="qd-cont"></span><button type="button" data-n="fechar" aria-label="Fechar">✕</button></header>' +
     '<div class="qd-corpo"><div class="qd-ed"><nav class="qd-chips" aria-label="Quadros"></nav><div class="qd-codewrap"><pre class="qd-gut" aria-hidden="true">1</pre><div class="nm-hlwrap"><pre class="nm-hl" aria-hidden="true"></pre><textarea spellcheck="false" wrap="off" aria-label="Texto do name, poses e animações"></textarea><ul class="nm-ac" hidden role="listbox"></ul><div class="nm-ac-lado" hidden></div><div class="nm-sig" hidden role="tooltip"></div><div class="nm-ajuda" hidden role="note"></div></div></div>' +
     '<ul class="nm-erros" aria-label="Erros e avisos"></ul><p class="nm-imgs"></p>' +
-    '<div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress>' +
+    '<div class="qd-barra"><button type="button" class="primario" data-n="gerar" title="Ctrl+Shift+Enter">Gerar todas as fichas</button><button type="button" data-n="zip">Baixar .zip</button><span class="nm-filmebtns" hidden><button type="button" class="primario" data-n="mp4" title="O filme inteiro em MP4 (H.264)">Filme → MP4</button><button type="button" data-n="mp4plano" title="Só o plano onde está o cursor">MP4 do plano</button><button type="button" data-n="pacote" title="filme.mp4 + um MP4 por plano + lista de planos (.md/.json) + prompts + folha de contato">Pacote para IA</button></span><select data-n="hq" aria-label="HQ, webtoon e ferramentas" title="Páginas de HQ com balões, webtoon, alternativas do quadro e auditor de animações"><option value="">HQ e mais…</option><option value="png">Páginas PNG (.zip)</option><option value="pdf">Páginas PDF</option><option value="cbz">Páginas CBZ (leitor de quadrinhos)</option><option value="webtoon">Webtoon (tira em fatias)</option><option value="alt">Alternativas do quadro do cursor</option><option value="auditar">Auditar animações</option></select><span class="nm-filmebtns2" hidden><label title="Largura do vídeo em pixels">largura <select data-n="vidLarg"><option>480</option><option>640</option><option selected>960</option><option>1280</option><option>1920</option></select></label></span><button type="button" data-n="cancelar">Cancelar</button><progress hidden></progress>' +
     '<label><input type="checkbox" data-n="semLat"> sem laterais</label><label><input type="checkbox" data-n="semLeg"> sem legenda</label></div><p class="qd-out"></p>' +
     '<div class="nm-texto" hidden><textarea readonly aria-label="Texto para copiar"></textarea><button type="button" data-n="textoFechar">Fechar</button></div></div>' +
     '<div class="qd-lado"><nav class="nm-tabs" aria-label="Prévia"><button type="button" data-aba="filme" title="O plano onde está o cursor, animado, com a lista do que acontece">Filme</button><button type="button" data-aba="ficha">Ficha</button><button type="button" data-aba="local">Local</button><button type="button" data-aba="pagina">Página</button><button type="button" data-aba="cores">Cores</button><button type="button" data-aba="locais">Locais</button><button type="button" data-aba="biblioteca" title="Todas as poses e animações em código">Biblioteca</button></nav>' +
@@ -377,7 +416,7 @@ export function iniciarName() {
   window.addEventListener("gm-texto-abrir", e => { const d = e.detail || {}; if (E.area.hidden) abrir(); if (d.codigo) inserirNoTexto(d.codigo, d.msg); });
   b("gerar").addEventListener("click", gerarTodas); b("zip").addEventListener("click", baixarZip); b("cancelar").addEventListener("click", () => { if (rodando) rodando.cancelar = true; });
   b("fechar").addEventListener("click", fechar);
-  b0 = b; b("mp4").addEventListener("click", () => exportarFilme("filme")); b("mp4plano").addEventListener("click", () => exportarFilme("plano")); b("pacote").addEventListener("click", () => exportarFilme("pacote"));
+  b0 = b; b("mp4").addEventListener("click", () => exportarFilme("filme")); b("hq").addEventListener("change", e => { const v = e.target.value; e.target.value = ""; if (v) acaoHq(v); }); b("mp4plano").addEventListener("click", () => exportarFilme("plano")); b("pacote").addEventListener("click", () => exportarFilme("pacote"));
   b("modelos").addEventListener("change", e => { const k = e.target.value; e.target.value = ""; if (!k) return; E.code.value = k === "Meu texto antes das lições" ? ls.ler("antesDasLicoes", E.code.value) : MODELOS[k]; realcar(); compilar(); ls.gravar("texto", E.code.value); });
   b("prompts").addEventListener("change", e => { const k = e.target.value; e.target.value = ""; if (!k) return; let t = PROMPTS_NAME[k]; if (/\{locais\}/.test(t)) t = t.replace("{locais}", bibliotecaLocais().listar().map(l => "- " + l.nome).join("\n") || "(nenhum)"); copiar(t + (/manual/i.test(t) ? "\n\n" + manualName() : ""), "Prompt “" + k + "” copiado (com o manual junto).") });
   b("manual").addEventListener("click", () => { E.texto.hidden = false; E.textoArea.value = manualName(); E.textoArea.scrollTop = 0; log("Manual aberto abaixo do editor (copie tudo para mandar à IA)."); });

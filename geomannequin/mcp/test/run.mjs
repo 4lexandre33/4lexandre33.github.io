@@ -330,7 +330,7 @@ async function suite(client, tag) {
     r = await call("pose_texto", { codigo: 'pose "pedido" de empe\n  ajoelha direito\n  ombro.direito(frente 70) cotovelo.direito(dobra 20)\n' });
     check(!r.isError && r.content[0].type === "image" && r.structuredContent.valores.armFlexR === 70, "pose_texto: juntas e atalhos" + (r.isError ? ": " + text(r) : ""));
     r = await call("animacao_texto", { codigo: 'pose "pl" de empe\n  quadril.direito(frente 35)\n  quadril.esquerdo(tras 15)\nciclo "andar-pl" de pl duracao 1s\n', fps: 4 });
-    check(!r.isError && r.structuredContent.loop === true && r.structuredContent.chaves >= 5, "animacao_texto: ciclo de uma pose" + (r.isError ? ": " + text(r) : ""));
+    check(!r.isError && r.structuredContent.loop === true && r.structuredContent.chaves === 5, "animacao_texto: ciclo de uma pose" + (r.isError ? ": " + text(r) : ""));
     r = await call("derivar_animacao", { base: "girar360E", operacoes: ["troca pernas por pose ajoelhado", "ate 90"], fps: 4 });
     check(!r.isError && r.structuredContent.duracao < 2, "derivar_animacao: de joelhos e só 90°" + (r.isError ? ": " + text(r) : ""));
     r = await call("ciclo_de_pose", { pose: "correndo", corre: true, fps: 4 });
@@ -350,6 +350,14 @@ async function suite(client, tag) {
     r = await call("lote", { codigo: 'pose "lt1" de empe\n  ombro(frente 90)\nanimacao "lt-anim" duracao 1s\n  chave 0s pose lt1\n  chave 1s pose empe\n' }); check(!r.isError && r.structuredContent.criados.length === 2, "lote: 2 criados");
     r = await call("codigo_de_animacao", { nome: "lt-anim" }); check(!r.isError, "lote salvou a animação na sessão");
     r = await call("manual_filme", {}); check(!r.isError && /16\. CÂMERA DE CINEMA/.test(text(r)), "manual_filme");
+    { const hq = 'elenco\n  Kai relevante\n  Mira relevante\nlocal "Rua" unidade m\n  chao retangulo -10,-10 a 10,10\npagina formato manga\nquadro 1 local "Rua" plano medio alvo Kai, Mira\n  Kai em (0,0) vira-para Mira\n  Mira em (1.3,0) vira-para Kai\n  Kai fala "Oi!"\nquadro 2 plano close alvo Mira ritmo cena\n  Mira grita "SAI!"\n';
+      r = await call("paginas_hq", { name: hq, saida: "pdf" }); check(!r.isError && r.content.some(x => x.type === "resource" && x.resource.mimeType === "application/pdf" && Buffer.from(x.resource.blob, "base64").slice(0, 5).toString() === "%PDF-"), "paginas_hq: PDF" + (r.isError ? ": " + text(r) : ""));
+      r = await call("paginas_hq", { name: hq, saida: "cbz" }); check(!r.isError && r.structuredContent.paginas === 1, "paginas_hq: CBZ");
+      r = await call("webtoon", { name: hq }); check(!r.isError && r.structuredContent.fatias >= 1, "webtoon" + (r.isError ? ": " + text(r) : ""));
+      r = await call("quadro_alternativas", { name: hq, quadro: 2, n: 2 }); check(!r.isError && r.structuredContent.alternativas.length === 2, "quadro_alternativas");
+      r = await call("auditar_animacoes", { nomes: ["andarCiclo"] }); check(!r.isError && r.structuredContent.ruins === 0, "auditar_animacoes" + (r.isError ? ": " + text(r) : ""));
+      r = await call("animais", { especie: "cavalo", montado: true }); check(!r.isError && r.content[0].type === "image" && r.structuredContent.especies.length >= 13, "animais" + (r.isError ? ": " + text(r) : ""));
+      r = await call("manual_avancado", {}); check(!r.isError && /22\. ANIMAIS/.test(text(r)) && /26\. VÍDEO AVANÇADO/.test(text(r)), "manual_avancado"); }
     r = await call("completar", { antes: 'pose "x"\n  ombro.direito(', miniaturas: true });
     check(!r.isError && r.structuredContent.itens.some(i => i.rotulo === "frente") && r.structuredContent.itens[0].svg && /0–180°/.test(r.structuredContent.ajuda), "completar: movimentos da junta com limites e miniatura" + (r.isError ? ": " + text(r) : "")); }
   return link;

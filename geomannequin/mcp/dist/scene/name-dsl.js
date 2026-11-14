@@ -564,6 +564,20 @@ function nmPlanoAnimais(F, t) {
     const andando = amPoseMarcha(s.marcha, fase % 1, base), fimT = s.giroDur + Math.hypot(pa.x - de.x, pa.z - de.z) / NM_M / (s.S / s.T);
     o.animal.pose = chegou ? amMisturar(andando, base, NM_SUAVE(Math.min(1, (tl - fimT) / 0.45))) : andando; }
 }
+/* animal que segue alguém (cachorro atrás do dono): a cada quadro anda até ficar a "dist" atrás da pessoa, no passo ou no trote, com os cascos/patas no ritmo */
+function nmSegueAnimais(F, t) {
+  const mem = F._segue = F._segue || {};
+  for (const o of SCN.objetos) { if (o.tipo !== "animal" || !o.animal || !o.animal.segue) continue; const alvo = SCN.list.find(x => x.name === o.animal.segue.quem); if (!alvo) continue;
+    if (F.trilhas.some(s => s.tipo === "animalMov" && s.quem === o.nome && t >= s.inicio - 1e-9)) continue;
+    let m = mem[o.nome]; if (!m || t < m.t - 1e-6) m = mem[o.nome] = { x: o.x, z: o.z, giro: o.giro || 0, fase: 0, t };
+    const dt = Math.max(0, t - m.t), esc = o.animal.escala || 1, ga = (alvo.params.wRot || 0) * Math.PI / 180, dist = (o.animal.segue.dist || 2.2) * NM_M * Math.max(0.6, esc);
+    const px = (alvo.params.wx || 0) - Math.sin(ga) * dist, pz = (alvo.params.wz || 0) - Math.cos(ga) * dist, dx = px - m.x, dz = pz - m.z, L = Math.hypot(dx, dz);
+    const marcha = L > 5 * NM_M ? "galope" : L > 1.2 * NM_M ? "trote" : "passo", Smt = amPassada(o.animal.especie, esc, marcha) * NM_M, Tc = amCiclo(o.animal.especie, esc, marcha), v = Smt / Tc;
+    if (L > 0.3 * NM_M) { const d = Math.min(L, v * dt); m.x += dx / L * d; m.z += dz / L * d; const alvoG = Math.atan2(dx, dz) * 180 / Math.PI; m.giro += nmAng(m.giro, alvoG) * Math.min(1, dt * 4); m.fase += d / Smt; m.parado = 0; }
+    else { m.parado = (m.parado || 0) + dt; m.giro += nmAng(m.giro, alvo.params.wRot || 0) * Math.min(1, dt * 2); }
+    m.t = t; o.x = m.x; o.z = m.z; o.giro = m.giro; const base = o.animal.pose || amPose("parado");
+    o.animal.pose = m.parado > 0 ? amMisturar(amPoseMarcha(marcha, m.fase % 1, base), base, Math.min(1, m.parado / 0.4)) : amPoseMarcha(marcha, m.fase % 1, base); }
+}
 /* câmera mirando um animal (quadro do name) */
 function nmCameraAnimal(o, plano, lado, el) {
   const g0 = amChaoMundo(), centro = qdPontoMundo(o, "sela", g0), cab = qdPontoMundo(o, "cabeca", g0), tam = Math.max(o.prof || 10, o.alt || 10), alvo = plano === "close" || plano === "detalhe" ? cab : [(centro[0] + cab[0]) / 2, centro[1] - (o.alt || 10) * 0.15, (centro[2] + cab[2]) / 2];
@@ -985,8 +999,8 @@ function compilarName(texto, opts = {}) {
 function nmCompilar(texto, opts = {}) {
   const ctx = { elenco: new Map(), apelidos: new Map(), coresUsadas: new Set(), locais: new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: new Map(), locaisRuins: new Set(), animacoes: new Map(), poses: new Map(), defs: [], salvar: opts.salvar !== false };
   const erros = [], avisos = [], quadros = [], paginas = []; ctx.erros = erros;
-  ctx.diretor = /^\s*diretor\s+(auto|automatico|automático|ligado)\b/im.test(texto);
-  let blocos; try { blocos = nmFilmeEstrutura(nmBlocos(String(texto).replace(/^\s*diretor\s+\S+.*$/gim, "")), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
+  ctx.diretor = /^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado)\b/im.test(texto);
+  let blocos; try { blocos = nmFilmeEstrutura(nmBlocos(String(texto).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
   /* semente e variáveis primeiro (valem para tudo) */
   for (const b of blocos) { const t = nmTokens(b.cab), w = nmNorm(t[0].v);
     if (w === "semente" || w === "seed") ctx.semente = t[1] ? (t[1].t === "num" ? t[1].v : String(t[1].v).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) : 1;
@@ -1663,6 +1677,7 @@ function videoDoFilme(r, o = {}) {
         const t = tela.historia(i / fps); loadScene(nmEstadoNoTempo(F, t));
         nmPlanoAnimais(F, t);
         nmPlanoPessoas(F, t, mems);
+        try { nmSegueAnimais(F, t); } catch (e) { }
         try { amAtualizarMontaria(); } catch (e) { }
         let falaAgora = null;
         for (const { f, L: lf } of linhas) { const it = SCN.list.find(x => x.name === f.quem); if (it && t >= f.inicio && t <= f.inicio + lf.duracao + 0.3) { falarNoTempo(it, f.tom, f.texto, t - f.inicio, { linha: lf }); falaAgora = { quem: f.quem, texto: f.texto };
@@ -1704,7 +1719,7 @@ function roteiroDoFilme(r, o = {}) {
     const linhas = [...eventos.map(e => fmt(e.t) + " s: " + e.texto), ...cam.map(c => fmt(c.t) + " s (câmera): " + c.texto)].sort((a, b) => parseFloat(a.replace(",", ".")) - parseFloat(b.replace(",", ".")));
     const prompt = "Plano " + F.n + " (" + fmt(nmTempoDeTela(F).dur) + " s" + ((F.vel || 1) < 1 ? ", câmera lenta " + Math.round(F.vel * 100) + "%" : (F.vel || 1) > 1 ? ", acelerado " + Math.round(F.vel * 100) + "%" : "") + ((F.congela || []).length ? ", imagem congela em " + F.congela.map(c => fmt(c.em) + " s por " + fmt(c.por) + " s").join(", ") : "") + (F.transicao && F.transicao.tipo !== "corte" ? ", entra com " + F.transicao.tipo : "") + "). " + (q.local ? "Local: " + q.local + (q.hora ? ", " + q.hora : "") + ". " : "") +
       "Câmera inicial: " + (q.plano || "plano") + ". " + linhas.join("; ") + ". Quem é quem: " + pessoas.join(", ") + ". Use esta referência para posição, poses, olhares, expressões, tempo e câmera; " + (o.estilo || "estilo final: animação 2D/3D estilizada") + ".";
-    const p = { n: F.n, cena: F.cena, inicio: +T0.toFixed(3), duracao: +nmTempoDeTela(F).dur.toFixed(3), velocidade: F.vel || 1, congela: F.congela || [], transicao: F.transicao, local: q.local || null, hora: q.hora || null, enquadramento: q.plano || null, personagens: q.personagens, eventos, camera: cam, falas: F.falas, marcas: F.marcas, legenda: q.legenda, prompt };
+    const p = { n: F.n, cena: F.cena, inicio: +T0.toFixed(3), duracao: +nmTempoDeTela(F).dur.toFixed(3), velocidade: F.vel || 1, congela: F.congela || [], transicao: F.transicao, local: q.local || null, hora: q.hora || null, enquadramento: q.plano || null, personagens: q.personagens, eventos, camera: cam, falas: F.falas, marcas: F.marcas, legenda: q.legenda, prompt, trilha: F.roteiro.map(e => ({ t: e.t, ate: e.ate ?? e.t, quem: e.quem || "", texto: e.texto, linha: e.linha || null })) };
     T0 += nmTempoDeTela(F).dur; return p; });
   const md = ["# " + (Fm.nome || "Filme") + " — lista de planos", "", "Duração total: " + fmt(T0) + " s · " + planos.length + " planos · " + (Fm.fps || 24) + " fps. Cada manequim tem uma cor fixa (veja \"Quem é quem\").", "",
     ...planos.flatMap(p => ["## Plano " + p.n + (p.cena ? " · cena “" + p.cena + "”" : "") + " — " + fmt(p.inicio) + " a " + fmt(p.inicio + p.duracao) + " s", "", "- Local: " + (p.local || "—") + (p.hora ? " (" + p.hora + ")" : "") + " · enquadramento: " + (p.enquadramento || "—") + " · entrada: " + (p.transicao ? p.transicao.tipo : "corte"),

@@ -181,9 +181,15 @@ O build passa a gerar um arquivo source-manifest.json em dist com hash dos arqui
 | `executar_codigo` | Roda o mesmo código do editor do app (`cena.adicionar(...)`, `camera.lente(35)`…). Ligado no modo local; desligado no servidor público |
 | `filme_texto` | Compila um **filme** (filme → cena → plano, linhas com tempo `0s`, `depois`, `junto`, câmera de cinema) e devolve a lista de planos e a folha de contato |
 | `plano_previa` | Tira de quadros de um plano (câmera, posições e tempo) antes de exportar |
-| `exportar_filme` | **MP4** (H.264, com o ffmpeg do computador) do filme ou de alguns planos; `pacote: true` = .zip com filme.mp4, um MP4 por plano, roteiro-de-planos.md, planos.json, prompts.txt, falas.srt e folha (para a IA de vídeo). Sem ffmpeg: quadros PNG + comando |
+| `exportar_filme` | **MP4** (H.264, com o ffmpeg do computador) do filme ou de alguns planos; `passes: ["contorno","openpose","profundidade"]` = um MP4 de cada referência; `pacote: true` = .zip com filme.mp4, um MP4 por plano, roteiro-de-planos.md, planos.json, prompts.txt, falas.srt e folha (para a IA de vídeo). Sem ffmpeg: quadros PNG + comando |
 | `camera_plano` | Trajetória da câmera de um plano (posição e alvo em metros, lente em mm) |
 | `manual_filme` | Capítulos 15–20 do manual: planos, câmera de cinema, ações/ciclos/esperas, objetos no tempo, princípios, falas, exportar |
+| `paginas_hq` | **Páginas de HQ** (mangá B5, comic, A4, quadrado; sangria, dupla, splash; painéis diagonais/sem borda) com **balões automáticos** (fala, pensa, grita, sussurra, rádio, narração) que apontam para a boca de quem fala e não cobrem rostos; saída PNG, **PDF** ou **CBZ** |
+| `webtoon` | Tira vertical (800 px) com o espaço entre quadros como tempo (ritmo, respiro); .zip em fatias de 1280 px |
+| `quadro_alternativas` | Até 6 versões do quadro/plano N (planos e ângulos diferentes) com miniatura e texto pronto |
+| `auditar_animacoes` | Mede em cada animação o corpo afundando (cm), o pé apoiado escorregando (cm/s) e se termina longe da pose de partida |
+| `animais` | Espécies do manequim quadrúpede, poses, marchas e exemplo de montaria; com `especie` devolve a imagem |
+| `manual_avancado` | Capítulos 22–26: animais e montaria, escala/voo/orientação, página/balões/webtoon, diretor e composição, vídeo avançado e auditor |
 | `catalogo_dsl` | **Catálogo** de todas as poses e animações em código (Markdown), com índice de verbos, esperas, expressões, efeitos e objetos |
 | `codigo_de_pose` / `codigo_de_animacao` | Uma pose (ou a pose atual de um manequim) e uma animação da biblioteca como texto da linguagem (ida e volta exata) |
 | `lote` | Vários blocos pose / ciclo / animacao de uma vez: salva todos e devolve miniaturas |

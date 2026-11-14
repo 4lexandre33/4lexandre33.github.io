@@ -557,4 +557,67 @@ cena "Praça" local "Praça" hora tarde
     1s Kai expressao alegria
     2s Kai acena
 
+
+22. ANIMAIS QUADRÚPEDES E MONTARIA
+  Manequim simplificado: tronco (cilindro com peito e anca), pescoço, cabeça com focinho, orelhas, rabo e 4 pernas de 3 segmentos com casco.
+  Espécies: cavalo, ponei, burro, camelo, dromedario, bode, ovelha, boi, cachorro, cachorroPequeno, lobo, gato, cervo, elefante (também pônei, burro, dromedário, cabra, vaca, cão, lobo, gata…).
+  ELENCO:   Trovão animal cavalo [sela] [escala 1.2] [cor #8a5a2b]        Rex animal cachorro        Duna animal camelo escala 0.9
+  NO QUADRO OU PLANO (sem tempo = arruma; com tempo = acontece):
+    Trovão em (0,0) gira 90 · Trovão vira-para Kai · Trovão olha Mira · Trovão escala 1.5 · Trovão sela
+    Trovão pose parado|atento|comendo|cabeca-baixa|deitado|sentado|empinado|pata-levantada|coice|agachado|uivando   (ou os verbos: empina, deita, senta, come/pasta, levanta, atento)
+    0s Trovão anda|trota|galopa|corre [15m] [para (x,z)|Kai]     0s Trovão galopa-ate (12,4)
+    Os cascos ficam plantados: a passada sai do comprimento da perna (passo 4 tempos, trote em diagonais, galope com voo).
+  MONTARIA: Kai monta Trovão (senta na sela; com tempo: "1s Kai monta Trovão") · 4s Kai desmonta [direita|esquerda]
+    Montado, a pessoa acompanha o balanço da sela, o giro e a andadura; os braços ficam livres para gestos (acena, aponta).
+  CARGA E SEGUIR: Trovão carrega "mala" (objeto do local vai no lombo) · Rex segue Kai (anda atrás da pessoa, passo/trote/galope conforme a distância).
+  CÂMERA: os animais servem de alvo como pessoas: camera segue Trovão lado direita distancia 6m · camera plano inteiro alvo Trovão lado perfil.
+  MCP: animais (espécies, poses, marchas e exemplo).
+
+23. ESCALA, VOO E ORIENTAÇÃO (gigantes, anões, fadas; corpos e objetos em qualquer ângulo)
+  ELENCO (tipo de corpo):  Golias gigante [4] · Atlas tita · Toco anao · Lumi fada · Pingo miniatura · Kai escala 0.5 · Kai tamanho 2
+    gigante = 3,5×, titã = 10×, anão = 0,62× com pernas curtas e cabeça maior, fada = 0,12× pairando, miniatura = 0,2×. Faixa: 0,03× a 30×.
+    Tudo acompanha a escala: passada e velocidade de andar, alcance, câmera (enquadramentos, distâncias e limites), chão e apoio.
+  NO PLANO: Kai escala 3 (muda no meio da história) · Lumi paira 1.5m · Lumi voa (sobe 1 m) · 0s Lumi voa-ate Golias altura 6m · Lumi pousa
+    Lumi sobre-mao Golias [esquerda] (a mão vira de palma para cima e a fada fica de pé nela) · Lumi sobre-ombro Golias · Lumi sobre-cabeca Golias
+  ORIENTAÇÃO DO CORPO: Kai inclina-corpo 30 [frente|tras] · Kai tomba-corpo 45 · Kai de-lado · Kai de-cabeca-para-baixo (gira o corpo inteiro)
+  ORIENTAÇÃO DE OBJETOS (no local): caixa "c" em (2,2) inclina 30 · coluna "tronco" em (-2,2) tamanho 0.4x0.4x3 tomba 90 · deitado · de-pe
+    (gira = em volta do eixo vertical; inclina = para a frente; tomba = de lado; a base é recalculada para o objeto encostar no chão).
+
+24. PÁGINA, BALÕES E WEBTOON (mangá, comic, A4, quadrado; tira vertical)
+  PÁGINA: pagina formato manga|comic|a4|quadrado|webtoon|livre [leitura japonesa|ocidental] [grade 2x3] [margem 40] [calha 14] [sangria] [dupla] [splash]
+    manga = B5 (182×257), comic = 6,625×10,25", a4, quadrado. sangria = a arte vai até a borda; dupla = página dupla (spread); splash = 1 quadro na página toda.
+  QUADRO: quadro 3 … tamanho pequeno|medio|grande|splash · borda diagonal [12] | nenhuma | grossa · sem-borda
+    Diagonal = painel inclinado (ação); sem borda = quadro aberto (calma, memória). A ordem de leitura segue a leitura da página (japonesa: da direita para a esquerda).
+  BALÕES (automáticos a partir das falas, com o rabicho apontando para a BOCA de quem fala e sem cobrir rostos):
+    Kai fala "…" (oval) · Kai pensa "…" (nuvem com bolinhas) · Mira grita|berra "…" (estourado) · Kai sussurra|cochicha "…" (tracejado)
+    Kai fala-radio|radio "…" (zigue-zague: telefone, rádio, TV) · narra "…" ou narrador "…" (caixa de narração no canto)
+    Os balões ficam na ordem de leitura (o primeiro a falar mais acima e no começo da leitura) e perto de quem fala.
+  WEBTOON: o espaço entre quadros é TEMPO. No quadro: ritmo momento|acao|sujeito|aspecto|lugar|tempo|cena · respiro [1.5] (espaço vazio, pausa).
+    Momento → quase colado; troca de cena → espaço grande. Exporta como tira de 800 px de largura em fatias de 1280 px.
+  RITMO (McCloud): momento-a-momento (câmera lenta), ação-a-ação, sujeito-a-sujeito (conversa), cena-a-cena (salto), aspecto-a-aspecto (clima, mangá), non-sequitur.
+  EXPORTAR: site → Texto → botões "Páginas PNG", "Páginas PDF", "Webtoon", "CBZ". MCP: paginas_hq (PNG/PDF/CBZ) e webtoon (tira e fatias).
+
+25. DIRETOR AUTOMÁTICO E COMPOSIÇÃO
+  diretor auto (linha solta no texto, vale para todos) ou "camera auto"/"diretor" no cabeçalho de um quadro ou plano. Também: cobertura auto.
+    Escolhe plano, lado e ângulo pela FUNÇÃO e pelo conteúdo: estabelecimento/troca de local → geral; fala → sobre-o-ombro/médio alternando;
+    emoção (surpresa, medo, grito) → close; clímax/ação → ângulo baixo; nunca repete o mesmo plano 3 vezes e respeita o EIXO de 180° entre os dois que conversam.
+  ALTERNATIVAS: quadro 4 … alternativas 6 (ou MCP quadro_alternativas): 6 versões do mesmo quadro (médio 3/4, close contra-plongée, geral plongée, americano perfil,
+    inteiro de costas, primeiro plano holandês) para escolher.
+  AVISOS DE COMPOSIÇÃO (aparecem com os erros): cabeça cortada pela borda, olhar sem espaço à frente (lead room), três quadros seguidos no mesmo plano,
+    câmera que cruza o eixo de 180°, mão na frente do corpo (silhueta).
+
+26. VÍDEO AVANÇADO, PÉS NO CHÃO E AUDITOR
+  CÂMERA: camera caminho (x,altura,z) (x,altura,z) (x,altura,z)… em 5s [olha Kai]   — percurso suave passando por todos os pontos (metros)
+    0s camera vertigo aproxima|afasta 50 em 3s   — dolly zoom: a câmera anda e a lente compensa (o alvo fica do mesmo tamanho, o fundo estica)
+    Curvas de tempo em qualquer movimento: … em 2s linear | entra (começa devagar) | sai (freia no fim) | suave (padrão)
+  TEMPO DO PLANO: plano 2 duracao 3s lento 50% (câmera lenta: a tela dura 6 s) · acelera 200% · congela 1.5s por 1s (a imagem para 1 s nesse ponto)
+  PERCURSO A PÉ: 0s Kai anda por (0,0) (3,1) (3,4) · corre por … (vira nos cantos, passadas do tamanho do corpo)
+  PASSES EM VÍDEO: MCP exportar_filme passes ["contorno","openpose","profundidade"] → passes/*.mp4 no .zip (referência para ControlNet de vídeo).
+  LINHA DO TEMPO (site → Texto → aba Filme): uma faixa por pessoa/animal e uma da câmera; clique numa barra para ir à linha; arraste para mudar o segundo.
+  PÉS NO CHÃO: o ciclo de andar tem 4 poses por passo (contato, recepção, passagem, impulso) e o corpo avança no ritmo do pé de apoio (pé parado no chão).
+    As animações prendem o pé de apoio automaticamente no filme (menos nado, rolar, cair, deitar, voo). Gestos passageiros voltam sozinhos à pose de antes.
+    Para soltar o chão: "Kai paira 0.05m" (folga) ou animações de voo.
+  AUDITOR: MCP auditar_animacoes (ou site → Texto → "Auditar animações") mede em cada animação quanto o corpo afunda no chão (cm), quanto o pé apoiado
+    escorrega (cm/s) e se termina longe da pose de partida. Limites: afunda > 3,5 cm ou escorrega > 12 cm/s (corrida 40, transições 30) = problema.
+  SOM: não há áudio; falas viram legendas e .srt e os tempos ficam na lista de planos.
 ```
