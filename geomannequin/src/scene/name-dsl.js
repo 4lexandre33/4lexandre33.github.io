@@ -31,7 +31,7 @@ import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
-import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
+import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
 const NM_M = 1 / 0.114; /* R por metro */
 /* ===================== cores do elenco ===================== */
@@ -378,6 +378,7 @@ function nmLerElenco(bloco, ctx) {
       else if (w === "cor") { e.cor = toks[++k].v; }
       else if (w === "animal" || w === "bicho") { const sp = toks[k + 1] && qdEspecie(toks[k + 1].v); if (!sp) throw new NmErro("animal QUAL? (" + Object.keys(QD_ESPECIES).join(", ") + ").", l.linha); e.animal = sp; k++; }
       else if (w === "sela" || w === "selado") e.sela = true;
+      else if (w === "ossos" || w === "esqueleto") e.ossos = true;
       else if (w === "tamanho" || w === "escala") { e.tamanho = toks[++k].v; }
       else if (NM_TIPO_CORPO[w] && w !== "normal") { e.tipoCorpo = w; if (toks[k + 1] && toks[k + 1].t === "num") e.tamanho = toks[++k].v; }
       else if (w === "apelido" || w === "=" ) { e.apelidos.push(toks[++k].v); }
@@ -522,7 +523,7 @@ function alternativasDeQuadro(texto, nQuadro, n = 3) {
   return ops.slice(0, Math.max(1, Math.min(6, n))).map((op, i) => { const L = linhas.slice(); L[idx] = ehPlano ? linhas[idx] : base + op; if (ehPlano) L.splice(idx + 1, 0, (linhas[idx + 1] || "").match(/^\s*/)[0] + "camera" + op); return { n: i + 1, cabecalho: ehPlano ? "camera" + op : (base + op).trim(), texto: L.join("\n") }; });
 }
 /* ===================== animais (quadrúpedes) ===================== */
-function nmAnimal(ctx, nome) { let o = amAchar(nome); if (o) return o; const e = ctx.elenco.get(nome) || {}; return amCriar(nome, e.animal || "cavalo", { escala: +e.tamanho || 1, cor: e.hex, sela: !!e.sela }); }
+function nmAnimal(ctx, nome) { let o = amAchar(nome); if (o) return o; const e = ctx.elenco.get(nome) || {}; o = amCriar(nome, e.animal || "cavalo", { escala: +e.tamanho || 1, cor: e.ossos ? "#ece4cf" : e.hex, sela: !!e.sela }); if (e.ossos && o) o.animal.ossos = true; return o; }
 function nmAnimalEstado(o) { return { x: o.x, z: o.z, giro: o.giro || 0, pose: JSON.parse(JSON.stringify(o.animal.pose || amPose("parado"))) }; }
 const NM_POSTURA_VERBO = { senta: "sentarNoChao", sentar: "sentarNoChao", "senta-se": "sentarNoChao", ajoelha: "ajoelhar", ajoelhar: "ajoelhar", "ajoelha-se": "ajoelhar", deita: "deitar", deitar: "deitar", "deita-se": "deitar", agacha: "agachar", agachar: "agachar", "agacha-se": "agachar", levanta: "levantarDoChao" };
 const NM_ANIMAL_POSE_VERBO = { empina: "empinado", deita: "deitado", senta: "sentado", come: "comendo", pasta: "comendo", levanta: "parado", "levanta-se": "parado", para: "parado", atento: "atento", uiva: "uivando", coice: "coice", "da-coice": "coice", agacha: "agachado" };
@@ -535,6 +536,8 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
     else if (w === "vira-para") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " vira-para QUEM?", l.linha); o.giro = ang(p); k = k2 - 1; }
     else if (w === "escala" || w === "tamanho") { o.animal.escala = Math.max(0.05, Math.min(40, +nx.v)); k++; }
     else if (w === "sela" || w === "selado") o.animal.sela = true;
+    else if (w === "ossos" || w === "esqueleto") { o.animal.ossos = true; if (!o.colOrig) o.colOrig = o.col || null; o.col = { fill: "#ece4cf", ink: "#4a4034" }; }
+    else if (w === "sem-ossos" || w === "corpo") { o.animal.ossos = false; if (o.colOrig !== undefined) { o.col = o.colOrig; delete o.colOrig; } }
     else if (w === "sem-sela") o.animal.sela = false;
     else if (w === "anima" || w === "animacao" || AMA_VERBOS[w] || (Q.animais && AMA_POSE_ANIM[w] && !(w === "levanta"))) { /* animação de animal: "Trovão anima salto-obstaculo", "Rex late por 3s", "Trovão empina" (no filme) */
       let an = w === "anima" || w === "animacao" ? (k++, nmNorm(nx.v)) : AMA_VERBOS[w] || AMA_POSE_ANIM[w]; if (!AMA[an]) throw new NmErro("Animação de animal “" + an + "” não existe. Há: " + Object.keys(AMA).join(", ") + ".", l.linha);
@@ -652,7 +655,7 @@ function nmEfeitosNoTempo(F, t) { for (const e of SCN.efeitos || []) { const a =
 function nmCameraAnimal(o, plano, lado, el) {
   const g0 = amChaoMundo(), centro = qdPontoMundo(o, "sela", g0), cab = qdPontoMundo(o, "cabeca", g0), tam = Math.max(o.prof || 10, o.alt || 10), alvo = plano === "close" || plano === "detalhe" ? cab : [(centro[0] + cab[0]) / 2, centro[1] - (o.alt || 10) * 0.15, (centro[2] + cab[2]) / 2];
   const d = { close: 0.45, detalhe: 0.3, "primeiro plano": 0.6, medio: 0.8, americano: 1.0, inteiro: 1.35, conjunto: 1.8, geral: 3 }[plano] ?? 1.35, az = ((o.giro || 0) + (lado ?? 40)) * Math.PI / 180, e = (el ?? 8) * Math.PI / 180, D = tam * d * 1.2;
-  aplicarCameraBlk([alvo[0] + Math.sin(az) * Math.cos(e) * D, alvo[1] + Math.sin(e) * D, alvo[2] + Math.cos(az) * Math.cos(e) * D], alvo); P.lens = 40; P.persp = 1; P.panX = 0; P.panY = 0; }
+  aplicarCameraBlk([alvo[0] + Math.sin(az) * Math.cos(e) * D, alvo[1] + Math.sin(e) * D, alvo[2] + Math.cos(az) * Math.cos(e) * D], alvo); P.lens = 40; P.persp = 1; P.panX = 0; P.panY = (CY - H / 2) * 18 * Math.max(3, D) / ((W / 2) * P.lens); }
 /* tipos de corpo por escala: gigante, anão, fada (com "Kai gigante 5" o número troca a escala) */
 const NM_TIPO_CORPO = { gigante: { params: { tamanho: 3.5 } }, titã: { params: { tamanho: 10 } }, tita: { params: { tamanho: 10 } }, anao: { params: { tamanho: 0.62, legLen: 0.78, armLen: 0.9, headScale: 1.12 } }, "anão": { params: { tamanho: 0.62, legLen: 0.78, armLen: 0.9, headScale: 1.12 } }, fada: { params: { tamanho: 0.12 }, paira: 0.4 }, miniatura: { params: { tamanho: 0.2 } }, normal: { params: { tamanho: 1, legLen: 1, armLen: 1, headScale: 1 } } };
 /* chão sob a pessoa (y do mundo, R) e um ponto do corpo (mão, ombro, cabeça) — pelas cápsulas, já com a escala */
