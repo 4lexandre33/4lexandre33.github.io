@@ -84,6 +84,32 @@ function vcHelicoptero(o) { const out = [], y = 9, a = ((o && o.rotor) || 0) * M
   return out; }
 function vcCasco(L, W, H, n, extra) { const out = []; for (let i = 0; i < n; i++) { const z = -L / 2 + (i + 0.5) * L / n, t = (z + L / 2) / L, w = W / 2 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.2 + t * 0.9)), 0.6) + 0.3, h = H * (0.8 + 0.4 * t);
     out.push(ocCaixa([0, h * 0.45, z], [w * 0.85, h * 0.45, L / n / 2 + 0.05]), ocCaixa([w - 0.2, h + 0.5, z], [0.25, 0.6, L / n / 2 + 0.05]), ocCaixa([-(w - 0.2), h + 0.5, z], [0.25, 0.6, L / n / 2 + 0.05])); } return out.concat(extra || []); }
+/* ===== TRILHO CURVO e TREM ARTICULADO ===== */
+/* move peças: gira em volta de y (graus, mesmo sentido do "giro" dos objetos) e desloca em x,z */
+function vcMover(parts, ang, tx, tz) { const g = ang * Math.PI / 180, c = Math.cos(g), s = Math.sin(g), M = [c, 0, s, 0, 1, 0, -s, 0, c];
+  const mul = (A, B) => [0, 1, 2].flatMap(i => [0, 1, 2].map(j => A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j]));
+  return parts.map(b => { const q = Object.assign({}, b), C = b.c; q.c = [C[0] * c + C[2] * s + tx, C[1], -C[0] * s + C[2] * c + tz]; q.R = mul(M, b.R || [1, 0, 0, 0, 1, 0, 0, 0, 1]); return q; }); }
+/* amostras do caminho do trilho (curva suave Catmull-Rom pelos pontos, em R, relativos ao objeto): [{x, z, s (comprimento), a (ângulo, graus)}] */
+function vcTrilhoAmostras(o) { const P = (o && o.caminho && o.caminho.length >= 2) ? o.caminho : [[0, -(o && o.prof || 440) / 2], [0, (o && o.prof || 440) / 2]], out = [];
+  const cr = (p0, p1, p2, p3, t) => [0, 1].map(i => 0.5 * (2 * p1[i] + (-p0[i] + p2[i]) * t + (2 * p0[i] - 5 * p1[i] + 4 * p2[i] - p3[i]) * t * t + (-p0[i] + 3 * p1[i] - 3 * p2[i] + p3[i]) * t * t * t));
+  for (let i = 0; i < P.length - 1; i++) { const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)], n = Math.max(2, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / 4));
+    for (let k = i ? 1 : 0; k <= n; k++) out.push(cr(p0, p1, p2, p3, k / n)); }
+  let S = 0; return out.map((q, i) => { if (i) S += Math.hypot(q[0] - out[i - 1][0], q[1] - out[i - 1][1]); const a = out[Math.min(out.length - 1, i + 1)], b = out[Math.max(0, i - 1)]; return { x: q[0], z: q[1], s: S, a: Math.atan2(a[0] - b[0], a[1] - b[1]) * 180 / Math.PI }; }); }
+function vcTrilhoEm(A, s) { if (s <= 0) return A[0]; for (let i = 1; i < A.length; i++) if (A[i].s >= s) { const u = (s - A[i - 1].s) / Math.max(1e-6, A[i].s - A[i - 1].s); return { x: A[i - 1].x + (A[i].x - A[i - 1].x) * u, z: A[i - 1].z + (A[i].z - A[i - 1].z) * u, s, a: A[i].a }; } return A[A.length - 1]; }
+function vcTrilhoPartes(o) { const A = vcTrilhoAmostras(o), out = [], off = (q, d) => { const g = q.a * Math.PI / 180; return [q.x + Math.cos(g) * d, q.z - Math.sin(g) * d]; };
+  for (let i = 1; i < A.length; i++) for (const d of [-6.3, 6.3]) { const a = off(A[i - 1], d), b = off(A[i], d); out.push(ocTubo([a[0], 1.0, a[1]], [b[0], 1.0, b[1]], 0.42)); }
+  const L = A[A.length - 1].s, n = Math.max(2, Math.floor(L / 5.4)); for (let k = 0; k <= n; k++) { const q = vcTrilhoEm(A, k * L / n), a = off(q, -11), b = off(q, 11); out.push(Object.assign(ocTubo([a[0], 0.3, a[1]], [b[0], 0.3, b[1]], 0.55), { r1: 0.55 })); }
+  return out; }
+/* trem: carros ao longo do trilho (o._carros = poses de cada carro no referencial do trem); sem trilho, em linha reta */
+const VC_TREM_CENTROS = k => k === 0 ? 0 : -89 - (k - 1) * 82;
+function vcTremPartes(o) { const n = Math.max(0, Math.min(6, Math.round(o.vagoes ?? 2))), C = o._carros;
+  if (!C || C.length !== n + 1) { const out = vcLocomotiva(0); for (let k = 0; k < n; k++) out.push(...vcVagao(VC_TREM_CENTROS(k + 1), 74)); return out; }
+  let out = vcMover(vcLocomotiva(0), C[0].a, C[0].x, C[0].z);
+  for (let k = 1; k <= n; k++) { out = out.concat(vcMover(vcVagao(0, 74), C[k].a, C[k].x, C[k].z));
+    /* sanfona entre os carros (a junção dobra na curva) */
+    const p = C[k - 1], q = C[k], ga = p.a * Math.PI / 180, gb = q.a * Math.PI / 180, ra = k === 1 ? 47 : 39, A2 = [p.x - Math.sin(ga) * ra, p.z - Math.cos(ga) * ra], B2 = [q.x + Math.sin(gb) * 39, q.z + Math.cos(gb) * 39];
+    out.push(Object.assign(ocTubo([A2[0], 18, A2[1]], [B2[0], 18, B2[1]], 9), { cor: "fundo" }), ocTubo([A2[0], 7, A2[1]], [B2[0], 7, B2[1]], 0.8)); }
+  return out; }
 function vcAssentosVagao(z0, L) { const A = {}, h = L / 2; [[-1, 1], [1, -1]].forEach(([s, ol], i) => { for (let r = 0; r < 3; r++) A["banco" + (i * 3 + r + 1)] = { p: [s * 6.5, 12.6, z0 - h + 12 + r * 14 + (ol < 0 ? 5 : 0)], olha: ol, dentro: true }; }); A["corredor"] = { p: [0, 8.6, z0], olha: 1, pe: true, dentro: true }; return A; }
 function vcVagao(z0, L) { const out = [], h = L / 2;
   out.push(ocCaixa([0, 7.2, z0], [5.6, 1.4, h + 1.6]), ocCaixa([0, 19.5, z0], [12.4, 11, h]), { cil: true, c: [0, 24.6, z0], r: 12.4, hh: h + 0.6, R: rotParaEixo([0, 0, 1]) });
@@ -332,7 +358,7 @@ const COMPOSTOS = {
   vagao: { nome: "vagão de passageiros (janelas, bancos, porta no fim)", larg: 26, prof: 78, alt: 32, grupo: "veiculo", veiculo: "trilho", corPadrao: "#2e7d4f",
     partes: o => vcVagao(0, 74), assentos: () => vcAssentosVagao(0, 74) },
   trem: { nome: "trem (locomotiva + vagões; “vagoes N” de 0 a 6)", larg: 26, prof: 260, alt: 38, grupo: "veiculo", veiculo: "trilho", corPadrao: "#b03a2e",
-    partes: o => { const n = Math.max(0, Math.min(6, Math.round(o.vagoes ?? 2))), out = vcLocomotiva(0); for (let k = 0; k < n; k++) out.push(...vcVagao(-48 - 4 - 37 - k * 82, 74)); return out; },
+    partes: o => vcTremPartes(o),
     assentos: o => { const n = Math.max(0, Math.min(6, Math.round((o && o.vagoes) ?? 2))), A = { maquinista: { p: [5, 9.6, -14], olha: 1, pe: true }, foguista: { p: [-5, 9.6, -16], olha: -1, pe: true } };
       for (let k = 0; k < n; k++) for (const [nm, a] of Object.entries(vcAssentosVagao(-48 - 4 - 37 - k * 82, 74))) A[(k ? "vagao" + (k + 1) + "-" : "") + nm] = a; return A; } },
   carro: { nome: "carro (modelo sedan, hatch, suv, esportivo, caminhonete, taxi, policia)", larg: 17, prof: 47, alt: 16, grupo: "veiculo", veiculo: "terra", corPadrao: "#3b6ea5",
@@ -362,7 +388,7 @@ const COMPOSTOS = {
     partes: o => [{ cil: true, c: [0, 16, 0], r: 16, hh: 130, R: rotParaEixo([0, 0, 1]) }, ocEsf([0, 16, 130], [16, 16, 24]), ocEsf([0, 16, -130], [16, 16, 30]), ocCaixa([0, 38, 40], [5, 10, 18]), ocCaixa([0, 42, 46], [16, 0.8, 4]), ocTubo([0, 48, 34], [0, 58, 34], 0.6), ocCaixa([0, 16, -160], [0.8, 14, 4]), ocCaixa([0, 16, -160], [14, 0.8, 4])],
     assentos: () => ({ torre: { p: [0, 48.6, 40], olha: 1, pe: true }, convés: { p: [6, 32.2, 80], olha: 1, pe: true } }) },
   trilho: { nome: "trilho (dois trilhos de aço sobre dormentes; “profundidade” = comprimento)", larg: 24, prof: 440, alt: 1.4, grupo: "veiculo", corPadrao: "#8a8378",
-    partes: o => { const L = o.prof || 440, out = []; for (const s of [-1, 1]) out.push(ocCaixa([s * 6.3, 1.0, 0], [0.38, 0.45, L / 2]), ocCaixa([s * 6.3, 0.6, 0], [0.7, 0.1, L / 2]));
+    partes: o => { if (o.caminho && o.caminho.length >= 2) return vcTrilhoPartes(o); const L = o.prof || 440, out = []; for (const s of [-1, 1]) out.push(ocCaixa([s * 6.3, 1.0, 0], [0.38, 0.45, L / 2]), ocCaixa([s * 6.3, 0.6, 0], [0.7, 0.1, L / 2]));
       const n = Math.max(2, Math.floor(L / 5.4)); for (let k = 0; k < n; k++) out.push(ocCaixa([0, 0.25, -L / 2 + 2.7 + k * (L - 5.4) / (n - 1)], [11, 0.25, 1.1])); return out; } }
 };
 Object.assign(COMPOSTOS, OBJ_MAO);
@@ -376,4 +402,4 @@ const SINONIMOS_COMPOSTOS = { carruagem: "carruagem", coche: "carruagem", dilige
   ancora: "ancora", "âncora": "ancora", "pilha de caixas": "pilhaCaixas", lanca: "lanca", "lança": "lanca", machado: "machado", escudo: "escudo", arco: "arco", cone: "cone", toro: "toro", anel: "toro", capsula: "capsula", "cápsula": "capsula", prisma: "prisma", esfera: "esfera", arvore: "arvore", "árvore": "arvore", palmeira: "palmeira", arbusto: "arbusto", poco: "poco", "poço": "poco", agua: "agua", "água": "agua", predio: "predio", "prédio": "predio", casa: "predio", rampa: "rampaDegraus", "escadaria": "rampaDegraus" };
 Object.assign(SINONIMOS_COMPOSTOS, SINONIMOS_MAO);
 function pegasDoObjeto(o) { const t = COMPOSTOS[o.tipo]; return t && t.pegas ? t.pegas(o) : {}; }
-export { VC_CARROS, COMPOSTOS, SINONIMOS_COMPOSTOS, pegasDoObjeto, rotParaEixo };
+export { vcTrilhoAmostras, vcTrilhoEm, VC_TREM_CENTROS, VC_CARROS, COMPOSTOS, SINONIMOS_COMPOSTOS, pegasDoObjeto, rotParaEixo };

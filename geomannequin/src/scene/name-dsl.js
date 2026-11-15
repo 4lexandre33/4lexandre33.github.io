@@ -36,11 +36,11 @@ import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo
 import { AV_VERBOS } from "./aves-anim.js";
 import { CR_VERBOS, ALADO_VERBOS } from "./criaturas-anim.js";
 import { lpExpandirTexto, lpAchar, localPronto } from "./locais-prontos.js";
-import { VC_VELOC, vcEhVeiculo, vcAssentos, vcEmbarcar, vcAtrelar, vcAtualizar } from "./veiculos.js";
+import { vcTremNoTrilho, VC_VELOC, vcEhVeiculo, vcAssentos, vcEmbarcar, vcAtrelar, vcAtualizar } from "./veiculos.js";
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
-import { SINONIMOS_MAO, qdMedidas, qdEhCriatura, cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
+import { vcTrilhoAmostras, vcTrilhoEm, SINONIMOS_MAO, qdMedidas, qdEhCriatura, cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
 const NM_M = 1 / 0.114; /* R por metro */
 /* ===================== cores do elenco ===================== */
@@ -182,6 +182,8 @@ function nmLerLocal(bloco, ctx) {
       else if (w === "nivel" || w === "nível") { o.nivel = nx.v; k++; }
       else if (w === "degraus") { o.degraus = nx.v; k++; }
       else if (w === "vagoes" || w === "vagões") { o.vagoes = nx.v; k++; }
+      else if (w === "caminho" || w === "curva") { const pts = []; while (toks[k + 1] && (toks[k + 1].t === "tupla" || toks[k + 1].v === ",")) { k++; if (toks[k].t === "tupla") pts.push([toks[k].v[0] * U, toks[k].v[1] * U]); } o.caminhoAbs = pts; }
+      else if (w === "no-trilho") { o.noTrilho = nx.v; k++; } else if (w === "posicao" || w === "posição" || w === "km") { o.trilhoS = nx.v * U; k++; }
       else if (w === "modelo" || w === "tipo-carro") { o.modelo = nmNorm(nx.v).replace("esporte", "esportivo").replace("picape", "caminhonete").replace("viatura", "policia"); k++; }
       else if (w === "sobe-para" || w === "sobe") { o.sobe = nmNorm(nx.v); k++; }
       else if (w === "paredes") { o.paredes = nx.v * U; k++; }
@@ -311,7 +313,7 @@ function nmObjeto(add, tipo0, p, o, linha) {
   if (!tipo) { const s = nmParecida(tipo0, Object.keys(TIPOS_OBJETO)); throw new NmErro("Objeto “" + tipo0 + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Tipos: " + Object.keys(TIPOS_OBJETO).join(", ") + "."), linha); }
   const D0 = TIPOS_OBJETO[tipo], cil = D0.forma === "cilindro" || ["arvore", "palmeira", "arbusto", "poco", "esfera", "cone"].includes(tipo);
   const larg = o.larg ?? (o.raio ? 2 * o.raio : D0.larg), prof = o.prof ?? (o.raio ? 2 * o.raio : D0.prof), alt = o.alt ?? D0.alt;
-  const novo = add({ tipo, x: p[0], z: p[1], larg, prof, alt, giro: o.giro || 0, base: o.base, classe: o.classe || NM_TIPO_CLASSE[tipo] || null, cor: o.cor, nome: o.nome || (["caixa"].includes(tipo) && t !== "caixa" ? tipo0 : tipo), nivel: o.nivel, cil, vagoes: o.vagoes, modelo: o.modelo });
+  const novo = add({ tipo, x: p[0], z: p[1], larg, prof, alt, giro: o.giro || 0, base: o.base, classe: o.classe || NM_TIPO_CLASSE[tipo] || null, cor: o.cor, nome: o.nome || (["caixa"].includes(tipo) && t !== "caixa" ? tipo0 : tipo), nivel: o.nivel, cil, vagoes: o.vagoes, modelo: o.modelo, caminhoAbs: o.caminhoAbs, noTrilho: o.noTrilho, trilhoS: o.trilhoS });
   /* orientação livre: inclina (gira para a frente) e tomba (gira de lado), além do giro no chão */
   if (o._rot && novo && typeof novo === "object") { const R = Math.PI / 180; novo.rot3 = rotM((o.giro || 0) * R, (o._inclina || 0) * R, (o._tomba || 0) * R); novo.inclina = o._inclina || 0; novo.tomba = o._tomba || 0;
     /* deitado/inclinado: encosta no chão (o ponto mais baixo da caixa girada fica em y = 0), a não ser que já tenha base */
@@ -324,7 +326,7 @@ function nmMontarLocal(plano) {
   const cont = {}, avisos = [];
   for (const it of plano.itens.slice(0, 300)) {
     try { cont[it.nome] = (cont[it.nome] || 0) + 1;
-      const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: Math.max(0.03, it.larg), prof: Math.max(0.03, it.prof), alt: Math.max(0.03, it.alt), giro: it.giro || 0, nome: (it.nome + (cont[it.nome] > 1 ? " " + cont[it.nome] : "")).slice(0, 24) , vagoes: it.vagoes, modelo: it.modelo });
+      const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: Math.max(0.03, it.larg), prof: Math.max(0.03, it.prof), alt: Math.max(0.03, it.alt), giro: it.giro || 0, nome: (it.nome + (cont[it.nome] > 1 ? " " + cont[it.nome] : "")).slice(0, 24) , vagoes: it.vagoes, modelo: it.modelo, caminhoAbs: it.caminhoAbs, noTrilho: it.noTrilho, trilhoS: it.trilhoS });
       if (it.base) { q.emAr = true; q.base = it.base; q.sobre = null; }
       if (it.rot3) { q.rot3 = it.rot3.slice(); q.emAr = true; q.base = it.base || 0; q.sobre = null; }
       q.grupo = "local:" + plano.nome; if (it.chao) q.chao = true; if (it.nivel && it.tipo === "caixa") q.nivel = it.nivel;
@@ -613,7 +615,7 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
 /* animais no instante t do plano */
 /* "0s Navio anda 40m [por 12s]" · "0s Trem anda 80m no-trilho Linha" · "0s Barco anda-ate (5,20)" · "0s Balsa vira 90" · "Trem re 10m" (de ré) */
 function nmVeiculoEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), vo = acharObjeto(tk[0].v); if (!vo || !vcEhVeiculo(vo)) return false;
-  const T = COMPOSTOS[vo.tipo], meio = T.veiculo, de = { x: vo.x, z: vo.z, giro: vo.giro || 0, base: vo.base || 0 }; let dist = null, alvo = null, giro = de.giro, re = false, vel = null, alt1 = null;
+  const T = COMPOSTOS[vo.tipo], meio = T.veiculo, de = { x: vo.x, z: vo.z, giro: vo.giro || 0, base: vo.base || 0 }; let dist = null, alvo = null, giro = de.giro, re = false, vel = null, alt1 = null, trilhoMov = null;
   for (let k = 1; k < tk.length; k++) { const w = nmNorm(tk[k].v), nx = tk[k + 1];
     if (/^(voa|decola|pousa|aterrissa|sobe|desce)$/.test(w)) { const voo = w === "voa" || w === "sobe" || w === "desce"; if (nx && nx.t === "num") { dist = nx.v * (nx.u === "R" ? 1 / NM_M : 1); k++; } if (w === "decola") alt1 = alt1 ?? 30; if (w === "pousa" || w === "aterrissa") alt1 = 0; void voo; }
     else if (w === "altura" || w === "altitude") { alt1 = nx.v; k++; }
@@ -622,12 +624,18 @@ function nmVeiculoEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), vo = ac
     else if (w === "vira" || w === "gira") { if (!nx || nx.t !== "num") throw new NmErro(vo.nome + " vira QUANTOS graus?", linha); giro = de.giro + nx.v; k++; }
     else if (w === "velocidade") { vel = nx.v; k++; }
     else if (w === "no-trilho" || w === "pelo-trilho" || w === "trilho") { const tr = acharObjeto(nx && nx.v); if (!tr || tr.tipo !== "trilho") throw new NmErro(vo.nome + " " + w + " QUAL trilho? (objeto trilho do local)", linha); k++;
-      const g = (tr.giro || 0) * Math.PI / 180, ux = Math.sin(g), uz = Math.cos(g), d0 = (vo.x - tr.x) * ux + (vo.z - tr.z) * uz; de.x = tr.x + ux * d0; de.z = tr.z + uz * d0; vo.base = tr.base || 0;
-      giro = Math.abs(nmAng(de.giro, tr.giro || 0)) <= 90 ? (tr.giro || 0) : (tr.giro || 0) + 180; de.giro = giro; }
+      /* posição atual ao longo do trilho (o ponto do caminho mais perto da frente do veículo) */
+      const A = vcTrilhoAmostras(tr), g0 = (tr.giro || 0) * Math.PI / 180, c0 = Math.cos(g0), s0 = Math.sin(g0); let best = 0, bd = 1e18;
+      if (vo.noTrilho === tr.nome && Number.isFinite(vo.trilhoS)) best = vo.trilhoS; else { const gv = (vo.giro || 0) * Math.PI / 180, fx = vo.x + Math.sin(gv) * 48, fz = vo.z + Math.cos(gv) * 48; for (const q of A) { const X = tr.x + q.x * c0 + q.z * s0, Z = tr.z - q.x * s0 + q.z * c0, d = (X - fx) ** 2 + (Z - fz) ** 2; if (d < bd) { bd = d; best = q.s; } }
+        vo.trilhoRe = Math.abs(nmAng(vo.giro || 0, (tr.giro || 0) + vcTrilhoEm(A, best).a)) > 90; if (vo.trilhoRe) best = A[A.length - 1].s - best; }
+      trilhoMov = { tr: tr.nome, s0: best, Ltot: A[A.length - 1].s }; }
     else if (w === "m" || w === "metros") { }
     else throw new NmErro("Não entendi “" + tk[k].v + "” para o veículo " + vo.nome + ". Use: anda N m · re N m · anda-ate (x,z) · vira N · no-trilho Linha · velocidade N · por Ns · voa N m altura H · decola [altura H] · pousa.", linha); }
   if (vo.puxadoPor) throw new NmErro(vo.nome + " é puxado por " + vo.puxadoPor + ": anime o animal (ex.: 0s " + vo.puxadoPor + " galopa 30m).", linha);
   if (!T.veiculo || T.veiculo === true) return false;
+  if (trilhoMov) { const d = (dist || 0) * NM_M * (re ? -1 : 1), s1 = Math.max(48, Math.min(trilhoMov.Ltot, trilhoMov.s0 + d)), L = Math.abs(s1 - trilhoMov.s0) / NM_M, dur = fl.por || Math.max(0.6, L / (vel || VC_VELOC[meio] || 3));
+    vo.noTrilho = trilhoMov.tr; vo.trilhoS = s1; vcTremNoTrilho(vo);
+    Qe.animais.push({ tipo: "veicMov", quem: vo.nome, inicio: 0, dur, trilho: { s0: trilhoMov.s0, s1 }, de, para: { x: vo.x, z: vo.z, giro: vo.giro }, texto: vo.nome + " anda " + L.toFixed(1) + " m no trilho " + trilhoMov.tr }); return true; }
   let para; if (alvo) { para = { x: alvo[0] * NM_M, z: alvo[1] * NM_M }; giro = Math.atan2(para.x - de.x, para.z - de.z) * 180 / Math.PI; }
   else { const g = giro * Math.PI / 180, d = (dist || 0) * NM_M * (re ? -1 : 1); para = { x: de.x + Math.sin(g) * d, z: de.z + Math.cos(g) * d }; }
   para.giro = giro; para.base = alt1 === null ? de.base : alt1 * NM_M; const L = Math.hypot(para.x - de.x, para.z - de.z) / NM_M, dur = fl.por || Math.max(0.6, L / (vel || VC_VELOC[meio] || 3), Math.abs(para.base - de.base) / NM_M / 4) + (giro !== de.giro && !alvo ? 1 : 0);
@@ -636,6 +644,7 @@ function nmVeiculoEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), vo = ac
   return true; }
 function nmPlanoAnimais(F, t) {
   for (const s of F.trilhas) { if (s.tipo !== "veicMov" || t < s.inicio - 1e-9) continue; const o = SCN.objetos.find(x => x.nome === s.quem); if (!o) continue;
+    if (s.trilho) { const u = Math.min(1, (t - s.inicio) / Math.max(0.05, s.dur)), e2 = u < 0.15 ? 0.5 * u * u / 0.15 / 0.85 : u > 0.85 ? 1 - 0.5 * (1 - u) * (1 - u) / 0.15 / 0.85 : (u - 0.075) / 0.85; o.trilhoS = s.trilho.s0 + (s.trilho.s1 - s.trilho.s0) * Math.max(0, Math.min(1, e2)); vcTremNoTrilho(o); continue; }
     const u = Math.min(1, (t - s.inicio) / Math.max(0.05, s.dur)), e = u < 0.15 ? 0.5 * u * u / 0.15 / 0.85 : u > 0.85 ? 1 - 0.5 * (1 - u) * (1 - u) / 0.15 / 0.85 : (u - 0.075) / 0.85, m = Math.max(0, Math.min(1, e));
     o.x = s.de.x + (s.para.x - s.de.x) * m; o.z = s.de.z + (s.para.z - s.de.z) * m; o.giro = s.de.giro + nmAng(s.de.giro, s.para.giro) * Math.min(1, u * 3);
     if (s.para.base !== undefined && s.de.base !== undefined) { o.base = s.de.base + (s.para.base - s.de.base) * NM_SUAVE(u); o.emAr = o.base > 0.5; } }
@@ -1449,7 +1458,7 @@ function nmCompilar(texto, opts = {}) {
         for (const l of linhas) { try {
           const tk = nmTokens(l.txt); if (!tk.length) continue; const w0 = nmNorm(tk[0].v);
           if (w0 === "objeto" || w0 === "coloca" || w0 === "adiciona") { /* objeto temporário do quadro */ const pl = { nome: "tmp", itens: [] }; const sub = { cab: "local tmp unidade m origem pronto", corpo: [{ txt: l.txt.replace(/^(objeto|coloca|adiciona)\s+/i, ""), linha: l.linha }], linha: l.linha };
-            const p2 = nmLerLocal(sub, ctx); p2.itens.forEach(it => { const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: it.larg, prof: it.prof, alt: it.alt, giro: it.giro, nome: it.nome, vagoes: it.vagoes, modelo: it.modelo }); if (it.base) { q.emAr = true; q.base = it.base; } }); void pl; continue; }
+            const p2 = nmLerLocal(sub, ctx); p2.itens.forEach(it => { const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: it.larg, prof: it.prof, alt: it.alt, giro: it.giro, nome: it.nome, vagoes: it.vagoes, modelo: it.modelo, caminhoAbs: it.caminhoAbs, noTrilho: it.noTrilho, trilhoS: it.trilhoS }); if (it.base) { q.emAr = true; q.base = it.base; } }); void pl; continue; }
           if (w0 === "efeito") { const tipo = tk[1] && tk[1].v; if (!CATALOGO[tipo] && tipo !== "explosao_completa") { const sg = nmParecida(tipo, Object.keys(CATALOGO).concat(["explosao_completa"])); throw new NmErro("Efeito “" + tipo + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), l.linha); }
             const ef = nmEfeitoOpcoes(ctx, tk, 1, l.linha, null); if (ef.k + 1 < tk.length) throw new NmErro("efeito " + tipo + ": não entendi “" + tk[ef.k + 1].v + "”" + (nmParecida(tk[ef.k + 1].v, VT_CAMINHOS) ? " (caminho: " + nmParecida(tk[ef.k + 1].v, VT_CAMINHOS) + "?)" : "") + ".", l.linha); (Q.efeitosDepois = Q.efeitosDepois || []).push(() => { try { nmEfeitoCriar(tipo, ef, null, null, null, Q); } catch (e) { Q.avisos.push("efeito " + tipo + ": " + e.message); } }); continue; }
           if ((w0 === "camera" || w0 === "câmera") && tk[1] && /^(preset|pre-?config)$/i.test(nmNorm(tk[1].v))) { const pr = nmLerPreset(ctx, l.txt, l.linha); Q.presetCamera = { def: pr.def, mapa: nmMapaPreset(ctx, pr, Q, l.linha), o: pr.o }; continue; }
