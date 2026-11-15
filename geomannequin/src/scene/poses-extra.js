@@ -178,7 +178,7 @@ px("amTkdGuarda", "Combate/Artes marciais/Taekwondo", "guarda do taekwondo|kyoru
 px("amCapoeiraMeiaLua", "Combate/Artes marciais/Capoeira", "meia lua de frente|meia-lua", "sf-6 ss-20 hf90,-4 ha60,8 kf0,10 fl30,60 ab50,40 el40,60 st-30 pt-40 m:aberta,aberta e:alegria");
 px("amCapoeiraArmada", "Combate/Artes marciais/Capoeira", "armada|meia lua de costas", "sf-10 ss-25 hf70,-4 ha80,10 kf10,10 fl40,90 ab80,30 el20,40 st80 pt80 hy-90 m:aberta,aberta e:determinacao");
 px("amCapoeiraQueixada", "Combate/Artes marciais/Capoeira", "queixada", "sf-8 ss-25 hf80,-4 ha70,8 hr-30,0 kf5,10 fl70,30 ab30,50 el60,40 st40 pt40 hy-40 m:aberta,aberta e:determinacao");
-px("amCapoeiraAu", "Combate/Artes marciais/Capoeira", "aú|estrela da capoeira", "br90 hf10,5 ha60,60 kf0,0 fl165,165 ab45,45 el0,0 m:espalmada,espalmada e:alegria");
+px("amCapoeiraAu", "Combate/Artes marciais/Capoeira", "aú|estrela da capoeira", "br90 hf10,5 ha60,60 kf0,0 fl30,30 ab160,160 el0,0 m:espalmada,espalmada e:alegria");
 px("amCapoeiraNegativa", "Combate/Artes marciais/Capoeira", "negativa|esquiva rasteira", "sf25 hf120,10 ha20,10 kf145,0 fl150,70 ab20,40 el10,90 hp-6 m:espalmada,aberta e:focoTotal");
 px("amCapoeiraEsquivaBaixa", "Combate/Artes marciais/Capoeira", "esquiva baixa|cocorinha", "sf40 hf120,120 ha25,25 kf140,140 fl140,40 ab20,30 el120,60 hp-10 m:aberta,aberta e:focoTotal");
 px("amCapoeiraMartelo", "Combate/Artes marciais/Capoeira", "martelo|chute martelo", "sf-10 ss-30 hf75,-4 ha80,6 hr40,0 kf20,10 af30,0 fl50,60 ab50,20 el80,100 st-40 pt-70 hy40 m:punho,aberta e:gritoDeGuerra");
