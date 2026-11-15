@@ -1460,8 +1460,8 @@ pose "sentado" de empe
 
 ```gm
 pose "sentadoChao" de empe
-  ombro(frente 25 abre 22)
-  cotovelo(dobra 40)
+  ombro(frente 20 abre 35)
+  cotovelo(dobra 35)
   mao(fecha 40%)
   quadril(frente 125 abre 45 gira-fora 45)
   joelho.direito(dobra 131)
@@ -11898,7 +11898,7 @@ No filme: `0s Kai anima sentarNoChao`
 animacao "sentarNoChao" duracao 1.2s mantem tags "Postura/Sentar"
   chave 0s 
   chave 0.6s ombro(frente 55) cotovelo(dobra 25) quadril(frente 62 abre 12 gira-fora 8) joelho(dobra 88) tornozelo(levanta-ponta 20) tronco(frente 22) cabeca(sobe 14)
-  chave 1.2s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tornozelo(aponta 0) tronco(frente 8) cabeca(baixa 6)
+  chave 1.2s ombro(frente 20 abre 35) cotovelo(dobra 35) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tornozelo(aponta 0) tronco(frente 8) cabeca(baixa 6)
 ```
 
 ### levantarDoChao — transição de postura, 1,20 s
@@ -11910,7 +11910,7 @@ No filme: `0s Kai anima levantarDoChao`
 ```gm
 # sentadoChao → empe (passando por agachado)
 animacao "levantarDoChao" duracao 1.2s mantem tags "Postura/Levantar"
-  chave 0s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tronco(frente 8) cabeca(baixa 6)
+  chave 0s ombro(frente 20 abre 35) cotovelo(dobra 35) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tronco(frente 8) cabeca(baixa 6)
   chave 0.6s ombro(frente 55 abre 12) cotovelo(dobra 25) mao(fecha 30%) quadril(frente 62 abre 12 gira-fora 8) joelho(dobra 88) tornozelo(levanta-ponta 20) tronco(frente 22) cabeca(sobe 14)
   chave 1.2s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0 abre 3 gira-fora 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0)
 ```
@@ -11963,7 +11963,7 @@ No filme: `0s Kai anima deitar`
 ```gm
 # sentadoChao → deitadoCostas
 animacao "deitar" duracao 1.2s mantem tags "Postura/Deitar"
-  chave 0s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tronco(frente 8) cabeca(baixa 6)
+  chave 0s ombro(frente 20 abre 35) cotovelo(dobra 35) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tronco(frente 8) cabeca(baixa 6)
   chave 1.1s ombro(frente 0 abre 14) cotovelo(dobra 0) mao(fecha 35%) quadril(frente 0 abre 3 gira-fora 12) joelho(dobra 0) tornozelo(aponta 25) tronco(frente 0) cabeca(baixa 0) corpo(deita-costas 90)
 ```
 
@@ -13662,7 +13662,7 @@ No filme: `0s Kai anima levantarDeCostas`
 # do chão (costas) até em pé
 animacao "levantarDeCostas" duracao 1.65s mantem tags "Postura/Levantar"
   chave 0s ombro(abre 14) mao(fecha 35%) quadril(gira-fora 12) tornozelo(aponta 25) corpo(deita-costas 90)
-  chave 0.55s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tornozelo(aponta 0) tronco(frente 8) cabeca(baixa 6) corpo(deita-brucos 0)
+  chave 0.55s ombro(frente 20 abre 35) cotovelo(dobra 35) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tornozelo(aponta 0) tronco(frente 8) cabeca(baixa 6) corpo(deita-brucos 0)
   chave 1.1s ombro.direito(frente 0 abre 10) ombro.esquerdo(frente 30 abre 12) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 60) mao(fecha 35%) quadril.direito(tras 6 abre 3 gira-fora 0) quadril.esquerdo(frente 88 abre 3 gira-fora 0) joelho(dobra 92) tornozelo.direito(aponta 10) tornozelo.esquerdo(levanta-ponta 4) dedos-pe.direito(levanta 55) tronco(frente 6) cabeca(baixa 0)
   chave 1.65s ombro.direito(abre 12) ombro.esquerdo(frente 0) cotovelo(dobra 0) mao(fecha 30%) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0)
 ```

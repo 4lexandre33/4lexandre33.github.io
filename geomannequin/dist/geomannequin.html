@@ -20421,7 +20421,7 @@ body.of-foco .stage svg{max-height:86vh}
       Object.assign(Q, { hipFlexL: 88, hipFlexR: 88, kneeFlexL: 88, kneeFlexR: 84, hipAbdL: 6, hipAbdR: 8, ankleFlexL: 2, ankleFlexR: 4, spineFlex: 6, pronL: -40, pronR: -40, handCurlL: 0.35, handCurlR: 0.35, headPitch: 4 });
       [1, -1].forEach((t) => maoNoCorpo(Q, t, (ch, pe) => applyA(pe[t].Th, [0, -pe[t].A.L1 * 0.62, 0.62 * pe[t].A.k])));
     },
-    sentadoChao: (Q, s) => Object.assign(Q, { hipFlexL: 125, hipFlexR: 125, hipAbdL: 45, hipAbdR: 45, hipRotL: 45, hipRotR: 45, kneeFlexL: 135, kneeFlexR: 131, ankleFlexL: 0, ankleFlexR: 0, ankleTiltL: 0, ankleTiltR: 0, spineFlex: 8, armFlexL: 25, armFlexR: 25, elbowL: 40, elbowR: 40, armAbdL: 22, armAbdR: 22, handCurlL: 0.4, handCurlR: 0.4, headPitch: 6 }),
+    sentadoChao: (Q, s) => Object.assign(Q, { hipFlexL: 125, hipFlexR: 125, hipAbdL: 45, hipAbdR: 45, hipRotL: 45, hipRotR: 45, kneeFlexL: 135, kneeFlexR: 131, ankleFlexL: 0, ankleFlexR: 0, ankleTiltL: 0, ankleTiltR: 0, spineFlex: 8, armFlexL: 20, armFlexR: 20, elbowL: 35, elbowR: 35, armAbdL: 35, armAbdR: 35, handCurlL: 0.4, handCurlR: 0.4, headPitch: 6 }),
     pernasEsticadas: (Q, s) => Object.assign(Q, { hipFlexL: 88, hipFlexR: 88, kneeFlexL: 0, kneeFlexR: 0, ankleFlexL: 18, ankleFlexR: 18, spineFlex: -12, armFlexL: -45, armFlexR: -45, armAbdL: 18, armAbdR: 18, elbowL: 0, elbowR: 0, wristL: -70, wristR: -70, handCurlL: 0.05, handCurlR: 0.05, headPitch: -6 }),
     abracandoJoelhos: (Q, s) => {
       Object.assign(Q, { hipFlexL: 118, hipFlexR: 118, kneeFlexL: 140, kneeFlexR: 140, ankleFlexL: 10, ankleFlexR: 10, hipAbdL: 4, hipAbdR: 4, spineFlex: 30, headPitch: 14, handCurlL: 0.55, handCurlR: 0.55 });
@@ -48346,7 +48346,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         return { nome: n2, erro: e.message };
       }
     });
-    const limDe = (x) => ({ afunda: /^mergulh/.test(x.nome) ? -99 : lim.afunda, escorrega: /^puloCorrida/.test(x.nome) ? 70 : /^(correr|passo(Frente|Tras|Lado))/.test(x.nome) ? 40 : /^(sentar|levantar|agachar|ajoelhar|defender)/.test(x.nome) ? 30 : lim.escorrega });
+    const limDe = (x) => ({ afunda: /^mergulh/.test(x.nome) ? -99 : lim.afunda, escorrega: /^puloCorrida/.test(x.nome) ? 70 : /^(sentarNoChao|levantarDoChao)$/.test(x.nome) ? 60 : /^(correr|passo(Frente|Tras|Lado))/.test(x.nome) ? 40 : /^(sentar|levantar|agachar|ajoelhar|defender)/.test(x.nome) ? 30 : lim.escorrega });
     itens.forEach((x) => {
       if (!x.erro) {
         x.limite = limDe(x);
