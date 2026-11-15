@@ -623,7 +623,7 @@ function nmVeiculoEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), vo = ac
     if (/^(voa|decola|pousa|aterrissa|sobe|desce)$/.test(w)) { const voo = w === "voa" || w === "sobe" || w === "desce"; if (nx && nx.t === "num") { dist = nx.v * (nx.u === "R" ? 1 / NM_M : 1); k++; } if (w === "decola") alt1 = alt1 ?? 30; if (w === "pousa" || w === "aterrissa") alt1 = 0; void voo; }
     else if (w === "altura" || w === "altitude") { alt1 = nx.v; k++; }
     else if (/^(anda|navega|avanca|avança|segue|corre|parte|desliza|vai|re|ré)$/.test(w)) { re = /^r[eé]$/.test(w); if (nx && nx.t === "num") { dist = nx.v * (nx.u === "R" ? 1 / NM_M : 1); k++; } }
-    else if (/^(anda-ate|navega-ate|vai-ate|anda-até|navega-até|vai-até)$/.test(w)) { const p = nx && nx.t === "tupla" ? nmXZ(nx.v) : null; if (!p) throw new NmErro(vo.nome + " " + w + " (x,z)?", linha); alvo = p; k++; }
+    else if (/^(anda-ate|navega-ate|vai-ate|voa-ate|voa-até|anda-até|navega-até|vai-até)$/.test(w)) { const p = nx && nx.t === "tupla" ? nmXZ(nx.v) : null; if (!p) throw new NmErro(vo.nome + " " + w + " (x,z)?", linha); alvo = p; k++; }
     else if (w === "vira" || w === "gira") { if (!nx || nx.t !== "num") throw new NmErro(vo.nome + " vira QUANTOS graus?", linha); giro = de.giro + nx.v; k++; }
     else if (w === "velocidade") { vel = nx.v; k++; }
     else if (w === "no-trilho" || w === "pelo-trilho" || w === "trilho") { const tr = acharObjeto(nx && nx.v); if (!tr || tr.tipo !== "trilho") throw new NmErro(vo.nome + " " + w + " QUAL trilho? (objeto trilho do local)", linha); k++;
@@ -1242,17 +1242,19 @@ const NM_GOLPE = {
   missil: { a: "segura lancaFoguetes", b: "arremessadoAlto", fx: ["efeito clarao_cano em {A}.lancaFoguetes.cano escala 1.6", "efeito fumaca em {A}.lancaFoguetes.traseira escala 0.6", "efeito projetil de {A}.lancaFoguetes.cano para {B} reta impacto explosao_completa elemento fogo escala 0.9 estica 2.5"] },
   granada: { a: "pose rfNinjaArremessoShuriken", b: "arremessadoAlto", fx: ["efeito projetil de {A}.maoDir para {B} balistica impacto explosao_completa elemento fogo escala 0.5"] }
 };
-function nmGolpeMacro(l) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt); if (!m) return null;
+function nmGolpeMacro(l, ctx) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt); if (!m) return null;
   let T = m[1] || "", Q = m[2], verbo = m[3].toLowerCase(), alvo = m[4], resto = m[5].trim().split(/\s+/).filter(Boolean), tipo = verbo === "dispara" ? "tiro" : "soco", cor = "";
   if (verbo === "dispara" && alvo && NM_GOLPE[nmNorm(alvo)]) { tipo = nmNorm(alvo); alvo = null; }
   for (let i = 0; i < resto.length; i++) { const w = nmNorm(resto[i]); if ((w === "em" || w === "contra" || w === "no" || w === "na") && resto[i + 1]) alvo = resto[++i]; else if (w === "com" && resto[i + 1]) { const t = nmNorm(resto[++i]).replace(/^feiti[cç]o$/, "feitico").replace(/^m[ií]ssil$/, "missil"); if (!NM_GOLPE[t]) throw new NmErro("“" + Q + " " + verbo + "” com QUÊ? Há: " + Object.keys(NM_GOLPE).join(", ") + ".", l.linha); tipo = t; } else if (w === "colorido" || w === "nanquim") cor = " " + w; else if (NM_GOLPE[w]) tipo = w; }
   if (!alvo) throw new NmErro(Q + " " + verbo + " QUEM? (ex.: " + Q + " golpeia Mira com espada)", l.linha);
   const G = NM_GOLPE[tipo], out = [], L = t => out.push({ txt: t, linha: l.linha, ind: l.ind }), t0 = parseFloat(T), filme = Number.isFinite(t0), T2 = filme ? (t0 + 0.25).toFixed(2).replace(/\.?0+$/, "") + "s " : T, fim = filme ? " some por 1" : "";
-  L(T + Q + " vira-para " + alvo); L(T + Q + " " + G.a); L(T2 + alvo + " vira-para " + Q); L(T2 + alvo + " pose " + G.b);
+  const eAnimal = ctx && ((ctx._animais && ctx._animais.has(alvo)) || (ctx.elenco && ctx.elenco.get(alvo) && ctx.elenco.get(alvo).animal)); /* alvo animal/criatura: sem pose humana de impacto (só o efeito) */
+  L(T + Q + " vira-para " + alvo); L(T + Q + " " + G.a); if (!eAnimal) { L(T2 + alvo + " vira-para " + Q); L(T2 + alvo + " pose " + G.b); }
   G.fx.forEach(f => { const e = f.replace(/\{A\}/g, Q).replace(/\{B\}/g, alvo); L((/projetil|feixe|cone|tracante|corte_ar|clarao|fumaca/.test(e) ? T : T2) + e + cor + (/projetil/.test(e) ? "" : fim)); });
   return out; }
-function nmExpandirPresets(blocos, ctx) { for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
-      if (!pr) { const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l) || nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
+function nmExpandirPresets(blocos, ctx) { ctx._animais = new Set(); for (const b of blocos) if (/^elenco\b/i.test(b.cab || "")) for (const l of b.corpo) { const m = /^(\S+)\s+(animal|bicho)\b/i.exec(l.txt); if (m) ctx._animais.add(m[1]); }
+  for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
+      if (!pr) { const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l, ctx) || nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
       pcArranjoTexto(pr.def, pr.nomes, pr.o).forEach(t => out.push({ txt: t, linha: l.linha, ind: l.ind }));
       out.push({ txt: "camera preset " + pr.def.id + " com " + pr.nomes.join(", ") + (pr.o.lente ? " lente " + pr.o.lente : "") + (pr.o.espelhar ? " espelhado" : ""), linha: l.linha, ind: l.ind }); }
     b.corpo = out; } return blocos; }

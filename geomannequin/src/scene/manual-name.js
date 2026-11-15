@@ -924,7 +924,7 @@ ${EXEMPLO_FILME}
 46. GOLPE COM IMPACTO E EFEITOS DE ARMA
   [T] Kai golpeia Mira [com ${Object.keys(NM_GOLPE).join("|")}] [colorido] — quem golpeia faz a pose de ataque, quem recebe faz a pose de impacto
     (rosto, estômago, de lado, arremessado) e o efeito certo aparece no ponto atingido. No filme o impacto chega 0,25 s depois e o efeito some em 1 s.
-    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute". Não precisa "segura" antes: a arma certa (espada, varinha, pistola, rifle, bazuca) vai para a mão sozinha.
+    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute". Alvo animal ou monstro funciona ("Mira golpeia Kong com missil"): o efeito vai nele, sem pose humana de impacto. Não precisa "segura" antes: a arma certa (espada, varinha, pistola, rifle, bazuca) vai para a mão sozinha.
   Efeitos novos: corte_ar (onda de corte que sai da espada) · choque_laminas (faíscas quando as armas se cruzam) · corte_impacto (corte no corpo) ·
     tracante (rajada de balas traçantes) · barreira_rachada (escudo rachando). Prontos de mangá também: corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma.
 
@@ -932,6 +932,7 @@ ${EXEMPLO_FILME}
   objeto carro "C" em (0,0) modelo sedan|hatch|suv|esportivo|caminhonete|taxi|policia (cada modelo com a sua forma e cor) · objeto onibus · aviao (tipo Boeing) · aviaoPequeno · helicoptero ·
     lancha · boteInflavel · barcoPesqueiro · submarino (com "base -5" fica submerso).
   Assentos: carro (motorista, carona, traseiro1/2, cacamba na caminhonete) · ônibus (motorista, banco1…16) · avião (piloto, copiloto, poltrona1…24) · helicóptero (piloto, copiloto, porta).
+  "anda N m" e "voa N m" aceleram e PARAM no fim; "voa-ate (x,z)" / "anda-ate (x,z)" levam até um ponto (o veículo vira para ele).
   No filme: 0s C anda 30m · 0s Aviao decola altura 40 · 2s Aviao voa 200m · 6s Aviao pousa · 0s H decola altura 20 · 3s H voa 30m (a hélice do helicóptero gira sozinha). Velocidades: terra 6, água 3, ar 40 m/s.
 
 48. TRILHO CURVO E TREM ARTICULADO
