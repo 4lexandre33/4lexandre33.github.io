@@ -41934,12 +41934,13 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function nmValidarLocal(pl) {
     const av = [], it2 = pl.itens, M2 = (v) => (v / NM_M).toFixed(1) + " m";
     it2.forEach((o) => {
+      if (o.noTrilho || o.caminhoAbs) return;
       const gg = (o.giro || 0) * Math.PI / 180, ex = Math.abs(Math.cos(gg)) * o.larg / 2 + Math.abs(Math.sin(gg)) * o.prof / 2, ez = Math.abs(Math.sin(gg)) * o.larg / 2 + Math.abs(Math.cos(gg)) * o.prof / 2;
       if (Math.abs(o.x) + ex > 400 || Math.abs(o.z) + ez > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)");
       if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes");
     });
     if (it2.length > 300) av.push("mais de 300 peças: só as 300 primeiras entram");
-    const altas = it2.filter((o) => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel), caixa2 = (o) => {
+    const altas = it2.filter((o) => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel && !o.noTrilho && o.tipo !== "trilho"), caixa2 = (o) => {
       const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g));
       return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2];
     };
@@ -42011,6 +42012,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       } catch (e) {
         avisos.push(it2.nome + ": " + e.message);
       }
+    }
+    try {
+      vcAtualizar();
+    } catch (e) {
     }
     if (plano.itens.length > 300) avisos.push("O local tem " + plano.itens.length + " peças; só as 300 primeiras entram.");
     SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcasNivel: plano.marcasNivel || {}, marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
@@ -42711,7 +42716,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           dist = nx.v * (nx.u === "R" ? 1 / NM_M : 1);
           k++;
         }
-      } else if (/^(anda-ate|navega-ate|vai-ate|anda-até|navega-até|vai-até)$/.test(w)) {
+      } else if (/^(anda-ate|navega-ate|vai-ate|voa-ate|voa-até|anda-até|navega-até|vai-até)$/.test(w)) {
         const p = nx && nx.t === "tupla" ? nmXZ(nx.v) : null;
         if (!p) throw new NmErro(vo.nome + " " + w + " (x,z)?", linha);
         alvo = p;
@@ -44675,7 +44680,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     missil: { a: "segura lancaFoguetes", b: "arremessadoAlto", fx: ["efeito clarao_cano em {A}.lancaFoguetes.cano escala 1.6", "efeito fumaca em {A}.lancaFoguetes.traseira escala 0.6", "efeito projetil de {A}.lancaFoguetes.cano para {B} reta impacto explosao_completa elemento fogo escala 0.9 estica 2.5"] },
     granada: { a: "pose rfNinjaArremessoShuriken", b: "arremessadoAlto", fx: ["efeito projetil de {A}.maoDir para {B} balistica impacto explosao_completa elemento fogo escala 0.5"] }
   };
-  function nmGolpeMacro(l) {
+  function nmGolpeMacro(l, ctx) {
     const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt);
     if (!m) return null;
     let T3 = m[1] || "", Q = m[2], verbo = m[3].toLowerCase(), alvo = m[4], resto = m[5].trim().split(/\s+/).filter(Boolean), tipo = verbo === "dispara" ? "tiro" : "soco", cor2 = "";
@@ -44695,10 +44700,13 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     }
     if (!alvo) throw new NmErro(Q + " " + verbo + " QUEM? (ex.: " + Q + " golpeia Mira com espada)", l.linha);
     const G = NM_GOLPE[tipo], out = [], L3 = (t) => out.push({ txt: t, linha: l.linha, ind: l.ind }), t0 = parseFloat(T3), filme = Number.isFinite(t0), T22 = filme ? (t0 + 0.25).toFixed(2).replace(/\.?0+$/, "") + "s " : T3, fim = filme ? " some por 1" : "";
+    const eAnimal = ctx && (ctx._animais && ctx._animais.has(alvo) || ctx.elenco && ctx.elenco.get(alvo) && ctx.elenco.get(alvo).animal);
     L3(T3 + Q + " vira-para " + alvo);
     L3(T3 + Q + " " + G.a);
-    L3(T22 + alvo + " vira-para " + Q);
-    L3(T22 + alvo + " pose " + G.b);
+    if (!eAnimal) {
+      L3(T22 + alvo + " vira-para " + Q);
+      L3(T22 + alvo + " pose " + G.b);
+    }
     G.fx.forEach((f) => {
       const e = f.replace(/\{A\}/g, Q).replace(/\{B\}/g, alvo);
       L3((/projetil|feixe|cone|tracante|corte_ar|clarao|fumaca/.test(e) ? T3 : T22) + e + cor2 + (/projetil/.test(e) ? "" : fim));
@@ -44706,6 +44714,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     return out;
   }
   function nmExpandirPresets(blocos2, ctx) {
+    ctx._animais = /* @__PURE__ */ new Set();
+    for (const b of blocos2) if (/^elenco\b/i.test(b.cab || "")) for (const l of b.corpo) {
+      const m = /^(\S+)\s+(animal|bicho)\b/i.exec(l.txt);
+      if (m) ctx._animais.add(m[1]);
+    }
     for (const b of blocos2) {
       const out = [];
       for (const l of b.corpo) {
@@ -44720,7 +44733,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           }
         }
         if (!pr) {
-          const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l) || nmMacroLinha(l);
+          const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l, ctx) || nmMacroLinha(l);
           if (mc) {
             out.push(...mc);
             continue;
@@ -48665,6 +48678,8 @@ ${EXEMPLO_FILME}
   Pose: Kai pose rfAgachadoApontando · Kai pose rfFurtivoColadoParede · Kai pose rfRendicaoAjoelhadoMaosAoAlto (apelidos em português também valem, entre aspas: pose "mãos ao alto").
   Cena: cena preset ref.ajuda.levantar com Kai, Mira · cena preset ref.papel.vila-trono com Ana, Leo, Rui · cena preset ref.luta.soco-no-rosto com Kai, Mira
     Cenas: ${PRECONFIG.filter((d) => /^ref\./.test(d.id)).map((d) => d.id.slice(4)).join(", ")}.
+  PAPÉIS das cenas: os nomes depois de "com" entram na ordem A, B, C — nas cenas ref.luta.* A ataca e B defende/recebe; em ref.papel.vila-trono A é a vilã no trono e B, C os servos;
+    em ref.ajuda.* A ajuda e B é ajudado; em ref.abraco.* A chega e B recebe. Use "em (x,z)" depois dos nomes para pôr a cena em outro lugar.
   No site: aba Catálogo → Referências; árvore de poses → Referência. MCP: catalogo categoria referencias. Lista das folhas e do que virou: docs/referencias/catalogo.md.
 
 45. ANIMAIS EM TAMANHO MONSTRO ("King Kong")
@@ -48675,7 +48690,7 @@ ${EXEMPLO_FILME}
 46. GOLPE COM IMPACTO E EFEITOS DE ARMA
   [T] Kai golpeia Mira [com ${Object.keys(NM_GOLPE).join("|")}] [colorido] — quem golpeia faz a pose de ataque, quem recebe faz a pose de impacto
     (rosto, estômago, de lado, arremessado) e o efeito certo aparece no ponto atingido. No filme o impacto chega 0,25 s depois e o efeito some em 1 s.
-    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute".
+    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute". Alvo animal ou monstro funciona ("Mira golpeia Kong com missil"): o efeito vai nele, sem pose humana de impacto. Não precisa "segura" antes: a arma certa (espada, varinha, pistola, rifle, bazuca) vai para a mão sozinha.
   Efeitos novos: corte_ar (onda de corte que sai da espada) · choque_laminas (faíscas quando as armas se cruzam) · corte_impacto (corte no corpo) ·
     tracante (rajada de balas traçantes) · barreira_rachada (escudo rachando). Prontos de mangá também: corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma.
 
@@ -48683,17 +48698,20 @@ ${EXEMPLO_FILME}
   objeto carro "C" em (0,0) modelo sedan|hatch|suv|esportivo|caminhonete|taxi|policia (cada modelo com a sua forma e cor) · objeto onibus · aviao (tipo Boeing) · aviaoPequeno · helicoptero ·
     lancha · boteInflavel · barcoPesqueiro · submarino (com "base -5" fica submerso).
   Assentos: carro (motorista, carona, traseiro1/2, cacamba na caminhonete) · ônibus (motorista, banco1…16) · avião (piloto, copiloto, poltrona1…24) · helicóptero (piloto, copiloto, porta).
+  "anda N m" e "voa N m" aceleram e PARAM no fim; "voa-ate (x,z)" / "anda-ate (x,z)" levam até um ponto (o veículo vira para ele).
   No filme: 0s C anda 30m · 0s Aviao decola altura 40 · 2s Aviao voa 200m · 6s Aviao pousa · 0s H decola altura 20 · 3s H voa 30m (a hélice do helicóptero gira sozinha). Velocidades: terra 6, água 3, ar 40 m/s.
 
 48. TRILHO CURVO E TREM ARTICULADO
   objeto trilho "Linha" em (0,0) caminho (-20,-20) (0,-15) (15,0) (15,20) — o trilho passa suave por todos os pontos (metros).
-  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo.
+  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo (o "em" é ignorado; vale no local e no quadro).
   0s Trem anda 45m no-trilho Linha por 7s — cada vagão segue a curva, as junções (sanfonas) dobram e quem está dentro vai junto no seu vagão.
 
 49. PORTAS E PORTÕES
   objeto porta|portaPequena|portaDupla|portaVidro|portaCorrer|portaCastelo|portaoGrade|portaoFerro|portaLevadica|alcapao "P" em (x,z) [gira g] [aberta 0.5 | aberta 90 | fechada | entreaberta | para-dentro]
+  "aberta" aceita fração (0 = fechada, 0.5 = meio, 1 = toda) ou graus (aberta 45 = metade). A levadiça "fechada" fica baixada no vão; ponha-a no portão do castelo.
+  Portas e veículos não podem ser "alvo" do enquadramento (alvo é para pessoas e animais): para mirar neles use camera (x,y,z) olhando (x,y,z).
   No filme: 0s Portao abre [por 2s] · 3s Portao fecha · Porta entreabre · Porta escancara (rápido). A levadiça sobe e desce; o alçapão gira no chão; a de correr desliza.
-  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local.`;
+  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local. "local X herda Y" também funciona com locais prontos (local preset castelo … "Y").`;
   }
   var CAT_TIPO = { acao: "ação (acontece e segura)", ciclo: "ciclo (repete)", espera: "espera viva", transicao: "transição de postura" };
   function catalogoItens() {

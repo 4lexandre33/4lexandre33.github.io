@@ -899,6 +899,8 @@ cena "Praça" local "Praça" hora tarde
   Pose: Kai pose rfAgachadoApontando · Kai pose rfFurtivoColadoParede · Kai pose rfRendicaoAjoelhadoMaosAoAlto (apelidos em português também valem, entre aspas: pose "mãos ao alto").
   Cena: cena preset ref.ajuda.levantar com Kai, Mira · cena preset ref.papel.vila-trono com Ana, Leo, Rui · cena preset ref.luta.soco-no-rosto com Kai, Mira
     Cenas: abraco.correndo, abraco.saltando, abraco.ajoelhados, abraco.consolo-sentado, ajuda.levantar, ajuda.puxar-penhasco, ajuda.ombro-ferido, ajuda.cuidar-ferido, ajuda.dar-agua, cooperacao.high-five, cooperacao.tres-abracados, cooperacao.roda-meditando, cooperacao.punhos, papel.mensageiro-entrega, papel.mensageiro-ajoelhado, papel.vila-trono, papel.vila-ameaca, papel.vila-trio, papel.provedor-presente, papel.infiltrador-troca, papel.furtivos-grupo, papel.sobreviventes-descanso, rendicao.rendido, luta.soco-no-rosto, luta.soco-no-estomago, luta.chute-arremessa, luta.joelhada, luta.energia, luta.ninja-shuriken, luta.rasteira, luta.cotovelada, luta.karate.oi-zuki-age-uke, luta.karate.gyaku-zuki-gedan, luta.karate.mae-geri-juji, luta.karate.yoko-geri-shuto, luta.karate.uraken-uchi-uke, luta.tkd.dollyo-makki, luta.tkd.neryo-esquiva, luta.tkd.bandal-guarda, luta.capoeira.meia-lua-cocorinha, luta.capoeira.armada-negativa, luta.capoeira.bencao-esquiva, luta.capoeira.martelo-guarda, luta.judo.kumikata, luta.judo.seoi-nage, luta.judo.o-soto-gari, luta.aikido.iriminage, luta.aikido.kote-gaeshi, luta.wing-chun.corrente-pak, luta.wing-chun.lap-tan, luta.shaolin.tigre-garca, luta.shaolin.serpente-louva, luta.shaolin.palma-dupla, luta.shaolin.dragao-macaco, luta.bjj.mata-leao, luta.karate.hiza-geri.
+  PAPÉIS das cenas: os nomes depois de "com" entram na ordem A, B, C — nas cenas ref.luta.* A ataca e B defende/recebe; em ref.papel.vila-trono A é a vilã no trono e B, C os servos;
+    em ref.ajuda.* A ajuda e B é ajudado; em ref.abraco.* A chega e B recebe. Use "em (x,z)" depois dos nomes para pôr a cena em outro lugar.
   No site: aba Catálogo → Referências; árvore de poses → Referência. MCP: catalogo categoria referencias. Lista das folhas e do que virou: docs/referencias/catalogo.md.
 
 45. ANIMAIS EM TAMANHO MONSTRO ("King Kong")
@@ -909,7 +911,7 @@ cena "Praça" local "Praça" hora tarde
 46. GOLPE COM IMPACTO E EFEITOS DE ARMA
   [T] Kai golpeia Mira [com soco|chute|joelhada|espada|corte|fogo|gelo|raio|energia|feitico|tiro|rajada|missil|granada] [colorido] — quem golpeia faz a pose de ataque, quem recebe faz a pose de impacto
     (rosto, estômago, de lado, arremessado) e o efeito certo aparece no ponto atingido. No filme o impacto chega 0,25 s depois e o efeito some em 1 s.
-    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute".
+    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute". Alvo animal ou monstro funciona ("Mira golpeia Kong com missil"): o efeito vai nele, sem pose humana de impacto. Não precisa "segura" antes: a arma certa (espada, varinha, pistola, rifle, bazuca) vai para a mão sozinha.
   Efeitos novos: corte_ar (onda de corte que sai da espada) · choque_laminas (faíscas quando as armas se cruzam) · corte_impacto (corte no corpo) ·
     tracante (rajada de balas traçantes) · barreira_rachada (escudo rachando). Prontos de mangá também: corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma.
 
@@ -917,15 +919,18 @@ cena "Praça" local "Praça" hora tarde
   objeto carro "C" em (0,0) modelo sedan|hatch|suv|esportivo|caminhonete|taxi|policia (cada modelo com a sua forma e cor) · objeto onibus · aviao (tipo Boeing) · aviaoPequeno · helicoptero ·
     lancha · boteInflavel · barcoPesqueiro · submarino (com "base -5" fica submerso).
   Assentos: carro (motorista, carona, traseiro1/2, cacamba na caminhonete) · ônibus (motorista, banco1…16) · avião (piloto, copiloto, poltrona1…24) · helicóptero (piloto, copiloto, porta).
+  "anda N m" e "voa N m" aceleram e PARAM no fim; "voa-ate (x,z)" / "anda-ate (x,z)" levam até um ponto (o veículo vira para ele).
   No filme: 0s C anda 30m · 0s Aviao decola altura 40 · 2s Aviao voa 200m · 6s Aviao pousa · 0s H decola altura 20 · 3s H voa 30m (a hélice do helicóptero gira sozinha). Velocidades: terra 6, água 3, ar 40 m/s.
 
 48. TRILHO CURVO E TREM ARTICULADO
   objeto trilho "Linha" em (0,0) caminho (-20,-20) (0,-15) (15,0) (15,20) — o trilho passa suave por todos os pontos (metros).
-  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo.
+  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo (o "em" é ignorado; vale no local e no quadro).
   0s Trem anda 45m no-trilho Linha por 7s — cada vagão segue a curva, as junções (sanfonas) dobram e quem está dentro vai junto no seu vagão.
 
 49. PORTAS E PORTÕES
   objeto porta|portaPequena|portaDupla|portaVidro|portaCorrer|portaCastelo|portaoGrade|portaoFerro|portaLevadica|alcapao "P" em (x,z) [gira g] [aberta 0.5 | aberta 90 | fechada | entreaberta | para-dentro]
+  "aberta" aceita fração (0 = fechada, 0.5 = meio, 1 = toda) ou graus (aberta 45 = metade). A levadiça "fechada" fica baixada no vão; ponha-a no portão do castelo.
+  Portas e veículos não podem ser "alvo" do enquadramento (alvo é para pessoas e animais): para mirar neles use camera (x,y,z) olhando (x,y,z).
   No filme: 0s Portao abre [por 2s] · 3s Portao fecha · Porta entreabre · Porta escancara (rápido). A levadiça sobe e desce; o alçapão gira no chão; a de correr desliza.
-  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local.
+  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local. "local X herda Y" também funciona com locais prontos (local preset castelo … "Y").
 ```

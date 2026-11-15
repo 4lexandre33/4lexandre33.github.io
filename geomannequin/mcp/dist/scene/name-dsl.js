@@ -300,9 +300,9 @@ function nmLerLocal(bloco, ctx) {
 /* conferência geométrica do local: fora dos limites, peças atravessadas, escada que não chega a nenhum nível, porta tapada */
 function nmValidarLocal(pl) {
   const av = [], it = pl.itens, M = v => (v / NM_M).toFixed(1) + " m";
-  it.forEach(o => { const gg = (o.giro || 0) * Math.PI / 180, ex = Math.abs(Math.cos(gg)) * o.larg / 2 + Math.abs(Math.sin(gg)) * o.prof / 2, ez = Math.abs(Math.sin(gg)) * o.larg / 2 + Math.abs(Math.cos(gg)) * o.prof / 2; if (Math.abs(o.x) + ex > 400 || Math.abs(o.z) + ez > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
+  it.forEach(o => { if (o.noTrilho || o.caminhoAbs) return; /* trem sobre o trilho e trilho curvo: a posição real vem do trilho */ const gg = (o.giro || 0) * Math.PI / 180, ex = Math.abs(Math.cos(gg)) * o.larg / 2 + Math.abs(Math.sin(gg)) * o.prof / 2, ez = Math.abs(Math.sin(gg)) * o.larg / 2 + Math.abs(Math.cos(gg)) * o.prof / 2; if (Math.abs(o.x) + ex > 400 || Math.abs(o.z) + ez > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
   if (it.length > 300) av.push("mais de 300 peças: só as 300 primeiras entram");
-  const altas = it.filter(o => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel), caixa = o => { const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g)); return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2]; };
+  const altas = it.filter(o => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel && !o.noTrilho && o.tipo !== "trilho"), caixa = o => { const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g)); return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2]; };
   for (let i = 0; i < altas.length && av.length < 30; i++) for (let j = i + 1; j < altas.length; j++) { const a = altas[i], b = altas[j]; if (a.tipo === "parede" && b.tipo === "parede") continue; if ((a.base || 0) >= (b.base || 0) + b.alt || (b.base || 0) >= (a.base || 0) + a.alt) continue;
     const A = caixa(a), B = caixa(b), ix = Math.min(A[2], B[2]) - Math.max(A[0], B[0]), iz = Math.min(A[3], B[3]) - Math.max(A[1], B[1]); if (ix > 2 && iz > 2) av.push("“" + a.nome + "” e “" + b.nome + "” se atravessam (" + M(ix) + " × " + M(iz) + ")"); }
   const niveis = Object.values(pl.niveis || {});
@@ -337,6 +337,7 @@ function nmMontarLocal(plano) {
       else if (base) { const v = ((cont[it.nome] * 37) % 17) - 8, hx = c => Math.max(0, Math.min(255, c + v)).toString(16).padStart(2, "0"); q.col = { fill: "#" + base.map(hx).join(""), ink: "#" + base.map(c => Math.round(c * 0.42).toString(16).padStart(2, "0")).join("") }; }
     } catch (e) { avisos.push(it.nome + ": " + e.message); }
   }
+  try { vcAtualizar(); } catch (e) { } /* trem "no-trilho": vai para o lugar certo do trilho já no local */
   if (plano.itens.length > 300) avisos.push("O local tem " + plano.itens.length + " peças; só as 300 primeiras entram.");
   SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcasNivel: plano.marcasNivel || {}, marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
   return avisos;
@@ -622,7 +623,7 @@ function nmVeiculoEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), vo = ac
     if (/^(voa|decola|pousa|aterrissa|sobe|desce)$/.test(w)) { const voo = w === "voa" || w === "sobe" || w === "desce"; if (nx && nx.t === "num") { dist = nx.v * (nx.u === "R" ? 1 / NM_M : 1); k++; } if (w === "decola") alt1 = alt1 ?? 30; if (w === "pousa" || w === "aterrissa") alt1 = 0; void voo; }
     else if (w === "altura" || w === "altitude") { alt1 = nx.v; k++; }
     else if (/^(anda|navega|avanca|avança|segue|corre|parte|desliza|vai|re|ré)$/.test(w)) { re = /^r[eé]$/.test(w); if (nx && nx.t === "num") { dist = nx.v * (nx.u === "R" ? 1 / NM_M : 1); k++; } }
-    else if (/^(anda-ate|navega-ate|vai-ate|anda-até|navega-até|vai-até)$/.test(w)) { const p = nx && nx.t === "tupla" ? nmXZ(nx.v) : null; if (!p) throw new NmErro(vo.nome + " " + w + " (x,z)?", linha); alvo = p; k++; }
+    else if (/^(anda-ate|navega-ate|vai-ate|voa-ate|voa-até|anda-até|navega-até|vai-até)$/.test(w)) { const p = nx && nx.t === "tupla" ? nmXZ(nx.v) : null; if (!p) throw new NmErro(vo.nome + " " + w + " (x,z)?", linha); alvo = p; k++; }
     else if (w === "vira" || w === "gira") { if (!nx || nx.t !== "num") throw new NmErro(vo.nome + " vira QUANTOS graus?", linha); giro = de.giro + nx.v; k++; }
     else if (w === "velocidade") { vel = nx.v; k++; }
     else if (w === "no-trilho" || w === "pelo-trilho" || w === "trilho") { const tr = acharObjeto(nx && nx.v); if (!tr || tr.tipo !== "trilho") throw new NmErro(vo.nome + " " + w + " QUAL trilho? (objeto trilho do local)", linha); k++;
@@ -1241,17 +1242,19 @@ const NM_GOLPE = {
   missil: { a: "segura lancaFoguetes", b: "arremessadoAlto", fx: ["efeito clarao_cano em {A}.lancaFoguetes.cano escala 1.6", "efeito fumaca em {A}.lancaFoguetes.traseira escala 0.6", "efeito projetil de {A}.lancaFoguetes.cano para {B} reta impacto explosao_completa elemento fogo escala 0.9 estica 2.5"] },
   granada: { a: "pose rfNinjaArremessoShuriken", b: "arremessadoAlto", fx: ["efeito projetil de {A}.maoDir para {B} balistica impacto explosao_completa elemento fogo escala 0.5"] }
 };
-function nmGolpeMacro(l) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt); if (!m) return null;
+function nmGolpeMacro(l, ctx) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt); if (!m) return null;
   let T = m[1] || "", Q = m[2], verbo = m[3].toLowerCase(), alvo = m[4], resto = m[5].trim().split(/\s+/).filter(Boolean), tipo = verbo === "dispara" ? "tiro" : "soco", cor = "";
   if (verbo === "dispara" && alvo && NM_GOLPE[nmNorm(alvo)]) { tipo = nmNorm(alvo); alvo = null; }
   for (let i = 0; i < resto.length; i++) { const w = nmNorm(resto[i]); if ((w === "em" || w === "contra" || w === "no" || w === "na") && resto[i + 1]) alvo = resto[++i]; else if (w === "com" && resto[i + 1]) { const t = nmNorm(resto[++i]).replace(/^feiti[cç]o$/, "feitico").replace(/^m[ií]ssil$/, "missil"); if (!NM_GOLPE[t]) throw new NmErro("“" + Q + " " + verbo + "” com QUÊ? Há: " + Object.keys(NM_GOLPE).join(", ") + ".", l.linha); tipo = t; } else if (w === "colorido" || w === "nanquim") cor = " " + w; else if (NM_GOLPE[w]) tipo = w; }
   if (!alvo) throw new NmErro(Q + " " + verbo + " QUEM? (ex.: " + Q + " golpeia Mira com espada)", l.linha);
   const G = NM_GOLPE[tipo], out = [], L = t => out.push({ txt: t, linha: l.linha, ind: l.ind }), t0 = parseFloat(T), filme = Number.isFinite(t0), T2 = filme ? (t0 + 0.25).toFixed(2).replace(/\.?0+$/, "") + "s " : T, fim = filme ? " some por 1" : "";
-  L(T + Q + " vira-para " + alvo); L(T + Q + " " + G.a); L(T2 + alvo + " vira-para " + Q); L(T2 + alvo + " pose " + G.b);
+  const eAnimal = ctx && ((ctx._animais && ctx._animais.has(alvo)) || (ctx.elenco && ctx.elenco.get(alvo) && ctx.elenco.get(alvo).animal)); /* alvo animal/criatura: sem pose humana de impacto (só o efeito) */
+  L(T + Q + " vira-para " + alvo); L(T + Q + " " + G.a); if (!eAnimal) { L(T2 + alvo + " vira-para " + Q); L(T2 + alvo + " pose " + G.b); }
   G.fx.forEach(f => { const e = f.replace(/\{A\}/g, Q).replace(/\{B\}/g, alvo); L((/projetil|feixe|cone|tracante|corte_ar|clarao|fumaca/.test(e) ? T : T2) + e + cor + (/projetil/.test(e) ? "" : fim)); });
   return out; }
-function nmExpandirPresets(blocos, ctx) { for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
-      if (!pr) { const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l) || nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
+function nmExpandirPresets(blocos, ctx) { ctx._animais = new Set(); for (const b of blocos) if (/^elenco\b/i.test(b.cab || "")) for (const l of b.corpo) { const m = /^(\S+)\s+(animal|bicho)\b/i.exec(l.txt); if (m) ctx._animais.add(m[1]); }
+  for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
+      if (!pr) { const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l, ctx) || nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
       pcArranjoTexto(pr.def, pr.nomes, pr.o).forEach(t => out.push({ txt: t, linha: l.linha, ind: l.ind }));
       out.push({ txt: "camera preset " + pr.def.id + " com " + pr.nomes.join(", ") + (pr.o.lente ? " lente " + pr.o.lente : "") + (pr.o.espelhar ? " espelhado" : ""), linha: l.linha, ind: l.ind }); }
     b.corpo = out; } return blocos; }
