@@ -795,10 +795,11 @@ function pgIrAte(it, k, a) {
 /* DUAS MÃOS NO MESMO LUGAR: se os dois contatos caem a menos do espaço de uma mão, a segunda vai para onde uma pessoa poria:
    objeto comprido (haste, cabo, lâmina, cano) → desliza ao longo do eixo comprido (12 cm num cabo curto, até 55 cm numa haste);
    objeto largo (caixa, cadeira, mesa) → lado oposto do objeto. Os dedos e a normal são recalculados na superfície nova. */
-function pgSepararMaos(k, cs) {
+function pgSepararMaos(k, cs, tipo) {
+  if (/^(arrastar|subirDegrauComCarga)$/.test(tipo || "")) return cs; /* pegadas por baixo/abraçando: as mãos já são as do desenho */
   if (cs.length !== 2 || !cs[0].P || !cs[1].P || cs[0].s === cs[1].s) return cs;
   const d = pgLen(pgSub(cs[0].P, cs[1].P)), m = k.meia, iL = m.indexOf(Math.max(...m)), L = m[iL] * 2, sec = [...m].sort((a, b) => b - a)[1] * 2, longo = L > sec * 2.2;
-  const minimo = longo ? Math.max(0.9, Math.min(4.8, L * (L > 9 ? 0.32 : 0.36))) : Math.max(1.4, sec * 0.8); if (d >= Math.min(minimo, longo ? L * 0.7 : 99)) return cs;
+  const minimo = longo ? Math.max(0.9, Math.min(4.8, L * (L > 9 ? 0.32 : 0.36))) : Math.max(1.4, sec * 0.8); if (d >= Math.min(minimo, longo ? L * 0.7 : 99, 1.0) || (k.o && k.o.tipo === "corda")) return cs; /* só conserta mãos praticamente no mesmo ponto (< ~11 cm); pegadas já afastadas (rifle, arco, corda) ficam como estão */
   const dom = k.s, i2 = cs[0].s === dom ? 1 : 0, c1 = cs[1 - i2], c2 = cs[i2], ax = k.ax[iL];
   let P;
   if (longo) { const t1 = pgDot(pgSub(c1.P, k.C), ax), lim = m[iL] - 0.35, dir = Math.abs(t1 + minimo) <= lim && (t1 <= 0 || Math.abs(t1 - minimo) > lim) ? 1 : -1; let t2 = Math.max(-lim, Math.min(lim, t1 + dir * minimo)); if (Math.abs(t2 - t1) < minimo * 0.6) t2 = Math.max(-lim, Math.min(lim, t1 - dir * minimo));
@@ -829,7 +830,7 @@ function segurarComo(it, o, tipo0, opts = {}) {
     const Ad = armDims(Q), alcance = Ad.L1 + Ad.L2 + 0.5 * Ad.LH - 0.25;
     let res = [], dedos = [], empurrado = 0, aproximado = 0; const folgaExtra = {}; let afastes = 0;
     for (let volta = 0; volta < 10; volta++) {
-      const cs = pgSepararMaos(k, A.contatos(k).filter(Boolean)).map(c => folgaExtra[c.s] ? Object.assign({}, c, { folga: (c.folga ?? (c.como === "forca" || c.como === "gancho" ? 0.02 : 0.03)) + folgaExtra[c.s] }) : c), alvos = cs.map(c => ({ c, a: pgAlvoDoContato(it, c) }));
+      const cs = pgSepararMaos(k, A.contatos(k).filter(Boolean), tipo).map(c => folgaExtra[c.s] ? Object.assign({}, c, { folga: (c.folga ?? (c.como === "forca" || c.como === "gancho" ? 0.02 : 0.03)) + folgaExtra[c.s] }) : c), alvos = cs.map(c => ({ c, a: pgAlvoDoContato(it, c) }));
       /* alcance: mais longe que o braço → aproxima (o objeto ou o corpo) */
       let falta = 0, dirF = [0, 0, 0];
       for (const { c, a } of alvos) { const sh = c.s > 0 ? k.B.oE : k.B.oD, v = pgSub(a.Pc, sh), d = pgLen(v); if (d > alcance) { falta = Math.max(falta, d - alcance); dirF = pgAdd(dirF, pgMul(pgNorm(v), d - alcance)); } }

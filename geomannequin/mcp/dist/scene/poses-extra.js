@@ -119,7 +119,7 @@ px("saltoDesviando", "Combate/Salto/Esquiva", "pulando para trás desviando", "b
 /* ===================== ARTES MARCIAIS (Shaolin: tigre, garça, serpente, louva-a-deus, macaco, dragão · judô · karatê · aikidô · wing chun · taekwondo · capoeira · jiu-jitsu) ===================== */
 px("amMabu", "Combate/Artes marciais/Shaolin", "base do cavalo|ma bu|mabu|horse stance", "sf2 hf65,65 ha42,42 hr18,18 kf95,95 fl-25,-25 ab12,12 el110,110 pr-80,-80 hp2 m:punho,punho e:focoTotal");
 px("amGongbu", "Combate/Artes marciais/Shaolin", "base do arco|gong bu|front stance", "sf2 hf55,-18 ha8,14 kf70,0 fl90,-25 ab10,12 el5,110 pr-80,-80 st-10 pt12 m:punho,punho e:determinacao");
-px("amPubu", "Combate/Artes marciais/Shaolin", "base rasteira|pu bu|base baixa estendida", "sf10 bl-4 hf85,10 ha20,70 kf140,0 hr20,10 fl40,140 ab40,30 el20,10 st20 m:aberta,espalmada e:focoTotal");
+px("amPubu", "Combate/Artes marciais/Shaolin", "base rasteira|pu bu|base baixa estendida", "sf10 hf85,10 ha20,70 kf140,0 hr20,10 fl40,140 ab40,30 el20,10 st20 m:aberta,espalmada e:focoTotal");
 px("amXiebu", "Combate/Artes marciais/Shaolin", "base cruzada sentada|xie bu", "sf6 hf80,60 ha10,-6 kf110,120 hr30,-30 fl80,60 ab40,20 el40,120 st30 pt20 hy-40 m:espalmada,punho e:focoTotal");
 px("amXubu", "Combate/Artes marciais/Shaolin", "base vazia|xu bu|base do gato chinesa", "sf2 hf45,70 kf55,95 af30,0 fl70,40 ab10,30 el40,110 st-10 m:gancho,espalmada e:calmo");
 px("amSaudacaoKungFu", "Combate/Artes marciais/Shaolin", "saudação kung fu|bao quan|punho e palma", "hf0,0 fl80,80 ab-5,-5 el95,95 hp4 m:espalmada,punho e:serio");
@@ -130,7 +130,7 @@ px("amGarcaAsas", "Combate/Artes marciais/Shaolin/Garça", "garça abre as asas|
 px("amGarcaBico", "Combate/Artes marciais/Shaolin/Garça", "bico da garça|garça bica", "sf4 hf90,-4 kf100,4 fl95,30 ab10,90 el5,30 wr60,70 hy-6 m:gancho,gancho e:focoTotal");
 px("amGarcaUmPe", "Combate/Artes marciais/Shaolin/Garça", "garça num pé só|grou", "hf100,0 kf120,0 ha6,0 fl150,20 ab20,80 el30,10 wr70,60 m:gancho,espalmada e:focoTotal");
 px("amSerpenteBote", "Combate/Artes marciais/Shaolin/Serpente", "serpente dá o bote|lança da serpente", "sf12 hf55,-18 kf70,0 fl90,40 ab5,30 el0,110 pr-10,-80 st-14 pt12 hp6 m:espalmada,espalmada e:olharFrio");
-px("amSerpenteBaixa", "Combate/Artes marciais/Shaolin/Serpente", "serpente rasteja|serpente baixa", "sf20 bl-3 hf85,20 ha20,60 kf130,10 fl60,110 ab10,30 el20,90 pr-10,-60 st20 m:espalmada,espalmada e:olharFrio");
+px("amSerpenteBaixa", "Combate/Artes marciais/Shaolin/Serpente", "serpente rasteja|serpente baixa", "sf20 hf85,20 ha20,60 kf130,10 fl60,110 ab10,30 el20,90 pr-10,-60 st20 m:espalmada,espalmada e:olharFrio");
 px("amSerpenteEnrola", "Combate/Artes marciais/Shaolin/Serpente", "serpente enrola|cobra enrolada", "sf8 hf40,60 kf55,90 fl100,60 ab-10,40 el90,120 ar40,0 pr-10,-60 st-30 pt10 m:espalmada,espalmada e:olharPenetrante");
 px("amLouvaDeusGuarda", "Combate/Artes marciais/Shaolin/Louva-a-deus", "louva-a-deus|tang lang|guarda do louva-a-deus", "sf6 hf45,70 kf55,95 af30,0 fl120,90 ab10,10 el110,120 wr80,80 hp2 m:gancho,gancho e:focoTotal");
 px("amLouvaDeusAgarra", "Combate/Artes marciais/Shaolin/Louva-a-deus", "louva-a-deus agarra|gancho do louva-a-deus", "sf10 hf55,-18 kf70,0 fl100,80 ab10,10 el30,100 wr80,80 st-10 pt10 m:gancho,gancho e:iraFocada");
@@ -178,8 +178,8 @@ px("amTkdGuarda", "Combate/Artes marciais/Taekwondo", "guarda do taekwondo|kyoru
 px("amCapoeiraMeiaLua", "Combate/Artes marciais/Capoeira", "meia lua de frente|meia-lua", "sf-6 ss-20 hf90,-4 ha60,8 kf0,10 fl30,60 ab50,40 el40,60 st-30 pt-40 m:aberta,aberta e:alegria");
 px("amCapoeiraArmada", "Combate/Artes marciais/Capoeira", "armada|meia lua de costas", "sf-10 ss-25 hf70,-4 ha80,10 kf10,10 fl40,90 ab80,30 el20,40 st80 pt80 hy-90 m:aberta,aberta e:determinacao");
 px("amCapoeiraQueixada", "Combate/Artes marciais/Capoeira", "queixada", "sf-8 ss-25 hf80,-4 ha70,8 hr-30,0 kf5,10 fl70,30 ab30,50 el60,40 st40 pt40 hy-40 m:aberta,aberta e:determinacao");
-px("amCapoeiraAu", "Combate/Artes marciais/Capoeira", "aú|estrela da capoeira", "br90 hf20,10 ha70,70 kf0,0 fl170,170 ab30,30 el0,0 m:espalmada,espalmada e:alegria");
-px("amCapoeiraNegativa", "Combate/Artes marciais/Capoeira", "negativa|esquiva rasteira", "sf25 bl-4 hf120,10 ha20,10 kf145,0 fl150,70 ab20,40 el10,90 hp-6 m:espalmada,aberta e:focoTotal");
+px("amCapoeiraAu", "Combate/Artes marciais/Capoeira", "aú|estrela da capoeira", "br90 hf10,5 ha60,60 kf0,0 fl30,30 ab160,160 el0,0 m:espalmada,espalmada e:alegria");
+px("amCapoeiraNegativa", "Combate/Artes marciais/Capoeira", "negativa|esquiva rasteira", "sf25 hf120,10 ha20,10 kf145,0 fl150,70 ab20,40 el10,90 hp-6 m:espalmada,aberta e:focoTotal");
 px("amCapoeiraEsquivaBaixa", "Combate/Artes marciais/Capoeira", "esquiva baixa|cocorinha", "sf40 hf120,120 ha25,25 kf140,140 fl140,40 ab20,30 el120,60 hp-10 m:aberta,aberta e:focoTotal");
 px("amCapoeiraMartelo", "Combate/Artes marciais/Capoeira", "martelo|chute martelo", "sf-10 ss-30 hf75,-4 ha80,6 hr40,0 kf20,10 af30,0 fl50,60 ab50,20 el80,100 st-40 pt-70 hy40 m:punho,aberta e:gritoDeGuerra");
 px("amBjjGuardaFechada", "Combate/Artes marciais/Jiu-jitsu", "guarda fechada|guarda do jiu-jitsu", "bp-90 sf20 hf100,100 ha40,40 kf110,110 fl90,90 ab20,20 el90,90 hp30 m:garra,garra e:determinacao");
