@@ -188,6 +188,21 @@ px("amBjjChaveDeBraco", "Combate/Artes marciais/Jiu-jitsu", "chave de braço|arm
 px("amBjjMataLeao", "Combate/Artes marciais/Jiu-jitsu", "mata-leão|estrangulamento por trás", "sf10 hf20,10 kf30,25 fl70,80 ab-30,10 el140,120 ar40,0 hp10 m:garra,espalmada e:esforco");
 px("amBjjTriangulo", "Combate/Artes marciais/Jiu-jitsu", "triângulo|estrangulamento triângulo", "bp-90 sf30 hf130,110 ha10,40 kf100,30 fl80,80 ab20,20 el90,90 hp40 m:garra,garra e:esforco");
 px("amBjjRaspagem", "Combate/Artes marciais/Jiu-jitsu", "raspagem|sweep", "bp-80 sf20 hf120,40 ha30,10 kf60,30 fl70,90 ab30,10 el80,70 st20 hp30 m:garra,garra e:esforco");
+/* artes marciais: mais ataques e defesas (para as duplas ataque × defesa) */
+px("amKarateUchiUke", "Combate/Artes marciais/Karatê/Defesa", "uchi uke|defesa por dentro", "sf2 hf55,-18 kf70,0 fl80,-25 ab-10,12 el100,110 ar30,0 pr-80,-80 st-10 m:punho,punho e:focoTotal");
+px("amKarateJuujiUke", "Combate/Artes marciais/Karatê/Defesa", "juji uke|defesa em X", "sf10 hf55,-18 kf70,0 fl40,40 ab-15,-15 el40,40 pr-80,-80 hp10 m:punho,punho e:focoTotal");
+px("amKarateUraken", "Combate/Artes marciais/Karatê/Ataque", "uraken|soco de costas da mão", "sf2 hf25,45 kf20,75 hr0,50 fl90,-25 ab70,12 el20,110 ar-60,0 st-40 pt40 hy40 m:punho,punho e:gritoDeGuerra");
+px("amKarateHizaGeri", "Combate/Artes marciais/Karatê/Ataque", "hiza geri|joelhada do karatê", "sf10 hf115,-5 kf130,10 fl70,70 ab20,20 el110,110 pr-80,-80 m:punho,punho e:gritoDeGuerra");
+px("amTkdMakki", "Combate/Artes marciais/Taekwondo/Defesa", "makki|bloqueio do taekwondo", "hf10,-6 kf18,12 fl60,120 ab20,30 el110,90 ar0,-30 st-40 pt40 hy40 m:punho,punho e:focoTotal");
+px("amTkdBandalChagi", "Combate/Artes marciais/Taekwondo/Ataque", "bandal chagi|chute rápido de lado", "sf-8 ss-20 hf70,-4 ha60,6 hr40,0 kf30,10 fl40,60 ab40,20 el100,120 st-40 pt-60 hy40 m:punho,punho e:gritoDeGuerra");
+px("amWingChunLapSau", "Combate/Artes marciais/Wing chun/Defesa", "lap sau|puxar o braço", "hf20,20 ha16,16 hr-20,-20 kf35,35 fl50,70 ab0,0 el100,20 m:garra,punho e:focoTotal");
+px("amCapoeiraBencao", "Combate/Artes marciais/Capoeira/Ataque", "bênção|benção|chute de empurrar", "sf-15 hf95,-4 kf10,10 af-10,0 fl50,60 ab40,30 el40,60 hp-10 m:aberta,aberta e:determinacao");
+px("amCapoeiraCocorinha", "Combate/Artes marciais/Capoeira/Defesa", "cocorinha|esquiva agachada protegendo", "sf40 hf120,120 ha25,25 kf140,140 fl130,30 ab20,30 el140,60 hp10 m:aberta,espalmada e:focoTotal");
+px("amKungFuBloqueioGarca", "Combate/Artes marciais/Shaolin/Defesa", "asa da garça bloqueando", "sf4 hf45,70 kf55,95 fl110,40 ab40,20 el40,90 wr60,40 st-20 m:gancho,espalmada e:calmo");
+px("amKungFuPalmaDupla", "Combate/Artes marciais/Shaolin/Ataque", "palma dupla|duas palmas no peito", "sf10 hf55,-18 kf70,0 fl90,90 ab0,0 el10,10 wr-70,-70 st0 m:espalmada,espalmada e:gritoDeGuerra");
+px("amJudoDefesaQuadril", "Combate/Artes marciais/Judô/Defesa", "bloqueio com o quadril|abaixar o centro", "sf10 hf60,60 ha20,20 kf75,75 fl60,60 ab20,20 el80,80 hp10 m:garra,garra e:esforco");
+px("amJudoCaindoProjetado", "Combate/Artes marciais/Judô/Defesa", "sendo projetado|voando na projeção", "bl6 bp-120 sf20 hf60,90 kf40,90 fl120,60 ab40,30 el30,40 hp20 m:aberta,garra e:susto");
+px("amBjjDefendendoMataLeao", "Combate/Artes marciais/Jiu-jitsu/Defesa", "defendendo o mata-leão|puxando o braço do pescoço", "hf90,70 kf60,40 sf10 fl90,90 ab0,0 el120,120 hp10 m:garra,garra e:esforco");
 /* ===================== REFERÊNCIAS DO USUÁRIO (folhas de manequins): poses catalogadas por tema — Referência/<tema>/<sub> ===================== */
 px("rfAgachadoCocoras", "Referência/Agachado/Cócoras", "cócoras|agachado de cócoras", "sf20 hf115,115 ha20,20 kf140,140 af30,30 fl40,40 ab20,20 el60,60 hp5 m:relaxada,relaxada e:neutra");
 px("rfAgachadoApontando", "Referência/Agachado/Cócoras", "agachado apontando", "sf18 hf115,115 ha22,22 kf140,140 af30,30 fl90,30 ab20,20 el0,60 hp-5 m:apontar,relaxada e:determinacao");
@@ -224,7 +239,7 @@ px("rfFlutuandoGirando", "Referência/Flutuar/Gravidade zero", "girando no ar", 
 px("rfFlutuandoBracosAbertosRef", "Referência/Flutuar/Gravidade zero", "braços abertos flutuando", "bl10 hf10,20 kf20,30 fl20,20 ab80,80 el10,10 hp-10 m:aberta,aberta e:encantado");
 px("rfFlutuandoEncolhidoNoAr", "Referência/Flutuar/Gravidade zero", "encolhido no ar", "bl10 sf40 hf110,110 kf130,130 fl60,60 ab10,10 el120,120 hp20 m:aberta,aberta e:medo");
 px("rfCaindoDeCostasRef", "Referência/Flutuar/Queda", "caindo de costas", "bl8 bp-45 sf-10 hf30,10 kf40,20 fl150,120 ab40,50 el20,30 hp-20 m:aberta,aberta e:susto");
-px("rfCaindoDeFrente", "Referência/Flutuar/Queda", "caindo de frente", "bl8 bp50 sf-20 hf-10,10 kf20,40 fl140,140 ab65,65 el10,10 hp-30 m:aberta,aberta e:panico");
+px("rfCaindoDeFrente", "Referência/Flutuar/Queda", "caindo de frente", "bl8 bp50 sf-20 hf-10,10 kf20,40 fl50,50 ab130,130 el10,10 hp-30 m:aberta,aberta e:panico");
 px("rfRendicaoMaosAoAltoRef", "Referência/Rendição/Em pé", "mãos ao alto|não atire", "fl170,170 ab15,15 el20,20 hp5 m:espalmada,espalmada e:medo");
 px("rfRendicaoMaosNaNuca", "Referência/Rendição/Em pé", "mãos na nuca em pé", "fl120,120 ab25,25 el150,150 hp15 m:aberta,aberta e:medo");
 px("rfRendicaoMaosNasCostas", "Referência/Rendição/Em pé", "mãos para trás|algemado", "fl-30,-30 ab10,10 el20,20 ar-40,-40 hp25 m:aberta,aberta e:tristeza");
@@ -250,7 +265,7 @@ px("rfParadaDeMao", "Referência/Mergulho/Parada de mão", "parada de mão|banan
 px("rfParadaDeMaoAberta", "Referência/Mergulho/Parada de mão", "parada de mão pernas abertas", "bp180 sf-5 hf20,-30 kf10,10 ha30,30 fl175,175 ab10,10 el0,0 hp-30 m:espalmada,espalmada e:alegria");
 px("rfParadaDeMaoEscorpiao", "Referência/Mergulho/Parada de mão", "parada de mão escorpião", "bp175 sf-40 hf-20,-30 kf80,60 fl175,175 ab10,10 el0,0 hp-40 m:espalmada,espalmada e:focoTotal");
 px("rfAcenoTchau", "Referência/Despedida/Aceno", "acenando tchau", "fl10,150 ab10,30 el10,40 hp-5 m:relaxada,acenar e:alegria");
-px("rfAcenoDuasMaos", "Referência/Despedida/Aceno", "acenando com as duas mãos", "fl150,150 ab55,55 el40,40 hp-10 m:acenar,acenar e:gritoDeAlegria");
+px("rfAcenoDuasMaos", "Referência/Despedida/Aceno", "acenando com as duas mãos", "fl20,20 ab145,145 el30,30 hp-10 m:acenar,acenar e:gritoDeAlegria");
 px("rfAcenoAndandoEmbora", "Referência/Despedida/Aceno", "acenando indo embora", "sf0 hf25,-10 kf20,10 fl10,140 ab10,20 el20,60 hy-60 m:relaxada,acenar e:sorrisoTriste");
 px("rfAcenoDeCostas", "Referência/Despedida/Aceno", "acenando de costas", "fl10,160 ab10,20 el10,20 hy-30 m:relaxada,acenar e:calmo");
 px("rfAcenoAjoelhado", "Referência/Despedida/Aceno", "ajoelhado acenando", "kf95,95 hf0,0 af40,40 fl10,150 ab15,30 el10,40 hp-5 m:aberta,acenar e:choroContido");

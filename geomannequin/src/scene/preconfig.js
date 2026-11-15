@@ -329,6 +329,21 @@ const PC_REF = [
   ["luta.rasteira", "Luta/Ataque", "rasteira derrubando", "sweep", ["A", "B"], { A: { x: 0, z: 0, g: 0, pose: "rfAtaqueRasteira" }, B: { x: 0.3, z: 1.0, g: 180, pose: "rfCaindoDeCostasRef" } }],
   ["luta.cotovelada", "Luta/Impacto", "cotovelada no rosto", "elbow strike", ["A", "B"], { A: { x: 0, z: 0, g: 0, pose: "rfAtaqueCotovelada" }, B: { x: -0.1, z: 0.6, g: 180, pose: "atingidoLado" } }]
 ];
+/* artes marciais: ataque × defesa (A ataca, B defende/recebe) */
+const PC_AM = [["karate.oi-zuki-age-uke", "Karatê", "soco em avanço × defesa alta", "amKarateOiZuki", "amKarateAgeUke", 1.0], ["karate.gyaku-zuki-gedan", "Karatê", "soco reverso × defesa baixa", "amKarateGyakuZuki", "amKarateGedanBarai", 0.95],
+  ["karate.mae-geri-juji", "Karatê", "chute frontal × defesa em X", "amKarateMaeGeri", "amKarateJuujiUke", 1.2], ["karate.yoko-geri-shuto", "Karatê", "chute lateral × defesa com a mão em faca", "amKarateYokoGeri", "amKarateShutoUke", 1.3],
+  ["karate.uraken-uchi-uke", "Karatê", "uraken × defesa por dentro", "amKarateUraken", "amKarateUchiUke", 0.9], ["tkd.dollyo-makki", "Taekwondo", "chute circular × bloqueio", "amTkdDollyoChagi", "amTkdMakki", 1.25],
+  ["tkd.neryo-esquiva", "Taekwondo", "chute machado × esquiva para trás", "amTkdNeryoChagi", "esquivaParaTras", 1.3], ["tkd.bandal-guarda", "Taekwondo", "chute rápido × guarda fechada", "amTkdBandalChagi", "amTkdGuarda", 1.2],
+  ["capoeira.meia-lua-cocorinha", "Capoeira", "meia-lua × cocorinha", "amCapoeiraMeiaLua", "amCapoeiraCocorinha", 1.3], ["capoeira.armada-negativa", "Capoeira", "armada × negativa", "amCapoeiraArmada", "amCapoeiraNegativa", 1.4],
+  ["capoeira.bencao-esquiva", "Capoeira", "bênção × esquiva baixa", "amCapoeiraBencao", "amCapoeiraEsquivaBaixa", 1.3], ["capoeira.martelo-guarda", "Capoeira", "martelo × ginga", "amCapoeiraMartelo", "guardaCapoeira", 1.3],
+  ["judo.kumikata", "Judô", "disputa de pegada", "amJudoKumikata", "amJudoKumikata", 0.7], ["judo.seoi-nage", "Judô", "ippon seoi nage: projetando", "amJudoIpponSeoi", "amJudoCaindoProjetado", 0.5],
+  ["judo.o-soto-gari", "Judô", "o soto gari × bloqueio com o quadril", "amJudoOSotoGari", "amJudoDefesaQuadril", 0.6], ["aikido.iriminage", "Aikidô", "irimi nage: o atacante cai", "amAikidoIriminage", "amJudoCaindoProjetado", 0.8],
+  ["aikido.kote-gaeshi", "Aikidô", "kote gaeshi: torção do pulso", "amAikidoKoteGaeshi", "rfDorBracoFerido", 0.7], ["wing-chun.corrente-pak", "Wing chun", "socos em corrente × pak sau", "amWingChunSocoCorrente", "amWingChunPakSau", 0.75],
+  ["wing-chun.lap-tan", "Wing chun", "lap sau × tan sau", "amWingChunLapSau", "amWingChunTanSau", 0.7], ["shaolin.tigre-garca", "Shaolin", "garra do tigre × asa da garça", "amTigreAtaque", "amKungFuBloqueioGarca", 1.0],
+  ["shaolin.serpente-louva", "Shaolin", "bote da serpente × louva-a-deus", "amSerpenteBote", "amLouvaDeusGuarda", 1.0], ["shaolin.palma-dupla", "Shaolin", "palma dupla × cavalo", "amKungFuPalmaDupla", "amMabu", 0.9],
+  ["shaolin.dragao-macaco", "Shaolin", "garra do dragão × macaco agachado", "amDragaoGarra", "amMacacoAgachado", 1.0], ["bjj.mata-leao", "Jiu-jitsu", "mata-leão × defesa", "amBjjMataLeao", "amBjjDefendendoMataLeao", -0.35],
+  ["karate.hiza-geri", "Karatê", "joelhada × recebendo no estômago", "amKarateHizaGeri", "impactoNoEstomago", 0.6]];
+for (const [id, g, nome, pa, pb, d] of PC_AM) PC_REF.push(["luta." + id, "Artes marciais/" + g, nome, nome, ["A", "B"], { A: { x: 0, z: 0, g: 0, pose: pa }, B: { x: 0, z: d, g: d < 0 ? 0 : 180, pose: pb } }]);
 for (const [id, grupo, nome, tec, papeis, arranjo] of PC_REF) pcAdd("ref." + id, { grupo: "Referência/" + grupo, nome, tecnico: tec, desc: nome + " (das folhas de referência)", papeis, arranjo, cam: { tipo: "orbita", alvo: papeis, ref: "A", enq: "conjunto", az: 60, el: 10 } });
 const PC_DESV = {
   soco: { nome: "desvio de soco (pêndulo)", arranjo: { A: { x: 0, z: 0, g: 0, pose: "direto" }, B: { x: 0.15, z: 1.0, g: 180, pose: "esquivaPendulo" } } },
