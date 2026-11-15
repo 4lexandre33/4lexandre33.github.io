@@ -1077,6 +1077,9 @@ ${EXEMPLO_FILME}
   O que o prompt diz (calculado pela projeção da câmera, não adivinhado): para cada um, em que parte do quadro está (esquerda/centro/direita,
     em cima/embaixo, x e y em %), altura no quadro, primeiro plano/meio/fundo, distância em metros, de frente/3/4/perfil/costas para a câmera,
     para onde olha, quem tapa quem, quem está à esquerda de quem; a câmera (altura em m, inclinação, distância, lente, holandês); paleta com #hex.
+  Enquadramento: o prompt diz o que a câmera MOSTRA de fato (medido na imagem: corpo inteiro, joelhos para cima, cintura para cima, peito, rosto),
+    mesmo que o quadro peça outro plano. Cor de personagem: no elenco, "Ana cor #2E7D32" (ou a descrição no bloco prompt com #hex).
+    alvo pode ter objetos e veículos: quadro 1 conjunto alvo Bia, "Fusca" (a câmera enquadra os dois). Coordenadas: a câmera padrão fica em +z olhando para -z; olhando de trás (lado costas), esquerda e direita trocam.
   Avisos: alguém fora do quadro (ou mais da metade fora), ninguém no quadro, cores parecidas demais entre dois personagens, grade com quadros a mais/menos.
   ZIP: prompt-en.txt, prompt-pt.txt, prompt.json (posições numéricas), referencias/ (cena e mapa de cada célula, grade-cenas, grade-mapas, planta),
     paleta, miniaturas/ (poses, objetos, plano, ângulo, lado, lente usados) em PNG e SVG, o texto da cena e LEIA-ME.
