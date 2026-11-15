@@ -29,7 +29,7 @@ ok(w.NR.size >= 100 && w.nrTotalVariantes() >= 1000, "biblioteca: " + w.NR.size 
   ok(esp.length >= 16 && !ruins.length, "aves: " + esp.length + " espécies");
   const r1 = w.compilarName("elenco\n  Kai relevante\n  F animal falcao\nquadro 1\n  F em (2,0)\n  Kai em (0,0) monta F\n", { semCache: true, salvar: false });
   const r2 = w.compilarName("elenco\n  Kai relevante\n  R animal aguia escala 5 sela\nquadro 1\n  R em (2,0)\n  Kai em (0,0) monta R\n", { semCache: true, salvar: false });
-  ok(r1.erros.some(e => /pequeno demais/.test(e.erro)) && !r2.erros.length, "montaria por escala: falcão não, roca escala 5 sim"); }
+  ok(!r1.erros.length && r1.avisos.some(a => /aumentado para escala/.test(a)) && !r2.erros.length, "montaria por escala: falcão cresce sozinho (aviso), roca escala 5 monta direto"); }
 /* 6. efeitos de A até B */
 { const r = w.compilarName("elenco\n  Kai relevante\n  Mira relevante\nquadro 1\n  Kai em (0,0) gira 90 segura varinha como varinhaConjurando\n  Mira em (5,0) gira -90\n  efeito projetil de Kai.varinha.ponta para Mira arco\n  efeito raio em Kai.varinha.ponta colorido\n", { semCache: true, salvar: false });
   const ef = r.quadros[0].estado.efeitos || [], p = ef.find(e => e.tipo === "projetil");
