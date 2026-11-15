@@ -789,7 +789,7 @@ body.of-foco .stage svg{max-height:86vh}
 .pk-item span{font:12px var(--font-mono);flex:1;min-width:120px}
 #pkTexto{width:100%;font:12.5px var(--font-mono);padding:8px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);box-sizing:border-box}
 #pkProg{width:100%;height:4px}
-@media (max-width:720px){.pk-cat{grid-template-columns:1fr}.pk-ficha{width:auto;max-width:none;border-left:none;border-top:1px solid var(--rule);padding:8px 0 0}}
+@media (max-width:720px){.pk-aba .of-ferr input[type=search]{flex:1 1 100%}.pk-cat{grid-template-columns:1fr}.pk-grade{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));overflow:visible}.pk-aba{gap:6px}#pkCortar{position:sticky;bottom:0}.pk-ficha{width:auto;max-width:none;border-left:none;border-top:1px solid var(--rule);padding:8px 0 0}}
 
 /* palco: seta de orientação e caixa de seleção */
 .of-seta{position:fixed;inset:0;z-index:35;pointer-events:none}
@@ -48431,7 +48431,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
           });
           SCN.recorte = salvoRecorte;
           SCN.active = 0;
-          const legenda = Q.cab.legenda || nmLegenda(ctx, Q);
+          const legenda = Q.cab.legenda || (Q.celula ? Q.celula.ficha && Q.celula.ficha.descricao || "" : nmLegenda(ctx, Q));
           quadros.push({
             preset: Q.presetCamera ? { id: Q.presetCamera.def.id, enq: Q.presetCamera.def.cam.enq || null, alvos: [].concat(Q.presetCamera.def.cam.tipo === "ombro" ? [Q.presetCamera.def.cam.alvo] : Q.presetCamera.def.cam.tipo === "orbita" ? Q.presetCamera.def.cam.alvo || [] : []).map((p) => Q.presetCamera.mapa[p]).filter(Boolean) } : null,
             tom: Q.cab.tom || null,
@@ -52585,6 +52585,10 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
     let antes = JSON.stringify(sceneState());
     const nomes = new Set(SCN.list.map((x) => x.name).concat((SCN.objetos || []).map((o) => o.nome).filter(Boolean)));
     let extraElenco = [], avisosLote = [];
+    {
+      const gm = /^\s*grupo\s+(.+?)\s+(pose|olha|olham|olhando|vira-para|gira|move|alinha)\b/i.exec(linha);
+      if (gm) opts = Object.assign({}, opts, { _grupo: gm[1].split(/\s*,\s*|\s+e\s+/).map((x) => x.replace(/"/g, "").trim()).filter(Boolean) });
+    }
     if (/^\s*(espalh[ae]|grupo)\s/i.test(linha)) {
       const pontos = {};
       SCN.list.forEach((it2) => {
@@ -52717,6 +52721,8 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
       Object.assign(P2, B3.camera);
       mudou2.push("câmera");
     }
+    const naoMudou = (opts._grupo || []).filter((n2) => !mudou2.some((m) => m.startsWith(n2 + ":") || m.startsWith(n2 + " ")));
+    if (naoMudou.length) avisosLote.push("grupo: " + naoMudou.join(", ") + " não mudou (sentado, embarcado ou montado? solte antes com outra pose).");
     return { ok: true, mudou: mudou2, linhas: linha.split("\n").length, avisos: avisosLote.concat((rB.avisos || []).filter((a) => !(rA.avisos || []).includes(a) && !/olha para a borda mais perto|pouco espaço na frente/.test(a))) };
   }
   var BC_M, bcN, bcNome, BC_SUGESTOES;
@@ -54074,8 +54080,8 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
     }
     svgEl.innerHTML = (L2.grid ? GRID : "") + '<g id="gm-cena">' + wrapStyle(r.svg) + marcasColisao(lst) + "</g>" + (OVERLAY ? OVERLAY(lst) : "");
     ULT = { S: effScale(P2), panX: P2.panX, panY: P2.panY };
-    lastInfo = r.infos[SCN.active] || r.infos[0];
-    const i = lastInfo;
+    lastInfo = r.infos[SCN.active] || r.infos[0] || {};
+    const i = Object.assign({ S: 0, chinY: 0, t: 0, eyeY: 0 }, [lastInfo, ...r.infos].find((x) => x && x.S !== void 0) || lastInfo);
     $("readout").innerHTML = "yaw <b>" + Math.round(P2.yaw) + "°</b> · pitch <b>" + Math.round(P2.pitch) + "°</b> · roll <b>" + Math.round(P2.roll) + "°</b> · 1 R = <b>" + f1(i.S) + " px</b>" + (P2.persp ? " · lente <b>" + Math.round(P2.lens) + " mm</b> · olhos a <b>" + fr(eyeHeight(), 1) + " R</b> do chão" : " · sem perspectiva");
     $("measures").innerHTML = "<dt>Altura da cabeça</dt><dd>" + fr(1 - i.chinY, 2) + " R</dd><dt>Largura do crânio</dt><dd>" + fr(2 * P2.skull, 2) + " R</dd><dt>Terço do rosto</dt><dd>" + fr(i.t, 2) + " R</dd><dt>Linha dos olhos</dt><dd>y = " + fr(i.eyeY, 2) + " R</dd><dt>Altura / largura</dt><dd>" + fr((1 - i.chinY) / (2 * P2.skull), 2) + "</dd>";
     $("eq").textContent = "Crânio: elipsoide (sx, 1, 1)·r\n  x = cx + r·cos t\n  y = cy + r·sin t\n  r = " + f1(i.S) + "  sx = " + fr(P2.skull, 2) + "\n\nLinha das sobrancelhas (elipse)\n  a = " + f1(i.brow.a) + "  b = " + f1(i.brow.b) + "\n  θ = " + f1(i.brow.th) + "°\n\nEixo facial (elipse)\n  a = " + f1(i.mer.a) + "  b = " + f1(i.mer.b) + "\n  θ = " + f1(i.mer.th) + "°";
@@ -56487,7 +56493,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
   function inserirNoName(t, substituir) {
     if (!E3.area) return;
     if (E3.area.hidden) abrir2();
-    E3.code.value = substituir ? String(t) : E3.code.value.replace(/\s*$/, "") + (E3.code.value.trim() ? "\n" : "") + String(t);
+    E3.code.value = substituir ? String(t) : E3.code.value.replace(/\s*$/, "") + (E3.code.value.trim() ? "\n\n" : "") + String(t);
     try {
       realcar();
     } catch (e) {
@@ -57504,7 +57510,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
     j.hidden = true;
     j.setAttribute("role", "dialog");
     j.setAttribute("aria-label", "Pacotes de cenas");
-    j.innerHTML = '<div class="pk-tit"><b>Pacotes de cenas</b><span class="pk-est" id="pkEst"></span><button type="button" id="pkFechar" aria-label="Fechar">✕</button></div><div class="of-abas" role="tablist">' + [["importar", "Importar"], ["catalogo", "Catálogo"], ["montar", "Montar páginas"]].map(([k, n2]) => '<button type="button" role="tab" data-pk="' + k + '">' + n2 + "</button>").join("") + '</div><section class="pk-aba" data-pk="importar"><label class="pk-solta" id="pkSolta" tabindex="0"><input type="file" id="pkArq" accept=".zip,image/*" multiple hidden><b>Solte aqui um .zip ou imagens</b><span>ou clique para escolher · cada imagem é uma folha (sprite sheet) com várias cenas</span></label><div class="of-ferr"><label>Nome do pacote <input id="pkNome" type="text" placeholder="ex.: perseguicao-noite" size="18"></label><label>Numerar <select id="pkLeitura"><option value="ocidental">esquerda → direita</option><option value="japonesa">direita → esquerda (mangá)</option></select></label></div><div id="pkFolhas" class="pk-folhas"></div><div class="of-ferr"><button type="button" class="primary" id="pkCortar" disabled>Cortar e guardar</button><span class="of-dica" id="pkResumo"></span></div></section><section class="pk-aba" data-pk="catalogo" hidden><div class="of-ferr"><input id="pkBusca" type="search" placeholder="procurar: perseguição 2 pessoas · luta close · descanso" aria-label="Procurar células"><select id="pkPacote" aria-label="Pacote"><option value="">todos os pacotes</option></select><label><input type="checkbox" id="pkSemFicha"> só sem ficha</label></div><div class="of-ferr"><button type="button" id="pkIA" title="O Claude olha as imagens e preenche a ficha">Classificar com IA</button><button type="button" id="pkTodas">Selecionar todas</button><button type="button" id="pkNada">Limpar seleção</button><button type="button" id="pkUsar" title="Põe as selecionadas no texto do Name">Usar no Name</button><button type="button" id="pkApagar">Apagar</button></div><details class="pk-mais"><summary>Guardar e trazer</summary><div class="of-ferr"><button type="button" id="pkNuvemS">Salvar na nuvem</button><button type="button" id="pkNuvemC">Trazer da nuvem</button><button type="button" id="pkSbS">Supabase: salvar</button><button type="button" id="pkSbC">Supabase: trazer</button><button type="button" id="pkExp">Exportar JSON</button><label class="pk-bt">Importar JSON<input type="file" id="pkImpJ" accept=".json,application/json" hidden></label></div><p class="of-dica">No navegador o catálogo fica guardado sozinho. "Nuvem" = banco e arquivos do artefato no claude.ai (quem edita o artefato vê). Supabase usa a configuração de Projetos.</p></details><p class="of-dica" id="pkMsg" role="status" aria-live="polite"></p><div class="pk-cat"><div id="pkGrade" class="pk-grade" role="listbox" aria-multiselectable="true" aria-label="Células"></div><div id="pkFicha" class="pk-ficha" hidden></div></div></section><section class="pk-aba" data-pk="montar" hidden><p class="of-dica">As células selecionadas no Catálogo, na ordem. Escolha o painel de cada uma e mande para o Name (lá saem páginas, PDF, CBZ e webtoon).</p><div class="of-ferr"><label>Página <select id="pkFmt"><option>manga</option><option>comic</option><option>a4</option><option>quadrado</option><option>webtoon</option></select></label><label>Leitura <select id="pkLei"><option value="japonesa">japonesa</option><option value="ocidental">ocidental</option></select></label><label>Por página <input id="pkPorPag" type="number" min="1" max="12" value="5" style="width:4em"></label></div><ol id="pkOrdem" class="pk-ordem"></ol><div class="of-ferr"><button type="button" id="pkGerar">Gerar texto</button><button type="button" class="primary" id="pkMandar">Mandar para o Name</button></div><textarea id="pkTexto" rows="8" spellcheck="false" aria-label="Texto gerado"></textarea></section><progress id="pkProg" hidden></progress>';
+    j.innerHTML = '<div class="pk-tit"><b>Pacotes de cenas</b><span class="pk-est" id="pkEst"></span><button type="button" id="pkFechar" aria-label="Fechar">✕</button></div><div class="of-abas" role="tablist">' + [["importar", "Importar"], ["catalogo", "Catálogo"], ["montar", "Montar páginas"]].map(([k, n2]) => '<button type="button" role="tab" data-pk="' + k + '">' + n2 + "</button>").join("") + '</div><section class="pk-aba" data-pk="importar"><label class="pk-solta" id="pkSolta" tabindex="0"><input type="file" id="pkArq" accept=".zip,image/*" multiple hidden><b>Solte aqui um .zip ou imagens</b><span>ou clique para escolher · cada imagem é uma folha (sprite sheet) com várias cenas</span></label><div class="of-ferr"><label>Nome do pacote <input id="pkNome" type="text" placeholder="ex.: perseguicao-noite" size="18"></label><label>Numerar <select id="pkLeitura"><option value="ocidental">esquerda → direita</option><option value="japonesa">direita → esquerda (mangá)</option></select></label></div><div id="pkFolhas" class="pk-folhas"></div><div class="of-ferr"><button type="button" class="primary" id="pkCortar" disabled>Cortar e guardar</button><span class="of-dica" id="pkResumo"></span></div></section><section class="pk-aba" data-pk="catalogo" hidden><div class="of-ferr"><input id="pkBusca" type="search" placeholder="procurar: perseguição 2 pessoas · luta close · descanso" aria-label="Procurar células"><select id="pkPacote" aria-label="Pacote"><option value="">todos os pacotes</option></select><label><input type="checkbox" id="pkSemFicha"> só sem ficha</label></div><div class="of-ferr"><button type="button" id="pkIA" title="O Claude olha as imagens e preenche a ficha">Classificar com IA</button><button type="button" id="pkTodas">Selecionar todas</button><button type="button" id="pkNada">Limpar seleção</button><button type="button" id="pkUsar" title="Põe as selecionadas no texto do Name">Usar no Name</button><button type="button" id="pkApagar">Apagar</button></div><details class="pk-mais"><summary>Guardar e trazer</summary><div class="of-ferr"><button type="button" id="pkNuvemS">Salvar na nuvem</button><button type="button" id="pkNuvemC">Trazer da nuvem</button><button type="button" id="pkSbS">Supabase: salvar</button><button type="button" id="pkSbC">Supabase: trazer</button><button type="button" id="pkExp">Exportar JSON</button><label class="pk-bt">Importar JSON<input type="file" id="pkImpJ" accept=".json,application/json" hidden></label></div><p class="of-dica">No navegador o catálogo fica guardado sozinho. "Nuvem" = banco e arquivos do artefato no claude.ai (quem edita o artefato vê). Supabase usa a configuração de Projetos.</p></details><p class="of-dica" id="pkMsg" role="status" aria-live="polite"></p><div class="pk-cat"><div id="pkGrade" class="pk-grade" role="listbox" aria-multiselectable="true" aria-label="Células"></div><div id="pkFicha" class="pk-ficha" hidden></div></div></section><section class="pk-aba" data-pk="montar" hidden><p class="of-dica">As células selecionadas no Catálogo, na ordem. Escolha o painel de cada uma e mande para o Name (lá saem páginas, PDF, CBZ e webtoon).</p><div class="of-ferr"><label>Página <select id="pkFmt"><option>manga</option><option>comic</option><option>a4</option><option>quadrado</option><option>webtoon</option></select></label><label>Leitura <select id="pkLei"><option value="ocidental">ocidental</option><option value="japonesa">japonesa</option></select></label><label>Por página <input id="pkPorPag" type="number" min="1" max="12" value="5" style="width:4em"></label></div><ol id="pkOrdem" class="pk-ordem"></ol><div class="of-ferr"><button type="button" id="pkGerar">Gerar texto</button><button type="button" class="primary" id="pkMandar">Mandar para o Name</button></div><textarea id="pkTexto" rows="8" spellcheck="false" aria-label="Texto gerado"></textarea></section><progress id="pkProg" hidden></progress>';
     document.body.appendChild(j);
     j.querySelectorAll("[data-pk]").forEach((b) => {
       if (b.tagName === "BUTTON") b.addEventListener("click", () => aba2(b.dataset.pk));
@@ -57711,7 +57717,10 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
       ap.type = "button";
       ap.addEventListener("click", () => {
         const v = g.value.trim();
-        if (v && !/^\d+\s*[x×]\s*\d+$/i.test(v)) return msg6("Grade: colunas x linhas, ex.: 3x3.", true);
+        if (v && !/^\d+\s*[x×]\s*\d+$/i.test(v)) {
+          g.setAttribute("aria-invalid", "true");
+          return msg6("Grade “" + v + "”: escreva colunas x linhas, ex.: 3x3.", true);
+        }
         f.forcada = v.replace(/\s/g, "").replace("×", "x");
         regrade(f);
         desenharFolhas();
@@ -58846,11 +58855,11 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
     const m = $4("ofMenu");
     if (m) m.remove();
   }
-  function chaoDoPalco(ev2) {
+  function chaoDoPalco(ev2, dy) {
     const svg = $4("svg");
     if (!svg) return null;
     const r = svg.getBoundingClientRect(), sx = (ev2.clientX - r.left) / r.width * 600, sy = (ev2.clientY - r.top) / r.height * 700;
-    const p = Object.assign({}, P2), g0 = restGround(SCN.list[0].params);
+    const p = Object.assign({}, P2), g0 = restGround(SCN.list[0].params) + (dy || 0);
     let x = P2.tx || 0, z = P2.tz || 0;
     for (let i = 0; i < 16; i++) {
       const f = telaDoMundo(p, [x, g0, z]), fx = telaDoMundo(p, [x + 0.5, g0, z]), fz = telaDoMundo(p, [x, g0, z + 0.5]);
@@ -58937,7 +58946,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
   }
   function atualizarSel() {
     const s = selecionado(), n2 = $4("ofSelNome");
-    if (n2) n2.textContent = s ? "· " + s.nome : "· nada selecionado";
+    if (n2) n2.textContent = est2.sel.size > 1 ? "· " + est2.sel.size + " selecionados" : s ? "· " + s.nome : "· nada selecionado";
     const animal = s && s.tipo === "animal";
     const a = $4("ofPartesAnimal"), p = $4("ofPartesPessoa");
     if (a) a.hidden = !animal;
@@ -59002,10 +59011,10 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
       const [px2, py] = pl2tela(i.x * M2, i.z * M2), a = i.g * Math.PI / 180, dx = Math.sin(a), dz = Math.cos(a);
       if (i.k === "p") {
         const r = Math.max(4, 0.25 * est2.zoom);
-        g += '<g class="of-it of-pessoa' + (i.sel ? " sel" : "") + '"><circle cx="' + px2.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + r.toFixed(1) + '"/><line x1="' + px2.toFixed(1) + '" y1="' + py.toFixed(1) + '" x2="' + (px2 + dx * r * 1.8).toFixed(1) + '" y2="' + (py - dz * r * 1.8).toFixed(1) + '"/><text x="' + (px2 + r + 2).toFixed(1) + '" y="' + (py - r).toFixed(1) + '">' + esc10(i.nome) + "</text></g>";
+        g += '<g class="of-it of-pessoa' + (i.sel ? " sel" : "") + '"><circle cx="' + px2.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + r.toFixed(1) + '"/><line x1="' + px2.toFixed(1) + '" y1="' + py.toFixed(1) + '" x2="' + (px2 + dx * r * 1.8).toFixed(1) + '" y2="' + (py + dz * r * 1.8).toFixed(1) + '"/><text x="' + (px2 + r + 2).toFixed(1) + '" y="' + (py - r).toFixed(1) + '">' + esc10(i.nome) + "</text></g>";
       } else {
         const w = i.larg * M2 * est2.zoom / 2, h = i.prof * M2 * est2.zoom / 2;
-        g += '<g class="of-it ' + (i.k === "a" ? "of-animal" : "of-obj") + (i.sel ? " sel" : "") + '" transform="translate(' + px2.toFixed(1) + " " + py.toFixed(1) + ") rotate(" + (-i.g).toFixed(1) + ')"><rect x="' + (-w).toFixed(1) + '" y="' + (-h).toFixed(1) + '" width="' + (2 * w).toFixed(1) + '" height="' + (2 * h).toFixed(1) + '" rx="' + (i.k === "a" ? Math.min(w, h).toFixed(1) : "1") + '"/><line x1="0" y1="0" x2="0" y2="' + (-h - 4).toFixed(1) + '"/></g><text class="of-rot" x="' + (px2 + 4).toFixed(1) + '" y="' + (py + 3).toFixed(1) + '">' + esc10(i.nome) + "</text>";
+        g += '<g class="of-it ' + (i.k === "a" ? "of-animal" : "of-obj") + (i.sel ? " sel" : "") + '" transform="translate(' + px2.toFixed(1) + " " + py.toFixed(1) + ") rotate(" + i.g.toFixed(1) + ')"><rect x="' + (-w).toFixed(1) + '" y="' + (-h).toFixed(1) + '" width="' + (2 * w).toFixed(1) + '" height="' + (2 * h).toFixed(1) + '" rx="' + (i.k === "a" ? Math.min(w, h).toFixed(1) : "1") + '"/><line x1="0" y1="0" x2="0" y2="' + (-h - 4).toFixed(1) + '"/></g><text class="of-rot" x="' + (px2 + 4).toFixed(1) + '" y="' + (py + 3).toFixed(1) + '">' + esc10(i.nome) + "</text>";
       }
     }
     const esc1 = est2.grade;
@@ -59080,6 +59089,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
     est2.orientando = null;
     est2.seta = null;
     if (!alvos.length) return;
+    mostrarHud("Orientado para (" + f2(pt2[0]) + ", " + f2(pt2[1]) + ").");
     if (alvos[0].cam) {
       marca();
       moverAlvo(pt2[0] / M2, void 0, pt2[1] / M2);
@@ -59155,7 +59165,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
         return;
       }
       const cam = camNaPlanta();
-      if (cam && Math.hypot(q[0] - cam.px, q[1] - cam.py) < 8) {
+      if (cam && (Math.hypot(q[0] - cam.px, q[1] - cam.py) < 12 || Math.hypot(q[0] - (cam.px + (cam.ax - cam.px) * 0.25), q[1] - (cam.py + (cam.ay - cam.py) * 0.25)) < 12)) {
         marca();
         est2.arr = { camera: true };
         return;
@@ -59188,7 +59198,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
       if (!est2.arr) return;
       const q = ptPlanta(e), [xm, zm] = tela2pl(q[0], q[1]);
       if (est2.arr.pan) {
-        est2.centro = [est2.arr.c0[0] - (q[0] - est2.arr.q[0]) / est2.zoom, est2.arr.c0[1] + (q[1] - est2.arr.q[1]) / est2.zoom];
+        est2.centro = [est2.arr.c0[0] - (q[0] - est2.arr.q[0]) / est2.zoom, est2.arr.c0[1] - (q[1] - est2.arr.q[1]) / est2.zoom];
         desenharPlanta();
         return;
       }
@@ -59324,7 +59334,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
         orientarModo(L3.map(chaveDe2));
         return;
       }
-      const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
+      const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
       if (!d || !L3.length) return;
       e.preventDefault();
       e.stopPropagation();
@@ -59987,9 +59997,9 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
       } else if (!est2.sel.has(k)) est2.sel = /* @__PURE__ */ new Set([k]);
       SCN.objSel = o.id;
       atualizarSel();
-      const p0 = chaoDoPalco(e);
+      const dy = (o.base || 0) + (o.alt || 0) * 0.6, p0 = chaoDoPalco(e, dy);
       marca();
-      est2.arrPalco = { grupo: itensSel().map((j) => ({ j, x: j.x, z: j.z })), p0, moveu: false };
+      est2.arrPalco = { grupo: itensSel().map((j) => ({ j, x: j.x, z: j.z })), p0, dy, moveu: false };
       try {
         st.setPointerCapture(e.pointerId);
       } catch (er) {
@@ -60005,7 +60015,7 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
         setaPalco(a.de, [e.clientX, e.clientY]);
         return;
       }
-      const p = chaoDoPalco(e);
+      const p = chaoDoPalco(e, a.dy);
       if (!p || !a.p0) return;
       const dx = snap2(p[0] - a.p0[0]), dz = snap2(p[1] - a.p0[1]);
       if (dx || dz || a.moveu) {
@@ -60237,8 +60247,8 @@ create policy "anon grava versoes" on projeto_versoes for insert to anon with ch
         } catch (e) {
         }
       };
-      pl2tela = (xm, zm) => [180 + (xm - est2.centro[0]) * est2.zoom, 150 - (zm - est2.centro[1]) * est2.zoom];
-      tela2pl = (px2, py) => [est2.centro[0] + (px2 - 180) / est2.zoom, est2.centro[1] - (py - 150) / est2.zoom];
+      pl2tela = (xm, zm) => [180 + (xm - est2.centro[0]) * est2.zoom, 150 + (zm - est2.centro[1]) * est2.zoom];
+      tela2pl = (px2, py) => [est2.centro[0] + (px2 - 180) / est2.zoom, est2.centro[1] + (py - 150) / est2.zoom];
       snap2 = (v) => Math.round(v / est2.grade) * est2.grade;
       quote = (n2) => /^[A-Za-zÀ-ÿ][\wÀ-ÿ]*$/.test(n2) ? n2 : '"' + n2 + '"';
       AN_PARTES2 = {

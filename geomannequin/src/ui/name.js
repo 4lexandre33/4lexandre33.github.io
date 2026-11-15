@@ -411,7 +411,7 @@ function salvarCatalogo() { BIB = null;
 /* ===== montar a área ===== */
 function abrir() { E.area.hidden = false; const b = document.getElementById("nameBtn"); if (b) b.setAttribute("aria-pressed", "true"); compilar(); E.code.focus(); }
 /* põe texto no editor do Name (abre o editor): no fim, ou trocando tudo */
-function inserirNoName(t, substituir) { if (!E.area) return; if (E.area.hidden) abrir(); E.code.value = substituir ? String(t) : (E.code.value.replace(/\s*$/, "") + (E.code.value.trim() ? "\n" : "") + String(t)); try { realcar(); } catch (e) { } ls.gravar("texto", E.code.value); compilar(); E.area.scrollIntoView({ behavior: "smooth", block: "start" }); }
+function inserirNoName(t, substituir) { if (!E.area) return; if (E.area.hidden) abrir(); E.code.value = substituir ? String(t) : (E.code.value.replace(/\s*$/, "") + (E.code.value.trim() ? "\n\n" : "") + String(t)); try { realcar(); } catch (e) { } ls.gravar("texto", E.code.value); compilar(); E.area.scrollIntoView({ behavior: "smooth", block: "start" }); }
 function fechar() { parar(); E.area.hidden = true; const b = document.getElementById("nameBtn"); if (b) b.setAttribute("aria-pressed", "false"); }
 async function copiar(t, msg) { try { await navigator.clipboard.writeText(t); log(msg || "Copiado."); } catch (e) { E.texto.hidden = false; E.textoArea.value = t; E.textoArea.select(); log("Selecionei o texto: copie com Ctrl+C.", ""); } }
 export function iniciarName() {

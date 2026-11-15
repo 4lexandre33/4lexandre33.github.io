@@ -122,8 +122,8 @@ function menuColocar(x, y, aoEscolher, pt) { fecharMenu(); const m = el("div", "
 function fecharMenu() { const m = $("ofMenu"); if (m) m.remove(); }
 
 /* ===== ponto do chão sob o cursor no palco (metros) ===== */
-function chaoDoPalco(ev) { const svg = $("svg"); if (!svg) return null; const r = svg.getBoundingClientRect(), sx = (ev.clientX - r.left) / r.width * 600, sy = (ev.clientY - r.top) / r.height * 700;
-  const p = Object.assign({}, P), g0 = restGround(SCN.list[0].params); let x = P.tx || 0, z = P.tz || 0;
+function chaoDoPalco(ev, dy) { const svg = $("svg"); if (!svg) return null; const r = svg.getBoundingClientRect(), sx = (ev.clientX - r.left) / r.width * 600, sy = (ev.clientY - r.top) / r.height * 700;
+  const p = Object.assign({}, P), g0 = restGround(SCN.list[0].params) + (dy || 0); let x = P.tx || 0, z = P.tz || 0;
   for (let i = 0; i < 16; i++) { const f = telaDoMundo(p, [x, g0, z]), fx = telaDoMundo(p, [x + 0.5, g0, z]), fz = telaDoMundo(p, [x, g0, z + 0.5]); const a = (fx[0] - f[0]) / 0.5, b = (fz[0] - f[0]) / 0.5, c = (fx[1] - f[1]) / 0.5, d = (fz[1] - f[1]) / 0.5, det = a * d - b * c; if (Math.abs(det) < 1e-9) break;
     const ex = sx - f[0], ey = sy - f[1], dx = (d * ex - b * ey) / det, dz = (-c * ex + a * ey) / det, st = Math.min(1, 40 / (Math.hypot(dx, dz) || 1)); x += dx * st; z += dz * st; if (Math.hypot(ex, ey) < 0.3) break; }
   return [x * M, z * M]; }
@@ -155,7 +155,7 @@ function arrastavel(j, alca) { let d = null; alca.addEventListener("pointerdown"
 function abrirInspetor(on, aba) { const j = $("ofInsp"); if (!j) return; j.hidden = on === undefined ? !j.hidden : !on; const bt = $("ofBtnInsp"); if (bt) bt.setAttribute("aria-pressed", String(!j.hidden)); if (!j.hidden) { if (!est.iniciouPlanta) { enquadrarPlanta(); est.iniciouPlanta = true; } abrirAba(aba || est.aba); } else ativarVistasPose(false); }
 function abrirAba(a) { est.aba = a; document.querySelectorAll("#ofInsp .of-abas button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.aba === a))); document.querySelectorAll("#ofInsp .of-aba").forEach(s => s.hidden = s.dataset.aba !== a);
   ativarVistasPose(a === "pose"); if (a === "posicao") desenharPlanta(); if (a === "orientacao") desenharDisco(); if (a === "pose") listarPoses(); if (a === "objetos") listarObjetos(); atualizarSel(); }
-function atualizarSel() { const s = selecionado(), n = $("ofSelNome"); if (n) n.textContent = s ? "· " + s.nome : "· nada selecionado"; const animal = s && s.tipo === "animal"; const a = $("ofPartesAnimal"), p = $("ofPartesPessoa"); if (a) a.hidden = !animal; if (p) p.hidden = !!animal; if (animal) listarPartesAnimal(s.o); }
+function atualizarSel() { const s = selecionado(), n = $("ofSelNome"); if (n) n.textContent = est.sel.size > 1 ? "· " + est.sel.size + " selecionados" : s ? "· " + s.nome : "· nada selecionado"; const animal = s && s.tipo === "animal"; const a = $("ofPartesAnimal"), p = $("ofPartesPessoa"); if (a) a.hidden = !animal; if (p) p.hidden = !!animal; if (animal) listarPartesAnimal(s.o); }
 
 /* --- aba Posição: planta --- */
 function itensPlanta() { const out = []; for (const it of SCN.list) { if (it.name === "__vazio__" || it.oculto) continue; out.push({ k: "p", it, x: it.params.wx || 0, z: it.params.wz || 0, g: it.params.wRot || 0, nome: it.name, sel: est.sel.has("p:" + it.name) || (!est.sel.size && SCN.list[SCN.active] === it && !SCN.objSel) }); }
@@ -165,13 +165,14 @@ function itensSel() { const L = itensPlanta(); if (!est.sel.size) { const s0 = s
 const marca = () => { try { cena.marcarEstado(); } catch (e) { } };
 function enquadrarPlanta() { const its = itensPlanta(); if (!its.length) { est.centro = [0, 0]; est.zoom = 18; return; } let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const i of its) { const r = Math.max(i.larg || 4, i.prof || 4) / 2; x0 = Math.min(x0, i.x - r); x1 = Math.max(x1, i.x + r); z0 = Math.min(z0, i.z - r); z1 = Math.max(z1, i.z + r); }
   est.centro = [(x0 + x1) / 2 * M, (z0 + z1) / 2 * M]; est.zoom = Math.max(1, Math.min(120, Math.min(300 / Math.max(2, (x1 - x0) * M + 4), 240 / Math.max(2, (z1 - z0) * M + 4)))); }
-const pl2tela = (xm, zm) => [180 + (xm - est.centro[0]) * est.zoom, 150 - (zm - est.centro[1]) * est.zoom], tela2pl = (px, py) => [est.centro[0] + (px - 180) / est.zoom, est.centro[1] - (py - 150) / est.zoom];
+/* planta igual à "vista de cima" do Blocking: +z para BAIXO (a câmera padrão fica embaixo) */
+const pl2tela = (xm, zm) => [180 + (xm - est.centro[0]) * est.zoom, 150 + (zm - est.centro[1]) * est.zoom], tela2pl = (px, py) => [est.centro[0] + (px - 180) / est.zoom, est.centro[1] + (py - 150) / est.zoom];
 function desenharPlanta() { const s = $("ofPlanta"); if (!s || $("ofInsp").hidden) return; let g = ""; const passo = est.grade, x0 = tela2pl(0, 0)[0], x1 = tela2pl(360, 0)[0], z1 = tela2pl(0, 0)[1], z0 = tela2pl(0, 300)[1];
   const n = (x1 - x0) / passo; if (n < 200) { for (let x = Math.floor(x0 / passo) * passo; x <= x1; x += passo) { const p = pl2tela(x, 0)[0]; g += '<line x1="' + p.toFixed(1) + '" y1="0" x2="' + p.toFixed(1) + '" y2="300" class="' + (Math.abs(x) < 1e-6 ? "of-eixo" : "of-gr") + '"/>'; }
     for (let z = Math.floor(z0 / passo) * passo; z <= z1; z += passo) { const p = pl2tela(0, z)[1]; g += '<line x1="0" y1="' + p.toFixed(1) + '" x2="360" y2="' + p.toFixed(1) + '" class="' + (Math.abs(z) < 1e-6 ? "of-eixo" : "of-gr") + '"/>'; } }
   for (const i of itensPlanta()) { const [px, py] = pl2tela(i.x * M, i.z * M), a = i.g * Math.PI / 180, dx = Math.sin(a), dz = Math.cos(a);
-    if (i.k === "p") { const r = Math.max(4, 0.25 * est.zoom); g += '<g class="of-it of-pessoa' + (i.sel ? " sel" : "") + '"><circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + r.toFixed(1) + '"/><line x1="' + px.toFixed(1) + '" y1="' + py.toFixed(1) + '" x2="' + (px + dx * r * 1.8).toFixed(1) + '" y2="' + (py - dz * r * 1.8).toFixed(1) + '"/><text x="' + (px + r + 2).toFixed(1) + '" y="' + (py - r).toFixed(1) + '">' + esc(i.nome) + "</text></g>"; }
-    else { const w = i.larg * M * est.zoom / 2, h = i.prof * M * est.zoom / 2; g += '<g class="of-it ' + (i.k === "a" ? "of-animal" : "of-obj") + (i.sel ? " sel" : "") + '" transform="translate(' + px.toFixed(1) + " " + py.toFixed(1) + ") rotate(" + (-i.g).toFixed(1) + ')"><rect x="' + (-w).toFixed(1) + '" y="' + (-h).toFixed(1) + '" width="' + (2 * w).toFixed(1) + '" height="' + (2 * h).toFixed(1) + '" rx="' + (i.k === "a" ? Math.min(w, h).toFixed(1) : "1") + '"/><line x1="0" y1="0" x2="0" y2="' + (-h - 4).toFixed(1) + '"/></g><text class="of-rot" x="' + (px + 4).toFixed(1) + '" y="' + (py + 3).toFixed(1) + '">' + esc(i.nome) + "</text>"; } }
+    if (i.k === "p") { const r = Math.max(4, 0.25 * est.zoom); g += '<g class="of-it of-pessoa' + (i.sel ? " sel" : "") + '"><circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + r.toFixed(1) + '"/><line x1="' + px.toFixed(1) + '" y1="' + py.toFixed(1) + '" x2="' + (px + dx * r * 1.8).toFixed(1) + '" y2="' + (py + dz * r * 1.8).toFixed(1) + '"/><text x="' + (px + r + 2).toFixed(1) + '" y="' + (py - r).toFixed(1) + '">' + esc(i.nome) + "</text></g>"; }
+    else { const w = i.larg * M * est.zoom / 2, h = i.prof * M * est.zoom / 2; g += '<g class="of-it ' + (i.k === "a" ? "of-animal" : "of-obj") + (i.sel ? " sel" : "") + '" transform="translate(' + px.toFixed(1) + " " + py.toFixed(1) + ") rotate(" + (i.g).toFixed(1) + ')"><rect x="' + (-w).toFixed(1) + '" y="' + (-h).toFixed(1) + '" width="' + (2 * w).toFixed(1) + '" height="' + (2 * h).toFixed(1) + '" rx="' + (i.k === "a" ? Math.min(w, h).toFixed(1) : "1") + '"/><line x1="0" y1="0" x2="0" y2="' + (-h - 4).toFixed(1) + '"/></g><text class="of-rot" x="' + (px + 4).toFixed(1) + '" y="' + (py + 3).toFixed(1) + '">' + esc(i.nome) + "</text>"; } }
   const esc1 = est.grade; g += '<text class="of-escala" x="6" y="294">grade ' + String(esc1).replace(".", ",") + " m · " + (est.colocar ? "clique para pôr: " + esc(est.colocar.rot) : "") + "</text>";
   g += sobreposPlanta();
   s.innerHTML = '<defs><marker id="ofPontaP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>' + g; const c = $("ofColocando"); if (c) c.textContent = est.colocar ? "Pondo: " + est.colocar.rot + " (Esc cancela)" : ""; }
@@ -190,7 +191,7 @@ function sobreposPlanta() { let g = ""; const c = camNaPlanta();
   return g; }
 function alvosOrientar() { if (!est.orientando) return []; if (est.orientando === "camera") return [{ cam: true }]; return itensPlanta().filter(i => est.orientando.includes(chaveDe(i))); }
 /* orientar para um ponto do chão (m): pessoas pelo texto (grupo … olha), objetos e animais girando direto, câmera mudando o alvo */
-function aplicarOrientacao(pt) { const alvos = alvosOrientar(); est.orientando = null; est.seta = null; if (!alvos.length) return;
+function aplicarOrientacao(pt) { const alvos = alvosOrientar(); est.orientando = null; est.seta = null; if (!alvos.length) return; mostrarHud("Orientado para (" + f2(pt[0]) + ", " + f2(pt[1]) + ").");
   if (alvos[0].cam) { marca(); moverAlvo(pt[0] / M, undefined, pt[1] / M); hist("camera olhando (" + f2(pt[0]) + ",1.5," + f2(pt[1]) + ")"); refrescar(); return; }
   const gente = alvos.filter(i => i.k === "p"), outros = alvos.filter(i => i.k !== "p");
   if (outros.length) { marca(); outros.forEach(i => { i.o.giro = Math.round(Math.atan2(pt[0] - i.x * M, pt[1] - i.z * M) * 180 / Math.PI); }); }
@@ -204,14 +205,14 @@ function ligarPlanta() { const s = $("ofPlanta");
     const [xm, zm] = tela2pl(q[0], q[1]);
     if (est.orientando) { est.arr = { orienta: true }; est.seta = [xm, zm]; desenharPlanta(); return; }
     if (est.colocar) { colocarEm(est.colocar, snap(xm), snap(zm)); if (!e.ctrlKey) est.colocar = null; desenharPlanta(); return; }
-    const cam = camNaPlanta(); if (cam && Math.hypot(q[0] - cam.px, q[1] - cam.py) < 8) { marca(); est.arr = { camera: true }; return; } if (cam && Math.hypot(q[0] - cam.ax, q[1] - cam.ay) < 6) { marca(); est.arr = { alvoCam: true }; return; }
+    const cam = camNaPlanta(); if (cam && (Math.hypot(q[0] - cam.px, q[1] - cam.py) < 12 || Math.hypot(q[0] - (cam.px + (cam.ax - cam.px) * 0.25), q[1] - (cam.py + (cam.ay - cam.py) * 0.25)) < 12)) { marca(); est.arr = { camera: true }; return; } if (cam && Math.hypot(q[0] - cam.ax, q[1] - cam.ay) < 6) { marca(); est.arr = { alvoCam: true }; return; }
     const i = itemNaPlanta(q);
     if (i) { const k = chaveDe(i); if (e.shiftKey || e.ctrlKey || e.metaKey) { if (est.sel.has(k)) est.sel.delete(k); else est.sel.add(k); } else if (!est.sel.has(k)) est.sel = new Set([k]);
       if (i.k === "p") { SCN.objSel = null; SCN.active = SCN.list.indexOf(i.it); } else SCN.objSel = i.o.id; atualizarSel(); marca();
       est.arr = { grupo: itensSel().map(j => ({ j, x: j.x, z: j.z })), xm, zm, moveu: false }; desenharPlanta(); return; }
     est.arr = { caixa: true, q, q2: q, add: e.shiftKey || e.ctrlKey }; });
   s.addEventListener("pointermove", e => { if (!est.arr) return; const q = ptPlanta(e), [xm, zm] = tela2pl(q[0], q[1]);
-    if (est.arr.pan) { est.centro = [est.arr.c0[0] - (q[0] - est.arr.q[0]) / est.zoom, est.arr.c0[1] + (q[1] - est.arr.q[1]) / est.zoom]; desenharPlanta(); return; }
+    if (est.arr.pan) { est.centro = [est.arr.c0[0] - (q[0] - est.arr.q[0]) / est.zoom, est.arr.c0[1] - (q[1] - est.arr.q[1]) / est.zoom]; desenharPlanta(); return; }
     if (est.arr.orienta) { est.seta = [xm, zm]; desenharPlanta(); return; }
     if (est.arr.camera) { moverCamera(snap(xm) / M, undefined, snap(zm) / M); render(); desenharPlanta(); return; }
     if (est.arr.alvoCam) { moverAlvo(xm / M, undefined, zm / M); render(); desenharPlanta(); return; }
@@ -235,7 +236,7 @@ function ligarPlanta() { const s = $("ofPlanta");
     menuColocar(e.clientX, e.clientY, item => { colocarEm(item, snap(xm), snap(zm)); desenharPlanta(); }, [xm, zm]); });
   s.addEventListener("keydown", e => { const L = itensSel(); if (e.key === "Escape") { est.sel = new Set(); est.area = null; est.orientando = null; desenharPlanta(); return; }
     if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); apagarSel(); return; } if (e.key === "o" || e.key === "O") { e.preventDefault(); orientarModo(L.map(chaveDe)); return; }
-    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key]; if (!d || !L.length) return; e.preventDefault(); e.stopPropagation(); marca(); const p = est.grade * (e.shiftKey ? 5 : 1);
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!d || !L.length) return; e.preventDefault(); e.stopPropagation(); marca(); const p = est.grade * (e.shiftKey ? 5 : 1);
     moverGrupo({ grupo: L.map(j => ({ j, x: j.x, z: j.z })) }, d[0] * p, d[1] * p); hist(L.length > 1 ? "grupo " + L.map(j => quote(j.nome)).join(", ") + " move (" + f2(d[0] * p) + "," + f2(d[1] * p) + ")" : quote(L[0].nome) + " em (" + f2(L[0].x * M + d[0] * p) + "," + f2(L[0].z * M + d[1] * p) + ")"); refrescar(); }); }
 /* apagar / duplicar a seleção */
 function apagarSel() { const L0 = itensSel(); if (!L0.length) return; const semNome = L0.filter(i => i.k !== "p" && !i.o.nome), L = L0.filter(i => !semNome.includes(i)); if (semNome.length) { marca(); semNome.forEach(i => removerObjeto(i.o)); } const r = L.length ? executar("apaga " + L.map(i => quote(i.nome)).join(", "), true) : { ok: true, mudou: semNome }; est.sel = new Set(); SCN.objSel = null; if (r && r.ok) mostrarHud((r.mudou || []).length + " apagado(s). Ctrl+Z desfaz."); refrescar(); }
@@ -370,10 +371,10 @@ function ligarPalco() { const st = $("stage"); if (!st) return;
     const id = pessoaNoPalco(e);
     if (id >= 0 && SCN.list[id]) { const k = "p:" + SCN.list[id].name; if (e.shiftKey || e.ctrlKey) { if (est.sel.has(k)) est.sel.delete(k); else est.sel.add(k); } else est.sel = new Set([k]); SCN.objSel = null; desenharPlanta(); return; }
     const o = objetoNoPalco(e); if (!o) return; e.preventDefault(); e.stopPropagation(); const k = "o:" + o.id; if (e.shiftKey || e.ctrlKey) { if (est.sel.has(k)) est.sel.delete(k); else est.sel.add(k); } else if (!est.sel.has(k)) est.sel = new Set([k]); SCN.objSel = o.id; atualizarSel();
-    const p0 = chaoDoPalco(e); marca(); est.arrPalco = { grupo: itensSel().map(j => ({ j, x: j.x, z: j.z })), p0, moveu: false }; try { st.setPointerCapture(e.pointerId); } catch (er) { } render(); desenharPlanta(); }, true);
+    const dy = (o.base || 0) + (o.alt || 0) * 0.6, p0 = chaoDoPalco(e, dy); marca(); est.arrPalco = { grupo: itensSel().map(j => ({ j, x: j.x, z: j.z })), p0, dy, moveu: false }; try { st.setPointerCapture(e.pointerId); } catch (er) { } render(); desenharPlanta(); }, true);
   st.addEventListener("pointermove", e => { const a = est.arrPalco; if (!a) return; e.stopPropagation();
     if (a.orienta) { setaPalco(a.de, [e.clientX, e.clientY]); return; }
-    const p = chaoDoPalco(e); if (!p || !a.p0) return; const dx = snap(p[0] - a.p0[0]), dz = snap(p[1] - a.p0[1]); if (dx || dz || a.moveu) { a.moveu = true; a.d = [dx, dz]; moverGrupo(a, dx, dz); render(); desenharPlanta(); } }, true);
+    const p = chaoDoPalco(e, a.dy); if (!p || !a.p0) return; const dx = snap(p[0] - a.p0[0]), dz = snap(p[1] - a.p0[1]); if (dx || dz || a.moveu) { a.moveu = true; a.d = [dx, dz]; moverGrupo(a, dx, dz); render(); desenharPlanta(); } }, true);
   st.addEventListener("pointerup", e => { const a = est.arrPalco; if (!a) return; est.arrPalco = null; e.stopPropagation();
     if (a.orienta) { setaPalco(null); const p = chaoDoPalco(e); if (p) aplicarOrientacao(p); return; }
     if (a.moveu && a.d) hist(a.grupo.length > 1 ? "grupo " + a.grupo.map(g => quote(g.j.nome)).join(", ") + " move (" + f2(a.d[0]) + "," + f2(a.d[1]) + ")" : quote(a.grupo[0].j.nome) + " em (" + f2(a.grupo[0].x * M + a.d[0]) + "," + f2(a.grupo[0].z * M + a.d[1]) + ")"); refrescar(); }, true);
