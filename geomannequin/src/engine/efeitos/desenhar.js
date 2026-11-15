@@ -67,6 +67,9 @@ function pontoParte(K, i, parte) {
     case "cintura": return J("coluna lombar");
     case "pelve": case "centro": case "corpo": return J("pelve");
     case "maos": { const a = J("mão", 1), b = J("mão", -1); return a && b ? mul(add(a, b), 0.5) : a || b; }
+    case "maoAtiva": { /* a mão que está à frente e esticada; as duas juntas e esticadas = entre as palmas */
+      const pel = J("pelve"), f0 = ro && at ? sub(ro, at) : [0, 0, 1], fr = norm([f0[0], 0, f0[2]]), nota = s => { const h = J("mão", s), o = J("ombro", s); if (!h || !o) return null; return { h, n: Math.hypot(...sub(h, o)) + (pel ? (h[0] - pel[0]) * fr[0] + (h[2] - pel[2]) * fr[2] : 0) * 0.6 }; };
+      const E = nota(1), D = nota(-1); if (!E || !D) return (E || D || { h: pel }).h; if (Math.abs(E.n - D.n) < 0.8 && Math.hypot(...sub(E.h, D.h)) < 3.2) return mul(add(E.h, D.h), 0.5); return (E.n > D.n ? E : D).h; }
     case "pes": { const a = J("tornozelo", 1), b = J("tornozelo", -1); return a && b ? [(a[0] + b[0]) / 2, K.g0, (a[2] + b[2]) / 2] : null; }
   }
   return J("pelve");
@@ -1180,6 +1183,65 @@ TIPOS.barreira_rachada = fx => {
   let cacos = ""; for (let i = 0; i < quant(fx, 8) * fx.t; i++) { const a = r() * 6.28, dd = Rs * r.entre(0.1, 0.5) * fx.t; cacos += lasca(hx + Math.cos(a) * dd, hy + Math.sin(a) * dd, Rs * 0.05, r); }
   const extra = forma(d, "none", { stroke: fx.ink ? INK : fx.cores[fx.cores.length - 1], sw: 1.6 }) + forma(cacos, fx.ink ? INK : fx.cores[1], { op: 0.9 });
   if (typeof base0 === "string") return base0 + extra; base0.frente = (base0.frente || "") + extra; return base0;
+};
+/* ---------- RAIO EM CADEIA: um raio que pula de alvo em alvo (pontos ao longo da direção), cada trecho com galhos ---------- */
+TIPOS.raio_cadeia = fx => {
+  const { P, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, L = escalaW(fx, P.alcance) * s * Math.min(1, fx.t * 1.4), a = fx.D.ang, ux = Math.cos(a), uy = Math.sin(a), n = Math.max(1, Math.round(P.saltos));
+  const nos = [[x, y]]; for (let i = 1; i <= n; i++) { const t = i / n, des = (i % 2 ? 1 : -1) * L * 0.12 * r.entre(0.4, 1); nos.push([x + ux * L * t - uy * des, y + uy * L * t + ux * des]); }
+  const zig = (p0, p1, k, amp) => { const pts = [p0]; for (let i = 1; i < k; i++) { const t = i / k, j = r.entre(-1, 1) * amp; pts.push([p0[0] + (p1[0] - p0[0]) * t - (p1[1] - p0[1]) / 1 * j / Math.max(1, Math.hypot(p1[0] - p0[0], p1[1] - p0[1])) * Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), p0[1] + (p1[1] - p0[1]) * t + (p1[0] - p0[0]) * j / Math.max(1, Math.hypot(p1[0] - p0[0], p1[1] - p0[1])) * Math.hypot(p1[0] - p0[0], p1[1] - p0[1])]); } pts.push(p1); return pts; };
+  let d = "", g = "", nucleo = ""; const w = Math.max(1.2, L * 0.012);
+  for (let i = 0; i < nos.length - 1; i++) { const pts = zig(nos[i], nos[i + 1], 8, 0.09); d += pincelada(pts, w * 2.2, "fuso"); nucleo += pincelada(pts, w * 0.8, "fuso");
+    for (let k = 0; k < Math.round(quant(fx, P.galhos) / n); k++) { const q = pts[1 + Math.floor(r() * (pts.length - 2))], aa = a + r.entre(-1.4, 1.4), l = L * r.entre(0.05, 0.14); g += pincelada(zig(q, [q[0] + Math.cos(aa) * l, q[1] + Math.sin(aa) * l], 4, 0.25), w * 0.7, "ponta"); }
+    if (i > 0) d += circulo(nos[i][0], nos[i][1], w * 3.5); }
+  if (fx.ink) return forma(d + g, INK) + forma(nucleo, PAPEL);
+  return forma(d + g, fx.cores[fx.cores.length - 1], { op: 0.45, filtro: brilho(fx) }) + forma(d + g, fx.cores[1]) + forma(nucleo, fx.cores[0]);
+};
+/* ---------- PISADA DE GIGANTE: cratera, anel de poeira que se espalha, rachaduras e pedras voando ---------- */
+TIPOS.pisada_gigante = fx => {
+  const { P, r } = fx, up = UPW(fx), C = fx.plano ? fx.A.mundo : [fx.A.mundo[0], fx.K.g0, fx.A.mundo[2]], R = escalaW(fx, P.raio), t = fx.t;
+  const aro = (rr, k) => aroMundo(fx, C, up, rr, k || 36), [cx, cy] = T2(fx, C);
+  let svg = forma(suave(aro(R * 0.45), true), fx.ink ? "#3A3A3A" : misturar(escuro(fx), "#000000", 0.3), { op: 0.75 });
+  let rach = ""; for (let i = 0; i < quant(fx, 10); i++) { const a = r() * 6.28; let p0 = [C[0] + Math.cos(a) * R * 0.4, C[1], C[2] + Math.sin(a) * R * 0.4]; const pts = [T2(fx, p0)]; let aa = a;
+    for (let k = 0; k < 4; k++) { aa += r.entre(-0.5, 0.5); const l = R * 0.22 * t * r.entre(0.6, 1.2); p0 = [p0[0] + Math.cos(aa) * l, p0[1], p0[2] + Math.sin(aa) * l]; pts.push(T2(fx, p0)); } rach += pincelada(pts, Math.max(1, pxu(fx) * R * 0.012), "ponta"); }
+  svg += forma(rach, fx.ink ? INK : escuro(fx));
+  const circs = []; const Rp = R * (0.5 + 0.9 * t); for (let i = 0; i < quant(fx, 22); i++) { const a = r() * 6.28, q = T2(fx, [C[0] + Math.cos(a) * Rp, C[1] + R * 0.12, C[2] + Math.sin(a) * Rp]); circs.push([q[0], q[1] - R * pxu(fx) * 0.05, R * pxu(fx) * r.entre(0.08, 0.16) * (0.6 + t)]); }
+  svg += nuvemTinta(fx, circs, r, "claro", 1 - 0.5 * t);
+  let pd = ""; for (let i = 0; i < quant(fx, P.pedras); i++) { const a = r() * 6.28, d0 = R * r.entre(0.2, 0.8) * t, h = R * r.entre(0.2, 0.9) * Math.sin(Math.PI * Math.min(1, t * 1.2)), q = T2(fx, [C[0] + Math.cos(a) * d0, C[1] + h, C[2] + Math.sin(a) * d0]); pd += lasca(q[0], q[1], R * pxu(fx) * r.entre(0.02, 0.05), r); }
+  return svg + forma(pd, fx.ink ? INK : escuro(fx), ct(fx, 0.7)) + (t < 0.4 ? estouro(fx, cx, cy, R * pxu(fx) * 0.4 * (1 - t), 12, r) : "");
+};
+/* ---------- RUGIDO: arcos de onda sonora em cone saindo da boca, linhas de vento e tremor ---------- */
+TIPOS.rugido = fx => {
+  const { P, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, L = escalaW(fx, P.alcance) * s, a = fx.D.ang, ab = (P.abertura || 40) * Math.PI / 360;
+  let d = "", v = ""; for (let i = 0; i < quant(fx, P.ondas); i++) { const t = ((i + 0.3) / P.ondas + fx.t * 0.6) % 1, rr = L * t, pts = []; for (let k = 0; k <= 14; k++) { const q = a - ab + 2 * ab * k / 14; pts.push([x + Math.cos(q) * rr, y + Math.sin(q) * rr]); }
+    d += pincelada(pts, Math.max(1.5, L * 0.025 * (1 - t * 0.7)), "fuso"); }
+  for (let i = 0; i < quant(fx, 14); i++) { const q = a + r.entre(-ab, ab), d0 = L * r.entre(0.1, 0.5), d1 = d0 + L * r.entre(0.2, 0.5); v += pincelada([[x + Math.cos(q) * d0, y + Math.sin(q) * d0], [x + Math.cos(q) * d1, y + Math.sin(q) * d1]], Math.max(0.8, L * 0.008), "agulha"); }
+  return forma(d, fx.ink ? INK : fx.cores[1], { op: 0.9 }) + forma(v, fx.ink ? INK : escuro(fx), { op: 0.6 });
+};
+/* ---------- SOPRO DE KAIJU: feixe grosso brilhante, espinhos de luz em volta e anéis de distorção ---------- */
+TIPOS.sopro_kaiju = fx => {
+  const { P, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, L = escalaW(fx, P.alcance) * s * Math.min(1, fx.t * 1.8), a = fx.D.ang, ux = Math.cos(a), uy = Math.sin(a), Wd = escalaW(fx, P.largura) * s;
+  const tubo = (w, ex) => pincelada([[x, y], [x + ux * L * ex, y + uy * L * ex]], w, "fuso");
+  let svg = fx.ink ? forma(tubo(Wd * 1.2, 1), INK) + forma(tubo(Wd * 0.6, 0.98), PAPEL) : forma(tubo(Wd * 1.8, 1), fx.cores[fx.cores.length - 1], { op: 0.35, filtro: brilho(fx) }) + forma(tubo(Wd * 1.1, 1), fx.cores[1]) + forma(tubo(Wd * 0.45, 0.97), fx.cores[0]);
+  let esp = ""; for (let i = 0; i < quant(fx, 26); i++) { const t = r(), bx = x + ux * L * t, by = y + uy * L * t, sg = r() < 0.5 ? 1 : -1, l = Wd * r.entre(0.6, 1.8); esp += pincelada([[bx - uy * Wd * 0.4 * sg, by + ux * Wd * 0.4 * sg], [bx - uy * (Wd * 0.4 + l) * sg + ux * l * 0.4, by + ux * (Wd * 0.4 + l) * sg + uy * l * 0.4]], Wd * 0.12, "agulha"); }
+  let an = ""; for (let i = 0; i < 4; i++) { const t = ((i + 0.5) / 4 + fx.t * 0.5) % 1, cx = x + ux * L * t, cy = y + uy * L * t; an += pincelada([[cx - uy * Wd * 1.3, cy + ux * Wd * 1.3], [cx + ux * Wd * 0.5, cy + uy * Wd * 0.5], [cx + uy * Wd * 1.3, cy - ux * Wd * 1.3]], Wd * 0.1, "fuso"); }
+  return svg + forma(esp, fx.ink ? INK : fx.cores[1], { op: 0.9 }) + forma(an, fx.ink ? INK : fx.cores[0], { op: 0.7 }) + estouro(fx, x + ux * L, y + uy * L, Wd * 1.6, 10, r);
+};
+/* ---------- TEIA: fios radiais e voltas em espiral (presa no alvo) ---------- */
+TIPOS.teia = fx => {
+  const { P, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, R = escalaW(fx, P.raio) * s * Math.min(1, 0.3 + fx.t), n = Math.round(P.raios), angs = []; for (let i = 0; i < n; i++) angs.push(i / n * 6.28 + r.entre(-0.15, 0.15));
+  let d = ""; const w = Math.max(0.7, R * 0.012); angs.forEach(q => { d += pincelada([[x, y], [x + Math.cos(q) * R * r.entre(0.85, 1.1), y + Math.sin(q) * R * r.entre(0.85, 1.1)]], w, "ponta"); });
+  for (let v = 1; v <= P.voltas; v++) { const rr = R * v / (P.voltas + 0.5), pts = angs.concat([angs[0] + 6.28]).map(q => [x + Math.cos(q) * rr, y + Math.sin(q) * rr * 0.96]); for (let i = 0; i < pts.length - 1; i++) { const m = [(pts[i][0] + pts[i + 1][0]) / 2 * 0.92 + x * 0.08, (pts[i][1] + pts[i + 1][1]) / 2 * 0.92 + y * 0.08]; d += pincelada([pts[i], m, pts[i + 1]], w * 0.8, "pincel"); } }
+  return forma(d, fx.ink ? INK : (fx.e.elemento === "tinta" ? "#F4F4F4" : fx.cores[0]), fx.ink ? {} : ct(fx, 0.5));
+};
+/* ---------- RASGO DIMENSIONAL: fenda vertical em zigue-zague, brilho de dentro e estilhaços ---------- */
+TIPOS.rasgo_dimensional = fx => {
+  const { P, r } = fx, s = pxu(fx), C = fx.A.mundo, up = UPW(fx), Hh = escalaW(fx, P.altura) * Math.min(1, fx.t * 1.5), Wd = escalaW(fx, P.largura) * Math.min(1, fx.t * 1.2);
+  const base0 = add(C, mul(up, -Hh * 0.2)), topo = add(base0, mul(up, Hh)), a = T2(fx, base0), b = T2(fx, topo), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l, wpx = Wd * s;
+  const lado = sg => { const pts = []; for (let i = 0; i <= 12; i++) { const t = i / 12, amp = Math.sin(Math.PI * t) * wpx * (0.6 + r.entre(0, 0.6)); pts.push([a[0] + dx * t + nx * amp * sg + r.entre(-1, 1) * wpx * 0.15, a[1] + dy * t + ny * amp * sg]); } return pts; };
+  const E = lado(1), D = lado(-1), fenda = caminho(E.concat(D.reverse()), true);
+  let svg = fx.ink ? forma(fenda, INK) : forma(fenda, fx.cores[fx.cores.length - 1], { filtro: brilho(fx) }) + forma(caminho(E.map((p, i) => [p[0] * 0.6 + (a[0] + dx * i / 12) * 0.4, p[1] * 0.6 + (a[1] + dy * i / 12) * 0.4]).concat(D.map((p, i) => [p[0] * 0.6 + (a[0] + dx * (12 - i) / 12) * 0.4, p[1] * 0.6 + (a[1] + dy * (12 - i) / 12) * 0.4])), true), fx.cores[0], { op: 0.85 });
+  let la = ""; for (let i = 0; i < quant(fx, 12); i++) { const t = r(), side = r() < 0.5 ? 1 : -1, d0 = wpx * r.entre(1, 4) * fx.t; la += lasca(a[0] + dx * t + nx * d0 * side, a[1] + dy * t + ny * d0 * side, wpx * r.entre(0.15, 0.4), r); }
+  return svg + forma(fenda, "none", { stroke: fx.ink ? INK : fx.cores[1], sw: 1.4 }) + forma(la, fx.ink ? INK : fx.cores[1], { op: 0.9 }) + estrelas(fx, E.concat(D), 18);
 };
 /* ---------- personalizado ---------- */
 /* construtor por camadas e os efeitos prontos de mangá: a profundidade de referência é o peito do dono */

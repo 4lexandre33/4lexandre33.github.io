@@ -17,24 +17,32 @@ function vtPontoPessoa(it, parte) { const p = it.params, g0 = restGround(SCN.lis
   const pt = String(parte || "peito"), lado = /Esq$/.test(pt) ? 1 : /Dir$/.test(pt) ? -1 : 0, b = pt.replace(/(Esq|Dir)$/, "");
   if (VT_JUNTA[b] && lado) return j(VT_JUNTA[b], lado);
   if (b === "maos") { const a = j("mão", 1), c = j("mão", -1); return a.map((v, i) => (v + c[i]) / 2); }
+  if (VT_MAO_ATIVA.test(b)) return vtMaoAtiva(j, (p.wRot || 0));
   if (b === "pes") { const a = j("tornozelo", 1), c = j("tornozelo", -1); return [(a[0] + c[0]) / 2, g0, (a[2] + c[2]) / 2]; }
   if (b === "cabeca" || b === "olhos" || b === "rosto" || b === "boca") { const c = j("cabeça (atlas)"); return c ? [c[0], c[1] + 0.6, c[2]] : null; }
   if (b === "pelve" || b === "corpo" || b === "centro") return j("pelve");
   if (b === "peito" || b === "tronco") return j("coluna torácica") || j("pelve");
-  throw new Error("parte “" + pt + "” não existe (use maoDir, maoEsq, peDir, peEsq, cotoveloDir, joelhoEsq, ombroDir, maos, pes, cabeca, olhos, peito, pelve ou um objeto: Kai.katana.ponta)."); }
+  throw new Error("parte “" + pt + "” não existe (use maoAtiva (a mão que está à frente), maoDir, maoEsq, peDir, peEsq, cotoveloDir, joelhoEsq, ombroDir, maos, pes, cabeca, olhos, peito, pelve ou um objeto: Kai.katana.ponta)."); }
+/* MÃO ATIVA: a mão que está à frente e esticada (de onde sai o poder); as duas juntas e esticadas (kamehameha) = entre as palmas */
+const VT_MAO_ATIVA = /^(maoAtiva|mao|maoFrente|palma|maoativa|mao-ativa)$/i;
+function vtMaoAtiva(j, giro) { const g = giro * Math.PI / 180, fr = [Math.sin(g), 0, Math.cos(g)], pel = j("pelve") || [0, 0, 0];
+  const nota = s => { const h = j("mão", s), o = j("ombro", s); if (!h || !o) return null; const ext = Math.hypot(h[0] - o[0], h[1] - o[1], h[2] - o[2]), fw = (h[0] - pel[0]) * fr[0] + (h[2] - pel[2]) * fr[2]; return { h, n: ext + fw * 0.6 }; };
+  const E = nota(1), D = nota(-1); if (!E || !D) return (E || D || { h: pel }).h;
+  if (Math.abs(E.n - D.n) < 0.8 && Math.hypot(E.h[0] - D.h[0], E.h[1] - D.h[1], E.h[2] - D.h[2]) < 3.2) return E.h.map((v, i) => (v + D.h[i]) / 2);
+  return (E.n > D.n ? E : D).h; }
 /* referência em texto → ponto no mundo: "Kai.maoDir" · "Kai.katana.ponta" · "katana.ponta" · "Mira" · {x,y,z} */
-function vtPonto(ref, padrao) {
+function vtPonto(ref, padrao, parteSo) {
   if (Array.isArray(ref)) return ref.slice(0, 3);
   if (ref && typeof ref === "object") { if (ref.mundo) return ref.mundo.slice(); if (ref.manequim) { const it = vtPessoa(ref.manequim); return it ? vtPontoPessoa(it, ref.parte) : null; }
     if (ref.objeto !== undefined) { const o = typeof ref.objeto === "number" ? SCN.objetos.find(q => q.id === ref.objeto) : vtObjeto(ref.objeto); return o ? vtPontoObjeto(o, ref.parte) : null; } }
   const ps = String(ref || padrao || "").split("."); const it = vtPessoa(ps[0]);
-  if (it) { if (ps.length === 1) return vtPontoPessoa(it, "peito"); const o = vtObjeto(ps[1], it); if (o) return vtPontoObjeto(o, ps[2] || "ponta"); return vtPontoPessoa(it, ps[1]); }
+  if (it) { if (ps.length === 1) return vtPontoPessoa(it, parteSo || "peito"); const o = vtObjeto(ps[1], it); if (o) return vtPontoObjeto(o, ps[2] || "ponta"); return vtPontoPessoa(it, ps[1]); }
   const o = vtObjeto(ps[0]); if (o) return vtPontoObjeto(o, ps[1] || "ponta");
   return null; }
 function vtPontoObjeto(o, parte) { const g0 = restGround(SCN.list[0].params); try { const L = pontosLocaisDoObjeto(o); return pontoDoObjeto(o, L[parte] ? parte : "ponta", g0); } catch (e) { return [o.x, g0 + (o.base || 0) + (o.alt || 1) / 2, o.z]; } }
 /* referência em texto → âncora de efeito (para "em Kai.katana.ponta") */
-function vtAncora(ref) { const ps = String(ref || "").split("."), it = vtPessoa(ps[0]);
-  if (it) { if (ps.length === 1) return { manequim: it.name, parte: "corpo" }; const o = vtObjeto(ps[1], it); if (o) return { objeto: o.id, parte: ps[2] || "ponta" }; return { manequim: it.name, parte: ps[1] }; }
+function vtAncora(ref, parteSo) { const ps = String(ref || "").split("."), it = vtPessoa(ps[0]);
+  if (it) { if (ps.length === 1) return { manequim: it.name, parte: parteSo || "corpo" }; const o = vtObjeto(ps[1], it); if (o) return { objeto: o.id, parte: ps[2] || "ponta" }; return { manequim: it.name, parte: ps[1] }; }
   const o = vtObjeto(ps[0]); if (o) return { objeto: o.id, parte: ps[1] || "ponta" }; return null; }
 /* o caminho: n+1 pontos de A até B */
 function vtCaminho(A, B, tipo = "reta", o = {}) {
@@ -54,4 +62,4 @@ function vtCaminho(A, B, tipo = "reta", o = {}) {
 /* posição e cauda num instante u (0..1) do caminho */
 function vtNoCaminho(pts, u) { const f = Math.max(0, Math.min(1, u)) * (pts.length - 1), i = Math.floor(f), a = f - i, p = i >= pts.length - 1 ? pts[pts.length - 1] : pts[i].map((v, j) => v + (pts[i + 1][j] - v) * a);
   return { p, cauda: pts.slice(0, i + 1).concat([p]) }; }
-export { VT_CAMINHOS, vtPonto, vtAncora, vtCaminho, vtNoCaminho, vtPontoPessoa };
+export { vtMaoAtiva, VT_MAO_ATIVA, VT_CAMINHOS, vtPonto, vtAncora, vtCaminho, vtNoCaminho, vtPontoPessoa };

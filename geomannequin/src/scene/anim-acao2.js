@@ -51,22 +51,69 @@ const AA2 = [
   ["judoSeoiNageAnim", "Combate/Artes marciais/Judô", "pegada → gira e encaixa o ombro → projeta", [[0, "amJudoKumikata"], [0.35, "amJudoOGoshi", { giro: 90 }], [0.7, "amJudoIpponSeoi", { giro: 180 }], [1.1, "amJudoKumikata", { giro: 180 }]]],
   ["judoOSotoGariAnim", "Combate/Artes marciais/Judô", "pegada → avança → ceifa a perna por fora", [[0, "amJudoKumikata"], [0.3, "amJudoKumikata", { frente: 0.3 }], [0.6, "amJudoOSotoGari", { frente: 0.4 }], [1.0, "amJudoKumikata", { frente: 0.4 }]]],
   ["judoUkemiAnim", "Combate/Artes marciais/Judô", "cai rolando e bate o braço no chão", [[0, "amJudoKumikata"], [0.3, "amJudoUkemi", { frente: -0.4 }], [0.9, "amJudoUkemi", { frente: -0.6 }]], null, { pesLivres: true }],
-  ["karateKihonAnim", "Combate/Artes marciais/Karatê", "kihon: defesa baixa → soco em avanço → defesa alta → soco reverso", [[0, "amKarateKata"], [0.5, "amKarateGedanBarai", { frente: 0.4 }], [1.0, "amKarateOiZuki", { frente: 0.9 }], [1.5, "amKarateAgeUke", { frente: 1.3 }], [2.0, "amKarateGyakuZuki", { frente: 1.3 }], [2.6, "amKarateKata", { frente: 1.3 }]]],
-  ["karateChutesAnim", "Combate/Artes marciais/Karatê", "mae geri → yoko geri → volta à base", [[0, "amKarateZenkutsu"], [0.35, "amKarateMaeGeri"], [0.8, "amKarateZenkutsu", { frente: 0.4 }], [1.2, "amKarateYokoGeri", { frente: 0.4 }], [1.7, "amKarateKibaDachi", { frente: 0.6 }]], null, { limite: { escorrega: 25 } }],
   ["aikidoIriminageAnim", "Combate/Artes marciais/Aikidô", "hanmi → entra girando → projeta", [[0, "amAikidoKamae"], [0.4, "amAikidoKamae", { frente: 0.4, giro: 90 }], [0.8, "amAikidoIriminage", { frente: 0.6, giro: 180 }], [1.3, "amAikidoKamae", { frente: 0.6, giro: 180 }]], "suave"],
-  ["wingChunAnim", "Combate/Artes marciais/Wing chun", "tan sau → pak sau → socos em corrente", [[0, "amWingChunGuarda"], [0.3, "amWingChunTanSau"], [0.55, "amWingChunPakSau"], [0.75, "amWingChunSocoCorrente", { frente: 0.15 }], [0.9, "amWingChunGuarda", { frente: 0.25 }], [1.05, "amWingChunSocoCorrente", { frente: 0.35 }], [1.4, "amWingChunGuarda", { frente: 0.4 }]]],
-  ["taekwondoAnim", "Combate/Artes marciais/Taekwondo", "guarda → chute circular → chute machado → guarda", [[0, "amTkdGuarda"], [0.35, "amTkdDollyoChagi"], [0.8, "amTkdGuarda", { frente: 0.3 }], [1.15, "amTkdNeryoChagi", { frente: 0.3 }], [1.6, "amTkdGuarda", { frente: 0.5 }]]],
   ["taekwondoVoadorAnim", "Combate/Artes marciais/Taekwondo", "corre e dá o chute lateral voador", [[0, "amTkdGuarda"], [0.25, "puloImpulso", { frente: 0.4 }], [0.55, "amTkdTwioYopChagi", { frente: 1.6 }], [0.9, "puloAterrissagem", { frente: 2.4 }], [1.3, "amTkdGuarda", { frente: 2.4 }]], null, { pesLivres: true }],
   ["capoeiraGingaAnim", "Combate/Artes marciais/Capoeira", "ginga → meia-lua → negativa → armada → ginga", [[0, "guardaCapoeira"], [0.5, "amCapoeiraMeiaLua"], [1.0, "amCapoeiraNegativa"], [1.5, "amCapoeiraArmada", { giro: 180 }], [2.0, "guardaCapoeira", { giro: 360 }]], "suave", { limite: { escorrega: 15, afunda: -25 } }],
   ["capoeiraAuAnim", "Combate/Artes marciais/Capoeira", "ginga → aú (estrela) → ginga", [[0, "guardaCapoeira"], [0.4, "amCapoeiraAu", { lado: 0.8 }], [0.9, "guardaCapoeira", { lado: 1.6 }]], null, { pesLivres: true }],
   ["jiuJitsuAnim", "Combate/Artes marciais/Jiu-jitsu", "guarda fechada → raspagem → montada", [[0, "amBjjGuardaFechada"], [0.6, "amBjjRaspagem"], [1.2, "amBjjMontada", { frente: 0.3 }]], "suave", { pesLivres: true }],
 
 ];
+
+/* ===== GOLPES DE CORPO INTEIRO (artes marciais, boxe, muay thai): para cada técnica
+   guarda → ANTECIPAÇÃO (o membro recolhe, o tronco torce ao contrário, o peso vai para trás) → EXECUÇÃO rápida (passa um pouco do alvo)
+   → IMPACTO (segura) → RECOLHE (no chute o joelho volta dobrado) → guarda. O passo à frente acontece durante a execução.
+   [nome, tag, descrição, guarda, [[pose, passo em m (frente), lado?]...], {ritmo, curva final}] */
+const AA2_GOLPES = [
+  ["karateKihonAnim", "Combate/Artes marciais/Karatê", "kihon: defesa baixa → soco em avanço → defesa alta → soco reverso", "amKarateZenkutsu", [["amKarateGedanBarai", 0.35], ["amKarateOiZuki", 0.5], ["amKarateAgeUke", 0.4], ["amKarateGyakuZuki", 0]]],
+  ["karateChutesAnim", "Combate/Artes marciais/Karatê", "mae geri → yoko geri → joelhada → volta à base", "amKarateZenkutsu", [["amKarateMaeGeri", 0.3], ["amKarateYokoGeri", 0.25], ["amKarateHizaGeri", 0.15]]],
+  ["karateDefesasAnim", "Combate/Artes marciais/Karatê", "as cinco defesas: age uke, uchi uke, shuto uke, gedan barai, juji uke", "amKarateZenkutsu", [["amKarateAgeUke", 0], ["amKarateUchiUke", 0], ["amKarateShutoUke", 0], ["amKarateGedanBarai", 0], ["amKarateJuujiUke", 0]]],
+  ["karateComboAnim", "Combate/Artes marciais/Karatê", "defende por dentro, contra-ataca com uraken e soco reverso", "amKarateZenkutsu", [["amKarateUchiUke", 0], ["amKarateUraken", 0.2], ["amKarateGyakuZuki", 0.2]]],
+  ["boxeComboAnim", "Combate/Boxe/Combinação", "jab → direto → gancho → uppercut (1-2-3-6)", "guardaBoxe", [["jab", 0.15], ["direto", 0.1], ["gancho", 0], ["uppercut", 0.1]], { ritmo: 0.8 }],
+  ["boxeCorpoAnim", "Combate/Boxe/Combinação", "jab baixo → direto ao corpo → gancho baixo → sobe com o cruzado", "guardaBoxe", [["jabBaixo", 0.1], ["diretoAoCorpo", 0.1], ["ganchoBaixo", 0], ["cruzado", 0]], { ritmo: 0.85 }],
+  ["muayThaiAnim", "Combate/Muay thai/Combinação", "teep → chute circular → cotovelada → joelhada", "guardaMuayThai", [["chuteEmpurrao", 0.15], ["chuteCircularMedio", 0.1], ["cotovelada", 0.2], ["joelhada", 0.1]]],
+  ["chutesAltosAnim", "Combate/Chute/Combinação", "chute frontal → chute alto → chute gancho → chute para trás", "guardaLuta", [["chuteFrontal", 0.2], ["chuteAlto", 0.1], ["chuteGancho", 0], ["chuteParaTras", 0]]],
+  ["taekwondoAnim", "Combate/Artes marciais/Taekwondo", "guarda → chute circular → chute machado → bandal → guarda", "amTkdGuarda", [["amTkdDollyoChagi", 0.25], ["amTkdNeryoChagi", 0.2], ["amTkdBandalChagi", 0.2]]],
+  ["taekwondoDefesaAnim", "Combate/Artes marciais/Taekwondo", "makki (defesa) → contra-ataque com chute de costas", "amTkdGuarda", [["amTkdMakki", 0], ["amTkdDwiChagi", 0.2]]],
+  ["wingChunAnim", "Combate/Artes marciais/Wing chun", "tan sau → pak sau → lap sau → socos em corrente", "amWingChunGuarda", [["amWingChunTanSau", 0], ["amWingChunPakSau", 0.05], ["amWingChunLapSau", 0.05], ["amWingChunSocoCorrente", 0.15], ["amWingChunSocoCorrente", 0.15]], { ritmo: 0.7 }],
+  ["kungFuGarcaAnim", "Combate/Artes marciais/Shaolin/Garça", "bloqueio da garça → bico → palma dupla", "amKungFuBloqueioGarca", [["amGarcaBico", 0.2], ["amKungFuPalmaDupla", 0.3]]],
+  ["capoeiraAtaquesAnim", "Combate/Artes marciais/Capoeira", "ginga → bênção → martelo → queixada → meia-lua", "guardaCapoeira", [["amCapoeiraBencao", 0.2], ["amCapoeiraMartelo", 0.1], ["amCapoeiraQueixada", 0], ["amCapoeiraMeiaLua", 0]], { ritmo: 1.15 }],
+  ["capoeiraDefesasAnim", "Combate/Artes marciais/Capoeira", "ginga → cocorinha → esquiva baixa → negativa", "guardaCapoeira", [["amCapoeiraCocorinha", 0], ["amCapoeiraEsquivaBaixa", 0], ["amCapoeiraNegativa", -0.2]], { ritmo: 1.2 }],
+  ["defesasLutaAnim", "Combate/Defesa/Combinação", "bloqueio alto → bloqueio interno → bloqueio baixo → defende o chute", "guardaLuta", [["bloqueioAlto", 0], ["bloqueioInterno", 0], ["bloqueioBaixo", 0], ["defesaChute", -0.1]]]
+];
+const AA2_LIM = { armFlexL: [-60, 180], armFlexR: [-60, 180], elbowL: [0, 150], elbowR: [0, 150], hipFlexL: [-30, 130], hipFlexR: [-30, 130], kneeFlexL: [0, 150], kneeFlexR: [0, 150], spineTwist: [-60, 60] };
+const aa2Lim = (k, v) => { const l = AA2_LIM[k]; return l ? Math.max(l[0], Math.min(l[1], v)) : v; };
+/* qual braço/perna golpeia: o que mais muda da guarda para a técnica */
+function aa2Membro(G, S) { const soma = re => Object.keys(S).filter(k => re.test(k)).reduce((s, k) => s + Math.abs((S[k] || 0) - (G[k] || 0)), 0);
+  const b = { L: soma(/^(armFlex|armAbd|elbow)L$/), R: soma(/^(armFlex|armAbd|elbow)R$/) }, p = { L: soma(/^(hipFlex|hipAbd|kneeFlex)L$/), R: soma(/^(hipFlex|hipAbd|kneeFlex)R$/) };
+  const braco = b.L > b.R ? "L" : "R", perna = p.L > p.R ? "L" : "R"; return Math.max(p.L, p.R) > Math.max(b.L, b.R) * 0.9 && Math.max(p.L, p.R) > 60 ? { perna } : { braco }; }
+function aa2Chaves(guarda, golpes, base, o) {
+  const G = anPoseValores(guarda, base), out = [], r = (o && o.ritmo) || 1; let t = 0, fr = 0;
+  const num = v => typeof v === "number";
+  const push = (dt, valores, curva) => { t += dt * r; out.push({ t: +t.toFixed(3), valores, curva, mover: { frente: +fr.toFixed(3) } }); };
+  out.push({ t: 0, valores: G, curva: "suave", mover: { frente: 0 } });
+  for (const [pose, passo] of golpes) {
+    const S = anPoseValores(pose, base), m = aa2Membro(G, S), ant = {}, pas = {}, rec = {};
+    for (const k of new Set(Object.keys(S).concat(Object.keys(G)))) { const g = num(G[k]) ? G[k] : (num(base[k]) ? base[k] : 0), sv = num(S[k]) ? S[k] : g; if (!num(sv)) continue; const d = sv - g;
+      if (/^(spineTwist|spineSide|hipTwist)$/.test(k)) { ant[k] = g - d * 0.45; pas[k] = sv + d * 0.12; rec[k] = g + d * 0.3; }
+      else if (m.braco && new RegExp("^(armFlex|armAbd|armRot|elbow|pron)" + m.braco + "$").test(k)) { ant[k] = aa2Lim(k, g - d * 0.3 + (/^elbow/.test(k) ? 22 : 0)); pas[k] = aa2Lim(k, sv + d * 0.07); rec[k] = g + d * 0.25; }
+      else if (m.perna && new RegExp("^(hipFlex|hipAbd|hipRot)" + m.perna + "$").test(k)) { ant[k] = aa2Lim(k, /^hipFlex/.test(k) ? Math.max(g, sv * 0.78) : g + d * 0.6); pas[k] = aa2Lim(k, sv + d * 0.05); rec[k] = ant[k]; }
+      else if (m.perna && k === "kneeFlex" + m.perna) { ant[k] = Math.max(g, 112); pas[k] = Math.max(0, sv - 4); rec[k] = Math.max(g, 105); }
+      else if (/^(bodyPitch)$/.test(k)) { ant[k] = g - Math.abs(d) * 0.3 - 3; pas[k] = sv; rec[k] = g; }
+      else { ant[k] = g + d * 0.25; pas[k] = sv; rec[k] = g + d * 0.4; } }
+    push(0.22, Object.assign({}, G, ant), "rapida");               /* antecipação: carrega (segmento seguinte é rápido) */
+    fr += passo || 0; push(m.perna ? 0.16 : 0.12, Object.assign({}, S, pas), "saida");  /* execução: passa um pouco */
+    push(0.07, S, "suave");                                         /* impacto */
+    push(0.12, S, "suave");                                         /* segura */
+    push(m.perna ? 0.16 : 0.12, Object.assign({}, G, rec), "suave"); /* recolhe (chute: joelho dobrado) */
+    push(0.2, G, "suave"); }                                        /* guarda */
+  return out; }
 function registrarAcao2() { const L = {}, base = Object.assign({}, SCN.list[0] ? SCN.list[0].params : {});
   for (const [nome, tag, desc, seq, curva, ex] of AA2) { try {
     const chaves = seq.map(([t, pose, mov]) => Object.assign({ t, valores: anPoseValores(pose, base) }, mov ? { mover: mov } : {}));
     L[nome] = Object.assign(criarAnimacao({ nome, duracao: seq[seq.length - 1][0], curva: curva || "saida", chaves }), { tags: [tag], descricao: desc + ((ex && ex.desc2) || ""), origem: "pronta", versao: 0 }, ex && ex.pesLivres ? { pesLivres: true } : {}, ex && ex.limite ? { limiteAuditoria: ex.limite } : {}); } catch (e) { /* pose que falta não derruba a biblioteca */ } }
+  for (const [nome, tag, desc, guarda, golpes, o] of AA2_GOLPES) { try { const chaves = aa2Chaves(guarda, golpes, base, o);
+    L[nome] = Object.assign(criarAnimacao({ nome, duracao: chaves[chaves.length - 1].t, curva: "suave", chaves }), { tags: [tag], descricao: desc + " (antecipação, golpe rápido, impacto e recolhimento)", origem: "pronta", versao: 0, limiteAuditoria: { escorrega: 25, afunda: -10 } }); } catch (e) { /* pose que falta não derruba a biblioteca */ } }
   return L; }
 registrarProntas(registrarAcao2);
-function listaAnimAcao2() { return AA2.map(([nome, tag, desc, seq]) => ({ nome, tag, desc, duracao: seq[seq.length - 1][0], poses: seq.map(x => x[1]) })); }
-export { AA2, listaAnimAcao2 };
+function listaAnimAcao2() { return AA2_GOLPES.map(([nome, tag, desc, guarda, golpes]) => ({ nome, tag, desc, duracao: null, poses: [guarda].concat(golpes.map(g => g[0])) })).concat(AA2.map(([nome, tag, desc, seq]) => ({ nome, tag, desc, duracao: seq[seq.length - 1][0], poses: seq.map(x => x[1]) }))); }
+export { AA2_GOLPES, aa2Chaves, AA2, listaAnimAcao2 };

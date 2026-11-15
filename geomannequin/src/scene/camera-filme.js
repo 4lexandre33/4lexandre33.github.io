@@ -7,7 +7,7 @@ import { SCN, P } from "./modelo.js";
 import { pMundo } from "./colisoes.js";
 import { aplicarCameraBlk } from "./blocking.js";
 import { amPontos } from "./animais.js";
-import { capsulas, cameraNoMundo } from "../engine/index.js";
+import { capsulas, cameraNoMundo, CY, H, W } from "../engine/index.js";
 
 const CF_M = 1 / 0.114, CF_D = Math.PI / 180;
 const cfSuave = u => { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
@@ -63,7 +63,7 @@ function cfBase(b, t, anc) {
   if (b.modo === "caminho") { const P0 = b.pts.map(q => cfPonto(q)).filter(Boolean); if (P0.length < 2) return null; const u = cfCurva(b.curva, (t - (b.t0 || 0)) / Math.max(0.05, b.dur || 4)), pos = cfSpline(P0, u);
     let alvo = b.olha && b.olha !== "frente" ? cfPonto(b.olha, { cabeca: b.cabeca }) : null; if (!alvo) { const q = cfSpline(P0, Math.min(1, u + 0.02)), d = q.map((x, j) => x - pos[j]); const L0 = Math.hypot(...d); alvo = L0 > 1e-4 ? pos.map((x, j) => x + d[j] / L0 * 30) : cfSpline(P0, 1).map((x, j) => x + (x - P0[P0.length - 2][j])); }
     return { pos, alvo, lente: b.lente || 35 }; }
-  if (b.modo === "fixa") { const pos = b.posFixa || (anc && anc.fixa && anc.fixa(b)), alvo = b.olha ? (b.olha === "frente" ? b.alvoFixo : cfPonto(b.olha, { cabeca: b.cabeca })) : b.alvoFixo; if (!pos || !alvo) return null; return { pos: pos.slice(), alvo: alvo.slice(), lente: b.lente || 50 }; }
+  if (b.modo === "fixa") { const pos = b.posFixa || (anc && anc.fixa && anc.fixa(b)), alvo = b.olha ? (b.olha === "frente" ? b.alvoFixo : cfPonto(b.olha, { cabeca: b.cabeca })) : b.alvoFixo; if (!pos || !alvo) return null; return { centro: !!(b.centro && Array.isArray(b.olha)), pos: pos.slice(), alvo: alvo.slice(), lente: b.lente || 50 }; }
   if (b.modo === "ombro") { const p = cfPessoa(b.quem), a = cfPonto(b.alvo, { cabeca: true }); if (!p || !a) return null;
     const v = [a[0] - p.cabeca[0], a[2] - p.cabeca[2]], L = Math.hypot(...v) || 1, u = [v[0] / L, v[1] / L], s = b.lado === "esquerdo" ? 1 : -1, lat = [u[1] * s, -u[0] * s];
     return { pos: [p.cabeca[0] - u[0] * m(1.3) + lat[0] * m(0.62), p.cabeca[1] + m(0.08), p.cabeca[2] - u[1] * m(1.3) + lat[1] * m(0.62)], alvo: [a[0] - lat[0] * m(0.3), a[1], a[2] - lat[1] * m(0.3)], lente: b.lente || 36 }; }
@@ -101,7 +101,7 @@ function cfCameraNoTempo(ev, t, anc = {}) {
   if (i > 0 && !b.corte && t < b.t + (b.dur || 1)) { const pb = bases[i - 1], pc = cfComMods(ev, pb, cfBase(pb.base, t, anc), t, b.t); if (pc) { const u = cfSuave((t - b.t) / (b.dur || 1)); cam = { pos: cfLerp(pc.pos, cam.pos, u), alvo: cfLerp(pc.alvo, cam.alvo, u), lente: pc.lente + (cam.lente - pc.lente) * u, esconder: u > 0.5 ? cam.esconder : pc.esconder, pan: (pc.pan || cam.pan) ? [0, 1].map(j => ((pc.pan || [0, 0])[j]) * (1 - u) + ((cam.pan || [0, 0])[j]) * u) : undefined }; } }
   return cfComMods(ev, b, cam, t, Infinity);
 }
-function cfComMods(ev, b, cam, t, ate) { if (!cam) return null; const c = { pos: cam.pos.slice(), alvo: cam.alvo.slice(), lente: cam.lente, esconder: cam.esconder, pan: cam.pan, roll: cam.roll };
+function cfComMods(ev, b, cam, t, ate) { if (!cam) return null; const c = { pos: cam.pos.slice(), alvo: cam.alvo.slice(), lente: cam.lente, esconder: cam.esconder, pan: cam.pan, roll: cam.roll, centro: cam.centro };
   for (const e of ev) { if (!e.mod || e.t < b.t - 1e-9 || e.t > t + 1e-9 || e.t > ate) continue; const u = e.corte || !e.dur ? 1 : cfCurva(e.mod.curva, (Math.min(t, ate) - e.t) / e.dur);
     /* nos olhos de alguém (POV) aproximar/afastar é zoom: a câmera não sai da cabeça */
     if (b.base && b.base.modo === "pov" && (e.mod.tipo === "aproxima" || e.mod.tipo === "afasta")) { const p = (e.mod.pct || 30) / 100 * u; c.lente = c.lente * (e.mod.tipo === "aproxima" ? 1 / Math.max(0.1, 1 - p) : Math.max(0.2, 1 - p)); continue; }
@@ -116,7 +116,7 @@ function cfAplicar(cam, avisos) {
   /* dentro de algo: primeiro chega para perto do alvo (parede entre); se não sair, recua (gente na frente) */
   const q0 = dentro(pos); if (q0) { let quem = q0; for (let k = 1; k <= 20 && quem; k++) { pos = cfLerp(cam.pos, alvo, k / 40); quem = dentro(pos); }
     if (quem) for (let k = 1; k <= 30 && quem; k++) { pos = cfLerp(cam.pos, alvo, -k / 20); quem = dentro(pos); } if (avisos) avisos.add("cam:" + q0); }
-  P.persp = 1; aplicarCameraBlk(pos, alvo); P.lens = Math.max(14, Math.min(200, Math.round(cam.lente || 50))); P.panX = cam.pan ? cam.pan[0] : 0; P.panY = cam.pan ? cam.pan[1] : 0; P.roll = cam.roll || 0;
+  P.persp = 1; aplicarCameraBlk(pos, alvo); P.lens = Math.max(14, Math.min(200, Math.round(cam.lente || 50))); P.panX = cam.pan ? cam.pan[0] : 0; P.panY = cam.pan ? cam.pan[1] : cam.centro ? (CY - H / 2) * 18 * Math.max(3, P.camDist || 30) / ((W / 2) * (P.lens || 50)) : 0; /* câmera em coordenadas: o alvo fica no centro do quadro */ P.roll = cam.roll || 0;
   if (cam.esconder) { const it = SCN.list.find(x => x.name === cam.esconder); if (it) it.oculto = true; }
   return { pos, alvo };
 }

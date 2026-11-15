@@ -12,7 +12,7 @@ import { sceneState, loadScene } from "./estado.js";
 import { pMundo } from "./colisoes.js";
 import { L } from "./modos.js";
 import { cena, camera, apiFor } from "./comandos.js";
-import { adicionarObjeto, removerObjeto, acharObjeto, olharNatural } from "./cenario.js";
+import { adicionarObjeto, removerObjeto, acharObjeto, olharNatural, sentar } from "./cenario.js";
 import { mdSorteio, separar, posicoesArranjo, olharParaPonto } from "./multidao.js";
 import { todasPoses, nomePose, EXPRESSOES, chaveExpressao, misturarExpressoes } from "./poses.js";
 import { INTERACOES, PARES } from "./interacoes.js";
@@ -40,7 +40,7 @@ import { vcChaveAssento, vcTremNoTrilho, VC_VELOC, vcEhVeiculo, vcAssentos, vcEm
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
-import { vcTrilhoAmostras, vcTrilhoEm, SINONIMOS_MAO, qdMedidas, qdEhCriatura, cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
+import { capsulasObjeto, vcTrilhoAmostras, vcTrilhoEm, SINONIMOS_MAO, qdMedidas, qdEhCriatura, cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
 const NM_M = 1 / 0.114; /* R por metro */
 /* ===================== cores do elenco ===================== */
@@ -472,7 +472,7 @@ function nmCabQuadro(cab, linha) {
 }
 const NM_HORAS = { manha: [-60, 25, "manhã"], "manhã": [-60, 25, "manhã"], dia: [-40, 55, "dia"], "meio-dia": [-20, 75, "meio-dia"], tarde: [60, 22, "fim de tarde"], "fim-de-tarde": [60, 15, "fim de tarde"], entardecer: [70, 10, "entardecer"], noite: [30, 8, "noite"], interior: [-30, 60, "interior"] };
 const NM_CHAVES_Q = new Set(["tom", "velocidade", "duracao", "camera-move", "movimento", "hora", "luz", "local", "continua", "novo", "corte", "plano", "angulo", "alvo", "lado", "lente", "formato", "tamanho", "funcao", "legenda", "titulo", "camera", "elevacao", ...Object.keys(NM_PLANOS), ...Object.keys(NM_ANGULOS), ...Object.keys(NM_TAMANHOS)]);
-const NM_CHAVES_P = new Set(["anda-por", "corre-por", "caminha-por", "gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "espera", "aguarda", "descansa", "oferece", "pede", "entrega", "recebe", "aponta", "acena", "cumprimenta", "abre-porta", "bebe", "le", "atende", "olha-relogio", "encolhe-ombros", "chora", "ri", "cai-de-joelhos", "coca-cabeca", "cruza-bracos", "espreguica", "boceja", "comemora", "suspira", "bate-palmas", "grita", "sussurra", "berra", "cochicha", "fala-radio", "radio", "monta", "montar", "cavalga", "desmonta", "apeia", "escala", "gigante", "anao", "anão", "fada", "titã", "tita", "miniatura", "paira", "flutua", "voa", "voa-ate", "voa-até", "voa-para", "pousa", "aterrissa", "sobre-mao", "sobre-mão", "sobre-ombro", "sobre-cabeca", "sobre-cabeça", "inclina-corpo", "tomba-corpo", "de-lado", "de-cabeca-para-baixo", "anda", "caminha", "corre", "pega", "pegar", "larga", "largar", "solta", "soltar", "joga", "jogar", "arremessa", "passa", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado"]);
+const NM_CHAVES_P = new Set(["anda-por", "corre-por", "caminha-por", "gesto", "atitude", "postura", "papel", "conversa", "tom", "anima", "pescoco", "coluna", "ombros", "perna", "pe", "braco", "em", "frente-de", "atras-de", "atrás-de", "ao-lado-de", "esquerda-de", "direita-de", "perto-de", "distancia", "distância", "nivel", "nível", "sobre", "gira", "vira-para", "anda-ate", "corre-ate", "espera", "aguarda", "descansa", "oferece", "pede", "entrega", "recebe", "aponta", "acena", "cumprimenta", "abre-porta", "bebe", "le", "atende", "olha-relogio", "encolhe-ombros", "chora", "ri", "cai-de-joelhos", "coca-cabeca", "cruza-bracos", "espreguica", "boceja", "comemora", "suspira", "bate-palmas", "grita", "sussurra", "berra", "cochicha", "fala-radio", "radio", "monta", "montar", "cavalga", "desmonta", "apeia", "escala", "gigante", "anao", "anão", "fada", "titã", "tita", "miniatura", "paira", "flutua", "voa", "voa-ate", "voa-até", "voa-para", "pousa", "aterrissa", "sobre-mao", "sobre-mão", "sobre-ombro", "sobre-cabeca", "sobre-cabeça", "sobre-costas", "sobre-dorso", "sobre-pescoco", "sobre-pescoço", "inclina-corpo", "tomba-corpo", "de-lado", "de-cabeca-para-baixo", "anda", "caminha", "corre", "pega", "pegar", "larga", "largar", "solta", "soltar", "joga", "jogar", "arremessa", "passa", "pula", "mergulha", "nada", "engatinha", "rasteja", "anda-agachado", "cai", "levanta-se", "rola", "olha", "olha-para", "pose", "acao", "ação", "expressao", "expressão", "intensidade", "segura", "como", "interacao", "interação", "interage", "com", "efeito", "molejo", "fala", "sai", "some", "oculto", "centro", "fundo", "frente", "deitado", "sentado", "senta-em", "senta-na", "senta-no", "sentado-em", "sentada-em"]);
 /* ponto do mundo (R) para um alvo: personagem, marca, região, (x,z) em metros, objeto */
 function nmPontoDe(ctx, tok, toks, k) {
   if (tok.t === "tupla") return [nmXZ(tok.v), k + 1];
@@ -716,6 +716,7 @@ function nmEfeitoOpcoes(ctx, toks, k, linha, padraoManequim) {
       if (a.t === "tupla") { const v = a.v, d = (SCN.localAtual && SCN.localAtual.desloc) || [0, 0], g0 = restGround(SCN.list[0].params); o.em = v.length > 2 ? { modo: "mundo", x: v[0] * NM_M - d[0], y: g0 + v[1] * NM_M, z: v[2] * NM_M - d[1] } : { modo: "chao", x: v[0] * NM_M - d[0], z: v[1] * NM_M - d[1] }; k++; }
       else if (/\./.test(a.v)) { o.emRef = a.v; k++; }
       else if (nmNorm(a.v) === "objeto") { o.em = { objeto: toks[k + 2].v }; k += 2; if (toks[k + 1] && pontosLocaisDoObjeto({ tipo: o.em.objeto, alt: 1 })[toks[k + 1].v]) { o.em.parte = toks[k + 1].v; k++; } } else if (nmNorm(a.v) === "tela") { o.em = { modo: "tela" }; k++; }
+      else if ((ctx._animais && ctx._animais.has(a.v)) || (amAchar(a.v) && !SCN.list.some(x => x.name === a.v))) { o.emAnimal = { nome: a.v, parte: null }; k++; if (toks[k + 1] && /^(cabeca|cabeça|boca|sela|costas|dorso|pes|pés|cauda|centro)$/i.test(nmNorm(toks[k + 1].v))) { o.emAnimal.parte = nmNorm(toks[k + 1].v).replace(/cabeça/, "cabeca").replace(/^(costas|dorso)$/, "sela").replace(/^pés$/, "pes"); k++; } }
       else if (nmQuem(ctx, a.v) && !padraoManequim) { o.em = { manequim: nmQuem(ctx, a.v), parte: "corpo" }; k++; if (toks[k + 1] && /^[a-z]/i.test(toks[k + 1].v) && !/^(elemento|cor|tom|nivel|escala|colorido|nanquim|texto|simbolo|camada|por|cresce|pulsa|some|pisca|para)$/.test(nmNorm(toks[k + 1].v)) && !PRM[toks[k + 1].v]) { o.em.parte = toks[k + 1].v; k++; } }
       else { parte = a.v; k++; } }
     else if (w === "elemento") { o.elemento = nmNorm(nx.v); if (!ELEMENTOS[o.elemento]) { const sg = nmParecida(o.elemento, Object.keys(ELEMENTOS)); throw new NmErro("Elemento “" + nx.v + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : "") + " Use: " + Object.keys(ELEMENTOS).join(", ") + ".", linha); } o.colorido = true; k += 2; }
@@ -747,7 +748,13 @@ function nmPontoTupla(v) { const d = (SCN.localAtual && SCN.localAtual.desloc) |
 /* cria um efeito (linha "efeito" no quadro, na pessoa ou no tempo do filme): explosão completa em camadas, projétil de A até B,
    ou um efeito comum. T0/plano = instante no filme (null num quadro parado). */
 function nmEfeitoCriar(tipo, ef, quem, T0, plano, Q) {
-  const o = Object.assign({}, ef.o); if (o.emRef) { const an = vtAncora(o.emRef); if (!an) throw new Error("“" + o.emRef + "” não é uma parte, objeto ou ponto conhecido (ex.: Kai.maoDir, Kai.katana.ponta, katana.ponta)."); o.em = an; delete o.emRef; }
+  const o = Object.assign({}, ef.o);
+  if (o.emAnimal) { const an = amAchar(o.emAnimal.nome); if (!an) throw new Error("Animal “" + o.emAnimal.nome + "” não está no quadro."); const g0 = amChaoMundo(), boca = /^(rugido|sopro_kaiju|feixe|cone|chama)$/.test(tipo), pt = o.emAnimal.parte || (boca ? "cabeca" : /chao|pes|onda_choque|poeira|cratera|pisada|impulso/.test(tipo) ? "pes" : "sela");
+    let P = pt === "pes" ? [an.x, g0, an.z] : qdPontoMundo(an, pt === "boca" ? "cabeca" : pt === "centro" ? "sela" : pt, g0); if (!P) P = [an.x, g0 + (an.alt || 10) / 2, an.z];
+    const gr = (an.giro || 0) * Math.PI / 180, fr = [Math.sin(gr), 0, Math.cos(gr)];
+    if (boca) { const tam = Math.max(an.alt || 10, an.prof || 10); P = [P[0] + fr[0] * tam * 0.06, P[1], P[2] + fr[2] * tam * 0.06]; if (o.paraRef === undefined && o.para === undefined) o.paraRef = [P[0] + fr[0] * tam * 2, P[1] - tam * 0.15, P[2] + fr[2] * tam * 2]; }
+    o.em = pt === "pes" ? { modo: "chao", x: P[0], z: P[2] } : { modo: "mundo", x: P[0], y: P[1], z: P[2], absoluto: true }; if (!o.escala) o.escala = Math.max(1, Math.min(12, (an.alt || 16) / 40)); delete o.emAnimal; }
+  if (o.emRef) { const an = vtAncora(o.emRef, /^(feixe|cone|projetil|tracante|corte_ar|disparo|rajada|kamehameha|bola)/.test(tipo) ? "maoAtiva" : undefined); if (!an) throw new Error("“" + o.emRef + "” não é uma parte, objeto ou ponto conhecido (ex.: Kai.maoDir, Kai.katana.ponta, katana.ponta)."); o.em = an; delete o.emRef; }
   const add = (t, oo, anim) => { const id = cena.efeitos.adicionar(t, oo); if (anim && plano !== null && plano !== undefined) { const e = SCN.efeitos.find(x => x.id === id); if (e) e.animNoTempo = Object.assign({ plano, escala0: e.escala }, anim); } return id; };
   const mundoDe = P => ({ modo: "mundo", x: P[0], y: P[1], z: P[2], absoluto: true });
   if (tipo === "explosao_completa") { /* clarão → bola de fogo → anel no chão → destroços → fumaça que sobe e fica */
@@ -762,7 +769,7 @@ function nmEfeitoCriar(tipo, ef, quem, T0, plano, Q) {
     add("fumaca", C({ em: mundoDe([P[0], P[1] + 2, P[2]]) }), { modo: "cresce", t0: t0 + 0.3, dur: 1.4, esconde: true, sobe: 4 });
     return; }
   if (tipo === "projetil" || o.trajeto) { /* de A até B */
-    const A = vtPonto(o.deRef !== undefined ? o.deRef : o.em && (o.em.manequim || o.em.objeto !== undefined) ? o.em : quem ? { manequim: quem, parte: "maoDir" } : null);
+    const A = vtPonto(o.deRef !== undefined ? o.deRef : o.em && (o.em.manequim || o.em.objeto !== undefined) ? o.em : quem ? { manequim: quem, parte: "maoAtiva" } : null, undefined, "maoAtiva");
     const B = vtPonto(o.paraRef !== undefined ? o.paraRef : o.para);
     if (!A || !B) throw new Error("de onde (de Kai.maoDir) e para onde (para Mira) o efeito vai?");
     const pts = vtCaminho(A, B, o.trajeto || "reta"), dur = ef.dur || Math.max(0.3, Math.min(2.5, Math.hypot(B[0] - A[0], B[1] - A[1], B[2] - A[2]) * 0.114 / 12));
@@ -773,8 +780,13 @@ function nmEfeitoCriar(tipo, ef, quem, T0, plano, Q) {
     if (imp === "explosao_completa") nmEfeitoCriar(imp, { o: { em: mundoDe(B), escala: o.escala, colorido: o.colorido, elemento: o.elemento } }, null, (T0 || 0) + dur, plano, Q);
     else if (imp) add(imp, { em: mundoDe(B), escala: o.escala || 1, colorido: o.colorido, elemento: o.elemento }, { modo: "cresce", t0: (T0 || 0) + dur, dur: 0.3, esconde: true, depois: { some: 0.6 } });
     return; }
+  if (typeof o.paraRef === "string" && !vtAncora(o.paraRef) && amAchar(o.paraRef)) { const an = amAchar(o.paraRef), P = qdPontoMundo(an, "sela", amChaoMundo()); o.paraRef = P || [an.x, amChaoMundo() + (an.alt || 10) / 2, an.z]; }
+  if (Array.isArray(o.paraRef)) { const q = o.paraRef; o.para = { alvo: { modo: "mundo", x: q[0], y: q[1], z: q[2], absoluto: true } }; delete o.paraRef; }
   if (typeof o.paraRef === "string") { const an = vtAncora(o.paraRef); if (an && an.objeto !== undefined) o.para = { objeto: an.objeto, parte: /\./.test(o.paraRef) ? an.parte : "centro" }; else if (an && an.manequim) o.para = an.parte && an.parte !== "corpo" ? { manequim: an.manequim, parte: an.parte } : an.manequim; delete o.paraRef; }
-  add(tipo, Object.assign({}, o, o.em ? {} : quem ? { em: { manequim: quem, parte: "corpo" } } : { em: CATALOGO[tipo].ancora === "tela" ? { modo: "tela" } : { modo: "chao", x: 0, z: 0 } }), ef.anim ? Object.assign({ modo: ef.anim, t0: T0 || 0, dur: ef.dur || 1 }, ef.esconde ? { esconde: true } : {}, ef.depoisSome ? { depois: { some: ef.depoisSome } } : {}) : null);
+  /* "de Kai" num efeito que sai de alguém (feixe, cone…): origem na mão ativa (ou no ponto/objeto dado) */
+  if (o.deRef !== undefined && !o.em) { const dr = o.deRef; o.em = Array.isArray(dr) ? { modo: "mundo", x: dr[0], y: dr[1], z: dr[2], absoluto: true } : vtAncora(String(dr), "maoAtiva") || undefined; if (o.em && o.em.manequim) o.em = { manequim: o.em.manequim, parte: o.em.parte }; delete o.deRef; }
+  const parteQuem = /^(feixe|cone|tracante|corte_ar|disparo|clarao_cano)/.test(tipo) ? "maoAtiva" : "corpo";
+  add(tipo, Object.assign({}, o, o.em ? {} : quem ? { em: { manequim: quem, parte: parteQuem } } : { em: CATALOGO[tipo].ancora === "tela" ? { modo: "tela" } : { modo: "chao", x: 0, z: 0 } }), ef.anim ? Object.assign({ modo: ef.anim, t0: T0 || 0, dur: ef.dur || 1 }, ef.esconde ? { esconde: true } : {}, ef.depoisSome ? { depois: { some: ef.depoisSome } } : {}) : null);
 }
 /* "filme … efeitos auto": cada animação de pessoa ganha os efeitos de quadrinho do movimento —
    pulo/salto: explosão branca de impulso nos pés na decolagem e no pouso (+ poeira); corrida/arrancada/investida: impulso esticado
@@ -878,6 +890,13 @@ function nmPersonagem(ctx, l, Q) {
         void fr; nmTocar(Q, x, Object.assign(criarAnimacao({ nome: "voar", duracao: dur, modo: "relativa", curva: "suave", escalarPeloCorpo: false, travarPes: false, chaves: ch, tags: ["Locomocao/Voar"] }), { tipo: "acao", dia: true, travarPes: false }), null); }));
       feito.anima = "voa até " + nx.v; }
     else if (w === "pousa" || w === "aterrissa") { depois.push(() => its.forEach(x => { x.params.bodyLift = 0; x.params.ground = 1; })); feito.anima = "pousa"; }
+    else if (/^sobre-(cabeca|cabeça|costas|dorso|pescoco|pescoço|ombro)$/.test(w) && nx && amAchar(nx.v)) { /* em cima de um animal/monstro (kaiju): na cabeça, nas costas ou no pescoço */
+      const an = amAchar(nx.v); k++; const parte = /cabe/.test(w) ? "cabeca" : /pesco/.test(w) ? "pescoco" : "sela";
+      depois.push(() => { const g0 = amChaoMundo(); let p = qdPontoMundo(an, parte === "pescoco" ? "cabeca" : parte, g0); if (parte === "pescoco") { const q = qdPontoMundo(an, "sela", g0); p = p.map((v, i) => v * 0.45 + q[i] * 0.55); }
+        let topo = p[1]; try { let melhor = null; for (const c of capsulasObjeto(an, g0).caps) for (let i = 0; i <= 12; i++) { const q = c.a.map((v, j) => v + (c.b[j] - v) * i / 12), d3 = Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]); if (!melhor || d3 < melhor.d3) melhor = { d3, q, r: c.r }; }
+          if (melhor) { const d = Math.hypot(melhor.q[0] - p[0], melhor.q[2] - p[2]); topo = melhor.q[1] + Math.sqrt(Math.max(0, melhor.r * melhor.r - d * d)); } } catch (e) { }
+        its.forEach(x => { x.params.wx = p[0]; x.params.wz = p[2]; x.params.wRot = an.giro || 0; x.params.ground = 1; x.params.bodyLift = 0; const ch = nmPisoDe(x); x.params.bodyLift = (topo - ch) / (x.params.tamanho || 1); x.apoioEm = an.id; }); });
+      feito.anima = "sobre " + (parte === "sela" ? "as costas" : parte === "cabeca" ? "a cabeça" : "o pescoço") + " de " + an.nome; }
     else if (/^sobre-(mao|mão|ombro|cabeca|cabeça|cabeca)$/.test(w) || w === "sobre-a-mao") { /* fada na mão/ombro/cabeça de outro (gigante ou não) */
       const parte = /mao|mão/.test(w) ? "mao" : /ombro/.test(w) ? "ombro" : "cabeca"; const alvoN = nmQuem(ctx, nx && nx.v); if (!alvoN) throw new NmErro(w + " QUEM? (alguém do elenco).", l.linha); k++;
       let lado = "D"; if (toks[k + 1] && /^(esquerda|esquerdo)$/.test(nmNorm(toks[k + 1].v))) { lado = "E"; k++; } else if (toks[k + 1] && /^(direita|direito)$/.test(nmNorm(toks[k + 1].v))) k++;
@@ -1064,6 +1083,9 @@ function nmPersonagem(ctx, l, Q) {
       if (w !== "pensa") { feito.fala = true; depois.push(() => its.forEach(x => { if (!temGesto && !feito.semGesto) { const lista = PAPEIS_CONVERSA[feito.tom === "raiva" ? "discutindo" : feito.tom === "pergunta" ? "perguntando" : "falante"].gestos.filter(Boolean), r = mdSorteio(ctx.semente + ":" + Q.indice + x.name); aplicarGestoConversa(x, lista[Math.floor(r() * lista.length)], { intensidade: 0.75, mao: r() < 0.7 ? "direita" : "esquerda" }); }
         falar(x, feito.tom || "calmo", txt, Q.indice); })); } }
     else if (w === "sai" || w === "some" || w === "oculto" || w === "fora") { its.forEach(x => { x.oculto = true; Q.presentes.delete(x.name); }); }
+    else if ((w === "senta-em" || w === "senta-na" || w === "senta-no" || w === "sentado-em" || w === "sentada-em" || ((w === "sentado" || w === "senta") && nx && nx.t === "pal" && /^(em|na|no)$/.test(nmNorm(nx.v)))) || (w === "senta" && nx && nx.t === "pal" && acharObjeto(nx.v))) { /* senta numa cadeira/banco/sofá/caixa: ísquios no assento, pés no chão */
+      if (nx && /^(em|na|no)$/.test(nmNorm(nx.v)) && !acharObjeto(nx.v)) k++; const ref = toks[k + 1]; if (!ref) throw new NmErro("senta em QUÊ? Ex.: Kai senta-em Cadeira (um objeto do quadro ou do local).", l.linha); k++;
+      depois.unshift(() => its.forEach(x => { if (!acharObjeto(ref.v)) throw new NmErro("Objeto “" + ref.v + "” não existe para sentar.", l.linha); sentar(x, ref.v); })); feito.pose = "sentado"; feito.sentaEm = ref.v; }
     else if (w === "deitado" || w === "sentado" || w === "ajoelhado" || w === "agachado" || w === "correndo" || w === "caminhando" || w === "empe" || w === "em-pe") { const pz = { deitado: "deitadoCostas", sentado: "sentadoChao", ajoelhado: "ajoelhado", agachado: "agachar", correndo: "correndo", caminhando: "caminhando", empe: "empe", "em-pe": "empe" }[w]; its.forEach(x => apiFor(x).poseRapida(pz, { molejo: 0.5, semente: x.name })); feito.pose = pz; }
     else if (t.v === "," ) continue;
     else { const s = nmParecida(t.v, [...NM_CHAVES_P]); throw new NmErro("Em “" + nomes.join(", ") + "”, não entendi “" + t.v + "”." + (s ? " Quis dizer “" + s + "”?" : ""), l.linha); }
@@ -1227,20 +1249,20 @@ function nmEsgrimaMacro(l) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+
 /* ===== GOLPE COM IMPACTO: "[T] Kai golpeia Mira [com soco|chute|espada|fogo|gelo|raio|feitico|tiro|energia|missil|granada] [colorido]"
    → pose de ataque em quem golpeia, pose de impacto em quem recebe e o efeito certo no ponto atingido (no filme, o impacto chega 0,25 s depois) ===== */
 const NM_GOLPE = {
-  soco: { a: "pose rfSocoDiretoAvanco", b: "impactoNoRosto", fx: ["efeito impacto_contato em {B} rosto escala 0.8", "efeito aneis_impacto em {A}.maoDir escala 0.6"] },
+  soco: { a: "pose rfSocoDiretoAvanco", b: "impactoNoRosto", fx: ["efeito impacto_contato em {B} rosto escala 0.8", "efeito aneis_impacto em {A}.maoAtiva escala 0.6"] },
   chute: { a: "pose rfAtaqueChuteAlto", b: "atingidoLado", fx: ["efeito impacto_contato em {B} peito escala 0.9", "efeito poeira_pes em {B}"] },
   joelhada: { a: "pose rfAtaqueJoelhada", b: "impactoNoEstomago", fx: ["efeito impacto_contato em {B} peito escala 0.8"] },
   espada: { a: "segura espadaCurta como esgrimaCorteDiagonal", b: "atingidoLado", fx: ["efeito corte_impacto em {B}", "efeito choque_laminas em {B} peito escala 0.6"] },
   corte: { a: "segura espadaCurta como esgrimaCorteHorizontal", b: "atingidoLado", fx: ["efeito corte_ar em {A}.maoDir para {B}", "efeito corte_impacto em {B} angulo 0"] },
-  fogo: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoParaTras", fx: ["efeito projetil de {A}.maoDir para {B} reta impacto explosao elemento fogo escala 0.7 estica 1.5"] },
-  gelo: { a: "pose rfAtaqueEnergiaPalmas", b: "atingidoLado", fx: ["efeito cone em {A}.maoDir para {B} elemento gelo escala 0.6", "efeito cristais_chao em {B} elemento gelo escala 0.6"] },
-  raio: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoParaTras", fx: ["efeito feixe de {A}.maoDir para {B} elemento eletrico escala 0.6", "efeito impacto_contato em {B} peito elemento eletrico"] },
-  energia: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoAlto", fx: ["efeito feixe de {A}.maoDir para {B} elemento sagrado escala 0.9", "efeito explosao em {B} elemento sagrado escala 0.5"] },
+  fogo: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoParaTras", fx: ["efeito projetil de {A}.maoAtiva para {B} reta impacto explosao elemento fogo escala 0.7 estica 1.5"] },
+  gelo: { a: "pose rfAtaqueEnergiaPalmas", b: "atingidoLado", fx: ["efeito cone em {A}.maoAtiva para {B} elemento gelo escala 0.6", "efeito cristais_chao em {B} elemento gelo escala 0.6"] },
+  raio: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoParaTras", fx: ["efeito feixe de {A}.maoAtiva para {B} elemento eletrico escala 0.6", "efeito impacto_contato em {B} peito elemento eletrico"] },
+  energia: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoAlto", fx: ["efeito feixe de {A}.maoAtiva para {B} elemento sagrado escala 0.9", "efeito explosao em {B} elemento sagrado escala 0.5"] },
   feitico: { a: "segura varinha como varinhaEstocadaFeitico", b: "atingidoLado", fx: ["efeito projetil de {A}.varinha.ponta para {B} reta impacto impacto_contato elemento plasma escala 0.6"] },
   tiro: { a: "segura pistola como pistolaMirando", b: "atingidoCostas", fx: ["efeito clarao_cano em {A}.pistola.cano", "efeito projetil de {A}.pistola.cano para {B} reta impacto impacto_bala elemento ouro escala 0.3 estica 3"] },
   rajada: { a: "segura rifle", b: "atingidoCostas", fx: ["efeito clarao_cano em {A}.rifle.cano", "efeito tracante em {A}.rifle.cano para {B}", "efeito impacto_bala em {B} peito"] },
   missil: { a: "segura lancaFoguetes", b: "arremessadoAlto", fx: ["efeito clarao_cano em {A}.lancaFoguetes.cano escala 1.6", "efeito fumaca em {A}.lancaFoguetes.traseira escala 0.6", "efeito projetil de {A}.lancaFoguetes.cano para {B} reta impacto explosao_completa elemento fogo escala 0.9 estica 2.5"] },
-  granada: { a: "pose rfNinjaArremessoShuriken", b: "arremessadoAlto", fx: ["efeito projetil de {A}.maoDir para {B} balistica impacto explosao_completa elemento fogo escala 0.5"] }
+  granada: { a: "pose rfNinjaArremessoShuriken", b: "arremessadoAlto", fx: ["efeito projetil de {A}.maoAtiva para {B} balistica impacto explosao_completa elemento fogo escala 0.5"] }
 };
 function nmGolpeMacro(l, ctx) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt); if (!m) return null;
   let T = m[1] || "", Q = m[2], verbo = m[3].toLowerCase(), alvo = m[4], resto = m[5].trim().split(/\s+/).filter(Boolean), tipo = verbo === "dispara" ? "tiro" : "soco", cor = "";
@@ -1265,7 +1287,9 @@ function nmCamera(ctx, Q) {
   const plano = Q.cab.plano || (alvos.length > 2 ? "conjunto" : alvos.length ? "inteiro" : "geral");
   { const anA = (Q.cab.alvo || []).map(a => amAchar(nmQuem(ctx, a) || a)).filter(Boolean); if (anA.length && !alvos.length && !Q.cab.camera) { nmCameraAnimal(anA[0], plano === "geral" && !Q.cab.plano ? "inteiro" : plano, Q.cab.lado ?? 40, Q.cab.elevacao); return plano; } }
   if (Q.cab.camera) { const c = Q.cab.camera, o = Q.cab.olhando || [0, 1.5, 0], pc = nmXZ(c), po = nmXZ(o); P.persp = 1; SCN.pivo = null; SCN.orbitaArea = null; SCN.seguirCamera = null; P.panX = 0; P.panY = 0; /* posição e alvo juntos (colocar e depois mirar girava a câmera em volta do alvo novo) */
-    aplicarCameraBlk([pc[0], (c.length > 2 ? c[1] : 1.6) * NM_M, pc[1]], [po[0], (o.length > 2 ? o[1] : 1.5) * NM_M, po[1]]); if (Q.cab.lente) try { camera.lente(Q.cab.lente, true); } catch (e) { } return plano; }
+    const gy = restGround(SCN.list[0].params); /* alturas da câmera e do alvo contam a partir do chão (como no filme) */
+    aplicarCameraBlk([pc[0], gy + (c.length > 2 ? c[1] : 1.6) * NM_M, pc[1]], [po[0], gy + (o.length > 2 ? o[1] : 1.5) * NM_M, po[1]]); if (Q.cab.lente) try { camera.lente(Q.cab.lente, true); } catch (e) { }
+    P.panY = (CY - H / 2) * 18 * Math.max(3, P.camDist || 30) / ((W / 2) * (P.lens || 50)); /* o alvo no centro do quadro (o palco projeta no terço de cima) */ return plano; }
   const lado = Q.cab.lado ?? 30, el = Q.cab.elevacao ?? (Q.cab.angulo ? undefined : 8);
   if (plano === "geral" || plano === "grande plano geral") {
     const ref = alvos.length ? SCN.list.find(x => x.name === alvos[0]) : null, yawBase = ref ? (ref.params.wRot || 0) + lado : -45;
@@ -1931,7 +1955,7 @@ function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
     if (w === "corte") corte = true;
     else if (w === "em" && nx && nx.t === "num") { dur = nx.v; k++; }
     else if (tk[k].t === "tupla" && !base) { /* "camera (x,altura,z) olhando (x,altura,z)|Kai" — câmera parada nesse ponto (metros) */
-      base = { modo: "fixa", posFixa: cfPonto(tk[k].v) }; if (tk[k + 1] && /^(olhando|olha|mirando|para)$/.test(nmNorm(tk[k + 1].v)) && tk[k + 2]) { const a = tk[k + 2]; base.olha = a.t === "tupla" ? a.v : quem(a.v); k += 2; } if (!base.olha) base.olha = "frente"; base.alvoFixo = base.olha === "frente" ? cfPonto([tk[k].v[0], tk[k].v[1], (tk[k].v[2] || 0) + 5]) : null; }
+      base = { modo: "fixa", posFixa: cfPonto(tk[k].v), centro: true }; if (tk[k + 1] && /^(olhando|olha|mirando|para)$/.test(nmNorm(tk[k + 1].v)) && tk[k + 2]) { const a = tk[k + 2]; base.olha = a.t === "tupla" ? a.v : quem(a.v); k += 2; } if (!base.olha) base.olha = "frente"; base.alvoFixo = base.olha === "frente" ? cfPonto([tk[k].v[0], tk[k].v[1], (tk[k].v[2] || 0) + 5]) : null; }
     else if (w === "caminho" || w === "trilho" || w === "percurso") { const pts = []; while (tk[k + 1] && (tk[k + 1].t === "tupla" || tk[k + 1].v === ",")) { k++; if (tk[k].t === "tupla") pts.push(tk[k].v); } if (pts.length < 2) throw new NmErro("camera caminho: dê 2 ou mais pontos (x,altura,z) em metros, ex.: camera caminho (0,1.6,-6) (4,2,-3) (6,3,2) em 5s olha Kai.", linha); base = { modo: "caminho", pts, t0: T }; }
     else if (w === "vertigo" || w === "dolly-zoom" || w === "efeito-vertigo") { let dir = "aproxima"; if (nx && /^(aproxima|afasta)$/.test(nmNorm(nx.v))) { dir = nmNorm(nx.v); k++; } const pc = tk[k + 1] && tk[k + 1].t === "num" ? tk[++k].v : 40; mods.push({ tipo: "vertigo", dir, pct: Math.max(1, Math.min(90, pc)) }); }
     else if (/^(linear|entra|sai|suave-entra|suave-sai|acelerando|freando)$/.test(w) || (w === "suave" && !base)) curva = { linear: "linear", entra: "entra", acelerando: "entra", "suave-entra": "entra", sai: "sai", freando: "sai", "suave-sai": "sai", suave: "suave" }[w];
@@ -1941,7 +1965,7 @@ function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
     else if (w === "sobre-o-ombro" || w === "ombro") { base = { modo: "ombro", quem: quem(nx.v) }; k++; }
     else if (w === "presa-em" || w === "presa") { base = { modo: "presa", quem: quem(nx.v) }; k++; }
     else if (w === "frente-de" && base) { base.de = quem(nx.v); k++; if (tk[k + 1] && tk[k + 1].t === "num") base.distancia = met(tk[++k]); }
-    else if (w === "em" && nx && nx.t === "tupla" && base) { base.posM = nx.v; k++; }
+    else if (w === "em" && nx && nx.t === "tupla" && base) { base.posM = nx.v; base.centro = true; k++; }
     else if ((w === "distancia" || w === "distância") && base) base.distancia = met(num());
     else if (w === "altura" && base) base.altura = met(num());
     else if (w === "suave" && base) base.suave = num().v;

@@ -77,9 +77,9 @@ const CATALOGO = {
   reticula: { cat: "tela", nome: "Retícula (screentone)", elem: "tinta", camada: "fundo", ancora: "tela",
     params: { passo: P(7, 3, 20, "passo"), raio: P(0.55, 0.1, 1, "área") } },
   /* ---- cena (ponto do mundo, com perspectiva) ---- */
-  feixe: { cat: "cena", nome: "Feixe / rajada", elem: "fogo", camada: "auto", ancora: "maoDir",
+  feixe: { cat: "cena", nome: "Feixe / rajada", elem: "fogo", camada: "auto", ancora: "maoAtiva",
     params: { comprimento: P(14, 1, 60, "comprimento"), largura: P(1.2, 0.2, 6, "largura"), aneis: P(3, 0, 8, "anéis"), fios: P(16, 4, 48, "fios") } },
-  cone: { cat: "cena", nome: "Cone / leque", elem: "gelo", camada: "auto", ancora: "maoDir",
+  cone: { cat: "cena", nome: "Cone / leque", elem: "gelo", camada: "auto", ancora: "maoAtiva",
     params: { comprimento: P(12, 1, 60, "comprimento"), abertura: P(35, 5, 90, "abertura (graus)"), fios: P(26, 6, 80, "fios") } },
   espiral: { cat: "cena", nome: "Espiral / broca", elem: "vento", camada: "auto", ancora: "maoDir",
     params: { comprimento: P(14, 1, 60, "comprimento"), largura: P(3.2, 0.3, 8, "largura"), voltas: P(5, 1, 14, "voltas") } },
@@ -157,6 +157,18 @@ const CATALOGO = {
     params: { balas: P(5, 1, 20, "balas"), alcance: P(30, 2, 200, "alcance") } },
   barreira_rachada: { cat: "cena", nome: "Escudo rachando (domo com rachaduras)", elem: "cristal", camada: "auto", ancora: "corpo",
     params: { raio: P(5, 1, 30, "raio") } },
+  raio_cadeia: { cat: "cena", nome: "Raio em cadeia (salta de um alvo para outro, com galhos)", elem: "raio", camada: "frente", ancora: "maoAtiva",
+    params: { alcance: P(30, 2, 200, "alcance"), saltos: P(3, 1, 8, "saltos"), galhos: P(6, 0, 20, "galhos") } },
+  pisada_gigante: { cat: "destruicao", nome: "Pisada de gigante/kaiju (cratera, muro de poeira, rachaduras e pedras)", elem: "terra", camada: "auto", ancora: "pes",
+    params: { raio: P(12, 2, 120, "raio"), pedras: P(14, 0, 60, "pedras") } },
+  rugido: { cat: "personagem", nome: "Rugido (ondas de som em cone, vento e tremor — monstro ou herói)", elem: "vento", camada: "frente", ancora: "rosto",
+    params: { alcance: P(20, 2, 200, "alcance"), ondas: P(5, 1, 12, "ondas"), abertura: P(40, 10, 120, "abertura (graus)") } },
+  sopro_kaiju: { cat: "cena", nome: "Sopro atômico de kaiju (raio grosso com espinhos de luz e distorção)", elem: "plasma", camada: "frente", ancora: "rosto",
+    params: { alcance: P(80, 5, 400, "alcance"), largura: P(4, 0.5, 30, "largura") } },
+  teia: { cat: "personagem", nome: "Teia (rede de fios que prende o alvo)", elem: "tinta", camada: "frente", ancora: "peito",
+    params: { raio: P(4, 0.5, 30, "raio"), raios: P(10, 4, 24, "fios radiais"), voltas: P(5, 2, 12, "voltas") } },
+  rasgo_dimensional: { cat: "cena", nome: "Rasgo dimensional (fenda no ar com brilho e estilhaços)", elem: "vazio", camada: "auto", ancora: "corpo",
+    params: { altura: P(14, 2, 120, "altura"), largura: P(3, 0.5, 30, "abertura") } },
   impulso: { cat: "destruicao", nome: "Impulso: explosão branca no chão (pulo, pouso, arrancada — mangá/webtoon)", elem: "tinta", camada: "auto", ancora: "pes",
     params: { raio: P(5, 0.5, 14, "tamanho"), pontas: P(12, 6, 24, "pontas"), lascas: P(18, 0, 50, "lascas brancas"), altura: P(4.5, 0.3, 12, "altura das lascas"), dash: P(0, 0, 1, "arrancada (estica para trás)") } },
   borrao_movimento: { cat: "personagem", nome: "Borrão de movimento (corpo arrastado para trás)", elem: "tinta", camada: "atras", ancora: "corpo",
@@ -210,7 +222,7 @@ const SIMBOLOS = ["veia", "gota", "tristeza", "brilho", "exclamacao", "interroga
 /* partes do manequim que servem de âncora */
 const PARTES = ["corpo", "centro", "cabeca", "topoCabeca", "rosto", "olhos", "olhoEsq", "olhoDir", "pescoco", "peito", "cintura", "pelve", "pes",
   "ombroEsq", "ombroDir", "cotoveloEsq", "cotoveloDir", "punhoEsq", "punhoDir", "maoEsq", "maoDir",
-  "quadrilEsq", "quadrilDir", "joelhoEsq", "joelhoDir", "tornozeloEsq", "tornozeloDir", "peEsq", "peDir", "maos"];
+  "quadrilEsq", "quadrilDir", "joelhoEsq", "joelhoDir", "tornozeloEsq", "tornozeloDir", "peEsq", "peDir", "maos", "maoAtiva"];
 /* tipos antigos (referências da PR #20) → tipo novo */
 const LEGADO = { linhas: "velocidade", impacto: "concentracao", explosao: "explosao", fumaca: "fumaca", chama: "chama", rastro: "rastro_membro" };
 
@@ -222,6 +234,7 @@ function normParte(s) {
   const k = String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "");
   const achou = PARTES.find(p => p.toLowerCase() === k.toLowerCase());
   if (achou) return achou;
+  if (/^(mao|maofrente|palma|maoativa|mao-ativa)$/i.test(k)) return "maoAtiva";
   /* "mão direita", "pe esquerdo" */
   const m = /^(ombro|cotovelo|punho|mao|quadril|joelho|tornozelo|pe|olho)(esquerd[oa]|direit[oa]|esq|dir)$/i.exec(k);
   if (m) return m[1].toLowerCase() + (/^esq/i.test(m[2]) ? "Esq" : "Dir");
