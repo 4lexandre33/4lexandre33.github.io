@@ -311,7 +311,7 @@ const NR_ESTRUTURAS = {
 };
 /* curva de tensão ideal: sobe até ~80% e cai no fim */
 const nrCurva = u => u < 0.8 ? 1 + 4 * Math.pow(u / 0.8, 1.3) : 5 - 3.5 * (u - 0.8) / 0.2;
-function nrOpcoes(passo) { const out = []; for (const alt of passo.split("|")) { if (alt.endsWith(".*")) { const f = alt.slice(0, -2); for (const d of NR.values()) if (d.familia === f) out.push(d.id); } else if (NR.has(alt)) out.push(alt); } return out; }
+function nrOpcoes(passo) { const out = []; for (const alt of passo.split("|")) { if (alt.endsWith(".*")) { const f = alt.slice(0, -2); for (const d of NR.values()) if (d.familia === f && !d.sub) out.push(d.id); } else if (NR.has(alt)) out.push(alt); } return out; }
 /* nota de uma história: tensão perto da curva, variedade de presets e de versões, ninguém some, tamanho perto do pedido */
 function nrNota(rcs, alvoQuadros) { const n = rcs.length; let erroT = 0; rcs.forEach((rc, i) => { const u = n > 1 ? i / (n - 1) : 1; erroT += Math.pow(rc.def.intensidade - nrCurva(u), 2); });
   const presets = rcs.flatMap(rc => rc.beats.map(b => b.preset).filter(Boolean)), fams = new Set(presets.map(p => p.split(".")[0])), rep = presets.filter((p, i) => i && p === presets[i - 1]).length;
@@ -385,14 +385,16 @@ function nrVerificar(texto, compilar, o = {}) { let tx = texto, r = null; const 
   return { texto: tx, correcoes: log, avisosRestantes: restam, ok: !!(r && r.ok), erros: r ? r.erros : [] }; }
 
 /* ===================== catálogo, árvore, busca ===================== */
-function nrListar() { return [...NR.values()].map(d => ({ id: d.id, nome: d.nome, familia: d.familia, familiaNome: NR_FAMILIAS[d.familia], fonte: d.fonte, papeis: d.papeis, intensidade: d.intensidade, batidas: d.beats.length })); }
+function nrListar() { return [...NR.values()].filter(d => !d.sub).map(d => ({ id: d.id, nome: d.nome, familia: d.familia, familiaNome: NR_FAMILIAS[d.familia], fonte: d.fonte, papeis: d.papeis, intensidade: d.intensidade, batidas: d.beats.length })); }
 function nrTotalVariantes() { return NR.size * Object.keys(NR_VERSOES).length * Object.keys(NR_TONS).length; }
 /* próximos níveis do caminho (autocomplete): "" → famílias; "perseguicao." → funções; "perseguicao.telhados." → versões; "…versao." → tons */
 function nrProximos(prefixo) { const p = String(prefixo || "").replace(/\.$/, ""), parts = p ? p.split(".") : [];
   if (parts.length === 0) return Object.keys(NR_FAMILIAS).map(f => ({ nome: f, folha: false, desc: NR_FAMILIAS[f] + " · " + [...NR.values()].filter(d => d.familia === f).length + " funções", exemplo: [...NR.values()].find(d => d.familia === f).id }));
-  if (parts.length === 1) return [...NR.values()].filter(d => d.familia === parts[0]).map(d => ({ nome: d.id.split(".")[1], folha: false, desc: d.nome + " · " + d.fonte, exemplo: d.id, id: d.id }));
-  if (parts.length === 2) return Object.entries(NR_VERSOES).map(([v, ds]) => ({ nome: v, folha: false, desc: ds, exemplo: p, id: p + "." + v }));
-  if (parts.length === 3) return Object.entries(NR_TONS).map(([t, T]) => ({ nome: t, folha: true, desc: "tom " + T.nome, exemplo: parts.slice(0, 2).join("."), id: p + "." + t }));
+  if (parts.length === 1) return [...NR.values()].filter(d => d.familia === parts[0] && !d.sub).map(d => ({ nome: d.id.split(".")[1], folha: false, desc: d.nome + " · " + d.fonte, exemplo: d.id, id: d.id }));
+  const ehSub = NR.has(parts.slice(0, 3).join(".")) && NR.get(parts.slice(0, 3).join(".")).sub, nv = parts.length - (ehSub ? 1 : 0);
+  const subs = parts.length === 2 ? [...NR.values()].filter(d => d.sub && d.funcao === p).map(d => ({ nome: d.id.split(".")[2], folha: false, desc: "subfunção: " + d.nome.split(" — ")[1] + " (" + d.fonte.replace(/^subfunção: /, "") + ")", exemplo: d.id, id: d.id, sub: true })) : [];
+  if (nv === 2) return subs.concat(Object.entries(NR_VERSOES).map(([v, ds]) => ({ nome: v, folha: false, desc: ds, exemplo: p, id: p + "." + v })));
+  if (nv === 3) return Object.entries(NR_TONS).map(([t, T]) => ({ nome: t, folha: true, desc: "tom " + T.nome, exemplo: parts.slice(0, ehSub ? 3 : 2).join("."), id: p + "." + t }));
   return []; }
 function nrBuscar(q, max = 40) { const t = String(q || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); return nrListar().filter(d => (d.id + " " + d.nome + " " + d.fonte + " " + d.familiaNome).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(t)).slice(0, max); }
 /* texto curto para a miniatura: só o momento forte da função */

@@ -1,6 +1,6 @@
 /* GeoMannequin — Manual da DSL do NAME (para a pessoa e para a IA que converte a narrativa) e os prompts prontos.
    As listas (poses, expressões, objetos, interações, pegadas, ações, efeitos) saem dos dados do app: estão sempre em dia. */
-import { NM_CORES, NM_BORDA } from "./name-dsl.js";
+import { NM_CORES, NM_BORDA, NM_FEITICOS } from "./name-dsl.js";
 import { todasPoses, EXPRESSOES } from "./poses.js";
 import { INTERACOES } from "./interacoes.js";
 import { ACOES } from "./pegadas.js";
@@ -16,6 +16,8 @@ import { AV_POSES } from "./animais.js";
 import { AV_VERBOS } from "./aves-anim.js";
 import { CR_VERBOS } from "./criaturas-anim.js";
 import { listaLocaisProntos } from "./locais-prontos.js";
+import { listaVeiculos } from "./veiculos.js";
+import { NR_SUB_TOTAL } from "./narrativa-sub.js";
 import { CR_POSES } from "./animais.js";
 import { TONS_CENA } from "./quadros.js";
 import { AMA_VERBOS, AMA_POSE_ANIM, listaAnimacoesAnimal, animacaoAnimal, amaAmostrar } from "./animais-anim.js";
@@ -795,7 +797,34 @@ ${EXEMPLO_FILME}
   Verbos no filme: ${Object.keys(CR_VERBOS).join(", ")} — com "por 3s" ou "por 5m" nos que repetem (nada, rasteja, anda, corre, voa, plana, serpenteia, boia). Ex.: "0s Smaug decola" · "2s Smaug cospe-fogo" + "2s efeito chama em Smaug.boca para Kai".
   Andar até um ponto: "Rex anda-ate (5,0)" — a criatura vira e usa o ciclo do seu plano (peixe nada, cobra serpenteia, lagarto rasteja, aranha anda em tripé).
   O ritmo e a passada saem do tamanho: um lagarto ×100 anda devagar com passos enormes; uma formiga dá passinhos rápidos. "nada" deixa o corpo um pouco acima do chão (o fundo); a superfície da água não muda a altura da criatura.
-  Câmera "segue X" chega mais perto de criatura pequena e se afasta da grande.`;
+  Câmera "segue X" chega mais perto de criatura pequena e se afasta da grande.
+
+34. ARMAS DE FOGO, TIROS E FEITIÇOS (uma linha vira pose + efeitos do ponto certo da arma)
+  Armas: pistola, revolver, rifle, submetralhadora, metralhadora (bipé, caixa de munição), sniper (luneta, bipé), escopeta (bomba), lancaFoguetes; varinha.
+  Golpes/poses: Kai segura sniper como sniperDeitado · rifleAjoelhado · rifleOmbroMirando · rifleRecarregando · metralhadoraQuadril · escopetaBombeando · smgUmaMao · bazucaNoOmbro · revolverDuelo ·
+    varinhaDuelo · varinhaEstocadaFeitico · varinhaGiroAcima · varinhaEscudo · varinhaSaudacao · varinhaLuz · varinhaRecuo (lista completa: golpes de classe rifle, sniper, metralhadora, escopeta, smg, bazuca, revolver, magia).
+  TIRO: [0.5s] Kai atira em Mira [com sniper] [rajada 5] [colorido] → clarão na boca do cano (aponta para onde o cano aponta, em qualquer ângulo), projétil até o alvo com impacto, cápsulas ejetadas.
+    Sem "com", usa a arma de fogo que Kai já segura. Bazuca: projétil com explosão e fumaça atrás. No filme, a rajada sai em sequência a partir do tempo da linha.
+  FEITIÇO: [1s] Kai feitico NOME [em Mira] [colorido] [sem-pose] — ${Object.keys(NM_FEITICOS).map(k => k + " (" + NM_FEITICOS[k].desc + ")").join(" · ")}.
+    A linha põe a pose do duelo (pegando a varinha) e o efeito saindo da PONTA da varinha. "com cajadoMagico" troca a varinha.
+  Efeitos novos: clarao_cano, cartuchos, impacto_bala (podem ser usados sozinhos: efeito clarao_cano em Kai.rifle.cano).
+
+35. VEÍCULOS (carruagem, carroça, barco a remo, canoa, veleiro, balsa)
+  objeto carruagem "coche" em (0,0) gira 90 · Trovao puxa coche (o animal fica entre os varais; o veículo vai atrás dele, no filme também)
+  Kai embarca coche cocheiro · Mira embarca coche passageiro · Kai rema barco (senta no banco do remador, de costas para a proa, mãos nos remos) · Kai embarca balsa em-pe
+  Assentos: ${listaVeiculos().map(v => v.tipo + " (" + v.assentos.join(", ") + ")").join(" · ")}. Sem assento, ocupa o primeiro livre.
+  Limite: barco e canoa não andam sozinhos no filme (só os puxados por animal); use câmera em movimento ou mova o objeto entre quadros.
+
+36. NARRATIVAS: SUBFUNÇÕES (família → função → subfunção → versão → tom)
+  Cada função tem 3 subfunções (${NR_SUB_TOTAL} no total): encenações de 4 quadros com papel fixo — normalidade → estímulo → reação → consequência.
+  Ex.: narrativa gatilho.chamado.carta-misteriosa com Kai · narrativa relacao.despedida.adeus-na-estacao.lenta.melancolico com Kai, Mira.
+  No site: aba Narrativas (tiras de quadros). No MCP: catalogo categoria subfuncoes.
+
+37. HISTÓRIA → TEXTO (análise com lacunas)
+  Cole uma história em português (site: botão História…; MCP: analisar_historia). Sai o texto pronto: elenco (nomes e papéis como "o estranho"),
+  locais prontos para os lugares citados, um quadro por frase com legenda, ações traduzidas (poses, interações, atira, feitico, monta, embarca/rema, fala "…").
+  O que não existe vira LACUNA registrada (lugar sem local pronto, criatura, objeto/veículo, verbo sem pose) — no site vai para a nuvem; no MCP, ferramenta lacunas.
+  Revise o texto: a análise é por regras (palavras), não entende ironia nem ordem complexa de frases.`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */

@@ -1,6 +1,6 @@
 # Catálogo DSL do GeoMannequin
 
-Gerado em 2026-11-14 · **413 poses** · **179 animações** (144 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 133 efeitos · 117 objetos.
+Gerado em 2026-11-15 · **413 poses** · **179 animações** (144 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 136 efeitos · 129 objetos.
 
 Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.
 
@@ -24,15 +24,15 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 **Expressões (`expressao NOME`):** neutra, alegria, surpresa, raiva, tristeza, medo, grito, sono, desconfianca, piscando, riso, choro, vergonha, nojo, desprezo, determinacao, malicia, confusao, choque, tedio, dor, cansaco, admiracao, culpa, orgulho, pensativo, alivio, sorrisoManiaco, surpresaTotal, olharVazio, iraFocada, focoTotal, choqueComico, nervoso, mordendoLabio, provocando, furia, esforco, encantado, sombrio, determinadoLuta, gritoDeGuerra, apaixonado, envergonhadoSorrindo, tsundere, bicudo, gotaDeSuor, veiaDeRaiva, olhosBrilhando, choroCascata, choroContido, sorrisoTriste, sorrisoConfiante, sorrisoMaligno, gargalhadaMaligna, olharMorto, olharFrio, olharPenetrante, susto, panico, horror, nojoExtremo, incredulo, sarcastico, serio, calmo, sonhador, curioso, esperancoso, decepcionado, ciumes, arrogante, frustrado, exausto, tonto, bebado, doente, fome, concentradoLingua, gritoDeDor, gritoDeAlegria, vitoriaSorriso
 
-**Efeitos (`Kai efeito NOME em mao-direita`):** concentracao, velocidade, impacto_tela, flash, sombra_dramatica, onomatopeia, reticula, feixe, cone, espiral, tornado, explosao, barreira, circulo_magico, pilar, meteoro, chuva_meteoros, raio, onda_choque, cristais_chao, fogo_chao, fumaca, chama, aura, arco_movimento, rastro_membro, pos_imagem, energia_mao, velocidade_corpo, impacto_contato, emote, cratera, rachaduras, destrocos, poeira, parede_quebrada, buraco_chao, objeto_quebrando, rastro_fumaca, rastro_arma, projetil, poeira_pes, sulco_poeira, aura_explosiva, aura_vento, esfera_energia, fios_energia, pedras_levitando, ondas_chao, carga_maos, redemoinho, aneis_impacto, salpicos, aneis_orbitais, personalizado, composto, raio_galhos, raio_cartoon, arvore_de_raios, cone_de_aneis, torrente_espiral, tunel_de_aneis, foice_de_energia, rajada_de_particulas, leque_de_flechas, enxame_de_flechas, laminas_crescentes, crescente_gigante, laminas_de_vento, onda_gigante, espinhos_do_chao, tentaculos, vinhas_de_espinhos, atomo, vortice_disco, cupula_de_arcos, esfera_jaula, laco_infinito, fita_em_s, serpente_de_energia, discos_serra, ondas_sonoras, explosao_estrelada, bolhas, circulo_magico_flechas, circulo_de_runas, dna, tranca, portais_e_feixes, feixe_com_aneis, cone_de_ondas, esfera_espiral, chamas_nanquim, respingos_de_nanquim, pilar_de_luz_nanquim, redemoinho_de_fumaca, linhas_de_impulso, impacto_com_detritos, anel_de_impacto_no_chao, chuva_de_estrelas, aura_de_espinhos, tornado_espiral, rastro_de_velocidade, arco_de_golpe, petalas_sakura, folhas_ao_vento, chuva, neve, nevoa, raios_de_luz_divina, bolhas_subindo, vagalumes, corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma, flecha_de_luz, portal, teletransporte, aura_sombria, aura_de_gelo, selo_no_ar, cura, estrelas_tontura, espirais_tontura, linhas_de_susto, gotas_voando, vapor_de_raiva, brilho_nos_olhos, coracoes_flutuando, poeira_de_corrida, lens_flare
+**Efeitos (`Kai efeito NOME em mao-direita`):** concentracao, velocidade, impacto_tela, flash, sombra_dramatica, onomatopeia, reticula, feixe, cone, espiral, tornado, explosao, barreira, circulo_magico, pilar, meteoro, chuva_meteoros, raio, onda_choque, cristais_chao, fogo_chao, fumaca, chama, aura, arco_movimento, rastro_membro, pos_imagem, energia_mao, velocidade_corpo, impacto_contato, emote, cratera, rachaduras, destrocos, poeira, parede_quebrada, buraco_chao, objeto_quebrando, rastro_fumaca, rastro_arma, projetil, poeira_pes, sulco_poeira, clarao_cano, cartuchos, impacto_bala, aura_explosiva, aura_vento, esfera_energia, fios_energia, pedras_levitando, ondas_chao, carga_maos, redemoinho, aneis_impacto, salpicos, aneis_orbitais, personalizado, composto, raio_galhos, raio_cartoon, arvore_de_raios, cone_de_aneis, torrente_espiral, tunel_de_aneis, foice_de_energia, rajada_de_particulas, leque_de_flechas, enxame_de_flechas, laminas_crescentes, crescente_gigante, laminas_de_vento, onda_gigante, espinhos_do_chao, tentaculos, vinhas_de_espinhos, atomo, vortice_disco, cupula_de_arcos, esfera_jaula, laco_infinito, fita_em_s, serpente_de_energia, discos_serra, ondas_sonoras, explosao_estrelada, bolhas, circulo_magico_flechas, circulo_de_runas, dna, tranca, portais_e_feixes, feixe_com_aneis, cone_de_ondas, esfera_espiral, chamas_nanquim, respingos_de_nanquim, pilar_de_luz_nanquim, redemoinho_de_fumaca, linhas_de_impulso, impacto_com_detritos, anel_de_impacto_no_chao, chuva_de_estrelas, aura_de_espinhos, tornado_espiral, rastro_de_velocidade, arco_de_golpe, petalas_sakura, folhas_ao_vento, chuva, neve, nevoa, raios_de_luz_divina, bolhas_subindo, vagalumes, corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma, flecha_de_luz, portal, teletransporte, aura_sombria, aura_de_gelo, selo_no_ar, cura, estrelas_tontura, espirais_tontura, linhas_de_susto, gotas_voando, vapor_de_raiva, brilho_nos_olhos, coracoes_flutuando, poeira_de_corrida, lens_flare
 
-**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco, katana, espadaLonga, espadaCurta, sabre, adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku, chicote, besta, pistola, rifle, broquel, escudoCavaleiro, escudoTorre, varinha, cajadoMagico, orbe, tocha, lanterna, violao, guitarra, violino, arcoViolino, flauta, trompete, microfone, baqueta, celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave, espelhoMao, copoBebida
+**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco, carruagem, carroca, barcoRemo, canoa, veleiro, balsa, katana, espadaLonga, espadaCurta, sabre, adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku, chicote, besta, pistola, rifle, revolver, submetralhadora, metralhadora, sniper, escopeta, lancaFoguetes, broquel, escudoCavaleiro, escudoTorre, varinha, cajadoMagico, orbe, tocha, lanterna, violao, guitarra, violino, arcoViolino, flauta, trompete, microfone, baqueta, celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave, espelhoMao, copoBebida
 
 ## Animais quadrúpedes (capítulo 22)
 
-**Espécies (`Trovão animal cavalo [sela] [escala 1.2]`):** `cavalo`, `ponei`, `burro`, `camelo`, `dromedario`, `bode`, `ovelha`, `boi`, `cachorro`, `cachorroPequeno`, `lobo`, `gato`, `cervo`, `elefante`, `urso`, `leao`, `tigre`, `raposa`, `porco`, `girafa`, `rinoceronte`, `galinha`, `galo`, `pato`, `ganso`, `cisne`, `pombo`, `corvo`, `gaivota`, `coruja`, `aguia`, `falcao`, `papagaio`, `flamingo`, `pinguim`, `avestruz`, `beijaflor`
+**Espécies (`Trovão animal cavalo [sela] [escala 1.2]`):** `cavalo`, `ponei`, `burro`, `camelo`, `dromedario`, `bode`, `ovelha`, `boi`, `cachorro`, `cachorroPequeno`, `lobo`, `gato`, `cervo`, `elefante`, `urso`, `leao`, `tigre`, `raposa`, `porco`, `girafa`, `pegaso`, `unicornio`, `grifo`, `rinoceronte`, `galinha`, `galo`, `pato`, `ganso`, `cisne`, `pombo`, `corvo`, `gaivota`, `coruja`, `aguia`, `falcao`, `papagaio`, `flamingo`, `pinguim`, `avestruz`, `beijaflor`, `lagarto`, `iguana`, `crocodilo`, `jacare`, `varano`, `camaleao`, `tartaruga`, `salamandra`, `tiranossauro`, `raptor`, `cobra`, `piton`, `naja`, `enguia`, `minhoca`, `peixe`, `tubarao`, `atum`, `salmao`, `peixePalhaco`, `golfinho`, `baleia`, `orca`, `foca`, `polvo`, `lula`, `kraken`, `besouro`, `formiga`, `aranha`, `caranguejo`, `escorpiao`, `sapo`, `dragao`, `wyvern`, `dragaoOriental`, `macaco`, `gorila`
 
-**Poses (`Trovão pose NOME`):** `parado`, `atento`, `comendo`, `cabeca-baixa`, `deitado`, `sentado`, `empinado`, `pata-levantada`, `coice`, `agachado`, `uivando`
+**Poses (`Trovão pose NOME`):** `parado`, `atento`, `comendo`, `cabeca-baixa`, `deitado`, `sentado`, `empinado`, `pata-levantada`, `coice`, `agachado`, `asas-abertas`, `voando`, `planando`, `uivando`
 
 **Marchas:** `anda` (passo), `trota` (trote), `galopa`/`corre` (galope) `[N m] [para X]` · `galopa-ate (x,z)` · `Kai monta Trovão` / `Kai desmonta` · `Trovão carrega "mala"` · `Rex segue Kai`
 
@@ -42,7 +42,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 ## Pré-configurações de cena e câmera (capítulo 27)
 
-611 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
+667 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
 
 Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon Boom, No Film School): over-the-shoulder (OTS), dirty/clean single, two-shot, 50/50, dutch angle, POV, insert, establishing shot.
 
@@ -778,6 +778,127 @@ Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon B
 | `suspense.dolly-zoom` | efeito vertigo (use no filme: camera vertigo) | dolly zoom | A | efeito vertigo (use no filme: camera vertigo) |
 | `suspense.aproximacao-lenta` | aproximação lenta no rosto | slow push-in | A | aproximação lenta no rosto |
 | `suspense.algo-atras-da-porta` | A diante da porta, câmera do outro lado | behind the door | A | A diante da porta, câmera do outro lado |
+
+### Esconder/atrás de caixas (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `esconder.caixa.mestre` | de lado: quem se esconde e quem procura — atrás de caixas | hiding two-shot | A, B | de lado: quem se esconde e quem procura (atrás de caixas) |
+| `esconder.caixa.pov-b` | o que quem procura vê (o esconderijo) — atrás de caixas | seeker POV | A, B | o que quem procura vê (o esconderijo) (atrás de caixas) |
+| `esconder.caixa.close-a` | o rosto de quem se esconde — atrás de caixas | hider close-up | A, B | o rosto de quem se esconde (atrás de caixas) |
+| `esconder.caixa.por-cima-do-esconderijo` | por trás de quem se esconde, vendo quem procura — atrás de caixas | over the cover | A, B | por trás de quem se esconde, vendo quem procura (atrás de caixas) |
+| `esconder.caixa.aereo` | de cima: o esconderijo e o perigo — atrás de caixas | overhead hide | A, B | de cima: o esconderijo e o perigo (atrás de caixas) |
+
+### Esconder/atrás de um muro baixo (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `esconder.muro.mestre` | de lado: quem se esconde e quem procura — atrás de um muro baixo | hiding two-shot | A, B | de lado: quem se esconde e quem procura (atrás de um muro baixo) |
+| `esconder.muro.pov-b` | o que quem procura vê (o esconderijo) — atrás de um muro baixo | seeker POV | A, B | o que quem procura vê (o esconderijo) (atrás de um muro baixo) |
+| `esconder.muro.close-a` | o rosto de quem se esconde — atrás de um muro baixo | hider close-up | A, B | o rosto de quem se esconde (atrás de um muro baixo) |
+| `esconder.muro.por-cima-do-esconderijo` | por trás de quem se esconde, vendo quem procura — atrás de um muro baixo | over the cover | A, B | por trás de quem se esconde, vendo quem procura (atrás de um muro baixo) |
+| `esconder.muro.aereo` | de cima: o esconderijo e o perigo — atrás de um muro baixo | overhead hide | A, B | de cima: o esconderijo e o perigo (atrás de um muro baixo) |
+
+### Esconder/debaixo da mesa (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `esconder.sob-a-mesa.mestre` | de lado: quem se esconde e quem procura — debaixo da mesa | hiding two-shot | A, B | de lado: quem se esconde e quem procura (debaixo da mesa) |
+| `esconder.sob-a-mesa.pov-b` | o que quem procura vê (o esconderijo) — debaixo da mesa | seeker POV | A, B | o que quem procura vê (o esconderijo) (debaixo da mesa) |
+| `esconder.sob-a-mesa.por-cima-do-esconderijo` | por trás de quem se esconde, vendo quem procura — debaixo da mesa | over the cover | A, B | por trás de quem se esconde, vendo quem procura (debaixo da mesa) |
+| `esconder.sob-a-mesa.aereo` | de cima: o esconderijo e o perigo — debaixo da mesa | overhead hide | A, B | de cima: o esconderijo e o perigo (debaixo da mesa) |
+
+### Esconder/costas na árvore (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `esconder.arvore.mestre` | de lado: quem se esconde e quem procura — costas na árvore | hiding two-shot | A, B | de lado: quem se esconde e quem procura (costas na árvore) |
+| `esconder.arvore.pov-b` | o que quem procura vê (o esconderijo) — costas na árvore | seeker POV | A, B | o que quem procura vê (o esconderijo) (costas na árvore) |
+| `esconder.arvore.close-a` | o rosto de quem se esconde — costas na árvore | hider close-up | A, B | o rosto de quem se esconde (costas na árvore) |
+| `esconder.arvore.por-cima-do-esconderijo` | por trás de quem se esconde, vendo quem procura — costas na árvore | over the cover | A, B | por trás de quem se esconde, vendo quem procura (costas na árvore) |
+| `esconder.arvore.aereo` | de cima: o esconderijo e o perigo — costas na árvore | overhead hide | A, B | de cima: o esconderijo e o perigo (costas na árvore) |
+
+### Esconder/no meio do mato (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `esconder.arbusto.mestre` | de lado: quem se esconde e quem procura — no meio do mato | hiding two-shot | A, B | de lado: quem se esconde e quem procura (no meio do mato) |
+| `esconder.arbusto.pov-b` | o que quem procura vê (o esconderijo) — no meio do mato | seeker POV | A, B | o que quem procura vê (o esconderijo) (no meio do mato) |
+| `esconder.arbusto.close-a` | o rosto de quem se esconde — no meio do mato | hider close-up | A, B | o rosto de quem se esconde (no meio do mato) |
+| `esconder.arbusto.por-cima-do-esconderijo` | por trás de quem se esconde, vendo quem procura — no meio do mato | over the cover | A, B | por trás de quem se esconde, vendo quem procura (no meio do mato) |
+| `esconder.arbusto.aereo` | de cima: o esconderijo e o perigo — no meio do mato | overhead hide | A, B | de cima: o esconderijo e o perigo (no meio do mato) |
+
+### Esconder/colado na parede, prendendo a respiração (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `esconder.parede.mestre` | de lado: quem se esconde e quem procura — colado na parede, prendendo a respiração | hiding two-shot | A, B | de lado: quem se esconde e quem procura (colado na parede, prendendo a respiração) |
+| `esconder.parede.pov-b` | o que quem procura vê (o esconderijo) — colado na parede, prendendo a respiração | seeker POV | A, B | o que quem procura vê (o esconderijo) (colado na parede, prendendo a respiração) |
+| `esconder.parede.close-a` | o rosto de quem se esconde — colado na parede, prendendo a respiração | hider close-up | A, B | o rosto de quem se esconde (colado na parede, prendendo a respiração) |
+| `esconder.parede.aereo` | de cima: o esconderijo e o perigo — colado na parede, prendendo a respiração | overhead hide | A, B | de cima: o esconderijo e o perigo (colado na parede, prendendo a respiração) |
+
+### Desvio/desvio de soco (pêndulo) (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.soco.mestre` | de lado: golpe e desvio — desvio de soco (pêndulo) | dodge two-shot | A, B | de lado: golpe e desvio (desvio de soco (pêndulo)) |
+| `desvio.soco.ombro-a` | por cima do ombro de quem ataca — desvio de soco (pêndulo) | attacker OTS | A, B | por cima do ombro de quem ataca (desvio de soco (pêndulo)) |
+| `desvio.soco.baixo` | de baixo, o desvio heroico — desvio de soco (pêndulo) | low angle dodge | A, B | de baixo, o desvio heroico (desvio de soco (pêndulo)) |
+| `desvio.soco.medio-b` | quem desvia, em plano médio — desvio de soco (pêndulo) | dodger medium | A, B | quem desvia, em plano médio (desvio de soco (pêndulo)) |
+
+### Desvio/abaixando do chute (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.chute.mestre` | de lado: golpe e desvio — abaixando do chute | dodge two-shot | A, B | de lado: golpe e desvio (abaixando do chute) |
+| `desvio.chute.ombro-a` | por cima do ombro de quem ataca — abaixando do chute | attacker OTS | A, B | por cima do ombro de quem ataca (abaixando do chute) |
+| `desvio.chute.baixo` | de baixo, o desvio heroico — abaixando do chute | low angle dodge | A, B | de baixo, o desvio heroico (abaixando do chute) |
+| `desvio.chute.medio-b` | quem desvia, em plano médio — abaixando do chute | dodger medium | A, B | quem desvia, em plano médio (abaixando do chute) |
+
+### Desvio/recuando do corte de espada (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.espada.mestre` | de lado: golpe e desvio — recuando do corte de espada | dodge two-shot | A, B | de lado: golpe e desvio (recuando do corte de espada) |
+| `desvio.espada.ombro-a` | por cima do ombro de quem ataca — recuando do corte de espada | attacker OTS | A, B | por cima do ombro de quem ataca (recuando do corte de espada) |
+| `desvio.espada.baixo` | de baixo, o desvio heroico — recuando do corte de espada | low angle dodge | A, B | de baixo, o desvio heroico (recuando do corte de espada) |
+| `desvio.espada.medio-b` | quem desvia, em plano médio — recuando do corte de espada | dodger medium | A, B | quem desvia, em plano médio (recuando do corte de espada) |
+
+### Desvio/mergulhando do tiro (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.tiro.mestre` | de lado: golpe e desvio — mergulhando do tiro | dodge two-shot | A, B | de lado: golpe e desvio (mergulhando do tiro) |
+| `desvio.tiro.ombro-a` | por cima do ombro de quem ataca — mergulhando do tiro | attacker OTS | A, B | por cima do ombro de quem ataca (mergulhando do tiro) |
+| `desvio.tiro.baixo` | de baixo, o desvio heroico — mergulhando do tiro | low angle dodge | A, B | de baixo, o desvio heroico (mergulhando do tiro) |
+| `desvio.tiro.medio-b` | quem desvia, em plano médio — mergulhando do tiro | dodger medium | A, B | quem desvia, em plano médio (mergulhando do tiro) |
+
+### Desvio/saindo da investida (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.investida.mestre` | de lado: golpe e desvio — saindo da investida | dodge two-shot | A, B | de lado: golpe e desvio (saindo da investida) |
+| `desvio.investida.ombro-a` | por cima do ombro de quem ataca — saindo da investida | attacker OTS | A, B | por cima do ombro de quem ataca (saindo da investida) |
+| `desvio.investida.baixo` | de baixo, o desvio heroico — saindo da investida | low angle dodge | A, B | de baixo, o desvio heroico (saindo da investida) |
+| `desvio.investida.medio-b` | quem desvia, em plano médio — saindo da investida | dodger medium | A, B | quem desvia, em plano médio (saindo da investida) |
+
+### Desvio/esquiva de bala para trás (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.matrix.mestre` | de lado: golpe e desvio — esquiva de bala para trás | dodge two-shot | A, B | de lado: golpe e desvio (esquiva de bala para trás) |
+| `desvio.matrix.ombro-a` | por cima do ombro de quem ataca — esquiva de bala para trás | attacker OTS | A, B | por cima do ombro de quem ataca (esquiva de bala para trás) |
+| `desvio.matrix.baixo` | de baixo, o desvio heroico — esquiva de bala para trás | low angle dodge | A, B | de baixo, o desvio heroico (esquiva de bala para trás) |
+| `desvio.matrix.medio-b` | quem desvia, em plano médio — esquiva de bala para trás | dodger medium | A, B | quem desvia, em plano médio (esquiva de bala para trás) |
+
+### Desvio/o golpe passa raspando (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `desvio.por-um-triz.mestre` | de lado: golpe e desvio — o golpe passa raspando | dodge two-shot | A, B | de lado: golpe e desvio (o golpe passa raspando) |
+| `desvio.por-um-triz.ombro-a` | por cima do ombro de quem ataca — o golpe passa raspando | attacker OTS | A, B | por cima do ombro de quem ataca (o golpe passa raspando) |
+| `desvio.por-um-triz.baixo` | de baixo, o desvio heroico — o golpe passa raspando | low angle dodge | A, B | de baixo, o desvio heroico (o golpe passa raspando) |
+| `desvio.por-um-triz.medio-b` | quem desvia, em plano médio — o golpe passa raspando | dodger medium | A, B | quem desvia, em plano médio (o golpe passa raspando) |
 
 ### Romance e intimidade (12)
 
@@ -6292,8 +6413,8 @@ pose "puloDecolando" de empe
 
 ```gm
 pose "puloEstrela" de empe
-  ombro(frente 150 abre 90)
-  cotovelo(dobra 10)
+  ombro(frente 25 abre 140)
+  cotovelo(dobra 8)
   mao(fecha 0% afasta 85%)
   quadril(abre 40)
   joelho(dobra 10)
@@ -6710,18 +6831,18 @@ pose "fugaEsgueirando" de empe
 
 ```gm
 pose "fugaRastejando" de empe
-  ombro.direito(frente 60 abre 30)
-  ombro.esquerdo(frente 150 abre 20)
-  cotovelo.direito(dobra 110)
-  cotovelo.esquerdo(dobra 40)
+  ombro.direito(frente 165 abre 30)
+  ombro.esquerdo(frente 172 abre 25)
+  cotovelo.direito(dobra 105)
+  cotovelo.esquerdo(dobra 70)
   mao(fecha 55% afasta 70% opoe 30%)
-  quadril.direito(frente 10 abre 10)
-  quadril.esquerdo(frente 40 abre 20)
-  joelho.direito(dobra 20)
-  joelho.esquerdo(dobra 70)
-  tronco(tras 20)
-  cabeca(sobe 50)
-  corpo(deita-brucos 85)
+  quadril.direito(abre 8)
+  quadril.esquerdo(frente 10 abre 45 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 85)
+  tronco(tras 12)
+  cabeca(sobe 45)
+  corpo(deita-brucos 86)
   valor fThL -0.2 fThR -0.2
 ```
 
@@ -6848,7 +6969,7 @@ pose "perseguicaoAlcancando" de empe
 
 ```gm
 pose "perseguicaoAgarrando" de empe
-  ombro(frente 160 abre 20)
+  ombro(frente 120 abre 10)
   cotovelo(dobra 10)
   mao(fecha 55% afasta 70% opoe 30%)
   quadril.direito(frente 40)
@@ -7118,14 +7239,14 @@ pose "caidoDeCostas" de empe
 
 ```gm
 pose "caidoDeBrucos" de empe
-  ombro.direito(frente 30 abre 40)
-  ombro.esquerdo(frente 170 abre 30)
-  cotovelo.direito(dobra 40)
-  cotovelo.esquerdo(dobra 20)
-  quadril.direito(frente 10)
-  joelho.direito(dobra 10)
-  joelho.esquerdo(dobra 20)
-  cabeca(sobe 50 inclina-esquerda 20)
+  ombro.direito(frente 5)
+  ombro.esquerdo(frente 170 abre 35)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 25)
+  quadril.direito(frente 8)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 15)
+  cabeca(sobe 45 inclina-esquerda 20)
   corpo(deita-brucos 88)
 ```
 
@@ -9548,20 +9669,40 @@ animacao "rastejar" duracao 1.8s mantem loop curva linear tags "Locomocao/Chao/R
   chave 1.8s ombro.direito(frente 165 abre 20) ombro.esquerdo(frente 120 abre 30) cotovelo.direito(dobra 105) cotovelo.esquerdo(dobra 125) quadril.direito(frente 0 abre 3 gira-fora 0) quadril.esquerdo(frente 45 abre 35 gira-fora 25) joelho.direito(dobra 5) joelho.esquerdo(dobra 75) tornozelo.esquerdo(aponta 45) cabeca(gira-esquerda 70) move frente 0.5 curva suave
 ```
 
-### andarAgachado — ciclo (repete), 1,20 s, loop
+### andarAgachado — ciclo (repete), 1,30 s, loop
 
-ciclo a partir de uma pose:  · 0.90 m por ciclo
+andar agachado (furtivo)
 
 No filme: `0s Kai anima andarAgachado` (repete até o fim do plano ou `por 4s`)
 
 ```gm
-# ciclo a partir de uma pose:  · 0.90 m por ciclo
-animacao "andarAgachado" duracao 1.2s mantem loop curva linear travar-pes tags "Locomocao/Andar/Agachado"
-  chave 0s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(frente 26) quadril.esquerdo(frente 64) joelho.direito(dobra 83) joelho.esquerdo(dobra 61) dedos-pe.direito(levanta 30) tronco(frente 28 gira-esquerda 7) pelve(gira-direita 6) cabeca(sobe 20) valor ankleFlexL -21 ankleFlexR -22 curva suave
-  chave 0.3s ombro(frente 1.5) cotovelo(dobra 22.5) quadril.direito(frente 57) quadril.esquerdo(frente 45) joelho(dobra 72) dedos-pe(levanta 15) tronco(gira-esquerda 0) pelve(gira-esquerda 0) valor ankleFlexL -21.5 ankleFlexR -21.5 move frente 0.019 curva suave
-  chave 0.6s ombro.direito(tras 22) ombro.esquerdo(frente 25) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 30) quadril.direito(frente 64) quadril.esquerdo(frente 26) joelho.direito(dobra 61) joelho.esquerdo(dobra 83) dedos-pe.direito(dobra 0) dedos-pe.esquerdo(levanta 30) tronco(gira-direita 7) pelve(gira-esquerda 6) valor ankleFlexL -22 ankleFlexR -21 move frente 0.037 curva suave
-  chave 0.9s ombro(frente 1.5) cotovelo(dobra 22.5) quadril.direito(frente 45) quadril.esquerdo(frente 57) joelho(dobra 72) dedos-pe(levanta 15) tronco(gira-esquerda 0) pelve(gira-direita 0) valor ankleFlexL -21.5 ankleFlexR -21.5 move frente 0.056 curva suave
-  chave 1.2s ombro.direito(frente 25) ombro.esquerdo(tras 22) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 15) quadril.direito(frente 26) quadril.esquerdo(frente 64) joelho.direito(dobra 83) joelho.esquerdo(dobra 61) dedos-pe.direito(levanta 30) dedos-pe.esquerdo(dobra 0) tronco(gira-esquerda 7) pelve(gira-direita 6) valor ankleFlexL -21 ankleFlexR -22 move frente 0.074 curva suave
+# andar agachado (furtivo)
+animacao "andarAgachado" duracao 1.3s relativa desde-neutra mantem loop curva linear travar-pes tags "Locomocao/Andar/Agachado"
+  chave 0s ombro.direito(frente 20) ombro.esquerdo(tras 18) cotovelo.direito(dobra 24) cotovelo.esquerdo(dobra 15) quadril.direito(frente 18) quadril.esquerdo(frente 56) joelho.direito(dobra 74) joelho.esquerdo(dobra 50) tornozelo.esquerdo(levanta-ponta 20) tronco(frente 22 gira-esquerda 5) pelve(gira-direita 5) cabeca(sobe 14)
+  chave 0.054s ombro.direito(frente 17.8) ombro.esquerdo(tras 15.8) cotovelo.direito(dobra 22.9) quadril.direito(frente 20.2) quadril.esquerdo(frente 55.2) joelho.direito(dobra 79) joelho.esquerdo(dobra 53.9) tornozelo.direito(aponta 0.6) tronco(gira-esquerda 4.4) pelve(gira-direita 4.4) move frente -0.002
+  chave 0.108s ombro.direito(frente 13.8) ombro.esquerdo(tras 11.8) cotovelo.direito(dobra 20.9) quadril.direito(frente 24.2) quadril.esquerdo(frente 53.7) joelho.direito(dobra 88) joelho.esquerdo(dobra 60.9) tornozelo.direito(aponta 1.6) tornozelo.esquerdo(levanta-ponta 18.2) tronco(gira-esquerda 3.4) pelve(gira-direita 3.4) move frente -0.006
+  chave 0.163s ombro.direito(frente 11.9) ombro.esquerdo(tras 10) cotovelo.direito(dobra 20) quadril.direito(frente 26.1) quadril.esquerdo(frente 52.9) joelho.direito(dobra 92.1) joelho.esquerdo(dobra 64) tornozelo.direito(aponta 1.9) tornozelo.esquerdo(levanta-ponta 16) tronco(gira-esquerda 3) pelve(gira-direita 3) move frente -0.01
+  chave 0.217s ombro.direito(frente 8.5) ombro.esquerdo(tras 7.1) cotovelo.direito(dobra 18.5) quadril.direito(frente 35.4) quadril.esquerdo(frente 48.6) joelho.direito(dobra 96.7) joelho.esquerdo(dobra 61.6) tornozelo.direito(levanta-ponta 5.1) tornozelo.esquerdo(levanta-ponta 15.4) tronco(gira-esquerda 2.1) pelve(gira-direita 2.1) move frente -0.061
+  chave 0.271s ombro.direito(frente 2.9) ombro.esquerdo(tras 2.4) cotovelo.direito(dobra 16.2) quadril.direito(frente 50.3) quadril.esquerdo(frente 41.6) joelho.direito(dobra 104.1) joelho.esquerdo(dobra 57.9) tornozelo.direito(levanta-ponta 16.2) tornozelo.esquerdo(levanta-ponta 14.5) tronco(gira-esquerda 0.7) pelve(gira-direita 0.7) move frente 0.009
+  chave 0.325s ombro(frente 0) cotovelo.direito(dobra 15) quadril.direito(frente 58) quadril.esquerdo(frente 38) joelho.direito(dobra 108) joelho.esquerdo(dobra 56) tornozelo.direito(levanta-ponta 20) tornozelo.esquerdo(levanta-ponta 14) tronco(gira-esquerda 0) pelve(gira-esquerda 0) move frente 0.048
+  chave 0.379s ombro.direito(tras 2.9) ombro.esquerdo(frente 2.9) cotovelo.esquerdo(dobra 16.2) quadril.direito(frente 59) quadril.esquerdo(frente 35.1) joelho.direito(dobra 98.8) joelho.esquerdo(dobra 55.5) tornozelo.esquerdo(levanta-ponta 12.5) tronco(gira-direita 0.7) pelve(gira-esquerda 0.7) move frente 0.09
+  chave 0.433s ombro.direito(tras 8.5) ombro.esquerdo(frente 8.5) cotovelo.esquerdo(dobra 18.5) quadril.direito(frente 60.8) quadril.esquerdo(frente 29.5) joelho.direito(dobra 81.2) joelho.esquerdo(dobra 54.6) tornozelo.esquerdo(levanta-ponta 9.8) tronco(gira-direita 2.1) pelve(gira-esquerda 2.1) move frente 0.172
+  chave 0.487s ombro.direito(tras 11.9) ombro.esquerdo(frente 11.9) cotovelo.esquerdo(dobra 20) quadril.direito(frente 62) quadril.esquerdo(frente 26.1) joelho.direito(dobra 70.2) joelho.esquerdo(dobra 54) tornozelo.esquerdo(levanta-ponta 8) tronco(gira-direita 3) pelve(gira-esquerda 3) move frente 0.225
+  chave 0.542s ombro.direito(tras 13.3) ombro.esquerdo(frente 13.8) cotovelo.esquerdo(dobra 20.9) quadril.direito(frente 60.7) quadril.esquerdo(frente 24.2) joelho.direito(dobra 65.5) joelho.esquerdo(dobra 58.5) tornozelo.esquerdo(levanta-ponta 6.2) tronco(gira-direita 3.4) pelve(gira-esquerda 3.4) move frente 0.29
+  chave 0.596s ombro.direito(tras 16.3) ombro.esquerdo(frente 17.8) cotovelo.esquerdo(dobra 22.9) quadril.direito(frente 57.7) quadril.esquerdo(frente 20.2) joelho.direito(dobra 55.6) joelho.esquerdo(dobra 68.4) tornozelo.esquerdo(levanta-ponta 2.2) tronco(gira-direita 4.4) pelve(gira-esquerda 4.4) move frente 0.426
+  chave 0.65s ombro.direito(tras 18) ombro.esquerdo(frente 20) cotovelo.esquerdo(dobra 24) quadril.direito(frente 56) quadril.esquerdo(frente 18) joelho.direito(dobra 50) joelho.esquerdo(dobra 74) tornozelo.esquerdo(aponta 0) tronco(gira-direita 5) pelve(gira-esquerda 5) move frente 0.496
+  chave 0.704s ombro.direito(tras 15.8) ombro.esquerdo(frente 17.8) cotovelo.esquerdo(dobra 22.9) quadril.direito(frente 55.2) quadril.esquerdo(frente 20.2) joelho.direito(dobra 53.9) joelho.esquerdo(dobra 79) tornozelo.esquerdo(aponta 0.6) tronco(gira-direita 4.4) pelve(gira-esquerda 4.4) move frente 0.493
+  chave 0.758s ombro.direito(tras 11.8) ombro.esquerdo(frente 13.8) cotovelo.esquerdo(dobra 20.9) quadril.direito(frente 53.7) quadril.esquerdo(frente 24.2) joelho.direito(dobra 60.9) joelho.esquerdo(dobra 88) tornozelo.direito(levanta-ponta 18.2) tornozelo.esquerdo(aponta 1.6) tronco(gira-direita 3.4) pelve(gira-esquerda 3.4) move frente 0.487
+  chave 0.813s ombro.direito(tras 10) ombro.esquerdo(frente 11.9) cotovelo.esquerdo(dobra 20) quadril.direito(frente 52.9) quadril.esquerdo(frente 26.1) joelho.direito(dobra 64) joelho.esquerdo(dobra 92.1) tornozelo.direito(levanta-ponta 16) tornozelo.esquerdo(aponta 1.9) tronco(gira-direita 3) pelve(gira-esquerda 3) move frente 0.482
+  chave 0.867s ombro.direito(tras 7.1) ombro.esquerdo(frente 8.5) cotovelo.esquerdo(dobra 18.5) quadril.direito(frente 48.6) quadril.esquerdo(frente 35.4) joelho.direito(dobra 61.6) joelho.esquerdo(dobra 96.7) tornozelo.direito(levanta-ponta 15.4) tornozelo.esquerdo(levanta-ponta 5.1) tronco(gira-direita 2.1) pelve(gira-esquerda 2.1) move frente 0.43
+  chave 0.921s ombro.direito(tras 2.4) ombro.esquerdo(frente 2.9) cotovelo.esquerdo(dobra 16.2) quadril.direito(frente 41.6) quadril.esquerdo(frente 50.3) joelho.direito(dobra 57.9) joelho.esquerdo(dobra 104.1) tornozelo.direito(levanta-ponta 14.5) tornozelo.esquerdo(levanta-ponta 16.2) tronco(gira-direita 0.7) pelve(gira-esquerda 0.7) move frente 0.501
+  chave 0.975s ombro.direito(frente 0) ombro.esquerdo(tras 0) cotovelo.esquerdo(dobra 15) quadril.direito(frente 38) quadril.esquerdo(frente 58) joelho.direito(dobra 56) joelho.esquerdo(dobra 108) tornozelo.direito(levanta-ponta 14) tornozelo.esquerdo(levanta-ponta 20) tronco(gira-esquerda 0) pelve(gira-direita 0) move frente 0.539
+  chave 1.029s ombro.direito(frente 2.9) ombro.esquerdo(tras 2.9) cotovelo.direito(dobra 16.2) quadril.direito(frente 35.1) quadril.esquerdo(frente 59) joelho.direito(dobra 55.5) joelho.esquerdo(dobra 98.8) tornozelo.direito(levanta-ponta 12.5) tronco(gira-esquerda 0.7) pelve(gira-direita 0.7) move frente 0.581
+  chave 1.083s ombro.direito(frente 8.5) ombro.esquerdo(tras 8.5) cotovelo.direito(dobra 18.5) quadril.direito(frente 29.5) quadril.esquerdo(frente 60.8) joelho.direito(dobra 54.6) joelho.esquerdo(dobra 81.2) tornozelo.direito(levanta-ponta 9.8) tronco(gira-esquerda 2.1) pelve(gira-direita 2.1) move frente 0.662
+  chave 1.137s ombro.direito(frente 11.9) ombro.esquerdo(tras 11.9) cotovelo.direito(dobra 20) quadril.direito(frente 26.1) quadril.esquerdo(frente 62) joelho.direito(dobra 54) joelho.esquerdo(dobra 70.2) tornozelo.direito(levanta-ponta 8) tronco(gira-esquerda 3) pelve(gira-direita 3) move frente 0.713
+  chave 1.192s ombro.direito(frente 13.8) ombro.esquerdo(tras 13.3) cotovelo.direito(dobra 20.9) quadril.direito(frente 24.2) quadril.esquerdo(frente 60.7) joelho.direito(dobra 58.5) joelho.esquerdo(dobra 65.5) tornozelo.direito(levanta-ponta 6.2) tronco(gira-esquerda 3.4) pelve(gira-direita 3.4) move frente 0.778
+  chave 1.246s ombro.direito(frente 17.8) ombro.esquerdo(tras 16.3) cotovelo.direito(dobra 22.9) quadril.direito(frente 20.2) quadril.esquerdo(frente 57.7) joelho.direito(dobra 68.4) joelho.esquerdo(dobra 55.6) tornozelo.direito(levanta-ponta 2.2) tronco(gira-esquerda 4.4) pelve(gira-direita 4.4) move frente 0.912
+  chave 1.3s ombro.direito(frente 20) ombro.esquerdo(tras 18) cotovelo.direito(dobra 24) quadril.direito(frente 18) quadril.esquerdo(frente 56) joelho.direito(dobra 74) joelho.esquerdo(dobra 50) tornozelo.direito(aponta 0) tronco(gira-esquerda 5) pelve(gira-direita 5) move frente 0.98
 ```
 
 ### cairFrente — transição de postura, 1,00 s
@@ -10365,7 +10506,7 @@ animacao "esquivaMergulhoAnim" duracao 0.75s mantem curva saida tags "Combate/Es
   chave 0s ombro.direito(frente 48 abre 20 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1 fThR -0.1
   chave 0.15s ombro.direito(tras 50 gira-fora 0) ombro.esquerdo(tras 50 abre 20 gira-fora 0) cotovelo(dobra 20) mao(fecha 0% afasta 85% polegar 0% opoe 0%) quadril(frente 90 abre 3) joelho(dobra 110) tornozelo(aponta 30) tronco(frente 30 gira-esquerda 0) pelve(gira-esquerda 0) pescoco(frente 0) cabeca(sobe 20) corpo(deita-brucos 20) move lado 0.609
   chave 0.4s ombro.direito(frente 150 abre 30) ombro.esquerdo(frente 170) cotovelo.direito(dobra 30) cotovelo.esquerdo(dobra 10) quadril.direito(frente 40) quadril.esquerdo(tras 10) joelho.direito(dobra 60) joelho.esquerdo(dobra 10) tornozelo(aponta 0) tronco(frente 0) corpo(deita-brucos 70 sobe 45.6cm) valor bodyRoll -30 move lado 1
-  chave 0.75s ombro.direito(frente 30 abre 40) ombro.esquerdo(abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) mao(fecha 30% afasta 40%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88 rola 0 sobe 0cm) move lado 1.8
+  chave 0.75s ombro.direito(frente 5 abre 12) ombro.esquerdo(abre 35) cotovelo.direito(dobra 10) cotovelo.esquerdo(dobra 25) mao(fecha 30% afasta 40%) quadril.direito(frente 8) quadril.esquerdo(frente 0) joelho.direito(dobra 30) joelho.esquerdo(dobra 15) cabeca(sobe 45 inclina-esquerda 20) corpo(deita-brucos 88 rola 0 sobe 0cm) move lado 1.8
 ```
 
 ### defesaCruzadaAnim — ação (acontece e segura), 0,80 s
@@ -10506,17 +10647,17 @@ animacao "decolarHeroi" duracao 0.9s mantem curva saida tags "Movimento/Voar/Dec
 
 ### fugaOlhandoTrasAnim — ação (acontece e segura), 1,20 s
 
-corre olhando para trás
+corre olhando para trás (no lugar: junte com "corre" para andar)
 
 No filme: `0s Kai anima fugaOlhandoTrasAnim`
 
 ```gm
-# corre olhando para trás
+# corre olhando para trás (no lugar: junte com "corre" para andar)
 animacao "fugaOlhandoTrasAnim" duracao 1.2s mantem curva saida tags "Movimento/Fuga/Olhar para trás"
   chave 0s ombro.direito(frente 68 abre 10) ombro.esquerdo(tras 55 abre 10) cotovelo.direito(dobra 88) cotovelo.esquerdo(dobra 95) mao(fecha 60%) quadril.direito(frente 25.2 fecha 2.4 gira-fora 9.6) quadril.esquerdo(frente 82) joelho.direito(dobra 64.4) joelho.esquerdo(dobra 105) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 14) dedos-pe.direito(levanta 40) tronco(frente 6 gira-direita 12) pelve(gira-esquerda 10) cabeca(sobe 18) corpo(deita-brucos 14)
-  chave 0.4s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) mao(fecha 0% afasta 85%) quadril.direito(tras 30 abre 3 gira-fora 0) quadril.esquerdo(frente 85) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tornozelo.esquerdo(aponta 10) dedos-pe.direito(dobra 0) tronco(frente 10 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110 move frente 2
-  chave 0.8s ombro.direito(frente 120 abre 60) ombro.esquerdo(frente 150 abre 50) cotovelo.direito(dobra 50) cotovelo.esquerdo(dobra 40) quadril.esquerdo(frente 80) tornozelo(aponta 0) tronco(frente 0) cabeca(sobe 20 gira-esquerda 0) corpo(deita-brucos 15) move frente 4
-  chave 1.2s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) quadril.esquerdo(frente 85) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 10) tronco(frente 10) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110 move frente 6
+  chave 0.4s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) mao(fecha 0% afasta 85%) quadril.direito(tras 30 abre 3 gira-fora 0) quadril.esquerdo(frente 85) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tornozelo.esquerdo(aponta 10) dedos-pe.direito(dobra 0) tronco(frente 10 gira-esquerda 0) pelve(gira-esquerda 0) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110
+  chave 0.8s ombro.direito(frente 120 abre 60) ombro.esquerdo(frente 150 abre 50) cotovelo.direito(dobra 50) cotovelo.esquerdo(dobra 40) quadril.esquerdo(frente 80) tornozelo(aponta 0) tronco(frente 0) cabeca(sobe 20 gira-esquerda 0) corpo(deita-brucos 15)
+  chave 1.2s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) quadril.esquerdo(frente 85) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 10) tronco(frente 10) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110
 ```
 
 ### fugaTropecaoAnim — transição de postura, 0,70 s
@@ -10530,7 +10671,7 @@ No filme: `0s Kai anima fugaTropecaoAnim`
 animacao "fugaTropecaoAnim" duracao 0.7s mantem curva saida tags "Movimento/Fuga/Queda"
   chave 0s ombro.direito(frente 80 abre 25) ombro.esquerdo(tras 60 abre 25) cotovelo.direito(dobra 90) cotovelo.esquerdo(dobra 70) mao(fecha 0% afasta 85%) quadril.direito(tras 30) quadril.esquerdo(frente 85) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tornozelo.direito(aponta 30) tornozelo.esquerdo(aponta 10) tronco(frente 10) cabeca(sobe 6) corpo(deita-brucos 22) valor headYaw -110
   chave 0.35s ombro.direito(frente 110 abre 40) ombro.esquerdo(frente 130 abre 40) cotovelo(dobra 20) quadril.direito(frente 70) quadril.esquerdo(tras 30) joelho.direito(dobra 80) joelho.esquerdo(dobra 20) tornozelo(aponta 0) tronco(frente 20) cabeca(sobe 30 gira-esquerda 0) corpo(deita-brucos 50) move frente 1.4
-  chave 0.7s ombro.direito(frente 30) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) mao(fecha 30% afasta 40%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) tronco(frente 0) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88) move frente 2.4
+  chave 0.7s ombro.direito(frente 5 abre 12) ombro.esquerdo(frente 170 abre 35) cotovelo.direito(dobra 10) cotovelo.esquerdo(dobra 25) mao(fecha 30% afasta 40%) quadril.direito(frente 8) quadril.esquerdo(frente 0) joelho.direito(dobra 30) joelho.esquerdo(dobra 15) tronco(frente 0) cabeca(sobe 45 inclina-esquerda 20) corpo(deita-brucos 88) move frente 2.4
 ```
 
 ### esconderAnim — ação (acontece e segura), 1,80 s
@@ -10558,8 +10699,8 @@ No filme: `0s Kai anima perseguicaoAgarrao`
 animacao "perseguicaoAgarrao" duracao 1.1s mantem curva saida tags "Movimento/Perseguição/Agarrar"
   chave 0s ombro.direito(frente 85) ombro.esquerdo(tras 60) cotovelo.direito(dobra 100) cotovelo.esquerdo(dobra 95) mao(fecha 100% afasta 20% opoe 75%) quadril.esquerdo(frente 95) joelho.direito(dobra 40) joelho.esquerdo(dobra 100) tornozelo.direito(aponta 35) tornozelo.esquerdo(aponta 15) tronco(frente 6) cabeca(sobe 20) corpo(deita-brucos 30) valor hipFlexR -35 fThL -0.1 fThR -0.1
   chave 0.4s ombro.direito(tras 40 abre 20) ombro.esquerdo(frente 160 abre 15) cotovelo.direito(dobra 80) cotovelo.esquerdo(dobra 5) mao.esquerdo(fecha 0% afasta 85% polegar 0% opoe 0%) quadril.direito(tras 30) quadril.esquerdo(frente 80) joelho.esquerdo(dobra 80) tornozelo(aponta 0) tronco(frente 0) cabeca(sobe 24) move frente 2
-  chave 0.75s ombro.direito(frente 160) ombro.esquerdo(abre 20) cotovelo(dobra 10) mao(fecha 55% afasta 70% opoe 30%) quadril.direito(frente 40) quadril.esquerdo(tras 10) joelho.direito(dobra 60) joelho.esquerdo(dobra 20) cabeca(sobe 40) corpo(deita-brucos 70 sobe 34.2cm) valor fThL -0.2 fThR -0.2 move frente 3.6
-  chave 1.1s ombro.direito(frente 30 abre 40) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) mao(fecha 30% afasta 40% polegar 0% opoe 0%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88 sobe 0cm) move frente 4.2
+  chave 0.75s ombro(frente 120 abre 10) cotovelo(dobra 10) mao(fecha 55% afasta 70% opoe 30%) quadril.direito(frente 40) quadril.esquerdo(tras 10) joelho.direito(dobra 60) joelho.esquerdo(dobra 20) cabeca(sobe 40) corpo(deita-brucos 70 sobe 34.2cm) valor fThL -0.2 fThR -0.2 move frente 3.6
+  chave 1.1s ombro.direito(frente 5 abre 12) ombro.esquerdo(frente 170 abre 35) cotovelo.esquerdo(dobra 25) mao(fecha 30% afasta 40% polegar 0% opoe 0%) quadril.direito(frente 8) quadril.esquerdo(frente 0) joelho.direito(dobra 30) joelho.esquerdo(dobra 15) cabeca(sobe 45 inclina-esquerda 20) corpo(deita-brucos 88 sobe 0cm) move frente 4.2
 ```
 
 ### perseguicaoParouCansado — ação (acontece e segura), 2,20 s
@@ -10648,7 +10789,7 @@ animacao "nocaute" duracao 1.6s mantem curva saida tags "Combate/Reação/No ch�
   chave 0s ombro(frente 10 abre 20) cotovelo(dobra 20) quadril(frente 10) joelho(dobra 20) tronco(tras 6 esquerda 10) cabeca(sobe 14 inclina-esquerda 20)
   chave 0.6s ombro.direito(frente 40 abre 30) ombro.esquerdo(frente 30 abre 40) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 30) quadril.direito(tras 6 abre 8) quadril.esquerdo(frente 20 abre 20) joelho.direito(dobra 10) tronco(frente 0 direita 20) cabeca(baixa 10 inclina-direita 25) corpo(deita-costas 6) move lado 0.2
   chave 1.1s ombro.direito(frente 10 abre 10) ombro.esquerdo(frente 60 abre 20) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 90 abre 3) quadril.esquerdo(abre 3) joelho.direito(dobra 90) joelho.esquerdo(dobra 100) tornozelo.esquerdo(aponta 40) tronco(frente 40 direita 0) cabeca(baixa 30 inclina-direita 0) corpo(deita-brucos 0) move lado 0.3
-  chave 1.6s ombro.direito(frente 30 abre 40) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) mao.esquerdo(fecha 30% afasta 40%) quadril.direito(frente 10) quadril.esquerdo(frente 0) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) tornozelo.esquerdo(aponta 0) tronco(frente 0) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88) move frente 0.4 lado 0.3
+  chave 1.6s ombro.direito(frente 5 abre 12) ombro.esquerdo(frente 170 abre 35) cotovelo.direito(dobra 10) cotovelo.esquerdo(dobra 25) mao.esquerdo(fecha 30% afasta 40%) quadril.direito(frente 8) quadril.esquerdo(frente 0) joelho.direito(dobra 30) joelho.esquerdo(dobra 15) tornozelo.esquerdo(aponta 0) tronco(frente 0) cabeca(sobe 45 inclina-esquerda 20) corpo(deita-brucos 88) move frente 0.4 lado 0.3
 ```
 
 ### levantarDoChaoLuta — transição de postura, 1,80 s
@@ -10660,7 +10801,7 @@ No filme: `0s Kai anima levantarDoChaoLuta`
 ```gm
 # levanta do chão com esforço e volta à guarda
 animacao "levantarDoChaoLuta" duracao 1.8s mantem curva saida tags "Combate/Reação/Levantar"
-  chave 0s ombro.direito(frente 30 abre 40) ombro.esquerdo(frente 170 abre 30) cotovelo.direito(dobra 40) cotovelo.esquerdo(dobra 20) quadril.direito(frente 10) joelho.direito(dobra 10) joelho.esquerdo(dobra 20) cabeca(sobe 50 inclina-esquerda 20) corpo(deita-brucos 88)
+  chave 0s ombro.direito(frente 5) ombro.esquerdo(frente 170 abre 35) cotovelo.direito(dobra 10) cotovelo.esquerdo(dobra 25) quadril.direito(frente 8) joelho.direito(dobra 30) joelho.esquerdo(dobra 15) cabeca(sobe 45 inclina-esquerda 20) corpo(deita-brucos 88)
   chave 0.6s ombro.direito(frente 10 abre 10) ombro.esquerdo(frente 60 abre 20) cotovelo.direito(dobra 20) cotovelo.esquerdo(dobra 10) mao.esquerdo(fecha 2% afasta 60%) quadril.direito(frente 90) quadril.esquerdo(frente 20) joelho.direito(dobra 90) joelho.esquerdo(dobra 100) tornozelo.esquerdo(aponta 40) tronco(frente 40) cabeca(baixa 30 inclina-direita 0) corpo(deita-brucos 0)
   chave 1.2s ombro.direito(abre 20) cotovelo.direito(dobra 30) mao.direito(fecha 100% afasta 20% opoe 75%) quadril.direito(frente 10) quadril.esquerdo(frente 100) joelho.esquerdo(dobra 110) tornozelo.direito(aponta 20) tornozelo.esquerdo(aponta 30) cabeca(sobe 20) valor fThR -0.1
   chave 1.8s ombro.direito(frente 48 gira-dentro 10) ombro.esquerdo(frente 55 abre 18 gira-dentro 10) cotovelo.direito(dobra 125) cotovelo.esquerdo(dobra 118) mao.esquerdo(fecha 100% afasta 20% opoe 75%) quadril.direito(tras 6 abre 10) quadril.esquerdo(frente 18 abre 8) joelho.direito(dobra 14) joelho.esquerdo(dobra 22) tornozelo(aponta 0) tronco(frente 8 gira-direita 12) pelve(gira-esquerda 8) pescoco(frente 6) cabeca(baixa 8) valor fThL -0.1
@@ -10749,8 +10890,8 @@ No filme: `0s Kai anima minusculoFogePisao`
 # o pequeno corre se protegendo do pisão
 animacao "minusculoFogePisao" duracao 0.7s mantem curva saida tags "Escala/Minúsculo/Fugir"
   chave 0s ombro(frente 30 abre 20) cotovelo(dobra 60) mao(fecha 0% afasta 85%) quadril.direito(tras 4) quadril.esquerdo(frente 10) joelho.direito(dobra 4) joelho.esquerdo(dobra 10) tronco(tras 20) pescoco(tras 20) cabeca(sobe 55)
-  chave 0.3s ombro(frente 150 abre 30) cotovelo(dobra 105) quadril.direito(tras 20) quadril.esquerdo(frente 50) joelho.direito(dobra 20) joelho.esquerdo(dobra 60) tronco(frente 20) pescoco(frente 0) cabeca(sobe 40) move frente 0.5
-  chave 0.7s ombro.direito(frente 120 abre 60) ombro.esquerdo(abre 50) cotovelo.direito(dobra 50) cotovelo.esquerdo(dobra 40) quadril.direito(tras 30) quadril.esquerdo(frente 80) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tronco(frente 0) cabeca(sobe 20) corpo(deita-brucos 15) move frente 1.6
+  chave 0.3s ombro(frente 150 abre 30) cotovelo(dobra 105) quadril.direito(tras 20) quadril.esquerdo(frente 50) joelho.direito(dobra 20) joelho.esquerdo(dobra 60) tronco(frente 20) pescoco(frente 0) cabeca(sobe 40) move frente 0.3
+  chave 0.7s ombro.direito(frente 120 abre 60) ombro.esquerdo(abre 50) cotovelo.direito(dobra 50) cotovelo.esquerdo(dobra 40) quadril.direito(tras 30) quadril.esquerdo(frente 80) joelho.direito(dobra 40) joelho.esquerdo(dobra 90) tronco(frente 0) cabeca(sobe 20) corpo(deita-brucos 15) move frente 0.5
 ```
 
 ### confrontoEncarar — ação (acontece e segura), 1,50 s

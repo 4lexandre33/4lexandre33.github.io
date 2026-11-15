@@ -21,6 +21,7 @@ import { registerFilmeTools } from "./tools-filme.mjs";
 import { registerHqTools } from "./tools-hq.mjs";
 import { registerPreconfigTools } from "./tools-preconfig.mjs";
 import { registerNarrativaTools } from "./tools-narrativa.mjs";
+import { registerHistoriaTools } from "./tools-historia.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -192,7 +193,7 @@ function metaWidget(w, tipo, extra) { return { gm: Object.assign({ tipo, link: s
 
 /* metadados do ChatGPT (Apps SDK): texto enquanto a ferramenta roda e quando termina; as visuais abrem o widget */
 const INVOCA = {
-  narrativas: ["Abrindo a biblioteca de funções narrativas…", "Biblioteca pronta"], aplicar_narrativa: ["Transformando a função narrativa em quadros…", "Quadros prontos"], gerar_historia: ["Gerando a história e as variações…", "História pronta"],
+  narrativas: ["Abrindo a biblioteca de funções narrativas…", "Biblioteca pronta"], analisar_historia: ["Lendo a história e montando o texto…", "Texto e lacunas prontos"], lacunas: ["Lendo as lacunas…", "Lacunas listadas"], locais_prontos: ["Montando o local pronto…", "Local pronto"], catalogo: ["Abrindo o catálogo…", "Catálogo pronto"], aplicar_narrativa: ["Transformando a função narrativa em quadros…", "Quadros prontos"], gerar_historia: ["Gerando a história e as variações…", "História pronta"],
   preconfiguracoes: ["Abrindo o catálogo de pré-configurações…", "Catálogo pronto"], aplicar_preconfiguracao: ["Montando a pré-configuração…", "Quadro pronto"], animacao_animal: ["Animando o animal…", "Animação pronta"],
   pose_em_codigo: ["Lendo a pose…", "Pose pronta"], vistas_de_pose: ["Desenhando o esqueleto…", "Vistas prontas"],
   nova_cena: ["Limpando a cena…", "Cena nova"], adicionar_manequim: ["Adicionando manequim…", "Manequim adicionado"], editar_manequim: ["Ajustando o manequim…", "Manequim ajustado"],
@@ -939,6 +940,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerHqTools(server, W);
   registerPreconfigTools(server, W);
   registerNarrativaTools(server, W);
+  registerHistoriaTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

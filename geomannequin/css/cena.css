@@ -394,3 +394,17 @@ body.qd-aberto{overflow:hidden}
 .nm-pc-lista button:hover{border-color:var(--accent,#d0452f)}.nm-pc-lista small{color:var(--muted);font-size:11px;line-height:1.2}.nm-pc-lista b{font-size:12px;word-break:break-word}
 .nm-pc-mini{display:block;aspect-ratio:16/9;background:var(--paper)}.nm-pc-mini .ac-sp,.nm-pc-mini img{width:100%;height:100%;display:block}.nm-pc-mig button{border:0;background:none;color:var(--accent,#d0452f);cursor:pointer;padding:0 2px}
 [data-pc] input[type=search]{width:100%}
+/* aba Narrativas: tira de quadros (normalidade → estímulo → reação → consequência) */
+.nm-nr-lista{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}.nm-nr-lista li{display:flex;flex-direction:column;gap:3px}
+.nm-nr-tira{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:2px}.nm-nr-q{display:flex;flex-direction:column;border:1px solid var(--line,#ccc);border-radius:3px;overflow:hidden;min-width:0}
+.nm-nr-q.k{border-color:var(--accent,#d0452f);box-shadow:0 0 0 1px var(--accent,#d0452f)}.nm-nr-q i{font-style:normal;font-size:9px;color:var(--muted);text-align:center;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nm-nr-usar{align-self:flex-start;font-size:11px;padding:2px 8px}.nm-pc-mig button.sel{font-weight:700;text-decoration:underline}
+/* janela Projetos na nuvem */
+.pj-dlg{width:min(720px,94vw);max-height:86vh;border:1px solid var(--line,#ccc);border-radius:10px;padding:14px 16px;background:var(--panel,#fff);color:var(--ink,#222)}
+.pj-dlg::backdrop{background:rgba(0,0,0,.35)}.pj-cab{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px}.pj-cab h3{margin:0;font-size:16px}.pj-cab button{border:0;background:none;font-size:20px;cursor:pointer;color:inherit}
+.pj-linha{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0;align-items:end}.pj-linha label{display:flex;flex-direction:column;gap:2px;font-size:12px;flex:1 1 200px}.pj-linha input,.pj-linha select{flex:1 1 200px;min-width:0;padding:5px 7px}
+.pj-estado{font-size:12px;color:var(--muted);min-height:1.2em}.pj-estado.err{color:#c0392b}.pj-lista{list-style:none;padding:0;margin:6px 0;max-height:40vh;overflow:auto;border-top:1px solid var(--line,#ddd)}
+.pj-lista>li{padding:6px 2px;border-bottom:1px solid var(--line,#eee);display:flex;flex-wrap:wrap;gap:6px;align-items:center}.pj-lista>li>span{margin-left:auto;display:flex;gap:4px}.pj-lista small{color:var(--muted)}
+.pj-versoes{flex-basis:100%;margin:4px 0 0 18px;font-size:12px}.pj-sb summary{cursor:pointer;font-weight:600;margin-top:6px}.pj-sql{max-height:160px;overflow:auto;font-size:11px;background:var(--paper,#f6f6f6);padding:6px;border-radius:6px;white-space:pre}
+.pj-linha label input{flex:none;width:100%;box-sizing:border-box}
+.pj-res{max-height:42vh;overflow:auto;font-size:13px}.pj-res ul{margin:4px 0 8px 18px;padding:0}

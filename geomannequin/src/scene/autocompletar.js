@@ -7,6 +7,7 @@
      pré-configurações: "preset " e depois "." desce na árvore (dialogo. → dois. → frente. → ombro-a-dir)
    As miniaturas de câmera, gente, animais e presets são DESENHOS DE VERDADE (um quadro pequeno compilado e renderizado, com cache);
    movimentos, curvas, transições, ritmo e página são diagramas. */
+import { localPronto } from "./locais-prontos.js";
 import { PD_AC_EXTRA, PD_AC_ANTES, PD_MINI_EXTRA, pdNorm } from "./pose-dsl.js";
 import { EXPRESSOES } from "./poses.js";
 import { INTERACOES } from "./interacoes.js";
@@ -61,6 +62,7 @@ function acTexto(m) {
     case "ramo": { const d = pcAchar(m.exemplo); return d ? pcDemoTexto(d) : ""; }
     case "narrativa": return NR.has(m.v) ? nrDemoTexto(m.v) : "";
     case "nramo": return NR.has(m.exemplo) ? nrDemoTexto(m.exemplo) : "";
+    case "localpronto": { try { const L = localPronto(m.v); return L.codigo + "elenco\n  Kai\nquadro 1 local \"" + L.nome + "\" geral angulo plongee\n  Kai em (0,0)\n"; } catch (e) { return ""; } }
     case "golpe": { const g = listaGolpes().find(x => x.nome === m.v); return g ? AC_EL1 + "quadro 1 inteiro alvo Kai lado 3/4\n  Kai em (0,0) segura " + g.teste + " como " + g.nome + "\n" : ""; }
   } return ""; }
 /* ===== miniaturas prontas (atlas gerados por ferramentas/miniaturas.mjs): instantâneas; sem atlas, desenha na hora ===== */
