@@ -797,6 +797,7 @@ ${EXEMPLO_FILME}
   Todas têm OSSOS ("Rex ossos"): crânio, vértebras, costelas, cintura e ossos das patas/asas/nadadeiras.
   Poses de criatura (${Object.keys(CR_POSES).length}): ${Object.keys(CR_POSES).join(", ")}.
   Verbos no filme: ${Object.keys(CR_VERBOS).join(", ")} — com "por 3s" ou "por 5m" nos que repetem (nada, rasteja, anda, corre, voa, plana, serpenteia, boia). Ex.: "0s Smaug decola" · "2s Smaug cospe-fogo" + "2s efeito chama em Smaug.boca para Kai".
+  Criaturas NÃO aceitam "para X" nos verbos (isso é dos quadrúpedes, capítulo 22): use "gira" antes, ou "Rex anda-ate (5,0)".
   Andar até um ponto: "Rex anda-ate (5,0)" — a criatura vira e usa o ciclo do seu plano (peixe nada, cobra serpenteia, lagarto rasteja, aranha anda em tripé).
   O ritmo e a passada saem do tamanho: um lagarto ×100 anda devagar com passos enormes; uma formiga dá passinhos rápidos. "nada" deixa o corpo um pouco acima do chão (o fundo); a superfície da água não muda a altura da criatura.
   Câmera "segue X" chega mais perto de criatura pequena e se afasta da grande.
@@ -843,6 +844,7 @@ ${EXEMPLO_FILME}
   Kai monta Rex [escala N] — se o animal for pequeno demais (altura do lombo, comprimento ou largura), ele CRESCE sozinho até caber uma pessoa e aparece o aviso
   "Rex aumentado para escala N para dar montaria". "escala N" escolhe o tamanho (erro se ainda for pequeno). Kai desmonta / apeia.
   A postura do cavaleiro muda com o animal: ereto no cavalo, deitado para a frente no dragão, nos peixes e golfinhos, pernas bem abertas no crocodilo, ajoelhado no polvo.
+  Onde está o cavaleiro antes não importa: "monta" põe a pessoa na sela (o animal cresce no lugar dele; afaste os outros se for crescer muito).
   E com a VELOCIDADE: parado → passo → galope/nado/voo o corpo inclina mais e balança no ritmo do animal. Asas abrem para o lado quando há cavaleiro.
   No filme: "0s Rex rasteja por 4s" ou "0s Trovao galopa 20m" — o cavaleiro vai junto, no ritmo. MCP: catalogo categoria montaria.
 
@@ -855,6 +857,8 @@ ${EXEMPLO_FILME}
   DUELO PRONTO: [T] Kai duelo-varinha Mira [rodadas N] [feitico fogo] [com espada] · duelo-espada
     No filme, um lance por segundo a partir de T: saudação → en garde → estocada × quarta → resposta × sexta → corte × quinta → flecha × recuo → finta → estocada longa × passata sotto →
     inquartata → remessa → batida → corte diagonal × prima → vitória × salto para trás. Num quadro parado mostra o lance "estocada × quarta". Os dois se viram um para o outro.
+    QUEM ESCREVE A LINHA VENCE: "Mira duelo-varinha Kai" → Mira faz a vitória e Kai o salto para trás. "rodadas N" usa só os N primeiros lances (o duelo dura N segundos; sem rodadas: 13 s).
+    A saudação já está nos lances; não precisa de pose de reverência antes. Cada feitiço aparece no seu lance e some em menos de 1 s.
 
 40. ARTES MARCIAIS (poses e animações)
   Shaolin — bases: amMabu (cavalo), amGongbu (arco), amPubu, amXiebu, amXubu, amSaudacaoKungFu · cinco animais: amTigreGarra/Ataque/Defesa, amGarcaAsas/Bico/UmPe, amSerpenteBote/Baixa/Enrola,
@@ -873,6 +877,7 @@ ${EXEMPLO_FILME}
   BORRÃO: efeito borrao_movimento em Kai [copias 6] [comprimento 2] — o corpo arrastado para trás em cópias translúcidas. Também: velocidade_corpo, pos_imagem (fantasmas), rastro_membro, arco_movimento.
   PROJÉTIL ESTICADO: efeito projetil de Kai.maoDir para Mira estica 2 (a cabeça do projétil se alonga na direção do voo).
   PARÂMETROS DE QUALQUER EFEITO pelo nome, no texto: "efeito onda_choque em Kai aneis 6 raio 10" — os nomes estão no catálogo de efeitos (site: painel Efeitos; MCP: efeitos acao catalogo).
+  No filme, com tempo: "1s efeito impulso em Kai dash 1" (aparece na hora). O efeito escrito SOMA aos automáticos.
   AUTOMÁTICOS: no cabeçalho do filme "filme "X" fps 12 efeitos auto" — cada animação ganha os efeitos sozinha:
     pulo/salto/mortal/chute voador → impulso branco na decolagem, impulso + poeira no pouso, linhas de velocidade · pouso/queda → impulso, poeira e onda no chão ·
     corrida/arrancada/investida/flecha → impulso esticado para trás, linhas de velocidade, borrão e poeira · golpe (soco, chute, corte, estocada…) → borrão curto e anéis de impacto.
@@ -883,6 +888,8 @@ ${EXEMPLO_FILME}
   node mcp/gm.mjs texto historia.txt --png q1.png --quadro 1 · node mcp/gm.mjs texto filme.txt --mp4 filme.mp4 --fps 12
   node mcp/gm.mjs roteiro passos.json (várias ferramentas em sequência na mesma cena). Imagens, vídeos e arquivos devolvidos são salvos na pasta (--saida).
   CÂMERA PARADA NUM PONTO (filme e quadro): camera (x,altura,z) olhando (x,altura,z) · camera (8,2,2) olhando Kai — em metros; "2s camera (…) olhando …" corta para ela aos 2 s.
+    É o mesmo que "camera fixa em (x,y,z) olha Kai" (capítulo 16), escrito mais curto.
+  TIRAR ALGUÉM DO PLANO: "Kai sai" (no filme vale do começo do plano; "3s Kai sai" some aos 3 s).
 
 43. FORMAS DE SEGURAR (cada objeto tem várias, testadas)
   Cada objeto que dá para segurar tem uma lista de formas que FUNCIONAM (testadas uma a uma: a mão alcança, os dedos ficam fora do objeto, nada atravessa o tronco,
