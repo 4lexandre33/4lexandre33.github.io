@@ -980,4 +980,64 @@ cena "Praça" local "Praça" hora tarde
     animal selecionado: partes do bicho — pescoço, cabeça, cauda, patas, asas, boca) e Objetos (catálogo por categoria; escolha e clique na planta ou no palco).
   Botão direito no palco: "Colocar aqui" com busca (pessoas, animais, monstros, objetos por categoria, veículos, portas, cenários, efeitos).
   F = modo foco (só o palco) · ? = cartão de atalhos · Ctrl+Z desfaz qualquer mudança.
+
+56. PACOTES DE CENAS (sprite sheets) → CÉLULAS → QUADROS
+  Um pacote é um .zip (ou várias imagens). Cada imagem é uma FOLHA com várias cenas em grade. A grade é achada pelas faixas de fundo (branco, ou a cor
+    de fundo da folha): 1x1, 2x2, 3x3, 3x5, irregular (3+2 = 3 na primeira linha, 2 na segunda). Grade escrita como COLUNAS x LINHAS.
+  Cada célula vira uma cena com nome próprio: pacote-folha-célula (ex.: acao-noturna-02-05 = pacote "Ação Noturna", folha 2, célula 5; leitura
+    ocidental numera da esquerda; japonesa da direita). Grade errada (faixa branca dentro da cena)? force: grade 3x3.
+  FICHA de cada célula (a IA olha a imagem e preenche; ou à mão): funcao (perseguicao, fuga, luta, confronto, esconderijo, descanso, interacao, reuniao,
+    romance, emocao, comedia, investigacao, revelacao, viagem, treino, refeicao, trabalho, cotidiano, vitoria, derrota, resgate, poder, estabelecimento,
+    transicao, detalhe — pode ter mais de uma), acao, pessoas, plano (geral, conjunto, inteiro, americano, medio, primeiro, close, detalhe), angulo, clima,
+    lugar, interno, hora, intensidade 1–5, movimento, personagens, tags, descricao e rostos [{u,v,r}] (onde estão os rostos, 0..1, para os balões).
+  BUSCA em texto livre: "perseguição 2 pessoas noite" · "luta close tenso" · "descanso sozinho" · "grupo" (3+) · "pacote acao" · "-chuva" exclui ·
+    "nao classificadas" (sem ficha).
+  NO TEXTO: quadro 3 celula acao-noturna-02-05            (por id)
+            quadro 3 celula "perseguição 2 pessoas"       (a melhor célula da busca; o mesmo texto não repete célula)
+            celulas perseguição, luta 2 pessoas, descanso  (linha solta: vira um quadro por item, na ordem)
+    Opções do quadro de célula: recorte caber (mostra a célula inteira, com faixa branca) | recorte cheio (padrão: preenche e corta as sobras).
+    Balões na célula: fala esquerda "Corre!" · grita direita "BOOM" · pensa centro "…" · fala (0.3,0.4) "Ei" · fala rosto1 "…" (rosto marcado na ficha) ·
+      narra "Mais tarde…". Personagens do elenco não falam numa célula (ela é uma imagem pronta).
+  PAINÉIS não retangulares (valem para qualquer quadro, de célula ou de manequins), no cabeçalho do quadro:
+    borda triangulo [cima|baixo|esquerda|direita|sup-esq|sup-dir|inf-esq|inf-dir] · borda losango · borda trapezio [baixo] · borda circulo ·
+    borda explosao · borda poligono "0,0 1,0.1 0.9,1 0,0.9" (pontos 0..1 dentro da célula da página) · borda diagonal [graus] · sem-borda · borda grossa.
+    junto = este quadro DIVIDE a célula do anterior (divisória inclinada; se o anterior for "borda triangulo …", a diagonal vai de canto a canto:
+      o par clássico de triângulos do mangá). Três ou mais "junto" seguidos = faixas inclinadas.
+  Site: janela Pacotes (tecla P): Importar (solte o .zip, confira a grade em vermelho, Cortar e guardar) · Catálogo (miniaturas, busca, ficha,
+    Classificar com IA, guardar no navegador / nuvem do artefato / Supabase, exportar JSON) · Montar páginas (ordem, painel de cada uma → Name).
+  MCP: celulas_importar (zip_base64, caminho ou imagens; grade/grades; leitura) → celulas_ver (a IA vê até 12 por vez) → celulas_classificar (fichas) →
+    celulas_buscar (com miniaturas) → paginas_hq / webtoon com "quadro celula …". celulas_catalogo: pacotes, listar, estatisticas, miniaturas,
+    exportar, importar, apagar, vocabulario. No MCP local o catálogo fica em ~/.geomannequin/celulas (GM_CELULAS muda a pasta).
+
+57. CENA EM LOTE: ESPALHAR, GRUPOS, APAGAR, DUPLICAR
+  espalha 8 pessoas em area (0,0) (6,4) [olhando (3,2) | olhando centro | olhando aleatorio | olhando Kai | gira 90]
+          [pose correndo | pose aleatoria | pose aleatoria-de Conversa | pose aleatoria-de Combate/Guarda] [distancia 1] [semente 3] [nome Guarda] [expressao alegria]
+  espalha 4 animal lobo em area (-6,0) (-2,4) olhando (0,0) [monstro] · espalha 6 objeto cadeira em area (0,6) (4,8) · espalha 3 efeito fumaca em area (…) (…)
+    Cada um ganha nome (Pessoa1, Guarda2, Lobo3…) e fica editável. Área pequena demais: a distância mínima diminui e há aviso.
+  grupo Kai, Mira, Zed pose aleatoria-de Conversa [semente 2] · grupo Kai, Mira pose guardaBoxe · grupo Kai, Mira olha (2,3) | olha centro | olha Zed
+  grupo Kai, Mira gira 45 · grupo Kai, Mira move (1,0) (desloca em metros) · grupo Kai, Mira, Zed alinha fila|grade|circulo|arco em (0,0) [espaco 1.2] [olhando (0,5)]
+    (objetos também entram no grupo: mudam de lugar e de giro.) Categorias de pose: Combate, Conversa, Cotidiano, Movimento, Emoção, Narrativa,
+    Montaria, Escala, Comédia, Referência (e subcategorias: Combate/Guarda, Movimento/Pulo…).
+  Só no palco (barra de comando, MCP linha_no_palco): apaga Kai, Mesa · duplica Kai [em (3,3)] (a cópia vira Kai2).
+  No Name, "espalha" e "grupo" valem dentro de um quadro (os nomes novos entram no elenco sozinhos); para figurantes sem nome use "povo".
+
+58. MONTAR COM O MOUSE: PALCO, PLANTA (TABULEIRO), ÁREA, SETA, CÂMERA
+  Palco: arrastar no vazio gira a vista · Shift/botão do meio desloca · rodinha aproxima (Alt+rodinha = zoom da lente) · clique escolhe pessoa OU objeto
+    (Shift/Ctrl+clique soma) · arrastar um objeto move no chão (o grupo todo, se houver vários escolhidos) · botão direito em alguém: Orientar (seta),
+    Olhar para cá, Pose…, Pose aleatória de uma categoria…, Olhar para uma pessoa, Alinhar fila/círculo/grade/arco, Virar 180°, Duplicar, Apagar ·
+    botão direito no vazio: levar os escolhidos para cá, virar para cá, câmera olha para cá, colocar algo aqui.
+  Planta (Inspetor → Posição): grade de tabuleiro (0,5 a 10 m) · clique escolhe · arrastar alguém move (o grupo todo) · arrastar no vazio = seleção por
+    CAIXA; sem ninguém dentro marca uma ÁREA (laranja) → botão direito dentro: Gerar (o quê, quantos, olhando para onde, pose fixa/aleatória/de uma
+    categoria, distância, variação) — o texto "espalha …" aparece embaixo · ícone da câmera: arraste (lugar) e o ponto (para onde olha) ·
+    Alt+arrastar desloca · rodinha aproxima · setas movem os escolhidos (Shift = 5 casas) · Delete apaga · O orienta com a seta · Esc solta tudo.
+  Orientar com a seta (tecla O ou menu): clique e arraste até o ponto, na planta ou no palco; pessoas, objetos, animais e a câmera.
+  Cada ação de mouse escreve a linha equivalente no histórico da barra de comando (para aprender o texto fazendo).
+
+59. APRENDER (tutorial interativo) E O QUE CADA IA PODE FAZER
+  Site: botão Aprender (F1). 11 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
+    pacotes de cenas, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
+    pedem para você repetir. Ao sair, dá para voltar à cena de antes.
+  MCP (Claude, ChatGPT, Gemini) e linha de comando (node mcp/gm.mjs <ferramenta> …): linha_no_palco (qualquer linha deste manual, incluindo espalha,
+    grupo, apaga, duplica), celulas_* (pacotes), miniaturas (folha de contato de poses por categoria, animações ou células), paginas_hq, webtoon,
+    gerar_name, filme, catalogo e as demais.
 ```

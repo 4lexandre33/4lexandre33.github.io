@@ -1,0 +1,112 @@
+/* GeoMannequin — APRENDER: tutorial interativo de todas as ferramentas (F1 ou botão "Aprender").
+   Cada passo mostra ONDE (anel em volta do botão/área), explica, e pode ser FEITO SOZINHO na tela: um cursor-fantasma vai até o lugar,
+   clica, arrasta, digita, e a cena muda de verdade. Depois o usuário repete ("Agora você": o passo espera a ação acontecer).
+   Capítulos: palco, comando, inspetor, planta e grupos, área aleatória, poses e juntas, efeitos, veículos e sentar, Name e páginas,
+   pacotes de cenas, filme, nuvem e MCP. A cena de antes volta ao sair (se quiser). Progresso guardado no navegador. */
+import { SCN } from "../scene/modelo.js";
+import { sceneState, loadScene } from "../scene/estado.js";
+import { CL, clRegistrarPacote, clClassificar } from "../scene/celulas.js";
+import { render } from "./palco.js";
+import { refreshScene } from "./painel-cena.js";
+import { syncControls } from "./controles.js";
+
+const $ = id => document.getElementById(id), el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h !== undefined) e.innerHTML = h; return e; };
+const dorme = ms => new Promise(r => setTimeout(r, ms));
+const TU = { cap: 0, passo: 0, rodando: false, parar: false, salvo: null, feitos: {} };
+const atualizar = () => { try { refreshScene(); } catch (e) { } try { syncControls(); } catch (e) { } render(); };
+/* lazy: a oficina importa este módulo e este usa a oficina (sem ciclo na carga) */
+let OF = null; const of = async () => OF || (OF = await import("./oficina.js"));
+
+/* ===== cursor-fantasma, anel e ações ===== */
+function fantasma() { let g = $("tuCursor"); if (!g) { g = el("div", "tu-cursor", '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3 2 L3 20 L8 15 L11.5 22 L14.5 20.7 L11 13.8 L18 13.8 Z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>'); g.id = "tuCursor"; document.body.appendChild(g); } return g; }
+function anel(alvo) { let a = $("tuAnel"); if (!a) { a = el("div", "tu-anel"); a.id = "tuAnel"; document.body.appendChild(a); } if (!alvo) { a.hidden = true; return; } const r = alvo.getBoundingClientRect ? alvo.getBoundingClientRect() : alvo; a.hidden = false; Object.assign(a.style, { left: r.left - 6 + "px", top: r.top - 6 + "px", width: r.width + 12 + "px", height: r.height + 12 + "px" }); }
+const centro = e => { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+const ach = s => typeof s === "function" ? s() : typeof s === "string" ? document.querySelector(s) : s;
+async function vai(p, ms = 550) { const g = fantasma(); g.hidden = false; const x0 = parseFloat(g.style.left) || innerWidth / 2, y0 = parseFloat(g.style.top) || innerHeight / 2, n = Math.max(8, Math.round(ms / 16));
+  for (let i = 1; i <= n; i++) { if (TU.parar) throw new Error("parado"); const u = i / n, k = u * u * (3 - 2 * u); g.style.left = x0 + (p[0] - x0) * k + "px"; g.style.top = y0 + (p[1] - y0) * k + "px"; await dorme(16); } }
+function ev(tipo, alvo, p, extra = {}) { const o = Object.assign({ bubbles: true, cancelable: true, clientX: p[0], clientY: p[1], button: 0, buttons: tipo === "pointerup" ? 0 : 1, pointerId: 77, pointerType: "mouse", isPrimary: true, view: window }, extra);
+  const E = /^pointer/.test(tipo) ? PointerEvent : /^(mouse|click|contextmenu)/.test(tipo) ? MouseEvent : /^wheel/.test(tipo) ? WheelEvent : Event; alvo.dispatchEvent(new E(tipo, o)); }
+async function clica(sel, extra) { const e = ach(sel); if (!e) return false; e.scrollIntoView({ block: "nearest", inline: "nearest" }); anel(e); await vai(centro(e)); fantasma().classList.add("on"); await dorme(120); fantasma().classList.remove("on"); const [cx0, cy0] = centro(e); if (typeof e.click === "function") e.click(); else { ev("pointerdown", e, [cx0, cy0]); ev("pointerup", e, [cx0, cy0]); e.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX: cx0, clientY: cy0 })); } await dorme(250); return true; }
+async function botaoDireito(sel, p) { const e = ach(sel); if (!e) return; const q = p || centro(e); await vai(q); ev("contextmenu", e, q, { button: 2, buttons: 2 }); await dorme(500); }
+async function arrasta(sel, de, ate, o = {}) { const e = ach(sel); if (!e) return; await vai(de); ev("pointerdown", e, de, o); const n = o.passos || 24; for (let i = 1; i <= n; i++) { if (TU.parar) break; const p = [de[0] + (ate[0] - de[0]) * i / n, de[1] + (ate[1] - de[1]) * i / n]; ev("pointermove", e, p, o); const g = fantasma(); g.style.left = p[0] + "px"; g.style.top = p[1] + "px"; await dorme(o.ms || 22); } ev("pointerup", e, ate, o); await dorme(300); }
+async function digita(sel, texto, enter = true) { const e = ach(sel); if (!e) return; anel(e); await vai(centro(e)); e.focus(); e.value = ""; for (const ch of texto) { if (TU.parar) break; e.value += ch; e.dispatchEvent(new Event("input", { bubbles: true })); await dorme(24); } if (enter) { await dorme(250); e.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })); } await dorme(400); }
+async function comando(l) { const O = await of(); O.abrirBarra(true); await dorme(200); await digita("#ofCmd", l); }
+const noPalco = (u, v) => { const r = $("svg").getBoundingClientRect(); return [r.left + r.width * u, r.top + r.height * v]; };
+const naPlanta = (u, v) => { const r = $("ofPlanta").getBoundingClientRect(); return [r.left + r.width * u, r.top + r.height * v]; };
+async function inspetor(aba) { const O = await of(); O.abrirInspetor(true, aba); if (aba) O.abrirAba(aba); await dorme(300); }
+/* folha de demonstração (3x3) desenhada aqui mesmo, para o capítulo de pacotes */
+function folhaDemo() { const c = document.createElement("canvas"); c.width = 600; c.height = 600; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, 600, 600); const cores = ["#d94f4f", "#4f7fd9", "#4fb37a", "#d9a64f", "#9a5fd9", "#4fc2c2", "#d95fa8", "#7a8a4f", "#5f6fd9"], rot = ["corre", "luta", "esconde", "dorme", "conversa", "reunião", "foge", "treina", "come"];
+  for (let i = 0; i < 9; i++) { const cx = 16 + (i % 3) * 195, cy = 16 + Math.floor(i / 3) * 195; x.fillStyle = "#f4f1ea"; x.fillRect(cx, cy, 180, 180); x.strokeStyle = "#111"; x.lineWidth = 4; x.strokeRect(cx, cy, 180, 180); x.fillStyle = cores[i];
+    for (let k = 0; k < (i % 3) + 1; k++) { const px = cx + 50 + k * 40, py = cy + 70; x.beginPath(); x.arc(px, py, 14, 0, 7); x.fill(); x.fillRect(px - 10, py + 16, 20, 50); } x.fillStyle = "#111"; x.font = "bold 20px system-ui"; x.fillText(rot[i], cx + 12, cy + 168); }
+  return new Promise(ok => c.toBlob(b => ok(new File([b], "demo-tutorial.png", { type: "image/png" })), "image/png")); }
+
+/* ===== capítulos ===== */
+const CAP = [
+  { t: "Palco: olhar, aproximar e escolher", p: [
+    { alvo: "#svg", txt: "Este é o PALCO. Arraste no vazio para girar a vista; a rodinha aproxima; Shift+arrastar (ou o botão do meio) desloca.", demo: async () => { await arrasta("#stage", noPalco(0.25, 0.85), noPalco(0.55, 0.8)); await arrasta("#stage", noPalco(0.55, 0.8), noPalco(0.3, 0.86)); } },
+    { alvo: "#svg", txt: "Clique numa pessoa para escolher. Clique num objeto (mesa, carro…) para escolher e arraste para mover no chão. Shift/Ctrl+clique soma à seleção.", demo: async () => { await comando('objeto mesa "Mesa" em (1.5,0)'); await clica(() => $("svg")); } },
+    { alvo: "#svg", txt: "Botão direito no vazio do palco: COLOCAR algo ali (pessoa, animal, objeto, veículo, porta, cenário, efeito), ou mandar a câmera olhar para lá.", demo: async () => { await botaoDireito("#stage", noPalco(0.7, 0.86)); await dorme(1600); (await of()).fecharMenu(); } },
+    { alvo: "#svg", txt: "Botão direito EM CIMA de alguém: pose, orientar com a seta, olhar para uma pessoa, virar, duplicar, apagar; com vários escolhidos, alinhar em fila, círculo ou grade.", demo: async () => { await botaoDireito("#stage", noPalco(0.5, 0.45)); await dorme(1800); (await of()).fecharMenu(); } } ] },
+  { t: "Barra de comando", p: [
+    { alvo: "#ofBtnCmd", txt: "A BARRA DE COMANDO (tecla / ou Ctrl+K) muda a cena com uma linha de texto — a mesma linguagem do Name, do MCP e da linha de comando.", demo: async () => { await clica("#ofBtnCmd"); } },
+    { alvo: "#ofCmd", txt: "Exemplo: “Kai em (2,0) pose correndo”. Quem não existe entra sozinho. ↑/↓ volta no histórico; Tab completa.", demo: async () => { await comando("Kai em (2,0) pose correndo"); } },
+    { alvo: "#ofCmd", txt: "Mais exemplos: “Mira em (-1,1) vira-para Kai”, “Kai gira 90”, “Mira pose acenando”.", demo: async () => { await comando("Mira em (-1,1) vira-para Kai"); await comando("Mira pose acenando"); }, voce: { txt: "Agora você: escreva “Kai gira 180” e aperte Enter.", ok: () => SCN.list.some(x => x.name === "Kai" && Math.abs(Math.abs(x.params.wRot || 0) - 180) < 1) } } ] },
+  { t: "Inspetor: posição, orientação, pose, objetos", p: [
+    { alvo: "#ofBtnInsp", txt: "O INSPETOR (tecla I) junta tudo em abas: Posição (planta com grade), Orientação (disco), Pose (biblioteca + articulações) e Objetos.", demo: async () => { await clica("#ofBtnInsp"); } },
+    { alvo: "#ofPlanta", txt: "PLANTA vista de cima, com grade de tabuleiro. Clique numa pessoa para escolher; arraste para mover; clique numa célula vazia leva o escolhido até lá.", demo: async () => { await inspetor("posicao"); const O = await of(); O.desenharPlanta(); await clica(() => $("ofPlanta")); } },
+    { alvo: "#ofGrade", txt: "O tamanho da grade (0,5 m a 10 m) define o “encaixe”. A rodinha aproxima a planta; Alt+arrastar desloca.", demo: async () => { await clica("#ofGrade"); } },
+    { alvo: "#ofDisco", txt: "ORIENTAÇÃO: clique ou arraste no disco para girar quem está escolhido; setas giram 5° (Shift 45°).", demo: async () => { await inspetor("orientacao"); const d = $("ofDisco"); if (d) { const r = d.getBoundingClientRect(); await arrasta(d, [r.left + r.width / 2, r.top + 20], [r.right - 20, r.top + r.height / 2]); } } },
+    { alvo: "#ofPoseBusca", txt: "POSE: procure (corre, senta, soco…) e clique. Nas vistas do esqueleto, clique numa articulação e ajuste com as setas ou a RODINHA do mouse — para no limite anatômico.", demo: async () => { await inspetor("pose"); await digita("#ofPoseBusca", "guarda", false); } },
+    { alvo: "#ofObjBusca", txt: "OBJETOS por categoria: escolha e clique na planta ou no palco para pôr (Ctrl+clique põe vários).", demo: async () => { await inspetor("objetos"); await digita("#ofObjBusca", "cadeira", false); } } ] },
+  { t: "Planta: grupos, seta de orientação e câmera", p: [
+    { alvo: "#ofPlanta", txt: "Arraste no VAZIO da planta para selecionar por CAIXA. Depois arraste um dos escolhidos: todos andam juntos.", demo: async () => { await comando("espalha 4 pessoas em area (-3,-3) (-1,-1) semente 4"); await inspetor("posicao"); await arrasta("#ofPlanta", naPlanta(0.05, 0.95), naPlanta(0.55, 0.45)); } },
+    { alvo: "#ofPlanta", txt: "ORIENTAR com a seta: botão direito num escolhido → “Orientar (arraste a seta)” (ou tecla O) e arraste até o ponto. Vale para pessoas, objetos e a câmera.", demo: async () => { const O = await of(); O.orientarModo([...O.OF_ESTADO.sel]); await arrasta("#ofPlanta", naPlanta(0.5, 0.5), naPlanta(0.85, 0.2)); } },
+    { alvo: "#ofPlanta", txt: "A CÂMERA também está na planta: arraste o ícone para mudar o lugar dela, e o pontinho para mudar para onde olha.", demo: async () => { const O = await of(); O.desenharPlanta(); } } ] },
+  { t: "Área: gerar aleatório", p: [
+    { alvo: "#ofPlanta", txt: "Arraste no vazio, sem ninguém dentro: vira uma ÁREA (tracejado laranja). Botão direito dentro dela abre “Gerar”: o quê, quantos, para onde olham e qual pose (fixa, aleatória ou aleatória de uma categoria).", demo: async () => { await inspetor("posicao"); const O = await of(); O.OF_ESTADO.sel = new Set(); await arrasta("#ofPlanta", naPlanta(0.62, 0.62), naPlanta(0.95, 0.95)); await botaoDireito("#ofPlanta", naPlanta(0.8, 0.8)); await dorme(1200); } },
+    { alvo: ".of-menu", txt: "O texto equivalente aparece embaixo (“espalha 6 pessoas em area … pose aleatoria-de Conversa”) — dá para usar na barra, no Name e no MCP.", demo: async () => { const b = document.querySelector("#ofMenu .primary"); if (b) await clica(b); } } ] },
+  { t: "Efeitos especiais", p: [
+    { alvo: "#ofCmd", txt: "Efeitos por linha: “efeito feixe de Kai para Mira” sai da mão que está à frente. Outros: explosao, aura, raio_cadeia, rugido, teia…", demo: async () => { await comando("Kai pose amKarateGyakuZuki"); await comando("efeito feixe de Kai para Mira"); } },
+    { alvo: "#fxBtn", txt: "O painel EFEITOS (abaixo do palco) lista o catálogo, com nível 1–5, cor e posição.", demo: async () => { anel($("fxBtn")); await vai(centro($("fxBtn"))); } } ] },
+  { t: "Veículos, sentar e montar", p: [
+    { alvo: "#ofCmd", txt: "Veículos são ocos e as pessoas entram de verdade: “objeto carro \"Fusca\" em (4,2)” e “Kai embarca Fusca assento motorista”.", demo: async () => { await comando('objeto carro "Fusca" em (4,2)'); await comando("Kai embarca Fusca assento motorista"); } },
+    { alvo: "#ofCmd", txt: "Sentar numa cadeira, banco ou cama: “objeto cadeira \"C\" em (-2,2)” e “Mira senta-em C”. Animais: “Lua animal cavalo em (0,3)” e “Mira monta Lua”.", demo: async () => { await comando('objeto cadeira "C" em (-2,2)'); await comando("Mira senta-em C"); } } ] },
+  { t: "Name: quadros e páginas", p: [
+    { alvo: "#nameBtn", txt: "O NAME é o roteiro em texto: elenco, locais e quadros. Ele gera as fichas para a IA de imagem, páginas de mangá/comic (PNG, PDF, CBZ) e webtoon.", demo: async () => { await clica("#nameBtn"); } },
+    { alvo: "#nameBtn", txt: "Painéis podem ser triângulo, losango, trapézio, círculo, explosão ou polígono livre (“quadro 3 borda triangulo sup-esq”); “junto” divide a célula com o quadro anterior (a diagonal clássica do mangá).", demo: async () => { const { inserirNoName } = await import("./name.js"); inserirNoName("elenco\n  Kai\n  Mira\npagina formato manga\nquadro 1 plano inteiro\n  Kai em (0,0) pose correndo\nquadro 2 borda triangulo sup-esq\n  Mira em (0,0) pose acenando\n  Mira fala \"Espera!\"\nquadro 3 junto\n  Kai em (0,0) pose guardaBoxe\n", true); await dorme(600); } } ] },
+  { t: "Pacotes de cenas (sprite sheets)", p: [
+    { alvo: "#ofBtnPac", txt: "PACOTES (tecla P): solte um .zip com folhas de cenas. Cada folha é cortada pela grade de branco (3x3, 2x2, 1x1, 3x5…) e cada célula ganha um nome: pacote-folha-célula.", demo: async () => { await clica("#ofBtnPac"); } },
+    { alvo: "#pkSolta", txt: "Vou soltar uma folha de exemplo 3x3: a grade aparece em vermelho, numerada. Se errar, escreva a grade certa (ex.: 3x3) e “Refazer”.", demo: async () => { const P = await import("./pacotes.js"); P.abrirPacotes(true); document.querySelector('#pkJan [data-pk="importar"]').click(); $("pkNome").value = "tutorial"; anel($("pkSolta")); await vai(centro($("pkSolta"))); await P.receberPacote([await folhaDemo()]); await dorme(800); } },
+    { alvo: "#pkCortar", txt: "“Cortar e guardar”: as 9 células vão para o Catálogo, guardadas no navegador (e na nuvem, se quiser).", demo: async () => { await clica("#pkCortar"); await dorme(900); } },
+    { alvo: "#pkGrade", txt: "No CATÁLOGO cada célula tem uma ficha: função narrativa (perseguição, luta, esconderijo, descanso, interação, reunião…), ação, pessoas, plano, clima. “Classificar com IA” deixa o Claude olhar e preencher; ou preencha à mão.", demo: async () => { const ids = Object.keys(CL.itens).filter(i => i.startsWith("tutorial-")); const f = [["perseguicao", "corre"], ["luta", "luta"], ["esconderijo", "esconde"], ["descanso", "dorme"], ["interacao", "conversa"], ["reuniao", "reunião"], ["fuga", "foge"], ["treino", "treina"], ["refeicao", "come"]]; ids.forEach((id, i) => { if (f[i]) clClassificar(id, { funcao: f[i][0], acao: f[i][1], pessoas: (i % 3) + 1 }, "tutorial"); }); const c = document.querySelector(".pk-cel"); if (c) await clica(c); } },
+    { alvo: "#pkBusca", txt: "Busca em texto livre: “luta 2 pessoas”, “descanso sozinho”, “-noite” exclui.", demo: async () => { await digita("#pkBusca", "luta 2 pessoas", false); } },
+    { alvo: "#pkTexto", txt: "MONTAR: escolha as células e o tipo de painel, e mande para o Name. No texto: “quadro celula tutorial-01-02” ou “celulas perseguição, luta, descanso” (vira uma sequência de quadros).", demo: async () => { const P = await import("./pacotes.js"); P.PK_ESTADO.sel = Object.keys(CL.itens).filter(i => i.startsWith("tutorial-")).slice(0, 4); P.PK_ESTADO.painel[P.PK_ESTADO.sel[1]] = "triangulo sup-esq"; P.PK_ESTADO.painel[P.PK_ESTADO.sel[2]] = "junto"; document.querySelector('#pkJan [data-pk="montar"]').click(); await dorme(800); } } ] },
+  { t: "Filme e animação", p: [
+    { alvo: "#animBtn", txt: "ANIMAÇÃO e FILME: no Name, “filme → cena → plano” com tempo (“0s Kai anima correndo”, “camera segue Kai”). Exporta MP4 por plano ou inteiro.", demo: async () => { anel($("animBtn")); await vai(centro($("animBtn"))); } } ] },
+  { t: "Nuvem, projetos e IA (MCP)", p: [
+    { alvo: "#ofBtnPac", txt: "Tudo isto existe também para as IAs (Claude, ChatGPT, Gemini) pelo servidor MCP: linha_no_palco (qualquer linha da barra), celulas_importar / celulas_ver / celulas_classificar / celulas_buscar, paginas_hq, webtoon, filme… e pela linha de comando (gm).", demo: async () => { anel($("ofBtnPac")); } },
+    { alvo: "#ofBtnAtalhos", txt: "Atalhos (tecla ?) mostra todos os atalhos. F1 abre este tutorial de novo, em qualquer capítulo.", demo: async () => { await clica("#ofBtnAtalhos"); await dorme(1500); const a = $("ofAtalhos"); if (a) a.remove(); } } ] }
+];
+
+/* ===== painel do tutorial ===== */
+function painel() { let p = $("tuPainel"); if (p) return p; p = el("div", "tu-painel"); p.id = "tuPainel"; p.setAttribute("role", "dialog"); p.setAttribute("aria-label", "Aprender");
+  p.innerHTML = '<div class="tu-cab"><select id="tuCap" aria-label="Capítulo"></select><button type="button" id="tuSair" aria-label="Sair do tutorial">✕</button></div><p class="tu-n" id="tuN"></p><p class="tu-txt" id="tuTxt" aria-live="polite"></p><p class="tu-voce" id="tuVoce" hidden></p>' +
+    '<div class="tu-bts"><button type="button" id="tuAnt">◀</button><button type="button" class="primary" id="tuFaz">Mostrar fazendo</button><button type="button" id="tuProx">Próximo ▶</button><label class="tu-auto"><input type="checkbox" id="tuAuto"> automático</label></div>';
+  document.body.appendChild(p); const sc = $("tuCap"); sc.innerHTML = CAP.map((c, i) => '<option value="' + i + '">' + (i + 1) + ". " + c.t + (TU.feitos[i] ? " ✓" : "") + "</option>").join("");
+  sc.addEventListener("change", () => ir(+sc.value, 0)); $("tuSair").addEventListener("click", sair); $("tuAnt").addEventListener("click", () => passoRel(-1)); $("tuProx").addEventListener("click", () => passoRel(1)); $("tuFaz").addEventListener("click", () => fazer());
+  $("tuAuto").addEventListener("change", e => { if (e.target.checked) fazer(true); else TU.parar = true; }); return p; }
+function mostrar() { const c = CAP[TU.cap], s = c.p[TU.passo]; $("tuCap").value = TU.cap; $("tuN").textContent = "Capítulo " + (TU.cap + 1) + " de " + CAP.length + " · passo " + (TU.passo + 1) + " de " + c.p.length; $("tuTxt").textContent = s.txt;
+  const v = $("tuVoce"); v.hidden = !s.voce; if (s.voce) v.textContent = s.voce.txt; anel(ach(s.alvo)); try { localStorage.setItem("gm-tutorial", JSON.stringify({ cap: TU.cap, passo: TU.passo, feitos: TU.feitos })); } catch (e) { } }
+function ir(cap, passo) { TU.parar = true; TU.cap = Math.max(0, Math.min(CAP.length - 1, cap)); TU.passo = Math.max(0, Math.min(CAP[TU.cap].p.length - 1, passo)); mostrar(); }
+function passoRel(d) { const c = CAP[TU.cap]; let p = TU.passo + d, k = TU.cap; if (p >= c.p.length) { TU.feitos[k] = true; k++; p = 0; if (k >= CAP.length) { $("tuTxt").textContent = "Pronto! Você viu todas as ferramentas. Volte quando quiser (F1)."; anel(null); return false; } } if (p < 0) { k = Math.max(0, k - 1); p = CAP[k].p.length - 1; } ir(k, p); return true; }
+async function fazer(auto) { if (TU.rodando) return; TU.rodando = true; TU.parar = false; const b = $("tuFaz"); b.disabled = true;
+  try { do { const s = CAP[TU.cap].p[TU.passo]; mostrar(); try { if (s.demo) await s.demo(); } catch (e) { if (e.message !== "parado") $("tuTxt").textContent = s.txt + " (não deu para mostrar: " + e.message + ")"; } atualizar(); anel(ach(s.alvo));
+      if (s.voce && !auto) { const v = $("tuVoce"); v.hidden = false; v.textContent = s.voce.txt + " (esperando…)"; for (let i = 0; i < 1200 && !TU.parar; i++) { if (s.voce.ok()) { v.textContent = "✓ Isso! " + s.voce.txt.replace(/^Agora você: /, ""); break; } await dorme(250); } }
+      if (auto && !TU.parar) { await dorme(2200); if (!passoRel(1)) break; TU.parar = false; } } while (auto && !TU.parar && $("tuAuto").checked); }
+  finally { TU.rodando = false; b.disabled = false; fantasma().hidden = true; } }
+function sair() { TU.parar = true; const p = $("tuPainel"); if (p) p.remove(); anel(null); const g = $("tuCursor"); if (g) g.hidden = true;
+  if (TU.salvo) { const box = el("div", "tu-painel tu-fim"); box.id = "tuFim"; box.innerHTML = "<p>Voltar para a cena que estava antes do tutorial?</p>"; const s = el("button", "primary", "Voltar a minha cena"), n = el("button", "", "Ficar com esta"); s.type = n.type = "button";
+    s.addEventListener("click", () => { loadScene(JSON.parse(TU.salvo)); TU.salvo = null; box.remove(); atualizar(); }); n.addEventListener("click", () => { TU.salvo = null; box.remove(); }); box.append(s, n); document.body.appendChild(box); } }
+export function abrirTutorial(cap) { if ($("tuPainel")) { sair(); return; } try { const g = JSON.parse(localStorage.getItem("gm-tutorial") || "null"); if (g) { TU.cap = g.cap || 0; TU.passo = g.passo || 0; TU.feitos = g.feitos || {}; } } catch (e) { }
+  if (cap !== undefined) { TU.cap = cap; TU.passo = 0; } TU.salvo = JSON.stringify(sceneState()); const f = $("tuFim"); if (f) f.remove(); painel(); mostrar(); }
+export { CAP as TUTORIAL_CAPITULOS, fazer as tutorialFazer, ir as tutorialIr };

@@ -10,6 +10,7 @@
    O roteiro roda sobre a própria cena (mesmo motor e mesmas regras), mas a cena aberta é guardada antes e devolvida
    depois: renderizar não muda o que está no palco. Este módulo não usa a página (roda também no MCP). */
 import { LOG, camera, cena, tema, poseCmd } from "./comandos.js";
+import { clQuadroSvg } from "./celulas.js";
 import { loadScene, sceneState } from "./estado.js";
 import { L } from "./modos.js";
 import { SCN, sceneList, instColors, corObjeto } from "./modelo.js";
@@ -230,6 +231,8 @@ function capturarPasses(list) {
 const PASSES_QUADRO = ["contorno", "openpose", "profundidade", "mascara", "normal", "partes", "canny"];
 function renderizarQuadro(q, opts) {
   opts = opts || {};
+  /* quadro feito de uma CÉLULA do catálogo (cena pronta): a imagem dela; os rostos marcados servem aos balões */
+  if (q && q.celula) return { n: q.n, titulo: q.titulo, formato: q.formato, celula: q.celula.id, svg: clQuadroSvg(q.celula), png: q.celula.img || q.celula.url || undefined, cabecas: q.celula.cabecas || {}, recorte: { x: 0, y: 0, w: q.celula.w, h: q.celula.h } };
   return comEstado(q, () => {
     const rc = recorteQuadro(q.formato), exp = opts.tema !== "escuro", list = sceneList(exp,true), Lr = Object.assign({}, L, { grid: false });
     const r = renderScene(list, Lr, !!opts.rapido, Lr.floor ? 16 : 0, { canal: opts.rapido ? "quadros-previa" : "quadros" });

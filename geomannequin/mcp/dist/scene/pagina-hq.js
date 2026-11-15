@@ -9,17 +9,37 @@ const hqEsc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;
 function hqB64(t) { if (typeof Buffer !== "undefined") return Buffer.from(t, "utf8").toString("base64"); return btoa(unescape(encodeURIComponent(t))); }
 function hqQuebrar(t, n) { const out = []; let l = ""; String(t).split(/\s+/).forEach(w => { if ((l + " " + w).trim().length > n && l) { out.push(l); l = w; } else l = (l + " " + w).trim(); }); if (l) out.push(l); return out; }
 /* onde a imagem do quadro cai dentro da célula (preserveAspectRatio slice): para levar as cabeças (0..1 da imagem) para a página */
-function hqEncaixe(svg, cel, cabecas) { const m = /viewBox="([^"]+)"/.exec(svg), vb = m ? m[1].split(/\s+/).map(Number) : [0, 0, cel.w, cel.h], iw = vb[2], ih = vb[3], k = Math.max(cel.w / iw, cel.h / ih), w = iw * k, h = ih * k, alto = ih / iw > cel.h / cel.w;
+function hqEncaixe(svg, cel, cabecas, caber) { const m = /viewBox="([^"]+)"/.exec(svg), vb = m ? m[1].split(/\s+/).map(Number) : [0, 0, cel.w, cel.h], iw = vb[2], ih = vb[3], k = caber ? Math.min(cel.w / iw, cel.h / ih) : Math.max(cel.w / iw, cel.h / ih), w = iw * k, h = ih * k, alto = ih / iw > cel.h / cel.w;
   /* a imagem é maior que a célula num sentido: o recorte segue os rostos (cabeça inteira, um pouco acima do meio), senão centra */
   const cs = Object.values(cabecas || {}).filter(c => c.u > -0.1 && c.u < 1.1 && c.v > -0.2 && c.v < 1.2); let x = cel.x + (cel.w - w) / 2, y = alto ? cel.y + (cel.h - h) * 0.3 : cel.y + (cel.h - h) / 2;
   if (cs.length) { const v0 = Math.min(...cs.map(c => c.v - c.r)), v1 = Math.max(...cs.map(c => c.v + c.r)), u0 = Math.min(...cs.map(c => c.u - c.r)), u1 = Math.max(...cs.map(c => c.u + c.r));
     if (alto) { const meio = (v0 + v1) / 2 * h, alvoY = cel.h * (v1 - v0) * h > cel.h * 0.8 ? cel.h * 0.5 : cel.h * 0.42; y = cel.y + Math.min(0, Math.max(cel.h - h, alvoY - meio)); if (v0 * h + (y - cel.y) < 0) y = cel.y - Math.max(0, v0 * h - 4); y = Math.min(cel.y, Math.max(cel.y + cel.h - h, y)); }
     else { const meio = (u0 + u1) / 2 * w; x = cel.x + Math.min(0, Math.max(cel.w - w, cel.w / 2 - meio)); } }
   return { x, y, w, h, alto }; }
-/* polígono da célula (borda diagonal: um lado inclinado, alternando para dar movimento) */
-function hqPoligono(c, q, i) { if (q && q.borda === "diagonal") { const d = Math.min(c.w * 0.25, Math.tan(((q.bordaGraus || 12) * Math.PI) / 180) * c.h), dir = i % 2 ? 1 : -1;
+/* polígono da célula: retângulo, diagonal (um lado inclinado, alternando), triângulo (para cima/baixo/lado ou de canto),
+   losango, trapézio, círculo, explosão (estrela) ou polígono livre (pontos 0..1 dentro da célula) */
+function hqPoligono(c, q, i) { const { x, y, w, h } = c, b = q && q.borda;
+  if (b === "diagonal") { const d = Math.min(c.w * 0.25, Math.tan(((q.bordaGraus || 12) * Math.PI) / 180) * c.h), dir = i % 2 ? 1 : -1;
     return dir > 0 ? [[c.x, c.y], [c.x + c.w, c.y], [c.x + c.w - d, c.y + c.h], [c.x, c.y + c.h]] : [[c.x, c.y], [c.x + c.w - d, c.y], [c.x + c.w, c.y + c.h], [c.x, c.y + c.h]]; }
-  return [[c.x, c.y], [c.x + c.w, c.y], [c.x + c.w, c.y + c.h], [c.x, c.y + c.h]]; }
+  if (b === "triangulo") { const d = (q.bordaDir || "cima").replace("cima-esquerda", "sup-esq").replace("cima-direita", "sup-dir").replace("baixo-esquerda", "inf-esq").replace("baixo-direita", "inf-dir");
+    return ({ cima: [[x + w / 2, y], [x + w, y + h], [x, y + h]], baixo: [[x, y], [x + w, y], [x + w / 2, y + h]], esquerda: [[x, y + h / 2], [x + w, y], [x + w, y + h]], direita: [[x, y], [x + w, y + h / 2], [x, y + h]],
+      "sup-esq": [[x, y], [x + w, y], [x, y + h]], "sup-dir": [[x, y], [x + w, y], [x + w, y + h]], "inf-esq": [[x, y], [x + w, y + h], [x, y + h]], "inf-dir": [[x + w, y], [x + w, y + h], [x, y + h]] })[d] || [[x + w / 2, y], [x + w, y + h], [x, y + h]]; }
+  if (b === "losango") return [[x + w / 2, y], [x + w, y + h / 2], [x + w / 2, y + h], [x, y + h / 2]];
+  if (b === "trapezio") return q.bordaDir === "baixo" ? [[x, y], [x + w, y], [x + w * 0.85, y + h], [x + w * 0.15, y + h]] : [[x + w * 0.15, y], [x + w * 0.85, y], [x + w, y + h], [x, y + h]];
+  if (b === "poligono" && q.bordaPts) return q.bordaPts.map(([u, v]) => [x + u * w, y + v * h]);
+  if (b === "circulo") return Array.from({ length: 48 }, (_, k) => { const a = k / 48 * Math.PI * 2; return [x + w / 2 + Math.cos(a) * w / 2, y + h / 2 + Math.sin(a) * h / 2]; });
+  if (b === "explosao") { const n = 14; return Array.from({ length: n * 2 }, (_, k) => { const a = k / (n * 2) * Math.PI * 2 - Math.PI / 2, f = k % 2 ? 0.74 : 1 - ((k * 7) % 5) * 0.025; return [x + w / 2 + Math.cos(a) * w / 2 * f, y + h / 2 + Math.sin(a) * h / 2 * f]; }); }
+  return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]; }
+/* vários quadros na MESMA célula ("junto"): divisórias inclinadas (ou a diagonal de canto a canto, se o primeiro for triângulo) */
+function hqDividir(c, qs, cal, jp) { const n = qs.length, { x, y, w, h } = c, g = cal / 2; if (n === 1) return null;
+  const espelha = P => jp ? P.map(([px, py]) => [2 * x + w - px, py]) : P;
+  if (n === 2 && qs[0].borda === "triangulo") { const k = h / w; return [espelha([[x, y], [x + w - g * 1.4, y], [x, y + h - g * 1.4 * k]]), espelha([[x + w, y + g * 1.4 * k], [x + w, y + h], [x + g * 1.4, y + h]])]; }
+  const largo = w >= h, out = [], inc = 0.1;
+  for (let j = 0; j < n; j++) { const a = j / n, b2 = (j + 1) / n, s0 = j === 0 ? 0 : (j % 2 ? inc : -inc), s1 = j === n - 1 ? 0 : ((j + 1) % 2 ? inc : -inc);
+    if (largo) { const t0 = j === 0 ? x : x + w * (a + s0) + g, b0 = j === 0 ? x : x + w * (a - s0) + g, t1 = j === n - 1 ? x + w : x + w * (b2 + s1) - g, b1 = j === n - 1 ? x + w : x + w * (b2 - s1) - g; out.push(espelha([[t0, y], [t1, y], [b1, y + h], [b0, y + h]])); }
+    else { const l0 = j === 0 ? y : y + h * (a + s0) + g, r0 = j === 0 ? y : y + h * (a - s0) + g, l1 = j === n - 1 ? y + h : y + h * (b2 + s1) - g, r1 = j === n - 1 ? y + h : y + h * (b2 - s1) - g; out.push([[x, l0], [x + w, r0], [x + w, r1], [x, l1]]); } }
+  return out; }
+const hqCaixa = P => { const xs = P.map(p => p[0]), ys = P.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys); return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y }; };
 const hqPts = P => P.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
 
 /* ===== balões ===== */
@@ -86,16 +106,19 @@ function hqPaginas(r, fotos, o = {}) {
     const qi = pg.quadros.map(i => r.quadros.findIndex(q => q.indice === i)).filter(k => k >= 0 && fotos[k]); if (!qi.length) continue;
     const F = HQ_FORMATOS[pg.formato || o.formato || "manga"] || HQ_FORMATOS.manga, base = o.largura || 1200, PW = base * (pg.dupla ? 2 : 1), PH = Math.round(base * F.razao);
     const m = pg.sangria ? 0 : (pg.margem ?? F.margem * base), cal = pg.calha ?? F.calha * base, jp = (pg.leitura || o.leitura || "japonesa") !== "ocidental";
-    const qs = qi.map(k => r.quadros[k]), g = pg.splash ? [[1]] : hqGrade(qs, pg), pesoLinha = g.map(l => Math.max(...l.map((w, j) => { const q = qs[g.slice(0, g.indexOf(l)).reduce((s, x) => s + x.length, 0) + j]; return q ? Math.min(2.2, q.tamanho >= 1.4 ? q.tamanho * 0.8 : 1) : 1; })));
+    /* quadros "junto" dividem a célula do anterior */
+    const grupos = []; qi.forEach(kk => { if (r.quadros[kk].junto && grupos.length) grupos[grupos.length - 1].push(kk); else grupos.push([kk]); });
+    const qs = grupos.map(gq => r.quadros[gq[0]]), g = pg.splash ? [[1]] : hqGrade(qs, pg), pesoLinha = g.map(l => Math.max(...l.map((w, j) => { const q = qs[g.slice(0, g.indexOf(l)).reduce((s, x) => s + x.length, 0) + j]; return q ? Math.min(2.2, q.tamanho >= 1.4 ? q.tamanho * 0.8 : 1) : 1; })));
     const totP = pesoLinha.reduce((a, b) => a + b, 0), altUtil = PH - 2 * m - cal * (g.length - 1); let s = "", k = 0, y = m;
     g.forEach((lin, li) => { const ah = altUtil * pesoLinha[li] / totP, tot = lin.reduce((a, b) => a + (typeof b === "number" ? b : 1), 0), larg = PW - 2 * m - cal * (lin.length - 1); let x = m;
       /* leitura japonesa: o primeiro quadro da linha fica à direita (cada um com a SUA largura) */
       const cel = lin.map(w => { const cw0 = larg * (typeof w === "number" ? w : 1) / tot, c = { x: jp ? PW - x - cw0 : x, y, w: cw0, h: ah }; x += cw0 + cal; return c; });
-      cel.forEach(c => { const kk = qi[k], q = r.quadros[kk], f = fotos[kk]; k++; if (!f) return; const id = "c" + out.length + "_" + k, poly = hqPoligono(c, q, k), enc = hqEncaixe(f.svg, c, f.cabecas);
-        s += '<clipPath id="' + id + '"><polygon points="' + hqPts(poly) + '"/></clipPath><g clip-path="url(#' + id + ')"><image x="' + enc.x.toFixed(1) + '" y="' + enc.y.toFixed(1) + '" width="' + enc.w.toFixed(1) + '" height="' + enc.h.toFixed(1) + '" preserveAspectRatio="none" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/></g>';
+      cel.forEach(c0 => { const gq = grupos[k] || []; k++; const partes = hqDividir(c0, gq.map(kk => r.quadros[kk]), cal, jp);
+        gq.forEach((kk, j) => { const q = r.quadros[kk], f = fotos[kk]; if (!f) return; const id = "c" + out.length + "_" + k + "_" + j, poly = partes ? partes[j] : hqPoligono(c0, q, k), c = partes ? hqCaixa(poly) : (q && q.borda && q.borda !== "diagonal" && q.borda !== "normal" && q.borda !== "grossa" && q.borda !== "nenhuma" ? hqCaixa(poly) : c0), enc = hqEncaixe(f.svg, c, f.cabecas, q && q.recorteCel === "caber");
+        s += '<clipPath id="' + id + '"><polygon points="' + hqPts(poly) + '"/></clipPath><g clip-path="url(#' + id + ')">' + (q && q.recorteCel === "caber" ? '<rect x="' + c.x.toFixed(1) + '" y="' + c.y.toFixed(1) + '" width="' + c.w.toFixed(1) + '" height="' + c.h.toFixed(1) + '" fill="#fff"/>' : "") + '<image x="' + enc.x.toFixed(1) + '" y="' + enc.y.toFixed(1) + '" width="' + enc.w.toFixed(1) + '" height="' + enc.h.toFixed(1) + '" preserveAspectRatio="none" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/></g>';
         if (!q || q.borda !== "nenhuma") s += '<polygon points="' + hqPts(poly) + '" fill="none" stroke="#111" stroke-width="' + (q && q.borda === "grossa" ? 7 : 4) + '" stroke-linejoin="miter"/>';
         if (o.baloes !== false) s += '<g>' + hqBaloes((q && q.falas) || [], f.cabecas, c, enc, { leitura: jp ? "japonesa" : "ocidental", fonte: o.fonte }) + "</g>";
-        if (o.numeros) s += '<text x="' + (c.x + 8).toFixed(1) + '" y="' + (c.y + c.h - 8).toFixed(1) + '" font-family="Arial" font-size="14" fill="#c00">' + (q.indice + 1) + "</text>"; });
+        if (o.numeros) s += '<text x="' + (c.x + 8).toFixed(1) + '" y="' + (c.y + c.h - 8).toFixed(1) + '" font-family="Arial" font-size="14" fill="#c00">' + (q.indice + 1) + "</text>"; }); });
       y += ah + cal; });
     out.push({ svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + PW + " " + PH + '" width="' + PW + '" height="' + PH + '"><rect width="' + PW + '" height="' + PH + '" fill="#fff"/>' + s + "</svg>", quadros: qi.map(kk => r.quadros[kk].indice + 1), formato: pg.formato || o.formato || "manga", largura: PW, altura: PH }); }
   return out;

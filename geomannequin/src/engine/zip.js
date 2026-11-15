@@ -27,3 +27,19 @@ function criarZip(arquivos) {
   return out;
 }
 export { criarZip, crc32 };
+/* lê o diretório central de um .zip: [{nome, metodo (0 guardado, 8 deflate), dados (ainda comprimidos), tamanho}].
+   Descomprimir fica com quem chama (navegador: DecompressionStream("deflate-raw"); Node: zlib.inflateRawSync). */
+function lerZip(bytes) {
+  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), dv = new DataView(b.buffer, b.byteOffset, b.byteLength), dec = new TextDecoder();
+  let fim = -1; for (let i = b.length - 22; i >= Math.max(0, b.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { fim = i; break; }
+  if (fim < 0) throw new Error("Arquivo ZIP inválido (sem diretório central).");
+  const n = dv.getUint16(fim + 10, true); let p = dv.getUint32(fim + 16, true); const out = [];
+  for (let k = 0; k < n; k++) { if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const flags = dv.getUint16(p + 8, true), metodo = dv.getUint16(p + 10, true), comp = dv.getUint32(p + 20, true), tam = dv.getUint32(p + 24, true), ln = dv.getUint16(p + 28, true), le = dv.getUint16(p + 30, true), lc = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    const nomeB = b.subarray(p + 46, p + 46 + ln), nome = (flags & 0x800) ? dec.decode(nomeB) : Array.from(nomeB, c => String.fromCharCode(c)).join("");
+    const lnL = dv.getUint16(off + 26, true), leL = dv.getUint16(off + 28, true), ini = off + 30 + lnL + leL;
+    if (!nome.endsWith("/")) out.push({ nome, metodo, dados: b.subarray(ini, ini + comp), tamanho: tam, cifrado: !!(flags & 1) });
+    p += 46 + ln + le + lc; }
+  return out;
+}
+export { lerZip };

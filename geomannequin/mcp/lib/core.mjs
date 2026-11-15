@@ -50,6 +50,7 @@ ${sceneSrc}
 ${ordem.iniciar.map(f => f + "();").join("\n")}
 return {
   get P(){return P}, SCN, cena, camera, tema, LOG, handFrameV3,
+  CL, CL_FUNCOES, CL_PLANOS, CL_ANGULOS, CL_CLIMAS, CL_CAMPOS, CL_PROMPT, clFicha, clRegistrarPacote, clCelula, clClassificar, clApagar, clLimpar, clBuscar, clEscolher, clConsulta, clResumo, clListar, clPacotes, clEstatisticas, clExportar, clImportar, clDefinirImagem, clExpandirTexto, clQuadroSvg, clClassificada, ltExpandir, ltExpandirName, ltPoses, LT_CATEGORIAS,
   get L(){return L}, setLayer:(k,v)=>{L[k]=!!v;mode=null},
   setPreset:n=>{if(!PRESETS[n])throw new Error("Modo desconhecido: use 'manequim', 'construcao' ou 'ecorche'.");setPreset(n)},
   get mode(){return mode},

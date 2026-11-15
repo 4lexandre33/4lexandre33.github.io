@@ -47,6 +47,8 @@ export * from "./animais-anim.js";
 export * from "./poses-extra.js";
 export * from "./poses-acao2.js";
 export * from "./interacoes-extra.js";
+export * from "./celulas.js";
+export * from "./lote.js";
 export * from "./name-dsl.js";
 export * from "./auditoria-anim.js";
 export * from "./pagina-hq.js";

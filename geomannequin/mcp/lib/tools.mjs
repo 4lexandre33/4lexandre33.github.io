@@ -22,6 +22,7 @@ import { registerHqTools } from "./tools-hq.mjs";
 import { registerPreconfigTools } from "./tools-preconfig.mjs";
 import { registerNarrativaTools } from "./tools-narrativa.mjs";
 import { registerHistoriaTools } from "./tools-historia.mjs";
+import { registerCelulasTools, garantirCatalogo } from "./tools-celulas.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -193,6 +194,7 @@ function metaWidget(w, tipo, extra) { return { gm: Object.assign({ tipo, link: s
 
 /* metadados do ChatGPT (Apps SDK): texto enquanto a ferramenta roda e quando termina; as visuais abrem o widget */
 const INVOCA = {
+  celulas_importar: ["Abrindo o pacote e achando a grade…", "Células cortadas"], celulas_ver: ["Separando as células…", "Células prontas"], celulas_classificar: ["Gravando as fichas…", "Fichas gravadas"], celulas_buscar: ["Procurando no catálogo…", "Células encontradas"], celulas_catalogo: ["Abrindo o catálogo de células…", "Catálogo"], miniaturas: ["Desenhando as miniaturas…", "Miniaturas prontas"],
   linha_no_palco: ["Aplicando a linha na cena…", "Cena atualizada"], narrativas: ["Abrindo a biblioteca de funções narrativas…", "Biblioteca pronta"], analisar_historia: ["Lendo a história e montando o texto…", "Texto e lacunas prontos"], lacunas: ["Lendo as lacunas…", "Lacunas listadas"], locais_prontos: ["Montando o local pronto…", "Local pronto"], catalogo: ["Abrindo o catálogo…", "Catálogo pronto"], aplicar_narrativa: ["Transformando a função narrativa em quadros…", "Quadros prontos"], gerar_historia: ["Gerando a história e as variações…", "História pronta"],
   preconfiguracoes: ["Abrindo o catálogo de pré-configurações…", "Catálogo pronto"], aplicar_preconfiguracao: ["Montando a pré-configuração…", "Quadro pronto"], animacao_animal: ["Animando o animal…", "Animação pronta"],
   pose_em_codigo: ["Lendo a pose…", "Pose pronta"], vistas_de_pose: ["Desenhando o esqueleto…", "Vistas prontas"],
@@ -234,7 +236,7 @@ export function registerAll(server, getWorld, opts = {}) {
   /* todas as ferramentas recebem os metadados do ChatGPT (os que a ferramenta declarar têm prioridade) */
   const registrar = server.registerTool.bind(server);
   server.registerTool = (nome, cfg, fn) => registrar(nome, Object.assign({}, cfg, { _meta: Object.assign(metaChatGPT(nome), cfg._meta || {}) }), fn);
-  const W = () => getWorld();
+  const W = () => garantirCatalogo(getWorld());
   buildSchemas(W());
 
   /* ---------- cena ---------- */
@@ -941,6 +943,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerPreconfigTools(server, W);
   registerNarrativaTools(server, W);
   registerHistoriaTools(server, W);
+  registerCelulasTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

@@ -7,6 +7,9 @@ import { SCN, P } from "./modelo.js";
 import { sceneState, loadScene } from "./estado.js";
 import { POSEKEYS } from "./parametros.js";
 import { compilarName } from "./name-dsl.js";
+import { ltExpandir } from "./lote.js";
+import { delInst, dupInst } from "./modelo.js";
+import { removerObjeto, duplicarObjeto } from "./cenario.js";
 
 const BC_M = 0.114, bcN = v => +(+v * BC_M).toFixed(2);
 const bcNome = s => /^[A-Za-zÀ-ÿ][\wÀ-ÿ]*$/.test(s) ? s : '"' + String(s).replace(/"/g, "") + '"';
@@ -28,9 +31,24 @@ function bcNovos(linha, ctxNomes) { const out = []; const m = /^\s*(?:\d+(?:\.\d
   const w = /^\s*(?:\d+(?:\.\d+)?s\s+)?([A-ZÀ-Ý][\wÀ-ÿ]*)\b/.exec(linha); if (w && !ctxNomes.has(w[1])) out.push(w[1]); return { pessoas: out }; }
 function aplicarLinhaNoPalco(linha, opts = {}) {
   linha = String(linha || "").trim(); if (!linha) return { ok: false, erros: ["Linha vazia."] };
+  /* apaga / duplica (só no palco: o texto do Name descreve quadros, não edita) */
+  const ap = /^(apaga|apagar|remove|remover|tira|tirar)\s+(.+)$/i.exec(linha), dp = /^(duplica|duplicar|copia|copiar)\s+("[^"]+"|[^\s(]+)(?:\s+em\s+\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\))?\s*$/i.exec(linha);
+  if (ap || dp) { const acha = n => { n = n.replace(/"/g, "").trim(); const it = SCN.list.find(x => x.name === n); if (it) return { it }; const o = (SCN.objetos || []).find(x => x.nome === n); return o ? { o } : null; };
+    if (ap) { const nomes = ap[2].split(/\s*,\s*|\s+e\s+/).filter(Boolean), feitos = [], erros = []; for (const n of nomes) { const a = acha(n); if (!a) { erros.push("“" + n + "” não está na cena."); continue; } if (a.it) { if (SCN.list.filter(x => x.name !== "__vazio__").length < 2) { erros.push("A cena precisa de pelo menos um manequim."); continue; } delInst(a.it); } else removerObjeto(a.o); feitos.push(n.replace(/"/g, "") + " saiu da cena"); }
+      return feitos.length ? { ok: true, mudou: feitos, avisos: erros } : { ok: false, erros }; }
+    const a = acha(dp[2]); if (!a) return { ok: false, erros: ["“" + dp[2].replace(/"/g, "") + "” não está na cena."] };
+    const pos = dp[3] !== undefined ? [+dp[3] / BC_M, +dp[4] / BC_M] : null, usados = new Set(SCN.list.map(x => x.name).concat((SCN.objetos || []).map(o => o.nome))), livre = b => { b = String(b).replace(/\d+$/, "").replace(/[^A-Za-zÀ-ÿ0-9]/g, "") || "Copia"; for (let i = 2; i < 999; i++) if (!usados.has(b + i)) return b + i; return b + Date.now() % 1000; };
+    if (a.it) { const c = dupInst(a.it); if (!c) return { ok: false, erros: ["Não deu para copiar (limite de manequins?)."] }; c.name = livre(a.it.name); if (pos) { c.params.wx = pos[0]; c.params.wz = pos[1]; } else c.params.wx += 1 / BC_M; return { ok: true, mudou: [c.name + " entrou na cena (cópia de " + a.it.name + ")"], avisos: [] }; }
+    const c = duplicarObjeto(a.o); c.nome = livre(a.o.nome || a.o.tipo); if (pos) { c.x = pos[0]; c.z = pos[1]; } else c.x += (a.o.larg || 2) * 0.6; return { ok: true, mudou: [(c.nome || c.tipo) + " entrou na cena (cópia)"], avisos: [] }; }
   let antes = JSON.stringify(sceneState()); const nomes = new Set(SCN.list.map(x => x.name).concat((SCN.objetos || []).map(o => o.nome).filter(Boolean)));
+  /* linhas de lote (espalha / grupo) viram várias linhas; os nomes novos entram no elenco */
+  let extraElenco = [], avisosLote = [];
+  if (/^\s*(espalh[ae]|grupo)\s/i.test(linha)) { const pontos = {}; SCN.list.forEach(it => { if (it.name) pontos[it.name] = [bcN(it.params.wx || 0), bcN(it.params.wz || 0)]; }); (SCN.objetos || []).forEach(o => { if (o.nome) pontos[o.nome] = [bcN(o.x || 0), bcN(o.z || 0)]; });
+    const objetos = {}; (SCN.objetos || []).forEach(o => { if (o.nome && !o.animal && !o.chao) objetos[o.nome] = o.tipo; });
+    let r0; try { r0 = ltExpandir(linha, { usados: nomes, pontos, objetos }); } catch (e) { return { ok: false, erros: [e.message] }; } linha = r0.texto; extraElenco = r0.elenco; avisosLote = r0.avisos; }
   let base = dslDoPalco(), corpo = linha;
-  const nv = /^\s*(camera|câmera|objeto|efeito)\b/i.test(linha) ? {} : bcNovos(linha, nomes);
+  const nv = /^\s*(camera|câmera|objeto|efeito)\b/i.test(linha) || extraElenco.length || linha.includes("\n") ? {} : bcNovos(linha, nomes);
+  if (extraElenco.length) base = base.replace("elenco\n", "elenco\n" + extraElenco.map(n => "  " + n).join("\n") + "\n").replace("  __ninguem__\n", "");
   if (nv.animal) { const r0 = nv.animal.resto.trim(), i = r0.search(/\b(em|pose|gira|vira-para)\b/), opc = i < 0 ? r0 : r0.slice(0, i).trim(), resto = i < 0 ? "" : r0.slice(i); base = base.replace("elenco\n", "elenco\n  " + nv.animal.nome + " animal " + nv.animal.especie + (opc ? " " + opc : "") + "\n"); corpo = nv.animal.nome + " " + (resto || "em (0,2)"); }
   /* a primeira pessoa nova ocupa o "Manequim 1" padrão (intocado, no centro) em vez de ficar outro boneco em cima */
   if ((nv.pessoas || []).length || nv.animal) { const pad = SCN.list.filter(x => /^Manequim \d+$/.test(x.name)); if ((nv.pessoas || []).length && pad.length === 1 && SCN.list.filter(x => x.name !== "__vazio__").length === 1 && !(pad[0].params.wx) && !(pad[0].params.wz)) { pad[0].name = nv.pessoas[0]; nomes.add(nv.pessoas[0]); base = dslDoPalco(); nv.pessoas = []; antes = JSON.stringify(sceneState()); } }
@@ -44,7 +62,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b), palavras = new Set(linha.replace(/[^\wÀ-ÿ\s-]/g, " ").split(/\s+/)), citado = n => palavras.has(n) || (n && n.includes(" ") && linha.includes(n));
   /* pessoas: o que a linha mudou */
   for (const pb of B.list) { if (!pb.name || pb.name === "__vazio__" || pb.name === "__ninguem__") continue; const pa = A.list.find(x => x.name === pb.name), live = SCN.list.find(x => x.name === pb.name);
-    if (!live) { const novo = JSON.parse(antes); novo.list.push(pb); loadScene(novo); mudou.push(pb.name + " entrou na cena"); continue; }
+    if (!live) { const novo = JSON.parse(JSON.stringify(sceneState())); novo.list.push(pb); loadScene(novo); mudou.push(pb.name + " entrou na cena"); continue; }
     if (!pa || !citado(pb.name)) continue; const pose = /\b(pose|senta|sentado|sentada|ajoelha|deita|agacha|anima|golpeia|acerta|ataca|dispara|monta|embarca|rema|segura|esgrima|sobre-\w+)\b/.test(linha) && Object.keys(pb.params).some(k => POSEKEYS.has(k) && pb.params[k] !== pa.params[k]);
     let mexeu = pose; for (const k of Object.keys(pb.params)) { if (pose && POSEKEYS.has(k)) live.params[k] = pb.params[k]; else if (!igual(pb.params[k], pa.params[k])) { live.params[k] = pb.params[k]; mexeu = true; } }
     if (Number.isInteger(pb.apoioEm) && B.objetos && B.objetos[pb.apoioEm] && !igual(pb.apoioEm, pa.apoioEm)) { const nm = B.objetos[pb.apoioEm].nome, q = (SCN.objetos || []).find(o => o.nome === nm); if (q) { live.apoioEm = q.id; mexeu = true; } }
@@ -60,10 +78,10 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
     const novos = JSON.parse(JSON.stringify(efB.slice(efA))).map(e => { remap(e.ancora); if (e.direcao && e.direcao.alvo && typeof e.direcao.alvo === "object") remap(e.direcao.alvo); return e; }); novo.efeitos = (novo.efeitos || []).concat(novos); loadScene(novo); mudou.push((efB.length - efA) + " efeito(s)"); }
   /* câmera: só quando a linha é de câmera */
   if (camLinha && B.camera) { Object.assign(P, B.camera); mudou.push("câmera"); }
-  return { ok: true, mudou, avisos: (rB.avisos || []).filter(a => !(rA.avisos || []).includes(a)) };
+  return { ok: true, mudou, linhas: linha.split("\n").length, avisos: avisosLote.concat((rB.avisos || []).filter(a => !(rA.avisos || []).includes(a) && !/olha para a borda mais perto|pouco espaço na frente/.test(a))) };
 }
 /* palavras para o autocompletar da barra (verbos e opções mais usados) */
-const BC_SUGESTOES = ["pose", "em (x,z)", "gira", "vira-para", "olha", "senta-em", "embarca", "monta", "sobre-cabeca", "sobre-costas", "segura", "golpeia", "dispara", "anima", "anda-ate", "expressao", "gesto",
+const BC_SUGESTOES = ["espalha 6 pessoas em area (0,0) (5,4) pose aleatoria", "grupo", "alinha fila em", "aleatoria-de", "pose", "em (x,z)", "gira", "vira-para", "olha", "senta-em", "embarca", "monta", "sobre-cabeca", "sobre-costas", "segura", "golpeia", "dispara", "anima", "anda-ate", "expressao", "gesto",
   "objeto carro", "objeto onibus", "objeto aviao", "objeto helicoptero", "objeto lancha", "objeto trem", "objeto porta", "objeto portaoTita", "objeto castelo", "objeto casteloMagico", "objeto floresta",
   "efeito feixe de", "efeito explosao em", "efeito aura em", "efeito raio_cadeia de", "efeito rugido em", "efeito pisada_gigante em", "efeito teia em", "efeito rasgo_dimensional em", "camera (x,y,z) olhando (x,y,z)", "animal cavalo", "animal dragao monstro"];
 export { dslDoPalco, aplicarLinhaNoPalco, BC_SUGESTOES };
