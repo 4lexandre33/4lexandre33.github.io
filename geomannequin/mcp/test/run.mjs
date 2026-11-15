@@ -371,7 +371,7 @@ async function suite(client, tag) {
     check(!r.isError && r.structuredContent.erros.length === 0 && r.structuredContent.personagens.includes("Estranho") && /atira em Kai/.test(r.structuredContent.texto) && r.structuredContent.lacunas.some(l => l.termo === "sereia") && r.structuredContent.lacunas.some(l => l.termo === "praia"), "analisar_historia: personagens, tiro, feitiço e lacunas (praia, sereia)" + (r.isError ? ": " + text(r) : ""));
     r = await call("lacunas", {}); check(!r.isError && r.structuredContent.total >= 2, "lacunas: registro acumulado");
     r = await call("locais_prontos", { tipo: "castelo", largura: 26 }); check(!r.isError && /muro linha/.test(r.structuredContent.codigo) && r.content.some(c => c.type === "image"), "locais_prontos: castelo com imagem");
-    r = await call("catalogo", { categoria: "veiculos", miniaturas: false }); check(!r.isError && r.structuredContent.veiculos.length === 6, "catalogo: 6 veículos");
+    r = await call("catalogo", { categoria: "veiculos", miniaturas: false }); check(!r.isError && r.structuredContent.veiculos.length >= 11, "catalogo: " + (r.structuredContent || {veiculos:[]}).veiculos.length + " veículos (com navio, balsa grande, trem)");
     r = await call("catalogo", { categoria: "subfuncoes", funcao: "gatilho.chamado", miniaturas: false }); check(!r.isError && r.structuredContent.total >= 300 && r.structuredContent.subfuncoes.length === 3, "catalogo: 300+ subfunções, 3 por função");
     r = await call("animacao_animal", { nome: "trote", especie: "cavalo", quadros: 4 }); check(!r.isError && /escorrega/i.test(text(r)) && r.content.some(c => c.type === "image"), "animacao_animal: tira e auditoria" + (r.isError ? ": " + text(r) : "")); }
   return link;
