@@ -33,8 +33,14 @@ else { const w = createWorld(), CACHE = process.env.GM_CACHE_FORMAS || null, tab
   /* um processo novo a cada 6 objetos (a memória de muitos mundos seguidos estoura) */
   const roda = p => new Promise(ok => { if (!p.length) return ok(); const f = fork(AQUI, ["--filho"]); f.on("message", r => { Object.assign(tab, r); if (CACHE) writeFileSync(CACHE, JSON.stringify(tab)); process.stdout.write("."); }); f.on("exit", ok); f.on("error", ok); f.send(p); });
   await Promise.all(partes.map(async p => { for (let i = 0; i < p.length; i += 6) await roda(p.slice(i, i + 6)); }));
-  const ord = Object.fromEntries(tipos.map(t => { const GR = gruposDe(t, w.TIPOS_OBJETO[t], w.COMPOSTOS && w.COMPOSTOS[t]), pos = x => x.grupo === "golpe" ? (GR[0] === "empunhar" || GR[0] === "mirar" ? 0.5 : 50) : GR.includes(x.grupo) ? GR.indexOf(x.grupo) : 99;
-    return [t, (tab[t] || []).filter(x => pos(x) < 99).sort((a, b) => pos(a) - pos(b) || (a.maos - b.maos) * (GR === G_LONGO || GR === G_PESADO ? -1 : 0)).slice(0, 12).map(x => x.tipo)]; }));
+  /* ordem: 1º as pegadas feitas PARA esse objeto, depois os golpes dele, depois os grupos na ordem do tipo de objeto.
+     Pegadas de grupos específicos (tocar, cotidiano, mirar) só entram no objeto delas ou num irmão (bebida↔bebida, arma de fogo↔arma de fogo). */
+  const TST = Object.fromEntries(w.cena.pegadas().map(a => [a.tipo, Array.isArray(a.teste) ? a.teste[0] : a.teste])), grp = t => (w.TIPOS_OBJETO[t] || {}).grupo || "", BEB = new Set(["xicara", "copoBebida", "garrafa", "copo"]);
+  const irmao = (t, tt) => tt === t || (BEB.has(t) && BEB.has(tt)) || (grp(t) === "arma-fogo" && grp(tt) === "arma-fogo");
+  const ord = Object.fromEntries(tipos.map(t => { const GR = gruposDe(t, w.TIPOS_OBJETO[t], w.COMPOSTOS && w.COMPOSTOS[t]), pos = x => TST[x.tipo] === t && x.grupo !== "golpe" ? -2 : x.grupo === "golpe" ? (GR[0] === "empunhar" || GR[0] === "mirar" ? -1 : 50) : GR.includes(x.grupo) ? GR.indexOf(x.grupo) : 99;
+    const armado = g => /^arma|magico|escudo/.test(g) || ["bastao", "cajado", "espada", "lanca", "arco"].includes(g), objArma = armado(grp(t)) || armado(t);
+    const ok = x => x.grupo === "golpe" || (!/^(tocar|cotidiano|mirar)$/.test(x.grupo) || irmao(t, TST[x.tipo])) && (objArma || ["forca", "pinca"].includes(x.tipo) || !(armado(grp(TST[x.tipo])) || armado(TST[x.tipo] || "")));
+    return [t, (tab[t] || []).filter(x => pos(x) < 99 && ok(x)).sort((a, b) => pos(a) - pos(b) || (a.maos - b.maos) * (GR === G_LONGO || GR === G_PESADO ? -1 : 0)).slice(0, 12).map(x => x.tipo)]; }));
   const poucas = Object.entries(ord).filter(([, v]) => v.length < 5).map(([k, v]) => k + "(" + v.length + ")");
   writeFileSync(new URL("../src/scene/pegadas-formas-tabela.js", import.meta.url), "/* GERADO por ferramentas/pegadas-formas.mjs — formas de segurar testadas para cada objeto (a 1ª é a padrão). Não edite à mão. */\nconst PEGADAS_FORMAS = " + JSON.stringify(ord, null, 0).replace(/\],"/g, '],\n  "') + ";\nexport { PEGADAS_FORMAS };\n");
   console.log("\n" + tipos.length + " objetos; com menos de 5 formas: " + (poucas.join(", ") || "nenhum")); process.exit(0); }
