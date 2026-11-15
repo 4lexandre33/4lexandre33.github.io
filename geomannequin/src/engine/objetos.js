@@ -290,6 +290,9 @@ function paletaObjeto(o, pal) {
 }
 
 /* ===== desenho ===== */
+/* posição do olho da câmera no mundo (para o nível de detalhe dos cenários grandes) */
+function olhoDaCamera(p) { const cam = makeXf(Object.assign({}, p, { wRot: 0 })), ex = cam([1, 0, 0]), ey = cam([0, 1, 0]), ez = cam([0, 0, 1]), d = Math.max(3, p.camDist || 30);
+  return [(p.tx || 0) + ex[2] * d, (p.ty || 0) + ey[2] * d, (p.tz || 0) + ez[2] * d]; }
 function camInfo(p) {
   const cam = makeXf(Object.assign({}, p, { wRot: 0 })), S = effScale(p), d = Math.max(3, p.camDist || 30);
   const cs = w => cam([w[0] - (p.tx || 0), w[1] - (p.ty || 0), w[2] - (p.tz || 0)]);
@@ -322,12 +325,18 @@ function desenharReferencia(grupo,p,pal,g0,L){
 }
 function desenharObjeto(o, p, pal0, g0, L) {
   const pal = paletaObjeto(o, pal0);
-  const ci = camInfo(p), LD = luzCam(p), bs = partesDoObjeto(o, g0), faces = [], grupos = [];
+  const ci = camInfo(p), LD = luzCam(p), faces = [], grupos = [];
+  /* cenários grandes (castelo, floresta): sabem onde está a câmera para escolher o detalhe e cortar o que não aparece */
+  const CT = COMPOSTOS[o.tipo], bs = partesDoObjeto(CT && CT.usaCamera ? Object.assign({}, o, { _olho: olhoDaCamera(p), _g0: g0 }) : o, g0);
+  const fora = b => { const q = ci.tela(ci.cs(b.c)), k = p.persp ? ci.d / Math.max(0.2 * ci.d, ci.d - ci.cs(b.c)[2]) : 1, ext = b.cil ? Math.hypot(b.r || 0, (b.h && b.h[1]) || b.hh || 0) : b.esf ? Math.max(...[].concat(b.r)) : b.h ? Math.hypot(...b.h) : 1e3, rp = ext * ci.S * k + 4;
+    return q[0] + rp < -40 || q[0] - rp > W + 40 || q[1] + rp < -40 || q[1] - rp > H + 40; };
   /* direção da luz no mundo (a luz é fixa na vista): Rᵀ · LD */
   const ex = ci.cam([1, 0, 0]), ey = ci.cam([0, 1, 0]), ez = ci.cam([0, 0, 1]);
   const Lw = [ex[0] * LD[0] + ex[1] * LD[1] + ex[2] * LD[2], ey[0] * LD[0] + ey[1] * LD[1] + ey[2] * LD[2], ez[0] * LD[0] + ez[1] * LD[1] + ez[2] * LD[2]];
   let sombra = "";
+  const muitos = bs.length > 60;
   for (const b of bs) {
+    if (muitos && fora(b)) continue; /* fora da tela: não desenha */
     const fs = [], g = { b, fs, cil: null };
     /* atrás da câmera (perspectiva): peças redondas que cruzam o olho não são desenhadas; caixas são cortadas no plano perto */
     const zPerto = p.persp ? ci.d * 0.79 : Infinity; /* a projeção satura a 0,2·d do olho: corta antes disso */

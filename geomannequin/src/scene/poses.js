@@ -228,7 +228,7 @@ const punhos=Q=>{aplicarGesto(Q,1,"punho");aplicarGesto(Q,-1,"punho")};
 const POSES_CORPO={
   sentado:(Q,s)=>{Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:88,kneeFlexR:84,hipAbdL:6,hipAbdR:8,ankleFlexL:2,ankleFlexR:4,spineFlex:6,pronL:-40,pronR:-40,handCurlL:0.35,handCurlR:0.35,headPitch:4});
     [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[t].Th,[0,-pe[t].A.L1*0.62,0.62*pe[t].A.k])))},
-  sentadoChao:(Q,s)=>Object.assign(Q,{hipFlexL:105,hipFlexR:105,hipAbdL:65,hipAbdR:65,hipRotL:65,hipRotR:65,kneeFlexL:150,kneeFlexR:146,ankleFlexL:20,ankleFlexR:20,ankleTiltL:20,ankleTiltR:20,spineFlex:8,armFlexL:25,armFlexR:25,elbowL:40,elbowR:40,armAbdL:22,armAbdR:22,handCurlL:0.4,handCurlR:0.4,headPitch:6}),
+  sentadoChao:(Q,s)=>Object.assign(Q,{hipFlexL:125,hipFlexR:125,hipAbdL:45,hipAbdR:45,hipRotL:45,hipRotR:45,kneeFlexL:135,kneeFlexR:131,ankleFlexL:0,ankleFlexR:0,ankleTiltL:0,ankleTiltR:0,spineFlex:8,armFlexL:25,armFlexR:25,elbowL:40,elbowR:40,armAbdL:22,armAbdR:22,handCurlL:0.4,handCurlR:0.4,headPitch:6}),
   pernasEsticadas:(Q,s)=>Object.assign(Q,{hipFlexL:88,hipFlexR:88,kneeFlexL:0,kneeFlexR:0,ankleFlexL:18,ankleFlexR:18,spineFlex:-12,armFlexL:-45,armFlexR:-45,armAbdL:18,armAbdR:18,elbowL:0,elbowR:0,wristL:-70,wristR:-70,handCurlL:0.05,handCurlR:0.05,headPitch:-6}),
   abracandoJoelhos:(Q,s)=>{Object.assign(Q,{hipFlexL:118,hipFlexR:118,kneeFlexL:140,kneeFlexR:140,ankleFlexL:10,ankleFlexR:10,hipAbdL:4,hipAbdR:4,spineFlex:30,headPitch:14,handCurlL:0.55,handCurlR:0.55});
     [1,-1].forEach(t=>maoNoCorpo(Q,t,(ch,pe)=>applyA(pe[-t].Cf,[t*0.35,-pe[-t].A.L2*0.3,0.55*pe[-t].A.k]),{["pron"+(t>0?"L":"R")]:60}))},

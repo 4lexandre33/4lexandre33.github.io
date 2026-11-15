@@ -65,3 +65,4 @@ export * from "./criaturas-anim.js";
 export * from "./veiculos.js";
 export * from "./locais-prontos.js";
 export * from "./historia-analise.js";
+export * from "./barra-comando.js";

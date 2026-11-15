@@ -182,6 +182,9 @@ function nmLerLocal(bloco, ctx) {
       else if (w === "nivel" || w === "nível") { o.nivel = nx.v; k++; }
       else if (w === "degraus") { o.degraus = nx.v; k++; }
       else if (w === "vagoes" || w === "vagões") { o.vagoes = nx.v; k++; }
+      else if (w === "densidade") { o.densidade = nx.v; k++; } else if (w === "nevoa" || w === "névoa") { o.nevoa = nx.v * U; k++; } else if (w === "clareira") { o.clareira = nx.v * U; k++; }
+      else if (w === "especies" || w === "espécies" || w === "especie" || w === "espécie") { o.especies = nmNorm(nx.v); k++; } else if (w === "semente") { o.semente = nx.v; k++; } else if (w === "altura-arvore" || w === "altura-árvore") { o.alturaArvore = nx.v * U; k++; }
+      else if (w === "estilo") { o.estilo = nmNorm(nx.v); k++; }
       else if (w === "caminho" || w === "curva") { const pts = []; while (toks[k + 1] && (toks[k + 1].t === "tupla" || toks[k + 1].v === ",")) { k++; if (toks[k].t === "tupla") pts.push([toks[k].v[0] * U, toks[k].v[1] * U]); } o.caminhoAbs = pts; }
       else if (w === "no-trilho") { o.noTrilho = nx.v; k++; } else if (w === "posicao" || w === "posição" || w === "km") { o.trilhoS = nx.v * U; k++; }
       else if (w === "aberta" || w === "aberto") { if (nx && nx.t === "num") { o.aberto = nx.v > 1 ? nx.v / 90 : nx.v; k++; } else o.aberto = 1; }
@@ -1344,7 +1347,7 @@ function nmCentrar(rc, folga = 0.9, pts0, soPan) {
 /* o manequim está dentro de um objeto alto (e não em cima dele)? */
 function nmDentroDe(it, ignorar) {
   const x = it.params.wx || 0, z = it.params.wz || 0, h = it.params.bodyLift || 0;
-  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.animal && o.animal.pousadoEm === it.name) || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.embarcadoEm && o.nome === it.embarcadoEm.veiculo) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
+  for (const o of SCN.objetos) { if (o.chao || o.tipo === "floresta" || o.tipo === "castelo" || o.tipo === "casteloMagico" || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.animal && o.animal.pousadoEm === it.name) || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.embarcadoEm && o.nome === it.embarcadoEm.veiculo) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
     /* debaixo da mesa: quem cabe por baixo do tampo não está "dentro" dela */
     if (/^mesa/i.test(o.tipo || "")) { try { const cp = capsulas(Object.assign({}, it.params, { wx: 0, wz: 0, wRot: 0 })); if (cp.hi[1] - cp.lo[1] < (o.alt || 7) - 0.6) continue; } catch (e) { } }
