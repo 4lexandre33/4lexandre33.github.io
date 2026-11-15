@@ -542,7 +542,7 @@ function nmAvisosComposicao(r) {
       if (Math.abs(c.du) > 0.015 && c.u > 0 && c.u < 1 && ((c.du > 0 && c.u > 0.8) || (c.du < 0 && c.u < 0.2))) av.push(n + nome + " olha para a borda mais perto (pouco espaço na frente do olhar): mude o lado da câmera ou a posição."); }
     /* no filme, uma linha "camera plano X" no começo do plano manda no enquadramento */
     const pu = x => { const c = x && x.filme && (x.filme.cam || []).find(e => e.t <= 0.05 && e.base && e.base.planoEnq); return c ? c.base.planoEnq : x && x.planoUsado; };
-    if (i >= 2 && pu(q) && pu(q) === pu(r.quadros[i - 1]) && pu(q) === pu(r.quadros[i - 2])) av.push(n + "três quadros seguidos em plano " + pu(q) + " (varie: close, médio, geral).");
+    if (i >= 2 && !q.celula && !r.quadros[i - 1].celula && pu(q) && pu(q) === pu(r.quadros[i - 1]) && pu(q) === pu(r.quadros[i - 2])) av.push(n + "três quadros seguidos em plano " + pu(q) + " (varie: close, médio, geral).");
     ant = q; });
   return av;
 }
@@ -1527,9 +1527,12 @@ function nmCompilar(texto, opts = {}) {
             if (nomes.length < 2) throw new NmErro("diálogo: diga quem conversa (ex.: dialogo Kai, Mira tom tenso).", l.linha); Q.dialogo = { nomes, tom, arranjo }; continue; }
           if (Q.celula && /^(fala|diz|pensa|grita|berra|sussurra|cochicha|radio|fala-radio)$/.test(w0)) { /* balão numa célula: fala [esquerda|direita|centro|rosto1|(u,v)] "texto" */
             const tipoF = { diz: "fala", berra: "grita", cochicha: "sussurra", "fala-radio": "radio" }[w0] || w0, str = tk.find(x => x.t === "str"); if (!str) throw new NmErro(w0 + ": o texto vai entre aspas (ex.: fala esquerda \"Corre!\").", l.linha);
+            const rostosC = Object.entries(Q.celula.cabecas).filter(([k]) => /^rosto|^[A-ZÀ-Ý]/.test(k)), perto = u => rostosC.length ? rostosC.reduce((m, r) => Math.abs(r[1].u - u) < Math.abs(m[1].u - u) ? r : m)[0] : null;
             let quem = null; const a = tk[1]; if (a && a.t === "tupla") { quem = "ponto" + Q.falas.length; Q.celula.cabecas[quem] = { u: +a.v[0], v: +a.v[1], r: 0.06, bu: +a.v[0], bv: +a.v[1] + 0.03 }; }
-            else if (a && a.t === "pal") { const pv = nmNorm(a.v), pos = { esquerda: 0.25, centro: 0.5, meio: 0.5, direita: 0.75 }[pv]; if (pos != null) { quem = pv; Q.celula.cabecas[quem] = Q.celula.cabecas[quem] || { u: pos, v: 0.42, r: 0.07, bu: pos, bv: 0.47 }; } else if (Q.celula.cabecas[a.v]) quem = a.v; else throw new NmErro("Na célula, quem fala é esquerda, centro, direita, (u,v) ou um rosto marcado na ficha (" + (Object.keys(Q.celula.cabecas).join(", ") || "nenhum") + ").", l.linha); }
-            Q.falas.push(quem ? { quem, texto: str.v, tipo: tipoF } : { quem: null, texto: str.v, tipo: "narra" }); continue; }
+            else if (a && a.t === "pal") { const pv = nmNorm(a.v), pos = { esquerda: 0.25, centro: 0.5, meio: 0.5, direita: 0.75 }[pv]; if (pos != null) { const pr = perto(pos); if (pr && Math.abs(Q.celula.cabecas[pr].u - pos) < 0.3) quem = pr; else { quem = pv; Q.celula.cabecas[quem] = Q.celula.cabecas[quem] || { u: pos, v: 0.42, r: 0.07, bu: pos, bv: 0.47 }; } } else if (Q.celula.cabecas[a.v]) quem = a.v; else throw new NmErro("Na célula, quem fala é esquerda, centro, direita, (u,v) ou um rosto marcado na ficha (" + (Object.keys(Q.celula.cabecas).join(", ") || "nenhum") + ").", l.linha); }
+            if (!quem) { quem = perto(0.5) || "centro"; if (quem === "centro") Q.celula.cabecas.centro = Q.celula.cabecas.centro || { u: 0.5, v: 0.42, r: 0.07, bu: 0.5, bv: 0.47 }; }
+            Q.falas.push({ quem, texto: str.v, tipo: tipoF }); continue; }
+          if (Q.celula && tk[1] && /^(fala|diz|pensa|grita|berra|sussurra|cochicha|radio|fala-radio)$/.test(nmNorm(tk[1].v))) throw new NmErro("Numa célula (imagem pronta) quem fala não é do elenco: use fala esquerda|centro|direita|(u,v)|rosto1 \"…\" (ex.: " + nmNorm(tk[1].v) + " esquerda \"" + ((tk.find(x => x.t === "str") || {}).v || "…") + "\").", l.linha);
           if (w0 === "fala" || w0 === "narracao" || w0 === "narração" || w0 === "narra" || w0 === "narrador") { Q.falas.push({ quem: null, texto: tk[1].v, tipo: "narra" }); continue; }
           if (tk[0] && tk[0].t === "num" && (tk[0].u === "s" || tk[0].u === "ms")) throw new NmErro("Linha com tempo (“" + tk[0].v + "s …”) só vale dentro de um PLANO de filme (filme → cena → plano). Num quadro de name, escreva sem o tempo: a pose do quadro é um momento só.", l.linha);
           if (/^(transicao|transição)$/.test(nmNorm(tk[0].v))) throw new NmErro("“transicao” é um bloco de primeiro nível (sem recuo, entre quadros). Num filme, a transição vai no cabeçalho do plano: plano 3 fusao 0.6s | escurece 0.8s | corte.", l.linha);

@@ -33,7 +33,10 @@ function hqPoligono(c, q, i) { const { x, y, w, h } = c, b = q && q.borda;
 /* vários quadros na MESMA célula ("junto"): divisórias inclinadas (ou a diagonal de canto a canto, se o primeiro for triângulo) */
 function hqDividir(c, qs, cal, jp) { const n = qs.length, { x, y, w, h } = c, g = cal / 2; if (n === 1) return null;
   const espelha = P => jp ? P.map(([px, py]) => [2 * x + w - px, py]) : P;
-  if (n === 2 && qs[0].borda === "triangulo") { const k = h / w; return [espelha([[x, y], [x + w - g * 1.4, y], [x, y + h - g * 1.4 * k]]), espelha([[x + w, y + g * 1.4 * k], [x + w, y + h], [x + g * 1.4, y + h]])]; }
+  if (n === 2 && qs[0].borda === "triangulo") { const k = h / w, d = (qs[0].bordaDir || "").replace("cima-esquerda", "sup-esq").replace("cima-direita", "sup-dir").replace("baixo-esquerda", "inf-esq").replace("baixo-direita", "inf-dir");
+    const SE = [[x, y], [x + w - g * 1.4, y], [x, y + h - g * 1.4 * k]], ID = [[x + w, y + g * 1.4 * k], [x + w, y + h], [x + g * 1.4, y + h]], SD = [[x + g * 1.4, y], [x + w, y], [x + w, y + h - g * 1.4 * k]], IE = [[x, y + g * 1.4 * k], [x + w - g * 1.4, y + h], [x, y + h]];
+    if (d === "sup-esq") return [SE, ID]; if (d === "inf-dir") return [ID, SE]; if (d === "sup-dir") return [SD, IE]; if (d === "inf-esq") return [IE, SD];
+    return jp ? [SD, IE] : [SE, ID]; }
   const largo = w >= h, out = [], inc = 0.1;
   for (let j = 0; j < n; j++) { const a = j / n, b2 = (j + 1) / n, s0 = j === 0 ? 0 : (j % 2 ? inc : -inc), s1 = j === n - 1 ? 0 : ((j + 1) % 2 ? inc : -inc);
     if (largo) { const t0 = j === 0 ? x : x + w * (a + s0) + g, b0 = j === 0 ? x : x + w * (a - s0) + g, t1 = j === n - 1 ? x + w : x + w * (b2 + s1) - g, b1 = j === n - 1 ? x + w : x + w * (b2 - s1) - g; out.push(espelha([[t0, y], [t1, y], [b1, y + h], [b0, y + h]])); }
@@ -137,9 +140,11 @@ function hqWebtoon(r, fotos, o = {}) {
   r.quadros.forEach((q, k) => { const f = fotos[k]; if (!f) return; const vb = (/viewBox="([^"]+)"/.exec(f.svg) || [0, "0 0 16 9"])[1].split(/\s+/).map(Number), h = Math.round((W - 2 * m) * vb[3] / vb[2]);
     const gap = k === 0 ? 0 : (q.respiro ? 260 * q.respiro : 0) + ({ cena: 520, tempo: 420, lugar: 420, aspecto: 160, sujeito: 120, acao: 90, momento: 50 }[q.ritmo] ?? (q.tipoTransicao ? 420 : 110));
     y += gap; const cel = { x: m, y, w: W - 2 * m, h }, enc = hqEncaixe(f.svg, cel);
-    s += '<image x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" preserveAspectRatio="xMidYMid slice" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/>';
-    if (q.borda !== "nenhuma" && m > 0) s += '<rect x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" fill="none" stroke="#111" stroke-width="3"/>';
-    if (o.baloes !== false) s += hqBaloes(q.falas || [], f.cabecas, cel, enc, { leitura: "ocidental", fonte: o.fonte || 22 });
+    const forma = q.borda && !/^(normal|grossa|nenhuma)$/.test(q.borda), poly = forma ? hqPoligono(cel, q, k) : null, idc = "wt" + k;
+    if (poly) s += '<clipPath id="' + idc + '"><polygon points="' + hqPts(poly) + '"/></clipPath>';
+    s += (poly ? '<g clip-path="url(#' + idc + ')">' : "") + '<image x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" preserveAspectRatio="xMidYMid slice" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/>' + (poly ? "</g>" : "");
+    if (poly) s += '<polygon points="' + hqPts(poly) + '" fill="none" stroke="#111" stroke-width="4" stroke-linejoin="miter"/>'; else if (q.borda !== "nenhuma" && m > 0) s += '<rect x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" fill="none" stroke="#111" stroke-width="3"/>';
+    if (o.baloes !== false) s += hqBaloes(q.falas || [], f.cabecas, poly ? hqInscrito(poly) : cel, enc, { leitura: "ocidental", fonte: o.fonte || 22 });
     items.push({ quadro: q.indice + 1, y, h }); y += h; });
   y += 120; const fatias = [], maxH = o.alturaFatia || 1280; for (let y0 = 0; y0 < y; y0 += maxH) fatias.push({ y: y0, h: Math.min(maxH, y - y0) });
   return { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + y + '" width="' + W + '" height="' + y + '"><rect width="' + W + '" height="' + y + '" fill="' + (o.fundo || "#fff") + '"/>' + s + "</svg>", largura: W, altura: y, quadros: items, fatias };

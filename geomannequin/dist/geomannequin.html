@@ -31754,9 +31754,17 @@ log(cena.vinculos());`,
   }
   function clClassificar(id, ficha, quem) {
     const c = clCelula(id);
-    if (!c) throw new Error("Célula “" + id + "” não existe. Use celulas_listar para ver os ids.");
+    if (!c) throw new Error("Célula “" + id + "” não existe. Veja os ids com celulas_catalogo (acao listar).");
     const f = clFicha(Object.assign({}, ficha, { classificadoPor: quem || ficha.classificadoPor || "manual" }));
+    const ign = [];
+    [].concat(ficha.funcao || []).flatMap((x) => String(x).split(/[,;/]/)).map((x) => x.trim()).filter(Boolean).forEach((x) => {
+      if (!clAchar(CL_M_FUNC, x)) ign.push("funcao “" + x + "”");
+    });
+    [["plano", CL_M_PLANO], ["angulo", CL_M_ANG], ["clima", CL_M_CLIMA]].forEach(([k, m]) => {
+      if (ficha[k] && !clAchar(m, ficha[k])) ign.push(k + " “" + ficha[k] + "”");
+    });
     c.ficha = f;
+    c.ignorados = ign;
     clAvisar({ tipo: "ficha", id: c.id });
     return c;
   }
@@ -31862,10 +31870,14 @@ log(cena.vinculos());`,
       if (f[k] === q[k]) s += w;
       else if (f[k]) s -= w * 0.6;
     }
+    let achou = 0;
     for (const w of q.palavras) {
-      if (txt.includes(w)) s += 2;
-      else s -= 0.5;
+      if (txt.includes(w)) {
+        s += 2;
+        achou++;
+      } else s -= 0.5;
     }
+    if (q.palavras.length && !achou && !q.funcao.length && q.pessoas == null && q.pessoasMin == null && !q.plano && !q.angulo && !q.clima) return -1;
     return s + (clClassificada(c) ? 0.5 : 0);
   }
   function clBuscar(texto2, o = {}) {
@@ -31877,6 +31889,7 @@ log(cena.vinculos());`,
   function clEscolher(texto2, o = {}) {
     const c0 = clCelula(String(texto2).trim());
     if (c0) return c0;
+    if (/^[a-z0-9]+(?:-[a-z0-9]+)*-\d{2,}-\d{2,}$/.test(String(texto2).trim())) return null;
     const q = clConsulta(texto2), r = Object.values(CL2.itens).map((c) => ({ c, s: clPontuar(c, q) })).filter((x) => x.s >= 0).sort((a, b) => b.s - a.s);
     if (!r.length) return null;
     const usadas = o.usadas || /* @__PURE__ */ new Set(), livres = r.filter((x) => !usadas.has(x.c.id)), base2 = livres.length ? livres : r, topo = base2.filter((x) => x.s >= base2[0].s - 1.5);
@@ -31892,6 +31905,7 @@ log(cena.vinculos());`,
   }
   function clListar(o = {}) {
     let L3 = Object.values(CL2.itens);
+    if (o.ids && o.ids.length) L3 = L3.filter((c) => o.ids.includes(c.id));
     if (o.pacote) L3 = L3.filter((c) => c.pacote === o.pacote);
     if (o.naoClassificadas) L3 = L3.filter((c) => !clClassificada(c));
     L3.sort((a, b) => a.id < b.id ? -1 : 1);
@@ -41517,10 +41531,11 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
   function ltPontos(n2, a, b, dist, rnd) {
     const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), z0 = Math.min(a[1], b[1]), z1 = Math.max(a[1], b[1]), P3 = [];
     let d = dist, aviso3 = null;
-    for (let tent = 0; P3.length < n2 && tent < 6e3; tent++) {
+    for (let tent = 0; P3.length < n2 && tent < 4e4; tent++) {
       if (tent > 0 && tent % 1500 === 0) {
         d *= 0.75;
         aviso3 = "a área é pequena para " + n2 + ": distância mínima reduzida para " + ltF(d) + " m";
+        if (d < 0.05) break;
       }
       const p = [x0 + (x1 - x0) * rnd(), z0 + (z1 - z0) * rnd()];
       if (P3.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) >= d)) P3.push(p);
@@ -41616,6 +41631,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       });
       ctx.lotes.push({ tipo, n: P3.length, pedido: n2, aviso: aviso3 });
       if (aviso3) ctx.avisos.push("espalha: " + aviso3);
+      if (P3.length < n2) ctx.avisos.push("espalha: só couberam " + P3.length + " de " + n2 + " na área (aumente a área ou diminua a distância).");
       return out;
     }
     const g = /^\s*grupo\s+(.+?)\s+(pose|olha|olham|olhando|vira-para|gira|move|alinha|expressao|expressão)\b\s*(.*)$/i.exec(lin);
@@ -41643,8 +41659,10 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
             const l = gira(n2, ltGiroPara(pos[n2], alvo));
             if (l) out.push(l);
           } else if (t && !objs[n2]) out.push(ltQ(n2) + " vira-para (" + ltF(t[0]) + "," + ltF(t[1]) + ")");
-          else if (o.olhando && !t && !cen && !objs[n2]) out.push(ltQ(n2) + " vira-para " + ltQ(o.olhando));
-          else if (!o.olhando) throw new Error("grupo … olha: diga para onde: (x,z), centro ou um nome.");
+          else if (o.olhando && !t && !cen && !objs[n2]) {
+            if (Object.keys(pos).length && !pos[o.olhando]) throw new Error("grupo … olha " + o.olhando + ": “" + o.olhando + "” não está na cena.");
+            out.push(ltQ(n2) + " vira-para " + ltQ(o.olhando));
+          } else if (!o.olhando) throw new Error("grupo … olha: diga para onde: (x,z), centro ou um nome.");
         });
       } else if (verbo === "move") {
         const t = ltTupla(resto.trim().split(/\s+/)[0]);
@@ -45217,7 +45235,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
         const c = x && x.filme && (x.filme.cam || []).find((e) => e.t <= 0.05 && e.base && e.base.planoEnq);
         return c ? c.base.planoEnq : x && x.planoUsado;
       };
-      if (i >= 2 && pu(q) && pu(q) === pu(r.quadros[i - 1]) && pu(q) === pu(r.quadros[i - 2])) av.push(n2 + "três quadros seguidos em plano " + pu(q) + " (varie: close, médio, geral).");
+      if (i >= 2 && !q.celula && !r.quadros[i - 1].celula && pu(q) && pu(q) === pu(r.quadros[i - 1]) && pu(q) === pu(r.quadros[i - 2])) av.push(n2 + "três quadros seguidos em plano " + pu(q) + " (varie: close, médio, geral).");
       ant = q;
     });
     return av;
@@ -48208,6 +48226,7 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
               if (Q.celula && /^(fala|diz|pensa|grita|berra|sussurra|cochicha|radio|fala-radio)$/.test(w0)) {
                 const tipoF = { diz: "fala", berra: "grita", cochicha: "sussurra", "fala-radio": "radio" }[w0] || w0, str = tk.find((x) => x.t === "str");
                 if (!str) throw new NmErro(w0 + ': o texto vai entre aspas (ex.: fala esquerda "Corre!").', l.linha);
+                const rostosC = Object.entries(Q.celula.cabecas).filter(([k]) => /^rosto|^[A-ZÀ-Ý]/.test(k)), perto = (u) => rostosC.length ? rostosC.reduce((m, r) => Math.abs(r[1].u - u) < Math.abs(m[1].u - u) ? r : m)[0] : null;
                 let quem = null;
                 const a = tk[1];
                 if (a && a.t === "tupla") {
@@ -48216,14 +48235,23 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
                 } else if (a && a.t === "pal") {
                   const pv = nmNorm(a.v), pos = { esquerda: 0.25, centro: 0.5, meio: 0.5, direita: 0.75 }[pv];
                   if (pos != null) {
-                    quem = pv;
-                    Q.celula.cabecas[quem] = Q.celula.cabecas[quem] || { u: pos, v: 0.42, r: 0.07, bu: pos, bv: 0.47 };
+                    const pr = perto(pos);
+                    if (pr && Math.abs(Q.celula.cabecas[pr].u - pos) < 0.3) quem = pr;
+                    else {
+                      quem = pv;
+                      Q.celula.cabecas[quem] = Q.celula.cabecas[quem] || { u: pos, v: 0.42, r: 0.07, bu: pos, bv: 0.47 };
+                    }
                   } else if (Q.celula.cabecas[a.v]) quem = a.v;
                   else throw new NmErro("Na célula, quem fala é esquerda, centro, direita, (u,v) ou um rosto marcado na ficha (" + (Object.keys(Q.celula.cabecas).join(", ") || "nenhum") + ").", l.linha);
                 }
-                Q.falas.push(quem ? { quem, texto: str.v, tipo: tipoF } : { quem: null, texto: str.v, tipo: "narra" });
+                if (!quem) {
+                  quem = perto(0.5) || "centro";
+                  if (quem === "centro") Q.celula.cabecas.centro = Q.celula.cabecas.centro || { u: 0.5, v: 0.42, r: 0.07, bu: 0.5, bv: 0.47 };
+                }
+                Q.falas.push({ quem, texto: str.v, tipo: tipoF });
                 continue;
               }
+              if (Q.celula && tk[1] && /^(fala|diz|pensa|grita|berra|sussurra|cochicha|radio|fala-radio)$/.test(nmNorm(tk[1].v))) throw new NmErro('Numa célula (imagem pronta) quem fala não é do elenco: use fala esquerda|centro|direita|(u,v)|rosto1 "…" (ex.: ' + nmNorm(tk[1].v) + ' esquerda "' + ((tk.find((x) => x.t === "str") || {}).v || "…") + '").', l.linha);
               if (w0 === "fala" || w0 === "narracao" || w0 === "narração" || w0 === "narra" || w0 === "narrador") {
                 Q.falas.push({ quem: null, texto: tk[1].v, tipo: "narra" });
                 continue;
@@ -50513,8 +50541,13 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
     if (n2 === 1) return null;
     const espelha = (P3) => jp ? P3.map(([px2, py]) => [2 * x + w - px2, py]) : P3;
     if (n2 === 2 && qs[0].borda === "triangulo") {
-      const k = h / w;
-      return [espelha([[x, y], [x + w - g * 1.4, y], [x, y + h - g * 1.4 * k]]), espelha([[x + w, y + g * 1.4 * k], [x + w, y + h], [x + g * 1.4, y + h]])];
+      const k = h / w, d = (qs[0].bordaDir || "").replace("cima-esquerda", "sup-esq").replace("cima-direita", "sup-dir").replace("baixo-esquerda", "inf-esq").replace("baixo-direita", "inf-dir");
+      const SE = [[x, y], [x + w - g * 1.4, y], [x, y + h - g * 1.4 * k]], ID2 = [[x + w, y + g * 1.4 * k], [x + w, y + h], [x + g * 1.4, y + h]], SD = [[x + g * 1.4, y], [x + w, y], [x + w, y + h - g * 1.4 * k]], IE = [[x, y + g * 1.4 * k], [x + w - g * 1.4, y + h], [x, y + h]];
+      if (d === "sup-esq") return [SE, ID2];
+      if (d === "inf-dir") return [ID2, SE];
+      if (d === "sup-dir") return [SD, IE];
+      if (d === "inf-esq") return [IE, SD];
+      return jp ? [SD, IE] : [SE, ID2];
     }
     const largo = w >= h, out = [], inc = 0.1;
     for (let j = 0; j < n2; j++) {
@@ -50772,9 +50805,12 @@ camera.orbitar("Ana", { azimute: "3/4 esquerda", elevacao: 0 }).enquadramento("c
       const gap = k === 0 ? 0 : (q.respiro ? 260 * q.respiro : 0) + ({ cena: 520, tempo: 420, lugar: 420, aspecto: 160, sujeito: 120, acao: 90, momento: 50 }[q.ritmo] ?? (q.tipoTransicao ? 420 : 110));
       y += gap;
       const cel = { x: m, y, w: W4 - 2 * m, h }, enc = hqEncaixe(f.svg, cel);
-      s += '<image x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" preserveAspectRatio="xMidYMid slice" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/>';
-      if (q.borda !== "nenhuma" && m > 0) s += '<rect x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" fill="none" stroke="#111" stroke-width="3"/>';
-      if (o.baloes !== false) s += hqBaloes(q.falas || [], f.cabecas, cel, enc, { leitura: "ocidental", fonte: o.fonte || 22 });
+      const forma2 = q.borda && !/^(normal|grossa|nenhuma)$/.test(q.borda), poly = forma2 ? hqPoligono(cel, q, k) : null, idc = "wt" + k;
+      if (poly) s += '<clipPath id="' + idc + '"><polygon points="' + hqPts(poly) + '"/></clipPath>';
+      s += (poly ? '<g clip-path="url(#' + idc + ')">' : "") + '<image x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" preserveAspectRatio="xMidYMid slice" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/>' + (poly ? "</g>" : "");
+      if (poly) s += '<polygon points="' + hqPts(poly) + '" fill="none" stroke="#111" stroke-width="4" stroke-linejoin="miter"/>';
+      else if (q.borda !== "nenhuma" && m > 0) s += '<rect x="' + cel.x + '" y="' + y + '" width="' + cel.w + '" height="' + h + '" fill="none" stroke="#111" stroke-width="3"/>';
+      if (o.baloes !== false) s += hqBaloes(q.falas || [], f.cabecas, poly ? hqInscrito(poly) : cel, enc, { leitura: "ocidental", fonte: o.fonte || 22 });
       items.push({ quadro: q.indice + 1, y, h });
       y += h;
     });
@@ -51835,11 +51871,14 @@ ${EXEMPLO_FILME}
             quadro 3 celula "perseguição 2 pessoas"       (a melhor célula da busca; o mesmo texto não repete célula)
             celulas perseguição, luta 2 pessoas, descanso  (linha solta: vira um quadro por item, na ordem)
     Opções do quadro de célula: recorte caber (mostra a célula inteira, com faixa branca) | recorte cheio (padrão: preenche e corta as sobras).
-    Balões na célula: fala esquerda "Corre!" · grita direita "BOOM" · pensa centro "…" · fala (0.3,0.4) "Ei" · fala rosto1 "…" (rosto marcado na ficha) ·
+    Balões na célula: fala esquerda "Corre!" · grita direita "BOOM" · pensa centro "…" · fala (0.3,0.4) "Ei" (o ponto é a BOCA de quem fala: o rabicho aponta para lá e o balão fica perto, sem cobrir o rosto) · fala rosto1 "…" (rosto marcado na ficha;
+      esquerda/direita também puxam o rosto marcado mais perto daquele lado; sem posição = o rosto do meio ou o centro) ·
       narra "Mais tarde…". Personagens do elenco não falam numa célula (ela é uma imagem pronta).
   PAINÉIS não retangulares (valem para qualquer quadro, de célula ou de manequins), no cabeçalho do quadro:
     borda triangulo [cima|baixo|esquerda|direita|sup-esq|sup-dir|inf-esq|inf-dir] · borda losango · borda trapezio [baixo] · borda circulo ·
     borda explosao · borda poligono "0,0 1,0.1 0.9,1 0,0.9" (pontos 0..1 dentro da célula da página) · borda diagonal [graus] · sem-borda · borda grossa.
+    Valem nas páginas e no webtoon (no webtoon, "junto" não se aplica: cada quadro é uma faixa).
+    junto com triângulo: o primeiro fica no canto dito (sup-esq, sup-dir, inf-esq, inf-dir) e o segundo no canto oposto.
     junto = este quadro DIVIDE a célula do anterior (divisória inclinada; se o anterior for "borda triangulo …", a diagonal vai de canto a canto:
       o par clássico de triângulos do mangá). Três ou mais "junto" seguidos = faixas inclinadas.
   Site: janela Pacotes (tecla P): Importar (solte o .zip, confira a grade em vermelho, Cortar e guardar) · Catálogo (miniaturas, busca, ficha,
@@ -51855,7 +51894,7 @@ ${EXEMPLO_FILME}
     Cada um ganha nome (Pessoa1, Guarda2, Lobo3…) e fica editável. Área pequena demais: a distância mínima diminui e há aviso.
   grupo Kai, Mira, Zed pose aleatoria-de Conversa [semente 2] · grupo Kai, Mira pose guardaBoxe · grupo Kai, Mira olha (2,3) | olha centro | olha Zed
   grupo Kai, Mira gira 45 · grupo Kai, Mira move (1,0) (desloca em metros) · grupo Kai, Mira, Zed alinha fila|grade|circulo|arco em (0,0) [espaco 1.2] [olhando (0,5)]
-    (objetos também entram no grupo: mudam de lugar e de giro.) Categorias de pose: Combate, Conversa, Cotidiano, Movimento, Emoção, Narrativa,
+    (no grupo, todos já precisam estar na cena; objetos também entram: mudam de lugar e de giro.) Se a área não comporta todos, o espalha avisa quantos couberam. Categorias de pose: Combate, Conversa, Cotidiano, Movimento, Emoção, Narrativa,
     Montaria, Escala, Comédia, Referência (e subcategorias: Combate/Guarda, Movimento/Pulo…).
   Só no palco (barra de comando, MCP linha_no_palco): apaga Kai, Mesa · duplica Kai [em (3,3)] (a cópia vira Kai2).
   No Name, "espalha" e "grupo" valem dentro de um quadro (os nomes novos entram no elenco sozinhos); para figurantes sem nome use "povo".

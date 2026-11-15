@@ -1009,11 +1009,14 @@ ${EXEMPLO_FILME}
             quadro 3 celula "perseguição 2 pessoas"       (a melhor célula da busca; o mesmo texto não repete célula)
             celulas perseguição, luta 2 pessoas, descanso  (linha solta: vira um quadro por item, na ordem)
     Opções do quadro de célula: recorte caber (mostra a célula inteira, com faixa branca) | recorte cheio (padrão: preenche e corta as sobras).
-    Balões na célula: fala esquerda "Corre!" · grita direita "BOOM" · pensa centro "…" · fala (0.3,0.4) "Ei" · fala rosto1 "…" (rosto marcado na ficha) ·
+    Balões na célula: fala esquerda "Corre!" · grita direita "BOOM" · pensa centro "…" · fala (0.3,0.4) "Ei" (o ponto é a BOCA de quem fala: o rabicho aponta para lá e o balão fica perto, sem cobrir o rosto) · fala rosto1 "…" (rosto marcado na ficha;
+      esquerda/direita também puxam o rosto marcado mais perto daquele lado; sem posição = o rosto do meio ou o centro) ·
       narra "Mais tarde…". Personagens do elenco não falam numa célula (ela é uma imagem pronta).
   PAINÉIS não retangulares (valem para qualquer quadro, de célula ou de manequins), no cabeçalho do quadro:
     borda triangulo [cima|baixo|esquerda|direita|sup-esq|sup-dir|inf-esq|inf-dir] · borda losango · borda trapezio [baixo] · borda circulo ·
     borda explosao · borda poligono "0,0 1,0.1 0.9,1 0,0.9" (pontos 0..1 dentro da célula da página) · borda diagonal [graus] · sem-borda · borda grossa.
+    Valem nas páginas e no webtoon (no webtoon, "junto" não se aplica: cada quadro é uma faixa).
+    junto com triângulo: o primeiro fica no canto dito (sup-esq, sup-dir, inf-esq, inf-dir) e o segundo no canto oposto.
     junto = este quadro DIVIDE a célula do anterior (divisória inclinada; se o anterior for "borda triangulo …", a diagonal vai de canto a canto:
       o par clássico de triângulos do mangá). Três ou mais "junto" seguidos = faixas inclinadas.
   Site: janela Pacotes (tecla P): Importar (solte o .zip, confira a grade em vermelho, Cortar e guardar) · Catálogo (miniaturas, busca, ficha,
@@ -1029,7 +1032,7 @@ ${EXEMPLO_FILME}
     Cada um ganha nome (Pessoa1, Guarda2, Lobo3…) e fica editável. Área pequena demais: a distância mínima diminui e há aviso.
   grupo Kai, Mira, Zed pose aleatoria-de Conversa [semente 2] · grupo Kai, Mira pose guardaBoxe · grupo Kai, Mira olha (2,3) | olha centro | olha Zed
   grupo Kai, Mira gira 45 · grupo Kai, Mira move (1,0) (desloca em metros) · grupo Kai, Mira, Zed alinha fila|grade|circulo|arco em (0,0) [espaco 1.2] [olhando (0,5)]
-    (objetos também entram no grupo: mudam de lugar e de giro.) Categorias de pose: Combate, Conversa, Cotidiano, Movimento, Emoção, Narrativa,
+    (no grupo, todos já precisam estar na cena; objetos também entram: mudam de lugar e de giro.) Se a área não comporta todos, o espalha avisa quantos couberam. Categorias de pose: Combate, Conversa, Cotidiano, Movimento, Emoção, Narrativa,
     Montaria, Escala, Comédia, Referência (e subcategorias: Combate/Guarda, Movimento/Pulo…).
   Só no palco (barra de comando, MCP linha_no_palco): apaga Kai, Mesa · duplica Kai [em (3,3)] (a cópia vira Kai2).
   No Name, "espalha" e "grupo" valem dentro de um quadro (os nomes novos entram no elenco sozinhos); para figurantes sem nome use "povo".

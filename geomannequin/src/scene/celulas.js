@@ -76,7 +76,10 @@ function clRegistrarPacote(p) {
   clAvisar({ tipo: "pacote", pacote: slug, ids }); return { pacote: slug, celulas: ids };
 }
 function clCelula(id) { const c = CL.itens[id] || CL.itens[clNorm(id)]; return c || null; }
-function clClassificar(id, ficha, quem) { const c = clCelula(id); if (!c) throw new Error("Célula “" + id + "” não existe. Use celulas_listar para ver os ids."); const f = clFicha(Object.assign({}, ficha, { classificadoPor: quem || ficha.classificadoPor || "manual" })); c.ficha = f; clAvisar({ tipo: "ficha", id: c.id }); return c; }
+function clClassificar(id, ficha, quem) { const c = clCelula(id); if (!c) throw new Error("Célula “" + id + "” não existe. Veja os ids com celulas_catalogo (acao listar)."); const f = clFicha(Object.assign({}, ficha, { classificadoPor: quem || ficha.classificadoPor || "manual" }));
+  const ign = []; [].concat(ficha.funcao || []).flatMap(x => String(x).split(/[,;/]/)).map(x => x.trim()).filter(Boolean).forEach(x => { if (!clAchar(CL_M_FUNC, x)) ign.push("funcao “" + x + "”"); });
+  [["plano", CL_M_PLANO], ["angulo", CL_M_ANG], ["clima", CL_M_CLIMA]].forEach(([k, m]) => { if (ficha[k] && !clAchar(m, ficha[k])) ign.push(k + " “" + ficha[k] + "”"); });
+  c.ficha = f; c.ignorados = ign; clAvisar({ tipo: "ficha", id: c.id }); return c; }
 function clApagar(id) { if (CL.pacotes[id]) { const ids = Object.keys(CL.itens).filter(k => CL.itens[k].pacote === id); ids.forEach(k => delete CL.itens[k]); delete CL.pacotes[id]; clAvisar({ tipo: "apagar", pacote: id, ids }); return ids.length; } if (CL.itens[id]) { delete CL.itens[id]; clAvisar({ tipo: "apagar", ids: [id] }); return 1; } return 0; }
 function clLimpar() { CL.pacotes = {}; CL.itens = {}; clAvisar({ tipo: "limpar" }); }
 const clClassificada = c => !!(c.ficha && (c.ficha.funcao.length || c.ficha.descricao || c.ficha.acao));
@@ -105,7 +108,8 @@ function clPontuar(c, q) {
   if (q.pessoas != null) { if (f.pessoas === q.pessoas) s += 5; else if (f.pessoas == null) s -= 1; else return -1; }
   if (q.pessoasMin != null) { if (f.pessoas != null && f.pessoas >= q.pessoasMin) s += 4; else return -1; }
   for (const [k, w] of [["plano", 3], ["angulo", 2], ["clima", 3]]) if (q[k]) { if (f[k] === q[k]) s += w; else if (f[k]) s -= w * 0.6; }
-  for (const w of q.palavras) { if (txt.includes(w)) s += 2; else s -= 0.5; }
+  let achou = 0; for (const w of q.palavras) { if (txt.includes(w)) { s += 2; achou++; } else s -= 0.5; }
+  if (q.palavras.length && !achou && !q.funcao.length && q.pessoas == null && q.pessoasMin == null && !q.plano && !q.angulo && !q.clima) return -1;
   return s + (clClassificada(c) ? 0.5 : 0);
 }
 function clBuscar(texto, o = {}) {
@@ -115,14 +119,14 @@ function clBuscar(texto, o = {}) {
 }
 /* escolhe uma célula: as melhores (empate) sorteadas pela semente, evitando as já usadas */
 function clEscolher(texto, o = {}) {
-  const c0 = clCelula(String(texto).trim()); if (c0) return c0;
+  const c0 = clCelula(String(texto).trim()); if (c0) return c0; if (/^[a-z0-9]+(?:-[a-z0-9]+)*-\d{2,}-\d{2,}$/.test(String(texto).trim())) return null; /* parece um id e não existe: não troca por outra */
   const q = clConsulta(texto), r = Object.values(CL.itens).map(c => ({ c, s: clPontuar(c, q) })).filter(x => x.s >= 0).sort((a, b) => b.s - a.s);
   if (!r.length) return null; const usadas = o.usadas || new Set(), livres = r.filter(x => !usadas.has(x.c.id)), base = livres.length ? livres : r, topo = base.filter(x => x.s >= base[0].s - 1.5);
   let h = 2166136261 ^ (o.semente || 1); for (const ch of String(texto) + (o.indice || 0)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   const e = topo[(h >>> 0) % topo.length].c; usadas.add(e.id); return e;
 }
 function clResumo(c) { const f = c.ficha || clFicha({}); return { id: c.id, pacote: c.pacote, folha: c.folha, celula: c.celula, largura: c.w, altura: c.h, classificada: clClassificada(c), funcao: f.funcao, acao: f.acao, pessoas: f.pessoas, plano: f.plano, angulo: f.angulo, clima: f.clima, lugar: f.lugar, tags: f.tags, descricao: f.descricao, temImagem: !!(c.img || c.url) }; }
-function clListar(o = {}) { let L = Object.values(CL.itens); if (o.pacote) L = L.filter(c => c.pacote === o.pacote); if (o.naoClassificadas) L = L.filter(c => !clClassificada(c)); L.sort((a, b) => a.id < b.id ? -1 : 1); const ini = o.de || 0, n = o.limite || 200; return { total: L.length, itens: L.slice(ini, ini + n).map(clResumo) }; }
+function clListar(o = {}) { let L = Object.values(CL.itens); if (o.ids && o.ids.length) L = L.filter(c => o.ids.includes(c.id)); if (o.pacote) L = L.filter(c => c.pacote === o.pacote); if (o.naoClassificadas) L = L.filter(c => !clClassificada(c)); L.sort((a, b) => a.id < b.id ? -1 : 1); const ini = o.de || 0, n = o.limite || 200; return { total: L.length, itens: L.slice(ini, ini + n).map(clResumo) }; }
 function clPacotes() { return Object.values(CL.pacotes).map(p => { const its = Object.values(CL.itens).filter(c => c.pacote === p.slug); return Object.assign({}, p, { celulas: its.length, classificadas: its.filter(clClassificada).length }); }); }
 function clEstatisticas() { const L = Object.values(CL.itens), por = {}; L.forEach(c => (c.ficha.funcao.length ? c.ficha.funcao : ["(sem função)"]).forEach(k => por[k] = (por[k] || 0) + 1)); return { pacotes: Object.keys(CL.pacotes).length, celulas: L.length, classificadas: L.filter(clClassificada).length, porFuncao: por }; }
 /* exportar/importar (JSON; imagens opcionais como data URL) */
