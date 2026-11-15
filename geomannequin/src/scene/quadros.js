@@ -22,7 +22,7 @@ import { capsulas, B25_COCO, H, W, paraMundo, pontosDoCorpo, renderScene, render
 const FORMATOS_QUADRO = { "16:9": 16 / 9, "4:3": 4 / 3, "3:2": 3 / 2, "2:1": 2, "21:9": 21 / 9, "1:1": 1, "3:4": 3 / 4, "2:3": 2 / 3, "9:16": 9 / 16,
   horizontal: 16 / 9, paisagem: 16 / 9, vertical: 2 / 3, retrato: 2 / 3, quadrado: 1, pagina: W / H, "página": W / H, palco: W / H };
 function recorteQuadro(formato) {
-  const r = FORMATOS_QUADRO[String(formato || "palco").toLowerCase()] || W / H;
+  const fk = String(formato || "palco").toLowerCase(), m = /^(\d+(?:\.\d+)?)\s*[:x×]\s*(\d+(?:\.\d+)?)$/.exec(fk), r = FORMATOS_QUADRO[fk] || (m && +m[2] > 0 ? +m[1] / +m[2] : 0) || W / H;
   if (r >= W / H) { const h = W / r; return { x: 0, y: (H - h) / 2, w: W, h, razao: r }; }
   const w = H * r; return { x: (W - w) / 2, y: 0, w, h: H, razao: r };
 }
