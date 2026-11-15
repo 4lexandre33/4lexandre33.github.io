@@ -745,9 +745,10 @@ function nmEfeitoCriar(tipo, ef, quem, T0, plano, Q) {
     const pts = vtCaminho(A, B, o.trajeto || "reta"), dur = ef.dur || Math.max(0.3, Math.min(2.5, Math.hypot(B[0] - A[0], B[1] - A[1], B[2] - A[2]) * 0.114 / 12));
     const imp = o.impacto, limpo = Object.assign({}, o); ["deRef", "paraRef", "para", "trajeto", "impacto", "viagem", "em"].forEach(kk => delete limpo[kk]);
     if (plano === null || plano === undefined) { const u = o.viagem ?? (imp ? 1 : 0.6), q = vtNoCaminho(pts, u); add(tipo, Object.assign(limpo, { em: mundoDe(q.p), trilha: q.cauda.slice(-24) }));
-      if (imp && u >= 0.99) add(imp, { em: mundoDe(B), escala: o.escala || 1, colorido: o.colorido, elemento: o.elemento }); return; }
+      if (imp && u >= 0.99) { if (imp === "explosao_completa") nmEfeitoCriar(imp, { o: { em: mundoDe(B), escala: o.escala, colorido: o.colorido, elemento: o.elemento } }, null, null, null, Q); else add(imp, { em: mundoDe(B), escala: o.escala || 1, colorido: o.colorido, elemento: o.elemento }); } return; }
     add(tipo, Object.assign(limpo, { em: mundoDe(A) }), { modo: "viaja", t0: T0 || 0, dur, pts, esconde: true });
-    if (imp) add(imp, { em: mundoDe(B), escala: o.escala || 1, colorido: o.colorido, elemento: o.elemento }, { modo: "cresce", t0: (T0 || 0) + dur, dur: 0.3, esconde: true, depois: { some: 0.6 } });
+    if (imp === "explosao_completa") nmEfeitoCriar(imp, { o: { em: mundoDe(B), escala: o.escala, colorido: o.colorido, elemento: o.elemento } }, null, (T0 || 0) + dur, plano, Q);
+    else if (imp) add(imp, { em: mundoDe(B), escala: o.escala || 1, colorido: o.colorido, elemento: o.elemento }, { modo: "cresce", t0: (T0 || 0) + dur, dur: 0.3, esconde: true, depois: { some: 0.6 } });
     return; }
   if (typeof o.paraRef === "string") { const an = vtAncora(o.paraRef); if (an && an.objeto !== undefined) o.para = { objeto: an.objeto, parte: /\./.test(o.paraRef) ? an.parte : "centro" }; else if (an && an.manequim) o.para = an.parte && an.parte !== "corpo" ? { manequim: an.manequim, parte: an.parte } : an.manequim; delete o.paraRef; }
   add(tipo, Object.assign({}, o, o.em ? {} : quem ? { em: { manequim: quem, parte: "corpo" } } : { em: CATALOGO[tipo].ancora === "tela" ? { modo: "tela" } : { modo: "chao", x: 0, z: 0 } }), ef.anim ? Object.assign({ modo: ef.anim, t0: T0 || 0, dur: ef.dur || 1 }, ef.esconde ? { esconde: true } : {}, ef.depoisSome ? { depois: { some: ef.depoisSome } } : {}) : null);
@@ -995,7 +996,7 @@ function nmPersonagem(ctx, l, Q) {
         let o = SCN.objetos.find(x => !x.chao && x.autoDe === it.name && (nmNorm(x.nome) === nmNorm(ob) || nmNorm(x.tipo) === nmNorm(ob))) || SCN.objetos.find(x => !x.chao && !deOutro(x) && nmNorm(x.nome) === nmNorm(ob)) || SCN.objetos.find(x => !x.chao && !deOutro(x) && !String(x.grupo || "").startsWith("local:") && nmNorm(x.tipo) === nmNorm(ob)); if (!o) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)) || SINONIMOS_COMPOSTOS[String(ob).toLowerCase()]; if (!tipo) throw new NmErro("Objeto “" + ob + "” não está no local e não é um tipo de objeto.", l.linha); const f = nmFrenteDe(it); const D0 = TIPOS_OBJETO[tipo], k = Math.min(1, (it.params.tamanho || 1) * 1.1); o = adicionarObjeto(tipo, { x: it.params.wx + f[0] * 3, z: it.params.wz + f[1] * 3, nome: ob, larg: D0.larg * k, prof: D0.prof * k, alt: D0.alt * k }); o.autoDe = it.name; }
         (Q.segurados = Q.segurados || new Set()).add(o.id);
         if (!peg && w === "segura") { const pf = pegaForma(o.tipo); if (pf) pegada = pf; else if (PEGADA_PADRAO[o.tipo]) pegada = PEGADA_PADRAO[o.tipo]; }
-        try { const r = apiFor(it).segurarComo(o.id, pegada, {}); if (r && r.aproximado) Q.avisos.push(it.name + " segura " + ob + ": aproximado"); } catch (e) { Q.avisos.push(it.name + " segura " + ob + ": " + e.message); }
+        try { const r = apiFor(it).segurarComo(o.id, pegada, {}); if (r && r.aproximado > 4) Q.avisos.push(it.name + " segura " + ob + ": aproximado (" + Math.round(r.aproximado) + " cm)"); } catch (e) { Q.avisos.push(it.name + " segura " + ob + ": " + e.message); }
         /* rastro do golpe (da preparação até aqui): pedido com "rastro"; no filme, automático nos golpes de ataque ("sem-rastro" desliga) */
         const G = ACOES[pegada] && ACOES[pegada].golpe, auto = planoR !== null && G && G.de && /Ataque/.test(G.tag || "") && rastro !== false;
         if (G && G.de && (rastro || auto)) { try { const tr = trilhaDoGolpe(it, o, pegada, {}); if (tr) { const id = cena.efeitos.adicionar("rastro_arma", Object.assign({ em: { objeto: o.id, parte: "ponta" }, trilha: tr }, rastro && rastro.elemento ? { elemento: rastro.elemento, colorido: true } : {}));
@@ -1200,8 +1201,35 @@ function nmEsgrimaMacro(l) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+
     (filme ? seq : seq.slice(-1)).forEach((d, i) => { const Tk = filme ? (t0 + i).toFixed(2).replace(/\.?0+$/, "") + "s " : T, at = d[0] === "A" ? Q : alvo, df = d[0] === "A" ? alvo : Q;
       nmEsgLinhas(Tk, at, d[1], df, com, feit, cor, L); nmEsgLinhas(Tk, df, d[2], at, com, feit, cor, L); });
     return out; } catch (e) { if (e instanceof NmErro && !e.linha) e.linha = l.linha; throw e; } }
+/* ===== GOLPE COM IMPACTO: "[T] Kai golpeia Mira [com soco|chute|espada|fogo|gelo|raio|feitico|tiro|energia|missil|granada] [colorido]"
+   → pose de ataque em quem golpeia, pose de impacto em quem recebe e o efeito certo no ponto atingido (no filme, o impacto chega 0,25 s depois) ===== */
+const NM_GOLPE = {
+  soco: { a: "pose rfSocoDiretoAvanco", b: "impactoNoRosto", fx: ["efeito impacto_contato em {B} rosto escala 0.8", "efeito aneis_impacto em {A}.maoDir escala 0.6"] },
+  chute: { a: "pose rfAtaqueChuteAlto", b: "atingidoLado", fx: ["efeito impacto_contato em {B} peito escala 0.9", "efeito poeira_pes em {B}"] },
+  joelhada: { a: "pose rfAtaqueJoelhada", b: "impactoNoEstomago", fx: ["efeito impacto_contato em {B} peito escala 0.8"] },
+  espada: { a: "segura espadaCurta como esgrimaCorteDiagonal", b: "atingidoLado", fx: ["efeito corte_impacto em {B}", "efeito choque_laminas em {B} peito escala 0.6"] },
+  corte: { a: "segura espadaCurta como esgrimaCorteHorizontal", b: "atingidoLado", fx: ["efeito corte_ar em {A}.maoDir para {B}", "efeito corte_impacto em {B} angulo 0"] },
+  fogo: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoParaTras", fx: ["efeito projetil de {A}.maoDir para {B} reta impacto explosao elemento fogo escala 0.7 estica 1.5"] },
+  gelo: { a: "pose rfAtaqueEnergiaPalmas", b: "atingidoLado", fx: ["efeito cone em {A}.maoDir para {B} elemento gelo escala 0.6", "efeito cristais_chao em {B} elemento gelo escala 0.6"] },
+  raio: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoParaTras", fx: ["efeito feixe de {A}.maoDir para {B} elemento eletrico escala 0.6", "efeito impacto_contato em {B} peito elemento eletrico"] },
+  energia: { a: "pose rfAtaqueEnergiaPalmas", b: "arremessadoAlto", fx: ["efeito feixe de {A}.maoDir para {B} elemento sagrado escala 0.9", "efeito explosao em {B} elemento sagrado escala 0.5"] },
+  feitico: { a: "segura varinha como varinhaEstocadaFeitico", b: "atingidoLado", fx: ["efeito projetil de {A}.varinha.ponta para {B} reta impacto impacto_contato elemento plasma escala 0.6"] },
+  tiro: { a: "segura pistola como pistolaMirando", b: "atingidoCostas", fx: ["efeito clarao_cano em {A}.pistola.cano", "efeito projetil de {A}.pistola.cano para {B} reta impacto impacto_bala elemento ouro escala 0.3 estica 3"] },
+  rajada: { a: "segura rifle", b: "atingidoCostas", fx: ["efeito clarao_cano em {A}.rifle.cano", "efeito tracante em {A}.rifle.cano para {B}", "efeito impacto_bala em {B} peito"] },
+  missil: { a: "segura lancaFoguetes", b: "arremessadoAlto", fx: ["efeito clarao_cano em {A}.lancaFoguetes.cano escala 1.6", "efeito fumaca em {A}.lancaFoguetes.traseira escala 0.6", "efeito projetil de {A}.lancaFoguetes.cano para {B} reta impacto explosao_completa elemento fogo escala 0.9 estica 2.5"] },
+  granada: { a: "pose rfNinjaArremessoShuriken", b: "arremessadoAlto", fx: ["efeito projetil de {A}.maoDir para {B} balistica impacto explosao_completa elemento fogo escala 0.5"] }
+};
+function nmGolpeMacro(l) { const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(golpeia|acerta|ataca|dispara)\s+(\S+)?\s*(.*)$/i.exec(l.txt); if (!m) return null;
+  let T = m[1] || "", Q = m[2], verbo = m[3].toLowerCase(), alvo = m[4], resto = m[5].trim().split(/\s+/).filter(Boolean), tipo = verbo === "dispara" ? "tiro" : "soco", cor = "";
+  if (verbo === "dispara" && alvo && NM_GOLPE[nmNorm(alvo)]) { tipo = nmNorm(alvo); alvo = null; }
+  for (let i = 0; i < resto.length; i++) { const w = nmNorm(resto[i]); if ((w === "em" || w === "contra" || w === "no" || w === "na") && resto[i + 1]) alvo = resto[++i]; else if (w === "com" && resto[i + 1]) { const t = nmNorm(resto[++i]).replace(/^feiti[cç]o$/, "feitico").replace(/^m[ií]ssil$/, "missil"); if (!NM_GOLPE[t]) throw new NmErro("“" + Q + " " + verbo + "” com QUÊ? Há: " + Object.keys(NM_GOLPE).join(", ") + ".", l.linha); tipo = t; } else if (w === "colorido" || w === "nanquim") cor = " " + w; else if (NM_GOLPE[w]) tipo = w; }
+  if (!alvo) throw new NmErro(Q + " " + verbo + " QUEM? (ex.: " + Q + " golpeia Mira com espada)", l.linha);
+  const G = NM_GOLPE[tipo], out = [], L = t => out.push({ txt: t, linha: l.linha, ind: l.ind }), t0 = parseFloat(T), filme = Number.isFinite(t0), T2 = filme ? (t0 + 0.25).toFixed(2).replace(/\.?0+$/, "") + "s " : T, fim = filme ? " some por 1" : "";
+  L(T + Q + " vira-para " + alvo); L(T + Q + " " + G.a); L(T2 + alvo + " vira-para " + Q); L(T2 + alvo + " pose " + G.b);
+  G.fx.forEach(f => { const e = f.replace(/\{A\}/g, Q).replace(/\{B\}/g, alvo); L((/projetil|feixe|cone|tracante|corte_ar|clarao|fumaca/.test(e) ? T : T2) + e + cor + (/projetil/.test(e) ? "" : fim)); });
+  return out; }
 function nmExpandirPresets(blocos, ctx) { for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
-      if (!pr) { const mc = nmEsgrimaMacro(l) || nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
+      if (!pr) { const mc = nmEsgrimaMacro(l) || nmGolpeMacro(l) || nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
       pcArranjoTexto(pr.def, pr.nomes, pr.o).forEach(t => out.push({ txt: t, linha: l.linha, ind: l.ind }));
       out.push({ txt: "camera preset " + pr.def.id + " com " + pr.nomes.join(", ") + (pr.o.lente ? " lente " + pr.o.lente : "") + (pr.o.espelhar ? " espelhado" : ""), linha: l.linha, ind: l.ind }); }
     b.corpo = out; } return blocos; }
@@ -2161,4 +2189,4 @@ function framesDaAnimacao(quem, a, o = {}) {
 /* também no código do editor: cena.name.compilar(texto), cena.name.ficha(quadro), cena.name.locais()… */
 cena.name = { video: videoDoName, framesDaAnimacao, compilar: compilarName, validar: validarName, ficha: fichaDoQuadro, paginas: paginasDoName, cores: legendaDeCores, manifesto: manifestoName, locais: bibliotecaLocais, abrirLocal: abrirLocalNoPalco, localDoPalco };
 
-export { NM_FEITICOS, NM_TIRO, NM_DUELO, NM_CORES, NM_FIGURANTE, NM_BORDA, compilarName, validarName, fichaDoQuadro, pecasDaFicha, paginasDoName, legendaDeCores, manifestoName, bibliotecaLocais, localDoPalco, abrirLocalNoPalco, codigoDoPlano, videoDoName, videoDoFilme, roteiroDoFilme, svgComLegenda, alternativasDeQuadro, nmAvisosComposicao, nmPlanoAnimais, framesDaAnimacao, nmLerLocal, nmBlocos, nmTokens };
+export { NM_GOLPE, NM_FEITICOS, NM_TIRO, NM_DUELO, NM_CORES, NM_FIGURANTE, NM_BORDA, compilarName, validarName, fichaDoQuadro, pecasDaFicha, paginasDoName, legendaDeCores, manifestoName, bibliotecaLocais, localDoPalco, abrirLocalNoPalco, codigoDoPlano, videoDoName, videoDoFilme, roteiroDoFilme, svgComLegenda, alternativasDeQuadro, nmAvisosComposicao, nmPlanoAnimais, framesDaAnimacao, nmLerLocal, nmBlocos, nmTokens };

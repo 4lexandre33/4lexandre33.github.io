@@ -1139,6 +1139,48 @@ TIPOS.borrao_movimento = fx => {
     svg += '<path d="' + dd + '" fill="none" stroke="' + cor + '" stroke-linecap="round" stroke-width="' + f1(Math.max(2, (caps.reduce((a, c) => a + c.r, 0) / caps.length) * 2)) + '" opacity="' + (P.opacidade * (1 - f * 0.85)).toFixed(3) + '"/>'; }
   return { atras: svg };
 };
+/* ---------- CORTE NO AR (onda de corte que sai da espada e viaja): meia-lua afiada na direção do golpe, com rastros ---------- */
+TIPOS.corte_ar = fx => {
+  const { P, D, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, R = escalaW(fx, P.tamanho) * s * (0.35 + 0.65 * fx.t), a = D.ang, inc = (P.inclinacao || 0) * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a), vx = -uy, vy = ux;
+  const lua = (Rr, esp) => { const ext = [], int = []; for (let i = 0; i <= 24; i++) { const t = -1 + 2 * i / 24, ang = t * 1.15 + inc, c = Math.cos(ang), sn = Math.sin(ang);
+      ext.push([x + (ux * c + vx * sn) * Rr, y + (uy * c + vy * sn) * Rr]); const k = Rr * (1 - esp * Math.cos(t * Math.PI / 2)); int.push([x - ux * Rr * 0.25 + (ux * c + vx * sn) * k, y - uy * Rr * 0.25 + (uy * c + vy * sn) * k]); }
+    return suave(ext.concat(int.reverse()), true); };
+  let svg = fx.ink ? forma(lua(R * 1.08, 0.38), INK) + forma(lua(R, 0.3), PAPEL) : forma(lua(R * 1.2, 0.5), fx.cores[fx.cores.length - 1], { op: 0.35, filtro: brilho(fx) }) + forma(lua(R * 1.05, 0.38), fx.cores[1], { op: 0.9 }) + forma(lua(R, 0.22), fx.cores[0]);
+  let d = ""; for (let i = 0; i < quant(fx, 12); i++) { const t = r.entre(-0.9, 0.9), px0 = x + vx * t * R - ux * R * 0.4, py0 = y + vy * t * R - uy * R * 0.4, L = R * r.entre(0.6, 1.6); d += pincelada([[px0, py0], [px0 - ux * L, py0 - uy * L]], R * 0.05 * r.entre(0.5, 1.4), "agulha"); }
+  return svg + forma(d, fx.ink ? INK : escuro(fx), { op: 0.7 });
+};
+/* ---------- CHOQUE DE LÂMINAS: clarão em X, faíscas em leque e anel de impacto no ponto onde as armas se cruzam ---------- */
+TIPOS.choque_laminas = fx => {
+  const { P, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, R = escalaW(fx, P.raio) * s * (0.3 + 0.7 * fx.t);
+  let svg = estouro(fx, x, y, R * 0.8, 10, r);
+  const cruz = a => pincelada([[x - Math.cos(a) * R * 1.6, y - Math.sin(a) * R * 1.6], [x + Math.cos(a) * R * 1.6, y + Math.sin(a) * R * 1.6]], R * 0.16, "fuso");
+  svg += forma(cruz(0.6) + cruz(-0.6 + Math.PI), fx.ink ? PAPEL : fx.cores[0], { stroke: fx.ink ? INK : fx.cores[2] || fx.cores[1], sw: 1.2 });
+  let fa = ""; for (let i = 0; i < quant(fx, P.faiscas); i++) { const a = r() * 6.28, d0 = R * r.entre(0.6, 1), d1 = d0 + R * r.entre(0.8, 2.2) * fx.t; fa += pincelada([[x + Math.cos(a) * d0, y + Math.sin(a) * d0], [x + Math.cos(a) * d1, y + Math.sin(a) * d1 + R * 0.3 * fx.t]], R * 0.06, "agulha"); }
+  return svg + forma(fa, fx.ink ? INK : fx.cores[1], { op: 0.95 });
+};
+/* ---------- CORTE NO CORPO (impacto de espada): risco diagonal brilhante sobre o alvo, lascas de luz e salpicos ---------- */
+TIPOS.corte_impacto = fx => {
+  const { P, D, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, L = escalaW(fx, P.comprimento) * s * Math.min(1, fx.t * 1.6), a = D.ang + (P.angulo || 35) * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a);
+  const risco = (w, ex) => pincelada([[x - ux * L * ex, y - uy * L * ex], [x + ux * L * ex, y + uy * L * ex]], w, "fuso");
+  let svg = fx.ink ? forma(risco(L * 0.09, 0.55), INK) + forma(risco(L * 0.05, 0.5), PAPEL) : forma(risco(L * 0.14, 0.6), fx.cores[fx.cores.length - 1], { op: 0.4, filtro: brilho(fx) }) + forma(risco(L * 0.07, 0.55), fx.cores[1]) + forma(risco(L * 0.03, 0.5), fx.cores[0]);
+  let d = ""; for (let i = 0; i < quant(fx, 16); i++) { const t = r.entre(-0.45, 0.45), bx = x + ux * L * t, by = y + uy * L * t, sg = r() < 0.5 ? 1 : -1, l2 = L * r.entre(0.08, 0.25); d += pincelada([[bx, by], [bx - uy * l2 * sg, by + ux * l2 * sg]], L * 0.015, "agulha"); }
+  return svg + forma(d, fx.ink ? INK : escuro(fx), { op: 0.85 });
+};
+/* ---------- TRAÇANTES: rajada de riscos de luz do cano até o alvo (balas traçantes) ---------- */
+TIPOS.tracante = fx => {
+  const { P, r } = fx, s = pxu(fx), [x, y] = fx.A.tela, a = fx.D.ang, L = escalaW(fx, P.alcance) * s, ux = Math.cos(a), uy = Math.sin(a);
+  let d = ""; for (let i = 0; i < quant(fx, P.balas); i++) { const t0 = (i / Math.max(1, P.balas) + fx.t * 0.7) % 1, l0 = L * t0, ln = L * 0.12, off = r.entre(-1, 1) * L * 0.02;
+    d += pincelada([[x + ux * l0 - uy * off, y + uy * l0 + ux * off], [x + ux * (l0 + ln) - uy * off, y + uy * (l0 + ln) + ux * off]], escalaW(fx, 0.12) * s * 5, "ponta"); }
+  return forma(d, fx.ink ? INK : fx.cores[1], { op: 0.95 }) + (fx.ink ? "" : forma(d, fx.cores[0], { op: 0.6 }));
+};
+/* ---------- ESCUDO RACHANDO: domo com rachaduras que crescem do ponto de impacto e cacos soltos ---------- */
+TIPOS.barreira_rachada = fx => {
+  const base0 = TIPOS.barreira(Object.assign({}, fx, { t: 1, P: Object.assign({ hexagonos: 0 }, fx.P) })), { P, r } = fx, s = pxu(fx), C = fx.A.mundo, [cx, cy] = T2(fx, C), Rs = escalaW(fx, P.raio) * s, dir = fx.D.ang + Math.PI, hx = cx + Math.cos(dir) * Rs * 0.7, hy = cy + Math.sin(dir) * Rs * 0.7;
+  let d = ""; for (let i = 0; i < quant(fx, 9); i++) { let px0 = hx, py0 = hy, a = r() * 6.28; const pts = [[px0, py0]]; for (let k = 0; k < 5; k++) { a += r.entre(-0.6, 0.6); const l = Rs * 0.16 * fx.t * r.entre(0.6, 1.3); px0 += Math.cos(a) * l; py0 += Math.sin(a) * l; pts.push([px0, py0]); } d += caminho(pts); }
+  let cacos = ""; for (let i = 0; i < quant(fx, 8) * fx.t; i++) { const a = r() * 6.28, dd = Rs * r.entre(0.1, 0.5) * fx.t; cacos += lasca(hx + Math.cos(a) * dd, hy + Math.sin(a) * dd, Rs * 0.05, r); }
+  const extra = forma(d, "none", { stroke: fx.ink ? INK : fx.cores[fx.cores.length - 1], sw: 1.6 }) + forma(cacos, fx.ink ? INK : fx.cores[1], { op: 0.9 });
+  if (typeof base0 === "string") return base0 + extra; base0.frente = (base0.frente || "") + extra; return base0;
+};
 /* ---------- personalizado ---------- */
 /* construtor por camadas e os efeitos prontos de mangá: a profundidade de referência é o peito do dono */
 const zcDono = fx => { if (fx.plano || fx.A.dono < 0) return null; const q = pontoParte(fx.K, fx.A.dono, "peito"); return q ? fx.proj(q)[2] : null; };
