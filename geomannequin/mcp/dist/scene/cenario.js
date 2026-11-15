@@ -5,7 +5,7 @@
 import { SCN, novoIdObjeto, P, setP, nextHue, setCorObjeto, atualizarApoios } from "./modelo.js";
 import { doBodyPose, guardArms, POSE0 } from "./poses.js";
 import { pMundo } from "./colisoes.js";
-import { COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
+import { VC_CARROS, COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
 
 const chaoY = () => restGround(SCN.list[0].params);
 /* roda uma função de pose com este manequim como ativo (as poses usam P) */
@@ -61,7 +61,11 @@ function editarObjeto(q, o) {
   if (cil) { if (o.raio === undefined && o.diametro === undefined && (o.larg !== undefined || o.largura !== undefined || o.prof !== undefined || o.profundidade !== undefined)) q.raio = Math.max(0.1, Math.max(q.larg, q.prof) / 2); q.larg = q.prof = 2 * q.raio; }
   else if (q.raio !== undefined) delete q.raio;
   if (typeof o.nome === "string") q.nome = o.nome.slice(0, 24);
+  if (Array.isArray(o.caminhoAbs) && o.caminhoAbs.length >= 2 && q.tipo === "trilho") { const p0 = o.caminhoAbs[0]; q.x = p0[0]; q.z = p0[1]; q.giro = 0; q.caminho = o.caminhoAbs.map(p => [p[0] - p0[0], p[1] - p0[1]]); }
+  if (typeof o.noTrilho === "string") { q.noTrilho = o.noTrilho.slice(0, 24); if (Number.isFinite(o.trilhoS)) q.trilhoS = o.trilhoS; }
+  if (Number.isFinite(o.aberto)) q.aberto = Math.max(0, Math.min(1, o.aberto)); if (o.paraDentro) q.paraDentro = true;
   if (Number.isFinite(o.vagoes)) q.vagoes = Math.max(0, Math.min(6, Math.round(o.vagoes)));
+  if (typeof o.modelo === "string" && o.modelo) { q.modelo = o.modelo.slice(0, 20); const Mc = q.tipo === "carro" && VC_CARROS[q.modelo]; if (Mc && Mc.cor && o.cor === undefined) try { setCorObjeto(q, Mc.cor); } catch (e) { } }
   if (o.cor !== undefined) { if (o.cor === null || o.cor === "auto") { q.col = null; q.hue = nextHue(q); } else setCorObjeto(q, String(o.cor), o.contorno); }
   if (o.sobre !== undefined) {
     if (o.sobre === null || o.sobre === false || o.sobre === "chao" || o.sobre === "chão") q.sobre = null;

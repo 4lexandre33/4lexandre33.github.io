@@ -1,6 +1,6 @@
 # Catálogo DSL do GeoMannequin
 
-Gerado em 2026-11-15 · **484 poses** · **197 animações** (162 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 138 efeitos · 135 objetos.
+Gerado em 2026-11-15 · **636 poses** · **197 animações** (162 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 143 efeitos · 154 objetos.
 
 Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.
 
@@ -8,7 +8,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 ## Índice
 
-**Poses:** `empe`, `contrapposto`, `caminhando`, `frente`, `torcao`, `passo`, `joelho`, `ponta`, `erguido`, `alcancar`, `lateral`, `agachar`, `cintura`, `cruzar`, `ombro`, `sentado`, `sentadoChao`, `pernasEsticadas`, `abracandoJoelhos`, `deitadoCostas`, `deitadoLado`, `deBrucos`, `apoiadoCotovelos`, `ajoelhado`, `sentadoCalcanhares`, `umJoelho`, `cocoras`, `correndo`, `impulso`, `saltando`, `aterrissando`, `chutando`, `socando`, `alongando`, `paradaDeMao`, `engatinhando`, `apontando`, `acenando`, `carregando`, `empurrando`, `pensando`, `encostado`, `caindo`, `ponte`, `ponteUmaPerna`, `paradaAbertura`, `escorpiao`, `arabesque`, `espacateSaltado`, `camelo`, `agachamentoProfundo`, `prancha`, `quatroApoios`, `meditando`, `guardaLuta`, `jab`, `direto`, `gancho`, `uppercut`, `socoParaCima`, `cotovelada`, `joelhada`, `chuteLateral`, `chuteAlto`, `chuteGiratorio`, `chuteVoador`, `rasteira`, `palma`, `palmaDupla`, `defesaCruzada`, `aterrissagemHeroi`, `investida`, `esquiva`, `provocando`, `golpeRosto`, `golpeEstomago`, `arremessadoCostas`, `girandoNoAr`, `deCabecaParaBaixo`, `rolando`, `deslizandoSentado`, `estatelado`, `levantandoDeQuatro`, `atordoado`, `recuando`, `ajoelhadoFerido`, `atravessandoParede`, `caindoDeCostas`, `lotusFlutuando`, `baseGritando`, `agachadoCerrando`, `bracosAbertosLevitando`, `maosEmPrece`, `bracosCruzadosPeito`, `joelhoMaoNoChao`, `esferaDeLado`, `bracoAosCeus`, `concentrando`, `cargaDuasMaos`, `saltoSobreCaixa`, `subindoDegrau`, `saltoLongo`, `desviando`, `escalando`, `vitoria`, `corridaSuperRapida`, `corridaNinja`, `arrancada`, `puloAlto`, `saltoAtaque`, `socoCarregado`, `socoDescendente`, `investidaDeOmbro`, `chuteMachado`, `bloqueioAlto`, `defesaComBracos`, `esquivaBaixa`, `esquivaParaTras`, `quedaDeCostas`, `quedaDeFrente`, `lancandoMagia`, `disparoDuasMaos`, `guardaBoxe`, `guardaKarate`, `guardaKungFuGarca`, `guardaMuayThai`, `guardaBaixaProvocando`, `posturaSumo`, `guardaEsgrima`, `guardaCapoeira`, `guardaNinja`, `guardaLutaLivre`, `jabBaixo`, `diretoAoCorpo`, `cruzado`, `ganchoBaixo`, `socoGiratorio`, `socoMartelo`, `socoSuperman`, `socoDuplo`, `socoNoChao`, `chuteFrontal`, `chuteEmpurrao`, `chuteCircularBaixo`, `chuteCircularMedio`, `chuteGancho`, `chuteCrescente`, `chuteParaTras`, `joelhadaVoadora`, `pisao`, `bloqueioBaixo`, `bloqueioInterno`, `aparar`, `cobertura`, `esquivaLateral`, `rolamentoParaTras`, `protegendoRosto`, `espadaGuardaMedia`, `espadaGuardaAlta`, `espadaEstocada`, `espadaCorteDescendente`, `espadaCorteHorizontal`, `espadaDefesa`, `espadaSaque`, `espadaEmbainhando`, `espadaApoiadaNoChao`, `lancaGuarda`, `lancaEstocada`, `bastaoGirando`, `arcoPuxando`, `arcoSacandoFlecha`, `armaDuasMaos`, `armaUmaMao`, `armaCoberturaParede`, `armaRecarregando`, `atingidoCostas`, `atingidoLado`, `caindoDeJoelhos`, `nocauteadoSentado`, `cuspindoSangue`, `arremessadoAlto`, `entradaHeroica`, `apontandoInimigo`, `punhoAFrente`, `viloesBracosCruzados`, `risadaVila`, `transformacao`, `pousoAgachadoMaoNoChao`, `vitoriaPunhoErguido`, `vitoriaAjoelhada`, `costasParaCamera`, `energiaConchaLado`, `energiaRajadaUmBraco`, `energiaDuasMaosAFrente`, `energiaAuraConcentrando`, `energiaEsferaUmaMao`, `selosDeMao`, `saltoComEspada`, `voadoraDupla`, `cambalhotaNoAr`, `saltoDesviando`, `amMabu`, `amGongbu`, `amPubu`, `amXiebu`, `amXubu`, `amSaudacaoKungFu`, `amTigreGarra`, `amTigreAtaque`, `amTigreDefesa`, `amGarcaAsas`, `amGarcaBico`, `amGarcaUmPe`, `amSerpenteBote`, `amSerpenteBaixa`, `amSerpenteEnrola`, `amLouvaDeusGuarda`, `amLouvaDeusAgarra`, `amMacacoAgachado`, `amMacacoOlha`, `amMacacoRouba`, `amDragaoGarra`, `amDragaoSobe`, `amDragaoMergulha`, `amJudoKumikata`, `amJudoIpponSeoi`, `amJudoOGoshi`, `amJudoOSotoGari`, `amJudoUchiMata`, `amJudoTomoeNage`, `amJudoKesaGatame`, `amJudoUkemi`, `amKarateZenkutsu`, `amKarateKokutsu`, `amKarateKibaDachi`, `amKarateOiZuki`, `amKarateGyakuZuki`, `amKarateAgeUke`, `amKarateGedanBarai`, `amKarateShutoUke`, `amKarateMaeGeri`, `amKarateYokoGeri`, `amKarateKata`, `amAikidoKamae`, `amAikidoIriminage`, `amAikidoKoteGaeshi`, `amAikidoShihoNage`, `amAikidoIkkyo`, `amAikidoSuwariwaza`, `amWingChunGuarda`, `amWingChunTanSau`, `amWingChunBongSau`, `amWingChunPakSau`, `amWingChunSocoCorrente`, `amTkdDollyoChagi`, `amTkdNeryoChagi`, `amTkdTwioYopChagi`, `amTkdDwiChagi`, `amTkdGuarda`, `amCapoeiraMeiaLua`, `amCapoeiraArmada`, `amCapoeiraQueixada`, `amCapoeiraAu`, `amCapoeiraNegativa`, `amCapoeiraEsquivaBaixa`, `amCapoeiraMartelo`, `amBjjGuardaFechada`, `amBjjMontada`, `amBjjChaveDeBraco`, `amBjjMataLeao`, `amBjjTriangulo`, `amBjjRaspagem`, `explicandoComMaos`, `contandoNosDedos`, `apontandoParaSi`, `maosAbertasSinceras`, `encolhendoOmbros`, `maoNoPeitoJuramento`, `maoNoQueixo`, `bracosCruzadosOuvindo`, `inclinadoAtento`, `cochichandoMaoNaBoca`, `dedoNosLabios`, `maoNaTesta`, `cocandoACabeca`, `maosNaCinturaBravo`, `apontandoAcusando`, `gesticulandoBravo`, `pedindoMaoEstendida`, `implorandoMaosJuntas`, `acenandoDeLonge`, `chamandoComAMao`, `dispensandoComAMao`, `polegarParaCima`, `sinalOk`, `maoNoBolsoRelaxado`, `maosNosBolsos`, `encostadoBracosCruzados`, `celularNoOuvido`, `olhandoOCelular`, `maoAtrasDaCabeca`, `maosAtrasDasCostas`, `reverenciaJaponesa`, `reverenciaLeve`, `continencia`, `negandoComDedo`, `apresentandoBracoAberto`, `discursando`, `olharDeLado`, `maoEstendidaApertar`, `abracoAberto`, `desesperoMaosNaCabeca`, `ajoelhadoChorando`, `encolhidoComMedo`, `abracandoASiMesmo`, `cabisbaixoAndando`, `bracosParaCimaAlegria`, `pulandoDeAlegria`, `dancandoAlegre`, `cansadoMaosNosJoelhos`, `deitadoOlhandoOCeu`, `sentadoNaEscadaPensativo`, `sentadoLendo`, `sentadoNoCelular`, `espreguicando`, `bocejando`, `olhandoORelogio`, `procurandoMaoNosOlhos`, `espiando`, `escondidoAgachado`, `correndoAssustado`, `tropecando`, `escorregando`, `carregandoCaixa`, `empurrandoPesado`, `puxandoCorda`, `varrendo`, `cozinhandoMexendo`, `escrevendoEmPe`, `digitandoSentado`, `pintandoCavalete`, `tocandoViolaoSentado`, `cantandoMicrofone`, `fotografando`, `bebendoGarrafa`, `comendoSanduiche`, `dormindoSentado`, `deitadoDeBrucosLendo`, `rezando`, `ajoelhadoRezando`, `tirandoSelfie`, `segurandoGuardaChuva`, `acenandoAdeusTriste`, `maosNoVidro`, `saltitando`, `girandoBracosAbertos`, `timidaPesParaDentro`, `maosNoRostoVergonha`, `derrotadoOmbrosCaidos`, `punhoCerradoDeterminado`, `modeloMaoNoQuadril`, `sentadoPernasCruzadas`, `sentadoEncostadoParede`, `deitadoFetal`, `correndoBracosAbertos`, `bracosCruzadosEmburrado`, `chocadoMaosNaBoca`, `apontandoRindo`, `segurandoBarrigaRindo`, `bocejandoSentado`, `esperandoImpaciente`, `ofereceFlor`, `ajoelhadoPedido`, `debrucadoNaMesa`, `maosAoAlto`, `ajoelhadoRendido`, `estendendoAMaoAjuda`, `esquivaMatrix`, `esquivaAbaixando`, `esquivaPendulo`, `esquivaGiro`, `esquivaRolamento`, `esquivaMergulho`, `esquivaCambalhotaTras`, `esquivaPorUmTriz`, `esquivaPuloLado`, `esquivaInclinarCabeca`, `defesaCoberto`, `defesaEncolhido`, `defesaEmpurrando`, `defesaBarreira`, `defesaBarreiraDupla`, `defesaChute`, `defesaAgarrandoPunho`, `defesaDesviandoBraco`, `defesaProtegendoOutro`, `puloImpulso`, `puloDecolando`, `puloEstrela`, `puloEncolhido`, `puloAltoEsticado`, `puloEmDistancia`, `puloTesoura`, `puloAterrissagem`, `puloAterrissagemHeroi`, `puloParede`, `puloCambalhota`, `puloQueda`, `flutuandoMeditacao`, `flutuandoRelaxado`, `flutuandoBracosAbertos`, `flutuandoAmeaca`, `flutuandoSubmerso`, `flutuandoGravidadeZero`, `flutuandoAdormecido`, `vooSuperHeroi`, `vooDecolando`, `vooPlanando`, `vooMergulho`, `vooPairando`, `fugaOlhandoTras`, `fugaDesesperada`, `fugaEsgueirando`, `fugaRastejando`, `fugaTropecando`, `fugaPulandoMuro`, `fugaEscondendo`, `fugaColadoParede`, `fugaCarregandoAlguem`, `perseguicaoSprint`, `perseguicaoAlcancando`, `perseguicaoAgarrando`, `perseguicaoApontando`, `perseguicaoOfegante`, `perseguicaoDerrapando`, `perseguicaoProcurando`, `parkourVault`, `parkourPendurado`, `parkourEscalando`, `parkourCorridaParede`, `parkourDeslizando`, `parkourEquilibrio`, `parkourAgachadoBeirada`, `impactoNoRosto`, `impactoNoEstomago`, `arremessadoParaTras`, `caidoDeCostas`, `caidoDeBrucos`, `levantandoComEsforco`, `ajoelhadoExausto`, `cambaleando`, `atordoadoEstrelinhas`, `escorregaoComico`, `quedaSentado`, `poderCarregando`, `poderKamehameha`, `poderBolaPreparo`, `poderAoCeu`, `poderSocoChao`, `poderTelecinese`, `poderTransformacao`, `poderSelamento`, `giganteAgachando`, `gigantePisando`, `giganteRugindo`, `giganteOlhandoBaixo`, `giganteSegurandoNaPalma`, `giganteDerrubandoPredio`, `minusculoOlhandoCima`, `minusculoAcenando`, `minusculoEscalando`, `minusculoEsmagado`, `minusculoNaPalma`, `minusculoEmpurrando`, `entradaVilao`, `encaraRival`, `desafioChamando`, `costasComCostas`, `cercadoOlhandoVolta`, `vitoriaPunhoAlto`, `vitoriaCostasViradas`, `derrotaDeJoelhos`, `juramento`, `estendendoMaoRival`
+**Poses:** `empe`, `contrapposto`, `caminhando`, `frente`, `torcao`, `passo`, `joelho`, `ponta`, `erguido`, `alcancar`, `lateral`, `agachar`, `cintura`, `cruzar`, `ombro`, `sentado`, `sentadoChao`, `pernasEsticadas`, `abracandoJoelhos`, `deitadoCostas`, `deitadoLado`, `deBrucos`, `apoiadoCotovelos`, `ajoelhado`, `sentadoCalcanhares`, `umJoelho`, `cocoras`, `correndo`, `impulso`, `saltando`, `aterrissando`, `chutando`, `socando`, `alongando`, `paradaDeMao`, `engatinhando`, `apontando`, `acenando`, `carregando`, `empurrando`, `pensando`, `encostado`, `caindo`, `ponte`, `ponteUmaPerna`, `paradaAbertura`, `escorpiao`, `arabesque`, `espacateSaltado`, `camelo`, `agachamentoProfundo`, `prancha`, `quatroApoios`, `meditando`, `guardaLuta`, `jab`, `direto`, `gancho`, `uppercut`, `socoParaCima`, `cotovelada`, `joelhada`, `chuteLateral`, `chuteAlto`, `chuteGiratorio`, `chuteVoador`, `rasteira`, `palma`, `palmaDupla`, `defesaCruzada`, `aterrissagemHeroi`, `investida`, `esquiva`, `provocando`, `golpeRosto`, `golpeEstomago`, `arremessadoCostas`, `girandoNoAr`, `deCabecaParaBaixo`, `rolando`, `deslizandoSentado`, `estatelado`, `levantandoDeQuatro`, `atordoado`, `recuando`, `ajoelhadoFerido`, `atravessandoParede`, `caindoDeCostas`, `lotusFlutuando`, `baseGritando`, `agachadoCerrando`, `bracosAbertosLevitando`, `maosEmPrece`, `bracosCruzadosPeito`, `joelhoMaoNoChao`, `esferaDeLado`, `bracoAosCeus`, `concentrando`, `cargaDuasMaos`, `saltoSobreCaixa`, `subindoDegrau`, `saltoLongo`, `desviando`, `escalando`, `vitoria`, `corridaSuperRapida`, `corridaNinja`, `arrancada`, `puloAlto`, `saltoAtaque`, `socoCarregado`, `socoDescendente`, `investidaDeOmbro`, `chuteMachado`, `bloqueioAlto`, `defesaComBracos`, `esquivaBaixa`, `esquivaParaTras`, `quedaDeCostas`, `quedaDeFrente`, `lancandoMagia`, `disparoDuasMaos`, `guardaBoxe`, `guardaKarate`, `guardaKungFuGarca`, `guardaMuayThai`, `guardaBaixaProvocando`, `posturaSumo`, `guardaEsgrima`, `guardaCapoeira`, `guardaNinja`, `guardaLutaLivre`, `jabBaixo`, `diretoAoCorpo`, `cruzado`, `ganchoBaixo`, `socoGiratorio`, `socoMartelo`, `socoSuperman`, `socoDuplo`, `socoNoChao`, `chuteFrontal`, `chuteEmpurrao`, `chuteCircularBaixo`, `chuteCircularMedio`, `chuteGancho`, `chuteCrescente`, `chuteParaTras`, `joelhadaVoadora`, `pisao`, `bloqueioBaixo`, `bloqueioInterno`, `aparar`, `cobertura`, `esquivaLateral`, `rolamentoParaTras`, `protegendoRosto`, `espadaGuardaMedia`, `espadaGuardaAlta`, `espadaEstocada`, `espadaCorteDescendente`, `espadaCorteHorizontal`, `espadaDefesa`, `espadaSaque`, `espadaEmbainhando`, `espadaApoiadaNoChao`, `lancaGuarda`, `lancaEstocada`, `bastaoGirando`, `arcoPuxando`, `arcoSacandoFlecha`, `armaDuasMaos`, `armaUmaMao`, `armaCoberturaParede`, `armaRecarregando`, `atingidoCostas`, `atingidoLado`, `caindoDeJoelhos`, `nocauteadoSentado`, `cuspindoSangue`, `arremessadoAlto`, `entradaHeroica`, `apontandoInimigo`, `punhoAFrente`, `viloesBracosCruzados`, `risadaVila`, `transformacao`, `pousoAgachadoMaoNoChao`, `vitoriaPunhoErguido`, `vitoriaAjoelhada`, `costasParaCamera`, `energiaConchaLado`, `energiaRajadaUmBraco`, `energiaDuasMaosAFrente`, `energiaAuraConcentrando`, `energiaEsferaUmaMao`, `selosDeMao`, `saltoComEspada`, `voadoraDupla`, `cambalhotaNoAr`, `saltoDesviando`, `amMabu`, `amGongbu`, `amPubu`, `amXiebu`, `amXubu`, `amSaudacaoKungFu`, `amTigreGarra`, `amTigreAtaque`, `amTigreDefesa`, `amGarcaAsas`, `amGarcaBico`, `amGarcaUmPe`, `amSerpenteBote`, `amSerpenteBaixa`, `amSerpenteEnrola`, `amLouvaDeusGuarda`, `amLouvaDeusAgarra`, `amMacacoAgachado`, `amMacacoOlha`, `amMacacoRouba`, `amDragaoGarra`, `amDragaoSobe`, `amDragaoMergulha`, `amJudoKumikata`, `amJudoIpponSeoi`, `amJudoOGoshi`, `amJudoOSotoGari`, `amJudoUchiMata`, `amJudoTomoeNage`, `amJudoKesaGatame`, `amJudoUkemi`, `amKarateZenkutsu`, `amKarateKokutsu`, `amKarateKibaDachi`, `amKarateOiZuki`, `amKarateGyakuZuki`, `amKarateAgeUke`, `amKarateGedanBarai`, `amKarateShutoUke`, `amKarateMaeGeri`, `amKarateYokoGeri`, `amKarateKata`, `amAikidoKamae`, `amAikidoIriminage`, `amAikidoKoteGaeshi`, `amAikidoShihoNage`, `amAikidoIkkyo`, `amAikidoSuwariwaza`, `amWingChunGuarda`, `amWingChunTanSau`, `amWingChunBongSau`, `amWingChunPakSau`, `amWingChunSocoCorrente`, `amTkdDollyoChagi`, `amTkdNeryoChagi`, `amTkdTwioYopChagi`, `amTkdDwiChagi`, `amTkdGuarda`, `amCapoeiraMeiaLua`, `amCapoeiraArmada`, `amCapoeiraQueixada`, `amCapoeiraAu`, `amCapoeiraNegativa`, `amCapoeiraEsquivaBaixa`, `amCapoeiraMartelo`, `amBjjGuardaFechada`, `amBjjMontada`, `amBjjChaveDeBraco`, `amBjjMataLeao`, `amBjjTriangulo`, `amBjjRaspagem`, `amKarateUchiUke`, `amKarateJuujiUke`, `amKarateUraken`, `amKarateHizaGeri`, `amTkdMakki`, `amTkdBandalChagi`, `amWingChunLapSau`, `amCapoeiraBencao`, `amCapoeiraCocorinha`, `amKungFuBloqueioGarca`, `amKungFuPalmaDupla`, `amJudoDefesaQuadril`, `amJudoCaindoProjetado`, `amBjjDefendendoMataLeao`, `rfAgachadoCocoras`, `rfAgachadoApontando`, `rfAgachadoMaosNosJoelhos`, `rfAgachadoMaoNoChao`, `rfAgachadoMaosNaCabeca`, `rfAgachadoAbracandoJoelhos`, `rfAgachadoPensando`, `rfAgachadoOferecendo`, `rfAgachadoUmJoelho`, `rfAgachadoUmJoelhoOlhando`, `rfAgachadoBaixoLateral`, `rfAgachadoInspecionando`, `rfEngatinhandoAvanco`, `rfEngatinhandoOlhandoTras`, `rfRastejandoCotovelos`, `rfLargadaCorrida`, `rfApoioTresPontos`, `rfFurtivoPassoLongo`, `rfFurtivoNasPontas`, `rfFurtivoAgachadoAvancando`, `rfFurtivoColadoParede`, `rfFurtivoEspiandoMuro`, `rfFurtivoAgachadoAtrasCobertura`, `rfFurtivoSinalSilencio`, `rfFurtivoSinalAvancar`, `rfFurtivoSinalParar`, `rfFurtivoEscalandoMuro`, `rfFurtivoCorridaAbaixada`, `rfFlutuandoRelaxadoRef`, `rfFlutuandoSentadoNoAr`, `rfFlutuandoDeCostas`, `rfFlutuandoGirando`, `rfFlutuandoBracosAbertosRef`, `rfFlutuandoEncolhidoNoAr`, `rfCaindoDeCostasRef`, `rfCaindoDeFrente`, `rfRendicaoMaosAoAltoRef`, `rfRendicaoMaosNaNuca`, `rfRendicaoMaosNasCostas`, `rfRendicaoMeioErguido`, `rfRendicaoAjoelhadoMaosAoAlto`, `rfRendicaoAjoelhadoCurvado`, `rfRendicaoProstrado`, `rfRendicaoAjoelhadoCobrindoCabeca`, `rfSocoJabRef`, `rfSocoDiretoAvanco`, `rfSocoGanchoAlto`, `rfSocoUppercutRef`, `rfSocoOverhand`, `rfSocoInvestidaAbaixada`, `rfSocoGuardaRecolhida`, `rfSocoBackfistGirando`, `rfMergulhoCanivete`, `rfMergulhoGrupado`, `rfMergulhoCarpado`, `rfMergulhoAndorinha`, `rfMergulhoSuperman`, `rfParadaDeMao`, `rfParadaDeMaoAberta`, `rfParadaDeMaoEscorpiao`, `rfAcenoTchau`, `rfAcenoDuasMaos`, `rfAcenoAndandoEmbora`, `rfAcenoDeCostas`, `rfAcenoAjoelhado`, `rfDespedidaMaoNoPeito`, `rfDespedidaAbracandoSi`, `rfDespedidaAjoelhadoChorando`, `rfAtaqueInvestidaSoco`, `rfAtaqueSaltoChute`, `rfAtaqueChuteAlto`, `rfAtaqueRasteira`, `rfAtaquePalmaAberta`, `rfAtaqueCotovelada`, `rfAtaqueJoelhada`, `rfAtaqueMarteloDuasMaos`, `rfAtaqueEnergiaPalmas`, `rfAtaqueCargaEnergia`, `rfDorBarriga`, `rfDorPeito`, `rfDorCostas`, `rfDorPescoco`, `rfDorCabeca`, `rfDorJoelhoSentado`, `rfDorTornozeloSentado`, `rfDorMancando`, `rfDorBracoFerido`, `rfDorContorcendo`, `rfVergonhaRostoNasMaos`, `rfVergonhaMaoNaNuca`, `rfVergonhaMaosEntrelacadas`, `rfVergonhaPePezinho`, `rfVergonhaBracoCruzadoNaFrente`, `rfVergonhaMaosAtras`, `rfVergonhaEncolhido`, `rfVergonhaCobrindoBoca`, `rfVergonhaVirandoRosto`, `rfNinjaGuardaKunai`, `rfNinjaArremessoShuriken`, `rfNinjaArremessoDuplo`, `rfNinjaSeloDeMao`, `rfNinjaSaltoAlto`, `rfNinjaCorridaBracosParaTras`, `rfNinjaEspadaReversa`, `rfProvedorOferecendo`, `rfProvedorMaoNoPeito`, `rfProvedorBracosAbertosAcolhendo`, `rfProvedorAgachadoDando`, `rfProvedorMaosNaCintura`, `rfProvedorAbrindoBau`, `rfProvedorCarregandoSaco`, `rfMensageiroCorrendoComCarta`, `rfMensageiroEntregandoCarta`, `rfMensageiroLendoProclamacao`, `rfMensageiroGritandoNotícia`, `rfMensageiroAjoelhadoReportando`, `rfMensageiroApontandoCaminho`, `rfViloaRisoMaligno`, `rfViloaMaoNoQuadril`, `rfViloaBracosCruzados`, `rfViloaConjurando`, `rfViloaApontandoAcusando`, `rfViloaSentadaNoTrono`, `rfViloaAgachadaPredadora`, `rfSobreviventeExausto`, `rfSobreviventeComCajado`, `rfSobreviventeOlhandoHorizonte`, `rfSobreviventeAjoelhadoAgradecendo`, `rfSobreviventeBebendoCantil`, `rfSobreviventeEscalandoCorda`, `rfSobreviventeComMochila`, `rfInfiltradorAgachadoSinal`, `rfInfiltradorTrocaObjeto`, `rfInfiltradorEscutando`, `rfInfiltradorDisfarcado`, `rfCooperacaoBateMao`, `rfCooperacaoPunhoErguido`, `rfCooperacaoMeditandoSentado`, `explicandoComMaos`, `contandoNosDedos`, `apontandoParaSi`, `maosAbertasSinceras`, `encolhendoOmbros`, `maoNoPeitoJuramento`, `maoNoQueixo`, `bracosCruzadosOuvindo`, `inclinadoAtento`, `cochichandoMaoNaBoca`, `dedoNosLabios`, `maoNaTesta`, `cocandoACabeca`, `maosNaCinturaBravo`, `apontandoAcusando`, `gesticulandoBravo`, `pedindoMaoEstendida`, `implorandoMaosJuntas`, `acenandoDeLonge`, `chamandoComAMao`, `dispensandoComAMao`, `polegarParaCima`, `sinalOk`, `maoNoBolsoRelaxado`, `maosNosBolsos`, `encostadoBracosCruzados`, `celularNoOuvido`, `olhandoOCelular`, `maoAtrasDaCabeca`, `maosAtrasDasCostas`, `reverenciaJaponesa`, `reverenciaLeve`, `continencia`, `negandoComDedo`, `apresentandoBracoAberto`, `discursando`, `olharDeLado`, `maoEstendidaApertar`, `abracoAberto`, `desesperoMaosNaCabeca`, `ajoelhadoChorando`, `encolhidoComMedo`, `abracandoASiMesmo`, `cabisbaixoAndando`, `bracosParaCimaAlegria`, `pulandoDeAlegria`, `dancandoAlegre`, `cansadoMaosNosJoelhos`, `deitadoOlhandoOCeu`, `sentadoNaEscadaPensativo`, `sentadoLendo`, `sentadoNoCelular`, `espreguicando`, `bocejando`, `olhandoORelogio`, `procurandoMaoNosOlhos`, `espiando`, `escondidoAgachado`, `correndoAssustado`, `tropecando`, `escorregando`, `carregandoCaixa`, `empurrandoPesado`, `puxandoCorda`, `varrendo`, `cozinhandoMexendo`, `escrevendoEmPe`, `digitandoSentado`, `pintandoCavalete`, `tocandoViolaoSentado`, `cantandoMicrofone`, `fotografando`, `bebendoGarrafa`, `comendoSanduiche`, `dormindoSentado`, `deitadoDeBrucosLendo`, `rezando`, `ajoelhadoRezando`, `tirandoSelfie`, `segurandoGuardaChuva`, `acenandoAdeusTriste`, `maosNoVidro`, `saltitando`, `girandoBracosAbertos`, `timidaPesParaDentro`, `maosNoRostoVergonha`, `derrotadoOmbrosCaidos`, `punhoCerradoDeterminado`, `modeloMaoNoQuadril`, `sentadoPernasCruzadas`, `sentadoEncostadoParede`, `deitadoFetal`, `correndoBracosAbertos`, `bracosCruzadosEmburrado`, `chocadoMaosNaBoca`, `apontandoRindo`, `segurandoBarrigaRindo`, `bocejandoSentado`, `esperandoImpaciente`, `ofereceFlor`, `ajoelhadoPedido`, `debrucadoNaMesa`, `maosAoAlto`, `ajoelhadoRendido`, `estendendoAMaoAjuda`, `esquivaMatrix`, `esquivaAbaixando`, `esquivaPendulo`, `esquivaGiro`, `esquivaRolamento`, `esquivaMergulho`, `esquivaCambalhotaTras`, `esquivaPorUmTriz`, `esquivaPuloLado`, `esquivaInclinarCabeca`, `defesaCoberto`, `defesaEncolhido`, `defesaEmpurrando`, `defesaBarreira`, `defesaBarreiraDupla`, `defesaChute`, `defesaAgarrandoPunho`, `defesaDesviandoBraco`, `defesaProtegendoOutro`, `puloImpulso`, `puloDecolando`, `puloEstrela`, `puloEncolhido`, `puloAltoEsticado`, `puloEmDistancia`, `puloTesoura`, `puloAterrissagem`, `puloAterrissagemHeroi`, `puloParede`, `puloCambalhota`, `puloQueda`, `flutuandoMeditacao`, `flutuandoRelaxado`, `flutuandoBracosAbertos`, `flutuandoAmeaca`, `flutuandoSubmerso`, `flutuandoGravidadeZero`, `flutuandoAdormecido`, `vooSuperHeroi`, `vooDecolando`, `vooPlanando`, `vooMergulho`, `vooPairando`, `fugaOlhandoTras`, `fugaDesesperada`, `fugaEsgueirando`, `fugaRastejando`, `fugaTropecando`, `fugaPulandoMuro`, `fugaEscondendo`, `fugaColadoParede`, `fugaCarregandoAlguem`, `perseguicaoSprint`, `perseguicaoAlcancando`, `perseguicaoAgarrando`, `perseguicaoApontando`, `perseguicaoOfegante`, `perseguicaoDerrapando`, `perseguicaoProcurando`, `parkourVault`, `parkourPendurado`, `parkourEscalando`, `parkourCorridaParede`, `parkourDeslizando`, `parkourEquilibrio`, `parkourAgachadoBeirada`, `impactoNoRosto`, `impactoNoEstomago`, `arremessadoParaTras`, `caidoDeCostas`, `caidoDeBrucos`, `levantandoComEsforco`, `ajoelhadoExausto`, `cambaleando`, `atordoadoEstrelinhas`, `escorregaoComico`, `quedaSentado`, `poderCarregando`, `poderKamehameha`, `poderBolaPreparo`, `poderAoCeu`, `poderSocoChao`, `poderTelecinese`, `poderTransformacao`, `poderSelamento`, `giganteAgachando`, `gigantePisando`, `giganteRugindo`, `giganteOlhandoBaixo`, `giganteSegurandoNaPalma`, `giganteDerrubandoPredio`, `minusculoOlhandoCima`, `minusculoAcenando`, `minusculoEscalando`, `minusculoEsmagado`, `minusculoNaPalma`, `minusculoEmpurrando`, `entradaVilao`, `encaraRival`, `desafioChamando`, `costasComCostas`, `cercadoOlhandoVolta`, `vitoriaPunhoAlto`, `vitoriaCostasViradas`, `derrotaDeJoelhos`, `juramento`, `estendendoMaoRival`
 
 **Animações — ação (acontece e segura):** `passoFrente`, `passoTras`, `passoLadoDireito`, `passoLadoEsquerdo`, `virarEsquerda`, `virarDireita`, `meiaVolta`, `peDireito15cmDireita`, `peDireito15cmEsquerda`, `peDireito15cmFrente`, `peDireito15cmTras`, `peEsquerdo15cmDireita`, `peEsquerdo15cmEsquerda`, `peEsquerdo15cmFrente`, `peEsquerdo15cmTras`, `inclinarCabecaDireita`, `inclinarCabecaEsquerda`, `abaixarCabeca`, `erguerQueixo`, `acenarSim`, `acenarNao`, `inclinarTroncoFrente`, `recuarTronco`, `encolherOmbrosRapido`, `pesoParaDireita`, `pesoParaEsquerda`, `ombrosCairem`, `encolher`, `gestoExplicar`, `gestoOferecer`, `gestoEnfatizar`, `gestoContarDedos`, `gestoApontar`, `gestoDedoEmRiste`, `gestoNegarComMao`, `gestoMaoNoPeito`, `gestoEncolherOmbros`, `gestoMaoNoQueixo`, `gestoBracosCruzados`, `gestoMaosNaCintura`, `gestoMaosNoAr`, `gestoMaoNaNuca`, `gestoCocarCabeca`, `gestoMaosJuntas`, `gestoSegurarCabeca`, `gestoAcenar`, `gestoJoinha`, `gestoBracosAbertos`, `acenarTchau`, `piscar`, `sorrir`, `ficarComRaiva`, `assustar`, `socarJab`, `socoDireto`, `defender`, `esquivar`, `chutar`, `entrarEmGuarda`, `apontarAlgo`, `acenarPose`, `pular`, `girar45E`, `girar45D`, `girar90E`, `girar90D`, `girar180E`, `girar180D`, `girar360E`, `girar360D`, `girar360E_pivo`, `girar360D_pivo`, `girar360E_luta`, `girar360D_luta`, `girar360E_salto`, `girar360D_salto`, `girar720E_pivo`, `puloLugar`, `puloFrente`, `puloAlto`, `puloLado`, `puloCorrida`, `mergulhar`, `rolarDireita`, `rolarEsquerda`, `oferecer`, `pedir`, `entregar`, `receber`, `pegar`, `jogar`, `largar`, `apontar`, `acenar`, `cumprimentar`, `abrirPorta`, `beber`, `ler`, `atenderCelular`, `olharRelogio`, `encolherOmbros`, `chorar`, `rir`, `cairDeJoelhos`, `cocarCabeca`, `cruzarBracos`, `espreguicar`, `bocejar`, `comemorar`, `suspirar`, `baterPalmas`, `esquivaLateralAnim`, `esquivaParaTrasAnim`, `esquivaAbaixandoAnim`, `esquivaMatrixAnim`, `esquivaRolamentoAnim`, `esquivaMergulhoAnim`, `defesaCruzadaAnim`, `defesaBarreiraAnim`, `puloCompleto`, `puloEmDistanciaAnim`, `pousoDeHeroi`, `mortalParaTras`, `levitar`, `flutuarMeditando`, `decolarHeroi`, `fugaOlhandoTrasAnim`, `esconderAnim`, `perseguicaoAgarrao`, `perseguicaoParouCansado`, `parkourVaultAnim`, `levarSocoNoRosto`, `levarSocoNoEstomago`, `serArremessado`, `nocaute`, `carregarPoder`, `dispararRaio`, `socoNoChaoPoder`, `gigantePisao`, `giganteAbaixaPega`, `minusculoFogePisao`, `confrontoEncarar`, `vitoriaAnim`, `derrotaAnim`, `kataShaolinAnim`, `cincoAnimaisAnim`, `tigreAtacaAnim`, `garcaBicaAnim`, `serpenteBoteAnim`, `macacoAnim`, `judoSeoiNageAnim`, `judoOSotoGariAnim`, `judoUkemiAnim`, `karateKihonAnim`, `karateChutesAnim`, `aikidoIriminageAnim`, `wingChunAnim`, `taekwondoAnim`, `taekwondoVoadorAnim`, `capoeiraGingaAnim`, `capoeiraAuAnim`, `jiuJitsuAnim`
 
@@ -24,9 +24,9 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 **Expressões (`expressao NOME`):** neutra, alegria, surpresa, raiva, tristeza, medo, grito, sono, desconfianca, piscando, riso, choro, vergonha, nojo, desprezo, determinacao, malicia, confusao, choque, tedio, dor, cansaco, admiracao, culpa, orgulho, pensativo, alivio, sorrisoManiaco, surpresaTotal, olharVazio, iraFocada, focoTotal, choqueComico, nervoso, mordendoLabio, provocando, furia, esforco, encantado, sombrio, determinadoLuta, gritoDeGuerra, apaixonado, envergonhadoSorrindo, tsundere, bicudo, gotaDeSuor, veiaDeRaiva, olhosBrilhando, choroCascata, choroContido, sorrisoTriste, sorrisoConfiante, sorrisoMaligno, gargalhadaMaligna, olharMorto, olharFrio, olharPenetrante, susto, panico, horror, nojoExtremo, incredulo, sarcastico, serio, calmo, sonhador, curioso, esperancoso, decepcionado, ciumes, arrogante, frustrado, exausto, tonto, bebado, doente, fome, concentradoLingua, gritoDeDor, gritoDeAlegria, vitoriaSorriso
 
-**Efeitos (`Kai efeito NOME em mao-direita`):** concentracao, velocidade, impacto_tela, flash, sombra_dramatica, onomatopeia, reticula, feixe, cone, espiral, tornado, explosao, barreira, circulo_magico, pilar, meteoro, chuva_meteoros, raio, onda_choque, cristais_chao, fogo_chao, fumaca, chama, aura, arco_movimento, rastro_membro, pos_imagem, energia_mao, velocidade_corpo, impacto_contato, emote, cratera, rachaduras, destrocos, poeira, parede_quebrada, buraco_chao, objeto_quebrando, rastro_fumaca, rastro_arma, projetil, impulso, borrao_movimento, poeira_pes, sulco_poeira, clarao_cano, cartuchos, impacto_bala, aura_explosiva, aura_vento, esfera_energia, fios_energia, pedras_levitando, ondas_chao, carga_maos, redemoinho, aneis_impacto, salpicos, aneis_orbitais, personalizado, composto, raio_galhos, raio_cartoon, arvore_de_raios, cone_de_aneis, torrente_espiral, tunel_de_aneis, foice_de_energia, rajada_de_particulas, leque_de_flechas, enxame_de_flechas, laminas_crescentes, crescente_gigante, laminas_de_vento, onda_gigante, espinhos_do_chao, tentaculos, vinhas_de_espinhos, atomo, vortice_disco, cupula_de_arcos, esfera_jaula, laco_infinito, fita_em_s, serpente_de_energia, discos_serra, ondas_sonoras, explosao_estrelada, bolhas, circulo_magico_flechas, circulo_de_runas, dna, tranca, portais_e_feixes, feixe_com_aneis, cone_de_ondas, esfera_espiral, chamas_nanquim, respingos_de_nanquim, pilar_de_luz_nanquim, redemoinho_de_fumaca, linhas_de_impulso, impacto_com_detritos, anel_de_impacto_no_chao, chuva_de_estrelas, aura_de_espinhos, tornado_espiral, rastro_de_velocidade, arco_de_golpe, petalas_sakura, folhas_ao_vento, chuva, neve, nevoa, raios_de_luz_divina, bolhas_subindo, vagalumes, corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma, flecha_de_luz, portal, teletransporte, aura_sombria, aura_de_gelo, selo_no_ar, cura, estrelas_tontura, espirais_tontura, linhas_de_susto, gotas_voando, vapor_de_raiva, brilho_nos_olhos, coracoes_flutuando, poeira_de_corrida, lens_flare
+**Efeitos (`Kai efeito NOME em mao-direita`):** concentracao, velocidade, impacto_tela, flash, sombra_dramatica, onomatopeia, reticula, feixe, cone, espiral, tornado, explosao, barreira, circulo_magico, pilar, meteoro, chuva_meteoros, raio, onda_choque, cristais_chao, fogo_chao, fumaca, chama, aura, arco_movimento, rastro_membro, pos_imagem, energia_mao, velocidade_corpo, impacto_contato, emote, cratera, rachaduras, destrocos, poeira, parede_quebrada, buraco_chao, objeto_quebrando, rastro_fumaca, rastro_arma, projetil, corte_ar, choque_laminas, corte_impacto, tracante, barreira_rachada, impulso, borrao_movimento, poeira_pes, sulco_poeira, clarao_cano, cartuchos, impacto_bala, aura_explosiva, aura_vento, esfera_energia, fios_energia, pedras_levitando, ondas_chao, carga_maos, redemoinho, aneis_impacto, salpicos, aneis_orbitais, personalizado, composto, raio_galhos, raio_cartoon, arvore_de_raios, cone_de_aneis, torrente_espiral, tunel_de_aneis, foice_de_energia, rajada_de_particulas, leque_de_flechas, enxame_de_flechas, laminas_crescentes, crescente_gigante, laminas_de_vento, onda_gigante, espinhos_do_chao, tentaculos, vinhas_de_espinhos, atomo, vortice_disco, cupula_de_arcos, esfera_jaula, laco_infinito, fita_em_s, serpente_de_energia, discos_serra, ondas_sonoras, explosao_estrelada, bolhas, circulo_magico_flechas, circulo_de_runas, dna, tranca, portais_e_feixes, feixe_com_aneis, cone_de_ondas, esfera_espiral, chamas_nanquim, respingos_de_nanquim, pilar_de_luz_nanquim, redemoinho_de_fumaca, linhas_de_impulso, impacto_com_detritos, anel_de_impacto_no_chao, chuva_de_estrelas, aura_de_espinhos, tornado_espiral, rastro_de_velocidade, arco_de_golpe, petalas_sakura, folhas_ao_vento, chuva, neve, nevoa, raios_de_luz_divina, bolhas_subindo, vagalumes, corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma, flecha_de_luz, portal, teletransporte, aura_sombria, aura_de_gelo, selo_no_ar, cura, estrelas_tontura, espirais_tontura, linhas_de_susto, gotas_voando, vapor_de_raiva, brilho_nos_olhos, coracoes_flutuando, poeira_de_corrida, lens_flare
 
-**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco, carruagem, carroca, barcoRemo, canoa, veleiro, balsa, balsaGrande, navio, locomotiva, vagao, trem, trilho, katana, espadaLonga, espadaCurta, sabre, adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku, chicote, besta, pistola, rifle, revolver, submetralhadora, metralhadora, sniper, escopeta, lancaFoguetes, broquel, escudoCavaleiro, escudoTorre, varinha, cajadoMagico, orbe, tocha, lanterna, violao, guitarra, violino, arcoViolino, flauta, trompete, microfone, baqueta, celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave, espelhoMao, copoBebida
+**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco, carruagem, carroca, barcoRemo, canoa, veleiro, balsa, balsaGrande, navio, locomotiva, vagao, trem, porta, portaPequena, portaDupla, portaVidro, portaCorrer, portaCastelo, portaoGrade, portaoFerro, portaLevadica, alcapao, carro, onibus, aviao, aviaoPequeno, helicoptero, lancha, boteInflavel, barcoPesqueiro, submarino, trilho, katana, espadaLonga, espadaCurta, sabre, adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku, chicote, besta, pistola, rifle, revolver, submetralhadora, metralhadora, sniper, escopeta, lancaFoguetes, broquel, escudoCavaleiro, escudoTorre, varinha, cajadoMagico, orbe, tocha, lanterna, violao, guitarra, violino, arcoViolino, flauta, trompete, microfone, baqueta, celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave, espelhoMao, copoBebida
 
 ## Animais quadrúpedes (capítulo 22)
 
@@ -42,7 +42,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 ## Pré-configurações de cena e câmera (capítulo 27)
 
-667 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
+723 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
 
 Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon Boom, No Film School): over-the-shoulder (OTS), dirty/clean single, two-shot, 50/50, dutch angle, POV, insert, establishing shot.
 
@@ -836,6 +836,197 @@ Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon B
 | `esconder.parede.pov-b` | o que quem procura vê (o esconderijo) — colado na parede, prendendo a respiração | seeker POV | A, B | o que quem procura vê (o esconderijo) (colado na parede, prendendo a respiração) |
 | `esconder.parede.close-a` | o rosto de quem se esconde — colado na parede, prendendo a respiração | hider close-up | A, B | o rosto de quem se esconde (colado na parede, prendendo a respiração) |
 | `esconder.parede.aereo` | de cima: o esconderijo e o perigo — colado na parede, prendendo a respiração | overhead hide | A, B | de cima: o esconderijo e o perigo (colado na parede, prendendo a respiração) |
+
+### Referência/Abraço/Reencontro (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.abraco.correndo` | correndo para o abraço | reunion run | A, B | correndo para o abraço (das folhas de referência) |
+| `ref.abraco.saltando` | pulando no colo | jump hug | A, B | pulando no colo (das folhas de referência) |
+
+### Referência/Abraço/Consolo (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.abraco.ajoelhados` | abraço ajoelhados no chão | kneeling embrace | A, B | abraço ajoelhados no chão (das folhas de referência) |
+| `ref.abraco.consolo-sentado` | consolando quem está sentado no chão | comfort | A, B | consolando quem está sentado no chão (das folhas de referência) |
+
+### Referência/Ajuda/Levantar (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.ajuda.levantar` | estendendo a mão para levantar | helping up | A, B | estendendo a mão para levantar (das folhas de referência) |
+
+### Referência/Ajuda/Resgate (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.ajuda.puxar-penhasco` | puxando do penhasco | cliff pull | A, B | puxando do penhasco (das folhas de referência) |
+
+### Referência/Ajuda/Amparo (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.ajuda.ombro-ferido` | amparando o ferido pelo ombro | shoulder carry | A, B | amparando o ferido pelo ombro (das folhas de referência) |
+
+### Referência/Ajuda/Cuidar (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.ajuda.cuidar-ferido` | cuidando do ferido no chão | first aid | A, B | cuidando do ferido no chão (das folhas de referência) |
+| `ref.ajuda.dar-agua` | dando de beber ao sobrevivente | giving water | A, B | dando de beber ao sobrevivente (das folhas de referência) |
+
+### Referência/Cooperação/Comemorar (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.cooperacao.high-five` | batendo as mãos | high five | A, B | batendo as mãos (das folhas de referência) |
+| `ref.cooperacao.punhos` | punhos erguidos juntos | fist raise | A, B, C | punhos erguidos juntos (das folhas de referência) |
+
+### Referência/Cooperação/Grupo (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.cooperacao.tres-abracados` | três de braços nos ombros | group shoulders | A, B, C | três de braços nos ombros (das folhas de referência) |
+| `ref.cooperacao.roda-meditando` | três sentados em roda meditando | circle meditation | A, B, C | três sentados em roda meditando (das folhas de referência) |
+
+### Referência/Papel/Mensageiro (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.papel.mensageiro-entrega` | mensageiro entregando a carta | message delivery | A, B | mensageiro entregando a carta (das folhas de referência) |
+| `ref.papel.mensageiro-ajoelhado` | mensageiro ajoelhado diante do líder | kneeling report | A, B | mensageiro ajoelhado diante do líder (das folhas de referência) |
+
+### Referência/Papel/Vilã (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.papel.vila-trono` | vilã no trono com servos ajoelhados | throne court | A, B, C | vilã no trono com servos ajoelhados (das folhas de referência) |
+| `ref.papel.vila-ameaca` | vilã ameaçando a vítima ajoelhada | threat | A, B | vilã ameaçando a vítima ajoelhada (das folhas de referência) |
+| `ref.papel.vila-trio` | vilã e capangas de braços cruzados | villain trio | A, B, C | vilã e capangas de braços cruzados (das folhas de referência) |
+
+### Referência/Papel/Provedor (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.papel.provedor-presente` | provedor dando o presente | gift | A, B | provedor dando o presente (das folhas de referência) |
+
+### Referência/Papel/Infiltrador (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.papel.infiltrador-troca` | troca secreta de objeto | secret handoff | A, B | troca secreta de objeto (das folhas de referência) |
+
+### Referência/Furtivo/Grupo (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.papel.furtivos-grupo` | três avançando furtivos | stealth squad | A, B, C | três avançando furtivos (das folhas de referência) |
+
+### Referência/Papel/Sobrevivente (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.papel.sobreviventes-descanso` | sobreviventes descansando | survivors rest | A, B, C | sobreviventes descansando (das folhas de referência) |
+
+### Referência/Rendição (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.rendicao.rendido` | rendido sob a mira | held at gunpoint | A, B | rendido sob a mira (das folhas de referência) |
+
+### Referência/Luta/Impacto (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.soco-no-rosto` | soco acertando o rosto | punch impact | A, B | soco acertando o rosto (das folhas de referência) |
+| `ref.luta.soco-no-estomago` | soco no estômago | gut punch | A, B | soco no estômago (das folhas de referência) |
+| `ref.luta.chute-arremessa` | chute que arremessa o rival | kick launch | A, B | chute que arremessa o rival (das folhas de referência) |
+| `ref.luta.joelhada` | joelhada segurando a nuca | knee strike | A, B | joelhada segurando a nuca (das folhas de referência) |
+| `ref.luta.cotovelada` | cotovelada no rosto | elbow strike | A, B | cotovelada no rosto (das folhas de referência) |
+
+### Referência/Luta/Poder (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.energia` | disparo de energia contra a defesa | energy clash | A, B | disparo de energia contra a defesa (das folhas de referência) |
+
+### Referência/Luta/Ninja (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.ninja-shuriken` | shuriken contra espada | ninja exchange | A, B | shuriken contra espada (das folhas de referência) |
+
+### Referência/Luta/Ataque (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.rasteira` | rasteira derrubando | sweep | A, B | rasteira derrubando (das folhas de referência) |
+
+### Referência/Artes marciais/Karatê (6)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.karate.oi-zuki-age-uke` | soco em avanço × defesa alta | soco em avanço × defesa alta | A, B | soco em avanço × defesa alta (das folhas de referência) |
+| `ref.luta.karate.gyaku-zuki-gedan` | soco reverso × defesa baixa | soco reverso × defesa baixa | A, B | soco reverso × defesa baixa (das folhas de referência) |
+| `ref.luta.karate.mae-geri-juji` | chute frontal × defesa em X | chute frontal × defesa em X | A, B | chute frontal × defesa em X (das folhas de referência) |
+| `ref.luta.karate.yoko-geri-shuto` | chute lateral × defesa com a mão em faca | chute lateral × defesa com a mão em faca | A, B | chute lateral × defesa com a mão em faca (das folhas de referência) |
+| `ref.luta.karate.uraken-uchi-uke` | uraken × defesa por dentro | uraken × defesa por dentro | A, B | uraken × defesa por dentro (das folhas de referência) |
+| `ref.luta.karate.hiza-geri` | joelhada × recebendo no estômago | joelhada × recebendo no estômago | A, B | joelhada × recebendo no estômago (das folhas de referência) |
+
+### Referência/Artes marciais/Taekwondo (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.tkd.dollyo-makki` | chute circular × bloqueio | chute circular × bloqueio | A, B | chute circular × bloqueio (das folhas de referência) |
+| `ref.luta.tkd.neryo-esquiva` | chute machado × esquiva para trás | chute machado × esquiva para trás | A, B | chute machado × esquiva para trás (das folhas de referência) |
+| `ref.luta.tkd.bandal-guarda` | chute rápido × guarda fechada | chute rápido × guarda fechada | A, B | chute rápido × guarda fechada (das folhas de referência) |
+
+### Referência/Artes marciais/Capoeira (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.capoeira.meia-lua-cocorinha` | meia-lua × cocorinha | meia-lua × cocorinha | A, B | meia-lua × cocorinha (das folhas de referência) |
+| `ref.luta.capoeira.armada-negativa` | armada × negativa | armada × negativa | A, B | armada × negativa (das folhas de referência) |
+| `ref.luta.capoeira.bencao-esquiva` | bênção × esquiva baixa | bênção × esquiva baixa | A, B | bênção × esquiva baixa (das folhas de referência) |
+| `ref.luta.capoeira.martelo-guarda` | martelo × ginga | martelo × ginga | A, B | martelo × ginga (das folhas de referência) |
+
+### Referência/Artes marciais/Judô (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.judo.kumikata` | disputa de pegada | disputa de pegada | A, B | disputa de pegada (das folhas de referência) |
+| `ref.luta.judo.seoi-nage` | ippon seoi nage: projetando | ippon seoi nage: projetando | A, B | ippon seoi nage: projetando (das folhas de referência) |
+| `ref.luta.judo.o-soto-gari` | o soto gari × bloqueio com o quadril | o soto gari × bloqueio com o quadril | A, B | o soto gari × bloqueio com o quadril (das folhas de referência) |
+
+### Referência/Artes marciais/Aikidô (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.aikido.iriminage` | irimi nage: o atacante cai | irimi nage: o atacante cai | A, B | irimi nage: o atacante cai (das folhas de referência) |
+| `ref.luta.aikido.kote-gaeshi` | kote gaeshi: torção do pulso | kote gaeshi: torção do pulso | A, B | kote gaeshi: torção do pulso (das folhas de referência) |
+
+### Referência/Artes marciais/Wing chun (2)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.wing-chun.corrente-pak` | socos em corrente × pak sau | socos em corrente × pak sau | A, B | socos em corrente × pak sau (das folhas de referência) |
+| `ref.luta.wing-chun.lap-tan` | lap sau × tan sau | lap sau × tan sau | A, B | lap sau × tan sau (das folhas de referência) |
+
+### Referência/Artes marciais/Shaolin (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.shaolin.tigre-garca` | garra do tigre × asa da garça | garra do tigre × asa da garça | A, B | garra do tigre × asa da garça (das folhas de referência) |
+| `ref.luta.shaolin.serpente-louva` | bote da serpente × louva-a-deus | bote da serpente × louva-a-deus | A, B | bote da serpente × louva-a-deus (das folhas de referência) |
+| `ref.luta.shaolin.palma-dupla` | palma dupla × cavalo | palma dupla × cavalo | A, B | palma dupla × cavalo (das folhas de referência) |
+| `ref.luta.shaolin.dragao-macaco` | garra do dragão × macaco agachado | garra do dragão × macaco agachado | A, B | garra do dragão × macaco agachado (das folhas de referência) |
+
+### Referência/Artes marciais/Jiu-jitsu (1)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `ref.luta.bjj.mata-leao` | mata-leão × defesa | mata-leão × defesa | A, B | mata-leão × defesa (das folhas de referência) |
 
 ### Desvio/desvio de soco (pêndulo) (4)
 
@@ -5874,6 +6065,2319 @@ pose "amBjjRaspagem" de empe
   cabeca(baixa 30)
   corpo(deita-costas 80)
   valor fThL -0.2 fThR -0.2
+```
+
+### amKarateUchiUke
+
+```gm
+pose "amKarateUchiUke" de empe
+  ombro.direito(tras 25)
+  ombro.esquerdo(frente 80 cruza 10 gira-fora 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 100)
+  antebraco(palma-baixo 80)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 18)
+  quadril.esquerdo(frente 55)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 2 gira-direita 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### amKarateJuujiUke
+
+```gm
+pose "amKarateJuujiUke" de empe
+  ombro(frente 40 cruza 15)
+  cotovelo(dobra 40)
+  antebraco(palma-baixo 80)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 18)
+  quadril.esquerdo(frente 55)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 10)
+  cabeca(baixa 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### amKarateUraken
+
+```gm
+pose "amKarateUraken" de empe
+  ombro.direito(tras 25)
+  ombro.esquerdo(frente 90 abre 70 gira-dentro 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 45)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 75)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 2 gira-direita 40)
+  cabeca(gira-esquerda 40)
+  valor pelvisTwist 40 hipRotR 50 fThL -0.1 fThR -0.1
+```
+
+### amKarateHizaGeri
+
+```gm
+pose "amKarateHizaGeri" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 110)
+  antebraco(palma-baixo 80)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 115)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 130)
+  tronco(frente 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### amTkdMakki
+
+```gm
+pose "amTkdMakki" de empe
+  ombro.direito(frente 120 abre 30 gira-dentro 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 110)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 6)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 12)
+  joelho.esquerdo(dobra 18)
+  tronco(gira-direita 40)
+  cabeca(gira-esquerda 40)
+  valor pelvisTwist 40 fThL -0.1 fThR -0.1
+```
+
+### amTkdBandalChagi
+
+```gm
+pose "amTkdBandalChagi" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 40 abre 40)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 4 abre 6)
+  quadril.esquerdo(frente 70 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 8 esquerda 20 gira-direita 40)
+  cabeca(gira-esquerda 40)
+  valor pelvisTwist -60 hipAbdL 60 fThL -0.1 fThR -0.1
+```
+
+### amWingChunLapSau
+
+```gm
+pose "amWingChunLapSau" de empe
+  ombro.direito(frente 70 abre 0)
+  ombro.esquerdo(frente 50 abre 0)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 100)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 20 abre 16 gira-dentro 20)
+  joelho(dobra 35)
+  valor fThL -0.2 fThR -0.1
+```
+
+### amCapoeiraBencao
+
+```gm
+pose "amCapoeiraBencao" de empe
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(frente 50 abre 40)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 4)
+  quadril.esquerdo(frente 94)
+  joelho(dobra 10)
+  tornozelo.esquerdo(levanta-ponta 10)
+  tronco(tras 15)
+  cabeca(sobe 10)
+```
+
+### amCapoeiraCocorinha
+
+```gm
+pose "amCapoeiraCocorinha" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 130 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 120 abre 25)
+  joelho(dobra 140)
+  tronco(frente 40)
+  cabeca(baixa 10)
+```
+
+### amKungFuBloqueioGarca
+
+```gm
+pose "amKungFuBloqueioGarca" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(dobra 40)
+  punho.esquerdo(dobra 60)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 0% afasta 30% opoe 20%)
+  quadril.direito(frente 70)
+  quadril.esquerdo(frente 45)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 55)
+  tronco(frente 4 gira-direita 20)
+  valor fInMcpL -0.2 fInIpL 1 fMeMcpL -0.2 fMeIpL 1
+  valor fAnMcpL -0.2 fAnIpL 1 fMiMcpL -0.2 fMiIpL 1
+```
+
+### amKungFuPalmaDupla
+
+```gm
+pose "amKungFuPalmaDupla" de empe
+  ombro(frente 90 abre 0)
+  cotovelo(dobra 10)
+  punho(levanta 70)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 18)
+  quadril.esquerdo(frente 55)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 10)
+```
+
+### amJudoDefesaQuadril
+
+```gm
+pose "amJudoDefesaQuadril" de empe
+  ombro(frente 60 abre 20)
+  cotovelo(dobra 80)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 60 abre 20)
+  joelho(dobra 75)
+  tronco(frente 10)
+  cabeca(baixa 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### amJudoCaindoProjetado
+
+```gm
+pose "amJudoCaindoProjetado" de empe
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(frente 120 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 90)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20)
+  cabeca(baixa 20)
+  corpo(deita-costas 120 sobe 68.4cm)
+  valor fThR -0.2
+```
+
+### amBjjDefendendoMataLeao
+
+```gm
+pose "amBjjDefendendoMataLeao" de empe
+  ombro(frente 90 abre 0)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 70)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 10)
+  cabeca(baixa 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfAgachadoCocoras
+
+```gm
+pose "rfAgachadoCocoras" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 60)
+  quadril(frente 115 abre 20)
+  joelho(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 20)
+  cabeca(baixa 5)
+```
+
+### rfAgachadoApontando
+
+```gm
+pose "rfAgachadoApontando" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 90 abre 20)
+  cotovelo.direito(dobra 60)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 115 abre 22)
+  joelho(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 18)
+  cabeca(sobe 5)
+  valor fThL -0.25 fInL -1
+```
+
+### rfAgachadoMaosNosJoelhos
+
+```gm
+pose "rfAgachadoMaosNosJoelhos" de empe
+  ombro(frente 45 abre 25)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 115 abre 25)
+  joelho(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 25)
+```
+
+### rfAgachadoMaoNoChao
+
+```gm
+pose "rfAgachadoMaoNoChao" de empe
+  ombro.direito(frente 20 abre 25)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo.direito(dobra 40)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 115 abre 25)
+  quadril.esquerdo(frente 110 abre 20)
+  joelho.direito(dobra 140)
+  joelho.esquerdo(dobra 135)
+  tornozelo(aponta 30)
+  tronco(frente 35)
+  cabeca(baixa 10)
+```
+
+### rfAgachadoMaosNaCabeca
+
+```gm
+pose "rfAgachadoMaosNaCabeca" de empe
+  ombro(frente 130 abre 20)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 115 abre 20)
+  joelho(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 35)
+  cabeca(baixa 30)
+```
+
+### rfAgachadoAbracandoJoelhos
+
+```gm
+pose "rfAgachadoAbracandoJoelhos" de empe
+  ombro(frente 50 abre 10)
+  cotovelo(dobra 110)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 120 abre 5)
+  joelho(dobra 145)
+  tornozelo(aponta 30)
+  tronco(frente 40)
+  cabeca(baixa 25)
+```
+
+### rfAgachadoPensando
+
+```gm
+pose "rfAgachadoPensando" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 60 abre 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 115 abre 20)
+  joelho(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 25)
+  cabeca(baixa 10)
+  valor fThL -0.1
+```
+
+### rfAgachadoOferecendo
+
+```gm
+pose "rfAgachadoOferecendo" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 70 abre 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 20)
+  antebraco.esquerdo(palma-cima 60)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 115 abre 20)
+  joelho(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 15)
+  cabeca(sobe 5)
+```
+
+### rfAgachadoUmJoelho
+
+```gm
+pose "rfAgachadoUmJoelho" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 30 abre 15)
+  cotovelo(dobra 40)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 100 abre 10)
+  joelho(dobra 100)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(baixa 5)
+```
+
+### rfAgachadoUmJoelhoOlhando
+
+```gm
+pose "rfAgachadoUmJoelhoOlhando" de empe
+  ombro.direito(frente 30 abre 15)
+  ombro.esquerdo(frente 90 abre 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 100 abre 10)
+  joelho(dobra 100)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 5)
+  cabeca(sobe 10)
+```
+
+### rfAgachadoBaixoLateral
+
+```gm
+pose "rfAgachadoBaixoLateral" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 50 abre 20)
+  cotovelo(dobra 40)
+  mao.direito(fecha 0% afasta 85%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 110 abre 15)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 140)
+  tornozelo.direito(aponta 10)
+  tornozelo.esquerdo(aponta 30)
+  tronco(frente 20 gira-esquerda 20)
+  valor hipAbdR 50
+```
+
+### rfAgachadoInspecionando
+
+```gm
+pose "rfAgachadoInspecionando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 60 abre 10)
+  cotovelo.direito(dobra 70)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(frente 110 abre 20)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 135)
+  joelho.esquerdo(dobra 140)
+  tornozelo(aponta 30)
+  tronco(frente 45)
+  cabeca(baixa 35)
+```
+
+### rfEngatinhandoAvanco
+
+```gm
+pose "rfEngatinhandoAvanco" de empe
+  ombro.direito(frente 70 abre 10)
+  ombro.esquerdo(frente 85 abre 10)
+  cotovelo.direito(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 95)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(tras 10)
+  cabeca(sobe 35)
+  corpo(deita-brucos 70)
+```
+
+### rfEngatinhandoOlhandoTras
+
+```gm
+pose "rfEngatinhandoOlhandoTras" de empe
+  ombro(frente 80 abre 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 90)
+  joelho(dobra 100)
+  tronco(tras 10)
+  cabeca(sobe 20 gira-esquerda 60)
+  corpo(deita-brucos 70)
+```
+
+### rfRastejandoCotovelos
+
+```gm
+pose "rfRastejandoCotovelos" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tronco(tras 20)
+  cabeca(sobe 40)
+  corpo(deita-brucos 85)
+```
+
+### rfLargadaCorrida
+
+```gm
+pose "rfLargadaCorrida" de empe
+  ombro(frente 75 abre 5)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 120)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 120)
+  tronco(frente 20)
+  cabeca(sobe 10)
+  corpo(deita-brucos 30)
+```
+
+### rfApoioTresPontos
+
+```gm
+pose "rfApoioTresPontos" de empe
+  ombro.direito(tras 30 abre 30)
+  ombro.esquerdo(frente 50 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 110 abre 10)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 130)
+  tronco(frente 40)
+  cabeca(sobe 10)
+```
+
+### rfFurtivoPassoLongo
+
+```gm
+pose "rfFurtivoPassoLongo" de empe
+  ombro(frente 30 abre 25)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 45)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 55)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 25)
+  cabeca(sobe 5)
+```
+
+### rfFurtivoNasPontas
+
+```gm
+pose "rfFurtivoNasPontas" de empe
+  ombro(frente 40 abre 30)
+  cotovelo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 10)
+  valor ankleFlexL -30 ankleFlexR -30
+```
+
+### rfFurtivoAgachadoAvancando
+
+```gm
+pose "rfFurtivoAgachadoAvancando" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 50 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 100)
+  tornozelo.direito(aponta 10)
+  tornozelo.esquerdo(aponta 20)
+  tronco(frente 40)
+  cabeca(sobe 15)
+  valor fThR -0.1
+```
+
+### rfFurtivoColadoParede
+
+```gm
+pose "rfFurtivoColadoParede" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 20 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 5)
+  joelho(dobra 10)
+  cabeca(gira-esquerda 70)
+```
+
+### rfFurtivoEspiandoMuro
+
+```gm
+pose "rfFurtivoEspiandoMuro" de empe
+  ombro(frente 130 abre 20)
+  cotovelo(dobra 80)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 30)
+  joelho(dobra 40)
+  tronco(frente 10)
+  cabeca(baixa 5)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfFurtivoAgachadoAtrasCobertura
+
+```gm
+pose "rfFurtivoAgachadoAtrasCobertura" de empe
+  ombro.direito(frente 40 abre 25)
+  ombro.esquerdo(frente 60 abre 15)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 110 abre 15)
+  joelho(dobra 135)
+  tornozelo(aponta 30)
+  tronco(frente 35)
+  cabeca(gira-esquerda 40)
+```
+
+### rfFurtivoSinalSilencio
+
+```gm
+pose "rfFurtivoSinalSilencio" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 60 abre 0)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15)
+  cabeca(baixa 5)
+  valor fThL -0.25 fInL -1
+```
+
+### rfFurtivoSinalAvancar
+
+```gm
+pose "rfFurtivoSinalAvancar" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 90 abre 30)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20)
+```
+
+### rfFurtivoSinalParar
+
+```gm
+pose "rfFurtivoSinalParar" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 90 abre 60)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20)
+  valor fThL -0.1
+```
+
+### rfFurtivoEscalandoMuro
+
+```gm
+pose "rfFurtivoEscalandoMuro" de empe
+  ombro.direito(frente 160 abre 10)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 10)
+  cabeca(sobe 20)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfFurtivoCorridaAbaixada
+
+```gm
+pose "rfFurtivoCorridaAbaixada" de empe
+  ombro.direito(frente 60 abre 15)
+  ombro.esquerdo(frente 30 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 70)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tornozelo.esquerdo(aponta 20)
+  tronco(frente 35)
+  cabeca(sobe 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfFlutuandoRelaxadoRef
+
+```gm
+pose "rfFlutuandoRelaxadoRef" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 30)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 30)
+  tronco(frente 5)
+  cabeca(baixa 5)
+  corpo(sobe 91.2cm)
+```
+
+### rfFlutuandoSentadoNoAr
+
+```gm
+pose "rfFlutuandoSentadoNoAr" de empe
+  ombro.direito(frente 20 abre 25)
+  ombro.esquerdo(frente 30 abre 20)
+  cotovelo(dobra 40)
+  quadril.direito(frente 70)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 90)
+  tronco(frente 10)
+  cabeca(baixa 5)
+  corpo(sobe 91.2cm)
+```
+
+### rfFlutuandoDeCostas
+
+```gm
+pose "rfFlutuandoDeCostas" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 10)
+  corpo(deita-costas 60 sobe 114cm)
+```
+
+### rfFlutuandoGirando
+
+```gm
+pose "rfFlutuandoGirando" de empe
+  ombro.direito(frente 120 abre 60)
+  ombro.esquerdo(frente 60 abre 40)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 10)
+  corpo(rola 40 sobe 114cm)
+```
+
+### rfFlutuandoBracosAbertosRef
+
+```gm
+pose "rfFlutuandoBracosAbertosRef" de empe
+  ombro(frente 20 abre 80)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 20)
+  cabeca(sobe 10)
+  corpo(sobe 114cm)
+```
+
+### rfFlutuandoEncolhidoNoAr
+
+```gm
+pose "rfFlutuandoEncolhidoNoAr" de empe
+  ombro(frente 60 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 110)
+  joelho(dobra 130)
+  tronco(frente 40)
+  cabeca(baixa 20)
+  corpo(sobe 114cm)
+```
+
+### rfCaindoDeCostasRef
+
+```gm
+pose "rfCaindoDeCostasRef" de empe
+  ombro.direito(frente 120 abre 50)
+  ombro.esquerdo(frente 150 abre 40)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 10)
+  cabeca(sobe 20)
+  corpo(deita-costas 45 sobe 91.2cm)
+```
+
+### rfCaindoDeFrente
+
+```gm
+pose "rfCaindoDeFrente" de empe
+  ombro(frente 50 abre 130)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(tras 20)
+  cabeca(sobe 30)
+  corpo(deita-brucos 50 sobe 91.2cm)
+```
+
+### rfRendicaoMaosAoAltoRef
+
+```gm
+pose "rfRendicaoMaosAoAltoRef" de empe
+  ombro(frente 170 abre 15)
+  cotovelo(dobra 20)
+  mao(fecha 2% afasta 60%)
+  cabeca(baixa 5)
+```
+
+### rfRendicaoMaosNaNuca
+
+```gm
+pose "rfRendicaoMaosNaNuca" de empe
+  ombro(frente 120 abre 25)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  cabeca(baixa 15)
+```
+
+### rfRendicaoMaosNasCostas
+
+```gm
+pose "rfRendicaoMaosNasCostas" de empe
+  ombro(tras 30 abre 10 gira-dentro 40)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  cabeca(baixa 25)
+```
+
+### rfRendicaoMeioErguido
+
+```gm
+pose "rfRendicaoMeioErguido" de empe
+  ombro(frente 70 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 2% afasta 60%)
+```
+
+### rfRendicaoAjoelhadoMaosAoAlto
+
+```gm
+pose "rfRendicaoAjoelhadoMaosAoAlto" de empe
+  ombro(frente 165 abre 15)
+  cotovelo(dobra 20)
+  mao(fecha 2% afasta 60%)
+  joelho(dobra 95)
+  tornozelo(aponta 40)
+  cabeca(baixa 5)
+```
+
+### rfRendicaoAjoelhadoCurvado
+
+```gm
+pose "rfRendicaoAjoelhadoCurvado" de empe
+  ombro(frente 80 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 30)
+  joelho(dobra 95)
+  tornozelo(aponta 40)
+  tronco(frente 50)
+  cabeca(baixa 30)
+```
+
+### rfRendicaoProstrado
+
+```gm
+pose "rfRendicaoProstrado" de empe
+  ombro(frente 150 abre 20)
+  cotovelo(dobra 20)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 120)
+  joelho(dobra 130)
+  tornozelo(aponta 40)
+  tronco(frente 60)
+  cabeca(baixa 40)
+```
+
+### rfRendicaoAjoelhadoCobrindoCabeca
+
+```gm
+pose "rfRendicaoAjoelhadoCobrindoCabeca" de empe
+  ombro(frente 140 abre 15)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 95)
+  tornozelo(aponta 40)
+  tronco(frente 30)
+  cabeca(baixa 35)
+```
+
+### rfSocoJabRef
+
+```gm
+pose "rfSocoJabRef" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 90 abre 5)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 5)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 12)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 30)
+  tronco(frente 4 gira-direita 15)
+  pelve(gira-esquerda 10)
+  cabeca(baixa 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoDiretoAvanco
+
+```gm
+pose "rfSocoDiretoAvanco" de empe
+  ombro.direito(frente 90 abre 5)
+  ombro.esquerdo(frente 50 abre 20)
+  cotovelo.esquerdo(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 45)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 8 gira-esquerda 30)
+  pelve(gira-direita 20)
+  cabeca(baixa 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoGanchoAlto
+
+```gm
+pose "rfSocoGanchoAlto" de empe
+  ombro.direito(frente 50 abre 20)
+  ombro.esquerdo(frente 80 abre 80)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(frente 6 gira-esquerda 35)
+  pelve(gira-direita 20)
+  cabeca(baixa 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoUppercutRef
+
+```gm
+pose "rfSocoUppercutRef" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 150 abre 10)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-direita 15)
+  cabeca(sobe 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoOverhand
+
+```gm
+pose "rfSocoOverhand" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 45)
+  tronco(frente 15 gira-esquerda 30)
+  pelve(gira-direita 15)
+  cabeca(baixa 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoInvestidaAbaixada
+
+```gm
+pose "rfSocoInvestidaAbaixada" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 110)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 90)
+  tronco(frente 30 gira-esquerda 20)
+  cabeca(baixa 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoGuardaRecolhida
+
+```gm
+pose "rfSocoGuardaRecolhida" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 70 abre 15)
+  cotovelo.direito(dobra 125)
+  cotovelo.esquerdo(dobra 130)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 30)
+  tronco(frente 10 gira-direita 10)
+  cabeca(baixa 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSocoBackfistGirando
+
+```gm
+pose "rfSocoBackfistGirando" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 5)
+  cabeca(gira-esquerda 70)
+  valor spineTwist -70 pelvisTwist -40 fThL -0.1 fThR -0.1
+```
+
+### rfMergulhoCanivete
+
+```gm
+pose "rfMergulhoCanivete" de empe
+  ombro(frente 175 abre 5)
+  mao(fecha 2% afasta 60%)
+  cabeca(sobe 5)
+  corpo(deita-brucos 150 sobe 136.8cm)
+```
+
+### rfMergulhoGrupado
+
+```gm
+pose "rfMergulhoGrupado" de empe
+  ombro(frente 60 abre 10)
+  cotovelo(dobra 110)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 125)
+  joelho(dobra 140)
+  tronco(frente 50)
+  cabeca(baixa 30)
+  corpo(deita-brucos 120 sobe 136.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfMergulhoCarpado
+
+```gm
+pose "rfMergulhoCarpado" de empe
+  ombro(frente 110 abre 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 90)
+  tronco(frente 70)
+  cabeca(baixa 30)
+  corpo(deita-brucos 100 sobe 136.8cm)
+```
+
+### rfMergulhoAndorinha
+
+```gm
+pose "rfMergulhoAndorinha" de empe
+  ombro(frente 90 abre 80)
+  mao(fecha 2% afasta 60%)
+  quadril(tras 10)
+  tronco(tras 20)
+  cabeca(sobe 30)
+  corpo(deita-brucos 70 sobe 136.8cm)
+```
+
+### rfMergulhoSuperman
+
+```gm
+pose "rfMergulhoSuperman" de empe
+  ombro(frente 170 abre 10)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  tronco(tras 10)
+  cabeca(sobe 40)
+  corpo(deita-brucos 85 sobe 114cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfParadaDeMao
+
+```gm
+pose "rfParadaDeMao" de empe
+  ombro(frente 175 abre 10)
+  mao(fecha 2% afasta 60%)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  corpo(deita-brucos 180)
+```
+
+### rfParadaDeMaoAberta
+
+```gm
+pose "rfParadaDeMaoAberta" de empe
+  ombro(frente 175 abre 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 30 abre 30)
+  quadril.esquerdo(frente 20 abre 30)
+  joelho(dobra 10)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  corpo(deita-brucos 180)
+```
+
+### rfParadaDeMaoEscorpiao
+
+```gm
+pose "rfParadaDeMaoEscorpiao" de empe
+  ombro(frente 175 abre 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 30)
+  quadril.esquerdo(tras 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  cabeca(sobe 40)
+  corpo(deita-brucos 175)
+  valor spineFlex -40
+```
+
+### rfAcenoTchau
+
+```gm
+pose "rfAcenoTchau" de empe
+  ombro.direito(frente 150 abre 30)
+  ombro.esquerdo(frente 10 abre 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 8% afasta 70%)
+  cabeca(sobe 5)
+```
+
+### rfAcenoDuasMaos
+
+```gm
+pose "rfAcenoDuasMaos" de empe
+  ombro(frente 20 abre 145)
+  cotovelo(dobra 30)
+  mao(fecha 8% afasta 70%)
+  cabeca(sobe 10)
+```
+
+### rfAcenoAndandoEmbora
+
+```gm
+pose "rfAcenoAndandoEmbora" de empe
+  ombro.direito(frente 140 abre 20)
+  ombro.esquerdo(frente 10 abre 10)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 8% afasta 70%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  cabeca(gira-direita 60)
+```
+
+### rfAcenoDeCostas
+
+```gm
+pose "rfAcenoDeCostas" de empe
+  ombro.direito(frente 160 abre 20)
+  ombro.esquerdo(frente 10 abre 10)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 8% afasta 70%)
+  cabeca(gira-direita 30)
+```
+
+### rfAcenoAjoelhado
+
+```gm
+pose "rfAcenoAjoelhado" de empe
+  ombro.direito(frente 150 abre 30)
+  ombro.esquerdo(frente 10 abre 15)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 8% afasta 70%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  joelho(dobra 95)
+  tornozelo(aponta 40)
+  cabeca(sobe 5)
+```
+
+### rfDespedidaMaoNoPeito
+
+```gm
+pose "rfDespedidaMaoNoPeito" de empe
+  ombro.direito(frente 60 abre 10)
+  ombro.esquerdo(frente 10 abre 10)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  cabeca(baixa 15)
+```
+
+### rfDespedidaAbracandoSi
+
+```gm
+pose "rfDespedidaAbracandoSi" de empe
+  ombro(frente 50 abre 10 gira-fora 50)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  cabeca(baixa 20)
+```
+
+### rfDespedidaAjoelhadoChorando
+
+```gm
+pose "rfDespedidaAjoelhadoChorando" de empe
+  ombro(frente 40 abre 15)
+  cotovelo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 30)
+  joelho(dobra 95)
+  tornozelo(aponta 40)
+  tronco(frente 35)
+  cabeca(baixa 40)
+```
+
+### rfAtaqueInvestidaSoco
+
+```gm
+pose "rfAtaqueInvestidaSoco" de empe
+  ombro.direito(frente 60 abre 30)
+  ombro.esquerdo(frente 90 abre 10)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 15 gira-direita 20)
+  pelve(gira-esquerda 15)
+  cabeca(baixa 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfAtaqueSaltoChute
+
+```gm
+pose "rfAtaqueSaltoChute" de empe
+  ombro.direito(frente 90 abre 20)
+  ombro.esquerdo(frente 60 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 90)
+  joelho.direito(dobra 130)
+  tronco(tras 5)
+  corpo(sobe 68.4cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfAtaqueChuteAlto
+
+```gm
+pose "rfAtaqueChuteAlto" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 60 abre 40)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 4 abre 6)
+  quadril.esquerdo(frente 80 gira-dentro 20)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 15 esquerda 30)
+  cabeca(gira-esquerda 50)
+  valor spineTwist -50 pelvisTwist -60 hipAbdL 90 fThL -0.1
+  valor fThR -0.1
+```
+
+### rfAtaqueRasteira
+
+```gm
+pose "rfAtaqueRasteira" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 20 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 100 abre 20)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20 gira-esquerda 40)
+  valor hipAbdR 70 fThR -0.1
+```
+
+### rfAtaquePalmaAberta
+
+```gm
+pose "rfAtaquePalmaAberta" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 120)
+  punho.esquerdo(levanta 60)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 8 gira-direita 20)
+  pelve(gira-esquerda 15)
+  valor fThR -0.1
+```
+
+### rfAtaqueCotovelada
+
+```gm
+pose "rfAtaqueCotovelada" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(frente 90 abre 60)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 45)
+  tronco(frente 8 gira-esquerda 40)
+  pelve(gira-direita 20)
+  cabeca(gira-direita 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfAtaqueJoelhada
+
+```gm
+pose "rfAtaqueJoelhada" de empe
+  ombro(frente 90 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 130)
+  tronco(frente 10)
+  cabeca(baixa 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfAtaqueMarteloDuasMaos
+
+```gm
+pose "rfAtaqueMarteloDuasMaos" de empe
+  ombro(frente 160 abre 10)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20)
+  cabeca(baixa 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfAtaqueEnergiaPalmas
+
+```gm
+pose "rfAtaqueEnergiaPalmas" de empe
+  ombro(frente 90 cruza 5)
+  punho(levanta 70)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 5 gira-direita 10)
+```
+
+### rfAtaqueCargaEnergia
+
+```gm
+pose "rfAtaqueCargaEnergia" de empe
+  ombro(frente 30 abre 20)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 10 gira-esquerda 30)
+  pelve(gira-esquerda 15)
+  cabeca(gira-direita 30)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfDorBarriga
+
+```gm
+pose "rfDorBarriga" de empe
+  ombro(frente 40 abre 10)
+  cotovelo(dobra 110)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 25)
+  tronco(frente 35)
+  cabeca(baixa 25)
+```
+
+### rfDorPeito
+
+```gm
+pose "rfDorPeito" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 0)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 15)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 20)
+  cabeca(baixa 15)
+  valor fThL -0.2
+```
+
+### rfDorCostas
+
+```gm
+pose "rfDorCostas" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(tras 20 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 110)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(frente 15)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 10 direita 10)
+  cabeca(sobe 10)
+```
+
+### rfDorPescoco
+
+```gm
+pose "rfDorPescoco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 0% afasta 85%)
+  cabeca(baixa 5 inclina-direita 15)
+```
+
+### rfDorCabeca
+
+```gm
+pose "rfDorCabeca" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 90 abre 10)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 0% afasta 85%)
+  tronco(frente 10)
+  cabeca(baixa 20)
+```
+
+### rfDorJoelhoSentado
+
+```gm
+pose "rfDorJoelhoSentado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 abre 10)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 30)
+  cabeca(baixa 20)
+```
+
+### rfDorTornozeloSentado
+
+```gm
+pose "rfDorTornozeloSentado" de empe
+  ombro.direito(frente 50 abre 10)
+  ombro.esquerdo(frente 60 abre 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 100)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 130)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 35)
+  cabeca(baixa 30)
+```
+
+### rfDorMancando
+
+```gm
+pose "rfDorMancando" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 30 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 8)
+  cabeca(baixa 10)
+```
+
+### rfDorBracoFerido
+
+```gm
+pose "rfDorBracoFerido" de empe
+  ombro.direito(frente 40 abre 10 gira-fora 40)
+  ombro.esquerdo(frente 20 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  tronco(frente 15)
+  cabeca(baixa 20)
+  valor fThR -0.2
+```
+
+### rfDorContorcendo
+
+```gm
+pose "rfDorContorcendo" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 50 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 130)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 30 direita 15 gira-esquerda 20)
+  cabeca(baixa 20)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfVergonhaRostoNasMaos
+
+```gm
+pose "rfVergonhaRostoNasMaos" de empe
+  ombro(frente 90 abre 5)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  cabeca(baixa 25)
+```
+
+### rfVergonhaMaoNaNuca
+
+```gm
+pose "rfVergonhaMaoNaNuca" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 130 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 0% afasta 85%)
+  cabeca(baixa 10 inclina-direita 8)
+```
+
+### rfVergonhaMaosEntrelacadas
+
+```gm
+pose "rfVergonhaMaosEntrelacadas" de empe
+  ombro(frente 20 cruza 5)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  cabeca(baixa 20 inclina-direita 5)
+```
+
+### rfVergonhaPePezinho
+
+```gm
+pose "rfVergonhaPePezinho" de empe
+  ombro(frente 10 abre 0)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 30)
+  tornozelo.direito(levanta-ponta 20)
+  cabeca(baixa 20)
+```
+
+### rfVergonhaBracoCruzadoNaFrente
+
+```gm
+pose "rfVergonhaBracoCruzadoNaFrente" de empe
+  ombro.direito(frente 30 abre 5 gira-fora 40)
+  ombro.esquerdo(frente 20 abre 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  cabeca(baixa 20 gira-direita 20)
+  valor fThR -0.2
+```
+
+### rfVergonhaMaosAtras
+
+```gm
+pose "rfVergonhaMaosAtras" de empe
+  ombro(tras 20 abre 10)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  cabeca(baixa 15 inclina-esquerda 8)
+```
+
+### rfVergonhaEncolhido
+
+```gm
+pose "rfVergonhaEncolhido" de empe
+  ombro(frente 40 abre 0)
+  cotovelo(dobra 120)
+  mao(fecha 0% afasta 85%)
+  tronco(frente 20)
+  cabeca(baixa 30)
+  valor shElevL 30 shElevR 30
+```
+
+### rfVergonhaCobrindoBoca
+
+```gm
+pose "rfVergonhaCobrindoBoca" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 50 abre 0)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 0% afasta 85%)
+  cabeca(baixa 10)
+```
+
+### rfVergonhaVirandoRosto
+
+```gm
+pose "rfVergonhaVirandoRosto" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 0% afasta 85%)
+  cabeca(baixa 10 gira-direita 50)
+```
+
+### rfNinjaGuardaKunai
+
+```gm
+pose "rfNinjaGuardaKunai" de empe
+  ombro.direito(frente 40 abre 30)
+  ombro.esquerdo(frente 90 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30 abre 25)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 25)
+  cabeca(sobe 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfNinjaArremessoShuriken
+
+```gm
+pose "rfNinjaArremessoShuriken" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 90 abre 40)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 10 gira-direita 40)
+  pelve(gira-esquerda 20)
+  cabeca(gira-esquerda 20)
+  valor fThR -0.1
+```
+
+### rfNinjaArremessoDuplo
+
+```gm
+pose "rfNinjaArremessoDuplo" de empe
+  ombro(frente 90 abre 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 60)
+  tronco(tras 5)
+  corpo(sobe 34.2cm)
+```
+
+### rfNinjaSeloDeMao
+
+```gm
+pose "rfNinjaSeloDeMao" de empe
+  ombro(frente 60 cruza 5)
+  cotovelo(dobra 130)
+  mao(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 20)
+  joelho(dobra 25)
+  tronco(frente 5)
+  cabeca(baixa 5)
+  valor fThL -0.25 fInL -1 fThR -0.25 fInR -1
+```
+
+### rfNinjaSaltoAlto
+
+```gm
+pose "rfNinjaSaltoAlto" de empe
+  ombro.direito(frente 20 abre 60)
+  ombro.esquerdo(frente 60 abre 40)
+  cotovelo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 100)
+  quadril.esquerdo(frente 120)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 130)
+  tronco(frente 20)
+  cabeca(sobe 5)
+  corpo(sobe 91.2cm)
+  valor fThL -0.1
+```
+
+### rfNinjaCorridaBracosParaTras
+
+```gm
+pose "rfNinjaCorridaBracosParaTras" de empe
+  ombro(tras 50 abre 20)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 70)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40)
+  cabeca(sobe 20)
+```
+
+### rfNinjaEspadaReversa
+
+```gm
+pose "rfNinjaEspadaReversa" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 30 gira-fora 60)
+  cotovelo(dobra 100)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 20)
+  valor fThL -0.1
+```
+
+### rfProvedorOferecendo
+
+```gm
+pose "rfProvedorOferecendo" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo(dobra 20)
+  antebraco.esquerdo(palma-cima 60)
+  mao.esquerdo(fecha 0% afasta 85%)
+  cabeca(baixa 5)
+```
+
+### rfProvedorMaoNoPeito
+
+```gm
+pose "rfProvedorMaoNoPeito" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 0)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  cabeca(sobe 5)
+```
+
+### rfProvedorBracosAbertosAcolhendo
+
+```gm
+pose "rfProvedorBracosAbertosAcolhendo" de empe
+  ombro(frente 40 abre 45)
+  cotovelo(dobra 20)
+  antebraco(palma-cima 60)
+  mao(fecha 0% afasta 85%)
+  cabeca(sobe 5)
+```
+
+### rfProvedorAgachadoDando
+
+```gm
+pose "rfProvedorAgachadoDando" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 70 abre 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 20)
+  antebraco.esquerdo(palma-cima 60)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 100)
+  joelho(dobra 100)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 20)
+  cabeca(baixa 10)
+```
+
+### rfProvedorMaosNaCintura
+
+```gm
+pose "rfProvedorMaosNaCintura" de empe
+  ombro(frente 10 abre 40)
+  cotovelo(dobra 110)
+  mao(fecha 100% afasta 20% opoe 75%)
+  cabeca(sobe 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfProvedorAbrindoBau
+
+```gm
+pose "rfProvedorAbrindoBau" de empe
+  ombro(frente 60 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 40)
+  cabeca(baixa 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfProvedorCarregandoSaco
+
+```gm
+pose "rfProvedorCarregandoSaco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 140)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 20)
+  cabeca(baixa 5)
+  valor fThL -0.1
+```
+
+### rfMensageiroCorrendoComCarta
+
+```gm
+pose "rfMensageiroCorrendoComCarta" de empe
+  ombro.direito(tras 40 abre 20)
+  ombro.esquerdo(frente 80 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 70)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 20)
+  cabeca(sobe 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfMensageiroEntregandoCarta
+
+```gm
+pose "rfMensageiroEntregandoCarta" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  tronco(frente 10)
+  cabeca(baixa 10)
+```
+
+### rfMensageiroLendoProclamacao
+
+```gm
+pose "rfMensageiroLendoProclamacao" de empe
+  ombro(frente 80 abre 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  cabeca(baixa 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfMensageiroGritandoNotícia
+
+```gm
+pose "rfMensageiroGritandoNotícia" de empe
+  ombro.direito(frente 160 abre 20)
+  ombro.esquerdo(frente 10 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  tronco(tras 10)
+  cabeca(sobe 20)
+```
+
+### rfMensageiroAjoelhadoReportando
+
+```gm
+pose "rfMensageiroAjoelhadoReportando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 10 abre 10)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 90)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 95)
+  tornozelo.esquerdo(aponta 40)
+  tronco(frente 10)
+  cabeca(baixa 15)
+  valor fThR -0.1
+```
+
+### rfMensageiroApontandoCaminho
+
+```gm
+pose "rfMensageiroApontandoCaminho" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 90 abre 40)
+  cotovelo.direito(dobra 20)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  cabeca(gira-esquerda 40)
+  valor fThL -0.25 fInL -1
+```
+
+### rfViloaRisoMaligno
+
+```gm
+pose "rfViloaRisoMaligno" de empe
+  ombro(frente 60 abre 60)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  tronco(tras 10)
+  cabeca(sobe 20)
+```
+
+### rfViloaMaoNoQuadril
+
+```gm
+pose "rfViloaMaoNoQuadril" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(frente 10 abre 40)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 100% afasta 30% opoe 60%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  tronco(direita 10)
+  cabeca(sobe 10)
+  valor fThL -0.1 fThR -0.25 fInR -1
+```
+
+### rfViloaBracosCruzados
+
+```gm
+pose "rfViloaBracosCruzados" de empe
+  ombro(frente 60 cruza 10 gira-fora 40)
+  cotovelo(dobra 110)
+  mao(fecha 0% afasta 85%)
+  cabeca(sobe 15)
+```
+
+### rfViloaConjurando
+
+```gm
+pose "rfViloaConjurando" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 55% afasta 70% opoe 30%)
+  tronco(tras 5)
+  cabeca(sobe 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfViloaApontandoAcusando
+
+```gm
+pose "rfViloaApontandoAcusando" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 90 abre 10)
+  cotovelo.direito(dobra 20)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  cabeca(sobe 10)
+  valor fThL -0.25 fInL -1
+```
+
+### rfViloaSentadaNoTrono
+
+```gm
+pose "rfViloaSentadaNoTrono" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 30 abre 20)
+  cotovelo.direito(dobra 70)
+  cotovelo.esquerdo(dobra 60)
+  quadril.direito(frente 90 gira-dentro 20)
+  quadril.esquerdo(frente 90)
+  joelho(dobra 90)
+  cabeca(sobe 10)
+```
+
+### rfViloaAgachadaPredadora
+
+```gm
+pose "rfViloaAgachadaPredadora" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 30 abre 30)
+  quadril.esquerdo(frente 100 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 120)
+  tronco(frente 25)
+  cabeca(sobe 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### rfSobreviventeExausto
+
+```gm
+pose "rfSobreviventeExausto" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 130 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 15)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 20)
+  tronco(frente 20)
+  cabeca(baixa 15)
+```
+
+### rfSobreviventeComCajado
+
+```gm
+pose "rfSobreviventeComCajado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 10 abre 10)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(frente 15)
+  cabeca(baixa 10)
+  valor fThR -0.1
+```
+
+### rfSobreviventeOlhandoHorizonte
+
+```gm
+pose "rfSobreviventeOlhandoHorizonte" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 130 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.esquerdo(fecha 2% afasta 60%)
+  cabeca(sobe 5)
+```
+
+### rfSobreviventeAjoelhadoAgradecendo
+
+```gm
+pose "rfSobreviventeAjoelhadoAgradecendo" de empe
+  ombro(frente 160 abre 20)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  joelho(dobra 95)
+  tornozelo(aponta 40)
+  tronco(tras 15)
+  cabeca(sobe 30)
+```
+
+### rfSobreviventeBebendoCantil
+
+```gm
+pose "rfSobreviventeBebendoCantil" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 110 abre 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 130)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 80)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 90)
+  tronco(tras 5)
+  cabeca(sobe 35)
+  valor fThL -0.1
+```
+
+### rfSobreviventeEscalandoCorda
+
+```gm
+pose "rfSobreviventeEscalandoCorda" de empe
+  ombro.direito(frente 140 abre 0)
+  ombro.esquerdo(frente 160 abre 0)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 5)
+  cabeca(sobe 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfSobreviventeComMochila
+
+```gm
+pose "rfSobreviventeComMochila" de empe
+  ombro(frente 40 abre 10)
+  cotovelo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 15)
+  cabeca(baixa 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfInfiltradorAgachadoSinal
+
+```gm
+pose "rfInfiltradorAgachadoSinal" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 90 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 120)
+  tornozelo.direito(aponta 10)
+  tornozelo.esquerdo(aponta 30)
+  tronco(frente 30)
+  cabeca(sobe 10)
+```
+
+### rfInfiltradorTrocaObjeto
+
+```gm
+pose "rfInfiltradorTrocaObjeto" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 20)
+  cabeca(baixa 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### rfInfiltradorEscutando
+
+```gm
+pose "rfInfiltradorEscutando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 60 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 30)
+  tronco(frente 10)
+  cabeca(gira-esquerda 60 inclina-direita 15)
+```
+
+### rfInfiltradorDisfarcado
+
+```gm
+pose "rfInfiltradorDisfarcado" de empe
+  ombro.direito(tras 10 abre 10)
+  ombro.esquerdo(frente 20 abre 10)
+  cotovelo(dobra 20)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-direita 30)
+```
+
+### rfCooperacaoBateMao
+
+```gm
+pose "rfCooperacaoBateMao" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  cabeca(sobe 10)
+```
+
+### rfCooperacaoPunhoErguido
+
+```gm
+pose "rfCooperacaoPunhoErguido" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  cabeca(sobe 15)
+  valor fThL -0.1
+```
+
+### rfCooperacaoMeditandoSentado
+
+```gm
+pose "rfCooperacaoMeditandoSentado" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 60)
+  mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
+  quadril(frente 90 abre 45 gira-fora 40)
+  joelho(dobra 140)
+  tronco(frente 5)
 ```
 
 ### explicandoComMaos

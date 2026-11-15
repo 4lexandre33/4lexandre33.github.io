@@ -7,6 +7,8 @@ import { ACOES } from "./pegadas.js";
 import { ACOES_LUTA } from "./acoes-luta.js";
 import { TIPOS_OBJETO, CATALOGO, QD_ESPECIES, TONS, ELEMENTOS } from "../engine/index.js";
 import { PRECONFIG, pcArvore } from "./preconfig.js";
+import { NM_GOLPE } from "./name-dsl.js";
+import { AM_MONSTRO_M } from "./animais.js";
 import { NR, NR_FAMILIAS, NR_TONS, NR_VERSOES, NR_ESTRUTURAS, nrTotalVariantes } from "./narrativa.js";
 import { listaGolpes, GL_CLASSES, ESGRIMA } from "./pegadas.js";
 import { PEGADAS_FORMAS } from "./pegadas-formas-tabela.js";
@@ -902,7 +904,43 @@ ${EXEMPLO_FILME}
   Exemplos: ${["mala", "bastao", "caixa", "rifle", "violao", "xicara"].filter(t => PEGADAS_FORMAS[t]).map(t => t + ": " + PEGADAS_FORMAS[t].slice(0, 6).map((n, i) => (i + 1) + " " + n).join(", ")).join(" · ")}.
   "segura mala" pega o objeto chamado "mala" do local se existir; senão cria uma mala nova na mão.
   "como N" fora da lista dá erro que mostra todas as formas daquele objeto, numeradas. Com duas mãos, a segunda mão escorrega ao longo do cabo (objetos compridos)
-  ou vai para o lado oposto (objetos largos): as mãos nunca ficam uma em cima da outra. Lista completa: MCP catalogo categoria pegadas [funcao bastao].`;
+  ou vai para o lado oposto (objetos largos): as mãos nunca ficam uma em cima da outra. Lista completa: MCP catalogo categoria pegadas [funcao bastao].
+
+44. POSES E CENAS DAS FOLHAS DE REFERÊNCIA (catálogo Referência/…)
+  As folhas de manequins enviadas viraram ${listaPosesExtras().filter(p => /^rf/.test(p.nome)).length} poses (prefixo rf) e ${PRECONFIG.filter(d => /^ref\./.test(d.id)).length} cenas de 2 e 3 pessoas (prefixo ref.).
+  Temas: ${[...new Set(listaPosesExtras().filter(p => /^rf/.test(p.nome)).map(p => p.tag.split("/").slice(1, 3).join("/")))].join(" · ")}.
+  Pose: Kai pose rfAgachadoApontando · Kai pose rfFurtivoColadoParede · Kai pose rfRendicaoAjoelhadoMaosAoAlto (apelidos em português também valem, entre aspas: pose "mãos ao alto").
+  Cena: cena preset ref.ajuda.levantar com Kai, Mira · cena preset ref.papel.vila-trono com Ana, Leo, Rui · cena preset ref.luta.soco-no-rosto com Kai, Mira
+    Cenas: ${PRECONFIG.filter(d => /^ref\./.test(d.id)).map(d => d.id.slice(4)).join(", ")}.
+  No site: aba Catálogo → Referências; árvore de poses → Referência. MCP: catalogo categoria referencias. Lista das folhas e do que virou: docs/referencias/catalogo.md.
+
+45. ANIMAIS EM TAMANHO MONSTRO ("King Kong")
+  No elenco: "Naga animal cobra monstro" · "Kong animal gorila monstro 30" (30 m) · na linha: "Rex monstro" · "Rex comprimento 40m" · "escala N" vai até 5000.
+  Tamanho monstro padrão (comprimento): ${Object.entries(AM_MONSTRO_M).map(([k, v]) => k + " " + v + " m").join(", ")}. Vale para todos os animais: aves, peixes, insetos, dragões.
+  O humano fica minúsculo do lado (ou nas costas: "Kai monta Naga"). Passos, câmera "segue" e ritmo se ajustam ao tamanho.
+
+46. GOLPE COM IMPACTO E EFEITOS DE ARMA
+  [T] Kai golpeia Mira [com ${Object.keys(NM_GOLPE).join("|")}] [colorido] — quem golpeia faz a pose de ataque, quem recebe faz a pose de impacto
+    (rosto, estômago, de lado, arremessado) e o efeito certo aparece no ponto atingido. No filme o impacto chega 0,25 s depois e o efeito some em 1 s.
+    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute".
+  Efeitos novos: corte_ar (onda de corte que sai da espada) · choque_laminas (faíscas quando as armas se cruzam) · corte_impacto (corte no corpo) ·
+    tracante (rajada de balas traçantes) · barreira_rachada (escudo rachando). Prontos de mangá também: corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma.
+
+47. CARROS, ÔNIBUS, AVIÕES, HELICÓPTERO, BARCOS E SUBMARINO
+  objeto carro "C" em (0,0) modelo sedan|hatch|suv|esportivo|caminhonete|taxi|policia (cada modelo com a sua forma e cor) · objeto onibus · aviao (tipo Boeing) · aviaoPequeno · helicoptero ·
+    lancha · boteInflavel · barcoPesqueiro · submarino (com "base -5" fica submerso).
+  Assentos: carro (motorista, carona, traseiro1/2, cacamba na caminhonete) · ônibus (motorista, banco1…16) · avião (piloto, copiloto, poltrona1…24) · helicóptero (piloto, copiloto, porta).
+  No filme: 0s C anda 30m · 0s Aviao decola altura 40 · 2s Aviao voa 200m · 6s Aviao pousa · 0s H decola altura 20 · 3s H voa 30m (a hélice do helicóptero gira sozinha). Velocidades: terra 6, água 3, ar 40 m/s.
+
+48. TRILHO CURVO E TREM ARTICULADO
+  objeto trilho "Linha" em (0,0) caminho (-20,-20) (0,-15) (15,0) (15,20) — o trilho passa suave por todos os pontos (metros).
+  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo.
+  0s Trem anda 45m no-trilho Linha por 7s — cada vagão segue a curva, as junções (sanfonas) dobram e quem está dentro vai junto no seu vagão.
+
+49. PORTAS E PORTÕES
+  objeto porta|portaPequena|portaDupla|portaVidro|portaCorrer|portaCastelo|portaoGrade|portaoFerro|portaLevadica|alcapao "P" em (x,z) [gira g] [aberta 0.5 | aberta 90 | fechada | entreaberta | para-dentro]
+  No filme: 0s Portao abre [por 2s] · 3s Portao fecha · Porta entreabre · Porta escancara (rápido). A levadiça sobe e desce; o alçapão gira no chão; a de correr desliza.
+  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local.`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */
