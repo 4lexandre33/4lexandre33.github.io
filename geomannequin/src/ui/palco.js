@@ -54,7 +54,7 @@ function draw(){
   svgEl.innerHTML=(L.grid?GRID:"")+'<g id="gm-cena">'+wrapStyle(r.svg)+marcasColisao(lst)+'</g>'+(OVERLAY?OVERLAY(lst):"");
   ULT={S:effScale(P),panX:P.panX,panY:P.panY};
   lastInfo=r.infos[SCN.active]||r.infos[0]||{};
-  const i=Object.assign({S:0,chinY:0,t:0,eyeY:0},[lastInfo,...r.infos].find(x=>x&&x.S!==undefined)||lastInfo);
+  const i=Object.assign({S:0,chinY:0,t:0,eyeY:0,brow:{a:0,b:0,th:0},mer:{a:0,b:0,th:0}},[lastInfo,...r.infos].find(x=>x&&x.S!==undefined)||lastInfo);
   $("readout").innerHTML=
     "yaw <b>"+Math.round(P.yaw)+"°</b> · pitch <b>"+Math.round(P.pitch)+"°</b> · roll <b>"+Math.round(P.roll)+"°</b> · 1 R = <b>"+f1(i.S)+" px</b>"+(P.persp?" · lente <b>"+Math.round(P.lens)+" mm</b> · olhos a <b>"+fr(eyeHeight(),1)+" R</b> do chão":" · sem perspectiva");
   $("measures").innerHTML=
