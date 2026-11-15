@@ -110,6 +110,40 @@ function vcTremPartes(o) { const n = Math.max(0, Math.min(6, Math.round(o.vagoes
     const p = C[k - 1], q = C[k], ga = p.a * Math.PI / 180, gb = q.a * Math.PI / 180, ra = k === 1 ? 47 : 39, A2 = [p.x - Math.sin(ga) * ra, p.z - Math.cos(ga) * ra], B2 = [q.x + Math.sin(gb) * 39, q.z + Math.cos(gb) * 39];
     out.push(Object.assign(ocTubo([A2[0], 18, A2[1]], [B2[0], 18, B2[1]], 9), { cor: "fundo" }), ocTubo([A2[0], 7, A2[1]], [B2[0], 7, B2[1]], 0.8)); }
   return out; }
+/* ===== PORTAS E PORTÕES: o.aberto de 0 (fechada) a 1 (aberta); folhas giram na dobradiça, de correr deslizam, levadiça sobe ===== */
+function vcMoverX(parts, ang, ty, tz) { const g = ang * Math.PI / 180, c = Math.cos(g), s = Math.sin(g), M = [1, 0, 0, 0, c, -s, 0, s, c];
+  const mul = (A, B) => [0, 1, 2].flatMap(i => [0, 1, 2].map(j => A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j]));
+  return parts.map(b => { const q = Object.assign({}, b), C = b.c; q.c = [C[0], C[1] * c - C[2] * s + ty, C[1] * s + C[2] * c + tz]; q.R = mul(M, b.R || [1, 0, 0, 0, 1, 0, 0, 0, 1]); return q; }); }
+const pAb = o => Math.max(0, Math.min(1, (o && o.aberto) || 0));
+/* uma folha de porta com a dobradiça em x=0, largura w, altura h, espessura e (estilo: lisa | almofadas | tabuas | vidro) */
+function vcFolhaPorta(w, h, e, estilo, sx) { const out = [ocCaixa([sx * w / 2, h / 2, 0], [w / 2, h / 2, e / 2])], ink = b => Object.assign(b, { cor: "ink" });
+  if (estilo === "almofadas") for (const [y0, y1] of [[0.12, 0.45], [0.55, 0.9]]) for (const f of [-1, 1]) out.push(ink(ocCaixa([sx * w / 2, h * (y0 + y1) / 2, f * (e / 2 + 0.03)], [w * 0.36, h * (y1 - y0) / 2, 0.03])));
+  if (estilo === "tabuas") { for (let i = 1; i < 6; i++) out.push(ink(ocCaixa([sx * w * i / 6, h / 2, e / 2 + 0.03], [0.05, h / 2 - 0.2, 0.03]))); for (const y of [0.18, 0.5, 0.82]) out.push(ink(ocCaixa([sx * w / 2, h * y, e / 2 + 0.08], [w / 2 - 0.2, 0.45, 0.08]))); for (let i = 0; i < 5; i++) for (const y of [0.18, 0.5, 0.82]) out.push(ink(ocEsf([sx * w * (i + 0.5) / 5, h * y, e / 2 + 0.2], [0.22, 0.22, 0.15]))); }
+  if (estilo === "vidro") out.push(Object.assign(ocCaixa([sx * w / 2, h * 0.55, 0], [w * 0.38, h * 0.38, e / 2 + 0.02]), { cor: "claro" }));
+  out.push(ocEsf([sx * (w - 0.9), h * 0.48, e / 2 + 0.35], [0.35, 0.35, 0.35]), ocEsf([sx * (w - 0.9), h * 0.48, -e / 2 - 0.35], [0.35, 0.35, 0.35]));
+  return out; }
+function vcBatente(w, h, t, e) { return [ocCaixa([-w / 2 - t / 2, h / 2, 0], [t / 2, h / 2, e]), ocCaixa([w / 2 + t / 2, h / 2, 0], [t / 2, h / 2, e]), ocCaixa([0, h + t / 2, 0], [w / 2 + t, t / 2, e])]; }
+function vcPorta(o, w, h, estilo, dupla) { const a = pAb(o) * 92 * (o.paraDentro ? -1 : 1), e = Math.max(0.35, w * 0.05), out = vcBatente(w, h, Math.max(0.6, w * 0.08), e * 1.4);
+  if (!dupla) return out.concat(vcMover(vcFolhaPorta(w, h, e, estilo, 1), -a, -w / 2, 0));
+  return out.concat(vcMover(vcFolhaPorta(w / 2, h, e, estilo, 1), -a, -w / 2, 0), vcMover(vcFolhaPorta(w / 2, h, e, estilo, -1), a, w / 2, 0)); }
+function vcPortaCastelo(o) { const w = 24, h = 32, a = pAb(o) * 88, out = [];
+  for (const sx of [-1, 1]) out.push(ocCaixa([sx * (w / 2 + 3), (h + 8) / 2, 0], [3, (h + 8) / 2, 4]));
+  out.push(ocToro([0, h, 0], w / 2 + 3, 3, "z", 4, { meio: [0, 1, 0, 0] }), ocCaixa([0, h + 9, 0], [w / 2 + 6, 3, 4]));
+  const folha = sx => { const f = vcFolhaPorta(w / 2, h, 1.2, "tabuas", sx); f.push(ocToro([0, h, 0], w / 2 - 0.3, 0.6, "z", 0.6, { meio: [0, 1, 0, 0] })); return f; };
+  return out.concat(vcMover(folha(1), -a, -w / 2, 0), vcMover(folha(-1), a, w / 2, 0)); }
+function vcPortao(o, w, h, solido) { const a = pAb(o) * 95, out = [], barras = (L, sx) => { const f = [ocCaixa([sx * L / 2, 1.5, 0], [L / 2, 0.35, 0.35]), ocCaixa([sx * L / 2, h - 1, 0], [L / 2, 0.35, 0.35])], n = Math.max(3, Math.round(L / 1.4));
+    for (let i = 0; i <= n; i++) { const x = sx * L * i / n; f.push(ocTubo([x, 0.6, 0], [x, h, 0], 0.22)); if (solido) f.push(ocEsf([x, h + 0.6, 0], [0.4, 0.9, 0.4])); }
+    if (solido) { f.push(ocCaixa([sx * L / 2, h * 0.5, 0], [L / 2, 0.3, 0.3])); for (let i = 0; i < n; i++) f.push(ocToro([sx * L * (i + 0.5) / n, h * 0.72, 0], L / n * 0.35, 0.12, "z")); } return f; };
+  for (const sx of [-1, 1]) out.push(ocCaixa([sx * (w / 2 + 1), (h + 2) / 2, 0], [1, (h + 2) / 2, 1]), ocEsf([sx * (w / 2 + 1), h + 2.6, 0], [1.2, 1.2, 1.2]));
+  return out.concat(vcMover(barras(w / 2, 1), -a, -w / 2, 0), vcMover(barras(w / 2, -1), a, w / 2, 0)); }
+function vcLevadica(o) { const w = 26, h = 30, up = pAb(o) * (h - 2), out = [];
+  for (const sx of [-1, 1]) out.push(ocCaixa([sx * (w / 2 + 4), (h + 10) / 2, 0], [4, (h + 10) / 2, 5])); out.push(ocCaixa([0, h + 6, 0], [w / 2 + 8, 4, 5]));
+  for (let i = 0; i <= 9; i++) { const x = -w / 2 + w * i / 9; out.push(ocTubo([x, up, 0], [x, up + h, 0], 0.35), ocEsf([x, up - 0.6, 0], [0.4, 1, 0.4])); }
+  for (let j = 1; j <= 7; j++) out.push(ocTubo([-w / 2, up + h * j / 8, 0], [w / 2, up + h * j / 8, 0], 0.3));
+  return out; }
+function vcAlcapao(o) { const w = 8, d = 8, a = pAb(o) * 100, out = [ocCaixa([0, 0.08, -d / 2 - 0.4], [w / 2 + 0.8, 0.08, 0.4]), ocCaixa([0, 0.08, d / 2 + 0.4], [w / 2 + 0.8, 0.08, 0.4]), ocCaixa([-w / 2 - 0.4, 0.08, 0], [0.4, 0.08, d / 2]), ocCaixa([w / 2 + 0.4, 0.08, 0], [0.4, 0.08, d / 2]), Object.assign(ocCaixa([0, 0.02, 0], [w / 2, 0.02, d / 2]), { cor: "ink" })];
+  const folha = [ocCaixa([0, 0.25, d / 2], [w / 2, 0.25, d / 2])]; for (let i = 1; i < 4; i++) folha.push(Object.assign(ocCaixa([-w / 2 + w * i / 4, 0.52, d / 2], [0.05, 0.03, d / 2 - 0.2]), { cor: "ink" })); folha.push(ocToro([0, 0.6, d * 0.8], 0.6, 0.12, "x"));
+  return out.concat(vcMoverX(folha, -a, 0, -d / 2)); }
 function vcAssentosVagao(z0, L) { const A = {}, h = L / 2; [[-1, 1], [1, -1]].forEach(([s, ol], i) => { for (let r = 0; r < 3; r++) A["banco" + (i * 3 + r + 1)] = { p: [s * 6.5, 12.6, z0 - h + 12 + r * 14 + (ol < 0 ? 5 : 0)], olha: ol, dentro: true }; }); A["corredor"] = { p: [0, 8.6, z0], olha: 1, pe: true, dentro: true }; return A; }
 function vcVagao(z0, L) { const out = [], h = L / 2;
   out.push(ocCaixa([0, 7.2, z0], [5.6, 1.4, h + 1.6]), ocCaixa([0, 19.5, z0], [12.4, 11, h]), { cil: true, c: [0, 24.6, z0], r: 12.4, hh: h + 0.6, R: rotParaEixo([0, 0, 1]) });
@@ -361,6 +395,17 @@ const COMPOSTOS = {
     partes: o => vcTremPartes(o),
     assentos: o => { const n = Math.max(0, Math.min(6, Math.round((o && o.vagoes) ?? 2))), A = { maquinista: { p: [5, 9.6, -14], olha: 1, pe: true }, foguista: { p: [-5, 9.6, -16], olha: -1, pe: true } };
       for (let k = 0; k < n; k++) for (const [nm, a] of Object.entries(vcAssentosVagao(-48 - 4 - 37 - k * 82, 74))) A[(k ? "vagao" + (k + 1) + "-" : "") + nm] = a; return A; } },
+  porta: { nome: "porta comum (batente, maçaneta; estilo almofadas)", larg: 9.4, prof: 1.2, alt: 19.2, grupo: "porta", porta: true, corPadrao: "#8b5e3c", partes: o => vcPorta(o, 8, 18.4, "almofadas") },
+  portaPequena: { nome: "porta pequena (despensa, porão, toca)", larg: 7, prof: 1, alt: 14.6, grupo: "porta", porta: true, corPadrao: "#7a5230", partes: o => vcPorta(o, 6, 14, "tabuas") },
+  portaDupla: { nome: "porta dupla (duas folhas)", larg: 15.6, prof: 1.2, alt: 20.4, grupo: "porta", porta: true, corPadrao: "#6f4a2e", partes: o => vcPorta(o, 14, 19.4, "almofadas", true) },
+  portaVidro: { nome: "porta moderna de vidro", larg: 9.4, prof: 1, alt: 19.2, grupo: "porta", porta: true, corPadrao: "#5f6b78", partes: o => vcPorta(o, 8, 18.4, "vidro") },
+  portaCorrer: { nome: "porta de correr (desliza para o lado)", larg: 17.4, prof: 1.4, alt: 19.2, grupo: "porta", porta: true, corPadrao: "#9a8a72",
+    partes: o => vcBatente(8, 18.4, 0.6, 0.7).concat(vcMover(vcFolhaPorta(8, 18.4, 0.4, "almofadas", 1), 0, -4 + pAb(o) * 7.6, 0.9)) },
+  portaCastelo: { nome: "porta de castelo (gigante, em arco, tábuas com ferragens e cravos)", larg: 36, prof: 8, alt: 44, grupo: "porta", porta: true, corPadrao: "#5b3a22", partes: o => vcPortaCastelo(o) },
+  portaoGrade: { nome: "portão de grade (duas folhas de barras)", larg: 34, prof: 2, alt: 21, grupo: "porta", porta: true, corPadrao: "#3a3d42", partes: o => vcPortao(o, 32, 17, false) },
+  portaoFerro: { nome: "portão de ferro (alto, lanças no topo, ornamentos)", larg: 38, prof: 2.4, alt: 26, grupo: "porta", porta: true, corPadrao: "#22262b", partes: o => vcPortao(o, 36, 21, true) },
+  portaLevadica: { nome: "porta levadiça de castelo (grade que sobe)", larg: 42, prof: 10, alt: 44, grupo: "porta", porta: true, corPadrao: "#6d6a63", partes: o => vcLevadica(o) },
+  alcapao: { nome: "alçapão (porta no chão)", larg: 10, prof: 10, alt: 1, grupo: "porta", porta: true, corPadrao: "#6b4a2b", partes: o => vcAlcapao(o) },
   carro: { nome: "carro (modelo sedan, hatch, suv, esportivo, caminhonete, taxi, policia)", larg: 17, prof: 47, alt: 16, grupo: "veiculo", veiculo: "terra", corPadrao: "#3b6ea5",
     partes: o => vcCarro(o), assentos: o => vcAssentosCarro(o) },
   onibus: { nome: "ônibus (12 m, janelas, portas, 2 fileiras de bancos)", larg: 22, prof: 105, alt: 28, grupo: "veiculo", veiculo: "terra", corPadrao: "#d9a520",
@@ -393,7 +438,7 @@ const COMPOSTOS = {
 };
 Object.assign(COMPOSTOS, OBJ_MAO);
 /* sinônimos em português para achar o objeto por nome */
-const SINONIMOS_COMPOSTOS = { carruagem: "carruagem", coche: "carruagem", diligencia: "carruagem", "diligência": "carruagem", carroca: "carroca", "carroça": "carroca", charrete: "carroca", barco: "barcoRemo", "barco a remo": "barcoRemo", bote: "barcoRemo", canoa: "canoa", caiaque: "canoa", veleiro: "veleiro", "barco a vela": "veleiro", balsa: "balsa", jangada: "balsa", "balsa grande": "balsaGrande", ferry: "balsaGrande", navio: "navio", "galeao": "navio", "galeão": "navio", nau: "navio", trem: "trem", comboio: "trem", locomotiva: "locomotiva", "maria fumaca": "locomotiva", "maria-fumaça": "locomotiva", vagao: "vagao", "vagão": "vagao", trilho: "trilho", trilhos: "trilho", carro: "carro", automovel: "carro", "automóvel": "carro", sedan: "carro", suv: "carro", caminhonete: "carro", picape: "carro", taxi: "carro", "táxi": "carro", viatura: "carro", onibus: "onibus", "ônibus": "onibus", aviao: "aviao", "avião": "aviao", boeing: "aviao", jato: "aviao", "aviao pequeno": "aviaoPequeno", "avião pequeno": "aviaoPequeno", cessna: "aviaoPequeno", teco: "aviaoPequeno", helicoptero: "helicoptero", "helicóptero": "helicoptero", lancha: "lancha", "bote inflavel": "boteInflavel", "bote inflável": "boteInflavel", pesqueiro: "barcoPesqueiro", "barco pesqueiro": "barcoPesqueiro", submarino: "submarino", "linha de trem": "trilho", "ferrovia": "trilho", bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
+const SINONIMOS_COMPOSTOS = { carruagem: "carruagem", coche: "carruagem", diligencia: "carruagem", "diligência": "carruagem", carroca: "carroca", "carroça": "carroca", charrete: "carroca", barco: "barcoRemo", "barco a remo": "barcoRemo", bote: "barcoRemo", canoa: "canoa", caiaque: "canoa", veleiro: "veleiro", "barco a vela": "veleiro", balsa: "balsa", jangada: "balsa", "balsa grande": "balsaGrande", ferry: "balsaGrande", navio: "navio", "galeao": "navio", "galeão": "navio", nau: "navio", trem: "trem", comboio: "trem", locomotiva: "locomotiva", "maria fumaca": "locomotiva", "maria-fumaça": "locomotiva", vagao: "vagao", "vagão": "vagao", trilho: "trilho", trilhos: "trilho", porta: "porta", "porta dupla": "portaDupla", "porta de vidro": "portaVidro", "porta de correr": "portaCorrer", "porta de castelo": "portaCastelo", portao: "portaoGrade", "portão": "portaoGrade", "portão de grade": "portaoGrade", "portao de ferro": "portaoFerro", "portão de ferro": "portaoFerro", grade: "portaoGrade", levadica: "portaLevadica", "levadiça": "portaLevadica", "porta levadiça": "portaLevadica", alcapao: "alcapao", "alçapão": "alcapao", carro: "carro", automovel: "carro", "automóvel": "carro", sedan: "carro", suv: "carro", caminhonete: "carro", picape: "carro", taxi: "carro", "táxi": "carro", viatura: "carro", onibus: "onibus", "ônibus": "onibus", aviao: "aviao", "avião": "aviao", boeing: "aviao", jato: "aviao", "aviao pequeno": "aviaoPequeno", "avião pequeno": "aviaoPequeno", cessna: "aviaoPequeno", teco: "aviaoPequeno", helicoptero: "helicoptero", "helicóptero": "helicoptero", lancha: "lancha", "bote inflavel": "boteInflavel", "bote inflável": "boteInflavel", pesqueiro: "barcoPesqueiro", "barco pesqueiro": "barcoPesqueiro", submarino: "submarino", "linha de trem": "trilho", "ferrovia": "trilho", bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
   tambor: "tambor", "tonel": "tambor", chope: "barrilChope", keg: "barrilChope", botijao: "botijao", "botijão": "botijao", "cilindro de gas": "botijao", galao: "galao", "galão": "galao", "jerry can": "galao", balde: "balde",
   mala: "mala", maleta: "maleta", "caixa de ferramentas": "maleta", "mala de rodinhas": "malaRodinhas", mochila: "mochila", bigorna: "bigorna", caixote: "caixote", engradado: "caixote", palete: "palete", pallet: "palete", treno: "palete", "trenó": "palete",
   viga: "vigaI", "viga i": "vigaI", cano: "cano", tora: "cano", tronco: "cano", tubo: "cano", tabua: "tabua", "tábua": "tabua", prancha: "tabua", escada: "escada", trelica: "trelica", "treliça": "trelica",

@@ -184,6 +184,8 @@ function nmLerLocal(bloco, ctx) {
       else if (w === "vagoes" || w === "vagões") { o.vagoes = nx.v; k++; }
       else if (w === "caminho" || w === "curva") { const pts = []; while (toks[k + 1] && (toks[k + 1].t === "tupla" || toks[k + 1].v === ",")) { k++; if (toks[k].t === "tupla") pts.push([toks[k].v[0] * U, toks[k].v[1] * U]); } o.caminhoAbs = pts; }
       else if (w === "no-trilho") { o.noTrilho = nx.v; k++; } else if (w === "posicao" || w === "posição" || w === "km") { o.trilhoS = nx.v * U; k++; }
+      else if (w === "aberta" || w === "aberto") { if (nx && nx.t === "num") { o.aberto = nx.v > 1 ? nx.v / 90 : nx.v; k++; } else o.aberto = 1; }
+      else if (w === "fechada" || w === "fechado") o.aberto = 0; else if (w === "entreaberta") o.aberto = 0.3; else if (w === "para-dentro") o.paraDentro = true;
       else if (w === "modelo" || w === "tipo-carro") { o.modelo = nmNorm(nx.v).replace("esporte", "esportivo").replace("picape", "caminhonete").replace("viatura", "policia"); k++; }
       else if (w === "sobe-para" || w === "sobe") { o.sobe = nmNorm(nx.v); k++; }
       else if (w === "paredes") { o.paredes = nx.v * U; k++; }
@@ -313,7 +315,7 @@ function nmObjeto(add, tipo0, p, o, linha) {
   if (!tipo) { const s = nmParecida(tipo0, Object.keys(TIPOS_OBJETO)); throw new NmErro("Objeto “" + tipo0 + "” não existe." + (s ? " Quis dizer “" + s + "”?" : " Tipos: " + Object.keys(TIPOS_OBJETO).join(", ") + "."), linha); }
   const D0 = TIPOS_OBJETO[tipo], cil = D0.forma === "cilindro" || ["arvore", "palmeira", "arbusto", "poco", "esfera", "cone"].includes(tipo);
   const larg = o.larg ?? (o.raio ? 2 * o.raio : D0.larg), prof = o.prof ?? (o.raio ? 2 * o.raio : D0.prof), alt = o.alt ?? D0.alt;
-  const novo = add({ tipo, x: p[0], z: p[1], larg, prof, alt, giro: o.giro || 0, base: o.base, classe: o.classe || NM_TIPO_CLASSE[tipo] || null, cor: o.cor, nome: o.nome || (["caixa"].includes(tipo) && t !== "caixa" ? tipo0 : tipo), nivel: o.nivel, cil, vagoes: o.vagoes, modelo: o.modelo, caminhoAbs: o.caminhoAbs, noTrilho: o.noTrilho, trilhoS: o.trilhoS });
+  const novo = add({ tipo, x: p[0], z: p[1], larg, prof, alt, giro: o.giro || 0, base: o.base, classe: o.classe || NM_TIPO_CLASSE[tipo] || null, cor: o.cor, nome: o.nome || (["caixa"].includes(tipo) && t !== "caixa" ? tipo0 : tipo), nivel: o.nivel, cil, vagoes: o.vagoes, modelo: o.modelo, caminhoAbs: o.caminhoAbs, noTrilho: o.noTrilho, trilhoS: o.trilhoS, aberto: o.aberto, paraDentro: o.paraDentro });
   /* orientação livre: inclina (gira para a frente) e tomba (gira de lado), além do giro no chão */
   if (o._rot && novo && typeof novo === "object") { const R = Math.PI / 180; novo.rot3 = rotM((o.giro || 0) * R, (o._inclina || 0) * R, (o._tomba || 0) * R); novo.inclina = o._inclina || 0; novo.tomba = o._tomba || 0;
     /* deitado/inclinado: encosta no chão (o ponto mais baixo da caixa girada fica em y = 0), a não ser que já tenha base */
@@ -326,7 +328,7 @@ function nmMontarLocal(plano) {
   const cont = {}, avisos = [];
   for (const it of plano.itens.slice(0, 300)) {
     try { cont[it.nome] = (cont[it.nome] || 0) + 1;
-      const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: Math.max(0.03, it.larg), prof: Math.max(0.03, it.prof), alt: Math.max(0.03, it.alt), giro: it.giro || 0, nome: (it.nome + (cont[it.nome] > 1 ? " " + cont[it.nome] : "")).slice(0, 24) , vagoes: it.vagoes, modelo: it.modelo, caminhoAbs: it.caminhoAbs, noTrilho: it.noTrilho, trilhoS: it.trilhoS });
+      const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: Math.max(0.03, it.larg), prof: Math.max(0.03, it.prof), alt: Math.max(0.03, it.alt), giro: it.giro || 0, nome: (it.nome + (cont[it.nome] > 1 ? " " + cont[it.nome] : "")).slice(0, 24) , vagoes: it.vagoes, modelo: it.modelo, caminhoAbs: it.caminhoAbs, noTrilho: it.noTrilho, trilhoS: it.trilhoS, aberto: it.aberto, paraDentro: it.paraDentro });
       if (it.base) { q.emAr = true; q.base = it.base; q.sobre = null; }
       if (it.rot3) { q.rot3 = it.rot3.slice(); q.emAr = true; q.base = it.base || 0; q.sobre = null; }
       q.grupo = "local:" + plano.nome; if (it.chao) q.chao = true; if (it.nivel && it.tipo === "caixa") q.nivel = it.nivel;
@@ -642,7 +644,13 @@ function nmVeiculoEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), vo = ac
   vo.x = para.x; vo.z = para.z; vo.giro = ((giro + 540) % 360) - 180; vo.base = para.base; vo.emAr = para.base > 0.5;
   Qe.animais.push({ tipo: "veicMov", quem: vo.nome, inicio: 0, dur, de, para, texto: vo.nome + (L > 0.01 ? " anda " + L.toFixed(1) + " m" : " vira") });
   return true; }
+/* "0s Porta abre [por 1.2s]" · "3s Portao fecha" · "Porta abre 45" (graus) — portas, portões, levadiça e alçapão */
+function nmPortaEvento(txt, Qe, fl, linha) { const tk = nmTokens(txt), o = acharObjeto(tk[0].v); if (!o || !COMPOSTOS[o.tipo] || !COMPOSTOS[o.tipo].porta) return false;
+  const w = nmNorm(tk[1] ? tk[1].v : ""); if (!/^(abre|abrir|fecha|fechar|entreabre|escancara)$/.test(w)) throw new NmErro(o.nome + ": use abre [graus] | fecha | entreabre | escancara [por Ns].", linha);
+  const de = o.aberto || 0, para = /^fecha/.test(w) ? 0 : w === "entreabre" ? 0.3 : tk[2] && tk[2].t === "num" ? Math.min(1, tk[2].v > 1 ? tk[2].v / 90 : tk[2].v) : 1, dur = fl.por || (o.tipo === "portaLevadica" ? 3 : o.tipo === "portaCastelo" ? 2.2 : w === "escancara" ? 0.35 : 1);
+  o.aberto = para; Qe.animais.push({ tipo: "portaMov", quem: o.nome, inicio: 0, dur, de, para, texto: o.nome + (para > de ? " abre" : " fecha") }); return true; }
 function nmPlanoAnimais(F, t) {
+  for (const s of F.trilhas) { if (s.tipo !== "portaMov" || t < s.inicio - 1e-9) continue; const o = SCN.objetos.find(x => x.nome === s.quem); if (o) o.aberto = s.de + (s.para - s.de) * NM_SUAVE(Math.min(1, (t - s.inicio) / Math.max(0.05, s.dur))); }
   for (const s of F.trilhas) { if (s.tipo !== "veicMov" || t < s.inicio - 1e-9) continue; const o = SCN.objetos.find(x => x.nome === s.quem); if (!o) continue;
     if (s.trilho) { const u = Math.min(1, (t - s.inicio) / Math.max(0.05, s.dur)), e2 = u < 0.15 ? 0.5 * u * u / 0.15 / 0.85 : u > 0.85 ? 1 - 0.5 * (1 - u) * (1 - u) / 0.15 / 0.85 : (u - 0.075) / 0.85; o.trilhoS = s.trilho.s0 + (s.trilho.s1 - s.trilho.s0) * Math.max(0, Math.min(1, e2)); vcTremNoTrilho(o); continue; }
     const u = Math.min(1, (t - s.inicio) / Math.max(0.05, s.dur)), e = u < 0.15 ? 0.5 * u * u / 0.15 / 0.85 : u > 0.85 ? 1 - 0.5 * (1 - u) * (1 - u) / 0.15 / 0.85 : (u - 0.075) / 0.85, m = Math.max(0, Math.min(1, e));
@@ -1458,7 +1466,7 @@ function nmCompilar(texto, opts = {}) {
         for (const l of linhas) { try {
           const tk = nmTokens(l.txt); if (!tk.length) continue; const w0 = nmNorm(tk[0].v);
           if (w0 === "objeto" || w0 === "coloca" || w0 === "adiciona") { /* objeto temporário do quadro */ const pl = { nome: "tmp", itens: [] }; const sub = { cab: "local tmp unidade m origem pronto", corpo: [{ txt: l.txt.replace(/^(objeto|coloca|adiciona)\s+/i, ""), linha: l.linha }], linha: l.linha };
-            const p2 = nmLerLocal(sub, ctx); p2.itens.forEach(it => { const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: it.larg, prof: it.prof, alt: it.alt, giro: it.giro, nome: it.nome, vagoes: it.vagoes, modelo: it.modelo, caminhoAbs: it.caminhoAbs, noTrilho: it.noTrilho, trilhoS: it.trilhoS }); if (it.base) { q.emAr = true; q.base = it.base; } }); void pl; continue; }
+            const p2 = nmLerLocal(sub, ctx); p2.itens.forEach(it => { const q = adicionarObjeto(it.tipo, { x: it.x, z: it.z, larg: it.larg, prof: it.prof, alt: it.alt, giro: it.giro, nome: it.nome, vagoes: it.vagoes, modelo: it.modelo, caminhoAbs: it.caminhoAbs, noTrilho: it.noTrilho, trilhoS: it.trilhoS, aberto: it.aberto, paraDentro: it.paraDentro }); if (it.base) { q.emAr = true; q.base = it.base; } }); void pl; continue; }
           if (w0 === "efeito") { const tipo = tk[1] && tk[1].v; if (!CATALOGO[tipo] && tipo !== "explosao_completa") { const sg = nmParecida(tipo, Object.keys(CATALOGO).concat(["explosao_completa"])); throw new NmErro("Efeito “" + tipo + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), l.linha); }
             const ef = nmEfeitoOpcoes(ctx, tk, 1, l.linha, null); if (ef.k + 1 < tk.length) throw new NmErro("efeito " + tipo + ": não entendi “" + tk[ef.k + 1].v + "”" + (nmParecida(tk[ef.k + 1].v, VT_CAMINHOS) ? " (caminho: " + nmParecida(tk[ef.k + 1].v, VT_CAMINHOS) + "?)" : "") + ".", l.linha); (Q.efeitosDepois = Q.efeitosDepois || []).push(() => { try { nmEfeitoCriar(tipo, ef, null, null, null, Q); } catch (e) { Q.avisos.push("efeito " + tipo + ": " + e.message); } }); continue; }
           if ((w0 === "camera" || w0 === "câmera") && tk[1] && /^(preset|pre-?config)$/i.test(nmNorm(tk[1].v))) { const pr = nmLerPreset(ctx, l.txt, l.linha); Q.presetCamera = { def: pr.def, mapa: nmMapaPreset(ctx, pr, Q, l.linha), o: pr.o }; continue; }
@@ -2000,6 +2008,7 @@ function nmRodarPlano(ctx, Q, b, erros, indice) {
     if (/^(transicao|transição)\b/i.test(txt)) throw new NmErro("Num filme, a transição vai no cabeçalho do plano: plano 3 fusao 0.6s | escurece 0.8s | clareia | corte.", e.linha);
     if (tk0[0] && nmNorm(tk0[0].v) === "efeito") { /* efeito no tempo, preso ao lugar, a um objeto ou à tela */ const tkE = nmTokens(txt), tipo = tkE[1] && tkE[1].v; if (!CATALOGO[tipo] && tipo !== "explosao_completa") { const sg = nmParecida(tipo, Object.keys(CATALOGO).concat(["explosao_completa"])); throw new NmErro("Efeito “" + tipo + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : ""), e.linha); }
       const ef = nmEfeitoOpcoes(ctx, tkE, 1, e.linha, null); if (ef.k + 1 < tkE.length) throw new NmErro("efeito " + tipo + ": não entendi “" + tkE[ef.k + 1].v + "”.", e.linha); try { nmEfeitoCriar(tipo, ef, null, T, F.n, Qe); } catch (er) { throw new NmErro("efeito " + tipo + ": " + er.message, e.linha); } }
+    else if (tk0[0] && !quem0 && nmPortaEvento(txt, Qe, fl, e.linha)) { }
     else if (tk0[0] && !quem0 && nmVeiculoEvento(txt, Qe, fl, e.linha)) { }
     else if (!nmPersonagem(ctx, { txt, linha: e.linha }, Qe)) { const s = nmParecida(tk0[0] ? tk0[0].v : "", [...ctx.elenco.keys()]); throw new NmErro("“" + (tk0[0] ? tk0[0].v : txt) + "” não está no elenco." + (s ? " Quis dizer “" + s + "”?" : ""), e.linha); }
     for (const f of Qe.depois) f();
