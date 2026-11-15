@@ -36,7 +36,7 @@ import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo
 import { AV_VERBOS } from "./aves-anim.js";
 import { CR_VERBOS, ALADO_VERBOS } from "./criaturas-anim.js";
 import { lpExpandirTexto, lpAchar, localPronto } from "./locais-prontos.js";
-import { vcTremNoTrilho, VC_VELOC, vcEhVeiculo, vcAssentos, vcEmbarcar, vcAtrelar, vcAtualizar } from "./veiculos.js";
+import { vcChaveAssento, vcTremNoTrilho, VC_VELOC, vcEhVeiculo, vcAssentos, vcEmbarcar, vcAtrelar, vcAtualizar } from "./veiculos.js";
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
@@ -849,7 +849,7 @@ function nmPersonagem(ctx, l, Q) {
     else if (/^(embarca|embarcar|entra-em|entra-no|entra-na|rema|remar)$/.test(w)) { /* veículo: "Kai embarca barco [assento remador]" · "Kai rema barco" (= assento do remador) */
       const vn = nx && nx.v; k++; let ass = /^rema/.test(w) ? "rema" : null; if (toks[k + 1] && /^(assento|banco|lugar|como)$/.test(nmNorm(toks[k + 1].v)) && toks[k + 2]) { ass = nmNorm(toks[k + 2].v); k += 2; } else if (toks[k + 1] && toks[k + 1].t === "pal" && !NM_CHAVES_P.has(nmNorm(toks[k + 1].v))) { const cand = nmNorm(toks[k + 1].v); if (["cocheiro", "condutor", "passageiro", "passageiro2", "remador", "proa", "popa", "timoneiro", "tripulante", "em-pe", "borda", "carga"].includes(cand)) { ass = cand; k++; } }
       depois.push(() => { const o = acharObjeto(vn); if (!o || !vcEhVeiculo(o)) throw new NmErro(w + " EM QUAL veículo? Ponha um no quadro/local (ex.: objeto barcoRemo \"barco\" em (0,3)). Veículos: carruagem, carroca, barcoRemo, canoa, veleiro, balsa.", l.linha);
-        const A = vcAssentos(o); let nome = ass; if (ass === "rema") nome = Object.keys(A).find(a => A[a].rema) || Object.keys(A)[0]; if (nome && !A[nome]) throw new NmErro("Assento “" + nome + "” não existe em " + o.nome + ". Há: " + Object.keys(A).join(", ") + ".", l.linha);
+        const A = vcAssentos(o); let nome = ass; if (ass === "rema") nome = Object.keys(A).find(a => A[a].rema) || Object.keys(A)[0]; if (nome && !A[nome]) nome = vcChaveAssento(A, nome) || nome; if (nome && !A[nome]) throw new NmErro("Assento “" + nome + "” não existe em " + o.nome + ". Há: " + Object.keys(A).join(", ") + ".", l.linha);
         its.forEach((x, i) => { const livre = nome || Object.keys(A).find(a => !(o.passageiros || {})[a] || o.passageiros[a] === x.name) || Object.keys(A)[i % Object.keys(A).length]; vcEmbarcar(x, o, livre); }); }); feito.anima = "embarca " + vn; }
     else if (w === "monta" || w === "montar" || w === "cavalga") { const an = nx && nx.v; const o = an && amAchar(nmQuem(ctx, an) || an); if (!o) throw new NmErro(w + " EM QUAL animal? (do elenco: “Trovão animal cavalo”).", l.linha); k++;
       { let escPed = null; if (toks[k + 1] && nmNorm(toks[k + 1].v) === "escala" && toks[k + 2] && toks[k + 2].t === "num") { escPed = Math.max(0.01, Math.min(100, toks[k + 2].v)); k += 2; }

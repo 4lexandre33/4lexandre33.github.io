@@ -39,51 +39,102 @@ function vcLocomotiva(z0) { const out = [], Z = z => z + z0;
   out.push({ cil: true, c: [0, 19.5, Z(14)], r: 8.6, hh: 20, R: rotParaEixo([0, 0, 1]) }, { cil: true, c: [0, 19.5, Z(36)], r: 9.2, hh: 3, R: rotParaEixo([0, 0, 1]) }, Object.assign({ cil: true, c: [0, 19.5, Z(39.1)], r: 7.8, hh: 0.15, R: rotParaEixo([0, 0, 1]) }, { cor: "ink" }));
   out.push({ cil: true, c: [0, 32, Z(34)], r: 2.6, hh: 4.5 }, { cil: true, c: [0, 37, Z(34)], r: 3.6, hh: 0.9 }, ocEsf([0, 28.4, Z(18)], [3.2, 3.0, 3.6]), { cil: true, c: [0, 28.8, Z(6)], r: 1.6, hh: 1.8 }, ocEsf([0, 25, Z(39.5)], [1.8, 1.8, 1.0]), Object.assign(ocEsf([0, 25, Z(40.3)], [1.3, 1.3, 0.3]), { cor: "fundo" }));
   for (let k = 0; k < 6; k++) { const x = -10 + k * 4; out.push(ocCaixa([x * 0.55, 4.0, Z(44.5 + Math.abs(x) * 0.18)], [1.4, 2.4, 0.3], rotParaEixo([0, 0.6, -1]))); }
-  out.push(ocCaixa([0, 21.5, Z(-14)], [11.4, 12.5, 8.4]), ocCaixa([0, 35, Z(-13)], [12.4, 0.6, 10.2]), Object.assign(ocCaixa([11.45, 26, Z(-14)], [0.05, 3.4, 4.6]), { cor: "ink" }), Object.assign(ocCaixa([-11.45, 26, Z(-14)], [0.05, 3.4, 4.6]), { cor: "ink" }),
-    Object.assign(ocCaixa([6, 27, Z(-5.55)], [3, 2.4, 0.05]), { cor: "ink" }), Object.assign(ocCaixa([-6, 27, Z(-5.55)], [3, 2.4, 0.05]), { cor: "ink" }));
+  out.push(...vcCasca({ w: 11.4, y0: 9, yp: 9.6, yb: 20, yt: 34.2, z0: Z(-22.4), z1: Z(-5.6), t: 0.5, jan: [[Z(-19.6), Z(-11)]], frente: "janela", tras: "aberta", moldura: 3.2, teto: false }), ocCaixa([0, 35, Z(-13)], [12.4, 0.6, 10.2]));
+  out.push(ocCaixa([0, 14, Z(-7)], [6, 4.4, 1.2]), ocTubo([4.6, 18.5, Z(-7.5)], [4.6, 21, Z(-9.5)], 0.25));
   /* tênder de carvão */
   out.push(ocCaixa([0, 7, Z(-35)], [10.5, 1.2, 11.5]), ocCaixa([0, 15, Z(-35)], [11, 7, 11.5]), Object.assign(ocCaixa([0, 22.4, Z(-35)], [10, 0.6, 10.5]), { cor: "ink" }));
   for (const s of [-1, 1]) for (const z of [-42, -28]) out.push(...vcRodaTrem(s * 6.3, 4.6, Z(z), 3.6));
   return out; }
+/* ===== CASCA OCA de cabine (carro, ônibus, vagão, cabine de locomotiva, avião pequeno, helicóptero…): piso, paredes até a cintura,
+   colunas entre as janelas (abertas, para ver quem está dentro), teto e as pontas (frente/trás com janela, fechada ou aberta).
+   sp = { w meia largura, y0 fundo, yp topo do piso, yb cintura, yt teto (por baixo), z0 trás, z1 frente, t espessura,
+          jan [[za,zb]…] janelas laterais, portas [{lado:±1, za, zb}] vãos do piso ao teto, frente/tras "janela"|"fechada"|"aberta" } ===== */
+function vcLivres(a, b, buracos) { const H = buracos.map(q => [Math.max(a, Math.min(q[0], q[1])), Math.min(b, Math.max(q[0], q[1]))]).filter(q => q[1] > q[0]).sort((p, q) => p[0] - q[0]), out = []; let c = a;
+  for (const [p, q] of H) { if (p > c + 0.05) out.push([c, p]); c = Math.max(c, q); } if (b > c + 0.05) out.push([c, b]); return out; }
+function vcCasca(sp) { const out = [], t = sp.t || 0.4, w = sp.w, zc = (sp.z0 + sp.z1) / 2, hz = (sp.z1 - sp.z0) / 2, portas = sp.portas || [];
+  out.push(ocCaixa([0, (sp.y0 + sp.yp) / 2, zc], [w, Math.max(0.1, (sp.yp - sp.y0) / 2), hz]));
+  if (sp.teto !== false) out.push(ocCaixa([0, sp.yt + t / 2, zc], [w, t / 2, hz]));
+  for (const sx of [-1, 1]) { const vaos = portas.filter(p => p.lado === sx).map(p => [p.za, p.zb]);
+    for (const [a, b] of vcLivres(sp.z0, sp.z1, vaos)) out.push(ocCaixa([sx * (w - t / 2), (sp.yp + sp.yb) / 2, (a + b) / 2], [t / 2, (sp.yb - sp.yp) / 2, (b - a) / 2]));
+    for (const [a, b] of vcLivres(sp.z0, sp.z1, (sp.jan || []).concat(vaos))) out.push(ocCaixa([sx * (w - t / 2), (sp.yb + sp.yt) / 2, (a + b) / 2], [t / 2, (sp.yt - sp.yb) / 2, (b - a) / 2]));
+    for (const [a, b] of sp.jan || []) out.push(Object.assign(ocCaixa([sx * (w - t / 2), sp.yb + 0.08, (a + b) / 2], [t / 2 + 0.05, 0.08, (b - a) / 2]), { cor: "ink" })); }
+  for (const [z, tipo, s] of [[sp.z1, sp.frente || "janela", 1], [sp.z0, sp.tras || "janela", -1]]) { if (tipo === "aberta") continue; const zz = z - s * t / 2, m = sp.moldura || 0.9;
+    out.push(ocCaixa([0, (sp.yp + sp.yb) / 2, zz], [w, (sp.yb - sp.yp) / 2, t / 2]));
+    if (tipo === "fechada") out.push(ocCaixa([0, (sp.yb + sp.yt) / 2, zz], [w, (sp.yt - sp.yb) / 2, t / 2]));
+    else for (const sx of [-1, 1]) out.push(ocCaixa([sx * (w - m / 2), (sp.yb + sp.yt) / 2, zz], [m / 2, (sp.yt - sp.yb) / 2, t / 2])); }
+  return out; }
+const rotX = a => { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, c, -s, 0, s, c]; }, rotZ = a => { const c = Math.cos(a), s = Math.sin(a); return [c, -s, 0, s, c, 0, 0, 0, 1]; };
+/* banco com encosto: y = topo do assento, (x,z) = onde fica o quadril; olha ±1; L = meia largura */
+function vcBanco(x, y, z, olha, L, enc, alto) { const s = olha < 0 ? -1 : 1, h = enc || 6, y0 = alto === undefined ? y - 1.2 : alto;
+  return [ocCaixa([x, (y + y0) / 2 - 0.05, z + s * 1.4], [L || 2.4, Math.max(0.3, (y - y0) / 2 - 0.05), 2.7]), ocCaixa([x, y + h / 2, z - s * 2.15 - s * h * 0.11], [L || 2.4, h / 2, 0.4], rotX(-s * 0.22))]; }
+/* volante (toro inclinado) e painel */
+function vcVolante(x, y, z, r) { return [ocToro([x, y, z], r || 1.6, 0.22, "z"), ocTubo([x, y, z], [x, y - 1.2, z + 2.4], 0.25)]; }
 /* ===== CARRO PARAMÉTRICO: um só manequim para sedã, hatch, SUV, esportivo, caminhonete, táxi e polícia (o.modelo) ===== */
-const VC_CARROS = { sedan: { L: 40, W: 16, H: 12.8, r: 2.8, cl: 1.4, c0: -0.28, c1: 0.18, cap: 5.6, cor: "#3b6ea5" }, hatch: { L: 35, W: 15.4, H: 13, r: 2.7, cl: 1.4, c0: -0.42, c1: 0.16, cap: 5.4, cor: "#5a9e6f" },
-  suv: { L: 42, W: 17, H: 15.6, r: 3.3, cl: 2.2, c0: -0.42, c1: 0.2, cap: 7, cor: "#4a4f57" }, esportivo: { L: 39, W: 17, H: 10.4, r: 3, cl: 1, c0: -0.22, c1: 0.08, cap: 4.6, cor: "#c8202a" },
-  caminhonete: { L: 47, W: 17, H: 16, r: 3.4, cl: 2.4, c0: -0.08, c1: 0.24, cap: 7.4, cacamba: true, cor: "#8a6a3c" }, taxi: { L: 40, W: 16, H: 12.8, r: 2.8, cl: 1.4, c0: -0.28, c1: 0.18, cap: 5.6, placa: true, cor: "#f2c318" },
-  policia: { L: 40, W: 16, H: 12.8, r: 2.8, cl: 1.4, c0: -0.28, c1: 0.18, cap: 5.6, sirene: true, cor: "#dfe4ea" } };
+const VC_CARROS = { sedan: { L: 40, W: 16, H: 13.2, r: 2.8, cl: 1.4, c0: -0.28, c1: 0.18, cap: 5.6, cor: "#3b6ea5" }, hatch: { L: 35, W: 15.4, H: 13.4, r: 2.7, cl: 1.4, c0: -0.42, c1: 0.16, cap: 5.4, cor: "#5a9e6f" },
+  suv: { L: 42, W: 17, H: 15.6, r: 3.3, cl: 2.2, c0: -0.42, c1: 0.2, cap: 7, cor: "#4a4f57" }, esportivo: { L: 39, W: 17, H: 11.2, r: 3, cl: 1, c0: -0.22, c1: 0.08, cap: 4.6, cor: "#c8202a" },
+  caminhonete: { L: 47, W: 17, H: 16, r: 3.4, cl: 2.4, c0: -0.2, c1: 0.24, cap: 7.4, cacamba: true, cor: "#8a6a3c" }, taxi: { L: 40, W: 16, H: 13.2, r: 2.8, cl: 1.4, c0: -0.28, c1: 0.18, cap: 5.6, placa: true, cor: "#f2c318" },
+  policia: { L: 40, W: 16, H: 13.2, r: 2.8, cl: 1.4, c0: -0.28, c1: 0.18, cap: 5.6, sirene: true, cor: "#dfe4ea" } };
 const vcModelo = o => VC_CARROS[(o && o.modelo) || "sedan"] || VC_CARROS.sedan;
 function vcCarro(o) { const M = vcModelo(o), L = M.L, W = M.W, h = M.L / 2, w = M.W / 2, y0 = M.cl, cin = y0 + M.cap, out = [], zc0 = M.c0 * L, zc1 = M.c1 * L, ink = b => Object.assign(b, { cor: "ink" });
-  out.push(ocCaixa([0, (y0 + cin) / 2 + 0.6, 0], [w, (cin - y0) / 2 - 0.2, h]), ocCaixa([0, cin + 0.3, (zc1 + h) / 2], [w - 0.5, 0.35, (h - zc1) / 2 - 0.3]), ocCaixa([0, cin + 0.3, (zc0 - h) / 2], [w - 0.5, 0.35, (zc0 + h) / 2 - 0.3]));
-  out.push(ocCaixa([0, (cin + M.H) / 2, (zc0 + zc1) / 2], [w - 1, (M.H - cin) / 2, (zc1 - zc0) / 2]));
-  for (const sx of [-1, 1]) { out.push(ink(ocCaixa([sx * (w - 0.95), (cin + M.H) / 2 + 0.3, (zc0 + zc1) / 2], [0.06, (M.H - cin) / 2 - 0.9, (zc1 - zc0) / 2 - 0.9])), ink(ocCaixa([sx * (w + 0.02), cin - 1.2, (zc0 + zc1) / 2], [0.04, 0.08, (zc1 - zc0) / 2])));
+  const yp = y0 + 0.9, zi1 = zc1 + 3.4, zi0 = zc0 - (M.cacamba ? 0.5 : 2.6), quatro = M.c1 - M.c0 > 0.3, A = vcAssentosCarro(o);
+  /* capô e porta-malas maciços; no meio, a cabine oca: piso, portas (paredes), painel, colunas inclinadas e teto */
+  out.push(ocCaixa([0, (y0 + cin) / 2 + 0.3, (zi1 + h) / 2], [w, (cin - y0) / 2 - 0.3, (h - zi1) / 2]));
+  if (!M.cacamba) out.push(ocCaixa([0, (y0 + cin) / 2 + 0.3, (zi0 - h) / 2], [w, (cin - y0) / 2 - 0.3, (zi0 + h) / 2]));
+  else { out.push(ocCaixa([0, y0 + 1.2, (zi0 - h) / 2], [w, 1.2, (zi0 + h) / 2]), ocCaixa([0, (yp + M.H) / 2, zi0 - 0.3], [w - 0.4, (M.H - yp) / 2, 0.3]), ocCaixa([0, (y0 + cin) / 2 + 1, -h + 0.25], [w - 0.2, (cin - y0) / 2, 0.25]));
+    for (const sx of [-1, 1]) out.push(ocCaixa([sx * (w - 0.25), (y0 + cin) / 2 + 1, (zi0 - h) / 2], [0.25, (cin - y0) / 2, (zi0 + h) / 2])); }
+  out.push(ocCaixa([0, (y0 + yp) / 2, (zi0 + zi1) / 2], [w - 0.1, (yp - y0) / 2, (zi1 - zi0) / 2]));
+  for (const sx of [-1, 1]) { out.push(ocCaixa([sx * (w - 0.3), (yp + cin) / 2 + 0.15, (zi0 + zi1) / 2], [0.3, (cin - yp) / 2 + 0.15, (zi1 - zi0) / 2]));
+    out.push(ocTubo([sx * (w - 0.7), cin + 0.2, zi1], [sx * (w - 1.1), M.H - 0.3, zc1], 0.42), ocTubo([sx * (w - 0.7), cin + 0.2, zi0], [sx * (w - 1.1), M.H - 0.3, zc0], 0.55));
+    if (quatro) out.push(ocCaixa([sx * (w - 0.9), (cin + M.H) / 2, (zc0 + zc1) / 2 + 1.5], [0.35, (M.H - cin) / 2, 0.45]));
+    out.push(ink(ocCaixa([sx * (w + 0.02), cin - 1.2, (zi0 + zi1) / 2], [0.04, 0.08, (zi1 - zi0) / 2])));
     for (const zr of [h - 7.2, -h + 7.4]) out.push({ cil: true, c: [sx * (w - 1.2), M.r, zr], r: M.r, hh: 1.1, R: rotParaEixo([1, 0, 0]) }, ink({ cil: true, c: [sx * (w - 0.05), M.r, zr], r: M.r * 0.55, hh: 0.08, R: rotParaEixo([1, 0, 0]) }));
-    out.push(ocEsf([sx * (w - 2.4), cin - 1.4, h + 0.1], [1.6, 0.9, 0.3]), Object.assign(ocEsf([sx * (w - 2.2), cin - 1.2, -h - 0.1], [1.6, 0.8, 0.3]), { cor: "fundo" }), ocCaixa([sx * (w + 0.5), cin + 1.2, zc1 - 1], [0.6, 0.4, 0.5])); }
-  out.push(ink(ocCaixa([0, (cin + M.H) / 2 + 0.4, zc1 + 0.06], [w - 1.6, (M.H - cin) / 2 - 0.9, 0.05])), ink(ocCaixa([0, (cin + M.H) / 2 + 0.4, zc0 - 0.06], [w - 1.8, (M.H - cin) / 2 - 1.1, 0.05])), ocCaixa([0, y0 + 1.6, h + 0.2], [w - 0.6, 0.9, 0.3]), ocCaixa([0, y0 + 1.6, -h - 0.2], [w - 0.6, 0.9, 0.3]));
-  if (M.cacamba) { out.push(ocCaixa([0, cin + 2, -h + (h + zc0) / 2 - 0.2], [w - 0.2, 2, 0.25])); for (const sx of [-1, 1]) out.push(ocCaixa([sx * (w - 0.25), cin + 2, (zc0 - h) / 2], [0.25, 2, (zc0 + h) / 2])); }
+    out.push(ocEsf([sx * (w - 2.4), cin - 1.4, h + 0.1], [1.6, 0.9, 0.3]), Object.assign(ocEsf([sx * (w - 2.2), cin - 1.2, -h - 0.1], [1.6, 0.8, 0.3]), { cor: "fundo" }), ocCaixa([sx * (w + 0.5), cin + 1.2, zi1 - 1.2], [0.6, 0.4, 0.5])); }
+  out.push(ocCaixa([0, M.H - 0.18, (zc0 + zc1) / 2], [w - 1.0, 0.2, (zc1 - zc0) / 2 + 0.2]), ocTubo([-(w - 1.1), M.H - 0.3, zc1], [w - 1.1, M.H - 0.3, zc1], 0.35), ocTubo([-(w - 1.1), M.H - 0.3, zc0], [w - 1.1, M.H - 0.3, zc0], 0.35));
+  out.push(ocCaixa([0, cin - 0.9, zi1 - 1.2], [w - 0.6, 1.1, 1.3]), ocCaixa([0, y0 + 1.6, h + 0.2], [w - 0.6, 0.9, 0.3]), ocCaixa([0, y0 + 1.6, -h - 0.2], [w - 0.6, 0.9, 0.3]));
+  for (const [k, S] of Object.entries(A)) { if (k === "cacamba") continue; out.push(...vcBanco(S.p[0], S.p[1], S.p[2], 1, 2.5, M.H - S.p[1] - 3.2, yp)); if (S.volante) out.push(...vcVolante(...S.volante.c, S.volante.r)); }
   if (M.placa) out.push(ocCaixa([0, M.H + 1, (zc0 + zc1) / 2], [2.6, 1, 0.8]));
   if (M.sirene) out.push(ocCaixa([0, M.H + 0.6, (zc0 + zc1) / 2], [5, 0.6, 1.1]), Object.assign(ocCaixa([-2.6, M.H + 0.7, (zc0 + zc1) / 2], [2.2, 0.55, 1.15]), { cor: "fundo" }));
   return out; }
-function vcAssentosCarro(o) { const M = vcModelo(o), w = M.W / 2, y = M.cl + 1.4, zf = M.c1 * M.L - 9, zt = zf - 9; const A = { motorista: { p: [w * 0.42, y, zf], olha: 1, dentro: true, dirige: true }, carona: { p: [-w * 0.42, y, zf], olha: 1, dentro: true } };
-  if (M.c1 - M.c0 > 0.3) { A.traseiro1 = { p: [w * 0.42, y, zt], olha: 1, dentro: true }; A.traseiro2 = { p: [-w * 0.42, y, zt], olha: 1, dentro: true }; }
-  if (M.cacamba) A.cacamba = { p: [0, M.cl + M.cap + 0.6, -M.L / 2 + 6], olha: -1 }; return A; }
+/* assentos do carro: quadril no banco (y = topo do assento), pés no piso (chao), cabeça abaixo do teto, mãos no volante */
+function vcAssentosCarro(o) { const M = vcModelo(o), w = M.W / 2, yp = M.cl + 0.9, y = yp + (M.H < 12 ? 1.2 : M.H > 15 ? 2.6 : 1.9), zc1 = M.c1 * M.L, zc0 = M.c0 * M.L, zf = zc1 - 8.5, zt = zf - 8.2, zi0 = zc0 - (M.cacamba ? 0.5 : 2.6), x = w * 0.47;
+  const base = { olha: 1, dentro: true, chao: yp, teto: M.H - 0.4, pesFrente: 5.8, reclina: 16 };
+  const A = { motorista: Object.assign({ p: [x, y, zf], dirige: true, volante: { c: [x, y + 3.3, zf + 4.6], r: 1.6 } }, base), carona: Object.assign({ p: [-x, y, zf] }, base) };
+  if (M.c1 - M.c0 > 0.3 && zt - 2.6 > zi0) { A.traseiro1 = Object.assign({ p: [x, y + 0.3, zt] }, base, { pesFrente: 4.6, reclina: 8 }); A.traseiro2 = Object.assign({ p: [-x, y + 0.3, zt] }, base, { pesFrente: 4.6, reclina: 8 }); }
+  if (M.cacamba) A.cacamba = { p: [0, M.cl + 2.4 + 0.1, -M.L / 2 + 5], olha: 1, pe: true }; return A; }
 /* avião grande (tipo Boeing), avião pequeno (tipo Cessna), helicóptero, lancha, bote inflável, pesqueiro, submarino */
-function vcAviaoGrande() { const out = [], Lf = 560, r = 27, y = 40; out.push({ cil: true, c: [0, y, 0], r, hh: Lf / 2, R: rotParaEixo([0, 0, 1]) }, ocEsf([0, y, Lf / 2], [r, r, 40]), ocEsf([0, y + 4, -Lf / 2], [r * 0.6, r * 0.7, 50]));
-  for (let k = 0; k < 34; k++) for (const sx of [-1, 1]) out.push(Object.assign(ocCaixa([sx * r * 0.99, y + 6, -220 + k * 13], [0.3, 2.2, 1.6]), { cor: "ink" }));
-  out.push(Object.assign(ocCaixa([0, y + 14, Lf / 2 + 22], [10, 3, 4], rotParaEixo([0, 0.5, 1])), { cor: "ink" }));
-  for (const sx of [-1, 1]) { out.push(ocCaixa([sx * 135, y - 12, 10], [110, 2, 32])); out.push({ cil: true, c: [sx * 90, y - 28, 50], r: 13, hh: 28, R: rotParaEixo([0, 0, 1]) }, Object.assign({ cil: true, c: [sx * 90, y - 28, 78.2], r: 11, hh: 0.3, R: rotParaEixo([0, 0, 1]) }, { cor: "ink" }));
+function vcAviaoGrande(o) { const out = [], Lf = 560, r = 27, y = 40, n = 24, ink = b => Object.assign(b, { cor: "ink" });
+  /* fuselagem oca: anel de painéis; o painel da altura dos olhos de cada lado vira fileira de janelas */
+  for (let k = 0; k < n; k++) { const th = 2 * Math.PI * k / n, cx = r * Math.cos(th), cy = y + r * Math.sin(th), R = rotZ(th + Math.PI / 2);
+    if (k % (n / 2) === 0) { for (let z = -232; z <= 236; z += 13) out.push(ocCaixa([cx, cy, z], [3.7, 0.5, 4.4], R)); out.push(ocCaixa([cx, cy, -256], [3.7, 0.5, 24], R), ocCaixa([cx, cy, 258], [3.7, 0.5, 22], R)); }
+    else out.push(ocCaixa([cx, cy, 0], [3.7, 0.5, Lf / 2], R)); }
+  out.push(ocCaixa([0, y - 12.4, 0], [24, 0.4, Lf / 2 - 2]), ocEsf([0, y, Lf / 2], [r, r, 40]), ocEsf([0, y + 4, -Lf / 2], [r * 0.6, r * 0.7, 50]), ocCaixa([-14.5, y - 4, Lf / 2 - 66], [11.5, 18, 0.5]), ocCaixa([14.5, y - 4, Lf / 2 - 66], [11.5, 18, 0.5]), ocCaixa([0, y - 4, 237], [24, 3, 2.5]));
+  out.push(ink(ocCaixa([0, y + 14, Lf / 2 + 22], [10, 3, 4], rotParaEixo([0, 0.5, 1]))));
+  for (const sx of [-1, 1]) { out.push(ocCaixa([sx * 135, y - 12, 10], [110, 2, 32])); out.push({ cil: true, c: [sx * 90, y - 28, 50], r: 13, hh: 28, R: rotParaEixo([0, 0, 1]) }, ink({ cil: true, c: [sx * 90, y - 28, 78.2], r: 11, hh: 0.3, R: rotParaEixo([0, 0, 1]) }));
     out.push(ocCaixa([sx * 55, y + 8, -250], [45, 1.5, 18])); for (const z of [-20, 200]) out.push({ cil: true, c: [sx * (z > 0 ? 0 : 40), 7, z], r: 7, hh: 3, R: rotParaEixo([1, 0, 0]) }); }
   out.push(ocCaixa([0, y + 55, -250], [1.6, 50, 22]), ocTubo([0, 7, 200], [0, y - r, 200], 1.6), ocTubo([40, 7, -20], [40, y - 15, -20], 2), ocTubo([-40, 7, -20], [-40, y - 15, -20], 2));
+  const A = COMPOSTOS.aviao.assentos(o); for (const S of Object.values(A)) if (!S.pe) { out.push(...vcBanco(S.p[0], S.p[1], S.p[2], 1, S.dirige ? 3 : 5.6, 9, S.chao)); if (S.volante) out.push(...vcVolante(...S.volante.c, 1.4)); }
   return out; }
-function vcAviaoPequeno() { const out = [], y = 9; out.push({ cil: true, c: [0, y, 0], r: 5, hh: 28, R: rotParaEixo([0, 0, 1]) }, ocEsf([0, y, 28], [5, 5, 8]), ocEsf([0, y + 1, -30], [2.5, 3, 12]), ocCaixa([0, y + 9, 6], [48, 0.6, 7]), Object.assign(ocCaixa([0, y + 3, 14], [4.4, 2.8, 4], rotParaEixo([0, 0.6, 1])), { cor: "ink" }));
-  for (const sx of [-1, 1]) out.push(ocTubo([sx * 4, y + 2, 8], [sx * 20, y + 9, 8], 0.5), Object.assign(ocCaixa([sx * 5.05, y + 3.5, 4], [0.05, 2.2, 5]), { cor: "ink" }), ocTubo([sx * 3, y - 4, 10], [sx * 8, 2.4, 10], 0.5), { cil: true, c: [sx * 8, 2.4, 10], r: 2.4, hh: 0.8, R: rotParaEixo([1, 0, 0]) });
-  out.push(ocCaixa([0, y + 7, -50], [1, 7, 6]), ocCaixa([0, y + 2, -50], [16, 0.5, 5]), ocCaixa([0, y, 36.8], [0.6, 12, 1.4]), ocTubo([0, y, 34], [0, y, 37], 1.2), ocTubo([0, y - 5, 26], [0, 2.4, 26], 0.5), { cil: true, c: [0, 2.4, 26], r: 2.2, hh: 0.8, R: rotParaEixo([1, 0, 0]) });
+function vcAviaoPequeno(o) { const out = [], ink = b => Object.assign(b, { cor: "ink" });
+  out.push(...vcCasca({ w: 4.8, y0: 4.4, yp: 5.2, yb: 10.4, yt: 16.2, z0: 1, z1: 16, t: 0.35, jan: [[3, 14.5]], frente: "janela", tras: "fechada", moldura: 1 }));
+  out.push(ocCaixa([0, 17, 9], [48, 0.6, 7]), ocCaixa([0, 10.4, 20], [4.4, 4.2, 4]), ocEsf([0, 10.4, 24.5], [3.6, 3.4, 3]), ocCaixa([0, 10.4, 27.6], [0.6, 11, 1.2]), ocEsf([0, 10.4, 28.4], [1.2, 1.2, 1.4]));
+  out.push(ocTubo([0, 11, 1.4], [0, 13.5, -42], 4.6, { r1: 1.2 }), ocCaixa([0, 20, -44], [0.5, 7, 5]), ocCaixa([0, 14, -44], [16, 0.5, 5]), ink(ocCaixa([0, 13.6, 16.2], [4.4, 2.6, 0.06])));
+  for (const sx of [-1, 1]) out.push(ocTubo([sx * 4.8, 10.4, 9], [sx * 20, 16.4, 9], 0.45), ocTubo([sx * 3, 4.6, 8], [sx * 8, 2.4, 8], 0.5), { cil: true, c: [sx * 8, 2.4, 8], r: 2.4, hh: 0.8, R: rotParaEixo([1, 0, 0]) });
+  out.push(ocTubo([0, 6.4, 21], [0, 2.4, 22], 0.5), { cil: true, c: [0, 2.4, 22], r: 2.2, hh: 0.8, R: rotParaEixo([1, 0, 0]) });
+  const A = COMPOSTOS.aviaoPequeno.assentos(o); for (const S of Object.values(A)) { out.push(...vcBanco(S.p[0], S.p[1], S.p[2], 1, 1.9, 6, 5.2)); if (S.volante) out.push(...vcVolante(...S.volante.c, 1.1)); }
+  out.push(ocCaixa([0, 11.4, 15.2], [4.4, 1.0, 0.7]));
   return out; }
-function vcHelicoptero(o) { const out = [], y = 9, a = ((o && o.rotor) || 0) * Math.PI / 180; out.push(ocEsf([0, y + 4, 8], [10, 9, 16]), Object.assign(ocEsf([0, y + 5, 15], [8.6, 7, 9]), { cor: "ink" }), ocTubo([0, y + 6, -6], [0, y + 9, -60], 2.4), ocCaixa([0, y + 14, -60], [0.6, 7, 4]), ocCaixa([0, y + 10, -56], [7, 0.5, 2.5]), { cil: true, c: [0, y + 15, 4], r: 2, hh: 2.5 });
-  for (const k of [0, 1]) { const b = a + k * Math.PI / 2; out.push(ocTubo([-Math.cos(b) * 55, y + 17.6, 4 - Math.sin(b) * 55], [Math.cos(b) * 55, y + 17.6, 4 + Math.sin(b) * 55], 0.6)); }
-  for (const k of [0, 1]) { const b = a * 3 + k * Math.PI / 2; out.push(ocTubo([1.5, y + 14 - Math.cos(b) * 8, -60 - Math.sin(b) * 8], [1.5, y + 14 + Math.cos(b) * 8, -60 + Math.sin(b) * 8], 0.35)); }
-  for (const sx of [-1, 1]) out.push(ocTubo([sx * 7, 0.6, -10], [sx * 7, 0.6, 26], 0.6), ocTubo([sx * 6, 0.6, 0], [sx * 4, y - 3, 0], 0.4), ocTubo([sx * 6, 0.6, 18], [sx * 4, y - 3, 18], 0.4));
+function vcHelicoptero(o) { const out = [], a = ((o && o.rotor) || 0) * Math.PI / 180, yr = 25.4, ink = b => Object.assign(b, { cor: "ink" });
+  out.push(...vcCasca({ w: 6.4, y0: 3.4, yp: 4.6, yb: 9.4, yt: 17.6, z0: -4, z1: 20, t: 0.35, jan: [[9, 18.6]], portas: [{ lado: 1, za: -2, zb: 8 }, { lado: -1, za: -2, zb: 8 }], frente: "janela", tras: "fechada", moldura: 1.1 }));
+  out.push(ocEsf([0, 7, 20.5], [6.2, 3.6, 2.6]), ocCaixa([0, 19.6, 3], [4.2, 2, 8]), { cil: true, c: [0, 23.2, 4], r: 1.3, hh: 2.2 }, ocTubo([0, 13, -4], [0, 15, -60], 2.6, { r1: 1.1 }), ocCaixa([0, 19, -60], [0.6, 7, 4]), ocCaixa([0, 15, -56], [7, 0.5, 2.5]));
+  for (const k of [0, 1]) { const b = a + k * Math.PI / 2; out.push(ocTubo([-Math.cos(b) * 55, yr, 4 - Math.sin(b) * 55], [Math.cos(b) * 55, yr, 4 + Math.sin(b) * 55], 0.6)); }
+  for (const k of [0, 1]) { const b = a * 3 + k * Math.PI / 2; out.push(ocTubo([1.5, 19 - Math.cos(b) * 8, -60 - Math.sin(b) * 8], [1.5, 19 + Math.cos(b) * 8, -60 + Math.sin(b) * 8], 0.35)); }
+  for (const sx of [-1, 1]) out.push(ocTubo([sx * 7, 0.6, -10], [sx * 7, 0.6, 26], 0.6), ocTubo([sx * 7, 0.6, 0], [sx * 5.6, 3.6, 0], 0.4), ocTubo([sx * 7, 0.6, 16], [sx * 5.6, 3.6, 16], 0.4));
+  const A = COMPOSTOS.helicoptero.assentos(o); for (const S of Object.values(A)) if (!S.pe) { out.push(...vcBanco(S.p[0], S.p[1], S.p[2], 1, 2, 6.2, 4.6)); out.push(ocTubo([S.p[0], 4.8, S.p[2] + 4], [S.p[0], 8.6, S.p[2] + 4.6], 0.22)); }
+  out.push(ocCaixa([0, 9.6, 18.2], [5.6, 1.2, 1.2]));
   return out; }
-function vcCasco(L, W, H, n, extra) { const out = []; for (let i = 0; i < n; i++) { const z = -L / 2 + (i + 0.5) * L / n, t = (z + L / 2) / L, w = W / 2 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.2 + t * 0.9)), 0.6) + 0.3, h = H * (0.8 + 0.4 * t);
-    out.push(ocCaixa([0, h * 0.45, z], [w * 0.85, h * 0.45, L / n / 2 + 0.05]), ocCaixa([w - 0.2, h + 0.5, z], [0.25, 0.6, L / n / 2 + 0.05]), ocCaixa([-(w - 0.2), h + 0.5, z], [0.25, 0.6, L / n / 2 + 0.05])); } return out.concat(extra || []); }
+function vcCasco(L, W, H, n, extra, piso) { const out = [], pi = piso ?? H * 0.45; for (let i = 0; i < n; i++) { const z = -L / 2 + (i + 0.5) * L / n, t = (z + L / 2) / L, w = W / 2 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.2 + t * 0.9)), 0.6) + 0.3, h = H * (0.8 + 0.4 * t), tp = h + 1.1;
+    out.push(ocCaixa([0, pi / 2, z], [w * 0.85, pi / 2, L / n / 2 + 0.05]), ocCaixa([w - 0.2, (pi + tp) / 2, z], [0.25, (tp - pi) / 2, L / n / 2 + 0.05]), ocCaixa([-(w - 0.2), (pi + tp) / 2, z], [0.25, (tp - pi) / 2, L / n / 2 + 0.05])); }
+  out.push(ocCaixa([0, (pi + H * 0.8 + 1.1) / 2, -L / 2 + 0.25], [W / 2 * 0.62, (H * 0.8 + 1.1 - pi) / 2, 0.25])); return out.concat(extra || []); }
 /* ===== TRILHO CURVO e TREM ARTICULADO ===== */
 /* move peças: gira em volta de y (graus, mesmo sentido do "giro" dos objetos) e desloca em x,z */
 function vcMover(parts, ang, tx, tz) { const g = ang * Math.PI / 180, c = Math.cos(g), s = Math.sin(g), M = [c, 0, s, 0, 1, 0, -s, 0, c];
@@ -144,13 +195,15 @@ function vcLevadica(o) { const w = 26, h = 30, up = pAb(o) * (h - 2), out = [];
 function vcAlcapao(o) { const w = 8, d = 8, a = pAb(o) * 100, out = [ocCaixa([0, 0.08, -d / 2 - 0.4], [w / 2 + 0.8, 0.08, 0.4]), ocCaixa([0, 0.08, d / 2 + 0.4], [w / 2 + 0.8, 0.08, 0.4]), ocCaixa([-w / 2 - 0.4, 0.08, 0], [0.4, 0.08, d / 2]), ocCaixa([w / 2 + 0.4, 0.08, 0], [0.4, 0.08, d / 2]), Object.assign(ocCaixa([0, 0.02, 0], [w / 2, 0.02, d / 2]), { cor: "ink" })];
   const folha = [ocCaixa([0, 0.25, d / 2], [w / 2, 0.25, d / 2])]; for (let i = 1; i < 4; i++) folha.push(Object.assign(ocCaixa([-w / 2 + w * i / 4, 0.52, d / 2], [0.05, 0.03, d / 2 - 0.2]), { cor: "ink" })); folha.push(ocToro([0, 0.6, d * 0.8], 0.6, 0.12, "x"));
   return out.concat(vcMoverX(folha, -a, 0, -d / 2)); }
-function vcAssentosVagao(z0, L) { const A = {}, h = L / 2; [[-1, 1], [1, -1]].forEach(([s, ol], i) => { for (let r = 0; r < 3; r++) A["banco" + (i * 3 + r + 1)] = { p: [s * 6.5, 12.6, z0 - h + 12 + r * 14 + (ol < 0 ? 5 : 0)], olha: ol, dentro: true }; }); A["corredor"] = { p: [0, 8.6, z0], olha: 1, pe: true, dentro: true }; return A; }
-function vcVagao(z0, L) { const out = [], h = L / 2;
-  out.push(ocCaixa([0, 7.2, z0], [5.6, 1.4, h + 1.6]), ocCaixa([0, 19.5, z0], [12.4, 11, h]), { cil: true, c: [0, 24.6, z0], r: 12.4, hh: h + 0.6, R: rotParaEixo([0, 0, 1]) });
-  for (const s of [-1, 1]) { for (let k = 0; k < Math.floor((L - 8) / 7); k++) out.push(Object.assign(ocCaixa([s * 12.45, 22, z0 - h + 6 + k * 7], [0.05, 3, 2.2]), { cor: "ink" }));
-    out.push(Object.assign(ocCaixa([s * 12.45, 17.5, z0 + h - 3], [0.05, 8.2, 1.8]), { cor: "fundo" }));
+function vcAssentosVagao(z0, L) { const A = {}, h = L / 2, base = { dentro: true, chao: 8.6, teto: 30, pesFrente: 4.2, reclina: 4 }; [[-1, 1], [1, -1]].forEach(([s, ol], i) => { for (let r = 0; r < 3; r++) A["banco" + (i * 3 + r + 1)] = Object.assign({ p: [s * 7, 12.6, z0 - h + 12 + r * 14 + (ol < 0 ? 5 : 0)], olha: ol }, base); }); A["corredor"] = { p: [0, 8.6, z0], olha: 1, pe: true, dentro: true }; return A; }
+function vcVagao(z0, L) { const h = L / 2, jan = [], ink = b => Object.assign(b, { cor: "ink" }); for (let k = 0; k < Math.floor((L - 8) / 7); k++) jan.push([z0 - h + 3.8 + k * 7, z0 - h + 8.2 + k * 7]);
+  const out = vcCasca({ w: 12.4, y0: 7.6, yp: 8.6, yb: 17.6, yt: 30, z0: z0 - h, z1: z0 + h, t: 0.5, jan, frente: "fechada", tras: "fechada" });
+  out.push(ocCaixa([0, 6.8, z0], [5.6, 1.0, h + 1.6]));
+  for (const k of [-1, 0, 1]) out.push(ocCaixa([k * 7.6, 31.2 - Math.abs(k) * 1.0, z0], [4.2, 0.45, h + 0.4], k ? rotZ(k * 0.26) : undefined));
+  for (const s of [-1, 1]) { out.push(Object.assign(ocCaixa([s * 12.45, 17.5, z0 + h - 3], [0.05, 8.2, 1.8]), { cor: "fundo" }));
     for (const zb of [-h + 9, h - 9]) { out.push(ocCaixa([0, 6.0, z0 + zb], [9, 0.8, 4.6])); for (const dz of [-3.2, 3.2]) out.push(...vcRodaTrem(s * 6.3, 4.4, z0 + zb + dz, 3.4)); }
     out.push(ocEsf([s * 6, 7.2, z0 + s * (h + 2.2)], [1.2, 1.2, 0.6])); }
+  for (const S of Object.values(vcAssentosVagao(z0, L))) if (!S.pe) out.push(...vcBanco(S.p[0], S.p[1], S.p[2], S.olha, 4.2, 8.5, 8.6));
   return out; }
 
 import { qdPartes, qdMedidas } from "./quadrupede.js";
@@ -318,19 +371,16 @@ const COMPOSTOS = {
       for (const s of [-1, 1]) { out.push(...vcRoda(s * 8.6, 6.2, -12, 6.2, 10), ...vcRoda(s * 8.0, 4.6, 7, 4.6, 8));
         out.push(ocCaixa([s * 8.2, 8.8, -12], [0.5, 0.35, 3.4]), ocCaixa([s * 7.6, 7.6, 7], [0.5, 0.3, 2.6]), ocTubo([s * 2.6, 7.2, -15], [s * 2.6, 7.2, 9], 0.32));
         out.push(ocCaixa([s * 7.3, 9.4, -0.8], [0.6, 0.18, 1.0]), ocCaixa([s * 7.3, 8.0, -0.8], [0.25, 1.2, 0.25]));
-        out.push(ocCaixa([s * 7.35, 17.5, 0.9], [0.06, 2.2, 2.0], undefined), ocCaixa([s * 7.35, 17.5, -8.4], [0.06, 2.2, 2.4]));
-        out.push(Object.assign(ocCaixa([s * 7.42, 17.5, 0.9], [0.04, 2.0, 1.8]), { cor: "ink" }), Object.assign(ocCaixa([s * 7.42, 17.5, -8.4], [0.04, 2.0, 2.2]), { cor: "ink" }));
         out.push(Object.assign(ocCaixa([s * 7.42, 15.6, -4.2], [0.04, 4.9, 0.12]), { cor: "ink" }), Object.assign(ocCaixa([s * 7.42, 15.6, -2.4], [0.04, 4.9, 0.12]), { cor: "ink" }), ocEsf([s * 7.6, 14.8, -2.9], 0.3));
         out.push(ocCaixa([s * 7.6, 20.8, 4.3], [0.7, 1.0, 0.7]), Object.assign(ocCaixa([s * 7.6, 20.8, 5.0], [0.5, 0.7, 0.05]), { cor: "fundo" }), ocTubo([s * 7.6, 19.8, 4.3], [s * 7.0, 18.6, 4.3], 0.12)); }
       out.push(ocTubo([-9.2, 6.2, -12], [9.2, 6.2, -12], 0.38), ocTubo([-8.6, 4.6, 7], [8.6, 4.6, 7], 0.34), ocCaixa([0, 7.6, -3], [3, 0.4, 11]));
-      out.push(ocCaixa([0, 9.6, -4], [6.6, 1.5, 7.0]), ocCaixa([0, 16.0, -4], [7.3, 5.0, 7.7]), ocCaixa([0, 21.2, -4], [7.9, 0.35, 8.3]), ocCaixa([0, 21.75, -4], [7.3, 0.25, 7.6]),
+      out.push(...vcCasca({ w: 7.3, y0: 8.1, yp: 9.2, yb: 15.0, yt: 20.9, z0: -11.7, z1: 3.7, t: 0.35, jan: [[-1.1, 2.9], [-10.6, -6.2]], frente: "janela", tras: "fechada", moldura: 2.4, teto: false }), ...vcBanco(0, 12.2, 0.6, -1, 6.4, 6.8, 9.2), ...vcBanco(0, 12.2, -9.4, 1, 6.4, 6.8, 9.2), ocCaixa([0, 21.2, -4], [7.9, 0.35, 8.3]), ocCaixa([0, 21.75, -4], [7.3, 0.25, 7.6]),
         ocCaixa([0, 22.6, -7.5], [5.5, 0.9, 3.4]), ocTubo([-7.6, 22.2, -11.7], [7.6, 22.2, -11.7], 0.15), ocTubo([-7.6, 22.2, 3.7], [7.6, 22.2, 3.7], 0.15));
-      out.push(Object.assign(ocCaixa([0, 17.4, 3.72], [5.4, 2.2, 0.04]), { cor: "ink" }), Object.assign(ocCaixa([0, 17.4, -11.72], [5.4, 2.2, 0.04]), { cor: "ink" }));
-      out.push(ocCaixa([0, 13.2, 6.6], [5.4, 0.5, 2.1]), ocCaixa([0, 15.0, 4.7], [5.4, 1.8, 0.35]), ocCaixa([0, 10.6, 9.8], [5.0, 0.3, 2.0], rotParaEixo([0, 0.45, 1])), ocTubo([-4.6, 11.4, 4.6], [-4.6, 11.4, 9.6], 0.2), ocTubo([4.6, 11.4, 4.6], [4.6, 11.4, 9.6], 0.2));
+            out.push(ocCaixa([0, 13.2, 6.6], [5.4, 0.5, 2.1]), ocCaixa([0, 15.0, 4.7], [5.4, 1.8, 0.35]), ocCaixa([0, 10.6, 9.8], [5.0, 0.3, 2.0], rotParaEixo([0, 0.45, 1])), ocTubo([-4.6, 11.4, 4.6], [-4.6, 11.4, 9.6], 0.2), ocTubo([4.6, 11.4, 4.6], [4.6, 11.4, 9.6], 0.2));
       out.push(ocCaixa([0, 11.2, -13.4], [5.6, 1.7, 1.6]), ocCaixa([0, 8.6, -15], [6, 0.3, 1.2]));
       out.push(ocTubo([0, 6.4, 8.5], [0, 6.0, 30.5], 0.42), ocTubo([-6.2, 6.1, 26.5], [6.2, 6.1, 26.5], 0.32), ocTubo([-3.6, 6.4, 9.5], [-3.6, 6.2, 12.5], 0.22), ocTubo([3.6, 6.4, 9.5], [3.6, 6.2, 12.5], 0.22));
       return out; },
-    assentos: () => ({ cocheiro: { p: [0, 13.75, 6.6], olha: 1 }, cocheiro2: { p: [2.6, 13.75, 6.6], olha: 1 }, passageiro: { p: [2.6, 12.2, -0.4], olha: -1, dentro: true }, passageiro2: { p: [-2.6, 12.2, -8.4], olha: 1, dentro: true }, teto: { p: [0, 23.5, -7.5], olha: 1 } }), atrelar: () => [0, 0, 22],
+    assentos: () => ({ cocheiro: { p: [0, 13.75, 6.6], olha: 1 }, cocheiro2: { p: [2.6, 13.75, 6.6], olha: 1 }, passageiro: { p: [2.6, 12.2, 0.6], olha: -1, dentro: true, chao: 9.2, teto: 20.9, pesFrente: 4.4, reclina: 4 }, passageiro2: { p: [-2.6, 12.2, -9.4], olha: 1, dentro: true, chao: 9.2, teto: 20.9, pesFrente: 4.4, reclina: 4 }, teto: { p: [0, 23.5, -7.5], olha: 1 } }), atrelar: () => [0, 0, 22],
     pegas: () => ({ redeas: ocPega([0, 15, 10], [0, 0, 1], [1, 0, 0]) }) },
   carroca: { nome: "carroça (duas rodas, varais para o animal)", larg: 14, prof: 26, alt: 11, grupo: "veiculo", veiculo: "terra",
     partes: o => { const out = []; for (const s of [-1, 1]) { out.push(ocToro([s * 6.5, 5.3, -2], 5, 0.35, "x", 0.5)); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 4; out.push(ocTubo([s * 6.5, 5.3 - Math.cos(a) * 4.8, -2 - Math.sin(a) * 4.8], [s * 6.5, 5.3 + Math.cos(a) * 4.8, -2 + Math.sin(a) * 4.8], 0.13)); }
@@ -340,24 +390,25 @@ const COMPOSTOS = {
     assentos: () => ({ condutor: { p: [0, 10, 5.5], olha: 1 }, carga: { p: [2.5, 7.4, -6], olha: -1 } }), atrelar: () => [0, 0, 15.5] },
   barcoRemo: { nome: "barco a remo", larg: 12, prof: 31, alt: 5, grupo: "veiculo", veiculo: "agua",
     partes: o => { const out = [], n = 9; for (let i = 0; i < n; i++) { const z = -15 + (i + 0.5) * 30 / n, t = (z + 15) / 30, w = 5.7 * Math.sin(Math.PI * Math.min(1, 0.18 + t * 0.95)) + 0.4, h = 2.2 + 0.9 * Math.abs(t - 0.45);
-        out.push(ocCaixa([0, h * 0.5, z], [w * 0.6, h * 0.5, 30 / n / 2 + 0.05]), ocCaixa([w - 0.2, h + 1.1, z], [0.22, 1.2, 30 / n / 2 + 0.05]), ocCaixa([-(w - 0.2), h + 1.1, z], [0.22, 1.2, 30 / n / 2 + 0.05])); }
+        const pi = 0.8, tp = h + 2.3; out.push(ocCaixa([0, pi * 0.5, z], [w * 0.8, pi * 0.5, 30 / n / 2 + 0.05]), ocCaixa([w - 0.2, (pi + tp) / 2, z], [0.22, (tp - pi) / 2, 30 / n / 2 + 0.05]), ocCaixa([-(w - 0.2), (pi + tp) / 2, z], [0.22, (tp - pi) / 2, 30 / n / 2 + 0.05])); }
+      out.push(ocCaixa([0, 2.4, -15.2], [3.6, 2.2, 0.25]), ocCaixa([0, 2.6, 15.2], [1.2, 2.4, 0.25]));
       out.push(ocCaixa([0, 3.2, 2], [5.3, 0.25, 1.1]), ocCaixa([0, 3.2, -9], [3.6, 0.25, 1.1]), ocCaixa([0, 3.2, 10], [3.6, 0.25, 1.0]));
       for (const s of [-1, 1]) out.push(ocTubo([s * 1.3, 4.6, -1.0], [s * 17, -0.6, 7.5], 0.17), ocCaixa([s * 16.4, -0.4, 7.2], [0.25, 0.8, 1.6], rotParaEixo([s * 1, -0.35, 0.5].map(v => v)) ), ocToro([s * 5.7, 4.7, 2.6], 0.35, 0.1, "y"));
       return out; },
-    assentos: () => ({ remador: { p: [0, 3.45, 2], olha: -1, rema: true }, passageiro: { p: [0, 3.45, -9], olha: 1 }, proa: { p: [0, 3.45, 10], olha: -1 } }),
+    assentos: () => ({ remador: { p: [0, 3.45, 2], olha: -1, rema: true, chao: 0.8, pesFrente: 4.6 }, passageiro: { p: [0, 3.45, -9], olha: 1, chao: 0.8, pesFrente: 4 }, proa: { p: [0, 3.45, 10], olha: -1, chao: 0.8, pesFrente: 4 } }),
     pegas: () => ({ remoE: ocPega([1.3, 4.6, -1.0], [0, 1, 0], [1, 0, 0]), remoD: ocPega([-1.3, 4.6, -1.0], [0, 1, 0], [-1, 0, 0]) }) },
   canoa: { nome: "canoa", larg: 7.5, prof: 40, alt: 4.6, grupo: "veiculo", veiculo: "agua",
     partes: o => { const out = [], n = 12; for (let i = 0; i < n; i++) { const z = -20 + (i + 0.5) * 40 / n, t = (z + 20) / 40, w = 3.5 * Math.pow(Math.sin(Math.PI * t), 0.8) + 0.15, h = 1.8 + 1.6 * Math.pow(Math.abs(t - 0.5) * 2, 3);
-        out.push(ocCaixa([0, h * 0.4, z], [w * 0.55, h * 0.4, 40 / n / 2 + 0.05]), ocCaixa([w - 0.15, h * 0.85 + 0.6, z], [0.18, h * 0.45, 40 / n / 2 + 0.05]), ocCaixa([-(w - 0.15), h * 0.85 + 0.6, z], [0.18, h * 0.45, 40 / n / 2 + 0.05])); }
+        const pi = 0.6, tp = h * 1.3 + 0.6; out.push(ocCaixa([0, pi * 0.5, z], [w * 0.75, pi * 0.5, 40 / n / 2 + 0.05]), ocCaixa([w - 0.15, (pi + tp) / 2, z], [0.18, (tp - pi) / 2, 40 / n / 2 + 0.05]), ocCaixa([-(w - 0.15), (pi + tp) / 2, z], [0.18, (tp - pi) / 2, 40 / n / 2 + 0.05])); }
       out.push(ocCaixa([0, 2.3, 11], [2.8, 0.2, 0.9]), ocCaixa([0, 2.3, -11], [2.8, 0.2, 0.9])); return out; },
-    assentos: () => ({ proa: { p: [0, 2.5, 11], olha: 1, rema: "pa" }, popa: { p: [0, 2.5, -11], olha: 1, rema: "pa" } }) },
+    assentos: () => ({ proa: { p: [0, 2.5, 11], olha: 1, rema: "pa", chao: 0.6, pesFrente: 5.5 }, popa: { p: [0, 2.5, -11], olha: 1, rema: "pa", chao: 0.6, pesFrente: 5.5 } }) },
   veleiro: { nome: "veleiro pequeno (mastro, retranca e vela)", larg: 15, prof: 44, alt: 56, grupo: "veiculo", veiculo: "agua",
     partes: o => { const out = [], n = 11; for (let i = 0; i < n; i++) { const z = -22 + (i + 0.5) * 44 / n, t = (z + 22) / 44, w = 7 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.25 + t * 0.85)), 0.7) + 0.3, h = 3 + 1.5 * t;
-        out.push(ocCaixa([0, h * 0.5, z], [w * 0.65, h * 0.5, 44 / n / 2 + 0.05]), ocCaixa([w - 0.2, h + 0.9, z], [0.22, 0.9, 44 / n / 2 + 0.05]), ocCaixa([-(w - 0.2), h + 0.9, z], [0.22, 0.9, 44 / n / 2 + 0.05])); }
+        const pi = 1.4, tp = h + 1.8; out.push(ocCaixa([0, pi * 0.5, z], [w * 0.8, pi * 0.5, 44 / n / 2 + 0.05]), ocCaixa([w - 0.2, (pi + tp) / 2, z], [0.22, (tp - pi) / 2, 44 / n / 2 + 0.05]), ocCaixa([-(w - 0.2), (pi + tp) / 2, z], [0.22, (tp - pi) / 2, 44 / n / 2 + 0.05])); }
       out.push(ocCaixa([0, -2.5, 0], [0.25, 3, 4]), ocTubo([0, 3, 6], [0, 56, 6], 0.4), ocTubo([0, 9, 6], [0, 9, -16], 0.3), ocCaixa([0, 2, -22.5], [0.25, 3.5, 1.2]), ocTubo([0, 5, -22], [0, 5.5, -16], 0.18));
       for (let k = 0; k < 16; k++) { const y0 = 9.5 + k * 2.85, f = 1 - (k + 0.5) / 16; out.push(ocCaixa([0, y0 + 1.42, 6 - 11 * f], [0.06, 1.45, 11 * f])); }
-      out.push(ocCaixa([0, 4.4, -12], [5, 0.25, 1.2]), ocCaixa([0, 4.4, -2], [5, 0.25, 1.2])); return out; },
-    assentos: () => ({ timoneiro: { p: [3.5, 4.65, -17], olha: 1 }, tripulante: { p: [0, 4.65, -2], olha: 1 }, popa: { p: [0, 4.65, -12], olha: 1 } }) },
+      out.push(ocCaixa([0, 4.4, -12], [5.6, 0.25, 1.2]), ocCaixa([0, 4.4, -2], [5.6, 0.25, 1.2])); return out; },
+    assentos: () => ({ timoneiro: { p: [3.5, 4.65, -17], olha: 1, chao: 1.4, pesFrente: 4.4 }, tripulante: { p: [-4.2, 4.65, -2], olha: 1, chao: 1.4, pesFrente: 4.4 }, popa: { p: [4.2, 4.65, -12], olha: 1, chao: 1.4, pesFrente: 4.4 } }) },
   balsa: { nome: "balsa de toras", larg: 18, prof: 26, alt: 3, grupo: "veiculo", veiculo: "agua",
     partes: o => { const out = []; for (let i = 0; i < 8; i++) { const x = -7.9 + i * 2.25; out.push({ cil: true, c: [x, 1.1, (i % 2) * 0.6], r: 1.1, hh: 12.5 + (i % 3) * 0.5, R: rotParaEixo([0, 0, 1]) }); }
       for (const z of [-9, 0, 9]) out.push(ocTubo([-9, 2.3, z], [9, 2.3, z], 0.35)); out.push(ocTubo([5, 2.4, -11], [5, 26, -11], 0.25)); return out; },
@@ -369,7 +420,7 @@ const COMPOSTOS = {
       for (let k = 0; k < 13; k++) out.push(Object.assign(ocCaixa([0, 7.55, -48 + k * 8], [33.6, 0.04, 0.12]), { cor: "ink" }));
       for (const s of [-1, 1]) { out.push(ocTubo([s * 33.5, 12.5, -50], [s * 33.5, 12.5, 50], 0.3), ocTubo([s * 33.5, 10, -50], [s * 33.5, 10, 50], 0.18)); for (let k = 0; k <= 10; k++) out.push(ocTubo([s * 33.5, 7.5, -50 + k * 10], [s * 33.5, 12.5, -50 + k * 10], 0.22));
         out.push(ocCaixa([0, 6.0, s * 60], [16, 0.5, 8], rotParaEixo([0, 1, s * 0.25]))); }
-      out.push(ocCaixa([22, 15.5, -36], [8.5, 8, 9]), ocCaixa([22, 24, -36], [9.6, 0.6, 10.2]), Object.assign(ocCaixa([13.45, 17.5, -36], [0.05, 2.6, 6]), { cor: "ink" }), Object.assign(ocCaixa([22, 17.5, -26.95], [6, 2.6, 0.05]), { cor: "ink" }), { cil: true, c: [26, 28, -38], r: 1.1, hh: 4 });
+      out.push(...vcMover(vcCasca({ w: 9, y0: 7.2, yp: 7.5, yb: 15, yt: 25.6, z0: -8.5, z1: 8.5, t: 0.4, jan: [[-6, 6]], portas: [{ lado: -1, za: -7.5, zb: -2 }], frente: "janela", tras: "fechada", moldura: 2, teto: false }), 0, 22, -36), ocCaixa([22, 26.2, -36], [9.6, 0.6, 10.2]), { cil: true, c: [26, 30.4, -38], r: 1.1, hh: 4 });
       return out; },
     assentos: () => ({ "em-pe": { p: [0, 7.5, 0], olha: 1, pe: true }, proa: { p: [0, 7.5, 40], olha: 1, pe: true }, popa: { p: [-10, 7.5, -40], olha: -1, pe: true }, borda: { p: [-30, 7.5, 10], olha: 1, pe: true }, cabine: { p: [22, 7.5, -36], olha: 1, pe: true } }) },
   navio: { nome: "navio grande (galeão de três mastros, velas, castelo de popa, canhões)", larg: 62, prof: 280, alt: 270, grupo: "veiculo", veiculo: "agua", corPadrao: "#8b5a2b",
@@ -408,27 +459,32 @@ const COMPOSTOS = {
   alcapao: { nome: "alçapão (porta no chão)", larg: 10, prof: 10, alt: 1, grupo: "porta", porta: true, corPadrao: "#6b4a2b", partes: o => vcAlcapao(o) },
   carro: { nome: "carro (modelo sedan, hatch, suv, esportivo, caminhonete, taxi, policia)", larg: 17, prof: 47, alt: 16, grupo: "veiculo", veiculo: "terra", corPadrao: "#3b6ea5",
     partes: o => vcCarro(o), assentos: o => vcAssentosCarro(o) },
-  onibus: { nome: "ônibus (12 m, janelas, portas, 2 fileiras de bancos)", larg: 22, prof: 105, alt: 28, grupo: "veiculo", veiculo: "terra", corPadrao: "#d9a520",
-    partes: o => { const out = [], h = 52.5; out.push(ocCaixa([0, 15, 0], [11, 12, h]), ocCaixa([0, 27.4, 0], [10.6, 0.4, h - 0.5]));
-      for (const sx of [-1, 1]) { for (let k = 0; k < 9; k++) out.push(Object.assign(ocCaixa([sx * 11.05, 18, -h + 8 + k * 10.5], [0.05, 4, 4.6]), { cor: "ink" })); for (const z of [h - 14, -h + 16]) out.push({ cil: true, c: [sx * 9.4, 4.4, z], r: 4.4, hh: 1.6, R: rotParaEixo([1, 0, 0]) }); }
-      out.push(Object.assign(ocCaixa([11.06, 12, h - 5], [0.05, 9, 3]), { cor: "fundo" }), Object.assign(ocCaixa([11.06, 12, -6], [0.05, 9, 3]), { cor: "fundo" }), Object.assign(ocCaixa([0, 19, h + 0.06], [9.6, 6, 0.05]), { cor: "ink" }), Object.assign(ocCaixa([0, 25, h + 0.1], [6, 1.2, 0.05]), { cor: "fundo" }));
+  onibus: { nome: "ônibus (12 m, janelas, portas, 2 fileiras de bancos, corredor)", larg: 22, prof: 105, alt: 28, grupo: "veiculo", veiculo: "terra", corPadrao: "#d9a520",
+    partes: o => { const h = 52.5, jan = [], ink = b => Object.assign(b, { cor: "ink" }); for (let k = 0; k < 9; k++) jan.push([-h + 5 + k * 10.3, -h + 13.4 + k * 10.3]);
+      const out = vcCasca({ w: 11, y0: 1.6, yp: 4.6, yb: 13.4, yt: 27, z0: -h, z1: h, t: 0.5, jan, portas: [{ lado: 1, za: h - 9.5, zb: h - 3 }, { lado: 1, za: -9, zb: -2 }], frente: "janela", tras: "fechada", moldura: 1.4 });
+      out.push(ocCaixa([0, 27.6, 0], [10.6, 0.25, h - 0.6]), ocCaixa([0, 3.4, h + 0.3], [10.8, 2.2, 0.4]), ocCaixa([0, 3.4, -h - 0.3], [10.8, 2.2, 0.4]), ink(ocCaixa([0, 25.4, h + 0.08], [6, 1.2, 0.06])));
+      for (const sx of [-1, 1]) { for (const z of [h - 14, -h + 16]) out.push({ cil: true, c: [sx * 9.4, 4.4, z], r: 4.4, hh: 1.6, R: rotParaEixo([1, 0, 0]) }, ink({ cil: true, c: [sx * 11.05, 4.4, z], r: 2.4, hh: 0.08, R: rotParaEixo([1, 0, 0]) })); out.push(ocEsf([sx * 8.4, 8, h + 0.4], [1.4, 1, 0.3])); }
+      const A = COMPOSTOS.onibus.assentos(o); for (const [k, S] of Object.entries(A)) { if (S.pe) continue; out.push(...vcBanco(S.p[0], S.p[1], S.p[2], 1, k === "motorista" ? 2.6 : 2.4, 7, 4.6)); if (S.volante) out.push(ocToro(S.volante.c, 2.2, 0.25, "y"), ocTubo(S.volante.c, [S.volante.c[0], 6, S.volante.c[2] + 2], 0.3)); }
+      out.push(ocCaixa([-5, 12.2, h - 3], [5.6, 1.2, 2.2]), ocTubo([0.6, 4.6, -h + 8], [0.6, 26.8, -h + 8], 0.18), ocTubo([0.6, 23.5, -h + 8], [0.6, 23.5, h - 12], 0.15));
       return out; },
-    assentos: () => { const A = { motorista: { p: [-6, 8.6, 44], olha: 1, dentro: true, dirige: true }, corredor: { p: [0, 3.2, 10], olha: 1, pe: true, dentro: true } }; for (let i = 0; i < 8; i++) for (const sx of [-1, 1]) A["banco" + (i * 2 + (sx > 0 ? 1 : 2))] = { p: [sx * 6.2, 8.6, 30 - i * 9.5], olha: 1, dentro: true }; return A; } },
+    assentos: () => { const base = { olha: 1, dentro: true, chao: 4.6, teto: 26.8, pesFrente: 4.4, reclina: 6 }, A = { motorista: Object.assign({ p: [-6, 9.2, 43.5], dirige: true, volante: { c: [-6, 12.8, 47.4], r: 2.2 }, pesFrente: 6 }, base), corredor: { p: [0.6, 4.6, 10], olha: 1, pe: true, dentro: true } };
+      for (let i = 0; i < 8; i++) for (const sx of [-1, 1]) A["banco" + (i * 2 + (sx > 0 ? 1 : 2))] = Object.assign({ p: [sx * 6.0, 9.0, 31 - i * 9.6] }, base); return A; } },
   aviao: { nome: "avião grande de passageiros (tipo Boeing: ~64 m, asas de ~60 m, 2 turbinas)", larg: 520, prof: 610, alt: 130, grupo: "veiculo", veiculo: "ar", corPadrao: "#dfe3ea",
-    partes: o => vcAviaoGrande(), assentos: () => { const A = { piloto: { p: [-8, 34, 255], olha: 1, dentro: true }, copiloto: { p: [8, 34, 255], olha: 1, dentro: true }, corredor: { p: [0, 22, 100], olha: 1, pe: true, dentro: true } }; for (let i = 0; i < 12; i++) for (const sx of [-1, 1]) A["poltrona" + (i * 2 + (sx > 0 ? 1 : 2))] = { p: [sx * 12, 26, 180 - i * 28], olha: 1, dentro: true }; return A; } },
+    partes: o => vcAviaoGrande(o), assentos: () => { const b = { olha: 1, dentro: true, chao: 28, teto: 60, pesFrente: 4.6, reclina: 8 }, A = { piloto: Object.assign({ p: [-7, 32, 228], dirige: true, volante: { c: [-7, 35.4, 232.6], r: 1.4 } }, b), copiloto: Object.assign({ p: [7, 32, 228], dirige: true, volante: { c: [7, 35.4, 232.6], r: 1.4 } }, b), corredor: { p: [0, 28, 100], olha: 1, pe: true, dentro: true } };
+      for (let i = 0; i < 12; i++) for (const sx of [-1, 1]) A["poltrona" + (i * 2 + (sx > 0 ? 1 : 2))] = Object.assign({ p: [sx * 13, 32, 186 - i * 30] }, b); return A; } },
   aviaoPequeno: { nome: "avião pequeno (tipo Cessna: 8 m, asa alta, hélice)", larg: 96, prof: 88, alt: 26, grupo: "veiculo", veiculo: "ar", corPadrao: "#e8e2d0",
-    partes: o => vcAviaoPequeno(), assentos: () => ({ piloto: { p: [-2.2, 7.4, 10], olha: 1, dentro: true }, passageiro: { p: [2.2, 7.4, 10], olha: 1, dentro: true } }) },
+    partes: o => vcAviaoPequeno(o), assentos: () => { const b = { olha: 1, dentro: true, chao: 5.2, teto: 16.2, pesFrente: 5.2, reclina: 10 }; return { piloto: Object.assign({ p: [-2.3, 7.8, 9.4], dirige: true, volante: { c: [-2.3, 11.2, 13.8], r: 1.1 } }, b), passageiro: Object.assign({ p: [2.3, 7.8, 9.4] }, b) }; } },
   helicoptero: { nome: "helicóptero (rotor principal e de cauda, esquis)", larg: 110, prof: 120, alt: 30, grupo: "veiculo", veiculo: "ar", corPadrao: "#3f5a3a",
-    partes: o => vcHelicoptero(o), assentos: () => ({ piloto: { p: [-3.4, 6.8, 14], olha: 1, dentro: true }, copiloto: { p: [3.4, 6.8, 14], olha: 1, dentro: true }, porta: { p: [7, 1.3, 2], olha: 1, pe: true } }) },
+    partes: o => vcHelicoptero(o), assentos: () => { const b = { olha: 1, dentro: true, chao: 4.6, teto: 17.6, pesFrente: 4.4, reclina: 8 }; return { piloto: Object.assign({ p: [-3, 7.6, 12], dirige: true, volante: { c: [-3, 9.4, 16.4], r: 0.8 } }, b), copiloto: Object.assign({ p: [3, 7.6, 12] }, b), traseiro: Object.assign({ p: [0, 7.6, 1] }, b), porta: { p: [7, 1.3, 4], olha: 1, pe: true } }; } },
   lancha: { nome: "lancha (casco em V, para-brisa, motor de popa)", larg: 22, prof: 62, alt: 10, grupo: "veiculo", veiculo: "agua", corPadrao: "#f2f2f2",
-    partes: o => vcCasco(60, 22, 4.5, 12, [Object.assign(ocCaixa([0, 7.8, 6], [8, 2.4, 0.3], rotParaEixo([0, 0.7, 1])), { cor: "ink" }), ocCaixa([0, 5, -10], [7, 0.4, 3]), ocCaixa([0, 4, -31], [2, 4, 2])]),
-    assentos: () => ({ piloto: { p: [3.4, 5.4, -1], olha: 1 }, passageiro: { p: [-3.4, 5.4, -1], olha: 1 }, popa: { p: [0, 5.4, -10], olha: 1 } }) },
+    partes: o => vcCasco(60, 22, 4.5, 12, [Object.assign(ocCaixa([0, 7.6, 5.4], [8, 2.2, 0.25], rotX(-0.6)), { cor: "ink" }), ocCaixa([0, 4.4, 14], [8.4, 2.2, 8]), ocCaixa([3.4, 6.6, 4.4], [2.2, 1.6, 1.2]), ...vcVolante(3.4, 9.2, 3.2, 1.1), ...vcBanco(3.4, 6.4, -1.4, 1, 2.3, 5, 2.2), ...vcBanco(-3.4, 6.4, -1.4, 1, 2.3, 5, 2.2), ...vcBanco(0, 6.4, -12, 1, 7, 5, 2.2), ocCaixa([0, 4, -31], [2, 4, 2])], 2.2),
+    assentos: () => ({ piloto: { p: [3.4, 6.4, -1.4], olha: 1, chao: 2.2, pesFrente: 5, dirige: true, volante: { c: [3.4, 9.2, 3.2], r: 1.1 } }, passageiro: { p: [-3.4, 6.4, -1.4], olha: 1, chao: 2.2, pesFrente: 5 }, popa: { p: [0, 6.4, -12], olha: 1, chao: 2.2, pesFrente: 5 } }) },
   boteInflavel: { nome: "bote inflável (boias laterais, motor)", larg: 16, prof: 36, alt: 5, grupo: "veiculo", veiculo: "agua", corPadrao: "#d4632a",
     partes: o => { const out = [ocCaixa([0, 0.4, 0], [6, 0.3, 15])]; for (const sx of [-1, 1]) out.push({ cil: true, c: [sx * 6.5, 2, 0], r: 2, hh: 14, R: rotParaEixo([0, 0, 1]) }); out.push(ocEsf([0, 2, 14.5], [8.4, 2, 3]), { cil: true, c: [0, 2, -14], r: 2, hh: 7, R: rotParaEixo([1, 0, 0]) }, ocCaixa([0, 3.5, -17], [1.5, 3, 1.5])); return out; },
-    assentos: () => ({ proa: { p: [4.5, 3.6, 8], olha: 1, beira: true }, popa: { p: [-4.5, 3.6, -9], olha: 1, beira: true } }) },
+    assentos: () => ({ proa: { p: [4.8, 3.6, 8], olha: 1, beira: true, chao: 0.7, pesFrente: 3.6 }, popa: { p: [-4.8, 3.6, -9], olha: 1, beira: true, chao: 0.7, pesFrente: 3.6 } }) },
   barcoPesqueiro: { nome: "barco pesqueiro (cabine, mastro e redes)", larg: 32, prof: 112, alt: 40, grupo: "veiculo", veiculo: "agua", corPadrao: "#2f6d8a",
-    partes: o => vcCasco(110, 32, 9, 14, [ocCaixa([0, 17, 5], [9, 6, 10]), ocCaixa([0, 23.4, 5], [10, 0.5, 11]), Object.assign(ocCaixa([0, 18, 15.1], [7, 2.4, 0.05]), { cor: "ink" }), ocTubo([0, 10, -20], [0, 40, -20], 0.6), ocTubo([0, 34, -20], [0, 12, -46], 0.3)]),
-    assentos: () => ({ "em-pe": { p: [0, 10, -30], olha: -1, pe: true }, cabine: { p: [3, 10.6, 8], olha: 1, pe: true, dentro: true }, proa: { p: [0, 11, 40], olha: 1, pe: true } }) },
+    partes: o => vcCasco(110, 32, 9, 14, [...vcCasca({ w: 9, y0: 9.4, yp: 10, yb: 16.6, yt: 28.6, z0: -5, z1: 15, t: 0.4, jan: [[-2, 13]], portas: [{ lado: 1, za: -4, zb: 1.5 }], frente: "janela", tras: "fechada", moldura: 1.6, teto: false }), ocCaixa([0, 29, 5], [10, 0.5, 11]), ...vcVolante(3, 17.4, 12.6, 1.4), ocTubo([0, 10, -20], [0, 40, -20], 0.6), ocTubo([0, 34, -20], [0, 12, -46], 0.3)], 9.4),
+    assentos: () => ({ "em-pe": { p: [7, 9.4, -34], olha: -1, pe: true }, cabine: { p: [3, 10, 8], olha: 1, pe: true, dentro: true }, proa: { p: [0, 9.4, 40], olha: 1, pe: true } }) },
   submarino: { nome: "submarino (casco, torre, hélice; com “base -5” fica submerso)", larg: 40, prof: 310, alt: 52, grupo: "veiculo", veiculo: "agua", corPadrao: "#3a3f47",
     partes: o => [{ cil: true, c: [0, 16, 0], r: 16, hh: 130, R: rotParaEixo([0, 0, 1]) }, ocEsf([0, 16, 130], [16, 16, 24]), ocEsf([0, 16, -130], [16, 16, 30]), ocCaixa([0, 38, 40], [5, 10, 18]), ocCaixa([0, 42, 46], [16, 0.8, 4]), ocTubo([0, 48, 34], [0, 58, 34], 0.6), ocCaixa([0, 16, -160], [0.8, 14, 4]), ocCaixa([0, 16, -160], [14, 0.8, 4])],
     assentos: () => ({ torre: { p: [0, 48.6, 40], olha: 1, pe: true }, convés: { p: [6, 32.2, 80], olha: 1, pe: true } }) },

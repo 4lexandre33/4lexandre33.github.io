@@ -178,7 +178,7 @@ const SL=[
   {k:"atmo",g:"slCam",label:"Perspectiva atmosférica (longe = mais claro)",min:0,max:1,step:0.05,u:""},
   {k:"bodyPitch",g:"slScene",label:"Corpo inteiro: deitar de costas (−) / de bruços (+)",min:-180,max:180,step:1,u:"°"},
   {k:"bodyRoll",g:"slScene",label:"Corpo inteiro: deitar de lado",min:-180,max:180,step:1,u:"°"},
-  {k:"bodyLift",g:"slScene",label:"Altura (salto, flutuar, voar)",min:-2,max:3000,step:0.1,u:" R"},
+  {k:"bodyLift",g:"slScene",label:"Altura (salto, flutuar, voar)",min:-60,max:3000,step:0.1,u:" R"},
   {k:"wx",g:"slScene",label:"Posição no chão: X",min:-6000,max:6000,step:0.1,u:" R"},
   {k:"wz",g:"slScene",label:"Posição no chão: Z",min:-6000,max:6000,step:0.1,u:" R"},
   {k:"wRot",g:"slScene",label:"Girar no chão",min:-180,max:180,step:1,u:"°"},
