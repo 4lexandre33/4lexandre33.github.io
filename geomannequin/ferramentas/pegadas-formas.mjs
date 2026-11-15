@@ -30,7 +30,9 @@ else { const w = createWorld(), CACHE = process.env.GM_CACHE_FORMAS || null, tab
   if (CACHE) { try { Object.assign(tab, JSON.parse(readFileSync(CACHE, "utf8"))); } catch (e) { } }
   const tipos = Object.keys(w.TIPOS_OBJETO).filter(t => !NAO.test(t)), falta = tipos.filter(t => !tab[t]), N = +(process.argv[process.argv.indexOf("--paralelo") + 1] || 2) || 2, partes = Array.from({ length: N }, (_, i) => falta.filter((_, j) => j % N === i));
   /* cada filho manda o resultado de um objeto por vez (e o cache guarda): se um filho cair, os outros seguem e a próxima rodada continua de onde parou */
-  await Promise.all(partes.map(p => new Promise(ok => { if (!p.length) return ok(); const f = fork(AQUI, ["--filho"]); f.on("message", r => { Object.assign(tab, r); if (CACHE) writeFileSync(CACHE, JSON.stringify(tab)); process.stdout.write("."); }); f.on("exit", ok); f.on("error", ok); f.send(p); })));
+  /* um processo novo a cada 6 objetos (a memória de muitos mundos seguidos estoura) */
+  const roda = p => new Promise(ok => { if (!p.length) return ok(); const f = fork(AQUI, ["--filho"]); f.on("message", r => { Object.assign(tab, r); if (CACHE) writeFileSync(CACHE, JSON.stringify(tab)); process.stdout.write("."); }); f.on("exit", ok); f.on("error", ok); f.send(p); });
+  await Promise.all(partes.map(async p => { for (let i = 0; i < p.length; i += 6) await roda(p.slice(i, i + 6)); }));
   const ord = Object.fromEntries(tipos.map(t => { const GR = gruposDe(t, w.TIPOS_OBJETO[t], w.COMPOSTOS && w.COMPOSTOS[t]), pos = x => x.grupo === "golpe" ? (GR[0] === "empunhar" || GR[0] === "mirar" ? 0.5 : 50) : GR.includes(x.grupo) ? GR.indexOf(x.grupo) : 99;
     return [t, (tab[t] || []).filter(x => pos(x) < 99).sort((a, b) => pos(a) - pos(b) || (a.maos - b.maos) * (GR === G_LONGO || GR === G_PESADO ? -1 : 0)).slice(0, 12).map(x => x.tipo)]; }));
   const poucas = Object.entries(ord).filter(([, v]) => v.length < 5).map(([k, v]) => k + "(" + v.length + ")");
