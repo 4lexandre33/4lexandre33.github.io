@@ -912,6 +912,8 @@ ${EXEMPLO_FILME}
   Pose: Kai pose rfAgachadoApontando · Kai pose rfFurtivoColadoParede · Kai pose rfRendicaoAjoelhadoMaosAoAlto (apelidos em português também valem, entre aspas: pose "mãos ao alto").
   Cena: cena preset ref.ajuda.levantar com Kai, Mira · cena preset ref.papel.vila-trono com Ana, Leo, Rui · cena preset ref.luta.soco-no-rosto com Kai, Mira
     Cenas: ${PRECONFIG.filter(d => /^ref\./.test(d.id)).map(d => d.id.slice(4)).join(", ")}.
+  PAPÉIS das cenas: os nomes depois de "com" entram na ordem A, B, C — nas cenas ref.luta.* A ataca e B defende/recebe; em ref.papel.vila-trono A é a vilã no trono e B, C os servos;
+    em ref.ajuda.* A ajuda e B é ajudado; em ref.abraco.* A chega e B recebe. Use "em (x,z)" depois dos nomes para pôr a cena em outro lugar.
   No site: aba Catálogo → Referências; árvore de poses → Referência. MCP: catalogo categoria referencias. Lista das folhas e do que virou: docs/referencias/catalogo.md.
 
 45. ANIMAIS EM TAMANHO MONSTRO ("King Kong")
@@ -922,7 +924,7 @@ ${EXEMPLO_FILME}
 46. GOLPE COM IMPACTO E EFEITOS DE ARMA
   [T] Kai golpeia Mira [com ${Object.keys(NM_GOLPE).join("|")}] [colorido] — quem golpeia faz a pose de ataque, quem recebe faz a pose de impacto
     (rosto, estômago, de lado, arremessado) e o efeito certo aparece no ponto atingido. No filme o impacto chega 0,25 s depois e o efeito some em 1 s.
-    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute".
+    Também: "Kai dispara missil em Mira" · "Kai dispara granada em Mira" · "Kai acerta Mira com chute". Não precisa "segura" antes: a arma certa (espada, varinha, pistola, rifle, bazuca) vai para a mão sozinha.
   Efeitos novos: corte_ar (onda de corte que sai da espada) · choque_laminas (faíscas quando as armas se cruzam) · corte_impacto (corte no corpo) ·
     tracante (rajada de balas traçantes) · barreira_rachada (escudo rachando). Prontos de mangá também: corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma.
 
@@ -934,13 +936,15 @@ ${EXEMPLO_FILME}
 
 48. TRILHO CURVO E TREM ARTICULADO
   objeto trilho "Linha" em (0,0) caminho (-20,-20) (0,-15) (15,0) (15,20) — o trilho passa suave por todos os pontos (metros).
-  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo.
+  objeto trem "Trem" em (0,0) vagoes 3 no-trilho Linha posicao 12 — põe o trem sobre o trilho, a frente a 12 m do começo (o "em" é ignorado; vale no local e no quadro).
   0s Trem anda 45m no-trilho Linha por 7s — cada vagão segue a curva, as junções (sanfonas) dobram e quem está dentro vai junto no seu vagão.
 
 49. PORTAS E PORTÕES
   objeto porta|portaPequena|portaDupla|portaVidro|portaCorrer|portaCastelo|portaoGrade|portaoFerro|portaLevadica|alcapao "P" em (x,z) [gira g] [aberta 0.5 | aberta 90 | fechada | entreaberta | para-dentro]
+  "aberta" aceita fração (0 = fechada, 0.5 = meio, 1 = toda) ou graus (aberta 45 = metade). A levadiça "fechada" fica baixada no vão; ponha-a no portão do castelo.
+  Portas e veículos não podem ser "alvo" do enquadramento (alvo é para pessoas e animais): para mirar neles use camera (x,y,z) olhando (x,y,z).
   No filme: 0s Portao abre [por 2s] · 3s Portao fecha · Porta entreabre · Porta escancara (rápido). A levadiça sobe e desce; o alçapão gira no chão; a de correr desliza.
-  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local.`;
+  Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local. "local X herda Y" também funciona com locais prontos (local preset castelo … "Y").`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */

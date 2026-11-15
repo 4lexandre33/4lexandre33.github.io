@@ -300,9 +300,9 @@ function nmLerLocal(bloco, ctx) {
 /* conferência geométrica do local: fora dos limites, peças atravessadas, escada que não chega a nenhum nível, porta tapada */
 function nmValidarLocal(pl) {
   const av = [], it = pl.itens, M = v => (v / NM_M).toFixed(1) + " m";
-  it.forEach(o => { const gg = (o.giro || 0) * Math.PI / 180, ex = Math.abs(Math.cos(gg)) * o.larg / 2 + Math.abs(Math.sin(gg)) * o.prof / 2, ez = Math.abs(Math.sin(gg)) * o.larg / 2 + Math.abs(Math.cos(gg)) * o.prof / 2; if (Math.abs(o.x) + ex > 400 || Math.abs(o.z) + ez > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
+  it.forEach(o => { if (o.noTrilho || o.caminhoAbs) return; /* trem sobre o trilho e trilho curvo: a posição real vem do trilho */ const gg = (o.giro || 0) * Math.PI / 180, ex = Math.abs(Math.cos(gg)) * o.larg / 2 + Math.abs(Math.sin(gg)) * o.prof / 2, ez = Math.abs(Math.sin(gg)) * o.larg / 2 + Math.abs(Math.cos(gg)) * o.prof / 2; if (Math.abs(o.x) + ex > 400 || Math.abs(o.z) + ez > 400) av.push("“" + o.nome + "” passa do limite do palco (±45 m do centro)"); if (o.larg > 450 || o.prof > 450) av.push("“" + o.nome + "” tem mais de 51 m num lado: divida em partes"); });
   if (it.length > 300) av.push("mais de 300 peças: só as 300 primeiras entram");
-  const altas = it.filter(o => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel), caixa = o => { const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g)); return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2]; };
+  const altas = it.filter(o => !o.chao && o.alt > 4 && o.tipo !== "rampaDegraus" && !o.nivel && !o.noTrilho && o.tipo !== "trilho"), caixa = o => { const g = (o.giro || 0) * Math.PI / 180, c = Math.abs(Math.cos(g)), sn = Math.abs(Math.sin(g)); return [o.x - (o.larg * c + o.prof * sn) / 2, o.z - (o.larg * sn + o.prof * c) / 2, o.x + (o.larg * c + o.prof * sn) / 2, o.z + (o.larg * sn + o.prof * c) / 2]; };
   for (let i = 0; i < altas.length && av.length < 30; i++) for (let j = i + 1; j < altas.length; j++) { const a = altas[i], b = altas[j]; if (a.tipo === "parede" && b.tipo === "parede") continue; if ((a.base || 0) >= (b.base || 0) + b.alt || (b.base || 0) >= (a.base || 0) + a.alt) continue;
     const A = caixa(a), B = caixa(b), ix = Math.min(A[2], B[2]) - Math.max(A[0], B[0]), iz = Math.min(A[3], B[3]) - Math.max(A[1], B[1]); if (ix > 2 && iz > 2) av.push("“" + a.nome + "” e “" + b.nome + "” se atravessam (" + M(ix) + " × " + M(iz) + ")"); }
   const niveis = Object.values(pl.niveis || {});
@@ -337,6 +337,7 @@ function nmMontarLocal(plano) {
       else if (base) { const v = ((cont[it.nome] * 37) % 17) - 8, hx = c => Math.max(0, Math.min(255, c + v)).toString(16).padStart(2, "0"); q.col = { fill: "#" + base.map(hx).join(""), ink: "#" + base.map(c => Math.round(c * 0.42).toString(16).padStart(2, "0")).join("") }; }
     } catch (e) { avisos.push(it.nome + ": " + e.message); }
   }
+  try { vcAtualizar(); } catch (e) { } /* trem "no-trilho": vai para o lugar certo do trilho já no local */
   if (plano.itens.length > 300) avisos.push("O local tem " + plano.itens.length + " peças; só as 300 primeiras entram.");
   SCN.localAtual = { nome: plano.nome, desloc: plano.desloc || [0, 0], marcasNivel: plano.marcasNivel || {}, marcas: plano.marcas, regioes: plano.regioes, niveis: plano.niveis, salas: plano.salas };
   return avisos;
