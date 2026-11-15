@@ -798,7 +798,7 @@ function pgIrAte(it, k, a) {
 function pgSepararMaos(k, cs) {
   if (cs.length !== 2 || !cs[0].P || !cs[1].P || cs[0].s === cs[1].s) return cs;
   const d = pgLen(pgSub(cs[0].P, cs[1].P)), m = k.meia, iL = m.indexOf(Math.max(...m)), L = m[iL] * 2, sec = [...m].sort((a, b) => b - a)[1] * 2, longo = L > sec * 2.2;
-  const minimo = longo ? Math.max(0.9, Math.min(4.8, L * (L > 9 ? 0.32 : 0.36))) : Math.max(1.4, sec * 0.8); if (d >= Math.min(minimo, longo ? L * 0.7 : 99)) return cs;
+  const minimo = longo ? Math.max(0.9, Math.min(4.8, L * (L > 9 ? 0.32 : 0.36))) : Math.max(1.4, sec * 0.8); if (d >= Math.min(minimo, longo ? L * 0.7 : 99, 1.0) || (k.o && k.o.tipo === "corda")) return cs; /* só conserta mãos praticamente no mesmo ponto (< ~11 cm); pegadas já afastadas (rifle, arco, corda) ficam como estão */
   const dom = k.s, i2 = cs[0].s === dom ? 1 : 0, c1 = cs[1 - i2], c2 = cs[i2], ax = k.ax[iL];
   let P;
   if (longo) { const t1 = pgDot(pgSub(c1.P, k.C), ax), lim = m[iL] - 0.35, dir = Math.abs(t1 + minimo) <= lim && (t1 <= 0 || Math.abs(t1 - minimo) > lim) ? 1 : -1; let t2 = Math.max(-lim, Math.min(lim, t1 + dir * minimo)); if (Math.abs(t2 - t1) < minimo * 0.6) t2 = Math.max(-lim, Math.min(lim, t1 - dir * minimo));
