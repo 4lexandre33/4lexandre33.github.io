@@ -197,7 +197,7 @@ function nmLerLocal(bloco, ctx) {
     seg(t, Lg, 0, alt);
   };
   for (const l of linhas) {
-    const toks = nmTokens(l.txt); if (!toks.length) continue; const cmd = nmNorm(toks[0].v);
+    let toks = nmTokens(l.txt); if (!toks.length) continue; if (nmNorm(toks[0].v) === "objeto" && toks.length > 1) toks = toks.slice(1); /* "objeto trem …" também vale no local */ const cmd = nmNorm(toks[0].v);
     try {
       if (cmd === "chao" || cmd === "chão" || cmd === "piso" || cmd === "terreno") {
         const forma = nmNorm(toks[1] && toks[1].v);
@@ -520,7 +520,9 @@ function nmAvisosComposicao(r) {
       if (q.preset && (/^(olhos|detalhe)$/.test(q.preset.enq || "") || !q.preset.alvos.includes(nome))) continue; /* preset: só confere quem ele enquadra; olhos/detalhe cortam de propósito */
       if (c.u > -0.05 && c.u < 1.05 && c.v - c.r < -0.02 && c.v > 0) av.push(n + "a cabeça de " + nome + " está cortada no alto (abra um pouco o plano — ex.: close → primeiro-plano — ou mude o alvo/lado).");
       if (Math.abs(c.du) > 0.015 && c.u > 0 && c.u < 1 && ((c.du > 0 && c.u > 0.8) || (c.du < 0 && c.u < 0.2))) av.push(n + nome + " olha para a borda mais perto (pouco espaço na frente do olhar): mude o lado da câmera ou a posição."); }
-    if (i >= 2 && q.planoUsado && q.planoUsado === r.quadros[i - 1].planoUsado && q.planoUsado === r.quadros[i - 2].planoUsado) av.push(n + "três quadros seguidos em plano " + q.planoUsado + " (varie: close, médio, geral).");
+    /* no filme, uma linha "camera plano X" no começo do plano manda no enquadramento */
+    const pu = x => { const c = x && x.filme && (x.filme.cam || []).find(e => e.t <= 0.05 && e.base && e.base.planoEnq); return c ? c.base.planoEnq : x && x.planoUsado; };
+    if (i >= 2 && pu(q) && pu(q) === pu(r.quadros[i - 1]) && pu(q) === pu(r.quadros[i - 2])) av.push(n + "três quadros seguidos em plano " + pu(q) + " (varie: close, médio, geral).");
     ant = q; });
   return av;
 }
@@ -810,6 +812,12 @@ function nmPersonagem(ctx, l, Q) {
       its.forEach((x, i) => { x.params.wx = p[0] + v[0] * d * (1 + i * 0.8); x.params.wz = p[1] + v[1] * d * (1 + i * 0.8); if (w === "frente-de") nmVirarPara(x, p); });
       k = kk - 1; }
     else if (w === "nivel" || w === "nível" || w === "sobre") { const nv = nx.v; k++; depois.push(() => { const N = SCN.localAtual && SCN.localAtual.niveis[nv]; if (N) its.forEach(x => { x.params.bodyLift = N.altura; x.params.ground = 0; }); else { const o = acharObjeto(nv); if (!o) throw new NmErro("Nível/objeto “" + nv + "” não existe.", l.linha); its.forEach(x => { x.params.bodyLift = (o.base || 0) + o.alt; x.params.wx = o.x; x.params.wz = o.z; x.params.ground = 0; }); } }); }
+    else if (/^(desembarca|desembarcar|desce-de|desce-do|desce-da|sai-de|sai-do|sai-da)$/.test(w)) { /* sai do veículo e fica de pé ao lado dele */
+      depois.push(() => its.forEach(x => { const e = x.embarcadoEm, o = e && acharObjeto(e.veiculo); if (!e || !o) throw new NmErro(x.name + " não está embarcado em nenhum veículo.", l.linha);
+        if (o.passageiros) delete o.passageiros[e.assento]; delete x.embarcadoEm; const S = vcAssentos(o)[e.assento] || { p: [0, 0, 0] }, lado = (o.larg || 10) / 2 + 2.2, g = (o.giro || 0) * Math.PI / 180;
+        x.params.bodyLift = 0; x.params.ground = 0; ["hipFlexL", "hipFlexR", "kneeFlexL", "kneeFlexR", "spineFlex", "armFlexL", "armFlexR", "elbowL", "elbowR"].forEach(kk => x.params[kk] = 0);
+        x.params.wx = o.x + Math.cos(g) * lado + Math.sin(g) * S.p[2]; x.params.wz = o.z - Math.sin(g) * lado + Math.cos(g) * S.p[2]; x.params.wRot = ((o.giro || 0) + 90) % 360; }));
+      if (nx && acharObjeto(nx.v)) k++; feito.anima = "desembarca"; }
     else if (/^(embarca|embarcar|entra-em|entra-no|entra-na|rema|remar)$/.test(w)) { /* veículo: "Kai embarca barco [assento remador]" · "Kai rema barco" (= assento do remador) */
       const vn = nx && nx.v; k++; let ass = /^rema/.test(w) ? "rema" : null; if (toks[k + 1] && /^(assento|banco|lugar|como)$/.test(nmNorm(toks[k + 1].v)) && toks[k + 2]) { ass = nmNorm(toks[k + 2].v); k += 2; } else if (toks[k + 1] && toks[k + 1].t === "pal" && !NM_CHAVES_P.has(nmNorm(toks[k + 1].v))) { const cand = nmNorm(toks[k + 1].v); if (["cocheiro", "condutor", "passageiro", "passageiro2", "remador", "proa", "popa", "timoneiro", "tripulante", "em-pe", "borda", "carga"].includes(cand)) { ass = cand; k++; } }
       depois.push(() => { const o = acharObjeto(vn); if (!o || !vcEhVeiculo(o)) throw new NmErro(w + " EM QUAL veículo? Ponha um no quadro/local (ex.: objeto barcoRemo \"barco\" em (0,3)). Veículos: carruagem, carroca, barcoRemo, canoa, veleiro, balsa.", l.linha);
@@ -1861,7 +1869,7 @@ function nmCameraEventos(ctx, Q, txt, T, ate, linha) {
     const camP = {}; CAMK.forEach(kk => camP[kk] = P[kk]); const piv = [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera], cab0 = Object.assign({}, Q.cab);
     Object.assign(Q.cab, { plano: ck.plano || cab0.plano, alvo: ck.alvo || cab0.alvo, lado: ck.lado ?? cab0.lado, elevacao: ck.elevacao ?? cab0.elevacao, lente: ck.lente ?? cab0.lente, angulo: ck.angulo ?? cab0.angulo });
     let b0 = null; try { nmCamera(ctx, Q); b0 = cfEstaticaAtual(); } finally { Q.cab = cab0; CAMK.forEach(kk => P[kk] = camP[kk]); [SCN.pivo, SCN.orbitaArea, SCN.seguirCamera] = piv; }
-    const c0 = corte || (T <= 1e-6 && dur === null); return [{ t: T, dur: c0 ? 0 : dur ?? 1, corte: c0, base: b0 }]; }
+    if (b0 && ck.plano) b0.planoEnq = ck.plano; const c0 = corte || (T <= 1e-6 && dur === null); return [{ t: T, dur: c0 ? 0 : dur ?? 1, corte: c0, base: b0 }]; }
   for (; k < tk.length; k++) { const w = nmNorm(tk[k].v), nx = tk[k + 1], num = () => { if (!tk[k + 1] || tk[k + 1].t !== "num") throw new NmErro("câmera " + w + ": diga quanto (ex.: " + w + " 30).", linha); return tk[++k]; };
     if (w === "corte") corte = true;
     else if (w === "em" && nx && nx.t === "num") { dur = nx.v; k++; }
