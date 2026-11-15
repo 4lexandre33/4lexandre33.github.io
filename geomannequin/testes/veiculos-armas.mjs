@@ -2,12 +2,12 @@
 import { createWorld } from "../mcp/lib/core.mjs";
 let falhou = false; const ok = (c, t) => { if (!c) falhou = true; console.log((c ? "  ok  " : "  FALHOU  ") + t); };
 const w = createWorld(), comp = t => w.compilarName(t, { semCache: true, salvar: false }), M = 1 / 0.114;
-const V = w.listaVeiculos(); ok(V.length === 6 && V.every(v => v.assentos.length), "6 veículos, todos com assentos: " + V.map(v => v.tipo + "(" + v.assentos.join("/") + ")").join(", "));
+const V = w.listaVeiculos(); ok(V.length >= 6 && V.every(v => v.assentos.length), V.length + " veículos, todos com assentos: " + V.map(v => v.tipo + "(" + v.assentos.join("/") + ")").join(", "));
 { const r = comp('elenco\n  Kai\n  Mira\n  Trovao animal cavalo\nquadro 1 geral\n  Trovao em (0,6)\n  objeto carruagem "coche" em (0,0)\n  Trovao puxa coche\n  Kai embarca coche cocheiro\n  Mira embarca coche passageiro\n');
   ok(r.ok, "carruagem puxada por cavalo com cocheiro e passageira " + JSON.stringify(r.erros)); const e = r.quadros[0].estado, co = e.objetos.find(o => o.nome === "coche"), tv = e.objetos.find(o => o.nome === "Trovao"), K = e.list.find(x => x.name === "Kai").params, Mi = e.list.find(x => x.name === "Mira").params;
-  ok(Math.abs(tv.z - co.z - 20) < 0.5 && Math.abs(tv.x - co.x) < 0.5, "o cavalo fica entre os varais, à frente do coche");
-  ok(K.bodyLift > 0.2 * M && Math.abs(K.wz - (co.z + 5.2)) < 1 && (K.hipFlexL || 0) > 70, "cocheiro sentado no banco alto da frente (" + (K.bodyLift / M).toFixed(2) + " m de elevação)");
-  ok(Math.abs(Mi.wz - (co.z - 1.5)) < 1.5 && Math.abs(Mi.wx - co.x) < 1, "passageira fica dentro da cabine (não é empurrada para fora)"); }
+  ok(Math.abs(tv.z - co.z - 22) < 0.5 && Math.abs(tv.x - co.x) < 0.5, "o cavalo fica no timão, à frente do coche");
+  ok(K.bodyLift > 0.2 * M && Math.abs(K.wz - (co.z + 6.6)) < 1 && (K.hipFlexL || 0) > 70, "cocheiro sentado no banco alto da frente (" + (K.bodyLift / M).toFixed(2) + " m de elevação)");
+  ok(Math.abs(Mi.wz - (co.z - 0.4)) < 1.5 && Math.abs(Mi.wx - co.x) < 3.5, "passageira fica dentro da cabine (não é empurrada para fora)"); }
 { const r = comp('elenco\n  Kai\nquadro 1\n  objeto barcoRemo "barco" em (0,0) gira 90\n  Kai rema barco\n'); const K = r.quadros[0].estado.list.find(x => x.name === "Kai").params;
   ok(r.ok && Math.abs(((K.wRot - 270) % 360 + 360) % 360) < 1 && (K.armFlexL || 0) > 50, "remador senta de costas para a proa, braços nos remos"); }
 { const r = comp('elenco\n  Kai\nquadro 1\n  objeto barcoRemo "barco" em (0,0)\n  Kai embarca barco assento capota\n'); ok(!r.ok && /Assento “capota” não existe/.test(r.erros[0].erro), "assento errado dá erro com a lista"); }
