@@ -91,7 +91,7 @@ function resolverAncora(K, a, fx) {
     w = a.parte === "topo" ? [c[0], mx[1], c[2]] : a.parte === "base" ? [c[0], mn[1], c[2]] : c;
     /* ponto nomeado do objeto de mão (ponta, lâmina, cano, boca, cristal, chama…): vem da pose rígida do objeto */
     let eixo = null;
-    if (!["centro", "topo", "base", "frente"].includes(a.parte)) { try { const L = pontosLocaisDoObjeto(o); if (L && L[a.parte]) { w = pontoDoObjeto(o, a.parte, K.g0); const b0 = L.cabo ? pontoDoObjeto(o, "cabo", K.g0) : L.base ? pontoDoObjeto(o, "base", K.g0) : c; const d = sub(w, b0); if (len(d) > 1e-3) eixo = norm(d); } } catch (er) { /* sem ponto: centro */ } }
+    if (!["centro", "topo", "base", "frente"].includes(a.parte)) { try { const L = pontosLocaisDoObjeto(o); if (L && L[a.parte]) { w = pontoDoObjeto(o, a.parte, K.g0); const b0 = (a.parte === "cano" || a.parte === "ponta" || a.parte === "ejecao") && L.atrasCano ? pontoDoObjeto(o, a.parte === "ejecao" ? "atrasCano" : "atrasCano", K.g0) : L.cabo ? pontoDoObjeto(o, "cabo", K.g0) : L.base ? pontoDoObjeto(o, "base", K.g0) : c; const d = a.parte === "ejecao" && L.cano ? sub(pontoDoObjeto(o, "cano", K.g0), b0) : sub(w, b0); if (len(d) > 1e-3) eixo = norm(d); } } catch (er) { /* sem ponto: centro */ } }
     fx.objeto = { o, mn, mx, bs, eixo };
   }
   if (!w || !w.every(Number.isFinite)) return null;
@@ -349,11 +349,52 @@ function fiosNoEixo(fx, O, u, L, raio0, raio1, n, larg, torcao = 0.6, perfil = "
   }
   return lista.sort((a, b) => a.z - b.z);
 }
+/* faixa em PERSPECTIVA ao longo de um eixo no mundo: a largura de cada ponto segue a profundidade (encurta quando aponta para a câmera);
+   se o eixo fica quase de frente para a câmera, vira um disco (a seção do feixe) em vez de um borrão achatado */
+function tuboTela(fx, O, u, L, r0, r1, n = 18) {
+  const P = [], wd = []; for (let i = 0; i <= n; i++) { const t = i / n, q = fx.proj(add(O, mul(u, L * t))); if (!q || !q.every(Number.isFinite) || q[2] <= 0.05) continue; P.push([q[0], q[1]]); wd.push((r0 + (r1 - r0) * t) * (fx.plano ? 10 : (q[3] || 1))); }
+  if (P.length < 2) return { d: "", disco: "" };
+  const esq = [], dir = []; for (let i = 0; i < P.length; i++) { const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)]; let tx = b[0] - a[0], ty = b[1] - a[1]; const l = Math.hypot(tx, ty); if (l < 1e-6) { tx = 1; ty = 0; } else { tx /= l; ty /= l; } const h = wd[i]; esq.push([P[i][0] - ty * h, P[i][1] + tx * h]); dir.push([P[i][0] + ty * h, P[i][1] - tx * h]); }
+  const comp = Math.hypot(P[P.length - 1][0] - P[0][0], P[P.length - 1][1] - P[0][1]), wmax = Math.max(...wd);
+  return { d: suave(esq.concat(dir.reverse()), true), disco: comp < wmax * 2.2 ? circulo(P[0][0], P[0][1], wmax) : "", deFrente: comp < wmax * 2.2 }; }
+/* clarão na boca do cano: pétalas no mundo (a do tiro e as de lado), núcleo e fumaça — tudo projetado, então encurta certo em qualquer ângulo */
+TIPOS.clarao_cano = fx => {
+  const { P, cores, A, D, r } = fx, O = A.mundo; if (!O) return ""; const u = D.mundo || [0, 0, 1], B = base(u), T = escalaW(fx, P.tamanho) * (0.4 + 0.6 * fx.t) * Math.min(1.4, fx.X);
+  const petala = (dir, comp, larg) => { const p0 = add(O, mul(dir, comp * 0.05)), p1 = add(O, mul(dir, comp)), side = (() => { const c = cross(dir, [0, 1, 0]); return len(c) > 1e-3 ? norm(c) : [1, 0, 0]; })(), w = larg; const pts = [add(p0, mul(side, w)), add(O, mul(dir, comp * 0.35)), p1, add(O, mul(dir, comp * 0.35)), add(p0, mul(side, -w))];
+    const a = fx.proj(pts[0]), b = fx.proj(pts[2]), c = fx.proj(pts[4]), m = fx.proj(add(O, mul(dir, comp * 0.4))), ww = Math.max(1.2, Math.hypot(a[0] - c[0], a[1] - c[1]) * 0.5, larg * (fx.plano ? 10 : m[3]) * 0.9);
+    return pincelada([T2(fx, O), [m[0], m[1]], [b[0], b[1]]], ww * 2, "fuso"); };
+  let d1 = "", d2 = "", n = Math.round(P.petalas);
+  d1 += petala(u, T * 2.2, T * 0.35); for (let i = 0; i < n - 1; i++) { const a = i / (n - 1) * 6.283 + r() * 0.4, dir = norm(add(mul(u, 0.55), add(mul(B.v, Math.cos(a)), mul(B.w, Math.sin(a))))); d2 += petala(dir, T * r.entre(0.7, 1.1), T * 0.18); }
+  const q = fx.proj(O), R0 = T * 0.45 * (fx.plano ? 10 : q[3]);
+  let svg = ""; if (P.fumaca > 0.01) { for (let i = 0; i < 4; i++) { const c = add(O, add(mul(u, T * r.entre(0.6, 2.4)), mul([0, 1, 0], T * r.entre(0, 0.5)))), qc = fx.proj(c); svg += forma(circulo(qc[0], qc[1], T * r.entre(0.35, 0.7) * (fx.plano ? 10 : qc[3])), fx.ink ? "#D8D8D8" : "#9A948C", { op: 0.28 * P.fumaca * (1 - fx.t * 0.3) }); } }
+  if (!fx.ink) svg += forma(circulo(q[0], q[1], R0 * 2.2), cores[1], { op: 0.45, filtro: brilho(fx) });
+  svg += forma(d2, fx.ink ? INK : cores[2] || cores[1], { op: 0.95 }) + forma(d1, fx.ink ? INK : cores[1], { op: 0.97 });
+  svg += forma(circulo(q[0], q[1], R0), fx.ink ? PAPEL : cores[0], fx.ink ? ct(fx, 1) : {});
+  return svg;
+};
+/* cápsulas ejetadas: saem para o lado direito da arma e um pouco para cima, girando (cilindrinhos no mundo) */
+TIPOS.cartuchos = fx => {
+  const { P, cores, A, D, r } = fx, O = A.mundo; if (!O) return ""; const u = D.mundo || [0, 0, 1], dir = norm(cross(u, [0, 1, 0])), L = escalaW(fx, 0.35), alc = escalaW(fx, P.alcance) * 0.2;
+  let svg = ""; for (let i = 0; i < Math.round(P.quantidade); i++) { const t = (i + 0.4 + fx.t * 0.6) / Math.round(P.quantidade), p = add(O, add(mul(dir, alc * t * r.entre(0.8, 1.2)), add(mul([0, 1, 0], alc * 0.6 * Math.sin(Math.PI * Math.min(1, t * 1.2))), mul(u, -alc * 0.3 * t))));
+    const ang = r() * 6.28, ax = norm(add(mul(u, Math.cos(ang)), mul([0, 1, 0], Math.sin(ang)))), a = fx.proj(add(p, mul(ax, -L / 2))), b = fx.proj(add(p, mul(ax, L / 2))), w = escalaW(fx, 0.12) * (fx.plano ? 10 : a[3]);
+    svg += forma(pincelada([[a[0], a[1]], [b[0], b[1]]], Math.max(1, w * 2), "reto"), fx.ink ? INK : (cores[2] || cores[1]), fx.ink ? {} : ct(fx, 0.5)); }
+  return svg;
+};
+/* impacto de bala: faíscas para fora da superfície (voltando para quem atirou), poeira e lascas */
+TIPOS.impacto_bala = fx => {
+  const { P, A, D, r, cores } = fx, O = A.mundo; if (!O) return ""; const volta = D.mundo ? mul(D.mundo, -1) : [0, 1, 0], B = base(volta), R = escalaW(fx, P.raio) * (0.3 + 0.7 * fx.t), q = fx.proj(O), s = fx.plano ? 10 : q[3];
+  let svg = ""; if (P.poeira > 0.01) for (let i = 0; i < 6; i++) { const c = add(O, add(mul(volta, R * r.entre(0.2, 0.9)), add(mul(B.v, R * r.entre(-0.5, 0.5)), mul(B.w, R * r.entre(-0.5, 0.5))))), qc = fx.proj(c); svg += forma(circulo(qc[0], qc[1], R * r.entre(0.25, 0.5) * qc[3]), fx.ink ? "#E2E2E2" : "#B8A890", { op: 0.4 * P.poeira }); }
+  let d = ""; for (let i = 0; i < quant(fx, P.faiscas); i++) { const a = r() * 6.28, sp = r.entre(0.2, 0.9), dir = norm(add(mul(volta, 1 - sp * 0.6), add(mul(B.v, Math.cos(a) * sp), mul(B.w, Math.sin(a) * sp)))), p0 = add(O, mul(dir, R * 0.15)), p1 = add(O, mul(dir, R * r.entre(0.6, 1.4)));
+    d += pincelada([T2(fx, p0), T2(fx, p1)], Math.max(0.8, escalaW(fx, 0.06) * s), "agulha"); }
+  svg += forma(d, fx.ink ? INK : cores[0] === "#F2E3C6" ? "#FFD84A" : cores[1], { op: 0.95 });
+  return svg + forma(estrela(q[0], q[1], R * 0.45 * s, R * 0.18 * s, 7, r() * 6, r, 0.6), fx.ink ? INK : "#FFF4C2");
+};
 TIPOS.feixe = fx => {
   const { P, cores, A, D } = fx, O = A.mundo, u = D.mundo, L = (D.dist && fx.e.direcao.modo === "alvo" ? D.dist : escalaW(fx, P.comprimento)) * (0.15 + 0.85 * fx.t), Wd = escalaW(fx, P.largura) * Math.min(1.3, fx.X), s = pxu(fx), g = brilho(fx);
   const eixo = Array.from({ length: 12 }, (_, k) => T2(fx, add(O, mul(u, L * k / 11))));
-  let svg = fx.ink ? forma(pincelada(eixo, Wd * 3.2 * s, "pincel"), PAPEL, ct(fx, Math.max(1.2, Wd * s * 0.12)))
-    : forma(pincelada(eixo, Wd * 3.4 * s, "pincel"), cores[cores.length - 2] || cores[1], { op: 0.35, filtro: g });
+  const tb = tuboTela(fx, O, u, L, Wd * 1.7, Wd * 1.5); /* largura em perspectiva (de frente para a câmera vira disco) */
+  let svg = fx.ink ? forma(tb.d, PAPEL, ct(fx, Math.max(1.2, Wd * s * 0.12))) + (tb.disco ? forma(tb.disco, PAPEL, ct(fx, 1.2)) : "")
+    : forma(tb.d, cores[cores.length - 2] || cores[1], { op: 0.35, filtro: g }) + (tb.disco ? forma(tb.disco, cores[1], { op: 0.5, filtro: g }) : "");
   const fios = fiosNoEixo(fx, O, u, L, Wd * 0.25, Wd * 1.15, quant(fx, P.fios), Wd * (fx.ink ? 0.3 : 0.5) * s, 0.5, fx.ink ? "agulha" : "pincel");
   fios.forEach(f => { svg += fx.ink ? forma(f.d, f.rr > 0.45 ? INK : "#7A7A7A", { op: 0.9 }) : forma(f.d, corEm(cores, 0.2 + 0.75 * f.rr), { op: 0.9, ...ct(fx) }); });
   svg += estrelas(fx, eixo, 40);

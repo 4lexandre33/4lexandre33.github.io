@@ -82,6 +82,34 @@ const OBJ_MAO = {
     partes: o => [omCx([0, 1.3, 0], [0.18, 0.3, 2.6]), omTubo([0, 1.45, 2.6], [0, 1.45, 5.4], 0.09), omCx([0, 1.05, -3.4], [0.16, 0.45, 1.0]), omCx([0, 0.6, -0.9], [0.14, 0.45, 0.22], { R: omRot([0, 1, -0.3]) }), omCx([0, 1.0, 1.4], [0.15, 0.25, 0.9])],
     pegas: () => ({ punho: omPega([0, 0.55, -0.88], [0, 0, -1], [0, 1, -0.3]), frente: omPega([0, 0.82, 1.4], [0, -1, 0], [0, 0, 1]), cabo: omPega([0, 0.55, -0.88], [0, 0, -1], [0, 1, -0.3]) }),
     pontos: () => ({ cano: [0, 1.45, 5.4], ponta: [0, 1.45, 5.4], coronha: [0, 1.05, -4.4] }) },
+  /* ===== armas de fogo (cano em +z, y para cima; punho em z≈-0,9; "frente" = mão de apoio) ===== */
+  revolver: { nome: "revólver", larg: 0.45, prof: 2.9, alt: 1.8, grupo: "arma-fogo", pega: "punho",
+    partes: o => [omCx([0, 0.6, -0.4], [0.16, 0.62, 0.26], { R: omRot([0, 1, -0.35]) }), omCx([0, 1.3, 0.05], [0.15, 0.22, 0.55]), { cil: true, c: [0, 1.35, 0.3], r: 0.3, hh: 0.3, R: omRot([0, 0, 1]) }, omTubo([0, 1.45, 0.6], [0, 1.45, 2.4], 0.09), omCx([0, 1.62, 2.3], [0.03, 0.06, 0.05]), omCx([0, 1.55, -0.45], [0.05, 0.12, 0.08])],
+    pegas: () => ({ punho: omPega([0, 0.6, -0.4], [0, 0, -1], [0, 1, -0.35]), cabo: omPega([0, 0.6, -0.4], [0, 0, -1], [0, 1, -0.35]) }),
+    pontos: () => ({ cano: [0, 1.45, 2.4], ponta: [0, 1.45, 2.4], tambor: [0, 1.35, 0.3], cao: [0, 1.6, -0.45], gatilho: [0, 0.95, 0.1], mira: [0, 1.62, -0.3] }) },
+  submetralhadora: { nome: "submetralhadora", larg: 0.5, prof: 6, alt: 2.4, grupo: "arma-fogo", pega: "punho", duasMaos: true,
+    partes: o => [omCx([0, 1.3, 0.3], [0.17, 0.3, 1.4]), omTubo([0, 1.4, 1.7], [0, 1.4, 2.7], 0.1), omCx([0, 0.35, 0.6], [0.11, 0.65, 0.18], { R: omRot([0, 1, 0.12]) }), omCx([0, 0.6, -0.85], [0.13, 0.45, 0.2], { R: omRot([0, 1, -0.3]) }), omTubo([0, 1.25, -1.1], [0, 1.15, -3.0], 0.05), omCx([0, 1.0, -3.0], [0.12, 0.3, 0.06]), omCx([0, 1.7, 0.2], [0.04, 0.1, 0.5])],
+    pegas: () => ({ punho: omPega([0, 0.6, -0.85], [0, 0, -1], [0, 1, -0.3]), frente: omPega([0, 0.45, 0.62], [0, 0, -1], [0, 1, 0.12]), cabo: omPega([0, 0.6, -0.85], [0, 0, -1], [0, 1, -0.3]) }),
+    pontos: () => ({ cano: [0, 1.4, 2.7], ponta: [0, 1.4, 2.7], carregador: [0, -0.3, 0.7], coronha: [0, 1.0, -3.0], mira: [0, 1.8, -0.2], ejecao: [0.2, 1.4, 0.4] }) },
+  metralhadora: { nome: "metralhadora (com bipé e caixa de munição)", larg: 1.2, prof: 10, alt: 2.6, grupo: "arma-fogo", pega: "punho", duasMaos: true, pesada: true,
+    partes: o => [omCx([0, 1.35, 0.4], [0.24, 0.38, 2.2]), omTubo([0, 1.45, 2.6], [0, 1.45, 6.0], 0.13), omTubo([0, 1.45, 3.0], [0, 1.45, 4.6], 0.2, 0.2), omCx([0, 0.6, -0.9], [0.14, 0.45, 0.22], { R: omRot([0, 1, -0.3]) }), omCx([0, 1.05, -3.2], [0.18, 0.5, 1.2]),
+      omCx([0.55, 0.85, 0.4], [0.3, 0.4, 0.55]), omToro([0, 2.0, 0.6], 0.35, 0.05, [1, 0, 0]), omTubo([0, 1.35, 4.8], [0.55, -0.2, 5.6], 0.05), omTubo([0, 1.35, 4.8], [-0.55, -0.2, 5.6], 0.05)],
+    pegas: () => ({ punho: omPega([0, 0.55, -0.88], [0, 0, -1], [0, 1, -0.3]), frente: omPega([0, 2.0, 0.6], [0, 0, -1], [0, 0, 1]), alca: omPega([0, 2.0, 0.6], [0, 0, -1], [0, 0, 1]), cabo: omPega([0, 0.55, -0.88], [0, 0, -1], [0, 1, -0.3]) }),
+    pontos: () => ({ cano: [0, 1.45, 6.0], ponta: [0, 1.45, 6.0], bipe: [0, -0.2, 5.6], caixa: [0.55, 0.85, 0.4], ejecao: [-0.3, 1.4, 0.4], coronha: [0, 1.05, -4.4], mira: [0, 1.8, -0.3] }) },
+  sniper: { nome: "rifle de precisão (sniper, com luneta e bipé)", larg: 0.6, prof: 11, alt: 2.4, grupo: "arma-fogo", pega: "punho", duasMaos: true,
+    partes: o => [omCx([0, 1.3, 0.2], [0.18, 0.3, 2.4]), omTubo([0, 1.45, 2.6], [0, 1.45, 6.6], 0.08, 0.07), omCx([0, 1.0, -3.4], [0.16, 0.5, 1.1]), omCx([0, 1.55, -3.0], [0.14, 0.12, 0.6]), omCx([0, 0.6, -0.9], [0.14, 0.45, 0.22], { R: omRot([0, 1, -0.3]) }),
+      omTubo([0, 2.05, -0.9], [0, 2.05, 1.6], 0.17), omTubo([0, 2.05, 1.6], [0, 2.05, 2.2], 0.17, 0.26), omTubo([0, 2.05, -1.5], [0, 2.05, -0.9], 0.22, 0.17), omCx([0, 1.8, 0.4], [0.06, 0.15, 0.15]), omCx([0, 1.8, -0.5], [0.06, 0.15, 0.15]),
+      omTubo([0, 1.2, 2.4], [0.5, -0.3, 2.9], 0.05), omTubo([0, 1.2, 2.4], [-0.5, -0.3, 2.9], 0.05), omCx([0.25, 1.5, -0.2], [0.18, 0.05, 0.05])],
+    pegas: () => ({ punho: omPega([0, 0.55, -0.88], [0, 0, -1], [0, 1, -0.3]), frente: omPega([0, 1.0, 1.4], [0, -1, 0], [0, 0, 1]), cabo: omPega([0, 0.55, -0.88], [0, 0, -1], [0, 1, -0.3]), ferrolho: omPega([0.4, 1.5, -0.2], [1, 0, 0], [0, 0, 1]) }),
+    pontos: () => ({ cano: [0, 1.45, 6.6], ponta: [0, 1.45, 6.6], luneta: [0, 2.05, -1.5], mira: [0, 2.05, -1.5], objetiva: [0, 2.05, 2.2], bipe: [0, -0.3, 2.9], coronha: [0, 1.0, -4.5], ferrolho: [0.4, 1.5, -0.2] }) },
+  escopeta: { nome: "escopeta (pump)", larg: 0.5, prof: 9, alt: 2, grupo: "arma-fogo", pega: "punho", duasMaos: true,
+    partes: o => [omCx([0, 1.3, -0.1], [0.19, 0.32, 1.0]), omTubo([0, 1.5, 0.9], [0, 1.5, 5.2], 0.11), omTubo([0, 1.15, 0.9], [0, 1.15, 4.6], 0.1), { cil: true, c: [0, 1.15, 2.2], r: 0.2, hh: 0.6, R: omRot([0, 0, 1]) }, omCx([0, 1.05, -3.2], [0.15, 0.42, 1.05]), omCx([0, 0.6, -0.95], [0.14, 0.4, 0.2], { R: omRot([0, 1, -0.3]) })],
+    pegas: () => ({ punho: omPega([0, 0.6, -0.95], [0, 0, -1], [0, 1, -0.3]), frente: omPega([0, 0.95, 2.2], [0, -1, 0], [0, 0, 1]), bomba: omPega([0, 0.95, 2.2], [0, -1, 0], [0, 0, 1]), cabo: omPega([0, 0.6, -0.95], [0, 0, -1], [0, 1, -0.3]) }),
+    pontos: () => ({ cano: [0, 1.5, 5.2], ponta: [0, 1.5, 5.2], bomba: [0, 1.15, 2.2], coronha: [0, 1.0, -4.4], ejecao: [0.25, 1.35, -0.2], mira: [0, 1.65, 4.9] }) },
+  lancaFoguetes: { nome: "lança-foguetes (bazuca)", larg: 1.1, prof: 11, alt: 2.4, grupo: "arma-fogo", pega: "punho", duasMaos: true, pesada: true,
+    partes: o => [omTubo([0, 1.7, -4.2], [0, 1.7, 3.6], 0.42), omTubo([0, 1.7, -4.6], [0, 1.7, -4.2], 0.55, 0.42), omTubo([0, 1.7, 3.6], [0, 1.7, 5.4], 0.5, 0.05), omCx([0, 0.75, -0.2], [0.13, 0.5, 0.22], { R: omRot([0, 1, -0.2]) }), omCx([0, 0.85, 1.6], [0.12, 0.45, 0.2]), omCx([-0.55, 2.0, -0.4], [0.12, 0.25, 0.35])],
+    pegas: () => ({ punho: omPega([0, 0.7, -0.2], [0, 0, -1], [0, 1, -0.2]), frente: omPega([0, 0.8, 1.6], [0, 0, -1], [0, 1, 0]), cabo: omPega([0, 0.7, -0.2], [0, 0, -1], [0, 1, -0.2]) }),
+    pontos: () => ({ cano: [0, 1.7, 5.4], ponta: [0, 1.7, 5.4], traseira: [0, 1.7, -4.6], mira: [-0.55, 2.1, -0.6], ombro: [0, 1.25, -1.6] }) },
   /* ===== escudos (alça atrás, -z; frente +z) ===== */
   broquel: { nome: "broquel (escudo pequeno)", larg: 2.6, prof: 0.5, alt: 2.6, grupo: "escudo", pega: "alca",
     partes: o => [{ cil: true, c: [0, o.alt / 2, 0], r: o.larg / 2, hh: 0.12, R: omRot([0, 0, 1]) }, omEsf([0, o.alt / 2, 0.15], [0.4, 0.4, 0.3])],
@@ -155,12 +183,15 @@ const OBJ_MAO = {
     partes: o => [omCil(0, o.alt, 0.28, 0.34)], pegas: o => ({ copo: omPega([0.3, o.alt * 0.45, 0], [1, 0, 0], [0, 1, 0]), cabo: omPega([0.3, o.alt * 0.45, 0], [1, 0, 0], [0, 1, 0]) }), pontos: o => ({ boca: [0, o.alt, 0] }) }
 };
 const SINONIMOS_MAO = { espada: "espadaCurta", "espada longa": "espadaLonga", montante: "espadaLonga", gladio: "espadaCurta", "gládio": "espadaCurta", faca: "adaga", punhal: "adaga", "estrela ninja": "shuriken",
-  "martelo de guerra": "martelo", clava: "maca", "maça": "maca", porrete: "maca", "machado duplo": "machadoDuplo", bo: "bastaoBo", "bastão bo": "bastaoBo", gadanha: "foice", arma: "pistola", revolver: "pistola", "revólver": "pistola",
-  fuzil: "rifle", espingarda: "rifle", "escudo pequeno": "broquel", "escudo de cavaleiro": "escudoCavaleiro", "escudo torre": "escudoTorre", varinha: "varinha", "cajado mágico": "cajadoMagico", cajadoMagico: "cajadoMagico",
+  "martelo de guerra": "martelo", clava: "maca", "maça": "maca", porrete: "maca", "machado duplo": "machadoDuplo", bo: "bastaoBo", "bastão bo": "bastaoBo", gadanha: "foice", arma: "pistola", "revólver": "revolver", smg: "submetralhadora", uzi: "submetralhadora", metralhadora: "metralhadora", "metralhadora pesada": "metralhadora", "rifle de precisão": "sniper", "fuzil de precisão": "sniper", "franco-atirador": "sniper",
+  escopeta: "escopeta", "espingarda de bomba": "escopeta", bazuca: "lancaFoguetes", "lança-foguetes": "lancaFoguetes", "lanca-foguetes": "lancaFoguetes", rpg: "lancaFoguetes",
+  fuzil: "rifle", espingarda: "escopeta", "escudo pequeno": "broquel", "escudo de cavaleiro": "escudoCavaleiro", "escudo torre": "escudoTorre", varinha: "varinha", "cajado mágico": "cajadoMagico", cajadoMagico: "cajadoMagico",
   "violão": "violao", "guitarra elétrica": "guitarra", "arco de violino": "arcoViolino", trompa: "trompete", microfone: "microfone", telefone: "celular", "guarda-chuva": "guardaChuva", "sombrinha": "guardaChuva", caneca: "xicara", "xícara": "xicara", papel: "carta", espelho: "espelhoMao" };
 /* pontos (marcos) de um objeto em coordenadas locais; objetos sem lista: ponta = topo, centro = meio */
 function pontosLocaisDoObjeto(o) { const t = OBJ_MAO[o.tipo]; const p = t && t.pontos ? t.pontos(o) : {}; const A = o.alt || 1;
-  return Object.assign({ centro: [0, A / 2, 0], topo: [0, A, 0], base: [0, 0, 0], ponta: [0, A, 0] }, p); }
+  const r = Object.assign({ centro: [0, A / 2, 0], topo: [0, A, 0], base: [0, 0, 0], ponta: [0, A, 0] }, p);
+  if (r.cano && !r.atrasCano) r.atrasCano = [r.cano[0], r.cano[1], r.cano[2] - 1.5]; /* para o eixo do cano (direção do tiro) */
+  return r; }
 import { objectRigidPose, rigidPoint } from "./rigid-transform.js";
 /* um ponto nomeado do objeto no MUNDO (R), com o objeto onde está (segurado, girado, no chão) */
 function pontoDoObjeto(o, nome, ground = 0) { const L = pontosLocaisDoObjeto(o), q = L[nome] || L.ponta; return rigidPoint(objectRigidPose(o, ground), q); }

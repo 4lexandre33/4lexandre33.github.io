@@ -151,6 +151,13 @@ const CATALOGO = {
     params: { raio: P(2.2, 0.5, 12, "tamanho"), altura: P(1.6, 0.3, 8, "altura"), rastro: P(4, 0, 20, "rastro para trás") } },
   sulco_poeira: { cat: "destruicao", nome: "Poeira de quem desliza no chão", elem: "terra", camada: "auto", ancora: "pes",
     params: { comprimento: P(14, 2, 60, "comprimento"), altura: P(3.5, 0.5, 15, "altura") } },
+  /* ---- armas de fogo (boca do cano, cápsulas, impacto da bala) ---- */
+  clarao_cano: { cat: "personagem", nome: "Clarão do disparo (boca do cano)", elem: "fogo", camada: "frente", ancora: "maoDir",
+    params: { tamanho: P(1.6, 0.3, 6, "tamanho"), petalas: P(5, 3, 9, "pétalas"), fumaca: P(0.6, 0, 1, "fumaça") } },
+  cartuchos: { cat: "personagem", nome: "Cápsulas ejetadas", elem: "ouro", camada: "frente", ancora: "maoDir",
+    params: { quantidade: P(3, 1, 12, "cápsulas"), alcance: P(5, 1, 15, "alcance") } },
+  impacto_bala: { cat: "destruicao", nome: "Impacto de bala (faíscas, poeira, lascas)", elem: "terra", camada: "frente", ancora: "mundo",
+    params: { raio: P(2, 0.3, 8, "tamanho"), faiscas: P(14, 0, 40, "faíscas"), poeira: P(0.7, 0, 1, "poeira") } },
   /* ---- carga de energia / poder ---- */
   aura_explosiva: { cat: "carga", nome: "Aura explosiva (espinhos para cima)", elem: "sagrado", camada: "atras", ancora: "corpo",
     params: { altura: P(1.15, 0.4, 4, "altura"), pontas: P(24, 8, 70, "pontas"), detritos: P(14, 0, 60, "detritos") } },

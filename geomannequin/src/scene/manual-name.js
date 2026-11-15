@@ -14,6 +14,9 @@ import { listaAnimAcao2 } from "./anim-acao2.js";
 import { AV_ESPECIES } from "../engine/index.js";
 import { AV_POSES } from "./animais.js";
 import { AV_VERBOS } from "./aves-anim.js";
+import { CR_VERBOS } from "./criaturas-anim.js";
+import { listaLocaisProntos } from "./locais-prontos.js";
+import { CR_POSES } from "./animais.js";
 import { TONS_CENA } from "./quadros.js";
 import { AMA_VERBOS, AMA_POSE_ANIM, listaAnimacoesAnimal, animacaoAnimal, amaAmostrar } from "./animais-anim.js";
 import { listaPosesExtras, EXPRESSOES_EXTRA } from "./poses-extra.js";
@@ -162,6 +165,10 @@ Peças do local (uma por linha):
   grade-de 3x4 coluna de (x,z) ate (x,z)                         (grade C colunas × L linhas)
   circulo-de 8 arvore em (x,z) raio 6                             (N objetos em roda, virados para o centro)
   repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
+LOCAIS PRONTOS (parametrizados): local preset TIPO [largura 8] [profundidade 6] [altura 3] [semente 3] [padrao espinha] [densidade 1.5] ["Nome"]
+  Tipos: ${listaLocaisProntos().map(l => l.tipo + " (" + l.desc + ")").join(" · ")}.
+  A linha vira o bloco "local" inteiro (o mesmo código que você escreveria): depois use quadro … local "Nome" (o nome padrão é o do tipo, ex.: "Taverna").
+  Também dá para usar direto: quadro 1 local "taverna" (sem a linha preset). Para guardar com seu nome: salve na biblioteca (site: Locais → Salvar; MCP: salvar_local).
 Objetos: ${mnLista(O)}.
   Também valem: banca/balcão/barraca (caixas com nome), pilar (= coluna), "árvore", "poço".
   "tamanho LxPxA" = largura (x) × profundidade (z) × altura, em metros. "gira 90" gira no chão (graus; o mesmo sentido das pessoas: 0 = comprimento norte-sul, 90 = leste-oeste).
@@ -777,7 +784,18 @@ ${EXEMPLO_FILME}
     No filme ele viaja no tempo e o impacto aparece na chegada; num quadro parado ele fica no meio do caminho (viagem 60) com a cauda atrás.
   FUMAÇA BRANCA NOS PÉS: Kai arrastado 2m tras · Kai desliza 3m · Kai freia (o corpo desliza, a poeira sai dos dois pés, para trás do movimento) · Kai efeito poeira_pes.
   EXPLOSÃO EM CAMADAS: efeito explosao_completa em (5,0) [colorido] — clarão, bola de fogo, anel no chão, destroços e fumaça que sobe (no filme, cada camada no seu tempo).
-  Os efeitos são do quadro: no quadro seguinte somem (cabeçalho "mantem-efeitos" guarda os do anterior).`;
+  Os efeitos são do quadro: no quadro seguinte somem (cabeçalho "mantem-efeitos" guarda os do anterior).
+
+33. CRIATURAS: UM MANEQUIM POR PLANO CORPORAL (terra, água, dragões e criaturas mágicas)
+  Cada plano é um esqueleto reaproveitado por várias espécies (mesmas poses e animações): ${(() => { const g = {}; for (const [k, e] of Object.entries(QD_ESPECIES)) if (e.classe === "criatura") (g[e.plano] || (g[e.plano] = [])).push(k); return Object.entries(g).map(([p, l]) => p + " (" + l.join(", ") + ")").join(" · "); })()}.
+  Quadrúpedes alados (classe quadrúpede, com asas): pegaso, grifo; e unicornio. Usam as poses de quadrúpede + asas-abertas, voando, planando e os verbos voa, decola.
+  Elenco: Rex animal lagarto · Smaug animal dragao · Moby animal baleia · Kraken animal kraken. Tamanho: "Rex escala 100" (de 0,01 a 100 — um lagarto ×100 é um monstro de 70 m) ou "escala 0.05".
+  Todas têm OSSOS ("Rex ossos"): crânio, vértebras, costelas, cintura e ossos das patas/asas/nadadeiras.
+  Poses de criatura (${Object.keys(CR_POSES).length}): ${Object.keys(CR_POSES).join(", ")}.
+  Verbos no filme: ${Object.keys(CR_VERBOS).join(", ")} — com "por 3s" ou "por 5m" nos que repetem (nada, rasteja, anda, corre, voa, plana, serpenteia, boia). Ex.: "0s Smaug decola" · "2s Smaug cospe-fogo" + "2s efeito chama em Smaug.boca para Kai".
+  Andar até um ponto: "Rex anda-ate (5,0)" — a criatura vira e usa o ciclo do seu plano (peixe nada, cobra serpenteia, lagarto rasteja, aranha anda em tripé).
+  O ritmo e a passada saem do tamanho: um lagarto ×100 anda devagar com passos enormes; uma formiga dá passinhos rápidos. "nada" deixa o corpo um pouco acima do chão (o fundo); a superfície da água não muda a altura da criatura.
+  Câmera "segue X" chega mais perto de criatura pequena e se afasta da grande.`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */

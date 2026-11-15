@@ -30,13 +30,16 @@ import { salvarPose } from "./pose-codigo.js";
 import { pdSobrepor, pdNorm, pdAplicarJunta, pdExtrairJuntas, pdValoresPose, pdAtalho, pdLerPartes, pdParams, pdBase, pdChaveEm, pdTrecho, pdAteAngulo, pdReverter, pdEspelharAnim, pdJuntar, pdRepetir, pdVaiEVolta, pdAmplitude, pdEsticar, pdTroca, pdSoma, pdTira, pdFixar, pdCamada, pdCiclo, pdMiniatura } from "./pose-dsl.js";
 import { cfSilhueta, cfCameraNoTempo, cfAplicar, cfEstaticaAtual, cfFixaFrente, cfPessoa, cfPonto, cfDescrever } from "./camera-filme.js";
 import { AD_ACOES, adAcaoPara, adEspera, AD_ESPERAS } from "./acoes-dia.js";
-import { AV_POSES, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amMontavel } from "./animais.js";
+import { CR_POSES, AV_POSES, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amMontavel } from "./animais.js";
 import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo } from "./animais-anim.js";
 import { AV_VERBOS } from "./aves-anim.js";
+import { CR_VERBOS, ALADO_VERBOS } from "./criaturas-anim.js";
+import { lpExpandirTexto, lpAchar, localPronto } from "./locais-prontos.js";
+import { vcEhVeiculo, vcAssentos, vcEmbarcar, vcAtrelar, vcAtualizar } from "./veiculos.js";
 import { lcPulo, lcMergulho, lcNadar, lcEngatinharCiclo, lcRastejarCiclo, lcAgachadoCiclo, lcPorDistancia, lcCair, lcLevantar, lcRolar, lcAguaEm, lcNaLinhaDaAgua, lcNivelAgua, LC_NADO, LC_PULOS } from "./locomocao.js";
 import { pcAchar, pcAplicarCamera, pcArranjoTexto, pcBuscar } from "./preconfig.js";
 import { TONS_CENA, renderizarQuadro, paginaQuadros, recorteQuadro, cabecasNaTela } from "./quadros.js";
-import { cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
+import { SINONIMOS_MAO, qdMedidas, qdEhCriatura, cameraNoMundo, qdEspecie, qdPontoMundo, QD_ESPECIES, qdEhAve, rotM, capsulas, restGround, telaDoMundo, effScale, TIPOS_OBJETO, SINONIMOS_COMPOSTOS, CY, CATALOGO, analisarFolha, analisarImagemUnica, svgPlanta, comFundo, encaixar, renderScene, H, W } from "../engine/index.js";
 
 const NM_M = 1 / 0.114; /* R por metro */
 /* ===================== cores do elenco ===================== */
@@ -342,7 +345,7 @@ function bibliotecaLocais() {
     salvar(nome, codigo, o = {}) { if (!nome) throw new Error("Dê um nome ao local."); const atual = B[nome], versao = atual ? atual.versao + 1 : 1;
       const reg = { nome, versao, codigo: String(codigo), data: new Date().toISOString(), tags: o.tags || (atual && atual.tags) || [], miniatura: o.miniatura || null, origem: o.origem || "dsl" };
       B[nome] = Object.assign(reg, { versoes: [...(atual ? atual.versoes : []), { versao, codigo: reg.codigo, data: reg.data }].slice(-20) }); avisar(); return { nome, versao }; },
-    obter(nome, versao) { const s = B[nome] || B[Object.keys(B).find(k => nmNorm(k) === nmNorm(nome))]; if (!s) return null; if (!versao) return s; const v = s.versoes.find(x => x.versao === +versao); return v ? Object.assign({}, s, v) : null; },
+    obter(nome, versao) { const s = B[nome] || B[Object.keys(B).find(k => nmNorm(k) === nmNorm(nome))]; if (!s) { const lp = /^(preset|pronto)[: ]/i.test(String(nome)) || lpAchar(nome) ? (() => { try { return localPronto(String(nome).replace(/^(preset|pronto)[: ]\s*/i, "")); } catch (e) { return null; } })() : null; return lp ? { nome: lp.nome, versao: 0, codigo: lp.codigo, tags: ["pronto"], origem: "pronto", versoes: [] } : null; } if (!versao) return s; const v = s.versoes.find(x => x.versao === +versao); return v ? Object.assign({}, s, v) : null; },
     listar() { return Object.values(B).map(s => ({ nome: s.nome, versao: s.versao, data: s.data, tags: s.tags, pecas: (s.codigo.match(/\n/g) || []).length })); },
     remover(nome) { delete B[nome]; avisar(); },
     exportar() { return JSON.stringify({ app: "GeoMannequin", tipo: "locais", versao: 1, locais: B }); },
@@ -539,13 +542,14 @@ function nmPousarAveEm(o, it, parte) { if (!o || !it) return; const g0 = amChaoM
   const top = Math.max(c.a[1], c.b[1]) + (c.r || 0), P = /braco/.test(parte) || /ombro/.test(parte) ? (c.a[1] > c.b[1] ? c.a : c.b) : [(c.a[0] + c.b[0]) / 2, 0, (c.a[2] + c.b[2]) / 2];
   o.x = P[0]; o.z = P[2]; o.base = top - g0 - 0.05; o.emAr = true; o.sobre = null; o.giro = it.params.wRot || 0; o.animal.pousadoEm = it.name; }
 function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
-  const o = nmAnimal(ctx, nome), feito = { nome }, mudancas = [], ave = qdEhAve(o); (Q.animaisPresentes || (Q.animaisPresentes = new Set())).add(nome);
+  const o = nmAnimal(ctx, nome), feito = { nome }, mudancas = [], ave = qdEhAve(o), cria = qdEhCriatura(o), alado = !ave && !cria && !!(QD_ESPECIES[qdEspecie(o.animal.especie)] || {}).asas;
+  const verboAnim = w => cria ? CR_VERBOS[w] : ave ? AV_VERBOS[w] : (alado && ALADO_VERBOS[w]) || AMA_VERBOS[w], posesDe = cria ? CR_POSES : ave ? AV_POSES : AM_POSES; (Q.animaisPresentes || (Q.animaisPresentes = new Set())).add(nome);
   const ang = p => Math.atan2(p[0] - o.x, p[1] - o.z) * 180 / Math.PI, d0 = nmAnimalEstado(o), depoisAve = [];
   for (; k < toks.length; k++) { const tk = toks[k], w = nmNorm(tk.v), nx = toks[k + 1];
     if (w === "em" || w === "at") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " em ONDE?", l.linha); o.x = p[0]; o.z = p[1]; k = k2 - 1; }
     else if (w === "gira") { o.giro = +nx.v; k++; }
     else if (w === "vira-para") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " vira-para QUEM?", l.linha); o.giro = ang(p); k = k2 - 1; }
-    else if (w === "escala" || w === "tamanho") { o.animal.escala = Math.max(0.05, Math.min(40, +nx.v)); k++; }
+    else if (w === "escala" || w === "tamanho") { o.animal.escala = Math.max(0.01, Math.min(100, +nx.v)); const md = qdMedidas(o.animal.especie, o.animal.escala); Object.assign(o, { larg: Math.min(60000, md.larg), prof: Math.min(60000, md.prof), alt: Math.min(30000, md.alt) }); k++; }
     else if (w === "sela" || w === "selado") o.animal.sela = true;
     else if (w === "ossos" || w === "esqueleto") { o.animal.ossos = true; if (!o.colOrig) o.colOrig = o.col || null; o.col = { fill: "#ece4cf", ink: "#4a4034" }; }
     else if (w === "sem-ossos" || w === "corpo") { o.animal.ossos = false; if (o.colOrig !== undefined) { o.col = o.colOrig; delete o.colOrig; } }
@@ -554,8 +558,8 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
       const quem = nmQuem(ctx, nx && nx.v); if (!quem) throw new NmErro(nome + " " + w + " QUEM? (alguém do elenco)", l.linha); k++; let parte = /mao/.test(w) ? "mao" : /cabeca/.test(w) ? "cabeca" : /braco/.test(w) ? "braco" : "ombro";
       if (toks[k + 1] && /^(ombro|mao|mão|cabeca|cabeça|braco|braço|ombro-esquerdo|ombro-direito|mao-esquerda|mao-direita)$/.test(nmNorm(toks[k + 1].v))) { parte = nmNorm(toks[k + 1].v); k++; }
       const it = SCN.list.find(x => x.name === quem); depoisAve.push(() => nmPousarAveEm(o, it, parte)); o.animal.pose = amPose("empoleirado", o.animal.especie) || o.animal.pose; feito.pousa = quem + " " + parte; }
-    else if (w === "anima" || w === "animacao" || AMA_VERBOS[w] || (ave && AV_VERBOS[w]) || (Q.animais && AMA_POSE_ANIM[w] && !(w === "levanta"))) { /* animação de animal: "Trovão anima salto-obstaculo", "Rex late por 3s", "Trovão empina" (no filme) */
-      let an = w === "anima" || w === "animacao" ? (k++, nmNorm(nx.v)) : (ave && AV_VERBOS[w]) || AMA_VERBOS[w] || AMA_POSE_ANIM[w]; if (!AMA[an]) throw new NmErro("Animação de animal “" + an + "” não existe. Há: " + Object.keys(AMA).join(", ") + ".", l.linha);
+    else if (w === "anima" || w === "animacao" || verboAnim(w) || (!cria && Q.animais && AMA_POSE_ANIM[w] && !(w === "levanta"))) { /* animação de animal: "Trovão anima salto-obstaculo", "Rex late por 3s", "Trovão empina" (no filme) */
+      let an = w === "anima" || w === "animacao" ? (k++, nmNorm(nx.v)) : verboAnim(w) || AMA_POSE_ANIM[w]; if (!AMA[an]) throw new NmErro("Animação de animal “" + an + "” não existe. Há: " + Object.keys(AMA).join(", ") + ".", l.linha);
       let por = null, dist = null, vezes = null; while (toks[k + 1] && /^(por|vezes)$/.test(nmNorm(toks[k + 1].v)) || (toks[k + 1] && toks[k + 1].t === "num")) { const q = toks[k + 1]; if (q.t === "num") { if (q.u === "s") por = q.v; else if (q.u === "m" || q.u === "cm") dist = q.u === "cm" ? q.v / 100 : q.v; else vezes = q.v; k++; } else if (nmNorm(q.v) === "por") { const v = toks[k + 2]; if (v && v.t === "num") { if (v.u === "m") dist = v.v; else por = v.v; } k += 2; } else k++; }
       const a = animacaoAnimal(an, o.animal.especie, o.animal.escala || 1), de = nmAnimalEstado(o), fimMov = a.chaves[a.chaves.length - 1].mover, passo = Math.hypot(fimMov.frente || 0, fimMov.lado || 0);
       const dur = a.loop ? (por ?? (dist && passo > 0.01 ? dist / passo * a.duracao : vezes ? vezes * a.duracao : a.passada ? 4 / passo * a.duracao : a.duracao * 2)) : a.duracao;
@@ -563,10 +567,11 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
       if (Q.animais) { mudancas.push({ tipo: "anim", anim: a, de, dur, texto: nome + " " + an + (a.loop ? " (" + dur.toFixed(1) + " s)" : "") }); o.x = pos.x; o.z = pos.z; o.giro = pos.giro; o.animal.pose = a.relativa ? de.pose : fim.pose; }
       else { /* quadro (um instante): o momento-chave da animação */ const pk = amaAmostrar(a, a.pico ?? a.duracao * (a.loop ? 0.3 : 0.5), de.pose), pp = amaNoMundo(de, pk.mover, NM_M); o.x = pp.x; o.z = pp.z; o.giro = pp.giro; o.animal.pose = pk.pose; }
       feito.anima = an; }
-    else if (w === "pose" || (!ave && AM_POSES[w]) || (ave && AV_POSES[w]) || NM_ANIMAL_POSE_VERBO[w]) { const pn = w === "pose" ? (k++, nmNorm(nx.v)) : NM_ANIMAL_POSE_VERBO[w] || w, pp = amPose(pn, o.animal.especie); if (!pp) throw new NmErro("Pose de " + (ave ? "ave" : "animal") + " “" + pn + "” não existe. Há: " + Object.keys(ave ? AV_POSES : AM_POSES).join(", ") + ".", l.linha);
+    else if (w === "pose" || posesDe[w] || (!cria && NM_ANIMAL_POSE_VERBO[w])) { const pn = w === "pose" ? (k++, nmNorm(nx.v)) : NM_ANIMAL_POSE_VERBO[w] || w, pp = amPose(pn, o.animal.especie); if (!pp) throw new NmErro("Pose de " + (cria ? "criatura" : ave ? "ave" : "animal") + " “" + pn + "” não existe. Há: " + Object.keys(posesDe).join(", ") + ".", l.linha);
       mudancas.push({ tipo: "pose", para: pp, dur: pn === "empinado" ? 0.9 : pn === "deitado" || pn === "sentado" ? 1.4 : 0.7, texto: nome + ": " + pn }); o.animal.pose = pp; }
     else if (w === "olha") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " olha QUEM?", l.linha); k = k2 - 1; const g = ((ang(p) - (o.giro || 0)) % 360 + 540) % 360 - 180, pp = JSON.parse(JSON.stringify(o.animal.pose)); pp.cabecaGiro = Math.max(-70, Math.min(70, g)); mudancas.push({ tipo: "pose", para: pp, dur: 0.5, texto: nome + " olha " + nx.v }); o.animal.pose = pp; }
     else if (w === "carrega" || w === "leva") { const ob = nx && nx.v; k++; let c = SCN.objetos.find(x => !x.chao && nmNorm(x.nome || "") === nmNorm(ob)); if (!c) { const tipo = Object.keys(TIPOS_OBJETO).find(t => nmNorm(t) === nmNorm(ob)); if (!tipo) throw new NmErro("carrega O QUÊ? (um objeto do local ou um tipo).", l.linha); c = adicionarObjeto(tipo, { nome: ob }); } o.animal.carga = c.nome; }
+    else if (w === "puxa" || w === "atrelado-a" || w === "atrela") { const vn = nx && nx.v; k++; const vo = acharObjeto(vn); if (!vo || !vcEhVeiculo(vo)) throw new NmErro(nome + " puxa QUAL veículo? (carruagem ou carroça do quadro/local)", l.linha); vcAtrelar(vo, o); feito.puxa = vo.nome; }
     else if (w === "segue") { const alvoN = nmQuem(ctx, nx && nx.v); if (!alvoN) throw new NmErro(nome + " segue QUEM?", l.linha); k++; o.animal.segue = { quem: alvoN, dist: 2.2 }; }
     else if (AM_SIN_MARCHA[w] || /^(anda|trota|galopa|corre)-ate$/.test(w) || /^(anda|trota|galopa|corre)-até$/.test(w)) {
       const ate = /-at[eé]$/.test(w), base = w.replace(/-at[eé]$/, ""), marcha = AM_SIN_MARCHA[base] || "passo"; let dist = null, alvoTok = null, alvoJ = 0;
@@ -577,15 +582,21 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
       if (alvoTok) { const [p] = nmPontoDe(ctx, alvoTok, toks, alvoJ), dx = p[0] - o.x, dz = p[1] - o.z, L = Math.hypot(dx, dz) || 1, parar = nmQuem(ctx, alvoTok.v) ? 1.8 * NM_M * (o.animal.escala || 1) : 0, dd = Math.max(0, L - parar); px = o.x + dx / L * dd; pz = o.z + dz / L * dd; }
       else { const g = (o.giro || 0) * Math.PI / 180, dd = (dist ?? (marcha === "galope" ? 15 : marcha === "trote" ? 8 : 4)) * NM_M; px = o.x + Math.sin(g) * dd; pz = o.z + Math.cos(g) * dd; }
       const giro = Math.hypot(px - o.x, pz - o.z) > 1 ? Math.atan2(px - o.x, pz - o.z) * 180 / Math.PI : o.giro || 0, giroDur = Math.min(2, Math.abs(((giro - (o.giro || 0)) % 360 + 540) % 360 - 180) / 90 * 0.9);
+      if (cria) { /* criatura: vira para o destino e usa o ciclo do seu plano corporal (nadar, rastejar, andar, correr…) */
+        const pl = (QD_ESPECIES[qdEspecie(o.animal.especie)] || {}).plano, an = /peixe|cetaceo|cefalopode/.test(pl) ? "nadar" : pl === "serpente" ? "serpentear" : base === "corre" || base === "galopa" ? (AMA["correr-criatura"].planos.includes(pl) ? "correr-criatura" : "andar-criatura") : AMA["andar-criatura"].planos.includes(pl) ? "andar-criatura" : "rastejar";
+        o.giro = giro; const de2 = nmAnimalEstado(o), a = animacaoAnimal(an, o.animal.especie, o.animal.escala || 1), fm = a.chaves[a.chaves.length - 1].mover, passo = Math.max(1e-3, Math.hypot(fm.frente || 0, fm.lado || 0)), Lm = Math.hypot(px - de2.x, pz - de2.z) / NM_M, dur = passo > 0.01 ? Lm / passo * a.duracao : a.duracao;
+        if (Q.animais) mudancas.push({ tipo: "anim", anim: a, de: de2, dur, texto: nome + " " + an + " " + Lm.toFixed(1) + " m" }); else o.animal.pose = amaAmostrar(a, a.duracao * 0.3, de2.pose).pose;
+        o.x = px; o.z = pz; feito.anima = an; continue; }
       const S = amPassada(o.animal.especie, o.animal.escala || 1, marcha), T = amCiclo(o.animal.especie, o.animal.escala || 1, marcha), L = Math.hypot(px - o.x, pz - o.z) / NM_M, v = S / T, dur = giroDur + L / v + 0.45;
       mudancas.push({ tipo: "mov", de, para: { x: px, z: pz, giro }, marcha, S, T, giroDur, dur, texto: nome + " " + base + (alvoTok ? " até " + alvoTok.v : " " + L.toFixed(1) + " m") });
       o.x = px; o.z = pz; o.giro = giro; feito.anima = (base === "anda" ? "anda" : base === "trota" ? "trota" : "galopa") + (alvoTok ? " até " + alvoTok.v : ""); }
     else if (w === "," || w === "e") continue;
+    else if (cria) throw new NmErro("Não entendi “" + tk.v + "” para a criatura " + nome + ". Use: em, gira, vira-para, olha X, pose (" + Object.keys(CR_POSES).join(", ") + "), " + Object.keys(CR_VERBOS).join(", ") + " [por Ns | por Nm], escala N (0,01 a 100), ossos.", l.linha);
     else if (qdEhAve(o)) throw new NmErro("Não entendi “" + tk.v + "” para a ave " + nome + ". Use: em, gira, vira-para, pose (" + Object.keys(AV_POSES).join(", ") + "), " + Object.keys(AV_VERBOS).join(", ") + ", pousa-em QUEM ombro|mao|cabeca|braco, escala N, ossos.", l.linha);
     else throw new NmErro("Não entendi “" + tk.v + "” para o animal " + nome + ". Use: em, gira, vira-para, pose (" + Object.keys(AM_POSES).join(", ") + "), anda/trota/galopa [N m] [para X], anda-ate/galopa-ate X, olha X, empina, deita, senta, levanta, come, sela, carrega obj, segue X, escala N.", l.linha); }
   /* no filme: cada mudança vira uma trilha no tempo (o estado final já está no objeto) */
   if (Q.animais) { let t0 = 0; for (const m of mudancas) { Q.animais.push(Object.assign({ tipo: "animal", quem: nome, inicio: t0, poseDe: m.tipo === "pose" ? null : null }, m, { tipo: m.tipo === "mov" ? "animalMov" : m.tipo === "anim" ? "animalAnim" : "animalPose", de: m.de || null, poseIni: m.tipo === "pose" ? null : null })); t0 += m.tipo === "mov" || m.tipo === "anim" ? m.dur : 0; } }
-  depoisAve.forEach(f => { (Q.depoisPessoas || (Q.depoisPessoas = [])).push(f); }); amAtualizarMontaria(); Q.feitos.push(feito); void d0; return true; }
+  depoisAve.forEach(f => { (Q.depoisPessoas || (Q.depoisPessoas = [])).push(f); }); amAtualizarMontaria(); vcAtualizar(); Q.feitos.push(feito); void d0; return true; }
 /* animais no instante t do plano */
 function nmPlanoAnimais(F, t) {
   const tr = F.trilhas.filter(s => (s.tipo === "animalMov" || s.tipo === "animalPose" || s.tipo === "animalAnim") && t >= s.inicio - 1e-9); if (!tr.length) return;
@@ -751,6 +762,11 @@ function nmPersonagem(ctx, l, Q) {
       its.forEach((x, i) => { x.params.wx = p[0] + v[0] * d * (1 + i * 0.8); x.params.wz = p[1] + v[1] * d * (1 + i * 0.8); if (w === "frente-de") nmVirarPara(x, p); });
       k = kk - 1; }
     else if (w === "nivel" || w === "nível" || w === "sobre") { const nv = nx.v; k++; depois.push(() => { const N = SCN.localAtual && SCN.localAtual.niveis[nv]; if (N) its.forEach(x => { x.params.bodyLift = N.altura; x.params.ground = 0; }); else { const o = acharObjeto(nv); if (!o) throw new NmErro("Nível/objeto “" + nv + "” não existe.", l.linha); its.forEach(x => { x.params.bodyLift = (o.base || 0) + o.alt; x.params.wx = o.x; x.params.wz = o.z; x.params.ground = 0; }); } }); }
+    else if (/^(embarca|embarcar|entra-em|entra-no|entra-na|rema|remar)$/.test(w)) { /* veículo: "Kai embarca barco [assento remador]" · "Kai rema barco" (= assento do remador) */
+      const vn = nx && nx.v; k++; let ass = /^rema/.test(w) ? "rema" : null; if (toks[k + 1] && /^(assento|banco|lugar|como)$/.test(nmNorm(toks[k + 1].v)) && toks[k + 2]) { ass = nmNorm(toks[k + 2].v); k += 2; } else if (toks[k + 1] && toks[k + 1].t === "pal" && !NM_CHAVES_P.has(nmNorm(toks[k + 1].v))) { const cand = nmNorm(toks[k + 1].v); if (["cocheiro", "condutor", "passageiro", "passageiro2", "remador", "proa", "popa", "timoneiro", "tripulante", "em-pe", "borda", "carga"].includes(cand)) { ass = cand; k++; } }
+      depois.push(() => { const o = acharObjeto(vn); if (!o || !vcEhVeiculo(o)) throw new NmErro(w + " EM QUAL veículo? Ponha um no quadro/local (ex.: objeto barcoRemo \"barco\" em (0,3)). Veículos: carruagem, carroca, barcoRemo, canoa, veleiro, balsa.", l.linha);
+        const A = vcAssentos(o); let nome = ass; if (ass === "rema") nome = Object.keys(A).find(a => A[a].rema) || Object.keys(A)[0]; if (nome && !A[nome]) throw new NmErro("Assento “" + nome + "” não existe em " + o.nome + ". Há: " + Object.keys(A).join(", ") + ".", l.linha);
+        its.forEach((x, i) => { const livre = nome || Object.keys(A).find(a => !(o.passageiros || {})[a] || o.passageiros[a] === x.name) || Object.keys(A)[i % Object.keys(A).length]; vcEmbarcar(x, o, livre); }); }); feito.anima = "embarca " + vn; }
     else if (w === "monta" || w === "montar" || w === "cavalga") { const an = nx && nx.v; const o = an && amAchar(nmQuem(ctx, an) || an); if (!o) throw new NmErro(w + " EM QUAL animal? (do elenco: “Trovão animal cavalo”).", l.linha); k++;
       { const mv = amMontavel(o); if (!mv.ok) throw new NmErro(o.nome + " é pequeno demais para montar (sela a " + mv.alturaSela.toFixed(2) + " m do chão). Aumente: “" + o.nome + " animal " + o.animal.especie + " escala " + mv.escalaMin + "” ou mais.", l.linha); }
       if (Q.animais && !/sem-animacao|instantaneo/.test(l.txt || "")) its.forEach(x => Q.animais.push({ tipo: "montar", quem: x.name, animal: o.nome, inicio: 0, dur: 1.5, dePe: JSON.parse(JSON.stringify(x.params)), texto: x.name + " monta " + o.nome }));
@@ -1044,8 +1060,47 @@ function nmMapaPreset(ctx, pr, Q, linha) { const papeis = pr.def.papeis, ns = pr
   if (ns.length < papeis.length) throw new NmErro("preset " + pr.def.id + " precisa de " + papeis.length + " (" + papeis.join(", ") + "): escreva “com " + papeis.map((p, i) => (["Kai", "Mira", "Leo", "Ana", "Rui"])[i] || p).join(", ") + "”.", linha);
   return Object.fromEntries(papeis.map((p, i) => [p, ns[i]])); }
 /* troca cada linha "cena preset" pelas linhas de arranjo + a câmera (mesmo recuo e número de linha) */
+/* ===== FEITIÇOS (varinha) e TIROS (armas de fogo): uma linha vira pose + efeitos saindo do ponto certo do objeto ===== */
+const NM_FEITICOS = {
+  desarmar: { pose: "varinhaEstocadaFeitico", desc: "raio fino vermelho que tira a arma da mão", fx: ["efeito feixe de {P} para {A} elemento sangue escala 0.45", "efeito impacto_contato em {A} maoDir elemento sangue escala 0.6"] },
+  atordoar: { pose: "varinhaEstocadaFeitico", desc: "bola vermelha que derruba", fx: ["efeito projetil de {P} para {A} reta impacto impacto_contato elemento sangue escala 0.6"] },
+  raio: { pose: "varinhaEstocadaFeitico", desc: "relâmpago azul", fx: ["efeito feixe de {P} para {A} elemento eletrico escala 0.6"] },
+  fogo: { pose: "varinhaEstocadaFeitico", desc: "jato de fogo em leque", fx: ["efeito cone em {P} para {A} elemento fogo escala 0.6"] },
+  gelo: { pose: "varinhaEstocadaFeitico", desc: "jato de gelo em leque", fx: ["efeito cone em {P} para {A} elemento gelo escala 0.6"] },
+  explosao: { pose: "varinhaCorteDiagonal", desc: "bola de fogo que explode no alvo", fx: ["efeito projetil de {P} para {A} arco impacto explosao elemento fogo escala 0.7"] },
+  maldicao: { pose: "varinhaEstocadaFeitico", desc: "raio verde-escuro em espiral", fx: ["efeito feixe de {P} para {A} elemento veneno escala 0.5", "efeito espiral em {P} para {A} elemento trevas escala 0.4"] },
+  escudo: { pose: "varinhaEscudo", desc: "domo de proteção em volta de quem conjura", sem: true, fx: ["efeito barreira em {Q} elemento sagrado escala 0.5"] },
+  luz: { pose: "varinhaLuz", desc: "luz na ponta da varinha", sem: true, fx: ["efeito energia_mao em {P} elemento sagrado escala 0.35"] },
+  levitar: { pose: "varinhaConjurando", desc: "o alvo flutua envolto em anéis de vento", fx: ["efeito aneis_orbitais em {A} elemento vento escala 0.8"] },
+  cura: { pose: "varinhaConjurando", desc: "fios de luz verde no alvo", fx: ["efeito fios_energia em {A} elemento natureza"] },
+  invocar: { pose: "varinhaApontandoChao", desc: "círculo mágico no chão", sem: true, fx: ["efeito circulo_magico em {Q} elemento cristal escala 0.6"] },
+  duelo: { pose: "varinhaEstocadaFeitico", desc: "dois raios se chocando no meio (use com o alvo também conjurando)", fx: ["efeito feixe de {P} para {A} elemento raio escala 0.5", "efeito impacto_contato em {A} elemento raio escala 0.4"] }
+};
+const NM_TIRO = { pistola: 1, revolver: 1, rifle: 1, submetralhadora: 1, metralhadora: 1, sniper: 1, escopeta: 1, lancaFoguetes: 1 };
+/* "[T] Kai feitico desarmar em Mira [colorido]" · "[T] Kai atira em Mira [com sniper] [rajada 5] [sem-pose]" → linhas comuns */
+function nmMacroLinha(l) {
+  const m = /^((?:\d+(?:\.\d+)?s|depois)\s+)?(\S+)\s+(feiti[cç]o|conjura|lan[cç]a-feiti[cç]o|atira|atira-em)\b\s*(.*)$/i.exec(l.txt); if (!m) return null;
+  const T = m[1] || "", Q = m[2], verbo = m[3].toLowerCase(), resto = m[4].trim().split(/\s+/).filter(Boolean), out = [], L = t => out.push({ txt: t, linha: l.linha, ind: l.ind });
+  let alvo = null, com = null, rajada = 1, cor = "", semPose = false, nome = null;
+  for (let i = 0; i < resto.length; i++) { const w = nmNorm(resto[i]);
+    if (/^(em|para|no|na|contra)$/.test(w) && resto[i + 1]) { alvo = resto[++i]; } else if (w === "com" && resto[i + 1]) { com = resto[++i]; } else if (w === "rajada") { rajada = Math.max(1, Math.min(12, +(resto[i + 1] || 3) || 3)); if (/^\d+$/.test(resto[i + 1] || "")) i++; }
+    else if (w === "colorido" || w === "nanquim") cor = " " + w; else if (w === "sem-pose") semPose = true; else if (!nome) nome = w; }
+  const tempo = k => { if (!T) return ""; const n = parseFloat(T); return Number.isFinite(n) ? (n + k).toFixed(2).replace(/\.?0+$/, "") + "s " : T; };
+  if (/^(feiti|conjura|lan)/.test(verbo)) { const F = NM_FEITICOS[nome]; if (!F) throw new NmErro("Feitiço “" + (nome || "") + "” não existe. Há: " + Object.keys(NM_FEITICOS).join(", ") + ".", l.linha);
+    if (!F.sem && !alvo) throw new NmErro("Feitiço " + nome + " em QUEM? (ex.: " + Q + " feitico " + nome + " em Mira)", l.linha);
+    if (!semPose) L(T + Q + " segura " + (com || "varinha") + " como " + F.pose);
+    const P = Q + "." + (com || "varinha") + ".ponta"; F.fx.forEach(f => L(tempo(0) + f.replace(/\{P\}/g, P).replace(/\{A\}/g, alvo || Q).replace(/\{Q\}/g, Q) + cor)); return out; }
+  /* tiro */
+  const arma = com ? (NM_TIRO[com] ? com : (SINONIMOS_MAO[String(com).toLowerCase()] || com)) : "arma";
+  if (com && !semPose) L(T + Q + " segura " + arma);
+  for (let k = 0; k < rajada; k++) { const t = tempo(k * (arma === "metralhadora" || arma === "submetralhadora" ? 0.09 : 0.18)), cano = Q + "." + arma + ".cano";
+    L(t + "efeito clarao_cano em " + cano + (arma === "lancaFoguetes" ? " escala 1.6" : "") + cor);
+    if (alvo) L(t + "efeito projetil de " + cano + " para " + alvo + (arma === "lancaFoguetes" ? " reta impacto explosao elemento fogo escala 0.8" : " reta impacto impacto_bala elemento ouro escala 0.3") + cor);
+    if (arma === "lancaFoguetes") L(t + "efeito fumaca em " + Q + ".lancaFoguetes.traseira escala 0.6");
+    else if (!/pistola|revolver/.test(arma) || k === 0) L(t + "efeito cartuchos em " + Q + "." + arma + ".ejecao" + cor); }
+  return out; }
 function nmExpandirPresets(blocos, ctx) { for (const b of blocos) { const out = []; for (const l of b.corpo) { let pr = null; if (/^cena\s+(preset|pre-?config)/i.test(l.txt)) { try { pr = nmLerPreset(ctx, l.txt, l.linha, false); nmMapaPreset(ctx, pr, null, l.linha); } catch (e) { (ctx.erros || []).push({ linha: l.linha, erro: e.message }); continue; } }
-      if (!pr) { out.push(l); continue; }
+      if (!pr) { const mc = nmMacroLinha(l); if (mc) { out.push(...mc); continue; } out.push(l); continue; }
       pcArranjoTexto(pr.def, pr.nomes, pr.o).forEach(t => out.push({ txt: t, linha: l.linha, ind: l.ind }));
       out.push({ txt: "camera preset " + pr.def.id + " com " + pr.nomes.join(", ") + (pr.o.lente ? " lente " + pr.o.lente : "") + (pr.o.espelhar ? " espelhado" : ""), linha: l.linha, ind: l.ind }); }
     b.corpo = out; } return blocos; }
@@ -1055,7 +1110,8 @@ function nmCamera(ctx, Q) {
   const alvos = (Q.cab.alvo && Q.cab.alvo.length ? Q.cab.alvo.map(a => nmQuem(ctx, a) || a) : [...Q.presentes]).filter(n => SCN.list.find(x => x.name === n && !x.oculto));
   const plano = Q.cab.plano || (alvos.length > 2 ? "conjunto" : alvos.length ? "inteiro" : "geral");
   { const anA = (Q.cab.alvo || []).map(a => amAchar(nmQuem(ctx, a) || a)).filter(Boolean); if (anA.length && !alvos.length && !Q.cab.camera) { nmCameraAnimal(anA[0], plano === "geral" && !Q.cab.plano ? "inteiro" : plano, Q.cab.lado ?? 40, Q.cab.elevacao); return plano; } }
-  if (Q.cab.camera) { const c = Q.cab.camera, o = Q.cab.olhando || [0, 1.5, 0], pc = nmXZ(c), po = nmXZ(o); camera.colocar(pc[0], (c.length > 2 ? c[1] : 1.6) * NM_M, pc[1]); camera.mirar(po[0], (o.length > 2 ? o[1] : 1.5) * NM_M, po[1]); return plano; }
+  if (Q.cab.camera) { const c = Q.cab.camera, o = Q.cab.olhando || [0, 1.5, 0], pc = nmXZ(c), po = nmXZ(o); P.persp = 1; SCN.pivo = null; SCN.orbitaArea = null; SCN.seguirCamera = null; P.panX = 0; P.panY = 0; /* posição e alvo juntos (colocar e depois mirar girava a câmera em volta do alvo novo) */
+    aplicarCameraBlk([pc[0], (c.length > 2 ? c[1] : 1.6) * NM_M, pc[1]], [po[0], (o.length > 2 ? o[1] : 1.5) * NM_M, po[1]]); if (Q.cab.lente) try { camera.lente(Q.cab.lente, true); } catch (e) { } return plano; }
   const lado = Q.cab.lado ?? 30, el = Q.cab.elevacao ?? (Q.cab.angulo ? undefined : 8);
   if (plano === "geral" || plano === "grande plano geral") {
     const ref = alvos.length ? SCN.list.find(x => x.name === alvos[0]) : null, yawBase = ref ? (ref.params.wRot || 0) + lado : -45;
@@ -1110,7 +1166,7 @@ function nmCentrar(rc, folga = 0.9, pts0, soPan) {
 /* o manequim está dentro de um objeto alto (e não em cima dele)? */
 function nmDentroDe(it, ignorar) {
   const x = it.params.wx || 0, z = it.params.wz || 0, h = it.params.bodyLift || 0;
-  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.animal && o.animal.pousadoEm === it.name) || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
+  for (const o of SCN.objetos) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || o.alt < 2 || (ignorar && ignorar.has(o.id)) || o.grip || o.gripV3 || (o.animal && o.animal.pousadoEm === it.name) || (o.emAr && (o.base || 0) > 15) || (it.montadoEm && o.nome === it.montadoEm) || (it.embarcadoEm && o.nome === it.embarcadoEm.veiculo) || (it.apoioEm && it.apoioEm === o.id) || o.nome === "pc-cadeira-" + it.name) continue; if (h >= (o.base || 0) + o.alt - 0.5) continue;
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
     /* debaixo da mesa: quem cabe por baixo do tampo não está "dentro" dela */
     if (/^mesa/i.test(o.tipo || "")) { try { const cp = capsulas(Object.assign({}, it.params, { wx: 0, wz: 0, wRot: 0 })); if (cp.hi[1] - cp.lo[1] < (o.alt || 7) - 0.6) continue; } catch (e) { } }
@@ -1198,7 +1254,7 @@ function nmCompilar(texto, opts = {}) {
   const ctx = { elenco: new Map(), apelidos: new Map(), coresUsadas: new Set(), locais: new Map(), vars: {}, semente: 1, rnd: null, imagens: opts.imagens || {}, modelos: new Map(), locaisRuins: new Set(), animacoes: new Map(), poses: new Map(), defs: [], salvar: opts.salvar !== false };
   const erros = [], avisos = [], quadros = [], paginas = []; ctx.erros = erros;
   ctx.diretor = /^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado)\b/im.test(texto);
-  let blocos; try { blocos = nmFilmeEstrutura(nmExpandirPresets(nmBlocos(String(texto).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
+  let blocos; try { blocos = nmFilmeEstrutura(nmExpandirPresets(nmBlocos(lpExpandirTexto(String(texto)).replace(/^\s*(diretor|cobertura)\s+(auto|automatico|automático|automatica|automática|ligado|desligado)\b.*$/gim, "")), ctx), ctx); } catch (e) { return { ok: false, erros: [{ linha: e.linha || 0, erro: e.message }], quadros: [], avisos, elenco: [], locais: [], paginas: [] }; }
   /* semente e variáveis primeiro (valem para tudo) */
   for (const b of blocos) { const t = nmTokens(b.cab), w = nmNorm(t[0].v);
     if (w === "semente" || w === "seed") ctx.semente = t[1] ? (t[1].t === "num" ? t[1].v : String(t[1].v).split("").reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) : 1;
@@ -1307,7 +1363,7 @@ function nmCompilar(texto, opts = {}) {
             it.params.bodyLift = (o.base || 0) + o.alt * t; it.params.ground = 0; o = null; }
           if (o) { nmTirarDe(it, o); Q.avisos.push(it.name + " estava dentro de “" + (o.nome || o.tipo) + "”; foi para fora"); } });
         /* ninguém sobreposto (os relevantes ficam; os figurantes se afastam) */
-        try { const fixos = SCN.list.filter(x => x.papel === "relevante").map(x => x.name); separar({ folga: 0.25, fixos }); } catch (e) { }
+        try { const fixos = SCN.list.filter(x => x.papel === "relevante" || x.embarcadoEm || x.montadoEm).map(x => x.name); separar({ folga: 0.25, fixos }); vcAtualizar(); } catch (e) { }
         if (!SCN.list.some(x => !x.oculto && x.name !== "__vazio__")) { SCN.list[0].oculto = true; }
         SCN.active = Math.max(0, SCN.list.findIndex(x => !x.oculto));
         const fq = Q.cab.formato; SCN.recorte = fq ? recorteQuadro(fq) : null;
@@ -1892,7 +1948,7 @@ function videoDoFilme(r, o = {}) {
         try { nmSegueAnimais(F, t); } catch (e) { }
         try { nmMontagens(F, t); } catch (e) { }
         try { nmEfeitosNoTempo(F, t); } catch (e) { }
-        try { amAtualizarMontaria(); } catch (e) { }
+        try { amAtualizarMontaria(); vcAtualizar(); } catch (e) { }
         let falaAgora = null;
         for (const { f, L: lf } of linhas) { const it = SCN.list.find(x => x.name === f.quem); if (it && t >= f.inicio && t <= f.inicio + lf.duracao + 0.3) { falarNoTempo(it, f.tom, f.texto, t - f.inicio, { linha: lf }); falaAgora = { quem: f.quem, texto: f.texto };
             /* quem escuta olha para quem fala (reage ~0,2 s depois e volta devagar), a não ser quem tem “olha” no plano */

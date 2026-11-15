@@ -28,6 +28,7 @@ function suave(pts, fechar) {
 const PERFIS = {
   pincel: t => Math.sin(Math.PI * Math.pow(t, 0.62)),
   fuso: t => Math.sin(Math.PI * t),
+  reto: t => (t < 0.08 ? 0.6 + 5 * t : t > 0.92 ? 0.6 + 5 * (1 - t) : 1),
   ponta: t => Math.min(1, t / 0.06) * Math.pow(1 - t, 0.85),
   agulha: t => Math.pow(1 - t, 1.3),
   cheio: t => Math.min(1, t / 0.04, (1 - t) / 0.04)

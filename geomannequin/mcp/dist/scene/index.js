@@ -59,3 +59,6 @@ export * from "./preconfig.js";
 export * from "./narrativa.js";
 export * from "./autocompletar.js";
 export * from "./aves-anim.js";
+export * from "./criaturas-anim.js";
+export * from "./veiculos.js";
+export * from "./locais-prontos.js";

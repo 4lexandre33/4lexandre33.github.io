@@ -20,10 +20,10 @@ ok(w.NR.size >= 100 && w.nrTotalVariantes() >= 1000, "biblioteca: " + w.NR.size 
 { let antes = 0, depois = 0; for (const id of ["gatilho.chamado", "relacao.discussao", "conflito.troca-socos", "revelacao.segredo", "apresentacao.dupla"]) { const tx = w.nrMontarTexto([w.nrReceita(id, {})], {}), r0 = w.compilarName(tx, { semCache: true, salvar: false });
     antes += r0.avisos.filter(a => /cruzou o eixo|cortada/.test(a)).length; depois += w.nrVerificar(tx, (t, o) => w.compilarName(t, o)).avisosRestantes.filter(a => /cruzou o eixo|cortada/.test(a)).length; }
   ok(depois <= antes, "verificação corrige eixo/cabeça cortada (" + antes + " → " + depois + ")"); }
-/* 4. golpes com armas: dedos não entram e a arma não atravessa o corpo (a maioria) */
+/* 4. golpes com armas: dedos não entram e a arma não atravessa o tronco nem a cabeça (encostar no braço — coronha no ombro, arma no antebraço — é o contato normal) */
 { const L = w.listaGolpes(); let dedos = 0, atrav = 0; for (const g of L) { const W2 = createWorld(); W2.cena.objeto(g.teste, { x: 0, z: 3 }); const ob = W2.SCN.objetos[W2.SCN.objetos.length - 1]; const r = W2.cena.ativo.segurarComo(ob.id, g.nome, {});
-    if (r.dedosEntram > 2.5) dedos++; if ((r.atravessa || []).length) atrav++; }
-  ok(L.length >= 70 && dedos === 0, "golpes: " + L.length + ", nenhum com dedos > 2,5 cm dentro"); ok(atrav <= 4, "golpes: arma atravessando o corpo em " + atrav + " de " + L.length); }
+    if (r.dedosEntram > 2.5) dedos++; if ((r.atravessa || []).some(x => /torax|abdomen|pelve|cabeca|pescoco/.test(x))) atrav++; }
+  ok(L.length >= 70 && dedos === 0, "golpes: " + L.length + ", nenhum com dedos > 2,5 cm dentro"); ok(atrav <= 4, "golpes: arma atravessando o TRONCO/cabeça em " + atrav + " de " + L.length); }
 /* 5. aves: espécies compilam, falcão não dá para montar, roca gigante sim */
 { const esp = Object.keys(w.AV_ESPECIES); const ruins = esp.filter(e => w.compilarName("elenco\n  A animal " + e + "\nquadro 1 alvo A\n  A em (0,0)\n", { semCache: true, salvar: false }).erros.length);
   ok(esp.length >= 16 && !ruins.length, "aves: " + esp.length + " espécies");

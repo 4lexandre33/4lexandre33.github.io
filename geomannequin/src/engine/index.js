@@ -69,4 +69,5 @@ export * from "./planta-imagem.js";
 export * from "./gif.js";
 export * from "./quadrupede.js";
 export * from "./ave.js";
+export * from "./criaturas.js";
 export * from "./mp4.js";

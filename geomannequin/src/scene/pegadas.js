@@ -521,7 +521,7 @@ Object.assign(ALIAS_PEGADA, { guarda: "empunharGuarda", "em guarda": "empunharGu
   tambor: "baquetaTocando", celular: "celularOlhando", telefone: "celularNaOrelha", ler: "livroLendo", livro: "livroLendo", beber: "bebendo", "guarda-chuva": "guardaChuvaAberto" });
 /* pegada padrão de cada objeto de mão (quando o texto diz só "segura katana") */
 const PEGADA_PADRAO = { katana: "espada", espadaLonga: "espada", espadaCurta: "empunharGuarda", sabre: "empunharGuarda", adaga: "empunharGuarda", kunai: "adagaReversa", shuriken: "pinca", martelo: "golpeAcima", maca: "empunharGuarda",
-  machadoDuplo: "espada", bastaoBo: "bastaoGuarda", foice: "lancaInvestida", tridente: "lancaInvestida", nunchaku: "empunharGuarda", chicote: "empunharGuarda", besta: "bestaMirando", pistola: "pistolaMirando", rifle: "rifleDescansado",
+  machadoDuplo: "espada", bastaoBo: "bastaoGuarda", foice: "lancaInvestida", tridente: "lancaInvestida", nunchaku: "empunharGuarda", chicote: "empunharGuarda", besta: "bestaMirando", pistola: "pistolaMirando", rifle: "rifleDescansado", revolver: "revolverMirando", submetralhadora: "smgDuasMaos", metralhadora: "metralhadoraQuadril", sniper: "sniperEmPe", escopeta: "escopetaMirando", lancaFoguetes: "bazucaNoOmbro",
   broquel: "escudoDefesa", escudo: "escudoDefesa", escudoCavaleiro: "escudoDefesa", escudoTorre: "escudoDefesa", varinha: "armaApontada", cajadoMagico: "cajadoAoLado", orbe: "bandeja", tocha: "armaErguida", lanterna: "armaApontada",
   violao: "violaoTocando", guitarra: "violaoTocando", violino: "violinoTocando", arcoViolino: "empunharGuarda", flauta: "flautaTocando", trompete: "trompeteTocando", microfone: "microfoneCantando", baqueta: "baquetaTocando",
   celular: "celularOlhando", livro: "livroLendo", xicara: "bebendo", garrafa: "bebendo", copoBebida: "bebendo", guardaChuva: "guardaChuvaAberto", bandeira: "cajadoAoLado", vassoura: "bastaoGuarda", carta: "pinca", chave: "pinca", espelhoMao: "armaApontada", lanca: "lancaInvestida", arco: "arcoPuxando" };
@@ -548,7 +548,11 @@ const GL_CLASSES = { lamina1: ["espadaCurta", "espada curta, sabre, katana numa 
   pesada: ["martelo", "martelo de guerra, machado duplo (duas mãos)"], haste: ["tridente", "lança, tridente, bastão, foice, cajado (duas mãos)"], haste1: ["tridente", "lança, tridente, cajado numa mão"],
   adaga: ["adaga", "adaga, faca, kunai"], pistola: ["pistola", "pistola, revólver"], rifle: ["rifle", "rifle, fuzil, espingarda"], escudo: ["escudoCavaleiro", "broquel, escudo de cavaleiro, escudo torre"],
   magia: ["varinha", "varinha, cajado curto, tocha"], cajado: ["cajadoMagico", "cajado mágico, bastão de mago"], orbe: ["orbe", "orbe, esfera, bola de energia"], arremesso: ["kunai", "kunai, shuriken, faca de arremesso, pedra"],
-  chicote: ["chicote", "chicote, corda"], arco: ["arco", "arco"] };
+  chicote: ["chicote", "chicote, corda"], arco: ["arco", "arco"],
+  smg: ["submetralhadora", "submetralhadora (SMG, uzi)"], metralhadora: ["metralhadora", "metralhadora com bipé e caixa de munição"], sniper: ["sniper", "rifle de precisão com luneta e bipé"],
+  escopeta: ["escopeta", "escopeta de bomba (pump)"], bazuca: ["lancaFoguetes", "lança-foguetes / bazuca"], revolver: ["revolver", "revólver"] };
+/* classes de arma de fogo: punho na mão da arma; armas longas com a mão de apoio na pega "frente" */
+const GL_FOGO = new Set(["pistola", "revolver", "rifle", "smg", "metralhadora", "sniper", "escopeta", "bazuca"]), GL_FOGO2 = new Set(["rifle", "smg", "metralhadora", "sniper", "escopeta", "bazuca"]);
 const GOLPES = {};
 function golpe(nome, classe, maos, tag, desc, corpo, H, Y, N, extra) { GOLPES[nome] = Object.assign({ classe, maos, tag, desc, corpo, H, Y, N }, extra || {}); }
 /* --- lâmina numa mão --- */
@@ -617,6 +621,41 @@ golpe("pistolaCorrendo", "pistola", 1, "Combate/Arma/Pistola/Movimento", "Corren
 golpe("rifleQuadril", "rifle", 2, "Combate/Arma/Rifle/Mirar", "Rifle na cintura, atirando de quadril", "st10 sf4 R:.3,-.32,.1,.16", ["c", 1.6, 0.6, 0.8], [0.05, 0.99, 0], [1, 0, 0]);
 golpe("rifleBaixo", "rifle", 2, "Combate/Arma/Rifle/Espera", "Rifle baixo à frente (posição de alerta)", "sf6 hp4 R:.26,-.28,.06,.15", ["p", 2.7, -1.8, 0.5], [0.1, 0.99, 0], [0.75, -0.65, 0]);
 golpe("rifleNoOmbro", "rifle", 1, "Combate/Arma/Rifle/Pausa", "Rifle em pé junto ao ombro, cano para cima (marcha, sentinela)", "hp-2 fl10,10 ab10,10 el10,10", ["o", 1.4, -1.6, -0.2], [0.98, 0.15, 0], [0.15, 1, 0]);
+/* --- armas de fogo: técnicas conhecidas (coronha no ombro, ajoelhado, deitado, de quadril, recarga, luneta) --- */
+golpe("rifleOmbroMirando", "rifle", 2, "Combate/Arma/Rifle/Mirar", "Coronha no ombro, rosto na arma, mirando em pé (base de tiro)", "st22 sf6 hp4 hy-4 P:.3,-.32,.06,.16", ["o", 4.3, -0.72, -0.25], [0.02, 1, 0], [1, 0, 0]);
+golpe("rifleAjoelhado", "rifle", 2, "Combate/Arma/Rifle/Mirar", "Ajoelhado num joelho, coronha no ombro (tiro ajoelhado)", "st22 sf8 hp4 P:.42,-.36,.42,.16", ["o", 4.3, -0.72, -0.25], [0.02, 1, 0], [1, 0, 0]);
+golpe("rifleDeitado", "rifle", 2, "Combate/Arma/Rifle/Mirar", "Deitado de bruços mirando (tiro deitado)", "bp88 sf-16 hf-14,-10 ha10,16 kf4,10 af-30,-30 hp-40", ["o", 2.8, -0.25, 0.05], [0.05, 1, 0], [1, 0.12, 0]);
+golpe("rifleRecarregando", "rifle", 2, "Combate/Arma/Rifle/Recarga", "Recarregando: arma inclinada no peito, mão de apoio no carregador", "sf10 hp14 st-6 P:.3,-.3,.06,.15", ["p", 2.0, -1.0, 0.4], [0.35, 0.85, -0.4], [0.85, -0.1, 0.5]);
+golpe("rifleCoberturaCanto", "rifle", 2, "Combate/Arma/Rifle/Cobertura", "Saindo da quina de uma parede: corpo inclinado de lado, arma no ombro", "ss-6 st22 sf4 hz-6 P:.3,-.3,.06,.18", ["o", 4.4, -0.72, -0.1], [-0.15, 0.98, 0], [1, 0, 0]);
+golpe("sniperDeitado", "sniper", 2, "Combate/Arma/Sniper/Mirar", "Franco-atirador deitado no bipé, olho na luneta", "bp88 sf-16 hf-14,-10 ha12,18 kf4,10 af-30,-30 hp-40", ["o", 2.8, -0.25, 0.45], [0.05, 1, 0], [1, 0.12, 0]);
+golpe("sniperAjoelhado", "sniper", 2, "Combate/Arma/Sniper/Mirar", "Sniper ajoelhado, cotovelo no joelho, olho na luneta", "st22 sf12 hp6 P:.42,-.36,.44,.16", ["o", 4.7, -0.72, -0.2], [0.02, 1, 0], [1, 0, 0]);
+golpe("sniperEmPe", "sniper", 2, "Combate/Arma/Sniper/Mirar", "Sniper em pé, mirando pela luneta (tiro sem apoio)", "st22 sf6 hp6 P:.3,-.32,.06,.16", ["o", 4.7, -0.72, -0.2], [0.02, 1, 0], [1, 0, 0]);
+golpe("sniperDescanso", "sniper", 2, "Combate/Arma/Sniper/Pausa", "Sniper em pronto: rifle à frente na altura da cintura, pronto para erguer", "sf6 hp4 R:.26,-.28,.06,.15", ["p", 3.4, -2.2, 1.4], [0.1, 0.99, 0], [0.75, -0.65, 0]);
+golpe("metralhadoraQuadril", "metralhadora", 2, "Combate/Arma/Metralhadora/Mirar", "Metralhadora pesada atirando de quadril, base larga, corpo para trás (Rambo)", "sf-8 st6 bp-4 P:.42,-.4,.12,.22", ["c", 2.6, 0.4, 1.8], [0.05, 0.99, 0], [1, 0.08, 0]);
+golpe("metralhadoraDeitada", "metralhadora", 2, "Combate/Arma/Metralhadora/Mirar", "Metralhadora deitada no bipé (posição de apoio)", "bp88 sf-16 hf-14,-10 ha14,20 kf4,10 af-30,-30 hp-40", ["o", 2.8, -0.25, 0.05], [0.05, 1, 0], [1, 0.12, 0]);
+golpe("metralhadoraOmbro", "metralhadora", 2, "Combate/Arma/Metralhadora/Mirar", "Metralhadora no ombro, em pé, inclinado para a frente contra o recuo", "st22 sf10 hp4 P:.4,-.38,.08,.18", ["o", 4.6, -0.72, -0.3], [0.02, 1, 0], [1, 0, 0]);
+golpe("metralhadoraCarregando", "metralhadora", 2, "Combate/Arma/Metralhadora/Movimento", "Carregando a metralhadora baixa à frente, andando", "sf4 hp2 P:.3,-.3,.05,.15", ["c", 2.1, -0.4, 0.9], [0.1, 0.99, 0], [0.97, -0.2, 0]);
+golpe("escopetaMirando", "escopeta", 2, "Combate/Arma/Escopeta/Mirar", "Escopeta no ombro, mirando (cano um pouco acima da linha)", "st22 sf2 hp2 P:.3,-.32,.06,.16", ["o", 4.5, -0.6, -0.1], [-0.2, 0.98, 0], [0.98, 0.2, 0]);
+golpe("escopetaBombeando", "escopeta", 2, "Combate/Arma/Escopeta/Recarga", "Puxando a bomba depois do tiro (cano um pouco para cima)", "st22 sf2 hp2 P:.3,-.32,.06,.16", ["o", 4.5, -0.6, -0.1], [-0.25, 0.97, 0], [0.97, 0.25, 0]);
+golpe("escopetaQuadril", "escopeta", 2, "Combate/Arma/Escopeta/Mirar", "Escopeta na cintura, atirando de quadril", "st8 sf4 P:.32,-.32,.1,.16", ["c", 2.4, 0.6, 1.3], [0.05, 0.99, 0], [1, 0, 0]);
+golpe("escopetaBaixa", "escopeta", 2, "Combate/Arma/Escopeta/Espera", "Escopeta baixa à frente (alerta, entrando num cômodo)", "sf6 hp4 R:.26,-.28,.06,.15", ["c", 2.6, -0.2, 1.2], [0.1, 0.99, 0], [0.75, -0.65, 0]);
+golpe("smgDuasMaos", "smg", 2, "Combate/Arma/SMG/Mirar", "Submetralhadora compacta no ombro, mirando", "st22 sf6 hp4 P:.3,-.32,.06,.16", ["o", 4.3, -0.72, -0.25], [0.02, 1, 0], [1, 0, 0]);
+golpe("smgUmaMao", "smg", 1, "Combate/Arma/SMG/Mirar", "Submetralhadora numa mão, braço esticado (estilo filme de ação)", "st14 sf2 fl20,10 ab12,10 el20,20", ["o", 4.0, 0.0, -0.4], [0.05, 0.99, 0], [1, 0, 0]);
+golpe("smgCorrendo", "smg", 2, "Combate/Arma/SMG/Movimento", "Correndo com a submetralhadora diante do peito", "bp14 sf8 hf70,-20 kf80,40 af10,30", ["p", 1.8, -0.6, 0.4], [0.2, 0.97, 0], [0.97, -0.2, 0]);
+golpe("bazucaNoOmbro", "bazuca", 2, "Combate/Arma/Bazuca/Mirar", "Lança-foguetes no ombro, olho na mira lateral (o tubo passa por cima do ombro)", "st-6 sf4 hp6 hy-6 P:.36,-.36,.08,.18", ["o", 0.9, -1.0, -0.15], [0.02, 1, 0], [1, 0, 0]);
+golpe("bazucaAjoelhado", "bazuca", 2, "Combate/Arma/Bazuca/Mirar", "Lança-foguetes ajoelhado (posição de disparo)", "st-6 sf8 hp6 P:.42,-.36,.42,.18", ["o", 0.9, -1.0, -0.15], [0.02, 1, 0], [1, 0, 0]);
+golpe("revolverQuadril", "revolver", 1, "Combate/Arma/Revólver/Mirar", "Duelo de faroeste: revólver sacado na altura do quadril", "st10 sf2 fl10,10 ab12,10 el70,20 P:.3,-.3,.04,.2", ["c", 1.6, 0.2, 0.9], [0.05, 0.99, 0], [1, 0, 0]);
+golpe("revolverMirando", "revolver", 1, "Combate/Arma/Revólver/Mirar", "Revólver com o braço esticado, mirando na altura dos olhos", "st18 sf2 fl20,10 ab12,10 el20,20 R:.24,-.24,.04,.14", ["o", 4.3, 0.2, -0.6], [0.02, 1, 0], [1, 0, 0]);
+golpe("revolverDuelo", "revolver", 1, "Combate/Arma/Revólver/Espera", "Antes do saque: mão aberta perto do coldre, corpo tenso (duelo ao meio-dia)", "sf6 hp4 fl-10,10 ab20,10 el30,20 P:.3,-.3,.06,.24", ["c", 0.4, -1.0, 1.2], [0.1, -1, 0.1], [1, 0, 0]);
+/* --- varinha: duelo de bruxos (base de lado, varinha à frente, estocada do feitiço, escudo, giro) --- */
+golpe("varinhaDuelo", "magia", 1, "Combate/Arma/Magia/Duelo", "Base de duelo: corpo de lado, varinha à frente apontada para o rival, mão livre atrás", "st-30 pt-20 sf4 hp2 fl20,30 ab20,30 el50,60 P:.36,-.36,.1,.2", ["o", 3.4, 0.6, -0.4], [0.95, 0.25, 0], [0, 0, 1]);
+golpe("varinhaEstocadaFeitico", "magia", 1, "Combate/Arma/Magia/Duelo", "Lançando o feitiço: estocada com o braço todo esticado (o raio sai da ponta)", "st18 sf10 bp6 fl-20,-30 ab20,40 el20,20 P:.56,-.5,.26,.16", ["o", 5.0, 0.2, -0.4], [1, 0.05, 0], [0, 0, 1], { de: "varinhaDuelo" });
+golpe("varinhaGiroAcima", "magia", 1, "Combate/Arma/Magia/Duelo", "Giro acima da cabeça antes do feitiço forte", "st-14 sf-6 hp-8 fl60,30 ab30,40 el90,60 P:.3,-.3,.06,.16", ["o", 0.8, 3.6, 0.6], [0.25, 0.95, 0.2], [0, 0, 1]);
+golpe("varinhaCorteDiagonal", "magia", 1, "Combate/Arma/Magia/Duelo", "Feitiço em corte diagonal terminado (varinha baixa do outro lado)", "st24 sf12 hp6 fl20,20 ab25,40 el50,40 P:.44,-.4,.18,.16", ["o", 3.4, -1.2, -1.6], [0.7, -0.3, -0.6], [0, 0, 1], { de: "varinhaGiroAcima" });
+golpe("varinhaEscudo", "magia", 1, "Combate/Arma/Magia/Defesa", "Feitiço de escudo: varinha vertical diante do corpo, base firme", "st-10 sf2 hp-2 fl20,30 ab20,30 el70,60 P:.34,-.34,.08,.2", ["p", 2.4, 0.8, -0.3], [0.05, 1, 0], [1, 0, 0]);
+golpe("varinhaSaudacao", "magia", 1, "Combate/Arma/Magia/Duelo", "Saudação antes do duelo: varinha erguida diante do rosto", "hp2 fl5,5 ab10,10 el10,10", ["h", 1.6, -1.4, -0.8], [0.05, 1, 0], [0, 0, 1]);
+golpe("varinhaLuz", "magia", 1, "Combate/Arma/Magia/Feitiço", "Varinha erguida iluminando o caminho", "hp-6 fl20,10 ab10,10 el20,10", ["o", 2.4, 2.0, 0.2], [0.45, 0.88, 0], [0, 0, 1]);
+golpe("varinhaRecuo", "magia", 1, "Combate/Arma/Magia/Defesa", "Atingido pelo feitiço: corpo jogado para trás, varinha ainda erguida", "sf-18 bp-8 hp-14 fl60,40 ab40,40 el60,40 R:.3,-.4,.08,.2", ["o", 2.0, 2.4, 0.8], [0.5, 0.85, 0.1], [0, 0, 1]);
 /* --- escudo --- */
 golpe("escudoAoAlto", "escudo", 1, "Combate/Arma/Escudo/Defesa", "Escudo erguido acima da cabeça (chuva de flechas, pedras)", "sf6 hp-6 A:.3,.3", ["h", 1.2, 2.4, 0.2], [0.98, 0.2, 0], [0, 1, 0]);
 golpe("escudoInvestida", "escudo", 1, "Combate/Arma/Escudo/Ataque", "Avançando com o escudo à frente (empurrão, investida)", "sf20 bp12 hp2 P:.52,-.48,.24,.14", ["p", 2.8, -0.6, 0.2], [0.05, 1, 0], [1, 0, 0.2]);
@@ -638,10 +677,10 @@ golpe("chicoteEstalo", "chicote", 1, "Combate/Arma/Chicote/Ataque", "Estalo: bra
 /* registra como pegadas (ACOES) */
 for (const [nome, G] of Object.entries(GOLPES)) {
   const teste = GL_CLASSES[G.classe][0], corpo = glCorpo(G.corpo);
-  const lugar = k => pgPorPega(k, G.maos === 2 ? "cabo" : (G.classe === "pistola" || G.classe === "rifle" ? "punho" : G.classe === "escudo" ? "alca" : G.classe === "orbe" ? "palma" : "cabo"),
+  const lugar = k => pgPorPega(k, G.maos === 2 && !GL_FOGO.has(G.classe) ? "cabo" : (GL_FOGO.has(G.classe) ? "punho" : G.classe === "escudo" ? "alca" : G.classe === "orbe" ? "palma" : "cabo"),
     pgComb([glBase(k, G.H[0]), 1], [k.B.frenteChao, G.H[1]], [UP, G.H[2]], [k.B.esqChao, G.H[3] * k.s]), glV(k, G.Y), glV(k, G.N));
-  const pega1 = G.classe === "pistola" || G.classe === "rifle" ? "punho" : G.classe === "escudo" ? "alca" : G.classe === "orbe" ? "palma" : "cabo";
-  const contatos = G.maos === 2 ? k => [pgNaPega(k, k.s, pega1, { polegar: glV(k, G.Y) }), pgNaPega(k, -k.s, G.classe === "rifle" ? "frente" : G.classe === "haste" && /bastao/.test(k.o.tipo) ? "meio2" : "cabo2", { polegar: glV(k, G.Y) })]
+  const pega1 = GL_FOGO.has(G.classe) ? "punho" : G.classe === "escudo" ? "alca" : G.classe === "orbe" ? "palma" : "cabo";
+  const contatos = G.maos === 2 ? k => [pgNaPega(k, k.s, pega1, { polegar: glV(k, G.Y) }), pgNaPega(k, -k.s, GL_FOGO2.has(G.classe) ? "frente" : G.classe === "haste" && /bastao/.test(k.o.tipo) ? "meio2" : "cabo2", { polegar: glV(k, G.Y) })]
     : G.classe === "escudo" ? k => [pgNaPega(k, k.s, "alca", { polegar: UP, cotovelo: [0.4, -1, 0.3], folga: 0.04 })]
     : G.classe === "orbe" ? k => [pgPalmaEm(k, k.s, [0, 0, 0], DN)] : k => [pgNaPega(k, k.s, pega1, { polegar: glV(k, G.Y) })];
   ACOES[nome] = { desc: G.desc, grupo: "golpe", maos: G.maos, modo: "carregar", teste: [teste, {}], gesto: "segurar", fechar: "envolver", corpo, lugar, contatos, golpe: { classe: G.classe, tag: G.tag, de: G.de || null }, bracoEncosta: G.classe === "escudo" };

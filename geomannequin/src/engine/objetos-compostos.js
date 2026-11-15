@@ -186,10 +186,52 @@ const COMPOSTOS = {
   arco: { nome: "arco (arma)", larg: 2.4, prof: 0.4, alt: 12, grupo: "arma",
     partes: o => { const c = o.alt * 0.46, sg = 2, R = (c * c + sg * sg) / (2 * sg); return [ocToro([0.4 + R - sg, o.alt / 2, 0], R, 0.13, "z", 0.13, { meio: [-1, 0, 0, (R - sg) / R - 0.01] }), ocTubo([0.4, o.alt / 2 - c, 0], [0.4, o.alt / 2 + c, 0], 0.025)]; },
     pegas: o => ({ punho: ocPega([0.4 - 2, o.alt / 2, 0], [-1, 0, 0], [0, 1, 0]) }) }
+,
+  /* ===== VEÍCULOS (simplificados, mas com as peças que importam: rodas, eixo, varais para o animal, bancos, remos, mastro).
+     Frente = +z. "assentos" = onde a pessoa senta (olha +1 = para a frente, −1 = para trás, como o remador); "atrelar" = onde fica o animal que puxa. ===== */
+  carruagem: { nome: "carruagem (coche com cocheiro)", larg: 15, prof: 34, alt: 22, grupo: "veiculo", veiculo: "terra",
+    partes: o => { const out = []; for (const s of [-1, 1]) { out.push(ocToro([s * 7, 5.7, -9], 5.4, 0.35, "x", 0.5), ocToro([s * 7, 4.4, 5], 4.1, 0.3, "x", 0.45));
+        for (let k = 0; k < 6; k++) { const a = k * Math.PI / 6; out.push(ocTubo([s * 7, 5.7 - Math.cos(a) * 5.2, -9 - Math.sin(a) * 5.2], [s * 7, 5.7 + Math.cos(a) * 5.2, -9 + Math.sin(a) * 5.2], 0.12), ocTubo([s * 7, 4.4 - Math.cos(a) * 3.9, 5 - Math.sin(a) * 3.9], [s * 7, 4.4 + Math.cos(a) * 3.9, 5 + Math.sin(a) * 3.9], 0.1)); }
+        out.push(ocTubo([s * 3.6, 6.5, 8], [s * 3.6, 7.5, 27], 0.3)); }
+      out.push(ocTubo([-7.5, 5.7, -9], [7.5, 5.7, -9], 0.35), ocTubo([-7.5, 4.4, 5], [7.5, 4.4, 5], 0.3), ocCaixa([0, 6.6, -2], [1.2, 0.5, 9]),
+        ocCaixa([0, 12.5, -4], [5.6, 5.8, 6.5]), ocCaixa([0, 18.7, -4], [6.2, 0.5, 7.2]), ocCaixa([0, 13.5, -4], [5.75, 2, 4.5], ), ocCaixa([0, 10.8, 5.5], [4.5, 0.5, 3]), ocCaixa([0, 12, 7.8], [4.5, 1.6, 0.4]), ocCaixa([0, 9, 7.2], [3.6, 2.6, 0.4]));
+      return out; },
+    assentos: () => ({ cocheiro: { p: [0, 11.3, 5.2], olha: 1 }, passageiro: { p: [0, 8.2, -1.5], olha: -1, dentro: true }, passageiro2: { p: [0, 8.2, -7.5], olha: 1, dentro: true } }), atrelar: () => [0, 0, 20],
+    pegas: () => ({ redeas: ocPega([0, 13, 9], [0, 0, 1], [1, 0, 0]) }) },
+  carroca: { nome: "carroça (duas rodas, varais para o animal)", larg: 14, prof: 26, alt: 11, grupo: "veiculo", veiculo: "terra",
+    partes: o => { const out = []; for (const s of [-1, 1]) { out.push(ocToro([s * 6.5, 5.3, -2], 5, 0.35, "x", 0.5)); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 4; out.push(ocTubo([s * 6.5, 5.3 - Math.cos(a) * 4.8, -2 - Math.sin(a) * 4.8], [s * 6.5, 5.3 + Math.cos(a) * 4.8, -2 + Math.sin(a) * 4.8], 0.13)); }
+        out.push(ocTubo([s * 3.6, 6.2, 4], [s * 3.6, 6.8, 20], 0.3), ocCaixa([s * 5.6, 8.6, -2], [0.25, 1.5, 9])); }
+      out.push(ocTubo([-7, 5.3, -2], [7, 5.3, -2], 0.35), ocCaixa([0, 7, -2], [5.8, 0.35, 9.2]), ocCaixa([0, 8.6, -11], [5.8, 1.5, 0.25]), ocCaixa([0, 9.6, 5.5], [4.8, 0.4, 1.3]));
+      return out; },
+    assentos: () => ({ condutor: { p: [0, 10, 5.5], olha: 1 }, carga: { p: [2.5, 7.4, -6], olha: -1 } }), atrelar: () => [0, 0, 15.5] },
+  barcoRemo: { nome: "barco a remo", larg: 12, prof: 31, alt: 5, grupo: "veiculo", veiculo: "agua",
+    partes: o => { const out = [], n = 9; for (let i = 0; i < n; i++) { const z = -15 + (i + 0.5) * 30 / n, t = (z + 15) / 30, w = 5.7 * Math.sin(Math.PI * Math.min(1, 0.18 + t * 0.95)) + 0.4, h = 2.2 + 0.9 * Math.abs(t - 0.45);
+        out.push(ocCaixa([0, h * 0.5, z], [w * 0.6, h * 0.5, 30 / n / 2 + 0.05]), ocCaixa([w - 0.2, h + 1.1, z], [0.22, 1.2, 30 / n / 2 + 0.05]), ocCaixa([-(w - 0.2), h + 1.1, z], [0.22, 1.2, 30 / n / 2 + 0.05])); }
+      out.push(ocCaixa([0, 3.2, 2], [5.3, 0.25, 1.1]), ocCaixa([0, 3.2, -9], [3.6, 0.25, 1.1]), ocCaixa([0, 3.2, 10], [3.6, 0.25, 1.0]));
+      for (const s of [-1, 1]) out.push(ocTubo([s * 1.3, 4.6, -1.0], [s * 17, -0.6, 7.5], 0.17), ocCaixa([s * 16.4, -0.4, 7.2], [0.25, 0.8, 1.6], rotParaEixo([s * 1, -0.35, 0.5].map(v => v)) ), ocToro([s * 5.7, 4.7, 2.6], 0.35, 0.1, "y"));
+      return out; },
+    assentos: () => ({ remador: { p: [0, 3.45, 2], olha: -1, rema: true }, passageiro: { p: [0, 3.45, -9], olha: 1 }, proa: { p: [0, 3.45, 10], olha: -1 } }),
+    pegas: () => ({ remoE: ocPega([1.3, 4.6, -1.0], [0, 1, 0], [1, 0, 0]), remoD: ocPega([-1.3, 4.6, -1.0], [0, 1, 0], [-1, 0, 0]) }) },
+  canoa: { nome: "canoa", larg: 7.5, prof: 40, alt: 4.6, grupo: "veiculo", veiculo: "agua",
+    partes: o => { const out = [], n = 12; for (let i = 0; i < n; i++) { const z = -20 + (i + 0.5) * 40 / n, t = (z + 20) / 40, w = 3.5 * Math.pow(Math.sin(Math.PI * t), 0.8) + 0.15, h = 1.8 + 1.6 * Math.pow(Math.abs(t - 0.5) * 2, 3);
+        out.push(ocCaixa([0, h * 0.4, z], [w * 0.55, h * 0.4, 40 / n / 2 + 0.05]), ocCaixa([w - 0.15, h * 0.85 + 0.6, z], [0.18, h * 0.45, 40 / n / 2 + 0.05]), ocCaixa([-(w - 0.15), h * 0.85 + 0.6, z], [0.18, h * 0.45, 40 / n / 2 + 0.05])); }
+      out.push(ocCaixa([0, 2.3, 11], [2.8, 0.2, 0.9]), ocCaixa([0, 2.3, -11], [2.8, 0.2, 0.9])); return out; },
+    assentos: () => ({ proa: { p: [0, 2.5, 11], olha: 1, rema: "pa" }, popa: { p: [0, 2.5, -11], olha: 1, rema: "pa" } }) },
+  veleiro: { nome: "veleiro pequeno (mastro, retranca e vela)", larg: 15, prof: 44, alt: 56, grupo: "veiculo", veiculo: "agua",
+    partes: o => { const out = [], n = 11; for (let i = 0; i < n; i++) { const z = -22 + (i + 0.5) * 44 / n, t = (z + 22) / 44, w = 7 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.25 + t * 0.85)), 0.7) + 0.3, h = 3 + 1.5 * t;
+        out.push(ocCaixa([0, h * 0.5, z], [w * 0.65, h * 0.5, 44 / n / 2 + 0.05]), ocCaixa([w - 0.2, h + 0.9, z], [0.22, 0.9, 44 / n / 2 + 0.05]), ocCaixa([-(w - 0.2), h + 0.9, z], [0.22, 0.9, 44 / n / 2 + 0.05])); }
+      out.push(ocCaixa([0, -2.5, 0], [0.25, 3, 4]), ocTubo([0, 3, 6], [0, 56, 6], 0.4), ocTubo([0, 9, 6], [0, 9, -16], 0.3), ocCaixa([0, 2, -22.5], [0.25, 3.5, 1.2]), ocTubo([0, 5, -22], [0, 5.5, -16], 0.18));
+      for (let k = 0; k < 16; k++) { const y0 = 9.5 + k * 2.85, f = 1 - (k + 0.5) / 16; out.push(ocCaixa([0, y0 + 1.42, 6 - 11 * f], [0.06, 1.45, 11 * f])); }
+      out.push(ocCaixa([0, 4.4, -12], [5, 0.25, 1.2]), ocCaixa([0, 4.4, -2], [5, 0.25, 1.2])); return out; },
+    assentos: () => ({ timoneiro: { p: [3.5, 4.65, -17], olha: 1 }, tripulante: { p: [0, 4.65, -2], olha: 1 }, popa: { p: [0, 4.65, -12], olha: 1 } }) },
+  balsa: { nome: "balsa de toras", larg: 18, prof: 26, alt: 3, grupo: "veiculo", veiculo: "agua",
+    partes: o => { const out = []; for (let i = 0; i < 8; i++) { const x = -7.9 + i * 2.25; out.push({ cil: true, c: [x, 1.1, (i % 2) * 0.6], r: 1.1, hh: 12.5 + (i % 3) * 0.5, R: rotParaEixo([0, 0, 1]) }); }
+      for (const z of [-9, 0, 9]) out.push(ocTubo([-9, 2.3, z], [9, 2.3, z], 0.35)); out.push(ocTubo([5, 2.4, -11], [5, 26, -11], 0.25)); return out; },
+    assentos: () => ({ "em-pe": { p: [0, 2.6, 0], olha: 1, pe: true }, borda: { p: [-6, 2.6, -6], olha: 1, beira: true } }) }
 };
 Object.assign(COMPOSTOS, OBJ_MAO);
 /* sinônimos em português para achar o objeto por nome */
-const SINONIMOS_COMPOSTOS = { bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
+const SINONIMOS_COMPOSTOS = { carruagem: "carruagem", coche: "carruagem", diligencia: "carruagem", "diligência": "carruagem", carroca: "carroca", "carroça": "carroca", charrete: "carroca", barco: "barcoRemo", "barco a remo": "barcoRemo", bote: "barcoRemo", canoa: "canoa", caiaque: "canoa", veleiro: "veleiro", "barco a vela": "veleiro", balsa: "balsa", jangada: "balsa", bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
   tambor: "tambor", "tonel": "tambor", chope: "barrilChope", keg: "barrilChope", botijao: "botijao", "botijão": "botijao", "cilindro de gas": "botijao", galao: "galao", "galão": "galao", "jerry can": "galao", balde: "balde",
   mala: "mala", maleta: "maleta", "caixa de ferramentas": "maleta", "mala de rodinhas": "malaRodinhas", mochila: "mochila", bigorna: "bigorna", caixote: "caixote", engradado: "caixote", palete: "palete", pallet: "palete", treno: "palete", "trenó": "palete",
   viga: "vigaI", "viga i": "vigaI", cano: "cano", tora: "cano", tronco: "cano", tubo: "cano", tabua: "tabua", "tábua": "tabua", prancha: "tabua", escada: "escada", trelica: "trelica", "treliça": "trelica",

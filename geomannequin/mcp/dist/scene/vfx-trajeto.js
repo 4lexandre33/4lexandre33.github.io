@@ -2,13 +2,14 @@
    boca do trompete) ou de um lugar, e o CAMINHO entre eles (reta, arco, balística, espiral, zigue-zague, onda, teleguiado).
    O projétil anda por esse caminho no filme; no quadro parado ele aparece no meio do caminho com a cauda atrás. */
 import { SCN } from "./modelo.js";
-import { ossosDoCorpo, paraMundo, restGround, pontoDoObjeto, pontosLocaisDoObjeto } from "../engine/index.js";
+import { ossosDoCorpo, paraMundo, restGround, pontoDoObjeto, pontosLocaisDoObjeto, OBJ_MAO } from "../engine/index.js";
 
 const VT_JUNTA = { mao: "mão", punho: "punho", cotovelo: "cotovelo", ombro: "ombro", pe: "tornozelo", tornozelo: "tornozelo", joelho: "joelho", quadril: "quadril" };
 const VT_CAMINHOS = ["reta", "arco", "balistica", "espiral", "zigue", "onda", "teleguiado"];
 function vtPessoa(nome) { const s = String(nome || "").toLowerCase(); return SCN.list.find(m => String(m.name).toLowerCase() === s) || null; }
 function vtObjeto(ref, dono) { const s = String(ref || "").toLowerCase(); const os = SCN.objetos || [];
   const seg = dono ? os.filter(o => (o.gripV3 && o.gripV3.mannequinId === dono.id) || o.autoDe === dono.name) : [];
+  if (s === "arma" || s === "arma-de-fogo") { const a = seg.find(o => OBJ_MAO[o.tipo] && OBJ_MAO[o.tipo].grupo === "arma-fogo") || os.find(o => OBJ_MAO[o.tipo] && OBJ_MAO[o.tipo].grupo === "arma-fogo"); if (a) return a; }
   return seg.find(o => String(o.nome || "").toLowerCase() === s || String(o.tipo || "").toLowerCase() === s) || os.find(o => String(o.nome || "").toLowerCase() === s) || os.find(o => String(o.tipo || "").toLowerCase() === s) || null; }
 /* ponto de uma pessoa: maoDir, peEsq, cabeca, peito, pelve/corpo, olhos, pes */
 function vtPontoPessoa(it, parte) { const p = it.params, g0 = restGround(SCN.list[0].params), Wm = paraMundo({ ...p, wy: g0 - restGround(p) }), J = ossosDoCorpo(p).juntas;

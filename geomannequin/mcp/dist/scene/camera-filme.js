@@ -56,7 +56,7 @@ function cfBase(b, t, anc) {
     return { pos: p.olhos, alvo: o || [p.olhos[0] + p.olhar[0] * m(3), p.olhos[1] + p.olhar[1] * m(3), p.olhos[2] + p.olhar[2] * m(3)], lente: b.lente || 28, esconder: b.quem }; }
   if (b.modo === "segue") { const p = cfPessoa(b.quem) || null, ob = p ? null : cfObjeto(b.quem); if (!p && !ob) return null;
     const c = p ? p.centro : ob.centro, f = p ? p.frente : [0, 0, 1], dir = { atras: [-f[0], -f[2]], frente: [f[0], f[2]], esquerda: [f[2], -f[0]], direita: [-f[2], f[0]], lado: [f[2], -f[0]] }[b.lado || "atras"] || [-f[0], -f[2]];
-    const tam = p && p.animal ? (p.tam || 0) / CF_M : ob ? Math.max(ob.o.alt || 1, ob.o.larg || 1, ob.o.prof || 1, ob.o.comp || 0) / CF_M : 0, d = m(b.distancia ?? Math.max(3, tam * 1.5)), chao = p ? p.chao : cfChaoGeral(), alt = b.altura !== undefined ? chao + m(b.altura) : c[1] + m(0.35);
+    const tam = p && p.animal ? (p.tam || 0) / CF_M : ob ? Math.max(ob.o.alt || 1, ob.o.larg || 1, ob.o.prof || 1, ob.o.comp || 0) / CF_M : 0, d = m(b.distancia ?? (p && p.animal ? Math.max(0.25, tam * 1.6) : Math.max(3, tam * 1.5))), chao = p ? p.chao : cfChaoGeral(), alt = b.altura !== undefined ? chao + m(b.altura) : c[1] + m(p && p.animal ? Math.min(0.35, Math.max(0.05, tam * 0.3)) : 0.35);
     /* atraso suave: a câmera vai para onde a pessoa estava "suave" segundos antes (calculado pelo âncora do instante anterior) */
     const ant = anc && anc.passado ? anc.passado(b.quem, Math.max(0, t - (b.suave ?? 0.35))) : null, cc = ant || c;
     return { pos: [cc[0] + dir[0] * d, alt, cc[2] + dir[1] * d], alvo: b.olha ? cfPonto(b.olha) : [c[0], c[1] + (p ? (p.animal ? m(tam * 0.2) : m(0.1)) : 0), c[2]], lente: b.lente || 40 }; }
