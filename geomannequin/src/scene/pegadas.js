@@ -796,7 +796,7 @@ function pgIrAte(it, k, a) {
    objeto comprido (haste, cabo, lâmina, cano) → desliza ao longo do eixo comprido (12 cm num cabo curto, até 55 cm numa haste);
    objeto largo (caixa, cadeira, mesa) → lado oposto do objeto. Os dedos e a normal são recalculados na superfície nova. */
 function pgSepararMaos(k, cs, tipo) {
-  if (/^(arrastar|subirDegrauComCarga|abracado|porBaixo|bandeja|acimaDaCabeca|levantarDoChao|levantamentoTerra|ajoelhadoLevantando)$/.test(tipo || "")) return cs; /* pegadas por baixo/abraçando: as mãos já são as do desenho */
+  if (/^(arrastar|subirDegrauComCarga)$/.test(tipo || "")) return cs; /* pegadas por baixo/abraçando: as mãos já são as do desenho */
   if (cs.length !== 2 || !cs[0].P || !cs[1].P || cs[0].s === cs[1].s) return cs;
   const d = pgLen(pgSub(cs[0].P, cs[1].P)), m = k.meia, iL = m.indexOf(Math.max(...m)), L = m[iL] * 2, sec = [...m].sort((a, b) => b - a)[1] * 2, longo = L > sec * 2.2;
   const minimo = longo ? Math.max(0.9, Math.min(4.8, L * (L > 9 ? 0.32 : 0.36))) : Math.max(1.4, sec * 0.8); if (d >= Math.min(minimo, longo ? L * 0.7 : 99, 1.0) || (k.o && k.o.tipo === "corda")) return cs; /* só conserta mãos praticamente no mesmo ponto (< ~11 cm); pegadas já afastadas (rifle, arco, corda) ficam como estão */
