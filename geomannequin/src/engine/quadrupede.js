@@ -171,7 +171,7 @@ function qdPartes(o) {
   if (E.asas) { const f0 = corpo([0, 0, 1]), u0 = corpo([0, 1, 0]), fwv = [f0[0], f0[1], f0[2]], upv = [u0[0] - 0, u0[1], u0[2]], o0 = corpo([0, 0, 0]);
     const F = [fwv[0] - o0[0], fwv[1] - o0[1], fwv[2] - o0[2]], U = [upv[0] - o0[0], upv[1] - o0[1], upv[2] - o0[2]], Lt = [U[1] * F[2] - U[2] * F[1], U[2] * F[0] - U[0] * F[2], U[0] * F[1] - U[1] * F[0]];
     const ombBase = corpo([0, yb + r * 0.85, c * 0.22]);
-    for (const sx of [1, -1]) out.push(...crAsaQuadrupede(qdAdd(ombBase, qdMul(Lt, sx * r * 0.45)), F, U, Lt, sx, E.asas * k / 2, P.asaAbre || 0, P.asaBate || 0, E.cor)); }
+    for (const sx of [1, -1]) out.push(...crAsaQuadrupede(qdAdd(ombBase, qdMul(Lt, sx * r * 0.45)), F, U, Lt, sx, E.asas * k / 2, (o.animal && o.animal.cavaleiro) && (P.asaAbre || 0) < 0.4 ? 0.4 : P.asaAbre || 0, (o.animal && o.animal.cavaleiro) && (P.asaAbre || 0) < 0.4 ? -28 : P.asaBate || 0, E.cor)); } /* com cavaleiro, a asa em repouso abre um pouco e desce para os lados (não atravessa a pessoa) */
   /* rolar o corpo (de lado, de costas): gira tudo em volta do eixo do corpo */
   if (P.rolo) { const a = P.rolo * QD, cz = Math.cos(a), sz = Math.sin(a), Rz = [cz, -sz, 0, sz, cz, 0, 0, 0, 1], piv = [0, yb, 0];
     const mm = (A, B) => [0, 1, 2].flatMap(i => [0, 1, 2].map(j => A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j]));

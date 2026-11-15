@@ -28,12 +28,21 @@ function vcEmbarcar(it, o, nome, manterBracos) {
   try { const cs = capsulas(pMundo(it)), L = cs.caps || cs; if (S.pe) { const pe = Math.min(...L.map(c => Math.min(c.a[1], c.b[1]) - (c.r || 0))); it.params.bodyLift = (P[1] - pe) / tam; }
     else { const pel = L.find(c => c.nome === "pelve"), yA = pel ? Math.min(pel.a[1], pel.b[1]) - (pel.r || 0) * 0.7 : null; if (yA !== null) it.params.bodyLift = (P[1] - yA) / tam; } } catch (e) { }
   it.embarcadoEm = { veiculo: o.nome, assento: chave }; (o.passageiros || (o.passageiros = {}))[chave] = it.name; return chave; }
-/* o veículo vai atrás do animal que puxa (o animal fica no ponto "atrelar", entre os varais) */
-function vcAtrelar(o, an) { const T = vcTipo(o); if (!T || !T.atrelar) throw new Error(o.nome + " não tem varais para atrelar um animal (só carruagem e carroça)."); o.puxadoPor = an.nome; vcSeguirAnimal(o, an); }
-function vcSeguirAnimal(o, an) { const T = vcTipo(o), a = T.atrelar(o), g = (an.giro || 0) * Math.PI / 180, c = Math.cos(g), s = Math.sin(g), k = o.escalaVeiculo || 1; o.giro = an.giro || 0;
-  o.x = an.x - (a[0] * c + a[2] * s) * k; o.z = an.z - (-a[0] * s + a[2] * c) * k; }
+/* o veículo vai atrás do animal que puxa. Vários animais ("Trovao puxa coche", "Raio puxa coche"…): o 1º é o guia, os outros vão em
+   parelhas na frente do timão (2, 4 ou 6 cavalos) e copiam o passo do guia. */
+function vcSlot(o, i, n) { const a = vcTipo(o).atrelar(o); if (n <= 1) return a; const fila = Math.floor(i / 2), lado = i % 2 ? 1 : -1; return [a[0] + lado * 3.7, a[1], a[2] + fila * 24]; }
+function vcAtrelar(o, an) { const T = vcTipo(o); if (!T || !T.atrelar) throw new Error(o.nome + " não tem varais/timão para atrelar um animal (só carruagem e carroça).");
+  const extras = (o.puxadores || []).filter(n => n !== an.nome && amAchar(n));
+  if (!o.puxadoPor || o.puxadoPor === an.nome || !amAchar(o.puxadoPor)) o.puxadoPor = an.nome; else if (!extras.includes(an.nome)) { if (extras.length >= 5) throw new Error(o.nome + ": no máximo 6 animais puxando."); extras.push(an.nome); }
+  o.puxadores = extras; const lider = amAchar(o.puxadoPor); if (lider) vcSeguirAnimal(o, lider); }
+function vcSeguirAnimal(o, an) { const ex = (o.puxadores || []).map(amAchar).filter(Boolean), n = 1 + ex.length, a = vcSlot(o, 0, n), g = (an.giro || 0) * Math.PI / 180, c = Math.cos(g), s = Math.sin(g), k = o.escalaVeiculo || 1; o.giro = an.giro || 0;
+  o.x = an.x - (a[0] * c + a[2] * s) * k; o.z = an.z - (-a[0] * s + a[2] * c) * k;
+  ex.forEach((h, i) => { const q = vcSlot(o, i + 1, n); h.x = o.x + (q[0] * c + q[2] * s) * k; h.z = o.z + (-q[0] * s + q[2] * c) * k; h.giro = an.giro || 0; h.base = an.base || 0;
+    if (h.animal && an.animal) { h.animal.pose = an.animal.pose; h.animal.marchaAtual = an.animal.marchaAtual; h.animal.animAtual = an.animal.animAtual; } }); }
+/* veículo que anda sozinho no filme (barco, navio, balsa, trem): velocidade típica por meio, em m/s */
+const VC_VELOC = { terra: 3, agua: 2.2, trilho: 9 };
 /* a cada quadro/instante: veículos puxados seguem o animal; passageiros seguem o banco */
 function vcAtualizar() { for (const o of SCN.objetos || []) { if (!vcTipo(o)) continue; if (o.puxadoPor) { const an = amAchar(o.puxadoPor); if (an) vcSeguirAnimal(o, an); }
     for (const [ass, nome] of Object.entries(o.passageiros || {})) { const it = SCN.list.find(x => x.name === nome && x.embarcadoEm && x.embarcadoEm.veiculo === o.nome); if (it) vcEmbarcar(it, o, ass, true); else delete o.passageiros[ass]; } } }
-function listaVeiculos() { return Object.entries(COMPOSTOS).filter(([, t]) => t.veiculo).map(([tipo, t]) => ({ tipo, nome: t.nome, meio: t.veiculo, assentos: Object.keys(t.assentos ? t.assentos({}) : {}), atrelar: !!t.atrelar, tamanho: [t.larg, t.prof, t.alt].map(v => +(v * 0.114).toFixed(1)) })); }
-export { vcEhVeiculo, vcAssentos, vcMundo, vcEmbarcar, vcAtrelar, vcAtualizar, listaVeiculos, VC_POSTURA };
+function listaVeiculos() { return Object.entries(COMPOSTOS).filter(([, t]) => t.veiculo).map(([tipo, t]) => ({ tipo, nome: t.nome, meio: t.veiculo, assentos: Object.keys(t.assentos ? t.assentos({}) : {}), atrelar: !!t.atrelar, maxAnimais: t.atrelar ? (tipo === "carruagem" ? 6 : 2) : 0, tamanho: [t.larg, t.prof, t.alt].map(v => +(v * 0.114).toFixed(1)) })); }
+export { VC_VELOC, vcSlot, vcEhVeiculo, vcAssentos, vcMundo, vcEmbarcar, vcAtrelar, vcAtualizar, listaVeiculos, VC_POSTURA };

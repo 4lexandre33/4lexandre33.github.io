@@ -107,7 +107,7 @@ function crMembro(S, m, sx, idx) { const { at, quadro, raio, N, P } = S, q = qua
 /* asas de membrana (dragão): úmero, rádio e 4 dedos com a membrana entre eles; abre 0 = dobrada nas costas, 1 = aberta; bate em graus */
 function crAsa(S, sx) { const { at, quadro, raio, N, P, E, k } = S, t = 0.33, q = quadro(t), r = raio(Math.round(t * N)), lat = crMl(q.lat, sx), env = (E.env || 0) * k / 2, ab = Math.max(0, Math.min(1, P.asas.abre || 0)), bt = (P.asas.bate || 0) * CR_D;
   const ombro = crA(crA(at(t), crMl(lat, r * 0.55)), crMl(q.up, r * 0.75)); const sobe = d => crN(crA(crMl(d, Math.cos(bt)), crMl(q.up, Math.sin(bt))));
-  const dob = crN(crA(crMl(q.fw, -0.6), crA(crMl(q.up, 0.7), crMl(lat, 0.25)))), abr = sobe(crN(crA(lat, crMl(q.fw, 0.15)))), d1 = crN(crA(crMl(dob, 1 - ab), crMl(abr, ab)));
+  const dob = S.montado ? crN(crA(crMl(q.fw, -0.55), crA(crMl(q.up, 0.12), crMl(lat, 0.85)))) : crN(crA(crMl(q.fw, -0.6), crA(crMl(q.up, 0.7), crMl(lat, 0.25)))) /* com cavaleiro, a asa dobrada vai para o lado e deixa o lombo livre */, abr = sobe(crN(crA(lat, crMl(q.fw, 0.15)))), d1 = crN(crA(crMl(dob, 1 - ab), crMl(abr, ab)));
   const dob2 = crN(crA(crMl(q.fw, 0.7), crA(crMl(q.up, 0.2), crMl(lat, 0.15)))), abr2 = sobe(crN(crA(lat, crMl(q.fw, -0.12)))), d2 = crN(crA(crMl(dob2, 1 - ab), crMl(abr2, ab)));
   const cot = crA(ombro, crMl(d1, env * 0.22)), punho = crA(cot, crMl(d2, env * 0.28)), dedos = [];
   for (let j = 0; j < 4; j++) { const a = (10 + j * 32) * CR_D, ab0 = sobe(crN(crA(crMl(lat, Math.cos(a)), crMl(q.fw, -Math.sin(a))))), fd = crN(crA(crMl(q.fw, -1), crMl(q.up, -0.15))), d = crN(crA(crMl(fd, 1 - ab), crMl(ab0, ab)));
@@ -153,10 +153,11 @@ function crPartes(o) {
   } else if (pl === "cefalopode") {
     const q = quadro(0.5), man = E.manto || 1.3, topo = crA(at(0.5), crMl(q.fw, 0)), corpoC = crA(topo, crMl(q.up, R * 1.3));
     if (!ossos) { out.push(crElip(corpoC, [R, R * man, R], q.up, q.lat)); for (const sx of [1, -1]) out.push(crElip(crA(crA(topo, crMl(q.lat, sx * R * 0.65)), crMl(q.up, R * 0.1)), [R * 0.22, R * 0.22, R * 0.22], null, null, { cor: esc })); }
-    else out.push(crElip(corpoC, [R * 0.9, R * man * 0.9, R * 0.9], q.up, q.lat), crElip(crA(topo, crMl(q.up, R * 0.1)), [R * 0.55, R * 0.4, R * 0.55], null, null)); /* manto e o "bico" (o único duro) */
+    else out.push(crElip(crA(topo, crMl(q.up, R * 0.45)), [R * 0.42, R * 0.32, R * 0.42], q.up, q.lat), crElip(crA(topo, crMl(q.up, R * 0.05)), [R * 0.3, R * 0.24, R * 0.3], null, null, { cor: esc }), ...(E.manto ? [crTubo(crA(topo, crMl(q.up, R * 0.6)), crA(topo, crMl(q.up, R * man * 1.9)), R * 0.08, R * 0.03)] : []));
+    /* cefalópode não tem esqueleto: no modo ossos só a cápsula de cartilagem do cérebro, o bico (escuro) e a pena da lula; os braços viram linhas finas de referência */
     const nb = E.bracos || 8, Lb = R * (E.bracos > 8 ? 5 : 4.2), T = P.tentaculos;
     for (let j = 0; j < nb; j++) { const a = j / nb * Math.PI * 2 + (T.fase || 0) * 0.3, out0 = crN(crA(crMl(q.lat, Math.cos(a)), crMl(q.fw, Math.sin(a)))); let p = crA(topo, crMl(out0, R * 0.55)), d = crN(crA(crMl(out0, 0.3 + 0.7 * (T.abre ?? 0.5)), crMl(q.up, -0.8)));
-      const nseg = 8, ax = crN(crX(d, q.up)); for (let s = 0; s < nseg; s++) { const f = s / nseg, rr = R * 0.32 * (1 - f * 0.85), b = crA(p, crMl(d, Lb / nseg)); out.push(crTubo(p, b, rr, rr * 0.88)); p = b; mn.push(p[1] - rr);
+      const nseg = 8, ax = crN(crX(d, q.up)); for (let s = 0; s < nseg; s++) { const f = s / nseg, rr = R * (ossos ? 0.05 : 0.32) * (1 - f * 0.85), b = crA(p, crMl(d, Lb / nseg)); out.push(crTubo(p, b, rr, rr * 0.88)); p = b; mn.push(p[1] - rr);
         const curl = ((T.enrola ?? 0.35) * 22 + 6 * Math.sin((T.fase || 0) * 6.28 + j + s * 0.7)) * CR_D; const c = Math.cos(curl), s2 = Math.sin(curl); d = crN(crA(crA(crMl(d, c), crMl(crX(ax, d), s2)), crMl(ax, ax[0] * d[0] * (1 - c) + ax[1] * d[1] * (1 - c) + ax[2] * d[2] * (1 - c)))); } }
   } else {
     /* corpo segmentado ao longo da coluna (peixe e cetáceo achatados de lado / em cima) */
@@ -208,6 +209,7 @@ function crPartes(o) {
   if (pl === "reptil" || pl === "serpente" || pl === "dragao") for (let i = Math.round(N * 0.12); i <= N; i++) mn.push(sp[i][1] - raio(i) * (pl === "reptil" ? 0.75 : 0.85));
   if (pl === "cetaceo" || pl === "peixe") for (let i = 0; i <= N; i++) mn.push(sp[i][1] - raio(i));
   /* ---------- asas de membrana ---------- */
+  S.montado = !!(o.animal && o.animal.cavaleiro);
   if (pl === "dragao" && (E.env || 0) > 0) for (const sx of [1, -1]) { const W = crAsa(S, sx), rb = Math.max(ob, R * 0.12), espM = Math.max(0.01, R * 0.03);
     out.push(crTubo(W.ombro, W.cot, rb * 1.2, rb), crTubo(W.cot, W.punho, rb, rb * 0.8)); W.dedos.forEach(d => out.push(crTubo(W.punho, d, rb * 0.6, rb * 0.15)));
     if (!ossos) { const pts = [W.punho, ...W.dedos, W.flanco], cor = "#3a1818";
@@ -218,8 +220,10 @@ function crPartes(o) {
   out.forEach(b => { b.c = [b.c[0], b.c[1] + dy, b.c[2]]; }); out.dy = dy; out.pisa = pisa; return out;
 }
 /* um ponto no mundo: sela (costas), cabeca, boca, cauda, pes, frente, tras */
+/* onde fica a sela em cada plano (fração do comprimento a partir do focinho): no meio do dorso, entre as asas do dragão, atrás da cabeça do peixe, no topo do manto do polvo, nos ombros do macaco */
+const CR_SELA_T = { reptil: 0.36, teropode: 0.34, serpente: 0.22, peixe: 0.32, cetaceo: 0.3, cefalopode: 0.05, artropode: 0.45, anfibio: 0.42, dragao: 0.36, primata: 0.24 };
 function crPontoMundo(o, ponto, g0 = 0) { const S = crEsqueleto(o), dy = crPartes(o).dy || 0, q = S.quadro(0.42), r = S.raio(Math.round(0.42 * S.N));
-  let loc = ponto === "cabeca" ? S.sp[1] : ponto === "boca" || ponto === "frente" ? S.sp[0] : ponto === "cauda" || ponto === "tras" ? S.sp[S.N] : ponto === "pes" ? [S.sp[Math.round(S.N / 2)][0], -dy, S.sp[Math.round(S.N / 2)][2]] : crA(S.at(S.pl === "dragao" ? 0.38 : 0.42), crMl(q.up, r * 0.95));
+  let loc = ponto === "cabeca" ? S.sp[1] : ponto === "boca" || ponto === "frente" ? S.sp[0] : ponto === "cauda" || ponto === "tras" ? S.sp[S.N] : ponto === "pes" ? [S.sp[Math.round(S.N / 2)][0], -dy, S.sp[Math.round(S.N / 2)][2]] : (() => { const t = ponto === "sela" ? (CR_SELA_T[S.pl] ?? 0.42) : S.pl === "dragao" ? 0.38 : 0.42, qs = S.quadro(t), rs = S.raio(Math.round(t * S.N)); if (S.pl === "cefalopode") { const E = CR_ESPECIES[crEspecie(o.animal.especie)], R = E.R * (o.animal.escala || 1) * CR_M, q5 = S.quadro(0.5); return crA(S.at(0.5), crMl(q5.up, R * (1.3 + (E.manto || 1.3) * (ponto === "sela" ? 0.85 : 1)))); } return crA(S.at(t), crMl(qs.up, rs * 0.95)); })();
   const g = (o.giro || 0) * CR_D, c = Math.cos(g), s = Math.sin(g), v = [loc[0], loc[1] + dy, loc[2]]; return [o.x + v[0] * c + v[2] * s, g0 + (o.base || 0) + v[1], o.z - v[0] * s + v[2] * c]; }
 function crMedidas(especie, escala = 1) { const E = CR_ESPECIES[crEspecie(especie)] || CR_ESPECIES.lagarto, k = escala * CR_M;
   const alt = E.plano === "teropode" || E.plano === "primata" ? (E.h || 1) * 1.3 : E.plano === "cefalopode" ? E.R * 4 : E.plano === "artropode" ? E.R * 3 : E.R * (E.plano === "dragao" ? 4 : 2.4);

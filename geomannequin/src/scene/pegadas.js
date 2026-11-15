@@ -656,6 +656,40 @@ golpe("varinhaEscudo", "magia", 1, "Combate/Arma/Magia/Defesa", "Feitiço de esc
 golpe("varinhaSaudacao", "magia", 1, "Combate/Arma/Magia/Duelo", "Saudação antes do duelo: varinha erguida diante do rosto", "hp2 fl5,5 ab10,10 el10,10", ["h", 1.6, -1.4, -0.8], [0.05, 1, 0], [0, 0, 1]);
 golpe("varinhaLuz", "magia", 1, "Combate/Arma/Magia/Feitiço", "Varinha erguida iluminando o caminho", "hp-6 fl20,10 ab10,10 el20,10", ["o", 2.4, 2.0, 0.2], [0.45, 0.88, 0], [0, 0, 1]);
 golpe("varinhaRecuo", "magia", 1, "Combate/Arma/Magia/Defesa", "Atingido pelo feitiço: corpo jogado para trás, varinha ainda erguida", "sf-18 bp-8 hp-14 fl60,40 ab40,40 el60,40 R:.3,-.4,.08,.2", ["o", 2.0, 2.4, 0.8], [0.5, 0.85, 0.1], [0, 0, 1]);
+/* --- ESGRIMA: as posições de um duelo (guarda, avanço, recuo, estocada, flecha, as 8 paradas, resposta, remessa, finta, batida, cortes de sabre,
+   esquivas de florete). Cada uma existe para espada ("esgrima…") e para varinha ("varinha…": o mesmo gesto, o ataque sai à distância pela ponta). --- */
+const ESGRIMA = [
+  ["EnGarde", "Guarda de esgrima (en garde): de lado, joelhos dobrados, arma à frente apontada para o rival, mão livre erguida atrás", "Guarda", "st-40 pt-35 sf2 hp2 fl30,40 ab20,60 el60,100 P:.36,-.34,.14,.24", ["o", 2.6, -0.6, -0.2], [0.9, 0.4, 0], [0, 0, 1]],
+  ["PassoFrente", "Avanço (marche): pé da frente adiantado, guarda mantida", "Movimento", "st-40 pt-35 sf2 fl30,40 ab20,60 el60,100 P:.46,-.30,.10,.24", ["o", 2.7, -0.6, -0.2], [0.9, 0.4, 0], [0, 0, 1]],
+  ["Recuo", "Recuo (rompre): corpo para trás, guarda mantida", "Movimento", "st-40 pt-35 sf-2 fl30,40 ab20,60 el60,100 P:.26,-.44,.12,.24", ["o", 2.4, -0.4, -0.2], [0.85, 0.5, 0], [0, 0, 1]],
+  ["Estocada", "Estocada (fente): braço esticado, perna da frente em avanço profundo, a de trás esticada", "Ataque", "st-30 pt-25 sf10 bp4 fl-10,-40 ab20,60 el10,60 P:.62,-.55,.34,.22", ["o", 5.2, -0.3, -0.3], [1, 0.05, 0], [0, 0, 1], "EnGarde"],
+  ["EstocadaLonga", "Estocada longa: a fente mais funda, quase rente ao chão", "Ataque", "st-30 pt-25 sf12 bp10 fl-10,-40 ab20,70 el10,40 P:.75,-.65,.42,.22", ["o", 5.6, -0.6, -0.3], [1, -0.05, 0], [0, 0, 1], "EnGarde"],
+  ["Flecha", "Flecha (flèche): ataque correndo, corpo lançado à frente, pernas cruzando", "Ataque", "bp18 sf8 hf70,-15 kf60,20 fl-10,30 ab20,40 el10,40", ["o", 5.4, -0.4, -0.2], [1, 0, 0], [0, 0, 1], "EnGarde"],
+  ["Prima", "Parada de prima: mão alta do outro lado do rosto, ponta para baixo", "Defesa", "st-30 pt-30 sf2 fl80,40 ab20,60 el90,100 P:.36,-.34,.14,.24", ["p", 1.6, 0.6, -1.2], [0.3, -0.9, -0.3], [0, 0, 1]],
+  ["Secunda", "Parada de segunda: mão baixa por fora, ponta para baixo e à frente", "Defesa", "st-40 pt-35 sf6 fl20,40 ab25,60 el40,100 P:.36,-.34,.16,.24", ["o", 2.4, -2.4, 0.4], [0.5, -0.8, 0.2], [0, 0, 1]],
+  ["Tercia", "Parada de terça: mão por fora na altura do peito, ponta para cima", "Defesa", "st-40 pt-35 sf2 fl30,40 ab30,60 el70,100 P:.36,-.34,.14,.24", ["o", 2.6, -1.0, 0.6], [0.5, 0.85, 0.2], [0, 0, 1]],
+  ["Quarta", "Parada de quarta: mão por dentro na altura do peito, ponta para cima", "Defesa", "st-30 pt-30 sf2 fl35,40 ab10,60 el80,100 P:.36,-.34,.14,.24", ["p", 2.4, 0, -0.8], [0.45, 0.85, -0.2], [0, 0, 1]],
+  ["Quinta", "Parada de quinta: arma deitada acima da cabeça (contra golpe de cima)", "Defesa", "st-35 pt-30 sf-2 hp-6 fl90,40 ab30,60 el90,100 P:.36,-.34,.14,.24", ["h", 1.6, 1.4, 0.4], [0.1, 0.1, -1], [1, 0, 0]],
+  ["Sexta", "Parada de sexta: mão por fora, ponta à frente e para cima (a guarda clássica do florete)", "Defesa", "st-40 pt-35 sf2 fl35,40 ab25,60 el60,100 P:.36,-.34,.14,.24", ["o", 2.8, -1.2, 0.3], [0.85, 0.5, 0.15], [0, 0, 1]],
+  ["Setima", "Parada de sétima: mão baixa por dentro, ponta para baixo e à frente", "Defesa", "st-30 pt-30 sf6 fl20,40 ab10,60 el50,100 P:.36,-.34,.16,.24", ["p", 2.6, -1.6, -0.6], [0.7, -0.6, -0.3], [0, 0, 1]],
+  ["Oitava", "Parada de oitava: mão baixa por fora, ponta para baixo e à frente", "Defesa", "st-40 pt-35 sf6 fl20,40 ab25,60 el50,100 P:.36,-.34,.16,.24", ["o", 2.8, -2.2, 0.4], [0.7, -0.6, 0.3], [0, 0, 1]],
+  ["Resposta", "Resposta (riposte): estocada logo depois da parada de quarta", "Ataque", "st-30 pt-25 sf8 bp4 fl-10,-40 ab20,60 el10,60 P:.56,-.5,.3,.22", ["o", 5.0, -0.4, -0.4], [1, 0.05, -0.05], [0, 0, 1], "Quarta"],
+  ["Remessa", "Remessa (remise): segunda estocada sem voltar à guarda", "Ataque", "st-30 pt-25 sf12 bp6 fl-10,-40 ab20,60 el10,60 P:.66,-.58,.38,.22", ["o", 5.3, -0.7, -0.3], [1, -0.08, 0], [0, 0, 1], "Estocada"],
+  ["Finta", "Finta: braço estica como se fosse atacar, sem avançar", "Ataque", "st-40 pt-35 sf4 fl-10,40 ab20,60 el10,100 P:.36,-.34,.14,.24", ["o", 4.6, -0.4, -0.3], [1, 0.1, 0], [0, 0, 1], "EnGarde"],
+  ["Batida", "Batida na lâmina (battement): golpe seco de lado na arma do rival", "Ataque", "st-34 pt-30 sf4 fl30,40 ab25,60 el50,100 P:.4,-.34,.14,.24", ["o", 3.4, -0.6, 0.6], [0.8, 0.3, 0.5], [0, 0, 1], "Quarta"],
+  ["CorteVertical", "Corte de cabeça (sabre): de cima para baixo, braço estendido", "Ataque", "st-30 pt-25 sf10 bp4 fl20,-40 ab20,60 el20,60 P:.56,-.5,.28,.22", ["o", 3.6, 0.4, -0.4], [0.8, -0.5, 0], [0, 0, 1], "Quinta"],
+  ["CorteHorizontal", "Corte de flanco (sabre): varre na horizontal", "Ataque", "st-10 pt-10 sf8 fl20,-40 ab20,60 el30,60 P:.5,-.46,.24,.22", ["o", 3.4, -0.8, -1.6], [0.4, 0, -0.9], [0, 1, 0], "Tercia"],
+  ["CorteDiagonal", "Corte diagonal (sabre): do alto de um lado para o baixo do outro", "Ataque", "st-14 pt-14 sf10 fl20,-40 ab20,60 el30,60 P:.52,-.48,.26,.22", ["o", 3.6, -1.4, -1.0], [0.6, -0.6, -0.5], [0, 0, 1], "Quinta"],
+  ["PassataSotto", "Passata sotto: abaixa quase ao chão e estoca por baixo do ataque", "Esquiva", "sf30 bp20 hp-20 fl-10,60 ab20,60 el10,60 P:.6,-.5,.45,.22", ["o", 4.8, -1.0, -0.4], [1, 0.15, 0], [0, 0, 1], "EnGarde"],
+  ["Inquartata", "Inquartata: gira o corpo para fora da linha e estoca ao mesmo tempo", "Esquiva", "st-60 pt-50 sf6 fl-10,40 ab20,60 el10,100 P:.3,-.5,.12,.4", ["o", 4.8, -0.4, -0.2], [1, 0, 0], [0, 0, 1], "EnGarde"],
+  ["SaltoTras", "Salto para trás (balestra para trás): os dois pés no ar, guarda mantida", "Movimento", "bl3 st-40 pt-35 sf-4 fl30,40 ab20,60 el60,100 hf20,10 kf30,40", ["o", 2.5, -0.4, -0.2], [0.85, 0.5, 0], [0, 0, 1]],
+  ["Saudacao", "Saudação: guarda da arma junto ao queixo, lâmina vertical diante do rosto", "Cerimônia", "hp2 fl70,10 ab10,10 el130,20", ["p", 1.2, 1.2, -0.4], [0.1, 0.99, 0.05], [0, 0, 1]],
+  ["SaudacaoBaixa", "Fim da saudação: arma baixa à frente, ponta para o chão", "Cerimônia", "hp4 fl20,5 ab10,10 el10,10", ["o", 2.6, -2.6, -0.2], [0.6, -0.8, 0], [0, 0, 1]],
+  ["Vitoria", "Arma erguida depois do toque (vitória do duelo)", "Cerimônia", "sf-4 hp-8 fl150,20 ab20,20 el20,40", ["o", 0.4, 3.8, 0.2], [0.2, 0.98, 0], [0, 0, 1]]
+];
+for (const [n, desc, tg, corpo, H, Y, N, de] of ESGRIMA) {
+  golpe("esgrima" + n, "lamina1", 1, "Combate/Arma/Esgrima/" + tg, desc + " (espada, florete, sabre)", corpo, H, Y, N, de ? { de: "esgrima" + de } : undefined);
+  golpe("varinha" + n, "magia", 1, "Combate/Arma/Magia/Duelo/" + tg, desc.replace(/arma|lâmina/g, "varinha") + " — com varinha: o ataque sai à distância pela ponta", corpo, H, Y, N, de ? { de: "varinha" + de } : undefined); }
 /* --- escudo --- */
 golpe("escudoAoAlto", "escudo", 1, "Combate/Arma/Escudo/Defesa", "Escudo erguido acima da cabeça (chuva de flechas, pedras)", "sf6 hp-6 A:.3,.3", ["h", 1.2, 2.4, 0.2], [0.98, 0.2, 0], [0, 1, 0]);
 golpe("escudoInvestida", "escudo", 1, "Combate/Arma/Escudo/Ataque", "Avançando com o escudo à frente (empurrão, investida)", "sf20 bp12 hp2 P:.52,-.48,.24,.14", ["p", 2.8, -0.6, 0.2], [0.05, 1, 0], [1, 0, 0.2]);
@@ -758,6 +792,20 @@ function pgIrAte(it, k, a) {
 }
 
 /* m.segurarComo(objeto, ação, {mao, orientacao, manterCorpo, manterObjeto}) */
+/* DUAS MÃOS NO MESMO LUGAR: se os dois contatos caem a menos do espaço de uma mão, a segunda vai para onde uma pessoa poria:
+   objeto comprido (haste, cabo, lâmina, cano) → desliza ao longo do eixo comprido (12 cm num cabo curto, até 55 cm numa haste);
+   objeto largo (caixa, cadeira, mesa) → lado oposto do objeto. Os dedos e a normal são recalculados na superfície nova. */
+function pgSepararMaos(k, cs) {
+  if (cs.length !== 2 || !cs[0].P || !cs[1].P || cs[0].s === cs[1].s) return cs;
+  const d = pgLen(pgSub(cs[0].P, cs[1].P)), m = k.meia, iL = m.indexOf(Math.max(...m)), L = m[iL] * 2, sec = [...m].sort((a, b) => b - a)[1] * 2, longo = L > sec * 2.2;
+  const minimo = longo ? Math.max(0.9, Math.min(4.8, L * (L > 9 ? 0.32 : 0.36))) : Math.max(1.4, sec * 0.8); if (d >= Math.min(minimo, longo ? L * 0.7 : 99)) return cs;
+  const dom = k.s, i2 = cs[0].s === dom ? 1 : 0, c1 = cs[1 - i2], c2 = cs[i2], ax = k.ax[iL];
+  let P;
+  if (longo) { const t1 = pgDot(pgSub(c1.P, k.C), ax), lim = m[iL] - 0.35, dir = Math.abs(t1 + minimo) <= lim && (t1 <= 0 || Math.abs(t1 - minimo) > lim) ? 1 : -1; let t2 = Math.max(-lim, Math.min(lim, t1 + dir * minimo)); if (Math.abs(t2 - t1) < minimo * 0.6) t2 = Math.max(-lim, Math.min(lim, t1 - dir * minimo));
+    P = pgAdd(c1.P, pgMul(ax, t2 - t1)); }
+  else { const lat = k.B && k.B.esqChao ? k.B.esqChao : [1, 0, 0], v = pgSub(c1.P, k.C), comp = pgDot(v, lat); P = pgSub(c1.P, pgMul(lat, 2 * comp || m[0] * 2)); }
+  const r = pgMaisPerto(k.S, P), c2n = Object.assign({}, c2, { P: r.P, N: c2.como === "palma" ? r.N : (pgDot(r.N, c2.N || r.N) > 0.2 ? c2.N : r.N) });
+  const out = cs.slice(); out[i2] = c2n; return out; }
 function segurarComo(it, o, tipo0, opts = {}) {
   const t0 = String(tipo0 || "").trim(), tipo = ACOES[t0] ? t0 : ALIAS_PEGADA[t0.toLowerCase()] || Object.keys(ACOES).find(k => k.toLowerCase() === t0.toLowerCase());
   if (!tipo) throw new Error("Pegada desconhecida: “" + tipo0 + "”. Opções: " + Object.keys(ACOES).join(", ") + ".");
@@ -781,7 +829,7 @@ function segurarComo(it, o, tipo0, opts = {}) {
     const Ad = armDims(Q), alcance = Ad.L1 + Ad.L2 + 0.5 * Ad.LH - 0.25;
     let res = [], dedos = [], empurrado = 0, aproximado = 0; const folgaExtra = {}; let afastes = 0;
     for (let volta = 0; volta < 10; volta++) {
-      const cs = A.contatos(k).filter(Boolean).map(c => folgaExtra[c.s] ? Object.assign({}, c, { folga: (c.folga ?? (c.como === "forca" || c.como === "gancho" ? 0.02 : 0.03)) + folgaExtra[c.s] }) : c), alvos = cs.map(c => ({ c, a: pgAlvoDoContato(it, c) }));
+      const cs = pgSepararMaos(k, A.contatos(k).filter(Boolean)).map(c => folgaExtra[c.s] ? Object.assign({}, c, { folga: (c.folga ?? (c.como === "forca" || c.como === "gancho" ? 0.02 : 0.03)) + folgaExtra[c.s] }) : c), alvos = cs.map(c => ({ c, a: pgAlvoDoContato(it, c) }));
       /* alcance: mais longe que o braço → aproxima (o objeto ou o corpo) */
       let falta = 0, dirF = [0, 0, 0];
       for (const { c, a } of alvos) { const sh = c.s > 0 ? k.B.oE : k.B.oD, v = pgSub(a.Pc, sh), d = pgLen(v); if (d > alcance) { falta = Math.max(falta, d - alcance); dirF = pgAdd(dirF, pgMul(pgNorm(v), d - alcance)); } }
@@ -867,4 +915,4 @@ function atualizarCordas() {
 SCN.aposApoios = (SCN.aposApoios || []).filter(f => f.name !== "atualizarCordas").concat([atualizarCordas]);
 
 function listaPegadas() { return Object.entries(ACOES).map(([tipo, a]) => ({ tipo, descricao: a.desc, grupo: a.grupo, maos: a.maos, modo: a.modo === "ir" ? "o corpo vai até o objeto" : "o objeto vem para a mão", teste: a.teste[0], testeMedidas: a.teste[1] })); }
-export { trilhaDoGolpe, GOLPES, GL_CLASSES, listaGolpes, PEGADA_PADRAO, PEGADAS, ACOES, ALIAS_PEGADA, segurarComo, listaPegadas, marcosDoCorpo, atualizarCordas, pgResolverMao, pgAlvoDoContato, pgFecharDedos, pgSdf, pgRaio, pgMaisPerto };
+export { ESGRIMA, trilhaDoGolpe, GOLPES, GL_CLASSES, listaGolpes, PEGADA_PADRAO, PEGADAS, ACOES, ALIAS_PEGADA, segurarComo, listaPegadas, marcosDoCorpo, atualizarCordas, pgResolverMao, pgAlvoDoContato, pgFecharDedos, pgSdf, pgRaio, pgMaisPerto };

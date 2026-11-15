@@ -8,7 +8,8 @@ import { ACOES_LUTA } from "./acoes-luta.js";
 import { TIPOS_OBJETO, CATALOGO, QD_ESPECIES, TONS, ELEMENTOS } from "../engine/index.js";
 import { PRECONFIG, pcArvore } from "./preconfig.js";
 import { NR, NR_FAMILIAS, NR_TONS, NR_VERSOES, NR_ESTRUTURAS, nrTotalVariantes } from "./narrativa.js";
-import { listaGolpes, GL_CLASSES } from "./pegadas.js";
+import { listaGolpes, GL_CLASSES, ESGRIMA } from "./pegadas.js";
+import { PEGADAS_FORMAS } from "./pegadas-formas-tabela.js";
 import { listaPosesAcao2 } from "./poses-acao2.js";
 import { listaAnimAcao2 } from "./anim-acao2.js";
 import { AV_ESPECIES } from "../engine/index.js";
@@ -814,13 +815,17 @@ ${EXEMPLO_FILME}
     A linha põe a pose do duelo (pegando a varinha) e o efeito saindo da PONTA da varinha. "com cajadoMagico" troca a varinha.
   Efeitos novos: clarao_cano, cartuchos, impacto_bala (podem ser usados sozinhos: efeito clarao_cano em Kai.rifle.cano).
 
-35. VEÍCULOS (carruagem, carroça, barco a remo, canoa, veleiro, balsa)
-  objeto carruagem "coche" em (0,0) gira 90 · Trovao puxa coche (o animal fica entre os varais; o veículo vai atrás dele, no filme também)
-  Kai embarca coche cocheiro · Mira embarca coche passageiro · Kai rema barco (senta no banco do remador, de costas para a proa, mãos nos remos) · Kai embarca balsa em-pe
+35. VEÍCULOS (carruagem, carroça, barcos, navio, balsa grande, trem e trilho)
+  objeto carruagem "coche" em (0,0) gira 90 · Trovao puxa coche (o animal fica na frente do timão; o veículo vai atrás dele, no filme também)
+  VÁRIOS CAVALOS: repita "X puxa coche" — 2, 4 ou 6 cavalos em parelhas na frente (até 6). O primeiro é o GUIA: anime só ele ("0s Trovao galopa 30m"); os outros andam junto, no mesmo passo.
+  Kai embarca coche assento cocheiro · Mira embarca coche assento passageiro · Kai rema barco (senta no banco do remador, de costas para a proa, mãos nos remos) · Kai embarca balsa assento em-pe
   Assentos: ${listaVeiculos().map(v => v.tipo + " (" + v.assentos.join(", ") + ")").join(" · ")}. Sem assento, ocupa o primeiro livre.
+  TREM E TRILHO são objetos separados, com cores diferentes: objeto trilho "Linha" em (0,0) profundidade 80 (comprimento em m) · objeto trem "Trem" em (0,-10) vagoes 3 (0 a 6) · também locomotiva e vagao soltos.
+  NAVIO (galeão de 3 mastros, ~30 m) e BALSA GRANDE (travessia, 14 × 8 m, grade, cabine e rampas): pessoas ficam de pé no convés (assentos leme, proa, popa, convés, borda…).
+  VEÍCULO ANDANDO NO FILME (sem animal): [T] NOME anda N m [por Ns] · re N m (de ré) · anda-ate (x,z) · vira 90 · velocidade N (m/s) · no-trilho Linha (põe o trem sobre o trilho, alinhado)
+    Ex.: 0s Trem anda 60m no-trilho Linha por 8s · 0s Nau anda 40m por 12s · 2s Barco anda-ate (5,20). Quem está embarcado vai junto. Velocidade padrão: terra 3, água 2,2, trilho 9 m/s.
   O veículo pode ser criado no quadro (linha "objeto barcoRemo "barco" em (x,z) [gira g]") ou no local. Frente do veículo = +z com gira 0 (gira 90 = virado para leste); com "puxa", ele se alinha ao animal.
   Água: a peça "agua" do local é uma lâmina fina no chão; o barco fica apoiado nela (para afundar o casco, "base -0.2").
-  Limite: barco e canoa não andam sozinhos no filme (só os puxados por animal); use câmera em movimento ou mova o objeto entre quadros.
 
 36. NARRATIVAS: SUBFUNÇÕES (família → função → subfunção → versão → tom)
   Cada função tem 3 subfunções (${NR_SUB_TOTAL} no total): encenações de 4 quadros com papel fixo — normalidade → estímulo → reação → consequência.
@@ -832,7 +837,59 @@ ${EXEMPLO_FILME}
   Cole uma história em português (site: botão História…; MCP: analisar_historia). Sai o texto pronto: elenco (nomes e papéis como "o estranho"),
   locais prontos para os lugares citados, um quadro por frase com legenda, ações traduzidas (poses, interações, atira, feitico, monta, embarca/rema, fala "…").
   O que não existe vira LACUNA registrada (lugar sem local pronto, criatura, objeto/veículo, verbo sem pose) — no site vai para a nuvem; no MCP, ferramenta lacunas.
-  Revise o texto: a análise é por regras (palavras), não entende ironia nem ordem complexa de frases.`;
+  Revise o texto: a análise é por regras (palavras), não entende ironia nem ordem complexa de frases.
+
+38. MONTAR EM QUALQUER ANIMAL (até peixe, cobra, aranha e dragão)
+  Kai monta Rex [escala N] — se o animal for pequeno demais (altura do lombo, comprimento ou largura), ele CRESCE sozinho até caber uma pessoa e aparece o aviso
+  "Rex aumentado para escala N para dar montaria". "escala N" escolhe o tamanho (erro se ainda for pequeno). Kai desmonta / apeia.
+  A postura do cavaleiro muda com o animal: ereto no cavalo, deitado para a frente no dragão, nos peixes e golfinhos, pernas bem abertas no crocodilo, ajoelhado no polvo.
+  E com a VELOCIDADE: parado → passo → galope/nado/voo o corpo inclina mais e balança no ritmo do animal. Asas abrem para o lado quando há cavaleiro.
+  No filme: "0s Rex rasteja por 4s" ou "0s Trovao galopa 20m" — o cavaleiro vai junto, no ritmo. MCP: catalogo categoria montaria.
+
+39. ESGRIMA E DUELO DE VARINHA (as posições de um duelo, com espada ou varinha)
+  Movimentos (${ESGRIMA.length}): ${ESGRIMA.map(e => e[0].replace(/^./, c => c.toLowerCase()) + " (" + e[2].toLowerCase() + ")").join(", ")}.
+  Guardas/paradas: prima, secunda, tercia, quarta, quinta, sexta, setima, oitava · ataques: estocada, estocadaLonga, flecha, resposta, remessa, finta, batida, cortes · esquivas: passataSotto, inquartata.
+  UM MOVIMENTO: Kai esgrima estocada em Mira [com varinha|espada|florete|sabre] [feitico fogo] [colorido]
+    Com VARINHA (padrão) o ataque sai à distância pela ponta: ataque → feitiço (raio, ou o "feitico" dado); defesa → escudo em volta de quem defende; movimento → brilho na ponta.
+    Com espada/florete/sabre é só a pose (golpes "esgrimaX"). Também: Kai segura varinha como varinhaQuarta · Kai segura espadaCurta como esgrimaFlecha.
+  DUELO PRONTO: [T] Kai duelo-varinha Mira [rodadas N] [feitico fogo] [com espada] · duelo-espada
+    No filme, um lance por segundo a partir de T: saudação → en garde → estocada × quarta → resposta × sexta → corte × quinta → flecha × recuo → finta → estocada longa × passata sotto →
+    inquartata → remessa → batida → corte diagonal × prima → vitória × salto para trás. Num quadro parado mostra o lance "estocada × quarta". Os dois se viram um para o outro.
+
+40. ARTES MARCIAIS (poses e animações)
+  Shaolin — bases: amMabu (cavalo), amGongbu (arco), amPubu, amXiebu, amXubu, amSaudacaoKungFu · cinco animais: amTigreGarra/Ataque/Defesa, amGarcaAsas/Bico/UmPe, amSerpenteBote/Baixa/Enrola,
+    amLouvaDeusGuarda/Agarra, amMacacoAgachado/Olha/Rouba, amDragaoGarra/Sobe/Mergulha.
+  Judô: amJudoKumikata, amJudoIpponSeoi, amJudoOGoshi, amJudoOSotoGari, amJudoUchiMata, amJudoTomoeNage, amJudoKesaGatame, amJudoUkemi.
+  Karatê: amKarateZenkutsu, amKarateKokutsu, amKarateKibaDachi, amKarateOiZuki, amKarateGyakuZuki, amKarateAgeUke, amKarateGedanBarai, amKarateShutoUke, amKarateMaeGeri, amKarateYokoGeri, amKarateKata.
+  Aikidô: amAikidoKamae, amAikidoIriminage, amAikidoKoteGaeshi, amAikidoShihoNage, amAikidoIkkyo, amAikidoSuwariwaza. Wing chun: amWingChunGuarda, amWingChunTanSau, amWingChunBongSau, amWingChunPakSau, amWingChunSocoCorrente.
+  Taekwondo: amTkdGuarda, amTkdDollyoChagi, amTkdNeryoChagi, amTkdTwioYopChagi, amTkdDwiChagi. Capoeira: amCapoeiraMeiaLua, amCapoeiraArmada, amCapoeiraQueixada, amCapoeiraAu, amCapoeiraNegativa, amCapoeiraEsquivaBaixa, amCapoeiraMartelo (e guardaCapoeira = ginga).
+  Jiu-jitsu: amBjjGuardaFechada, amBjjMontada, amBjjChaveDeBraco, amBjjMataLeao, amBjjTriangulo, amBjjRaspagem. Apelidos em português/japonês também valem (Kai pose \"mae geri\" · Kai pose mabu · pose garça — com espaço, entre aspas).
+  Animações: kataShaolinAnim, cincoAnimaisAnim, tigreAtacaAnim, garcaBicaAnim, serpenteBoteAnim, macacoAnim, judoSeoiNageAnim, judoOSotoGariAnim, judoUkemiAnim, karateKihonAnim, karateChutesAnim,
+    aikidoIriminageAnim, wingChunAnim, taekwondoAnim, taekwondoVoadorAnim, capoeiraGingaAnim, capoeiraAuAnim, jiuJitsuAnim — "0s Kai anima cincoAnimaisAnim".
+
+41. EFEITOS DE MOVIMENTO (mangá/webtoon) e EFEITOS AUTOMÁTICOS
+  IMPULSO: efeito impulso em Kai [dash 1] [lascas 30] [altura 6] [colorido elemento eletrico] — explosão BRANCA recortada no chão onde a pessoa pisou para pular, pousar ou arrancar:
+    estrela branca, lascas brancas espirrando e riscos de velocidade. dash 1 estica tudo para trás (arrancada); sem dash espalha para todos os lados (pulo/pouso).
+  BORRÃO: efeito borrao_movimento em Kai [copias 6] [comprimento 2] — o corpo arrastado para trás em cópias translúcidas. Também: velocidade_corpo, pos_imagem (fantasmas), rastro_membro, arco_movimento.
+  PROJÉTIL ESTICADO: efeito projetil de Kai.maoDir para Mira estica 2 (a cabeça do projétil se alonga na direção do voo).
+  PARÂMETROS DE QUALQUER EFEITO pelo nome, no texto: "efeito onda_choque em Kai aneis 6 raio 10" — os nomes estão no catálogo de efeitos (site: painel Efeitos; MCP: efeitos acao catalogo).
+  AUTOMÁTICOS: no cabeçalho do filme "filme "X" fps 12 efeitos auto" — cada animação ganha os efeitos sozinha:
+    pulo/salto/mortal/chute voador → impulso branco na decolagem, impulso + poeira no pouso, linhas de velocidade · pouso/queda → impulso, poeira e onda no chão ·
+    corrida/arrancada/investida/flecha → impulso esticado para trás, linhas de velocidade, borrão e poeira · golpe (soco, chute, corte, estocada…) → borrão curto e anéis de impacto.
+  EFEITO PRÓPRIO (composto) por texto/MCP e salvo: MCP efeitos acao criar (camadas) + salvar_modelo; no texto use o nome do modelo como efeito. Todo efeito é testado em 8 ângulos (teste vfx-angulos).
+
+42. LINHA DE COMANDO (gm) — as mesmas ferramentas do MCP, sem cliente
+  node mcp/gm.mjs lista · node mcp/gm.mjs ajuda camera · node mcp/gm.mjs catalogo --categoria esgrima --saida pasta
+  node mcp/gm.mjs texto historia.txt --png q1.png --quadro 1 · node mcp/gm.mjs texto filme.txt --mp4 filme.mp4 --fps 12
+  node mcp/gm.mjs roteiro passos.json (várias ferramentas em sequência na mesma cena). Imagens, vídeos e arquivos devolvidos são salvos na pasta (--saida).
+  CÂMERA PARADA NUM PONTO (filme e quadro): camera (x,altura,z) olhando (x,altura,z) · camera (8,2,2) olhando Kai — em metros; "2s camera (…) olhando …" corta para ela aos 2 s.
+
+43. FORMAS DE SEGURAR (cada objeto tem várias, testadas)
+  Cada objeto que dá para segurar tem uma lista de formas que FUNCIONAM (testadas uma a uma: a mão alcança, os dedos ficam fora do objeto, nada atravessa o tronco,
+  e com duas mãos elas ficam afastadas o certo para o tamanho do objeto). A 1ª é a padrão. Objetos com mais formas: ${Object.entries(PEGADAS_FORMAS).sort((a, b) => b[1].length - a[1].length).slice(0, 8).map(([k, v]) => k + " (" + v.length + ")").join(", ")}.
+  Kai segura bastao (1ª forma) · Kai segura bastao como 3 (3ª forma) · Kai segura bastao uma-mao (1ª com uma mão) · Kai segura bastao duas-maos como 2 · Kai segura bastao como noOmbro (pelo nome).
+  "como N" fora da lista dá erro que mostra todas as formas daquele objeto, numeradas. Com duas mãos, a segunda mão escorrega ao longo do cabo (objetos compridos)
+  ou vai para o lado oposto (objetos largos): as mãos nunca ficam uma em cima da outra. Lista completa: MCP catalogo categoria pegadas [funcao bastao].`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */

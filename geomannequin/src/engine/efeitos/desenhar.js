@@ -1079,8 +1079,12 @@ TIPOS.projetil = fx => {
     const perf = t => Math.pow(t, 1.2);
     if (fx.ink) { svg += forma(pincelada(cauda, R * 1.6, perf), INK, { op: 0.9 }); svg += forma(pincelada(cauda.slice(Math.floor(cauda.length / 3)), R * 0.7, perf), PAPEL, { op: 0.95 }); }
     else { svg += forma(pincelada(cauda, R * 2.2, perf), cores[cores.length - 1], { op: 0.35, filtro: brilho(fx) }); svg += forma(pincelada(cauda, R * 1.4, perf), cores[2] || cores[1], { op: 0.85 }); svg += forma(pincelada(cauda, R * 0.6, perf), cores[0], { op: 0.95 }); } }
-  if (fx.ink) { svg += forma(circulo(x, y, R * 1.1), INK) + forma(circulo(x, y, R * 0.6), PAPEL); }
-  else { svg += forma(circulo(x, y, R * 2.2), cores[cores.length - 1], { op: 0.3, filtro: brilho(fx) }) + forma(circulo(x, y, R * 1.2), cores[1], { op: 0.95 }) + forma(circulo(x, y, R * 0.6), cores[0]); }
+  /* esticado na direção do movimento (estica 0 = redondo; 2 = três vezes mais comprido que largo) */
+  let cab = (rr, k) => circulo(x, y, rr);
+  if (P.estica > 0.02 && tr.length >= 2 && !fx.plano) { const q = T2(fx, tr[tr.length - 2] || tr[0]), dx = x - q[0], dy = y - q[1], l = Math.hypot(dx, dy); if (l > 0.5) { const ux = dx / l, uy = dy / l;
+    cab = rr => { const pts = []; for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a), ex = rr * (1 + P.estica) * (c > 0 ? 0.7 : 1.3); pts.push([x + ux * c * ex - uy * sn * rr * 0.85, y + uy * c * ex + ux * sn * rr * 0.85]); } return suave(pts, true); }; } }
+  if (fx.ink) { svg += forma(cab(R * 1.1), INK) + forma(cab(R * 0.6), PAPEL); }
+  else { svg += forma(cab(R * 2.2), cores[cores.length - 1], { op: 0.3, filtro: brilho(fx) }) + forma(cab(R * 1.2), cores[1], { op: 0.95 }) + forma(cab(R * 0.6), cores[0]); }
   let fa = ""; for (let i = 0; i < quant(fx, P.faiscas); i++) { const a = r.entre(0, Math.PI * 2), d = R * r.entre(1.2, 2.6); fa += lasca(x + Math.cos(a) * d, y + Math.sin(a) * d, R * r.entre(0.12, 0.3), r); }
   svg += forma(fa, fx.ink ? INK : cores[1], { op: 0.9 });
   return svg;
@@ -1097,6 +1101,43 @@ TIPOS.poeira_pes = fx => {
       bolhas(q[0], q[1], Rr * s * (0.45 + 0.55 * (1 - t * 0.5)) * (0.4 + 0.6 * fx.t), r, 4).forEach(c => (q[2] < zc ? tras : frente).push(c)); } }
   out.atras = nuvemTinta(fx, tras.reverse(), r, "claro", 0.95); out.frente = nuvemTinta(fx, frente.reverse(), r, "claro", 0.97);
   return out;
+};
+/* ---------- IMPULSO (mangá/webtoon): explosão branca no chão onde a pessoa pisou para pular, pousou ou arrancou.
+   Estrela branca recortada no chão, lascas brancas espirrando para cima e para fora, riscos de velocidade.
+   "dash" > 0 estica tudo para trás (arrancada/investida); 0 = pulo/pouso (para todos os lados). ---------- */
+TIPOS.impulso = fx => {
+  const { P, r } = fx, up = UPW(fx), s = pxu(fx), out = { chao: "", atras: "", frente: "" };
+  let C = fx.A.mundo; if (!fx.plano && fx.A.dono >= 0) { const pes = [pontoParte(fx.K, fx.A.dono, "peEsq"), pontoParte(fx.K, fx.A.dono, "peDir")].filter(Boolean); if (pes.length) C = [pes.reduce((a, q) => a + q[0], 0) / pes.length, 0, pes.reduce((a, q) => a + q[2], 0) / pes.length]; }
+  if (fx.plano) { const [x, y] = fx.A.tela, R = escalaW(fx, P.raio) * s * (0.35 + 0.65 * fx.t); return estouro(fx, x, y, R, Math.round(P.pontas), r); }
+  C = [C[0], fx.K.g0 + 0.03, C[2]]; const B = base(up), Rw = escalaW(fx, P.raio) * (0.3 + 0.7 * fx.t), zc = fx.proj(C)[2];
+  let u = direcaoRastro(fx); u = norm([u[0] || 0, 0, u[2] || 0]); if (!isFinite(u[0])) u = [-1, 0, 0]; const dash = Math.max(0, Math.min(1, P.dash));
+  const P3 = (a, rr) => { let v = add(mul(B.v, Math.cos(a) * rr), mul(B.w, Math.sin(a) * rr)); const ao = dot(v, u); if (dash > 0 && ao > 0) v = add(v, mul(u, ao * dash * 1.6)); else if (dash > 0) v = add(v, mul(u, ao * -0.55 * dash)); return add(C, v); };
+  /* estrela branca no chão (duas camadas) */
+  const n = Math.max(6, Math.round(P.pontas)), estr = (R1, R2, op) => { const pts = []; for (let i = 0; i < 2 * n; i++) { const a = i * Math.PI / n + r.entre(-0.12, 0.12), rr = (i % 2 ? R2 : R1) * r.entre(0.75, 1.25); pts.push(T2(fx, P3(a, rr))); } return forma("M" + pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + "Z", PAPEL, { stroke: fx.ink ? INK : corEm(fx.cores, 0.6), sw: Math.max(1, escalaW(fx, 0.18) * s), op }); };
+  out.chao += estr(Rw * 1.35, Rw * 0.62, 0.97) + estr(Rw * 0.8, Rw * 0.38, 1);
+  /* riscos no chão saindo do centro */
+  let d = ""; for (let i = 0; i < quant(fx, 26); i++) { const a = r() * 6.28, r0 = Rw * r.entre(1.0, 1.4), r1 = r0 + Rw * r.entre(0.3, 0.9) * (1 + dash); d += pincelada([T2(fx, P3(a, r0)), T2(fx, P3(a, r1))], escalaW(fx, 0.22) * s * r.entre(0.6, 1.4), "agulha"); }
+  out.chao += forma(d, fx.ink ? INK : escuro(fx), { op: 0.8 });
+  /* lascas brancas espirrando (para cima e para fora): atrás ou na frente do corpo pela profundidade */
+  const H = escalaW(fx, P.altura) * (0.35 + 0.65 * fx.t);
+  for (let i = 0; i < quant(fx, P.lascas); i++) { const a = r() * 6.28, b0 = P3(a, Rw * r.entre(0.5, 1.1)), rad = norm(sub(b0, C)), h = H * r.entre(0.35, 1) * (1 - 0.5 * dash), tip = add(add(b0, mul(up, h)), mul(rad, h * r.entre(0.2, 0.7) + Rw * 0.3 * dash)), wv = mul(norm(cross(up, rad)), Rw * r.entre(0.08, 0.18));
+    const a0 = T2(fx, add(b0, wv)), a1 = T2(fx, add(b0, mul(wv, -1))), a2 = T2(fx, tip), lasq = forma("M" + [a0, a2, a1].map(q => f1(q[0]) + " " + f1(q[1])).join("L") + "Z", PAPEL, { stroke: fx.ink ? INK : corEm(fx.cores, 0.6), sw: Math.max(0.8, escalaW(fx, 0.12) * s) });
+    out[fx.proj(b0)[2] < zc ? "atras" : "frente"] += lasq; }
+  /* nuvenzinhas brancas na borda */
+  const cs = []; for (let i = 0; i < quant(fx, 10); i++) { const a = r() * 6.28, q = T2(fx, add(P3(a, Rw * r.entre(0.9, 1.3)), mul(up, Rw * 0.15))); cs.push([q[0], q[1], Rw * s * r.entre(0.12, 0.25)]); }
+  out.frente += nuvemTinta(fx, cs, r, "claro", 0.95);
+  return out;
+};
+/* ---------- BORRÃO DE MOVIMENTO: o corpo do dono "arrastado" para trás em cópias translúcidas (motion blur de quadrinho) ---------- */
+TIPOS.borrao_movimento = fx => {
+  const { P, D } = fx, caps = capsulasTela(fx); if (!caps.length) return "";
+  let mv = [Math.cos(D.ang), Math.sin(D.ang)];
+  if (fx.e.direcao.modo === "auto") { mv = [1, 0]; if (fx.A.dono >= 0 && fx.A.mundo) { const wr = (fx.K.list0[fx.A.dono].p.wRot || 0) * Math.PI / 180, a = fx.proj(fx.A.mundo), b = fx.proj(add(fx.A.mundo, [Math.sin(wr), 0, Math.cos(wr)])), l = Math.hypot(b[0] - a[0], b[1] - a[1]); if (l > 0.3 * a[3]) mv = [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; } }
+  const L = fx.A.s * P.comprimento * fx.e.escala * (0.3 + 0.7 * fx.t), n = Math.max(2, Math.round(P.copias)), cor = fx.ink ? "#8A8A8A" : corEm(fx.cores, 0.45);
+  let svg = ""; for (let k = n; k >= 1; k--) { const f = k / n, ox = -mv[0] * L * f, oy = -mv[1] * L * f; let dd = "";
+    for (const c of caps) dd += "M" + f1(c.a[0] + ox) + " " + f1(c.a[1] + oy) + "L" + f1(c.b[0] + ox) + " " + f1(c.b[1] + oy);
+    svg += '<path d="' + dd + '" fill="none" stroke="' + cor + '" stroke-linecap="round" stroke-width="' + f1(Math.max(2, (caps.reduce((a, c) => a + c.r, 0) / caps.length) * 2)) + '" opacity="' + (P.opacidade * (1 - f * 0.85)).toFixed(3) + '"/>'; }
+  return { atras: svg };
 };
 /* ---------- personalizado ---------- */
 /* construtor por camadas e os efeitos prontos de mangá: a profundidade de referência é o peito do dono */

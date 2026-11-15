@@ -5,7 +5,7 @@
 import { SCN, novoIdObjeto, P, setP, nextHue, setCorObjeto, atualizarApoios } from "./modelo.js";
 import { doBodyPose, guardArms, POSE0 } from "./poses.js";
 import { pMundo } from "./colisoes.js";
-import { TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
+import { COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
 
 const chaoY = () => restGround(SCN.list[0].params);
 /* roda uma função de pose com este manequim como ativo (as poses usam P) */
@@ -41,6 +41,7 @@ function adicionarObjeto(tipo, o) {
   if (SCN.objetos.length >= 300) throw new Error("Limite de 300 objetos na cena.");
   const q = objetoPadrao(tipoObjeto(tipo), {}); q.id = novoIdObjeto();
   SCN.objetos.push(q); q.hue = nextHue(q);
+  { const T = COMPOSTOS[q.tipo]; if (T && T.corPadrao && !(o && o.cor)) try { setCorObjeto(q, T.corPadrao); } catch (e) { } }
   try { editarObjeto(q, o || {}); } catch (e) { SCN.objetos.splice(SCN.objetos.indexOf(q), 1); throw e; }
   /* em cima de outro e sem posição dada: no centro do de baixo */
   if (q.sobre && o && o.x === undefined && o.z === undefined) { const s = SCN.objetos.find(x => x.id === q.sobre); if (s) { q.x = s.x; q.z = s.z; } }
@@ -60,6 +61,7 @@ function editarObjeto(q, o) {
   if (cil) { if (o.raio === undefined && o.diametro === undefined && (o.larg !== undefined || o.largura !== undefined || o.prof !== undefined || o.profundidade !== undefined)) q.raio = Math.max(0.1, Math.max(q.larg, q.prof) / 2); q.larg = q.prof = 2 * q.raio; }
   else if (q.raio !== undefined) delete q.raio;
   if (typeof o.nome === "string") q.nome = o.nome.slice(0, 24);
+  if (Number.isFinite(o.vagoes)) q.vagoes = Math.max(0, Math.min(6, Math.round(o.vagoes)));
   if (o.cor !== undefined) { if (o.cor === null || o.cor === "auto") { q.col = null; q.hue = nextHue(q); } else setCorObjeto(q, String(o.cor), o.contorno); }
   if (o.sobre !== undefined) {
     if (o.sobre === null || o.sobre === false || o.sobre === "chao" || o.sobre === "chão") q.sobre = null;

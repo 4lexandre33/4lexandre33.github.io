@@ -1,6 +1,6 @@
 # Matriz de comandos — tudo que é visual tem texto e ferramenta de IA
 
-Cada recurso visual do GeoMannequin pode ser feito por três caminhos: no **texto** (editor Texto do site, a mesma linguagem que a IA escreve), num **botão** do site e por uma **ferramenta MCP** (Claude, ChatGPT e Gemini usam as mesmas ferramentas). Capítulos = manual (site → Texto → Manual; MCP `manual_name`, `manual_filme`, `manual_avancado`).
+Cada recurso visual do GeoMannequin pode ser feito por quatro caminhos — texto, botão, ferramenta MCP e a linha de comando `node mcp/gm.mjs` (que tem exatamente as mesmas ferramentas do MCP, testado em `testes/paridade-texto-mcp-cli.mjs`): no **texto** (editor Texto do site, a mesma linguagem que a IA escreve), num **botão** do site e por uma **ferramenta MCP** (Claude, ChatGPT e Gemini usam as mesmas ferramentas). Capítulos = manual (site → Texto → Manual; MCP `manual_name`, `manual_filme`, `manual_avancado`).
 
 | Recurso | Texto (DSL) | Site | MCP | Cap. |
 |---|---|---|---|---|
@@ -35,5 +35,16 @@ Cada recurso visual do GeoMannequin pode ser feito por três caminhos: no **text
 | Passes de quadro (ControlNet) | — | Baixar .zip | `gerar_name passes`, `referencias_controlnet` | 7 |
 | Auditor de pés e chão | — | HQ e mais… → Auditar animações | `auditar_animacoes` | 26 |
 | Catálogo em código | — | aba Biblioteca → Catálogo .md | `catalogo_dsl` | 20 |
+| Montar em qualquer animal | `Kai monta Rex [escala N]` (cresce sozinho) | Texto | `catalogo montaria`, `filme_texto` | 38 |
+| Esgrima (espada e varinha) | `Kai esgrima estocada em Mira [com sabre] [feitico fogo]` | Texto | `catalogo esgrima`, `gerar_name` | 39 |
+| Duelo de varinha pronto | `0s Kai duelo-varinha Mira [rodadas N]` · `duelo-espada` | aba Filme | `filme_texto`, `exportar_filme` | 39 |
+| Artes marciais | `Kai pose amTigreGarra` · `0s Kai anima cincoAnimaisAnim` | Biblioteca | `catalogo artes_marciais`, `animacao_texto` | 40 |
+| Veículos andando, trem, navio | `0s Trem anda 60m no-trilho Linha` · `Nau anda 40m` · `X puxa coche` (2–6 cavalos) | Texto | `catalogo veiculos`, `filme_texto` | 35 |
+| Efeitos de movimento | `efeito impulso em Kai dash 1` · `borrao_movimento` · `projetil … estica 2` | painel Efeitos | `efeitos`, `catalogo efeitos_movimento` | 41 |
+| Efeitos automáticos | `filme "X" fps 12 efeitos auto` | aba Filme | `exportar_filme` | 41 |
+| Parâmetros de efeito por nome | `efeito onda_choque em Kai aneis 6 raio 10` | painel Efeitos | `efeitos acao adicionar params` | 41 |
+| Formas de segurar | `segura bastao como 3` · `uma-mao` · `duas-maos` | Texto | `catalogo pegadas` | 43 |
+| Câmera parada num ponto (filme) | `camera (8,2,2) olhando Kai` | aba Filme | `camera_plano` | 42 |
+| Linha de comando | `node mcp/gm.mjs <ferramenta> --chave valor` · `texto f.txt --png/--mp4` · `roteiro` | — | (todas as 110) | 42 |
 
 Lacunas conhecidas (honesto): profundidade de campo (foco) só existe como passe de profundidade para pós-produção; som não é gerado (falas viram legenda e .srt); passes em vídeo não têm botão no site (só MCP, que usa o ffmpeg do computador).

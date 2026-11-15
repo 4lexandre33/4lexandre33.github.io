@@ -131,13 +131,23 @@ function amCriar(nome, especie, o = {}) {
 /* ===== montaria ===== */
 /* pose de montado: sentado com as pernas abertas em volta do lombo, mãos à frente (rédeas) */
 const AM_MONTADO = { hipFlexL: 72, hipFlexR: 72, hipAbdL: 28, hipAbdR: 28, kneeFlexL: 78, kneeFlexR: 78, ankleFlexL: -8, ankleFlexR: -8, armFlexL: 32, armFlexR: 32, elbowL: 62, elbowR: 62, armAbdL: 6, armAbdR: 6, handCurlL: 0.75, handCurlR: 0.75, spineFlex: 6 };
+/* postura do cavaleiro por tipo de corpo: [inclinação do tronco, quadril, joelho, braços à frente, cotovelo, inclinação extra na velocidade] */
+const AM_POSTURA = { quadrupede: [6, 72, 78, 32, 62, 1], alado: [24, 62, 98, 55, 45, 1.3], dragao: [30, 58, 104, 62, 40, 1.4], teropode: [16, 68, 90, 40, 55, 1.2], reptil: [20, 66, 96, 44, 50, 1],
+  serpente: [26, 64, 104, 58, 40, 1], peixe: [52, 30, 40, 85, 25, 0.6], cetaceo: [48, 32, 44, 82, 28, 0.6], cefalopode: [18, 70, 95, 50, 50, 0.8], artropode: [22, 92, 112, 42, 58, 1], anfibio: [18, 74, 92, 40, 55, 1], primata: [8, 82, 70, 70, 80, 1], ave: [24, 64, 96, 50, 48, 1.2] };
+function amPostura(o) { const E = QD_ESPECIES[qdEspecie(o.animal.especie)] || {}; if (E.classe === "criatura") return AM_POSTURA[E.plano] || AM_POSTURA.reptil; if (qdEhAve(o)) return AM_POSTURA.ave; return E.asas ? AM_POSTURA.alado : AM_POSTURA.quadrupede; }
+/* quanto o animal anda/voa/nada agora (0 parado … 1 correndo/mergulhando): vem da andadura (quadrúpede) ou do nome da animação (criatura, ave) */
+function amVelocidade(o) { const m = o.animal.marchaAtual || "", an = o.animal.animAtual || ""; if (/galope|fuga/.test(m) || /correr|galopa|mergulh|bote|investida/.test(an)) return 1; if (m === "trote" || m === "meio-galope" || /nadar|voar|planar|decolar|serpentear|rastejar|pousar/.test(an)) return 0.6; if (m || /andar|passo/.test(an)) return 0.3; return 0; }
 function amAssentar(it, o, g0, soPernas) { /* põe a pessoa sentada na sela do animal (posição, giro e altura); soPernas = mantém os braços (acenar a cavalo) */
-  const s = qdPontoMundo(o, "sela", g0), tam = it.params.tamanho || 1; for (const [k, v] of Object.entries(AM_MONTADO)) if (!soPernas || /^(hip|knee|ankle)/.test(k)) it.params[k] = v; it.params.wx = s[0]; it.params.wz = s[2]; it.params.wRot = o.giro || 0; it.params.ground = 0; it.params.bodyLift = 0;
-  /* o assento (parte de baixo da pelve) encosta na sela */
+  const s = qdPontoMundo(o, "sela", g0), tam = it.params.tamanho || 1, [inc, hf, kf, af, el, kv] = amPostura(o);
+  /* abertura das pernas pela largura do lombo (crocodilo, dragão e baleia abrem mais; cobra e cavalo menos) */
+  const larg = Math.min(o.larg || 5, o.alt || 5) * 0.5 / tam, abd = Math.max(16, Math.min(70, Math.asin(Math.min(0.95, larg / 4.6)) * 180 / Math.PI + 10));
+  const P = { hipFlexL: hf, hipFlexR: hf, hipAbdL: abd, hipAbdR: abd, kneeFlexL: kf, kneeFlexR: kf, ankleFlexL: -8, ankleFlexR: -8, armFlexL: af, armFlexR: af, elbowL: el, elbowR: el, armAbdL: 6, armAbdR: 6, handCurlL: 0.75, handCurlR: 0.75 };
+  for (const [k, v] of Object.entries(P)) if (!soPernas || /^(hip|knee|ankle)/.test(k)) it.params[k] = v; it.params.wx = s[0]; it.params.wz = s[2]; it.params.wRot = o.giro || 0; it.params.ground = 0; it.params.bodyLift = 0;
+  /* o cavaleiro reage à velocidade e ao animal: inclina à frente no galope, no mergulho e no voo, acompanha o empinar; balança com o passo */
+  const pz = o.animal.pose || {}, v = amVelocidade(o), fase = (pz.fase || 0) * Math.PI * 2, lean = inc + v * 22 * kv + ((pz.voo || 0) > 0.05 ? 10 : 0) + Math.max(0, (pz.corpoInclina || 0)) * 0.6 + Math.sin(fase) * 4 * v;
+  it.params.spineFlex = Math.min(70, lean); it.params.spineSide = Math.sin(fase) * 3 * v; it.params.neckFlex = -Math.min(70, lean) * 0.45; it.params.headPitch = -Math.min(70, lean) * 0.35;
+  /* o assento (parte de baixo da pelve) encosta na sela (depois da postura: inclinar muda a altura da pelve) */
   try { const cs = capsulas(pMundo(it)), L = cs.caps || cs, pel = L.find(c => c.nome === "pelve"); const yA = pel ? Math.min(pel.a[1], pel.b[1]) - (pel.r || 0) * 0.7 : null; if (yA !== null) it.params.bodyLift = (s[1] - yA) / tam; } catch (e) { }
-  /* o cavaleiro reage à andadura: inclina à frente no galope (e mais no salto), acompanha o empinar */
-  const pz = o.animal.pose || {}, m = o.animal.marchaAtual || "", lean = (/galope/.test(m) ? 22 : m === "trote" || m === "meio-galope" ? 10 : 0) + ((pz.voo || 0) > 0.05 ? 18 : 0) + Math.max(0, (pz.corpoInclina || 0)) * 0.6;
-  it.params.spineFlex = 6 + lean; if (lean) { it.params.neckFlex = -lean * 0.4; it.params.headPitch = -lean * 0.3; }
   it.apoioEm = o.id; it.montadoEm = o.nome; o.animal.cavaleiro = it.name; o.animal.sela = true; }
 function amChao() { const it = SCN.list.find(x => x.name !== "__vazio__") || SCN.list[0]; try { return it ? restGround(SCN.list[0].params) : 0; } catch (e) { return 0; } }
 /* depois de mexer nos animais: cavaleiros acompanham a sela, carga acompanha o lombo */
@@ -152,7 +162,11 @@ function amChaoMundo() { try { const it = SCN.list.find(x => x.name !== "__vazio
 function amPontos(nome) { const o = amAchar(nome); if (!o) return null; const g0 = amChaoMundo(), cab = qdPontoMundo(o, "cabeca", g0), sela = qdPontoMundo(o, "sela", g0), g = (o.giro || 0) * Math.PI / 180, fr = [Math.sin(g), Math.cos(g)];
   return { cabeca: cab, olhos: cab, olhar: [fr[0], 0, fr[1]], peito: sela, centro: sela, frente: fr, chao: g0, animal: true, tam: Math.max(o.alt || 0, o.larg || 0, o.prof || 0, (sela[1] - g0) * 1.6) }; }
 /* dá para montar? a sela precisa estar a ≥ 0,55 m do chão (abaixo disso a pessoa esmaga o animal); devolve {ok, alturaSela (m), escalaMin} */
-function amMontavel(o) { const g0 = amChaoMundo(), sela = qdPontoMundo(o, "sela", g0), h = (sela[1] - g0) * 0.114, esc = o.animal.escala || 1, min = qdEhAve(o) ? 0.85 : 0.55;
-  return { ok: h >= min, alturaSela: h, escalaMin: h > 0 ? Math.ceil(esc * min / h * 10) / 10 : 99 }; }
+function amMontavel(o) { const g0 = amChaoMundo(), sela = qdPontoMundo(o, "sela", g0), h = (sela[1] - g0) * 0.114, esc = o.animal.escala || 1, min = qdEhAve(o) ? 0.85 : 0.55, E = QD_ESPECIES[qdEspecie(o.animal.especie)] || {}, Lm = (E.L || E.c || 1.5) * esc;
+  /* também precisa ter COMPRIMENTO para a pessoa (pelo menos 1,1 m de lombo) */
+  /* e LARGURA de lombo (raio do corpo): um bicho fino demais (lagarto, cobra, polvo) não dá apoio às pernas */
+  const Rm = E.R ? E.R * esc : 1, Rmin = E.plano === "cefalopode" ? 0.3 : E.plano === "serpente" || E.plano === "artropode" ? 0.16 : 0.2;
+  const Lmin = qdEhAve(o) ? 1.6 : 1.1, kH = h > 0 ? min / h : 99, kL = Lm > 0 ? Lmin / Lm : 99, kR = E.R ? Rmin / Rm : 0, k = Math.max(kH, kL, kR);
+  return { ok: h >= min && Lm >= Lmin && (!E.R || Rm >= Rmin), alturaSela: h, escalaMin: Math.min(100, Math.ceil(esc * k * 1.08 * 10) / 10) }; }
 export { amMontavel, CR_POSES, amEhCriatura, AV_POSES, amEhAve, amParams, amParamsMix, amPoseGait, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
 void qdEsqueleto;

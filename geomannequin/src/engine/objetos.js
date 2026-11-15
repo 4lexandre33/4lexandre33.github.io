@@ -351,6 +351,7 @@ function desenharObjeto(o, p, pal0, g0, L) {
         if (Q.length < 3) return; fs.push({ pts: Q.map(ci.tela), z: Math.min(cen[2], zPerto), lum }); return; }
       fs.push({ pts: f.map(i => T[i]), z: cen[2], lum });
     });
+    if (b.cor) fs.forEach(f => f.ink = b.cor);
     grupos.push(g); faces.push(...fs);
     /* sombra no chão: cantos projetados ao longo da luz, casca convexa */
     if (L.shadow && Lw[1] > 0.08 && !Cc.some(c => c[2] > zPerto)) {
@@ -368,7 +369,7 @@ function desenharObjeto(o, p, pal0, g0, L) {
     g.fs.sort((a, b) => a.z - b.z);
     for (const fc of g.fs) {
       /* lateral do cilindro: tom contínuo (degradê pela luz) e só preenchimento (o contorno vem da silhueta); faces planas: degraus de tom */
-      const cor = !L.fill ? "none" : fc.ink ? (fc.ink === "ink" ? pal.ink : mistura(pal.shade3, pal.ink, 0.25)) : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
+      const cor = !L.fill ? "none" : fc.ink ? (fc.ink === "ink" ? pal.ink : fc.ink === "claro" ? mistura(L.shade ? tom(fc.lum) : pal.fill, "#ffffff", 0.72) : mistura(pal.shade3, pal.ink, 0.25)) : fc.lado && L.shade ? mistura(pal.fill, pal.shade3, Math.max(0, Math.min(1, (0.75 - fc.lum) / 1.4))) : tom(L.shade ? fc.lum : 1);
       if (fc.faceta) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? mistura(pal.fill, pal.ink, 0.55) : pal.ink) + ';stroke-width:0.8;stroke-linejoin:round"/>';
       else if (fc.lado) svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + (L.fill ? cor : "none") + ';stroke-width:0.7;stroke-linejoin:round"/>';
       else svg += '<path d="M' + fc.pts.map(q => f1(q[0]) + " " + f1(q[1])).join("L") + 'Z" style="fill:' + cor + ';stroke:' + pal.ink + ';stroke-width:1.5;stroke-linejoin:round"/>';

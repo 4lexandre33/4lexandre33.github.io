@@ -28,6 +28,31 @@ const ocCaixa = (c, h, R) => R ? { c, h, R } : { c, h };
 const ocEsf = (c, r, extra) => Object.assign({ esf: true, c, r: Array.isArray(r) ? r : [r, r, r] }, extra || {});
 const ocToro = (c, R, rt, eixo, ra, extra) => Object.assign({ toro: true, c, Rm: R, rt, ra: ra || rt, R: rotParaEixo(EIXO[eixo] || eixo) }, extra || {});
 const ocPega = (P, N, eixo, extra) => Object.assign({ P, N: ocUnit(N), eixo: ocUnit(eixo) }, extra || {});
+/* roda de carruagem/vagão: aro (toro no eixo x), raios e cubo — centro (x,y,z), raio r, n raios */
+function vcRoda(x, y, z, r, n) { const out = [ocToro([x, y, z], r - 0.35, 0.35, "x", 0.5), ocEsf([x, y, z], [0.9, 0.9, 0.9])]; for (let k = 0; k < n / 2; k++) { const a = k * 2 * Math.PI / n; out.push(ocTubo([x, y - Math.cos(a) * (r - 0.4), z - Math.sin(a) * (r - 0.4)], [x, y + Math.cos(a) * (r - 0.4), z + Math.sin(a) * (r - 0.4)], 0.12)); } return out; }
+/* roda de trem: disco com friso, contrapeso e cubo */
+function vcRodaTrem(x, y, z, r) { const s = Math.sign(x) || 1; return [{ cil: true, c: [x, y, z], r, hh: 0.5, R: rotParaEixo([1, 0, 0]) }, { cil: true, c: [x - s * 0.55, y, z], r: r + 0.45, hh: 0.12, R: rotParaEixo([1, 0, 0]) }, Object.assign({ cil: true, c: [x + s * 0.55, y, z], r: r * 0.3, hh: 0.1, R: rotParaEixo([1, 0, 0]) }, { cor: "ink" })]; }
+function vcLocomotiva(z0) { const out = [], Z = z => z + z0;
+  out.push(ocCaixa([0, 6.6, Z(4)], [5.6, 1.6, 40]), ocCaixa([0, 6.6, Z(45.5)], [12, 1.2, 1.2]));
+  for (const s of [-1, 1]) { for (const z of [-6, 8, 22]) out.push(...vcRodaTrem(s * 6.3, 7.8, Z(z), 6.4)); for (const z of [34, 40]) out.push(...vcRodaTrem(s * 6.3, 4.2, Z(z), 2.8));
+    out.push(ocTubo([s * 7.4, 7.8, Z(-6)], [s * 7.4, 7.8, Z(22)], 0.45), ocCaixa([s * 9.5, 9.6, Z(36)], [2.0, 2.8, 4.2]), ocEsf([s * 6, 6.8, Z(46.8)], [1.4, 1.4, 0.6]), ocCaixa([s * 11.6, 15.0, Z(8)], [0.25, 0.8, 26])); }
+  out.push({ cil: true, c: [0, 19.5, Z(14)], r: 8.6, hh: 20, R: rotParaEixo([0, 0, 1]) }, { cil: true, c: [0, 19.5, Z(36)], r: 9.2, hh: 3, R: rotParaEixo([0, 0, 1]) }, Object.assign({ cil: true, c: [0, 19.5, Z(39.1)], r: 7.8, hh: 0.15, R: rotParaEixo([0, 0, 1]) }, { cor: "ink" }));
+  out.push({ cil: true, c: [0, 32, Z(34)], r: 2.6, hh: 4.5 }, { cil: true, c: [0, 37, Z(34)], r: 3.6, hh: 0.9 }, ocEsf([0, 28.4, Z(18)], [3.2, 3.0, 3.6]), { cil: true, c: [0, 28.8, Z(6)], r: 1.6, hh: 1.8 }, ocEsf([0, 25, Z(39.5)], [1.8, 1.8, 1.0]), Object.assign(ocEsf([0, 25, Z(40.3)], [1.3, 1.3, 0.3]), { cor: "fundo" }));
+  for (let k = 0; k < 6; k++) { const x = -10 + k * 4; out.push(ocCaixa([x * 0.55, 4.0, Z(44.5 + Math.abs(x) * 0.18)], [1.4, 2.4, 0.3], rotParaEixo([0, 0.6, -1]))); }
+  out.push(ocCaixa([0, 21.5, Z(-14)], [11.4, 12.5, 8.4]), ocCaixa([0, 35, Z(-13)], [12.4, 0.6, 10.2]), Object.assign(ocCaixa([11.45, 26, Z(-14)], [0.05, 3.4, 4.6]), { cor: "ink" }), Object.assign(ocCaixa([-11.45, 26, Z(-14)], [0.05, 3.4, 4.6]), { cor: "ink" }),
+    Object.assign(ocCaixa([6, 27, Z(-5.55)], [3, 2.4, 0.05]), { cor: "ink" }), Object.assign(ocCaixa([-6, 27, Z(-5.55)], [3, 2.4, 0.05]), { cor: "ink" }));
+  /* tênder de carvão */
+  out.push(ocCaixa([0, 7, Z(-35)], [10.5, 1.2, 11.5]), ocCaixa([0, 15, Z(-35)], [11, 7, 11.5]), Object.assign(ocCaixa([0, 22.4, Z(-35)], [10, 0.6, 10.5]), { cor: "ink" }));
+  for (const s of [-1, 1]) for (const z of [-42, -28]) out.push(...vcRodaTrem(s * 6.3, 4.6, Z(z), 3.6));
+  return out; }
+function vcAssentosVagao(z0, L) { const A = {}, h = L / 2; [[-1, 1], [1, -1]].forEach(([s, ol], i) => { for (let r = 0; r < 3; r++) A["banco" + (i * 3 + r + 1)] = { p: [s * 6.5, 12.6, z0 - h + 12 + r * 14 + (ol < 0 ? 5 : 0)], olha: ol, dentro: true }; }); A["corredor"] = { p: [0, 8.6, z0], olha: 1, pe: true, dentro: true }; return A; }
+function vcVagao(z0, L) { const out = [], h = L / 2;
+  out.push(ocCaixa([0, 7.2, z0], [5.6, 1.4, h + 1.6]), ocCaixa([0, 19.5, z0], [12.4, 11, h]), { cil: true, c: [0, 24.6, z0], r: 12.4, hh: h + 0.6, R: rotParaEixo([0, 0, 1]) });
+  for (const s of [-1, 1]) { for (let k = 0; k < Math.floor((L - 8) / 7); k++) out.push(Object.assign(ocCaixa([s * 12.45, 22, z0 - h + 6 + k * 7], [0.05, 3, 2.2]), { cor: "ink" }));
+    out.push(Object.assign(ocCaixa([s * 12.45, 17.5, z0 + h - 3], [0.05, 8.2, 1.8]), { cor: "fundo" }));
+    for (const zb of [-h + 9, h - 9]) { out.push(ocCaixa([0, 6.0, z0 + zb], [9, 0.8, 4.6])); for (const dz of [-3.2, 3.2]) out.push(...vcRodaTrem(s * 6.3, 4.4, z0 + zb + dz, 3.4)); }
+    out.push(ocEsf([s * 6, 7.2, z0 + s * (h + 2.2)], [1.2, 1.2, 0.6])); }
+  return out; }
 
 import { qdPartes, qdMedidas } from "./quadrupede.js";
 import { OBJ_MAO, SINONIMOS_MAO } from "./objetos-mao.js";
@@ -189,15 +214,25 @@ const COMPOSTOS = {
 ,
   /* ===== VEÍCULOS (simplificados, mas com as peças que importam: rodas, eixo, varais para o animal, bancos, remos, mastro).
      Frente = +z. "assentos" = onde a pessoa senta (olha +1 = para a frente, −1 = para trás, como o remador); "atrelar" = onde fica o animal que puxa. ===== */
-  carruagem: { nome: "carruagem (coche com cocheiro)", larg: 15, prof: 34, alt: 22, grupo: "veiculo", veiculo: "terra",
-    partes: o => { const out = []; for (const s of [-1, 1]) { out.push(ocToro([s * 7, 5.7, -9], 5.4, 0.35, "x", 0.5), ocToro([s * 7, 4.4, 5], 4.1, 0.3, "x", 0.45));
-        for (let k = 0; k < 6; k++) { const a = k * Math.PI / 6; out.push(ocTubo([s * 7, 5.7 - Math.cos(a) * 5.2, -9 - Math.sin(a) * 5.2], [s * 7, 5.7 + Math.cos(a) * 5.2, -9 + Math.sin(a) * 5.2], 0.12), ocTubo([s * 7, 4.4 - Math.cos(a) * 3.9, 5 - Math.sin(a) * 3.9], [s * 7, 4.4 + Math.cos(a) * 3.9, 5 + Math.sin(a) * 3.9], 0.1)); }
-        out.push(ocTubo([s * 3.6, 6.5, 8], [s * 3.6, 7.5, 27], 0.3)); }
-      out.push(ocTubo([-7.5, 5.7, -9], [7.5, 5.7, -9], 0.35), ocTubo([-7.5, 4.4, 5], [7.5, 4.4, 5], 0.3), ocCaixa([0, 6.6, -2], [1.2, 0.5, 9]),
-        ocCaixa([0, 12.5, -4], [5.6, 5.8, 6.5]), ocCaixa([0, 18.7, -4], [6.2, 0.5, 7.2]), ocCaixa([0, 13.5, -4], [5.75, 2, 4.5], ), ocCaixa([0, 10.8, 5.5], [4.5, 0.5, 3]), ocCaixa([0, 12, 7.8], [4.5, 1.6, 0.4]), ocCaixa([0, 9, 7.2], [3.6, 2.6, 0.4]));
+  carruagem: { nome: "carruagem (coche fechado com cocheiro, timão para 1, 2, 4 ou 6 cavalos)", larg: 20, prof: 46, alt: 23, grupo: "veiculo", veiculo: "terra", corPadrao: "#6b2737",
+    partes: o => { const out = [];
+      for (const s of [-1, 1]) { out.push(...vcRoda(s * 8.6, 6.2, -12, 6.2, 10), ...vcRoda(s * 8.0, 4.6, 7, 4.6, 8));
+        out.push(ocCaixa([s * 8.2, 8.8, -12], [0.5, 0.35, 3.4]), ocCaixa([s * 7.6, 7.6, 7], [0.5, 0.3, 2.6]), ocTubo([s * 2.6, 7.2, -15], [s * 2.6, 7.2, 9], 0.32));
+        out.push(ocCaixa([s * 7.3, 9.4, -0.8], [0.6, 0.18, 1.0]), ocCaixa([s * 7.3, 8.0, -0.8], [0.25, 1.2, 0.25]));
+        out.push(ocCaixa([s * 7.35, 17.5, 0.9], [0.06, 2.2, 2.0], undefined), ocCaixa([s * 7.35, 17.5, -8.4], [0.06, 2.2, 2.4]));
+        out.push(Object.assign(ocCaixa([s * 7.42, 17.5, 0.9], [0.04, 2.0, 1.8]), { cor: "ink" }), Object.assign(ocCaixa([s * 7.42, 17.5, -8.4], [0.04, 2.0, 2.2]), { cor: "ink" }));
+        out.push(Object.assign(ocCaixa([s * 7.42, 15.6, -4.2], [0.04, 4.9, 0.12]), { cor: "ink" }), Object.assign(ocCaixa([s * 7.42, 15.6, -2.4], [0.04, 4.9, 0.12]), { cor: "ink" }), ocEsf([s * 7.6, 14.8, -2.9], 0.3));
+        out.push(ocCaixa([s * 7.6, 20.8, 4.3], [0.7, 1.0, 0.7]), Object.assign(ocCaixa([s * 7.6, 20.8, 5.0], [0.5, 0.7, 0.05]), { cor: "fundo" }), ocTubo([s * 7.6, 19.8, 4.3], [s * 7.0, 18.6, 4.3], 0.12)); }
+      out.push(ocTubo([-9.2, 6.2, -12], [9.2, 6.2, -12], 0.38), ocTubo([-8.6, 4.6, 7], [8.6, 4.6, 7], 0.34), ocCaixa([0, 7.6, -3], [3, 0.4, 11]));
+      out.push(ocCaixa([0, 9.6, -4], [6.6, 1.5, 7.0]), ocCaixa([0, 16.0, -4], [7.3, 5.0, 7.7]), ocCaixa([0, 21.2, -4], [7.9, 0.35, 8.3]), ocCaixa([0, 21.75, -4], [7.3, 0.25, 7.6]),
+        ocCaixa([0, 22.6, -7.5], [5.5, 0.9, 3.4]), ocTubo([-7.6, 22.2, -11.7], [7.6, 22.2, -11.7], 0.15), ocTubo([-7.6, 22.2, 3.7], [7.6, 22.2, 3.7], 0.15));
+      out.push(Object.assign(ocCaixa([0, 17.4, 3.72], [5.4, 2.2, 0.04]), { cor: "ink" }), Object.assign(ocCaixa([0, 17.4, -11.72], [5.4, 2.2, 0.04]), { cor: "ink" }));
+      out.push(ocCaixa([0, 13.2, 6.6], [5.4, 0.5, 2.1]), ocCaixa([0, 15.0, 4.7], [5.4, 1.8, 0.35]), ocCaixa([0, 10.6, 9.8], [5.0, 0.3, 2.0], rotParaEixo([0, 0.45, 1])), ocTubo([-4.6, 11.4, 4.6], [-4.6, 11.4, 9.6], 0.2), ocTubo([4.6, 11.4, 4.6], [4.6, 11.4, 9.6], 0.2));
+      out.push(ocCaixa([0, 11.2, -13.4], [5.6, 1.7, 1.6]), ocCaixa([0, 8.6, -15], [6, 0.3, 1.2]));
+      out.push(ocTubo([0, 6.4, 8.5], [0, 6.0, 30.5], 0.42), ocTubo([-6.2, 6.1, 26.5], [6.2, 6.1, 26.5], 0.32), ocTubo([-3.6, 6.4, 9.5], [-3.6, 6.2, 12.5], 0.22), ocTubo([3.6, 6.4, 9.5], [3.6, 6.2, 12.5], 0.22));
       return out; },
-    assentos: () => ({ cocheiro: { p: [0, 11.3, 5.2], olha: 1 }, passageiro: { p: [0, 8.2, -1.5], olha: -1, dentro: true }, passageiro2: { p: [0, 8.2, -7.5], olha: 1, dentro: true } }), atrelar: () => [0, 0, 20],
-    pegas: () => ({ redeas: ocPega([0, 13, 9], [0, 0, 1], [1, 0, 0]) }) },
+    assentos: () => ({ cocheiro: { p: [0, 13.75, 6.6], olha: 1 }, cocheiro2: { p: [2.6, 13.75, 6.6], olha: 1 }, passageiro: { p: [2.6, 12.2, -0.4], olha: -1, dentro: true }, passageiro2: { p: [-2.6, 12.2, -8.4], olha: 1, dentro: true }, teto: { p: [0, 23.5, -7.5], olha: 1 } }), atrelar: () => [0, 0, 22],
+    pegas: () => ({ redeas: ocPega([0, 15, 10], [0, 0, 1], [1, 0, 0]) }) },
   carroca: { nome: "carroça (duas rodas, varais para o animal)", larg: 14, prof: 26, alt: 11, grupo: "veiculo", veiculo: "terra",
     partes: o => { const out = []; for (const s of [-1, 1]) { out.push(ocToro([s * 6.5, 5.3, -2], 5, 0.35, "x", 0.5)); for (let k = 0; k < 4; k++) { const a = k * Math.PI / 4; out.push(ocTubo([s * 6.5, 5.3 - Math.cos(a) * 4.8, -2 - Math.sin(a) * 4.8], [s * 6.5, 5.3 + Math.cos(a) * 4.8, -2 + Math.sin(a) * 4.8], 0.13)); }
         out.push(ocTubo([s * 3.6, 6.2, 4], [s * 3.6, 6.8, 20], 0.3), ocCaixa([s * 5.6, 8.6, -2], [0.25, 1.5, 9])); }
@@ -227,11 +262,47 @@ const COMPOSTOS = {
   balsa: { nome: "balsa de toras", larg: 18, prof: 26, alt: 3, grupo: "veiculo", veiculo: "agua",
     partes: o => { const out = []; for (let i = 0; i < 8; i++) { const x = -7.9 + i * 2.25; out.push({ cil: true, c: [x, 1.1, (i % 2) * 0.6], r: 1.1, hh: 12.5 + (i % 3) * 0.5, R: rotParaEixo([0, 0, 1]) }); }
       for (const z of [-9, 0, 9]) out.push(ocTubo([-9, 2.3, z], [9, 2.3, z], 0.35)); out.push(ocTubo([5, 2.4, -11], [5, 26, -11], 0.25)); return out; },
-    assentos: () => ({ "em-pe": { p: [0, 2.6, 0], olha: 1, pe: true }, borda: { p: [-6, 2.6, -6], olha: 1, beira: true } }) }
+    assentos: () => ({ "em-pe": { p: [0, 2.6, 0], olha: 1, pe: true }, borda: { p: [-6, 2.6, -6], olha: 1, beira: true } }) },
+  balsaGrande: { nome: "balsa grande (de travessia: convés com grade, flutuadores, cabine e rampas)", larg: 70, prof: 120, alt: 26, grupo: "veiculo", veiculo: "agua", corPadrao: "#c8a165",
+    partes: o => { const out = [];
+      for (const x of [-27, -9, 9, 27]) out.push({ cil: true, c: [x, 2.2, 0], r: 4.2, hh: 52, R: rotParaEixo([0, 0, 1]) }, ocEsf([x, 2.2, 52], [4.2, 4.2, 5]), ocEsf([x, 2.2, -52], [4.2, 4.2, 5]));
+      out.push(ocCaixa([0, 6.8, 0], [34, 0.7, 52]));
+      for (let k = 0; k < 13; k++) out.push(Object.assign(ocCaixa([0, 7.55, -48 + k * 8], [33.6, 0.04, 0.12]), { cor: "ink" }));
+      for (const s of [-1, 1]) { out.push(ocTubo([s * 33.5, 12.5, -50], [s * 33.5, 12.5, 50], 0.3), ocTubo([s * 33.5, 10, -50], [s * 33.5, 10, 50], 0.18)); for (let k = 0; k <= 10; k++) out.push(ocTubo([s * 33.5, 7.5, -50 + k * 10], [s * 33.5, 12.5, -50 + k * 10], 0.22));
+        out.push(ocCaixa([0, 6.0, s * 60], [16, 0.5, 8], rotParaEixo([0, 1, s * 0.25]))); }
+      out.push(ocCaixa([22, 15.5, -36], [8.5, 8, 9]), ocCaixa([22, 24, -36], [9.6, 0.6, 10.2]), Object.assign(ocCaixa([13.45, 17.5, -36], [0.05, 2.6, 6]), { cor: "ink" }), Object.assign(ocCaixa([22, 17.5, -26.95], [6, 2.6, 0.05]), { cor: "ink" }), { cil: true, c: [26, 28, -38], r: 1.1, hh: 4 });
+      return out; },
+    assentos: () => ({ "em-pe": { p: [0, 7.5, 0], olha: 1, pe: true }, proa: { p: [0, 7.5, 40], olha: 1, pe: true }, popa: { p: [-10, 7.5, -40], olha: -1, pe: true }, borda: { p: [-30, 7.5, 10], olha: 1, pe: true }, cabine: { p: [22, 7.5, -36], olha: 1, pe: true } }) },
+  navio: { nome: "navio grande (galeão de três mastros, velas, castelo de popa, canhões)", larg: 62, prof: 280, alt: 270, grupo: "veiculo", veiculo: "agua", corPadrao: "#8b5a2b",
+    partes: o => { const out = [], n = 18, Lh = 240;
+      for (let i = 0; i < n; i++) { const z = -Lh / 2 + (i + 0.5) * Lh / n, t = (z + Lh / 2) / Lh, w = 30 * Math.pow(Math.sin(Math.PI * Math.min(1, 0.12 + t * 0.95)), 0.55) + 1.5, fundo = 4 + 10 * Math.pow(Math.abs(t - 0.45) * 2, 2), topo = 34 + 10 * Math.pow(Math.max(0, 0.25 - t) * 4, 1.5) + 6 * Math.pow(Math.max(0, t - 0.85) * 6.6, 1.2);
+        out.push(ocCaixa([0, (fundo + topo) / 2 - 2, z], [w * 0.82, (topo - fundo) / 2 + 2, Lh / n / 2 + 0.1]), ocCaixa([w - 0.8, topo + 2, z], [0.8, 2.5, Lh / n / 2 + 0.1]), ocCaixa([-(w - 0.8), topo + 2, z], [0.8, 2.5, Lh / n / 2 + 0.1]));
+        if (i % 2 && t > 0.15 && t < 0.85) for (const s of [-1, 1]) out.push(Object.assign(ocCaixa([s * (w * 0.82 + 0.1), 26, z], [0.1, 1.6, 1.8]), { cor: "ink" }), ocTubo([s * (w * 0.82), 26, z], [s * (w * 0.82 + 3), 26.4, z], 0.6)); }
+      out.push(ocCaixa([0, 2, 0], [1, 6, 100]), ocCaixa([0, 46, -100], [26, 10, 22]), ocCaixa([0, 56.6, -100], [27, 0.6, 23]), Object.assign(ocCaixa([0, 46, -122.1], [18, 4, 0.1]), { cor: "ink" }), ocCaixa([0, 42, 100], [20, 6, 16]));
+      out.push(ocTubo([0, 40, 118], [0, 62, 160], 1.4), ocCaixa([0, 30, -121], [0.8, 14, 4]));
+      const mastro = (z, H, vel) => { out.push(ocTubo([0, 30, z], [0, H, z], 2.0), { cil: true, c: [0, H * 0.62, z], r: 3.4, hh: 1 });
+        for (let k = 0; k < 3; k++) { const y = 70 + k * (H - 80) / 2.4, wv = vel * (1 - k * 0.22); out.push(ocTubo([-wv, y + 30, z], [wv, y + 30, z], 0.8));
+          for (let q = 0; q < 6; q++) out.push(Object.assign(ocCaixa([0, y + 30 - 4.6 - q * 4.4, z + 1.5 + Math.sin(Math.PI * (q + 0.5) / 6) * 4], [wv * (0.98 - q * 0.02), 2.25, 0.25]), { cor: "claro" })); } };
+      mastro(55, 250, 44); mastro(-5, 270, 50); mastro(-70, 210, 36);
+      for (const s of [-1, 1]) { out.push(ocTubo([s * 28, 40, 60], [0, 245, 55], 0.25), ocTubo([s * 30, 40, -10], [0, 265, -5], 0.25), ocTubo([s * 26, 48, -75], [0, 205, -70], 0.25)); }
+      out.push(ocEsf([0, 64, -121.5], [1.6, 2.4, 1.6]), { cil: true, c: [0, 52, -84], r: 3.6, hh: 0.4, R: rotParaEixo([0, 0, 1]) });
+      return out; },
+    assentos: () => ({ "em-pe": { p: [0, 36.6, 10], olha: 1, pe: true }, leme: { p: [0, 57.2, -84], olha: 1, pe: true }, popa: { p: [10, 57.2, -110], olha: -1, pe: true }, proa: { p: [0, 48.2, 105], olha: 1, pe: true }, convés: { p: [-14, 36.6, -30], olha: 1, pe: true }, mastro: { p: [0, 36.6, -12], olha: 1, pe: true }, borda: { p: [24, 36.6, 30], olha: 1, pe: true } }) },
+  locomotiva: { nome: "locomotiva a vapor (com tênder de carvão)", larg: 26, prof: 96, alt: 38, grupo: "veiculo", veiculo: "trilho", corPadrao: "#2c3e50",
+    partes: o => vcLocomotiva(0), assentos: () => ({ maquinista: { p: [5, 9.6, -14], olha: 1, pe: true }, foguista: { p: [-5, 9.6, -16], olha: -1, pe: true } }) },
+  vagao: { nome: "vagão de passageiros (janelas, bancos, porta no fim)", larg: 26, prof: 78, alt: 32, grupo: "veiculo", veiculo: "trilho", corPadrao: "#2e7d4f",
+    partes: o => vcVagao(0, 74), assentos: () => vcAssentosVagao(0, 74) },
+  trem: { nome: "trem (locomotiva + vagões; “vagoes N” de 0 a 6)", larg: 26, prof: 260, alt: 38, grupo: "veiculo", veiculo: "trilho", corPadrao: "#b03a2e",
+    partes: o => { const n = Math.max(0, Math.min(6, Math.round(o.vagoes ?? 2))), out = vcLocomotiva(0); for (let k = 0; k < n; k++) out.push(...vcVagao(-48 - 4 - 37 - k * 82, 74)); return out; },
+    assentos: o => { const n = Math.max(0, Math.min(6, Math.round((o && o.vagoes) ?? 2))), A = { maquinista: { p: [5, 9.6, -14], olha: 1, pe: true }, foguista: { p: [-5, 9.6, -16], olha: -1, pe: true } };
+      for (let k = 0; k < n; k++) for (const [nm, a] of Object.entries(vcAssentosVagao(-48 - 4 - 37 - k * 82, 74))) A[(k ? "vagao" + (k + 1) + "-" : "") + nm] = a; return A; } },
+  trilho: { nome: "trilho (dois trilhos de aço sobre dormentes; “profundidade” = comprimento)", larg: 24, prof: 440, alt: 1.4, grupo: "veiculo", corPadrao: "#8a8378",
+    partes: o => { const L = o.prof || 440, out = []; for (const s of [-1, 1]) out.push(ocCaixa([s * 6.3, 1.0, 0], [0.38, 0.45, L / 2]), ocCaixa([s * 6.3, 0.6, 0], [0.7, 0.1, L / 2]));
+      const n = Math.max(2, Math.floor(L / 5.4)); for (let k = 0; k < n; k++) out.push(ocCaixa([0, 0.25, -L / 2 + 2.7 + k * (L - 5.4) / (n - 1)], [11, 0.25, 1.1])); return out; } }
 };
 Object.assign(COMPOSTOS, OBJ_MAO);
 /* sinônimos em português para achar o objeto por nome */
-const SINONIMOS_COMPOSTOS = { carruagem: "carruagem", coche: "carruagem", diligencia: "carruagem", "diligência": "carruagem", carroca: "carroca", "carroça": "carroca", charrete: "carroca", barco: "barcoRemo", "barco a remo": "barcoRemo", bote: "barcoRemo", canoa: "canoa", caiaque: "canoa", veleiro: "veleiro", "barco a vela": "veleiro", balsa: "balsa", jangada: "balsa", bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
+const SINONIMOS_COMPOSTOS = { carruagem: "carruagem", coche: "carruagem", diligencia: "carruagem", "diligência": "carruagem", carroca: "carroca", "carroça": "carroca", charrete: "carroca", barco: "barcoRemo", "barco a remo": "barcoRemo", bote: "barcoRemo", canoa: "canoa", caiaque: "canoa", veleiro: "veleiro", "barco a vela": "veleiro", balsa: "balsa", jangada: "balsa", "balsa grande": "balsaGrande", ferry: "balsaGrande", navio: "navio", "galeao": "navio", "galeão": "navio", nau: "navio", trem: "trem", comboio: "trem", locomotiva: "locomotiva", "maria fumaca": "locomotiva", "maria-fumaça": "locomotiva", vagao: "vagao", "vagão": "vagao", trilho: "trilho", trilhos: "trilho", "linha de trem": "trilho", "ferrovia": "trilho", bola: "bola", "bola de praia": "esfera", rocha: "pedra", "pedregulho": "pedra", pneu: "pneu", roda: "pneu", saco: "saco", sacola: "saco", trouxa: "saco", "saco de dormir": "fardo", rolo: "fardo", tapete: "tapete",
   tambor: "tambor", "tonel": "tambor", chope: "barrilChope", keg: "barrilChope", botijao: "botijao", "botijão": "botijao", "cilindro de gas": "botijao", galao: "galao", "galão": "galao", "jerry can": "galao", balde: "balde",
   mala: "mala", maleta: "maleta", "caixa de ferramentas": "maleta", "mala de rodinhas": "malaRodinhas", mochila: "mochila", bigorna: "bigorna", caixote: "caixote", engradado: "caixote", palete: "palete", pallet: "palete", treno: "palete", "trenó": "palete",
   viga: "vigaI", "viga i": "vigaI", cano: "cano", tora: "cano", tronco: "cano", tubo: "cano", tabua: "tabua", "tábua": "tabua", prancha: "tabua", escada: "escada", trelica: "trelica", "treliça": "trelica",
