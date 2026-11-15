@@ -31,7 +31,7 @@ import { salvarPose } from "./pose-codigo.js";
 import { pdSobrepor, pdNorm, pdAplicarJunta, pdExtrairJuntas, pdValoresPose, pdAtalho, pdLerPartes, pdParams, pdBase, pdChaveEm, pdTrecho, pdAteAngulo, pdReverter, pdEspelharAnim, pdJuntar, pdRepetir, pdVaiEVolta, pdAmplitude, pdEsticar, pdTroca, pdSoma, pdTira, pdFixar, pdCamada, pdCiclo, pdMiniatura } from "./pose-dsl.js";
 import { cfSilhueta, cfCameraNoTempo, cfAplicar, cfEstaticaAtual, cfFixaFrente, cfPessoa, cfPonto, cfDescrever } from "./camera-filme.js";
 import { AD_ACOES, adAcaoPara, adEspera, AD_ESPERAS } from "./acoes-dia.js";
-import { CR_POSES, AV_POSES, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amMontavel } from "./animais.js";
+import { amEscalaMonstro, AM_ESC_MAX, CR_POSES, AV_POSES, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amMontavel } from "./animais.js";
 import { AMA, AMA_VERBOS, AMA_POSE_ANIM, animacaoAnimal, amaAmostrar, amaNoMundo } from "./animais-anim.js";
 import { AV_VERBOS } from "./aves-anim.js";
 import { CR_VERBOS, ALADO_VERBOS } from "./criaturas-anim.js";
@@ -390,6 +390,7 @@ function nmLerElenco(bloco, ctx) {
       else if (w === "sela" || w === "selado") e.sela = true;
       else if (w === "ossos" || w === "esqueleto") e.ossos = true;
       else if (w === "tamanho" || w === "escala") { e.tamanho = toks[++k].v; }
+      else if ((w === "monstro" || w === "kaiju" || w === "colossal") && e.animal) { e.monstro = toks[k + 1] && toks[k + 1].t === "num" ? toks[++k].v : true; }
       else if (NM_TIPO_CORPO[w] && w !== "normal") { e.tipoCorpo = w; if (toks[k + 1] && toks[k + 1].t === "num") e.tamanho = toks[++k].v; }
       else if (w === "apelido" || w === "=" ) { e.apelidos.push(toks[++k].v); }
       else if (w === "veste" || w === "visual" || w === "roupa" || w === "usa") { e.visual = toks[++k].v; }
@@ -535,7 +536,7 @@ function alternativasDeQuadro(texto, nQuadro, n = 3) {
   return ops.slice(0, Math.max(1, Math.min(6, n))).map((op, i) => { const L = linhas.slice(); L[idx] = ehPlano ? linhas[idx] : base + op; if (ehPlano) L.splice(idx + 1, 0, (linhas[idx + 1] || "").match(/^\s*/)[0] + "camera" + op); return { n: i + 1, cabecalho: ehPlano ? "camera" + op : (base + op).trim(), texto: L.join("\n") }; });
 }
 /* ===================== animais (quadrúpedes) ===================== */
-function nmAnimal(ctx, nome) { let o = amAchar(nome); if (o) return o; const e = ctx.elenco.get(nome) || {}; o = amCriar(nome, e.animal || "cavalo", { escala: +e.tamanho || 1, cor: e.ossos ? "#ece4cf" : e.hex, sela: !!e.sela }); if (e.ossos && o) o.animal.ossos = true; return o; }
+function nmAnimal(ctx, nome) { let o = amAchar(nome); if (o) return o; const e = ctx.elenco.get(nome) || {}; o = amCriar(nome, e.animal || "cavalo", { escala: e.monstro ? amEscalaMonstro(e.animal || "cavalo", e.monstro === true ? null : +e.monstro) : +e.tamanho || 1, cor: e.ossos ? "#ece4cf" : e.hex, sela: !!e.sela }); if (e.ossos && o) o.animal.ossos = true; return o; }
 function nmAnimalEstado(o) { return { x: o.x, z: o.z, giro: o.giro || 0, pose: JSON.parse(JSON.stringify(o.animal.pose || amPose("parado"))) }; }
 const NM_POSTURA_VERBO = { senta: "sentarNoChao", sentar: "sentarNoChao", "senta-se": "sentarNoChao", ajoelha: "ajoelhar", ajoelhar: "ajoelhar", "ajoelha-se": "ajoelhar", deita: "deitar", deitar: "deitar", "deita-se": "deitar", agacha: "agachar", agachar: "agachar", "agacha-se": "agachar", levanta: "levantarDoChao" };
 const NM_ANIMAL_POSE_VERBO = { empina: "empinado", deita: "deitado", senta: "sentado", come: "comendo", pasta: "comendo", levanta: "parado", "levanta-se": "parado", para: "parado", atento: "atento", uiva: "uivando", coice: "coice", "da-coice": "coice", agacha: "agachado" };
@@ -556,7 +557,10 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
     else if (w === "efeito") { const tipo = nx && nx.v; if (!tipo || (!CATALOGO[tipo] && tipo !== "explosao_completa")) throw new NmErro(nome + " efeito QUAL? (um efeito do catálogo, ex.: impacto_bala, chama, aura)", l.linha); k++; const ef = nmEfeitoOpcoes(ctx, toks, k, l.linha, null); k = ef.k; if (!ef.o.em && !ef.o.emRef) ef.o.emRef = nome; (Q.depoisPessoas || (Q.depoisPessoas = [])).push(() => { try { nmEfeitoCriar(tipo, ef, null, null, null, Q); } catch (e) { Q.avisos.push("efeito " + tipo + ": " + e.message); } }); }
     else if (w === "expressao" || w === "expressão") throw new NmErro("Animais e criaturas não têm expressão de rosto: use uma pose (" + (cria ? "rugindo, ameacando, boca-aberta" : ave ? "alerta" : "atento, uivando") + ") ou um efeito (" + nome + " efeito impacto_bala).", l.linha);
     else if (w === "altura" || w === "paira" || w === "no-ar") { const v = nx && nx.t === "num" ? nx.v * (nx.u === "R" ? 1 / NM_M : 1) : null; if (v === null) throw new NmErro(nome + " " + w + " QUANTO? (metros acima do chão, ex.: altura 20)", l.linha); k++; o.base = v * NM_M; o.emAr = v > 0.01; }
-    else if (w === "escala" || w === "tamanho") { o.animal.escala = Math.max(0.01, Math.min(100, +nx.v)); const md = qdMedidas(o.animal.especie, o.animal.escala); Object.assign(o, { larg: Math.min(60000, md.larg), prof: Math.min(60000, md.prof), alt: Math.min(30000, md.alt) }); k++; }
+    else if (w === "monstro" || w === "kaiju" || w === "colossal" || ((w === "comprimento" || w === "tamanho-real") && nx && nx.t === "num")) { /* "Rex monstro" (tamanho de monstro do plano corporal) · "Rex comprimento 40m" */
+      const m = w === "monstro" || w === "kaiju" || w === "colossal" ? (nx && nx.t === "num" ? nx.v : null) : nx.v; if (nx && nx.t === "num") k++; o.animal.escala = amEscalaMonstro(o.animal.especie, m);
+      const md = qdMedidas(o.animal.especie, o.animal.escala); Object.assign(o, { larg: Math.min(600000, md.larg), prof: Math.min(600000, md.prof), alt: Math.min(300000, md.alt) }); }
+    else if (w === "escala" || w === "tamanho") { o.animal.escala = Math.max(0.01, Math.min(AM_ESC_MAX, +nx.v)); const md = qdMedidas(o.animal.especie, o.animal.escala); Object.assign(o, { larg: Math.min(600000, md.larg), prof: Math.min(600000, md.prof), alt: Math.min(300000, md.alt) }); k++; }
     else if (w === "sela" || w === "selado") o.animal.sela = true;
     else if (w === "ossos" || w === "esqueleto") { o.animal.ossos = true; if (!o.colOrig) o.colOrig = o.col || null; o.col = { fill: "#ece4cf", ink: "#4a4034" }; }
     else if (w === "sem-ossos" || w === "corpo") { o.animal.ossos = false; if (o.colOrig !== undefined) { o.col = o.colOrig; delete o.colOrig; } }

@@ -162,11 +162,16 @@ function amChaoMundo() { try { const it = SCN.list.find(x => x.name !== "__vazio
 function amPontos(nome) { const o = amAchar(nome); if (!o) return null; const g0 = amChaoMundo(), cab = qdPontoMundo(o, "cabeca", g0), sela = qdPontoMundo(o, "sela", g0), g = (o.giro || 0) * Math.PI / 180, fr = [Math.sin(g), Math.cos(g)];
   return { cabeca: cab, olhos: cab, olhar: [fr[0], 0, fr[1]], peito: sela, centro: sela, frente: fr, chao: g0, animal: true, tam: Math.max(o.alt || 0, o.larg || 0, o.prof || 0, (sela[1] - g0) * 1.6) }; }
 /* dá para montar? a sela precisa estar a ≥ 0,55 m do chão (abaixo disso a pessoa esmaga o animal); devolve {ok, alturaSela (m), escalaMin} */
+/* TAMANHO MONSTRO ("King Kong"): comprimento típico de um monstro de cada plano corporal, em metros — o humano vira um inseto ao lado */
+const AM_MONSTRO_M = { serpente: 60, peixe: 30, cetaceo: 45, artropode: 15, cefalopode: 40, reptil: 30, teropode: 30, dragao: 60, primata: 18, anfibio: 12, ave: 15, quadrupede: 25 };
+const AM_ESC_MAX = 5000;
+function amEscalaMonstro(especie, metros) { const k = qdEspecie(especie), E = QD_ESPECIES[k] || {}, L = E.L || E.c || 1.5, pl = E.plano || (E.classe === "ave" ? "ave" : "quadrupede");
+  return Math.max(0.01, Math.min(AM_ESC_MAX, (metros || AM_MONSTRO_M[pl] || 25) / L)); }
 function amMontavel(o) { const g0 = amChaoMundo(), sela = qdPontoMundo(o, "sela", g0), h = (sela[1] - g0) * 0.114, esc = o.animal.escala || 1, min = qdEhAve(o) ? 0.85 : 0.55, E = QD_ESPECIES[qdEspecie(o.animal.especie)] || {}, Lm = (E.L || E.c || 1.5) * esc;
   /* também precisa ter COMPRIMENTO para a pessoa (pelo menos 1,1 m de lombo) */
   /* e LARGURA de lombo (raio do corpo): um bicho fino demais (lagarto, cobra, polvo) não dá apoio às pernas */
   const Rm = E.R ? E.R * esc : 1, Rmin = E.plano === "cefalopode" ? 0.3 : E.plano === "serpente" || E.plano === "artropode" ? 0.16 : 0.2;
   const Lmin = qdEhAve(o) ? 1.6 : 1.1, kH = h > 0 ? min / h : 99, kL = Lm > 0 ? Lmin / Lm : 99, kR = E.R ? Rmin / Rm : 0, k = Math.max(kH, kL, kR);
   return { ok: h >= min && Lm >= Lmin && (!E.R || Rm >= Rmin), alturaSela: h, escalaMin: Math.min(100, Math.ceil(esc * k * 1.08 * 10) / 10) }; }
-export { amMontavel, CR_POSES, amEhCriatura, AV_POSES, amEhAve, amParams, amParamsMix, amPoseGait, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
+export { amEscalaMonstro, AM_MONSTRO_M, AM_ESC_MAX, amMontavel, CR_POSES, amEhCriatura, AV_POSES, amEhAve, amParams, amParamsMix, amPoseGait, AM_POSES, AM_MARCHAS, AM_SIN_MARCHA, AM_MONTADO, amPose, amMisturar, amPoseMarcha, amPerna, amPassada, amCiclo, amAchar, amCriar, amAssentar, amAtualizarMontaria, amChaoMundo, amPontos, amChao };
 void qdEsqueleto;

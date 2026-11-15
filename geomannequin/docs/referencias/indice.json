@@ -1,0 +1,1389 @@
+{
+ "folhas": {
+  "flutuando": {
+   "catalogo": "Flutuar",
+   "quantidade": 19,
+   "arquivos": [
+    "Human_mannequin_floating_poses_s#U2026_f988dc0b.jpg",
+    "Human_mannequins_floating_poses_#U2026_429f2067.jpg",
+    "Human_mannequins_floating_poses_#U2026_a627301f.jpg",
+    "Human_mannequins_in_floating_poses_19538b15.jpg",
+    "Human_mannequins_in_floating_poses_2417b4dd.jpg",
+    "Human_mannequins_in_floating_poses_578510ad.jpg",
+    "Human_mannequins_in_floating_poses_5d96057a.jpg",
+    "Human_mannequins_in_floating_poses_81c8d918.jpg",
+    "Human_mannequins_in_floating_poses_95004572.jpg",
+    "Human_mannequins_in_floating_poses_97a47619.jpg",
+    "Human_mannequins_in_floating_poses_a9567a4b.jpg",
+    "Human_mannequins_in_floating_poses_b62fe63b.jpg",
+    "Human_mannequins_in_floating_poses_beb789ce.jpg",
+    "Human_mannequins_in_floating_poses_dabe4088.jpg",
+    "Manga_mannequins_floating_grid_7b302d40.jpg",
+    "Manga_mannequins_floating_in_grid_92b1ed65.jpg",
+    "Mannequins_displaying_floating_p#U2026_208bff4c.jpg",
+    "Mannequins_in_floating_poses_spr#U2026_2b963720.jpg",
+    "Mannequins_in_floating_poses_spr#U2026_f2eeaf75.jpg"
+   ]
+  },
+  "outros": {
+   "catalogo": "Agachado/Chão (engatinhar, apoio)",
+   "quantidade": 81,
+   "arquivos": [
+    "Human_mannequins_demonstrating_s#U2026_a58f22bc.jpg",
+    "Mannequin_spritesheet_in_floatin#U2026_0a1ed540.jpg",
+    "Human_mannequin_spritesheet_in_f#U2026_9a7ff2df.jpg",
+    "Human_mannequins_posing_in_grid_3272fde8.jpg",
+    "Mannequin_spritesheet_showing_fa#U2026_809210fe.jpg",
+    "Mannequin_spritesheet_showing_fa#U2026_97696e73.jpg",
+    "Mannequins_demonstrating_farewel#U2026_916d2945.jpg",
+    "Mannequins_posing_for_manga_refe#U2026_2f59dba3.jpg",
+    "Human_mannequins_showing_surrend#U2026_91252e4d.jpg",
+    "Mannequins_demonstrating_surrend#U2026_36288eb4.jpg",
+    "Mannequins_demonstrating_surrend#U2026_6f97fa50.jpg",
+    "Mannequins_demonstrating_surrend#U2026_7121cc5f.jpg",
+    "Humanoid_mannequins_showing_coop#U2026_393c6f98.jpg",
+    "Humanoid_mannequins_showing_coop#U2026_9314ec03.jpg",
+    "Humanoid_mannequins_showing_coop#U2026_f13c8e1c.jpg",
+    "unnamed.webp_097c6d8e.jpg",
+    "unnamed.webp_101370e2.jpg",
+    "unnamed.webp_11925bbf.jpg",
+    "unnamed.webp_1786de3e.jpg",
+    "unnamed.webp_195fb6bc.jpg",
+    "unnamed.webp_218b8971.jpg",
+    "unnamed.webp_3f4c7798.jpg",
+    "unnamed.webp_4b96b002.jpg",
+    "unnamed.webp_55ad9aaa.jpg",
+    "unnamed.webp_6a20c702.jpg",
+    "unnamed.webp_85e03a7a.jpg",
+    "unnamed.webp_9d87031e.jpg",
+    "unnamed.webp_b3752702.jpg",
+    "unnamed.webp_b972b3b5.jpg",
+    "unnamed.webp_bc48d275.jpg",
+    "unnamed.webp_d75e7033.jpg",
+    "unnamed.webp_e51f03ef.jpg",
+    "unnamed.webp_e9e83a05.jpg",
+    "unnamed.webp_e9f0c4e7.jpg",
+    "unnamed.webp_f33505a6.jpg",
+    "unnamed.webp_f7066e3d.jpg",
+    "Human_mannequins_demonstrating_k#U2026_952563a6.jpg",
+    "Human_mannequins_performing_atta#U2026_aa3c410c.jpg",
+    "Human_mannequins_performing_atta#U2026_d9745eb2.jpg",
+    "Drawing_mannequin_spritesheet_poses_80ef8909.jpg",
+    "Drawing_mannequin_spritesheet_va#U2026_27b5a9fe.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_2064fad7.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_3f8b3b7d.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_4c0c682f.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_5357bf3b.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_6e668907.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_afa8135a.jpg",
+    "Drawing_mannequins_showing_crouc#U2026_f58386af.jpg",
+    "Drawing_mannequins_spritesheet_2bb34051.jpg",
+    "Human_drawing_mannequins_sprites#U2026_4bae2308.jpg",
+    "Manga_drawing_mannequin_spritesheet_164b2988.jpg",
+    "Manga_drawing_mannequin_spritesheet_68473207.jpg",
+    "Manga_drawing_mannequins_sprite_#U2026_1146ea13.jpg",
+    "Manga_drawing_mannequins_sprites#U2026_1ec014f6.jpg",
+    "Manga_mannequin_spritesheet_poses_12756e15.jpg",
+    "Manga_mannequin_spritesheet_poses_70c80b64.jpg",
+    "Mannequin_poses_spritesheet_21722f77.jpg",
+    "Mannequin_poses_spritesheet_b2ff18fc.jpg",
+    "Mannequin_poses_spritesheet_grid_d789a91d.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_041b5965.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_0434f400.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_0835cf8d.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_1556ba49.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_1bb83ba5.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_3e938379.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_43677b36.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_52269010.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_53aec2c5.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_6d08c240.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_6fe2d95e.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_76e79b7c.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_79366d67.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_955c7ce3.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_95ae438f.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_98142c51.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_a65c6304.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_a913e328.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_ad3d1306.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_b34f5a7f.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_e6ead1c7.jpg",
+    "Mannequin_spritesheet_showing_cr#U2026_e910831a.jpg"
+   ]
+  },
+  "furtivo": {
+   "catalogo": "Furtivo + Papel/Infiltrador",
+   "quantidade": 57,
+   "arquivos": [
+    "Human_mannequins_in_stealth_poses_091d2464.jpg",
+    "Human_mannequins_in_stealth_poses_0979dae4.jpg",
+    "Human_mannequins_in_stealth_poses_1f538327.jpg",
+    "Human_mannequins_in_stealth_poses_444e738a.jpg",
+    "Human_mannequins_in_stealth_poses_4a27403f.jpg",
+    "Human_mannequins_in_stealth_poses_611ac056.jpg",
+    "Human_mannequins_in_stealth_poses_85ee5e60.jpg",
+    "Human_mannequins_in_stealth_poses_af0b0154.jpg",
+    "Human_mannequins_in_stealth_poses_f23e4224.jpg",
+    "Human_mannequins_in_stealth_poses_f7225024.jpg",
+    "Manga_mannequins_in_stealth_poses_0fbdd4f2.jpg",
+    "Manga_mannequins_in_stealth_poses_9e0f8332.jpg",
+    "Mannequins_demonstrating_stealth#U2026_6669b492.jpg",
+    "Mannequins_displaying_stealth_poses_f6f0b78f.jpg",
+    "Mannequins_in_stealth_poses_f875887c.jpg",
+    "Mannequins_in_stealth_poses_spri#U2026_a14bdbc7.jpg",
+    "Infiltrator_scenes_spritesheet_grid_38324340.jpg",
+    "Infiltrator_scenes_spritesheet_grid_a5f8de4e.jpg",
+    "Infiltrator_scenes_spritesheet_grid_ada02239.jpg",
+    "Infiltrator_scenes_spritesheet_grid_ea651329.jpg",
+    "Infiltrator_spritesheet_grid_scenes_1ae58ef8.jpg",
+    "Infiltrator_spritesheet_grid_scenes_2ef92bcd.jpg",
+    "Infiltrator_spritesheet_grid_scenes_4d671992.jpg",
+    "Infiltrator_spritesheet_grid_scenes_4f428b6e.jpg",
+    "Infiltrator_spritesheet_grid_scenes_90223f1d.jpg",
+    "Infiltrator_spritesheet_grid_scenes_974a06c3.jpg",
+    "Infiltrator_spritesheet_grid_scenes_e5c43ec6.jpg",
+    "Infiltrator_spritesheet_scenes_grid_ac16fd48.jpg",
+    "Infiltrator_spritesheet_scenes_grid_bce47c9d.jpg",
+    "Infiltrator_spritesheet_scenes_grid_cbfd812f.jpg",
+    "Mannequin_infiltrator_scenes_spr#U2026_7361bce2.jpg",
+    "Narrative_infiltrator_scenes_gri#U2026_5f73c80f.jpg",
+    "Narrative_infiltrator_spriteshee#U2026_1a72057f.jpg",
+    "Narrative_infiltrator_spriteshee#U2026_66f30fe1.jpg",
+    "Human_mannequins_in_stealth_poses_09a5dea0.jpg",
+    "Human_mannequins_in_stealth_poses_0c1837ef.jpg",
+    "Human_mannequins_in_stealth_poses_25162c10.jpg",
+    "Human_mannequins_in_stealth_poses_2cdae4cc.jpg",
+    "Human_mannequins_in_stealth_poses_368fbf4f.jpg",
+    "Human_mannequins_in_stealth_poses_3bce23e8.jpg",
+    "Human_mannequins_in_stealth_poses_3f53ab8f.jpg",
+    "Human_mannequins_in_stealth_poses_461dc18a.jpg",
+    "Human_mannequins_in_stealth_poses_467662aa.jpg",
+    "Human_mannequins_in_stealth_poses_5dccd6f4.jpg",
+    "Human_mannequins_in_stealth_poses_6c0fb799.jpg",
+    "Human_mannequins_in_stealth_poses_74f6eed4.jpg",
+    "Human_mannequins_in_stealth_poses_8530869e.jpg",
+    "Human_mannequins_in_stealth_poses_acabd8cd.jpg",
+    "Human_mannequins_in_stealth_poses_bd1662cd.jpg",
+    "Human_mannequins_in_stealth_poses_cc2020c3.jpg",
+    "Mannequin_spritesheet_in_stealth#U2026_fc70efe6.jpg",
+    "Mannequin_stealth_poses_spritesheet_032914ff.jpg",
+    "Mannequins_demonstrating_stealth#U2026_79dc3de1.jpg",
+    "Mannequins_in_stealth_poses_25fa1e4e.jpg",
+    "Mannequins_in_stealth_poses_3f4e1568.jpg",
+    "Mannequins_in_stealth_poses_406e8be5.jpg",
+    "Mannequins_in_stealth_poses_58853344.jpg"
+   ]
+  },
+  "mergulho": {
+   "catalogo": "Mergulho",
+   "quantidade": 20,
+   "arquivos": [
+    "Human_mannequins_diving_poses_sp#U2026_0ed0ed5c.jpg",
+    "Human_mannequins_diving_poses_sp#U2026_3090482e.jpg",
+    "Human_mannequins_in_diving_poses_4057c04e.jpg",
+    "Human_mannequins_in_diving_poses_5da010d2.jpg",
+    "Human_mannequins_in_diving_poses_a116152a.jpg",
+    "Human_mannequins_in_diving_poses_a2fd04d1.jpg",
+    "Human_mannequins_in_diving_poses_b4d62106.jpg",
+    "Human_mannequins_in_diving_poses_be397aa1.jpg",
+    "Human_mannequins_in_diving_poses_e9217fdb.jpg",
+    "Manga_mannequins_diving_poses_sp#U2026_af34557f.jpg",
+    "Manga_mannequins_in_diving_poses_057a93d6.jpg",
+    "Manga_mannequins_in_diving_poses_12447ff0.jpg",
+    "Mannequins_demonstrating_diving_#U2026_5b4ad160.jpg",
+    "Mannequins_demonstrating_diving_#U2026_79cc1c28.jpg",
+    "Mannequins_demonstrating_diving_#U2026_9dda13c1.jpg",
+    "Mannequins_demonstrating_diving_#U2026_dc4331d1.jpg",
+    "Mannequins_in_diving_poses_6241c133.jpg",
+    "Mannequins_in_diving_poses_effffb50.jpg",
+    "Mannequins_in_diving_poses_sprit#U2026_45cc9a0f.jpg",
+    "Mannequins_showing_diving_poses_ac243433.jpg"
+   ]
+  },
+  "despedida": {
+   "catalogo": "Despedida",
+   "quantidade": 14,
+   "arquivos": [
+    "Human_mannequins_in_farewell_poses_3231f28c.jpg",
+    "Human_mannequins_in_farewell_poses_358f547d.jpg",
+    "Human_mannequins_in_farewell_poses_5dcdd849.jpg",
+    "Human_mannequins_in_farewell_poses_7fc58fdd.jpg",
+    "Human_mannequins_in_farewell_poses_c0ee2129.jpg",
+    "Human_mannequins_in_farewell_poses_c607ac02.jpg",
+    "Human_mannequins_waving_goodbye_3fb82d8e.jpg",
+    "Mannequins_displaying_farewell_p#U2026_32ab40c5.jpg",
+    "Mannequins_displaying_farewell_p#U2026_458d7a4a.jpg",
+    "Mannequins_displaying_farewell_p#U2026_abdfa92f.jpg",
+    "Mannequins_in_farewell_poses_28dd97f0.jpg",
+    "Mannequins_showing_farewell_poses_35330bde.jpg",
+    "Mannequins_showing_farewell_poses_3f70f3c5.jpg",
+    "Mannequins_showing_farewell_poses_5b7b1bb1.jpg"
+   ]
+  },
+  "rendicao": {
+   "catalogo": "Rendição",
+   "quantidade": 16,
+   "arquivos": [
+    "Human_mannequins_in_surrender_poses_1386d1e4.jpg",
+    "Human_mannequins_in_surrender_poses_66d60147.jpg",
+    "Human_mannequins_in_surrender_poses_68c992c1.jpg",
+    "Human_mannequins_in_surrender_poses_884b56fb.jpg",
+    "Human_mannequins_in_surrender_poses_8ee75b00.jpg",
+    "Human_mannequins_in_surrender_poses_ae3614f8.jpg",
+    "Human_mannequins_in_surrender_poses_b172ac33.jpg",
+    "Human_mannequins_in_surrender_poses_c81102f8.jpg",
+    "Human_mannequins_in_surrender_poses_ea27e256.jpg",
+    "Human_mannequins_in_surrender_poses_fc3ad38c.jpg",
+    "Human_mannequins_surrendering_sp#U2026_4c540821.jpg",
+    "Mannequins_displaying_surrender_#U2026_d1c69876.jpg",
+    "Mannequins_in_surrender_poses_06da8664.jpg",
+    "Mannequins_in_surrender_poses_6b924a72.jpg",
+    "Mannequins_in_surrender_poses_a2ed2e7c.jpg",
+    "Mannequins_in_surrender_poses_sp#U2026_80c089d5.jpg"
+   ]
+  },
+  "cooperacao": {
+   "catalogo": "Cooperação",
+   "quantidade": 18,
+   "arquivos": [
+    "Mannequin_cooperation_poses_spri#U2026_cfb36765.jpg",
+    "Mannequins_demonstrating_coopera#U2026_1db082e9.jpg",
+    "Mannequins_demonstrating_coopera#U2026_2dbd2cd9.jpg",
+    "Mannequins_demonstrating_coopera#U2026_37349aa7.jpg",
+    "Mannequins_demonstrating_coopera#U2026_3d99295e.jpg",
+    "Mannequins_demonstrating_coopera#U2026_552075fd.jpg",
+    "Mannequins_demonstrating_coopera#U2026_73b50064.jpg",
+    "Mannequins_demonstrating_coopera#U2026_7d7a8d39.jpg",
+    "Mannequins_demonstrating_coopera#U2026_9428f2dc.jpg",
+    "Mannequins_demonstrating_coopera#U2026_98911453.jpg",
+    "Mannequins_demonstrating_coopera#U2026_ab334d32.jpg",
+    "Mannequins_demonstrating_coopera#U2026_c05d18ae.jpg",
+    "Mannequins_demonstrating_coopera#U2026_c5640f29.jpg",
+    "Mannequins_demonstrating_coopera#U2026_d8ca2f01.jpg",
+    "Mannequins_demonstrating_coopera#U2026_db1de587.jpg",
+    "Mannequins_showing_cooperation_p#U2026_65e2395e.jpg",
+    "Mannequins_showing_cooperative_p#U2026_67f9b32c.jpg",
+    "Mannequins_demonstrating_protect#U2026_795287f4.jpg"
+   ]
+  },
+  "narrativa": {
+   "catalogo": "Papel/Infiltrador",
+   "quantidade": 2,
+   "arquivos": [
+    "Mannequins_displaying_narrative_#U2026_86877f36.jpg",
+    "Spritesheet_containing_narrative#U2026_daf5164d.jpg"
+   ]
+  },
+  "vila": {
+   "catalogo": "Papel/Vilã",
+   "quantidade": 20,
+   "arquivos": [
+    "Female_villain_grid_spritesheet_7368dd65.jpg",
+    "Female_villain_grid_spritesheet_a2a41728.jpg",
+    "Female_villain_scenes_spriteshee#U2026_7abba3ea.jpg",
+    "Female_villain_spritesheet_grid_#U2026_30d0cce5.jpg",
+    "Female_villain_spritesheet_grid_#U2026_76ac4fa7.jpg",
+    "Female_villain_spritesheet_grid_#U2026_7ef9b196.jpg",
+    "Female_villain_spritesheet_grid_#U2026_fc9e06c1.jpg",
+    "Female_villain_spritesheet_grid_0225a18a.jpg",
+    "Female_villain_spritesheet_grid_6ab10e8a.jpg",
+    "Female_villain_spritesheet_grid_72f37042.jpg",
+    "Female_villain_spritesheet_grid_98b4e455.jpg",
+    "Female_villain_spritesheet_grid_9d7c6887.jpg",
+    "Female_villain_spritesheet_grid_ad4db394.jpg",
+    "Female_villain_spritesheet_grid_ae75763d.jpg",
+    "Female_villain_spritesheet_grid_baa1fcef.jpg",
+    "Female_villain_spritesheet_grid_c96e4f4c.jpg",
+    "Female_villain_spritesheet_scene#U2026_9a397cb4.jpg",
+    "Female_villains_in_grid_spritesheet_b4d41185.jpg",
+    "Female_villains_spritesheet_grid_0a3ea062.jpg",
+    "Female_villains_spritesheet_grid_c3c8df98.jpg"
+   ]
+  },
+  "mensageiro": {
+   "catalogo": "Papel/Mensageiro",
+   "quantidade": 20,
+   "arquivos": [
+    "Messenger_role_scenes_grid_sprit#U2026_6cf242a3.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_1d2f4edb.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_6ab8cc6f.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_8ba2baa2.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_9189bf00.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_b0f8ef71.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_b908a8d2.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_bb30fa88.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_bd09ffe8.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_df8d8a42.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_e1f5c0e4.jpg",
+    "Messenger_role_scenes_spriteshee#U2026_f16e8a52.jpg",
+    "Messenger_role_scenes_spritesheet_27680b0d.jpg",
+    "Messenger_role_scenes_spritesheet_44eb6895.jpg",
+    "Messenger_role_spritesheet_grid_02eda8d6.jpg",
+    "Messenger_role_spritesheet_grid_6595acba.jpg",
+    "Messenger_role_spritesheet_grid_8a1f1b1c.jpg",
+    "Messenger_scenes_spritesheet_grid_0f2d8e73.jpg",
+    "Messenger_spritesheet_grid_scenes_3a9f611b.jpg",
+    "Messenger_spritesheet_grid_scenes_adff6e0f.jpg"
+   ]
+  },
+  "abraco": {
+   "catalogo": "Abraço (pré-config.)",
+   "quantidade": 20,
+   "arquivos": [
+    "Human_mannequins_hugging_in_grid_024b3146.jpg",
+    "Human_mannequins_hugging_in_grid_cb7cf785.jpg",
+    "Human_mannequins_hugging_pose_sp#U2026_94ec0d3c.jpg",
+    "Mannequins_embracing_spritesheet#U2026_9b04d6fc.jpg",
+    "Mannequins_hugging_in_grid_cfe36003.jpg",
+    "Mannequins_hugging_in_grid_fa19c082.jpg",
+    "Mannequins_hugging_in_grid_layout_0501b144.jpg",
+    "Mannequins_hugging_in_grid_layout_29383072.jpg",
+    "Mannequins_hugging_in_grid_layout_3cf233a1.jpg",
+    "Mannequins_hugging_in_grid_layout_b586af7b.jpg",
+    "Mannequins_hugging_in_grid_layout_c346d4bd.jpg",
+    "Mannequins_hugging_in_spritesheet_160858ba.jpg",
+    "Mannequins_hugging_in_spritesheet_4a3b36ca.jpg",
+    "Mannequins_hugging_in_spritesheet_537c844a.jpg",
+    "Mannequins_hugging_in_spritesheet_797e6b83.jpg",
+    "Mannequins_in_back-hug_pose_fb29fe7d.jpg",
+    "Mannequins_performing_hugging_poses_efa76ee4.jpg",
+    "Two_human_mannequins_hugging_37388e26.jpg",
+    "Two_mannequins_hugging_spritesheet_02abb667.jpg",
+    "Two_mannequins_hugging_spritesheet_d6ef4107.jpg"
+   ]
+  },
+  "soco": {
+   "catalogo": "Soco",
+   "quantidade": 40,
+   "arquivos": [
+    "Human_mannequins_punching_3x3_grid_6ec86578.jpg",
+    "Human_mannequins_punching_poses_#U2026_60d391e0.jpg",
+    "Human_mannequins_punching_poses_#U2026_ba4a76ce.jpg",
+    "Human_mannequins_punching_sprite#U2026_dece3f48.jpg",
+    "Mannequins_demonstrating_punchin#U2026_4ce8aa95.jpg",
+    "Mannequins_demonstrating_punchin#U2026_cb4ece7a.jpg",
+    "Mannequins_displaying_punching_p#U2026_15d4fecb.jpg",
+    "Mannequins_in_punching_poses_9f68d110.jpg",
+    "Mannequins_in_punching_poses_spr#U2026_71726935.jpg",
+    "Mannequins_in_punching_poses_spr#U2026_a8d101ee.jpg",
+    "Mannequins_performing_punching_p#U2026_1dd7ad0d.jpg",
+    "Mannequins_performing_punching_p#U2026_49618a02.jpg",
+    "Mannequins_performing_punching_p#U2026_8dce5309.jpg",
+    "Mannequins_performing_punching_p#U2026_a6e7123e.jpg",
+    "Mannequins_punching_3x3_spritesheet_d66a26cf.jpg",
+    "Mannequins_punching_in_grid_layout_20971d12.jpg",
+    "Mannequins_punching_in_grid_layout_4c836e34.jpg",
+    "Mannequins_punching_in_grid_layout_6e63fa97.jpg",
+    "Mannequins_punching_in_grid_layout_e465fe09.jpg",
+    "Mannequins_striking_punching_poses_62f37ede.jpg",
+    "Human_mannequins_punching_3x3_grid_6ec86578.jpg",
+    "Human_mannequins_punching_poses_#U2026_60d391e0.jpg",
+    "Human_mannequins_punching_poses_#U2026_ba4a76ce.jpg",
+    "Human_mannequins_punching_sprite#U2026_dece3f48.jpg",
+    "Mannequins_demonstrating_punchin#U2026_4ce8aa95.jpg",
+    "Mannequins_demonstrating_punchin#U2026_cb4ece7a.jpg",
+    "Mannequins_displaying_punching_p#U2026_15d4fecb.jpg",
+    "Mannequins_in_punching_poses_9f68d110.jpg",
+    "Mannequins_in_punching_poses_spr#U2026_71726935.jpg",
+    "Mannequins_in_punching_poses_spr#U2026_a8d101ee.jpg",
+    "Mannequins_performing_punching_p#U2026_1dd7ad0d.jpg",
+    "Mannequins_performing_punching_p#U2026_49618a02.jpg",
+    "Mannequins_performing_punching_p#U2026_8dce5309.jpg",
+    "Mannequins_performing_punching_p#U2026_a6e7123e.jpg",
+    "Mannequins_punching_3x3_spritesheet_d66a26cf.jpg",
+    "Mannequins_punching_in_grid_layout_20971d12.jpg",
+    "Mannequins_punching_in_grid_layout_4c836e34.jpg",
+    "Mannequins_punching_in_grid_layout_6e63fa97.jpg",
+    "Mannequins_punching_in_grid_layout_e465fe09.jpg",
+    "Mannequins_striking_punching_poses_62f37ede.jpg"
+   ]
+  },
+  "ataque": {
+   "catalogo": "Ataque",
+   "quantidade": 17,
+   "arquivos": [
+    "Human_mannequins_in_attack_poses_086c25b6.jpg",
+    "Human_mannequins_in_attack_poses_b19457eb.jpg",
+    "Human_mannequins_in_attack_poses_d36c7f31.jpg",
+    "Human_mannequins_in_attack_poses_e352b0c6.jpg",
+    "Human_mannequins_in_attack_poses_ebb1ba1f.jpg",
+    "Human_mannequins_in_attack_poses_f6ea9d99.jpg",
+    "Manga_attack_poses_spritesheet_bfb3f4b6.jpg",
+    "Manga_mannequins_in_attack_poses_65ce65ee.jpg",
+    "Mannequins_displaying_attack_poses_ec8c2d9c.jpg",
+    "Mannequins_in_attack_poses_191b2a98.jpg",
+    "Mannequins_in_attack_poses_7793539b.jpg",
+    "Mannequins_in_attack_poses_a2d76eda.jpg",
+    "Mannequins_in_attack_poses_fb6345c6.jpg",
+    "Mannequins_in_attack_poses_sprit#U2026_0b13d287.jpg",
+    "Mannequins_in_attack_poses_sprit#U2026_aa7c4e5d.jpg",
+    "Mannequins_performing_attack_poses_30f3a2e0.jpg",
+    "Mannequins_performing_attack_poses_38ec0551.jpg"
+   ]
+  },
+  "provedor": {
+   "catalogo": "Papel/Provedor",
+   "quantidade": 20,
+   "arquivos": [
+    "Provider_role_scenes_spritesheet#U2026_12d4722a.jpg",
+    "Provider_role_scenes_spritesheet#U2026_174c80ad.jpg",
+    "Provider_role_scenes_spritesheet#U2026_1a942ffe.jpg",
+    "Provider_role_scenes_spritesheet#U2026_2be4f1fb.jpg",
+    "Provider_role_scenes_spritesheet#U2026_343a8414.jpg",
+    "Provider_role_scenes_spritesheet#U2026_5e1004b8.jpg",
+    "Provider_role_scenes_spritesheet#U2026_62ea2141.jpg",
+    "Provider_role_scenes_spritesheet#U2026_6924d3c9.jpg",
+    "Provider_role_scenes_spritesheet#U2026_708894d0.jpg",
+    "Provider_role_scenes_spritesheet#U2026_7cd91f80.jpg",
+    "Provider_role_scenes_spritesheet#U2026_bb21b5eb.jpg",
+    "Provider_role_scenes_spritesheet#U2026_bcace99b.jpg",
+    "Provider_role_scenes_spritesheet#U2026_c6bf8cd8.jpg",
+    "Provider_role_scenes_spritesheet#U2026_da5bad02.jpg",
+    "Provider_role_scenes_spritesheet#U2026_ecbe51a5.jpg",
+    "Provider_role_scenes_spritesheet_77fb00e4.jpg",
+    "Provider_role_spritesheet_grid_s#U2026_0af00708.jpg",
+    "Provider_role_spritesheet_grid_s#U2026_a525c686.jpg",
+    "Spritesheet_of_provider_role_scenes_476c02e0.jpg",
+    "Spritesheet_of_provider_role_scenes_9a4c8e85.jpg"
+   ]
+  },
+  "sobrevivente": {
+   "catalogo": "Papel/Sobrevivente",
+   "quantidade": 20,
+   "arquivos": [
+    "Survivor_scenes_grid_spritesheet_47e601af.jpg",
+    "Survivor_scenes_grid_spritesheet_4e2c0a4c.jpg",
+    "Survivor_scenes_grid_spritesheet_9a63db1f.jpg",
+    "Survivor_scenes_grid_spritesheet_cfb7a93d.jpg",
+    "Survivor_scenes_spritesheet_grid_08115020.jpg",
+    "Survivor_scenes_spritesheet_grid_3caea738.jpg",
+    "Survivor_scenes_spritesheet_grid_44f48267.jpg",
+    "Survivor_scenes_spritesheet_grid_6728f574.jpg",
+    "Survivor_scenes_spritesheet_grid_733b4618.jpg",
+    "Survivor_scenes_spritesheet_grid_87559ba3.jpg",
+    "Survivor_scenes_spritesheet_grid_c78e1a77.jpg",
+    "Survivor_scenes_spritesheet_grid_e97ee0e3.jpg",
+    "Survivor_spritesheet_grid_e3014d6c.jpg",
+    "Survivor_spritesheet_grid_scenes_4ec8c107.jpg",
+    "Survivor_spritesheet_grid_scenes_5151ae82.jpg",
+    "Survivor_spritesheet_grid_scenes_9d2c0071.jpg",
+    "Survivor_spritesheet_grid_scenes_cb84f2cb.jpg",
+    "Survivor_spritesheet_grid_scenes_d85dcd73.jpg",
+    "Survivor_spritesheet_grid_scenes_dbb0e016.jpg",
+    "Survivor_spritesheet_grid_scenes_e1373c7f.jpg"
+   ]
+  },
+  "dor": {
+   "catalogo": "Dor",
+   "quantidade": 19,
+   "arquivos": [
+    "Human_mannequin_pain_poses_sprit#U2026_63a7e4ad.jpg",
+    "Human_mannequins_in_pain_poses_236950fc.jpg",
+    "Human_mannequins_in_pain_poses_46a9bf5e.jpg",
+    "Human_mannequins_in_pain_poses_64cd952d.jpg",
+    "Human_mannequins_showing_chest_pain_54959bed.jpg",
+    "Human_mannequins_showing_pain_poses_773a64cc.jpg",
+    "Human_mannequins_showing_pain_poses_85dcc07f.jpg",
+    "Human_mannequins_showing_pain_poses_987a2c46.jpg",
+    "Human_mannequins_showing_pain_poses_cb3d9e4b.jpg",
+    "Human_mannequins_showing_pain_poses_e164c7b4.jpg",
+    "Manga_mannequins_showing_pain_75e8c716.jpg",
+    "Mannequins_demonstrating_pain_poses_b05225c2.jpg",
+    "Mannequins_displaying_pain_poses#U2026_fb618869.jpg",
+    "Mannequins_displaying_pain_poses_07606a64.jpg",
+    "Mannequins_displaying_pain_poses_759b26c3.jpg",
+    "Mannequins_displaying_writhing_p#U2026_b83196ca.jpg",
+    "Mannequins_in_pain_poses_3d35a5b5.jpg",
+    "Mannequins_showing_neck_pain_poses_2545bae6.jpg",
+    "Mannequins_showing_pain_poses_c2fed048.jpg"
+   ]
+  },
+  "vergonha": {
+   "catalogo": "Vergonha",
+   "quantidade": 20,
+   "arquivos": [
+    "Human_mannequins_in_embarrassed_#U2026_fae5be35.jpg",
+    "Human_mannequins_in_shame_poses_15dbb893.jpg",
+    "Human_mannequins_in_shame_poses_345aba32.jpg",
+    "Human_mannequins_in_shame_poses_6992007b.jpg",
+    "Human_mannequins_in_shame_poses_d3f0cba2.jpg",
+    "Human_mannequins_in_shame_poses_ed6365b9.jpg",
+    "Human_mannequins_showing_shame_p#U2026_198883ff.jpg",
+    "Human_mannequins_showing_shame_p#U2026_52611d40.jpg",
+    "Human_mannequins_showing_shame_pose_567f76aa.jpg",
+    "Manga_mannequins_showing_shame_p#U2026_e2ffd192.jpg",
+    "Mannequins_displaying_embarrasse#U2026_a472da24.jpg",
+    "Mannequins_displaying_shame_poses_5f91cdeb.jpg",
+    "Mannequins_displaying_shame_poses_dc276a3b.jpg",
+    "Mannequins_in_embarrassed_poses_47ea45e7.jpg",
+    "Mannequins_in_shame_poses_sprite#U2026_ae58f217.jpg",
+    "Mannequins_in_shy_poses_spritesheet_9148ea34.jpg",
+    "Mannequins_showing_embarrassed_p#U2026_045d7058.jpg",
+    "Mannequins_showing_embarrassed_p#U2026_52a91f8b.jpg",
+    "Mannequins_showing_embarrassment#U2026_31e5ba8d.jpg",
+    "Mannequins_showing_shame_poses_c56ccb59.jpg"
+   ]
+  },
+  "luta": {
+   "catalogo": "Luta/Impacto (pré-config.)",
+   "quantidade": 17,
+   "arquivos": [
+    "Mannequins_exchanging_anime_blows_d9938ffb.jpg",
+    "Mannequins_fighting_in_2D_animation_16ad6575.jpg",
+    "Mannequins_fighting_in_2D_sprite#U2026_b727b9a4.jpg",
+    "Mannequins_fighting_in_3x3_grid_03019a5b.jpg",
+    "Mannequins_fighting_in_3x3_grid_6ae8914d.jpg",
+    "Mannequins_fighting_in_3x3_sprit#U2026_100f7296.jpg",
+    "Mannequins_fighting_in_3x3_sprit#U2026_7e840785.jpg",
+    "Mannequins_fighting_in_3x3_sprit#U2026_afc1a713.jpg",
+    "Mannequins_fighting_in_grid_scenes_03dccbc0.jpg",
+    "Mannequins_fighting_in_grid_scenes_c7309b95.jpg",
+    "Mannequins_fighting_in_isometric#U2026_62069e87.jpg",
+    "Mannequins_fighting_in_isometric#U2026_6b204bf6.jpg",
+    "Mannequins_fighting_in_isometric#U2026_7fc89f84.jpg",
+    "Mannequins_fighting_in_isometric#U2026_7fd7e43e.jpg",
+    "Mannequins_fighting_in_isometric#U2026_b037e4fd.jpg",
+    "Mannequins_fighting_in_spriteshe#U2026_05aba662.jpg",
+    "Mannequins_in_action_spritesheet_0eddba28.jpg"
+   ]
+  },
+  "ninja": {
+   "catalogo": "Ninja + Luta/Ninja (cenas com efeito)",
+   "quantidade": 33,
+   "arquivos": [
+    "Mannequins_exchanging_ninja_blow#U2026_4a1b60ce.jpg",
+    "Mannequins_exchanging_ninja_blow#U2026_78364ce6.jpg",
+    "Mannequins_exchanging_ninja_blow#U2026_8a331b1a.jpg",
+    "Mannequins_exchanging_ninja_blow#U2026_b52fac7f.jpg",
+    "Mannequins_exchanging_ninja_blow#U2026_d2ac2cd7.jpg",
+    "Mannequins_exchanging_ninja_blow#U2026_e07df519.jpg",
+    "Mannequins_exchanging_ninja_blows_1559fc1e.jpg",
+    "Mannequins_exchanging_ninja_blows_4aa1148a.jpg",
+    "Mannequins_exchanging_ninja_blows_d89a6278.jpg",
+    "Mannequins_fighting_in_ninja_style_1226623f.jpg",
+    "Mannequins_fighting_in_ninja_style_433f4cde.jpg",
+    "Mannequins_fighting_in_ninja_style_85b1402b.jpg",
+    "Mannequins_fighting_in_ninja_style_ad503525.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_0ed4ae39.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_2b7eeb1d.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_2e8dc841.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_3124ab13.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_32eeacee.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_37b166ff.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_61695267.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_654624c3.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_7e397764.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_8f9561f3.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_917ad42a.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_a6fda347.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_ab8f874e.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_b72aaa75.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_bdb25856.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_ced7d87d.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_e7e8f29e.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_e9088589.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_f4fbbbdb.jpg",
+    "Mannequins_fighting_with_ninja_w#U2026_fbef46ed.jpg"
+   ]
+  },
+  "agachado": {
+   "catalogo": "Agachado",
+   "quantidade": 81,
+   "arquivos": [
+    "Crouching_drawing_mannequin_spri#U2026_547fb1d6.jpg",
+    "Crouching_drawing_mannequins_spr#U2026_3dfd1648.jpg",
+    "Crouching_drawing_mannequins_spr#U2026_8d79ad29.jpg",
+    "Crouching_drawing_mannequins_spr#U2026_9964803f.jpg",
+    "Crouching_human_drawing_mannequi#U2026_4a5e66ab.jpg",
+    "Crouching_man_drawing_mannequins_10294dcc.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_151dfad7.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_1c1759a4.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_560a5e3c.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_5f8a2531.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_8f2ca0d6.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_9dbcdd9c.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_ac9bb7c3.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_dbb84e49.jpg",
+    "Crouching_mannequin_spritesheet_#U2026_efd8b915.jpg",
+    "Crouching_mannequins_spritesheet#U2026_fc79b015.jpg",
+    "Drawing_mannequins_crouching_pos#U2026_222e10c5.jpg",
+    "Drawing_mannequins_crouching_pos#U2026_47bda6c5.jpg",
+    "Drawing_mannequins_crouching_spr#U2026_5261c1b5.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_3c4d91ec.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_4c65c6fd.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_765c4b1a.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_86f72415.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_95b2c7dd.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_aabf61c9.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_abc78ef6.jpg",
+    "Human_drawing_mannequins_crouchi#U2026_d75e950d.jpg",
+    "Human_mannequin_crouching_poses_#U2026_8c3bf9d6.jpg",
+    "Manga_drawing_mannequin_crouchin#U2026_6403eaff.jpg",
+    "Manga_mannequin_crouching_pose_s#U2026_101a607a.jpg",
+    "Manga_mannequin_crouching_poses_#U2026_fa9af067.jpg",
+    "Manga_mannequin_crouching_sprite#U2026_114bda4a.jpg",
+    "Manga_mannequin_crouching_sprite#U2026_92e4ccdf.jpg",
+    "Manga_mannequins_crouching_sprit#U2026_6b93aef1.jpg",
+    "Mannequin_crouching_pose_variati#U2026_13e1b42c.jpg",
+    "Mannequin_crouching_pose_variati#U2026_ff1cb599.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_0b73f265.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_2fb9cde7.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_357ea4f6.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_3584b9df.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_392cb971.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_5f57e0e5.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_62e28944.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_6e831d12.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_74baf611.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_794b2cf1.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_7afd5063.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_7bbdbc07.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_7f316bba.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_822e4734.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_8d14931d.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_90d8ffb6.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_920209bb.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_a121ff69.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_a1cd9f72.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_c0e52272.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_c6d85669.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_c7735fc0.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_d562b5ca.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_dd221149.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_dfdfe37b.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_e1565563.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_e443f9c2.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_e7ac7461.jpg",
+    "Mannequin_crouching_poses_sprite#U2026_f96452d9.jpg",
+    "Mannequins_displaying_crouching_#U2026_16cb21bd.jpg",
+    "Mannequins_displaying_crouching_#U2026_1889e711.jpg",
+    "Mannequins_displaying_crouching_#U2026_35b44a49.jpg",
+    "Mannequins_displaying_crouching_#U2026_60d5eccd.jpg",
+    "Mannequins_displaying_crouching_#U2026_a9f2513e.jpg",
+    "Mannequins_showing_crouching_pos#U2026_4b853473.jpg",
+    "Mannequins_showing_crouching_pos#U2026_50833234.jpg",
+    "Mannequins_showing_crouching_pos#U2026_79e1923c.jpg",
+    "Mannequins_showing_crouching_pos#U2026_8d24ba51.jpg",
+    "Mannequins_showing_crouching_pos#U2026_f298ac38.jpg",
+    "Mannequins_showing_crouching_poses_8631113f.jpg",
+    "Mannequins_showing_crouching_poses_8f25bbd0.jpg",
+    "Mannequins_showing_crouching_poses_cd425938.jpg",
+    "Spritesheet_of_crouching_drawing#U2026_6539c747.jpg",
+    "Spritesheet_of_crouching_drawing#U2026_d1ae59d6.jpg",
+    "Spritesheet_of_crouching_mannequins_fa13e219.jpg"
+   ]
+  }
+ },
+ "poses": [
+  {
+   "nome": "rfAgachadoCocoras",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoApontando",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoMaosNosJoelhos",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoMaoNoChao",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoMaosNaCabeca",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoAbracandoJoelhos",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoPensando",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoOferecendo",
+   "tag": "Referência/Agachado/Cócoras"
+  },
+  {
+   "nome": "rfAgachadoUmJoelho",
+   "tag": "Referência/Agachado/Um joelho"
+  },
+  {
+   "nome": "rfAgachadoUmJoelhoOlhando",
+   "tag": "Referência/Agachado/Um joelho"
+  },
+  {
+   "nome": "rfAgachadoBaixoLateral",
+   "tag": "Referência/Agachado/Baixo"
+  },
+  {
+   "nome": "rfAgachadoInspecionando",
+   "tag": "Referência/Agachado/Baixo"
+  },
+  {
+   "nome": "rfEngatinhandoAvanco",
+   "tag": "Referência/Chão/Engatinhar"
+  },
+  {
+   "nome": "rfEngatinhandoOlhandoTras",
+   "tag": "Referência/Chão/Engatinhar"
+  },
+  {
+   "nome": "rfRastejandoCotovelos",
+   "tag": "Referência/Chão/Engatinhar"
+  },
+  {
+   "nome": "rfLargadaCorrida",
+   "tag": "Referência/Chão/Largada"
+  },
+  {
+   "nome": "rfApoioTresPontos",
+   "tag": "Referência/Chão/Apoio"
+  },
+  {
+   "nome": "rfFurtivoPassoLongo",
+   "tag": "Referência/Furtivo/Andar"
+  },
+  {
+   "nome": "rfFurtivoNasPontas",
+   "tag": "Referência/Furtivo/Andar"
+  },
+  {
+   "nome": "rfFurtivoAgachadoAvancando",
+   "tag": "Referência/Furtivo/Andar"
+  },
+  {
+   "nome": "rfFurtivoColadoParede",
+   "tag": "Referência/Furtivo/Cobertura"
+  },
+  {
+   "nome": "rfFurtivoEspiandoMuro",
+   "tag": "Referência/Furtivo/Cobertura"
+  },
+  {
+   "nome": "rfFurtivoAgachadoAtrasCobertura",
+   "tag": "Referência/Furtivo/Cobertura"
+  },
+  {
+   "nome": "rfFurtivoSinalSilencio",
+   "tag": "Referência/Furtivo/Sinal"
+  },
+  {
+   "nome": "rfFurtivoSinalAvancar",
+   "tag": "Referência/Furtivo/Sinal"
+  },
+  {
+   "nome": "rfFurtivoSinalParar",
+   "tag": "Referência/Furtivo/Sinal"
+  },
+  {
+   "nome": "rfFurtivoEscalandoMuro",
+   "tag": "Referência/Furtivo/Escalar"
+  },
+  {
+   "nome": "rfFurtivoCorridaAbaixada",
+   "tag": "Referência/Furtivo/Correr"
+  },
+  {
+   "nome": "rfFlutuandoRelaxadoRef",
+   "tag": "Referência/Flutuar/Gravidade zero"
+  },
+  {
+   "nome": "rfFlutuandoSentadoNoAr",
+   "tag": "Referência/Flutuar/Gravidade zero"
+  },
+  {
+   "nome": "rfFlutuandoDeCostas",
+   "tag": "Referência/Flutuar/Gravidade zero"
+  },
+  {
+   "nome": "rfFlutuandoGirando",
+   "tag": "Referência/Flutuar/Gravidade zero"
+  },
+  {
+   "nome": "rfFlutuandoBracosAbertosRef",
+   "tag": "Referência/Flutuar/Gravidade zero"
+  },
+  {
+   "nome": "rfFlutuandoEncolhidoNoAr",
+   "tag": "Referência/Flutuar/Gravidade zero"
+  },
+  {
+   "nome": "rfCaindoDeCostasRef",
+   "tag": "Referência/Flutuar/Queda"
+  },
+  {
+   "nome": "rfCaindoDeFrente",
+   "tag": "Referência/Flutuar/Queda"
+  },
+  {
+   "nome": "rfRendicaoMaosAoAltoRef",
+   "tag": "Referência/Rendição/Em pé"
+  },
+  {
+   "nome": "rfRendicaoMaosNaNuca",
+   "tag": "Referência/Rendição/Em pé"
+  },
+  {
+   "nome": "rfRendicaoMaosNasCostas",
+   "tag": "Referência/Rendição/Em pé"
+  },
+  {
+   "nome": "rfRendicaoMeioErguido",
+   "tag": "Referência/Rendição/Em pé"
+  },
+  {
+   "nome": "rfRendicaoAjoelhadoMaosAoAlto",
+   "tag": "Referência/Rendição/Ajoelhado"
+  },
+  {
+   "nome": "rfRendicaoAjoelhadoCurvado",
+   "tag": "Referência/Rendição/Ajoelhado"
+  },
+  {
+   "nome": "rfRendicaoProstrado",
+   "tag": "Referência/Rendição/Ajoelhado"
+  },
+  {
+   "nome": "rfRendicaoAjoelhadoCobrindoCabeca",
+   "tag": "Referência/Rendição/Ajoelhado"
+  },
+  {
+   "nome": "rfSocoJabRef",
+   "tag": "Referência/Soco/Jab"
+  },
+  {
+   "nome": "rfSocoDiretoAvanco",
+   "tag": "Referência/Soco/Direto"
+  },
+  {
+   "nome": "rfSocoGanchoAlto",
+   "tag": "Referência/Soco/Gancho"
+  },
+  {
+   "nome": "rfSocoUppercutRef",
+   "tag": "Referência/Soco/Uppercut"
+  },
+  {
+   "nome": "rfSocoOverhand",
+   "tag": "Referência/Soco/Overhand"
+  },
+  {
+   "nome": "rfSocoInvestidaAbaixada",
+   "tag": "Referência/Soco/Investida"
+  },
+  {
+   "nome": "rfSocoGuardaRecolhida",
+   "tag": "Referência/Soco/Guarda"
+  },
+  {
+   "nome": "rfSocoBackfistGirando",
+   "tag": "Referência/Soco/Golpe de costas"
+  },
+  {
+   "nome": "rfMergulhoCanivete",
+   "tag": "Referência/Mergulho/Salto"
+  },
+  {
+   "nome": "rfMergulhoGrupado",
+   "tag": "Referência/Mergulho/Salto"
+  },
+  {
+   "nome": "rfMergulhoCarpado",
+   "tag": "Referência/Mergulho/Salto"
+  },
+  {
+   "nome": "rfMergulhoAndorinha",
+   "tag": "Referência/Mergulho/Salto"
+  },
+  {
+   "nome": "rfMergulhoSuperman",
+   "tag": "Referência/Mergulho/Salto"
+  },
+  {
+   "nome": "rfParadaDeMao",
+   "tag": "Referência/Mergulho/Parada de mão"
+  },
+  {
+   "nome": "rfParadaDeMaoAberta",
+   "tag": "Referência/Mergulho/Parada de mão"
+  },
+  {
+   "nome": "rfParadaDeMaoEscorpiao",
+   "tag": "Referência/Mergulho/Parada de mão"
+  },
+  {
+   "nome": "rfAcenoTchau",
+   "tag": "Referência/Despedida/Aceno"
+  },
+  {
+   "nome": "rfAcenoDuasMaos",
+   "tag": "Referência/Despedida/Aceno"
+  },
+  {
+   "nome": "rfAcenoAndandoEmbora",
+   "tag": "Referência/Despedida/Aceno"
+  },
+  {
+   "nome": "rfAcenoDeCostas",
+   "tag": "Referência/Despedida/Aceno"
+  },
+  {
+   "nome": "rfAcenoAjoelhado",
+   "tag": "Referência/Despedida/Aceno"
+  },
+  {
+   "nome": "rfDespedidaMaoNoPeito",
+   "tag": "Referência/Despedida/Tristeza"
+  },
+  {
+   "nome": "rfDespedidaAbracandoSi",
+   "tag": "Referência/Despedida/Tristeza"
+  },
+  {
+   "nome": "rfDespedidaAjoelhadoChorando",
+   "tag": "Referência/Despedida/Tristeza"
+  },
+  {
+   "nome": "rfAtaqueInvestidaSoco",
+   "tag": "Referência/Ataque/Investida"
+  },
+  {
+   "nome": "rfAtaqueSaltoChute",
+   "tag": "Referência/Ataque/Investida"
+  },
+  {
+   "nome": "rfAtaqueChuteAlto",
+   "tag": "Referência/Ataque/Investida"
+  },
+  {
+   "nome": "rfAtaqueRasteira",
+   "tag": "Referência/Ataque/Investida"
+  },
+  {
+   "nome": "rfAtaquePalmaAberta",
+   "tag": "Referência/Ataque/Golpe"
+  },
+  {
+   "nome": "rfAtaqueCotovelada",
+   "tag": "Referência/Ataque/Golpe"
+  },
+  {
+   "nome": "rfAtaqueJoelhada",
+   "tag": "Referência/Ataque/Golpe"
+  },
+  {
+   "nome": "rfAtaqueMarteloDuasMaos",
+   "tag": "Referência/Ataque/Golpe"
+  },
+  {
+   "nome": "rfAtaqueEnergiaPalmas",
+   "tag": "Referência/Ataque/Energia"
+  },
+  {
+   "nome": "rfAtaqueCargaEnergia",
+   "tag": "Referência/Ataque/Energia"
+  },
+  {
+   "nome": "rfDorBarriga",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorPeito",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorCostas",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorPescoco",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorCabeca",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorJoelhoSentado",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorTornozeloSentado",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorMancando",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorBracoFerido",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfDorContorcendo",
+   "tag": "Referência/Dor/Corpo"
+  },
+  {
+   "nome": "rfVergonhaRostoNasMaos",
+   "tag": "Referência/Vergonha/Rosto"
+  },
+  {
+   "nome": "rfVergonhaMaoNaNuca",
+   "tag": "Referência/Vergonha/Rosto"
+  },
+  {
+   "nome": "rfVergonhaMaosEntrelacadas",
+   "tag": "Referência/Vergonha/Corpo"
+  },
+  {
+   "nome": "rfVergonhaPePezinho",
+   "tag": "Referência/Vergonha/Corpo"
+  },
+  {
+   "nome": "rfVergonhaBracoCruzadoNaFrente",
+   "tag": "Referência/Vergonha/Corpo"
+  },
+  {
+   "nome": "rfVergonhaMaosAtras",
+   "tag": "Referência/Vergonha/Corpo"
+  },
+  {
+   "nome": "rfVergonhaEncolhido",
+   "tag": "Referência/Vergonha/Corpo"
+  },
+  {
+   "nome": "rfVergonhaCobrindoBoca",
+   "tag": "Referência/Vergonha/Rosto"
+  },
+  {
+   "nome": "rfVergonhaVirandoRosto",
+   "tag": "Referência/Vergonha/Rosto"
+  },
+  {
+   "nome": "rfNinjaGuardaKunai",
+   "tag": "Referência/Ninja/Guarda"
+  },
+  {
+   "nome": "rfNinjaArremessoShuriken",
+   "tag": "Referência/Ninja/Arremesso"
+  },
+  {
+   "nome": "rfNinjaArremessoDuplo",
+   "tag": "Referência/Ninja/Arremesso"
+  },
+  {
+   "nome": "rfNinjaSeloDeMao",
+   "tag": "Referência/Ninja/Selo"
+  },
+  {
+   "nome": "rfNinjaSaltoAlto",
+   "tag": "Referência/Ninja/Salto"
+  },
+  {
+   "nome": "rfNinjaCorridaBracosParaTras",
+   "tag": "Referência/Ninja/Corrida"
+  },
+  {
+   "nome": "rfNinjaEspadaReversa",
+   "tag": "Referência/Ninja/Espada"
+  },
+  {
+   "nome": "rfProvedorOferecendo",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfProvedorMaoNoPeito",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfProvedorBracosAbertosAcolhendo",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfProvedorAgachadoDando",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfProvedorMaosNaCintura",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfProvedorAbrindoBau",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfProvedorCarregandoSaco",
+   "tag": "Referência/Papel/Provedor"
+  },
+  {
+   "nome": "rfMensageiroCorrendoComCarta",
+   "tag": "Referência/Papel/Mensageiro"
+  },
+  {
+   "nome": "rfMensageiroEntregandoCarta",
+   "tag": "Referência/Papel/Mensageiro"
+  },
+  {
+   "nome": "rfMensageiroLendoProclamacao",
+   "tag": "Referência/Papel/Mensageiro"
+  },
+  {
+   "nome": "rfMensageiroGritandoNotícia",
+   "tag": "Referência/Papel/Mensageiro"
+  },
+  {
+   "nome": "rfMensageiroAjoelhadoReportando",
+   "tag": "Referência/Papel/Mensageiro"
+  },
+  {
+   "nome": "rfMensageiroApontandoCaminho",
+   "tag": "Referência/Papel/Mensageiro"
+  },
+  {
+   "nome": "rfViloaRisoMaligno",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfViloaMaoNoQuadril",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfViloaBracosCruzados",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfViloaConjurando",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfViloaApontandoAcusando",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfViloaSentadaNoTrono",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfViloaAgachadaPredadora",
+   "tag": "Referência/Papel/Vilã"
+  },
+  {
+   "nome": "rfSobreviventeExausto",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfSobreviventeComCajado",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfSobreviventeOlhandoHorizonte",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfSobreviventeAjoelhadoAgradecendo",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfSobreviventeBebendoCantil",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfSobreviventeEscalandoCorda",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfSobreviventeComMochila",
+   "tag": "Referência/Papel/Sobrevivente"
+  },
+  {
+   "nome": "rfInfiltradorAgachadoSinal",
+   "tag": "Referência/Papel/Infiltrador"
+  },
+  {
+   "nome": "rfInfiltradorTrocaObjeto",
+   "tag": "Referência/Papel/Infiltrador"
+  },
+  {
+   "nome": "rfInfiltradorEscutando",
+   "tag": "Referência/Papel/Infiltrador"
+  },
+  {
+   "nome": "rfInfiltradorDisfarcado",
+   "tag": "Referência/Papel/Infiltrador"
+  },
+  {
+   "nome": "rfCooperacaoBateMao",
+   "tag": "Referência/Cooperação/Gesto"
+  },
+  {
+   "nome": "rfCooperacaoPunhoErguido",
+   "tag": "Referência/Cooperação/Gesto"
+  },
+  {
+   "nome": "rfCooperacaoMeditandoSentado",
+   "tag": "Referência/Cooperação/Gesto"
+  }
+ ],
+ "cenas": [
+  {
+   "id": "ref.abraco.correndo",
+   "grupo": "Referência/Abraço/Reencontro",
+   "nome": "correndo para o abraço"
+  },
+  {
+   "id": "ref.abraco.saltando",
+   "grupo": "Referência/Abraço/Reencontro",
+   "nome": "pulando no colo"
+  },
+  {
+   "id": "ref.abraco.ajoelhados",
+   "grupo": "Referência/Abraço/Consolo",
+   "nome": "abraço ajoelhados no chão"
+  },
+  {
+   "id": "ref.abraco.consolo-sentado",
+   "grupo": "Referência/Abraço/Consolo",
+   "nome": "consolando quem está sentado no chão"
+  },
+  {
+   "id": "ref.ajuda.levantar",
+   "grupo": "Referência/Ajuda/Levantar",
+   "nome": "estendendo a mão para levantar"
+  },
+  {
+   "id": "ref.ajuda.puxar-penhasco",
+   "grupo": "Referência/Ajuda/Resgate",
+   "nome": "puxando do penhasco"
+  },
+  {
+   "id": "ref.ajuda.ombro-ferido",
+   "grupo": "Referência/Ajuda/Amparo",
+   "nome": "amparando o ferido pelo ombro"
+  },
+  {
+   "id": "ref.ajuda.cuidar-ferido",
+   "grupo": "Referência/Ajuda/Cuidar",
+   "nome": "cuidando do ferido no chão"
+  },
+  {
+   "id": "ref.ajuda.dar-agua",
+   "grupo": "Referência/Ajuda/Cuidar",
+   "nome": "dando de beber ao sobrevivente"
+  },
+  {
+   "id": "ref.cooperacao.high-five",
+   "grupo": "Referência/Cooperação/Comemorar",
+   "nome": "batendo as mãos"
+  },
+  {
+   "id": "ref.cooperacao.tres-abracados",
+   "grupo": "Referência/Cooperação/Grupo",
+   "nome": "três de braços nos ombros"
+  },
+  {
+   "id": "ref.cooperacao.roda-meditando",
+   "grupo": "Referência/Cooperação/Grupo",
+   "nome": "três sentados em roda meditando"
+  },
+  {
+   "id": "ref.cooperacao.punhos",
+   "grupo": "Referência/Cooperação/Comemorar",
+   "nome": "punhos erguidos juntos"
+  },
+  {
+   "id": "ref.papel.mensageiro-entrega",
+   "grupo": "Referência/Papel/Mensageiro",
+   "nome": "mensageiro entregando a carta"
+  },
+  {
+   "id": "ref.papel.mensageiro-ajoelhado",
+   "grupo": "Referência/Papel/Mensageiro",
+   "nome": "mensageiro ajoelhado diante do líder"
+  },
+  {
+   "id": "ref.papel.vila-trono",
+   "grupo": "Referência/Papel/Vilã",
+   "nome": "vilã no trono com servos ajoelhados"
+  },
+  {
+   "id": "ref.papel.vila-ameaca",
+   "grupo": "Referência/Papel/Vilã",
+   "nome": "vilã ameaçando a vítima ajoelhada"
+  },
+  {
+   "id": "ref.papel.vila-trio",
+   "grupo": "Referência/Papel/Vilã",
+   "nome": "vilã e capangas de braços cruzados"
+  },
+  {
+   "id": "ref.papel.provedor-presente",
+   "grupo": "Referência/Papel/Provedor",
+   "nome": "provedor dando o presente"
+  },
+  {
+   "id": "ref.papel.infiltrador-troca",
+   "grupo": "Referência/Papel/Infiltrador",
+   "nome": "troca secreta de objeto"
+  },
+  {
+   "id": "ref.papel.furtivos-grupo",
+   "grupo": "Referência/Furtivo/Grupo",
+   "nome": "três avançando furtivos"
+  },
+  {
+   "id": "ref.papel.sobreviventes-descanso",
+   "grupo": "Referência/Papel/Sobrevivente",
+   "nome": "sobreviventes descansando"
+  },
+  {
+   "id": "ref.rendicao.rendido",
+   "grupo": "Referência/Rendição",
+   "nome": "rendido sob a mira"
+  },
+  {
+   "id": "ref.luta.soco-no-rosto",
+   "grupo": "Referência/Luta/Impacto",
+   "nome": "soco acertando o rosto"
+  },
+  {
+   "id": "ref.luta.soco-no-estomago",
+   "grupo": "Referência/Luta/Impacto",
+   "nome": "soco no estômago"
+  },
+  {
+   "id": "ref.luta.chute-arremessa",
+   "grupo": "Referência/Luta/Impacto",
+   "nome": "chute que arremessa o rival"
+  },
+  {
+   "id": "ref.luta.joelhada",
+   "grupo": "Referência/Luta/Impacto",
+   "nome": "joelhada segurando a nuca"
+  },
+  {
+   "id": "ref.luta.energia",
+   "grupo": "Referência/Luta/Poder",
+   "nome": "disparo de energia contra a defesa"
+  },
+  {
+   "id": "ref.luta.ninja-shuriken",
+   "grupo": "Referência/Luta/Ninja",
+   "nome": "shuriken contra espada"
+  },
+  {
+   "id": "ref.luta.rasteira",
+   "grupo": "Referência/Luta/Ataque",
+   "nome": "rasteira derrubando"
+  },
+  {
+   "id": "ref.luta.cotovelada",
+   "grupo": "Referência/Luta/Impacto",
+   "nome": "cotovelada no rosto"
+  }
+ ]
+}
