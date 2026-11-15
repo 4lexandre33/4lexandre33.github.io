@@ -39,6 +39,13 @@ function hqDividir(c, qs, cal, jp) { const n = qs.length, { x, y, w, h } = c, g 
     if (largo) { const t0 = j === 0 ? x : x + w * (a + s0) + g, b0 = j === 0 ? x : x + w * (a - s0) + g, t1 = j === n - 1 ? x + w : x + w * (b2 + s1) - g, b1 = j === n - 1 ? x + w : x + w * (b2 - s1) - g; out.push(espelha([[t0, y], [t1, y], [b1, y + h], [b0, y + h]])); }
     else { const l0 = j === 0 ? y : y + h * (a + s0) + g, r0 = j === 0 ? y : y + h * (a - s0) + g, l1 = j === n - 1 ? y + h : y + h * (b2 + s1) - g, r1 = j === n - 1 ? y + h : y + h * (b2 - s1) - g; out.push([[x, l0], [x + w, r0], [x + w, r1], [x, l1]]); } }
   return out; }
+/* retângulo dentro do polígono (para os balões não saírem de um painel triangular, losango ou explosão) */
+function hqDentroPoli(P, x, y) { let d = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) d = !d; } return d; }
+function hqInscrito(P) { const b = hqCaixa(P); let cx = 0, cy = 0; P.forEach(p => { cx += p[0]; cy += p[1]; }); cx /= P.length; cy /= P.length;
+  /* tenta vários centros (centróide e a caminho de cada canto) e fica com o maior retângulo (no triângulo: perto do ângulo reto) */
+  const centros = [[cx, cy]]; P.concat([[b.x, b.y], [b.x + b.w, b.y], [b.x, b.y + b.h], [b.x + b.w, b.y + b.h]]).forEach(v => [0.3, 0.5, 0.65].forEach(u => centros.push([cx + (v[0] - cx) * u, cy + (v[1] - cy) * u]))); let melhor = null;
+  for (const [ax, ay] of centros) { if (!hqDentroPoli(P, ax, ay)) continue; for (let s0 = 1; s0 > 0.15; s0 -= 0.04) { const w = b.w * s0, h = b.h * s0, x = ax - w / 2, y = ay - h / 2; if ([[x, y], [x + w, y], [x, y + h], [x + w, y + h], [ax, y], [ax, y + h], [x, ay], [x + w, ay]].every(q => hqDentroPoli(P, q[0], q[1]))) { if (!melhor || w * h > melhor.w * melhor.h) melhor = { x, y, w, h }; break; } } }
+  return melhor || { x: cx - b.w * 0.1, y: cy - b.h * 0.1, w: b.w * 0.2, h: b.h * 0.2 }; }
 const hqCaixa = P => { const xs = P.map(p => p[0]), ys = P.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys); return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y }; };
 const hqPts = P => P.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
 
@@ -117,7 +124,8 @@ function hqPaginas(r, fotos, o = {}) {
         gq.forEach((kk, j) => { const q = r.quadros[kk], f = fotos[kk]; if (!f) return; const id = "c" + out.length + "_" + k + "_" + j, poly = partes ? partes[j] : hqPoligono(c0, q, k), c = partes ? hqCaixa(poly) : (q && q.borda && q.borda !== "diagonal" && q.borda !== "normal" && q.borda !== "grossa" && q.borda !== "nenhuma" ? hqCaixa(poly) : c0), enc = hqEncaixe(f.svg, c, f.cabecas, q && q.recorteCel === "caber");
         s += '<clipPath id="' + id + '"><polygon points="' + hqPts(poly) + '"/></clipPath><g clip-path="url(#' + id + ')">' + (q && q.recorteCel === "caber" ? '<rect x="' + c.x.toFixed(1) + '" y="' + c.y.toFixed(1) + '" width="' + c.w.toFixed(1) + '" height="' + c.h.toFixed(1) + '" fill="#fff"/>' : "") + '<image x="' + enc.x.toFixed(1) + '" y="' + enc.y.toFixed(1) + '" width="' + enc.w.toFixed(1) + '" height="' + enc.h.toFixed(1) + '" preserveAspectRatio="none" href="' + (f.png || "data:image/svg+xml;base64," + hqB64(f.svg)) + '"/></g>';
         if (!q || q.borda !== "nenhuma") s += '<polygon points="' + hqPts(poly) + '" fill="none" stroke="#111" stroke-width="' + (q && q.borda === "grossa" ? 7 : 4) + '" stroke-linejoin="miter"/>';
-        if (o.baloes !== false) s += '<g>' + hqBaloes((q && q.falas) || [], f.cabecas, c, enc, { leitura: jp ? "japonesa" : "ocidental", fonte: o.fonte }) + "</g>";
+        const ehRet = poly.length === 4 && !partes && (!q || !q.borda || /^(normal|grossa|nenhuma|diagonal)$/.test(q.borda)), cb = ehRet ? c : hqInscrito(poly);
+        if (o.baloes !== false) s += '<g>' + hqBaloes((q && q.falas) || [], f.cabecas, cb, enc, { leitura: jp ? "japonesa" : "ocidental", fonte: o.fonte }) + "</g>";
         if (o.numeros) s += '<text x="' + (c.x + 8).toFixed(1) + '" y="' + (c.y + c.h - 8).toFixed(1) + '" font-family="Arial" font-size="14" fill="#c00">' + (q.indice + 1) + "</text>"; }); });
       y += ah + cal; });
     out.push({ svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + PW + " " + PH + '" width="' + PW + '" height="' + PH + '"><rect width="' + PW + '" height="' + PH + '" fill="#fff"/>' + s + "</svg>", quadros: qi.map(kk => r.quadros[kk].indice + 1), formato: pg.formato || o.formato || "manga", largura: PW, altura: PH }); }

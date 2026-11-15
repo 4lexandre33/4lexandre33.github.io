@@ -16,3 +16,14 @@ create policy "anon grava projetos" on projetos for insert to anon with check (t
 create policy "anon atualiza projetos" on projetos for update to anon using (true) with check (true);
 create policy "anon le versoes" on projeto_versoes for select to anon using (true);
 create policy "anon grava versoes" on projeto_versoes for insert to anon with check (true);
+
+-- Pacotes de cenas (células cortadas das folhas): ficha em jsonb e a imagem em data URL
+create table if not exists celulas (
+  id text primary key, pacote text not null, dados jsonb not null default '{}'::jsonb, img text,
+  atualizado timestamptz not null default now()
+);
+create index if not exists celulas_pacote on celulas (pacote);
+alter table celulas enable row level security;
+create policy "anon le celulas" on celulas for select to anon using (true);
+create policy "anon grava celulas" on celulas for insert to anon with check (true);
+create policy "anon atualiza celulas" on celulas for update to anon using (true) with check (true);
