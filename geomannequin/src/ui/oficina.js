@@ -17,6 +17,7 @@ import { removerObjeto, duplicarObjeto } from "../scene/cenario.js";
 import { moverCamera, moverAlvo } from "../scene/blocking.js";
 import { LT_CATEGORIAS } from "../scene/lote.js";
 import { abrirPacotes } from "./pacotes.js";
+import { abrirPrompt } from "./prompt.js";
 import { abrirTutorial } from "./tutorial.js";
 import { AM_POSES } from "../scene/animais.js";
 import { listaPosesExtras } from "../scene/poses-extra.js";
@@ -167,7 +168,7 @@ function enquadrarPlanta() { const its = itensPlanta(); if (!its.length) { est.c
   est.centro = [(x0 + x1) / 2 * M, (z0 + z1) / 2 * M]; est.zoom = Math.max(1, Math.min(120, Math.min(300 / Math.max(2, (x1 - x0) * M + 4), 240 / Math.max(2, (z1 - z0) * M + 4)))); }
 /* planta igual à "vista de cima" do Blocking: +z para BAIXO (a câmera padrão fica embaixo) */
 const pl2tela = (xm, zm) => [180 + (xm - est.centro[0]) * est.zoom, 150 + (zm - est.centro[1]) * est.zoom], tela2pl = (px, py) => [est.centro[0] + (px - 180) / est.zoom, est.centro[1] + (py - 150) / est.zoom];
-function desenharPlanta() { const s = $("ofPlanta"); if (!s || $("ofInsp").hidden) return; let g = ""; const passo = est.grade, x0 = tela2pl(0, 0)[0], x1 = tela2pl(360, 0)[0], z1 = tela2pl(0, 0)[1], z0 = tela2pl(0, 300)[1];
+function desenharPlanta() { const s = $("ofPlanta"); if (!s || ($("ofInsp").hidden && !s.closest("#prJan"))) return; let g = ""; const passo = est.grade, x0 = tela2pl(0, 0)[0], x1 = tela2pl(360, 0)[0], zA = tela2pl(0, 0)[1], zB = tela2pl(0, 300)[1], z0 = Math.min(zA, zB), z1 = Math.max(zA, zB);
   const n = (x1 - x0) / passo; if (n < 200) { for (let x = Math.floor(x0 / passo) * passo; x <= x1; x += passo) { const p = pl2tela(x, 0)[0]; g += '<line x1="' + p.toFixed(1) + '" y1="0" x2="' + p.toFixed(1) + '" y2="300" class="' + (Math.abs(x) < 1e-6 ? "of-eixo" : "of-gr") + '"/>'; }
     for (let z = Math.floor(z0 / passo) * passo; z <= z1; z += passo) { const p = pl2tela(0, z)[1]; g += '<line x1="0" y1="' + p.toFixed(1) + '" x2="360" y2="' + p.toFixed(1) + '" class="' + (Math.abs(z) < 1e-6 ? "of-eixo" : "of-gr") + '"/>'; } }
   for (const i of itensPlanta()) { const [px, py] = pl2tela(i.x * M, i.z * M), a = i.g * Math.PI / 180, dx = Math.sin(a), dz = Math.cos(a);
@@ -205,7 +206,7 @@ function ligarPlanta() { const s = $("ofPlanta");
     const [xm, zm] = tela2pl(q[0], q[1]);
     if (est.orientando) { est.arr = { orienta: true }; est.seta = [xm, zm]; desenharPlanta(); return; }
     if (est.colocar) { colocarEm(est.colocar, snap(xm), snap(zm)); if (!e.ctrlKey) est.colocar = null; desenharPlanta(); return; }
-    const cam = camNaPlanta(); if (cam && (Math.hypot(q[0] - cam.px, q[1] - cam.py) < 12 || Math.hypot(q[0] - (cam.px + (cam.ax - cam.px) * 0.25), q[1] - (cam.py + (cam.ay - cam.py) * 0.25)) < 12)) { marca(); est.arr = { camera: true }; return; } if (cam && Math.hypot(q[0] - cam.ax, q[1] - cam.ay) < 6) { marca(); est.arr = { alvoCam: true }; return; }
+    const cam = camNaPlanta(); if (cam && (Math.hypot(q[0] - cam.px, q[1] - cam.py) < 12 || Math.hypot(q[0] - (cam.px + (cam.ax - cam.px) * 0.25), q[1] - (cam.py + (cam.ay - cam.py) * 0.25)) < 12)) { marca(); est.arr = { camera: true }; return; } if (cam && Math.hypot(q[0] - cam.ax, q[1] - cam.ay) < 6 && !itemNaPlanta(q)) { marca(); est.arr = { alvoCam: true }; return; }
     const i = itemNaPlanta(q);
     if (i) { const k = chaveDe(i); if (e.shiftKey || e.ctrlKey || e.metaKey) { if (est.sel.has(k)) est.sel.delete(k); else est.sel.add(k); } else if (!est.sel.has(k)) est.sel = new Set([k]);
       if (i.k === "p") { SCN.objSel = null; SCN.active = SCN.list.indexOf(i.it); } else SCN.objSel = i.o.id; atualizarSel(); marca();
@@ -330,6 +331,7 @@ function montarBarraTrabalho(box) { const t = el("div", "of-barra"); t.setAttrib
     '<button type="button" id="ofBtnPor" title="Colocar algo no palco (ou botão direito no palco)">Colocar…</button>' +
     '<button type="button" id="ofBtnFoco" aria-pressed="false" title="Modo foco: esconde os painéis laterais e deixa só o palco (F)">Foco <kbd>F</kbd></button>' +
     '<button type="button" id="ofBtnPac" aria-pressed="false" title="Pacotes de cenas: folhas (sprite sheets) cortadas, catalogadas e usadas nas páginas (P)">Pacotes <kbd>P</kbd></button>' +
+    '<button type="button" id="ofBtnPrompt" aria-pressed="false" title="Prompt de imagem (Google Flow): cena + câmera → texto com posições, cores, grade e ZIP (G)">Prompt <kbd>G</kbd></button>' +
     '<button type="button" id="ofBtnAprender" title="Aprender: tutorial interativo de todas as ferramentas (F1)">Aprender <kbd>F1</kbd></button>' +
     '<button type="button" id="ofBtnAtalhos" title="Atalhos de teclado (?)">Atalhos <kbd>?</kbd></button>';
   box.prepend(t);
@@ -338,10 +340,10 @@ function montarBarraTrabalho(box) { const t = el("div", "of-barra"); t.setAttrib
   $("ofBtnPor").addEventListener("click", e => { const r = e.target.getBoundingClientRect(); menuColocar(r.left, r.bottom + 4, i => { est.colocar = i; mostrarHud("Clique no palco ou na planta para pôr: " + i.rot); }); });
   $("ofBtnFoco").addEventListener("click", () => modoFoco());
   $("ofBtnAtalhos").addEventListener("click", () => cartaoAtalhos());
-  $("ofBtnPac").addEventListener("click", () => abrirPacotes()); $("ofBtnAprender").addEventListener("click", () => abrirTutorial()); }
+  $("ofBtnPac").addEventListener("click", () => abrirPacotes()); $("ofBtnPrompt").addEventListener("click", () => abrirPrompt()); $("ofBtnAprender").addEventListener("click", () => abrirTutorial()); }
 function modoFoco(on) { const b = document.body, v = on === undefined ? !b.classList.contains("of-foco") : on; b.classList.toggle("of-foco", v); const bt = $("ofBtnFoco"); if (bt) bt.setAttribute("aria-pressed", String(v)); try { localStorage.setItem("gm-foco", v ? "1" : ""); } catch (e) { } }
 function cartaoAtalhos() { const v = $("ofAtalhos"); if (v) { v.remove(); return; } const c = el("div", "of-atalhos"); c.id = "ofAtalhos"; c.setAttribute("role", "dialog"); c.setAttribute("aria-label", "Atalhos de teclado");
-  const A = [["/ ou Ctrl+K", "barra de comando"], ["I", "inspetor"], ["P", "pacotes de cenas (sprite sheets)"], ["F1", "aprender (tutorial interativo)"], ["clique no palco", "seleciona pessoa ou objeto (Shift/Ctrl: soma à seleção); arraste um objeto para mover"], ["arrastar no vazio do palco", "gira a vista · Shift ou botão do meio: desloca · rodinha: aproxima"], ["botão direito em alguém", "pose, orientar, olhar para, duplicar, apagar, alinhar o grupo"], ["O", "orientar a seleção: clique e arraste a seta até o ponto"], ["Shift+D / Delete", "duplicar / apagar a seleção"], ["planta: arrastar no vazio", "seleção por caixa; sem ninguém dentro marca uma ÁREA (botão direito: gerar aleatório)"], ["planta: Alt ou botão do meio", "deslocar a vista da planta"], ["planta: câmera", "arraste o ícone da câmera ou o ponto do alvo"], ["1 2 3 4", "abas do inspetor (com ele aberto)"], ["F", "modo foco (só o palco)"], ["botão direito no palco", "colocar algo ali"], ["clique numa articulação", "escolher a parte (com “Mostrar ossos” ou nas vistas)"],
+  const A = [["/ ou Ctrl+K", "barra de comando"], ["I", "inspetor"], ["P", "pacotes de cenas (sprite sheets)"], ["G", "prompt de imagem (Google Flow)"], ["F1", "aprender (tutorial interativo)"], ["clique no palco", "seleciona pessoa ou objeto (Shift/Ctrl: soma à seleção); arraste um objeto para mover"], ["arrastar no vazio do palco", "gira a vista · Shift ou botão do meio: desloca · rodinha: aproxima"], ["botão direito em alguém", "pose, orientar, olhar para, duplicar, apagar, alinhar o grupo"], ["O", "orientar a seleção: clique e arraste a seta até o ponto"], ["Shift+D / Delete", "duplicar / apagar a seleção"], ["planta: arrastar no vazio", "seleção por caixa; sem ninguém dentro marca uma ÁREA (botão direito: gerar aleatório)"], ["planta: Alt ou botão do meio", "deslocar a vista da planta"], ["planta: câmera", "arraste o ícone da câmera ou o ponto do alvo"], ["1 2 3 4", "abas do inspetor (com ele aberto)"], ["F", "modo foco (só o palco)"], ["botão direito no palco", "colocar algo ali"], ["clique numa articulação", "escolher a parte (com “Mostrar ossos” ou nas vistas)"],
     ["← → ↑ ↓ PgUp PgDn", "girar a articulação escolhida"], ["rodinha do mouse", "girar a articulação (Shift: outro eixo · Alt: fino)"], ["Tab / Shift+Tab", "próxima / anterior articulação"], ["[ ]", "subir / descer na cadeia"], ["R", "zera a articulação"], ["M", "copia para o outro lado"], ["Ctrl+Z / Ctrl+Y", "desfazer / refazer"], ["Esc", "cancela / fecha"]];
   c.innerHTML = "<h3>Atalhos</h3><dl>" + A.map(([k, v]) => "<dt><kbd>" + esc(k) + "</kbd></dt><dd>" + esc(v) + "</dd>").join("") + '</dl><button type="button" class="primary" id="ofAtalhosOk">Fechar</button>';
   document.body.appendChild(c); $("ofAtalhosOk").addEventListener("click", () => c.remove()); }
@@ -409,6 +411,6 @@ export function iniciarOficina() {
   document.addEventListener("pointerdown", e => { const m = $("ofMenu"); if (m && !m.contains(e.target)) fecharMenu(); });
   window.addEventListener("gm:render", () => { desenharPlanta(); desenharDisco(); });
   try { if (localStorage.getItem("gm-foco") === "1") modoFoco(true); } catch (e) { }
-  setInterval(() => { if (!$("ofInsp").hidden) { atualizarSel(); if (est.aba === "posicao" && !est.arr) desenharPlanta(); if (est.aba === "orientacao") desenharDisco(); } }, 900);
+  setInterval(() => { const pj = $("prJan"); if (pj && !pj.hidden && !est.arr) desenharPlanta(); if (!$("ofInsp").hidden) { atualizarSel(); if (est.aba === "posicao" && !est.arr) desenharPlanta(); if (est.aba === "orientacao") desenharDisco(); } }, 900);
 }
 export { aplicarLinhaNoPalco as aplicarLinhaOficina, executar as executarLinhaOficina, abrirInspetor, abrirAba, abrirBarra, est as OF_ESTADO, menuItens, menuArea, orientarModo, aplicarOrientacao, desenharPlanta, itensPlanta, modoFoco, cartaoAtalhos, fecharMenu };

@@ -1037,10 +1037,36 @@ cena "Praça" local "Praça" hora tarde
   Cada ação de mouse escreve a linha equivalente no histórico da barra de comando (para aprender o texto fazendo).
 
 59. APRENDER (tutorial interativo) E O QUE CADA IA PODE FAZER
-  Site: botão Aprender (F1). 11 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
-    pacotes de cenas, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
+  Site: botão Aprender (F1). 12 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
+    pacotes de cenas, prompt de imagem, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
     pedem para você repetir. Ao sair, dá para voltar à cena de antes.
   MCP (Claude, ChatGPT, Gemini) e linha de comando (node mcp/gm.mjs <ferramenta> …): linha_no_palco (qualquer linha deste manual, incluindo espalha,
-    grupo, apaga, duplica), celulas_* (pacotes), miniaturas (folha de contato de poses por categoria, animações ou células), paginas_hq, webtoon,
+    grupo, apaga, duplica), celulas_* (pacotes), prompt_imagem / prompt_catalogo (cap. 60), miniaturas (folha de contato de poses por categoria, animações ou células), paginas_hq, webtoon,
     gerar_name, filme, catalogo e as demais.
+
+60. PROMPT DE IMAGEM (Google Flow e outras IAs de imagem): CENA + CÂMERA → TEXTO, GRADE, CORES, ZIP
+  Site: botão Prompt (tecla G). À esquerda o texto; à direita a planta (a mesma do Inspetor), o Mapa (caixas calculadas), as Cenas, a Paleta e o prompt
+    pronto (Inglês/Português, Copiar, Baixar ZIP). Sem "quadro" no texto vale a CENA DO PALCO (poses, cores, câmera de agora): mexa na planta ou no palco
+    e o prompt se refaz. "Trazer a cena para o texto" copia a cena como elenco + quadro (aí ela fica independente e pode variar).
+  Bloco prompt (no começo do texto; as linhas de dentro com recuo):
+    prompt
+      formato 16:9            (1:1, 9:16, 4:3, 3:4, 3:2, 2:3, 4:5, 21:9 ou qualquer a:b) · tamanho/proporcao = sinônimos
+      grade 3x3               (folha tipo sprite sheet: colunas x linhas, até 64 células; cada quadro é uma célula, em ordem)
+      idioma ambos            (en, pt ou ambos) · compacto / detalhado (grade com várias células já sai compacta)
+      estilo "anime, cel shading" · situacao "perseguição no telhado" · lugar "beco molhado" · luz "neon" · hora "noite" · clima "chuva"
+      negativo "texto, marca d'água" · detalhe "frase extra no fim"
+      var capa = #8E1B1B      (variável: use ${capa} ou {{capa}} em qualquer lugar do texto)
+      Kai = "rapaz de 20 anos, capa ${capa}"   (descrição do personagem/objeto, entra uma vez só e vale em todas as células)
+      variar lado frente, 3/4, perfil, costas  (preenche a grade copiando o último quadro; campos: lado, angulo, plano, lente, pose, expressao)
+  Depois, a linguagem de sempre: elenco + quadro (câmera: plano geral…detalhe, angulo normal/plongee/contra-plongee/zenital/nadir/holandes,
+    lado frente/3/4/perfil/3/4-costas/costas ou graus "lado 120", lente 24mm…135mm, alvo Kai, Mira). Cor por código: "objeto carro "Fusca" em (0,-3)
+    cor #F2C230"; no editor, digite # para ver a tabela de cores com amostra.
+  O que o prompt diz (calculado pela projeção da câmera, não adivinhado): para cada um, em que parte do quadro está (esquerda/centro/direita,
+    em cima/embaixo, x e y em %), altura no quadro, primeiro plano/meio/fundo, distância em metros, de frente/3/4/perfil/costas para a câmera,
+    para onde olha, quem tapa quem, quem está à esquerda de quem; a câmera (altura em m, inclinação, distância, lente, holandês); paleta com #hex.
+  Avisos: alguém fora do quadro (ou mais da metade fora), ninguém no quadro, cores parecidas demais entre dois personagens, grade com quadros a mais/menos.
+  ZIP: prompt-en.txt, prompt-pt.txt, prompt.json (posições numéricas), referencias/ (cena e mapa de cada célula, grade-cenas, grade-mapas, planta),
+    paleta, miniaturas/ (poses, objetos, plano, ângulo, lado, lente usados) em PNG e SVG, o texto da cena e LEIA-ME.
+  Dica de uso: mande o prompt junto com referencias/grade-cenas.png (ou celula-01-cena.png) como imagem de referência de composição.
+  MCP: prompt_imagem {texto, zip?} (sem quadro usa a cena montada com linha_no_palco) e prompt_catalogo {miniaturas?, grupo?}.
 ```

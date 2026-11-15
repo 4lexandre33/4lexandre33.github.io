@@ -65,6 +65,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   for (const pb of B.list) { if (!pb.name || pb.name === "__vazio__" || pb.name === "__ninguem__") continue; const pa = A.list.find(x => x.name === pb.name), live = SCN.list.find(x => x.name === pb.name);
     if (!live) { const novo = JSON.parse(JSON.stringify(sceneState())); novo.list.push(pb); loadScene(novo); mudou.push(pb.name + " entrou na cena"); continue; }
     if (!pa || !citado(pb.name)) continue; const pose = /\b(pose|senta|sentado|sentada|ajoelha|deita|agacha|anima|golpeia|acerta|ataca|dispara|monta|embarca|rema|segura|esgrima|sobre-\w+)\b/.test(linha) && Object.keys(pb.params).some(k => POSEKEYS.has(k) && pb.params[k] !== pa.params[k]);
+    if (pose) { live.poseNome = pb.poseNome || live.poseNome || null; if (pb.exprNome) live.exprNome = pb.exprNome; }
     let mexeu = pose; for (const k of Object.keys(pb.params)) { if (pose && POSEKEYS.has(k)) live.params[k] = pb.params[k]; else if (!igual(pb.params[k], pa.params[k])) { live.params[k] = pb.params[k]; mexeu = true; } }
     if (Number.isInteger(pb.apoioEm) && B.objetos && B.objetos[pb.apoioEm] && !igual(pb.apoioEm, pa.apoioEm)) { const nm = B.objetos[pb.apoioEm].nome, q = (SCN.objetos || []).find(o => o.nome === nm); if (q) { live.apoioEm = q.id; mexeu = true; } }
     for (const k of ["embarcadoEm", "montadoEm", "oculto", "papel"]) if (!igual(pb[k], pa[k]) && pb[k] !== undefined) { live[k] = pb[k]; mexeu = true; }
