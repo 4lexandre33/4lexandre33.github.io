@@ -203,6 +203,15 @@ px("amKungFuPalmaDupla", "Combate/Artes marciais/Shaolin/Ataque", "palma dupla|d
 px("amJudoDefesaQuadril", "Combate/Artes marciais/Judô/Defesa", "bloqueio com o quadril|abaixar o centro", "sf10 hf60,60 ha20,20 kf75,75 fl60,60 ab20,20 el80,80 hp10 m:garra,garra e:esforco");
 px("amJudoCaindoProjetado", "Combate/Artes marciais/Judô/Defesa", "sendo projetado|voando na projeção", "bl6 bp-120 sf20 hf60,90 kf40,90 fl120,60 ab40,30 el30,40 hp20 m:aberta,garra e:susto");
 px("amBjjDefendendoMataLeao", "Combate/Artes marciais/Jiu-jitsu/Defesa", "defendendo o mata-leão|puxando o braço do pescoço", "hf90,70 kf60,40 sf10 fl90,90 ab0,0 el120,120 hp10 m:garra,garra e:esforco");
+/* ===== MONTARIA EM MONSTRO (kaiju): de pé na cabeça, agarrado, sentado no ombro, pendurado, comandando ===== */
+px("kaijuDePeNaCabeca", "Montaria/Kaiju/Em pé", "em pé na cabeça do monstro|surfando no kaiju", "hf18,-8 ha16,16 kf32,14 sf6 fl30,60 ab70,40 el20,40 hp-4 m:aberta,punho e:determinacao");
+px("kaijuComandando", "Montaria/Kaiju/Em pé", "apontando o caminho de cima do monstro|comandante", "hf12,-6 ha14,14 kf20,10 sf-2 fl10,95 ab20,10 el30,5 hp-6 hy10 m:punho,apontar e:determinacao");
+px("kaijuAgarradoAgachado", "Montaria/Kaiju/Agarrado", "agachado agarrando o pelo/escamas|segurando firme", "hf100,90 ha20,20 kf120,110 sf34 fl60,70 ab20,25 el60,50 hp-14 m:punho,punho e:medo");
+px("kaijuAbracadoAoPescoco", "Montaria/Kaiju/Agarrado", "deitado abraçando o pescoço do monstro", "bp70 hf50,50 ha30,30 kf60,60 sf10 fl95,95 ab95,95 el25,25 hp-30 m:punho,punho e:medo");
+px("kaijuSentadoNoOmbro", "Montaria/Kaiju/Sentado", "sentado no ombro do gigante", "hf88,88 ha10,10 kf80,70 sf8 fl20,40 ab25,15 el30,60 hp4 m:espalmada,aberta e:alegria");
+px("kaijuPenduradoUmaMao", "Montaria/Kaiju/Pendurado", "pendurado por uma mão|quase caindo do monstro", "hf20,-10 kf40,10 sf-4 fl175,20 ab5,40 el5,40 hp20 m:punho,aberta e:medo");
+px("kaijuSaltandoDoMonstro", "Montaria/Kaiju/Salto", "salta do monstro|pula de cima do kaiju", "bl10 hf60,-20 kf90,20 sf-10 fl60,60 ab125,125 el20,20 hp-10 m:aberta,aberta e:gritoDeGuerra");
+px("kaijuMontadoComRedeas", "Montaria/Kaiju/Sentado", "montado no pescoço com rédeas", "hf80,80 ha35,35 kf95,95 sf14 fl45,45 ab15,15 el80,80 hp-4 m:punho,punho e:determinacao");
 /* ===================== REFERÊNCIAS DO USUÁRIO (folhas de manequins): poses catalogadas por tema — Referência/<tema>/<sub> ===================== */
 px("rfAgachadoCocoras", "Referência/Agachado/Cócoras", "cócoras|agachado de cócoras", "sf20 hf115,115 ha20,20 kf140,140 af30,30 fl40,40 ab20,20 el60,60 hp5 m:relaxada,relaxada e:neutra");
 px("rfAgachadoApontando", "Referência/Agachado/Cócoras", "agachado apontando", "sf18 hf115,115 ha22,22 kf140,140 af30,30 fl90,30 ab20,20 el0,60 hp-5 m:apontar,relaxada e:determinacao");

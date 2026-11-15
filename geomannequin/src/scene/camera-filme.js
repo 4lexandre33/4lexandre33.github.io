@@ -110,11 +110,11 @@ function cfComMods(ev, b, cam, t, ate) { if (!cam) return null; const c = { pos:
 /* põe a câmera no P (sem entrar em parede nem em gente: empurra para fora e avisa) */
 function cfAplicar(cam, avisos) {
   if (!cam) return null; let pos = cam.pos.slice(); const alvo = cam.alvo;
-  const dentro = p => { for (const o of SCN.objetos || []) { if (o.chao || o.tipo === "agua" || o.classe === "agua" || (o.alt || 0) < 1) continue; const y0 = cfChaoGeral() + (o.base || 0), g = -(o.giro || 0) * CF_D, dx = p[0] - o.x, dz = p[2] - o.z, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
+  const dentro = p => { for (const o of SCN.objetos || []) { if (o.chao || /^(floresta|castelo|casteloMagico)$/.test(o.tipo) || o.tipo === "agua" || o.classe === "agua" || (o.alt || 0) < 1) continue; const y0 = cfChaoGeral() + (o.base || 0), g = -(o.giro || 0) * CF_D, dx = p[0] - o.x, dz = p[2] - o.z, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
       if (Math.abs(lx) < (o.larg || 1) / 2 && Math.abs(lz) < (o.prof || 1) / 2 && p[1] > y0 && p[1] < y0 + o.alt) return o.nome || o.tipo; }
     for (const it of SCN.list) { if (it.oculto || it.name === "__vazio__" || it.name === cam.esconder) continue; if (Math.hypot(p[0] - (it.params.wx || 0), p[2] - (it.params.wz || 0)) < 2.2 && p[1] < cfChao(it) + 16 * (it.params.tamanho || 1)) return it.name; } return null; };
   /* dentro de algo: primeiro chega para perto do alvo (parede entre); se não sair, recua (gente na frente) */
-  const q0 = dentro(pos); if (q0) { let quem = q0; for (let k = 1; k <= 20 && quem; k++) { pos = cfLerp(cam.pos, alvo, k / 40); quem = dentro(pos); }
+  const q0 = cam.centro ? null : dentro(pos); if (q0) { let quem = q0; for (let k = 1; k <= 20 && quem; k++) { pos = cfLerp(cam.pos, alvo, k / 40); quem = dentro(pos); }
     if (quem) for (let k = 1; k <= 30 && quem; k++) { pos = cfLerp(cam.pos, alvo, -k / 20); quem = dentro(pos); } if (avisos) avisos.add("cam:" + q0); }
   P.persp = 1; aplicarCameraBlk(pos, alvo); P.lens = Math.max(14, Math.min(200, Math.round(cam.lente || 50))); P.panX = cam.pan ? cam.pan[0] : 0; P.panY = cam.pan ? cam.pan[1] : cam.centro ? (CY - H / 2) * 18 * Math.max(3, P.camDist || 30) / ((W / 2) * (P.lens || 50)) : 0; /* câmera em coordenadas: o alvo fica no centro do quadro */ P.roll = cam.roll || 0;
   if (cam.esconder) { const it = SCN.list.find(x => x.name === cam.esconder); if (it) it.oculto = true; }

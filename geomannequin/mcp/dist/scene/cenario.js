@@ -220,8 +220,17 @@ function sentar(it, ref) {
   comP(it, () => doBodyPose("sentado"));
   let q = ref === undefined || ref === null ? null : acharObjeto(ref);
   if (ref !== undefined && ref !== null && !q) throw new Error("Objeto não encontrado: “" + ref + "”.");
-  const g0 = chaoY();
+  const g0 = chaoY(), T = q ? (TIPOS_OBJETO[q.tipo] || {}) : {};
+  /* onde sentar: com encosto (cadeira, poltrona, sofá) = no fundo do assento, costas no encosto;
+     comprido (cama, banco longo) = na beira do lado comprido, virado para fora; o resto = no meio, um pouco à frente */
+  let giroP = q ? (q.giro || 0) : 0, off = [0, 0];
+  if (q) { const comprido = q.prof > 9 && q.prof > q.larg * 1.5, largo = q.larg > 9 && q.larg > q.prof * 1.5;
+    if (T.encosto || /poltrona|sofa|trono/.test(q.tipo)) { off = [0, -q.prof / 2 + 1.35]; it.params.bodyPitch = -7; it.params.spineFlex = 2; }
+    else if (comprido) { giroP += 90; off = [q.larg / 2 - 1.6, 0]; }
+    else if (largo) off = [0, q.prof / 2 - 1.6];
+    else off = [0, q.prof * 0.08]; }
   if (q) {
+    it.params.wRot = giroP;
     /* ajusta os joelhos para o assento ficar na altura dos ísquios (pés no chão) */
     const alvo = g0 + q.alt; let best = null;
     for (let k = 40; k <= 135; k += 3) {
@@ -230,14 +239,13 @@ function sentar(it, ref) {
     }
     Object.assign(it.params, { kneeFlexL: best.k, kneeFlexR: best.k - 3, ankleFlexL: clamp(90 - best.k, -20, 40), ankleFlexR: clamp(93 - best.k, -20, 40) });
     comP(it, () => guardArms());
-    it.params.wRot = q.giro || 0;
-    if (best.e > 0.25) it.params.bodyLift = (it.params.bodyLift || 0) + (alvo - isquios(it)[1]);
+    if (best.e > 0.12) it.params.bodyLift = (it.params.bodyLift || 0) + (alvo - isquios(it)[1]);
   } else {
     q = adicionarObjeto("banco", { x: it.params.wx, z: it.params.wz, giro: it.params.wRot });
     q.alt = clamp(isquios(it)[1] - g0, 1.5, 8);
   }
-  /* coloca os ísquios sobre o meio do assento, um pouco à frente */
-  const r = (q.giro || 0) * D, alvoXZ = [q.x + Math.sin(r) * q.prof * 0.08, q.z + Math.cos(r) * q.prof * 0.08], is = isquios(it);
+  /* ísquios no ponto do assento */
+  const r = (q.giro || 0) * D, alvoXZ = [q.x + off[0] * Math.cos(r) + off[1] * Math.sin(r), q.z - off[0] * Math.sin(r) + off[1] * Math.cos(r)], is = isquios(it);
   it.params.wx += alvoXZ[0] - is[0]; it.params.wz += alvoXZ[1] - is[2];
   it.apoioEm = q.id;
   return q;

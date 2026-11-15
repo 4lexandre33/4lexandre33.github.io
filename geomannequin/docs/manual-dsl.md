@@ -813,7 +813,7 @@ cena "Praça" local "Praça" hora tarde
   TREM E TRILHO são objetos separados, com cores diferentes: objeto trilho "Linha" em (0,0) profundidade 80 (comprimento em m) · objeto trem "Trem" em (0,-10) vagoes 3 (0 a 6) · também locomotiva e vagao soltos.
   NAVIO (galeão de 3 mastros, ~30 m) e BALSA GRANDE (travessia, 14 × 8 m, grade, cabine e rampas): pessoas ficam de pé no convés (assentos leme, proa, popa, convés, borda…).
   VEÍCULO ANDANDO NO FILME (sem animal): [T] NOME anda N m [por Ns] · re N m (de ré) · anda-ate (x,z) · vira 90 · velocidade N (m/s) · no-trilho Linha (põe o trem sobre o trilho, alinhado)
-    Ex.: 0s Trem anda 60m no-trilho Linha por 8s · 0s Nau anda 40m por 12s · 2s Barco anda-ate (5,20). Quem está embarcado vai junto. Velocidade padrão: terra 3, água 2,2, trilho 9 m/s.
+    Ex.: 0s Trem anda 60m no-trilho Linha por 8s · 0s Nau anda 40m por 12s · 2s Barco anda-ate (5,20). Quem está embarcado vai junto. Velocidade padrão: terra 6, água 3, trilho 9, ar 40 m/s.
   DESEMBARCAR: Leo desembarca Trem (ou "desce-do Trem", "sai-do coche") — fica de pé ao lado do veículo, na altura do assento.
   Medidas: trilho com gira 0 corre ao longo de z (frente = +z); trem ≈ 10,5 m de locomotiva + 9,4 m por vagão; "anda N m" acelera, anda e PARA no fim.
   Navio e barcos ficam no chão onde estão: ponha a peça "agua" embaixo (o navio tem ~30 m e mastros de ~30 m de altura; aparece ao fundo).
@@ -918,7 +918,7 @@ cena "Praça" local "Praça" hora tarde
 47. CARROS, ÔNIBUS, AVIÕES, HELICÓPTERO, BARCOS E SUBMARINO
   objeto carro "C" em (0,0) modelo sedan|hatch|suv|esportivo|caminhonete|taxi|policia (cada modelo com a sua forma e cor) · objeto onibus · aviao (tipo Boeing) · aviaoPequeno · helicoptero ·
     lancha · boteInflavel · barcoPesqueiro · submarino (com "base -5" fica submerso).
-  Assentos: carro (motorista, carona, traseiro1/2, cacamba na caminhonete) · ônibus (motorista, banco1…16) · avião (piloto, copiloto, poltrona1…24) · helicóptero (piloto, copiloto, porta).
+  Assentos: carro (motorista, carona, traseiro1/2, cacamba na caminhonete) · ônibus (motorista, banco1…16, corredor de pé) · avião grande (piloto, copiloto, poltrona1…24, corredor) · aviaoPequeno (piloto, passageiro) · helicóptero (piloto, copiloto, traseiro, porta) · lancha (piloto, passageiro, popa).
   "anda N m" e "voa N m" aceleram e PARAM no fim; "voa-ate (x,z)" / "anda-ate (x,z)" levam até um ponto (o veículo vira para ele).
   No filme: 0s C anda 30m · 0s Aviao decola altura 40 · 2s Aviao voa 200m · 6s Aviao pousa · 0s H decola altura 20 · 3s H voa 30m (a hélice do helicóptero gira sozinha). Velocidades: terra 6, água 3, ar 40 m/s.
 
@@ -933,4 +933,51 @@ cena "Praça" local "Praça" hora tarde
   Portas e veículos não podem ser "alvo" do enquadramento (alvo é para pessoas e animais): para mirar neles use camera (x,y,z) olhando (x,y,z).
   No filme: 0s Portao abre [por 2s] · 3s Portao fecha · Porta entreabre · Porta escancara (rápido). A levadiça sobe e desce; o alçapão gira no chão; a de correr desliza.
   Uma porta marca a entrada e a saída do lugar: ponha-a no vão da parede (vao porta …) do local. "local X herda Y" também funciona com locais prontos (local preset castelo … "Y").
+  PORTAS GIGANTES DE FANTASIA (kaiju, titãs): portaoTita (≈34 m, folhas de ferro com faixas e rebites, pilares) · portaoCidadela (duas torres com ameias e arco) ·
+    portaDungeon (laje de pedra com runas que SOBE) · portaTemplo (colunas e frontão) · portaRaiz (arco de raízes, porta encantada) · portaCofre (redonda, de aço, com volante).
+    Abrem igual: "objeto portaoTita "Portao" em (0,10) aberta 0.4" · no filme "0s Portao abre por 3s".
+
+50. VEÍCULOS COM GENTE DENTRO
+  Carro, ônibus, vagão, cabine da locomotiva, carruagem, avião pequeno, helicóptero, avião grande, lancha, barco pesqueiro e balsa grande são OCOS: piso, portas, colunas, teto,
+    janelas abertas (dá para ver quem está dentro) e bancos. Quem embarca senta no banco, com os pés no piso, a cabeça abaixo do teto (reclina sozinho se precisar) e,
+    no banco do motorista/piloto, as mãos no volante/manche. Passageiro de cabine fica com as mãos nas coxas (os braços não saem pela janela).
+  No filme quem está dentro vai junto: "0s Carro anda 30m" · "2s Carro vira 90 por 1s" · "0s Heli decola altura 20" — a pessoa não sai do banco.
+  Assentos com ou sem acento valem ("assento conves" = "convés").
+
+51. SENTAR
+  Kai senta-em Cadeira (ou "Kai sentado em Banco", "Kai senta Sofa") — em objeto com encosto (cadeira, poltrona, sofá) senta no fundo, com as costas no encosto;
+    em objeto comprido (cama, banco longo) senta na beira do lado comprido, virado para fora; os joelhos dobram para os pés ficarem no chão.
+  Kai sentado (sem objeto) = no chão, de pernas cruzadas. "pose sentado" sozinho é só a pose (sem assento).
+
+52. MONSTROS: GENTE EM CIMA, PORTAS E EFEITOS
+  Kai sobre-cabeca Kong · Kai sobre-costas Smaug · Kai sobre-pescoco Rex — põe a pessoa em cima do animal ou monstro (no topo da cabeça, das costas ou do pescoço).
+  Poses prontas (Montaria/Kaiju): kaijuDePeNaCabeca, kaijuComandando, kaijuAgarradoAgachado, kaijuAbracadoAoPescoco, kaijuSentadoNoOmbro, kaijuPenduradoUmaMao, kaijuSaltandoDoMonstro, kaijuMontadoComRedeas.
+  Efeitos de monstro: efeito rugido em Kong (ondas de som da boca) · efeito sopro_kaiju em Rex (raio grosso da boca, na direção para onde ele olha) · efeito pisada_gigante em Kong.
+    "em ANIMAL" põe o efeito no animal (boca para rugido/sopro, pés para os de chão); dá para escolher a parte: "em Kong cabeca|sela|pes".
+
+53. EFEITOS NOVOS E A MÃO ATIVA
+  raio_cadeia (raio em zigue-zague com saltos e galhos até o alvo dado em "para"; os saltos são pontos no caminho — um alvo por efeito; para vários alvos, um efeito para cada) · pisada_gigante · rugido · sopro_kaiju · teia (rede que prende o alvo) · rasgo_dimensional (fenda no ar).
+  Poderes saem da MÃO ATIVA (a que está à frente e esticada; as duas juntas = entre as palmas): "efeito feixe de Kai para Mira", "efeito cone de Kai …", "efeito projetil de Kai …"
+    e os golpes de poder ("Kai golpeia Mira com fogo") já usam a mão ativa. Para forçar uma: Kai.maoDir / Kai.maoEsq / Kai.maoAtiva.
+
+54. CASTELOS E FLORESTA (cenários grandes e leves)
+  objeto castelo "C" em (0,0) [estilo conico] — muralhas com ameias, 4 torres, casa do portão com levadiça, torre de menagem (≈100 m).
+  objeto casteloMagico "H" em (0,0) — castelo de escola de magia sobre penhasco: torres finas e pontudas, salão gótico, torre do relógio e de astronomia, ponte coberta.
+    Tamanho: ≈137 × 170 m e 90 m de altura; o topo do penhasco fica a ≈18 m; a ponte coberta sai para +z (a frente). O castelo comum ocupa ≈100 × 100 m, portão em +z.
+  Cenários grandes (castelo, casteloMagico, floresta, portaoTita) podem passar dos limites do capítulo 3 (±45 m, 51 m por peça): não geram aviso, não empurram a câmera
+    nem as pessoas para fora. Câmera em coordenadas (camera (x,y,z) olhando …) nunca é mexida sozinha.
+  objeto floresta "F" em (0,0) largura 200 profundidade 200 [densidade 4] [especies mista|pinheiros|folhosas|palmeiras|mortas] [nevoa 5] [clareira 8] [altura-arvore 12] [semente 3]
+  Leves de propósito: o detalhe cai com a distância da câmera (longe, árvore vira cone e o castelo perde ameias e janelas), peças fora da tela não são desenhadas,
+    a colisão usa só troncos/blocos, e a NÉVOA ("nevoa 5" = 5 m) esconde e NÃO desenha o que está abaixo dela (com a câmera acima); com a câmera dentro da névoa,
+    só as árvores perto aparecem. Pessoas podem ficar dentro da floresta/castelo (não são empurradas para fora).
+
+55. OFICINA: MONTAR A CENA NO PALCO (mouse e teclado)
+  Barra de comando (/ ou Ctrl+K): escreva UMA linha desta linguagem e a cena da tela muda na hora, sem refazer o resto ("Kai pose correndo", "Mira senta-em Cadeira",
+    "objeto carro "Fusca" em (4,0)", "Lua animal lobo em (2,1)", "efeito feixe de Kai para Mira", "camera (5,2,5) olhando (0,1,0)"). Quem não está na cena entra sozinho.
+    ↑/↓ histórico · Tab completa · várias linhas separadas por ";". No MCP/linha de comando: ferramenta linha_no_palco.
+  Inspetor (I): abas Posição (planta vista de cima com grade — clique põe/move, arraste move, botão direito escolhe o que pôr), Orientação (disco — clique/arraste gira;
+    ←/→ 5°, Shift 45°), Pose (biblioteca com busca + vistas do esqueleto: clique numa articulação e use setas ou a RODINHA do mouse; para no limite anatômico;
+    animal selecionado: partes do bicho — pescoço, cabeça, cauda, patas, asas, boca) e Objetos (catálogo por categoria; escolha e clique na planta ou no palco).
+  Botão direito no palco: "Colocar aqui" com busca (pessoas, animais, monstros, objetos por categoria, veículos, portas, cenários, efeitos).
+  F = modo foco (só o palco) · ? = cartão de atalhos · Ctrl+Z desfaz qualquer mudança.
 ```

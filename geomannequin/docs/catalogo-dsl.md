@@ -1463,13 +1463,11 @@ pose "sentadoChao" de empe
   ombro(frente 25 abre 22)
   cotovelo(dobra 40)
   mao(fecha 40%)
-  quadril(frente 105)
-  joelho.direito(dobra 146)
-  joelho.esquerdo(dobra 150)
-  tornozelo(aponta 20 sola-dentro 20)
+  quadril(frente 125 abre 45 gira-fora 45)
+  joelho.direito(dobra 131)
+  joelho.esquerdo(dobra 135)
   tronco(frente 8)
   cabeca(baixa 6)
-  valor hipAbdL 65 hipAbdR 65 hipRotL 65 hipRotR 65
 ```
 
 ### pernasEsticadas
@@ -6364,8 +6362,8 @@ pose "kaijuAgarradoAgachado" de empe
 
 ```gm
 pose "kaijuAbracadoAoPescoco" de empe
-  ombro(frente 150 abre 40)
-  cotovelo(dobra 80)
+  ombro(frente 95 abre 95)
+  cotovelo(dobra 25)
   mao(fecha 100% afasta 20% opoe 75%)
   quadril(frente 50 abre 30)
   joelho(dobra 60)
@@ -6415,7 +6413,7 @@ pose "kaijuPenduradoUmaMao" de empe
 
 ```gm
 pose "kaijuSaltandoDoMonstro" de empe
-  ombro(frente 150 abre 30)
+  ombro(frente 60 abre 125)
   cotovelo(dobra 20)
   mao(fecha 0% afasta 85%)
   quadril.direito(tras 20)
@@ -11889,33 +11887,35 @@ animacao "meiaVolta" duracao 0.6s relativa desde-neutra mantem tags "Locomocao/V
   chave 0.6s quadril.esquerdo(frente 0) joelho.esquerdo(dobra 0) move giro 180
 ```
 
-### sentarNoChao — transição de postura, 1,10 s
+### sentarNoChao — transição de postura, 1,20 s
 
-empe → sentadoChao
+empe → sentadoChao (passando por agachado)
 
 No filme: `0s Kai anima sentarNoChao`
 
 ```gm
-# empe → sentadoChao
-animacao "sentarNoChao" duracao 1.1s mantem tags "Postura/Sentar"
+# empe → sentadoChao (passando por agachado)
+animacao "sentarNoChao" duracao 1.2s mantem tags "Postura/Sentar"
   chave 0s 
-  chave 1.1s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 105) joelho.direito(dobra 146) joelho.esquerdo(dobra 150) tornozelo(aponta 20 sola-dentro 20) tronco(frente 8) cabeca(baixa 6) valor hipAbdL 65 hipAbdR 65 hipRotL 65 hipRotR 65
+  chave 0.6s ombro(frente 55) cotovelo(dobra 25) quadril(frente 62 abre 12 gira-fora 8) joelho(dobra 88) tornozelo(levanta-ponta 20) tronco(frente 22) cabeca(sobe 14)
+  chave 1.2s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tornozelo(aponta 0) tronco(frente 8) cabeca(baixa 6)
 ```
 
-### levantarDoChao — transição de postura, 1,10 s
+### levantarDoChao — transição de postura, 1,20 s
 
-sentadoChao → empe
+sentadoChao → empe (passando por agachado)
 
 No filme: `0s Kai anima levantarDoChao`
 
 ```gm
-# sentadoChao → empe
-animacao "levantarDoChao" duracao 1.1s mantem tags "Postura/Levantar"
-  chave 0s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 105) joelho.direito(dobra 146) joelho.esquerdo(dobra 150) tornozelo(aponta 20 sola-dentro 20) tronco(frente 8) cabeca(baixa 6) valor hipAbdL 65 hipAbdR 65 hipRotL 65 hipRotR 65
-  chave 1.1s ombro(frente 0 abre 12) cotovelo(dobra 0) mao(fecha 30%) quadril(frente 0 abre 3 gira-fora 0) joelho(dobra 0) tornozelo(aponta 0 sola-dentro 0) tronco(frente 0) cabeca(baixa 0)
+# sentadoChao → empe (passando por agachado)
+animacao "levantarDoChao" duracao 1.2s mantem tags "Postura/Levantar"
+  chave 0s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tronco(frente 8) cabeca(baixa 6)
+  chave 0.6s ombro(frente 55 abre 12) cotovelo(dobra 25) mao(fecha 30%) quadril(frente 62 abre 12 gira-fora 8) joelho(dobra 88) tornozelo(levanta-ponta 20) tronco(frente 22) cabeca(sobe 14)
+  chave 1.2s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0 abre 3 gira-fora 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0)
 ```
 
-### agachar — transição de postura, 1,10 s
+### agachar — transição de postura, 1,20 s
 
 empe → agachar
 
@@ -11923,12 +11923,12 @@ No filme: `0s Kai anima agachar`
 
 ```gm
 # empe → agachar
-animacao "agachar" duracao 1.1s mantem tags "Postura/Agachar"
+animacao "agachar" duracao 1.2s mantem tags "Postura/Agachar"
   chave 0s 
   chave 1.1s ombro(frente 55) cotovelo(dobra 25) quadril(frente 62 abre 12 gira-fora 8) joelho(dobra 88) tornozelo(levanta-ponta 20) tronco(frente 22) cabeca(sobe 14)
 ```
 
-### levantarDeAgachado — transição de postura, 1,10 s
+### levantarDeAgachado — transição de postura, 1,20 s
 
 agachar → empe
 
@@ -11936,12 +11936,12 @@ No filme: `0s Kai anima levantarDeAgachado`
 
 ```gm
 # agachar → empe
-animacao "levantarDeAgachado" duracao 1.1s mantem tags "Postura/Levantar"
+animacao "levantarDeAgachado" duracao 1.2s mantem tags "Postura/Levantar"
   chave 0s ombro(frente 55) cotovelo(dobra 25) quadril(frente 62 abre 12 gira-fora 8) joelho(dobra 88) tornozelo(levanta-ponta 20) tronco(frente 22) cabeca(sobe 14)
   chave 1.1s ombro(frente 0) cotovelo(dobra 0) quadril(frente 0 abre 3 gira-fora 0) joelho(dobra 0) tornozelo(aponta 0) tronco(frente 0) cabeca(baixa 0)
 ```
 
-### ajoelhar — transição de postura, 1,10 s
+### ajoelhar — transição de postura, 1,20 s
 
 empe → umJoelho
 
@@ -11949,12 +11949,12 @@ No filme: `0s Kai anima ajoelhar`
 
 ```gm
 # empe → umJoelho
-animacao "ajoelhar" duracao 1.1s mantem tags "Postura/Ajoelhar"
+animacao "ajoelhar" duracao 1.2s mantem tags "Postura/Ajoelhar"
   chave 0s 
   chave 1.1s ombro.direito(abre 10) ombro.esquerdo(frente 30) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 60) mao(fecha 35%) quadril.direito(tras 6) quadril.esquerdo(frente 88) joelho(dobra 92) tornozelo.direito(aponta 10) tornozelo.esquerdo(levanta-ponta 4) dedos-pe.direito(levanta 55) tronco(frente 6)
 ```
 
-### deitar — transição de postura, 1,10 s
+### deitar — transição de postura, 1,20 s
 
 sentadoChao → deitadoCostas
 
@@ -11962,9 +11962,9 @@ No filme: `0s Kai anima deitar`
 
 ```gm
 # sentadoChao → deitadoCostas
-animacao "deitar" duracao 1.1s mantem tags "Postura/Deitar"
-  chave 0s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 105) joelho.direito(dobra 146) joelho.esquerdo(dobra 150) tornozelo(aponta 20 sola-dentro 20) tronco(frente 8) cabeca(baixa 6) valor hipAbdL 65 hipAbdR 65 hipRotL 65 hipRotR 65
-  chave 1.1s ombro(frente 0 abre 14) cotovelo(dobra 0) mao(fecha 35%) quadril(frente 0 abre 3 gira-fora 12) joelho(dobra 0) tornozelo(aponta 25 sola-dentro 0) tronco(frente 0) cabeca(baixa 0) corpo(deita-costas 90)
+animacao "deitar" duracao 1.2s mantem tags "Postura/Deitar"
+  chave 0s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tronco(frente 8) cabeca(baixa 6)
+  chave 1.1s ombro(frente 0 abre 14) cotovelo(dobra 0) mao(fecha 35%) quadril(frente 0 abre 3 gira-fora 12) joelho(dobra 0) tornozelo(aponta 25) tronco(frente 0) cabeca(baixa 0) corpo(deita-costas 90)
 ```
 
 ### peDireito15cmDireita — ação (acontece e segura), 0,40 s
@@ -13662,8 +13662,8 @@ No filme: `0s Kai anima levantarDeCostas`
 # do chão (costas) até em pé
 animacao "levantarDeCostas" duracao 1.65s mantem tags "Postura/Levantar"
   chave 0s ombro(abre 14) mao(fecha 35%) quadril(gira-fora 12) tornozelo(aponta 25) corpo(deita-costas 90)
-  chave 0.55s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 105) joelho.direito(dobra 146) joelho.esquerdo(dobra 150) tornozelo(aponta 20 sola-dentro 20) tronco(frente 8) cabeca(baixa 6) corpo(deita-brucos 0) valor hipAbdL 65 hipAbdR 65 hipRotL 65 hipRotR 65
-  chave 1.1s ombro.direito(frente 0 abre 10) ombro.esquerdo(frente 30 abre 12) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 60) mao(fecha 35%) quadril.direito(tras 6 abre 3 gira-fora 0) quadril.esquerdo(frente 88 abre 3 gira-fora 0) joelho(dobra 92) tornozelo.direito(aponta 10 sola-dentro 0) tornozelo.esquerdo(levanta-ponta 4 sola-dentro 0) dedos-pe.direito(levanta 55) tronco(frente 6) cabeca(baixa 0)
+  chave 0.55s ombro(frente 25 abre 22) cotovelo(dobra 40) mao(fecha 40%) quadril(frente 125 abre 45 gira-fora 45) joelho.direito(dobra 131) joelho.esquerdo(dobra 135) tornozelo(aponta 0) tronco(frente 8) cabeca(baixa 6) corpo(deita-brucos 0)
+  chave 1.1s ombro.direito(frente 0 abre 10) ombro.esquerdo(frente 30 abre 12) cotovelo.direito(dobra 15) cotovelo.esquerdo(dobra 60) mao(fecha 35%) quadril.direito(tras 6 abre 3 gira-fora 0) quadril.esquerdo(frente 88 abre 3 gira-fora 0) joelho(dobra 92) tornozelo.direito(aponta 10) tornozelo.esquerdo(levanta-ponta 4) dedos-pe.direito(levanta 55) tronco(frente 6) cabeca(baixa 0)
   chave 1.65s ombro.direito(abre 12) ombro.esquerdo(frente 0) cotovelo(dobra 0) mao(fecha 30%) quadril(frente 0) joelho(dobra 0) tornozelo(aponta 0) dedos-pe.direito(dobra 0) tronco(frente 0)
 ```
 

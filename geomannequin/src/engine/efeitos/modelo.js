@@ -251,8 +251,8 @@ function validarAncora(a, padrao) {
     if (a.x === undefined && a.y === undefined && a.alvo !== undefined && a.alvo !== null) { o.alvo = typeof a.alvo === "number" ? a.alvo : texto(a.alvo, 60); o.parte = normParte(a.parte) || "peito"; }
     return o;
   }
-  if (modo === "mundo") { const o = { modo, x: num(a.x, -200, 200, 0), y: num(a.y, -200, 200, 6), z: num(a.z, -200, 200, 0) }; if (a.absoluto) o.absoluto = true; return o; }
-  if (modo === "chao") return { modo, x: num(a.x, -200, 200, 0), z: num(a.z, -200, 200, 0) };
+  if (modo === "mundo") { const o = { modo, x: num(a.x, -6000, 6000, 0), y: num(a.y, -6000, 6000, 6), z: num(a.z, -6000, 6000, 0) }; if (a.absoluto) o.absoluto = true; return o; }
+  if (modo === "chao") return { modo, x: num(a.x, -6000, 6000, 0), z: num(a.z, -6000, 6000, 0) };
   if (modo === "manequim") {
     const parte = normParte(a.parte) || "corpo", o = { modo, parte };
     if (a.alvo !== undefined && a.alvo !== null && a.alvo !== "") o.alvo = typeof a.alvo === "number" ? a.alvo : texto(a.alvo, 60);

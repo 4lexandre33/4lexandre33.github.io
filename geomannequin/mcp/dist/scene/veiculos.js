@@ -2,7 +2,7 @@
    embarcar: a pessoa senta no banco certo (posição, para onde olha, altura do assento), com a postura do lugar (remador puxa os remos,
    canoeiro segura o remo de pá, na balsa fica de pé). puxar: o animal fica entre os varais e o veículo vai atrás dele (no filme também). */
 import { SCN } from "./modelo.js";
-import { COMPOSTOS, capsulas, vcTrilhoAmostras, vcTrilhoEm, VC_TREM_CENTROS } from "../engine/index.js";
+import { COMPOSTOS, capsulas, vcTrilhoAmostras, vcTrilhoEm, VC_TREM_CENTROS, shape, doMundo, ikArm, ikLeg } from "../engine/index.js";
 import { pMundo } from "./colisoes.js";
 import { amChaoMundo, amAchar } from "./animais.js";
 
@@ -33,14 +33,33 @@ function vcTremNoTrilho(o) { const tr = SCN.objetos.find(x => x.nome === o.noTri
 /* local → mundo (giro do objeto em graus; +z local = frente) */
 function vcMundo(o, p, g0) { const g = (o.giro || 0) * Math.PI / 180, c = Math.cos(g), s = Math.sin(g), k = (o.escalaVeiculo || 1);
   return [o.x + (p[0] * c + p[2] * s) * k, g0 + (o.base || 0) + p[1] * k, o.z + (-p[0] * s + p[2] * c) * k]; }
-/* senta (ou põe de pé) a pessoa no assento: posição, giro, postura e altura do quadril no banco */
+/* senta (ou põe de pé) a pessoa no assento: posição, giro, postura e altura do quadril no banco.
+   Assentos com "chao" põem os pés no piso (pernas por IK), com "teto" reclinam o tronco até a cabeça caber, com "volante" põem as mãos no aro. */
+const vcSemAcento = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+function vcChaveAssento(A, nome) { if (nome && A[nome]) return nome; const n = vcSemAcento(nome); return nome ? Object.keys(A).find(k => vcSemAcento(k) === n) : Object.keys(A)[0]; }
+const vcCaps = it => { const cs = capsulas(pMundo(it)); return cs.caps || cs; };
+function vcPorNoBanco(it, S, P, tam) { try { const L = vcCaps(it); if (S.pe) { const pe = Math.min(...L.map(c => Math.min(c.a[1], c.b[1]) - (c.r || 0))); it.params.bodyLift += (P[1] - pe) / tam; }
+    else { const pel = L.find(c => c.nome === "pelve"), yA = pel ? Math.min(pel.a[1], pel.b[1]) - (pel.r || 0) * 0.7 : null; if (yA !== null) it.params.bodyLift += (P[1] - yA) / tam; } } catch (e) { } }
+function vcMembroEm(it, lado, W, perna) { const Q = it.params, Sh = shape(Q), al = doMundo(pMundo(it))(W), L_ = lado > 0 ? "L" : "R";
+  if (perna) { const r = ikLeg(Q, Sh, lado, al); Object.assign(Q, { ["hipFlex" + L_]: r.hipFlex, ["hipAbd" + L_]: r.hipAbd, ["hipRot" + L_]: r.hipRot, ["kneeFlex" + L_]: r.knee }); }
+  else { const r = ikArm(Q, Sh, lado, al); Object.assign(Q, { ["armAbd" + L_]: r.abd, ["armFlex" + L_]: r.flex, ["armRot" + L_]: r.rot, ["elbow" + L_]: r.elbow }); } }
 function vcEmbarcar(it, o, nome, manterBracos) {
-  const A = vcAssentos(o), chave = nome && A[nome] ? nome : Object.keys(A)[0], S = A[chave]; if (!S) throw new Error(o.nome + " não tem assentos.");
-  const g0 = amChaoMundo(), P = vcMundo(o, S.p, g0), tam = it.params.tamanho || 1;
-  if (!S.pe) { Object.assign(it.params, VC_SENTADO); const post = S.rema === true ? "rema" : S.rema === "pa" ? "pa" : chave === "cocheiro" || chave === "condutor" ? "redeas" : "passageiro"; if (!manterBracos || post === "rema" || post === "pa") Object.assign(it.params, VC_POSTURA[post]); }
+  const A = vcAssentos(o), chave = vcChaveAssento(A, nome), S = A[chave]; if (!S) throw new Error(o.nome + " não tem assentos.");
+  const g0 = amChaoMundo(), P = vcMundo(o, S.p, g0), tam = it.params.tamanho || 1, ol = S.olha < 0 ? -1 : 1, lc = (x, y, z) => vcMundo(o, [S.p[0] + x * ol, y, S.p[2] + z * ol], g0);
+  if (!S.pe) { Object.assign(it.params, VC_SENTADO); const post = S.rema === true ? "rema" : S.rema === "pa" ? "pa" : chave === "cocheiro" || chave === "condutor" ? "redeas" : "passageiro"; if (!manterBracos || post === "rema" || post === "pa") Object.assign(it.params, VC_POSTURA[post]); if (S.teto !== undefined) it.params.bodyPitch = -(S.reclina ?? 12); }
   it.params.wx = P[0]; it.params.wz = P[2]; it.params.wRot = ((o.giro || 0) + (S.giroExtra || 0) + (S.olha < 0 ? 180 : 0)) % 360; it.params.ground = 0; it.params.bodyLift = 0;
-  try { const cs = capsulas(pMundo(it)), L = cs.caps || cs; if (S.pe) { const pe = Math.min(...L.map(c => Math.min(c.a[1], c.b[1]) - (c.r || 0))); it.params.bodyLift = (P[1] - pe) / tam; }
-    else { const pel = L.find(c => c.nome === "pelve"), yA = pel ? Math.min(pel.a[1], pel.b[1]) - (pel.r || 0) * 0.7 : null; if (yA !== null) it.params.bodyLift = (P[1] - yA) / tam; } } catch (e) { }
+  vcPorNoBanco(it, S, P, tam);
+  /* cabe sob o teto? reclina (até 32°) e abaixa a cabeça */
+  if (!S.pe && S.teto !== undefined) { const teto = vcMundo(o, [S.p[0], S.teto, S.p[2]], g0)[1];
+    for (let k = 0; k < 8; k++) { let topo; try { topo = Math.max(...vcCaps(it).filter(c => /cabe|pesco/.test(c.nome)).map(c => Math.max(c.a[1], c.b[1]) + (c.r || 0))); } catch (e) { break; }
+      if (!(topo > teto + 0.15)) break; if ((it.params.bodyPitch || 0) > -28) it.params.bodyPitch = (it.params.bodyPitch || 0) - 3; else it.params.neckFlex = (it.params.neckFlex || 0) + 6; it.params.bodyLift = 0; vcPorNoBanco(it, S, P, tam); } }
+  /* pés no piso, um pouco à frente do quadril */
+  if (!S.pe && S.chao !== undefined) { const fr = S.pesFrente ?? 4.5, yc = S.chao + 0.8; for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.4, yc, fr), true); } catch (e) { } } }
+  /* mãos no volante (10 e 2 horas) */
+  if (S.volante && !manterBracos) { const [cx, cy, cz] = S.volante.c, r = S.volante.r || 1.6; for (const lado of [1, -1]) { try { vcMembroEm(it, lado, vcMundo(o, [cx + lado * ol * r * 0.85, cy + r * 0.45, cz - ol * 0.6], g0), false); } catch (e) { } }
+    Object.assign(it.params, { handCurlL: 0.85, handCurlR: 0.85 }); }
+  /* passageiro de cabine fechada: mãos nas coxas (os braços ficam dentro) */
+  else if (!S.pe && S.dentro && !manterBracos && !S.rema) { for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.5, S.p[1] + 1.6, 3.2), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.35, handCurlR: 0.35 }); }
   it.embarcadoEm = { veiculo: o.nome, assento: chave }; (o.passageiros || (o.passageiros = {}))[chave] = it.name; return chave; }
 /* o veículo vai atrás do animal que puxa. Vários animais ("Trovao puxa coche", "Raio puxa coche"…): o 1º é o guia, os outros vão em
    parelhas na frente do timão (2, 4 ou 6 cavalos) e copiam o passo do guia. */
@@ -59,4 +78,4 @@ const VC_VELOC = { terra: 6, agua: 3, trilho: 9, ar: 40 };
 function vcAtualizar() { for (const o of SCN.objetos || []) { if (!vcTipo(o)) continue; if (o.noTrilho) vcTremNoTrilho(o); if (o.puxadoPor) { const an = amAchar(o.puxadoPor); if (an) vcSeguirAnimal(o, an); }
     for (const [ass, nome] of Object.entries(o.passageiros || {})) { const it = SCN.list.find(x => x.name === nome && x.embarcadoEm && x.embarcadoEm.veiculo === o.nome); if (it) vcEmbarcar(it, o, ass, true); else delete o.passageiros[ass]; } } }
 function listaVeiculos() { return Object.entries(COMPOSTOS).filter(([, t]) => t.veiculo).map(([tipo, t]) => ({ tipo, nome: t.nome, meio: t.veiculo, assentos: Object.keys(t.assentos ? t.assentos({}) : {}), atrelar: !!t.atrelar, maxAnimais: t.atrelar ? (tipo === "carruagem" ? 6 : 2) : 0, tamanho: [t.larg, t.prof, t.alt].map(v => +(v * 0.114).toFixed(1)) })); }
-export { vcTremNoTrilho, VC_VELOC, vcSlot, vcEhVeiculo, vcAssentos, vcMundo, vcEmbarcar, vcAtrelar, vcAtualizar, listaVeiculos, VC_POSTURA };
+export { vcChaveAssento, vcTremNoTrilho, VC_VELOC, vcSlot, vcEhVeiculo, vcAssentos, vcMundo, vcEmbarcar, vcAtrelar, vcAtualizar, listaVeiculos, VC_POSTURA };
