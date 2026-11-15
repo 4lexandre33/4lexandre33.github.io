@@ -5,7 +5,7 @@
 import { SCN, novoIdObjeto, P, setP, nextHue, setCorObjeto, atualizarApoios } from "./modelo.js";
 import { doBodyPose, guardArms, POSE0 } from "./poses.js";
 import { pMundo } from "./colisoes.js";
-import { COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
+import { VC_CARROS, COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
 
 const chaoY = () => restGround(SCN.list[0].params);
 /* roda uma função de pose com este manequim como ativo (as poses usam P) */
@@ -62,6 +62,7 @@ function editarObjeto(q, o) {
   else if (q.raio !== undefined) delete q.raio;
   if (typeof o.nome === "string") q.nome = o.nome.slice(0, 24);
   if (Number.isFinite(o.vagoes)) q.vagoes = Math.max(0, Math.min(6, Math.round(o.vagoes)));
+  if (typeof o.modelo === "string" && o.modelo) { q.modelo = o.modelo.slice(0, 20); const Mc = q.tipo === "carro" && VC_CARROS[q.modelo]; if (Mc && Mc.cor && o.cor === undefined) try { setCorObjeto(q, Mc.cor); } catch (e) { } }
   if (o.cor !== undefined) { if (o.cor === null || o.cor === "auto") { q.col = null; q.hue = nextHue(q); } else setCorObjeto(q, String(o.cor), o.contorno); }
   if (o.sobre !== undefined) {
     if (o.sobre === null || o.sobre === false || o.sobre === "chao" || o.sobre === "chão") q.sobre = null;

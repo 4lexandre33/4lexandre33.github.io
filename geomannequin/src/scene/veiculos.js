@@ -40,7 +40,7 @@ function vcSeguirAnimal(o, an) { const ex = (o.puxadores || []).map(amAchar).fil
   ex.forEach((h, i) => { const q = vcSlot(o, i + 1, n); h.x = o.x + (q[0] * c + q[2] * s) * k; h.z = o.z + (-q[0] * s + q[2] * c) * k; h.giro = an.giro || 0; h.base = an.base || 0;
     if (h.animal && an.animal) { h.animal.pose = an.animal.pose; h.animal.marchaAtual = an.animal.marchaAtual; h.animal.animAtual = an.animal.animAtual; } }); }
 /* veículo que anda sozinho no filme (barco, navio, balsa, trem): velocidade típica por meio, em m/s */
-const VC_VELOC = { terra: 3, agua: 2.2, trilho: 9 };
+const VC_VELOC = { terra: 6, agua: 3, trilho: 9, ar: 40 };
 /* a cada quadro/instante: veículos puxados seguem o animal; passageiros seguem o banco */
 function vcAtualizar() { for (const o of SCN.objetos || []) { if (!vcTipo(o)) continue; if (o.puxadoPor) { const an = amAchar(o.puxadoPor); if (an) vcSeguirAnimal(o, an); }
     for (const [ass, nome] of Object.entries(o.passageiros || {})) { const it = SCN.list.find(x => x.name === nome && x.embarcadoEm && x.embarcadoEm.veiculo === o.nome); if (it) vcEmbarcar(it, o, ass, true); else delete o.passageiros[ass]; } } }
