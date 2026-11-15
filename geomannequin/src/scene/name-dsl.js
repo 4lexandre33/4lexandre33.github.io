@@ -549,6 +549,9 @@ function nmAnimalLinha(ctx, l, Q, nome, toks, k) {
     if (w === "em" || w === "at") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " em ONDE?", l.linha); o.x = p[0]; o.z = p[1]; k = k2 - 1; }
     else if (w === "gira") { o.giro = +nx.v; k++; }
     else if (w === "vira-para") { const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro(nome + " vira-para QUEM?", l.linha); o.giro = ang(p); k = k2 - 1; }
+    else if (w === "efeito") { const tipo = nx && nx.v; if (!tipo || (!CATALOGO[tipo] && tipo !== "explosao_completa")) throw new NmErro(nome + " efeito QUAL? (um efeito do catálogo, ex.: impacto_bala, chama, aura)", l.linha); k++; const ef = nmEfeitoOpcoes(ctx, toks, k, l.linha, null); k = ef.k; if (!ef.o.em && !ef.o.emRef) ef.o.emRef = nome; (Q.depoisPessoas || (Q.depoisPessoas = [])).push(() => { try { nmEfeitoCriar(tipo, ef, null, null, null, Q); } catch (e) { Q.avisos.push("efeito " + tipo + ": " + e.message); } }); }
+    else if (w === "expressao" || w === "expressão") throw new NmErro("Animais e criaturas não têm expressão de rosto: use uma pose (" + (cria ? "rugindo, ameacando, boca-aberta" : ave ? "alerta" : "atento, uivando") + ") ou um efeito (" + nome + " efeito impacto_bala).", l.linha);
+    else if (w === "altura" || w === "paira" || w === "no-ar") { const v = nx && nx.t === "num" ? nx.v * (nx.u === "R" ? 1 / NM_M : 1) : null; if (v === null) throw new NmErro(nome + " " + w + " QUANTO? (metros acima do chão, ex.: altura 20)", l.linha); k++; o.base = v * NM_M; o.emAr = v > 0.01; }
     else if (w === "escala" || w === "tamanho") { o.animal.escala = Math.max(0.01, Math.min(100, +nx.v)); const md = qdMedidas(o.animal.especie, o.animal.escala); Object.assign(o, { larg: Math.min(60000, md.larg), prof: Math.min(60000, md.prof), alt: Math.min(30000, md.alt) }); k++; }
     else if (w === "sela" || w === "selado") o.animal.sela = true;
     else if (w === "ossos" || w === "esqueleto") { o.animal.ossos = true; if (!o.colOrig) o.colOrig = o.col || null; o.col = { fill: "#ece4cf", ink: "#4a4034" }; }
@@ -670,6 +673,7 @@ function nmEfeitoOpcoes(ctx, toks, k, linha, padraoManequim) {
     else if (w === "por") { dur = nx.v; k += 2; }
     else if (/^(cresce|pulsa|some|pisca|surge)$/.test(w)) { anim = w === "surge" ? "cresce" : w; k++; }
     else if (w === "para" && nx && nmQuem(ctx, nx.v)) { o.para = nmQuem(ctx, nx.v); o.paraRef = nx.v; k += 2; }
+    else if (w === "para" && nx && nx.t !== "tupla" && !/\./.test(nx.v) && (amAchar(nx.v) || acharObjeto(nx.v))) { o.paraRef = nx.v; k += 2; } /* animal/criatura ou objeto como alvo */
     else if ((w === "para" || w === "ate" || w === "até") && nx && (/\./.test(nx.v) || nx.t === "tupla")) { o.paraRef = nx.t === "tupla" ? nmPontoTupla(nx.v) : nx.v; k += 2; }
     else if (w === "de" && nx && (/\./.test(nx.v) || nmQuem(ctx, nx.v) || nx.t === "tupla")) { o.deRef = nx.t === "tupla" ? nmPontoTupla(nx.v) : nmQuem(ctx, nx.v) || nx.v; k += 2; }
     else if (w === "trajeto" || w === "caminho") { o.trajeto = nmNorm(nx.v).replace("balística", "balistica"); if (!VT_CAMINHOS.includes(o.trajeto)) { const sg = nmParecida(o.trajeto, VT_CAMINHOS); throw new NmErro("Caminho “" + nx.v + "” não existe." + (sg ? " Quis dizer “" + sg + "”?" : "") + " Use: " + VT_CAMINHOS.join(", ") + ".", linha); } k += 2; }
@@ -710,6 +714,7 @@ function nmEfeitoCriar(tipo, ef, quem, T0, plano, Q) {
     add(tipo, Object.assign(limpo, { em: mundoDe(A) }), { modo: "viaja", t0: T0 || 0, dur, pts, esconde: true });
     if (imp) add(imp, { em: mundoDe(B), escala: o.escala || 1, colorido: o.colorido, elemento: o.elemento }, { modo: "cresce", t0: (T0 || 0) + dur, dur: 0.3, esconde: true, depois: { some: 0.6 } });
     return; }
+  if (typeof o.paraRef === "string") { const an = vtAncora(o.paraRef); if (an && an.objeto !== undefined) o.para = { objeto: an.objeto, parte: /\./.test(o.paraRef) ? an.parte : "centro" }; else if (an && an.manequim) o.para = an.parte && an.parte !== "corpo" ? { manequim: an.manequim, parte: an.parte } : an.manequim; delete o.paraRef; }
   add(tipo, Object.assign({}, o, o.em ? {} : quem ? { em: { manequim: quem, parte: "corpo" } } : { em: CATALOGO[tipo].ancora === "tela" ? { modo: "tela" } : { modo: "chao", x: 0, z: 0 } }), ef.anim ? Object.assign({ modo: ef.anim, t0: T0 || 0, dur: ef.dur || 1 }, ef.esconde ? { esconde: true } : {}, ef.depoisSome ? { depois: { some: ef.depoisSome } } : {}) : null);
 }
 /* efeitos animados no filme: cresce (0→1), pulsa (vai e volta), some (1→0), pisca */
@@ -753,7 +758,9 @@ function nmPersonagem(ctx, l, Q) {
     if (w === "em" || w === "no" || w === "na") { if (nx && nmNorm(nx.v) === "centro") { its.forEach((x, i) => { x.params.wx = (i - (its.length - 1) / 2) * 6; x.params.wz = 0; }); k++; continue; }
       if (nx && nmNorm(nx.v) === "fundo") { const r = nmLimites(); its.forEach(x => { x.params.wx = r[0] + (r[2] - r[0]) * ctx.rnd(); x.params.wz = r[1] + (r[3] - r[1]) * 0.15; }); k++; continue; }
       const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro("“em " + (nx && nx.v) + "”: use (x,z) em metros, marca \"nome\", regiao \"nome\", centro, fundo ou o nome de alguém.", l.linha);
-      its.forEach((x, i) => { x.params.wx = p[0] + (i - (its.length - 1) / 2) * 5; x.params.wz = p[1]; }); k = k2 - 1; }
+      its.forEach((x, i) => { x.params.wx = p[0] + (i - (its.length - 1) / 2) * 5; x.params.wz = p[1]; }); k = k2 - 1;
+      { /* marca num nível (muralha, terraço, píer): a pessoa sobe para a altura dele */ const nomeM = nx && nmNorm(nx.v) === "marca" ? toks[k2 - 1] && toks[k2 - 1].v : nx && nx.v, LA = SCN.localAtual, nv = LA && LA.marcasNivel && LA.marcasNivel[nomeM], N = nv && LA.niveis[nv];
+        if (N) its.forEach(x => { x.params.bodyLift = N.altura; x.params.ground = 0; }); } }
     else if (/^(frente-de|atras-de|atrás-de|ao-lado-de|esquerda-de|direita-de|perto-de)$/.test(w)) {
       const [p, k2] = nmPontoDe(ctx, nx, toks, k + 1); if (!p) throw new NmErro("“" + t.v + " " + (nx && nx.v) + "”: alvo não encontrado (personagem já posicionado, marca ou objeto).", l.linha);
       let d = 1.5 * NM_M, kk = k2; if (toks[kk] && /^(distancia|distância|a)$/.test(nmNorm(toks[kk].v))) { d = toks[kk + 1].v * (toks[kk + 1].u === "R" ? 1 : NM_M); kk += 2; }
@@ -1170,6 +1177,7 @@ function nmDentroDe(it, ignorar) {
     const dx = x - o.x, dz = z - o.z, g = (o.giro || 0) * Math.PI / 180, lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g);
     /* debaixo da mesa: quem cabe por baixo do tampo não está "dentro" dela */
     if (/^mesa/i.test(o.tipo || "")) { try { const cp = capsulas(Object.assign({}, it.params, { wx: 0, wz: 0, wRot: 0 })); if (cp.hi[1] - cp.lo[1] < (o.alt || 7) - 0.6) continue; } catch (e) { } }
+    if (o.animal && qdEhCriatura(o)) { if (Math.hypot(dx, dz) < Math.min(o.larg || 3, o.prof || 3) * 0.3) return o; continue; } /* criatura: só o corpo conta (tentáculos, cauda e asas não empurram ninguém) */
     if (/^(arvore|palmeira)$/.test(o.tipo || "")) { if (Math.hypot(dx, dz) < Math.min(o.larg || 3, o.prof || 3) * 0.12 + 1.2) return o; continue; } /* só o tronco conta; a copa fica no alto */
     if (o.raio && Math.hypot(dx, dz) < o.raio + 1.2) return o; if (!o.raio && Math.abs(lx) < o.larg / 2 + 1.2 && Math.abs(lz) < o.prof / 2 + 1.2) return o; }
   return null;
@@ -1188,7 +1196,7 @@ function nmLivre() {
   return L0;
 }
 function nmPontoBloqueado(p, g0) {
-  for (const o of SCN.objetos) { if (o.chao || o.alt <= 4 || /^(arbusto|agua|animal)$/.test(o.tipo)) continue; const y0 = g0 + (o.base || 0); if (p[1] < y0 - 0.5 || p[1] > y0 + o.alt + 0.5) continue; const dx = p[0] - o.x, dz = p[2] - o.z, g = (o.giro || 0) * Math.PI / 180;
+  for (const o of SCN.objetos) { if (o.chao || o.alt <= 4 || /^(arbusto|agua|animal)$/.test(o.tipo) || vcEhVeiculo(o)) continue; /* veículo não é parede (e quem está dentro dele é o alvo) */ const y0 = g0 + (o.base || 0); if (p[1] < y0 - 0.5 || p[1] > y0 + o.alt + 0.5) continue; const dx = p[0] - o.x, dz = p[2] - o.z, g = (o.giro || 0) * Math.PI / 180;
     if (o.raio && /^(arvore|palmeira|cilindro|poco|coluna)$/.test(o.tipo)) { if (Math.hypot(dx, dz) < (o.raio || o.larg / 2) + 0.6) return o; continue; }
     const lx = dx * Math.cos(g) - dz * Math.sin(g), lz = dx * Math.sin(g) + dz * Math.cos(g); if (Math.abs(lx) < o.larg / 2 + 0.6 && Math.abs(lz) < o.prof / 2 + 0.6) return o; }
   return null;

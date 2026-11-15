@@ -22,4 +22,10 @@ ok(!ruins.length, Object.keys(w.CR_POSES).length + " poses de criatura aceitas p
   ok(pos(f1, "Dg").animal.pose.voo > 1, "dragão decolou (voo " + pos(f1, "Dg").animal.pose.voo.toFixed(1) + ")");
   ok(Math.abs(pos(f1, "Ar").z - 8.3 * M) < 0.05 * M, "aranha anda até o ponto"); }
 { const r = comp("elenco\n  A animal cobra\nquadro 1\n  A em (0,0) late\n"); ok(!r.ok && /criatura/.test(r.erros[0].erro), "verbo que não serve para criatura dá erro que lista os verbos dela"); }
+{ const r = comp("elenco\n  Kai\n  Mira\n  Smaug animal dragao\n  K animal kraken\nquadro 1 geral\n  Kai em (0,0)\n  Mira em (-3,0)\n  Smaug em (0,15) altura 10 pose voando efeito impacto_bala\n  K em (6,8) gira 90\n  Kai atira em Smaug com sniper\n  Mira feitico raio em K\n"), e = r.quadros[0] && r.quadros[0].estado;
+  ok(r.ok && !r.avisos.some(a => /dentro de|não é um manequim|não existe/.test(a)), "criatura no ar (altura), efeito na criatura, tiro e feitiço com criatura de alvo " + JSON.stringify(r.erros) + " " + r.avisos.join(" | "));
+  ok(e && Math.abs(e.objetos.find(o => o.nome === "Smaug").base * 0.114 - 10) < 0.01, "altura 10 = 10 m acima do chão");
+  const r2 = comp("elenco\n  K animal dragao\nquadro 1\n  K em (0,0) expressao raiva\n"); ok(!r2.ok && /não têm expressão/.test(r2.erros[0].erro), "expressão em criatura: erro que explica o que usar"); }
+{ const L = w.localPronto("castelo"), r = comp(L.codigo + 'elenco\n  Kai\nquadro 1 local "' + L.nome + '" geral\n  Kai em marca "muralha"\n'); const k = r.quadros[0].estado.list.find(x => x.name === "Kai").params;
+  ok(r.ok && !r.avisos.length && Math.abs(k.bodyLift * 0.114 - 8) < 0.01, "castelo pronto sem avisos; marca na muralha põe a pessoa em cima (8 m)"); }
 console.log(falhou ? "\nFALHOU" : "\ntudo certo"); process.exit(falhou ? 1 : 0);

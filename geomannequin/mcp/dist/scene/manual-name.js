@@ -15,7 +15,7 @@ import { AV_ESPECIES } from "../engine/index.js";
 import { AV_POSES } from "./animais.js";
 import { AV_VERBOS } from "./aves-anim.js";
 import { CR_VERBOS } from "./criaturas-anim.js";
-import { listaLocaisProntos } from "./locais-prontos.js";
+import { listaLocaisProntos, localPronto } from "./locais-prontos.js";
 import { listaVeiculos } from "./veiculos.js";
 import { NR_SUB_TOTAL } from "./narrativa-sub.js";
 import { CR_POSES } from "./animais.js";
@@ -168,7 +168,8 @@ Peças do local (uma por linha):
   circulo-de 8 arvore em (x,z) raio 6                             (N objetos em roda, virados para o centro)
   repetir 5: arvore em (i*3, 8)                                   (i = 0, 1, 2…; contas simples valem)
 LOCAIS PRONTOS (parametrizados): local preset TIPO [largura 8] [profundidade 6] [altura 3] [semente 3] [padrao espinha] [densidade 1.5] ["Nome"]
-  Tipos: ${listaLocaisProntos().map(l => l.tipo + " (" + l.desc + ")").join(" · ")}.
+  Tipos (com as MARCAS que cada um cria, para usar em "em marca …"): ${listaLocaisProntos().map(l => { const c = localPronto(l.tipo).codigo, mk = [...c.matchAll(/marca "([^"]+)"/g)].map(x => x[1]), nv = [...c.matchAll(/nivel "([^"]+)"/g)].map(x => x[1]); return l.tipo + " (" + l.desc + (mk.length ? "; marcas: " + mk.join(", ") : "") + (nv.length ? "; níveis: " + nv.join(", ") : "") + ")"; }).join(" · ")}.
+  Medidas: largura = x (leste-oeste), profundidade = z (norte-sul), centro em (0,0); a "frente" (portão do castelo, porta da sala) fica no lado SUL (z negativo). Marca num nível (muralha, topo, píer) põe a pessoa em cima dele.
   A linha vira o bloco "local" inteiro (o mesmo código que você escreveria): depois use quadro … local "Nome" (o nome padrão é o do tipo, ex.: "Taverna").
   Também dá para usar direto: quadro 1 local "taverna" (sem a linha preset). Para guardar com seu nome: salve na biblioteca (site: Locais → Salvar; MCP: salvar_local).
 Objetos: ${mnLista(O)}.
@@ -798,6 +799,10 @@ ${EXEMPLO_FILME}
   Andar até um ponto: "Rex anda-ate (5,0)" — a criatura vira e usa o ciclo do seu plano (peixe nada, cobra serpenteia, lagarto rasteja, aranha anda em tripé).
   O ritmo e a passada saem do tamanho: um lagarto ×100 anda devagar com passos enormes; uma formiga dá passinhos rápidos. "nada" deixa o corpo um pouco acima do chão (o fundo); a superfície da água não muda a altura da criatura.
   Câmera "segue X" chega mais perto de criatura pequena e se afasta da grande.
+  Tamanho real em escala 1 (comprimento): ${Object.entries(QD_ESPECIES).filter(([, e]) => e.classe === "criatura").map(([k, e]) => k + " " + String(+(e.L || 0).toFixed(2)).replace(".", ",") + " m").join(" · ")}.
+  No ar: "Smaug altura 20" (metros acima do chão, num quadro parado; também "paira 20"). No filme, decola/voa/plana sobem sozinhos.
+  Efeito NA criatura: "Smaug efeito impacto_bala colorido" (no corpo) ou "efeito chama em Smaug.boca para Kai". Pontos do animal/criatura: cabeca, boca, sela, costas, centro.
+  Criaturas não têm expressão de rosto (use poses: rugindo, ameacando, boca-aberta). Alvo de tiro/feitiço/efeito pode ser animal ou objeto: "Kai atira em Smaug", "Mira feitico raio em Kraken".
 
 34. ARMAS DE FOGO, TIROS E FEITIÇOS (uma linha vira pose + efeitos do ponto certo da arma)
   Armas: pistola, revolver, rifle, submetralhadora, metralhadora (bipé, caixa de munição), sniper (luneta, bipé), escopeta (bomba), lancaFoguetes; varinha.
@@ -813,10 +818,13 @@ ${EXEMPLO_FILME}
   objeto carruagem "coche" em (0,0) gira 90 · Trovao puxa coche (o animal fica entre os varais; o veículo vai atrás dele, no filme também)
   Kai embarca coche cocheiro · Mira embarca coche passageiro · Kai rema barco (senta no banco do remador, de costas para a proa, mãos nos remos) · Kai embarca balsa em-pe
   Assentos: ${listaVeiculos().map(v => v.tipo + " (" + v.assentos.join(", ") + ")").join(" · ")}. Sem assento, ocupa o primeiro livre.
+  O veículo pode ser criado no quadro (linha "objeto barcoRemo "barco" em (x,z) [gira g]") ou no local. Frente do veículo = +z com gira 0 (gira 90 = virado para leste); com "puxa", ele se alinha ao animal.
+  Água: a peça "agua" do local é uma lâmina fina no chão; o barco fica apoiado nela (para afundar o casco, "base -0.2").
   Limite: barco e canoa não andam sozinhos no filme (só os puxados por animal); use câmera em movimento ou mova o objeto entre quadros.
 
 36. NARRATIVAS: SUBFUNÇÕES (família → função → subfunção → versão → tom)
   Cada função tem 3 subfunções (${NR_SUB_TOTAL} no total): encenações de 4 quadros com papel fixo — normalidade → estímulo → reação → consequência.
+  4 quadros na versão "direta"; "suspense" e "lenta" acrescentam 2 (antes e depois do momento forte), "impacto" deixa 2. A linha "narrativa …" fica SOLTA no texto (fora de um quadro): ela gera os quadros.
   Ex.: narrativa gatilho.chamado.carta-misteriosa com Kai · narrativa relacao.despedida.adeus-na-estacao.lenta.melancolico com Kai, Mira.
   No site: aba Narrativas (tiras de quadros). No MCP: catalogo categoria subfuncoes.
 
