@@ -105,11 +105,11 @@ function cruzarPernas(Q, modo = "perna", s = -1) {
       { s: o, ponto: "tornozelo", w: 1, alvo: P => pxSoma(applyA(P[s].lp.thigh, [0, -0.7 * A.L1, 0]), [0, 0.7 * k, 0]) },
       { s, ponto: "tornozelo", w: 1, alvo: P => pxSoma(applyA(P[o].lp.thigh, [0, -0.7 * A.L1, 0]), [0, 0.7 * k + 0.3, 0]) },
       { s, ponto: "joelho", w: 0.4, alvo: P => [P[s].lp.calf.T[0], yK, P[s].lp.calf.T[2]] },
-      { s: o, ponto: "joelho", w: 0.4, alvo: P => [P[o].lp.calf.T[0], yK, P[o].lp.calf.T[2]] }], { folga: -0.06, chao: yChao, maxFlex: 95 }); }
+      { s: o, ponto: "joelho", w: 0.4, alvo: P => [P[o].lp.calf.T[0], yK, P[o].lp.calf.T[2]] }], { folga: 0.0, chao: yChao, maxFlex: 100 }); }
   else if (modo === "borboleta") { const Jl = J(1);
     r = pcResolver(Q, ch, A, [s, o], [
       { s: 1, ponto: "tornozelo", w: 1, alvo: [0.42 * k, yChao + 0.42, Jl[2] + 0.62 * A.L1] },
-      { s: -1, ponto: "tornozelo", w: 1, alvo: [-0.42 * k, yChao + 0.42, Jl[2] + 0.62 * A.L1] }], { folga: -0.02, chao: yChao, maxFlex: 95 }); }
+      { s: -1, ponto: "tornozelo", w: 1, alvo: [-0.42 * k, yChao + 0.42, Jl[2] + 0.62 * A.L1] }], { folga: 0.03, chao: yChao, maxFlex: 100 }); }
   else { const jx = Math.abs(J(1)[0]), jz = J(1)[2];
     r = pcResolver(Q, ch, A, [s, o], [
       { s, ponto: "tornozelo", w: 1, alvo: [s * (jx + 1.5 * k), yChao + 0.4, jz - 0.2 * k] },
@@ -124,7 +124,8 @@ export { PC_MODOS, cruzarPernas, pcPontos, pcFolga };
 const POSE_PERNAS = {};
 const pcPP = (lista, modo, s = -1) => lista.split(/\s+/).filter(Boolean).forEach(n => { POSE_PERNAS[n] = [modo, s]; });
 pcPP("sentadoPernasCruzadas rfViloaSentadaNoTrono lazerLendoRede viloTronoPernaCruzada", "perna");
-pcPP("meditando lotusFlutuando rfCooperacaoMeditandoSentado escolaEstudandoChao magoLevitandoMeditando", "indio");
+pcPP("meditando lotusFlutuando rfCooperacaoMeditandoSentado escolaEstudandoChao", "indio");
+pcPP("magoLevitandoMeditando", "lotus");
 pcPP("yogaLotus", "lotus");
 pcPP("sereiaSentadaPedra", "lado", 1);
 function aplicarPernasDaPose(Q, nome) { const d = POSE_PERNAS[nome]; if (!d) return null; return cruzarPernas(Q, d[0], d[1]); }

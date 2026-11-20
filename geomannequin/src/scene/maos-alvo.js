@@ -55,6 +55,7 @@ pm("dedoNosLabios infSinalSilencio", { R: "boca" });
 pm("celularNoOuvido escrAoTelefone terTelefoneSemSinal", { R: "orelha" });
 pm("chocadoMaosNaBoca", { L: "boca", R: "boca" });
 pm("escolaEstudandoChao", { L: "colo", R: "colo" });
+pm("meditando lotusFlutuando magoLevitandoMeditando", { L: "coxa", R: "coxa" });
 
 /* o ponto (mundo) de um marco para a mão do lado t */
 function marcoNoMundo(Q, marco, t, ch, desl) { const m = MARCOS[marco]; if (!m) throw new Error("Marco “" + marco + "” não existe. Use: " + Object.keys(MARCOS).join(", ") + ".");
