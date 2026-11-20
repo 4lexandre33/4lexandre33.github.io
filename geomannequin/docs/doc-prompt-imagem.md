@@ -1,6 +1,6 @@
 # Prompt de imagem (Google Flow) — cena + câmera → texto, grade, cores, ZIP
 
-Data: 2026-11-15 · Manual: capítulo 60 · Tutorial: capítulo 10 ("Prompt de imagem")
+Data: 2026-11-15 a 2026-11-20 · Manual: capítulo 60 · Tutorial: capítulo 10 ("Prompt de imagem")
 
 ## O que é
 Uma janela nova do site (botão **Prompt**, tecla **G**) e duas ferramentas do MCP (`prompt_imagem`, `prompt_catalogo`). Elas transformam a cena montada (manequins, objetos, animais, veículos) e a câmera num prompt para IA de imagem. As posições não são adivinhadas: são **calculadas pela projeção da câmera**.
@@ -58,6 +58,12 @@ Avisos aparecem quando:
   - barra de comando: guarda o nome da pose;
   - planta: as linhas horizontais da grade voltaram;
   - planta: clicar numa pessoa que está no alvo da câmera pega a pessoa.
+
+## Correções do teste cego
+- Grade com close/detalhe não quebra mais (a grade de cenas do MCP é montada com os PNGs das células).
+- Enquadramento medido na imagem, câmera nunca abaixo do chão (contra-plongée), alvo com objetos/veículos.
+- "de costas" não diz mais "olhando para a câmera"; "mais perto da câmera" usa o ponto mais próximo de cada um (carro grande × pessoa).
+- Paleta inclui todos os personagens; cores azul-acinzentadas com nome certo; aviso de cores parecidas sem repetição.
 
 ## Limitações
 - A IA de imagem pode não obedecer às porcentagens à risca. A imagem de referência (grade-cenas) ajuda mais que o texto.

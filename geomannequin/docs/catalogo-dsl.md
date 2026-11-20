@@ -1,6 +1,6 @@
 # Catálogo DSL do GeoMannequin
 
-Gerado em 2026-11-15 · **644 poses** · **208 animações** (173 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 149 efeitos · 163 objetos.
+Gerado em 2026-11-20 · **644 poses** · **208 animações** (173 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 149 efeitos · 163 objetos.
 
 Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.
 
