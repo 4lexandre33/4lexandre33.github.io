@@ -96,12 +96,14 @@ function pcAplicarCamera(def, mapa, o) { const c = pcCamera(def, mapa, o); if (t
 /* linhas de texto que arrumam os papéis (cena preset): posições no sistema da âncora (x0, z0, giro g0), giro e pose */
 function pcArranjoTexto(def, nomes, o = {}) { const x0 = o.x ?? 0, z0 = o.z ?? 0, g0 = (o.giro || 0) * PC_D, esp = o.espelhar ? -1 : 1, L = [];
   def.papeis.forEach((pp, i) => { const a = def.arranjo[pp]; if (!a || !nomes[i]) return; if (def.montaria && pp === "A") return; const lx = a.x * esp, wx = x0 + lx * Math.cos(g0) + a.z * Math.sin(g0), wz = z0 - lx * Math.sin(g0) + a.z * Math.cos(g0), g = Math.round(((o.giro || 0) + (a.g || 0) * esp + 540) % 360 - 180);
-    L.push(nomes[i] + " em (" + wx.toFixed(2) + "," + wz.toFixed(2) + ") gira " + g + (a.pose && !o.semPoses ? " pose " + a.pose : "")); });
+    L.push(nomes[i] + " em (" + wx.toFixed(2) + "," + wz.toFixed(2) + ") gira " + g + (a.pose && !o.semPoses ? " pose " + a.pose : "") + (a.acao ? " " + a.acao : "")); });
   /* quem senta (pose sentado) ganha uma cadeira atrás, virada para o mesmo lado */
   if (!o.semPoses && !o.semCadeiras) def.papeis.forEach((pp, i) => { const a = def.arranjo[pp]; if (!a || a.pose !== "sentado" || !nomes[i]) return; const gg = ((a.g || 0) * esp) * PC_D, lx = (a.x - Math.sin((a.g || 0) * PC_D) * 0.12) * esp, lz = a.z - Math.cos((a.g || 0) * PC_D) * 0.12;
     const wx = x0 + lx * Math.cos(g0) + lz * Math.sin(g0), wz = z0 - lx * Math.sin(g0) + lz * Math.cos(g0); void gg; L.unshift("objeto cadeira \"pc-cadeira-" + nomes[i] + "\" em (" + wx.toFixed(2) + "," + wz.toFixed(2) + ") gira " + Math.round(((o.giro || 0) + (a.g || 0) * esp + 540) % 360 - 180)); });
   if (def.montaria) { const iA = def.papeis.indexOf("A"), iM = def.papeis.indexOf("M"); if (nomes[iA] && nomes[iM]) L.push(nomes[iA] + " monta " + nomes[iM]); }
-  for (const ob of def.objetos || []) { const lx = ob.x * esp, wx = x0 + lx * Math.cos(g0) + ob.z * Math.sin(g0), wz = z0 - lx * Math.sin(g0) + ob.z * Math.cos(g0); L.push("objeto " + ob.tipo + ' "pc-' + ob.tipo + "-" + L.length + '" em (' + wx.toFixed(2) + "," + wz.toFixed(2) + ")" + (ob.tam ? " tamanho " + ob.tam : "") + (ob.g !== undefined ? " gira " + Math.round(((o.giro || 0) + ob.g * esp + 540) % 360 - 180) : "")); }
+  /* objetos (os com nome vão primeiro: quem embarca/toca/deita precisa deles já na cena) */
+  const OB = []; for (const ob of def.objetos || []) { const lx = ob.x * esp, wx = x0 + lx * Math.cos(g0) + ob.z * Math.sin(g0), wz = z0 - lx * Math.sin(g0) + ob.z * Math.cos(g0); (ob.nome ? OB : L).push("objeto " + ob.tipo + ' "' + (ob.nome || "pc-" + ob.tipo + "-" + L.length) + '" em (' + wx.toFixed(2) + "," + wz.toFixed(2) + ")" + (ob.tam ? " tamanho " + ob.tam : "") + (ob.modelo ? " modelo " + ob.modelo : "") + (ob.g !== undefined ? " gira " + Math.round(((o.giro || 0) + ob.g * esp + 540) % 360 - 180) : "")); }
+  L.unshift(...OB);
   return L; }
 
 /* ===================== o catálogo ===================== */
@@ -218,6 +220,55 @@ const PC_LUTA_PLANOS = [
   ["aereo", "de cima", "overhead fight", "o espaço da luta", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "conjunto", az: 90, el: 75 }],
   ["holandes", "inclinado (holandês)", "dutch angle fight", "caos, desequilíbrio", { tipo: "orbita", alvo: ["A", "B"], ref: "A", enq: "inteiro", az: 60, el: -5, roll: 18 }]
 ];
+/* ---------- veículos: quem pilota e a câmera da velocidade ---------- */
+const PC_VEIC = {
+  moto: { nome: "moto em alta velocidade", ob: { tipo: "moto", nome: "pc-moto", x: 0, z: 0, g: 0 }, acao: "embarca pc-moto piloto efeitos" },
+  bicicleta: { nome: "bicicleta (ciclista em sprint)", ob: { tipo: "bicicleta", nome: "pc-bike", x: 0, z: 0, g: 0, modelo: "speed" }, acao: "embarca pc-bike ciclista efeitos" },
+  carro: { nome: "carro (motorista)", ob: { tipo: "carro", nome: "pc-carro", x: 0, z: 0, g: 0, modelo: "esportivo" }, acao: "embarca pc-carro motorista efeitos" },
+  caminhao: { nome: "caminhão (motorista)", ob: { tipo: "caminhao", nome: "pc-caminhao", x: 0, z: 0, g: 0 }, acao: "embarca pc-caminhao motorista efeitos" },
+  skate: { nome: "skate", ob: { tipo: "skate", nome: "pc-skate", x: 0, z: 0, g: 0 }, acao: "embarca pc-skate skatista efeitos" },
+  kart: { nome: "kart de corrida", ob: { tipo: "carroCorrida", nome: "pc-kart", x: 0, z: 0, g: 0, modelo: "kart" }, acao: "embarca pc-kart piloto efeitos" }
+};
+const PC_VEIC_PLANOS = [
+  ["lateral", "panorâmica lateral (acompanha)", "tracking side shot", "velocidade de lado, o fundo passando", { tipo: "orbita", alvo: "A", enq: "inteiro", az: 90, el: 4 }],
+  ["frontal", "de frente para o piloto", "head-on rider shot", "determinação, o vento no rosto", { tipo: "orbita", alvo: "A", enq: "americano", az: 0, el: 6 }],
+  ["baixa-traseira", "baixa, de trás", "low rear chase cam", "perseguição, potência", { tipo: "orbita", alvo: "A", enq: "inteiro", az: 160, el: -10 }],
+  ["drone", "drone de cima", "overhead drone shot", "o trajeto e o espaço", { tipo: "orbita", alvo: "A", enq: "geral", az: 60, el: 55 }],
+  ["holandes", "inclinada (holandês)", "dutch angle speed", "perigo, adrenalina", { tipo: "orbita", alvo: "A", enq: "americano", az: 50, el: -6, roll: 15 }]
+];
+for (const [vk, V] of Object.entries(PC_VEIC)) for (const [sk, nome, tec, desc, cam] of PC_VEIC_PLANOS) pcAdd("veiculo." + vk + "." + sk, { grupo: "Veículo/" + V.nome, nome: nome + " — " + V.nome, tecnico: tec, desc, papeis: ["A"], arranjo: { A: { x: 0, z: 0, g: 0, acao: V.acao } }, objetos: [V.ob], cam });
+/* ---------- música: tocando no palco ---------- */
+const PC_MUS = {
+  piano: { nome: "pianista", ob: { tipo: "pianoCauda", nome: "pc-piano", x: 0, z: -8.9, g: 0 }, acao: "toca pc-piano" },
+  bateria: { nome: "baterista", ob: { tipo: "bateria", nome: "pc-bateria", x: 0, z: 4.6, g: 0 }, acao: "toca pc-bateria" },
+  teclado: { nome: "tecladista", ob: { tipo: "teclado", nome: "pc-teclado", x: 0, z: -3.4, g: 0 }, acao: "toca pc-teclado" },
+  microfone: { nome: "cantor no pedestal", ob: { tipo: "microfonePedestal", nome: "pc-mic", x: 0, z: -2.4, g: 0 }, acao: "toca pc-mic expressao gritoDeAlegria" },
+  guitarra: { nome: "guitarrista", acao: "segura guitarra como tocar efeitos" },
+  violao: { nome: "violão sentado", acao: "pose tocandoViolaoSentado" }
+};
+const PC_MUS_PLANOS = [
+  ["palco", "três quartos, da plateia", "stage three-quarter", "o show, a presença", { tipo: "orbita", alvo: "A", enq: "conjunto", az: 65, el: 8 }],
+  ["contra", "de baixo (contra-plongée)", "low angle hero", "ídolo, poder do som", { tipo: "orbita", alvo: "A", enq: "inteiro", az: 55, el: -20 }],
+  ["maos", "de cima, nas mãos", "high angle on the hands", "técnica, virtuosismo", { tipo: "orbita", alvo: "A", enq: "medio", az: 75, el: 40 }],
+  ["lateral", "de lado", "profile shot", "concentração", { tipo: "orbita", alvo: "A", enq: "americano", az: 95, el: 4 }]
+];
+for (const [mk, M] of Object.entries(PC_MUS)) for (const [sk, nome, tec, desc, cam] of PC_MUS_PLANOS) pcAdd("musica." + mk + "." + sk, { grupo: "Música/" + M.nome, nome: nome + " — " + M.nome, tecnico: tec, desc, papeis: ["A"], arranjo: { A: { x: 0, z: 0, g: 0, acao: M.acao } }, objetos: M.ob ? [M.ob] : [], cam });
+/* ---------- objetos do dia a dia ---------- */
+const PC_OBJ = {
+  "sofa-deitado": { nome: "deitado no sofá", ob: { tipo: "sofa", nome: "pc-sofa", x: 0, z: 0, g: 0 }, acao: "deita-em pc-sofa" },
+  "sofa-pernas": { nome: "sofá, pernas cruzadas", ob: { tipo: "sofa", nome: "pc-sofa", x: 0, z: 0, g: 0 }, acao: "senta-em pc-sofa cruza perna-dir sobre perna-esq" },
+  "cama-lendo": { nome: "cama, deitado de lado", ob: { tipo: "camaCasal", nome: "pc-cama", x: 0, z: 0, g: 0 }, acao: "deita-em pc-cama de-lado" },
+  "cozinha-fogao": { nome: "cozinhando no fogão", ob: { tipo: "fogao", nome: "pc-fogao", x: 0, z: -3, g: 0 }, acao: "usa pc-fogao" },
+  "escritorio-pc": { nome: "no computador", ob: { tipo: "computador", nome: "pc-computador", x: 0, z: -4.6, g: 0 }, acao: "usa pc-computador" },
+  "aula-lousa": { nome: "escrevendo na lousa", ob: { tipo: "quadroNegro", nome: "pc-lousa", x: 3, z: -3, g: 0 }, acao: "usa pc-lousa" },
+  "praca-banco": { nome: "banco de praça, braços cruzados", ob: { tipo: "bancoPraca", nome: "pc-banco", x: 0, z: 0, g: 0 }, acao: "senta-em pc-banco cruza bracos" }
+};
+const PC_OBJ_PLANOS = [
+  ["geral", "plano geral do ambiente", "establishing", "onde e como", { tipo: "orbita", alvo: "A", enq: "geral", az: 70, el: 25 }],
+  ["medio", "plano médio, de lado", "medium side shot", "a ação", { tipo: "orbita", alvo: "A", enq: "inteiro", az: 80, el: 15 }],
+  ["alto", "de cima", "high angle", "rotina, solidão", { tipo: "orbita", alvo: "A", enq: "conjunto", az: 60, el: 60 }]
+];
+for (const [ok_, O] of Object.entries(PC_OBJ)) for (const [sk, nome, tec, desc, cam] of PC_OBJ_PLANOS) pcAdd("objeto." + ok_ + "." + sk, { grupo: "Objetos/" + O.nome, nome: nome + " — " + O.nome, tecnico: tec, desc, papeis: ["A"], arranjo: { A: { x: 0, z: 0, g: 0, acao: O.acao } }, objetos: [O.ob], cam });
 for (const [lk, L] of Object.entries(PC_LUTAS)) for (const [sk, nome, tec, desc, cam] of PC_LUTA_PLANOS) pcAdd("combate." + lk + "." + sk, { grupo: "Combate/" + L.nome, nome: nome + " — " + L.nome, tecnico: tec, desc, papeis: ["A", "B"], arranjo: L.arranjo, cam });
 pcAdd("combate.impasse-tres.mestre", { grupo: "Combate/impasse a três", nome: "impasse a três (mexican standoff) — de cima", tecnico: "mexican standoff overhead", desc: "três armas apontadas em triângulo", papeis: ["A", "B", "C"], arranjo: { A: { x: 0, z: 0, g: 30, pose: "armaUmaMao" }, B: { x: -2.4, z: 1.4, g: 150, pose: "armaUmaMao" }, C: { x: 0.4, z: 2.8, g: -100, pose: "armaUmaMao" } }, cam: { tipo: "orbita", alvo: ["A", "B", "C"], ref: "A", enq: "conjunto", az: 0, el: 70 } });
 for (const p of ["A", "B", "C"]) pcAdd("combate.impasse-tres.close-" + p.toLowerCase(), { grupo: "Combate/impasse a três", nome: "impasse a três — close de " + p, tecnico: "standoff close-up", desc: "o olhar de cada um", papeis: ["A", "B", "C"], arranjo: PC_IDX.get("combate.impasse-tres.mestre").arranjo, cam: { tipo: "orbita", alvo: p, enq: "close", az: 15 } });

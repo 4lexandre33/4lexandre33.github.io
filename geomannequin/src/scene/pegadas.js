@@ -489,6 +489,15 @@ Object.assign(ACOES, {
     lugar: k => { const Y = pgNorm(pgComb([k.B.frenteChao, 1], [UP, 0.12])), boca = pgComb([k.B.cab, 1], [k.B.frenteChao, 1.3], [UP, -1.0]);
       return pgPorPega(k, "cabo", pgComb([boca, 1], [Y, 1.9], [UP, -0.62]), Y, DN); },
     contatos: k => [pgNaPega(k, k.s, "cabo", { polegar: k.B.frenteChao }), pgPalmaEm(k, -k.s, [0, 2.4, 0], pgMul(k.B.esqChao, -k.s), { dedos: UP })] },
+  soproVertical: { desc: "Clarinete/saxofone: bocal na boca, o instrumento desce para a frente, as duas mãos nas chaves", grupo: "tocar", maos: 2, modo: "carregar", teste: ["clarinete", {}], gesto: "segurar", fechar: "envolver", semColisao: true,
+    corpo: (Q, s) => { Object.assign(Q, { headPitch: 10, spineFlex: 4 }); pgPasso(Q, s, 0.12, -0.12, 0.02, 0.13, false); },
+    lugar: k => { const Y = pgNorm(pgComb([UP, 0.86], [k.B.frenteChao, -0.5])), boca = pgComb([k.B.cab, 1], [k.B.frenteChao, 1.35], [UP, -1.0]), L = k.o.alt || 6, yp = ({ clarinete: 3.8, saxofone: 3.0 })[k.o.tipo] ?? L * 0.6;
+      return pgPorPega(k, k.o.tipo === "saxofone" ? "corpo" : "cabo", pgAdd(boca, pgMul(Y, -(L - yp))), Y, pgMul(k.B.frenteChao, -1)); },
+    contatos: k => [pgNaPega(k, k.s, k.o.tipo === "saxofone" ? "cabo" : "cabo", { polegar: UP }), pgNaPega(k, -k.s, k.o.tipo === "saxofone" ? "corpo" : "cabo2", { polegar: UP })] },
+  pandeiroTocando: pgMao1("Pandeiro erguido na frente do peito, a outra mão batendo", "tocar", "pandeiro",
+    k => pgComb([k.B.peito, 1], [k.B.frenteChao, 2.2], [UP, 0.8], [k.B.esqChao, k.s * 1.2]), k => UP, k => k.B.frenteChao, { pega: "aro", corpo: (Q, s) => { Object.assign(Q, { headPitch: -4 }); pgPasso(Q, s, 0.12, -0.1, 0.02, 0.13, false); } }),
+  gaitaTocando: pgMao1("Gaita de boca nos lábios, as mãos em concha", "tocar", "gaita",
+    k => pgComb([k.B.cab, 1], [k.B.frenteChao, 1.45], [UP, -1.05], [k.B.esqChao, k.s * 0.5]), k => UP, k => k.B.frenteChao, { pega: "corpo", semColisao: true }),
   microfoneCantando: pgMao1("Microfone na boca, cantando ou discursando", "tocar", "microfone",
     k => pgComb([k.B.cab, 1], [k.B.frenteChao, 2.4], [UP, -2.6]), k => pgNorm(pgComb([UP, 0.75], [k.B.frenteChao, -0.65])), k => pgMul(k.B.esqChao, -k.s),
     { semColisao: true, corpo: (Q, s) => { Object.assign(Q, { headPitch: -10, spineFlex: -4 }); pgPasso(Q, s, 0.14, -0.12, 0.02, 0.13, false); } }),
@@ -517,13 +526,14 @@ Object.assign(ACOES, {
 Object.assign(ALIAS_PEGADA, { guarda: "empunharGuarda", "em guarda": "empunharGuarda", empunhar: "empunharGuarda", reversa: "adagaReversa", "pegada invertida": "adagaReversa", apontar: "armaApontada", apontando: "armaApontada", "apontar arma": "armaApontada",
   erguida: "armaErguida", erguer: "armaErguida", "ao lado": "cajadoAoLado", investida: "lancaInvestida", "guarda de bastão": "bastaoGuarda", defender: "escudoDefesa", escudo: "escudoDefesa", defesa: "escudoDefesa",
   mirar: "pistolaMirando", mirando: "pistolaMirando", "duas maos na pistola": "pistolaDuasMaos", "no ombro mirando": "rifleMirando", rifle: "rifleMirando", arqueiro: "arcoPuxando", "puxar arco": "arcoPuxando", atirar: "arcoPuxando",
-  tocar: "violaoTocando", violao: "violaoTocando", "violão": "violaoTocando", guitarra: "violaoTocando", violino: "violinoTocando", flauta: "flautaTocando", trompete: "trompeteTocando", cantar: "microfoneCantando", microfone: "microfoneCantando",
+  tocar: "violaoTocando", violao: "violaoTocando", "violão": "violaoTocando", guitarra: "violaoTocando", violino: "violinoTocando", flauta: "flautaTocando", trompete: "trompeteTocando", cantar: "microfoneCantando", microfone: "microfoneCantando", saxofone: "soproVertical", sax: "soproVertical", clarinete: "soproVertical", ukulele: "violaoTocando", cavaquinho: "violaoTocando", baixo: "violaoTocando", pandeiro: "pandeiroTocando", gaita: "gaitaTocando", trombone: "trompeteTocando",
   tambor: "baquetaTocando", celular: "celularOlhando", telefone: "celularNaOrelha", ler: "livroLendo", livro: "livroLendo", beber: "bebendo", "guarda-chuva": "guardaChuvaAberto" });
 /* pegada padrão de cada objeto de mão (quando o texto diz só "segura katana") */
 const PEGADA_PADRAO = { katana: "espada", espadaLonga: "espada", espadaCurta: "empunharGuarda", sabre: "empunharGuarda", adaga: "empunharGuarda", kunai: "adagaReversa", shuriken: "pinca", martelo: "golpeAcima", maca: "empunharGuarda",
   machadoDuplo: "espada", bastaoBo: "bastaoGuarda", foice: "lancaInvestida", tridente: "lancaInvestida", nunchaku: "empunharGuarda", chicote: "empunharGuarda", besta: "bestaMirando", pistola: "pistolaMirando", rifle: "rifleDescansado", revolver: "revolverMirando", submetralhadora: "smgDuasMaos", metralhadora: "metralhadoraQuadril", sniper: "sniperEmPe", escopeta: "escopetaMirando", lancaFoguetes: "bazucaNoOmbro",
   broquel: "escudoDefesa", escudo: "escudoDefesa", escudoCavaleiro: "escudoDefesa", escudoTorre: "escudoDefesa", varinha: "armaApontada", cajadoMagico: "cajadoAoLado", orbe: "bandeja", tocha: "armaErguida", lanterna: "armaApontada",
   violao: "violaoTocando", guitarra: "violaoTocando", violino: "violinoTocando", arcoViolino: "empunharGuarda", flauta: "flautaTocando", trompete: "trompeteTocando", microfone: "microfoneCantando", baqueta: "baquetaTocando",
+  saxofone: "soproVertical", clarinete: "soproVertical", ukulele: "violaoTocando", cavaquinho: "violaoTocando", baixo: "violaoTocando", pandeiro: "pandeiroTocando", gaita: "gaitaTocando", acordeao: "aFrente", trombone: "trompeteTocando", mochilaEscolar: "pelaAlca", notebook: "aFrente",
   celular: "celularOlhando", livro: "livroLendo", xicara: "bebendo", garrafa: "bebendo", copoBebida: "bebendo", guardaChuva: "guardaChuvaAberto", bandeira: "cajadoAoLado", vassoura: "bastaoGuarda", carta: "pinca", chave: "pinca", espelhoMao: "armaApontada", lanca: "lancaInvestida", arco: "arcoPuxando" };
 
 /* ===== GOLPES COM ARMAS: poses de luta já segurando a arma certa (a mão vai à pega pela IK; o objeto fica sólido) =====

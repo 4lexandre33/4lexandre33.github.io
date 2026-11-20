@@ -88,7 +88,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   return { ok: true, mudou, linhas: linha.split("\n").length, avisos: avisosLote.concat((rB.avisos || []).filter(a => !(rA.avisos || []).includes(a) && !/olha para a borda mais perto|pouco espaço na frente/.test(a))) };
 }
 /* palavras para o autocompletar da barra (verbos e opções mais usados) */
-const BC_SUGESTOES = ["espalha 6 pessoas em area (0,0) (5,4) pose aleatoria", "situacao", "grupo-pose", "grupo", "alinha fila em", "aleatoria-de", "pose", "em (x,z)", "gira", "vira-para", "olha", "senta-em", "embarca", "monta", "sobre-cabeca", "sobre-costas", "segura", "golpeia", "dispara", "anima", "anda-ate", "expressao", "gesto",
+const BC_SUGESTOES = ["espalha 6 pessoas em area (0,0) (5,4) pose aleatoria", "situacao", "cruza perna-dir sobre perna-esq", "cruza pernas indio", "mao-dir no queixo", "maos na cintura", "naturaliza bracos", "deita-em", "toca", "usa", "efeitos", "grupo-pose", "grupo", "alinha fila em", "aleatoria-de", "pose", "em (x,z)", "gira", "vira-para", "olha", "senta-em", "embarca", "monta", "sobre-cabeca", "sobre-costas", "segura", "golpeia", "dispara", "anima", "anda-ate", "expressao", "gesto",
   "objeto carro", "objeto onibus", "objeto aviao", "objeto helicoptero", "objeto lancha", "objeto trem", "objeto porta", "objeto portaoTita", "objeto castelo", "objeto casteloMagico", "objeto floresta",
   "efeito feixe de", "efeito explosao em", "efeito aura em", "efeito raio_cadeia de", "efeito rugido em", "efeito pisada_gigante em", "efeito teia em", "efeito rasgo_dimensional em", "camera (x,y,z) olhando (x,y,z)", "animal cavalo", "animal dragao monstro"];
 export { dslDoPalco, aplicarLinhaNoPalco, BC_SUGESTOES };

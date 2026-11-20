@@ -155,7 +155,8 @@ function handOnHip(p,S,s){
   return r;
 }
 /* cinemática inversa de dois ossos para levar o punho a um ponto (em coordenadas do mundo, antes da câmera) */
-function ikArm(p,S,s,Pw,pole0){
+/* nat = braço natural (mãos em marcos do corpo, "naturaliza bracos"): custo extra de cotovelo alto/abertura e mais partidas */
+function ikArm(p,S,s,Pw,pole0,nat){
   const ch=chainSetup(p,S),F=ch.F,A=armDims(p),A2=ch.A2;
   const MT=mT(A2.M),q=[Pw[0]-A2.T[0],Pw[1]-A2.T[1],Pw[2]-A2.T[2]],P=mv(MT,q);
   const G=armJoint(p,F,s);
@@ -175,17 +176,24 @@ function ikArm(p,S,s,Pw,pole0){
   const el=Math.acos(clamp(-fl2[1],-1,1));
   let ro=el>0.05?s*Math.atan2(fl2[0],fl2[2]):(s>0?p.armRotL:p.armRotR)*D;
   /* refinamento dentro dos limites anatômicos, evitando que o antebraço e a mão entrem no corpo */
-  const L_=s>0?"L":"R",keys=["armAbd","armFlex","armRot","elbow"],lim=[["armAbd",-45,160],["armFlex",-50,160],["armRot",-70,90],["elbow",0,145]].map(([k,a,b])=>ampliar(k,a,b,p.flex)),pp=Object.assign({},p);
+  const L_=s>0?"L":"R",keys=["armAbd","armFlex","armRot","elbow"],lim=[["armAbd",-45,160],["armFlex",-50,160],["armRot",nat?-95:-70,90],["elbow",0,145]].map(([k,a,b])=>ampliar(k,a,b,p.flex)),pp=Object.assign({},p);
   const PX=bodyProxies(p,S),pad=0.12*A.k;
   const err=v=>{keys.forEach((k,i)=>pp[k+L_]=v[i]);const ap=armPose(pp,F,s),Af=comp(A2,ap.fore),Ah=comp(A2,ap.hand);
     const W=Ah.T,e=Math.hypot(W[0]-Pw[0],W[1]-Pw[1],W[2]-Pw[2]),Aa=comp(A2,ap.arm);
-    return e+2*proxyDepth([applyA(Aa,[0,-L1*0.55,0]),Af.T,applyA(Af,[0,-L2*0.5,0]),W,applyA(Ah,[0,-0.9*A.k,0])],PX,pad)+0.05*Math.max(0,minAbd(v[1])-v[0])};
+    return e+2*proxyDepth([applyA(Aa,[0,-L1*0.55,0]),Af.T,applyA(Af,[0,-L2*0.5,0]),W,applyA(Ah,[0,-0.9*A.k,0])],PX,pad)+0.05*Math.max(0,minAbd(v[1])-v[0])+natural(Aa.T,Af.T,v)};
+  /* braço natural: com a mão abaixo da cabeça, o cotovelo fica abaixo do ombro (aponta para baixo e para fora), o braço não sobe por cima
+     da cabeça para "dar a volta" e não abre além do necessário — senão o refinamento acha braços erguidos que alcançam o peito por cima */
+  const Sw=applyA(A2,G),alto=!nat||Pw[1]>Sw[1]+0.5*L1;
+  const natural=(Sh,El,v)=>alto?0:0.8*Math.max(0,El[1]-Sh[1]+0.4*L1)+0.0012*Math.max(0,v[0]-35)**2+0.0008*Math.max(0,v[1]-100)**2+0.002*Math.abs(v[2]);
   const solve=x0=>{const x=x0.map((v,i)=>clamp(v,lim[i][0],lim[i][1]));let e=err(x),st=10;
     for(let it=0;it<80&&st>0.05&&e>1e-3;it++){let imp=false;
       for(let i=0;i<4;i++)for(const sg of [1,-1]){const y=x.slice();y[i]=clamp(y[i]+sg*st,lim[i][0],lim[i][1]);const ey=err(y);if(ey<e-1e-6){e=ey;x[i]=y[i];imp=true}}
       if(!imp)st*=0.5}
     return {x,e}};
-  const c1=solve([ab/D,fl/D,ro/D,el/D]),c2=solve([((ab/D+180+180)%360)-180,180-fl/D,ro/D,el/D]),c=c1.e<=c2.e+0.05?c1:c2;
+  /* várias partidas (a analítica, a "por cima" e posturas naturais de braço junto ao corpo); fica a de menor custo */
+  let c;
+  if(nat){const cands=[solve([ab/D,fl/D,ro/D,el/D]),solve([((ab/D+180+180)%360)-180,180-fl/D,ro/D,el/D]),solve([15,30,-20,100]),solve([5,10,-45,130]),solve([35,45,10,80])];c=cands.reduce((m,x)=>x.e<m.e-1e-6?x:m)}
+  else{const c1=solve([ab/D,fl/D,ro/D,el/D]),c2=solve([((ab/D+180+180)%360)-180,180-fl/D,ro/D,el/D]);c=c1.e<=c2.e+0.05?c1:c2}
   return {abd:c.x[0],flex:c.x[1],rot:c.x[2],elbow:c.x[3],err:c.e};
 }
 

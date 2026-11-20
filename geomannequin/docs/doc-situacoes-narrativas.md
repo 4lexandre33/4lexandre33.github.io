@@ -113,12 +113,12 @@ O agente encontrou estes problemas, todos corrigidos:
 - a faceta de família vinha com o rótulo "Situações";
 - a câmera de `acidente.batidaCarro` ficava dentro de um carro;
 - o efeito de `sobrenatural.levitando` saía como manchas cinza;
-- nas situações de sofá e banco, as pessoas sentavam em cadeiras (agora sentam em bancos).
+- nas situações de sofá e banco, as pessoas sentavam em cadeiras (agora sentam no sofá ou no banco de praça).
 
 ## Limitações
 - As situações das famílias com toque usam as interações prontas. Algumas mãos ficam a 5–20 cm do ponto de contato.
 - Quem monta a cavalo foi trocado por poses a pé: a situação ainda não põe animais.
-- Cama e sofá não entram como objeto: quem está deitado fica no chão. Quem está sentado ganha uma cadeira ou um banco.
+- Nas situações de sofá e de banco de praça, as pessoas sentam no objeto de verdade (desde o capítulo 63). Nas outras, quem está deitado fica no chão e quem está sentado ganha uma cadeira.
 - Nas situações dentro de carro, trem ou avião, aparecem só as pessoas, sem o veículo.
 - Algumas câmeras de close cortam a cabeça quando a pose olha para baixo. Troque o plano no quadro ou use `sem-camera`.
 - Situações com `falas`: a boca de fala troca a expressão de quem fala.

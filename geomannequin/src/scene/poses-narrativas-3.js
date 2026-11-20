@@ -111,7 +111,7 @@ pn("escolaProfessorBravo", "professor bravo|mãos na cintura", "angry teacher wi
 pn("escolaFormatura", "jogando o capelo|formatura", "graduate throwing a cap into the air", "sf-15 fl170,40 ab20,30 el10,60 hp-35 m:aberta,relaxada e:gritoDeAlegria");
 pn("escolaRecebendoDiploma", "recebendo o diploma|segurando o diploma", "graduate holding up a diploma proudly", "fl80,20 ab20,10 el90,20 hp-6 m:segurar,relaxada e:orgulho");
 pn("escolaCientistaTubo", "cientista com tubo de ensaio|laboratório", "scientist holding up a test tube to the light", "fl80,30 ab20,20 el110,90 hp-15 m:pinca,segurar e:curioso");
-pn("escolaEstudandoChao", "estudando no chão|cercado de livros", "studying cross-legged on the floor surrounded by books", "hf90,90 ha40,40 hr40,40 kf140,140 sf30 fl40,40 ab20,20 el90,90 hp40 m:segurar,aberta e:focoTotal");
+pn("escolaEstudandoChao", "estudando no chão|cercado de livros", "studying cross-legged on the floor surrounded by books", "hf90,90 ha40,40 hr40,40 kf140,140 sf10 fl40,40 ab20,20 el90,90 hp40 m:segurar,aberta e:focoTotal");
 
 /* ===================================================== FESTA ===================================================== */
 pnC("Festa e celebração");

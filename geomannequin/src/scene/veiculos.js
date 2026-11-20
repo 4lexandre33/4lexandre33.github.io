@@ -13,6 +13,10 @@ const VC_POSTURA = {
   redeas: { armFlexL: 40, armFlexR: 40, armAbdL: 8, armAbdR: 8, elbowL: 70, elbowR: 70, handCurlL: 0.8, handCurlR: 0.8, spineFlex: 8 },
   passageiro: { armFlexL: 18, armFlexR: 18, armAbdL: 10, armAbdR: 10, elbowL: 60, elbowR: 60, handCurlL: 0.3, handCurlR: 0.3 }
 };
+/* montado (bicicleta, moto, jet ski, quadriciclo): pernas abertas no selim, tronco inclinado para o guidão */
+const VC_MONTADO = { hipFlexL: 62, hipFlexR: 62, hipAbdL: 14, hipAbdR: 14, hipRotL: 0, hipRotR: 0, kneeFlexL: 75, kneeFlexR: 75, ankleFlexL: 8, ankleFlexR: 8, spineFlex: 6, bodyPitch: 0, bodyRoll: 0, armFlexL: 45, armFlexR: 45, armAbdL: 14, armAbdR: 14, elbowL: 30, elbowR: 30 };
+/* em pé sobre a prancha (skate, patinete): joelhos um pouco dobrados */
+const VC_PRANCHA = { hipFlexL: 14, hipFlexR: 14, hipAbdL: 6, hipAbdR: 6, kneeFlexL: 22, kneeFlexR: 22, spineFlex: 8, armAbdL: 30, armAbdR: 30, armFlexL: 10, armFlexR: 10, elbowL: 25, elbowR: 25 };
 const vcTipo = o => o && COMPOSTOS[o.tipo] && COMPOSTOS[o.tipo].veiculo ? COMPOSTOS[o.tipo] : null;
 function vcEhVeiculo(o) { return !!vcTipo(o); }
 function vcAssentos(o) { const T = vcTipo(o); if (!T || !T.assentos) return {}; const A = T.assentos(o);
@@ -47,8 +51,15 @@ function vcEmbarcar(it, o, nome, manterBracos) {
   const A = vcAssentos(o), chave = vcChaveAssento(A, nome), S = A[chave]; if (!S) throw new Error(o.nome + " não tem assentos.");
   const g0 = amChaoMundo(), P = vcMundo(o, S.p, g0), tam = it.params.tamanho || 1, ol = S.olha < 0 ? -1 : 1, lc = (x, y, z) => vcMundo(o, [S.p[0] + x * ol, y, S.p[2] + z * ol], g0);
   if (!S.pe) { Object.assign(it.params, VC_SENTADO); const post = S.rema === true ? "rema" : S.rema === "pa" ? "pa" : chave === "cocheiro" || chave === "condutor" ? "redeas" : "passageiro"; if (!manterBracos || post === "rema" || post === "pa") Object.assign(it.params, VC_POSTURA[post]); if (S.teto !== undefined) it.params.bodyPitch = -(S.reclina ?? 12); }
-  it.params.wx = P[0]; it.params.wz = P[2]; it.params.wRot = ((o.giro || 0) + (S.giroExtra || 0) + (S.olha < 0 ? 180 : 0)) % 360; it.params.ground = 0; it.params.bodyLift = 0;
+  const semBracos = v => manterBracos ? Object.fromEntries(Object.entries(v).filter(([k]) => !/^(arm|elbow)/.test(k))) : v;
+  if (S.montado) { Object.assign(it.params, semBracos(VC_MONTADO)); const inc = S.inclina || 0; it.params.spineFlex = Math.round(6 + Math.max(0, inc) * 0.55); it.params.bodyPitch = Math.round(inc * 0.45); if (S.empe) Object.assign(it.params, { hipFlexL: 30, hipFlexR: 30, kneeFlexL: 35, kneeFlexR: 35 }); }
+  if (S.emPeVeiculo) Object.assign(it.params, semBracos(VC_PRANCHA));
+  it.params.wx = P[0]; it.params.wz = P[2]; it.params.wRot = ((o.giro || 0) + (S.giroExtra || 0) + (S.olha < 0 ? 180 : 0) + (S.emPeVeiculo === "lado" ? 90 : 0)) % 360; it.params.ground = 0; it.params.bodyLift = 0;
   vcPorNoBanco(it, S, P, tam);
+  /* selim: pés nos pedais/pedaleiras, mãos no guidão; prancha: pés na prancha */
+  if (S.pedais || S.pesEm) { const pts = S.pedais || S.pesEm; for (const [i, lado] of [[0, 1], [1, -1]]) { const q = pts[i], W = vcMundo(o, [q[0], q[1] + (S.pesEm ? 0.65 : 0.2), q[2]], g0); try { vcMembroEm(it, S.emPeVeiculo === "lado" ? (i ? 1 : -1) : lado, W, true); } catch (e) { } } }
+  if (S.guidao && !manterBracos) { const [cx, cy, cz] = S.guidao.c, r = S.guidao.r || 2; for (const lado of [1, -1]) { try { vcMembroEm(it, lado, vcMundo(o, [cx + lado * r, cy + 0.2, cz - 0.3], g0), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.85, handCurlR: 0.85, pronL: 80, pronR: 80 }); }
+  if (S.abraca && !manterBracos) { for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.3, S.p[1] + 3.6, 3.6), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.4, handCurlR: 0.4 }); }
   /* cabe sob o teto? reclina (até 32°) e abaixa a cabeça */
   if (!S.pe && S.teto !== undefined) { const teto = vcMundo(o, [S.p[0], S.teto, S.p[2]], g0)[1];
     for (let k = 0; k < 8; k++) { let topo; try { topo = Math.max(...vcCaps(it).filter(c => /cabe|pesco/.test(c.nome)).map(c => Math.max(c.a[1], c.b[1]) + (c.r || 0))); } catch (e) { break; }
@@ -59,7 +70,7 @@ function vcEmbarcar(it, o, nome, manterBracos) {
   if (S.volante && !manterBracos) { const [cx, cy, cz] = S.volante.c, r = S.volante.r || 1.6; for (const lado of [1, -1]) { try { vcMembroEm(it, lado, vcMundo(o, [cx + lado * ol * r * 0.85, cy + r * 0.45, cz - ol * 0.6], g0), false); } catch (e) { } }
     Object.assign(it.params, { handCurlL: 0.85, handCurlR: 0.85 }); }
   /* passageiro de cabine fechada: mãos nas coxas (os braços ficam dentro) */
-  else if (!S.pe && S.dentro && !manterBracos && !S.rema) { for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.5, S.p[1] + 1.6, 3.2), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.35, handCurlR: 0.35 }); }
+  else if (!S.pe && S.dentro && !manterBracos && !S.rema && !S.guidao) { for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.5, S.p[1] + 1.6, 3.2), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.35, handCurlR: 0.35 }); }
   it.embarcadoEm = { veiculo: o.nome, assento: chave }; (o.passageiros || (o.passageiros = {}))[chave] = it.name; return chave; }
 /* o veículo vai atrás do animal que puxa. Vários animais ("Trovao puxa coche", "Raio puxa coche"…): o 1º é o guia, os outros vão em
    parelhas na frente do timão (2, 4 ou 6 cavalos) e copiam o passo do guia. */

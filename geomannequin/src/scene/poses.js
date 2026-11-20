@@ -2,6 +2,8 @@
 import { P } from "./modelo.js";
 import { BODIES } from "./biotipos.js";
 import { faixa } from "./parametros.js";
+import { aplicarMaosDaPose, POSE_MAOS } from "./maos-alvo.js";
+import { aplicarPernasDaPose, POSE_PERNAS } from "./pernas-cruzadas.js";
 import { D, ISQUIO, ampliar, nivelFlex, apoiarContatos, aplicarGesto, applyA, armClear, bodyProxies, chainSetup, comp, flatAnkle, handOnHip, ikArm, ikLeg, hipJoint, legClear, legDims, legPose, minAbd, pushOut, shape, AU_KEYS, ESTADO_KEYS } from "../engine/index.js";
 
 /* o braço e a mão não atravessam a cabeça nem o tronco */
@@ -26,11 +28,12 @@ function limitesAcoplados(Q){
   {const lim=Math.round((1-0.5*Math.max(0,Q.jawOpen||0))*100)/100;if(Math.abs(Q.jawSide||0)>lim){Q.jawSide=Math.sign(Q.jawSide)*lim;av.push("mandíbula: aberta, desvia para o lado só até "+Math.round(lim*100)+"%")}}
   return av;
 }
+let GUARD_PULA=[];
 function guardArms(){
   let ch=false;const sh=shape(P);
   if(limitesAcoplados(P).length)ch=true;
   const lc=legClear(P,sh);if(lc){P.hipAbdL=Math.round(lc.abdL);P.hipAbdR=Math.round(lc.abdR);ch=true}
-  [1,-1].forEach(s=>{const L_=s>0?"L":"R",mn=Math.round(minAbd(P["armFlex"+L_]));if(P["armAbd"+L_]<mn){P["armAbd"+L_]=mn;ch=true}
+  [1,-1].forEach(s=>{const L_=s>0?"L":"R",mn=Math.round(minAbd(P["armFlex"+L_]));if(GUARD_PULA.includes(L_))return;if(P["armAbd"+L_]<mn){P["armAbd"+L_]=mn;ch=true}
     const f=armClear(P,sh,s);if(!f)return;ch=true;
     if(f.elbow!==undefined)P["elbow"+L_]=Math.round(f.elbow);if(f.abd!==undefined)P["armAbd"+L_]=Math.round(f.abd)});
   return ch;
@@ -406,8 +409,12 @@ function aplicarMolejo(Q,opts){
 function doBodyPose(k,opts){
     k=nomePose(k);
     const s=opts&&(opts.lado==="dir"||opts.lado==="direito"||opts.lado===-1)?-1:1;
-    if(POSES_CORPO[k]){Object.assign(P,POSE0);POSES_CORPO[k](P,s);limitesAcoplados(P);guardArms();return}
+    /* as poses que dizem onde está a mão (braços cruzados, mão no queixo, nos bolsos…) passam pela cinemática inversa com braço
+       natural; esses braços não passam pelo "afasta do corpo" (a IK já evita atravessar e deixa encostar) */
+    if(POSES_CORPO[k]){Object.assign(P,POSE0);POSES_CORPO[k](P,s);limitesAcoplados(P);aplicarPernasDaPose(P,k);GUARD_PULA=aplicarMaosDaPose(P,k);guardArms();GUARD_PULA=[];return}
     doBodyPoseBase(k);
+    if(POSE_PERNAS[k])aplicarPernasDaPose(P,k);
+    if(POSE_MAOS[k]||POSE_PERNAS[k]){GUARD_PULA=aplicarMaosDaPose(P,k);guardArms();GUARD_PULA=[]}
 }
 function doBodyPoseBase(k){
     Object.assign(P,POSE0);

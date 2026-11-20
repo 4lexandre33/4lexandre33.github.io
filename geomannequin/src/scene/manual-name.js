@@ -1156,8 +1156,8 @@ ${EXEMPLO_FILME}
     esporte (futebol, basquete, vôlei, tênis, atletismo, natação, radical, vitória, torcida) · viagem (aeroporto, turismo, trilha, mar,
     selva, deserto) · guerra (trincheira, ataque, ferido, rendição, cerimônia, operação especial, paz) · sociedade (protesto, política,
     show, fila, arte de rua, vigília, celebração).
-  ASSENTOS: quem está sentado ganha uma cadeira (ou um banco, nas situações de sofá e banco de praça) atrás de si; quem está deitado
-    fica no chão (cama e sofá não entram como objeto). Situações dentro de carro, trem ou avião mostram só as pessoas.
+  ASSENTOS: quem está sentado ganha uma cadeira atrás de si; nas situações de sofá e de banco de praça, um SOFÁ (ou banco de praça)
+    de verdade com cada um no lugar mais perto (capítulo 63); quem está deitado fica no chão. Situações dentro de carro, trem ou avião mostram só as pessoas.
   TAMANHOS: 1, 2, 3, 4, 5, 6, 8 e 12 pessoas (as de 8 e 12 partem das poses de grupo do capítulo 61 e trocam um papel por quem
     conduz a cena: o DJ, o técnico, o oficial…).
   CLASSIFICAÇÃO (Catálogo e MCP): família › subfamília · evento (descoberta, revelação, segredo, espionagem, investigação, decisão,
@@ -1172,7 +1172,56 @@ ${EXEMPLO_FILME}
   MCP: situacoes {busca?, familia?, evento?, relacao?, emocao?, genero?, lugar?, pessoas?, intensidade?, facetas?, miniaturas?, nomes?}
     (sem nada: as famílias com as contagens) → itens com poses, câmera, objetos, toques, fala e a linha pronta;
     aplicar_situacao {id, nomes?, x?, z?, giro?, espelhado?, falas?, sem_camera?, so_ver?, imagem?} → a cena montada e a imagem.
-    catalogo_poses também aceita tipo "situacao".`;
+    catalogo_poses também aceita tipo "situacao".
+
+63. PERNAS CRUZADAS DE VERDADE, MÃOS NO LUGAR CERTO, OBJETOS DO DIA A DIA, INSTRUMENTOS, VEÍCULOS, EFEITOS E +1.000 POSES
+  O QUE ERA O PROBLEMA: a trava "as pernas não se atravessam" só sabia ABRIR as coxas (perna cruzada virava perna aberta) e a
+    cinemática do braço escolhia soluções com o braço por cima da cabeça. Os ossos e a anatomia estavam certos; o que faltava era
+    a cinemática: agora um resolvedor põe a coxa APOIADA na outra (encostar pode, atravessar não) e o braço é natural (cotovelo para
+    baixo e para fora), com a mão indo a MARCOS do corpo.
+  PERNAS: Kai cruza perna-dir sobre perna-esq (sentado: joelho sobre joelho; em pé: o pé cruza na frente do outro)
+    · Kai cruza perna-esq sobre joelho-dir (tornozelo no joelho, a "figura 4") · Kai cruza tornozelos
+    · Kai cruza pernas indio|lotus|borboleta|lado|empe [dir|esq] (no chão: cada pé sob o joelho oposto, lótus, solas juntas, de lado)
+    · "cruza pernas" sozinho escolhe pelo corpo (sentado na cadeira → perna sobre perna; no chão → índio; em pé → em pé).
+    As poses de pernas cruzadas (sentadoPernasCruzadas, meditando, yogaLotus, lotusFlutuando, sereiaSentadaPedra…) já usam isto.
+  MÃOS: Kai mao-dir no queixo · Kai mao-esq na cintura · Kai maos nos bolsos · Kai maos na nuca · Kai mao-dir no coracao.
+    Lugares: queixo, boca, bochecha/rosto, testa, olhos, orelha/ouvido (telefone), nuca, cabeca, peito, coracao, cruzado (braços
+    cruzados), abraco (abraçando a si mesmo), ombro (oposto), prece, barriga, cintura/quadril, bolso, bolso-tras, costas, lombar, coxa
+    (segue a perna, sentado ou em pé), colo, cotovelo (apoiando o outro braço). Se a mão não chega (a pose não deixa), o aviso diz a
+    distância. Kai cruza bracos = braços cruzados naturais. Kai naturaliza bracos = refaz os dois braços com cotovelo natural sem
+    tirar as mãos do lugar.
+  OBJETOS NOVOS (formas geométricas simples; "objeto TIPO "Nome" em (x,z) [gira g]"): sala e quarto (sofa, poltrona, pufe, mesaCentro,
+    rack, tv, estante, abajur, luminaria, lareira, camaCasal, beliche, berco, criadoMudo, guardaRoupa, comoda, espelhoPe, rede) ·
+    cozinha (geladeira, fogao, pia, balcao, armarioCozinha, microondas, mesaJantar, banquetaAlta) · banheiro e serviço (vasoSanitario,
+    banheira, chuveiro, lavatorio, maquinaLavar, tabuaPassar, lixeira, vassouraPe) · escritório e escola (escrivaninha, cadeiraEscritorio,
+    computador, notebook, arquivo, quadroNegro, carteiraEscolar, mesaProfessor, bebedouro, mochilaEscolar) · rua e lazer (bancoPraca,
+    posteLuz, semaforo, hidrante, lixeiraRua, pontoOnibus, orelhao, caixaCorreio, cadeiraPraia, guardaSol, churrasqueira, balanco,
+    escorregador, gangorra, mesaPiquenique, barraca, fogueira, cercaMadeira, placa, vasoPlanta, carrinhoBebe, carrinhoMercado).
+  USAR: Kai senta-em Sofa (altura certa do assento, costas no encosto) · Kai deita-em Cama [de-lado|de-brucos] (sofá, cama, banco de
+    praça, banheira, rede: ao longo do lado comprido, apoiado em cima) · Kai usa Fogao|Pia|Computador|Lousa|Churrasqueira|Lavatorio|
+    TabuaPassar|Bebedouro (fica no lugar, mãos nos pontos de uso, olhando para lá).
+  INSTRUMENTOS: grandes, para tocar (Kai toca Piano): piano, pianoCauda, teclado, bateria, harpa, violoncelo, contrabaixo,
+    microfonePedestal, xilofone (+ amplificador). De mão (Kai segura saxofone — já na pegada de tocar): saxofone, clarinete,
+    ukulele, cavaquinho, baixo, pandeiro, gaita, acordeao, trombone, além de violao, guitarra, violino, flauta, trompete, microfone.
+  VEÍCULOS POR CATEGORIA: bicicleta (modelo urbana|speed|bmx|mountain; assentos ciclista, em-pe) · moto (esportiva|custom|scooter|
+    trilha|policia; piloto, garupa) · caminhao (bau|carroceria|tanque|cacamba|cegonha; motorista, carona, carga) · van (perua|
+    ambulancia|escolar) · trator · carroCorrida (formula|kart) · skate (skatista, de lado na prancha) · patinete · jetski (piloto,
+    garupa) · quadriciclo — além de carro, ônibus, trem, locomotiva, barcos, avião e helicóptero. "Kai embarca Moto piloto": montado
+    (pernas abertas no selim, pés nas pedaleiras/pedais, mãos no guidão, tronco inclinado conforme o modelo); garupa abraça o piloto.
+  EFEITOS PARA TODAS AS POSES: "Kai pose X efeitos [1|2|3]" põe os efeitos sugeridos da pose (1 sutil, 2 normal, 3 forte, com linhas
+    de tela). Em veículo ("Kai embarca Moto piloto efeitos") são os de velocidade (linhas no corpo, rastro, poeira, linhas de tela).
+    Em situações: "situacao ID com Kai, Mira efeitos". O Catálogo e o MCP mostram efeitos_sugeridos de cada pose.
+  +1.000 POSES NOVAS (cada uma difere ≥ 60° de todas as outras): anime (luta, golpes especiais, poses estilosas, dança e idol), 12
+    estilos de dança (hip hop, k-pop, samba, frevo, balé, salsa, breakdance, vogue, contemporânea, forró, tango, shuffle), palco e
+    música, pilotando (moto na curva, empinando, sprint de bicicleta, skate, surfe, snowboard), esportes (golfe, beisebol, esgrima,
+    hóquei, tiro com arco, futebol americano, handebol, escalada), emoções, profissões, mãos no corpo × posturas, sentado de pernas
+    cruzadas × mãos, deitado, comédia, terror, infância, velhice e cerimônia.
+  CÂMERAS PRONTAS: cena preset veiculo.moto|bicicleta|carro|caminhao|skate|kart.lateral|frontal|baixa-traseira|drone|holandes com Kai
+    · musica.piano|bateria|teclado|microfone|guitarra|violao.palco|contra|maos|lateral · objeto.sofa-deitado|sofa-pernas|cama-lendo|
+    cozinha-fogao|escritorio-pc|aula-lousa|praca-banco.geral|medio|alto (o objeto e a ação vêm junto).
+  CATÁLOGO: tipo "Objetos e veículos" (mais de 200, com a linha que cria e o uso: senta-em, deita-em, toca, embarca, segura).
+  MCP: ajustar_corpo {nome?, pose?, maos?: [{mao, lugar}], cruzar?, naturalizar?, usar?: {acao, objeto, jeito?}, efeitos?} ·
+    catalogo_poses tipo "objeto" e efeitos_sugeridos · objetos (todos os tipos novos).`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */

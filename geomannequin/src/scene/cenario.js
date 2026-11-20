@@ -5,7 +5,7 @@
 import { SCN, novoIdObjeto, P, setP, nextHue, setCorObjeto, atualizarApoios } from "./modelo.js";
 import { doBodyPose, guardArms, POSE0 } from "./poses.js";
 import { pMundo } from "./colisoes.js";
-import { VC_CARROS, COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
+import { capsulas, VC_CARROS, COMPOSTOS, SINONIMOS_COMPOSTOS, TIPOS_OBJETO, objetoPadrao, ehCilindro, D, applyA, chainSetup, clamp, comp, doMundo, ikArm, ikLeg, legPose, mT, mv, paraMundo, restGround, shape, armJoint, armDims, aplicarGesto } from "../engine/index.js";
 
 const chaoY = () => restGround(SCN.list[0].params);
 /* roda uma função de pose com este manequim como ativo (as poses usam P) */
@@ -15,10 +15,11 @@ function comP(it, fn) { const prev = P; setP(it.params); try { return fn(); } fi
 const semAcento = t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 /* nomes aceitos (com sinônimos) → tipo */
 const SINONIMOS_OBJ = { "mesa redonda": "mesaRedonda", mesaredonda: "mesaRedonda", redonda: "mesaRedonda", cubo: "cubo", caixa: "caixa", bloco: "cubo", cama: "cama", cilindro: "cilindro", tubo: "cilindro",
-  copo: "copo", xicara: "copo", caneca: "copo", garrafa: "copo", coluna: "coluna", pilar: "coluna", poste: "coluna", barril: "barril", tambor: "barril", balde: "barril", banqueta: "banco", sofa: "cama", poltrona: "cadeira" };
+  copo: "copo", xicara: "copo", caneca: "copo", garrafa: "copo", coluna: "coluna", pilar: "coluna", poste: "coluna", barril: "barril", tambor: "barril", balde: "barril", banqueta: "banco" };
 function tipoObjeto(tipo) {
   const t = semAcento(tipo); if (TIPOS_OBJETO[t]) return t;
   if (SINONIMOS_OBJ[t]) return SINONIMOS_OBJ[t];
+  if (SINONIMOS_COMPOSTOS[t] && TIPOS_OBJETO[SINONIMOS_COMPOSTOS[t]]) return SINONIMOS_COMPOSTOS[t];
   const k = Object.keys(TIPOS_OBJETO).find(k => k.toLowerCase() === t.replace(/\s+/g, "")); if (k) return k;
   throw new Error("Objeto desconhecido: “" + tipo + "”. Opções: " + Object.values(TIPOS_OBJETO).map(x => x.nome).join(", ") + ".");
 }
@@ -187,8 +188,8 @@ function olharNatural(it, alvo, o = {}) {
   return { alcancou: erro < 10, erro: Math.round(erro), vertical: erroPit > erroYaw ? (r.pit > 0 ? "cima" : "baixo") : null, virouCorpo: Math.round(virou), cabeca: Math.round(Q.headYaw || 0), olhos: +(Q.eyeYaw || 0).toFixed(2) };
 }
 /* mão (lado 1 = esquerda, −1 = direita) num ponto do mundo [x, y, z] */
-function maoEm(it, lado, W) {
-  const Q = it.params, S = shape(Q), pw = pMundo(it), alvo = doMundo(pw)(W), r = ikArm(Q, S, lado, alvo), L_ = lado > 0 ? "L" : "R";
+function maoEm(it, lado, W, nat) {
+  const Q = it.params, S = shape(Q), pw = pMundo(it), alvo = doMundo(pw)(W), r = ikArm(Q, S, lado, alvo, null, nat), L_ = lado > 0 ? "L" : "R";
   Object.assign(Q, { ["armAbd" + L_]: r.abd, ["armFlex" + L_]: r.flex, ["armRot" + L_]: r.rot, ["elbow" + L_]: r.elbow });
   return r.err;
 }
@@ -226,15 +227,19 @@ function sentar(it, ref, poseSentada) {
   /* onde sentar: com encosto (cadeira, poltrona, sofá) = no fundo do assento, costas no encosto;
      comprido (cama, banco longo) = na beira do lado comprido, virado para fora; o resto = no meio, um pouco à frente */
   let giroP = q ? (q.giro || 0) : 0, off = [0, 0];
+  const AS = q && COMPOSTOS[q.tipo] && COMPOSTOS[q.tipo].assento ? COMPOSTOS[q.tipo].assento(q) : null;
   if (q) { const comprido = q.prof > 9 && q.prof > q.larg * 1.5, largo = q.larg > 9 && q.larg > q.prof * 1.5;
-    if (T.encosto || /poltrona|sofa|trono/.test(q.tipo)) { off = [0, -q.prof / 2 + 1.35]; it.params.bodyPitch = -7; it.params.spineFlex = 2; }
+    if (AS && AS.z !== undefined) off = [0, AS.z];
+    else if (AS && AS.lugares > 1 && AS.encosto) { /* vários lugares: o mais perto de onde a pessoa já está */ const r0 = -(q.giro || 0) * D, is = isquios(it), dx = is[0] - q.x, dz = is[2] - q.z, lx = dx * Math.cos(r0) + dz * Math.sin(r0), w = (q.larg - 2.8) / AS.lugares;
+      const k = Math.max(0, Math.min(AS.lugares - 1, Math.floor((lx + (q.larg - 2.8) / 2) / w))); off = [-(q.larg - 2.8) / 2 + w * (k + 0.5), -q.prof / 2 + 2.25]; it.params.bodyPitch = -7; it.params.spineFlex = 2; }
+    else if (T.encosto || (AS && AS.encosto) || /poltrona|sofa|trono/.test(q.tipo)) { off = [0, -q.prof / 2 + 1.35 + (AS && q.prof > 6 ? 0.9 : 0)]; it.params.bodyPitch = -7 - (AS && AS.reclina || 0); it.params.spineFlex = 2; }
     else if (comprido) { giroP += 90; off = [q.larg / 2 - 1.6, 0]; }
     else if (largo) off = [0, q.prof / 2 - 1.6];
     else off = [0, q.prof * 0.08]; }
   if (q) {
     it.params.wRot = giroP;
     /* ajusta os joelhos para o assento ficar na altura dos ísquios (pés no chão) */
-    const alvo = g0 + q.alt; let best = null;
+    const alvo = g0 + (q.base || 0) + (AS ? AS.y : q.alt); let best = null;
     for (let k = 40; k <= 135; k += 3) {
       Object.assign(it.params, { kneeFlexL: k, kneeFlexR: k - 3, ankleFlexL: clamp(90 - k, -20, 40), ankleFlexR: clamp(93 - k, -20, 40) });
       const e = Math.abs(isquios(it)[1] - alvo); if (!best || e < best.e) best = { e, k };
@@ -252,6 +257,45 @@ function sentar(it, ref, poseSentada) {
   it.apoioEm = q.id;
   return q;
 }
+/* deita EM CIMA de um objeto (sofá, cama, banco, banheira, rede…): ao longo do lado comprido, cabeça na cabeceira */
+function deitarEm(it, ref, tipo) {
+  const q = acharObjeto(ref); if (!q) throw new Error("Objeto não encontrado: “" + ref + "”.");
+  const Tc = COMPOSTOS[q.tipo], DT = Tc && Tc.deita ? Tc.deita(q) : (APOIAVEL.has(q.tipo) ? { y: q.alt, eixo: q.prof >= q.larg ? "z" : "x", cabeca: -1 } : null);
+  if (!DT) throw new Error("“" + (q.nome || q.tipo) + "” não é lugar para deitar. Dá para deitar em: cama, sofá, banco, banheira, rede, mesa, caixa…");
+  const t = String(tipo || "costas").toLowerCase(), pose = /bru/.test(t) ? "deBrucos" : /lado|direit|esquerd/.test(t) ? "deitadoLado" : "deitadoCostas";
+  comP(it, () => doBodyPose(pose, { lado: /direit/.test(t) ? "dir" : "esq" }));
+  const g0 = chaoY(), r = (q.giro || 0) * D, eixoL = DT.eixo === "x" ? [1, 0] : [0, 1], cab = DT.cabeca || -1;
+  /* direção da cabeça no mundo */
+  const dL = [eixoL[0] * cab, eixoL[1] * cab], dW = [dL[0] * Math.cos(r) + dL[1] * Math.sin(r), -dL[0] * Math.sin(r) + dL[1] * Math.cos(r)];
+  const ch = chainSetup(it.params, shape(it.params)), c0 = applyA(ch.A3, [0, 0, 0]), p0 = applyA(ch.Pel, [0, ch.F.yHip, 0]), v = [c0[0] - p0[0], c0[2] - p0[2]];
+  it.params.wRot = ((Math.atan2(dW[0], dW[1]) - Math.atan2(v[0], v[1])) / D + 540) % 360 - 180; it.params.ground = 0; it.params.bodyLift = 0;
+  /* corpo centrado no objeto (meio do corpo = meio da superfície) e apoiado na altura dela */
+  const L = (cs => cs.caps || cs)(capsulas(pMundo(it))), ys = L.map(c => Math.min(c.a[1], c.b[1]) - (c.r || 0)), xs = L.flatMap(c => [c.a[0], c.b[0]]), zs = L.flatMap(c => [c.a[2], c.b[2]]);
+  const tam = it.params.tamanho || 1, top = g0 + (q.base || 0) + DT.y;
+  it.params.bodyLift += (top - Math.min(...ys)) / tam;
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cz = (Math.min(...zs) + Math.max(...zs)) / 2; it.params.wx += q.x - cx; it.params.wz += q.z - cz;
+  it.apoioEm = q.id; return q;
+}
+/* TOCA / USA um objeto grande (piano, bateria, teclado, harpa, microfone no pedestal, fogão, pia, computador, lousa…):
+   fica no lugar certo (sentado no banco ou em pé), virado para ele, as mãos nos pontos de uso e olhando para lá */
+function tocarEm(it, ref) {
+  const q = acharObjeto(ref); if (!q) throw new Error("Objeto não encontrado: “" + ref + "”.");
+  const Tc = COMPOSTOS[q.tipo]; if (!Tc || !Tc.toca) throw new Error("“" + (q.nome || q.tipo) + "” não é para tocar/usar assim. Dá para: " + Object.entries(COMPOSTOS).filter(([, t]) => t.toca).map(([k]) => k).join(", ") + ". Instrumento de mão: segura violao como tocar.");
+  const TC = Tc.toca(q), g0 = chaoY() + (q.base || 0), r = (q.giro || 0) * D, W = p => [q.x + p[0] * Math.cos(r) + p[2] * Math.sin(r), g0 + p[1], q.z - p[0] * Math.sin(r) + p[2] * Math.cos(r)];
+  comP(it, () => doBodyPose(TC.pose || "empe")); const Q = it.params;
+  Q.wRot = (((q.giro || 0) + (TC.olha < 0 ? 180 : TC.olha === 0 ? -90 : 0)) + 540) % 360 - 180;
+  if (TC.banco) { const alvo = W(TC.banco); let best = null; Q.bodyPitch = 0;
+    for (let k = 40; k <= 135; k += 3) { Object.assign(Q, { kneeFlexL: k, kneeFlexR: k - 3, ankleFlexL: clamp(90 - k, -20, 40), ankleFlexR: clamp(93 - k, -20, 40) }); const e = Math.abs(isquios(it)[1] - alvo[1]); if (!best || e < best.e) best = { e, k }; }
+    Object.assign(Q, { kneeFlexL: best.k, kneeFlexR: best.k - 3, ankleFlexL: clamp(90 - best.k, -20, 40), ankleFlexR: clamp(93 - best.k, -20, 40) });
+    if (best.e > 0.12) Q.bodyLift = (Q.bodyLift || 0) + (alvo[1] - isquios(it)[1]); const is = isquios(it); Q.wx += alvo[0] - is[0]; Q.wz += alvo[2] - is[2]; }
+  else { const P = W(TC.pe); Q.wx = P[0]; Q.wz = P[2]; }
+  Q.spineFlex = Math.max(Q.spineFlex || 0, 8);
+  (TC.maos || []).forEach((m, i) => maoEm(it, i ? -1 : 1, W(m), true));
+  const CS = (cs => cs.caps || cs)(capsulas(pMundo(it))), err = (TC.maos || []).map((m, i) => { const h = CS.find(c => c.nome === (i ? "maoD" : "maoE")), P = W(m); return h ? Math.hypot(h.a[0] - P[0], h.a[1] - P[1], h.a[2] - P[2]) : 0; });
+  Object.assign(Q, TC.baquetas ? { handCurlL: 0.85, handCurlR: 0.85 } : { handCurlL: 0.35, handCurlR: 0.35, pronL: 85, pronR: 85, wristL: -10, wristR: -10 });
+  if (TC.olhar) try { olharPara(it, W(TC.olhar)); } catch (e) { }
+  it.apoioEm = q.id; return { objeto: q.nome || q.tipo, erro: err.map(e => +e.toFixed(2)) };
+}
 /* sobe em cima de uma caixa/degrau/mesa (em pé) */
 function subirEm(it, ref) {
   const q = acharObjeto(ref); if (!q) throw new Error("Objeto não encontrado: “" + ref + "”.");
@@ -266,4 +310,4 @@ function encostarEm(it, ref) {
   it.apoioEm = q.id; return q;
 }
 
-export { olharNatural, anguloNaCabeca, alvoDoOlhar, adicionarObjeto, editarObjeto, removerObjeto, duplicarObjeto, acharObjeto, apoioSob, emCimaDe, tipoObjeto, APOIAVEL, direcaoMundo, orientar, deitar, olharPara, maoEm, peEm, apontarPara, isquios, sentar, subirEm, encostarEm, DIRS };
+export { olharNatural, anguloNaCabeca, alvoDoOlhar, adicionarObjeto, editarObjeto, removerObjeto, duplicarObjeto, acharObjeto, apoioSob, emCimaDe, tipoObjeto, APOIAVEL, direcaoMundo, orientar, deitar, olharPara, maoEm, peEm, apontarPara, isquios, sentar, subirEm, encostarEm, deitarEm, tocarEm, DIRS };

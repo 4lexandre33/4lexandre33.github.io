@@ -5,8 +5,10 @@ const w = createWorld(), it = w.cena.ativo;
 /* poses em que encostar braço com braço / perna é o próprio gesto */
 const CONTATO = new Set(["abracandoJoelhos", "esquivaRolamento", "sentado", "poderSocoChao"]);
 const atrav = [], flut = [], lim = [];
+/* braços cruzados e abraçando a si mesmo: um antebraço APOIADO no outro é o gesto (as cápsulas são mais gordas que a pele); vale até 1 R só nesse par */
+const ANTEBRACOS = new Set(Object.entries(w.POSE_MAOS).filter(([, m]) => /cruzado|abraco|peito/.test(m.L || "") && /cruzado|abraco|peito/.test(m.R || "")).map(([n]) => n));
 for (const n of w.todasPoses()) { it.poseRapida(n); const v = it.validarPose(), p = w.SCN.list[w.SCN.active].params;
-  const prof = v.atravessa.length ? Math.max(...v.atravessa.map(a => a.profundidade || a.prof || 0)) : 0; if (prof > 0.8 && !CONTATO.has(n)) atrav.push(n + " " + prof);
+  const prof = v.atravessa.length ? Math.max(...v.atravessa.map(a => (a.partes || []).join("|") === "antebracoE|antebracoD" && ANTEBRACOS.has(n) ? (a.profundidade || 0) - 0.2 : a.profundidade || a.prof || 0)) : 0; if (prof > 0.8 && !CONTATO.has(n)) atrav.push(n + " " + prof);
   if (v.limites.length) lim.push(n);
   if ((p.bodyLift || 0) < 0.8) { const C = w.capsulas(Object.assign({}, p, { wx: 0, wz: 0, wRot: 0 })).caps; let g = 1e9; for (const c of C) g = Math.min(g, c.a[1] - c.r, c.b[1] - c.r);
     const mid = k => { const c = C.find(x => x.nome === k); return c.a.map((q, i) => (q + c.b[i]) / 2); }, pe = mid("pelve"), pc = mid("pescoco"), vv = pc.map((q, i) => q - pe[i]);

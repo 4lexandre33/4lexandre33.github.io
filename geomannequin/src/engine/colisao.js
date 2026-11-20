@@ -14,12 +14,14 @@ function legGap(p,S){
   for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++){const d=Math.hypot(a[i][0]-b[j][0],a[i][1]-b[j][1],a[i][2]-b[j][2])-(rr[i]+rr[j]);if(d<worst)worst=d}
   return worst;
 }
+/* folga mínima: −0,08 deixa uma perna APOIADA na outra (o músculo cede um pouco: perna sobre perna, lótus) sem abrir as coxas */
+const LEG_TOL=-0.08;
 function legClear(p,S){
-  if(legGap(p,S)>=0)return null;
+  if(legGap(p,S)>=LEG_TOL)return null;
   const q=Object.assign({},p);
   for(let i=0;i<20;i++){
     q.hipAbdL=Math.min(45,q.hipAbdL+1.5);q.hipAbdR=Math.min(45,q.hipAbdR+1.5);
-    if(legGap(q,S)>=0)return {abdL:q.hipAbdL,abdR:q.hipAbdR};
+    if(legGap(q,S)>=LEG_TOL)return {abdL:q.hipAbdL,abdR:q.hipAbdR};
   }
   return {abdL:q.hipAbdL,abdR:q.hipAbdR};
 }

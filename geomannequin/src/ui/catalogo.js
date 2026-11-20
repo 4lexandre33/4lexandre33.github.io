@@ -2,7 +2,7 @@
    grupo (2 a 12 pessoas), animações e cenas+câmera prontas, com busca e filtros em botões (pessoas, gênero, função na história, corpo,
    intensidade, emoção, lugar, contato, objeto) e a árvore de categorias. Clique num item: miniatura grande, nomes pt/en, tags e a
    linha de texto; "Aplicar no palco", "Pôr no texto (Name)", "Usar no Prompt", "Copiar linha". */
-import { cxBuscar, cxArvore, cxItem, cxLinha, cxMiniatura, CX_EIXOS, cxResumo } from "../scene/catalogo-poses.js";
+import { cxBuscar, cxArvore, cxItem, cxLinha, cxMiniatura, CX_EIXOS, cxResumo, cxUsoObjeto } from "../scene/catalogo-poses.js";
 import { SCN } from "../scene/modelo.js";
 import { GRUPOS_POSES } from "../scene/grupos-poses.js";
 import { acSprite } from "../scene/autocompletar.js";
@@ -12,7 +12,7 @@ import { mostrarHud } from "./teclado-juntas.js";
 const $ = id => document.getElementById(id), el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h !== undefined) e.innerHTML = h; return e; };
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const CS = { q: "", f: {}, de: 0, pag: 48, sel: null, cache: new Map(), obs: null, t: null };
-const CHIPS = [["tipo", "O quê", { situacao: "Situações", pose: "Poses (1)", interacao: "Duplas com toque", grupo: "Grupos", animacao: "Animações", preset: "Cena + câmera" }], ["evento", "Evento", CX_EIXOS.evento], ["relacao", "Relação", CX_EIXOS.relacao],
+const CHIPS = [["tipo", "O quê", { situacao: "Situações", pose: "Poses (1)", interacao: "Duplas com toque", grupo: "Grupos", animacao: "Animações", preset: "Cena + câmera", objeto: "Objetos e veículos" }], ["evento", "Evento", CX_EIXOS.evento], ["relacao", "Relação", CX_EIXOS.relacao],
   ["pessoas", "Pessoas", { 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6–8", 12: "12" }], ["genero", "Gênero", CX_EIXOS.genero], ["funcao", "Na história", null], ["nivel", "Corpo", CX_EIXOS.nivel],
   ["intensidade", "Intensidade", CX_EIXOS.intensidade], ["emocao", "Emoção", CX_EIXOS.emocao], ["lugar", "Lugar", CX_EIXOS.lugar]];
 const FUNCOES = { perseguicao: "perseguição", fuga: "fuga", luta: "luta", confronto: "confronto", esconderijo: "esconderijo", descanso: "descanso", interacao: "conversa / interação", reuniao: "reunião / grupo", romance: "romance", emocao: "emoção / drama", comedia: "comédia", investigacao: "investigação", revelacao: "revelação", viagem: "viagem", treino: "treino", refeicao: "refeição", trabalho: "trabalho", cotidiano: "cotidiano", vitoria: "vitória", derrota: "derrota", resgate: "resgate", poder: "poder / magia" };
@@ -69,7 +69,7 @@ function detalhe(id) { const it = cxItem(id); if (!it) return; CS.sel = id; docu
   $("cxPrompt").addEventListener("click", async () => { const P = await import("./prompt.js"); P.inserirNoPrompt(cxLinha(it, nomesPalco()), it); abrirCatalogo(false); }); }
 /* um quadro de texto completo para o Name */
 function blocoTexto(it) { const nomes = ["Kai", "Mira", "Leo", "Ana", "Rui"].slice(0, Math.min(5, Math.max(1, it.pessoas))), l = cxLinha(it, it.tipo === "grupo" ? nomes : nomes);
-  return (it.tipo === "grupo" || it.tipo === "situacao" ? "" : "elenco\n" + nomes.map(n => "  " + n).join("\n") + "\n") + "quadro 1" + (it.tipo === "situacao" ? "" : " " + (it.pessoas > 2 ? "conjunto" : "inteiro")) + "\n  " + (it.tipo === "animacao" ? nomes[0] + " em (0,0)\n  " : "") + l.replace(/^0s /, "") + "\n"; }
+  return (it.tipo === "grupo" || it.tipo === "situacao" ? "" : "elenco\n" + nomes.map(n => "  " + n).join("\n") + "\n") + "quadro 1" + (it.tipo === "situacao" ? "" : " " + (it.pessoas > 2 ? "conjunto" : "inteiro")) + "\n  " + (it.tipo === "animacao" || it.tipo === "objeto" ? nomes[0] + " em (0,0)\n  " : "") + l.replace(/^0s /, "") + "\n" + (it.tipo === "objeto" && cxUsoObjeto(it) ? "  " + cxUsoObjeto(it) + "\n" : ""); }
 function nomesPalco() { const L = SCN.list.filter(x => x.name && x.name !== "__vazio__" && !x.oculto), a = SCN.list[SCN.active]; return (a && L.includes(a) ? [a] : []).concat(L.filter(x => x !== a)).map(x => x.name); }
 async function aplicar(it) { if (!it) return; const O = await import("./oficina.js"); const ns = nomesPalco(); let linha = cxLinha(it, ns), r;
   try {

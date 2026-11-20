@@ -3,7 +3,7 @@
    para quem olha, a POSE, a expressão (opcional), os objetos, os toques (interações), os efeitos e a CÂMERA (enquadramento e ângulo).
    Classificação: família → subfamília, tipo de evento, emoção, relação entre as pessoas, gênero, lugar e intensidade.
    Uso no texto (Name e barra do palco):
-     situacao ID [com Kai, Mira] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [nome Figurante]
+     situacao ID [com Kai, Mira] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [efeitos [1-3]] [nome Figurante]
    Quem faltar vira figurante. A câmera vira "camera preset sit.ID com …" (segue as pessoas). MCP: situacoes / aplicar_situacao.
    Dados: situacoes-dados-1…6.js (st / stFam). Catálogo: tipo "situacao". */
 import { gpLinhas, gpSentado, GRUPOS_POSES } from "./grupos-poses.js";
@@ -66,10 +66,12 @@ function stLinhas(d, nomes, o = {}) { const d2 = Object.assign({}, d, { objetos:
   const ns = r.nomes, L = r.linhas.slice(), sub = s => s.replace(/\{([A-L])\}/g, (_, l) => stQ(ns[ST_LETRAS.indexOf(l)] || ns[0]));
   if (!o.semPoses) d.papeis.forEach((p, i) => { if (p.expr) L.push(stQ(ns[i]) + " expressao " + p.expr); });
   for (const f of d.fx) L.push(sub(f));
+  /* efeitos sugeridos para a pose de cada papel (além dos efeitos da própria situação) */
+  if (o.efeitos) d.papeis.forEach((p, i) => { if (ns[i]) L.push(stQ(ns[i]) + " efeitos " + (o.efeitos === true ? 2 : o.efeitos)); });
   if (o.falas && d.fala) { const m = /^([A-L])\s*:\s*(.+)$/.exec(d.fala); if (m) L.push(stQ(ns[ST_LETRAS.indexOf(m[1])] || ns[0]) + ' fala "' + m[2].replace(/"/g, "'") + '"'); }
   if (!o.semCamera) L.push("camera preset sit." + d.id + " com " + ns.map(stQ).join(", ") + (o.espelhar ? " espelhado" : ""));
   return Object.assign(r, { linhas: L }); }
-/* uma linha "situacao ID [com A, B] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [nome Base]" */
+/* uma linha "situacao ID [com A, B] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [efeitos [1-3]] [nome Base]" */
 function stLerLinha(txt) { const m = /^\s*(?:situacao|situação)\s+(\S+)\s*(.*)$/i.exec(String(txt)); if (!m) return null; const d = stAchar(m[1]);
   if (!d) { const s = stParecidos(m[1]); throw new Error("Situação “" + m[1] + "” não existe." + (s.length ? " Parecidas: " + s.join(", ") + "." : " Veja o Catálogo (tecla C, tipo situação) ou a ferramenta situacoes do MCP.")); }
   let r = " " + m[2] + " "; const o = {};
@@ -79,9 +81,10 @@ function stLerLinha(txt) { const m = /^\s*(?:situacao|situação)\s+(\S+)\s*(.*)
   r = r.replace(/\ssem-poses?(?=\s)/i, () => { o.semPoses = true; return " "; });
   r = r.replace(/\ssem-c[aâ]mera(?=\s)/i, () => { o.semCamera = true; return " "; });
   r = r.replace(/\s(com-)?falas?(?=\s)/i, () => { o.falas = true; return " "; });
+  r = r.replace(/\s(com-)?efeitos(?:\s+([123]))?(?=\s)/i, (_, a, n) => { o.efeitos = n ? +n : true; return " "; });
   r = r.replace(/\snome\s+("[^"]+"|[\wÀ-ÿ]+)/i, (_, v) => { o.nome = v.replace(/"/g, ""); return " "; });
   let nomes = []; const mc = /\scom\s+(.+?)\s*$/i.exec(r); if (mc) { nomes = mc[1].split(/\s*,\s*|\s+e\s+/).map(s => s.trim().replace(/^"|"$/g, "")).filter(Boolean); r = r.slice(0, mc.index) + " "; }
-  if (r.trim()) throw new Error("situacao " + d.id + ": não entendi “" + r.trim() + "” (use: com Kai, Mira · em (x,z) · gira 90 · espelhado · sem-camera · sem-poses · falas · nome Guarda).");
+  if (r.trim()) throw new Error("situacao " + d.id + ": não entendi “" + r.trim() + "” (use: com Kai, Mira · em (x,z) · gira 90 · espelhado · sem-camera · sem-poses · falas · efeitos · nome Guarda).");
   if (nomes.length > d.n) throw new Error("situacao " + d.id + " tem " + d.n + " papéis e você deu " + nomes.length + " nomes.");
   return { def: d, nomes, o }; }
 /* falas sugeridas (id → "A: texto"), acrescentadas por quem escreve os dados */

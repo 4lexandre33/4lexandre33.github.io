@@ -4,6 +4,7 @@
    Quem faltar vira figurante (Figurante1, Figurante2…). MCP: grupo_pose. Catálogo: catalogo-poses.js. */
 import { INTERACOES_NARRATIVAS } from "./interacoes-narrativas.js";
 import { POSES_CORPO, POSE0 } from "./poses.js";
+import { COMPOSTOS, TIPOS_OBJETO, objetoPadrao } from "../engine/index.js";
 const GRUPOS_POSES = {};
 const GP_D = Math.PI / 180, gpF = v => (Math.round(v * 100) / 100).toString();
 /* gp(id, "nome pt|apelido", "english", "Categoria/Sub", papeis, extra)  papeis: [[pose, x, z, giro, olha?], …] (olha: índice do outro papel) */
@@ -211,7 +212,7 @@ gpRegistrarInteracoes(GP_INTER);
 
 /* ===================================================== expandir (texto) ===================================================== */
 const GP_SENT = new Map();
-function gpSentado(pose) { if (GP_SENT.has(pose)) return GP_SENT.get(pose); let r = false; try { if (POSES_CORPO[pose]) { const v = Object.assign({}, POSE0); POSES_CORPO[pose](v, 1); r = !/agach|cocor|abrigad|ajoelh/i.test(pose) && Math.min(v.hipFlexL || 0, v.hipFlexR || 0) > 45 && ((v.hipFlexL || 0) + (v.hipFlexR || 0)) / 2 > 65 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 > 55 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 < 125 && Math.abs(v.bodyPitch || 0) < 40 && Math.abs(v.bodyRoll || 0) < 40 && (v.bodyLift || 0) < 2; } } catch (e) { r = false; } GP_SENT.set(pose, r); return r; }
+function gpSentado(pose) { if (GP_SENT.has(pose)) return GP_SENT.get(pose); let r = pose === "sentado"; try { if (POSES_CORPO[pose]) { const v = Object.assign({}, POSE0); POSES_CORPO[pose](v, 1); r = !/agach|cocor|abrigad|ajoelh/i.test(pose) && Math.min(v.hipFlexL || 0, v.hipFlexR || 0) > 45 && ((v.hipFlexL || 0) + (v.hipFlexR || 0)) / 2 > 65 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 > 55 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 < 125 && Math.abs(v.bodyPitch || 0) < 40 && Math.abs(v.bodyRoll || 0) < 40 && (v.bodyLift || 0) < 2; } } catch (e) { r = false; } if (pose === "sentado") r = true; GP_SENT.set(pose, r); return r; }
 function gpAchar(id) { if (!id) return null; const s = String(id).replace(/"/g, "").replace(/^(grupo|inter|pose):(?=\w+\.)/i, ""); if (GRUPOS_POSES[s]) return GRUPOS_POSES[s]; const k = Object.keys(GRUPOS_POSES).find(x => x.toLowerCase() === s.toLowerCase() || x.toLowerCase().endsWith("." + s.toLowerCase())); return k ? GRUPOS_POSES[k] : null; }
 function gpParecidos(id, n = 4) { const q = String(id).toLowerCase().replace(/[^a-z0-9]/g, ""); return Object.keys(GRUPOS_POSES).map(k => [k, k.toLowerCase().replace(/[^a-z0-9]/g, "")]).filter(([k, t]) => t.includes(q.slice(0, 6)) || q.includes(t.split(".").pop().slice(0, 6))).slice(0, n).map(x => x[0]); }
 /* devolve { linhas, novos (nomes de figurantes para o elenco) } */
@@ -221,7 +222,13 @@ function gpLinhas(def, nomes, o = {}) { const x0 = o.x ?? 0, z0 = o.z ?? 0, g0 =
   const objNomes = [], sentaEm = {}, mundo = (x, z) => { const lx = x * esp; return [x0 + lx * Math.cos(g0) + z * Math.sin(g0), z0 - lx * Math.sin(g0) + z * Math.cos(g0)]; }, giro = g => Math.round(((o.giro || 0) + g * esp + 540) % 360 - 180), L = [];
   for (const ob of def.objetos || []) { const [wx, wz] = mundo(ob[1], ob[2]), base = ob[0].replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase()); let nm = base, k = 2; while (usados.has(nm)) nm = base + " " + k++; usados.add(nm); objNomes.push(nm); L.push("objeto " + ob[0] + ' "' + nm + '" em (' + gpF(wx) + "," + gpF(wz) + ") gira " + giro(ob[3] || 0)); }
   /* quem senta (quadril e joelho dobrados, de pé no chão) ganha uma cadeira atrás, virada para o mesmo lado (se o grupo não trouxer assentos) */
-  if (def.sentados && def.cadeiras !== false && !(def.objetos || []).some(o => /cadeira|banco|sofa/.test(o[0]))) def.papeis.forEach((p, i) => { if (!gpSentado(p.pose)) return; const [wx, wz] = mundo(p.x, p.z); const bs = def.assento === "banco" ? "Banco" : "Cadeira"; let nm = bs, k = 2; while (usados.has(nm)) nm = bs + " " + k++; usados.add(nm); objNomes.push(nm); sentaEm[i] = nm; L.push("objeto " + (def.assento || "cadeira") + " \"" + nm + "\" em (" + gpF(wx) + "," + gpF(wz) + ") gira " + giro(p.g || 0)); });
+  /* assento de vários lugares (sofá, banco de praça, banheira…): UM objeto no meio de quem senta, cada um no lugar mais perto */
+  const ASL = def.assento && COMPOSTOS[def.assento] && COMPOSTOS[def.assento].assento ? COMPOSTOS[def.assento].assento(objetoPadrao(def.assento, {})) : null;
+  if (def.sentados && ASL && ASL.lugares > 1 && def.cadeiras !== false) { const ss = def.papeis.map((p, i) => [p, i]).filter(([p]) => gpSentado(p.pose)); if (ss.length) {
+    const T0 = TIPOS_OBJETO[def.assento], g0 = ss[0][0].g || 0, r0 = g0 * Math.PI / 180, mx = ss.reduce((a, [p]) => a + p.x, 0) / ss.length, mz = ss.reduce((a, [p]) => a + p.z, 0) / ss.length, tr = (T0.prof / 2 - 1.6) * 0.114;
+    const [wx, wz] = mundo(mx - Math.sin(r0) * tr, mz - Math.cos(r0) * tr); let nm = T0.nome.split(" ")[0].replace(/^./, c => c.toUpperCase()), k = 2; const b0 = nm; while (usados.has(nm)) nm = b0 + " " + k++; usados.add(nm); objNomes.push(nm);
+    L.push("objeto " + def.assento + ' "' + nm + '" em (' + gpF(wx) + "," + gpF(wz) + ") gira " + giro(g0)); ss.forEach(([, i]) => { sentaEm[i] = nm; }); } }
+  else if (def.sentados && def.cadeiras !== false && !(def.objetos || []).some(o => /cadeira|banco|sofa/.test(o[0]))) def.papeis.forEach((p, i) => { if (!gpSentado(p.pose)) return; const [wx, wz] = mundo(p.x, p.z); const bs = def.assento === "banco" ? "Banco" : "Cadeira"; let nm = bs, k = 2; while (usados.has(nm)) nm = bs + " " + k++; usados.add(nm); objNomes.push(nm); sentaEm[i] = nm; L.push("objeto " + (def.assento || "cadeira") + " \"" + nm + "\" em (" + gpF(wx) + "," + gpF(wz) + ") gira " + giro(p.g || 0)); });
   def.papeis.forEach((p, i) => { const [wx, wz] = mundo(p.x, p.z); L.push(q(ns[i]) + " em (" + gpF(wx) + "," + gpF(wz) + ") gira " + giro(p.g) + (o.semPoses ? "" : " pose " + p.pose)); });
   def.papeis.forEach((p, i) => { if (sentaEm[i] && !o.semPoses) L.push(q(ns[i]) + ' senta-em "' + sentaEm[i] + '"'); });
   def.papeis.forEach((p, i) => { if (p.olha !== null && p.olha !== undefined && ns[p.olha] && p.olha !== i) L.push(q(ns[i]) + " olha " + q(ns[p.olha])); });
