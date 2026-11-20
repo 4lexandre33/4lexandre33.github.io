@@ -78,13 +78,13 @@ Quem pilota fica **montado**:
 A garupa abraça o piloto.
 
 ## Efeitos para todas as poses
-- Cada pose (2.518) tem uma lista de efeitos sugeridos, do mais sutil ao mais forte. A lista sai da categoria, do nome, da descrição e da emoção da pose.
+- Cada pose (2.515) tem uma lista de efeitos sugeridos, do mais sutil ao mais forte. A lista sai da categoria, do nome, da descrição e da emoção da pose.
 - `efeitos 1` põe só o principal; `efeitos 3` põe todos, com linhas de tela.
 - No veículo, os efeitos são os de velocidade: linhas no corpo, rastro, poeira e linhas de tela.
 - Também valem em `situacao … efeitos`, no Catálogo e no MCP (`efeitos_sugeridos`).
 
 ## +1.000 poses novas
-São 1.218 poses, geradas por `ferramentas/gerar-poses-mil.mjs` e **podadas no mundo real**. Cada uma:
+São 1.215 poses, geradas por `ferramentas/gerar-poses-mil.mjs` e **podadas no mundo real**. Cada uma:
 - difere ≥ 62° de todas as outras;
 - não tem o corpo atravessando;
 - fica dentro dos limites.
