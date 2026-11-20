@@ -1037,8 +1037,8 @@ cena "Praça" local "Praça" hora tarde
   Cada ação de mouse escreve a linha equivalente no histórico da barra de comando (para aprender o texto fazendo).
 
 59. APRENDER (tutorial interativo) E O QUE CADA IA PODE FAZER
-  Site: botão Aprender (F1). 13 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
-    pacotes de cenas, prompt de imagem, catálogo de poses e grupos, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
+  Site: botão Aprender (F1). 14 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
+    pacotes de cenas, prompt de imagem, catálogo de poses e grupos, situações narrativas, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
     pedem para você repetir. Ao sair, dá para voltar à cena de antes.
   MCP (Claude, ChatGPT, Gemini) e linha de comando (node mcp/gm.mjs <ferramenta> …): linha_no_palco (qualquer linha deste manual, incluindo espalha,
     grupo, apaga, duplica), celulas_* (pacotes), prompt_imagem / prompt_catalogo (cap. 60), catalogo_poses / grupo_pose (cap. 61), miniaturas (folha de contato de poses por categoria, animações ou células), paginas_hq, webtoon,
@@ -1111,4 +1111,53 @@ cena "Praça" local "Praça" hora tarde
   Autocompletar: depois de "grupo-pose " aparecem os grupos com miniatura; depois de "pose " as poses (as novas incluídas).
   MCP: catalogo_poses {busca?, tipo?, pessoas?, genero?, funcao?, nivel?, intensidade?, emocao?, lugar?, categoria?, contato?, objeto?,
     novos?, miniaturas?, facetas?, arvore?, nomes?} → itens com a linha pronta; grupo_pose {id, nomes?, x?, z?, giro?, espelhado?, so_ver?}.
+
+62. SITUAÇÕES NARRATIVAS: MAIS DE 1.000 CENAS PRONTAS (POSES, OLHARES, EXPRESSÕES, OBJETOS, TOQUES E CÂMERA)
+  Uma SITUAÇÃO é uma cena de história pronta: quem está (papéis 1 a 12), onde cada um fica, para onde olha, a pose, a expressão,
+    os toques (interações), os objetos (mesa, porta, parede, carro…), os efeitos (chuva, fumaça, aura…) e a CÂMERA (enquadramento e
+    ângulo, que seguem as pessoas). Use no Name, na barra do palco, no Catálogo (tipo "Situações") e no MCP.
+  situacao ID [com Kai, Mira, …] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [nome Guarda]
+    Ex.: situacao revelacao.verdadeNaCara com Kai, Mira · situacao festa.parabens com Ana em (3,0) · situacao medo.olhandoTras com Kai falas
+    Quem você não nomear vira figurante (Figurante1, Figurante2… na ordem dos papéis que faltaram; o aviso do quadro diz os nomes), e os
+    mesmos figurantes seguem nos quadros seguintes ("Figurante1 sai" tira). Os figurantes entram no FIM do elenco: quem você declarou
+    antes fica com as primeiras cores. No palco, se só houver o "Manequim 1" do começo, ele vira o primeiro papel.
+    A câmera vira a linha "camera preset sit.ID com …"; com "sem-camera" vale a câmera escrita na linha do quadro (plano, ângulo,
+    lado…) ou a automática. "falas" acrescenta a fala sugerida (138 situações têm uma; nas outras aparece um aviso)
+    (ex.: "Kai fala "Eu sei de tudo.""; a boca de fala troca a expressão de quem fala). O id pode ser curto (verdadeNaCara) se não
+    houver outro igual. Também vale como "cena preset sit.ID com Kai, Mira" (só poses e câmera, sem olhares nem expressões).
+  FAMÍLIAS (34; entre parênteses, exemplos de subfamílias — a lista completa sai no Catálogo e na ferramenta situacoes): revelacao (descoberta, confissão, identidade, passado, pista) · segredo (confidência, pacto, mentira,
+    esconder, chantagem, conspiração, fofoca) · espionagem (vigilância, disfarce, infiltração, troca, captura) · investigacao (cena do crime,
+    interrogatório, perícia, depoimento, teoria, desfecho) · decisao (escolha, dilema, ruptura, compromisso, virada, redenção) · amizade ·
+    inimizade (rivalidade, provocação, humilhação, ameaça, sabotagem, trégua) · romance (primeiro encontro, carinho, beijo, dança, pedido,
+    casamento, ciúme, término) · familia (bebê, rotina, irmãos, avós, conflito, luto) · encontro (chegada, despedida, reencontro, apresentação)
+    · raiva (discussão, explosão, frustração, briga) · medo (escuro, presença, encurralado, fobia, pânico, assombração) · tristeza (luto,
+    saudade, solidão, choro, derrota, despedida) · alegria (vitória, conquista, sorte, superação, gratidão) · comedia (pastelão, vexame,
+    gafe, flagra, travessura, azar) · festa (aniversário, balada, casamento, natal, ano novo, carnaval, festa popular) · descanso (cochilo,
+    leitura, praia, acampamento, hobby, passeio) · cotidiano (manhã, cozinha, faxina, tarefas, compras, noite) · trabalho (reunião,
+    pressão, negócio, saúde, oficina, restaurante, entrevista) · escola (aula, prova, recreio, formatura, disciplina) · acidente (queda,
+    trânsito, ferimento, primeiros socorros, incêndio, água) · perigo (terremoto, tsunami, desabamento, enchente, tempestade, bomba, kaiju)
+    · resgate · saude (emergência, espera, recuperação, consulta, nascimento) · fuga (perseguição a pé, telhados, veículo, esconder,
+    captura) · crime (assalto, sequestro, refém, prisão, furto, tribunal, gangue, máfia) · conflito (golpe, defesa, agarramento, espadas,
+    impasse, cerco, boxe, treino) · poder (realeza, corporação, tirania, militar, política, justiça) · sobrenatural (possessão, vampiro,
+    lobisomem, zumbis, fantasma, ritual, maldição) · fantasia (dragão, magia, escolhido, portal, transformação, super-herói, espaço) ·
+    esporte (futebol, basquete, vôlei, tênis, atletismo, natação, radical, vitória, torcida) · viagem (aeroporto, turismo, trilha, mar,
+    selva, deserto) · guerra (trincheira, ataque, ferido, rendição, cerimônia, operação especial, paz) · sociedade (protesto, política,
+    show, fila, arte de rua, vigília, celebração).
+  ASSENTOS: quem está sentado ganha uma cadeira (ou um banco, nas situações de sofá e banco de praça) atrás de si; quem está deitado
+    fica no chão (cama e sofá não entram como objeto). Situações dentro de carro, trem ou avião mostram só as pessoas.
+  TAMANHOS: 1, 2, 3, 4, 5, 6, 8 e 12 pessoas (as de 8 e 12 partem das poses de grupo do capítulo 61 e trocam um papel por quem
+    conduz a cena: o DJ, o técnico, o oficial…).
+  CLASSIFICAÇÃO (Catálogo e MCP): família › subfamília · evento (descoberta, revelação, segredo, espionagem, investigação, decisão,
+    convivência, conflito, encontro amoroso, encontro, discussão, ameaça, perda, conquista, trapalhada, festa, descanso, rotina, trabalho,
+    escola, acidente, catástrofe, resgate, saúde, perseguição, crime, luta, poder, sobrenatural, aventura, competição, viagem, guerra,
+    evento público) · relação (sozinho, dupla, grupo, amigos, casal, família, inimigos, aliados, chefe, mestre, negócio…) · emoção ·
+    gênero · lugar · intensidade · pessoas · com toque · com objeto.
+  NENHUMA situação repete outra: um teste confere que poses, lugares, giros, toques e objetos nunca são iguais, que todas compilam,
+    que ninguém começa dentro de um objeto e que a câmera de cada uma existe.
+  Autocompletar: "situacao " mostra as famílias; "situacao romance." mostra as situações com miniatura.
+  Prompt de imagem: cada quadro com situação ganha "Narrative situation: …" (inglês) / "Situação narrativa: …" (português).
+  MCP: situacoes {busca?, familia?, evento?, relacao?, emocao?, genero?, lugar?, pessoas?, intensidade?, facetas?, miniaturas?, nomes?}
+    (sem nada: as famílias com as contagens) → itens com poses, câmera, objetos, toques, fala e a linha pronta;
+    aplicar_situacao {id, nomes?, x?, z?, giro?, espelhado?, falas?, sem_camera?, so_ver?, imagem?} → a cena montada e a imagem.
+    catalogo_poses também aceita tipo "situacao".
 ```

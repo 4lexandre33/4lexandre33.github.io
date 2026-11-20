@@ -52,6 +52,11 @@ r = T("elenco\n  Kai\nquadro 1\n  situacao revelacao.naoExiste\n"); ok(!r.ok && 
 r = T("elenco\n  Kai\nquadro 1\n  situacao revelacao.fotoAntiga com Kai, Mira\n"); ok(!r.ok && /papéis/.test(r.erros[0].erro), "nomes demais: erro claro");
 r = T("elenco\n  Kai\nquadro 1\n  situacao festa.baladaLotada\nquadro 2\n  situacao festa.baladaLotada\n"); ok(r.ok && r.quadros[1].estado.list.filter(x => /^Figurante/.test(x.name)).length === 12, "grupo grande (12 pessoas) em dois quadros com os mesmos figurantes");
 r = T("elenco\n  Kai\n  Mira\nquadro 1\n  cena preset sit.romance.altar com Kai, Mira\n"); ok(r.ok, "também como cena preset sit.ID");
+{ const t = "elenco\n  Kai\nquadro 1\n  situacao festa.parabens com Kai\nquadro 2\n  Figurante1 sai\n", e = w.ltExpandirName(t).texto; r = T(t);
+  ok(r.ok && /elenco\n  Kai\n  Figurante1\n/.test(e) && r.quadros[1].estado.list.find(x => x.name === "Figurante1").oculto, "figurantes no fim do elenco e 'Figurante1 sai' funciona (" + ((r.erros || [])[0] || {}).erro + ")"); }
+{ const e = w.ltExpandirName("elenco\n  Kai\nquadro 1\n  situacao medo.barulhoNoEscuro com Kai falas\n"); ok(e.avisos.some(a => /não tem fala/.test(a)), "falas sem fala sugerida: aviso"); }
+ok(S.filter(d => d.fala).length >= 100, "100+ situações com fala sugerida (" + S.filter(d => d.fala).length + ")");
+{ const w3 = createWorld(); w3.aplicarLinhaNoPalco("situacao raiva.casalCostas"); ok(!w3.SCN.list.some(x => /^Manequim/.test(x.name)), "palco: o Manequim 1 do começo vira o primeiro papel"); }
 
 /* ---------- catálogo ---------- */
 const c1 = w.cxBuscar("", { tipo: "situacao" }); ok(c1.total === S.length, "catálogo: todas as situações (" + c1.total + ")");

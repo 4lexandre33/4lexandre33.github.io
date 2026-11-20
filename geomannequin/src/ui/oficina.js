@@ -9,6 +9,7 @@
 import { SCN, P } from "../scene/modelo.js";
 import { cena } from "../scene/comandos.js";
 import { aplicarLinhaNoPalco, BC_SUGESTOES } from "../scene/barra-comando.js";
+import { SITUACOES, ST_FAMILIAS } from "../scene/situacoes.js";
 import { todasPoses } from "../scene/poses.js";
 import { moverJunta, eixosDaJunta } from "../scene/junta-controle.js";
 import { TIPOS_OBJETO, QD_ESPECIES, telaDoMundo, restGround, pickAt, cameraNoMundo, W as SVG_W, H as SVG_H } from "../engine/index.js";
@@ -86,10 +87,14 @@ function montarBarra(box) {
   box.appendChild(b);
   const inp = $("ofCmd"), sug = $("ofCmdSug");
   const palavras = () => [...new Set(BC_SUGESTOES.concat(SCN.list.map(x => x.name).filter(n => n !== "__vazio__")).concat((SCN.objetos || []).map(o => o.nome).filter(Boolean)))];
-  const mostrarSug = () => { const v = inp.value, ult = v.split(/\s+/).pop().toLowerCase(); sug.innerHTML = ""; if (!ult) return;
+  const mostrarSug = () => { const v = inp.value, ult = v.split(/\s+/).pop().toLowerCase(); sug.innerHTML = "";
+    /* "situacao " → famílias; "situacao festa." → as situações da família */
+    const ms = /^\s*situa(?:c|ç)(?:a|ã)o\s+(\S*)$/i.exec(v); if (ms) { const p = ms[1].toLowerCase(); const cand = !p.includes(".") ? Object.keys(ST_FAMILIAS).filter(f => f.startsWith(p)).map(f => f + ".") : Object.keys(SITUACOES).filter(k => k.toLowerCase().startsWith(p)).slice(0, 12);
+      cand.slice(0, 14).forEach((c, i) => { const s = el("button", "of-sug" + (i === 0 ? " on" : "")); s.type = "button"; s.textContent = c; s.title = SITUACOES[c] ? SITUACOES[c].nome + " · " + SITUACOES[c].n + " pessoa(s)" : (ST_FAMILIAS[c.slice(0, -1)] || {}).nome || ""; s.addEventListener("mousedown", e => { e.preventDefault(); completar(c); }); sug.appendChild(s); }); return; }
+    if (!ult) return;
     const cand = palavras().filter(p => p.toLowerCase().startsWith(ult) && p.toLowerCase() !== ult).slice(0, 8).concat(ult.length > 1 ? todasPoses().filter(p => p.toLowerCase().startsWith(ult)).slice(0, 6) : []);
     cand.forEach((c, i) => { const s = el("button", "of-sug" + (i === 0 ? " on" : "")); s.type = "button"; s.textContent = c; s.addEventListener("mousedown", e => { e.preventDefault(); completar(c); }); sug.appendChild(s); }); };
-  const completar = c => { const ps = inp.value.split(/(\s+)/); ps[ps.length - 1] = c; inp.value = ps.join("") + " "; sug.innerHTML = ""; inp.focus(); };
+  const completar = c => { const ps = inp.value.split(/(\s+)/); ps[ps.length - 1] = c; inp.value = ps.join("") + (c.endsWith(".") ? "" : " "); sug.innerHTML = ""; inp.focus(); if (c.endsWith(".")) mostrarSug(); };
   inp.addEventListener("input", mostrarSug);
   inp.addEventListener("keydown", e => {
     if (e.key === "Enter") { e.preventDefault(); const v = inp.value; for (const l of v.split(/\s*;\s*/)) executar(l); inp.value = ""; sug.innerHTML = ""; }

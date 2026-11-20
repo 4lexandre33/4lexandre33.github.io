@@ -43,7 +43,7 @@ function st(id, pt, en, papeis, x = {}) { if (!ST_FAM) throw new Error("situaç�
   if (B) { x = Object.assign({}, x); if (!x.obj && B.objetos) x._obj = B.objetos.map(o => [o[0], o[1], o[2], o[3] || 0, null]); if (!x.inter && B.inter) x._inter = B.inter.filter(t => t[0] < nb && t[1] < nb); if (x.sentados === undefined && B.sentados !== undefined) x.sentados = B.sentados; }
   const d = { id: fid, familia: ST_FAM.id, familiaNome: ST_FAM.nome, sub: x.sub || pad.sub || "", nome: ap[0], apelidos: ap, en, n: P.length, papeis: P, objetos: x._obj || stObjetos(x.obj), inter: x._inter || stInter(x.inter), base: x.base || null,
     camTxt: x.cam || null, cam: stCamera(x.cam, P.length), ev: x.ev || pad.ev || "", emo: x.emo || pad.emo || "", rel: x.rel || pad.rel || (P.length === 1 ? "sozinho" : P.length === 2 ? "dupla" : "grupo"),
-    gen: x.gen || pad.gen || "", lugar: x.lugar || pad.lugar || "", int: x.int || pad.int || 2, fx: [].concat(x.fx || []), fala: x.fala || null };
+    gen: x.gen || pad.gen || "", lugar: x.lugar || pad.lugar || "", int: x.int || pad.int || 2, fx: [].concat(x.fx || []), fala: x.fala || null, assento: x.assento || null };
   d.tag = ST_FAM.nome + (d.sub ? "/" + d.sub : "");
   d.sentados = x.sentados !== undefined ? x.sentados : !d.objetos.some(o => /tapete|cama/.test(o[0])) && P.some(p => { try { return gpSentado(p.pose); } catch (e) { return false; } });
   SITUACOES[fid] = d; ST_FAMILIAS[ST_FAM.id].n++; return d; }
@@ -84,6 +84,8 @@ function stLerLinha(txt) { const m = /^\s*(?:situacao|situação)\s+(\S+)\s*(.*)
   if (r.trim()) throw new Error("situacao " + d.id + ": não entendi “" + r.trim() + "” (use: com Kai, Mira · em (x,z) · gira 90 · espelhado · sem-camera · sem-poses · falas · nome Guarda).");
   if (nomes.length > d.n) throw new Error("situacao " + d.id + " tem " + d.n + " papéis e você deu " + nomes.length + " nomes.");
   return { def: d, nomes, o }; }
+/* falas sugeridas (id → "A: texto"), acrescentadas por quem escreve os dados */
+function stFalas(mapa) { for (const [id, f] of Object.entries(mapa)) { const d = SITUACOES[id]; if (!d) throw new Error("stFalas: situação " + id + " não existe"); d.fala = f; } }
 function listaSituacoes(f = {}) { return Object.values(SITUACOES).filter(d => (!f.familia || d.familia === f.familia) && (!f.pessoas || d.n === +f.pessoas)).map(d => ({ id: d.id, nome: d.nome, en: d.en, familia: d.familiaNome, sub: d.sub, pessoas: d.n, evento: d.ev, emocao: d.emo, relacao: d.rel, genero: d.gen, lugar: d.lugar, intensidade: d.int, poses: d.papeis.map(p => p.pose), camera: d.camTxt || "automática", fala: d.fala })); }
 function stFamilias() { return Object.values(ST_FAMILIAS).map(f => ({ id: f.id, nome: f.nome, en: f.en, n: f.n })); }
-export { SITUACOES, ST_FAMILIAS, st, stFam, stAchar, stParecidos, stPreset, stLinhas, stLerLinha, listaSituacoes, stFamilias, stCamera };
+export { SITUACOES, ST_FAMILIAS, st, stFam, stFalas, stAchar, stParecidos, stPreset, stLinhas, stLerLinha, listaSituacoes, stFamilias, stCamera };

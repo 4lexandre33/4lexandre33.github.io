@@ -75,12 +75,16 @@ Os eixos são:
   `situacao ID [com Kai, Mira] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [nome Guarda]`
   - Quem faltar vira figurante.
   - A câmera vira `camera preset sit.ID com …`.
-  - `falas` acrescenta a fala sugerida.
+  - `falas` acrescenta a fala sugerida. 138 situações têm uma; nas outras aparece um aviso.
+  - Os figurantes entram no fim do elenco, então quem foi declarado antes fica com as primeiras cores.
+  - `Figurante1 sai` tira um figurante.
   - O id pode ser curto, por exemplo `verdadeNaCara`.
 - **Catálogo** (tecla C):
   - o tipo "Situações" tem botões de Evento e de Relação;
   - a árvore de Categorias tem "Situações › família › subfamília";
   - Aplicar no palco usa as pessoas que já estão no palco e põe a câmera da situação.
+  - Se só houver o "Manequim 1" do começo, ele vira o primeiro papel.
+- **Barra de comando:** `situacao ` sugere as famílias e `situacao festa.` sugere as situações daquela família.
 - **Autocompletar:** `situacao ` mostra as famílias; `situacao festa.` mostra as situações com miniatura (atlas `img/miniaturas/situacao.webp`).
 - **Prompt de imagem:** cada quadro com situação ganha "Narrative situation: …".
 - **MCP** (Claude, ChatGPT, Gemini; esquemas sem anyOf):
@@ -98,8 +102,23 @@ Os eixos são:
   - `mcp/lib/tools-poses.mjs`.
 - Teste: `testes/situacoes.mjs`.
 
+## Teste cego (agente só com o manual) e correções
+O agente encontrou estes problemas, todos corrigidos:
+- o "Manequim 1" padrão ficava parado no meio da cena;
+- `Figurante1 sai` não achava o figurante;
+- os figurantes roubavam as primeiras cores do elenco;
+- `falas` só funcionava em 5 situações (agora são 138, e as outras avisam);
+- contagens erradas nas descrições dos grupos de 8 e 12;
+- o filtro `pessoas` de 9 a 11 caía em 6–8;
+- a faceta de família vinha com o rótulo "Situações";
+- a câmera de `acidente.batidaCarro` ficava dentro de um carro;
+- o efeito de `sobrenatural.levitando` saía como manchas cinza;
+- nas situações de sofá e banco, as pessoas sentavam em cadeiras (agora sentam em bancos).
+
 ## Limitações
 - As situações das famílias com toque usam as interações prontas. Algumas mãos ficam a 5–20 cm do ponto de contato.
 - Quem monta a cavalo foi trocado por poses a pé: a situação ainda não põe animais.
+- Cama e sofá não entram como objeto: quem está deitado fica no chão. Quem está sentado ganha uma cadeira ou um banco.
+- Nas situações dentro de carro, trem ou avião, aparecem só as pessoas, sem o veículo.
 - Algumas câmeras de close cortam a cabeça quando a pose olha para baixo. Troque o plano no quadro ou use `sem-camera`.
 - Situações com `falas`: a boca de fala troca a expressão de quem fala.

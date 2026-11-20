@@ -24,7 +24,7 @@ const resumoQ = q => ({ n: q.indice + 1, titulo: q.titulo, local: q.local, plano
 export function registerNameTools(server, W) {
   server.registerTool("manual_name", {
     title: "Manual da DSL do NAME (storyboard por texto)",
-    description: "Manual completo da linguagem do NAME: elenco por cores, local geométrico (paredes, salas, escadas, níveis, objetos, marcas, regiões), quadros (plano, ângulo, lado, personagens, figurantes com orientação por %), transições, legendas, a ficha (bordas verde/vermelha/azul/amarela) e como LER UMA IMAGEM e descrever o cenário em metros. Leia antes de escrever um name. Também traz prompts prontos.",
+    description: "Manual completo da linguagem do NAME: elenco por cores, local geométrico (paredes, salas, escadas, níveis, objetos, marcas, regiões), quadros (plano, ângulo, lado, personagens, figurantes com orientação por %), transições, legendas, a ficha (bordas verde/vermelha/azul/amarela) e como LER UMA IMAGEM e descrever o cenário em metros. Leia antes de escrever um name. Também traz prompts prontos. Capítulos recentes: 61 (catálogo de poses e grupos, grupo-pose) e 62 (mais de 1.000 situações narrativas prontas: situacao ID com Kai, Mira).",
     inputSchema: { secao: z.enum(["tudo", "prompts", "exemplo"]).optional() }, annotations: RO
   }, async a => {
     const w = W(); if (a.secao === "prompts") return { content: [{ type: "text", text: Object.entries(w.PROMPTS_NAME).map(([k, v]) => "## " + k + "\n" + v).join("\n\n") }] };

@@ -1131,11 +1131,14 @@ ${EXEMPLO_FILME}
     ângulo, que seguem as pessoas). Use no Name, na barra do palco, no Catálogo (tipo "Situações") e no MCP.
   situacao ID [com Kai, Mira, …] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [nome Guarda]
     Ex.: situacao revelacao.verdadeNaCara com Kai, Mira · situacao festa.parabens com Ana em (3,0) · situacao medo.olhandoTras com Kai falas
-    Quem você não nomear vira figurante (Figurante1…), e os mesmos figurantes seguem nos quadros seguintes ("Figurante1 sai" tira).
-    A câmera vira a linha "camera preset sit.ID com …"; "sem-camera" mantém a do quadro. "falas" acrescenta a fala sugerida
+    Quem você não nomear vira figurante (Figurante1, Figurante2… na ordem dos papéis que faltaram; o aviso do quadro diz os nomes), e os
+    mesmos figurantes seguem nos quadros seguintes ("Figurante1 sai" tira). Os figurantes entram no FIM do elenco: quem você declarou
+    antes fica com as primeiras cores. No palco, se só houver o "Manequim 1" do começo, ele vira o primeiro papel.
+    A câmera vira a linha "camera preset sit.ID com …"; com "sem-camera" vale a câmera escrita na linha do quadro (plano, ângulo,
+    lado…) ou a automática. "falas" acrescenta a fala sugerida (138 situações têm uma; nas outras aparece um aviso)
     (ex.: "Kai fala \"Eu sei de tudo.\""; a boca de fala troca a expressão de quem fala). O id pode ser curto (verdadeNaCara) se não
     houver outro igual. Também vale como "cena preset sit.ID com Kai, Mira" (só poses e câmera, sem olhares nem expressões).
-  FAMÍLIAS (34, com subfamílias): revelacao (descoberta, confissão, identidade, passado, pista) · segredo (confidência, pacto, mentira,
+  FAMÍLIAS (34; entre parênteses, exemplos de subfamílias — a lista completa sai no Catálogo e na ferramenta situacoes): revelacao (descoberta, confissão, identidade, passado, pista) · segredo (confidência, pacto, mentira,
     esconder, chantagem, conspiração, fofoca) · espionagem (vigilância, disfarce, infiltração, troca, captura) · investigacao (cena do crime,
     interrogatório, perícia, depoimento, teoria, desfecho) · decisao (escolha, dilema, ruptura, compromisso, virada, redenção) · amizade ·
     inimizade (rivalidade, provocação, humilhação, ameaça, sabotagem, trégua) · romance (primeiro encontro, carinho, beijo, dança, pedido,
@@ -1153,6 +1156,8 @@ ${EXEMPLO_FILME}
     esporte (futebol, basquete, vôlei, tênis, atletismo, natação, radical, vitória, torcida) · viagem (aeroporto, turismo, trilha, mar,
     selva, deserto) · guerra (trincheira, ataque, ferido, rendição, cerimônia, operação especial, paz) · sociedade (protesto, política,
     show, fila, arte de rua, vigília, celebração).
+  ASSENTOS: quem está sentado ganha uma cadeira (ou um banco, nas situações de sofá e banco de praça) atrás de si; quem está deitado
+    fica no chão (cama e sofá não entram como objeto). Situações dentro de carro, trem ou avião mostram só as pessoas.
   TAMANHOS: 1, 2, 3, 4, 5, 6, 8 e 12 pessoas (as de 8 e 12 partem das poses de grupo do capítulo 61 e trocam um papel por quem
     conduz a cena: o DJ, o técnico, o oficial…).
   CLASSIFICAÇÃO (Catálogo e MCP): família › subfamília · evento (descoberta, revelação, segredo, espionagem, investigação, decisão,
