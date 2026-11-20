@@ -1,0 +1,181 @@
+/* GeoMannequin — POSES NARRATIVAS (mais de 650 poses de uma pessoa): ação (invasão, infiltração, perseguição, fuga, esconderijo,
+   tático, resgate, parkour), movimento (corrida, caminhada, escalada, salto, chão), dança, esportes, casa, trabalho, escola, festa,
+   viagem, lazer, emoção, romance, terror, comédia e luta. Mesmo código curto de poses-extra (duas letras + "esquerda,direita";
+   o lado ESQUERDO faz o movimento principal; s = -1 espelha). Cada pose tem nome em português (apelidos) e descrição em inglês
+   (vai para o prompt de imagem). A classificação (tags em vários eixos) fica em catalogo-poses.js. */
+import { POSES_CORPO, POSE_GRUPOS, POSE_ALIAS } from "./poses.js";
+import { TAGS_POSES } from "./acoes-luta.js";
+import { pxLer, POSES_EXTRA, POSES_EXTRA_INFO } from "./poses-extra.js";
+import { aplicarGesto } from "../engine/index.js";
+
+function pnEspelhar(o) { const r = {}; for (const [k, v] of Object.entries(o)) { const m = /^(.*)(L|R)$/.exec(k); if (m && k !== "bodyRoll") r[m[1] + (m[2] === "L" ? "R" : "L")] = v; else r[k] = /Yaw|Twist|Side|Roll/.test(k) ? -v : v; } return r; }
+const POSES_NARRATIVAS = {}, POSES_NARRATIVAS_INFO = {};
+let pnCat = "Ação";
+/* pnC("Ação/Infiltração") muda a categoria das próximas; pn(id, "nome pt|apelido", "english description", "código") */
+function pnC(c) { pnCat = c; }
+function pn(nome, pt, en, cod) { if (POSES_NARRATIVAS[nome]) throw new Error("pose narrativa repetida: " + nome); if (POSES_CORPO[nome]) throw new Error("pose narrativa com nome já usado: " + nome); const { o, x } = pxLer(cod);
+  POSES_NARRATIVAS[nome] = (Q, s) => { Object.assign(Q, s < 0 ? pnEspelhar(o) : o); if (x.maos) x.maos.forEach((g, i) => { if (g && g !== "-") { const lado = (i === 0 ? 1 : -1) * (s < 0 ? -1 : 1); try { aplicarGesto(Q, lado, g); } catch (e) { } } }); };
+  const ap = pt.split("|"); POSES_NARRATIVAS_INFO[nome] = { tag: pnCat, apelidos: ap, desc: ap[0], en, expr: x.expr || null, cod }; }
+
+/* ===================================================== AÇÃO ===================================================== */
+pnC("Ação/Invasão/Entrada");
+pn("invChutandoPorta", "chutando a porta|arrombando com chute", "kicking a door open, leg extended forward, arms up for balance", "sf-8 bp-6 hf85,-8 kf10,18 af20,0 fl40,30 ab40,30 el90,100 hp-4 m:punho,punho e:determinacao");
+pn("invOmbroNaPorta", "arrombando com o ombro|ombrada na porta", "charging a door with the shoulder, body leaning in", "bp25 sf10 ss-12 hf40,-25 kf45,15 fl20,30 ab30,20 el110,100 ar60,0 st-25 hy20 m:punho,punho e:esforco");
+pn("invAriete", "segurando o aríete|batendo o aríete", "swinging a battering ram with both hands", "sf18 hf35,-15 kf40,20 fl30,35 ab12,12 el60,50 pr-80,-80 st-15 hp6 m:segurar,segurar e:gritoDeGuerra");
+pn("invPeDeCabra", "forçando com pé de cabra|alavanca na fresta", "prying a door with a crowbar, pulling back", "bp-10 sf-6 hf30,0 kf35,15 fl40,50 ab25,15 el50,40 pr-60,-60 st20 hp10 m:segurar,segurar e:esforco");
+pn("invEntrandoArmaAlta", "entrando com a arma em pronto|limpando a sala", "entering a room with a rifle raised at eye level", "sf8 hf30,-6 kf32,14 fl70,85 ab30,10 el60,15 ar0,30 hp4 hy-6 m:segurar,segurar e:focoTotal");
+pn("invVarrendoCanto", "checando o canto|varrendo o canto com a arma", "clearing a corner, rifle swung to the side", "sf10 hf28,-4 kf30,14 fl70,85 ab30,10 el60,15 st40 pt15 hy45 m:segurar,segurar e:focoTotal");
+pn("invJogandoGranada", "jogando granada|arremessando atordoante", "throwing a grenade underhand into a room", "sf20 hf35,-10 kf40,20 fl-20,40 ab20,20 el20,90 ar0,30 st-20 hp20 m:aberta,segurar e:gritoDeGuerra");
+pn("invGritandoRendam", "gritando rendam-se|mão aberta mandando parar", "shouting freeze with a pistol aimed and free hand up", "sf2 hf15,-4 kf15,8 fl90,70 ab15,35 el5,60 ar0,-40 hp-6 m:segurar,espalmada e:grito");
+pn("invPulandoJanela", "pulando pela janela|atravessando o vidro", "diving through a window, arms covering the head", "bl6 bp45 sf20 hf30,70 kf60,100 fl150,150 ab20,20 el120,120 hp30 m:punho,punho e:gritoDeGuerra");
+pn("invRapelDescendo", "descendo de rapel|rapel na parede", "rappelling down a wall, feet against the wall, leaning back", "bp-60 hf80,70 ha15,15 kf40,30 fl80,40 ab15,10 el90,40 hp-30 m:segurar,segurar e:focoTotal");
+pn("invCordaSubindo", "subindo na corda|escalando a corda", "climbing a rope hand over hand", "sf-6 hf60,10 kf80,30 fl170,130 ab10,10 el10,60 hp-30 m:segurar,segurar e:esforco");
+pn("invEscudoAvancando", "avançando atrás do escudo|escudo balístico", "advancing behind a riot shield, pistol over the top", "sf15 hf30,-8 kf35,20 fl35,85 ab25,15 el90,5 ar60,0 hp4 m:segurar,segurar e:focoTotal");
+pnC("Ação/Invasão/Assalto");
+pn("assaltoMandandoDeitar", "assaltante mandando deitar|apontando para o chão", "robber pointing a gun and ordering everyone down", "sf6 hf20,-4 kf20,10 fl60,30 ab15,25 el5,5 ar0,0 hp10 m:segurar,apontar e:furia");
+pn("assaltoEnchendoSaco", "enchendo o saco de dinheiro|pegando o dinheiro", "stuffing cash into a bag, hunched over", "sf40 hf30,30 kf35,35 fl60,50 ab15,15 el70,80 pr-60,-60 hp35 m:segurar,segurar e:nervoso");
+pn("assaltoCofreOuvindo", "ouvindo o cofre|girando o segredo", "ear pressed to a safe, turning the dial", "sf30 ss-20 hf60,60 kf80,80 fl70,20 ab30,10 el90,40 pr-40,0 hy70 hz-25 m:pinca,relaxada e:focoTotal");
+pn("assaltoMascaraPondo", "pondo a máscara|vestindo a balaclava", "pulling a ski mask down over the face", "sf-4 fl150,150 ab40,40 el150,150 hp-6 m:segurar,segurar e:serio");
+pnC("Ação/Infiltração/Furtivo");
+pn("infAndandoNaPonta", "andando na ponta dos pés|passo furtivo", "tiptoeing, knees soft, arms raised for balance", "sf10 hf35,-8 kf40,14 af-30,-25 fl40,30 ab35,35 el80,80 hp10 m:relaxada,relaxada e:nervoso");
+pn("infAgachadoAvancando", "avançando agachado|passo de gato", "sneaking forward in a low crouch", "sf35 hf80,40 kf100,80 ha15,10 fl60,40 ab20,20 el80,80 hp-20 m:aberta,relaxada e:focoTotal");
+pn("infColadoNaParede", "colado na parede|de costas para a parede", "flattened with the back against a wall, arms spread", "sf-6 hf6,6 kf8,8 fl-10,-10 ab35,35 el10,10 wr-40,-40 hy60 m:espalmada,espalmada e:nervoso");
+pn("infEspiandoQuina", "espiando na quina|olhando pela esquina", "peeking around a corner, only the head out", "sf6 ss25 hf15,10 kf20,15 fl70,20 ab40,10 el60,30 pr-60,0 hy70 hz20 m:espalmada,relaxada e:desconfianca");
+pn("infSinalSilencio", "pedindo silêncio|dedo nos lábios", "finger on lips signaling silence, crouched", "sf20 hf50,30 kf70,50 fl25,30 ab20,20 el140,80 hp-4 hy-30 m:apontar,aberta e:serio");
+pn("infSinalParar", "sinal de parar|punho fechado erguido", "raising a closed fist, the tactical hold signal", "sf8 hf25,-4 kf28,12 fl90,30 ab90,15 el90,40 hp4 m:punho,segurar e:focoTotal");
+pn("infSinalAvancar", "sinal de avançar|mão indicando ir", "waving the team forward with an open hand", "sf12 hf30,-4 kf34,14 fl80,40 ab30,20 el20,60 wr20,0 hp-4 hy-30 m:espalmada,segurar e:focoTotal");
+pn("infDesarmandoAlarme", "desarmando o alarme|mexendo nos fios", "cutting wires in an alarm panel, very focused", "sf18 hf30,30 kf40,40 ha15,15 fl40,40 ab25,20 el80,80 pr-40,-20 hp20 m:pinca,pinca e:concentradoLingua");
+pn("infPassandoLaser", "passando entre lasers|contorcido entre feixes", "contorting the body to slip between laser beams", "bp-20 ss30 hf70,-30 ha20,40 kf40,10 fl120,-30 ab70,40 el40,20 st30 hp-10 m:aberta,aberta e:focoTotal");
+pn("infRastejandoDuto", "rastejando no duto|no duto de ar", "crawling on elbows through an air duct", "bp90 hf20,40 kf30,70 fl150,150 ab40,40 el120,120 hp-60 m:aberta,aberta e:focoTotal");
+pn("infPendBeiral", "pendurado no beiral|segurando na borda", "hanging from a ledge by the fingertips", "bp4 hf10,20 kf15,30 fl175,175 ab12,12 el20,20 hp-35 m:garra,garra e:esforco");
+pn("infPegandoChave", "pegando a chave de alguém|furto de bolso", "pickpocketing, delicately lifting a key", "sf15 fl40,20 ab25,10 el60,40 pr-30,0 st20 hp10 hy-30 m:pinca,relaxada e:malicia");
+pn("infAbrindoFechadura", "abrindo a fechadura|gazua", "picking a lock, kneeling at the door", "sf25 hf20,100 kf100,100 af40,0 fl80,70 ab20,15 el110,110 pr-40,-40 hp15 m:pinca,pinca e:focoTotal");
+pn("infDisfarceJornal", "disfarçado atrás do jornal|lendo jornal de olho", "hiding behind a newspaper, eyes peeking over", "hf90,90 kf90,90 sf5 fl50,50 ab20,20 el90,90 hp-6 hy10 m:segurar,segurar e:desconfianca");
+pn("infFingindoNatural", "fingindo naturalidade|assobiando disfarçado", "pretending to be casual, hands in pockets, whistling", "hf8,-4 kf8,4 fl-5,-5 ab10,10 el30,30 ar60,60 hp-20 hy-20 m:relaxada,relaxada e:bicudo");
+pn("infCameraSeguranca", "desviando da câmera|escondendo o rosto", "turning the face away from a security camera, hand raised", "sf6 fl50,10 ab30,10 el120,10 hy-60 hp10 m:espalmada,relaxada e:nervoso");
+pn("infOuvindoPorta", "ouvindo atrás da porta|orelha na porta", "eavesdropping with an ear against a door", "sf20 ss15 hf20,10 kf25,15 fl70,30 ab40,15 el80,60 hy80 hz20 m:espalmada,relaxada e:curioso");
+pn("infEspiandoFechadura", "espiando pelo buraco da fechadura", "peeking through a keyhole, bent down", "sf55 hf40,40 kf50,50 fl70,30 ab20,20 el90,60 hp-30 m:espalmada,relaxada e:curioso");
+pnC("Ação/Infiltração/Sniper");
+pn("infSniperDeitado", "atirador deitado|sniper de bruços", "lying prone aiming a sniper rifle", "bp88 hf10,20 ha15,20 kf10,30 fl150,120 ab20,30 el70,100 hp-70 m:segurar,segurar e:focoTotal");
+pn("infSniperAjoelhado", "atirador ajoelhado|sniper de joelho", "kneeling on one knee aiming a rifle", "sf8 hf95,0 kf100,100 af0,40 fl70,85 ab30,10 el60,15 hp4 hy-8 m:segurar,segurar e:focoTotal");
+pn("infBinoculo", "olhando de binóculo|vigiando", "looking through binoculars, elbows up", "sf4 fl70,70 ab30,30 el110,110 pr-60,-60 hp-6 m:segurar,segurar e:focoTotal");
+pnC("Ação/Perseguição/Perseguindo");
+pn("persCorrendoApontando", "correndo apontando|pega ele!", "running and pointing ahead at someone", "bp15 sf6 hf70,-25 kf60,40 fl110,-40 ab15,20 el10,80 hp-10 m:apontar,punho e:grito");
+pn("persEsticandoPegar", "esticando para agarrar|quase pegando", "lunging forward, arm stretched to grab someone", "bp30 sf10 hf80,-30 kf40,20 fl140,30 ab10,20 el5,70 hp-20 m:garra,punho e:esforco");
+pn("persSaltoMergulho", "mergulho para agarrar|pulo para pegar", "diving horizontally to tackle someone", "bl5 bp80 hf10,-10 kf10,30 fl160,160 ab25,25 el20,20 hp-50 m:garra,garra e:gritoDeGuerra");
+pn("persDerrapandoCurva", "derrapando na curva|fazendo a curva correndo", "skidding around a corner while running, leaning in", "bp15 br-20 ss-15 hf60,-20 ha30,0 kf70,30 fl60,20 ab50,50 el90,60 hy-30 m:punho,aberta e:focoTotal");
+pn("persPulandoObstaculo", "pulando a cerca|saltando o obstáculo", "hurdling a fence mid-run", "bl5 bp20 hf100,-30 kf20,90 fl60,-30 ab40,40 el60,60 hp10 m:aberta,aberta e:determinacao");
+pn("persOfeganteProcurando", "ofegante procurando|perdeu de vista", "out of breath, scanning around for the target", "sf30 hf25,25 kf25,25 fl30,30 ab15,15 el20,20 hp-10 hy-50 m:aberta,aberta e:frustrado");
+pn("persRadioCorrendo", "falando no rádio correndo|perseguição policial", "running while talking into a radio", "bp10 hf60,-20 kf60,30 fl30,-30 ab30,20 el135,80 hp-4 hy20 m:segurar,punho e:grito");
+pn("persMotoInclinada", "pilotando moto em perseguição|deitado na moto", "racing on a motorcycle, crouched low over the tank", "hf100,100 kf110,110 ha25,25 sf50 fl80,80 ab20,20 el50,50 hp-50 m:segurar,segurar e:focoTotal");
+pn("persDirigindoUmaMao", "dirigindo com uma mão|virando o volante", "driving fast, one hand yanking the wheel, looking back", "hf90,90 kf80,80 sf8 fl60,10 ab20,10 el80,30 st-30 hy-60 m:segurar,relaxada e:grito");
+pnC("Ação/Perseguição/Telhado");
+pn("persSaltoEntrePredios", "salto entre prédios|pulando de telhado", "leaping across a gap between rooftops", "bl8 bp10 sf-10 hf90,-60 kf40,30 fl150,-40 ab40,30 el20,20 hp-20 m:aberta,aberta e:gritoDeGuerra");
+pn("persAterrissandoRolando", "aterrissando e rolando|rolamento de parkour", "landing from a jump into a forward roll", "bp60 sf60 hf110,90 kf130,120 fl90,60 ab30,30 el60,60 hp50 m:aberta,aberta e:focoTotal");
+pn("persEquilibrioBeiral", "equilibrando no beiral|na borda do prédio", "balancing on a narrow ledge, arms out", "sf-4 hf10,-10 ha8,8 kf10,10 af0,-20 fl20,20 ab90,90 el10,10 hp20 m:aberta,aberta e:medo");
+pnC("Ação/Fuga/Correndo");
+pn("fugaOlhaTrasPanico", "fugindo olhando para trás|correndo apavorado", "running away looking back over the shoulder in panic", "bp18 hf80,-35 kf80,40 fl-50,90 ab30,30 el60,90 st-30 hy-100 m:aberta,aberta e:panico");
+pn("fugaTropecaCorrendo", "tropeçando na fuga|quase caindo correndo", "stumbling while fleeing, arms flailing", "bp45 sf20 hf-30,70 kf30,90 fl150,60 ab50,60 el30,40 hp-30 m:aberta,aberta e:panico");
+pn("fugaCaidaRecuando", "caído recuando de costas|arrastando-se para trás", "fallen on the back, scrambling backward on hands and feet", "bp-60 hf80,40 kf110,70 fl-60,-60 ab20,20 el10,10 wr-60,-60 hp20 m:espalmada,espalmada e:horror");
+pn("fugaEscalandoMuro", "escalando o muro na fuga|pulando o muro", "scrambling over a wall, one leg hooked on top", "sf20 bp10 hf120,-10 ha40,10 kf120,30 fl150,140 ab30,30 el60,70 hp-10 m:garra,garra e:esforco");
+pn("fugaDescendoEscada", "descendo a escada correndo|pulando degraus", "running down stairs two at a time, hand on the rail", "bp10 hf60,-20 kf70,10 af-20,0 fl40,-20 ab60,15 el60,20 hp30 m:segurar,aberta e:panico");
+pn("fugaPelaJanela", "saindo pela janela|perna para fora da janela", "climbing out of a window, one leg over the sill", "sf30 hf100,10 ha30,0 kf90,20 fl70,90 ab30,30 el60,30 hy-40 m:segurar,segurar e:nervoso");
+pn("fugaBolsaNoPeito", "fugindo com a bolsa|abraçando o roubo", "running clutching a stolen bag to the chest", "bp15 hf75,-30 kf80,35 fl50,50 ab20,20 el130,130 ar60,60 hy-30 m:segurar,segurar e:nervoso");
+pn("fugaMancando", "fugindo mancando|perna ferida", "limping away, holding an injured leg", "sf25 ss15 hf30,-10 kf20,50 fl-20,30 ab30,15 el40,100 pr0,-60 hp10 m:aberta,garra e:dor");
+pn("fugaArrastandoAmigo", "arrastando o amigo|puxando pelo braço", "pulling someone along by the wrist while running", "bp15 hf70,-30 kf70,40 fl-20,60 ab40,20 el10,60 st30 hy-60 m:segurar,punho e:grito");
+pnC("Ação/Esconderijo");
+pn("escSobMesa", "escondido debaixo da mesa|encolhido sob a mesa", "hiding under a table, knees pulled in, hands over mouth", "hf120,120 kf150,150 sf45 fl30,30 ab10,10 el140,140 hp30 m:aberta,aberta e:medo");
+pn("escNoArmario", "escondido no armário|espiando pela fresta", "hiding inside a closet, peeking through the gap", "sf10 fl70,70 ab15,30 el140,110 pr0,-40 hy30 hz10 m:aberta,espalmada e:medo");
+pn("escAtrasCortina", "atrás da cortina|pés aparecendo", "standing frozen behind a curtain, holding breath", "fl10,10 ab5,5 el150,150 ar60,60 hp-10 m:punho,punho e:nervoso");
+pn("escAtrasCarro", "escondido atrás do carro|agachado no carro", "crouching behind a car, back against the door", "hf110,100 kf130,120 ha20,20 sf10 fl30,60 ab20,40 el80,90 hy60 m:segurar,espalmada e:focoTotal");
+pn("escNaArvore", "escondido na árvore|agarrado ao galho", "lying along a tree branch, hugging it", "bp80 hf50,40 ha30,30 kf70,60 fl100,100 ab60,60 el80,80 hp-40 m:garra,garra e:medo");
+pn("escEmbaixoCama", "embaixo da cama|deitado escondido", "lying under a bed, peering out", "bp90 hf10,30 kf10,50 fl100,140 ab40,40 el90,120 hp-60 hy20 m:aberta,aberta e:medo");
+pn("escCobrindoBoca", "tapando a boca para não gritar", "covering the mouth with both hands to stay silent", "sf10 hf20,20 kf20,20 fl25,25 ab15,15 el140,140 ar60,60 hp6 m:aberta,aberta e:horror");
+pnC("Ação/Tático/Armas");
+pn("tatAndandoArmaBaixa", "andando com a arma baixa|patrulha", "patrolling with a rifle at low ready", "sf8 hf30,-6 kf30,10 fl30,45 ab35,10 el70,25 hp10 hy-15 m:segurar,segurar e:focoTotal");
+pn("tatTrocandoPente", "trocando o pente|recarregando o fuzil", "reloading a rifle, magazine in the off hand", "sf12 hf20,-4 kf20,10 fl35,40 ab20,20 el70,80 pr-40,-60 hp30 m:segurar,segurar e:focoTotal");
+pn("tatAtirandoAbrigado", "atirando abrigado|atirando por cima do muro", "firing over cover from a crouch", "hf100,40 kf120,90 af0,30 sf10 fl70,85 ab30,10 el60,15 hp4 m:segurar,segurar e:gritoDeGuerra");
+pn("tatAtirandoDeitado", "atirando de bruços|tiro deitado", "prone position firing a pistol with both hands", "bp88 hf6,10 ha20,25 kf6,6 fl160,160 ab10,10 el10,10 hp-70 m:segurar,segurar e:focoTotal");
+pn("tatAtirandoCorrendo", "atirando correndo|correndo e atirando", "running sideways while firing a pistol", "bp8 hf60,-20 kf60,30 fl90,-20 ab15,20 el10,70 st50 hy60 m:segurar,punho e:gritoDeGuerra");
+pn("tatDuasPistolas", "duas pistolas|pistolas abertas", "firing two pistols in opposite directions, arms spread", "sf-4 hf25,-10 kf25,10 fl90,90 ab90,90 el5,5 hy40 m:segurar,segurar e:sorrisoConfiante");
+pn("tatPistolaLanterna", "pistola com lanterna|lanterna cruzada", "aiming a pistol with a flashlight crossed under the wrist", "sf8 hf20,-6 kf22,10 fl90,85 ab20,10 el5,30 ar0,-40 hp4 m:segurar,segurar e:medo");
+pn("tatFacaAgarrando", "faca na mão em guarda|faca invertida", "knife fighting stance, blade held reversed", "sf20 hf40,-10 kf45,20 ha12,12 fl40,50 ab20,20 el90,70 pr0,-60 hp4 m:espalmada,segurar e:olharFrio");
+pn("tatArcoMirando", "mirando com arco|puxando a flecha", "drawing a bow, string at the cheek", "sf-2 ss-6 hf10,-4 kf10,6 fl90,90 ab0,90 el0,150 st-60 hy-80 m:segurar,pinca e:focoTotal");
+pn("tatBazuca", "bazuca no ombro|lançador de foguetes", "aiming a rocket launcher on the shoulder", "sf6 hf30,-8 kf30,14 fl45,60 ab40,20 el100,60 ar60,0 hy-20 hp6 m:segurar,segurar e:gritoDeGuerra");
+pn("tatGranadaPino", "tirando o pino da granada|com os dentes", "pulling a grenade pin with the teeth", "hf30,-10 kf30,10 st-20 sf6 fl35,10 ab25,10 el140,10 pr-60,0 hp-10 hy-10 m:segurar,relaxada e:sorrisoMaligno");
+pn("tatChecandoMapa", "olhando o mapa tático|planejando no mapa", "studying a map unfolded in both hands", "sf20 fl40,40 ab30,30 el70,70 pr-80,-80 hp40 m:segurar,segurar e:pensativo");
+pnC("Ação/Resgate");
+pn("resCarregandoNoOmbro", "carregando ferido no ombro|resgate do bombeiro", "carrying a person over the shoulders in a fireman's carry", "sf20 hf25,-6 kf30,15 fl70,20 ab50,20 el120,60 hp10 m:segurar,segurar e:esforco");
+pn("resPuxandoDoBuraco", "puxando alguém do buraco|mão estendida para baixo", "lying at an edge reaching down to pull someone up", "bp85 hf10,10 ha20,20 kf10,10 fl170,100 ab20,40 el10,30 hp-20 m:segurar,espalmada e:esforco");
+pn("resMassagemCardiaca", "massagem cardíaca|reanimando", "doing CPR, kneeling, arms locked straight", "kf100,100 hf10,10 af40,40 sf35 fl70,70 ab5,5 el0,0 wr-60,-60 hp40 m:espalmada,espalmada e:esforco");
+pn("resChamandoAjuda", "acenando por socorro|pedindo ajuda", "waving both arms overhead to signal for help", "hf40,-20 kf20,10 ss-15 sf-6 fl170,150 ab40,50 el20,30 hp-30 m:aberta,aberta e:grito");
+pn("resLevantandoEscombro", "levantando escombro|erguendo a viga", "lifting heavy debris with legs bent", "sf20 hf80,80 kf90,90 ha25,25 fl50,50 ab20,20 el60,60 pr-80,-80 hp-10 m:segurar,segurar e:esforco");
+pn("resProtegendoCrianca", "protegendo alguém com o corpo|cobrindo", "crouching over someone to shield them", "sf50 hf90,70 kf110,90 fl60,60 ab40,40 el90,90 hp30 m:aberta,aberta e:determinacao");
+pnC("Ação/Parkour");
+pn("pkPassagemMacaco", "passagem de macaco|kong vault", "kong vault over a wall, hands planted, legs tucked through", "bl4 bp60 hf120,120 kf130,130 fl100,100 ab15,15 el5,5 wr-70,-70 hp-40 m:espalmada,espalmada e:focoTotal");
+pn("pkSpeedVault", "passagem lateral|speed vault", "speed vault, body sideways over an obstacle, one hand down", "bl4 br-40 ss-20 hf70,40 ha30,10 kf20,60 fl80,150 ab60,20 el10,20 hy30 m:espalmada,aberta e:focoTotal");
+pn("pkWallRun", "correndo na parede|wall run", "running up a wall, one foot planted high", "bp-20 hf120,-20 kf100,40 fl100,-30 ab30,40 el60,60 hp-30 m:aberta,aberta e:esforco");
+pn("pkPrecisao", "salto de precisão|aterrissagem na ponta", "precision landing on a rail, crouched, arms forward", "sf30 hf90,90 kf110,110 af30,30 fl90,90 ab10,10 el20,20 hp-20 m:aberta,aberta e:focoTotal");
+pn("pkGatoNoMuro", "agarrado no muro|cat leap", "cat leap, hanging on a wall top with feet on the wall", "bp-10 hf90,70 kf100,80 fl150,150 ab20,20 el60,60 hp-30 m:garra,garra e:esforco");
+pn("pkMortalFrente", "mortal para a frente|salto mortal", "front flip in the air, tucked", "bl10 bp120 hf140,140 kf140,140 fl60,60 ab20,20 el90,90 hp50 m:punho,punho e:focoTotal");
+pn("pkMortalTras", "mortal para trás|backflip", "backflip mid-air, body arched", "bl10 bp-140 sf-20 hf110,110 kf120,120 fl150,150 ab30,30 el30,30 hp-40 m:aberta,aberta e:focoTotal");
+
+/* ===================================================== MOVIMENTO ===================================================== */
+pnC("Movimento/Corrida");
+pn("corSprintContato", "sprint pé no chão|corrida de velocidade", "sprinting, front foot striking the ground, arms pumping", "bp20 hf60,-30 kf20,70 fl80,-60 ab10,10 el80,90 hp-6 m:espalmada,espalmada e:esforco");
+pn("corSprintVoo", "sprint no ar|passada longa", "sprinter in flight phase, both feet off the ground", "bl3 bp22 hf80,-40 kf90,60 fl-60,80 ab10,10 el90,80 hp-6 m:espalmada,espalmada e:esforco");
+pn("corLargadaBaixa", "largada de atletismo|em suas marcas", "crouched in sprint starting blocks, fingers on the line", "bp50 sf30 hf110,60 kf100,90 af30,10 fl90,90 ab5,5 el0,0 hp20 m:espalmada,espalmada e:focoTotal");
+pn("corTrotando", "trotando|corrida leve", "light jogging, relaxed arms", "bp6 hf40,-15 kf50,40 fl40,-30 ab12,12 el90,90 hp-2 m:relaxada,relaxada e:calmo");
+pn("corCansadaArrastando", "corrida cansada|quase parando", "exhausted runner dragging their feet, head back", "bp4 sf6 hf30,-10 kf30,30 fl20,-10 ab20,20 el50,50 hp-25 m:relaxada,relaxada e:exausto");
+pn("corChegadaFita", "cruzando a linha de chegada|rompendo a fita", "breaking the finish line tape, chest forward, arms back", "bp10 sf-15 hf50,-30 kf50,40 fl-40,-40 ab40,40 el10,10 hp-20 m:aberta,aberta e:gritoDeAlegria");
+pn("corFreando", "freando a corrida|parando de repente", "skidding to a sudden stop, leaning back", "bp-20 hf60,10 kf20,50 af30,0 fl60,60 ab40,40 el30,30 hp10 m:aberta,aberta e:surpresaTotal");
+pn("corCorridaNaruto", "corrida ninja de braços para trás|anime run", "anime ninja run, arms trailing straight behind", "bp40 sf10 hf70,-30 kf80,40 fl-60,-60 ab10,10 el0,0 hp-30 m:aberta,aberta e:determinacao");
+pn("corCorridaCartoon", "corrida de desenho|pernas em roda", "cartoon run, legs high, arms swinging wildly", "bp-6 hf100,-20 kf120,60 fl120,-60 ab30,30 el30,30 hp-10 m:aberta,aberta e:choqueComico");
+pn("corAtrasadoComCafe", "correndo atrasado com café|correndo com a pasta", "rushing late holding a coffee and briefcase", "bp12 hf60,-25 kf60,40 fl30,-10 ab25,20 el90,20 hy10 m:segurar,segurar e:nervoso");
+pn("corCorrendoChuva", "correndo da chuva|cobrindo a cabeça", "running through rain with a jacket over the head", "bp12 sf10 hf60,-20 kf60,40 fl160,160 ab40,40 el90,90 hp10 m:segurar,segurar e:nervoso");
+pn("corPegandoOnibus", "correndo atrás do ônibus|esperem!", "chasing a bus, arm raised calling it to wait", "bp15 hf70,-25 kf70,40 fl150,-30 ab30,20 el20,80 hp-14 m:aberta,punho e:grito");
+pnC("Movimento/Caminhada");
+pn("camConfiante", "andando confiante|passo firme", "confident walk, chest out, chin up", "sf-6 hf25,-10 kf10,10 fl20,-15 ab10,10 el15,15 hp-8 m:relaxada,relaxada e:sorrisoConfiante");
+pn("camDesfile", "desfile de passarela|modelo andando", "runway model walk, one foot crossing in front", "sf-4 hf30,-6 ha-10,0 hr-10,0 kf15,6 fl-10,10 ab12,12 el10,10 hp-4 m:relaxada,relaxada e:serio");
+pn("camMaosNoBolso", "andando com as mãos no bolso|passeando", "strolling with hands in pockets", "hf20,-8 kf15,8 fl-6,-6 ab15,15 el30,30 ar50,50 hp4 m:relaxada,relaxada e:calmo");
+pn("camVelhinhoBengala", "idoso com bengala|andando devagar", "elderly person walking slowly with a cane", "sf30 hf25,-6 kf30,20 fl40,10 ab20,10 el20,20 hp10 m:segurar,relaxada e:cansaco");
+pn("camBebado", "andando bêbado|cambaleando", "drunken stagger, leaning sideways", "ss25 br10 hf30,-20 ha10,25 kf30,10 fl40,10 ab50,30 el40,20 hz20 m:relaxada,relaxada e:bebado");
+pn("camZumbi", "andar de zumbi|braços estendidos", "zombie shuffle with arms stretched forward", "sf25 ss10 hf20,-6 kf20,10 fl90,85 ab8,8 el10,10 wr-50,-50 hp20 hz20 m:relaxada,relaxada e:olharVazio");
+pn("camEsgueirandoParede", "andando de lado pela parede|passo lateral", "side-stepping along a wall", "sf-4 hf10,10 ha30,0 kf20,10 fl-10,-10 ab30,30 el10,10 hy80 m:espalmada,espalmada e:nervoso");
+pn("camCarregandoSacolas", "carregando sacolas|compras nas mãos", "walking with heavy shopping bags in both hands", "sf4 hf20,-8 kf15,8 fl0,0 ab15,15 el5,5 se10,10 hp4 m:segurar,segurar e:cansaco");
+pn("camCelularAndando", "andando olhando o celular|distraído", "walking while staring at a phone", "sf15 hf20,-6 kf15,6 fl30,-5 ab15,10 el100,10 pr-60,0 hp45 m:segurar,relaxada e:tedio");
+pn("camPassoMarcha", "passo de marcha|marchando", "military march, knee high, arm swinging", "hf80,-10 kf80,0 fl70,-40 ab5,5 el0,0 hp-4 m:punho,punho e:serio");
+pn("camSonambulo", "sonâmbulo|andando dormindo", "sleepwalking with eyes closed, arms forward limp", "hf20,-6 kf10,6 fl80,80 ab10,10 el15,15 wr-60,-60 hp6 m:relaxada,relaxada e:sono");
+pn("camSubindoEscada", "subindo a escada|degrau a degrau", "climbing stairs, one foot on the higher step", "sf10 hf70,-10 kf80,10 fl20,-20 ab10,10 el20,20 hp10 m:relaxada,relaxada e:neutra");
+pn("camContraVento", "andando contra o vento|contra a tempestade", "pushing forward against strong wind, arm shielding the face", "bp20 sf15 hf50,-20 kf50,20 fl110,-20 ab30,20 el130,40 hp20 m:punho,punho e:esforco");
+pn("camNaNeve", "andando na neve funda|afundando na neve", "trudging through deep snow, knee lifted high", "sf15 hf90,-10 kf100,20 fl50,-20 ab40,30 el60,40 hp10 m:punho,punho e:cansaco");
+pn("camMochilaoTrilha", "trilha com mochilão|caminhada na montanha", "hiker with a big backpack, thumbs on the straps", "sf20 hf40,-10 kf40,15 fl50,50 ab20,20 el130,130 hp-4 m:segurar,segurar e:determinacao");
+pnC("Movimento/Escalada");
+pn("escaladaParedeAgarras", "escalando parede de agarras|boulder", "rock climbing, reaching for a high hold", "bp-6 hf70,10 ha40,30 kf90,30 fl175,90 ab30,40 el10,90 hp-40 m:garra,garra e:esforco");
+pn("escaladaEscadaMao", "subindo escada de mão|escada vertical", "climbing a vertical ladder", "hf80,20 kf90,20 fl150,90 ab15,15 el30,90 hp-20 m:segurar,segurar e:neutra");
+pn("escaladaArvore", "subindo na árvore|abraçando o tronco", "shimmying up a tree trunk", "hf90,60 ha30,30 kf110,80 fl140,110 ab40,40 el60,90 hp-30 m:garra,garra e:esforco");
+pn("escaladaPenduradoUmaMao", "pendurado por uma mão|quase caindo", "dangling from one hand over a drop", "bp4 ss-10 hf10,30 kf20,40 fl175,30 ab10,70 el5,30 hp-30 hz-15 m:garra,aberta e:panico");
+pnC("Movimento/Salto");
+pn("saltoEstrela", "salto estrela|polichinelo no ar", "star jump, arms and legs spread wide in the air", "bl8 sf-6 ha40,40 hf6,6 kf6,6 fl150,150 ab140,140 el5,5 hp-20 m:aberta,aberta e:gritoDeAlegria");
+pn("saltoGrupado", "salto grupado|bomba na piscina", "cannonball jump, knees hugged to the chest", "bl8 sf40 hf130,130 kf150,150 fl80,80 ab15,15 el130,130 hp30 m:segurar,segurar e:riso");
+pn("saltoMergulhoAgua", "mergulho de cabeça|saltando na água", "diving headfirst, arms together overhead", "bl8 bp60 sf-10 hf0,0 kf0,0 af-40,-40 fl178,178 ab5,5 el0,0 hp20 m:aberta,aberta e:focoTotal");
+pn("saltoCaindoDoAlto", "caindo do alto|queda livre", "free-falling, body flat, arms and legs spread", "bl10 bp80 sf-20 hf-10,-10 ha30,30 kf40,40 fl120,120 ab70,70 el30,30 hp-40 m:aberta,aberta e:gritoDeAlegria");
+pn("saltoAgachamento", "agachado para pular|carregando o pulo", "deep crouch, about to spring upward", "sf35 hf110,110 kf130,130 fl-40,-40 ab20,20 el10,10 hp-30 m:aberta,aberta e:determinacao");
+pnC("Movimento/Chão");
+pn("chaoRastejandoSoldado", "rastejando como soldado|rastejo baixo", "army crawl, flat on the stomach, elbow and knee forward", "bp88 hf50,0 ha40,10 kf80,10 fl150,60 ab50,40 el110,90 hp-60 m:punho,punho e:focoTotal");
+pn("chaoEngatinhandoRapido", "engatinhando rápido|de quatro", "crawling fast on hands and knees", "bp70 hf90,60 kf100,90 fl95,70 ab10,10 el5,5 wr-60,-60 hp-10 hy-50 m:espalmada,espalmada e:nervoso");
+pn("chaoLevantandoApoiado", "levantando do chão|apoiado num joelho", "getting up from the ground, one knee down, hand on the thigh", "sf30 hf100,0 kf100,100 af0,40 fl40,30 ab20,10 el40,30 hp10 m:espalmada,relaxada e:cansaco");
+pn("chaoSentadoApoiandoMaos", "sentado apoiado nas mãos|pernas esticadas", "sitting on the ground leaning back on the hands, legs out", "hf80,80 kf5,10 sf-15 fl-30,-30 ab25,25 el0,0 wr-70,-70 hp-10 m:espalmada,espalmada e:calmo");
+pn("chaoDeitadoDeLado", "deitado de lado|apoiado no cotovelo", "lying on the side propped on an elbow", "br-85 hf30,40 kf40,60 fl100,40 ab10,10 el100,30 hp-10 hz30 m:aberta,relaxada e:calmo");
+pn("chaoDeitadoBarriga", "deitado de bruços lendo|pernas balançando", "lying on the stomach, chin on hands, feet kicked up", "bp88 hf0,0 kf90,60 fl120,120 ab30,30 el140,140 hp-60 m:aberta,aberta e:sonhador");
+pn("chaoEstrelaNoChao", "estirado no chão|deitado de braços abertos", "lying spread-eagle on the back", "bp-90 ha30,30 hf0,0 kf0,0 fl90,90 ab90,90 el5,5 hp0 m:aberta,aberta e:exausto");
+pn("chaoEncolhidoFetal", "posição fetal|encolhido no chão", "curled up in fetal position on the floor", "br-88 sf50 hf120,120 kf130,130 fl80,80 ab10,10 el140,140 hp40 m:punho,punho e:choro");
+
+/* registro (cada arquivo de poses narrativas chama no fim; registra só as novas) */
+const PN_FEITAS = new Set();
+function pnRegistrar() { for (const [n, i] of Object.entries(POSES_NARRATIVAS_INFO)) { if (PN_FEITAS.has(n)) continue; PN_FEITAS.add(n);
+    POSES_CORPO[n] = POSES_NARRATIVAS[n]; POSES_EXTRA[n] = POSES_NARRATIVAS[n]; POSES_EXTRA_INFO[n] = { tag: i.tag, apelidos: i.apelidos, desc: i.desc, en: i.en, expr: i.expr };
+    TAGS_POSES[n] = i.tag; for (const a of i.apelidos) { const k = a.toLowerCase(); if (!POSE_ALIAS[k]) POSE_ALIAS[k] = n; } const t = i.tag.split("/"), g = t[0] + ": " + (t[1] || t[0]); (POSE_GRUPOS["Narrativa — " + g] = POSE_GRUPOS["Narrativa — " + g] || []).push(n); } }
+pnRegistrar();
+function listaPosesNarrativas() { return Object.entries(POSES_NARRATIVAS_INFO).map(([nome, i]) => ({ nome, tag: i.tag, apelidos: i.apelidos, en: i.en, expressao: i.expr })); }
+export { POSES_NARRATIVAS, POSES_NARRATIVAS_INFO, pn, pnC, pnRegistrar, listaPosesNarrativas };

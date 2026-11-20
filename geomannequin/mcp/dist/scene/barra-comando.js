@@ -44,7 +44,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   /* linhas de lote (espalha / grupo) viram várias linhas; os nomes novos entram no elenco */
   let extraElenco = [], avisosLote = [];
   { const gm = /^\s*grupo\s+(.+?)\s+(pose|olha|olham|olhando|vira-para|gira|move|alinha)\b/i.exec(linha); if (gm) opts = Object.assign({}, opts, { _grupo: gm[1].split(/\s*,\s*|\s+e\s+/).map(x => x.replace(/"/g, "").trim()).filter(Boolean) }); }
-  if (/^\s*(espalh[ae]|grupo)\s/i.test(linha)) { const pontos = {}; SCN.list.forEach(it => { if (it.name) pontos[it.name] = [bcN(it.params.wx || 0), bcN(it.params.wz || 0)]; }); (SCN.objetos || []).forEach(o => { if (o.nome) pontos[o.nome] = [bcN(o.x || 0), bcN(o.z || 0)]; });
+  if (/^\s*(espalh[ae]|grupo|grupo-pose)\s/i.test(linha)) { const pontos = {}; SCN.list.forEach(it => { if (it.name) pontos[it.name] = [bcN(it.params.wx || 0), bcN(it.params.wz || 0)]; }); (SCN.objetos || []).forEach(o => { if (o.nome) pontos[o.nome] = [bcN(o.x || 0), bcN(o.z || 0)]; });
     const objetos = {}; (SCN.objetos || []).forEach(o => { if (o.nome && !o.animal && !o.chao) objetos[o.nome] = o.tipo; });
     let r0; try { r0 = ltExpandir(linha, { usados: nomes, pontos, objetos }); } catch (e) { return { ok: false, erros: [e.message] }; } linha = r0.texto; extraElenco = r0.elenco; avisosLote = r0.avisos; }
   let base = dslDoPalco(), corpo = linha;

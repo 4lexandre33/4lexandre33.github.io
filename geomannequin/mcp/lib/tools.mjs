@@ -24,6 +24,7 @@ import { registerNarrativaTools } from "./tools-narrativa.mjs";
 import { registerHistoriaTools } from "./tools-historia.mjs";
 import { registerCelulasTools, garantirCatalogo } from "./tools-celulas.mjs";
 import { registerPromptTools } from "./tools-prompt.mjs";
+import { registerPosesTools } from "./tools-poses.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDGET_URI = "ui://widget/geomannequin.html";
@@ -195,6 +196,7 @@ function metaWidget(w, tipo, extra) { return { gm: Object.assign({ tipo, link: s
 
 /* metadados do ChatGPT (Apps SDK): texto enquanto a ferramenta roda e quando termina; as visuais abrem o widget */
 const INVOCA = {
+  catalogo_poses: ["Procurando no catálogo…", "Catálogo pronto"], grupo_pose: ["Montando a pose de grupo…", "Grupo na cena"],
   celulas_importar: ["Abrindo o pacote e achando a grade…", "Células cortadas"], celulas_ver: ["Separando as células…", "Células prontas"], celulas_classificar: ["Gravando as fichas…", "Fichas gravadas"], celulas_buscar: ["Procurando no catálogo…", "Células encontradas"], celulas_catalogo: ["Abrindo o catálogo de células…", "Catálogo"], miniaturas: ["Desenhando as miniaturas…", "Miniaturas prontas"], prompt_imagem: ["Calculando a composição e escrevendo o prompt…", "Prompt pronto"], prompt_catalogo: ["Listando as opções do prompt…", "Opções do prompt"],
   linha_no_palco: ["Aplicando a linha na cena…", "Cena atualizada"], narrativas: ["Abrindo a biblioteca de funções narrativas…", "Biblioteca pronta"], analisar_historia: ["Lendo a história e montando o texto…", "Texto e lacunas prontos"], lacunas: ["Lendo as lacunas…", "Lacunas listadas"], locais_prontos: ["Montando o local pronto…", "Local pronto"], catalogo: ["Abrindo o catálogo…", "Catálogo pronto"], aplicar_narrativa: ["Transformando a função narrativa em quadros…", "Quadros prontos"], gerar_historia: ["Gerando a história e as variações…", "História pronta"],
   preconfiguracoes: ["Abrindo o catálogo de pré-configurações…", "Catálogo pronto"], aplicar_preconfiguracao: ["Montando a pré-configuração…", "Quadro pronto"], animacao_animal: ["Animando o animal…", "Animação pronta"],
@@ -946,6 +948,7 @@ export function registerAll(server, getWorld, opts = {}) {
   registerHistoriaTools(server, W);
   registerCelulasTools(server, W);
   registerPromptTools(server, W);
+  registerPosesTools(server, W);
 
   /* ---------- recursos ---------- */
   server.registerResource("referencia", "geomannequin://referencia", { title: "Referência do GeoMannequin", mimeType: "text/plain", description: "API de comandos, poses, corpos e parâmetros." },

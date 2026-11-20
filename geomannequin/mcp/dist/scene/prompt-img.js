@@ -20,7 +20,12 @@ import { pMundo } from "./colisoes.js";
 import { compilarName, fichaDoQuadro } from "./name-dsl.js";
 import { renderizarQuadro, recorteQuadro } from "./quadros.js";
 import { pdMiniatura, pdValoresPose, pdParams } from "./pose-dsl.js";
-import { listaPosesExtras } from "./poses-extra.js";
+import { listaPosesExtras, POSES_EXTRA_INFO } from "./poses-extra.js";
+import { gpAchar } from "./grupos-poses.js";
+import { ltExpandirName } from "./lote.js";
+import { INTERACOES_NARRATIVAS } from "./interacoes-narrativas.js";
+import { INTERACOES_EXTRA } from "./interacoes-extra.js";
+import { INTERACOES } from "./interacoes.js";
 import { acTexto } from "./autocompletar.js";
 import { capsulas, telaDoMundo, cameraNoMundo, restGround, capsulasObjeto, partesDoObjeto, TIPOS_OBJETO, QD_ESPECIES } from "../engine/index.js";
 
@@ -59,8 +64,16 @@ const PI_PAL = { empe: "standing", "em pe": "standing", parado: "standing still"
   meditando: "meditating", rezando: "praying", gritando: "shouting", chorando: "crying", rindo: "laughing", dormindo: "sleeping", nadando: "swimming", escalando: "climbing", montado: "riding", dirigindo: "driving", boxe: "boxing", karate: "karate", capoeira: "capoeira", kung: "kung", fu: "fu", espada: "sword", varinha: "wand", estocada: "thrust", corte: "slash",
   de: "", da: "", do: "", com: "with", e: "and", no: "on", na: "on", em: "in", para: "to", um: "one", uma: "one", dois: "two", relaxado: "relaxed", relaxada: "relaxed", confiante: "confident", timido: "shy", tímida: "shy", ombro: "shoulder", joelho: "knee", perna: "leg", pernas: "legs", pe: "foot", pes: "feet", chao: "floor" };
 function piHumano(nome) { return String(nome || "").replace(/^am(?=[A-Z])/, "").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().trim(); }
-function piPose(nome) { if (!nome) return null; const pt = piHumano(nome); const en = pt.split(/\s+/).map(w => { const k = piNorm(w); return PI_PAL[k] !== undefined ? PI_PAL[k] : w; }).filter(Boolean).join(" ");
+function piPose(nome) { if (!nome) return null; const info = POSES_EXTRA_INFO[nome]; if (info && info.en) return { nome, pt: (info.apelidos && info.apelidos[0]) || piHumano(nome), en: info.en, tag: info.tag };
+  const pt = piHumano(nome); const en = pt.split(/\s+/).map(w => { const k = piNorm(w); return PI_PAL[k] !== undefined ? PI_PAL[k] : w; }).filter(Boolean).join(" ");
   let tag = null; try { const x = listaPosesExtras().find(p => p.nome === nome); tag = x ? x.tag : null; } catch (e) { } return { nome, pt, en: en || pt, tag }; }
+/* ações de grupo e toques que o texto pede (grupo-pose / interacao), para o prompt contar a AÇÃO e não só as posições */
+function piAcoes(texto) { const grupos = [], toques = []; let t = String(texto || "");
+  for (const m of t.matchAll(/^\s*grupo-pose\s+(\S+)/gim)) { const d = gpAchar(m[1]); if (d && !grupos.some(g => g.id === d.id)) grupos.push({ id: d.id, pt: d.nome, en: d.en, n: d.n }); }
+  try { t = ltExpandirName(t).texto; } catch (e) { }
+  for (const m of t.matchAll(/^\s*("[^"]+"|[^\s,]+)\s*,\s*("[^"]+"|[^\s,]+)\s+(?:interacao|interação|interage)\s+(\S+)/gim)) { const k = m[3], d = INTERACOES_NARRATIVAS[k] || INTERACOES_EXTRA[k] || null, desc = (d && d.desc) || INTERACOES[k] || k;
+    toques.push({ a: m[1].replace(/"/g, ""), b: m[2].replace(/"/g, ""), pt: String(desc).replace(/^[^:]*:\s*/, ""), en: (d && d.en) || null, tipo: k }); }
+  return { grupos, toques }; }
 function piObj(tipo) { const k = String(tipo || ""), pt = piHumano(k), n = piNorm(k); return { pt, en: PI_EN[k] || PI_EN[n] || pt }; }
 
 /* ===== leitura do bloco "prompt" (e variáveis) ===== */
@@ -179,7 +192,7 @@ function piItemTexto(i, lingua, compacto) { const en = lingua === "en", L = en ?
   if (i.tipo === "pessoa") { p.push(i.nome + (desc ? " (" + desc + ")" : "")); if (i.pose) p.push(en ? "pose: " + i.pose.en : "pose: " + i.pose.pt); if (i.expressao) p.push((en ? "expression: " : "expressão: ") + piHumano(i.expressao));
     if (i.embarcado) p.push(en ? "inside the " + i.embarcado.veiculo + (i.embarcado.assento ? " (" + i.embarcado.assento + " seat)" : "") : "dentro de " + i.embarcado.veiculo + (i.embarcado.assento ? " (assento " + i.embarcado.assento + ")" : "")); if (i.montado) p.push(en ? "riding " + i.montado : "montado em " + i.montado); if (i.apoio) p.push(en ? "sitting on " + i.apoio : "sentado em " + i.apoio); if (i.noAr && !i.montado && !i.embarcado && !i.apoio) p.push(en ? "in mid-air" : "no ar");
     p.push(i.face[L] + ", " + (en ? "looking " : "olhando ") + i.olhar[L]); if (!desc && cor) p.push((en ? "main outfit color " : "roupa principal ") + (en ? cor.en : cor.pt) + " (" + cor.hex + ")"); }
-  else { const nm = en ? i.nomeObj.en : i.nomeObj.pt; p.push((i.tipo === "animal" ? (i.monstro ? (en ? "giant monster " : "monstro gigante ") : "") : "") + (desc || nm) + (compacto ? "" : "") + (i.nome && piNorm(i.nome) !== piNorm(i.objeto || "") && piNorm(i.nome) !== piNorm(i.especie || "") ? " “" + i.nome + "”" : "")); if (cor && !desc) p.push((en ? "color " : "cor ") + (en ? cor.en : cor.pt) + " (" + cor.hex + ")");
+  else { const nm = en ? i.nomeObj.en : i.nomeObj.pt; p.push((i.tipo === "animal" ? (i.monstro ? (en ? "giant monster " : "monstro gigante ") : "") : "") + (desc || nm) + (compacto ? "" : "") + (i.nome && !/^(gp|pc)-/.test(i.nome) && piNorm(i.nome) !== piNorm(i.objeto || "") && piNorm(i.nome) !== piNorm(i.especie || "") ? " “" + i.nome + "”" : "")); if (cor && !desc) p.push((en ? "color " : "cor ") + (en ? cor.en : cor.pt) + " (" + cor.hex + ")");
     if (i.tipo !== "animal" && !compacto && i.tamanho) p.push((en ? "about " : "cerca de ") + i.tamanho[0] + " × " + i.tamanho[1] + " × " + i.tamanho[2] + " m"); if (i.face && i.tipo === "animal") p.push(i.face[L]); }
   p.push(i.pos[L] + (i.plano[L] ? ", " + i.plano[L] : "")); if (compacto) p.push("x " + piPc(Math.max(0, cx.u0)) + "–" + piPc(Math.min(1, cx.u1)) + "%, " + (en ? "height " : "altura ") + piPc(Math.min(1, i.alturaQuadro)) + "%"); else p.push(ret + ", " + (en ? "about " : "cerca de ") + piPc(Math.min(1.5, i.alturaQuadro)) + (en ? "% of the frame height" : "% da altura do quadro") + (i.caixa.vis < 0.85 ? (en ? ", partly outside the frame" : ", parte fora do quadro") : ""));
   return p.join(", "); }
@@ -200,6 +213,8 @@ function piMontar(L, cel, lingua) {
   linhas.push(N > 1 ? (en ? "A single " + o.formato + " image laid out as a " + C + "×" + R + " grid sprite sheet (" + C + " columns × " + R + " rows, " + N + " equal panels separated by thin white gutters, no borders, no text, no panel numbers). The SAME characters, outfits, colors and place in every panel." : "Uma única imagem " + o.formato + " organizada como folha em grade " + C + "×" + R + " (" + C + " colunas × " + R + " linhas, " + N + " painéis iguais separados por faixas brancas finas, sem bordas, sem texto, sem números). Os MESMOS personagens, roupas, cores e lugar em todos os painéis.")
     : (en ? "Image, aspect ratio " + o.formato + "." : "Imagem, proporção " + o.formato + "."));
   if (o.situacao) linhas.push((en ? "Situation: " : "Situação: ") + tr(o.situacao) + ".");
+  { const A = piAcoes(L.textoOriginal || L.name); if (A.grupos.length) linhas.push((en ? "Group action: " : "Ação do grupo: ") + A.grupos.map(g => (en ? g.en : g.pt) + " (" + g.n + (en ? " people" : " pessoas") + ")").join("; ") + ".");
+    if (A.toques.length) linhas.push((en ? "Physical contact: " : "Contato físico: ") + A.toques.map(c => c.a + (en ? " and " : " e ") + c.b + " — " + (en ? (c.en || c.pt) : c.pt)).join("; ") + "."); }
   const lugar = o.lugar || (cel[0] && cel[0].local); if (lugar) linhas.push((en ? "Place: " : "Lugar: ") + tr(lugar) + ".");
   const luz = [o.luz || (cel[0] && cel[0].luz), o.hora || (cel[0] && cel[0].hora), o.clima].filter(Boolean); if (luz.length) linhas.push((en ? "Light/time/weather: " : "Luz/hora/clima: ") + tr(luz.join(", ")) + ".");
   if (pessoas.size) linhas.push((en ? "Characters and key elements (keep identical everywhere): " : "Personagens e elementos (iguais em toda a imagem): ") + [...pessoas.values()].map(i => { const cor = i.cor ? piNomeCor(i.cor) : null; return i.nome + " = " + (i.descricao ? tr(i.descricao) : (i.tipo === "pessoa" ? (en ? "person" : "pessoa") : (en ? i.nomeObj.en : i.nomeObj.pt)) + (cor ? ", " + (en ? cor.en : cor.pt) + " (" + cor.hex + ")" : "")) + (i.tipo === "pessoa" && i.alturaM && !i.sentado && !i.noAr ? (en ? ", " + i.alturaM + " m tall" : ", " + i.alturaM + " m de altura") : ""); }).join("; ") + ".");

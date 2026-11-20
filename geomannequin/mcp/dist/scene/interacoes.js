@@ -300,6 +300,7 @@ function itPoseDe(it, def, s, ctx) {
 /* ponto de A onde B se apoia (carregar) */
 function itPontoA(MA, capsA, nome) {
   if (nome === "ombroD" || nome === "ombroE") { const sh = nome === "ombroD" ? MA.oD : MA.oE; return itRaio(capsA, itAddX(sh, [0, 6, 0]), [0, -1, 0]); }
+  if (nome === "nuca") return itRaio(capsA, itAddX(itMulX(itAddX(MA.oE, MA.oD), 0.5), [0, 6, 0]), [0, -1, 0]);
   if (nome === "costas") return naSuperficie(capsA, itMulX(itAddX(MA.oE, MA.oD), 0.5), itMulX(MA.frenteChao, -1), MA.cintura[1] + 1.4, [0, 0, 0]);
   if (nome === "frenteCintura") return naSuperficie(capsA, itMulX(itAddX(MA.oE, MA.oD), 0.5), MA.frenteChao, MA.cintura[1], [0, 0, 0]);
   return null;

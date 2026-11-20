@@ -101,4 +101,8 @@ async function baixarZip() { const r = PR.r; if (!r || !r.ok) return mostrarHud(
 function abrirPrompt(on) { const j = $("prJan"); if (!j) return; const abrir = on === undefined ? j.hidden : on; j.hidden = !abrir; const b = $("ofBtnPrompt"); if (b) b.setAttribute("aria-pressed", String(abrir)); trazerPlanta(abrir); if (abrir) { agendar(0); setTimeout(() => $("prEd").focus(), 50); } else fecharAC(); }
 export function iniciarPrompt() { if (typeof document === "undefined") return; montar();
   document.addEventListener("keydown", e => { const t = e.target; if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return; if (e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "g" || e.key === "G") { abrirPrompt(); e.preventDefault(); } if (e.key === "Escape" && !$("prJan").hidden) abrirPrompt(false); }); }
-export { abrirPrompt, PR as PR_ESTADO };
+/* do Catálogo: põe a linha num quadro do texto (cria elenco + quadro se ainda não houver) */
+function inserirNoPrompt(linha, item) { abrirPrompt(true); const ed = $("prEd"); let t = ed.value.replace(/\s*$/, "\n");
+  if (/^quadro\b/m.test(t)) t += "  " + linha + "\n"; else { const ns = (/com (.+)$/.exec(linha) || [0, ""])[1].split(/\s*,\s*/).filter(Boolean); t += (ns.length || !/^grupo-pose/.test(linha) ? "elenco\n" + (ns.length ? ns : ["Kai", "Mira"].slice(0, item && item.pessoas >= 2 ? 2 : 1)).map(n => "  " + n).join("\n") + "\n" : "") + "quadro 1 " + (item && item.pessoas > 2 ? "conjunto" : "inteiro") + "\n  " + linha.replace(/^0s /, "") + "\n"; }
+  ed.value = t; guardar(t); agendar(0); mostrarHud("No Prompt: " + linha); }
+export { abrirPrompt, inserirNoPrompt, PR as PR_ESTADO };
