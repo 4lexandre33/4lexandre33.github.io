@@ -10,6 +10,7 @@
 import { localPronto } from "./locais-prontos.js";
 import { PD_AC_EXTRA, PD_AC_ANTES, PD_MINI_EXTRA, pdNorm } from "./pose-dsl.js";
 import { GRUPOS_POSES } from "./grupos-poses.js";
+import { SITUACOES, ST_FAMILIAS } from "./situacoes.js";
 import { POSES_NARRATIVAS_INFO } from "./poses-narrativas.js";
 import { cxMiniaturaGrupo } from "./catalogo-poses.js";
 import { EXPRESSOES } from "./poses.js";
@@ -67,6 +68,7 @@ function acTexto(m) {
     case "aanim": return "elenco\n  Trovao animal cavalo\nquadro 1 alvo Trovao\n  Trovao em (0,0) gira 90\n  Trovao anima " + m.v + "\n";
     case "preset": { const d = pcAchar(m.v); return d ? pcDemoTexto(d) : ""; }
     case "ramo": { const d = pcAchar(m.exemplo); return d ? pcDemoTexto(d) : ""; }
+    case "situacao": return SITUACOES[m.v] ? "quadro 1\n  situacao " + m.v + "\n" : "";
     case "grupo": return GRUPOS_POSES[m.v] ? "quadro 1 conjunto lado " + (GRUPOS_POSES[m.v].n === 2 ? 70 : 30) + "\n  grupo-pose " + m.v + "\n" : "";
     case "pose": return AC_EL1 + "quadro 1 inteiro alvo Kai lado 3/4\n  Kai em (0,0) pose " + m.v + "\n";
     case "narrativa": return NR.has(m.v) ? nrDemoTexto(m.v) : "";
@@ -89,7 +91,7 @@ function acTodas() { const out = {}, add = (t, ks) => { out[t] = [...new Set(ks)
   add("enq", Object.keys(AC_ENQ)); add("ang", Object.keys(AC_ANG)); add("lado", Object.keys(AC_LADO)); add("lente", Object.keys(AC_LENTE)); add("tom", Object.keys(TONS_CENA));
   add("expr", Object.keys(EXPRESSOES)); add("gesto", Object.keys(GESTOS_CONVERSA)); add("atitude", Object.keys(ATITUDES)); add("interacao", Object.keys(INTERACOES)); add("efeito", Object.keys(CATALOGO));
   add("objeto", Object.keys(TIPOS_OBJETO)); add("corpo", Object.keys(AC_CORPO)); add("especie", Object.keys(QD_ESPECIES)); add("apose", Object.keys(AM_POSES));
-  add("aanim", listaAnimacoesAnimal().map(a => a.nome || a).concat(Object.keys(AM_MARCHAS))); add("preset", PRECONFIG.map(d => d.id)); add("narrativa", [...NR.keys()]); add("golpe", listaGolpes().map(g => g.nome)); add("grupo", Object.keys(GRUPOS_POSES)); add("pose", Object.keys(POSES_NARRATIVAS_INFO)); return out; }
+  add("aanim", listaAnimacoesAnimal().map(a => a.nome || a).concat(Object.keys(AM_MARCHAS))); add("preset", PRECONFIG.map(d => d.id)); add("narrativa", [...NR.keys()]); add("golpe", listaGolpes().map(g => g.nome)); add("grupo", Object.keys(GRUPOS_POSES)); add("situacao", Object.keys(SITUACOES)); add("pose", Object.keys(POSES_NARRATIVAS_INFO)); return out; }
 
 /* ===== diagramas (sem render) ===== */
 const AC_V = (c, w = 120, h = 68) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + " " + h + '" width="' + w + '" height="' + h + '"><rect width="' + w + '" height="' + h + '" rx="6" fill="#f4f1ea"/>' + c + "</svg>";
@@ -118,7 +120,7 @@ function acDiagrama(m) { const v = m.v;
   if (m.tipo === "balao") { const g = { fala: '<ellipse cx="60" cy="28" rx="42" ry="18" fill="#fff" ' + AC_S + '/><path d="M48 44L40 60L60 45" fill="#fff" ' + AC_S + "/>", pensa: '<ellipse cx="60" cy="26" rx="42" ry="17" fill="#fff" ' + AC_S + ' stroke-dasharray="1 0"/><circle cx="40" cy="50" r="5" fill="#fff" ' + AC_S + '/><circle cx="32" cy="60" r="3" fill="#fff" ' + AC_S + "/>",
       grita: '<path d="M20 30L32 22L30 10L48 18L60 6L70 18L90 10L88 24L104 30L90 38L96 52L76 44L62 58L52 44L32 52L36 38z" fill="#fff" ' + AC_S + "/>", sussurra: '<ellipse cx="60" cy="28" rx="42" ry="18" fill="#fff" ' + AC_S + ' stroke-dasharray="4 3"/>', radio: '<path d="M20 28L28 14L40 20L52 8L64 18L78 8L90 20L102 16L98 30L104 42L88 44L76 52L62 44L46 52L36 42L22 42z" fill="#fff" ' + AC_S + "/>", narra: '<rect x="14" y="12" width="92" height="36" fill="#fff8d8" ' + AC_S + "/>" }[v]; return AC_V(g || ""); }
   return ""; }
-PD_MINI_EXTRA.fn = (m) => { const sp = acSprite(m); if (sp) return sp; if (m.tipo === "grupo" && GRUPOS_POSES[m.v]) return cxMiniaturaGrupo(GRUPOS_POSES[m.v], { tam: 120 }); if (/^(cmov|curva|trans|ritmo|formato|borda|tam|balao|grade|cor)$/.test(m.tipo)) return acDiagrama(m); if (typeof document !== "undefined" && !AC_ATLAS.indice && AC_ATLAS.pedido) return ""; const t = acTexto(m); return t ? acQuadro(t) : ""; };
+PD_MINI_EXTRA.fn = (m) => { const sp = acSprite(m); if (sp) return sp; if (m.tipo === "grupo" && GRUPOS_POSES[m.v]) return cxMiniaturaGrupo(GRUPOS_POSES[m.v], { tam: 120 }); if (m.tipo === "situacao" && SITUACOES[m.v]) return cxMiniaturaGrupo(SITUACOES[m.v], { tam: 120 }); if (/^(cmov|curva|trans|ritmo|formato|borda|tam|balao|grade|cor)$/.test(m.tipo)) return acDiagrama(m); if (typeof document !== "undefined" && !AC_ATLAS.indice && AC_ATLAS.pedido) return ""; const t = acTexto(m); return t ? acQuadro(t) : ""; };
 
 /* ===== as listas por palavra-chave ===== */
 const acL = (obj, tipo, desc) => ({ pv, item }) => Object.keys(obj).map(k => item(pv + k + " ", tipo, typeof desc === "function" ? desc(k) : (obj[k] || desc || ""), { tipo, v: k }));
@@ -137,6 +139,11 @@ Object.assign(PD_AC_EXTRA, {
 });
 /* "pose" de animal e "anima" de animal: só quando a linha começa com um animal do elenco (o resto continua com as poses de gente) */
 const acEhAnimal = (linha, info, antes) => { const n = (/^\s*(\S+)/.exec(linha) || [])[1]; if (!n) return false; if ((info.animais || []).includes(n)) return true; return new RegExp("^\\s+" + n.replace(/[^\wÀ-ÿ-]/g, "") + "\\s+animal\\b", "m").test(antes); };
+/* "situacao " lista as famílias ("situacao " → revelacao., romance.…) e depois as situações da família, com miniatura */
+PD_AC_ANTES.unshift((antes) => { const linha = antes.split("\n").pop(), k = /^\s*situa(?:c|ç)(?:a|ã)o\s+([\w.-]*)$/i.exec(linha); if (!k) return null; const pre = pdNorm(k[1]);
+  let itens; if (!pre.includes(".") && pre.length < 3) itens = Object.values(ST_FAMILIAS).filter(f => !pre || pdNorm(f.id).startsWith(pre)).map(f => ({ v: f.id + ".", r: f.id + ".", tipo: "situacao", d: f.n + " situações · " + f.nome }));
+  else itens = Object.values(SITUACOES).filter(d => pdNorm(d.id).includes(pre) || pdNorm(d.nome).includes(pre) || d.apelidos.some(a => pdNorm(a).includes(pre))).slice(0, 80).map(d => ({ v: d.id + " com ", r: d.id, tipo: "situacao", d: d.n + (d.n > 1 ? " pessoas" : " pessoa") + " · " + d.nome, mini: { tipo: "situacao", v: d.id } }));
+  return itens.length ? { itens, de: antes.length - k[1].length, ponto: false } : null; });
 /* "grupo-pose " lista as poses de grupo (com miniatura: bonecos + planta) */
 PD_AC_ANTES.unshift((antes) => { const linha = antes.split("\n").pop(), k = /^\s*grupo-pose\s+([\w.-]*)$/i.exec(linha); if (!k) return null; const pre = pdNorm(k[1]);
   const itens = Object.values(GRUPOS_POSES).filter(d => !pre || pdNorm(d.id).includes(pre) || pdNorm(d.nome).includes(pre)).slice(0, 80).map(d => ({ v: d.id + " com ", r: d.id, tipo: "grupo", d: d.n + " pessoas · " + d.nome, mini: { tipo: "grupo", v: d.id } }));

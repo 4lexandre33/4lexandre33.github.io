@@ -23,6 +23,7 @@ import { pdMiniatura, pdValoresPose, pdParams } from "./pose-dsl.js";
 import { listaPosesExtras, POSES_EXTRA_INFO } from "./poses-extra.js";
 import { gpAchar } from "./grupos-poses.js";
 import { ltExpandirName } from "./lote.js";
+import { stAchar } from "./situacoes.js";
 import { INTERACOES_NARRATIVAS } from "./interacoes-narrativas.js";
 import { INTERACOES_EXTRA } from "./interacoes-extra.js";
 import { INTERACOES } from "./interacoes.js";
@@ -72,12 +73,13 @@ function piPose(nome) { if (!nome) return null; const info = POSES_EXTRA_INFO[no
 function piAcoesPorQuadro(texto, n) { const ls = String(texto || "").split("\n"), pre = [], blocos = []; let cur = null;
   for (const l of ls) { if (/^quadro\b/i.test(l)) { cur = [l]; blocos.push(cur); } else if (cur && (/^\s/.test(l) || !l.trim())) cur.push(l); else { cur = null; pre.push(l); } }
   const out = []; for (let k = 0; k < n; k++) { const b = blocos[Math.min(k, blocos.length - 1)]; out.push(b ? piAcoes(pre.join("\n") + "\n" + b.join("\n")) : null); } return out; }
-function piAcoes(texto) { const grupos = [], toques = []; let t = String(texto || "");
+function piAcoes(texto) { const grupos = [], toques = [], situacoes = []; let t = String(texto || "");
+  for (const m of t.matchAll(/^\s*situa(?:c|ç)(?:a|ã)o\s+(\S+)/gim)) { const d = stAchar(m[1]); if (d && !situacoes.some(g => g.id === d.id)) situacoes.push({ id: d.id, pt: d.nome, en: d.en, n: d.n, familia: d.familiaNome, evento: d.ev, emocao: d.emo }); }
   for (const m of t.matchAll(/^\s*grupo-pose\s+(\S+)/gim)) { const d = gpAchar(m[1]); if (d && !grupos.some(g => g.id === d.id)) grupos.push({ id: d.id, pt: d.nome, en: d.en, n: d.n }); }
   try { t = ltExpandirName(t).texto; } catch (e) { }
   for (const m of t.matchAll(/^\s*("[^"]+"|[^\s,]+)\s*,\s*("[^"]+"|[^\s,]+)\s+(?:interacao|interação|interage)\s+(\S+)/gim)) { const k = m[3], d = INTERACOES_NARRATIVAS[k] || INTERACOES_EXTRA[k] || null, desc = (d && d.desc) || INTERACOES[k] || k;
     toques.push({ a: m[1].replace(/"/g, ""), b: m[2].replace(/"/g, ""), pt: String(desc).replace(/^[^:]*:\s*/, ""), en: (d && d.en) || null, tipo: k }); }
-  return { grupos, toques }; }
+  return { grupos, toques, situacoes }; }
 function piObj(tipo) { const k = String(tipo || ""), pt = piHumano(k), n = piNorm(k); return { pt, en: PI_EN[k] || PI_EN[n] || pt }; }
 
 /* ===== leitura do bloco "prompt" (e variáveis) ===== */
@@ -217,7 +219,7 @@ function piMontar(L, cel, lingua) {
   linhas.push(N > 1 ? (en ? "A single " + o.formato + " image laid out as a " + C + "×" + R + " grid sprite sheet (" + C + " columns × " + R + " rows, " + N + " equal panels separated by thin white gutters, no borders, no text, no panel numbers). The SAME characters, outfits, colors and place in every panel." : "Uma única imagem " + o.formato + " organizada como folha em grade " + C + "×" + R + " (" + C + " colunas × " + R + " linhas, " + N + " painéis iguais separados por faixas brancas finas, sem bordas, sem texto, sem números). Os MESMOS personagens, roupas, cores e lugar em todos os painéis.")
     : (en ? "Image, aspect ratio " + o.formato + "." : "Imagem, proporção " + o.formato + "."));
   if (o.situacao) linhas.push((en ? "Situation: " : "Situação: ") + tr(o.situacao) + ".");
-  const acoes = piAcoesPorQuadro(L.name, cel.length), acaoTxt = A => [A.grupos.length ? (en ? "Group action: " : "Ação do grupo: ") + A.grupos.map(g => (en ? g.en : g.pt) + " (" + g.n + (en ? " people" : " pessoas") + ")").join("; ") + "." : "", A.toques.length ? (en ? "Physical contact: " : "Contato físico: ") + A.toques.map(c => c.a + (en ? " and " : " e ") + c.b + " — " + (en ? (c.en || c.pt) : c.pt)).join("; ") + "." : ""].filter(Boolean).join(" ");
+  const acoes = piAcoesPorQuadro(L.name, cel.length), acaoTxt = A => [(A.situacoes || []).length ? (en ? "Narrative situation: " : "Situação narrativa: ") + A.situacoes.map(g => (en ? g.en : g.pt) + " (" + g.n + (en ? (g.n > 1 ? " people" : " person") : (g.n > 1 ? " pessoas" : " pessoa")) + ")").join("; ") + "." : "", A.grupos.length ? (en ? "Group action: " : "Ação do grupo: ") + A.grupos.map(g => (en ? g.en : g.pt) + " (" + g.n + (en ? " people" : " pessoas") + ")").join("; ") + "." : "", A.toques.length ? (en ? "Physical contact: " : "Contato físico: ") + A.toques.map(c => c.a + (en ? " and " : " e ") + c.b + " — " + (en ? (c.en || c.pt) : c.pt)).join("; ") + "." : ""].filter(Boolean).join(" ");
   if (N <= 1 && acoes[0]) { const t = acaoTxt(acoes[0]); if (t) linhas.push(t); }
   const lugar = o.lugar || (cel[0] && cel[0].local); if (lugar) linhas.push((en ? "Place: " : "Lugar: ") + tr(lugar) + ".");
   const luz = [o.luz || (cel[0] && cel[0].luz), o.hora || (cel[0] && cel[0].hora), o.clima].filter(Boolean); if (luz.length) linhas.push((en ? "Light/time/weather: " : "Luz/hora/clima: ") + tr(luz.join(", ")) + ".");

@@ -211,7 +211,7 @@ gpRegistrarInteracoes(GP_INTER);
 
 /* ===================================================== expandir (texto) ===================================================== */
 const GP_SENT = new Map();
-function gpSentado(pose) { if (GP_SENT.has(pose)) return GP_SENT.get(pose); let r = false; try { if (POSES_CORPO[pose]) { const v = Object.assign({}, POSE0); POSES_CORPO[pose](v, 1); r = ((v.hipFlexL || 0) + (v.hipFlexR || 0)) / 2 > 65 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 > 55 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 < 125 && Math.abs(v.bodyPitch || 0) < 40 && (v.bodyLift || 0) < 2; } } catch (e) { r = false; } GP_SENT.set(pose, r); return r; }
+function gpSentado(pose) { if (GP_SENT.has(pose)) return GP_SENT.get(pose); let r = false; try { if (POSES_CORPO[pose]) { const v = Object.assign({}, POSE0); POSES_CORPO[pose](v, 1); r = !/agach|cocor|abrigad|ajoelh/i.test(pose) && Math.min(v.hipFlexL || 0, v.hipFlexR || 0) > 45 && ((v.hipFlexL || 0) + (v.hipFlexR || 0)) / 2 > 65 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 > 55 && ((v.kneeFlexL || 0) + (v.kneeFlexR || 0)) / 2 < 125 && Math.abs(v.bodyPitch || 0) < 40 && Math.abs(v.bodyRoll || 0) < 40 && (v.bodyLift || 0) < 2; } } catch (e) { r = false; } GP_SENT.set(pose, r); return r; }
 function gpAchar(id) { if (!id) return null; const s = String(id).replace(/"/g, "").replace(/^(grupo|inter|pose):(?=\w+\.)/i, ""); if (GRUPOS_POSES[s]) return GRUPOS_POSES[s]; const k = Object.keys(GRUPOS_POSES).find(x => x.toLowerCase() === s.toLowerCase() || x.toLowerCase().endsWith("." + s.toLowerCase())); return k ? GRUPOS_POSES[k] : null; }
 function gpParecidos(id, n = 4) { const q = String(id).toLowerCase().replace(/[^a-z0-9]/g, ""); return Object.keys(GRUPOS_POSES).map(k => [k, k.toLowerCase().replace(/[^a-z0-9]/g, "")]).filter(([k, t]) => t.includes(q.slice(0, 6)) || q.includes(t.split(".").pop().slice(0, 6))).slice(0, n).map(x => x[0]); }
 /* devolve { linhas, novos (nomes de figurantes para o elenco) } */
@@ -241,4 +241,4 @@ function gpLerLinha(txt) { const m = /^\s*grupo-pose\s+(\S+)\s*(.*)$/i.exec(Stri
   if (nomes.length > def.n) throw new Error("grupo-pose " + def.id + " tem " + def.n + " papéis e você deu " + nomes.length + " nomes.");
   return { def, nomes, o }; }
 function listaGruposPoses() { return Object.values(GRUPOS_POSES).map(d => ({ id: d.id, nome: d.nome, en: d.en, tag: d.tag, pessoas: d.n, contato: !!(d.inter && d.inter.length), objetos: (d.objetos || []).map(o => o[0]), poses: d.papeis.map(p => p.pose) })); }
-export { GRUPOS_POSES, gp, gpT, gpAchar, gpLinhas, gpLerLinha, gpParecidos, gpRegistrarInteracoes, listaGruposPoses, GP_INTER };
+export { GRUPOS_POSES, gp, gpT, gpSentado, gpAchar, gpLinhas, gpLerLinha, gpParecidos, gpRegistrarInteracoes, listaGruposPoses, GP_INTER };

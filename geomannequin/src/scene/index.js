@@ -77,3 +77,11 @@ export * from "./veiculos.js";
 export * from "./locais-prontos.js";
 export * from "./historia-analise.js";
 export * from "./barra-comando.js";
+export * from "./situacoes.js";
+import "./situacoes-dados-1.js";
+import "./situacoes-dados-2.js";
+import "./situacoes-dados-3.js";
+import "./situacoes-dados-4.js";
+import "./situacoes-dados-5.js";
+import "./situacoes-dados-6.js";
+

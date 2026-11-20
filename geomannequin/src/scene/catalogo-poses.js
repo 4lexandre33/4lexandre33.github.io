@@ -13,6 +13,7 @@ import { GRUPOS_POSES } from "./grupos-poses.js";
 import { pdValoresPose, pdParams, pdMiniatura } from "./pose-dsl.js";
 import { bibliotecaAnimacoes } from "./animacao.js";
 import { PRECONFIG } from "./preconfig.js";
+import { SITUACOES, ST_FAMILIAS } from "./situacoes.js";
 
 const cxNorm = t => String(t == null ? "" : t).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 /* texto de busca: separa camelCase e pontuação em palavras */
@@ -24,7 +25,8 @@ const CX_VAL = new Map();
 function cxValores(nome) { if (CX_VAL.has(nome)) return CX_VAL.get(nome); let v = null; try { if (POSES_CORPO[nome]) { v = Object.assign({}, POSE0); POSES_CORPO[nome](v, 1); } else v = pdValoresPose(nome, pdParams({}), null, 0).valores; } catch (e) { v = null; } CX_VAL.set(nome, v); return v; }
 /* ---------- vocabulário dos eixos ---------- */
 const CX_EIXOS = {
-  tipo: { pose: "pose (1 pessoa)", interacao: "interação a dois", grupo: "pose de grupo", animacao: "animação", preset: "cena + câmera pronta" },
+  tipo: { pose: "pose (1 pessoa)", interacao: "interação a dois", grupo: "pose de grupo", situacao: "situação narrativa", animacao: "animação", preset: "cena + câmera pronta" },
+  evento: {}, relacao: {},
   nivel: { "em-pe": "de pé", sentado: "sentado / agachado", ajoelhado: "ajoelhado", deitado: "deitado / no chão", "no-ar": "no ar", invertido: "de cabeça para baixo" },
   intensidade: { 1: "calma", 2: "média", 3: "explosiva" },
   emocao: { alegria: "alegria", tristeza: "tristeza", raiva: "raiva", medo: "medo", amor: "amor", calma: "calma", foco: "foco", surpresa: "surpresa", humor: "humor", neutra: "neutra", dor: "dor / cansaço", maldade: "maldade" },
@@ -57,7 +59,7 @@ function cxEmocao(expr, texto) { const e = expr || ""; for (const [k, re] of Obj
 const cxTodos = (lista, txt) => { const out = new Set(); for (const [re, k] of lista) if (re.test(txt)) out.add(k); return [...out]; };
 /* ---------- índice (montado na primeira busca) ---------- */
 let CX_IDX = null;
-const i_tipoPalavra = t => ({ pose: "pose solo", interacao: "interacao dupla contato", grupo: "grupo", animacao: "animacao movimento", preset: "camera preset" })[t] || "";
+const i_tipoPalavra = t => ({ pose: "pose solo", interacao: "interacao dupla contato", grupo: "grupo", situacao: "situacao narrativa cena historia", animacao: "animacao movimento", preset: "camera preset" })[t] || "";
 function cxItemBase(o) { const txt = [o.nome, (o.apelidos || []).join(" "), o.en || "", o.tag || "", o.desc || ""].join(" "), tagTxt = (o.tag || "") + " " + txt;
   const generos = cxTodos(CX_GEN, tagTxt), funcoes = cxTodos(CX_FUNC, tagTxt), lugares = cxTodos(CX_LUGAR, tagTxt);
   return Object.assign(o, { arvore: (o.tag || "Outras").split("/").map(s => s.trim()).filter(Boolean), generos: generos.length ? generos : ["cotidiano"], funcoes, lugares, busca: cxPalavras(txt + " " + generos.join(" ") + " " + funcoes.join(" ") + " " + lugares.join(" ")) + " " + i_tipoPalavra(o.tipo) + cxPalavras((CX_EIXOS.nivel[o.nivel] || "") + " " + (CX_EIXOS.emocao[o.emocao] || "") + " " + (CX_EIXOS.intensidade[o.intensidade] || "") + " " + generos.map(g => CX_EIXOS.genero[g]).join(" ") + " " + lugares.map(g => CX_EIXOS.lugar[g]).join(" ")) }); }
@@ -70,6 +72,14 @@ function cxMontar() { const itens = [], B = pdParams({});
   for (const nome of Object.keys(INTERACOES)) if (!PARES[nome]) itens.push(cxItemBase({ id: "inter:" + nome, tipo: "interacao", ref: nome, nome, apelidos: [INTERACOES[nome]], en: "", tag: "Social/Interação", desc: INTERACOES[nome], pessoas: 2, nivel: "em-pe", intensidade: 2, emocao: cxEmocao("", INTERACOES[nome]), contato: true, objeto: false }));
   for (const d of Object.values(GRUPOS_POSES)) { const ps = d.papeis.map(p => p.pose), infos = ps.map(p => POSES_EXTRA_INFO[p] || {}); const v = cxValores(ps[0]);
     itens.push(cxItemBase({ id: "grupo:" + d.id, tipo: "grupo", ref: d.id, nome: d.nome, apelidos: d.apelidos, en: d.en, tag: d.tag, desc: d.nome, pessoas: d.n, nivel: d.sentados ? "sentado" : cxNivel(v), intensidade: Math.round(infos.reduce((s, i, k) => s + cxIntensidade((i.apelidos || []).join(" ") + " " + d.tag + " " + ps[k], i.expr, null), 0) / Math.max(1, infos.length)), emocao: cxEmocao(infos.map(i => i.expr).join(" "), d.nome + " " + d.tag), contato: !!(d.inter && d.inter.length) || !!d.toque, objeto: !!(d.objetos && d.objetos.length) || infos.some(i => /arma|espada|pistola|rifle/i.test((i.en || ""))), poses: ps, novo: true })); }
+  /* situações narrativas: família → subfamília; evento e relação viram eixos próprios */
+  const cxK = t => cxNorm(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  for (const d of Object.values(SITUACOES)) { const ev = cxK(d.ev), rel = cxK(d.rel); CX_EIXOS.evento[ev] = d.ev; CX_EIXOS.relacao[rel] = d.rel; const v = cxValores(d.papeis[0].pose);
+    const i = cxItemBase({ id: "sit:" + d.id, tipo: "situacao", ref: d.id, nome: d.nome, apelidos: d.apelidos, en: d.en, tag: d.familiaNome + (d.sub ? "/" + d.sub : ""), desc: d.nome + " " + d.ev + " " + d.rel + " " + (d.fala || ""), pessoas: d.n,
+      nivel: d.sentados ? "sentado" : cxNivel(v), intensidade: d.int, emocao: CX_EIXOS.emocao[d.emo] ? d.emo : cxEmocao(d.papeis.map(p => p.expr || "").join(" "), d.nome), contato: d.inter.length > 0, objeto: d.objetos.length > 0, poses: d.papeis.map(p => p.pose), evento: ev, relacao: rel, familia: d.familia, novo: true });
+    if (d.gen && CX_EIXOS.genero[d.gen] && !i.generos.includes(d.gen)) i.generos = [d.gen].concat(i.generos.filter(g => g !== "cotidiano" || d.gen === "cotidiano"));
+    if (d.lugar && CX_EIXOS.lugar[d.lugar] && !i.lugares.includes(d.lugar)) i.lugares.push(d.lugar);
+    i.arvore = ["Situações", d.familiaNome].concat(d.sub ? [d.sub] : []); i.busca += cxPalavras(d.ev + " " + d.rel + " " + d.familiaNome + " " + (d.sub || "")) + " "; itens.push(i); }
   try { for (const a of bibliotecaAnimacoes().listar()) { const nm = a.nome || a, t = (a.tags || [])[0] || "Animação"; itens.push(cxItemBase({ id: "anim:" + nm, tipo: "animacao", ref: nm, nome: nm, apelidos: [], en: "", tag: t.replace(/^Locomocao/, "Movimento"), desc: (a.tags || []).join(" "), pessoas: 1, nivel: /deit|rol|rast|engatinh/i.test(nm + t) ? "deitado" : /pul|salt/i.test(nm + t) ? "no-ar" : "em-pe", intensidade: cxIntensidade(nm + " " + t, "", null), emocao: cxEmocao("", nm + " " + t), contato: false, objeto: false, duracao: a.duracao })); } } catch (e) { }
   for (const d of Object.values(PRECONFIG)) itens.push(cxItemBase({ id: "preset:" + d.id, tipo: "preset", ref: d.id, nome: d.nome, apelidos: [d.tecnico || ""], en: d.tecnico || "", tag: (d.grupo || "Pré-configuração").replace(/\s*\(.*?\)/g, ""), desc: d.desc || "", pessoas: (d.papeis || []).length, nivel: /sentad/i.test(d.nome + d.grupo) ? "sentado" : "em-pe", intensidade: cxIntensidade(d.nome + " " + d.grupo, "", null), emocao: cxEmocao("", d.nome + " " + d.grupo + " " + (d.desc || "")), contato: /abraç|abrac|beij|mão no|mao no|aperto/i.test(d.nome), objeto: !!(d.objetos && d.objetos.length) }));
   const porId = new Map(itens.map(i => [i.id, i])); CX_IDX = { itens, porId }; return CX_IDX; }
@@ -87,23 +97,24 @@ function cxPassa(i, f) { if (f.tipo && (Array.isArray(f.tipo) ? !f.tipo.includes
   if (f.genero && !i.generos.includes(f.genero)) return false; if (f.funcao && !i.funcoes.includes(f.funcao)) return false; if (f.lugar && !i.lugares.includes(f.lugar)) return false;
   if (f.contato !== undefined && f.contato !== null && f.contato !== "" && !!f.contato !== i.contato) return false; if (f.objeto !== undefined && f.objeto !== null && f.objeto !== "" && !!f.objeto !== i.objeto) return false;
   if (f.categoria) { const c = cxNorm(f.categoria).split("/"); const a = i.arvore.map(cxNorm); for (let k = 0; k < c.length; k++) if (a[k] !== c[k]) return false; }
+  if (f.evento && i.evento !== f.evento) return false; if (f.relacao && i.relacao !== f.relacao) return false; if (f.familia && i.familia !== f.familia) return false;
   if (f.novos && !i.novo) return false; return true; }
 function cxBuscar(q = "", filtros = {}, o = {}) { const { itens } = cxIndice(), f = Object.assign({}, filtros), t = cxFiltrosDoTexto(q, f), toks = t.split(/[^a-z0-9-]+/).filter(Boolean);
   const inc = toks.filter(x => !x.startsWith("-")).map(x => " " + cxRaiz(CX_SIN[x] || x)), exc = toks.filter(x => x.startsWith("-") && x.length > 1).map(x => " " + cxRaiz(x.slice(1)));
   const res = []; for (const i of itens) { if (!cxPassa(i, f)) continue; if (exc.some(x => i.busca.includes(x))) continue; let s = 0, ok = true;
     for (const x of inc) { if (!i.busca.includes(x)) { ok = false; break; } s += cxPalavras(i.nome).includes(x) ? 6 : cxPalavras(i.tag).includes(x) ? 4 : (i.apelidos || []).some(a => cxPalavras(a).includes(x)) ? 3 : 1; }
-    if (!ok) continue; s += i.tipo === "grupo" ? 0.3 : 0; s += i.novo ? 0.2 : 0; res.push([s, i]); }
+    if (!ok) continue; s += i.tipo === "grupo" ? 0.3 : i.tipo === "situacao" ? 0.35 : 0; s += i.novo ? 0.2 : 0; res.push([s, i]); }
   res.sort((a, b) => b[0] - a[0] || a[1].nome.localeCompare(b[1].nome)); const lista = res.map(r => r[1]), de = o.de || 0, lim = o.limite || 60;
   return { total: lista.length, itens: lista.slice(de, de + lim), facetas: cxFacetas(lista), filtros: f, texto: t }; }
-function cxFacetas(lista) { const F = { tipo: {}, pessoas: {}, nivel: {}, intensidade: {}, emocao: {}, genero: {}, funcao: {}, lugar: {}, categoria: {}, contato: { sim: 0 }, objeto: { sim: 0 } }, inc = (o, k) => { o[k] = (o[k] || 0) + 1; };
-  for (const i of lista) { inc(F.tipo, i.tipo); inc(F.pessoas, i.pessoas >= 12 ? 12 : i.pessoas >= 6 ? 6 : i.pessoas); inc(F.nivel, i.nivel); inc(F.intensidade, i.intensidade); inc(F.emocao, i.emocao); i.generos.forEach(g => inc(F.genero, g)); i.funcoes.forEach(g => inc(F.funcao, g)); i.lugares.forEach(g => inc(F.lugar, g)); inc(F.categoria, i.arvore[0]); if (i.contato) F.contato.sim++; if (i.objeto) F.objeto.sim++; }
+function cxFacetas(lista) { const F = { tipo: {}, pessoas: {}, nivel: {}, intensidade: {}, emocao: {}, genero: {}, funcao: {}, lugar: {}, categoria: {}, evento: {}, relacao: {}, contato: { sim: 0 }, objeto: { sim: 0 } }, inc = (o, k) => { o[k] = (o[k] || 0) + 1; };
+  for (const i of lista) { inc(F.tipo, i.tipo); inc(F.pessoas, i.pessoas >= 12 ? 12 : i.pessoas >= 6 ? 6 : i.pessoas); inc(F.nivel, i.nivel); inc(F.intensidade, i.intensidade); inc(F.emocao, i.emocao); i.generos.forEach(g => inc(F.genero, g)); i.funcoes.forEach(g => inc(F.funcao, g)); i.lugares.forEach(g => inc(F.lugar, g)); inc(F.categoria, i.arvore[0]); if (i.evento) inc(F.evento, i.evento); if (i.relacao) inc(F.relacao, i.relacao); if (i.contato) F.contato.sim++; if (i.objeto) F.objeto.sim++; }
   return F; }
 function cxArvore(filtros = {}) { const { itens } = cxIndice(), raiz = {}; for (const i of itens) { if (!cxPassa(i, filtros)) continue; let n = raiz; for (const p of i.arvore.slice(0, 3)) { n[p] = n[p] || { _n: 0 }; n[p]._n++; n = n[p]; } } return raiz; }
-function cxItem(id) { const { porId } = cxIndice(); if (porId.has(id)) return porId.get(id); for (const t of ["pose:", "grupo:", "inter:", "anim:", "preset:"]) if (porId.has(t + id)) return porId.get(t + id); return null; }
+function cxItem(id) { const { porId } = cxIndice(); if (porId.has(id)) return porId.get(id); for (const t of ["pose:", "grupo:", "sit:", "inter:", "anim:", "preset:"]) if (porId.has(t + id)) return porId.get(t + id); return null; }
 /* a linha de texto que põe o item na cena */
 function cxLinha(item, nomes0 = []) { const q = x => /^[A-Za-zÀ-ÿ][\wÀ-ÿ]*$/.test(x) ? x : '"' + String(x).replace(/"/g, "") + '"', nomes = nomes0.map(q), n = nomes.length ? nomes : ["Kai", "Mira", "Leo", "Ana", "Rui"]; switch (item.tipo) {
   case "pose": return n[0] + " pose " + item.ref; case "interacao": return n[0] + ", " + (n[1] || "Mira") + " interacao " + item.ref;
-  case "grupo": return "grupo-pose " + item.ref + (nomes.length ? " com " + nomes.slice(0, item.pessoas).join(", ") : ""); case "animacao": return "0s " + n[0] + " anima " + item.ref;
+  case "grupo": return "grupo-pose " + item.ref + (nomes.length ? " com " + nomes.slice(0, item.pessoas).join(", ") : ""); case "situacao": return "situacao " + item.ref + (nomes.length ? " com " + nomes.slice(0, item.pessoas).join(", ") : ""); case "animacao": return "0s " + n[0] + " anima " + item.ref;
   case "preset": return "cena preset " + item.ref + " com " + n.slice(0, Math.max(1, item.pessoas)).join(", "); } return ""; }
 /* ---------- miniatura de grupo (bonecos de linha na frente, mais longe = mais alto e menor; planta no canto) ---------- */
 function cxMiniaturaGrupo(def, o = {}) { const W = o.tam || 160, H = Math.round(W * 0.75), ps = def.papeis || [], B = pdParams({});
@@ -116,6 +127,7 @@ function cxMiniaturaGrupo(def, o = {}) { const W = o.tam || 160, H = Math.round(
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" class="pd-mini cx-mini" role="img" aria-label="' + String(def.nome || def.id).replace(/"/g, "'") + '" color="currentColor">' + s + pl + "</svg>"; }
 function cxMiniatura(item, o = {}) { try { if (item.tipo === "pose") return pdMiniatura(pdValoresPose(item.ref, pdParams({}), null, 0).valores, { tam: o.tam || 72 });
     if (item.tipo === "grupo") return cxMiniaturaGrupo(GRUPOS_POSES[item.ref], o);
+    if (item.tipo === "situacao") return cxMiniaturaGrupo(SITUACOES[item.ref], o);
     if (item.tipo === "interacao") { const d = PARES[item.ref]; if (d) return cxMiniaturaGrupo({ nome: item.nome, papeis: [{ pose: (d.A && d.A.pose) || "empe", x: 0, z: 0, g: 0 }, { pose: (d.B && d.B.pose) || "empe", x: -(d.l || 0) * 0.114, z: (d.f || 3) * 0.114, g: d.giro || 180 }] }, o); }
     if (item.tipo === "preset") { const d = PRECONFIG[item.ref]; if (d && d.arranjo) return cxMiniaturaGrupo({ nome: d.nome, papeis: d.papeis.map(p => { const a = d.arranjo[p] || {}; return { pose: a.pose || "empe", x: a.x || 0, z: a.z || 0, g: a.g || 0 }; }) }, o); }
   } catch (e) { } return ""; }

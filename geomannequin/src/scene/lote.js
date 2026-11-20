@@ -8,6 +8,7 @@
 import { todasPoses } from "./poses.js";
 import { listaPosesExtras } from "./poses-extra.js";
 import { gpLerLinha, gpLinhas } from "./grupos-poses.js";
+import { stLerLinha, stLinhas } from "./situacoes.js";
 
 const ltNorm = t => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const ltF = v => (Math.round(v * 100) / 100).toString();
@@ -45,6 +46,8 @@ function ltGiro(o, p, centro, rnd, pontos) { if (o.gira !== undefined) return o.
 /* uma linha "espalha"/"grupo" → linhas explícitas */
 function ltLinha(lin, ctx) {
   /* grupo-pose ID [com A, B] [em (x,z)] [gira G] [espelhado] [sem-poses] [nome Base]: pose de grupo pronta (quem faltar vira figurante) */
+  /* situacao ID [com A, B] [em (x,z)] [gira G] [espelhado] [sem-camera] [sem-poses] [falas] [nome Base]: situação narrativa pronta (pessoas, poses, objetos, toques, câmera) */
+  { const sl = stLerLinha(lin); if (sl) { ctx.figQuadro = ctx.figQuadro || new Set(); ctx.figs = ctx.figs || new Set(); const r = stLinhas(sl.def, sl.nomes, Object.assign({}, sl.o, { usados: [...ctx.figQuadro].concat([...ctx.usados].filter(n => !ctx.figs.has(n))) })); r.nomes.forEach(n => ctx.figQuadro.add(n)); (r.objetos || []).forEach(n => ctx.figQuadro.add(n)); r.novos.forEach(n => { ctx.figs.add(n); if (!ctx.usados.has(n)) { ctx.usados.add(n); ctx.elenco.push(n); } }); sl.nomes.forEach(n => { if (!ctx.usados.has(n)) { ctx.usados.add(n); ctx.elenco.push(ltQ(n)); } }); ctx.lotes.push({ tipo: "situacao", id: sl.def.id, n: sl.def.n, figurantes: r.novos.length }); if (r.novos.length) ctx.avisos.push("situacao " + sl.def.id + ": " + r.novos.length + " figurante(s) entraram (" + r.novos.join(", ") + ")."); return r.linhas; } }
   { const gpl = gpLerLinha(lin); if (gpl) { ctx.figQuadro = ctx.figQuadro || new Set(); ctx.figs = ctx.figs || new Set(); const r = gpLinhas(gpl.def, gpl.nomes, Object.assign({}, gpl.o, { usados: [...ctx.figQuadro].concat([...ctx.usados].filter(n => !ctx.figs.has(n))) })); r.nomes.forEach(n => ctx.figQuadro.add(n)); (r.objetos || []).forEach(n => ctx.figQuadro.add(n)); r.novos.forEach(n => { ctx.figs.add(n); if (!ctx.usados.has(n)) { ctx.usados.add(n); ctx.elenco.push(n); } }); gpl.nomes.forEach(n => { if (!ctx.usados.has(n)) { ctx.usados.add(n); ctx.elenco.push(ltQ(n)); } }); ctx.lotes.push({ tipo: "grupo-pose", id: gpl.def.id, n: gpl.def.n, figurantes: r.novos.length }); if (r.novos.length) ctx.avisos.push("grupo-pose " + gpl.def.id + ": " + r.novos.length + " figurante(s) entraram (" + r.novos.join(", ") + ")."); return r.linhas; } }
   const m = /^\s*espalh[ae]\s+(\d+)\s+(pessoas?|gente|manequins?|animal|animais|objetos?|efeitos?)\s*([\wÀ-ÿ_-]*)\s+em\s+area\s+(\([^)]*\))\s*(\([^)]*\))(.*)$/i.exec(lin);
   if (m) { const n = Math.min(200, +m[1]), tipo = ltNorm(m[2]).replace(/s$/, "").replace("animai", "animal").replace(/^(gente|manequim)$/, "pessoa"), sub = m[3], a = ltTupla(m[4]), b = ltTupla(m[5]), o = ltOpcoes(m[6]);
@@ -82,11 +85,11 @@ function ltLinha(lin, ctx) {
 /* texto inteiro: expande as linhas de lote (mantendo o recuo). usados = nomes que já existem; pontos = posições (m) por nome */
 function ltExpandir(texto, o = {}) {
   const ctx = { usados: new Set(o.usados || []), pontos: o.pontos || {}, objetos: o.objetos || {}, elenco: [], lotes: [], avisos: [], semente: o.semente };
-  const linhas = String(texto).split("\n").flatMap(l => { if (/^quadro\b/i.test(l)) ctx.figQuadro = new Set(); const m = /^(\s*)(espalh[ae]\s|grupo\s|grupo-pose\s)/i.exec(l); if (!m) return [l]; const r = ltLinha(l.trim(), ctx); return r ? r.map(x => m[1] + x) : [l]; });
+  const linhas = String(texto).split("\n").flatMap(l => { if (/^quadro\b/i.test(l)) ctx.figQuadro = new Set(); const m = /^(\s*)(espalh[ae]\s|grupo\s|grupo-pose\s|situa[cç][aã]o\s)/i.exec(l); if (!m) return [l]; const r = ltLinha(l.trim(), ctx); return r ? r.map(x => m[1] + x) : [l]; });
   return { texto: linhas.join("\n"), elenco: ctx.elenco, lotes: ctx.lotes, avisos: ctx.avisos };
 }
 /* no Name: põe os nomes novos no bloco elenco (ou cria um) */
-function ltExpandirName(texto) { if (!/^\s*(espalh[ae]|grupo|grupo-pose)\s/im.test(texto)) return { texto, avisos: [] };
+function ltExpandirName(texto) { if (!/^\s*(espalh[ae]|grupo|grupo-pose|situa[cç][aã]o)\s/im.test(texto)) return { texto, avisos: [] };
   const usados = new Set(); (String(texto).match(/^\s{1,}([A-ZÀ-Ý][\wÀ-ÿ]*)/gm) || []).forEach(s => usados.add(s.trim()));
   const r = ltExpandir(texto, { usados }); if (!r.elenco.length) return r; const add = r.elenco.map(n => "  " + n).join("\n");
   const t = /^elenco\s*$/im.test(r.texto) ? r.texto.replace(/^(elenco\s*)$/im, "$1\n" + add) : "elenco\n" + add + "\n" + r.texto; return Object.assign(r, { texto: t }); }

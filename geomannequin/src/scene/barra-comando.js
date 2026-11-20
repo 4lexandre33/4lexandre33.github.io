@@ -44,7 +44,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   /* linhas de lote (espalha / grupo) viram várias linhas; os nomes novos entram no elenco */
   let extraElenco = [], avisosLote = [];
   { const gm = /^\s*grupo\s+(.+?)\s+(pose|olha|olham|olhando|vira-para|gira|move|alinha)\b/i.exec(linha); if (gm) opts = Object.assign({}, opts, { _grupo: gm[1].split(/\s*,\s*|\s+e\s+/).map(x => x.replace(/"/g, "").trim()).filter(Boolean) }); }
-  if (/^\s*(espalh[ae]|grupo|grupo-pose)\s/i.test(linha)) { const pontos = {}; SCN.list.forEach(it => { if (it.name) pontos[it.name] = [bcN(it.params.wx || 0), bcN(it.params.wz || 0)]; }); (SCN.objetos || []).forEach(o => { if (o.nome) pontos[o.nome] = [bcN(o.x || 0), bcN(o.z || 0)]; });
+  if (/^\s*(espalh[ae]|grupo|grupo-pose|situa[cç][aã]o)\s/i.test(linha)) { const pontos = {}; SCN.list.forEach(it => { if (it.name) pontos[it.name] = [bcN(it.params.wx || 0), bcN(it.params.wz || 0)]; }); (SCN.objetos || []).forEach(o => { if (o.nome) pontos[o.nome] = [bcN(o.x || 0), bcN(o.z || 0)]; });
     const objetos = {}; (SCN.objetos || []).forEach(o => { if (o.nome && !o.animal && !o.chao) objetos[o.nome] = o.tipo; });
     let r0; try { r0 = ltExpandir(linha, { usados: nomes, pontos, objetos }); } catch (e) { return { ok: false, erros: [e.message] }; } linha = r0.texto; extraElenco = r0.elenco; avisosLote = r0.avisos; }
   let base = dslDoPalco(), corpo = linha;
@@ -55,7 +55,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   if ((nv.pessoas || []).length || nv.animal) { const pad = SCN.list.filter(x => /^Manequim \d+$/.test(x.name)); if ((nv.pessoas || []).length && pad.length === 1 && SCN.list.filter(x => x.name !== "__vazio__").length === 1 && !(pad[0].params.wx) && !(pad[0].params.wz)) { pad[0].name = nv.pessoas[0]; nomes.add(nv.pessoas[0]); base = dslDoPalco(); nv.pessoas = []; antes = JSON.stringify(sceneState()); } }
   for (const n of nv.pessoas || []) base = base.replace("elenco\n", "elenco\n  " + n + "\n");
   base = base.replace("  __ninguem__\n", nv.animal || (nv.pessoas || []).length ? "" : "  __ninguem__\n");
-  const camLinha = /^\s*(camera|câmera)\b/i.test(linha), comLinha = camLinha ? base.replace("\nquadro 1\n", "\nquadro 1 " + linha.trim() + "\n") : base + "  " + corpo.replace(/\n/g, "\n  ") + "\n";
+  const camSit = /^\s*camera preset sit\./im.test(linha), camLinha = /^\s*(camera|câmera)\b/i.test(linha) && !camSit, comLinha = camLinha ? base.replace("\nquadro 1\n", "\nquadro 1 " + linha.trim() + "\n") : base + "  " + corpo.replace(/\n/g, "\n  ") + "\n";
   let rA, rB; try { rA = compilarName(base, { semCache: true, salvar: false }); rB = compilarName(comLinha, { semCache: true, salvar: false }); }
   finally { loadScene(JSON.parse(antes)); }
   if (!rB.ok) return { ok: false, erros: rB.erros.map(e => e.erro), avisos: rB.avisos };
@@ -79,7 +79,7 @@ function aplicarLinhaNoPalco(linha, opts = {}) {
   const efA = (A.efeitos || []).length, efB = B.efeitos || []; if (efB.length > efA) { const novo = JSON.parse(JSON.stringify(sceneState())); const remap = a => { if (a && a.indice && Number.isInteger(a.alvo) && B.list[a.alvo]) { const j = novo.list.findIndex(x => x.name === B.list[a.alvo].name); if (j >= 0) a.alvo = j; } return a; };
     const novos = JSON.parse(JSON.stringify(efB.slice(efA))).map(e => { remap(e.ancora); if (e.direcao && e.direcao.alvo && typeof e.direcao.alvo === "object") remap(e.direcao.alvo); return e; }); novo.efeitos = (novo.efeitos || []).concat(novos); loadScene(novo); mudou.push((efB.length - efA) + " efeito(s)"); }
   /* câmera: só quando a linha é de câmera */
-  if (camLinha && B.camera) { Object.assign(P, B.camera); mudou.push("câmera"); }
+  if ((camLinha || camSit) && B.camera) { Object.assign(P, B.camera); mudou.push("câmera"); }
   /* grupo: quem foi citado e não mudou (sentado, embarcado…) */
   const naoMudou = (opts._grupo || []).filter(n => !mudou.some(m => m.startsWith(n + ":") || m.startsWith(n + " "))); if (naoMudou.length) avisosLote.push("grupo: " + naoMudou.join(", ") + " não mudou (sentado, embarcado ou montado? solte antes com outra pose).");
   return { ok: true, mudou, linhas: linha.split("\n").length, avisos: avisosLote.concat((rB.avisos || []).filter(a => !(rA.avisos || []).includes(a) && !/olha para a borda mais perto|pouco espaço na frente/.test(a))) };

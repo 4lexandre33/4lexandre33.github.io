@@ -11,6 +11,7 @@ import { SCN, P } from "./modelo.js";
 import { cfPessoa, CF_BASES } from "./camera-filme.js";
 import { aplicarCameraBlk } from "./blocking.js";
 import { W, H, CY } from "../engine/index.js";
+import { stPreset } from "./situacoes.js";
 
 const PC_M = 1 / 0.114, PC_D = Math.PI / 180;
 /* altura visível (fração da altura do corpo) e lente padrão de cada enquadramento */
@@ -450,7 +451,8 @@ for (const [k, n, t, cam, mov] of [["aproxima-lento", "aproximação lenta (push
 CF_BASES.preset = b => { const d = PC_IDX.get(b.id); if (!d) return null; try { const c = pcCamera(d, b.mapa || {}, b.o || {}); return { pos: c.pos, alvo: c.alvo, lente: c.lente, roll: c.roll, pan: c.pan, esconder: c.esconder }; } catch (e) { return null; } };
 
 /* ===================== consultas ===================== */
-function pcAchar(id) { const k = String(id || "").trim().toLowerCase(); return PC_IDX.get(k) || PRECONFIG.find(d => d.id.endsWith("." + k)) || null; }
+const PC_SIT = new Map();
+function pcAchar(id) { const k = String(id || "").trim().toLowerCase(); if (/^sit\./.test(k)) { if (!PC_SIT.has(k)) PC_SIT.set(k, stPreset(k)); return PC_SIT.get(k); } return PC_IDX.get(k) || PRECONFIG.find(d => d.id.endsWith("." + k)) || null; }
 /* árvore: { nome, filhos: {...}, itens: [ids] } a partir dos ids (dialogo.dois.frente.ombro-a-dir) */
 function pcArvore() { const raiz = { filhos: {}, itens: [] }; for (const d of PRECONFIG) { const p = d.id.split("."); let n = raiz; for (let i = 0; i < p.length - 1; i++) n = n.filhos[p[i]] = n.filhos[p[i]] || { filhos: {}, itens: [] }; n.itens.push(d.id); } return raiz; }
 function pcBuscar(q, max = 60) { const t = String(q || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); const ok = d => !t || (d.id + " " + d.nome + " " + d.tecnico + " " + d.grupo).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(t); return PRECONFIG.filter(ok).slice(0, max); }
