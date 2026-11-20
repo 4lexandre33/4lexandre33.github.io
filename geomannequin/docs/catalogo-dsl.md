@@ -1,6 +1,6 @@
 # Catálogo DSL do GeoMannequin
 
-Gerado em 2026-11-20 · **1300 poses** · **208 animações** (173 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 149 efeitos · 163 objetos.
+Gerado em 2026-11-20 · **2515 poses** · **208 animações** (173 ações, 13 ciclos, 13 transições de postura, 9 esperas vivas) · 26 verbos do dia a dia · 9 estilos de espera · 82 expressões · 149 efeitos · 258 objetos.
 
 Como usar: cada bloco abaixo é texto da linguagem do GeoMannequin (a mesma do editor Texto e do MCP). Cole um bloco no Texto para editar; para USAR pelo nome numa cena: `Kai pose NOME` (pose) ou `0s Kai anima NOME` (animação, dentro de um plano de filme). Para criar uma variação: copie o bloco, troque o nome e mude as linhas. Ações seguram a pose final; ciclos repetem até o fim do plano (ou `por 3s`); esperas são vivas (respiram, olham em volta) e duram o que for preciso.
 
@@ -8,7 +8,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 ## Índice
 
-**Poses:** `empe`, `contrapposto`, `caminhando`, `frente`, `torcao`, `passo`, `joelho`, `ponta`, `erguido`, `alcancar`, `lateral`, `agachar`, `cintura`, `cruzar`, `ombro`, `sentado`, `sentadoChao`, `pernasEsticadas`, `abracandoJoelhos`, `deitadoCostas`, `deitadoLado`, `deBrucos`, `apoiadoCotovelos`, `ajoelhado`, `sentadoCalcanhares`, `umJoelho`, `cocoras`, `correndo`, `impulso`, `saltando`, `aterrissando`, `chutando`, `socando`, `alongando`, `paradaDeMao`, `engatinhando`, `apontando`, `acenando`, `carregando`, `empurrando`, `pensando`, `encostado`, `caindo`, `ponte`, `ponteUmaPerna`, `paradaAbertura`, `escorpiao`, `arabesque`, `espacateSaltado`, `camelo`, `agachamentoProfundo`, `prancha`, `quatroApoios`, `meditando`, `guardaLuta`, `jab`, `direto`, `gancho`, `uppercut`, `socoParaCima`, `cotovelada`, `joelhada`, `chuteLateral`, `chuteAlto`, `chuteGiratorio`, `chuteVoador`, `rasteira`, `palma`, `palmaDupla`, `defesaCruzada`, `aterrissagemHeroi`, `investida`, `esquiva`, `provocando`, `golpeRosto`, `golpeEstomago`, `arremessadoCostas`, `girandoNoAr`, `deCabecaParaBaixo`, `rolando`, `deslizandoSentado`, `estatelado`, `levantandoDeQuatro`, `atordoado`, `recuando`, `ajoelhadoFerido`, `atravessandoParede`, `caindoDeCostas`, `lotusFlutuando`, `baseGritando`, `agachadoCerrando`, `bracosAbertosLevitando`, `maosEmPrece`, `bracosCruzadosPeito`, `joelhoMaoNoChao`, `esferaDeLado`, `bracoAosCeus`, `concentrando`, `cargaDuasMaos`, `saltoSobreCaixa`, `subindoDegrau`, `saltoLongo`, `desviando`, `escalando`, `vitoria`, `corridaSuperRapida`, `corridaNinja`, `arrancada`, `puloAlto`, `saltoAtaque`, `socoCarregado`, `socoDescendente`, `investidaDeOmbro`, `chuteMachado`, `bloqueioAlto`, `defesaComBracos`, `esquivaBaixa`, `esquivaParaTras`, `quedaDeCostas`, `quedaDeFrente`, `lancandoMagia`, `disparoDuasMaos`, `guardaBoxe`, `guardaKarate`, `guardaKungFuGarca`, `guardaMuayThai`, `guardaBaixaProvocando`, `posturaSumo`, `guardaEsgrima`, `guardaCapoeira`, `guardaNinja`, `guardaLutaLivre`, `jabBaixo`, `diretoAoCorpo`, `cruzado`, `ganchoBaixo`, `socoGiratorio`, `socoMartelo`, `socoSuperman`, `socoDuplo`, `socoNoChao`, `chuteFrontal`, `chuteEmpurrao`, `chuteCircularBaixo`, `chuteCircularMedio`, `chuteGancho`, `chuteCrescente`, `chuteParaTras`, `joelhadaVoadora`, `pisao`, `bloqueioBaixo`, `bloqueioInterno`, `aparar`, `cobertura`, `esquivaLateral`, `rolamentoParaTras`, `protegendoRosto`, `espadaGuardaMedia`, `espadaGuardaAlta`, `espadaEstocada`, `espadaCorteDescendente`, `espadaCorteHorizontal`, `espadaDefesa`, `espadaSaque`, `espadaEmbainhando`, `espadaApoiadaNoChao`, `lancaGuarda`, `lancaEstocada`, `bastaoGirando`, `arcoPuxando`, `arcoSacandoFlecha`, `armaDuasMaos`, `armaUmaMao`, `armaCoberturaParede`, `armaRecarregando`, `atingidoCostas`, `atingidoLado`, `caindoDeJoelhos`, `nocauteadoSentado`, `cuspindoSangue`, `arremessadoAlto`, `entradaHeroica`, `apontandoInimigo`, `punhoAFrente`, `viloesBracosCruzados`, `risadaVila`, `transformacao`, `pousoAgachadoMaoNoChao`, `vitoriaPunhoErguido`, `vitoriaAjoelhada`, `costasParaCamera`, `energiaConchaLado`, `energiaRajadaUmBraco`, `energiaDuasMaosAFrente`, `energiaAuraConcentrando`, `energiaEsferaUmaMao`, `selosDeMao`, `saltoComEspada`, `voadoraDupla`, `cambalhotaNoAr`, `saltoDesviando`, `amMabu`, `amGongbu`, `amPubu`, `amXiebu`, `amXubu`, `amSaudacaoKungFu`, `amTigreGarra`, `amTigreAtaque`, `amTigreDefesa`, `amGarcaAsas`, `amGarcaBico`, `amGarcaUmPe`, `amSerpenteBote`, `amSerpenteBaixa`, `amSerpenteEnrola`, `amLouvaDeusGuarda`, `amLouvaDeusAgarra`, `amMacacoAgachado`, `amMacacoOlha`, `amMacacoRouba`, `amDragaoGarra`, `amDragaoSobe`, `amDragaoMergulha`, `amJudoKumikata`, `amJudoIpponSeoi`, `amJudoOGoshi`, `amJudoOSotoGari`, `amJudoUchiMata`, `amJudoTomoeNage`, `amJudoKesaGatame`, `amJudoUkemi`, `amKarateZenkutsu`, `amKarateKokutsu`, `amKarateKibaDachi`, `amKarateOiZuki`, `amKarateGyakuZuki`, `amKarateAgeUke`, `amKarateGedanBarai`, `amKarateShutoUke`, `amKarateMaeGeri`, `amKarateYokoGeri`, `amKarateKata`, `amAikidoKamae`, `amAikidoIriminage`, `amAikidoKoteGaeshi`, `amAikidoShihoNage`, `amAikidoIkkyo`, `amAikidoSuwariwaza`, `amWingChunGuarda`, `amWingChunTanSau`, `amWingChunBongSau`, `amWingChunPakSau`, `amWingChunSocoCorrente`, `amTkdDollyoChagi`, `amTkdNeryoChagi`, `amTkdTwioYopChagi`, `amTkdDwiChagi`, `amTkdGuarda`, `amCapoeiraMeiaLua`, `amCapoeiraArmada`, `amCapoeiraQueixada`, `amCapoeiraAu`, `amCapoeiraNegativa`, `amCapoeiraEsquivaBaixa`, `amCapoeiraMartelo`, `amBjjGuardaFechada`, `amBjjMontada`, `amBjjChaveDeBraco`, `amBjjMataLeao`, `amBjjTriangulo`, `amBjjRaspagem`, `amKarateUchiUke`, `amKarateJuujiUke`, `amKarateUraken`, `amKarateHizaGeri`, `amTkdMakki`, `amTkdBandalChagi`, `amWingChunLapSau`, `amCapoeiraBencao`, `amCapoeiraCocorinha`, `amKungFuBloqueioGarca`, `amKungFuPalmaDupla`, `amJudoDefesaQuadril`, `amJudoCaindoProjetado`, `amBjjDefendendoMataLeao`, `kaijuDePeNaCabeca`, `kaijuComandando`, `kaijuAgarradoAgachado`, `kaijuAbracadoAoPescoco`, `kaijuSentadoNoOmbro`, `kaijuPenduradoUmaMao`, `kaijuSaltandoDoMonstro`, `kaijuMontadoComRedeas`, `rfAgachadoCocoras`, `rfAgachadoApontando`, `rfAgachadoMaosNosJoelhos`, `rfAgachadoMaoNoChao`, `rfAgachadoMaosNaCabeca`, `rfAgachadoAbracandoJoelhos`, `rfAgachadoPensando`, `rfAgachadoOferecendo`, `rfAgachadoUmJoelho`, `rfAgachadoUmJoelhoOlhando`, `rfAgachadoBaixoLateral`, `rfAgachadoInspecionando`, `rfEngatinhandoAvanco`, `rfEngatinhandoOlhandoTras`, `rfRastejandoCotovelos`, `rfLargadaCorrida`, `rfApoioTresPontos`, `rfFurtivoPassoLongo`, `rfFurtivoNasPontas`, `rfFurtivoAgachadoAvancando`, `rfFurtivoColadoParede`, `rfFurtivoEspiandoMuro`, `rfFurtivoAgachadoAtrasCobertura`, `rfFurtivoSinalSilencio`, `rfFurtivoSinalAvancar`, `rfFurtivoSinalParar`, `rfFurtivoEscalandoMuro`, `rfFurtivoCorridaAbaixada`, `rfFlutuandoRelaxadoRef`, `rfFlutuandoSentadoNoAr`, `rfFlutuandoDeCostas`, `rfFlutuandoGirando`, `rfFlutuandoBracosAbertosRef`, `rfFlutuandoEncolhidoNoAr`, `rfCaindoDeCostasRef`, `rfCaindoDeFrente`, `rfRendicaoMaosAoAltoRef`, `rfRendicaoMaosNaNuca`, `rfRendicaoMaosNasCostas`, `rfRendicaoMeioErguido`, `rfRendicaoAjoelhadoMaosAoAlto`, `rfRendicaoAjoelhadoCurvado`, `rfRendicaoProstrado`, `rfRendicaoAjoelhadoCobrindoCabeca`, `rfSocoJabRef`, `rfSocoDiretoAvanco`, `rfSocoGanchoAlto`, `rfSocoUppercutRef`, `rfSocoOverhand`, `rfSocoInvestidaAbaixada`, `rfSocoGuardaRecolhida`, `rfSocoBackfistGirando`, `rfMergulhoCanivete`, `rfMergulhoGrupado`, `rfMergulhoCarpado`, `rfMergulhoAndorinha`, `rfMergulhoSuperman`, `rfParadaDeMao`, `rfParadaDeMaoAberta`, `rfParadaDeMaoEscorpiao`, `rfAcenoTchau`, `rfAcenoDuasMaos`, `rfAcenoAndandoEmbora`, `rfAcenoDeCostas`, `rfAcenoAjoelhado`, `rfDespedidaMaoNoPeito`, `rfDespedidaAbracandoSi`, `rfDespedidaAjoelhadoChorando`, `rfAtaqueInvestidaSoco`, `rfAtaqueSaltoChute`, `rfAtaqueChuteAlto`, `rfAtaqueRasteira`, `rfAtaquePalmaAberta`, `rfAtaqueCotovelada`, `rfAtaqueJoelhada`, `rfAtaqueMarteloDuasMaos`, `rfAtaqueEnergiaPalmas`, `rfAtaqueCargaEnergia`, `rfDorBarriga`, `rfDorPeito`, `rfDorCostas`, `rfDorPescoco`, `rfDorCabeca`, `rfDorJoelhoSentado`, `rfDorTornozeloSentado`, `rfDorMancando`, `rfDorBracoFerido`, `rfDorContorcendo`, `rfVergonhaRostoNasMaos`, `rfVergonhaMaoNaNuca`, `rfVergonhaMaosEntrelacadas`, `rfVergonhaPePezinho`, `rfVergonhaBracoCruzadoNaFrente`, `rfVergonhaMaosAtras`, `rfVergonhaEncolhido`, `rfVergonhaCobrindoBoca`, `rfVergonhaVirandoRosto`, `rfNinjaGuardaKunai`, `rfNinjaArremessoShuriken`, `rfNinjaArremessoDuplo`, `rfNinjaSeloDeMao`, `rfNinjaSaltoAlto`, `rfNinjaCorridaBracosParaTras`, `rfNinjaEspadaReversa`, `rfProvedorOferecendo`, `rfProvedorMaoNoPeito`, `rfProvedorBracosAbertosAcolhendo`, `rfProvedorAgachadoDando`, `rfProvedorMaosNaCintura`, `rfProvedorAbrindoBau`, `rfProvedorCarregandoSaco`, `rfMensageiroCorrendoComCarta`, `rfMensageiroEntregandoCarta`, `rfMensageiroLendoProclamacao`, `rfMensageiroGritandoNotícia`, `rfMensageiroAjoelhadoReportando`, `rfMensageiroApontandoCaminho`, `rfViloaRisoMaligno`, `rfViloaMaoNoQuadril`, `rfViloaBracosCruzados`, `rfViloaConjurando`, `rfViloaApontandoAcusando`, `rfViloaSentadaNoTrono`, `rfViloaAgachadaPredadora`, `rfSobreviventeExausto`, `rfSobreviventeComCajado`, `rfSobreviventeOlhandoHorizonte`, `rfSobreviventeAjoelhadoAgradecendo`, `rfSobreviventeBebendoCantil`, `rfSobreviventeEscalandoCorda`, `rfSobreviventeComMochila`, `rfInfiltradorAgachadoSinal`, `rfInfiltradorTrocaObjeto`, `rfInfiltradorEscutando`, `rfInfiltradorDisfarcado`, `rfCooperacaoBateMao`, `rfCooperacaoPunhoErguido`, `rfCooperacaoMeditandoSentado`, `explicandoComMaos`, `contandoNosDedos`, `apontandoParaSi`, `maosAbertasSinceras`, `encolhendoOmbros`, `maoNoPeitoJuramento`, `maoNoQueixo`, `bracosCruzadosOuvindo`, `inclinadoAtento`, `cochichandoMaoNaBoca`, `dedoNosLabios`, `maoNaTesta`, `cocandoACabeca`, `maosNaCinturaBravo`, `apontandoAcusando`, `gesticulandoBravo`, `pedindoMaoEstendida`, `implorandoMaosJuntas`, `acenandoDeLonge`, `chamandoComAMao`, `dispensandoComAMao`, `polegarParaCima`, `sinalOk`, `maoNoBolsoRelaxado`, `maosNosBolsos`, `encostadoBracosCruzados`, `celularNoOuvido`, `olhandoOCelular`, `maoAtrasDaCabeca`, `maosAtrasDasCostas`, `reverenciaJaponesa`, `reverenciaLeve`, `continencia`, `negandoComDedo`, `apresentandoBracoAberto`, `discursando`, `olharDeLado`, `maoEstendidaApertar`, `abracoAberto`, `desesperoMaosNaCabeca`, `ajoelhadoChorando`, `encolhidoComMedo`, `abracandoASiMesmo`, `cabisbaixoAndando`, `bracosParaCimaAlegria`, `pulandoDeAlegria`, `dancandoAlegre`, `cansadoMaosNosJoelhos`, `deitadoOlhandoOCeu`, `sentadoNaEscadaPensativo`, `sentadoLendo`, `sentadoNoCelular`, `espreguicando`, `bocejando`, `olhandoORelogio`, `procurandoMaoNosOlhos`, `espiando`, `escondidoAgachado`, `correndoAssustado`, `tropecando`, `escorregando`, `carregandoCaixa`, `empurrandoPesado`, `puxandoCorda`, `varrendo`, `cozinhandoMexendo`, `escrevendoEmPe`, `digitandoSentado`, `pintandoCavalete`, `tocandoViolaoSentado`, `cantandoMicrofone`, `fotografando`, `bebendoGarrafa`, `comendoSanduiche`, `dormindoSentado`, `deitadoDeBrucosLendo`, `rezando`, `ajoelhadoRezando`, `tirandoSelfie`, `segurandoGuardaChuva`, `acenandoAdeusTriste`, `maosNoVidro`, `saltitando`, `girandoBracosAbertos`, `timidaPesParaDentro`, `maosNoRostoVergonha`, `derrotadoOmbrosCaidos`, `punhoCerradoDeterminado`, `modeloMaoNoQuadril`, `sentadoPernasCruzadas`, `sentadoEncostadoParede`, `deitadoFetal`, `correndoBracosAbertos`, `bracosCruzadosEmburrado`, `chocadoMaosNaBoca`, `apontandoRindo`, `segurandoBarrigaRindo`, `bocejandoSentado`, `esperandoImpaciente`, `ofereceFlor`, `ajoelhadoPedido`, `debrucadoNaMesa`, `maosAoAlto`, `ajoelhadoRendido`, `estendendoAMaoAjuda`, `esquivaMatrix`, `esquivaAbaixando`, `esquivaPendulo`, `esquivaGiro`, `esquivaRolamento`, `esquivaMergulho`, `esquivaCambalhotaTras`, `esquivaPorUmTriz`, `esquivaPuloLado`, `esquivaInclinarCabeca`, `defesaCoberto`, `defesaEncolhido`, `defesaEmpurrando`, `defesaBarreira`, `defesaBarreiraDupla`, `defesaChute`, `defesaAgarrandoPunho`, `defesaDesviandoBraco`, `defesaProtegendoOutro`, `puloImpulso`, `puloDecolando`, `puloEstrela`, `puloEncolhido`, `puloAltoEsticado`, `puloEmDistancia`, `puloTesoura`, `puloAterrissagem`, `puloAterrissagemHeroi`, `puloParede`, `puloCambalhota`, `puloQueda`, `flutuandoMeditacao`, `flutuandoRelaxado`, `flutuandoBracosAbertos`, `flutuandoAmeaca`, `flutuandoSubmerso`, `flutuandoGravidadeZero`, `flutuandoAdormecido`, `vooSuperHeroi`, `vooDecolando`, `vooPlanando`, `vooMergulho`, `vooPairando`, `fugaOlhandoTras`, `fugaDesesperada`, `fugaEsgueirando`, `fugaRastejando`, `fugaTropecando`, `fugaPulandoMuro`, `fugaEscondendo`, `fugaColadoParede`, `fugaCarregandoAlguem`, `perseguicaoSprint`, `perseguicaoAlcancando`, `perseguicaoAgarrando`, `perseguicaoApontando`, `perseguicaoOfegante`, `perseguicaoDerrapando`, `perseguicaoProcurando`, `parkourVault`, `parkourPendurado`, `parkourEscalando`, `parkourCorridaParede`, `parkourDeslizando`, `parkourEquilibrio`, `parkourAgachadoBeirada`, `impactoNoRosto`, `impactoNoEstomago`, `arremessadoParaTras`, `caidoDeCostas`, `caidoDeBrucos`, `levantandoComEsforco`, `ajoelhadoExausto`, `cambaleando`, `atordoadoEstrelinhas`, `escorregaoComico`, `quedaSentado`, `poderCarregando`, `poderKamehameha`, `poderBolaPreparo`, `poderAoCeu`, `poderSocoChao`, `poderTelecinese`, `poderTransformacao`, `poderSelamento`, `giganteAgachando`, `gigantePisando`, `giganteRugindo`, `giganteOlhandoBaixo`, `giganteSegurandoNaPalma`, `giganteDerrubandoPredio`, `minusculoOlhandoCima`, `minusculoAcenando`, `minusculoEscalando`, `minusculoEsmagado`, `minusculoNaPalma`, `minusculoEmpurrando`, `entradaVilao`, `encaraRival`, `desafioChamando`, `costasComCostas`, `cercadoOlhandoVolta`, `vitoriaPunhoAlto`, `vitoriaCostasViradas`, `derrotaDeJoelhos`, `juramento`, `estendendoMaoRival`, `invChutandoPorta`, `invOmbroNaPorta`, `invAriete`, `invPeDeCabra`, `invEntrandoArmaAlta`, `invVarrendoCanto`, `invJogandoGranada`, `invGritandoRendam`, `invPulandoJanela`, `invRapelDescendo`, `invCordaSubindo`, `invEscudoAvancando`, `assaltoMandandoDeitar`, `assaltoEnchendoSaco`, `assaltoCofreOuvindo`, `assaltoMascaraPondo`, `infAndandoNaPonta`, `infAgachadoAvancando`, `infColadoNaParede`, `infEspiandoQuina`, `infSinalSilencio`, `infSinalParar`, `infSinalAvancar`, `infDesarmandoAlarme`, `infPassandoLaser`, `infRastejandoDuto`, `infPendBeiral`, `infPegandoChave`, `infAbrindoFechadura`, `infDisfarceJornal`, `infFingindoNatural`, `infCameraSeguranca`, `infOuvindoPorta`, `infEspiandoFechadura`, `infSniperDeitado`, `infSniperAjoelhado`, `infBinoculo`, `persCorrendoApontando`, `persEsticandoPegar`, `persSaltoMergulho`, `persDerrapandoCurva`, `persPulandoObstaculo`, `persOfeganteProcurando`, `persRadioCorrendo`, `persMotoInclinada`, `persDirigindoUmaMao`, `persSaltoEntrePredios`, `persAterrissandoRolando`, `persEquilibrioBeiral`, `fugaOlhaTrasPanico`, `fugaTropecaCorrendo`, `fugaCaidaRecuando`, `fugaEscalandoMuro`, `fugaDescendoEscada`, `fugaPelaJanela`, `fugaBolsaNoPeito`, `fugaMancando`, `fugaArrastandoAmigo`, `escSobMesa`, `escNoArmario`, `escAtrasCortina`, `escAtrasCarro`, `escNaArvore`, `escEmbaixoCama`, `escCobrindoBoca`, `tatAndandoArmaBaixa`, `tatTrocandoPente`, `tatAtirandoAbrigado`, `tatAtirandoDeitado`, `tatAtirandoCorrendo`, `tatDuasPistolas`, `tatPistolaLanterna`, `tatFacaAgarrando`, `tatArcoMirando`, `tatBazuca`, `tatGranadaPino`, `tatChecandoMapa`, `resCarregandoNoOmbro`, `resPuxandoDoBuraco`, `resMassagemCardiaca`, `resChamandoAjuda`, `resLevantandoEscombro`, `resProtegendoCrianca`, `pkPassagemMacaco`, `pkSpeedVault`, `pkWallRun`, `pkPrecisao`, `pkGatoNoMuro`, `pkMortalFrente`, `pkMortalTras`, `corSprintContato`, `corSprintVoo`, `corLargadaBaixa`, `corTrotando`, `corCansadaArrastando`, `corChegadaFita`, `corFreando`, `corCorridaNaruto`, `corCorridaCartoon`, `corAtrasadoComCafe`, `corCorrendoChuva`, `corPegandoOnibus`, `camConfiante`, `camDesfile`, `camMaosNoBolso`, `camVelhinhoBengala`, `camBebado`, `camZumbi`, `camEsgueirandoParede`, `camCarregandoSacolas`, `camCelularAndando`, `camPassoMarcha`, `camSonambulo`, `camSubindoEscada`, `camContraVento`, `camNaNeve`, `camMochilaoTrilha`, `escaladaParedeAgarras`, `escaladaEscadaMao`, `escaladaArvore`, `escaladaPenduradoUmaMao`, `saltoEstrela`, `saltoGrupado`, `saltoMergulhoAgua`, `saltoCaindoDoAlto`, `saltoAgachamento`, `chaoRastejandoSoldado`, `chaoEngatinhandoRapido`, `chaoLevantandoApoiado`, `chaoSentadoApoiandoMaos`, `chaoDeitadoDeLado`, `chaoDeitadoBarriga`, `chaoEstrelaNoChao`, `chaoEncolhidoFetal`, `baleArabesque`, `balePlieSegunda`, `balePirueta`, `baleGrandJete`, `baleAttitude`, `baleReverencia`, `balePrimeiraPosicao`, `hipHopFreeze`, `hipHopTopRock`, `hipHopWindmill`, `hipHopBracosCruzados`, `hipHopPopping`, `hipHopKrumpPeito`, `hipHopAgachadoMao`, `salsaPassoBase`, `sambaNoPe`, `tangoInclinado`, `flamencoPalmas`, `forroDancando`, `frevoSombrinha`, `rumbaQuadril`, `valsaSozinho`, `discoApontando`, `twistAgachando`, `danceFestaBracosCima`, `danceDabbing`, `danceFloss`, `danceKpopPose`, `danceCharleston`, `danceMoonwalk`, `danceRodopio`, `contempContracao`, `contempEspiral`, `contempChaoDeslizando`, `contempEquilibrioLateral`, `contempQuedaControlada`, `dancaIrlandesa`, `dancaIndiana`, `dancaHawaiana`, `dancaCossaca`, `sapateado`, `capoeiraAu`, `capoeiraMeiaLua`, `capoeiraNegativa`, `cheerleaderPom`, `cheerleaderSalto`, `pole`, `futChuteForte`, `futCabeceio`, `futBicicleta`, `futConduzindo`, `futGoleiroDefesa`, `futGoleiroPronto`, `futComemoracaoJoelho`, `futLateral`, `futCarrinho`, `futEmbaixadinha`, `futJuizCartao`, `basqArremesso`, `basqEnterrada`, `basqDrible`, `basqDefesa`, `basqBandeja`, `basqToco`, `voleiSaque`, `voleiCortada`, `voleiManchete`, `voleiLevantamento`, `voleiPeixinho`, `tenisSaque`, `tenisForehand`, `tenisBackhand`, `tenisVoleioRede`, `pingPong`, `badminton`, `natCrawl`, `natCostas`, `natBorboleta`, `natSaidaBloco`, `natBoiando`, `ginParadaDeMao`, `ginEspacate`, `ginPonte`, `ginArgolas`, `ginBarraFixa`, `ginFinalizacao`, `ginFitaRitmica`, `skateOllie`, `skateRemando`, `skateManobraGrab`, `surfEmPe`, `surfRemando`, `snowboard`, `esquiDescendo`, `patinandoGelo`, `ciclismoPedalando`, `ciclismoSentado`, `atlArremessoPeso`, `atlLancaDardo`, `atlSaltoAltura`, `atlSaltoVara`, `atlBarreira`, `halterofilismo`, `agachamentoBarra`, `flexaoBraco`, `abdominal`, `pranchaAbdominal`, `roscaHalter`, `beisebolRebatendo`, `beisebolArremesso`, `golfeTacada`, `golfePutt`, `hoqueiPatins`, `rugbyCorrendoBola`, `rugbyQuarterback`, `boliche`, `sinuca`, `dardos`, `boxeComemorando`, `boxeNasCordas`, `judoQueda`, `esgrimaEstocadaEsporte`, `sumoInvestida`, `pescando`, `remandoCanoa`, `yogaGuerreiro`, `yogaArvore`, `yogaCachorro`, `yogaLotus`, `alongandoPerna`, `arqueiroAjoelhado`, `cozCortandoLegumes`, `cozProvandoColher`, `cozVirandoPanqueca`, `cozAbrindoForno`, `cozLavandoLouca`, `cozAmassandoMassa`, `cozMexendoGeladeira`, `cozServindoPrato`, `cozComendoEmPe`, `cozBebendoCafe`, `limpAspirando`, `limpPassandoPano`, `limpEsfregandoJoelhos`, `limpTirandoPo`, `limpLimpandoJanela`, `limpLevandoLixo`, `roupaPassandoFerro`, `roupaEstendendoVaral`, `roupaDobrando`, `roupaVestindoCalca`, `roupaAmarrandoSapato`, `roupaGravata`, `roupaPondoCasaco`, `quartoAcordando`, `quartoDormindoLado`, `quartoDormindoCostas`, `quartoArrumandoCama`, `banhoEscovandoDentes`, `banhoSecandoCabelo`, `banhoMaquiagem`, `banhoBarbeando`, `bebeNinando`, `bebeMamadeira`, `bebeCarregandoCostas`, `bebeTrocandoFralda`, `bebeLevantandoAlto`, `jardRegando`, `jardCavando`, `jardPlantando`, `jardCortandoGrama`, `petPasseandoCachorro`, `petAfagandoGato`, `escrApresentando`, `escrAoTelefone`, `escrCarregandoPastas`, `escrEstressado`, `escrEspreguicandoCadeira`, `escrApertoMaoNegocio`, `escrQuadroBranco`, `escrCafezinho`, `medAuscultando`, `medSeringa`, `medCirurgiao`, `medEmpurrandoMaca`, `medMaosLevantadasLuvas`, `polApitoTransito`, `polDistintivo`, `polRevistando`, `bombeiroMangueira`, `bombeiroMachado`, `segurancaBracosCruzados`, `garcomBandeja`, `garcomAnotando`, `chefFlambando`, `baristaServindo`, `mecanicoDebaixoCarro`, `mecanicoCapo`, `pedreiroMartelando`, `pedreiroCarregandoTijolo`, `carteiroEntregando`, `caixaSupermercado`, `fotoTirandoFoto`, `fotoAgachadoFotografando`, `cinegrafista`, `diretorClaquete`, `musicoGuitarraSolo`, `musicoBateria`, `musicoVioloncelo`, `musicoTrompete`, `cantorMicrofone`, `maestroRegendo`, `pintorParede`, `escultorModelando`, `escolaLevantandoMao`, `escolaDormindoCarteira`, `escolaColandoProva`, `escolaMochilaOmbro`, `escolaLendoEmPe`, `escolaProfessorBravo`, `escolaFormatura`, `escolaRecebendoDiploma`, `escolaCientistaTubo`, `escolaEstudandoChao`, `festaBrindando`, `festaAssoprandoVelas`, `festaAbrindoPresente`, `festaConfete`, `festaKaraoke`, `festaChampanhe`, `festaDJ`, `festaSelfie`, `festaBaloes`, `festaFantasiaSuperHeroi`, `festaBebadoAbracandoPoste`, `festaNatalPresente`, `viagemMala`, `viagemMochilaoMapa`, `viagemCaronaPolegar`, `viagemSegurandoBarra`, `viagemTaxi`, `viagemAcenandoTrem`, `viagemMalaPesada`, `viagemTirandoFotoTurista`, `viagemSentadoAviao`, `viagemMotoristaVolante`, `viagemCiclistaParado`, `viagemCavalgando`, `lazerVideogame`, `lazerVideogameVitoria`, `lazerTricotando`, `lazerXadrez`, `lazerPipoca`, `lazerRedeDeitado`, `lazerPiquenique`, `lazerPraiaBronzeando`, `lazerCastelinhoAreia`, `lazerEmpinandoPipa`, `lazerLendoRede`, `lazerFogueiraAquecendo`, `lazerMarshmallow`, `lazerTelescopio`, `lazerPintandoUnhas`, `lazerComprasVitrine`, `emoLutoTumulo`, `emoChorandoSentadoChao`, `emoOlhandoChuvaJanela`, `emoSentadoCabisbaixo`, `emoGritandoCeu`, `emoSegurandoFoto`, `emoCaixaDespedida`, `emoDeitadoChorando`, `emoSocandoParede`, `emoChutandoLixeira`, `emoJogandoObjeto`, `emoPuxandoCabelo`, `emoGritandoPunhos`, `emoDerrubandoMesa`, `emoApontandoAcusando`, `emoAgarradoAoPeito`, `emoPulandoPunho`, `emoGirandoFeliz`, `emoAjoelhadoGratidao`, `emoLendoCarta`, `emoTrofeuErguido`, `emoMedalhaBeijando`, `emoCorrendoBracosAbertos`, `emoEscondendoRosto`, `emoCocandoNuca`, `emoEncolhidoCanto`, `emoTremendoFrio`, `emoRoendoUnhas`, `emoAndandoDeUmLadoAOutro`, `emoOlhandoHorizonte`, `emoSentadoBeiraCais`, `emoDeitadoPensando`, `emoEscrevendoDiario`, `emoEspelhoEncarando`, `emoDecisaoFirme`, `romEsperandoFlores`, `romSuspirandoCoracao`, `romCartaDeAmor`, `romOlhandoCelularSorrindo`, `romAbracandoTravesseiro`, `romPedidoDeJoelho`, `romSerenata`, `romJogandoBeijo`, `romArrumandoCabelo`, `romOfereceChocolate`, `romCoracaoMaos`, `romDespedidaAcenando`, `romCiumes`, `romDancandoSozinhoChuva`, `terLanternaNoEscuro`, `terOlhandoParaTrasArrepio`, `terRecuandoParede`, `terCaidaRastejando`, `terGritandoMaosRosto`, `terSegurandoFaca`, `terTrancandoPorta`, `terEscondidoPrendendoRespiracao`, `terTelefoneSemSinal`, `terPossuido`, `terArrastandoCorrente`, `terVampiroCapa`, `terLobisomemUivando`, `terMumiaAndando`, `terAssassinoMascarado`, `terMenininaCabeloRosto`, `terRastejandoAranha`, `detLupa`, `detAgachadoPista`, `detQuadroDeProvas`, `detSoprandoFumacaArma`, `detEncostadoPoste`, `detInterrogando`, `detAlgemadoSentado`, `comEscorregandoBanana`, `comTortaNaCara`, `comPisandoAncinho`, `comCorrendoSemSair`, `comCaindoCadeira`, `comQueimandoBumbum`, `comSegurandoRisada`, `comRolandoDeRir`, `comPedindoPerdao`, `comPensadorExagerado`, `comMusculoExibido`, `comPeDeGalinha`, `comDesmaioDramatico`, `comCongelado`, `comAndandoNaPontaRoubando`, `comAbracandoComida`, `comTropecoCadarco`, `brigaEmpurrandoPeito`, `brigaSocoSelvagem`, `brigaLevandoSoco`, `brigaCaindoNocaute`, `brigaGarrafa`, `brigaCadeirada`, `brigaLimpandoSangue`, `brigaEstalandoDedos`, `brigaSegurandoAlguem`, `armaEspadaErguidaDuasMaos`, `armaEspadaCravadaChao`, `armaKatanaSaque`, `armaLancaInvestida`, `armaMachadoDuplo`, `armaNunchaku`, `armaBastaoBo`, `armaEscudoEspada`, `armaShurikenArremesso`, `armaChicote`, `defSeSoltandoPulso`, `defBracosNaCabeca`, `defSprayPimenta`, `defJoelhoNaVirilha`, `defCaidoChutando`, `magoConjurandoBola`, `magoCajadoErguido`, `magoLendoGrimorio`, `magoEscudoMagico`, `magoLevitandoMeditando`, `magoTeleporte`, `magaPocao`, `magoInvocacaoChao`, `heroiVooPunhoFrente`, `heroiPousoTresApoios`, `heroiSegurandoCarro`, `heroiRaioDosOlhos`, `heroiAbrindoCamisa`, `heroiTeiaLancando`, `heroiCorrendoVelocidade`, `heroiEscudoArremesso`, `viloRisoMalvado`, `viloTronoPernaCruzada`, `animeTransformacao`, `animeKamehameha`, `animeNinjaSelo`, `animeSalvandoNoBraco`, `animeCorrendoTorrada`, `animePoseVitoriaV`, `sereiaSentadaPedra`, `fadaVoando`, `faroesteDuelo`, `faroesteSacandoRevolver`, `faroesteLacando`, `faroesteEncostadoBalcao`, `medievalJuramentoEspada`, `medievalReiTrono`, `medievalArautoTrombeta`, `medievalFerreiroMartelo`, `piratLunetaProa`, `piratTimao`, `piratPranchaAndando`, `piratBalancoCorda`, `scifiAstronautaFlutuando`, `scifiPilotoCabine`, `scifiHologramaTocando`, `scifiRoboAndando`, `scifiArmaLaser`, `sobrevAcendendoFogo`, `sobrevBebendoRio`, `sobrevMachadoLenha`, `sobrevArcoCacando`, `sobrevBarraca`, `sobrevExaustoDeserto`, `socialDiscursoPalanque`, `socialPlacaProtesto`, `socialMegafone`, `socialVotando`, `socialAplaudindoEmPe`, `socialAcenandoMultidao`, `socialAssinandoContrato`, `gestoReverenciaJaponesa`, `gestoMaoNoPeitoSaudando`, `gestoContinenciaMilitar`, `gestoDandoDeOmbros`, `gestoContandoNosDedos`, `gestoChamandoComDedo`, `gestoSilencioMandando`, `gestoContandoSegredo`, `esporteRodaAbraco`, `esperaOlhandoRelogioPulso`, `esperaEncostadoParede`, `esperaSentadoMala`, `esperaPlacaAeroporto`, `esperaChuvaGuardaChuva`, `infanciaPulandoAmarelinha`, `infanciaPulandoCorda`, `infanciaEscondeEsconde`, `infanciaAviaozinho`, `infanciaBirra`, `infanciaBalanco`, `infanciaEscorregador`, `infanciaBolhaSabao`, `infanciaPirataEspadinha`, `velhoAndador`, `velhoCadeiraBalanco`, `velhoDandoMilhoPombos`, `velhoCostasDoendo`, `velhoBengalaBrava`, `fePrecandoAjoelhado`, `fePrecandoBracosAbertos`, `feAcendendoVela`, `feMeditacaoEmPe`, `cerimNoivoEsperandoAltar`, `cerimNoivaBuque`, `cerimJogandoBuque`, `cerimHinoMaoPeito`, `cerimCarregandoCaixao`, `campoOrdenhando`, `campoCarregandoFeno`, `campoColhendo`, `campoSemeando`, `campoEnxada`, `milSentido`, `milDescansar`, `milFuzilOmbro`, `milBinoculoTrincheira`, `milRadioMochila`, `milFeridoChamandoMedico`, `milLancandoGranadaAlta`, `milRendicaoBandeira`, `hospPacienteMuleta`, `hospCadeiraRodas`, `hospDeitadoMaca`, `hospSegurandoBarriga`, `hospTossindo`, `hospFisioterapia`, `animalAlimentandoCavalo`, `animalJogandoGraveto`, `animalFugindoAbelha`, `animalObservandoPassaro`, `natSentindoVento`, `natCheirandoFlor`, `natAtravessandoRio`, `amKarateKiaiZenkutsu`, `amTaiChiChicote`, `amTaekwondoGiratorio`, `amMuayThaiClinch`, `amJiuJitsuGuarda`, `amMMAGroundPound`, `amKungFuLouva`, `amCapoeiraGinga`, `ruaEsperandoSemaforo`, `ruaAtravessandoCorrendo`, `ruaAmarrandoBicicleta`, `ruaMendigoChapeu`, `ruaGrafiteiro`, `ruaSkatistaSentado`, `ruaCarregandoCaixaPizza`, `ruaPegandoTaxiChuva`, `tecFoneDeOuvido`, `tecVideoChamada`, `tecRealidadeVirtual`, `tecGravandoVideo`, `tecNotebookColo`, `sentadoBrindando`, `sentadoComendo`, `sentadoConversandoMesa`, `sentadoRindoMesa`
+**Poses:** `empe`, `contrapposto`, `caminhando`, `frente`, `torcao`, `passo`, `joelho`, `ponta`, `erguido`, `alcancar`, `lateral`, `agachar`, `cintura`, `cruzar`, `ombro`, `sentado`, `sentadoChao`, `pernasEsticadas`, `abracandoJoelhos`, `deitadoCostas`, `deitadoLado`, `deBrucos`, `apoiadoCotovelos`, `ajoelhado`, `sentadoCalcanhares`, `umJoelho`, `cocoras`, `correndo`, `impulso`, `saltando`, `aterrissando`, `chutando`, `socando`, `alongando`, `paradaDeMao`, `engatinhando`, `apontando`, `acenando`, `carregando`, `empurrando`, `pensando`, `encostado`, `caindo`, `ponte`, `ponteUmaPerna`, `paradaAbertura`, `escorpiao`, `arabesque`, `espacateSaltado`, `camelo`, `agachamentoProfundo`, `prancha`, `quatroApoios`, `meditando`, `guardaLuta`, `jab`, `direto`, `gancho`, `uppercut`, `socoParaCima`, `cotovelada`, `joelhada`, `chuteLateral`, `chuteAlto`, `chuteGiratorio`, `chuteVoador`, `rasteira`, `palma`, `palmaDupla`, `defesaCruzada`, `aterrissagemHeroi`, `investida`, `esquiva`, `provocando`, `golpeRosto`, `golpeEstomago`, `arremessadoCostas`, `girandoNoAr`, `deCabecaParaBaixo`, `rolando`, `deslizandoSentado`, `estatelado`, `levantandoDeQuatro`, `atordoado`, `recuando`, `ajoelhadoFerido`, `atravessandoParede`, `caindoDeCostas`, `lotusFlutuando`, `baseGritando`, `agachadoCerrando`, `bracosAbertosLevitando`, `maosEmPrece`, `bracosCruzadosPeito`, `joelhoMaoNoChao`, `esferaDeLado`, `bracoAosCeus`, `concentrando`, `cargaDuasMaos`, `saltoSobreCaixa`, `subindoDegrau`, `saltoLongo`, `desviando`, `escalando`, `vitoria`, `corridaSuperRapida`, `corridaNinja`, `arrancada`, `puloAlto`, `saltoAtaque`, `socoCarregado`, `socoDescendente`, `investidaDeOmbro`, `chuteMachado`, `bloqueioAlto`, `defesaComBracos`, `esquivaBaixa`, `esquivaParaTras`, `quedaDeCostas`, `quedaDeFrente`, `lancandoMagia`, `disparoDuasMaos`, `guardaBoxe`, `guardaKarate`, `guardaKungFuGarca`, `guardaMuayThai`, `guardaBaixaProvocando`, `posturaSumo`, `guardaEsgrima`, `guardaCapoeira`, `guardaNinja`, `guardaLutaLivre`, `jabBaixo`, `diretoAoCorpo`, `cruzado`, `ganchoBaixo`, `socoGiratorio`, `socoMartelo`, `socoSuperman`, `socoDuplo`, `socoNoChao`, `chuteFrontal`, `chuteEmpurrao`, `chuteCircularBaixo`, `chuteCircularMedio`, `chuteGancho`, `chuteCrescente`, `chuteParaTras`, `joelhadaVoadora`, `pisao`, `bloqueioBaixo`, `bloqueioInterno`, `aparar`, `cobertura`, `esquivaLateral`, `rolamentoParaTras`, `protegendoRosto`, `espadaGuardaMedia`, `espadaGuardaAlta`, `espadaEstocada`, `espadaCorteDescendente`, `espadaCorteHorizontal`, `espadaDefesa`, `espadaSaque`, `espadaEmbainhando`, `espadaApoiadaNoChao`, `lancaGuarda`, `lancaEstocada`, `bastaoGirando`, `arcoPuxando`, `arcoSacandoFlecha`, `armaDuasMaos`, `armaUmaMao`, `armaCoberturaParede`, `armaRecarregando`, `atingidoCostas`, `atingidoLado`, `caindoDeJoelhos`, `nocauteadoSentado`, `cuspindoSangue`, `arremessadoAlto`, `entradaHeroica`, `apontandoInimigo`, `punhoAFrente`, `viloesBracosCruzados`, `risadaVila`, `transformacao`, `pousoAgachadoMaoNoChao`, `vitoriaPunhoErguido`, `vitoriaAjoelhada`, `costasParaCamera`, `energiaConchaLado`, `energiaRajadaUmBraco`, `energiaDuasMaosAFrente`, `energiaAuraConcentrando`, `energiaEsferaUmaMao`, `selosDeMao`, `saltoComEspada`, `voadoraDupla`, `cambalhotaNoAr`, `saltoDesviando`, `amMabu`, `amGongbu`, `amPubu`, `amXiebu`, `amXubu`, `amSaudacaoKungFu`, `amTigreGarra`, `amTigreAtaque`, `amTigreDefesa`, `amGarcaAsas`, `amGarcaBico`, `amGarcaUmPe`, `amSerpenteBote`, `amSerpenteBaixa`, `amSerpenteEnrola`, `amLouvaDeusGuarda`, `amLouvaDeusAgarra`, `amMacacoAgachado`, `amMacacoOlha`, `amMacacoRouba`, `amDragaoGarra`, `amDragaoSobe`, `amDragaoMergulha`, `amJudoKumikata`, `amJudoIpponSeoi`, `amJudoOGoshi`, `amJudoOSotoGari`, `amJudoUchiMata`, `amJudoTomoeNage`, `amJudoKesaGatame`, `amJudoUkemi`, `amKarateZenkutsu`, `amKarateKokutsu`, `amKarateKibaDachi`, `amKarateOiZuki`, `amKarateGyakuZuki`, `amKarateAgeUke`, `amKarateGedanBarai`, `amKarateShutoUke`, `amKarateMaeGeri`, `amKarateYokoGeri`, `amKarateKata`, `amAikidoKamae`, `amAikidoIriminage`, `amAikidoKoteGaeshi`, `amAikidoShihoNage`, `amAikidoIkkyo`, `amAikidoSuwariwaza`, `amWingChunGuarda`, `amWingChunTanSau`, `amWingChunBongSau`, `amWingChunPakSau`, `amWingChunSocoCorrente`, `amTkdDollyoChagi`, `amTkdNeryoChagi`, `amTkdTwioYopChagi`, `amTkdDwiChagi`, `amTkdGuarda`, `amCapoeiraMeiaLua`, `amCapoeiraArmada`, `amCapoeiraQueixada`, `amCapoeiraAu`, `amCapoeiraNegativa`, `amCapoeiraEsquivaBaixa`, `amCapoeiraMartelo`, `amBjjGuardaFechada`, `amBjjMontada`, `amBjjChaveDeBraco`, `amBjjMataLeao`, `amBjjTriangulo`, `amBjjRaspagem`, `amKarateUchiUke`, `amKarateJuujiUke`, `amKarateUraken`, `amKarateHizaGeri`, `amTkdMakki`, `amTkdBandalChagi`, `amWingChunLapSau`, `amCapoeiraBencao`, `amCapoeiraCocorinha`, `amKungFuBloqueioGarca`, `amKungFuPalmaDupla`, `amJudoDefesaQuadril`, `amJudoCaindoProjetado`, `amBjjDefendendoMataLeao`, `kaijuDePeNaCabeca`, `kaijuComandando`, `kaijuAgarradoAgachado`, `kaijuAbracadoAoPescoco`, `kaijuSentadoNoOmbro`, `kaijuPenduradoUmaMao`, `kaijuSaltandoDoMonstro`, `kaijuMontadoComRedeas`, `rfAgachadoCocoras`, `rfAgachadoApontando`, `rfAgachadoMaosNosJoelhos`, `rfAgachadoMaoNoChao`, `rfAgachadoMaosNaCabeca`, `rfAgachadoAbracandoJoelhos`, `rfAgachadoPensando`, `rfAgachadoOferecendo`, `rfAgachadoUmJoelho`, `rfAgachadoUmJoelhoOlhando`, `rfAgachadoBaixoLateral`, `rfAgachadoInspecionando`, `rfEngatinhandoAvanco`, `rfEngatinhandoOlhandoTras`, `rfRastejandoCotovelos`, `rfLargadaCorrida`, `rfApoioTresPontos`, `rfFurtivoPassoLongo`, `rfFurtivoNasPontas`, `rfFurtivoAgachadoAvancando`, `rfFurtivoColadoParede`, `rfFurtivoEspiandoMuro`, `rfFurtivoAgachadoAtrasCobertura`, `rfFurtivoSinalSilencio`, `rfFurtivoSinalAvancar`, `rfFurtivoSinalParar`, `rfFurtivoEscalandoMuro`, `rfFurtivoCorridaAbaixada`, `rfFlutuandoRelaxadoRef`, `rfFlutuandoSentadoNoAr`, `rfFlutuandoDeCostas`, `rfFlutuandoGirando`, `rfFlutuandoBracosAbertosRef`, `rfFlutuandoEncolhidoNoAr`, `rfCaindoDeCostasRef`, `rfCaindoDeFrente`, `rfRendicaoMaosAoAltoRef`, `rfRendicaoMaosNaNuca`, `rfRendicaoMaosNasCostas`, `rfRendicaoMeioErguido`, `rfRendicaoAjoelhadoMaosAoAlto`, `rfRendicaoAjoelhadoCurvado`, `rfRendicaoProstrado`, `rfRendicaoAjoelhadoCobrindoCabeca`, `rfSocoJabRef`, `rfSocoDiretoAvanco`, `rfSocoGanchoAlto`, `rfSocoUppercutRef`, `rfSocoOverhand`, `rfSocoInvestidaAbaixada`, `rfSocoGuardaRecolhida`, `rfSocoBackfistGirando`, `rfMergulhoCanivete`, `rfMergulhoGrupado`, `rfMergulhoCarpado`, `rfMergulhoAndorinha`, `rfMergulhoSuperman`, `rfParadaDeMao`, `rfParadaDeMaoAberta`, `rfParadaDeMaoEscorpiao`, `rfAcenoTchau`, `rfAcenoDuasMaos`, `rfAcenoAndandoEmbora`, `rfAcenoDeCostas`, `rfAcenoAjoelhado`, `rfDespedidaMaoNoPeito`, `rfDespedidaAbracandoSi`, `rfDespedidaAjoelhadoChorando`, `rfAtaqueInvestidaSoco`, `rfAtaqueSaltoChute`, `rfAtaqueChuteAlto`, `rfAtaqueRasteira`, `rfAtaquePalmaAberta`, `rfAtaqueCotovelada`, `rfAtaqueJoelhada`, `rfAtaqueMarteloDuasMaos`, `rfAtaqueEnergiaPalmas`, `rfAtaqueCargaEnergia`, `rfDorBarriga`, `rfDorPeito`, `rfDorCostas`, `rfDorPescoco`, `rfDorCabeca`, `rfDorJoelhoSentado`, `rfDorTornozeloSentado`, `rfDorMancando`, `rfDorBracoFerido`, `rfDorContorcendo`, `rfVergonhaRostoNasMaos`, `rfVergonhaMaoNaNuca`, `rfVergonhaMaosEntrelacadas`, `rfVergonhaPePezinho`, `rfVergonhaBracoCruzadoNaFrente`, `rfVergonhaMaosAtras`, `rfVergonhaEncolhido`, `rfVergonhaCobrindoBoca`, `rfVergonhaVirandoRosto`, `rfNinjaGuardaKunai`, `rfNinjaArremessoShuriken`, `rfNinjaArremessoDuplo`, `rfNinjaSeloDeMao`, `rfNinjaSaltoAlto`, `rfNinjaCorridaBracosParaTras`, `rfNinjaEspadaReversa`, `rfProvedorOferecendo`, `rfProvedorMaoNoPeito`, `rfProvedorBracosAbertosAcolhendo`, `rfProvedorAgachadoDando`, `rfProvedorMaosNaCintura`, `rfProvedorAbrindoBau`, `rfProvedorCarregandoSaco`, `rfMensageiroCorrendoComCarta`, `rfMensageiroEntregandoCarta`, `rfMensageiroLendoProclamacao`, `rfMensageiroGritandoNotícia`, `rfMensageiroAjoelhadoReportando`, `rfMensageiroApontandoCaminho`, `rfViloaRisoMaligno`, `rfViloaMaoNoQuadril`, `rfViloaBracosCruzados`, `rfViloaConjurando`, `rfViloaApontandoAcusando`, `rfViloaSentadaNoTrono`, `rfViloaAgachadaPredadora`, `rfSobreviventeExausto`, `rfSobreviventeComCajado`, `rfSobreviventeOlhandoHorizonte`, `rfSobreviventeAjoelhadoAgradecendo`, `rfSobreviventeBebendoCantil`, `rfSobreviventeEscalandoCorda`, `rfSobreviventeComMochila`, `rfInfiltradorAgachadoSinal`, `rfInfiltradorTrocaObjeto`, `rfInfiltradorEscutando`, `rfInfiltradorDisfarcado`, `rfCooperacaoBateMao`, `rfCooperacaoPunhoErguido`, `rfCooperacaoMeditandoSentado`, `explicandoComMaos`, `contandoNosDedos`, `apontandoParaSi`, `maosAbertasSinceras`, `encolhendoOmbros`, `maoNoPeitoJuramento`, `maoNoQueixo`, `bracosCruzadosOuvindo`, `inclinadoAtento`, `cochichandoMaoNaBoca`, `dedoNosLabios`, `maoNaTesta`, `cocandoACabeca`, `maosNaCinturaBravo`, `apontandoAcusando`, `gesticulandoBravo`, `pedindoMaoEstendida`, `implorandoMaosJuntas`, `acenandoDeLonge`, `chamandoComAMao`, `dispensandoComAMao`, `polegarParaCima`, `sinalOk`, `maoNoBolsoRelaxado`, `maosNosBolsos`, `encostadoBracosCruzados`, `celularNoOuvido`, `olhandoOCelular`, `maoAtrasDaCabeca`, `maosAtrasDasCostas`, `reverenciaJaponesa`, `reverenciaLeve`, `continencia`, `negandoComDedo`, `apresentandoBracoAberto`, `discursando`, `olharDeLado`, `maoEstendidaApertar`, `abracoAberto`, `desesperoMaosNaCabeca`, `ajoelhadoChorando`, `encolhidoComMedo`, `abracandoASiMesmo`, `cabisbaixoAndando`, `bracosParaCimaAlegria`, `pulandoDeAlegria`, `dancandoAlegre`, `cansadoMaosNosJoelhos`, `deitadoOlhandoOCeu`, `sentadoNaEscadaPensativo`, `sentadoLendo`, `sentadoNoCelular`, `espreguicando`, `bocejando`, `olhandoORelogio`, `procurandoMaoNosOlhos`, `espiando`, `escondidoAgachado`, `correndoAssustado`, `tropecando`, `escorregando`, `carregandoCaixa`, `empurrandoPesado`, `puxandoCorda`, `varrendo`, `cozinhandoMexendo`, `escrevendoEmPe`, `digitandoSentado`, `pintandoCavalete`, `tocandoViolaoSentado`, `cantandoMicrofone`, `fotografando`, `bebendoGarrafa`, `comendoSanduiche`, `dormindoSentado`, `deitadoDeBrucosLendo`, `rezando`, `ajoelhadoRezando`, `tirandoSelfie`, `segurandoGuardaChuva`, `acenandoAdeusTriste`, `maosNoVidro`, `saltitando`, `girandoBracosAbertos`, `timidaPesParaDentro`, `maosNoRostoVergonha`, `derrotadoOmbrosCaidos`, `punhoCerradoDeterminado`, `modeloMaoNoQuadril`, `sentadoPernasCruzadas`, `sentadoEncostadoParede`, `deitadoFetal`, `correndoBracosAbertos`, `bracosCruzadosEmburrado`, `chocadoMaosNaBoca`, `apontandoRindo`, `segurandoBarrigaRindo`, `bocejandoSentado`, `esperandoImpaciente`, `ofereceFlor`, `ajoelhadoPedido`, `debrucadoNaMesa`, `maosAoAlto`, `ajoelhadoRendido`, `estendendoAMaoAjuda`, `esquivaMatrix`, `esquivaAbaixando`, `esquivaPendulo`, `esquivaGiro`, `esquivaRolamento`, `esquivaMergulho`, `esquivaCambalhotaTras`, `esquivaPorUmTriz`, `esquivaPuloLado`, `esquivaInclinarCabeca`, `defesaCoberto`, `defesaEncolhido`, `defesaEmpurrando`, `defesaBarreira`, `defesaBarreiraDupla`, `defesaChute`, `defesaAgarrandoPunho`, `defesaDesviandoBraco`, `defesaProtegendoOutro`, `puloImpulso`, `puloDecolando`, `puloEstrela`, `puloEncolhido`, `puloAltoEsticado`, `puloEmDistancia`, `puloTesoura`, `puloAterrissagem`, `puloAterrissagemHeroi`, `puloParede`, `puloCambalhota`, `puloQueda`, `flutuandoMeditacao`, `flutuandoRelaxado`, `flutuandoBracosAbertos`, `flutuandoAmeaca`, `flutuandoSubmerso`, `flutuandoGravidadeZero`, `flutuandoAdormecido`, `vooSuperHeroi`, `vooDecolando`, `vooPlanando`, `vooMergulho`, `vooPairando`, `fugaOlhandoTras`, `fugaDesesperada`, `fugaEsgueirando`, `fugaRastejando`, `fugaTropecando`, `fugaPulandoMuro`, `fugaEscondendo`, `fugaColadoParede`, `fugaCarregandoAlguem`, `perseguicaoSprint`, `perseguicaoAlcancando`, `perseguicaoAgarrando`, `perseguicaoApontando`, `perseguicaoOfegante`, `perseguicaoDerrapando`, `perseguicaoProcurando`, `parkourVault`, `parkourPendurado`, `parkourEscalando`, `parkourCorridaParede`, `parkourDeslizando`, `parkourEquilibrio`, `parkourAgachadoBeirada`, `impactoNoRosto`, `impactoNoEstomago`, `arremessadoParaTras`, `caidoDeCostas`, `caidoDeBrucos`, `levantandoComEsforco`, `ajoelhadoExausto`, `cambaleando`, `atordoadoEstrelinhas`, `escorregaoComico`, `quedaSentado`, `poderCarregando`, `poderKamehameha`, `poderBolaPreparo`, `poderAoCeu`, `poderSocoChao`, `poderTelecinese`, `poderTransformacao`, `poderSelamento`, `giganteAgachando`, `gigantePisando`, `giganteRugindo`, `giganteOlhandoBaixo`, `giganteSegurandoNaPalma`, `giganteDerrubandoPredio`, `minusculoOlhandoCima`, `minusculoAcenando`, `minusculoEscalando`, `minusculoEsmagado`, `minusculoNaPalma`, `minusculoEmpurrando`, `entradaVilao`, `encaraRival`, `desafioChamando`, `costasComCostas`, `cercadoOlhandoVolta`, `vitoriaPunhoAlto`, `vitoriaCostasViradas`, `derrotaDeJoelhos`, `juramento`, `estendendoMaoRival`, `invChutandoPorta`, `invOmbroNaPorta`, `invAriete`, `invPeDeCabra`, `invEntrandoArmaAlta`, `invVarrendoCanto`, `invJogandoGranada`, `invGritandoRendam`, `invPulandoJanela`, `invRapelDescendo`, `invCordaSubindo`, `invEscudoAvancando`, `assaltoMandandoDeitar`, `assaltoEnchendoSaco`, `assaltoCofreOuvindo`, `assaltoMascaraPondo`, `infAndandoNaPonta`, `infAgachadoAvancando`, `infColadoNaParede`, `infEspiandoQuina`, `infSinalSilencio`, `infSinalParar`, `infSinalAvancar`, `infDesarmandoAlarme`, `infPassandoLaser`, `infRastejandoDuto`, `infPendBeiral`, `infPegandoChave`, `infAbrindoFechadura`, `infDisfarceJornal`, `infFingindoNatural`, `infCameraSeguranca`, `infOuvindoPorta`, `infEspiandoFechadura`, `infSniperDeitado`, `infSniperAjoelhado`, `infBinoculo`, `persCorrendoApontando`, `persEsticandoPegar`, `persSaltoMergulho`, `persDerrapandoCurva`, `persPulandoObstaculo`, `persOfeganteProcurando`, `persRadioCorrendo`, `persMotoInclinada`, `persDirigindoUmaMao`, `persSaltoEntrePredios`, `persAterrissandoRolando`, `persEquilibrioBeiral`, `fugaOlhaTrasPanico`, `fugaTropecaCorrendo`, `fugaCaidaRecuando`, `fugaEscalandoMuro`, `fugaDescendoEscada`, `fugaPelaJanela`, `fugaBolsaNoPeito`, `fugaMancando`, `fugaArrastandoAmigo`, `escSobMesa`, `escNoArmario`, `escAtrasCortina`, `escAtrasCarro`, `escNaArvore`, `escEmbaixoCama`, `escCobrindoBoca`, `tatAndandoArmaBaixa`, `tatTrocandoPente`, `tatAtirandoAbrigado`, `tatAtirandoDeitado`, `tatAtirandoCorrendo`, `tatDuasPistolas`, `tatPistolaLanterna`, `tatFacaAgarrando`, `tatArcoMirando`, `tatBazuca`, `tatGranadaPino`, `tatChecandoMapa`, `resCarregandoNoOmbro`, `resPuxandoDoBuraco`, `resMassagemCardiaca`, `resChamandoAjuda`, `resLevantandoEscombro`, `resProtegendoCrianca`, `pkPassagemMacaco`, `pkSpeedVault`, `pkWallRun`, `pkPrecisao`, `pkGatoNoMuro`, `pkMortalFrente`, `pkMortalTras`, `corSprintContato`, `corSprintVoo`, `corLargadaBaixa`, `corTrotando`, `corCansadaArrastando`, `corChegadaFita`, `corFreando`, `corCorridaNaruto`, `corCorridaCartoon`, `corAtrasadoComCafe`, `corCorrendoChuva`, `corPegandoOnibus`, `camConfiante`, `camDesfile`, `camMaosNoBolso`, `camVelhinhoBengala`, `camBebado`, `camZumbi`, `camEsgueirandoParede`, `camCarregandoSacolas`, `camCelularAndando`, `camPassoMarcha`, `camSonambulo`, `camSubindoEscada`, `camContraVento`, `camNaNeve`, `camMochilaoTrilha`, `escaladaParedeAgarras`, `escaladaEscadaMao`, `escaladaArvore`, `escaladaPenduradoUmaMao`, `saltoEstrela`, `saltoGrupado`, `saltoMergulhoAgua`, `saltoCaindoDoAlto`, `saltoAgachamento`, `chaoRastejandoSoldado`, `chaoEngatinhandoRapido`, `chaoLevantandoApoiado`, `chaoSentadoApoiandoMaos`, `chaoDeitadoDeLado`, `chaoDeitadoBarriga`, `chaoEstrelaNoChao`, `chaoEncolhidoFetal`, `baleArabesque`, `balePlieSegunda`, `balePirueta`, `baleGrandJete`, `baleAttitude`, `baleReverencia`, `balePrimeiraPosicao`, `hipHopFreeze`, `hipHopTopRock`, `hipHopWindmill`, `hipHopBracosCruzados`, `hipHopPopping`, `hipHopKrumpPeito`, `hipHopAgachadoMao`, `salsaPassoBase`, `sambaNoPe`, `tangoInclinado`, `flamencoPalmas`, `forroDancando`, `frevoSombrinha`, `rumbaQuadril`, `valsaSozinho`, `discoApontando`, `twistAgachando`, `danceFestaBracosCima`, `danceDabbing`, `danceFloss`, `danceKpopPose`, `danceCharleston`, `danceMoonwalk`, `danceRodopio`, `contempContracao`, `contempEspiral`, `contempChaoDeslizando`, `contempEquilibrioLateral`, `contempQuedaControlada`, `dancaIrlandesa`, `dancaIndiana`, `dancaHawaiana`, `dancaCossaca`, `sapateado`, `capoeiraAu`, `capoeiraMeiaLua`, `capoeiraNegativa`, `cheerleaderPom`, `cheerleaderSalto`, `pole`, `futChuteForte`, `futCabeceio`, `futBicicleta`, `futConduzindo`, `futGoleiroDefesa`, `futGoleiroPronto`, `futComemoracaoJoelho`, `futLateral`, `futCarrinho`, `futEmbaixadinha`, `futJuizCartao`, `basqArremesso`, `basqEnterrada`, `basqDrible`, `basqDefesa`, `basqBandeja`, `basqToco`, `voleiSaque`, `voleiCortada`, `voleiManchete`, `voleiLevantamento`, `voleiPeixinho`, `tenisSaque`, `tenisForehand`, `tenisBackhand`, `tenisVoleioRede`, `pingPong`, `badminton`, `natCrawl`, `natCostas`, `natBorboleta`, `natSaidaBloco`, `natBoiando`, `ginParadaDeMao`, `ginEspacate`, `ginPonte`, `ginArgolas`, `ginBarraFixa`, `ginFinalizacao`, `ginFitaRitmica`, `skateOllie`, `skateRemando`, `skateManobraGrab`, `surfEmPe`, `surfRemando`, `snowboard`, `esquiDescendo`, `patinandoGelo`, `ciclismoPedalando`, `ciclismoSentado`, `atlArremessoPeso`, `atlLancaDardo`, `atlSaltoAltura`, `atlSaltoVara`, `atlBarreira`, `halterofilismo`, `agachamentoBarra`, `flexaoBraco`, `abdominal`, `pranchaAbdominal`, `roscaHalter`, `beisebolRebatendo`, `beisebolArremesso`, `golfeTacada`, `golfePutt`, `hoqueiPatins`, `rugbyCorrendoBola`, `rugbyQuarterback`, `boliche`, `sinuca`, `dardos`, `boxeComemorando`, `boxeNasCordas`, `judoQueda`, `esgrimaEstocadaEsporte`, `sumoInvestida`, `pescando`, `remandoCanoa`, `yogaGuerreiro`, `yogaArvore`, `yogaCachorro`, `yogaLotus`, `alongandoPerna`, `arqueiroAjoelhado`, `cozCortandoLegumes`, `cozProvandoColher`, `cozVirandoPanqueca`, `cozAbrindoForno`, `cozLavandoLouca`, `cozAmassandoMassa`, `cozMexendoGeladeira`, `cozServindoPrato`, `cozComendoEmPe`, `cozBebendoCafe`, `limpAspirando`, `limpPassandoPano`, `limpEsfregandoJoelhos`, `limpTirandoPo`, `limpLimpandoJanela`, `limpLevandoLixo`, `roupaPassandoFerro`, `roupaEstendendoVaral`, `roupaDobrando`, `roupaVestindoCalca`, `roupaAmarrandoSapato`, `roupaGravata`, `roupaPondoCasaco`, `quartoAcordando`, `quartoDormindoLado`, `quartoDormindoCostas`, `quartoArrumandoCama`, `banhoEscovandoDentes`, `banhoSecandoCabelo`, `banhoMaquiagem`, `banhoBarbeando`, `bebeNinando`, `bebeMamadeira`, `bebeCarregandoCostas`, `bebeTrocandoFralda`, `bebeLevantandoAlto`, `jardRegando`, `jardCavando`, `jardPlantando`, `jardCortandoGrama`, `petPasseandoCachorro`, `petAfagandoGato`, `escrApresentando`, `escrAoTelefone`, `escrCarregandoPastas`, `escrEstressado`, `escrEspreguicandoCadeira`, `escrApertoMaoNegocio`, `escrQuadroBranco`, `escrCafezinho`, `medAuscultando`, `medSeringa`, `medCirurgiao`, `medEmpurrandoMaca`, `medMaosLevantadasLuvas`, `polApitoTransito`, `polDistintivo`, `polRevistando`, `bombeiroMangueira`, `bombeiroMachado`, `segurancaBracosCruzados`, `garcomBandeja`, `garcomAnotando`, `chefFlambando`, `baristaServindo`, `mecanicoDebaixoCarro`, `mecanicoCapo`, `pedreiroMartelando`, `pedreiroCarregandoTijolo`, `carteiroEntregando`, `caixaSupermercado`, `fotoTirandoFoto`, `fotoAgachadoFotografando`, `cinegrafista`, `diretorClaquete`, `musicoGuitarraSolo`, `musicoBateria`, `musicoVioloncelo`, `musicoTrompete`, `cantorMicrofone`, `maestroRegendo`, `pintorParede`, `escultorModelando`, `escolaLevantandoMao`, `escolaDormindoCarteira`, `escolaColandoProva`, `escolaMochilaOmbro`, `escolaLendoEmPe`, `escolaProfessorBravo`, `escolaFormatura`, `escolaRecebendoDiploma`, `escolaCientistaTubo`, `escolaEstudandoChao`, `festaBrindando`, `festaAssoprandoVelas`, `festaAbrindoPresente`, `festaConfete`, `festaKaraoke`, `festaChampanhe`, `festaDJ`, `festaSelfie`, `festaBaloes`, `festaFantasiaSuperHeroi`, `festaBebadoAbracandoPoste`, `festaNatalPresente`, `viagemMala`, `viagemMochilaoMapa`, `viagemCaronaPolegar`, `viagemSegurandoBarra`, `viagemTaxi`, `viagemAcenandoTrem`, `viagemMalaPesada`, `viagemTirandoFotoTurista`, `viagemSentadoAviao`, `viagemMotoristaVolante`, `viagemCiclistaParado`, `viagemCavalgando`, `lazerVideogame`, `lazerVideogameVitoria`, `lazerTricotando`, `lazerXadrez`, `lazerPipoca`, `lazerRedeDeitado`, `lazerPiquenique`, `lazerPraiaBronzeando`, `lazerCastelinhoAreia`, `lazerEmpinandoPipa`, `lazerLendoRede`, `lazerFogueiraAquecendo`, `lazerMarshmallow`, `lazerTelescopio`, `lazerPintandoUnhas`, `lazerComprasVitrine`, `emoLutoTumulo`, `emoChorandoSentadoChao`, `emoOlhandoChuvaJanela`, `emoSentadoCabisbaixo`, `emoGritandoCeu`, `emoSegurandoFoto`, `emoCaixaDespedida`, `emoDeitadoChorando`, `emoSocandoParede`, `emoChutandoLixeira`, `emoJogandoObjeto`, `emoPuxandoCabelo`, `emoGritandoPunhos`, `emoDerrubandoMesa`, `emoApontandoAcusando`, `emoAgarradoAoPeito`, `emoPulandoPunho`, `emoGirandoFeliz`, `emoAjoelhadoGratidao`, `emoLendoCarta`, `emoTrofeuErguido`, `emoMedalhaBeijando`, `emoCorrendoBracosAbertos`, `emoEscondendoRosto`, `emoCocandoNuca`, `emoEncolhidoCanto`, `emoTremendoFrio`, `emoRoendoUnhas`, `emoAndandoDeUmLadoAOutro`, `emoOlhandoHorizonte`, `emoSentadoBeiraCais`, `emoDeitadoPensando`, `emoEscrevendoDiario`, `emoEspelhoEncarando`, `emoDecisaoFirme`, `romEsperandoFlores`, `romSuspirandoCoracao`, `romCartaDeAmor`, `romOlhandoCelularSorrindo`, `romAbracandoTravesseiro`, `romPedidoDeJoelho`, `romSerenata`, `romJogandoBeijo`, `romArrumandoCabelo`, `romOfereceChocolate`, `romCoracaoMaos`, `romDespedidaAcenando`, `romCiumes`, `romDancandoSozinhoChuva`, `terLanternaNoEscuro`, `terOlhandoParaTrasArrepio`, `terRecuandoParede`, `terCaidaRastejando`, `terGritandoMaosRosto`, `terSegurandoFaca`, `terTrancandoPorta`, `terEscondidoPrendendoRespiracao`, `terTelefoneSemSinal`, `terPossuido`, `terArrastandoCorrente`, `terVampiroCapa`, `terLobisomemUivando`, `terMumiaAndando`, `terAssassinoMascarado`, `terMenininaCabeloRosto`, `terRastejandoAranha`, `detLupa`, `detAgachadoPista`, `detQuadroDeProvas`, `detSoprandoFumacaArma`, `detEncostadoPoste`, `detInterrogando`, `detAlgemadoSentado`, `comEscorregandoBanana`, `comTortaNaCara`, `comPisandoAncinho`, `comCorrendoSemSair`, `comCaindoCadeira`, `comQueimandoBumbum`, `comSegurandoRisada`, `comRolandoDeRir`, `comPedindoPerdao`, `comPensadorExagerado`, `comMusculoExibido`, `comPeDeGalinha`, `comDesmaioDramatico`, `comCongelado`, `comAndandoNaPontaRoubando`, `comAbracandoComida`, `comTropecoCadarco`, `brigaEmpurrandoPeito`, `brigaSocoSelvagem`, `brigaLevandoSoco`, `brigaCaindoNocaute`, `brigaGarrafa`, `brigaCadeirada`, `brigaLimpandoSangue`, `brigaEstalandoDedos`, `brigaSegurandoAlguem`, `armaEspadaErguidaDuasMaos`, `armaEspadaCravadaChao`, `armaKatanaSaque`, `armaLancaInvestida`, `armaMachadoDuplo`, `armaNunchaku`, `armaBastaoBo`, `armaEscudoEspada`, `armaShurikenArremesso`, `armaChicote`, `defSeSoltandoPulso`, `defBracosNaCabeca`, `defSprayPimenta`, `defJoelhoNaVirilha`, `defCaidoChutando`, `magoConjurandoBola`, `magoCajadoErguido`, `magoLendoGrimorio`, `magoEscudoMagico`, `magoLevitandoMeditando`, `magoTeleporte`, `magaPocao`, `magoInvocacaoChao`, `heroiVooPunhoFrente`, `heroiPousoTresApoios`, `heroiSegurandoCarro`, `heroiRaioDosOlhos`, `heroiAbrindoCamisa`, `heroiTeiaLancando`, `heroiCorrendoVelocidade`, `heroiEscudoArremesso`, `viloRisoMalvado`, `viloTronoPernaCruzada`, `animeTransformacao`, `animeKamehameha`, `animeNinjaSelo`, `animeSalvandoNoBraco`, `animeCorrendoTorrada`, `animePoseVitoriaV`, `sereiaSentadaPedra`, `fadaVoando`, `faroesteDuelo`, `faroesteSacandoRevolver`, `faroesteLacando`, `faroesteEncostadoBalcao`, `medievalJuramentoEspada`, `medievalReiTrono`, `medievalArautoTrombeta`, `medievalFerreiroMartelo`, `piratLunetaProa`, `piratTimao`, `piratPranchaAndando`, `piratBalancoCorda`, `scifiAstronautaFlutuando`, `scifiPilotoCabine`, `scifiHologramaTocando`, `scifiRoboAndando`, `scifiArmaLaser`, `sobrevAcendendoFogo`, `sobrevBebendoRio`, `sobrevMachadoLenha`, `sobrevArcoCacando`, `sobrevBarraca`, `sobrevExaustoDeserto`, `socialDiscursoPalanque`, `socialPlacaProtesto`, `socialMegafone`, `socialVotando`, `socialAplaudindoEmPe`, `socialAcenandoMultidao`, `socialAssinandoContrato`, `gestoReverenciaJaponesa`, `gestoMaoNoPeitoSaudando`, `gestoContinenciaMilitar`, `gestoDandoDeOmbros`, `gestoContandoNosDedos`, `gestoChamandoComDedo`, `gestoSilencioMandando`, `gestoContandoSegredo`, `esporteRodaAbraco`, `esperaOlhandoRelogioPulso`, `esperaEncostadoParede`, `esperaSentadoMala`, `esperaPlacaAeroporto`, `esperaChuvaGuardaChuva`, `infanciaPulandoAmarelinha`, `infanciaPulandoCorda`, `infanciaEscondeEsconde`, `infanciaAviaozinho`, `infanciaBirra`, `infanciaBalanco`, `infanciaEscorregador`, `infanciaBolhaSabao`, `infanciaPirataEspadinha`, `velhoAndador`, `velhoCadeiraBalanco`, `velhoDandoMilhoPombos`, `velhoCostasDoendo`, `velhoBengalaBrava`, `fePrecandoAjoelhado`, `fePrecandoBracosAbertos`, `feAcendendoVela`, `feMeditacaoEmPe`, `cerimNoivoEsperandoAltar`, `cerimNoivaBuque`, `cerimJogandoBuque`, `cerimHinoMaoPeito`, `cerimCarregandoCaixao`, `campoOrdenhando`, `campoCarregandoFeno`, `campoColhendo`, `campoSemeando`, `campoEnxada`, `milSentido`, `milDescansar`, `milFuzilOmbro`, `milBinoculoTrincheira`, `milRadioMochila`, `milFeridoChamandoMedico`, `milLancandoGranadaAlta`, `milRendicaoBandeira`, `hospPacienteMuleta`, `hospCadeiraRodas`, `hospDeitadoMaca`, `hospSegurandoBarriga`, `hospTossindo`, `hospFisioterapia`, `animalAlimentandoCavalo`, `animalJogandoGraveto`, `animalFugindoAbelha`, `animalObservandoPassaro`, `natSentindoVento`, `natCheirandoFlor`, `natAtravessandoRio`, `amKarateKiaiZenkutsu`, `amTaiChiChicote`, `amTaekwondoGiratorio`, `amMuayThaiClinch`, `amJiuJitsuGuarda`, `amMMAGroundPound`, `amKungFuLouva`, `amCapoeiraGinga`, `ruaEsperandoSemaforo`, `ruaAtravessandoCorrendo`, `ruaAmarrandoBicicleta`, `ruaMendigoChapeu`, `ruaGrafiteiro`, `ruaSkatistaSentado`, `ruaCarregandoCaixaPizza`, `ruaPegandoTaxiChuva`, `tecFoneDeOuvido`, `tecVideoChamada`, `tecRealidadeVirtual`, `tecGravandoVideo`, `tecNotebookColo`, `sentadoBrindando`, `sentadoComendo`, `sentadoConversandoMesa`, `sentadoRindoMesa`, `anLutaBaseBaixaSocoCarregado`, `anLutaBaseBaixaSocoCarregadoOlhaLado`, `anLutaBaseBaixaSocoCarregadoTronco`, `anLutaBaseBaixaPalmaDupla`, `anLutaBaseBaixaPalmaDuplaOlhaLado`, `anLutaBaseBaixaPalmaDuplaTronco`, `anLutaBaseBaixaKameLateral`, `anLutaBaseBaixaKameLateralOlhaLado`, `anLutaBaseBaixaKameLateralTronco`, `anLutaBaseBaixaEspadaAlto`, `anLutaBaseBaixaEspadaAltoOlhaLado`, `anLutaBaseBaixaEspadaAltoTronco`, `anLutaBaseBaixaDefesaX`, `anLutaBaseBaixaDefesaXOlhaLado`, `anLutaBaseBaixaDefesaXTronco`, `anLutaBaseBaixaApontaDesafio`, `anLutaBaseBaixaApontaDesafioOlhaLado`, `anLutaBaseBaixaApontaDesafioTronco`, `anLutaBaseBaixaGarras`, `anLutaBaseBaixaGarrasOlhaLado`, `anLutaBaseBaixaGarrasTronco`, `anLutaBaseBaixaNinjaRun`, `anLutaBaseBaixaNinjaRunOlhaLado`, `anLutaBaseBaixaNinjaRunTronco`, `anLutaNoArSocoCarregado`, `anLutaNoArSocoCarregadoOlhaLado`, `anLutaNoArSocoCarregadoTronco`, `anLutaNoArPalmaDupla`, `anLutaNoArPalmaDuplaOlhaLado`, `anLutaNoArPalmaDuplaTronco`, `anLutaNoArKameLateral`, `anLutaNoArKameLateralOlhaLado`, `anLutaNoArEspadaAlto`, `anLutaNoArEspadaAltoOlhaLado`, `anLutaNoArEspadaAltoTronco`, `anLutaNoArDefesaX`, `anLutaNoArDefesaXOlhaLado`, `anLutaNoArDefesaXTronco`, `anLutaNoArApontaDesafio`, `anLutaNoArApontaDesafioOlhaLado`, `anLutaNoArApontaDesafioTronco`, `anLutaNoArGarras`, `anLutaNoArGarrasOlhaLado`, `anLutaNoArGarrasTronco`, `anLutaNoArNinjaRun`, `anLutaNoArNinjaRunOlhaLado`, `anLutaNoArNinjaRunTronco`, `anLutaInvestidaSocoCarregado`, `anLutaInvestidaSocoCarregadoOlhaLado`, `anLutaInvestidaSocoCarregadoTronco`, `anLutaInvestidaPalmaDupla`, `anLutaInvestidaPalmaDuplaOlhaLado`, `anLutaInvestidaPalmaDuplaTronco`, `anLutaInvestidaKameLateral`, `anLutaInvestidaKameLateralOlhaLado`, `anLutaInvestidaEspadaAlto`, `anLutaInvestidaEspadaAltoOlhaLado`, `anLutaInvestidaEspadaAltoTronco`, `anLutaInvestidaDefesaX`, `anLutaInvestidaDefesaXOlhaLado`, `anLutaInvestidaDefesaXTronco`, `anLutaInvestidaApontaDesafio`, `anLutaInvestidaApontaDesafioOlhaLado`, `anLutaInvestidaApontaDesafioTronco`, `anLutaInvestidaGarras`, `anLutaInvestidaGarrasOlhaLado`, `anLutaInvestidaGarrasTronco`, `anLutaInvestidaNinjaRun`, `anLutaInvestidaNinjaRunOlhaLado`, `anLutaInvestidaNinjaRunTronco`, `anLutaAterrissagemSocoCarregado`, `anLutaAterrissagemSocoCarregadoOlhaLado`, `anLutaAterrissagemSocoCarregadoTronco`, `anLutaAterrissagemPalmaDupla`, `anLutaAterrissagemPalmaDuplaOlhaLado`, `anLutaAterrissagemPalmaDuplaTronco`, `anLutaAterrissagemKameLateralOlhaLado`, `anLutaAterrissagemKameLateralTronco`, `anLutaAterrissagemEspadaAlto`, `anLutaAterrissagemEspadaAltoOlhaLado`, `anLutaAterrissagemEspadaAltoTronco`, `anLutaAterrissagemDefesaX`, `anLutaAterrissagemDefesaXOlhaLado`, `anLutaAterrissagemDefesaXTronco`, `anLutaAterrissagemApontaDesafio`, `anLutaAterrissagemApontaDesafioOlhaLado`, `anLutaAterrissagemApontaDesafioTronco`, `anLutaAterrissagemGarras`, `anLutaAterrissagemGarrasOlhaLado`, `anLutaAterrissagemGarrasTronco`, `anLutaAterrissagemNinjaRun`, `anLutaAterrissagemNinjaRunOlhaLado`, `anLutaAterrissagemNinjaRunTronco`, `anLutaGuardaLadoSocoCarregado`, `anLutaGuardaLadoSocoCarregadoOlhaLado`, `anLutaGuardaLadoSocoCarregadoTronco`, `anLutaGuardaLadoPalmaDupla`, `anLutaGuardaLadoPalmaDuplaOlhaLado`, `anLutaGuardaLadoPalmaDuplaTronco`, `anLutaGuardaLadoKameLateral`, `anLutaGuardaLadoKameLateralOlhaLado`, `anLutaGuardaLadoEspadaAlto`, `anLutaGuardaLadoEspadaAltoOlhaLado`, `anLutaGuardaLadoEspadaAltoTronco`, `anLutaGuardaLadoDefesaX`, `anLutaGuardaLadoDefesaXOlhaLado`, `anLutaGuardaLadoDefesaXTronco`, `anLutaGuardaLadoApontaDesafio`, `anLutaGuardaLadoApontaDesafioOlhaLado`, `anLutaGuardaLadoApontaDesafioTronco`, `anLutaGuardaLadoGarras`, `anLutaGuardaLadoGarrasOlhaLado`, `anLutaGuardaLadoGarrasTronco`, `anLutaGuardaLadoNinjaRun`, `anLutaGuardaLadoNinjaRunOlhaLado`, `anLutaGuardaLadoNinjaRunTronco`, `anLutaAjoelhadoSocoCarregado`, `anLutaAjoelhadoSocoCarregadoOlhaLado`, `anLutaAjoelhadoSocoCarregadoTronco`, `anLutaAjoelhadoPalmaDupla`, `anLutaAjoelhadoPalmaDuplaOlhaLado`, `anLutaAjoelhadoPalmaDuplaTronco`, `anLutaAjoelhadoKameLateral`, `anLutaAjoelhadoKameLateralOlhaLado`, `anLutaAjoelhadoEspadaAlto`, `anLutaAjoelhadoEspadaAltoOlhaLado`, `anLutaAjoelhadoEspadaAltoTronco`, `anLutaAjoelhadoDefesaX`, `anLutaAjoelhadoDefesaXOlhaLado`, `anLutaAjoelhadoDefesaXTronco`, `anLutaAjoelhadoApontaDesafio`, `anLutaAjoelhadoApontaDesafioOlhaLado`, `anLutaAjoelhadoApontaDesafioTronco`, `anLutaAjoelhadoGarras`, `anLutaAjoelhadoGarrasOlhaLado`, `anLutaAjoelhadoGarrasTronco`, `anLutaAjoelhadoNinjaRun`, `anLutaAjoelhadoNinjaRunOlhaLado`, `anLutaAjoelhadoNinjaRunTronco`, `anGolpeGiroChuteAlto`, `anGolpeGiroChuteAltoOlhaLado`, `anGolpeGiroChuteAltoTronco`, `anGolpeGiroCotovelada`, `anGolpeGiroCotoveladaOlhaLado`, `anGolpeGiroCotoveladaTronco`, `anGolpeGiroSocoDescendo`, `anGolpeGiroSocoDescendoOlhaLado`, `anGolpeGiroSocoDescendoTronco`, `anGolpeGiroRajada`, `anGolpeGiroRajadaOlhaLado`, `anGolpeGiroRajadaTronco`, `anGolpeGiroDedosDuplos`, `anGolpeGiroDedosDuplosOlhaLado`, `anGolpeGiroDedosDuplosTronco`, `anGolpeInclinadoChuteAlto`, `anGolpeInclinadoCotovelada`, `anGolpeInclinadoCotoveladaTronco`, `anGolpeInclinadoSocoDescendo`, `anGolpeInclinadoSocoDescendoTronco`, `anGolpeInclinadoRajada`, `anGolpeInclinadoRajadaTronco`, `anGolpeInclinadoDedosDuplos`, `anGolpeInclinadoDedosDuplosTronco`, `anGolpeAgachadoMaoChuteAlto`, `anGolpeAgachadoMaoChuteAltoOlhaLado`, `anGolpeAgachadoMaoChuteAltoTronco`, `anGolpeAgachadoMaoCotovelada`, `anGolpeAgachadoMaoCotoveladaOlhaLado`, `anGolpeAgachadoMaoCotoveladaTronco`, `anGolpeAgachadoMaoSocoDescendo`, `anGolpeAgachadoMaoSocoDescendoOlhaLado`, `anGolpeAgachadoMaoSocoDescendoTronco`, `anGolpeAgachadoMaoRajada`, `anGolpeAgachadoMaoRajadaOlhaLado`, `anGolpeAgachadoMaoRajadaTronco`, `anGolpeAgachadoMaoDedosDuplos`, `anGolpeAgachadoMaoDedosDuplosOlhaLado`, `anGolpeAgachadoMaoDedosDuplosTronco`, `anGolpeVoandoChuteAlto`, `anGolpeVoandoChuteAltoOlhaLado`, `anGolpeVoandoChuteAltoTronco`, `anGolpeVoandoCotovelada`, `anGolpeVoandoCotoveladaOlhaLado`, `anGolpeVoandoCotoveladaTronco`, `anGolpeVoandoSocoDescendo`, `anGolpeVoandoSocoDescendoOlhaLado`, `anGolpeVoandoSocoDescendoTronco`, `anGolpeVoandoRajada`, `anGolpeVoandoRajadaOlhaLado`, `anGolpeVoandoRajadaTronco`, `anGolpeVoandoDedosDuplos`, `anGolpeVoandoDedosDuplosOlhaLado`, `anGolpeVoandoDedosDuplosTronco`, `anEstiloTorcidoMaoRosto`, `anEstiloTorcidoMaoRostoOlhaLado`, `anEstiloTorcidoMaoRostoTronco`, `anEstiloTorcidoBracosAbertos`, `anEstiloTorcidoBracosAbertosOlhaLado`, `anEstiloTorcidoBracosAbertosTronco`, `anEstiloTorcidoApontaCima`, `anEstiloTorcidoApontaCimaOlhaLado`, `anEstiloTorcidoApontaCimaTronco`, `anEstiloTorcidoCostasMao`, `anEstiloTorcidoCostasMaoOlhaLado`, `anEstiloTorcidoCostasMaoTronco`, `anEstiloTorcidoCintura`, `anEstiloTorcidoCinturaOlhaLado`, `anEstiloTorcidoCinturaTronco`, `anEstiloArqueadoMaoRosto`, `anEstiloArqueadoMaoRostoOlhaLado`, `anEstiloArqueadoMaoRostoTronco`, `anEstiloArqueadoBracosAbertos`, `anEstiloArqueadoBracosAbertosOlhaLado`, `anEstiloArqueadoBracosAbertosTronco`, `anEstiloArqueadoApontaCima`, `anEstiloArqueadoApontaCimaOlhaLado`, `anEstiloArqueadoApontaCimaTronco`, `anEstiloArqueadoCostasMao`, `anEstiloArqueadoCostasMaoOlhaLado`, `anEstiloArqueadoCostasMaoTronco`, `anEstiloArqueadoCintura`, `anEstiloArqueadoCinturaOlhaLado`, `anEstiloArqueadoCinturaTronco`, `anEstiloJoelhoAltoMaoRosto`, `anEstiloJoelhoAltoMaoRostoOlhaLado`, `anEstiloJoelhoAltoMaoRostoTronco`, `anEstiloJoelhoAltoBracosAbertos`, `anEstiloJoelhoAltoBracosAbertosOlhaLado`, `anEstiloJoelhoAltoBracosAbertosTronco`, `anEstiloJoelhoAltoApontaCima`, `anEstiloJoelhoAltoApontaCimaOlhaLado`, `anEstiloJoelhoAltoApontaCimaTronco`, `anEstiloJoelhoAltoCostasMao`, `anEstiloJoelhoAltoCostasMaoOlhaLado`, `anEstiloJoelhoAltoCostasMaoTronco`, `anEstiloJoelhoAltoCintura`, `anEstiloJoelhoAltoCinturaOlhaLado`, `anEstiloJoelhoAltoCinturaTronco`, `anEstiloPernasCruzadasPeMaoRosto`, `anEstiloPernasCruzadasPeMaoRostoOlhaLado`, `anEstiloPernasCruzadasPeMaoRostoTronco`, `anEstiloPernasCruzadasPeBracosAbertos`, `anEstiloPernasCruzadasPeBracosAbertosOlhaLado`, `anEstiloPernasCruzadasPeBracosAbertosTronco`, `anEstiloPernasCruzadasPeApontaCima`, `anEstiloPernasCruzadasPeApontaCimaOlhaLado`, `anEstiloPernasCruzadasPeApontaCimaTronco`, `anEstiloPernasCruzadasPeCostasMao`, `anEstiloPernasCruzadasPeCostasMaoOlhaLado`, `anEstiloPernasCruzadasPeCostasMaoTronco`, `anEstiloPernasCruzadasPeCintura`, `anEstiloPernasCruzadasPeCinturaOlhaLado`, `anEstiloPernasCruzadasPeCinturaTronco`, `anIdolPulinhoCoracao`, `anIdolPulinhoCoracaoOlhaLado`, `anIdolPulinhoCoracaoTronco`, `anIdolPulinhoPaz`, `anIdolPulinhoPazOlhaLado`, `anIdolPulinhoPazTronco`, `anIdolPulinhoAcenoDuploTronco`, `anIdolPulinhoMicrofone`, `anIdolPulinhoMicrofoneOlhaLado`, `anIdolPulinhoMicrofoneTronco`, `anIdolPulinhoBracosOndas`, `anIdolPulinhoBracosOndasOlhaLado`, `anIdolPulinhoBracosOndasTronco`, `anIdolInclinadaCoracao`, `anIdolInclinadaCoracaoOlhaLado`, `anIdolInclinadaCoracaoTronco`, `anIdolInclinadaPaz`, `anIdolInclinadaPazOlhaLado`, `anIdolInclinadaPazTronco`, `anIdolInclinadaAcenoDuploTronco`, `anIdolInclinadaMicrofone`, `anIdolInclinadaMicrofoneOlhaLado`, `anIdolInclinadaMicrofoneTronco`, `anIdolInclinadaBracosOndas`, `anIdolInclinadaBracosOndasOlhaLado`, `anIdolInclinadaBracosOndasTronco`, `anIdolPontaPeCoracao`, `anIdolPontaPeCoracaoOlhaLado`, `anIdolPontaPeCoracaoTronco`, `anIdolPontaPePaz`, `anIdolPontaPePazOlhaLado`, `anIdolPontaPePazTronco`, `anIdolPontaPeAcenoDuploTronco`, `anIdolPontaPeMicrofone`, `anIdolPontaPeMicrofoneOlhaLado`, `anIdolPontaPeMicrofoneTronco`, `anIdolPontaPeBracosOndas`, `anIdolPontaPeBracosOndasOlhaLado`, `anIdolPontaPeBracosOndasTronco`, `anIdolJoelhosJuntosCoracao`, `anIdolJoelhosJuntosCoracaoOlhaLado`, `anIdolJoelhosJuntosCoracaoTronco`, `anIdolJoelhosJuntosPaz`, `anIdolJoelhosJuntosPazOlhaLado`, `anIdolJoelhosJuntosPazTronco`, `anIdolJoelhosJuntosAcenoDuploTronco`, `anIdolJoelhosJuntosMicrofone`, `anIdolJoelhosJuntosMicrofoneOlhaLado`, `anIdolJoelhosJuntosMicrofoneTronco`, `anIdolJoelhosJuntosBracosOndas`, `anIdolJoelhosJuntosBracosOndasOlhaLado`, `anIdolJoelhosJuntosBracosOndasTronco`, `anIdolPassoCoracao`, `anIdolPassoCoracaoOlhaLado`, `anIdolPassoPaz`, `anIdolPassoPazOlhaLado`, `anIdolPassoMicrofone`, `anIdolPassoMicrofoneOlhaLado`, `anIdolPassoBracosOndas`, `anIdolPassoBracosOndasOlhaLado`, `dancaHipHop1`, `dancaHipHop2`, `dancaHipHop3`, `dancaHipHop4`, `dancaHipHop5`, `dancaHipHop6`, `dancaHipHop7`, `dancaHipHop8`, `dancaHipHop9`, `dancaHipHop10`, `dancaHipHop11`, `dancaHipHop12`, `dancaHipHop13`, `dancaHipHop14`, `dancaHipHop15`, `dancaHipHop16`, `dancaHipHop17`, `dancaHipHop18`, `dancaHipHop19`, `dancaHipHop20`, `dancaHipHop21`, `dancaHipHop22`, `dancaHipHop23`, `dancaHipHop24`, `dancaHipHop25`, `dancaHipHop26`, `dancaHipHop27`, `dancaHipHop28`, `dancaHipHop31`, `dancaHipHop34`, `dancaBreakdance1`, `dancaBreakdance2`, `dancaBreakdance3`, `dancaBreakdance13`, `dancaBreakdance14`, `dancaBreakdance15`, `dancaShuffle1`, `dancaShuffle2`, `dancaShuffle3`, `dancaShuffle5`, `dancaShuffle7`, `dancaShuffle8`, `dancaShuffle9`, `dancaKpop1`, `dancaKpop2`, `dancaKpop3`, `dancaKpop4`, `dancaKpop5`, `dancaKpop6`, `dancaKpop7`, `dancaKpop8`, `dancaKpop9`, `dancaKpop10`, `dancaKpop11`, `dancaKpop12`, `dancaKpop13`, `dancaKpop14`, `dancaKpop15`, `dancaKpop16`, `dancaKpop17`, `dancaKpop18`, `dancaKpop19`, `dancaKpop20`, `dancaKpop21`, `dancaKpop22`, `dancaKpop23`, `dancaKpop24`, `dancaKpop25`, `dancaKpop28`, `dancaKpop31`, `dancaKpop34`, `dancaSamba1`, `dancaSamba2`, `dancaSamba3`, `dancaSamba4`, `dancaSamba5`, `dancaSamba6`, `dancaSamba7`, `dancaSamba8`, `dancaSamba9`, `dancaSamba10`, `dancaSamba11`, `dancaSamba12`, `dancaSamba13`, `dancaSamba14`, `dancaSamba15`, `dancaSamba16`, `dancaSamba17`, `dancaSamba18`, `dancaFrevo4`, `dancaFrevo5`, `dancaFrevo6`, `dancaFrevo10`, `dancaFrevo11`, `dancaFrevo12`, `dancaFrevo16`, `dancaFrevo17`, `dancaFrevo18`, `dancaBallet1`, `dancaBallet3`, `dancaBallet4`, `dancaBallet5`, `dancaBallet6`, `dancaBallet7`, `dancaBallet8`, `dancaBallet9`, `dancaBallet10`, `dancaBallet11`, `dancaBallet12`, `dancaBallet13`, `dancaBallet14`, `dancaBallet15`, `dancaBallet16`, `dancaBallet17`, `dancaBallet18`, `dancaBallet19`, `dancaBallet21`, `dancaBallet22`, `dancaBallet23`, `dancaBallet24`, `dancaBallet25`, `dancaBallet26`, `dancaBallet27`, `dancaBallet28`, `dancaBallet29`, `dancaBallet30`, `dancaBallet31`, `dancaBallet32`, `dancaBallet33`, `dancaBallet34`, `dancaBallet35`, `dancaBallet36`, `dancaSalsa1`, `dancaSalsa2`, `dancaSalsa3`, `dancaSalsa4`, `dancaSalsa5`, `dancaSalsa6`, `dancaSalsa7`, `dancaSalsa8`, `dancaSalsa9`, `dancaSalsa10`, `dancaSalsa11`, `dancaSalsa12`, `dancaForro1`, `dancaForro2`, `dancaForro3`, `dancaForro4`, `dancaForro5`, `dancaForro6`, `dancaForro7`, `dancaForro8`, `dancaForro9`, `dancaForro10`, `dancaForro11`, `dancaForro12`, `dancaTango1`, `dancaTango2`, `dancaTango3`, `dancaTango4`, `dancaTango5`, `dancaTango6`, `dancaTango7`, `dancaTango8`, `dancaTango9`, `dancaTango10`, `dancaTango11`, `dancaTango12`, `dancaVogue1`, `dancaVogue2`, `dancaVogue3`, `dancaVogue4`, `dancaVogue5`, `dancaVogue6`, `dancaVogue7`, `dancaVogue8`, `dancaVogue9`, `dancaVogue10`, `dancaVogue11`, `dancaVogue12`, `dancaVogue13`, `dancaVogue14`, `dancaVogue15`, `dancaVogue16`, `dancaVogue18`, `dancaContemporanea1`, `dancaContemporanea2`, `dancaContemporanea3`, `dancaContemporanea4`, `dancaContemporanea5`, `dancaContemporanea6`, `dancaContemporanea7`, `dancaContemporanea8`, `dancaContemporanea9`, `dancaContemporanea10`, `dancaContemporanea11`, `dancaContemporanea12`, `dancaContemporanea13`, `dancaContemporanea14`, `dancaContemporanea15`, `dancaContemporanea16`, `dancaContemporanea17`, `dancaContemporanea18`, `dancaContemporanea19`, `dancaContemporanea20`, `dancaContemporanea21`, `dancaContemporanea22`, `dancaContemporanea23`, `dancaContemporanea24`, `dancaContemporanea25`, `dancaContemporanea26`, `dancaContemporanea27`, `palcoEmPeGuitarraAir`, `palcoEmPeGuitarraAirOlhaLado`, `palcoEmPeGuitarraAirTronco`, `palcoEmPeCantandoAgudo`, `palcoEmPeCantandoAgudoOlhaLado`, `palcoEmPeCantandoAgudoTronco`, `palcoEmPeRegendo`, `palcoEmPeRegendoOlhaLado`, `palcoEmPeRegendoTronco`, `palcoEmPeDjMixando`, `palcoEmPeDjMixandoOlhaLado`, `palcoEmPeDjMixandoTronco`, `palcoEmPeAgradecendo`, `palcoEmPeAgradecendoOlhaLado`, `palcoEmPeAgradecendoTronco`, `palcoEmPeBateriaAir`, `palcoEmPeBateriaAirOlhaLado`, `palcoEmPeBateriaAirTronco`, `palcoJoelhosGuitarraAir`, `palcoJoelhosGuitarraAirOlhaLado`, `palcoJoelhosGuitarraAirTronco`, `palcoJoelhosCantandoAgudo`, `palcoJoelhosCantandoAgudoOlhaLado`, `palcoJoelhosCantandoAgudoTronco`, `palcoJoelhosRegendo`, `palcoJoelhosRegendoOlhaLado`, `palcoJoelhosRegendoTronco`, `palcoJoelhosDjMixando`, `palcoJoelhosDjMixandoOlhaLado`, `palcoJoelhosDjMixandoTronco`, `palcoJoelhosAgradecendo`, `palcoJoelhosAgradecendoOlhaLado`, `palcoJoelhosAgradecendoTronco`, `palcoJoelhosBateriaAir`, `palcoJoelhosBateriaAirOlhaLado`, `palcoJoelhosBateriaAirTronco`, `palcoArqueadoGuitarraAir`, `palcoArqueadoGuitarraAirOlhaLado`, `palcoArqueadoGuitarraAirTronco`, `palcoArqueadoCantandoAgudo`, `palcoArqueadoCantandoAgudoOlhaLado`, `palcoArqueadoCantandoAgudoTronco`, `palcoArqueadoRegendo`, `palcoArqueadoRegendoOlhaLado`, `palcoArqueadoRegendoTronco`, `palcoArqueadoDjMixando`, `palcoArqueadoDjMixandoOlhaLado`, `palcoArqueadoDjMixandoTronco`, `palcoArqueadoAgradecendo`, `palcoArqueadoAgradecendoOlhaLado`, `palcoArqueadoAgradecendoTronco`, `palcoArqueadoBateriaAir`, `palcoArqueadoBateriaAirOlhaLado`, `palcoArqueadoBateriaAirTronco`, `palcoPuloGuitarraAir`, `palcoPuloGuitarraAirOlhaLado`, `palcoPuloGuitarraAirTronco`, `palcoPuloCantandoAgudo`, `palcoPuloCantandoAgudoOlhaLado`, `palcoPuloCantandoAgudoTronco`, `palcoPuloRegendo`, `palcoPuloRegendoOlhaLado`, `palcoPuloRegendoTronco`, `palcoPuloDjMixando`, `palcoPuloDjMixandoOlhaLado`, `palcoPuloDjMixandoTronco`, `palcoPuloAgradecendo`, `palcoPuloAgradecendoOlhaLado`, `palcoPuloAgradecendoTronco`, `palcoPuloBateriaAir`, `palcoPuloBateriaAirOlhaLado`, `palcoPuloBateriaAirTronco`, `pilotMotoCurvaGuidao`, `pilotMotoCurvaGuidaoOlhaLado`, `pilotMotoCurvaGuidaoTronco`, `pilotMotoCurvaEquilibrio`, `pilotMotoCurvaEquilibrioOlhaLado`, `pilotMotoCurvaEquilibrioTronco`, `pilotMotoCurvaAcenando`, `pilotMotoCurvaAcenandoOlhaLado`, `pilotMotoCurvaAcenandoTronco`, `pilotMotoEmpinandoGuidao`, `pilotMotoEmpinandoGuidaoOlhaLado`, `pilotMotoEmpinandoGuidaoTronco`, `pilotMotoEmpinandoEquilibrio`, `pilotMotoEmpinandoEquilibrioOlhaLado`, `pilotMotoEmpinandoEquilibrioTronco`, `pilotMotoEmpinandoAcenando`, `pilotMotoEmpinandoAcenandoOlhaLado`, `pilotMotoEmpinandoAcenandoTronco`, `pilotBikeSprintGuidao`, `pilotBikeSprintGuidaoOlhaLado`, `pilotBikeSprintGuidaoTronco`, `pilotBikeSprintEquilibrio`, `pilotBikeSprintEquilibrioOlhaLado`, `pilotBikeSprintEquilibrioTronco`, `pilotBikeSprintAcenando`, `pilotBikeSprintAcenandoOlhaLado`, `pilotBikeSprintAcenandoTronco`, `pilotSkateOllieGuidao`, `pilotSkateOllieGuidaoOlhaLado`, `pilotSkateOllieGuidaoTronco`, `pilotSkateOllieEquilibrio`, `pilotSkateOllieEquilibrioOlhaLado`, `pilotSkateOllieEquilibrioTronco`, `pilotSkateOllieAcenando`, `pilotSkateOllieAcenandoOlhaLado`, `pilotSkateOllieAcenandoTronco`, `pilotSurfeBaseGuidao`, `pilotSurfeBaseGuidaoOlhaLado`, `pilotSurfeBaseGuidaoTronco`, `pilotSurfeBaseEquilibrio`, `pilotSurfeBaseEquilibrioOlhaLado`, `pilotSurfeBaseEquilibrioTronco`, `pilotSurfeBaseAcenando`, `pilotSurfeBaseAcenandoOlhaLado`, `pilotSurfeBaseAcenandoTronco`, `pilotSnowboardGuidao`, `pilotSnowboardEquilibrio`, `pilotSnowboardAcenando`, `espGolfePreparando`, `espGolfePreparandoOlhaLado`, `espGolfePreparandoTronco`, `espGolfeBatendo`, `espGolfeBatendoOlhaLado`, `espGolfeBatendoTronco`, `espGolfeFinalizando`, `espGolfeFinalizandoOlhaLado`, `espGolfeFinalizandoTronco`, `espGolfeComemorandoTronco`, `espBeisebolPreparando`, `espBeisebolPreparandoOlhaLado`, `espBeisebolPreparandoTronco`, `espBeisebolBatendo`, `espBeisebolBatendoOlhaLado`, `espBeisebolBatendoTronco`, `espBeisebolFinalizando`, `espBeisebolFinalizandoOlhaLado`, `espBeisebolFinalizandoTronco`, `espBeisebolComemorandoTronco`, `espEsgrimaPreparando`, `espEsgrimaPreparandoOlhaLado`, `espEsgrimaPreparandoTronco`, `espEsgrimaBatendo`, `espEsgrimaBatendoOlhaLado`, `espEsgrimaBatendoTronco`, `espEsgrimaFinalizando`, `espEsgrimaFinalizandoOlhaLado`, `espEsgrimaFinalizandoTronco`, `espEsgrimaComemorandoTronco`, `espHoqueiPreparandoOlhaLado`, `espHoqueiBatendo`, `espHoqueiBatendoOlhaLado`, `espHoqueiBatendoTronco`, `espHoqueiFinalizando`, `espHoqueiFinalizandoOlhaLado`, `espHoqueiFinalizandoTronco`, `espHoqueiComemorandoTronco`, `espArqueriaPreparando`, `espArqueriaPreparandoOlhaLado`, `espArqueriaPreparandoTronco`, `espArqueriaBatendo`, `espArqueriaBatendoOlhaLado`, `espArqueriaBatendoTronco`, `espArqueriaFinalizando`, `espArqueriaFinalizandoOlhaLado`, `espArqueriaFinalizandoTronco`, `espFutAmericanoPreparandoOlhaLado`, `espFutAmericanoBatendo`, `espFutAmericanoBatendoOlhaLado`, `espFutAmericanoBatendoTronco`, `espFutAmericanoFinalizando`, `espFutAmericanoFinalizandoOlhaLado`, `espFutAmericanoFinalizandoTronco`, `espFutAmericanoComemorandoTronco`, `espHandebolPreparando`, `espHandebolPreparandoOlhaLado`, `espHandebolPreparandoTronco`, `espHandebolBatendo`, `espHandebolBatendoOlhaLado`, `espHandebolBatendoTronco`, `espHandebolFinalizando`, `espHandebolFinalizandoOlhaLado`, `espHandebolFinalizandoTronco`, `espHandebolComemorandoTronco`, `espEscaladaPreparando`, `espEscaladaPreparandoTronco`, `espEscaladaBatendo`, `espEscaladaBatendoOlhaLado`, `espEscaladaBatendoTronco`, `espEscaladaFinalizando`, `espEscaladaFinalizandoOlhaLado`, `espEscaladaFinalizandoTronco`, `espEscaladaComemorando`, `espEscaladaComemorandoOlhaLado`, `espEscaladaComemorandoTronco`, `emoEmPeMaosRosto`, `emoEmPeMaosRostoOlhaLado`, `emoEmPeMaosRostoTronco`, `emoEmPePunhosCerradosOlhaLado`, `emoEmPePunhosCerradosTronco`, `emoEmPeAbracandoSe`, `emoEmPeAbracandoSeOlhaLado`, `emoEmPeAbracandoSeTronco`, `emoEmPeBracosCaidosOlhaLado`, `emoEmPeBracosCaidosTronco`, `emoEmPeMaoCabecaOlhaLado`, `emoEmPeMaoCabecaTronco`, `emoSentadoChaoMaosRosto`, `emoSentadoChaoMaosRostoOlhaLado`, `emoSentadoChaoMaosRostoTronco`, `emoSentadoChaoPunhosCerrados`, `emoSentadoChaoPunhosCerradosOlhaLado`, `emoSentadoChaoPunhosCerradosTronco`, `emoSentadoChaoAbracandoSe`, `emoSentadoChaoAbracandoSeOlhaLado`, `emoSentadoChaoAbracandoSeTronco`, `emoSentadoChaoBracosCaidos`, `emoSentadoChaoBracosCaidosOlhaLado`, `emoSentadoChaoBracosCaidosTronco`, `emoSentadoChaoMaoCabeca`, `emoSentadoChaoMaoCabecaOlhaLado`, `emoSentadoChaoMaoCabecaTronco`, `emoAjoelhadoMaosRosto`, `emoAjoelhadoMaosRostoOlhaLado`, `emoAjoelhadoMaosRostoTronco`, `emoAjoelhadoPunhosCerrados`, `emoAjoelhadoPunhosCerradosOlhaLado`, `emoAjoelhadoPunhosCerradosTronco`, `emoAjoelhadoAbracandoSe`, `emoAjoelhadoAbracandoSeOlhaLado`, `emoAjoelhadoAbracandoSeTronco`, `emoAjoelhadoBracosCaidos`, `emoAjoelhadoBracosCaidosOlhaLado`, `emoAjoelhadoBracosCaidosTronco`, `emoAjoelhadoMaoCabeca`, `emoAjoelhadoMaoCabecaOlhaLado`, `emoAjoelhadoMaoCabecaTronco`, `emoEncolhidoMaosRosto`, `emoEncolhidoMaosRostoOlhaLado`, `emoEncolhidoMaosRostoTronco`, `emoEncolhidoPunhosCerrados`, `emoEncolhidoPunhosCerradosOlhaLado`, `emoEncolhidoPunhosCerradosTronco`, `emoEncolhidoAbracandoSe`, `emoEncolhidoAbracandoSeOlhaLado`, `emoEncolhidoAbracandoSeTronco`, `emoEncolhidoBracosCaidos`, `emoEncolhidoBracosCaidosOlhaLado`, `emoEncolhidoBracosCaidosTronco`, `emoEncolhidoMaoCabeca`, `emoEncolhidoMaoCabecaOlhaLado`, `emoEncolhidoMaoCabecaTronco`, `emoDeCostasParedeMaoCabeca`, `profEmPeMartelando`, `profEmPeMartelandoOlhaLado`, `profEmPeMartelandoTronco`, `profEmPeAnotando`, `profEmPeAnotandoOlhaLado`, `profEmPeAnotandoTronco`, `profEmPeApontandoPlanta`, `profEmPeApontandoPlantaOlhaLado`, `profEmPeApontandoPlantaTronco`, `profEmPeExaminandoOlhaLado`, `profEmPeExaminandoTronco`, `profEmPeCarregandoCaixaOlhaLado`, `profEmPeCarregandoCaixaTronco`, `profAgachadoMartelando`, `profAgachadoMartelandoOlhaLado`, `profAgachadoMartelandoTronco`, `profAgachadoAnotando`, `profAgachadoAnotandoTronco`, `profAgachadoApontandoPlanta`, `profAgachadoApontandoPlantaTronco`, `profAgachadoExaminando`, `profAgachadoExaminandoTronco`, `profAgachadoCarregandoCaixa`, `profAgachadoCarregandoCaixaOlhaLado`, `profAgachadoCarregandoCaixaTronco`, `profInclinadoMartelando`, `profInclinadoMartelandoOlhaLado`, `profInclinadoMartelandoTronco`, `profInclinadoAnotando`, `profInclinadoAnotandoOlhaLado`, `profInclinadoAnotandoTronco`, `profInclinadoApontandoPlanta`, `profInclinadoApontandoPlantaOlhaLado`, `profInclinadoApontandoPlantaTronco`, `profInclinadoExaminando`, `profInclinadoExaminandoOlhaLado`, `profInclinadoExaminandoTronco`, `profInclinadoCarregandoCaixa`, `profInclinadoCarregandoCaixaOlhaLado`, `profInclinadoCarregandoCaixaTronco`, `profNaEscadaMartelando`, `profNaEscadaMartelandoOlhaLado`, `profNaEscadaMartelandoTronco`, `profNaEscadaAnotando`, `profNaEscadaAnotandoOlhaLado`, `profNaEscadaAnotandoTronco`, `profNaEscadaApontandoPlanta`, `profNaEscadaApontandoPlantaOlhaLado`, `profNaEscadaApontandoPlantaTronco`, `profNaEscadaExaminando`, `profNaEscadaExaminandoOlhaLado`, `profNaEscadaExaminandoTronco`, `profNaEscadaCarregandoCaixa`, `profNaEscadaCarregandoCaixaOlhaLado`, `profNaEscadaCarregandoCaixaTronco`, `maosQueixoSobCotoveloPesoDir`, `maosQueixoSobCotoveloPesoEsq`, `maosQueixoSobCotoveloInclinadoFrente`, `maosQueixoSobCotoveloPasso`, `maosQueixoSobCotoveloEncostado`, `maosQueixoSobCotoveloSentadoCadeira`, `maosQueixoSobCotoveloSentadoBorda`, `maosQueixoSobCotoveloAjoelhado`, `maosQueixoSobCotoveloAgachado`, `maosNucaPesoDir`, `maosNucaPesoEsq`, `maosNucaInclinadoFrente`, `maosNucaPasso`, `maosNucaEncostado`, `maosNucaSentadoCadeira`, `maosNucaSentadoBorda`, `maosNucaAjoelhado`, `maosNucaAgachado`, `maosCinturaCinturaPesoDir`, `maosCinturaCinturaPesoEsq`, `maosCinturaCinturaInclinadoFrente`, `maosCinturaCinturaPasso`, `maosCinturaCinturaEncostado`, `maosCinturaCinturaSentadoCadeira`, `maosCinturaCinturaSentadoBorda`, `maosCinturaCinturaAjoelhado`, `maosCinturaCinturaAgachado`, `maosBolsoBolsoPesoDir`, `maosBolsoBolsoPesoEsq`, `maosBolsoBolsoInclinadoFrente`, `maosBolsoBolsoEncostado`, `maosBolsoBolsoSentadoCadeira`, `maosBolsoBolsoSentadoBorda`, `maosBolsoBolsoAjoelhado`, `maosBolsoBolsoAgachado`, `maosBolsoPesoDir`, `maosBolsoPesoEsq`, `maosBolsoInclinadoFrente`, `maosBolsoPasso`, `maosBolsoEncostado`, `maosBolsoSentadoCadeira`, `maosBolsoSentadoBorda`, `maosBolsoAjoelhado`, `maosBolsoAgachado`, `maosCostasCostasPesoDir`, `maosCostasCostasPesoEsq`, `maosCostasCostasInclinadoFrente`, `maosCostasCostasPasso`, `maosCostasCostasEncostado`, `maosCostasCostasSentadoCadeira`, `maosCostasCostasAjoelhado`, `maosCostasCostasAgachado`, `maosTestaPesoDir`, `maosTestaPesoEsq`, `maosTestaInclinadoFrente`, `maosTestaPasso`, `maosTestaEncostado`, `maosTestaSentadoCadeira`, `maosTestaSentadoBorda`, `maosTestaAjoelhado`, `maosTestaAgachado`, `maosBocaPesoDir`, `maosBocaPesoEsq`, `maosBocaInclinadoFrente`, `maosBocaPasso`, `maosBocaSentadoCadeira`, `maosBocaAjoelhado`, `maosBocaAgachado`, `maosOrelhaSentadoBorda`, `maosCoracaoPesoDir`, `maosCoracaoPesoEsq`, `maosCoracaoInclinadoFrente`, `maosCoracaoEncostado`, `maosCoracaoSentadoCadeira`, `maosCoracaoAjoelhado`, `maosCoracaoAgachado`, `maosBarrigaBarrigaPesoDir`, `maosBarrigaBarrigaPesoEsq`, `maosBarrigaBarrigaInclinadoFrente`, `maosBarrigaBarrigaPasso`, `maosBarrigaBarrigaEncostado`, `maosBarrigaBarrigaSentadoCadeira`, `maosBarrigaBarrigaSentadoBorda`, `maosBarrigaBarrigaAjoelhado`, `maosBarrigaBarrigaAgachado`, `maosCabecaCabecaPesoDir`, `maosCabecaCabecaPesoEsq`, `maosCabecaCabecaInclinadoFrente`, `maosCabecaCabecaPasso`, `maosCabecaCabecaEncostado`, `maosCabecaCabecaSentadoBorda`, `maosCabecaCabecaAjoelhado`, `maosCabecaCabecaAgachado`, `maosBochechaInclinadoFrente`, `maosLombarLombarPesoDir`, `maosLombarLombarPesoEsq`, `maosLombarLombarEncostado`, `maosLombarLombarSentadoCadeira`, `maosLombarLombarSentadoBorda`, `maosLombarLombarAjoelhado`, `maosLombarLombarAgachado`, `maosCruzadoCimaCruzadoBaixoEncostado`, `maosPrecePreceInclinadoFrente`, `maosPrecePreceEncostado`, `maosPrecePreceSentadoCadeira`, `maosPrecePreceAjoelhado`, `maosPrecePreceAgachado`, `maosCoxaCoxaPesoDir`, `maosCoxaCoxaInclinadoFrente`, `maosCoxaCoxaPasso`, `maosCoxaCoxaEncostado`, `maosCoxaCoxaSentadoCadeira`, `maosCoxaCoxaSentadoBorda`, `maosCoxaCoxaAjoelhado`, `maosOmbroOpostoPesoDir`, `maosOmbroOpostoPesoEsq`, `maosOmbroOpostoInclinadoFrente`, `maosOmbroOpostoSentadoCadeira`, `maosOmbroOpostoAjoelhado`, `maosOmbroOpostoAgachado`, `maosAbracoAbracoPasso`, `sentadoPernaCoxa`, `sentadoPernaColo`, `sentadoPernaColoEsq`, `sentadoPernaQueixo`, `sentadoPernaQueixoEsq`, `sentadoPernaPrece`, `sentadoPernaCruzadoCimaEsq`, `sentadoPernaNuca`, `sentadoPernaNucaEsq`, `sentadoPernaOrelha`, `sentadoPernaOrelhaEsq`, `sentadoPernaCabeca`, `sentadoPernaCabecaEsq`, `sentadoPernaBoca`, `sentadoFigura4Coxa`, `sentadoFigura4Colo`, `sentadoFigura4ColoEsq`, `sentadoFigura4Queixo`, `sentadoFigura4QueixoEsq`, `sentadoFigura4Prece`, `sentadoFigura4Nuca`, `sentadoFigura4NucaEsq`, `sentadoFigura4Barriga`, `sentadoFigura4Orelha`, `sentadoFigura4OrelhaEsq`, `sentadoFigura4Cabeca`, `sentadoFigura4Coracao`, `sentadoFigura4Boca`, `sentadoTornozelosCoxa`, `sentadoTornozelosColo`, `sentadoTornozelosColoEsq`, `sentadoTornozelosQueixo`, `sentadoTornozelosQueixoEsq`, `sentadoTornozelosPrece`, `sentadoTornozelosNuca`, `sentadoTornozelosNucaEsq`, `sentadoTornozelosBarriga`, `sentadoTornozelosOrelha`, `sentadoTornozelosOrelhaEsq`, `sentadoTornozelosCabeca`, `sentadoTornozelosCabecaEsq`, `sentadoTornozelosCoracao`, `sentadoIndioCoxa`, `sentadoIndioColo`, `sentadoIndioQueixo`, `sentadoIndioQueixoEsq`, `sentadoIndioPrece`, `sentadoIndioNuca`, `sentadoIndioNucaEsq`, `sentadoIndioBarriga`, `sentadoIndioOrelha`, `sentadoIndioOrelhaEsq`, `sentadoIndioCabeca`, `sentadoIndioCabecaEsq`, `sentadoIndioCoracao`, `sentadoIndioBoca`, `sentadoLotusColoEsq`, `sentadoLotusOrelha`, `sentadoLotusCabeca`, `sentadoLotusCoracao`, `sentadoLotusBochechaEsq`, `sentadoLotusBoca`, `sentadoBorboletaCoxa`, `sentadoBorboletaColoEsq`, `sentadoBorboletaOrelha`, `sentadoBorboletaCabeca`, `sentadoBorboletaCabecaEsq`, `sentadoBorboletaCoracao`, `sentadoBorboletaBochechaEsq`, `sentadoBorboletaBoca`, `sentadoLadoCoxa`, `sentadoLadoColo`, `sentadoLadoColoEsq`, `sentadoLadoQueixo`, `sentadoLadoQueixoEsq`, `sentadoLadoPrece`, `sentadoLadoNuca`, `sentadoLadoNucaEsq`, `sentadoLadoBarriga`, `sentadoLadoOrelha`, `sentadoLadoOrelhaEsq`, `sentadoLadoCabeca`, `sentadoLadoCabecaEsq`, `sentadoLadoCoracao`, `sentadoLadoBoca`, `deitCostasLendo`, `deitCostasLendoOlhaLado`, `deitCostasLendoTronco`, `deitCostasCelular`, `deitCostasCelularOlhaLado`, `deitCostasCelularTronco`, `deitCostasBracoOlhos`, `deitCostasBracoOlhosOlhaLado`, `deitCostasBracoOlhosTronco`, `deitLadoLendo`, `deitLadoLendoOlhaLado`, `deitLadoLendoTronco`, `deitLadoCelular`, `deitLadoCelularOlhaLado`, `deitLadoCelularTronco`, `deitLadoBracoOlhosOlhaLado`, `deitLadoBracoOlhosTronco`, `deitCostasJoelhosLendo`, `deitCostasJoelhosLendoOlhaLado`, `deitCostasJoelhosLendoTronco`, `deitCostasJoelhosCelular`, `deitCostasJoelhosCelularOlhaLado`, `deitCostasJoelhosCelularTronco`, `deitCostasJoelhosBracoOlhos`, `deitCostasJoelhosBracoOlhosOlhaLado`, `deitCostasJoelhosBracoOlhosTronco`, `comedPernaUmPeBracosHelice`, `comedPernaUmPeBracosHeliceOlhaLado`, `comedPernaUmPeBracosHeliceTronco`, `comedPernaUmPeMaosBoca`, `comedPernaUmPeMaosBocaOlhaLado`, `comedPernaUmPeMaosBocaTronco`, `comedPernaUmPeDedoSilencio`, `comedPernaUmPeDedoSilencioOlhaLado`, `comedPernaUmPeDedoSilencioTronco`, `comedPernaUmPeJoinhaDuplo`, `comedPernaUmPeJoinhaDuploOlhaLado`, `comedPernaUmPeJoinhaDuploTronco`, `comedEscorregandoBracosHelice`, `comedEscorregandoBracosHeliceOlhaLado`, `comedEscorregandoBracosHeliceTronco`, `comedEscorregandoMaosBoca`, `comedEscorregandoMaosBocaOlhaLado`, `comedEscorregandoMaosBocaTronco`, `comedEscorregandoDedoSilencio`, `comedEscorregandoDedoSilencioOlhaLado`, `comedEscorregandoDedoSilencioTronco`, `comedEscorregandoJoinhaDuplo`, `comedEscorregandoJoinhaDuploOlhaLado`, `comedEscorregandoJoinhaDuploTronco`, `comedNaPontaPesBracosHelice`, `comedNaPontaPesBracosHeliceOlhaLado`, `comedNaPontaPesBracosHeliceTronco`, `comedNaPontaPesMaosBoca`, `comedNaPontaPesMaosBocaOlhaLado`, `comedNaPontaPesMaosBocaTronco`, `comedNaPontaPesDedoSilencio`, `comedNaPontaPesDedoSilencioOlhaLado`, `comedNaPontaPesDedoSilencioTronco`, `comedNaPontaPesJoinhaDuplo`, `comedNaPontaPesJoinhaDuploOlhaLado`, `comedNaPontaPesJoinhaDuploTronco`, `comedPulandoSustoBracosHelice`, `comedPulandoSustoBracosHeliceOlhaLado`, `comedPulandoSustoBracosHeliceTronco`, `comedPulandoSustoMaosBoca`, `comedPulandoSustoMaosBocaOlhaLado`, `comedPulandoSustoMaosBocaTronco`, `comedPulandoSustoDedoSilencio`, `comedPulandoSustoDedoSilencioOlhaLado`, `comedPulandoSustoDedoSilencioTronco`, `comedPulandoSustoJoinhaDuplo`, `comedPulandoSustoJoinhaDuploOlhaLado`, `comedPulandoSustoJoinhaDuploTronco`, `terrRecuandoBracosDefesa`, `terrRecuandoBracosDefesaOlhaLado`, `terrRecuandoBracosDefesaTronco`, `terrRecuandoLanterna`, `terrRecuandoLanternaOlhaLado`, `terrRecuandoLanternaTronco`, `terrRecuandoMaoParede`, `terrRecuandoMaoParedeOlhaLado`, `terrRecuandoMaoParedeTronco`, `terrEncurraladoBracosDefesa`, `terrEncurraladoBracosDefesaOlhaLado`, `terrEncurraladoBracosDefesaTronco`, `terrEncurraladoLanterna`, `terrEncurraladoLanternaOlhaLado`, `terrEncurraladoLanternaTronco`, `terrEncurraladoMaoParede`, `terrEncurraladoMaoParedeOlhaLado`, `terrEncurraladoMaoParedeTronco`, `terrCaidoArrastandoBracosDefesa`, `terrCaidoArrastandoBracosDefesaOlhaLado`, `terrCaidoArrastandoBracosDefesaTronco`, `terrCaidoArrastandoLanterna`, `terrCaidoArrastandoLanternaOlhaLado`, `terrCaidoArrastandoLanternaTronco`, `terrCaidoArrastandoMaoParede`, `terrCaidoArrastandoMaoParedeOlhaLado`, `terrCaidoArrastandoMaoParedeTronco`, `terrEspiandoBracosDefesa`, `terrEspiandoBracosDefesaOlhaLado`, `terrEspiandoLanterna`, `terrEspiandoLanternaOlhaLado`, `terrEspiandoMaoParede`, `terrEspiandoMaoParedeOlhaLado`, `infPulandoAviao`, `infPulandoAviaoOlhaLado`, `infPulandoAviaoTronco`, `infPulandoPegaPega`, `infPulandoPegaPegaOlhaLado`, `infPulandoPegaPegaTronco`, `infPulandoDinossauro`, `infPulandoDinossauroOlhaLado`, `infPulandoDinossauroTronco`, `infPulandoSuperHeroi`, `infPulandoSuperHeroiOlhaLado`, `infPulandoSuperHeroiTronco`, `infAgachadoAviao`, `infAgachadoAviaoOlhaLado`, `infAgachadoAviaoTronco`, `infAgachadoPegaPegaTronco`, `infAgachadoDinossauroOlhaLado`, `infAgachadoDinossauroTronco`, `infAgachadoSuperHeroi`, `infAgachadoSuperHeroiOlhaLado`, `infAgachadoSuperHeroiTronco`, `infCorrendoAviao`, `infCorrendoAviaoOlhaLado`, `infCorrendoAviaoTronco`, `infCorrendoPegaPega`, `infCorrendoPegaPegaOlhaLado`, `infCorrendoPegaPegaTronco`, `infCorrendoDinossauro`, `infCorrendoDinossauroOlhaLado`, `infCorrendoDinossauroTronco`, `infCorrendoSuperHeroi`, `infCorrendoSuperHeroiOlhaLado`, `infCorrendoSuperHeroiTronco`, `velhoBengalaMaoBengalaOlhaLado`, `velhoBengalaMaoBengalaTronco`, `velhoBengalaMaoCostas`, `velhoBengalaMaoCostasOlhaLado`, `velhoBengalaMaoCostasTronco`, `velhoBengalaAcenando`, `velhoBengalaAcenandoOlhaLado`, `velhoBengalaAcenandoTronco`, `velhoSentandoDevagarMaoBengala`, `velhoSentandoDevagarMaoBengalaOlhaLado`, `velhoSentandoDevagarMaoCostas`, `velhoSentandoDevagarMaoCostasTronco`, `velhoSentandoDevagarAcenando`, `velhoSentandoDevagarAcenandoTronco`, `velhoCurvadoMaoBengala`, `cerimEmPeBracosCeuTronco`, `cerimEmPeMaoPeito`, `cerimEmPeMaoPeitoOlhaLado`, `cerimEmPeMaoPeitoTronco`, `cerimEmPeOferendaOlhaLado`, `cerimEmPeOferendaTronco`, `cerimAjoelhadoBracosCeuTronco`, `cerimAjoelhadoMaoPeito`, `cerimAjoelhadoMaoPeitoOlhaLado`, `cerimAjoelhadoMaoPeitoTronco`, `cerimAjoelhadoOferenda`, `cerimAjoelhadoOferendaOlhaLado`, `cerimAjoelhadoOferendaTronco`, `cerimReverenciaBracosCeuTronco`, `cerimReverenciaMaoPeito`, `cerimReverenciaMaoPeitoOlhaLado`, `cerimReverenciaMaoPeitoTronco`, `cerimReverenciaOferenda`, `cerimReverenciaOferendaOlhaLado`, `cerimReverenciaOferendaTronco`
 
 **Animações — ação (acontece e segura):** `passoFrente`, `passoTras`, `passoLadoDireito`, `passoLadoEsquerdo`, `virarEsquerda`, `virarDireita`, `meiaVolta`, `peDireito15cmDireita`, `peDireito15cmEsquerda`, `peDireito15cmFrente`, `peDireito15cmTras`, `peEsquerdo15cmDireita`, `peEsquerdo15cmEsquerda`, `peEsquerdo15cmFrente`, `peEsquerdo15cmTras`, `inclinarCabecaDireita`, `inclinarCabecaEsquerda`, `abaixarCabeca`, `erguerQueixo`, `acenarSim`, `acenarNao`, `inclinarTroncoFrente`, `recuarTronco`, `encolherOmbrosRapido`, `pesoParaDireita`, `pesoParaEsquerda`, `ombrosCairem`, `encolher`, `gestoExplicar`, `gestoOferecer`, `gestoEnfatizar`, `gestoContarDedos`, `gestoApontar`, `gestoDedoEmRiste`, `gestoNegarComMao`, `gestoMaoNoPeito`, `gestoEncolherOmbros`, `gestoMaoNoQueixo`, `gestoBracosCruzados`, `gestoMaosNaCintura`, `gestoMaosNoAr`, `gestoMaoNaNuca`, `gestoCocarCabeca`, `gestoMaosJuntas`, `gestoSegurarCabeca`, `gestoAcenar`, `gestoJoinha`, `gestoBracosAbertos`, `acenarTchau`, `piscar`, `sorrir`, `ficarComRaiva`, `assustar`, `socarJab`, `socoDireto`, `defender`, `esquivar`, `chutar`, `entrarEmGuarda`, `apontarAlgo`, `acenarPose`, `pular`, `girar45E`, `girar45D`, `girar90E`, `girar90D`, `girar180E`, `girar180D`, `girar360E`, `girar360D`, `girar360E_pivo`, `girar360D_pivo`, `girar360E_luta`, `girar360D_luta`, `girar360E_salto`, `girar360D_salto`, `girar720E_pivo`, `puloLugar`, `puloFrente`, `puloAlto`, `puloLado`, `puloCorrida`, `mergulhar`, `rolarDireita`, `rolarEsquerda`, `oferecer`, `pedir`, `entregar`, `receber`, `pegar`, `jogar`, `largar`, `apontar`, `acenar`, `cumprimentar`, `abrirPorta`, `beber`, `ler`, `atenderCelular`, `olharRelogio`, `encolherOmbros`, `chorar`, `rir`, `cairDeJoelhos`, `cocarCabeca`, `cruzarBracos`, `espreguicar`, `bocejar`, `comemorar`, `suspirar`, `baterPalmas`, `esquivaLateralAnim`, `esquivaParaTrasAnim`, `esquivaAbaixandoAnim`, `esquivaMatrixAnim`, `esquivaRolamentoAnim`, `esquivaMergulhoAnim`, `defesaCruzadaAnim`, `defesaBarreiraAnim`, `puloCompleto`, `puloEmDistanciaAnim`, `pousoDeHeroi`, `mortalParaTras`, `levitar`, `flutuarMeditando`, `decolarHeroi`, `fugaOlhandoTrasAnim`, `esconderAnim`, `perseguicaoAgarrao`, `perseguicaoParouCansado`, `parkourVaultAnim`, `levarSocoNoRosto`, `levarSocoNoEstomago`, `serArremessado`, `nocaute`, `carregarPoder`, `dispararRaio`, `socoNoChaoPoder`, `gigantePisao`, `giganteAbaixaPega`, `minusculoFogePisao`, `confrontoEncarar`, `vitoriaAnim`, `derrotaAnim`, `kataShaolinAnim`, `cincoAnimaisAnim`, `tigreAtacaAnim`, `garcaBicaAnim`, `serpenteBoteAnim`, `macacoAnim`, `judoSeoiNageAnim`, `judoOSotoGariAnim`, `judoUkemiAnim`, `aikidoIriminageAnim`, `taekwondoVoadorAnim`, `capoeiraGingaAnim`, `capoeiraAuAnim`, `jiuJitsuAnim`, `karateKihonAnim`, `karateChutesAnim`, `karateDefesasAnim`, `karateComboAnim`, `boxeComboAnim`, `boxeCorpoAnim`, `muayThaiAnim`, `chutesAltosAnim`, `taekwondoAnim`, `taekwondoDefesaAnim`, `wingChunAnim`, `kungFuGarcaAnim`, `capoeiraAtaquesAnim`, `capoeiraDefesasAnim`, `defesasLutaAnim`
 
@@ -26,7 +26,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 **Efeitos (`Kai efeito NOME em mao-direita`):** concentracao, velocidade, impacto_tela, flash, sombra_dramatica, onomatopeia, reticula, feixe, cone, espiral, tornado, explosao, barreira, circulo_magico, pilar, meteoro, chuva_meteoros, raio, onda_choque, cristais_chao, fogo_chao, fumaca, chama, aura, arco_movimento, rastro_membro, pos_imagem, energia_mao, velocidade_corpo, impacto_contato, emote, cratera, rachaduras, destrocos, poeira, parede_quebrada, buraco_chao, objeto_quebrando, rastro_fumaca, rastro_arma, projetil, corte_ar, choque_laminas, corte_impacto, tracante, barreira_rachada, raio_cadeia, pisada_gigante, rugido, sopro_kaiju, teia, rasgo_dimensional, impulso, borrao_movimento, poeira_pes, sulco_poeira, clarao_cano, cartuchos, impacto_bala, aura_explosiva, aura_vento, esfera_energia, fios_energia, pedras_levitando, ondas_chao, carga_maos, redemoinho, aneis_impacto, salpicos, aneis_orbitais, personalizado, composto, raio_galhos, raio_cartoon, arvore_de_raios, cone_de_aneis, torrente_espiral, tunel_de_aneis, foice_de_energia, rajada_de_particulas, leque_de_flechas, enxame_de_flechas, laminas_crescentes, crescente_gigante, laminas_de_vento, onda_gigante, espinhos_do_chao, tentaculos, vinhas_de_espinhos, atomo, vortice_disco, cupula_de_arcos, esfera_jaula, laco_infinito, fita_em_s, serpente_de_energia, discos_serra, ondas_sonoras, explosao_estrelada, bolhas, circulo_magico_flechas, circulo_de_runas, dna, tranca, portais_e_feixes, feixe_com_aneis, cone_de_ondas, esfera_espiral, chamas_nanquim, respingos_de_nanquim, pilar_de_luz_nanquim, redemoinho_de_fumaca, linhas_de_impulso, impacto_com_detritos, anel_de_impacto_no_chao, chuva_de_estrelas, aura_de_espinhos, tornado_espiral, rastro_de_velocidade, arco_de_golpe, petalas_sakura, folhas_ao_vento, chuva, neve, nevoa, raios_de_luz_divina, bolhas_subindo, vagalumes, corte_de_espada, rastro_de_espada, x_de_cortes, faiscas_de_choque, disparo_de_arma, flecha_de_luz, portal, teletransporte, aura_sombria, aura_de_gelo, selo_no_ar, cura, estrelas_tontura, espirais_tontura, linhas_de_susto, gotas_voando, vapor_de_raiva, brilho_nos_olhos, coracoes_flutuando, poeira_de_corrida, lens_flare
 
-**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco, carruagem, carroca, barcoRemo, canoa, veleiro, balsa, balsaGrande, navio, locomotiva, vagao, trem, porta, portaPequena, portaDupla, portaVidro, portaCorrer, portaCastelo, portaoGrade, portaoFerro, portaLevadica, portaoTita, portaoCidadela, portaDungeon, portaTemplo, portaRaiz, portaCofre, castelo, casteloMagico, floresta, alcapao, carro, onibus, aviao, aviaoPequeno, helicoptero, lancha, boteInflavel, barcoPesqueiro, submarino, trilho, katana, espadaLonga, espadaCurta, sabre, adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku, chicote, besta, pistola, rifle, revolver, submetralhadora, metralhadora, sniper, escopeta, lancaFoguetes, broquel, escudoCavaleiro, escudoTorre, varinha, cajadoMagico, orbe, tocha, lanterna, violao, guitarra, violino, arcoViolino, flauta, trompete, microfone, baqueta, celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave, espelhoMao, copoBebida
+**Objetos (no local: `copo "copo" em (1,0) sobre mesa`):** cadeiraVazada, mesaComAlca, baseRetangular, basePerfil, baseCircular, bastao, cajado, espada, banco, cadeira, caixa, cubo, degrau, mesa, cama, parede, cilindro, copo, coluna, barril, mesaRedonda, corda, animal, arvore, palmeira, arbusto, poco, agua, predio, rampaDegraus, esfera, cone, toro, capsula, prisma, pedra, pneu, saco, fardo, tapete, tambor, barrilChope, botijao, galao, balde, mala, maleta, malaRodinhas, mochila, bigorna, caixote, palete, vigaI, cano, tabua, escada, trelica, barraPesos, pa, marreta, alavanca, carrinhoDeMao, carrinhoCarga, carrinhoPlataforma, cacamba, ancora, pilhaCaixas, bola, lanca, machado, escudo, arco, carruagem, carroca, barcoRemo, canoa, veleiro, balsa, balsaGrande, navio, locomotiva, vagao, trem, porta, portaPequena, portaDupla, portaVidro, portaCorrer, portaCastelo, portaoGrade, portaoFerro, portaLevadica, portaoTita, portaoCidadela, portaDungeon, portaTemplo, portaRaiz, portaCofre, castelo, casteloMagico, floresta, alcapao, carro, onibus, aviao, aviaoPequeno, helicoptero, lancha, boteInflavel, barcoPesqueiro, submarino, trilho, katana, espadaLonga, espadaCurta, sabre, adaga, kunai, shuriken, martelo, maca, machadoDuplo, bastaoBo, foice, tridente, nunchaku, chicote, besta, pistola, rifle, revolver, submetralhadora, metralhadora, sniper, escopeta, lancaFoguetes, broquel, escudoCavaleiro, escudoTorre, varinha, cajadoMagico, orbe, tocha, lanterna, violao, guitarra, violino, arcoViolino, flauta, trompete, microfone, baqueta, celular, livro, xicara, garrafa, guardaChuva, bandeira, vassoura, carta, chave, espelhoMao, copoBebida, sofa, poltrona, pufe, mesaCentro, rack, tv, estante, abajur, luminaria, lareira, camaCasal, beliche, berco, criadoMudo, guardaRoupa, comoda, espelhoPe, rede, geladeira, fogao, pia, balcao, armarioCozinha, microondas, mesaJantar, banquetaAlta, vasoSanitario, banheira, chuveiro, lavatorio, maquinaLavar, tabuaPassar, lixeira, vassouraPe, escrivaninha, cadeiraEscritorio, computador, notebook, arquivo, quadroNegro, carteiraEscolar, mesaProfessor, bebedouro, mochilaEscolar, bancoPraca, posteLuz, semaforo, hidrante, lixeiraRua, pontoOnibus, orelhao, caixaCorreio, cadeiraPraia, guardaSol, churrasqueira, balanco, escorregador, gangorra, mesaPiquenique, barraca, fogueira, cercaMadeira, placa, vasoPlanta, carrinhoBebe, carrinhoMercado, piano, pianoCauda, teclado, bateria, harpa, violoncelo, contrabaixo, microfonePedestal, xilofone, amplificador, saxofone, clarinete, ukulele, cavaquinho, baixo, pandeiro, gaita, acordeao, trombone, bicicleta, moto, caminhao, van, trator, carroCorrida, skate, patinete, jetski, quadriciclo
 
 ## Animais quadrúpedes (capítulo 22)
 
@@ -42,7 +42,7 @@ Linguagem completa: peça o MANUAL (site → Texto → Manual, ou ferramenta `ma
 
 ## Pré-configurações de cena e câmera (capítulo 27)
 
-723 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
+798 situações prontas de filme, série, anime e HQ. Use `cena preset ID com Kai, Mira` (arruma e põe a câmera) ou `camera preset ID com Kai, Mira` (só a câmera). Papéis na ordem: A, B, C…; M = animal.
 
 Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon Boom, No Film School): over-the-shoulder (OTS), dirty/clean single, two-shot, 50/50, dutch angle, POV, insert, establishing shot.
 
@@ -436,6 +436,176 @@ Nomes técnicos seguem o vocabulário de cinema/storyboard (StudioBinder, Toon B
 | `grupo.costas.perfil` | de lado — quatro de costas (cercados) | profile group | A, B, C, D | a fila/roda de perfil |
 | `grupo.costas.lider` | close do líder (A) com o grupo atrás — quatro de costas (cercados) | leader close | A, B, C, D | A na frente, os outros desfocados atrás |
 | `grupo.costas.geral` | geral alto — quatro de costas (cercados) | wide establishing group | A, B, C, D | o grupo pequeno no lugar |
+
+### Veículo/moto em alta velocidade (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `veiculo.moto.lateral` | panorâmica lateral (acompanha) — moto em alta velocidade | tracking side shot | A | velocidade de lado, o fundo passando |
+| `veiculo.moto.frontal` | de frente para o piloto — moto em alta velocidade | head-on rider shot | A | determinação, o vento no rosto |
+| `veiculo.moto.baixa-traseira` | baixa, de trás — moto em alta velocidade | low rear chase cam | A | perseguição, potência |
+| `veiculo.moto.drone` | drone de cima — moto em alta velocidade | overhead drone shot | A | o trajeto e o espaço |
+| `veiculo.moto.holandes` | inclinada (holandês) — moto em alta velocidade | dutch angle speed | A | perigo, adrenalina |
+
+### Veículo/bicicleta (ciclista em sprint) (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `veiculo.bicicleta.lateral` | panorâmica lateral (acompanha) — bicicleta (ciclista em sprint) | tracking side shot | A | velocidade de lado, o fundo passando |
+| `veiculo.bicicleta.frontal` | de frente para o piloto — bicicleta (ciclista em sprint) | head-on rider shot | A | determinação, o vento no rosto |
+| `veiculo.bicicleta.baixa-traseira` | baixa, de trás — bicicleta (ciclista em sprint) | low rear chase cam | A | perseguição, potência |
+| `veiculo.bicicleta.drone` | drone de cima — bicicleta (ciclista em sprint) | overhead drone shot | A | o trajeto e o espaço |
+| `veiculo.bicicleta.holandes` | inclinada (holandês) — bicicleta (ciclista em sprint) | dutch angle speed | A | perigo, adrenalina |
+
+### Veículo/carro (motorista) (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `veiculo.carro.lateral` | panorâmica lateral (acompanha) — carro (motorista) | tracking side shot | A | velocidade de lado, o fundo passando |
+| `veiculo.carro.frontal` | de frente para o piloto — carro (motorista) | head-on rider shot | A | determinação, o vento no rosto |
+| `veiculo.carro.baixa-traseira` | baixa, de trás — carro (motorista) | low rear chase cam | A | perseguição, potência |
+| `veiculo.carro.drone` | drone de cima — carro (motorista) | overhead drone shot | A | o trajeto e o espaço |
+| `veiculo.carro.holandes` | inclinada (holandês) — carro (motorista) | dutch angle speed | A | perigo, adrenalina |
+
+### Veículo/caminhão (motorista) (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `veiculo.caminhao.lateral` | panorâmica lateral (acompanha) — caminhão (motorista) | tracking side shot | A | velocidade de lado, o fundo passando |
+| `veiculo.caminhao.frontal` | de frente para o piloto — caminhão (motorista) | head-on rider shot | A | determinação, o vento no rosto |
+| `veiculo.caminhao.baixa-traseira` | baixa, de trás — caminhão (motorista) | low rear chase cam | A | perseguição, potência |
+| `veiculo.caminhao.drone` | drone de cima — caminhão (motorista) | overhead drone shot | A | o trajeto e o espaço |
+| `veiculo.caminhao.holandes` | inclinada (holandês) — caminhão (motorista) | dutch angle speed | A | perigo, adrenalina |
+
+### Veículo/skate (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `veiculo.skate.lateral` | panorâmica lateral (acompanha) — skate | tracking side shot | A | velocidade de lado, o fundo passando |
+| `veiculo.skate.frontal` | de frente para o piloto — skate | head-on rider shot | A | determinação, o vento no rosto |
+| `veiculo.skate.baixa-traseira` | baixa, de trás — skate | low rear chase cam | A | perseguição, potência |
+| `veiculo.skate.drone` | drone de cima — skate | overhead drone shot | A | o trajeto e o espaço |
+| `veiculo.skate.holandes` | inclinada (holandês) — skate | dutch angle speed | A | perigo, adrenalina |
+
+### Veículo/kart de corrida (5)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `veiculo.kart.lateral` | panorâmica lateral (acompanha) — kart de corrida | tracking side shot | A | velocidade de lado, o fundo passando |
+| `veiculo.kart.frontal` | de frente para o piloto — kart de corrida | head-on rider shot | A | determinação, o vento no rosto |
+| `veiculo.kart.baixa-traseira` | baixa, de trás — kart de corrida | low rear chase cam | A | perseguição, potência |
+| `veiculo.kart.drone` | drone de cima — kart de corrida | overhead drone shot | A | o trajeto e o espaço |
+| `veiculo.kart.holandes` | inclinada (holandês) — kart de corrida | dutch angle speed | A | perigo, adrenalina |
+
+### Música/pianista (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `musica.piano.palco` | três quartos, da plateia — pianista | stage three-quarter | A | o show, a presença |
+| `musica.piano.contra` | de baixo (contra-plongée) — pianista | low angle hero | A | ídolo, poder do som |
+| `musica.piano.maos` | de cima, nas mãos — pianista | high angle on the hands | A | técnica, virtuosismo |
+| `musica.piano.lateral` | de lado — pianista | profile shot | A | concentração |
+
+### Música/baterista (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `musica.bateria.palco` | três quartos, da plateia — baterista | stage three-quarter | A | o show, a presença |
+| `musica.bateria.contra` | de baixo (contra-plongée) — baterista | low angle hero | A | ídolo, poder do som |
+| `musica.bateria.maos` | de cima, nas mãos — baterista | high angle on the hands | A | técnica, virtuosismo |
+| `musica.bateria.lateral` | de lado — baterista | profile shot | A | concentração |
+
+### Música/tecladista (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `musica.teclado.palco` | três quartos, da plateia — tecladista | stage three-quarter | A | o show, a presença |
+| `musica.teclado.contra` | de baixo (contra-plongée) — tecladista | low angle hero | A | ídolo, poder do som |
+| `musica.teclado.maos` | de cima, nas mãos — tecladista | high angle on the hands | A | técnica, virtuosismo |
+| `musica.teclado.lateral` | de lado — tecladista | profile shot | A | concentração |
+
+### Música/cantor no pedestal (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `musica.microfone.palco` | três quartos, da plateia — cantor no pedestal | stage three-quarter | A | o show, a presença |
+| `musica.microfone.contra` | de baixo (contra-plongée) — cantor no pedestal | low angle hero | A | ídolo, poder do som |
+| `musica.microfone.maos` | de cima, nas mãos — cantor no pedestal | high angle on the hands | A | técnica, virtuosismo |
+| `musica.microfone.lateral` | de lado — cantor no pedestal | profile shot | A | concentração |
+
+### Música/guitarrista (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `musica.guitarra.palco` | três quartos, da plateia — guitarrista | stage three-quarter | A | o show, a presença |
+| `musica.guitarra.contra` | de baixo (contra-plongée) — guitarrista | low angle hero | A | ídolo, poder do som |
+| `musica.guitarra.maos` | de cima, nas mãos — guitarrista | high angle on the hands | A | técnica, virtuosismo |
+| `musica.guitarra.lateral` | de lado — guitarrista | profile shot | A | concentração |
+
+### Música/violão sentado (4)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `musica.violao.palco` | três quartos, da plateia — violão sentado | stage three-quarter | A | o show, a presença |
+| `musica.violao.contra` | de baixo (contra-plongée) — violão sentado | low angle hero | A | ídolo, poder do som |
+| `musica.violao.maos` | de cima, nas mãos — violão sentado | high angle on the hands | A | técnica, virtuosismo |
+| `musica.violao.lateral` | de lado — violão sentado | profile shot | A | concentração |
+
+### Objetos/deitado no sofá (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.sofa-deitado.geral` | plano geral do ambiente — deitado no sofá | establishing | A | onde e como |
+| `objeto.sofa-deitado.medio` | plano médio, de lado — deitado no sofá | medium side shot | A | a ação |
+| `objeto.sofa-deitado.alto` | de cima — deitado no sofá | high angle | A | rotina, solidão |
+
+### Objetos/sofá, pernas cruzadas (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.sofa-pernas.geral` | plano geral do ambiente — sofá, pernas cruzadas | establishing | A | onde e como |
+| `objeto.sofa-pernas.medio` | plano médio, de lado — sofá, pernas cruzadas | medium side shot | A | a ação |
+| `objeto.sofa-pernas.alto` | de cima — sofá, pernas cruzadas | high angle | A | rotina, solidão |
+
+### Objetos/cama, deitado de lado (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.cama-lendo.geral` | plano geral do ambiente — cama, deitado de lado | establishing | A | onde e como |
+| `objeto.cama-lendo.medio` | plano médio, de lado — cama, deitado de lado | medium side shot | A | a ação |
+| `objeto.cama-lendo.alto` | de cima — cama, deitado de lado | high angle | A | rotina, solidão |
+
+### Objetos/cozinhando no fogão (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.cozinha-fogao.geral` | plano geral do ambiente — cozinhando no fogão | establishing | A | onde e como |
+| `objeto.cozinha-fogao.medio` | plano médio, de lado — cozinhando no fogão | medium side shot | A | a ação |
+| `objeto.cozinha-fogao.alto` | de cima — cozinhando no fogão | high angle | A | rotina, solidão |
+
+### Objetos/no computador (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.escritorio-pc.geral` | plano geral do ambiente — no computador | establishing | A | onde e como |
+| `objeto.escritorio-pc.medio` | plano médio, de lado — no computador | medium side shot | A | a ação |
+| `objeto.escritorio-pc.alto` | de cima — no computador | high angle | A | rotina, solidão |
+
+### Objetos/escrevendo na lousa (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.aula-lousa.geral` | plano geral do ambiente — escrevendo na lousa | establishing | A | onde e como |
+| `objeto.aula-lousa.medio` | plano médio, de lado — escrevendo na lousa | medium side shot | A | a ação |
+| `objeto.aula-lousa.alto` | de cima — escrevendo na lousa | high angle | A | rotina, solidão |
+
+### Objetos/banco de praça, braços cruzados (3)
+
+| id | nome | técnico | papéis | para que serve |
+|---|---|---|---|---|
+| `objeto.praca-banco.geral` | plano geral do ambiente — banco de praça, braços cruzados | establishing | A | onde e como |
+| `objeto.praca-banco.medio` | plano médio, de lado — banco de praça, braços cruzados | medium side shot | A | a ação |
+| `objeto.praca-banco.alto` | de cima — banco de praça, braços cruzados | high angle | A | rotina, solidão |
 
 ### Combate/confronto a distância (8)
 
@@ -1416,13 +1586,18 @@ pose "cintura" de empe
 
 ```gm
 pose "cruzar" de empe
-  ombro.esquerdo(frente 15.2 cruza 8.9 gira-dentro 70)
-  cotovelo.esquerdo(dobra 120.5)
-  antebraco.esquerdo(palma-cima 70)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
   punho.esquerdo(dobra 10)
+  mao.direito(fecha 40%)
   mao.esquerdo(fecha 35%)
   tronco(gira-direita 8)
   cabeca(gira-direita 10)
+  valor armRotL -90 armRotR -95
 ```
 
 ### ombro
@@ -2039,14 +2214,16 @@ pose "quatroApoios" de empe
 
 ```gm
 pose "meditando" de empe
-  ombro(frente 20 abre 18)
-  cotovelo(dobra 30)
-  mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
-  quadril(frente 84 abre 30 gira-fora 45)
-  joelho.direito(dobra 142)
-  joelho.esquerdo(dobra 148)
+  ombro.direito(tras 34 abre 30 gira-dentro 30)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 106)
+  cotovelo.esquerdo(dobra 103)
+  mao(fecha 25% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
   cabeca(baixa 5)
-  valor pronL -90 pronR -90
 ```
 
 ### guardaLuta
@@ -2784,15 +2961,16 @@ pose "caindoDeCostas" de empe
 
 ```gm
 pose "lotusFlutuando" de empe
-  ombro(frente 20 abre 18)
-  cotovelo(dobra 30)
-  mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
-  quadril(frente 84 abre 30 gira-fora 45)
-  joelho.direito(dobra 142)
-  joelho.esquerdo(dobra 148)
+  ombro.direito(tras 34 abre 30 gira-dentro 30)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 106)
+  cotovelo.esquerdo(dobra 103)
+  mao(fecha 25% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
   cabeca(baixa 5)
-  corpo(sobe 36.5cm)
-  valor pronL -90 pronR -90
 ```
 
 ### baseGritando
@@ -2850,10 +3028,13 @@ pose "bracosAbertosLevitando" de empe
 
 ```gm
 pose "maosEmPrece" de empe
-  ombro(frente 13.9 abre 8.6 gira-dentro 62.3)
-  cotovelo(dobra 127.4)
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 25 cruza 17 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 104)
+  antebraco(palma-baixo 10)
   punho(levanta 55)
-  mao(fecha 2% afasta 60%)
+  mao(fecha 0% afasta 60%)
   quadril(frente 16.8 abre 20.2 gira-fora 44.8)
   joelho(dobra 36.1)
   tornozelo(levanta-ponta 10)
@@ -2864,18 +3045,20 @@ pose "maosEmPrece" de empe
 
 ```gm
 pose "bracosCruzadosPeito" de empe
-  ombro.direito(frente 128 abre 88.9 gira-dentro 8.2 avanca 50%)
-  ombro.esquerdo(frente 122.4 abre 89.3 gira-dentro 2.2 avanca 50%)
-  cotovelo.direito(dobra 103.3)
-  cotovelo.esquerdo(dobra 102.4)
-  antebraco(palma-baixo 10)
-  mao(fecha 100% afasta 20% opoe 75%)
+  ombro.direito(frente 38 cruza 29 avanca 50%)
+  ombro.esquerdo(frente 42 cruza 32 avanca 50%)
+  cotovelo.direito(dobra 72)
+  cotovelo.esquerdo(dobra 77)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 35% afasta 20% opoe 75%)
   quadril(frente 27.8 abre 42.1 gira-fora 44.5)
   joelho(dobra 64.8)
   tornozelo(levanta-ponta 16)
   tronco(frente 18)
   cabeca(baixa 12)
-  valor fThL -0.1 fThR -0.1
+  valor armRotL -93 armRotR -92 fThL -0.1 fThR -0.1
 ```
 
 ### joelhoMaoNoChao
@@ -4553,16 +4736,21 @@ pose "punhoAFrente" de empe
 
 ```gm
 pose "viloesBracosCruzados" de empe
-  ombro(frente 45 abre 20 gira-fora 60)
-  cotovelo(dobra 120)
-  mao(fecha 100% afasta 0% opoe 70%)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40% afasta 0% opoe 70%)
+  mao.esquerdo(fecha 35% afasta 0% opoe 70%)
   quadril.direito(tras 4)
   quadril.esquerdo(frente 4)
   tronco(tras 8)
   cabeca(sobe 15)
-  valor fInL -1 fMeL -1 fInR -1 fMeR -1
-  valor fInIpL 0.15 fInAbdL -1 fMeAbdL 1 fInIpR 0.15
-  valor fInAbdR -1 fMeAbdR 1
+  valor armRotL -90 armRotR -95 fInL -1 fMeL -1
+  valor fInR -1 fMeR -1 fInIpL 0.15 fInAbdL -1
+  valor fMeAbdL 1 fInIpR 0.15 fInAbdR -1 fMeAbdR 1
 ```
 
 ### risadaVila
@@ -7441,11 +7629,12 @@ pose "rfAcenoAjoelhado" de empe
 
 ```gm
 pose "rfDespedidaMaoNoPeito" de empe
-  ombro.direito(frente 60 abre 10)
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
   ombro.esquerdo(frente 10 abre 10)
-  cotovelo.direito(dobra 120)
+  cotovelo.direito(dobra 122)
   cotovelo.esquerdo(dobra 20)
-  mao.direito(fecha 0% afasta 85%)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5% afasta 85%)
   cabeca(baixa 15)
 ```
 
@@ -7453,10 +7642,14 @@ pose "rfDespedidaMaoNoPeito" de empe
 
 ```gm
 pose "rfDespedidaAbracandoSi" de empe
-  ombro(frente 50 abre 10 gira-fora 50)
-  cotovelo(dobra 140)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(frente 49 cruza 37)
+  ombro.esquerdo(frente 52 cruza 39)
+  cotovelo.direito(dobra 85)
+  cotovelo.esquerdo(dobra 80)
+  antebraco(palma-cima 60)
+  mao(fecha 45% afasta 85%)
   cabeca(baixa 20)
+  valor armRotL -93 armRotR -95
 ```
 
 ### rfDespedidaAjoelhadoChorando
@@ -7647,9 +7840,12 @@ pose "rfAtaqueCargaEnergia" de empe
 
 ```gm
 pose "rfDorBarriga" de empe
-  ombro(frente 40 abre 10)
-  cotovelo(dobra 110)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(tras 13 abre 0 gira-dentro 42)
+  ombro.esquerdo(tras 3 abre 5 gira-dentro 50)
+  cotovelo.direito(dobra 119)
+  cotovelo.esquerdo(dobra 122)
+  antebraco(palma-cima 60)
+  mao(fecha 10% afasta 85%)
   quadril(frente 20)
   joelho(dobra 25)
   tronco(frente 35)
@@ -7660,11 +7856,13 @@ pose "rfDorBarriga" de empe
 
 ```gm
 pose "rfDorPeito" de empe
-  ombro.direito(frente 10 abre 10)
-  ombro.esquerdo(frente 40 abre 0)
-  cotovelo.direito(dobra 20)
-  cotovelo.esquerdo(dobra 130)
-  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  ombro.direito(frente 12 cruza 4 gira-dentro 55)
+  ombro.esquerdo(frente 23 cruza 16 gira-dentro 44)
+  cotovelo.direito(dobra 118)
+  cotovelo.esquerdo(dobra 110)
+  antebraco(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 5% afasta 70% opoe 30%)
   quadril.direito(frente 10)
   quadril.esquerdo(frente 15)
   joelho.direito(dobra 15)
@@ -7813,9 +8011,9 @@ pose "rfVergonhaRostoNasMaos" de empe
 
 ```gm
 pose "rfVergonhaMaoNaNuca" de empe
-  ombro.direito(frente 10 abre 10)
+  ombro.direito(frente 160 abre 10 gira-dentro 42)
   ombro.esquerdo(frente 130 abre 30)
-  cotovelo.direito(dobra 20)
+  cotovelo.direito(dobra 142)
   cotovelo.esquerdo(dobra 150)
   mao.esquerdo(fecha 0% afasta 85%)
   cabeca(baixa 10 inclina-direita 8)
@@ -7860,9 +8058,11 @@ pose "rfVergonhaBracoCruzadoNaFrente" de empe
 
 ```gm
 pose "rfVergonhaMaosAtras" de empe
-  ombro(tras 20 abre 10)
-  cotovelo(dobra 30)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(tras 50 abre 5 gira-dentro 47)
+  ombro.esquerdo(tras 50 abre 7 gira-dentro 52)
+  cotovelo.direito(dobra 88)
+  cotovelo.esquerdo(dobra 85)
+  mao(afasta 85%)
   cabeca(baixa 15 inclina-esquerda 8)
 ```
 
@@ -7882,10 +8082,12 @@ pose "rfVergonhaEncolhido" de empe
 
 ```gm
 pose "rfVergonhaCobrindoBoca" de empe
-  ombro.direito(frente 10 abre 10)
+  ombro.direito(frente 40 cruza 30 gira-dentro 52)
   ombro.esquerdo(frente 50 abre 0)
-  cotovelo.direito(dobra 20)
+  cotovelo.direito(dobra 129)
   cotovelo.esquerdo(dobra 150)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
   mao.esquerdo(fecha 0% afasta 85%)
   cabeca(baixa 10)
 ```
@@ -8036,10 +8238,12 @@ pose "rfProvedorOferecendo" de empe
 
 ```gm
 pose "rfProvedorMaoNoPeito" de empe
-  ombro.direito(frente 10 abre 10)
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
   ombro.esquerdo(frente 40 abre 0)
-  cotovelo.direito(dobra 20)
+  cotovelo.direito(dobra 122)
   cotovelo.esquerdo(dobra 130)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
   mao.esquerdo(fecha 0% afasta 85%)
   cabeca(sobe 5)
 ```
@@ -8078,9 +8282,11 @@ pose "rfProvedorAgachadoDando" de empe
 
 ```gm
 pose "rfProvedorMaosNaCintura" de empe
-  ombro(frente 10 abre 40)
-  cotovelo(dobra 110)
-  mao(fecha 100% afasta 20% opoe 75%)
+  ombro(tras 27 abre 34 gira-dentro 55)
+  cotovelo(dobra 114)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35% afasta 20% opoe 75%)
   cabeca(sobe 10)
   valor fThL -0.1 fThR -0.1
 ```
@@ -8234,10 +8440,16 @@ pose "rfViloaMaoNoQuadril" de empe
 
 ```gm
 pose "rfViloaBracosCruzados" de empe
-  ombro(frente 60 cruza 10 gira-fora 40)
-  cotovelo(dobra 110)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 85%)
   cabeca(sobe 15)
+  valor armRotL -90 armRotR -95
 ```
 
 ### rfViloaConjurando
@@ -8274,9 +8486,11 @@ pose "rfViloaSentadaNoTrono" de empe
   ombro.esquerdo(frente 30 abre 20)
   cotovelo.direito(dobra 70)
   cotovelo.esquerdo(dobra 60)
-  quadril.direito(frente 90 gira-dentro 20)
-  quadril.esquerdo(frente 90)
-  joelho(dobra 90)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
   cabeca(sobe 10)
 ```
 
@@ -8511,8 +8725,10 @@ pose "rfCooperacaoMeditandoSentado" de empe
   cotovelo(dobra 60)
   antebraco(palma-cima 60)
   mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
-  quadril(frente 90 abre 45 gira-fora 40)
-  joelho(dobra 140)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
   tronco(frente 5)
 ```
 
@@ -8590,10 +8806,12 @@ pose "encolhendoOmbros" de empe
 
 ```gm
 pose "maoNoPeitoJuramento" de empe
-  ombro.direito(frente 5)
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
   ombro.esquerdo(frente 50 abre 10 gira-fora 40)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 122)
   cotovelo.esquerdo(dobra 130)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
   mao.esquerdo(fecha 0% afasta 85%)
   tronco(tras 2)
   cabeca(sobe 6)
@@ -8603,24 +8821,34 @@ pose "maoNoPeitoJuramento" de empe
 
 ```gm
 pose "maoNoQueixo" de empe
-  ombro.direito(frente 35 abre 30 gira-fora 60)
-  ombro.esquerdo(frente 60 abre 10 gira-fora 30)
-  cotovelo.direito(dobra 120)
-  cotovelo.esquerdo(dobra 140)
-  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  ombro.direito(frente 70 cruza 1 gira-dentro 70)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  mao.esquerdo(afasta 20% opoe 75%)
   tronco(frente 4)
   cabeca(baixa 8 gira-esquerda 10)
-  valor fThL -0.1
+  valor armRotL -75 fThL -0.1
 ```
 
 ### bracosCruzadosOuvindo
 
 ```gm
 pose "bracosCruzadosOuvindo" de empe
-  ombro(frente 40 abre 18 gira-fora 55)
-  cotovelo(dobra 125)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40%)
+  mao.esquerdo(fecha 35%)
   tronco(tras 4)
   cabeca(baixa 4 inclina-direita 6)
+  valor armRotL -90 armRotR -95
 ```
 
 ### inclinadoAtento
@@ -8637,10 +8865,12 @@ pose "inclinadoAtento" de empe
 
 ```gm
 pose "cochichandoMaoNaBoca" de empe
-  ombro.direito(frente 5)
+  ombro.direito(frente 77 abre 39 gira-dentro 30)
   ombro.esquerdo(frente 75 abre 30 gira-dentro 20)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 131)
   cotovelo.esquerdo(dobra 120)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
   mao.esquerdo(fecha 0% afasta 85%)
   tronco(frente 18 direita 8)
   cabeca(baixa 10 inclina-direita 12)
@@ -8650,10 +8880,12 @@ pose "cochichandoMaoNaBoca" de empe
 
 ```gm
 pose "dedoNosLabios" de empe
-  ombro.direito(frente 5)
+  ombro.direito(frente 44 cruza 33 gira-dentro 55)
   ombro.esquerdo(frente 65 gira-fora 20)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 128)
   cotovelo.esquerdo(dobra 140)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
   mao.esquerdo(fecha 100% afasta 30% opoe 60%)
   cabeca(baixa 4)
   valor fThL -0.25 fInL -1
@@ -8663,10 +8895,11 @@ pose "dedoNosLabios" de empe
 
 ```gm
 pose "maoNaTesta" de empe
-  ombro.direito(frente 10 abre 15)
+  ombro.direito(frente 51 cruza 37 gira-dentro 54)
   ombro.esquerdo(frente 80 abre 20)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 121)
   cotovelo.esquerdo(dobra 145)
+  mao.direito(fecha 15%)
   mao.esquerdo(fecha 0% afasta 85%)
   tronco(frente 18)
   cabeca(baixa 30)
@@ -8676,10 +8909,11 @@ pose "maoNaTesta" de empe
 
 ```gm
 pose "cocandoACabeca" de empe
-  ombro.direito(frente 5 abre 15)
+  ombro.direito(frente 118 abre 43 gira-fora 25)
   ombro.esquerdo(frente 150 abre 40)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 120)
   cotovelo.esquerdo(dobra 70)
+  mao.direito(fecha 35%)
   mao.esquerdo(fecha 55% afasta 70% opoe 30%)
   cabeca(baixa 6 inclina-direita 12)
   valor fThL -0.2
@@ -8689,9 +8923,11 @@ pose "cocandoACabeca" de empe
 
 ```gm
 pose "maosNaCinturaBravo" de empe
-  ombro(tras 10 abre 45 gira-dentro 70)
-  cotovelo(dobra 110)
-  mao(fecha 100% afasta 20% opoe 75%)
+  ombro(tras 25 abre 35 gira-dentro 55)
+  cotovelo(dobra 115)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35% afasta 20% opoe 75%)
   tronco(frente 8)
   cabeca(baixa 10)
   valor fThL -0.1 fThR -0.1
@@ -8747,8 +8983,11 @@ pose "pedindoMaoEstendida" de empe
 
 ```gm
 pose "implorandoMaosJuntas" de empe
-  ombro(frente 60 abre 5)
-  cotovelo(dobra 110)
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
   mao(fecha 0% afasta 85%)
   joelho(dobra 20)
   tronco(frente 20)
@@ -8822,10 +9061,13 @@ pose "sinalOk" de empe
 
 ```gm
 pose "maoNoBolsoRelaxado" de empe
-  ombro.direito(frente 40 abre 20 gira-fora 40)
+  ombro.direito(tras 30 abre 3 gira-dentro 5)
   ombro.esquerdo(tras 5 abre 14)
   cotovelo.direito(dobra 90)
   cotovelo.esquerdo(dobra 20)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
   tronco(direita 4)
   cabeca(inclina-esquerda 4)
 ```
@@ -8834,8 +9076,11 @@ pose "maoNoBolsoRelaxado" de empe
 
 ```gm
 pose "maosNosBolsos" de empe
-  ombro(tras 8 gira-fora 30)
-  cotovelo(dobra 25)
+  ombro(tras 28 abre 5 gira-dentro 10)
+  cotovelo(dobra 85)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
   tronco(tras 2)
   cabeca(baixa 4)
 ```
@@ -8844,22 +9089,31 @@ pose "maosNosBolsos" de empe
 
 ```gm
 pose "encostadoBracosCruzados" de empe
-  ombro(frente 40 abre 18 gira-fora 55)
-  cotovelo(dobra 125)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40%)
+  mao.esquerdo(fecha 35%)
   quadril.esquerdo(frente 20 gira-fora 40)
   joelho.esquerdo(dobra 35)
   tronco(tras 8)
   cabeca(sobe 4 gira-esquerda 15)
+  valor armRotL -90 armRotR -95
 ```
 
 ### celularNoOuvido
 
 ```gm
 pose "celularNoOuvido" de empe
-  ombro.direito(frente 5)
+  ombro.direito(frente 62 cruza 26 gira-dentro 40)
   ombro.esquerdo(frente 50 abre 45 gira-dentro 20)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 145)
   cotovelo.esquerdo(dobra 140)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
   mao.esquerdo(fecha 100% afasta 60%)
   cabeca(inclina-direita 12)
   valor fThL -1 fMiL -1 fThAbdL 0.8 fMiAbdL 0.6
@@ -8886,21 +9140,24 @@ pose "olhandoOCelular" de empe
 
 ```gm
 pose "maoAtrasDaCabeca" de empe
-  ombro.direito(frente 5 abre 15)
+  ombro.direito(frente 45 cruza 18)
   ombro.esquerdo(frente 150 abre 90)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 145)
   cotovelo.esquerdo(dobra 150)
   mao.esquerdo(fecha 0% afasta 85%)
   cabeca(inclina-direita 10)
+  valor armRotR -83
 ```
 
 ### maosAtrasDasCostas
 
 ```gm
 pose "maosAtrasDasCostas" de empe
-  ombro(tras 25 abre 10 gira-fora 40)
-  cotovelo(dobra 50)
-  mao.direito(fecha 60% afasta 25% opoe 80%)
+  ombro.direito(tras 48 abre 10 gira-dentro 56)
+  ombro.esquerdo(tras 50 abre 10 gira-dentro 57)
+  cotovelo.direito(dobra 89)
+  cotovelo.esquerdo(dobra 87)
+  mao.direito(afasta 25% opoe 80%)
   tronco(tras 4)
   cabeca(sobe 2)
   valor fThR -0.1
@@ -9056,11 +9313,15 @@ pose "encolhidoComMedo" de empe
 
 ```gm
 pose "abracandoASiMesmo" de empe
-  ombro(frente 45 abre 20 gira-fora 60)
-  cotovelo(dobra 130)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(frente 49 cruza 37)
+  ombro.esquerdo(frente 52 cruza 39)
+  cotovelo.direito(dobra 85)
+  cotovelo.esquerdo(dobra 80)
+  antebraco(palma-cima 60)
+  mao(fecha 45% afasta 85%)
   tronco(frente 15)
   cabeca(baixa 20)
+  valor armRotL -93 armRotR -95
 ```
 
 ### cabisbaixoAndando
@@ -9558,8 +9819,11 @@ pose "deitadoDeBrucosLendo" de empe
 
 ```gm
 pose "rezando" de empe
-  ombro(frente 55 abre 5)
-  cotovelo(dobra 120)
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
   mao(fecha 0% afasta 85%)
   cabeca(baixa 30)
 ```
@@ -9568,8 +9832,11 @@ pose "rezando" de empe
 
 ```gm
 pose "ajoelhadoRezando" de empe
-  ombro(frente 55 abre 5)
-  cotovelo(dobra 120)
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
   mao(fecha 0% afasta 85%)
   joelho(dobra 95)
   tornozelo(aponta 40)
@@ -9710,11 +9977,14 @@ pose "punhoCerradoDeterminado" de empe
 
 ```gm
 pose "modeloMaoNoQuadril" de empe
-  ombro.direito(frente 30 abre 20)
-  ombro.esquerdo(tras 10 abre 40 gira-dentro 70)
-  cotovelo.direito(dobra 40)
-  cotovelo.esquerdo(dobra 110)
-  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  ombro.direito(tras 33 abre 32 gira-dentro 48)
+  ombro.esquerdo(tras 25 abre 31 gira-dentro 55)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 107)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 35% afasta 20% opoe 75%)
   quadril.direito(tras 4 gira-fora 30)
   quadril.esquerdo(frente 10)
   joelho.esquerdo(dobra 15)
@@ -9731,9 +10001,11 @@ pose "sentadoPernasCruzadas" de empe
   ombro.esquerdo(frente 10 abre 15)
   cotovelo.direito(dobra 80)
   cotovelo.esquerdo(dobra 40)
-  quadril.direito(frente 105 fecha 4 gira-fora 20)
-  quadril.esquerdo(frente 90 abre 11)
-  joelho(dobra 90)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
   tronco(tras 4)
   cabeca(baixa 4)
 ```
@@ -9789,19 +10061,27 @@ pose "correndoBracosAbertos" de empe
 
 ```gm
 pose "bracosCruzadosEmburrado" de empe
-  ombro(frente 45 abre 20 gira-fora 55)
-  cotovelo(dobra 125)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40%)
+  mao.esquerdo(fecha 35%)
   tronco(tras 6)
   cabeca(sobe 10 gira-direita 35)
+  valor armRotL -90 armRotR -95
 ```
 
 ### chocadoMaosNaBoca
 
 ```gm
 pose "chocadoMaosNaBoca" de empe
-  ombro(frente 80 abre 10)
-  cotovelo(dobra 150)
-  mao(fecha 0% afasta 85%)
+  ombro(frente 44 cruza 33 gira-dentro 55)
+  cotovelo(dobra 128)
+  antebraco(palma-cima 20)
+  mao(fecha 20% afasta 85%)
   tronco(frente 6)
   cabeca(baixa 4)
 ```
@@ -9825,9 +10105,12 @@ pose "apontandoRindo" de empe
 
 ```gm
 pose "segurandoBarrigaRindo" de empe
-  ombro(frente 40 abre 20)
-  cotovelo(dobra 120)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(tras 7 abre 6 gira-dentro 50)
+  ombro.esquerdo(tras 4 abre 4 gira-dentro 49)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 123)
+  antebraco(palma-cima 60)
+  mao(fecha 10% afasta 85%)
   tronco(frente 40)
   cabeca(sobe 10)
 ```
@@ -12069,11 +12352,12 @@ pose "infEspiandoQuina" de empe
 
 ```gm
 pose "infSinalSilencio" de empe
-  ombro.direito(frente 30 abre 20)
+  ombro.direito(frente 58 cruza 24 gira-dentro 40)
   ombro.esquerdo(frente 25 abre 20)
-  cotovelo.direito(dobra 80)
+  cotovelo.direito(dobra 142)
   cotovelo.esquerdo(dobra 140)
-  mao.direito(fecha 0% afasta 85%)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20% afasta 85%)
   mao.esquerdo(fecha 100% afasta 30% opoe 60%)
   quadril.direito(frente 30)
   quadril.esquerdo(frente 50)
@@ -12800,9 +13084,13 @@ pose "escEmbaixoCama" de empe
 
 ```gm
 pose "escCobrindoBoca" de empe
-  ombro(frente 25 abre 15 gira-fora 60)
-  cotovelo(dobra 140)
-  mao(fecha 0% afasta 85%)
+  ombro.direito(frente 75 abre 25 gira-dentro 38)
+  ombro.esquerdo(frente 25 abre 15 gira-fora 60)
+  cotovelo.direito(dobra 129)
+  cotovelo.esquerdo(dobra 140)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20% afasta 85%)
+  mao.esquerdo(fecha 0% afasta 85%)
   quadril(frente 20)
   joelho(dobra 20)
   tronco(frente 10)
@@ -13456,8 +13744,11 @@ pose "camDesfile" de empe
 
 ```gm
 pose "camMaosNoBolso" de empe
-  ombro(tras 6 abre 15 gira-fora 50)
-  cotovelo(dobra 30)
+  ombro(tras 28 abre 5 gira-dentro 10)
+  cotovelo(dobra 86)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
   quadril.direito(tras 8)
   quadril.esquerdo(frente 20)
   joelho.direito(dobra 8)
@@ -15983,11 +16274,12 @@ pose "yogaLotus" de empe
   cotovelo(dobra 30)
   antebraco(palma-cima 60)
   mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
-  quadril(frente 90 abre 45)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 41 gira-fora 45)
   joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
   tronco(tras 6)
   cabeca(sobe 4)
-  valor hipRotL 50 hipRotR 50
 ```
 
 ### alongandoPerna
@@ -16668,12 +16960,12 @@ pose "escrApresentando" de empe
 
 ```gm
 pose "escrAoTelefone" de empe
-  ombro.direito(frente 40 abre 30)
+  ombro.direito(frente 59 cruza 40 gira-dentro 60)
   ombro.esquerdo(frente 40 abre 35)
-  cotovelo.direito(dobra 80)
+  cotovelo.direito(dobra 145)
   cotovelo.esquerdo(dobra 135)
-  antebraco.direito(palma-baixo 60)
-  mao.direito(fecha 0% afasta 85%)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50% afasta 85%)
   mao.esquerdo(fecha 60% afasta 25% opoe 80%)
   cabeca(sobe 4 gira-esquerda 10)
   valor fThL -0.1
@@ -17409,13 +17701,16 @@ pose "escolaCientistaTubo" de empe
 
 ```gm
 pose "escolaEstudandoChao" de empe
-  ombro(frente 40 abre 20)
-  cotovelo(dobra 90)
-  mao.direito(fecha 0% afasta 85%)
-  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
-  quadril(frente 90 abre 45 gira-fora 40)
-  joelho(dobra 140)
-  tronco(frente 30)
+  ombro(frente 13 cruza 5 gira-dentro 25)
+  cotovelo(dobra 89)
+  antebraco(palma-cima 80)
+  mao.direito(fecha 50% afasta 85%)
+  mao.esquerdo(fecha 50% afasta 25% opoe 80%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  tronco(frente 10)
   cabeca(baixa 40)
   valor fThL -0.1
 ```
@@ -17763,7 +18058,7 @@ pose "lazerVideogame" de empe
   ombro(frente 40 abre 20)
   cotovelo(dobra 90)
   mao(fecha 60% afasta 25% opoe 80%)
-  quadril(frente 90 abre 39 gira-fora 30)
+  quadril(frente 90 abre 38 gira-fora 30)
   joelho(dobra 140)
   tronco(frente 30)
   cabeca(baixa 10)
@@ -17919,10 +18214,11 @@ pose "lazerLendoRede" de empe
   ombro(frente 30 abre 20)
   cotovelo(dobra 90)
   mao(fecha 60% afasta 25% opoe 80%)
-  quadril.direito(frente 100 gira-dentro 20)
-  quadril.esquerdo(frente 90)
-  joelho.direito(dobra 60)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
   joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
   tronco(frente 10)
   cabeca(baixa 35)
   valor fThL -0.1 fThR -0.1
@@ -18235,11 +18531,13 @@ pose "emoApontandoAcusando" de empe
 
 ```gm
 pose "emoAgarradoAoPeito" de empe
-  ombro.direito(frente 30 abre 10)
-  ombro.esquerdo(frente 45 cruza 10)
-  cotovelo.direito(dobra 40)
+  ombro.direito(frente 10 cruza 6 gira-dentro 53)
+  ombro.esquerdo(frente 23 cruza 16 gira-dentro 44)
+  cotovelo.direito(dobra 118)
   cotovelo.esquerdo(dobra 110)
-  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  antebraco(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 5% afasta 70% opoe 30%)
   quadril(frente 20)
   joelho(dobra 20)
   tronco(frente 30)
@@ -18370,9 +18668,9 @@ pose "emoEscondendoRosto" de empe
 
 ```gm
 pose "emoCocandoNuca" de empe
-  ombro.direito(abre 10)
+  ombro.direito(frente 160 abre 10 gira-dentro 40)
   ombro.esquerdo(frente 150 abre 40)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 143)
   cotovelo.esquerdo(dobra 65)
   mao.esquerdo(fecha 55% afasta 70% opoe 30%)
   tronco(direita 6)
@@ -18398,9 +18696,10 @@ pose "emoEncolhidoCanto" de empe
 
 ```gm
 pose "emoTremendoFrio" de empe
-  ombro(frente 40 cruza 10 gira-fora 70)
-  cotovelo(dobra 140)
-  mao(fecha 100% afasta 20% opoe 75%)
+  ombro(frente 1 cruza 1 gira-dentro 4)
+  cotovelo(dobra 145)
+  antebraco(palma-cima 60)
+  mao(fecha 45% afasta 20% opoe 75%)
   quadril(frente 10)
   joelho(dobra 20)
   tronco(frente 20)
@@ -18708,12 +19007,17 @@ pose "romDespedidaAcenando" de empe
 
 ```gm
 pose "romCiumes" de empe
-  ombro(frente 40 abre 10 gira-fora 60)
-  cotovelo(dobra 120)
-  mao(fecha 100% afasta 20% opoe 75%)
+  ombro.direito(frente 42 cruza 32)
+  ombro.esquerdo(frente 44 cruza 33)
+  cotovelo.direito(dobra 64)
+  cotovelo.esquerdo(dobra 71)
+  antebraco.direito(palma-cima 70)
+  antebraco.esquerdo(palma-cima 40)
+  mao.direito(fecha 40% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 35% afasta 20% opoe 75%)
   tronco(direita 10)
   cabeca(sobe 10 gira-direita 50)
-  valor fThL -0.1 fThR -0.1
+  valor armRotL -90 armRotR -95 fThL -0.1 fThR -0.1
 ```
 
 ### romDancandoSozinhoChuva
@@ -18865,10 +19169,12 @@ pose "terEscondidoPrendendoRespiracao" de empe
 
 ```gm
 pose "terTelefoneSemSinal" de empe
-  ombro.direito(frente 40 abre 15)
+  ombro.direito(frente 128 abre 88 gira-fora 71)
   ombro.esquerdo(frente 170 abre 10)
-  cotovelo.direito(dobra 100)
+  cotovelo.direito(dobra 145)
   cotovelo.esquerdo(dobra 10)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
   mao.esquerdo(fecha 60% afasta 25% opoe 80%)
   quadril(frente 10)
   tronco(tras 10)
@@ -19824,15 +20130,15 @@ pose "magoEscudoMagico" de empe
 
 ```gm
 pose "magoLevitandoMeditando" de empe
-  ombro(frente 30 abre 20)
-  cotovelo(dobra 30)
-  antebraco(palma-cima 60)
-  mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
-  quadril(frente 90 abre 45)
+  ombro.direito(tras 36 abre 33 gira-dentro 33)
+  ombro.esquerdo(tras 35 abre 36 gira-dentro 38)
+  cotovelo(dobra 106)
+  mao(fecha 25% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 41 gira-fora 45)
   joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
   cabeca(sobe 4)
-  corpo(sobe 114cm)
-  valor hipRotL 50 hipRotR 50
 ```
 
 ### magoTeleporte
@@ -20019,6 +20325,11 @@ pose "viloTronoPernaCruzada" de empe
   ombro(frente 45 cruza 10)
   cotovelo(dobra 100)
   mao(fecha 0% afasta 85%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
   tronco(frente 15)
   cabeca(baixa 10)
 ```
@@ -20133,8 +20444,11 @@ pose "sereiaSentadaPedra" de empe
   punho.esquerdo(levanta 60)
   mao.direito(fecha 0% afasta 85%)
   mao.esquerdo(fecha 2% afasta 60%)
-  quadril(frente 80 abre 4 gira-dentro 40)
-  joelho(dobra 40)
+  quadril.direito(frente 95 abre 45 gira-fora 45)
+  quadril.esquerdo(frente 95 fecha 30 gira-dentro 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30 sola-dentro 10)
+  tornozelo.esquerdo(aponta 30)
   tronco(tras 6)
   cabeca(sobe 10 inclina-direita 15)
 ```
@@ -20643,10 +20957,12 @@ pose "gestoReverenciaJaponesa" de empe
 
 ```gm
 pose "gestoMaoNoPeitoSaudando" de empe
-  ombro.direito(abre 10)
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
   ombro.esquerdo(frente 45 cruza 15)
-  cotovelo.direito(dobra 10)
+  cotovelo.direito(dobra 122)
   cotovelo.esquerdo(dobra 120)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
   mao.esquerdo(fecha 2% afasta 60%)
   tronco(frente 15)
   cabeca(baixa 20)
@@ -21003,15 +21319,17 @@ pose "velhoDandoMilhoPombos" de empe
 
 ```gm
 pose "velhoCostasDoendo" de empe
-  ombro.direito(frente 30 abre 20)
+  ombro.direito(tras 50 abre 36)
   ombro.esquerdo(tras 20 abre 30)
-  cotovelo.direito(dobra 20)
+  cotovelo.direito(dobra 103)
   cotovelo.esquerdo(dobra 100)
+  mao.direito(fecha 10%)
   mao.esquerdo(fecha 2% afasta 60%)
   quadril(frente 10)
   joelho(dobra 20)
   tronco(tras 20)
   cabeca(sobe 10)
+  valor armRotR -80
 ```
 
 ### velhoBengalaBrava
@@ -21131,9 +21449,12 @@ pose "cerimJogandoBuque" de empe
 
 ```gm
 pose "cerimHinoMaoPeito" de empe
-  ombro.direito(abre 0)
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
   ombro.esquerdo(frente 45 cruza 15)
+  cotovelo.direito(dobra 122)
   cotovelo.esquerdo(dobra 120)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
   mao.esquerdo(fecha 2% afasta 60%)
   cabeca(sobe 6)
 ```
@@ -21241,7 +21562,7 @@ pose "campoEnxada" de empe
 pose "milSentido" de empe
   ombro(tras 8 abre 37)
   mao(fecha 100% afasta 20% opoe 75%)
-  quadril(gira-fora 25)
+  quadril(abre 2 gira-fora 25)
   tronco(tras 8)
   cabeca(sobe 12)
   valor shElevL 10 shElevR 10 fThL -0.1 fThR -0.1
@@ -21409,9 +21730,12 @@ pose "hospDeitadoMaca" de empe
 
 ```gm
 pose "hospSegurandoBarriga" de empe
-  ombro(frente 40 cruza 10)
-  cotovelo(dobra 100)
-  mao(fecha 55% afasta 70% opoe 30%)
+  ombro.direito(tras 7 abre 5 gira-dentro 50)
+  ombro.esquerdo(tras 6 abre 2 gira-dentro 48)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 125)
+  antebraco(palma-cima 60)
+  mao(fecha 10% afasta 70% opoe 30%)
   quadril(frente 30)
   joelho(dobra 40)
   tronco(frente 45)
@@ -21954,6 +22278,20553 @@ pose "sentadoRindoMesa" de empe
   joelho(dobra 90)
   tronco(tras 15)
   cabeca(sobe 20)
+```
+
+### anLutaBaseBaixaSocoCarregado
+
+```gm
+pose "anLutaBaseBaixaSocoCarregado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaSocoCarregadoOlhaLado
+
+```gm
+pose "anLutaBaseBaixaSocoCarregadoOlhaLado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaSocoCarregadoTronco
+
+```gm
+pose "anLutaBaseBaixaSocoCarregadoTronco" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaPalmaDupla
+
+```gm
+pose "anLutaBaseBaixaPalmaDupla" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+```
+
+### anLutaBaseBaixaPalmaDuplaOlhaLado
+
+```gm
+pose "anLutaBaseBaixaPalmaDuplaOlhaLado" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+```
+
+### anLutaBaseBaixaPalmaDuplaTronco
+
+```gm
+pose "anLutaBaseBaixaPalmaDuplaTronco" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anLutaBaseBaixaKameLateral
+
+```gm
+pose "anLutaBaseBaixaKameLateral" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-direita 35)
+  cabeca(sobe 6)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaBaseBaixaKameLateralOlhaLado
+
+```gm
+pose "anLutaBaseBaixaKameLateralOlhaLado" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaBaseBaixaKameLateralTronco
+
+```gm
+pose "anLutaBaseBaixaKameLateralTronco" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaBaseBaixaEspadaAlto
+
+```gm
+pose "anLutaBaseBaixaEspadaAlto" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaEspadaAltoOlhaLado
+
+```gm
+pose "anLutaBaseBaixaEspadaAltoOlhaLado" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaEspadaAltoTronco
+
+```gm
+pose "anLutaBaseBaixaEspadaAltoTronco" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaDefesaX
+
+```gm
+pose "anLutaBaseBaixaDefesaX" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaDefesaXOlhaLado
+
+```gm
+pose "anLutaBaseBaixaDefesaXOlhaLado" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaDefesaXTronco
+
+```gm
+pose "anLutaBaseBaixaDefesaXTronco" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaBaseBaixaApontaDesafio
+
+```gm
+pose "anLutaBaseBaixaApontaDesafio" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaBaseBaixaApontaDesafioOlhaLado
+
+```gm
+pose "anLutaBaseBaixaApontaDesafioOlhaLado" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaBaseBaixaApontaDesafioTronco
+
+```gm
+pose "anLutaBaseBaixaApontaDesafioTronco" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaBaseBaixaGarras
+
+```gm
+pose "anLutaBaseBaixaGarras" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaBaseBaixaGarrasOlhaLado
+
+```gm
+pose "anLutaBaseBaixaGarrasOlhaLado" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaBaseBaixaGarrasTronco
+
+```gm
+pose "anLutaBaseBaixaGarrasTronco" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaBaseBaixaNinjaRun
+
+```gm
+pose "anLutaBaseBaixaNinjaRun" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10)
+  cabeca(sobe 6)
+```
+
+### anLutaBaseBaixaNinjaRunOlhaLado
+
+```gm
+pose "anLutaBaseBaixaNinjaRunOlhaLado" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 6 gira-esquerda 65 inclina-direita 15)
+```
+
+### anLutaBaseBaixaNinjaRunTronco
+
+```gm
+pose "anLutaBaseBaixaNinjaRunTronco" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5 abre 22 gira-dentro 10)
+  quadril.esquerdo(frente 65 abre 32 gira-fora 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 85)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anLutaNoArSocoCarregado
+
+```gm
+pose "anLutaNoArSocoCarregado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArSocoCarregadoOlhaLado
+
+```gm
+pose "anLutaNoArSocoCarregadoOlhaLado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArSocoCarregadoTronco
+
+```gm
+pose "anLutaNoArSocoCarregadoTronco" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArPalmaDupla
+
+```gm
+pose "anLutaNoArPalmaDupla" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+```
+
+### anLutaNoArPalmaDuplaOlhaLado
+
+```gm
+pose "anLutaNoArPalmaDuplaOlhaLado" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+```
+
+### anLutaNoArPalmaDuplaTronco
+
+```gm
+pose "anLutaNoArPalmaDuplaTronco" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+```
+
+### anLutaNoArKameLateral
+
+```gm
+pose "anLutaNoArKameLateral" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-direita 35)
+  corpo(sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaNoArKameLateralOlhaLado
+
+```gm
+pose "anLutaNoArKameLateralOlhaLado" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaNoArEspadaAlto
+
+```gm
+pose "anLutaNoArEspadaAlto" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArEspadaAltoOlhaLado
+
+```gm
+pose "anLutaNoArEspadaAltoOlhaLado" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArEspadaAltoTronco
+
+```gm
+pose "anLutaNoArEspadaAltoTronco" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArDefesaX
+
+```gm
+pose "anLutaNoArDefesaX" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArDefesaXOlhaLado
+
+```gm
+pose "anLutaNoArDefesaXOlhaLado" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArDefesaXTronco
+
+```gm
+pose "anLutaNoArDefesaXTronco" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaNoArApontaDesafio
+
+```gm
+pose "anLutaNoArApontaDesafio" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaNoArApontaDesafioOlhaLado
+
+```gm
+pose "anLutaNoArApontaDesafioOlhaLado" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaNoArApontaDesafioTronco
+
+```gm
+pose "anLutaNoArApontaDesafioTronco" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaNoArGarras
+
+```gm
+pose "anLutaNoArGarras" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaNoArGarrasOlhaLado
+
+```gm
+pose "anLutaNoArGarrasOlhaLado" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaNoArGarrasTronco
+
+```gm
+pose "anLutaNoArGarrasTronco" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaNoArNinjaRun
+
+```gm
+pose "anLutaNoArNinjaRun" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10)
+  corpo(sobe 34.2cm)
+```
+
+### anLutaNoArNinjaRunOlhaLado
+
+```gm
+pose "anLutaNoArNinjaRunOlhaLado" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 34.2cm)
+```
+
+### anLutaNoArNinjaRunTronco
+
+```gm
+pose "anLutaNoArNinjaRunTronco" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 75 abre 15)
+  joelho.direito(dobra 45)
+  joelho.esquerdo(dobra 115)
+  tornozelo(aponta 30)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 34.2cm)
+```
+
+### anLutaInvestidaSocoCarregado
+
+```gm
+pose "anLutaInvestidaSocoCarregado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaSocoCarregadoOlhaLado
+
+```gm
+pose "anLutaInvestidaSocoCarregadoOlhaLado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaSocoCarregadoTronco
+
+```gm
+pose "anLutaInvestidaSocoCarregadoTronco" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaPalmaDupla
+
+```gm
+pose "anLutaInvestidaPalmaDupla" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+```
+
+### anLutaInvestidaPalmaDuplaOlhaLado
+
+```gm
+pose "anLutaInvestidaPalmaDuplaOlhaLado" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+```
+
+### anLutaInvestidaPalmaDuplaTronco
+
+```gm
+pose "anLutaInvestidaPalmaDuplaTronco" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+```
+
+### anLutaInvestidaKameLateral
+
+```gm
+pose "anLutaInvestidaKameLateral" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-direita 35)
+  corpo(deita-brucos 22)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaInvestidaKameLateralOlhaLado
+
+```gm
+pose "anLutaInvestidaKameLateralOlhaLado" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaInvestidaEspadaAlto
+
+```gm
+pose "anLutaInvestidaEspadaAlto" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaEspadaAltoOlhaLado
+
+```gm
+pose "anLutaInvestidaEspadaAltoOlhaLado" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaEspadaAltoTronco
+
+```gm
+pose "anLutaInvestidaEspadaAltoTronco" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaDefesaX
+
+```gm
+pose "anLutaInvestidaDefesaX" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaDefesaXOlhaLado
+
+```gm
+pose "anLutaInvestidaDefesaXOlhaLado" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaDefesaXTronco
+
+```gm
+pose "anLutaInvestidaDefesaXTronco" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaInvestidaApontaDesafio
+
+```gm
+pose "anLutaInvestidaApontaDesafio" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaInvestidaApontaDesafioOlhaLado
+
+```gm
+pose "anLutaInvestidaApontaDesafioOlhaLado" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaInvestidaApontaDesafioTronco
+
+```gm
+pose "anLutaInvestidaApontaDesafioTronco" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaInvestidaGarras
+
+```gm
+pose "anLutaInvestidaGarras" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaInvestidaGarrasOlhaLado
+
+```gm
+pose "anLutaInvestidaGarrasOlhaLado" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaInvestidaGarrasTronco
+
+```gm
+pose "anLutaInvestidaGarrasTronco" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaInvestidaNinjaRun
+
+```gm
+pose "anLutaInvestidaNinjaRun" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12)
+  corpo(deita-brucos 22)
+```
+
+### anLutaInvestidaNinjaRunOlhaLado
+
+```gm
+pose "anLutaInvestidaNinjaRunOlhaLado" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 22)
+```
+
+### anLutaInvestidaNinjaRunTronco
+
+```gm
+pose "anLutaInvestidaNinjaRunTronco" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 30 abre 8)
+  quadril.esquerdo(frente 55 abre 12)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 70)
+  tornozelo.direito(aponta 25)
+  tornozelo.esquerdo(aponta 10)
+  tronco(frente 12 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 22)
+```
+
+### anLutaAterrissagemSocoCarregado
+
+```gm
+pose "anLutaAterrissagemSocoCarregado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemSocoCarregadoOlhaLado
+
+```gm
+pose "anLutaAterrissagemSocoCarregadoOlhaLado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemSocoCarregadoTronco
+
+```gm
+pose "anLutaAterrissagemSocoCarregadoTronco" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemPalmaDupla
+
+```gm
+pose "anLutaAterrissagemPalmaDupla" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+```
+
+### anLutaAterrissagemPalmaDuplaOlhaLado
+
+```gm
+pose "anLutaAterrissagemPalmaDuplaOlhaLado" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+```
+
+### anLutaAterrissagemPalmaDuplaTronco
+
+```gm
+pose "anLutaAterrissagemPalmaDuplaTronco" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+```
+
+### anLutaAterrissagemKameLateralOlhaLado
+
+```gm
+pose "anLutaAterrissagemKameLateralOlhaLado" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAterrissagemKameLateralTronco
+
+```gm
+pose "anLutaAterrissagemKameLateralTronco" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAterrissagemEspadaAlto
+
+```gm
+pose "anLutaAterrissagemEspadaAlto" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemEspadaAltoOlhaLado
+
+```gm
+pose "anLutaAterrissagemEspadaAltoOlhaLado" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemEspadaAltoTronco
+
+```gm
+pose "anLutaAterrissagemEspadaAltoTronco" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemDefesaX
+
+```gm
+pose "anLutaAterrissagemDefesaX" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemDefesaXOlhaLado
+
+```gm
+pose "anLutaAterrissagemDefesaXOlhaLado" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemDefesaXTronco
+
+```gm
+pose "anLutaAterrissagemDefesaXTronco" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAterrissagemApontaDesafio
+
+```gm
+pose "anLutaAterrissagemApontaDesafio" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaAterrissagemApontaDesafioOlhaLado
+
+```gm
+pose "anLutaAterrissagemApontaDesafioOlhaLado" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaAterrissagemApontaDesafioTronco
+
+```gm
+pose "anLutaAterrissagemApontaDesafioTronco" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaAterrissagemGarras
+
+```gm
+pose "anLutaAterrissagemGarras" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAterrissagemGarrasOlhaLado
+
+```gm
+pose "anLutaAterrissagemGarrasOlhaLado" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAterrissagemGarrasTronco
+
+```gm
+pose "anLutaAterrissagemGarrasTronco" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAterrissagemNinjaRun
+
+```gm
+pose "anLutaAterrissagemNinjaRun" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35)
+  corpo(deita-brucos 10)
+```
+
+### anLutaAterrissagemNinjaRunOlhaLado
+
+```gm
+pose "anLutaAterrissagemNinjaRunOlhaLado" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+```
+
+### anLutaAterrissagemNinjaRunTronco
+
+```gm
+pose "anLutaAterrissagemNinjaRunTronco" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5 abre 15)
+  quadril.esquerdo(frente 110 abre 20 gira-fora 10)
+  joelho.direito(dobra 95)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+```
+
+### anLutaGuardaLadoSocoCarregado
+
+```gm
+pose "anLutaGuardaLadoSocoCarregado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30 fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoSocoCarregadoOlhaLado
+
+```gm
+pose "anLutaGuardaLadoSocoCarregadoOlhaLado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoSocoCarregadoTronco
+
+```gm
+pose "anLutaGuardaLadoSocoCarregadoTronco" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30 fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoPalmaDupla
+
+```gm
+pose "anLutaGuardaLadoPalmaDupla" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30
+```
+
+### anLutaGuardaLadoPalmaDuplaOlhaLado
+
+```gm
+pose "anLutaGuardaLadoPalmaDuplaOlhaLado" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anLutaGuardaLadoPalmaDuplaTronco
+
+```gm
+pose "anLutaGuardaLadoPalmaDuplaTronco" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30
+```
+
+### anLutaGuardaLadoKameLateral
+
+```gm
+pose "anLutaGuardaLadoKameLateral" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 35)
+  valor pelvisTwist -30 fThL -0.2 fThR -0.2
+```
+
+### anLutaGuardaLadoKameLateralOlhaLado
+
+```gm
+pose "anLutaGuardaLadoKameLateralOlhaLado" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaGuardaLadoEspadaAlto
+
+```gm
+pose "anLutaGuardaLadoEspadaAlto" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30 fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoEspadaAltoOlhaLado
+
+```gm
+pose "anLutaGuardaLadoEspadaAltoOlhaLado" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoEspadaAltoTronco
+
+```gm
+pose "anLutaGuardaLadoEspadaAltoTronco" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30 fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoDefesaX
+
+```gm
+pose "anLutaGuardaLadoDefesaX" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30 fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoDefesaXOlhaLado
+
+```gm
+pose "anLutaGuardaLadoDefesaXOlhaLado" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoDefesaXTronco
+
+```gm
+pose "anLutaGuardaLadoDefesaXTronco" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30 fThL -0.1 fThR -0.1
+```
+
+### anLutaGuardaLadoApontaDesafio
+
+```gm
+pose "anLutaGuardaLadoApontaDesafio" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30 fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaGuardaLadoApontaDesafioOlhaLado
+
+```gm
+pose "anLutaGuardaLadoApontaDesafioOlhaLado" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaGuardaLadoApontaDesafioTronco
+
+```gm
+pose "anLutaGuardaLadoApontaDesafioTronco" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30 fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaGuardaLadoGarras
+
+```gm
+pose "anLutaGuardaLadoGarras" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30 fThL -0.2 fThR -0.2
+```
+
+### anLutaGuardaLadoGarrasOlhaLado
+
+```gm
+pose "anLutaGuardaLadoGarrasOlhaLado" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaGuardaLadoGarrasTronco
+
+```gm
+pose "anLutaGuardaLadoGarrasTronco" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30 fThL -0.2 fThR -0.2
+```
+
+### anLutaGuardaLadoNinjaRun
+
+```gm
+pose "anLutaGuardaLadoNinjaRun" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-direita 25)
+  valor pelvisTwist -30
+```
+
+### anLutaGuardaLadoNinjaRunOlhaLado
+
+```gm
+pose "anLutaGuardaLadoNinjaRunOlhaLado" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anLutaGuardaLadoNinjaRunTronco
+
+```gm
+pose "anLutaGuardaLadoNinjaRunTronco" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 2 abre 24)
+  quadril.esquerdo(frente 28 abre 18)
+  joelho.direito(dobra 18)
+  joelho.esquerdo(dobra 38)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -30
+```
+
+### anLutaAjoelhadoSocoCarregado
+
+```gm
+pose "anLutaAjoelhadoSocoCarregado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoSocoCarregadoOlhaLado
+
+```gm
+pose "anLutaAjoelhadoSocoCarregadoOlhaLado" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoSocoCarregadoTronco
+
+```gm
+pose "anLutaAjoelhadoSocoCarregadoTronco" de empe
+  ombro.direito(tras 30 abre 55 gira-fora 40)
+  ombro.esquerdo(frente 95 abre 25)
+  cotovelo.direito(dobra 120)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoPalmaDupla
+
+```gm
+pose "anLutaAjoelhadoPalmaDupla" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+```
+
+### anLutaAjoelhadoPalmaDuplaOlhaLado
+
+```gm
+pose "anLutaAjoelhadoPalmaDuplaOlhaLado" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anLutaAjoelhadoPalmaDuplaTronco
+
+```gm
+pose "anLutaAjoelhadoPalmaDuplaTronco" de empe
+  ombro(frente 85 abre 10)
+  cotovelo(dobra 15)
+  punho(levanta 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anLutaAjoelhadoKameLateral
+
+```gm
+pose "anLutaAjoelhadoKameLateral" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-direita 35)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAjoelhadoKameLateralOlhaLado
+
+```gm
+pose "anLutaAjoelhadoKameLateralOlhaLado" de empe
+  ombro.direito(frente 25 abre 10)
+  ombro.esquerdo(frente 20 cruza 5)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  antebraco.direito(palma-baixo 60)
+  antebraco.esquerdo(palma-cima 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAjoelhadoEspadaAlto
+
+```gm
+pose "anLutaAjoelhadoEspadaAlto" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoEspadaAltoOlhaLado
+
+```gm
+pose "anLutaAjoelhadoEspadaAltoOlhaLado" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoEspadaAltoTronco
+
+```gm
+pose "anLutaAjoelhadoEspadaAltoTronco" de empe
+  ombro(frente 165)
+  cotovelo(dobra 25)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoDefesaX
+
+```gm
+pose "anLutaAjoelhadoDefesaX" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoDefesaXOlhaLado
+
+```gm
+pose "anLutaAjoelhadoDefesaXOlhaLado" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoDefesaXTronco
+
+```gm
+pose "anLutaAjoelhadoDefesaXTronco" de empe
+  ombro(frente 95 cruza 22 gira-dentro 55)
+  cotovelo(dobra 115)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anLutaAjoelhadoApontaDesafio
+
+```gm
+pose "anLutaAjoelhadoApontaDesafio" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaAjoelhadoApontaDesafioOlhaLado
+
+```gm
+pose "anLutaAjoelhadoApontaDesafioOlhaLado" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaAjoelhadoApontaDesafioTronco
+
+```gm
+pose "anLutaAjoelhadoApontaDesafioTronco" de empe
+  ombro.direito(frente 15 abre 35)
+  ombro.esquerdo(frente 90)
+  cotovelo.direito(dobra 95)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anLutaAjoelhadoGarras
+
+```gm
+pose "anLutaAjoelhadoGarras" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAjoelhadoGarrasOlhaLado
+
+```gm
+pose "anLutaAjoelhadoGarrasOlhaLado" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAjoelhadoGarrasTronco
+
+```gm
+pose "anLutaAjoelhadoGarrasTronco" de empe
+  ombro(frente 60 abre 55)
+  cotovelo(dobra 60)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anLutaAjoelhadoNinjaRun
+
+```gm
+pose "anLutaAjoelhadoNinjaRun" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5)
+```
+
+### anLutaAjoelhadoNinjaRunOlhaLado
+
+```gm
+pose "anLutaAjoelhadoNinjaRunOlhaLado" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anLutaAjoelhadoNinjaRunTronco
+
+```gm
+pose "anLutaAjoelhadoNinjaRunTronco" de empe
+  ombro(tras 45 abre 22)
+  cotovelo(dobra 12)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 10)
+  quadril.esquerdo(frente 95 abre 10)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 95)
+  tronco(frente 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anGolpeGiroChuteAlto
+
+```gm
+pose "anGolpeGiroChuteAlto" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(gira-esquerda 40)
+  pelve(gira-esquerda 20)
+  cabeca(gira-direita 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroChuteAltoOlhaLado
+
+```gm
+pose "anGolpeGiroChuteAltoOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroChuteAltoTronco
+
+```gm
+pose "anGolpeGiroChuteAltoTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroCotovelada
+
+```gm
+pose "anGolpeGiroCotovelada" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 40)
+  pelve(gira-esquerda 20)
+  cabeca(gira-direita 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroCotoveladaOlhaLado
+
+```gm
+pose "anGolpeGiroCotoveladaOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroCotoveladaTronco
+
+```gm
+pose "anGolpeGiroCotoveladaTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroSocoDescendo
+
+```gm
+pose "anGolpeGiroSocoDescendo" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 40)
+  pelve(gira-esquerda 20)
+  cabeca(gira-direita 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroSocoDescendoOlhaLado
+
+```gm
+pose "anGolpeGiroSocoDescendoOlhaLado" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroSocoDescendoTronco
+
+```gm
+pose "anGolpeGiroSocoDescendoTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeGiroRajada
+
+```gm
+pose "anGolpeGiroRajada" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 40)
+  pelve(gira-esquerda 20)
+  cabeca(gira-direita 30)
+  valor fThR -0.1
+```
+
+### anGolpeGiroRajadaOlhaLado
+
+```gm
+pose "anGolpeGiroRajadaOlhaLado" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### anGolpeGiroRajadaTronco
+
+```gm
+pose "anGolpeGiroRajadaTronco" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### anGolpeGiroDedosDuplos
+
+```gm
+pose "anGolpeGiroDedosDuplos" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 40)
+  pelve(gira-esquerda 20)
+  cabeca(gira-direita 30)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeGiroDedosDuplosOlhaLado
+
+```gm
+pose "anGolpeGiroDedosDuplosOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeGiroDedosDuplosTronco
+
+```gm
+pose "anGolpeGiroDedosDuplosTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 30)
+  joelho.direito(dobra 15)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeInclinadoChuteAlto
+
+```gm
+pose "anGolpeInclinadoChuteAlto" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(tras 20)
+  corpo(deita-costas 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeInclinadoCotovelada
+
+```gm
+pose "anGolpeInclinadoCotovelada" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20)
+  corpo(deita-costas 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeInclinadoCotoveladaTronco
+
+```gm
+pose "anGolpeInclinadoCotoveladaTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeInclinadoSocoDescendo
+
+```gm
+pose "anGolpeInclinadoSocoDescendo" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20)
+  corpo(deita-costas 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeInclinadoSocoDescendoTronco
+
+```gm
+pose "anGolpeInclinadoSocoDescendoTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeInclinadoRajada
+
+```gm
+pose "anGolpeInclinadoRajada" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20)
+  corpo(deita-costas 10)
+  valor fThR -0.1
+```
+
+### anGolpeInclinadoRajadaTronco
+
+```gm
+pose "anGolpeInclinadoRajadaTronco" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+  valor fThR -0.1
+```
+
+### anGolpeInclinadoDedosDuplos
+
+```gm
+pose "anGolpeInclinadoDedosDuplos" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20)
+  corpo(deita-costas 10)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeInclinadoDedosDuplosTronco
+
+```gm
+pose "anGolpeInclinadoDedosDuplosTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 30)
+  tronco(tras 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeAgachadoMaoChuteAlto
+
+```gm
+pose "anGolpeAgachadoMaoChuteAlto" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15 abre 30)
+  quadril.esquerdo(frente 92 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(frente 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoChuteAltoOlhaLado
+
+```gm
+pose "anGolpeAgachadoMaoChuteAltoOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15 abre 30)
+  quadril.esquerdo(frente 92 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoChuteAltoTronco
+
+```gm
+pose "anGolpeAgachadoMaoChuteAltoTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15 abre 30)
+  quadril.esquerdo(frente 92 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoCotovelada
+
+```gm
+pose "anGolpeAgachadoMaoCotovelada" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoCotoveladaOlhaLado
+
+```gm
+pose "anGolpeAgachadoMaoCotoveladaOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoCotoveladaTronco
+
+```gm
+pose "anGolpeAgachadoMaoCotoveladaTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoSocoDescendo
+
+```gm
+pose "anGolpeAgachadoMaoSocoDescendo" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoSocoDescendoOlhaLado
+
+```gm
+pose "anGolpeAgachadoMaoSocoDescendoOlhaLado" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoSocoDescendoTronco
+
+```gm
+pose "anGolpeAgachadoMaoSocoDescendoTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeAgachadoMaoRajada
+
+```gm
+pose "anGolpeAgachadoMaoRajada" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40)
+  valor fThR -0.1
+```
+
+### anGolpeAgachadoMaoRajadaOlhaLado
+
+```gm
+pose "anGolpeAgachadoMaoRajadaOlhaLado" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### anGolpeAgachadoMaoRajadaTronco
+
+```gm
+pose "anGolpeAgachadoMaoRajadaTronco" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### anGolpeAgachadoMaoDedosDuplos
+
+```gm
+pose "anGolpeAgachadoMaoDedosDuplos" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeAgachadoMaoDedosDuplosOlhaLado
+
+```gm
+pose "anGolpeAgachadoMaoDedosDuplosOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeAgachadoMaoDedosDuplosTronco
+
+```gm
+pose "anGolpeAgachadoMaoDedosDuplosTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 115 abre 20)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeVoandoChuteAlto
+
+```gm
+pose "anGolpeVoandoChuteAlto" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoChuteAltoOlhaLado
+
+```gm
+pose "anGolpeVoandoChuteAltoOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoChuteAltoTronco
+
+```gm
+pose "anGolpeVoandoChuteAltoTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 40 abre 50)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 92)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoCotovelada
+
+```gm
+pose "anGolpeVoandoCotovelada" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoCotoveladaOlhaLado
+
+```gm
+pose "anGolpeVoandoCotoveladaOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoCotoveladaTronco
+
+```gm
+pose "anGolpeVoandoCotoveladaTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 60 gira-fora 60)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoSocoDescendo
+
+```gm
+pose "anGolpeVoandoSocoDescendo" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoSocoDescendoOlhaLado
+
+```gm
+pose "anGolpeVoandoSocoDescendoOlhaLado" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoSocoDescendoTronco
+
+```gm
+pose "anGolpeVoandoSocoDescendoTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### anGolpeVoandoRajada
+
+```gm
+pose "anGolpeVoandoRajada" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThR -0.1
+```
+
+### anGolpeVoandoRajadaOlhaLado
+
+```gm
+pose "anGolpeVoandoRajadaOlhaLado" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThR -0.1
+```
+
+### anGolpeVoandoRajadaTronco
+
+```gm
+pose "anGolpeVoandoRajadaTronco" de empe
+  ombro.direito(tras 10 abre 30)
+  ombro.esquerdo(frente 90 abre 0)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 5)
+  punho.esquerdo(levanta 70)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThR -0.1
+```
+
+### anGolpeVoandoDedosDuplos
+
+```gm
+pose "anGolpeVoandoDedosDuplos" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeVoandoDedosDuplosOlhaLado
+
+```gm
+pose "anGolpeVoandoDedosDuplosOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.25 fInL -1
+```
+
+### anGolpeVoandoDedosDuplosTronco
+
+```gm
+pose "anGolpeVoandoDedosDuplosTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 150 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 70 sobe 57cm)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloTorcidoMaoRosto
+
+```gm
+pose "anEstiloTorcidoMaoRosto" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 40)
+  pelve(gira-direita 10)
+  valor fThL -0.2
+```
+
+### anEstiloTorcidoMaoRostoOlhaLado
+
+```gm
+pose "anEstiloTorcidoMaoRostoOlhaLado" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloTorcidoMaoRostoTronco
+
+```gm
+pose "anEstiloTorcidoMaoRostoTronco" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 10)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloTorcidoBracosAbertos
+
+```gm
+pose "anEstiloTorcidoBracosAbertos" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 40)
+  pelve(gira-direita 10)
+  valor fThR -0.2
+```
+
+### anEstiloTorcidoBracosAbertosOlhaLado
+
+```gm
+pose "anEstiloTorcidoBracosAbertosOlhaLado" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.2
+```
+
+### anEstiloTorcidoBracosAbertosTronco
+
+```gm
+pose "anEstiloTorcidoBracosAbertosTronco" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 10)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.2
+```
+
+### anEstiloTorcidoApontaCima
+
+```gm
+pose "anEstiloTorcidoApontaCima" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 40)
+  pelve(gira-direita 10)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloTorcidoApontaCimaOlhaLado
+
+```gm
+pose "anEstiloTorcidoApontaCimaOlhaLado" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloTorcidoApontaCimaTronco
+
+```gm
+pose "anEstiloTorcidoApontaCimaTronco" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 10)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloTorcidoCostasMao
+
+```gm
+pose "anEstiloTorcidoCostasMao" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 40)
+  pelve(gira-direita 10)
+  valor fThL -0.2
+```
+
+### anEstiloTorcidoCostasMaoOlhaLado
+
+```gm
+pose "anEstiloTorcidoCostasMaoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloTorcidoCostasMaoTronco
+
+```gm
+pose "anEstiloTorcidoCostasMaoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo(dobra 120)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 10)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloTorcidoCintura
+
+```gm
+pose "anEstiloTorcidoCintura" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 40)
+  pelve(gira-direita 10)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloTorcidoCinturaOlhaLado
+
+```gm
+pose "anEstiloTorcidoCinturaOlhaLado" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloTorcidoCinturaTronco
+
+```gm
+pose "anEstiloTorcidoCinturaTronco" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5 gira-dentro 20)
+  quadril.esquerdo(frente 15 gira-fora 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 10)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloArqueadoMaoRosto
+
+```gm
+pose "anEstiloArqueadoMaoRosto" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12)
+  cabeca(sobe 20)
+  valor fThL -0.2
+```
+
+### anEstiloArqueadoMaoRostoOlhaLado
+
+```gm
+pose "anEstiloArqueadoMaoRostoOlhaLado" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 20 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloArqueadoMaoRostoTronco
+
+```gm
+pose "anEstiloArqueadoMaoRostoTronco" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloArqueadoBracosAbertos
+
+```gm
+pose "anEstiloArqueadoBracosAbertos" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12)
+  cabeca(sobe 20)
+  valor fThR -0.2
+```
+
+### anEstiloArqueadoBracosAbertosOlhaLado
+
+```gm
+pose "anEstiloArqueadoBracosAbertosOlhaLado" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 20 gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.2
+```
+
+### anEstiloArqueadoBracosAbertosTronco
+
+```gm
+pose "anEstiloArqueadoBracosAbertosTronco" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.2
+```
+
+### anEstiloArqueadoApontaCima
+
+```gm
+pose "anEstiloArqueadoApontaCima" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12)
+  cabeca(sobe 20)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloArqueadoApontaCimaOlhaLado
+
+```gm
+pose "anEstiloArqueadoApontaCimaOlhaLado" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 20 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloArqueadoApontaCimaTronco
+
+```gm
+pose "anEstiloArqueadoApontaCimaTronco" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloArqueadoCostasMao
+
+```gm
+pose "anEstiloArqueadoCostasMao" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo(dobra 120)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12)
+  cabeca(sobe 20)
+  valor fThL -0.2
+```
+
+### anEstiloArqueadoCostasMaoOlhaLado
+
+```gm
+pose "anEstiloArqueadoCostasMaoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo(dobra 120)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 20 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloArqueadoCostasMaoTronco
+
+```gm
+pose "anEstiloArqueadoCostasMaoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo(dobra 120)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloArqueadoCintura
+
+```gm
+pose "anEstiloArqueadoCintura" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12)
+  cabeca(sobe 20)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloArqueadoCinturaOlhaLado
+
+```gm
+pose "anEstiloArqueadoCinturaOlhaLado" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 esquerda 12 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 20 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloArqueadoCinturaTronco
+
+```gm
+pose "anEstiloArqueadoCinturaTronco" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 15)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloJoelhoAltoMaoRosto
+
+```gm
+pose "anEstiloJoelhoAltoMaoRosto" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10)
+  valor fThL -0.2
+```
+
+### anEstiloJoelhoAltoMaoRostoOlhaLado
+
+```gm
+pose "anEstiloJoelhoAltoMaoRostoOlhaLado" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloJoelhoAltoMaoRostoTronco
+
+```gm
+pose "anEstiloJoelhoAltoMaoRostoTronco" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloJoelhoAltoBracosAbertos
+
+```gm
+pose "anEstiloJoelhoAltoBracosAbertos" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10)
+  valor fThR -0.2
+```
+
+### anEstiloJoelhoAltoBracosAbertosOlhaLado
+
+```gm
+pose "anEstiloJoelhoAltoBracosAbertosOlhaLado" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.2
+```
+
+### anEstiloJoelhoAltoBracosAbertosTronco
+
+```gm
+pose "anEstiloJoelhoAltoBracosAbertosTronco" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.2
+```
+
+### anEstiloJoelhoAltoApontaCima
+
+```gm
+pose "anEstiloJoelhoAltoApontaCima" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloJoelhoAltoApontaCimaOlhaLado
+
+```gm
+pose "anEstiloJoelhoAltoApontaCimaOlhaLado" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloJoelhoAltoApontaCimaTronco
+
+```gm
+pose "anEstiloJoelhoAltoApontaCimaTronco" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloJoelhoAltoCostasMao
+
+```gm
+pose "anEstiloJoelhoAltoCostasMao" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10)
+  valor fThL -0.2
+```
+
+### anEstiloJoelhoAltoCostasMaoOlhaLado
+
+```gm
+pose "anEstiloJoelhoAltoCostasMaoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloJoelhoAltoCostasMaoTronco
+
+```gm
+pose "anEstiloJoelhoAltoCostasMaoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo(dobra 120)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloJoelhoAltoCintura
+
+```gm
+pose "anEstiloJoelhoAltoCintura" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloJoelhoAltoCinturaOlhaLado
+
+```gm
+pose "anEstiloJoelhoAltoCinturaOlhaLado" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloJoelhoAltoCinturaTronco
+
+```gm
+pose "anEstiloJoelhoAltoCinturaTronco" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 90)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloPernasCruzadasPeMaoRosto
+
+```gm
+pose "anEstiloPernasCruzadasPeMaoRosto" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  valor fThL -0.2
+```
+
+### anEstiloPernasCruzadasPeMaoRostoOlhaLado
+
+```gm
+pose "anEstiloPernasCruzadasPeMaoRostoOlhaLado" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloPernasCruzadasPeMaoRostoTronco
+
+```gm
+pose "anEstiloPernasCruzadasPeMaoRostoTronco" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 130 cruza 10)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 150)
+  punho.esquerdo(dobra 40)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloPernasCruzadasPeBracosAbertos
+
+```gm
+pose "anEstiloPernasCruzadasPeBracosAbertos" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  valor fThR -0.2
+```
+
+### anEstiloPernasCruzadasPeBracosAbertosOlhaLado
+
+```gm
+pose "anEstiloPernasCruzadasPeBracosAbertosOlhaLado" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.2
+```
+
+### anEstiloPernasCruzadasPeBracosAbertosTronco
+
+```gm
+pose "anEstiloPernasCruzadasPeBracosAbertosTronco" de empe
+  ombro.direito(frente 90 abre 80)
+  ombro.esquerdo(frente 70 abre 90)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 55% afasta 70% opoe 30%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.2
+```
+
+### anEstiloPernasCruzadasPeApontaCima
+
+```gm
+pose "anEstiloPernasCruzadasPeApontaCima" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloPernasCruzadasPeApontaCimaOlhaLado
+
+```gm
+pose "anEstiloPernasCruzadasPeApontaCimaOlhaLado" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloPernasCruzadasPeApontaCimaTronco
+
+```gm
+pose "anEstiloPernasCruzadasPeApontaCimaTronco" de empe
+  ombro.direito(tras 10 abre 20)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### anEstiloPernasCruzadasPeCostasMao
+
+```gm
+pose "anEstiloPernasCruzadasPeCostasMao" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  valor fThL -0.2
+```
+
+### anEstiloPernasCruzadasPeCostasMaoOlhaLado
+
+```gm
+pose "anEstiloPernasCruzadasPeCostasMaoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 115)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### anEstiloPernasCruzadasPeCostasMaoTronco
+
+```gm
+pose "anEstiloPernasCruzadasPeCostasMaoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 100 abre 30)
+  cotovelo(dobra 120)
+  antebraco.esquerdo(palma-cima 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### anEstiloPernasCruzadasPeCintura
+
+```gm
+pose "anEstiloPernasCruzadasPeCintura" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloPernasCruzadasPeCinturaOlhaLado
+
+```gm
+pose "anEstiloPernasCruzadasPeCinturaOlhaLado" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### anEstiloPernasCruzadasPeCinturaTronco
+
+```gm
+pose "anEstiloPernasCruzadasPeCinturaTronco" de empe
+  ombro.direito(tras 15 abre 40)
+  ombro.esquerdo(frente 20 abre 30)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 4)
+  quadril.esquerdo(frente 8 abre 0 gira-fora 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### anIdolPulinhoCoracao
+
+```gm
+pose "anIdolPulinhoCoracao" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  corpo(sobe 11.4cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPulinhoCoracaoOlhaLado
+
+```gm
+pose "anIdolPulinhoCoracaoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPulinhoCoracaoTronco
+
+```gm
+pose "anIdolPulinhoCoracaoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPulinhoPaz
+
+```gm
+pose "anIdolPulinhoPaz" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  corpo(sobe 11.4cm)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPulinhoPazOlhaLado
+
+```gm
+pose "anIdolPulinhoPazOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPulinhoPazTronco
+
+```gm
+pose "anIdolPulinhoPazTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPulinhoAcenoDuploTronco
+
+```gm
+pose "anIdolPulinhoAcenoDuploTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 150 abre 40)
+  cotovelo(dobra 30)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+```
+
+### anIdolPulinhoMicrofone
+
+```gm
+pose "anIdolPulinhoMicrofone" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  corpo(sobe 11.4cm)
+  valor fThL -0.1
+```
+
+### anIdolPulinhoMicrofoneOlhaLado
+
+```gm
+pose "anIdolPulinhoMicrofoneOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+  valor fThL -0.1
+```
+
+### anIdolPulinhoMicrofoneTronco
+
+```gm
+pose "anIdolPulinhoMicrofoneTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+  valor fThL -0.1
+```
+
+### anIdolPulinhoBracosOndas
+
+```gm
+pose "anIdolPulinhoBracosOndas" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  corpo(sobe 11.4cm)
+```
+
+### anIdolPulinhoBracosOndasOlhaLado
+
+```gm
+pose "anIdolPulinhoBracosOndasOlhaLado" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+```
+
+### anIdolPulinhoBracosOndasTronco
+
+```gm
+pose "anIdolPulinhoBracosOndasTronco" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+```
+
+### anIdolInclinadaCoracao
+
+```gm
+pose "anIdolInclinadaCoracao" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolInclinadaCoracaoOlhaLado
+
+```gm
+pose "anIdolInclinadaCoracaoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolInclinadaCoracaoTronco
+
+```gm
+pose "anIdolInclinadaCoracaoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolInclinadaPaz
+
+```gm
+pose "anIdolInclinadaPaz" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolInclinadaPazOlhaLado
+
+```gm
+pose "anIdolInclinadaPazOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolInclinadaPazTronco
+
+```gm
+pose "anIdolInclinadaPazTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolInclinadaAcenoDuploTronco
+
+```gm
+pose "anIdolInclinadaAcenoDuploTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 150 abre 40)
+  cotovelo(dobra 30)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anIdolInclinadaMicrofone
+
+```gm
+pose "anIdolInclinadaMicrofone" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25)
+  valor fThL -0.1
+```
+
+### anIdolInclinadaMicrofoneOlhaLado
+
+```gm
+pose "anIdolInclinadaMicrofoneOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### anIdolInclinadaMicrofoneTronco
+
+```gm
+pose "anIdolInclinadaMicrofoneTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### anIdolInclinadaBracosOndas
+
+```gm
+pose "anIdolInclinadaBracosOndas" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25)
+```
+
+### anIdolInclinadaBracosOndasOlhaLado
+
+```gm
+pose "anIdolInclinadaBracosOndasOlhaLado" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anIdolInclinadaBracosOndasTronco
+
+```gm
+pose "anIdolInclinadaBracosOndasTronco" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10 abre 0)
+  quadril.esquerdo(frente 10 abre 15)
+  joelho.esquerdo(dobra 15)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anIdolPontaPeCoracao
+
+```gm
+pose "anIdolPontaPeCoracao" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPontaPeCoracaoOlhaLado
+
+```gm
+pose "anIdolPontaPeCoracaoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPontaPeCoracaoTronco
+
+```gm
+pose "anIdolPontaPeCoracaoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPontaPePaz
+
+```gm
+pose "anIdolPontaPePaz" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPontaPePazOlhaLado
+
+```gm
+pose "anIdolPontaPePazOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPontaPePazTronco
+
+```gm
+pose "anIdolPontaPePazTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPontaPeAcenoDuploTronco
+
+```gm
+pose "anIdolPontaPeAcenoDuploTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 150 abre 40)
+  cotovelo(dobra 30)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anIdolPontaPeMicrofone
+
+```gm
+pose "anIdolPontaPeMicrofone" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  valor fThL -0.1
+```
+
+### anIdolPontaPeMicrofoneOlhaLado
+
+```gm
+pose "anIdolPontaPeMicrofoneOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### anIdolPontaPeMicrofoneTronco
+
+```gm
+pose "anIdolPontaPeMicrofoneTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### anIdolPontaPeBracosOndas
+
+```gm
+pose "anIdolPontaPeBracosOndas" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+```
+
+### anIdolPontaPeBracosOndasOlhaLado
+
+```gm
+pose "anIdolPontaPeBracosOndasOlhaLado" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anIdolPontaPeBracosOndasTronco
+
+```gm
+pose "anIdolPontaPeBracosOndasTronco" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  joelho.direito(dobra 50)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anIdolJoelhosJuntosCoracao
+
+```gm
+pose "anIdolJoelhosJuntosCoracao" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolJoelhosJuntosCoracaoOlhaLado
+
+```gm
+pose "anIdolJoelhosJuntosCoracaoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolJoelhosJuntosCoracaoTronco
+
+```gm
+pose "anIdolJoelhosJuntosCoracaoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolJoelhosJuntosPaz
+
+```gm
+pose "anIdolJoelhosJuntosPaz" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolJoelhosJuntosPazOlhaLado
+
+```gm
+pose "anIdolJoelhosJuntosPazOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolJoelhosJuntosPazTronco
+
+```gm
+pose "anIdolJoelhosJuntosPazTronco" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolJoelhosJuntosAcenoDuploTronco
+
+```gm
+pose "anIdolJoelhosJuntosAcenoDuploTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 150 abre 40)
+  cotovelo(dobra 30)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anIdolJoelhosJuntosMicrofone
+
+```gm
+pose "anIdolJoelhosJuntosMicrofone" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  valor fThL -0.1
+```
+
+### anIdolJoelhosJuntosMicrofoneOlhaLado
+
+```gm
+pose "anIdolJoelhosJuntosMicrofoneOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### anIdolJoelhosJuntosMicrofoneTronco
+
+```gm
+pose "anIdolJoelhosJuntosMicrofoneTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### anIdolJoelhosJuntosBracosOndas
+
+```gm
+pose "anIdolJoelhosJuntosBracosOndas" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+```
+
+### anIdolJoelhosJuntosBracosOndasOlhaLado
+
+```gm
+pose "anIdolJoelhosJuntosBracosOndasOlhaLado" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### anIdolJoelhosJuntosBracosOndasTronco
+
+```gm
+pose "anIdolJoelhosJuntosBracosOndasTronco" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 25 abre 2 gira-dentro 25)
+  joelho(dobra 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### anIdolPassoCoracao
+
+```gm
+pose "anIdolPassoCoracao" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPassoCoracaoOlhaLado
+
+```gm
+pose "anIdolPassoCoracaoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### anIdolPassoPaz
+
+```gm
+pose "anIdolPassoPaz" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPassoPazOlhaLado
+
+```gm
+pose "anIdolPassoPazOlhaLado" de empe
+  ombro.direito(frente 10 abre 20)
+  ombro.esquerdo(frente 140 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 150)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 80% opoe 70%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fInL -1 fMeL -1
+```
+
+### anIdolPassoMicrofone
+
+```gm
+pose "anIdolPassoMicrofone" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  valor fThL -0.1
+```
+
+### anIdolPassoMicrofoneOlhaLado
+
+```gm
+pose "anIdolPassoMicrofoneOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 140)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### anIdolPassoBracosOndas
+
+```gm
+pose "anIdolPassoBracosOndas" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+```
+
+### anIdolPassoBracosOndasOlhaLado
+
+```gm
+pose "anIdolPassoBracosOndasOlhaLado" de empe
+  ombro.direito(frente 60 abre 70)
+  ombro.esquerdo(frente 100 abre 80)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 40)
+  punho.direito(levanta 30)
+  punho.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 15)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaHipHop1
+
+```gm
+pose "dancaHipHop1" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop2
+
+```gm
+pose "dancaHipHop2" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop3
+
+```gm
+pose "dancaHipHop3" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop4
+
+```gm
+pose "dancaHipHop4" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop5
+
+```gm
+pose "dancaHipHop5" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop6
+
+```gm
+pose "dancaHipHop6" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop7
+
+```gm
+pose "dancaHipHop7" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15)
+  valor fThR -0.1
+```
+
+### dancaHipHop8
+
+```gm
+pose "dancaHipHop8" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### dancaHipHop9
+
+```gm
+pose "dancaHipHop9" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10 abre 15)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tronco(frente 15 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### dancaHipHop10
+
+```gm
+pose "dancaHipHop10" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-direita 20)
+  pelve(gira-esquerda 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop11
+
+```gm
+pose "dancaHipHop11" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop12
+
+```gm
+pose "dancaHipHop12" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop13
+
+```gm
+pose "dancaHipHop13" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-direita 20)
+  pelve(gira-esquerda 20)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop14
+
+```gm
+pose "dancaHipHop14" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop15
+
+```gm
+pose "dancaHipHop15" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop16
+
+```gm
+pose "dancaHipHop16" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-direita 20)
+  pelve(gira-esquerda 20)
+  valor fThR -0.1
+```
+
+### dancaHipHop17
+
+```gm
+pose "dancaHipHop17" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### dancaHipHop18
+
+```gm
+pose "dancaHipHop18" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### dancaHipHop19
+
+```gm
+pose "dancaHipHop19" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  corpo(sobe 11.4cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop20
+
+```gm
+pose "dancaHipHop20" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop21
+
+```gm
+pose "dancaHipHop21" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop22
+
+```gm
+pose "dancaHipHop22" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  corpo(sobe 11.4cm)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop23
+
+```gm
+pose "dancaHipHop23" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop24
+
+```gm
+pose "dancaHipHop24" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop25
+
+```gm
+pose "dancaHipHop25" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  corpo(sobe 11.4cm)
+  valor fThR -0.1
+```
+
+### dancaHipHop26
+
+```gm
+pose "dancaHipHop26" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 11.4cm)
+  valor fThR -0.1
+```
+
+### dancaHipHop27
+
+```gm
+pose "dancaHipHop27" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 11.4cm)
+  valor fThR -0.1
+```
+
+### dancaHipHop28
+
+```gm
+pose "dancaHipHop28" de empe
+  ombro(frente 90 abre 40)
+  cotovelo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(esquerda 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaHipHop31
+
+```gm
+pose "dancaHipHop31" de empe
+  ombro.direito(frente 60 abre 20)
+  ombro.esquerdo(tras 20 abre 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(esquerda 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### dancaHipHop34
+
+```gm
+pose "dancaHipHop34" de empe
+  ombro.direito(frente 20 abre 40)
+  ombro.esquerdo(frente 140 abre 20)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 40)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(esquerda 15)
+  valor fThR -0.1
+```
+
+### dancaBreakdance1
+
+```gm
+pose "dancaBreakdance1" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(tras 30 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40)
+  corpo(deita-brucos 30)
+  valor fThR -0.1
+```
+
+### dancaBreakdance2
+
+```gm
+pose "dancaBreakdance2" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(tras 30 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 30)
+  valor fThR -0.1
+```
+
+### dancaBreakdance3
+
+```gm
+pose "dancaBreakdance3" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(tras 30 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 110)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 30)
+  valor fThR -0.1
+```
+
+### dancaBreakdance13
+
+```gm
+pose "dancaBreakdance13" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(tras 30 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 90)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 60)
+  corpo(rola 40)
+  valor fThR -0.1
+```
+
+### dancaBreakdance14
+
+```gm
+pose "dancaBreakdance14" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(tras 30 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 90)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 60)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(rola 40)
+  valor fThR -0.1
+```
+
+### dancaBreakdance15
+
+```gm
+pose "dancaBreakdance15" de empe
+  ombro.direito(frente 90 abre 30)
+  ombro.esquerdo(tras 30 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 90)
+  quadril.esquerdo(frente 50)
+  joelho.direito(dobra 120)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(rola 40)
+  valor fThR -0.1
+```
+
+### dancaShuffle1
+
+```gm
+pose "dancaShuffle1" de empe
+  ombro.direito(tras 20 abre 20)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tornozelo.esquerdo(aponta 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaShuffle2
+
+```gm
+pose "dancaShuffle2" de empe
+  ombro.direito(tras 20 abre 20)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaShuffle3
+
+```gm
+pose "dancaShuffle3" de empe
+  ombro.direito(tras 20 abre 20)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaShuffle5
+
+```gm
+pose "dancaShuffle5" de empe
+  ombro(frente 110 abre 50)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 60)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaShuffle7
+
+```gm
+pose "dancaShuffle7" de empe
+  ombro.direito(tras 20 abre 20)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 gira-dentro 40)
+  quadril.esquerdo(frente 10 gira-fora 40)
+  joelho(dobra 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaShuffle8
+
+```gm
+pose "dancaShuffle8" de empe
+  ombro.direito(tras 20 abre 20)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 gira-dentro 40)
+  quadril.esquerdo(frente 10 gira-fora 40)
+  joelho(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaShuffle9
+
+```gm
+pose "dancaShuffle9" de empe
+  ombro.direito(tras 20 abre 20)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 gira-dentro 40)
+  quadril.esquerdo(frente 10 gira-fora 40)
+  joelho(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaKpop1
+
+```gm
+pose "dancaKpop1" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+```
+
+### dancaKpop2
+
+```gm
+pose "dancaKpop2" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaKpop3
+
+```gm
+pose "dancaKpop3" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaKpop4
+
+```gm
+pose "dancaKpop4" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+```
+
+### dancaKpop5
+
+```gm
+pose "dancaKpop5" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaKpop6
+
+```gm
+pose "dancaKpop6" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaKpop7
+
+```gm
+pose "dancaKpop7" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  valor fThL -0.1
+```
+
+### dancaKpop8
+
+```gm
+pose "dancaKpop8" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaKpop9
+
+```gm
+pose "dancaKpop9" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaKpop10
+
+```gm
+pose "dancaKpop10" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  valor fThL -0.2 fThR -0.2
+```
+
+### dancaKpop11
+
+```gm
+pose "dancaKpop11" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### dancaKpop12
+
+```gm
+pose "dancaKpop12" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(abre 20)
+  quadril.esquerdo(frente 25 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### dancaKpop13
+
+```gm
+pose "dancaKpop13" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+```
+
+### dancaKpop14
+
+```gm
+pose "dancaKpop14" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaKpop15
+
+```gm
+pose "dancaKpop15" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaKpop16
+
+```gm
+pose "dancaKpop16" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+```
+
+### dancaKpop17
+
+```gm
+pose "dancaKpop17" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaKpop18
+
+```gm
+pose "dancaKpop18" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaKpop19
+
+```gm
+pose "dancaKpop19" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  valor fThL -0.1
+```
+
+### dancaKpop20
+
+```gm
+pose "dancaKpop20" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaKpop21
+
+```gm
+pose "dancaKpop21" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaKpop22
+
+```gm
+pose "dancaKpop22" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  valor fThL -0.2 fThR -0.2
+```
+
+### dancaKpop23
+
+```gm
+pose "dancaKpop23" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### dancaKpop24
+
+```gm
+pose "dancaKpop24" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  joelho.direito(dobra 70)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### dancaKpop25
+
+```gm
+pose "dancaKpop25" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(gira-esquerda 20)
+  valor pelvisTwist 30
+```
+
+### dancaKpop28
+
+```gm
+pose "dancaKpop28" de empe
+  ombro(frente 90 abre 0)
+  punho(dobra 60)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(gira-esquerda 20)
+  valor pelvisTwist 30
+```
+
+### dancaKpop31
+
+```gm
+pose "dancaKpop31" de empe
+  ombro.direito(tras 20 abre 30)
+  ombro.esquerdo(frente 160 abre 20)
+  cotovelo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(gira-esquerda 20)
+  valor pelvisTwist 30 fThL -0.1
+```
+
+### dancaKpop34
+
+```gm
+pose "dancaKpop34" de empe
+  ombro(frente 40 abre 70)
+  cotovelo(dobra 90)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(gira-esquerda 20)
+  valor pelvisTwist 30 fThL -0.2 fThR -0.2
+```
+
+### dancaSamba1
+
+```gm
+pose "dancaSamba1" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 100 abre 70)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  pelve(gira-esquerda 15)
+```
+
+### dancaSamba2
+
+```gm
+pose "dancaSamba2" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 100 abre 70)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSamba3
+
+```gm
+pose "dancaSamba3" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 100 abre 70)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 15)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSamba4
+
+```gm
+pose "dancaSamba4" de empe
+  ombro(frente 60 abre 90)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  pelve(gira-esquerda 15)
+```
+
+### dancaSamba5
+
+```gm
+pose "dancaSamba5" de empe
+  ombro(frente 60 abre 90)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSamba6
+
+```gm
+pose "dancaSamba6" de empe
+  ombro(frente 60 abre 90)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 15)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSamba7
+
+```gm
+pose "dancaSamba7" de empe
+  ombro.direito(frente 140 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  pelve(gira-esquerda 15)
+```
+
+### dancaSamba8
+
+```gm
+pose "dancaSamba8" de empe
+  ombro.direito(frente 140 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSamba9
+
+```gm
+pose "dancaSamba9" de empe
+  ombro.direito(frente 140 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 35)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 30)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 15)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSamba10
+
+```gm
+pose "dancaSamba10" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 100 abre 70)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 10)
+  pelve(gira-direita 15)
+```
+
+### dancaSamba11
+
+```gm
+pose "dancaSamba11" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 100 abre 70)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSamba12
+
+```gm
+pose "dancaSamba12" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 100 abre 70)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 15)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSamba13
+
+```gm
+pose "dancaSamba13" de empe
+  ombro(frente 60 abre 90)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 10)
+  pelve(gira-direita 15)
+```
+
+### dancaSamba14
+
+```gm
+pose "dancaSamba14" de empe
+  ombro(frente 60 abre 90)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSamba15
+
+```gm
+pose "dancaSamba15" de empe
+  ombro(frente 60 abre 90)
+  cotovelo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 15)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSamba16
+
+```gm
+pose "dancaSamba16" de empe
+  ombro.direito(frente 140 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 10)
+  pelve(gira-direita 15)
+```
+
+### dancaSamba17
+
+```gm
+pose "dancaSamba17" de empe
+  ombro.direito(frente 140 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSamba18
+
+```gm
+pose "dancaSamba18" de empe
+  ombro.direito(frente 140 abre 30)
+  ombro.esquerdo(frente 30 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 15)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaFrevo4
+
+```gm
+pose "dancaFrevo4" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10 abre 20)
+  quadril.esquerdo(frente 90 abre 30)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 110)
+  valor fThL -0.1
+```
+
+### dancaFrevo5
+
+```gm
+pose "dancaFrevo5" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10 abre 20)
+  quadril.esquerdo(frente 90 abre 30)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaFrevo6
+
+```gm
+pose "dancaFrevo6" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10 abre 20)
+  quadril.esquerdo(frente 90 abre 30)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaFrevo10
+
+```gm
+pose "dancaFrevo10" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 80 abre 40)
+  joelho(dobra 120)
+  tronco(frente 25)
+  valor fThL -0.1
+```
+
+### dancaFrevo11
+
+```gm
+pose "dancaFrevo11" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 80 abre 40)
+  joelho(dobra 120)
+  tronco(frente 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaFrevo12
+
+```gm
+pose "dancaFrevo12" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 80 abre 40)
+  joelho(dobra 120)
+  tronco(frente 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaFrevo16
+
+```gm
+pose "dancaFrevo16" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 gira-fora 30)
+  quadril.esquerdo(frente 20 gira-dentro 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  valor fThL -0.1
+```
+
+### dancaFrevo17
+
+```gm
+pose "dancaFrevo17" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 gira-fora 30)
+  quadril.esquerdo(frente 20 gira-dentro 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaFrevo18
+
+```gm
+pose "dancaFrevo18" de empe
+  ombro.direito(frente 30 abre 60)
+  ombro.esquerdo(frente 90 abre 80)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 gira-fora 30)
+  quadril.esquerdo(frente 20 gira-dentro 30)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaBallet1
+
+```gm
+pose "dancaBallet1" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+```
+
+### dancaBallet3
+
+```gm
+pose "dancaBallet3" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet4
+
+```gm
+pose "dancaBallet4" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+```
+
+### dancaBallet5
+
+```gm
+pose "dancaBallet5" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet6
+
+```gm
+pose "dancaBallet6" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet7
+
+```gm
+pose "dancaBallet7" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+```
+
+### dancaBallet8
+
+```gm
+pose "dancaBallet8" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet9
+
+```gm
+pose "dancaBallet9" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril(gira-fora 40)
+  tornozelo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet10
+
+```gm
+pose "dancaBallet10" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+```
+
+### dancaBallet11
+
+```gm
+pose "dancaBallet11" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet12
+
+```gm
+pose "dancaBallet12" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet13
+
+```gm
+pose "dancaBallet13" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+```
+
+### dancaBallet14
+
+```gm
+pose "dancaBallet14" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet15
+
+```gm
+pose "dancaBallet15" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet16
+
+```gm
+pose "dancaBallet16" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+```
+
+### dancaBallet17
+
+```gm
+pose "dancaBallet17" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet18
+
+```gm
+pose "dancaBallet18" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(frente 90 gira-fora 30)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet19
+
+```gm
+pose "dancaBallet19" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet21
+
+```gm
+pose "dancaBallet21" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet22
+
+```gm
+pose "dancaBallet22" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet23
+
+```gm
+pose "dancaBallet23" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet24
+
+```gm
+pose "dancaBallet24" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet25
+
+```gm
+pose "dancaBallet25" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet26
+
+```gm
+pose "dancaBallet26" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet27
+
+```gm
+pose "dancaBallet27" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(gira-fora 20)
+  quadril.esquerdo(tras 25 gira-fora 30)
+  joelho.esquerdo(dobra 5)
+  tornozelo.direito(aponta 40)
+  tornozelo.esquerdo(aponta 50)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 20)
+```
+
+### dancaBallet28
+
+```gm
+pose "dancaBallet28" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+```
+
+### dancaBallet29
+
+```gm
+pose "dancaBallet29" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet30
+
+```gm
+pose "dancaBallet30" de empe
+  ombro(frente 170 abre 20)
+  cotovelo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet31
+
+```gm
+pose "dancaBallet31" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+```
+
+### dancaBallet32
+
+```gm
+pose "dancaBallet32" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet33
+
+```gm
+pose "dancaBallet33" de empe
+  ombro(frente 80 abre 80)
+  cotovelo(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaBallet34
+
+```gm
+pose "dancaBallet34" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+```
+
+### dancaBallet35
+
+```gm
+pose "dancaBallet35" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaBallet36
+
+```gm
+pose "dancaBallet36" de empe
+  ombro.direito(frente 80 abre 70)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 40)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 40)
+  quadril.esquerdo(abre 0)
+  joelho.direito(dobra 110)
+  tornozelo.direito(aponta 50)
+  tornozelo.esquerdo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSalsa1
+
+```gm
+pose "dancaSalsa1" de empe
+  ombro.direito(frente 50 abre 50)
+  ombro.esquerdo(frente 100 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-direita 15)
+  pelve(gira-esquerda 20)
+```
+
+### dancaSalsa2
+
+```gm
+pose "dancaSalsa2" de empe
+  ombro.direito(frente 50 abre 50)
+  ombro.esquerdo(frente 100 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSalsa3
+
+```gm
+pose "dancaSalsa3" de empe
+  ombro.direito(frente 50 abre 50)
+  ombro.esquerdo(frente 100 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSalsa4
+
+```gm
+pose "dancaSalsa4" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-direita 15)
+  pelve(gira-esquerda 20)
+```
+
+### dancaSalsa5
+
+```gm
+pose "dancaSalsa5" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSalsa6
+
+```gm
+pose "dancaSalsa6" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSalsa7
+
+```gm
+pose "dancaSalsa7" de empe
+  ombro.direito(frente 50 abre 50)
+  ombro.esquerdo(frente 100 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-dentro 20)
+  quadril.esquerdo(frente 10 gira-fora 20)
+  joelho(dobra 20)
+  tronco(gira-esquerda 40)
+```
+
+### dancaSalsa8
+
+```gm
+pose "dancaSalsa8" de empe
+  ombro.direito(frente 50 abre 50)
+  ombro.esquerdo(frente 100 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-dentro 20)
+  quadril.esquerdo(frente 10 gira-fora 20)
+  joelho(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSalsa9
+
+```gm
+pose "dancaSalsa9" de empe
+  ombro.direito(frente 50 abre 50)
+  ombro.esquerdo(frente 100 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-dentro 20)
+  quadril.esquerdo(frente 10 gira-fora 20)
+  joelho(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaSalsa10
+
+```gm
+pose "dancaSalsa10" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-dentro 20)
+  quadril.esquerdo(frente 10 gira-fora 20)
+  joelho(dobra 20)
+  tronco(gira-esquerda 40)
+```
+
+### dancaSalsa11
+
+```gm
+pose "dancaSalsa11" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-dentro 20)
+  quadril.esquerdo(frente 10 gira-fora 20)
+  joelho(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaSalsa12
+
+```gm
+pose "dancaSalsa12" de empe
+  ombro.direito(frente 30 abre 40)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-dentro 20)
+  quadril.esquerdo(frente 10 gira-fora 20)
+  joelho(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaForro1
+
+```gm
+pose "dancaForro1" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  pelve(gira-esquerda 15)
+  valor fThL -0.1
+```
+
+### dancaForro2
+
+```gm
+pose "dancaForro2" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaForro3
+
+```gm
+pose "dancaForro3" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 15)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaForro4
+
+```gm
+pose "dancaForro4" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  pelve(gira-esquerda 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaForro5
+
+```gm
+pose "dancaForro5" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaForro6
+
+```gm
+pose "dancaForro6" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 25)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 15)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaForro7
+
+```gm
+pose "dancaForro7" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 25)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  pelve(gira-direita 15)
+  valor fThL -0.1
+```
+
+### dancaForro8
+
+```gm
+pose "dancaForro8" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 25)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaForro9
+
+```gm
+pose "dancaForro9" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 25)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 15)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaForro10
+
+```gm
+pose "dancaForro10" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 25)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  pelve(gira-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaForro11
+
+```gm
+pose "dancaForro11" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 25)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaForro12
+
+```gm
+pose "dancaForro12" de empe
+  ombro(frente 40 abre 20)
+  cotovelo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 25)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 15)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### dancaTango1
+
+```gm
+pose "dancaTango1" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 40)
+  tronco(tras 6)
+  valor fThL -0.1
+```
+
+### dancaTango2
+
+```gm
+pose "dancaTango2" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 40)
+  tronco(tras 6 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaTango3
+
+```gm
+pose "dancaTango3" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 40)
+  tronco(tras 6 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaTango4
+
+```gm
+pose "dancaTango4" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 40)
+  tronco(tras 6)
+```
+
+### dancaTango5
+
+```gm
+pose "dancaTango5" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 40)
+  tronco(tras 6 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaTango6
+
+```gm
+pose "dancaTango6" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 50)
+  joelho.esquerdo(dobra 30)
+  tornozelo.direito(aponta 40)
+  tronco(tras 6 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaTango7
+
+```gm
+pose "dancaTango7" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 gira-fora 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  tornozelo(aponta 40)
+  valor fThL -0.1
+```
+
+### dancaTango8
+
+```gm
+pose "dancaTango8" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 gira-fora 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  tornozelo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### dancaTango9
+
+```gm
+pose "dancaTango9" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 30)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 gira-fora 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  tornozelo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### dancaTango10
+
+```gm
+pose "dancaTango10" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-fora 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  tornozelo(aponta 40)
+```
+
+### dancaTango11
+
+```gm
+pose "dancaTango11" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-fora 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  tornozelo(aponta 40)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaTango12
+
+```gm
+pose "dancaTango12" de empe
+  ombro.direito(frente 20 abre 20)
+  ombro.esquerdo(frente 130 abre 60)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10 gira-fora 30)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 10)
+  tornozelo(aponta 40)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaVogue1
+
+```gm
+pose "dancaVogue1" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  pelve(gira-esquerda 20)
+```
+
+### dancaVogue2
+
+```gm
+pose "dancaVogue2" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaVogue3
+
+```gm
+pose "dancaVogue3" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaVogue4
+
+```gm
+pose "dancaVogue4" de empe
+  ombro(frente 90 abre 0)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 125)
+  punho.direito(levanta 60)
+  punho.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  pelve(gira-esquerda 20)
+```
+
+### dancaVogue5
+
+```gm
+pose "dancaVogue5" de empe
+  ombro(frente 90 abre 0)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 125)
+  punho.direito(levanta 60)
+  punho.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaVogue6
+
+```gm
+pose "dancaVogue6" de empe
+  ombro(frente 90 abre 0)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 125)
+  punho.direito(levanta 60)
+  punho.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaVogue7
+
+```gm
+pose "dancaVogue7" de empe
+  ombro.direito(tras 20 abre 40)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo.direito(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  pelve(gira-esquerda 20)
+```
+
+### dancaVogue8
+
+```gm
+pose "dancaVogue8" de empe
+  ombro.direito(tras 20 abre 40)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo.direito(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaVogue9
+
+```gm
+pose "dancaVogue9" de empe
+  ombro.direito(tras 20 abre 40)
+  ombro.esquerdo(frente 170 abre 80)
+  cotovelo.direito(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-esquerda 20)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaVogue10
+
+```gm
+pose "dancaVogue10" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20)
+```
+
+### dancaVogue11
+
+```gm
+pose "dancaVogue11" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaVogue12
+
+```gm
+pose "dancaVogue12" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 120)
+  cotovelo.esquerdo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaVogue13
+
+```gm
+pose "dancaVogue13" de empe
+  ombro(frente 90 abre 0)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 125)
+  punho.direito(levanta 60)
+  punho.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20)
+```
+
+### dancaVogue14
+
+```gm
+pose "dancaVogue14" de empe
+  ombro(frente 90 abre 0)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 125)
+  punho.direito(levanta 60)
+  punho.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaVogue15
+
+```gm
+pose "dancaVogue15" de empe
+  ombro(frente 90 abre 0)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 125)
+  punho.direito(levanta 60)
+  punho.esquerdo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaVogue16
+
+```gm
+pose "dancaVogue16" de empe
+  ombro.direito(tras 20 abre 40)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo.direito(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20)
+```
+
+### dancaVogue18
+
+```gm
+pose "dancaVogue18" de empe
+  ombro.direito(tras 20 abre 40)
+  ombro.esquerdo(frente 170 abre 80)
+  cotovelo.direito(dobra 20)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 10)
+  quadril.esquerdo(frente 100 abre 30)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 140)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea1
+
+```gm
+pose "dancaContemporanea1" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 20)
+```
+
+### dancaContemporanea2
+
+```gm
+pose "dancaContemporanea2" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea3
+
+```gm
+pose "dancaContemporanea3" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea4
+
+```gm
+pose "dancaContemporanea4" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 20)
+```
+
+### dancaContemporanea5
+
+```gm
+pose "dancaContemporanea5" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea6
+
+```gm
+pose "dancaContemporanea6" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea7
+
+```gm
+pose "dancaContemporanea7" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 20)
+```
+
+### dancaContemporanea8
+
+```gm
+pose "dancaContemporanea8" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea9
+
+```gm
+pose "dancaContemporanea9" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea10
+
+```gm
+pose "dancaContemporanea10" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30)
+  cabeca(sobe 30)
+```
+
+### dancaContemporanea11
+
+```gm
+pose "dancaContemporanea11" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea12
+
+```gm
+pose "dancaContemporanea12" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea13
+
+```gm
+pose "dancaContemporanea13" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30)
+  cabeca(sobe 30)
+```
+
+### dancaContemporanea14
+
+```gm
+pose "dancaContemporanea14" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea15
+
+```gm
+pose "dancaContemporanea15" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea16
+
+```gm
+pose "dancaContemporanea16" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30)
+  cabeca(sobe 30)
+```
+
+### dancaContemporanea17
+
+```gm
+pose "dancaContemporanea17" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea18
+
+```gm
+pose "dancaContemporanea18" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20)
+  joelho.direito(dobra 20)
+  tronco(tras 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea19
+
+```gm
+pose "dancaContemporanea19" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(esquerda 20)
+```
+
+### dancaContemporanea20
+
+```gm
+pose "dancaContemporanea20" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(esquerda 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea21
+
+```gm
+pose "dancaContemporanea21" de empe
+  ombro.direito(frente 170 abre 20)
+  ombro.esquerdo(frente 90 abre 90)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea22
+
+```gm
+pose "dancaContemporanea22" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(esquerda 20)
+```
+
+### dancaContemporanea23
+
+```gm
+pose "dancaContemporanea23" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(esquerda 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea24
+
+```gm
+pose "dancaContemporanea24" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 120)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### dancaContemporanea25
+
+```gm
+pose "dancaContemporanea25" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(esquerda 20)
+```
+
+### dancaContemporanea26
+
+```gm
+pose "dancaContemporanea26" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(esquerda 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### dancaContemporanea27
+
+```gm
+pose "dancaContemporanea27" de empe
+  ombro(frente 150 cruza 10)
+  cotovelo(dobra 60)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 100)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoEmPeGuitarraAir
+
+```gm
+pose "palcoEmPeGuitarraAir" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  valor fThL -0.2
+```
+
+### palcoEmPeGuitarraAirOlhaLado
+
+```gm
+pose "palcoEmPeGuitarraAirOlhaLado" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### palcoEmPeGuitarraAirTronco
+
+```gm
+pose "palcoEmPeGuitarraAirTronco" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### palcoEmPeCantandoAgudo
+
+```gm
+pose "palcoEmPeCantandoAgudo" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoEmPeCantandoAgudoOlhaLado
+
+```gm
+pose "palcoEmPeCantandoAgudoOlhaLado" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoEmPeCantandoAgudoTronco
+
+```gm
+pose "palcoEmPeCantandoAgudoTronco" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoEmPeRegendo
+
+```gm
+pose "palcoEmPeRegendo" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+```
+
+### palcoEmPeRegendoOlhaLado
+
+```gm
+pose "palcoEmPeRegendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoEmPeRegendoTronco
+
+```gm
+pose "palcoEmPeRegendoTronco" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoEmPeDjMixando
+
+```gm
+pose "palcoEmPeDjMixando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+```
+
+### palcoEmPeDjMixandoOlhaLado
+
+```gm
+pose "palcoEmPeDjMixandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 85)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoEmPeDjMixandoTronco
+
+```gm
+pose "palcoEmPeDjMixandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoEmPeAgradecendo
+
+```gm
+pose "palcoEmPeAgradecendo" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+```
+
+### palcoEmPeAgradecendoOlhaLado
+
+```gm
+pose "palcoEmPeAgradecendoOlhaLado" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoEmPeAgradecendoTronco
+
+```gm
+pose "palcoEmPeAgradecendoTronco" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoEmPeBateriaAir
+
+```gm
+pose "palcoEmPeBateriaAir" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoEmPeBateriaAirOlhaLado
+
+```gm
+pose "palcoEmPeBateriaAirOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoEmPeBateriaAirTronco
+
+```gm
+pose "palcoEmPeBateriaAirTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoJoelhosGuitarraAir
+
+```gm
+pose "palcoJoelhosGuitarraAir" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10)
+  valor fThL -0.2
+```
+
+### palcoJoelhosGuitarraAirOlhaLado
+
+```gm
+pose "palcoJoelhosGuitarraAirOlhaLado" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### palcoJoelhosGuitarraAirTronco
+
+```gm
+pose "palcoJoelhosGuitarraAirTronco" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### palcoJoelhosCantandoAgudo
+
+```gm
+pose "palcoJoelhosCantandoAgudo" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoJoelhosCantandoAgudoOlhaLado
+
+```gm
+pose "palcoJoelhosCantandoAgudoOlhaLado" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoJoelhosCantandoAgudoTronco
+
+```gm
+pose "palcoJoelhosCantandoAgudoTronco" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoJoelhosRegendo
+
+```gm
+pose "palcoJoelhosRegendo" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10)
+```
+
+### palcoJoelhosRegendoOlhaLado
+
+```gm
+pose "palcoJoelhosRegendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoJoelhosRegendoTronco
+
+```gm
+pose "palcoJoelhosRegendoTronco" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoJoelhosDjMixando
+
+```gm
+pose "palcoJoelhosDjMixando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10)
+```
+
+### palcoJoelhosDjMixandoOlhaLado
+
+```gm
+pose "palcoJoelhosDjMixandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 85)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoJoelhosDjMixandoTronco
+
+```gm
+pose "palcoJoelhosDjMixandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoJoelhosAgradecendo
+
+```gm
+pose "palcoJoelhosAgradecendo" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10)
+```
+
+### palcoJoelhosAgradecendoOlhaLado
+
+```gm
+pose "palcoJoelhosAgradecendoOlhaLado" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoJoelhosAgradecendoTronco
+
+```gm
+pose "palcoJoelhosAgradecendoTronco" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoJoelhosBateriaAir
+
+```gm
+pose "palcoJoelhosBateriaAir" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoJoelhosBateriaAirOlhaLado
+
+```gm
+pose "palcoJoelhosBateriaAirOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoJoelhosBateriaAirTronco
+
+```gm
+pose "palcoJoelhosBateriaAirTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 10)
+  joelho(dobra 120)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoArqueadoGuitarraAir
+
+```gm
+pose "palcoArqueadoGuitarraAir" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25)
+  cabeca(sobe 25)
+  valor fThL -0.2
+```
+
+### palcoArqueadoGuitarraAirOlhaLado
+
+```gm
+pose "palcoArqueadoGuitarraAirOlhaLado" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 25 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2
+```
+
+### palcoArqueadoGuitarraAirTronco
+
+```gm
+pose "palcoArqueadoGuitarraAirTronco" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2
+```
+
+### palcoArqueadoCantandoAgudo
+
+```gm
+pose "palcoArqueadoCantandoAgudo" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25)
+  cabeca(sobe 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoArqueadoCantandoAgudoOlhaLado
+
+```gm
+pose "palcoArqueadoCantandoAgudoOlhaLado" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 25 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoArqueadoCantandoAgudoTronco
+
+```gm
+pose "palcoArqueadoCantandoAgudoTronco" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoArqueadoRegendo
+
+```gm
+pose "palcoArqueadoRegendo" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25)
+  cabeca(sobe 25)
+```
+
+### palcoArqueadoRegendoOlhaLado
+
+```gm
+pose "palcoArqueadoRegendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 25 gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoArqueadoRegendoTronco
+
+```gm
+pose "palcoArqueadoRegendoTronco" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoArqueadoDjMixando
+
+```gm
+pose "palcoArqueadoDjMixando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 95)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25)
+  cabeca(sobe 25)
+```
+
+### palcoArqueadoDjMixandoOlhaLado
+
+```gm
+pose "palcoArqueadoDjMixandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 95)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 25 gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoArqueadoDjMixandoTronco
+
+```gm
+pose "palcoArqueadoDjMixandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoArqueadoAgradecendo
+
+```gm
+pose "palcoArqueadoAgradecendo" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25)
+  cabeca(sobe 25)
+```
+
+### palcoArqueadoAgradecendoOlhaLado
+
+```gm
+pose "palcoArqueadoAgradecendoOlhaLado" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 25 gira-esquerda 65 inclina-direita 15)
+```
+
+### palcoArqueadoAgradecendoTronco
+
+```gm
+pose "palcoArqueadoAgradecendoTronco" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### palcoArqueadoBateriaAir
+
+```gm
+pose "palcoArqueadoBateriaAir" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25)
+  cabeca(sobe 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoArqueadoBateriaAirOlhaLado
+
+```gm
+pose "palcoArqueadoBateriaAirOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 25 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoArqueadoBateriaAirTronco
+
+```gm
+pose "palcoArqueadoBateriaAirTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 40)
+  tronco(tras 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoPuloGuitarraAir
+
+```gm
+pose "palcoPuloGuitarraAir" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  corpo(sobe 22.8cm)
+  valor fThL -0.2
+```
+
+### palcoPuloGuitarraAirOlhaLado
+
+```gm
+pose "palcoPuloGuitarraAirOlhaLado" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.2
+```
+
+### palcoPuloGuitarraAirTronco
+
+```gm
+pose "palcoPuloGuitarraAirTronco" de empe
+  ombro.direito(frente 20 cruza 10 gira-dentro 40)
+  ombro.esquerdo(frente 40 abre 20 gira-fora 30)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 90)
+  mao.direito(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  mao.esquerdo(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.2
+```
+
+### palcoPuloCantandoAgudo
+
+```gm
+pose "palcoPuloCantandoAgudo" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoPuloCantandoAgudoOlhaLado
+
+```gm
+pose "palcoPuloCantandoAgudoOlhaLado" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoPuloCantandoAgudoTronco
+
+```gm
+pose "palcoPuloCantandoAgudoTronco" de empe
+  ombro.direito(frente 40 abre 40)
+  ombro.esquerdo(frente 90 cruza 5)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 140)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoPuloRegendo
+
+```gm
+pose "palcoPuloRegendo" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloRegendoOlhaLado
+
+```gm
+pose "palcoPuloRegendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloRegendoTronco
+
+```gm
+pose "palcoPuloRegendoTronco" de empe
+  ombro.direito(frente 90 abre 60)
+  ombro.esquerdo(frente 110 abre 40)
+  cotovelo.direito(dobra 40)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloDjMixando
+
+```gm
+pose "palcoPuloDjMixando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloDjMixandoOlhaLado
+
+```gm
+pose "palcoPuloDjMixandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 85)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloDjMixandoTronco
+
+```gm
+pose "palcoPuloDjMixandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 140 abre 40)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloAgradecendo
+
+```gm
+pose "palcoPuloAgradecendo" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloAgradecendoOlhaLado
+
+```gm
+pose "palcoPuloAgradecendoOlhaLado" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloAgradecendoTronco
+
+```gm
+pose "palcoPuloAgradecendoTronco" de empe
+  ombro(frente 70 abre 90)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### palcoPuloBateriaAir
+
+```gm
+pose "palcoPuloBateriaAir" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoPuloBateriaAirOlhaLado
+
+```gm
+pose "palcoPuloBateriaAirOlhaLado" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### palcoPuloBateriaAirTronco
+
+```gm
+pose "palcoPuloBateriaAirTronco" de empe
+  ombro.direito(frente 80 abre 30)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 100)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 110)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotMotoCurvaGuidao
+
+```gm
+pose "pilotMotoCurvaGuidao" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30)
+  valor fThL -0.1 fThR -0.1 bodyRoll -25
+```
+
+### pilotMotoCurvaGuidaoOlhaLado
+
+```gm
+pose "pilotMotoCurvaGuidaoOlhaLado" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1 bodyRoll -25
+```
+
+### pilotMotoCurvaGuidaoTronco
+
+```gm
+pose "pilotMotoCurvaGuidaoTronco" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1 bodyRoll -25
+```
+
+### pilotMotoCurvaEquilibrio
+
+```gm
+pose "pilotMotoCurvaEquilibrio" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30)
+  valor bodyRoll -25
+```
+
+### pilotMotoCurvaEquilibrioOlhaLado
+
+```gm
+pose "pilotMotoCurvaEquilibrioOlhaLado" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor bodyRoll -25
+```
+
+### pilotMotoCurvaEquilibrioTronco
+
+```gm
+pose "pilotMotoCurvaEquilibrioTronco" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor bodyRoll -25
+```
+
+### pilotMotoCurvaAcenando
+
+```gm
+pose "pilotMotoCurvaAcenando" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30)
+  valor fThL -0.1 bodyRoll -25
+```
+
+### pilotMotoCurvaAcenandoOlhaLado
+
+```gm
+pose "pilotMotoCurvaAcenandoOlhaLado" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 bodyRoll -25
+```
+
+### pilotMotoCurvaAcenandoTronco
+
+```gm
+pose "pilotMotoCurvaAcenandoTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 30)
+  quadril.esquerdo(frente 65 abre 20)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 bodyRoll -25
+```
+
+### pilotMotoEmpinandoGuidao
+
+```gm
+pose "pilotMotoEmpinandoGuidao" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10)
+  corpo(deita-costas 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotMotoEmpinandoGuidaoOlhaLado
+
+```gm
+pose "pilotMotoEmpinandoGuidaoOlhaLado" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotMotoEmpinandoGuidaoTronco
+
+```gm
+pose "pilotMotoEmpinandoGuidaoTronco" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotMotoEmpinandoEquilibrio
+
+```gm
+pose "pilotMotoEmpinandoEquilibrio" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10)
+  corpo(deita-costas 15)
+```
+
+### pilotMotoEmpinandoEquilibrioOlhaLado
+
+```gm
+pose "pilotMotoEmpinandoEquilibrioOlhaLado" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 15)
+```
+
+### pilotMotoEmpinandoEquilibrioTronco
+
+```gm
+pose "pilotMotoEmpinandoEquilibrioTronco" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 15)
+```
+
+### pilotMotoEmpinandoAcenando
+
+```gm
+pose "pilotMotoEmpinandoAcenando" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10)
+  corpo(deita-costas 15)
+  valor fThL -0.1
+```
+
+### pilotMotoEmpinandoAcenandoOlhaLado
+
+```gm
+pose "pilotMotoEmpinandoAcenandoOlhaLado" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 15)
+  valor fThL -0.1
+```
+
+### pilotMotoEmpinandoAcenandoTronco
+
+```gm
+pose "pilotMotoEmpinandoAcenandoTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60 abre 15)
+  joelho(dobra 70)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 15)
+  valor fThL -0.1
+```
+
+### pilotBikeSprintGuidao
+
+```gm
+pose "pilotBikeSprintGuidao" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20)
+  corpo(deita-brucos 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotBikeSprintGuidaoOlhaLado
+
+```gm
+pose "pilotBikeSprintGuidaoOlhaLado" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotBikeSprintGuidaoTronco
+
+```gm
+pose "pilotBikeSprintGuidaoTronco" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotBikeSprintEquilibrio
+
+```gm
+pose "pilotBikeSprintEquilibrio" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20)
+  corpo(deita-brucos 30)
+```
+
+### pilotBikeSprintEquilibrioOlhaLado
+
+```gm
+pose "pilotBikeSprintEquilibrioOlhaLado" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 30)
+```
+
+### pilotBikeSprintEquilibrioTronco
+
+```gm
+pose "pilotBikeSprintEquilibrioTronco" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 30)
+```
+
+### pilotBikeSprintAcenando
+
+```gm
+pose "pilotBikeSprintAcenando" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20)
+  corpo(deita-brucos 30)
+  valor fThL -0.1
+```
+
+### pilotBikeSprintAcenandoOlhaLado
+
+```gm
+pose "pilotBikeSprintAcenandoOlhaLado" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 30)
+  valor fThL -0.1
+```
+
+### pilotBikeSprintAcenandoTronco
+
+```gm
+pose "pilotBikeSprintAcenandoTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 70 abre 8)
+  quadril.esquerdo(frente 40 abre 8)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 30)
+  valor fThL -0.1
+```
+
+### pilotSkateOllieGuidao
+
+```gm
+pose "pilotSkateOllieGuidao" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotSkateOllieGuidaoOlhaLado
+
+```gm
+pose "pilotSkateOllieGuidaoOlhaLado" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotSkateOllieGuidaoTronco
+
+```gm
+pose "pilotSkateOllieGuidaoTronco" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotSkateOllieEquilibrio
+
+```gm
+pose "pilotSkateOllieEquilibrio" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20)
+  corpo(sobe 22.8cm)
+```
+
+### pilotSkateOllieEquilibrioOlhaLado
+
+```gm
+pose "pilotSkateOllieEquilibrioOlhaLado" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### pilotSkateOllieEquilibrioTronco
+
+```gm
+pose "pilotSkateOllieEquilibrioTronco" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### pilotSkateOllieAcenando
+
+```gm
+pose "pilotSkateOllieAcenando" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1
+```
+
+### pilotSkateOllieAcenandoOlhaLado
+
+```gm
+pose "pilotSkateOllieAcenandoOlhaLado" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1
+```
+
+### pilotSkateOllieAcenandoTronco
+
+```gm
+pose "pilotSkateOllieAcenandoTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60 abre 15)
+  quadril.esquerdo(frente 80 abre 15)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 110)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1
+```
+
+### pilotSurfeBaseGuidao
+
+```gm
+pose "pilotSurfeBaseGuidao" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 gira-direita 30)
+  valor pelvisTwist -40 fThL -0.1 fThR -0.1
+```
+
+### pilotSurfeBaseGuidaoOlhaLado
+
+```gm
+pose "pilotSurfeBaseGuidaoOlhaLado" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### pilotSurfeBaseGuidaoTronco
+
+```gm
+pose "pilotSurfeBaseGuidaoTronco" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -40 fThL -0.1 fThR -0.1
+```
+
+### pilotSurfeBaseEquilibrio
+
+```gm
+pose "pilotSurfeBaseEquilibrio" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 gira-direita 30)
+  valor pelvisTwist -40
+```
+
+### pilotSurfeBaseEquilibrioOlhaLado
+
+```gm
+pose "pilotSurfeBaseEquilibrioOlhaLado" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### pilotSurfeBaseEquilibrioTronco
+
+```gm
+pose "pilotSurfeBaseEquilibrioTronco" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -40
+```
+
+### pilotSurfeBaseAcenando
+
+```gm
+pose "pilotSurfeBaseAcenando" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 gira-direita 30)
+  valor pelvisTwist -40 fThL -0.1
+```
+
+### pilotSurfeBaseAcenandoOlhaLado
+
+```gm
+pose "pilotSurfeBaseAcenandoOlhaLado" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### pilotSurfeBaseAcenandoTronco
+
+```gm
+pose "pilotSurfeBaseAcenandoTronco" de empe
+  ombro.direito(frente 150 abre 75)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 25)
+  quadril.esquerdo(frente 45 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -40 fThL -0.1
+```
+
+### pilotSnowboardGuidao
+
+```gm
+pose "pilotSnowboardGuidao" de empe
+  ombro(frente 70 abre 20)
+  cotovelo(dobra 50)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30 abre 20)
+  quadril.esquerdo(frente 50 abre 25)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 25 gira-direita 20)
+  valor pelvisTwist -50 fThL -0.1 fThR -0.1
+```
+
+### pilotSnowboardEquilibrio
+
+```gm
+pose "pilotSnowboardEquilibrio" de empe
+  ombro.direito(frente 30 abre 80)
+  ombro.esquerdo(frente 50 abre 70)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 30)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 30 abre 20)
+  quadril.esquerdo(frente 50 abre 25)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 25 gira-direita 20)
+  valor pelvisTwist -50
+```
+
+### pilotSnowboardAcenando
+
+```gm
+pose "pilotSnowboardAcenando" de empe
+  ombro.direito(frente 150 abre 40)
+  ombro.esquerdo(frente 70 abre 20)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 50)
+  mao.direito(fecha 2% afasta 60%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30 abre 20)
+  quadril.esquerdo(frente 50 abre 25)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 70)
+  tronco(frente 25 gira-direita 20)
+  valor pelvisTwist -50 fThL -0.1
+```
+
+### espGolfePreparando
+
+```gm
+pose "espGolfePreparando" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfePreparandoOlhaLado
+
+```gm
+pose "espGolfePreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfePreparandoTronco
+
+```gm
+pose "espGolfePreparandoTronco" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeBatendo
+
+```gm
+pose "espGolfeBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 gira-esquerda 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeBatendoOlhaLado
+
+```gm
+pose "espGolfeBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeBatendoTronco
+
+```gm
+pose "espGolfeBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeFinalizando
+
+```gm
+pose "espGolfeFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 gira-esquerda 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeFinalizandoOlhaLado
+
+```gm
+pose "espGolfeFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeFinalizandoTronco
+
+```gm
+pose "espGolfeFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espGolfeComemorandoTronco
+
+```gm
+pose "espGolfeComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 25 abre 12)
+  joelho(dobra 20)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolPreparando
+
+```gm
+pose "espBeisebolPreparando" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-direita 30)
+  pelve(gira-direita 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolPreparandoOlhaLado
+
+```gm
+pose "espBeisebolPreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolPreparandoTronco
+
+```gm
+pose "espBeisebolPreparandoTronco" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolBatendo
+
+```gm
+pose "espBeisebolBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 20)
+  pelve(gira-direita 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolBatendoOlhaLado
+
+```gm
+pose "espBeisebolBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolBatendoTronco
+
+```gm
+pose "espBeisebolBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolFinalizando
+
+```gm
+pose "espBeisebolFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 40)
+  pelve(gira-direita 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolFinalizandoOlhaLado
+
+```gm
+pose "espBeisebolFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolFinalizandoTronco
+
+```gm
+pose "espBeisebolFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espBeisebolComemorandoTronco
+
+```gm
+pose "espBeisebolComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 10 abre 10)
+  quadril.esquerdo(frente 30 abre 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 35)
+  tronco(direita 25 gira-direita 35)
+  pelve(gira-direita 20)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaPreparando
+
+```gm
+pose "espEsgrimaPreparando" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaPreparandoOlhaLado
+
+```gm
+pose "espEsgrimaPreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaPreparandoTronco
+
+```gm
+pose "espEsgrimaPreparandoTronco" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaBatendo
+
+```gm
+pose "espEsgrimaBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(gira-esquerda 20)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaBatendoOlhaLado
+
+```gm
+pose "espEsgrimaBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaBatendoTronco
+
+```gm
+pose "espEsgrimaBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaFinalizando
+
+```gm
+pose "espEsgrimaFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(gira-esquerda 40)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaFinalizandoOlhaLado
+
+```gm
+pose "espEsgrimaFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaFinalizandoTronco
+
+```gm
+pose "espEsgrimaFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espEsgrimaComemorandoTronco
+
+```gm
+pose "espEsgrimaComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 60 abre 10 gira-fora 40)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 70)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -60 fThL -0.1 fThR -0.1
+```
+
+### espHoqueiPreparandoOlhaLado
+
+```gm
+pose "espHoqueiPreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiBatendo
+
+```gm
+pose "espHoqueiBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 gira-esquerda 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiBatendoOlhaLado
+
+```gm
+pose "espHoqueiBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiBatendoTronco
+
+```gm
+pose "espHoqueiBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiFinalizando
+
+```gm
+pose "espHoqueiFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 gira-esquerda 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiFinalizandoOlhaLado
+
+```gm
+pose "espHoqueiFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiFinalizandoTronco
+
+```gm
+pose "espHoqueiFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHoqueiComemorandoTronco
+
+```gm
+pose "espHoqueiComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 20)
+  quadril.esquerdo(frente 50 abre 20)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 60)
+  tronco(frente 35 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espArqueriaPreparando
+
+```gm
+pose "espArqueriaPreparando" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(gira-direita 20)
+  valor pelvisTwist -70 fThL -0.1 fThR -0.1
+```
+
+### espArqueriaPreparandoOlhaLado
+
+```gm
+pose "espArqueriaPreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espArqueriaPreparandoTronco
+
+```gm
+pose "espArqueriaPreparandoTronco" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -70 fThL -0.1 fThR -0.1
+```
+
+### espArqueriaBatendo
+
+```gm
+pose "espArqueriaBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(gira-esquerda 20)
+  valor pelvisTwist -70 fThL -0.1 fThR -0.1
+```
+
+### espArqueriaBatendoOlhaLado
+
+```gm
+pose "espArqueriaBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espArqueriaBatendoTronco
+
+```gm
+pose "espArqueriaBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -70 fThL -0.1 fThR -0.1
+```
+
+### espArqueriaFinalizando
+
+```gm
+pose "espArqueriaFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(gira-esquerda 40)
+  valor pelvisTwist -70 fThL -0.1 fThR -0.1
+```
+
+### espArqueriaFinalizandoOlhaLado
+
+```gm
+pose "espArqueriaFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espArqueriaFinalizandoTronco
+
+```gm
+pose "espArqueriaFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(abre 12)
+  quadril.esquerdo(frente 5 abre 12)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor pelvisTwist -70 fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoPreparandoOlhaLado
+
+```gm
+pose "espFutAmericanoPreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoBatendo
+
+```gm
+pose "espFutAmericanoBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 gira-esquerda 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoBatendoOlhaLado
+
+```gm
+pose "espFutAmericanoBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoBatendoTronco
+
+```gm
+pose "espFutAmericanoBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoFinalizando
+
+```gm
+pose "espFutAmericanoFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 gira-esquerda 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoFinalizandoOlhaLado
+
+```gm
+pose "espFutAmericanoFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoFinalizandoTronco
+
+```gm
+pose "espFutAmericanoFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espFutAmericanoComemorandoTronco
+
+```gm
+pose "espFutAmericanoComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 40 abre 20)
+  quadril.esquerdo(frente 70 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 80)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolPreparando
+
+```gm
+pose "espHandebolPreparando" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolPreparandoOlhaLado
+
+```gm
+pose "espHandebolPreparandoOlhaLado" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolPreparandoTronco
+
+```gm
+pose "espHandebolPreparandoTronco" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolBatendo
+
+```gm
+pose "espHandebolBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 gira-esquerda 20)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolBatendoOlhaLado
+
+```gm
+pose "espHandebolBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolBatendoTronco
+
+```gm
+pose "espHandebolBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolFinalizando
+
+```gm
+pose "espHandebolFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 gira-esquerda 40)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolFinalizandoOlhaLado
+
+```gm
+pose "espHandebolFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolFinalizandoTronco
+
+```gm
+pose "espHandebolFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espHandebolComemorandoTronco
+
+```gm
+pose "espHandebolComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 80)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaPreparando
+
+```gm
+pose "espEscaladaPreparando" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaPreparandoTronco
+
+```gm
+pose "espEscaladaPreparandoTronco" de empe
+  ombro(frente 20 cruza 15)
+  cotovelo(dobra 20)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaBatendo
+
+```gm
+pose "espEscaladaBatendo" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 20)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaBatendoOlhaLado
+
+```gm
+pose "espEscaladaBatendoOlhaLado" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaBatendoTronco
+
+```gm
+pose "espEscaladaBatendoTronco" de empe
+  ombro.direito(frente 90 abre 10)
+  ombro.esquerdo(frente 80 cruza 10)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 10)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaFinalizando
+
+```gm
+pose "espEscaladaFinalizando" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaFinalizandoOlhaLado
+
+```gm
+pose "espEscaladaFinalizandoOlhaLado" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaFinalizandoTronco
+
+```gm
+pose "espEscaladaFinalizandoTronco" de empe
+  ombro.direito(frente 120 abre 10)
+  ombro.esquerdo(frente 150 abre 30)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaComemorando
+
+```gm
+pose "espEscaladaComemorando" de empe
+  ombro(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaComemorandoOlhaLado
+
+```gm
+pose "espEscaladaComemorandoOlhaLado" de empe
+  ombro(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### espEscaladaComemorandoTronco
+
+```gm
+pose "espEscaladaComemorandoTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 20)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 20 abre 30)
+  quadril.esquerdo(frente 80 abre 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoEmPeMaosRosto
+
+```gm
+pose "emoEmPeMaosRosto" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+```
+
+### emoEmPeMaosRostoOlhaLado
+
+```gm
+pose "emoEmPeMaosRostoOlhaLado" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoEmPeMaosRostoTronco
+
+```gm
+pose "emoEmPeMaosRostoTronco" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoEmPePunhosCerradosOlhaLado
+
+```gm
+pose "emoEmPePunhosCerradosOlhaLado" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoEmPePunhosCerradosTronco
+
+```gm
+pose "emoEmPePunhosCerradosTronco" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoEmPeAbracandoSe
+
+```gm
+pose "emoEmPeAbracandoSe" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoEmPeAbracandoSeOlhaLado
+
+```gm
+pose "emoEmPeAbracandoSeOlhaLado" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoEmPeAbracandoSeTronco
+
+```gm
+pose "emoEmPeAbracandoSeTronco" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoEmPeBracosCaidosOlhaLado
+
+```gm
+pose "emoEmPeBracosCaidosOlhaLado" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoEmPeBracosCaidosTronco
+
+```gm
+pose "emoEmPeBracosCaidosTronco" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoEmPeMaoCabecaOlhaLado
+
+```gm
+pose "emoEmPeMaoCabecaOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoEmPeMaoCabecaTronco
+
+```gm
+pose "emoEmPeMaoCabecaTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho(dobra 5)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoSentadoChaoMaosRosto
+
+```gm
+pose "emoSentadoChaoMaosRosto" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+```
+
+### emoSentadoChaoMaosRostoOlhaLado
+
+```gm
+pose "emoSentadoChaoMaosRostoOlhaLado" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoSentadoChaoMaosRostoTronco
+
+```gm
+pose "emoSentadoChaoMaosRostoTronco" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoSentadoChaoPunhosCerrados
+
+```gm
+pose "emoSentadoChaoPunhosCerrados" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoSentadoChaoPunhosCerradosOlhaLado
+
+```gm
+pose "emoSentadoChaoPunhosCerradosOlhaLado" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoSentadoChaoPunhosCerradosTronco
+
+```gm
+pose "emoSentadoChaoPunhosCerradosTronco" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoSentadoChaoAbracandoSe
+
+```gm
+pose "emoSentadoChaoAbracandoSe" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoSentadoChaoAbracandoSeOlhaLado
+
+```gm
+pose "emoSentadoChaoAbracandoSeOlhaLado" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoSentadoChaoAbracandoSeTronco
+
+```gm
+pose "emoSentadoChaoAbracandoSeTronco" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoSentadoChaoBracosCaidos
+
+```gm
+pose "emoSentadoChaoBracosCaidos" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+```
+
+### emoSentadoChaoBracosCaidosOlhaLado
+
+```gm
+pose "emoSentadoChaoBracosCaidosOlhaLado" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoSentadoChaoBracosCaidosTronco
+
+```gm
+pose "emoSentadoChaoBracosCaidosTronco" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoSentadoChaoMaoCabeca
+
+```gm
+pose "emoSentadoChaoMaoCabeca" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10)
+```
+
+### emoSentadoChaoMaoCabecaOlhaLado
+
+```gm
+pose "emoSentadoChaoMaoCabecaOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoSentadoChaoMaoCabecaTronco
+
+```gm
+pose "emoSentadoChaoMaoCabecaTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 80 abre 10)
+  quadril.esquerdo(frente 80 abre 20)
+  joelho.direito(dobra 60)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoAjoelhadoMaosRosto
+
+```gm
+pose "emoAjoelhadoMaosRosto" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10)
+```
+
+### emoAjoelhadoMaosRostoOlhaLado
+
+```gm
+pose "emoAjoelhadoMaosRostoOlhaLado" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoAjoelhadoMaosRostoTronco
+
+```gm
+pose "emoAjoelhadoMaosRostoTronco" de empe
+  ombro(frente 110 cruza 15)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoAjoelhadoPunhosCerrados
+
+```gm
+pose "emoAjoelhadoPunhosCerrados" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoAjoelhadoPunhosCerradosOlhaLado
+
+```gm
+pose "emoAjoelhadoPunhosCerradosOlhaLado" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoAjoelhadoPunhosCerradosTronco
+
+```gm
+pose "emoAjoelhadoPunhosCerradosTronco" de empe
+  ombro(frente 10 abre 15)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoAjoelhadoAbracandoSe
+
+```gm
+pose "emoAjoelhadoAbracandoSe" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoAjoelhadoAbracandoSeOlhaLado
+
+```gm
+pose "emoAjoelhadoAbracandoSeOlhaLado" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoAjoelhadoAbracandoSeTronco
+
+```gm
+pose "emoAjoelhadoAbracandoSeTronco" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoAjoelhadoBracosCaidos
+
+```gm
+pose "emoAjoelhadoBracosCaidos" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10)
+```
+
+### emoAjoelhadoBracosCaidosOlhaLado
+
+```gm
+pose "emoAjoelhadoBracosCaidosOlhaLado" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoAjoelhadoBracosCaidosTronco
+
+```gm
+pose "emoAjoelhadoBracosCaidosTronco" de empe
+  ombro(abre 5)
+  cotovelo(dobra 5)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoAjoelhadoMaoCabeca
+
+```gm
+pose "emoAjoelhadoMaoCabeca" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10)
+```
+
+### emoAjoelhadoMaoCabecaOlhaLado
+
+```gm
+pose "emoAjoelhadoMaoCabecaOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoAjoelhadoMaoCabecaTronco
+
+```gm
+pose "emoAjoelhadoMaoCabecaTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoEncolhidoMaosRosto
+
+```gm
+pose "emoEncolhidoMaosRosto" de empe
+  ombro(frente 110 cruza 15 sobe 40%)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40)
+```
+
+### emoEncolhidoMaosRostoOlhaLado
+
+```gm
+pose "emoEncolhidoMaosRostoOlhaLado" de empe
+  ombro(frente 110 cruza 15 sobe 40%)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoEncolhidoMaosRostoTronco
+
+```gm
+pose "emoEncolhidoMaosRostoTronco" de empe
+  ombro(frente 110 cruza 15 sobe 40%)
+  cotovelo(dobra 140)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoEncolhidoPunhosCerrados
+
+```gm
+pose "emoEncolhidoPunhosCerrados" de empe
+  ombro(frente 10 abre 15 sobe 40%)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoEncolhidoPunhosCerradosOlhaLado
+
+```gm
+pose "emoEncolhidoPunhosCerradosOlhaLado" de empe
+  ombro(frente 10 abre 15 sobe 40%)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoEncolhidoPunhosCerradosTronco
+
+```gm
+pose "emoEncolhidoPunhosCerradosTronco" de empe
+  ombro(frente 10 abre 15 sobe 40%)
+  cotovelo(dobra 30)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### emoEncolhidoAbracandoSe
+
+```gm
+pose "emoEncolhidoAbracandoSe" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50 sobe 40%)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoEncolhidoAbracandoSeOlhaLado
+
+```gm
+pose "emoEncolhidoAbracandoSeOlhaLado" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50 sobe 40%)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoEncolhidoAbracandoSeTronco
+
+```gm
+pose "emoEncolhidoAbracandoSeTronco" de empe
+  ombro(frente 70 cruza 30 gira-dentro 50 sobe 40%)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### emoEncolhidoBracosCaidos
+
+```gm
+pose "emoEncolhidoBracosCaidos" de empe
+  ombro(abre 5 sobe 40%)
+  cotovelo(dobra 5)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40)
+```
+
+### emoEncolhidoBracosCaidosOlhaLado
+
+```gm
+pose "emoEncolhidoBracosCaidosOlhaLado" de empe
+  ombro(abre 5 sobe 40%)
+  cotovelo(dobra 5)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoEncolhidoBracosCaidosTronco
+
+```gm
+pose "emoEncolhidoBracosCaidosTronco" de empe
+  ombro(abre 5 sobe 40%)
+  cotovelo(dobra 5)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoEncolhidoMaoCabeca
+
+```gm
+pose "emoEncolhidoMaoCabeca" de empe
+  ombro.direito(frente 10 abre 10 sobe 40%)
+  ombro.esquerdo(frente 150 abre 20 sobe 40%)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40)
+```
+
+### emoEncolhidoMaoCabecaOlhaLado
+
+```gm
+pose "emoEncolhidoMaoCabecaOlhaLado" de empe
+  ombro.direito(frente 10 abre 10 sobe 40%)
+  ombro.esquerdo(frente 150 abre 20 sobe 40%)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### emoEncolhidoMaoCabecaTronco
+
+```gm
+pose "emoEncolhidoMaoCabecaTronco" de empe
+  ombro.direito(frente 10 abre 10 sobe 40%)
+  ombro.esquerdo(frente 150 abre 20 sobe 40%)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 20)
+  tronco(frente 40 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### emoDeCostasParedeMaoCabeca
+
+```gm
+pose "emoDeCostasParedeMaoCabeca" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 150 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 5)
+  tronco(frente 20)
+  cabeca(baixa 30)
+```
+
+### profEmPeMartelando
+
+```gm
+pose "profEmPeMartelando" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profEmPeMartelandoOlhaLado
+
+```gm
+pose "profEmPeMartelandoOlhaLado" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profEmPeMartelandoTronco
+
+```gm
+pose "profEmPeMartelandoTronco" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profEmPeAnotando
+
+```gm
+pose "profEmPeAnotando" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  valor fThR -0.1
+```
+
+### profEmPeAnotandoOlhaLado
+
+```gm
+pose "profEmPeAnotandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### profEmPeAnotandoTronco
+
+```gm
+pose "profEmPeAnotandoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### profEmPeApontandoPlanta
+
+```gm
+pose "profEmPeApontandoPlanta" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profEmPeApontandoPlantaOlhaLado
+
+```gm
+pose "profEmPeApontandoPlantaOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profEmPeApontandoPlantaTronco
+
+```gm
+pose "profEmPeApontandoPlantaTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profEmPeExaminandoOlhaLado
+
+```gm
+pose "profEmPeExaminandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### profEmPeExaminandoTronco
+
+```gm
+pose "profEmPeExaminandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### profEmPeCarregandoCaixaOlhaLado
+
+```gm
+pose "profEmPeCarregandoCaixaOlhaLado" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profEmPeCarregandoCaixaTronco
+
+```gm
+pose "profEmPeCarregandoCaixaTronco" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.direito(dobra 4)
+  joelho.esquerdo(dobra 8)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profAgachadoMartelando
+
+```gm
+pose "profAgachadoMartelando" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profAgachadoMartelandoOlhaLado
+
+```gm
+pose "profAgachadoMartelandoOlhaLado" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profAgachadoMartelandoTronco
+
+```gm
+pose "profAgachadoMartelandoTronco" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profAgachadoAnotando
+
+```gm
+pose "profAgachadoAnotando" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30)
+  valor fThR -0.1
+```
+
+### profAgachadoAnotandoTronco
+
+```gm
+pose "profAgachadoAnotandoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### profAgachadoApontandoPlanta
+
+```gm
+pose "profAgachadoApontandoPlanta" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profAgachadoApontandoPlantaTronco
+
+```gm
+pose "profAgachadoApontandoPlantaTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profAgachadoExaminando
+
+```gm
+pose "profAgachadoExaminando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30)
+  valor fThL -0.1
+```
+
+### profAgachadoExaminandoTronco
+
+```gm
+pose "profAgachadoExaminandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### profAgachadoCarregandoCaixa
+
+```gm
+pose "profAgachadoCarregandoCaixa" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profAgachadoCarregandoCaixaOlhaLado
+
+```gm
+pose "profAgachadoCarregandoCaixaOlhaLado" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profAgachadoCarregandoCaixaTronco
+
+```gm
+pose "profAgachadoCarregandoCaixaTronco" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 100 abre 20)
+  joelho(dobra 130)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profInclinadoMartelando
+
+```gm
+pose "profInclinadoMartelando" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profInclinadoMartelandoOlhaLado
+
+```gm
+pose "profInclinadoMartelandoOlhaLado" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profInclinadoMartelandoTronco
+
+```gm
+pose "profInclinadoMartelandoTronco" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profInclinadoAnotando
+
+```gm
+pose "profInclinadoAnotando" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45)
+  valor fThR -0.1
+```
+
+### profInclinadoAnotandoOlhaLado
+
+```gm
+pose "profInclinadoAnotandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### profInclinadoAnotandoTronco
+
+```gm
+pose "profInclinadoAnotandoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### profInclinadoApontandoPlanta
+
+```gm
+pose "profInclinadoApontandoPlanta" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profInclinadoApontandoPlantaOlhaLado
+
+```gm
+pose "profInclinadoApontandoPlantaOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profInclinadoApontandoPlantaTronco
+
+```gm
+pose "profInclinadoApontandoPlantaTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profInclinadoExaminando
+
+```gm
+pose "profInclinadoExaminando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45)
+  valor fThL -0.1
+```
+
+### profInclinadoExaminandoOlhaLado
+
+```gm
+pose "profInclinadoExaminandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### profInclinadoExaminandoTronco
+
+```gm
+pose "profInclinadoExaminandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### profInclinadoCarregandoCaixa
+
+```gm
+pose "profInclinadoCarregandoCaixa" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profInclinadoCarregandoCaixaOlhaLado
+
+```gm
+pose "profInclinadoCarregandoCaixaOlhaLado" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profInclinadoCarregandoCaixaTronco
+
+```gm
+pose "profInclinadoCarregandoCaixaTronco" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 30)
+  joelho(dobra 10)
+  tronco(frente 45 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profNaEscadaMartelando
+
+```gm
+pose "profNaEscadaMartelando" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profNaEscadaMartelandoOlhaLado
+
+```gm
+pose "profNaEscadaMartelandoOlhaLado" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profNaEscadaMartelandoTronco
+
+```gm
+pose "profNaEscadaMartelandoTronco" de empe
+  ombro.direito(frente 50 abre 30)
+  ombro.esquerdo(frente 120 abre 20)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 90)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profNaEscadaAnotando
+
+```gm
+pose "profNaEscadaAnotando" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  valor fThR -0.1
+```
+
+### profNaEscadaAnotandoOlhaLado
+
+```gm
+pose "profNaEscadaAnotandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### profNaEscadaAnotandoTronco
+
+```gm
+pose "profNaEscadaAnotandoTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 50 cruza 10)
+  cotovelo.direito(dobra 100)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 35% afasta 35% polegar 25% indicador 25% anelar 10% minimo 15% opoe 100%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### profNaEscadaApontandoPlanta
+
+```gm
+pose "profNaEscadaApontandoPlanta" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profNaEscadaApontandoPlantaOlhaLado
+
+```gm
+pose "profNaEscadaApontandoPlantaOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profNaEscadaApontandoPlantaTronco
+
+```gm
+pose "profNaEscadaApontandoPlantaTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(frente 60 abre 20)
+  cotovelo.direito(dobra 80)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1 fThR -0.1
+```
+
+### profNaEscadaExaminando
+
+```gm
+pose "profNaEscadaExaminando" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  valor fThL -0.1
+```
+
+### profNaEscadaExaminandoOlhaLado
+
+```gm
+pose "profNaEscadaExaminandoOlhaLado" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### profNaEscadaExaminandoTronco
+
+```gm
+pose "profNaEscadaExaminandoTronco" de empe
+  ombro.direito(frente 40 abre 20)
+  ombro.esquerdo(frente 80 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 120)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### profNaEscadaCarregandoCaixa
+
+```gm
+pose "profNaEscadaCarregandoCaixa" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5)
+  cabeca(sobe 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profNaEscadaCarregandoCaixaOlhaLado
+
+```gm
+pose "profNaEscadaCarregandoCaixaOlhaLado" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 30 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### profNaEscadaCarregandoCaixaTronco
+
+```gm
+pose "profNaEscadaCarregandoCaixaTronco" de empe
+  ombro(frente 50 cruza 5)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 5)
+  joelho.esquerdo(dobra 50)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### maosQueixoSobCotoveloPesoDir
+
+```gm
+pose "maosQueixoSobCotoveloPesoDir" de empe
+  ombro.direito(frente 66 abre 8 gira-dentro 56)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 133)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloPesoEsq
+
+```gm
+pose "maosQueixoSobCotoveloPesoEsq" de empe
+  ombro.direito(frente 66 abre 8 gira-dentro 56)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 133)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloInclinadoFrente
+
+```gm
+pose "maosQueixoSobCotoveloInclinadoFrente" de empe
+  ombro.direito(frente 77 abre 37 gira-dentro 42)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 135)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloPasso
+
+```gm
+pose "maosQueixoSobCotoveloPasso" de empe
+  ombro.direito(frente 63 cruza 18)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 126)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+  valor armRotL -75 armRotR -76
+```
+
+### maosQueixoSobCotoveloEncostado
+
+```gm
+pose "maosQueixoSobCotoveloEncostado" de empe
+  ombro.direito(frente 41 cruza 31 gira-dentro 51)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 137)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloSentadoCadeira
+
+```gm
+pose "maosQueixoSobCotoveloSentadoCadeira" de empe
+  ombro.direito(frente 69 abre 10 gira-dentro 54)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 133)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloSentadoBorda
+
+```gm
+pose "maosQueixoSobCotoveloSentadoBorda" de empe
+  ombro.direito(frente 77 abre 35 gira-dentro 43)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 135)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloAjoelhado
+
+```gm
+pose "maosQueixoSobCotoveloAjoelhado" de empe
+  ombro.direito(frente 71 gira-dentro 53)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 133)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+  valor armRotL -75
+```
+
+### maosQueixoSobCotoveloAgachado
+
+```gm
+pose "maosQueixoSobCotoveloAgachado" de empe
+  ombro.direito(frente 78 abre 37 gira-dentro 36)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 133)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+  valor armRotL -75
+```
+
+### maosNucaPesoDir
+
+```gm
+pose "maosNucaPesoDir" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  cotovelo.direito(dobra 134)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosNucaPesoEsq
+
+```gm
+pose "maosNucaPesoEsq" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  cotovelo.direito(dobra 134)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosNucaInclinadoFrente
+
+```gm
+pose "maosNucaInclinadoFrente" de empe
+  ombro.direito(frente 160 abre 13 gira-dentro 43)
+  cotovelo.direito(dobra 139)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosNucaPasso
+
+```gm
+pose "maosNucaPasso" de empe
+  ombro.direito(frente 160 abre 14 gira-dentro 39)
+  cotovelo.direito(dobra 144)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosNucaEncostado
+
+```gm
+pose "maosNucaEncostado" de empe
+  ombro.direito(frente 39 cruza 30)
+  cotovelo.direito(dobra 145)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+  valor armRotR -95
+```
+
+### maosNucaSentadoCadeira
+
+```gm
+pose "maosNucaSentadoCadeira" de empe
+  ombro.direito(frente 160 abre 11 gira-dentro 41)
+  cotovelo.direito(dobra 141)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosNucaSentadoBorda
+
+```gm
+pose "maosNucaSentadoBorda" de empe
+  ombro.direito(frente 160 gira-dentro 43)
+  cotovelo.direito(dobra 139)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosNucaAjoelhado
+
+```gm
+pose "maosNucaAjoelhado" de empe
+  ombro.direito(frente 160 abre 11 gira-dentro 41)
+  cotovelo.direito(dobra 141)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosNucaAgachado
+
+```gm
+pose "maosNucaAgachado" de empe
+  ombro.direito(frente 160 abre 11 gira-dentro 41)
+  cotovelo.direito(dobra 141)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosCinturaCinturaPesoDir
+
+```gm
+pose "maosCinturaCinturaPesoDir" de empe
+  ombro.direito(tras 22 abre 36 gira-dentro 60)
+  ombro.esquerdo(tras 31 abre 32 gira-dentro 50)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 116)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosCinturaCinturaPesoEsq
+
+```gm
+pose "maosCinturaCinturaPesoEsq" de empe
+  ombro.direito(tras 31 abre 32 gira-dentro 50)
+  ombro.esquerdo(tras 22 abre 36 gira-dentro 60)
+  cotovelo.direito(dobra 116)
+  cotovelo.esquerdo(dobra 111)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosCinturaCinturaInclinadoFrente
+
+```gm
+pose "maosCinturaCinturaInclinadoFrente" de empe
+  ombro(tras 35 abre 23 gira-dentro 37)
+  cotovelo(dobra 116)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosCinturaCinturaPasso
+
+```gm
+pose "maosCinturaCinturaPasso" de empe
+  ombro.direito(tras 27 abre 34 gira-dentro 55)
+  ombro.esquerdo(tras 36 abre 24 gira-dentro 39)
+  cotovelo(dobra 114)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosCinturaCinturaEncostado
+
+```gm
+pose "maosCinturaCinturaEncostado" de empe
+  ombro.direito(tras 37 abre 23 gira-dentro 39)
+  ombro.esquerdo(tras 24 abre 37 gira-dentro 60)
+  cotovelo(dobra 112)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosCinturaCinturaSentadoCadeira
+
+```gm
+pose "maosCinturaCinturaSentadoCadeira" de empe
+  ombro(tras 31 abre 30 gira-dentro 48)
+  cotovelo(dobra 114)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosCinturaCinturaSentadoBorda
+
+```gm
+pose "maosCinturaCinturaSentadoBorda" de empe
+  ombro(tras 29 abre 31 gira-dentro 48)
+  cotovelo(dobra 118)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosCinturaCinturaAjoelhado
+
+```gm
+pose "maosCinturaCinturaAjoelhado" de empe
+  ombro(tras 31 abre 30 gira-dentro 48)
+  cotovelo(dobra 115)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosCinturaCinturaAgachado
+
+```gm
+pose "maosCinturaCinturaAgachado" de empe
+  ombro(tras 26 abre 33 gira-dentro 51)
+  cotovelo(dobra 118)
+  antebraco(palma-cima 40)
+  punho(levanta 45)
+  mao(fecha 35%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosBolsoBolsoPesoDir
+
+```gm
+pose "maosBolsoBolsoPesoDir" de empe
+  ombro.direito(tras 25 abre 10 gira-dentro 21)
+  ombro.esquerdo(tras 30 abre 3 gira-dentro 5)
+  cotovelo.direito(dobra 82)
+  cotovelo.esquerdo(dobra 90)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosBolsoBolsoPesoEsq
+
+```gm
+pose "maosBolsoBolsoPesoEsq" de empe
+  ombro.direito(tras 30 abre 3 gira-dentro 5)
+  ombro.esquerdo(tras 25 abre 10 gira-dentro 21)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 82)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosBolsoBolsoInclinadoFrente
+
+```gm
+pose "maosBolsoBolsoInclinadoFrente" de empe
+  ombro(tras 24 abre 5 gira-dentro 9)
+  cotovelo(dobra 91)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosBolsoBolsoEncostado
+
+```gm
+pose "maosBolsoBolsoEncostado" de empe
+  ombro(tras 30 abre 5 gira-dentro 10)
+  cotovelo(dobra 84)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosBolsoBolsoSentadoCadeira
+
+```gm
+pose "maosBolsoBolsoSentadoCadeira" de empe
+  ombro(tras 23 abre 6 gira-dentro 11)
+  cotovelo(dobra 93)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosBolsoBolsoSentadoBorda
+
+```gm
+pose "maosBolsoBolsoSentadoBorda" de empe
+  ombro(tras 15 abre 14 gira-dentro 19)
+  cotovelo(dobra 104)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosBolsoBolsoAjoelhado
+
+```gm
+pose "maosBolsoBolsoAjoelhado" de empe
+  ombro(tras 26 abre 5 gira-dentro 10)
+  cotovelo(dobra 88)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosBolsoBolsoAgachado
+
+```gm
+pose "maosBolsoBolsoAgachado" de empe
+  ombro(tras 7 abre 22 gira-dentro 25)
+  cotovelo(dobra 111)
+  antebraco(palma-cima 10)
+  punho(dobra 55)
+  mao(fecha 50%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosBolsoPesoDir
+
+```gm
+pose "maosBolsoPesoDir" de empe
+  ombro.direito(tras 25 abre 10 gira-dentro 21)
+  cotovelo.direito(dobra 82)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosBolsoPesoEsq
+
+```gm
+pose "maosBolsoPesoEsq" de empe
+  ombro.direito(tras 30 abre 3 gira-dentro 5)
+  cotovelo.direito(dobra 90)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosBolsoInclinadoFrente
+
+```gm
+pose "maosBolsoInclinadoFrente" de empe
+  ombro.direito(tras 24 abre 5 gira-dentro 9)
+  cotovelo.direito(dobra 91)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosBolsoPasso
+
+```gm
+pose "maosBolsoPasso" de empe
+  ombro.direito(tras 28 abre 5 gira-dentro 10)
+  cotovelo.direito(dobra 86)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosBolsoEncostado
+
+```gm
+pose "maosBolsoEncostado" de empe
+  ombro.direito(tras 30 abre 5 gira-dentro 10)
+  cotovelo.direito(dobra 84)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosBolsoSentadoCadeira
+
+```gm
+pose "maosBolsoSentadoCadeira" de empe
+  ombro.direito(tras 23 abre 6 gira-dentro 11)
+  cotovelo.direito(dobra 93)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosBolsoSentadoBorda
+
+```gm
+pose "maosBolsoSentadoBorda" de empe
+  ombro.direito(tras 15 abre 14 gira-dentro 19)
+  cotovelo.direito(dobra 104)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosBolsoAjoelhado
+
+```gm
+pose "maosBolsoAjoelhado" de empe
+  ombro.direito(tras 26 abre 5 gira-dentro 10)
+  cotovelo.direito(dobra 88)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosBolsoAgachado
+
+```gm
+pose "maosBolsoAgachado" de empe
+  ombro.direito(tras 7 abre 22 gira-dentro 25)
+  cotovelo.direito(dobra 111)
+  antebraco.direito(palma-cima 10)
+  punho.direito(dobra 55)
+  mao.direito(fecha 50%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosCostasCostasPesoDir
+
+```gm
+pose "maosCostasCostasPesoDir" de empe
+  ombro.direito(tras 48 abre 5 gira-dentro 49)
+  ombro.esquerdo(tras 45 abre 13 gira-dentro 59)
+  cotovelo.direito(dobra 86)
+  cotovelo.esquerdo(dobra 89)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosCostasCostasPesoEsq
+
+```gm
+pose "maosCostasCostasPesoEsq" de empe
+  ombro.direito(tras 45 abre 13 gira-dentro 59)
+  ombro.esquerdo(tras 48 abre 5 gira-dentro 49)
+  cotovelo.direito(dobra 89)
+  cotovelo.esquerdo(dobra 86)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosCostasCostasInclinadoFrente
+
+```gm
+pose "maosCostasCostasInclinadoFrente" de empe
+  ombro.direito(tras 39 abre 10 gira-dentro 58)
+  ombro.esquerdo(tras 42 abre 8 gira-dentro 54)
+  cotovelo.direito(dobra 84)
+  cotovelo.esquerdo(dobra 81)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosCostasCostasPasso
+
+```gm
+pose "maosCostasCostasPasso" de empe
+  ombro.direito(tras 50 abre 5 gira-dentro 47)
+  ombro.esquerdo(tras 50 abre 7 gira-dentro 52)
+  cotovelo.direito(dobra 88)
+  cotovelo.esquerdo(dobra 85)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosCostasCostasEncostado
+
+```gm
+pose "maosCostasCostasEncostado" de empe
+  ombro.direito(tras 50 abre 10 gira-dentro 55)
+  ombro.esquerdo(tras 50 abre 13 gira-dentro 61)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 89)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosCostasCostasSentadoCadeira
+
+```gm
+pose "maosCostasCostasSentadoCadeira" de empe
+  ombro.direito(tras 44 abre 10 gira-dentro 57)
+  ombro.esquerdo(tras 36 abre 16)
+  cotovelo.direito(dobra 87)
+  cotovelo.esquerdo(dobra 86)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+  valor armRotL -75
+```
+
+### maosCostasCostasAjoelhado
+
+```gm
+pose "maosCostasCostasAjoelhado" de empe
+  ombro.direito(tras 43 abre 10 gira-dentro 58)
+  ombro.esquerdo(tras 49 abre 5 gira-dentro 48)
+  cotovelo.direito(dobra 86)
+  cotovelo.esquerdo(dobra 83)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosCostasCostasAgachado
+
+```gm
+pose "maosCostasCostasAgachado" de empe
+  ombro.direito(tras 38 abre 5 gira-dentro 48)
+  ombro.esquerdo(tras 39 abre 4 gira-dentro 47)
+  cotovelo.direito(dobra 81)
+  cotovelo.esquerdo(dobra 78)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosTestaPesoDir
+
+```gm
+pose "maosTestaPesoDir" de empe
+  ombro.direito(frente 43 abre 147 gira-fora 64)
+  cotovelo.direito(dobra 122)
+  mao.direito(fecha 15%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosTestaPesoEsq
+
+```gm
+pose "maosTestaPesoEsq" de empe
+  ombro.direito(frente 43 abre 147 gira-fora 64)
+  cotovelo.direito(dobra 122)
+  mao.direito(fecha 15%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosTestaInclinadoFrente
+
+```gm
+pose "maosTestaInclinadoFrente" de empe
+  ombro.direito(frente 68 cruza 44 gira-dentro 68)
+  cotovelo.direito(dobra 120)
+  mao.direito(fecha 15%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosTestaPasso
+
+```gm
+pose "maosTestaPasso" de empe
+  ombro.direito(frente 43 abre 160 gira-fora 72)
+  cotovelo.direito(dobra 116)
+  mao.direito(fecha 15%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosTestaEncostado
+
+```gm
+pose "maosTestaEncostado" de empe
+  ombro.direito(frente 24 abre 145 gira-fora 61)
+  cotovelo.direito(dobra 129)
+  mao.direito(fecha 15%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosTestaSentadoCadeira
+
+```gm
+pose "maosTestaSentadoCadeira" de empe
+  ombro.direito(frente 35 abre 151 gira-fora 63)
+  cotovelo.direito(dobra 123)
+  mao.direito(fecha 15%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosTestaSentadoBorda
+
+```gm
+pose "maosTestaSentadoBorda" de empe
+  ombro.direito(frente 88 abre 36 gira-dentro 6)
+  cotovelo.direito(dobra 117)
+  mao.direito(fecha 15%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosTestaAjoelhado
+
+```gm
+pose "maosTestaAjoelhado" de empe
+  ombro.direito(frente 35 abre 151 gira-fora 63)
+  cotovelo.direito(dobra 123)
+  mao.direito(fecha 15%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosTestaAgachado
+
+```gm
+pose "maosTestaAgachado" de empe
+  ombro.direito(frente 92 abre 36 gira-dentro 2)
+  cotovelo.direito(dobra 117)
+  mao.direito(fecha 15%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosBocaPesoDir
+
+```gm
+pose "maosBocaPesoDir" de empe
+  ombro.direito(frente 44 cruza 33 gira-dentro 55)
+  cotovelo.direito(dobra 128)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosBocaPesoEsq
+
+```gm
+pose "maosBocaPesoEsq" de empe
+  ombro.direito(frente 44 cruza 33 gira-dentro 55)
+  cotovelo.direito(dobra 128)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosBocaInclinadoFrente
+
+```gm
+pose "maosBocaInclinadoFrente" de empe
+  ombro.direito(frente 76 abre 37 gira-dentro 31)
+  cotovelo.direito(dobra 130)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosBocaPasso
+
+```gm
+pose "maosBocaPasso" de empe
+  ombro.direito(frente 48 cruza 36 gira-dentro 68)
+  cotovelo.direito(dobra 121)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosBocaSentadoCadeira
+
+```gm
+pose "maosBocaSentadoCadeira" de empe
+  ombro.direito(frente 46 cruza 35 gira-dentro 57)
+  cotovelo.direito(dobra 128)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosBocaAjoelhado
+
+```gm
+pose "maosBocaAjoelhado" de empe
+  ombro.direito(frente 46 cruza 35 gira-dentro 57)
+  cotovelo.direito(dobra 128)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosBocaAgachado
+
+```gm
+pose "maosBocaAgachado" de empe
+  ombro.direito(frente 46 cruza 35 gira-dentro 57)
+  cotovelo.direito(dobra 128)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosOrelhaSentadoBorda
+
+```gm
+pose "maosOrelhaSentadoBorda" de empe
+  ombro.direito(frente 66 cruza 36 gira-dentro 57)
+  cotovelo.direito(dobra 145)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosCoracaoPesoDir
+
+```gm
+pose "maosCoracaoPesoDir" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosCoracaoPesoEsq
+
+```gm
+pose "maosCoracaoPesoEsq" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosCoracaoInclinadoFrente
+
+```gm
+pose "maosCoracaoInclinadoFrente" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosCoracaoEncostado
+
+```gm
+pose "maosCoracaoEncostado" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosCoracaoSentadoCadeira
+
+```gm
+pose "maosCoracaoSentadoCadeira" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosCoracaoAjoelhado
+
+```gm
+pose "maosCoracaoAjoelhado" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosCoracaoAgachado
+
+```gm
+pose "maosCoracaoAgachado" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  cotovelo.direito(dobra 122)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosBarrigaBarrigaPesoDir
+
+```gm
+pose "maosBarrigaBarrigaPesoDir" de empe
+  ombro.direito(tras 3 abre 11 gira-dentro 55)
+  ombro.esquerdo(tras 14 abre 3 gira-dentro 40)
+  cotovelo.direito(dobra 102)
+  cotovelo.esquerdo(dobra 104)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosBarrigaBarrigaPesoEsq
+
+```gm
+pose "maosBarrigaBarrigaPesoEsq" de empe
+  ombro.direito(tras 14 abre 3 gira-dentro 40)
+  ombro.esquerdo(tras 3 abre 11 gira-dentro 55)
+  cotovelo.direito(dobra 104)
+  cotovelo.esquerdo(dobra 102)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosBarrigaBarrigaInclinadoFrente
+
+```gm
+pose "maosBarrigaBarrigaInclinadoFrente" de empe
+  ombro.direito(tras 5 abre 9 gira-dentro 51)
+  ombro.esquerdo(abre 9 gira-dentro 51)
+  cotovelo.direito(dobra 110)
+  cotovelo.esquerdo(dobra 112)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosBarrigaBarrigaPasso
+
+```gm
+pose "maosBarrigaBarrigaPasso" de empe
+  ombro.direito(tras 12 abre 4 gira-dentro 42)
+  ombro.esquerdo(tras 6 abre 6 gira-dentro 45)
+  cotovelo.direito(dobra 103)
+  cotovelo.esquerdo(dobra 104)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosBarrigaBarrigaEncostado
+
+```gm
+pose "maosBarrigaBarrigaEncostado" de empe
+  ombro.direito(tras 14 abre 3 gira-dentro 41)
+  ombro.esquerdo(tras 4 abre 9 gira-dentro 50)
+  cotovelo.direito(dobra 99)
+  cotovelo.esquerdo(dobra 100)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosBarrigaBarrigaSentadoCadeira
+
+```gm
+pose "maosBarrigaBarrigaSentadoCadeira" de empe
+  ombro.direito(tras 15 abre 0 gira-dentro 38)
+  ombro.esquerdo(tras 3 abre 9 gira-dentro 49)
+  cotovelo.direito(dobra 105)
+  cotovelo.esquerdo(dobra 106)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosBarrigaBarrigaSentadoBorda
+
+```gm
+pose "maosBarrigaBarrigaSentadoBorda" de empe
+  ombro.direito(tras 13 abre 0 gira-dentro 40)
+  ombro.esquerdo(tras 1 abre 8 gira-dentro 50)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 116)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosBarrigaBarrigaAjoelhado
+
+```gm
+pose "maosBarrigaBarrigaAjoelhado" de empe
+  ombro.direito(tras 13 abre 2 gira-dentro 40)
+  ombro.esquerdo(tras 2 abre 9 gira-dentro 49)
+  cotovelo.direito(dobra 106)
+  cotovelo.esquerdo(dobra 107)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosBarrigaBarrigaAgachado
+
+```gm
+pose "maosBarrigaBarrigaAgachado" de empe
+  ombro.direito(tras 6 abre 8 gira-dentro 50)
+  ombro.esquerdo(tras 6 abre 3 gira-dentro 45)
+  cotovelo.direito(dobra 115)
+  cotovelo.esquerdo(dobra 117)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosCabecaCabecaPesoDir
+
+```gm
+pose "maosCabecaCabecaPesoDir" de empe
+  ombro(frente 122 abre 42 gira-fora 17)
+  cotovelo(dobra 113)
+  mao(fecha 35%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosCabecaCabecaPesoEsq
+
+```gm
+pose "maosCabecaCabecaPesoEsq" de empe
+  ombro(frente 122 abre 42 gira-fora 17)
+  cotovelo(dobra 113)
+  mao(fecha 35%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosCabecaCabecaInclinadoFrente
+
+```gm
+pose "maosCabecaCabecaInclinadoFrente" de empe
+  ombro(frente 118 abre 42 gira-fora 15)
+  cotovelo(dobra 113)
+  mao(fecha 35%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosCabecaCabecaPasso
+
+```gm
+pose "maosCabecaCabecaPasso" de empe
+  ombro.direito(frente 1 abre 159 gira-fora 77)
+  ombro.esquerdo(frente 134 cruza 15 gira-dentro 59)
+  cotovelo.direito(dobra 117)
+  cotovelo.esquerdo(dobra 114)
+  mao(fecha 35%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosCabecaCabecaEncostado
+
+```gm
+pose "maosCabecaCabecaEncostado" de empe
+  ombro.direito(frente 131 abre 38 gira-fora 13)
+  ombro.esquerdo(frente 129 abre 44 gira-fora 18)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 112)
+  mao(fecha 35%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosCabecaCabecaSentadoBorda
+
+```gm
+pose "maosCabecaCabecaSentadoBorda" de empe
+  ombro.direito(frente 139 cruza 17 gira-dentro 67)
+  ombro.esquerdo(frente 116 abre 43 gira-fora 16)
+  cotovelo.direito(dobra 116)
+  cotovelo.esquerdo(dobra 111)
+  mao(fecha 35%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosCabecaCabecaAjoelhado
+
+```gm
+pose "maosCabecaCabecaAjoelhado" de empe
+  ombro.direito(tras 12 abre 160 gira-fora 69)
+  ombro.esquerdo(frente 120 abre 40 gira-fora 14)
+  cotovelo.direito(dobra 118)
+  cotovelo.esquerdo(dobra 108)
+  mao(fecha 35%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosCabecaCabecaAgachado
+
+```gm
+pose "maosCabecaCabecaAgachado" de empe
+  ombro.direito(tras 12 abre 160 gira-fora 69)
+  ombro.esquerdo(frente 120 abre 40 gira-fora 14)
+  cotovelo.direito(dobra 118)
+  cotovelo.esquerdo(dobra 108)
+  mao(fecha 35%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosBochechaInclinadoFrente
+
+```gm
+pose "maosBochechaInclinadoFrente" de empe
+  ombro.direito(frente 43 cruza 32 gira-dentro 49)
+  cotovelo.direito(dobra 145)
+  antebraco.direito(palma-cima 40)
+  mao.direito(fecha 15%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosLombarLombarPesoDir
+
+```gm
+pose "maosLombarLombarPesoDir" de empe
+  ombro.direito(tras 49 abre 25 gira-dentro 62)
+  ombro.esquerdo(tras 50 abre 29 gira-dentro 65)
+  cotovelo.direito(dobra 93)
+  cotovelo.esquerdo(dobra 96)
+  mao(fecha 10%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+```
+
+### maosLombarLombarPesoEsq
+
+```gm
+pose "maosLombarLombarPesoEsq" de empe
+  ombro.direito(tras 50 abre 29 gira-dentro 65)
+  ombro.esquerdo(tras 49 abre 25 gira-dentro 62)
+  cotovelo.direito(dobra 96)
+  cotovelo.esquerdo(dobra 93)
+  mao(fecha 10%)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+```
+
+### maosLombarLombarEncostado
+
+```gm
+pose "maosLombarLombarEncostado" de empe
+  ombro(tras 50 abre 31 gira-dentro 70)
+  cotovelo(dobra 98)
+  mao(fecha 10%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosLombarLombarSentadoCadeira
+
+```gm
+pose "maosLombarLombarSentadoCadeira" de empe
+  ombro(tras 48 abre 25 gira-dentro 62)
+  cotovelo(dobra 93)
+  mao(fecha 10%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosLombarLombarSentadoBorda
+
+```gm
+pose "maosLombarLombarSentadoBorda" de empe
+  ombro(tras 34 abre 26 gira-dentro 70)
+  cotovelo(dobra 88)
+  mao(fecha 10%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosLombarLombarAjoelhado
+
+```gm
+pose "maosLombarLombarAjoelhado" de empe
+  ombro(tras 47 abre 25 gira-dentro 62)
+  cotovelo(dobra 93)
+  mao(fecha 10%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosLombarLombarAgachado
+
+```gm
+pose "maosLombarLombarAgachado" de empe
+  ombro(tras 34 abre 25 gira-dentro 68)
+  cotovelo(dobra 88)
+  mao(fecha 10%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosCruzadoCimaCruzadoBaixoEncostado
+
+```gm
+pose "maosCruzadoCimaCruzadoBaixoEncostado" de empe
+  ombro.direito(frente 40 cruza 30)
+  ombro.esquerdo(frente 45 cruza 34)
+  cotovelo.direito(dobra 75)
+  cotovelo.esquerdo(dobra 61)
+  antebraco.direito(palma-cima 40)
+  antebraco.esquerdo(palma-cima 70)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 40%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+  valor armRotL -90 armRotR -91
+```
+
+### maosPrecePreceInclinadoFrente
+
+```gm
+pose "maosPrecePreceInclinadoFrente" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosPrecePreceEncostado
+
+```gm
+pose "maosPrecePreceEncostado" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosPrecePreceSentadoCadeira
+
+```gm
+pose "maosPrecePreceSentadoCadeira" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosPrecePreceAjoelhado
+
+```gm
+pose "maosPrecePreceAjoelhado" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosPrecePreceAgachado
+
+```gm
+pose "maosPrecePreceAgachado" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+```
+
+### maosCoxaCoxaPesoDir
+
+```gm
+pose "maosCoxaCoxaPesoDir" de empe
+  ombro.direito(frente 5 cruza 4)
+  ombro.esquerdo(frente 8 cruza 6 gira-dentro 10)
+  cotovelo.direito(dobra 18)
+  cotovelo.esquerdo(dobra 4)
+  mao(fecha 25%)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+  valor armRotR -78
+```
+
+### maosCoxaCoxaInclinadoFrente
+
+```gm
+pose "maosCoxaCoxaInclinadoFrente" de empe
+  ombro(frente 20 cruza 12)
+  mao(fecha 25%)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+```
+
+### maosCoxaCoxaPasso
+
+```gm
+pose "maosCoxaCoxaPasso" de empe
+  ombro.direito(frente 2 cruza 2 gira-dentro 69)
+  ombro.esquerdo(frente 15 cruza 11)
+  cotovelo.direito(dobra 16)
+  cotovelo.esquerdo(dobra 1)
+  mao(fecha 25%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+```
+
+### maosCoxaCoxaEncostado
+
+```gm
+pose "maosCoxaCoxaEncostado" de empe
+  ombro.direito(tras 4 abre 0 gira-dentro 60)
+  ombro.esquerdo(tras 2 abre 0 gira-dentro 59)
+  cotovelo(dobra 21)
+  mao(fecha 25%)
+  quadril.direito(tras 5)
+  joelho(dobra 10)
+  tronco(tras 8)
+  cabeca(sobe 6 gira-direita 15)
+  corpo(deita-costas 6)
+```
+
+### maosCoxaCoxaSentadoCadeira
+
+```gm
+pose "maosCoxaCoxaSentadoCadeira" de empe
+  ombro(tras 3 abre 3 gira-dentro 32)
+  cotovelo(dobra 87)
+  mao(fecha 25%)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+```
+
+### maosCoxaCoxaSentadoBorda
+
+```gm
+pose "maosCoxaCoxaSentadoBorda" de empe
+  ombro(tras 4 abre 0 gira-dentro 29)
+  cotovelo(dobra 104)
+  mao(fecha 25%)
+  quadril(frente 95)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 100)
+  tronco(frente 22)
+  cabeca(baixa 8)
+```
+
+### maosCoxaCoxaAjoelhado
+
+```gm
+pose "maosCoxaCoxaAjoelhado" de empe
+  ombro(frente 13 cruza 10)
+  mao(fecha 25%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+```
+
+### maosOmbroOpostoPesoDir
+
+```gm
+pose "maosOmbroOpostoPesoDir" de empe
+  ombro.direito(frente 39 cruza 29)
+  cotovelo.direito(dobra 105)
+  antebraco.direito(palma-cima 60)
+  quadril.direito(tras 5)
+  quadril.esquerdo(frente 5)
+  joelho.esquerdo(dobra 15)
+  tronco(esquerda 4)
+  pelve(gira-esquerda 8)
+  cabeca(baixa 4)
+  valor armRotR -95
+```
+
+### maosOmbroOpostoPesoEsq
+
+```gm
+pose "maosOmbroOpostoPesoEsq" de empe
+  ombro.direito(frente 39 cruza 29)
+  cotovelo.direito(dobra 105)
+  antebraco.direito(palma-cima 60)
+  quadril.direito(frente 5)
+  quadril.esquerdo(tras 5)
+  joelho.direito(dobra 15)
+  tronco(direita 4)
+  pelve(gira-direita 8)
+  cabeca(baixa 4)
+  valor armRotR -95
+```
+
+### maosOmbroOpostoInclinadoFrente
+
+```gm
+pose "maosOmbroOpostoInclinadoFrente" de empe
+  ombro.direito(frente 39 cruza 29)
+  cotovelo.direito(dobra 105)
+  antebraco.direito(palma-cima 60)
+  quadril(frente 10)
+  joelho(dobra 8)
+  tronco(frente 15)
+  cabeca(baixa 10)
+  valor armRotR -95
+```
+
+### maosOmbroOpostoSentadoCadeira
+
+```gm
+pose "maosOmbroOpostoSentadoCadeira" de empe
+  ombro.direito(frente 39 cruza 29)
+  cotovelo.direito(dobra 105)
+  antebraco.direito(palma-cima 60)
+  quadril(frente 90)
+  joelho(dobra 90)
+  tronco(frente 4)
+  valor armRotR -95
+```
+
+### maosOmbroOpostoAjoelhado
+
+```gm
+pose "maosOmbroOpostoAjoelhado" de empe
+  ombro.direito(frente 39 cruza 29)
+  cotovelo.direito(dobra 105)
+  antebraco.direito(palma-cima 60)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(frente 6)
+  valor armRotR -95
+```
+
+### maosOmbroOpostoAgachado
+
+```gm
+pose "maosOmbroOpostoAgachado" de empe
+  ombro.direito(frente 39 cruza 29)
+  cotovelo.direito(dobra 105)
+  antebraco.direito(palma-cima 60)
+  quadril(frente 105 abre 20)
+  joelho(dobra 135)
+  tronco(frente 25)
+  valor armRotR -95
+```
+
+### maosAbracoAbracoPasso
+
+```gm
+pose "maosAbracoAbracoPasso" de empe
+  ombro.direito(frente 49 cruza 37)
+  ombro.esquerdo(frente 52 cruza 39)
+  cotovelo.direito(dobra 85)
+  cotovelo.esquerdo(dobra 80)
+  antebraco(palma-cima 60)
+  mao(fecha 45%)
+  quadril.direito(tras 10)
+  quadril.esquerdo(frente 25)
+  joelho.direito(dobra 8)
+  joelho.esquerdo(dobra 15)
+  cabeca(gira-esquerda 15)
+  valor armRotL -93 armRotR -95
+```
+
+### sentadoPernaCoxa
+
+```gm
+pose "sentadoPernaCoxa" de empe
+  ombro.direito(tras 8 abre 5 gira-dentro 41)
+  ombro.esquerdo(tras 7 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 103)
+  cotovelo.esquerdo(dobra 102)
+  mao(fecha 25%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoPernaColo
+
+```gm
+pose "sentadoPernaColo" de empe
+  ombro.direito(frente 17 cruza 12 gira-dentro 17)
+  ombro.esquerdo(frente 14 cruza 9 gira-dentro 20)
+  cotovelo.direito(dobra 75)
+  cotovelo.esquerdo(dobra 77)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoPernaColoEsq
+
+```gm
+pose "sentadoPernaColoEsq" de empe
+  ombro.direito(frente 14 cruza 9 gira-dentro 20)
+  ombro.esquerdo(frente 17 cruza 12 gira-dentro 17)
+  cotovelo.direito(dobra 77)
+  cotovelo.esquerdo(dobra 75)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 95 abre 5 gira-dentro 1)
+  quadril.esquerdo(frente 111 fecha 6 gira-fora 7)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 25 sola-dentro 5)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoPernaQueixo
+
+```gm
+pose "sentadoPernaQueixo" de empe
+  ombro.direito(frente 66 cruza 6)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 129)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 10 gira-esquerda 12)
+  valor armRotL -75 armRotR -73
+```
+
+### sentadoPernaQueixoEsq
+
+```gm
+pose "sentadoPernaQueixoEsq" de empe
+  ombro.direito(frente 65 abre 20 gira-dentro 50)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 141)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 95 abre 5 gira-dentro 1)
+  quadril.esquerdo(frente 111 fecha 6 gira-fora 7)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 25 sola-dentro 5)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -75
+```
+
+### sentadoPernaPrece
+
+```gm
+pose "sentadoPernaPrece" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoPernaCruzadoCimaEsq
+
+```gm
+pose "sentadoPernaCruzadoCimaEsq" de empe
+  ombro.direito(frente 40 cruza 30)
+  ombro.esquerdo(frente 47 cruza 35)
+  cotovelo.direito(dobra 75)
+  cotovelo.esquerdo(dobra 60)
+  antebraco.direito(palma-cima 40)
+  antebraco.esquerdo(palma-cima 70)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 40%)
+  quadril.direito(frente 95 abre 5 gira-dentro 1)
+  quadril.esquerdo(frente 111 fecha 6 gira-fora 7)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 25 sola-dentro 5)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -95 armRotR -91
+```
+
+### sentadoPernaNuca
+
+```gm
+pose "sentadoPernaNuca" de empe
+  ombro.direito(frente 160 abre 2 gira-dentro 52)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 47)
+  cotovelo.direito(dobra 143)
+  cotovelo.esquerdo(dobra 135)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoPernaNucaEsq
+
+```gm
+pose "sentadoPernaNucaEsq" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 143)
+  quadril.direito(frente 95 abre 5 gira-dentro 1)
+  quadril.esquerdo(frente 111 fecha 6 gira-fora 7)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 25 sola-dentro 5)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoPernaOrelha
+
+```gm
+pose "sentadoPernaOrelha" de empe
+  ombro.direito(frente 52 cruza 39 gira-dentro 58)
+  ombro.esquerdo(tras 7 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 102)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoPernaOrelhaEsq
+
+```gm
+pose "sentadoPernaOrelhaEsq" de empe
+  ombro.direito(frente 60 cruza 37 gira-dentro 54)
+  ombro.esquerdo(tras 8 abre 5 gira-dentro 41)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 103)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 5 gira-dentro 1)
+  quadril.esquerdo(frente 111 fecha 6 gira-fora 7)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 25 sola-dentro 5)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoPernaCabeca
+
+```gm
+pose "sentadoPernaCabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 7 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 102)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoPernaCabecaEsq
+
+```gm
+pose "sentadoPernaCabecaEsq" de empe
+  ombro.direito(frente 119 abre 55 gira-fora 34)
+  ombro.esquerdo(tras 8 abre 5 gira-dentro 41)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 103)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 5 gira-dentro 1)
+  quadril.esquerdo(frente 111 fecha 6 gira-fora 7)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 100)
+  tornozelo.esquerdo(aponta 25 sola-dentro 5)
+  cabeca(baixa 14 gira-direita 12)
+```
+
+### sentadoPernaBoca
+
+```gm
+pose "sentadoPernaBoca" de empe
+  ombro.direito(frente 66 abre 6 gira-dentro 57)
+  ombro.esquerdo(tras 7 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 127)
+  cotovelo.esquerdo(dobra 102)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 111 fecha 6 gira-fora 7)
+  quadril.esquerdo(frente 95 abre 5 gira-dentro 1)
+  joelho.direito(dobra 100)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 25 sola-dentro 5)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoFigura4Coxa
+
+```gm
+pose "sentadoFigura4Coxa" de empe
+  ombro.direito(tras 45 abre 34 gira-dentro 34)
+  ombro.esquerdo(tras 1 abre 0 gira-dentro 34)
+  cotovelo.direito(dobra 109)
+  cotovelo.esquerdo(dobra 76)
+  mao(fecha 25%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoFigura4Colo
+
+```gm
+pose "sentadoFigura4Colo" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoFigura4ColoEsq
+
+```gm
+pose "sentadoFigura4ColoEsq" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 85 fecha 2)
+  quadril.esquerdo(frente 125 abre 37 gira-fora 45)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 123)
+  tornozelo.esquerdo(aponta 5 sola-dentro 10)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoFigura4Queixo
+
+```gm
+pose "sentadoFigura4Queixo" de empe
+  ombro.direito(frente 66 cruza 6)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 129)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+  valor armRotL -75 armRotR -73
+```
+
+### sentadoFigura4QueixoEsq
+
+```gm
+pose "sentadoFigura4QueixoEsq" de empe
+  ombro.direito(frente 65 abre 20 gira-dentro 50)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 141)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 85 fecha 2)
+  quadril.esquerdo(frente 125 abre 37 gira-fora 45)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 123)
+  tornozelo.esquerdo(aponta 5 sola-dentro 10)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -75
+```
+
+### sentadoFigura4Prece
+
+```gm
+pose "sentadoFigura4Prece" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoFigura4Nuca
+
+```gm
+pose "sentadoFigura4Nuca" de empe
+  ombro.direito(frente 160 abre 2 gira-dentro 52)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 47)
+  cotovelo.direito(dobra 143)
+  cotovelo.esquerdo(dobra 135)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoFigura4NucaEsq
+
+```gm
+pose "sentadoFigura4NucaEsq" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 143)
+  quadril.direito(frente 85 fecha 2)
+  quadril.esquerdo(frente 125 abre 37 gira-fora 45)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 123)
+  tornozelo.esquerdo(aponta 5 sola-dentro 10)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoFigura4Barriga
+
+```gm
+pose "sentadoFigura4Barriga" de empe
+  ombro.direito(tras 12 abre 4 gira-dentro 42)
+  ombro.esquerdo(tras 6 abre 6 gira-dentro 45)
+  cotovelo.direito(dobra 103)
+  cotovelo.esquerdo(dobra 104)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoFigura4Orelha
+
+```gm
+pose "sentadoFigura4Orelha" de empe
+  ombro.direito(frente 52 cruza 39 gira-dentro 58)
+  ombro.esquerdo(tras 1 abre 0 gira-dentro 34)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 76)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoFigura4OrelhaEsq
+
+```gm
+pose "sentadoFigura4OrelhaEsq" de empe
+  ombro.direito(frente 60 cruza 37 gira-dentro 54)
+  ombro.esquerdo(tras 45 abre 34 gira-dentro 34)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 109)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 85 fecha 2)
+  quadril.esquerdo(frente 125 abre 37 gira-fora 45)
+  joelho.direito(dobra 90)
+  joelho.esquerdo(dobra 123)
+  tornozelo.esquerdo(aponta 5 sola-dentro 10)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoFigura4Cabeca
+
+```gm
+pose "sentadoFigura4Cabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 1 abre 0 gira-dentro 34)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 76)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoFigura4Coracao
+
+```gm
+pose "sentadoFigura4Coracao" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  ombro.esquerdo(tras 1 abre 0 gira-dentro 34)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 76)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoFigura4Boca
+
+```gm
+pose "sentadoFigura4Boca" de empe
+  ombro.direito(frente 66 abre 6 gira-dentro 57)
+  ombro.esquerdo(tras 1 abre 0 gira-dentro 34)
+  cotovelo.direito(dobra 127)
+  cotovelo.esquerdo(dobra 76)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 125 abre 37 gira-fora 45)
+  quadril.esquerdo(frente 85 fecha 2)
+  joelho.direito(dobra 123)
+  joelho.esquerdo(dobra 90)
+  tornozelo.direito(aponta 5 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoTornozelosCoxa
+
+```gm
+pose "sentadoTornozelosCoxa" de empe
+  ombro.direito(tras 10 abre 2 gira-dentro 24)
+  ombro.esquerdo(tras 2 abre 2 gira-dentro 34)
+  cotovelo.direito(dobra 85)
+  cotovelo.esquerdo(dobra 72)
+  mao(fecha 25%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoTornozelosColo
+
+```gm
+pose "sentadoTornozelosColo" de empe
+  ombro(frente 11 cruza 4 gira-dentro 25)
+  cotovelo(dobra 70)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoTornozelosColoEsq
+
+```gm
+pose "sentadoTornozelosColoEsq" de empe
+  ombro(frente 11 cruza 4 gira-dentro 25)
+  cotovelo(dobra 70)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 85 abre 2)
+  quadril.esquerdo(frente 96 abre 0 gira-fora 26)
+  joelho.direito(dobra 35)
+  joelho.esquerdo(dobra 51)
+  tornozelo.direito(aponta 15)
+  tornozelo.esquerdo(aponta 20)
+  tronco(tras 8)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoTornozelosQueixo
+
+```gm
+pose "sentadoTornozelosQueixo" de empe
+  ombro.direito(frente 58 cruza 10 gira-dentro 70)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 129)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 10 gira-esquerda 12)
+  valor armRotL -75
+```
+
+### sentadoTornozelosQueixoEsq
+
+```gm
+pose "sentadoTornozelosQueixoEsq" de empe
+  ombro.direito(frente 57 abre 16 gira-dentro 50)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 140)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 85 abre 2)
+  quadril.esquerdo(frente 96 abre 0 gira-fora 26)
+  joelho.direito(dobra 35)
+  joelho.esquerdo(dobra 51)
+  tornozelo.direito(aponta 15)
+  tornozelo.esquerdo(aponta 20)
+  tronco(tras 8)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -75
+```
+
+### sentadoTornozelosPrece
+
+```gm
+pose "sentadoTornozelosPrece" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoTornozelosNuca
+
+```gm
+pose "sentadoTornozelosNuca" de empe
+  ombro.direito(frente 160 abre 2 gira-dentro 52)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 47)
+  cotovelo.direito(dobra 143)
+  cotovelo.esquerdo(dobra 135)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoTornozelosNucaEsq
+
+```gm
+pose "sentadoTornozelosNucaEsq" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 143)
+  quadril.direito(frente 85 abre 2)
+  quadril.esquerdo(frente 96 abre 0 gira-fora 26)
+  joelho.direito(dobra 35)
+  joelho.esquerdo(dobra 51)
+  tornozelo.direito(aponta 15)
+  tornozelo.esquerdo(aponta 20)
+  tronco(tras 8)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoTornozelosBarriga
+
+```gm
+pose "sentadoTornozelosBarriga" de empe
+  ombro.direito(tras 14 abre 3 gira-dentro 41)
+  ombro.esquerdo(tras 4 abre 9 gira-dentro 50)
+  cotovelo.direito(dobra 99)
+  cotovelo.esquerdo(dobra 100)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoTornozelosOrelha
+
+```gm
+pose "sentadoTornozelosOrelha" de empe
+  ombro.direito(frente 50 cruza 37 gira-dentro 56)
+  ombro.esquerdo(tras 2 abre 2 gira-dentro 34)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 72)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoTornozelosOrelhaEsq
+
+```gm
+pose "sentadoTornozelosOrelhaEsq" de empe
+  ombro.direito(frente 50 cruza 37 gira-dentro 52)
+  ombro.esquerdo(tras 10 abre 2 gira-dentro 24)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 85)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 85 abre 2)
+  quadril.esquerdo(frente 96 abre 0 gira-fora 26)
+  joelho.direito(dobra 35)
+  joelho.esquerdo(dobra 51)
+  tornozelo.direito(aponta 15)
+  tornozelo.esquerdo(aponta 20)
+  tronco(tras 8)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoTornozelosCabeca
+
+```gm
+pose "sentadoTornozelosCabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 2 abre 2 gira-dentro 34)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 72)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoTornozelosCabecaEsq
+
+```gm
+pose "sentadoTornozelosCabecaEsq" de empe
+  ombro.direito(frente 119 abre 55 gira-fora 34)
+  ombro.esquerdo(tras 10 abre 2 gira-dentro 24)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 85)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 85 abre 2)
+  quadril.esquerdo(frente 96 abre 0 gira-fora 26)
+  joelho.direito(dobra 35)
+  joelho.esquerdo(dobra 51)
+  tornozelo.direito(aponta 15)
+  tornozelo.esquerdo(aponta 20)
+  tronco(tras 8)
+  cabeca(baixa 14 gira-direita 12)
+```
+
+### sentadoTornozelosCoracao
+
+```gm
+pose "sentadoTornozelosCoracao" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  ombro.esquerdo(tras 2 abre 2 gira-dentro 34)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 72)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 96 abre 0 gira-fora 26)
+  quadril.esquerdo(frente 85 abre 2)
+  joelho.direito(dobra 51)
+  joelho.esquerdo(dobra 35)
+  tornozelo.direito(aponta 20)
+  tornozelo.esquerdo(aponta 15)
+  tronco(tras 8)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoIndioCoxa
+
+```gm
+pose "sentadoIndioCoxa" de empe
+  ombro.direito(tras 34 abre 30 gira-dentro 30)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 106)
+  cotovelo.esquerdo(dobra 103)
+  mao(fecha 25%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoIndioColo
+
+```gm
+pose "sentadoIndioColo" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoIndioQueixo
+
+```gm
+pose "sentadoIndioQueixo" de empe
+  ombro.direito(frente 66 cruza 6)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 129)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 10 gira-esquerda 12)
+  valor armRotL -75 armRotR -73
+```
+
+### sentadoIndioQueixoEsq
+
+```gm
+pose "sentadoIndioQueixoEsq" de empe
+  ombro.direito(frente 65 abre 20 gira-dentro 50)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 141)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 95 abre 43 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 38 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -75
+```
+
+### sentadoIndioPrece
+
+```gm
+pose "sentadoIndioPrece" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoIndioNuca
+
+```gm
+pose "sentadoIndioNuca" de empe
+  ombro.direito(frente 160 abre 2 gira-dentro 52)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 47)
+  cotovelo.direito(dobra 143)
+  cotovelo.esquerdo(dobra 135)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoIndioNucaEsq
+
+```gm
+pose "sentadoIndioNucaEsq" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 143)
+  quadril.direito(frente 95 abre 43 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 38 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoIndioBarriga
+
+```gm
+pose "sentadoIndioBarriga" de empe
+  ombro.direito(tras 12 abre 4 gira-dentro 42)
+  ombro.esquerdo(tras 6 abre 6 gira-dentro 45)
+  cotovelo.direito(dobra 103)
+  cotovelo.esquerdo(dobra 104)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoIndioOrelha
+
+```gm
+pose "sentadoIndioOrelha" de empe
+  ombro.direito(frente 52 cruza 39 gira-dentro 58)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 103)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoIndioOrelhaEsq
+
+```gm
+pose "sentadoIndioOrelhaEsq" de empe
+  ombro.direito(frente 60 cruza 37 gira-dentro 54)
+  ombro.esquerdo(tras 34 abre 30 gira-dentro 30)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 43 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 38 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoIndioCabeca
+
+```gm
+pose "sentadoIndioCabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 103)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoIndioCabecaEsq
+
+```gm
+pose "sentadoIndioCabecaEsq" de empe
+  ombro.direito(frente 119 abre 55 gira-fora 34)
+  ombro.esquerdo(tras 34 abre 30 gira-dentro 30)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 106)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 43 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 38 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 14 gira-direita 12)
+```
+
+### sentadoIndioCoracao
+
+```gm
+pose "sentadoIndioCoracao" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 103)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoIndioBoca
+
+```gm
+pose "sentadoIndioBoca" de empe
+  ombro.direito(frente 66 abre 6 gira-dentro 57)
+  ombro.esquerdo(tras 37 abre 13 gira-dentro 5)
+  cotovelo.direito(dobra 127)
+  cotovelo.esquerdo(dobra 103)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 38 gira-fora 45)
+  quadril.esquerdo(frente 95 abre 43 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 10 sola-dentro 20)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLotusColoEsq
+
+```gm
+pose "sentadoLotusColoEsq" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 100 abre 41 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 40 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoLotusOrelha
+
+```gm
+pose "sentadoLotusOrelha" de empe
+  ombro.direito(frente 52 cruza 39 gira-dentro 58)
+  ombro.esquerdo(tras 35 abre 36 gira-dentro 38)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 41 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLotusCabeca
+
+```gm
+pose "sentadoLotusCabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 35 abre 36 gira-dentro 38)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 106)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 41 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoLotusCoracao
+
+```gm
+pose "sentadoLotusCoracao" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  ombro.esquerdo(tras 35 abre 36 gira-dentro 38)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 41 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLotusBochechaEsq
+
+```gm
+pose "sentadoLotusBochechaEsq" de empe
+  ombro.direito(frente 45 cruza 28 gira-dentro 43)
+  ombro.esquerdo(tras 36 abre 33 gira-dentro 33)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 40)
+  mao.direito(fecha 15%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 41 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 40 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
+  cabeca(baixa 14 gira-direita 12)
+```
+
+### sentadoLotusBoca
+
+```gm
+pose "sentadoLotusBoca" de empe
+  ombro.direito(frente 66 abre 6 gira-dentro 57)
+  ombro.esquerdo(tras 35 abre 36 gira-dentro 38)
+  cotovelo.direito(dobra 127)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 41 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 25 sola-dentro 30)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoBorboletaCoxa
+
+```gm
+pose "sentadoBorboletaCoxa" de empe
+  ombro.direito(tras 36 abre 33 gira-dentro 33)
+  ombro.esquerdo(tras 35 abre 34 gira-dentro 35)
+  cotovelo.direito(dobra 106)
+  cotovelo.esquerdo(dobra 107)
+  mao(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 39 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoBorboletaColoEsq
+
+```gm
+pose "sentadoBorboletaColoEsq" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 100 abre 39 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 40 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoBorboletaOrelha
+
+```gm
+pose "sentadoBorboletaOrelha" de empe
+  ombro.direito(frente 52 cruza 39 gira-dentro 58)
+  ombro.esquerdo(tras 35 abre 34 gira-dentro 35)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 107)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 39 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoBorboletaCabeca
+
+```gm
+pose "sentadoBorboletaCabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 35 abre 34 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 107)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 39 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoBorboletaCabecaEsq
+
+```gm
+pose "sentadoBorboletaCabecaEsq" de empe
+  ombro.direito(frente 119 abre 55 gira-fora 34)
+  ombro.esquerdo(tras 36 abre 33 gira-dentro 33)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 106)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 39 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 40 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 14 gira-direita 12)
+```
+
+### sentadoBorboletaCoracao
+
+```gm
+pose "sentadoBorboletaCoracao" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  ombro.esquerdo(tras 35 abre 34 gira-dentro 35)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 107)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 39 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoBorboletaBochechaEsq
+
+```gm
+pose "sentadoBorboletaBochechaEsq" de empe
+  ombro.direito(frente 45 cruza 28 gira-dentro 43)
+  ombro.esquerdo(tras 36 abre 33 gira-dentro 33)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 40)
+  mao.direito(fecha 15%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 39 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 40 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 14 gira-direita 12)
+```
+
+### sentadoBorboletaBoca
+
+```gm
+pose "sentadoBorboletaBoca" de empe
+  ombro.direito(frente 66 abre 6 gira-dentro 57)
+  ombro.esquerdo(tras 35 abre 34 gira-dentro 35)
+  cotovelo.direito(dobra 127)
+  cotovelo.esquerdo(dobra 107)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 100 abre 40 gira-fora 45)
+  quadril.esquerdo(frente 100 abre 39 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo(aponta 5 sola-dentro 35)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLadoCoxa
+
+```gm
+pose "sentadoLadoCoxa" de empe
+  ombro.direito(frente 11 cruza 9)
+  ombro.esquerdo(tras 43 gira-dentro 4)
+  cotovelo.direito(dobra 67)
+  cotovelo.esquerdo(dobra 106)
+  mao(fecha 25%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+  valor armRotR -81
+```
+
+### sentadoLadoColo
+
+```gm
+pose "sentadoLadoColo" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLadoColoEsq
+
+```gm
+pose "sentadoLadoColoEsq" de empe
+  ombro(frente 14 cruza 1 gira-dentro 29)
+  cotovelo(dobra 79)
+  antebraco(palma-cima 80)
+  mao(fecha 50%)
+  quadril.direito(frente 95 abre 45 gira-fora 45)
+  quadril.esquerdo(frente 95 fecha 30 gira-dentro 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30 sola-dentro 10)
+  tornozelo.esquerdo(aponta 30)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoLadoQueixo
+
+```gm
+pose "sentadoLadoQueixo" de empe
+  ombro.direito(frente 66 cruza 6)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 129)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+  valor armRotL -75 armRotR -73
+```
+
+### sentadoLadoQueixoEsq
+
+```gm
+pose "sentadoLadoQueixoEsq" de empe
+  ombro.direito(frente 65 abre 20 gira-dentro 50)
+  ombro.esquerdo(frente 13 cruza 10)
+  cotovelo.direito(dobra 141)
+  cotovelo.esquerdo(dobra 88)
+  antebraco(palma-cima 70)
+  punho.direito(dobra 25)
+  mao.direito(fecha 55%)
+  quadril.direito(frente 95 abre 45 gira-fora 45)
+  quadril.esquerdo(frente 95 fecha 30 gira-dentro 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30 sola-dentro 10)
+  tornozelo.esquerdo(aponta 30)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -75
+```
+
+### sentadoLadoPrece
+
+```gm
+pose "sentadoLadoPrece" de empe
+  ombro.direito(frente 18 cruza 12 gira-dentro 37)
+  ombro.esquerdo(frente 30 cruza 16 gira-dentro 35)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 101)
+  antebraco(palma-baixo 10)
+  mao(fecha 0%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLadoNuca
+
+```gm
+pose "sentadoLadoNuca" de empe
+  ombro.direito(frente 160 abre 2 gira-dentro 52)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 47)
+  cotovelo.direito(dobra 143)
+  cotovelo.esquerdo(dobra 135)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLadoNucaEsq
+
+```gm
+pose "sentadoLadoNucaEsq" de empe
+  ombro.direito(frente 160 abre 93 gira-fora 43)
+  ombro.esquerdo(frente 160 abre 11 gira-dentro 42)
+  cotovelo.direito(dobra 130)
+  cotovelo.esquerdo(dobra 143)
+  quadril.direito(frente 95 abre 45 gira-fora 45)
+  quadril.esquerdo(frente 95 fecha 30 gira-dentro 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30 sola-dentro 10)
+  tornozelo.esquerdo(aponta 30)
+  cabeca(baixa 6 gira-direita 12)
+```
+
+### sentadoLadoBarriga
+
+```gm
+pose "sentadoLadoBarriga" de empe
+  ombro.direito(tras 12 abre 4 gira-dentro 42)
+  ombro.esquerdo(tras 6 abre 6 gira-dentro 45)
+  cotovelo.direito(dobra 103)
+  cotovelo.esquerdo(dobra 104)
+  antebraco(palma-cima 60)
+  mao(fecha 10%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoLadoOrelha
+
+```gm
+pose "sentadoLadoOrelha" de empe
+  ombro.direito(frente 52 cruza 39 gira-dentro 58)
+  ombro.esquerdo(tras 43 gira-dentro 4)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLadoOrelhaEsq
+
+```gm
+pose "sentadoLadoOrelhaEsq" de empe
+  ombro.direito(frente 60 cruza 37 gira-dentro 54)
+  ombro.esquerdo(frente 11 cruza 9)
+  cotovelo.direito(dobra 145)
+  cotovelo.esquerdo(dobra 67)
+  antebraco.direito(palma-cima 80)
+  mao.direito(fecha 50%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 45 gira-fora 45)
+  quadril.esquerdo(frente 95 fecha 30 gira-dentro 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30 sola-dentro 10)
+  tornozelo.esquerdo(aponta 30)
+  cabeca(baixa 6 gira-direita 12)
+  valor armRotL -81
+```
+
+### sentadoLadoCabeca
+
+```gm
+pose "sentadoLadoCabeca" de empe
+  ombro.direito(frente 117 abre 44 gira-fora 16)
+  ombro.esquerdo(tras 43 gira-dentro 4)
+  cotovelo.direito(dobra 111)
+  cotovelo.esquerdo(dobra 106)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 10 gira-esquerda 12)
+```
+
+### sentadoLadoCabecaEsq
+
+```gm
+pose "sentadoLadoCabecaEsq" de empe
+  ombro.direito(frente 119 abre 55 gira-fora 34)
+  ombro.esquerdo(frente 11 cruza 9)
+  cotovelo.direito(dobra 114)
+  cotovelo.esquerdo(dobra 67)
+  mao.direito(fecha 35%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 abre 45 gira-fora 45)
+  quadril.esquerdo(frente 95 fecha 30 gira-dentro 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30 sola-dentro 10)
+  tornozelo.esquerdo(aponta 30)
+  cabeca(baixa 14 gira-direita 12)
+  valor armRotL -81
+```
+
+### sentadoLadoCoracao
+
+```gm
+pose "sentadoLadoCoracao" de empe
+  ombro.direito(frente 9 cruza 4 gira-dentro 50)
+  ombro.esquerdo(tras 43 gira-dentro 4)
+  cotovelo.direito(dobra 122)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 70)
+  mao.direito(fecha 5%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### sentadoLadoBoca
+
+```gm
+pose "sentadoLadoBoca" de empe
+  ombro.direito(frente 66 abre 6 gira-dentro 57)
+  ombro.esquerdo(tras 43 gira-dentro 4)
+  cotovelo.direito(dobra 127)
+  cotovelo.esquerdo(dobra 106)
+  antebraco.direito(palma-cima 20)
+  mao.direito(fecha 20%)
+  mao.esquerdo(fecha 25%)
+  quadril.direito(frente 95 fecha 30 gira-dentro 45)
+  quadril.esquerdo(frente 95 abre 45 gira-fora 45)
+  joelho(dobra 150)
+  tornozelo.direito(aponta 30)
+  tornozelo.esquerdo(aponta 30 sola-dentro 10)
+  cabeca(baixa 18 gira-esquerda 12)
+```
+
+### deitCostasLendo
+
+```gm
+pose "deitCostasLendo" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  corpo(deita-costas 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitCostasLendoOlhaLado
+
+```gm
+pose "deitCostasLendoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitCostasLendoTronco
+
+```gm
+pose "deitCostasLendoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitCostasCelular
+
+```gm
+pose "deitCostasCelular" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  corpo(deita-costas 90)
+  valor fThL -0.1
+```
+
+### deitCostasCelularOlhaLado
+
+```gm
+pose "deitCostasCelularOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 90)
+  valor fThL -0.1
+```
+
+### deitCostasCelularTronco
+
+```gm
+pose "deitCostasCelularTronco" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 90)
+  valor fThL -0.1
+```
+
+### deitCostasBracoOlhos
+
+```gm
+pose "deitCostasBracoOlhos" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  corpo(deita-costas 90)
+```
+
+### deitCostasBracoOlhosOlhaLado
+
+```gm
+pose "deitCostasBracoOlhosOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 90)
+```
+
+### deitCostasBracoOlhosTronco
+
+```gm
+pose "deitCostasBracoOlhosTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
+  joelho.direito(dobra 50)
+  joelho.esquerdo(dobra 10)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 90)
+```
+
+### deitLadoLendo
+
+```gm
+pose "deitLadoLendo" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  corpo(rola 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitLadoLendoOlhaLado
+
+```gm
+pose "deitLadoLendoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(rola 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitLadoLendoTronco
+
+```gm
+pose "deitLadoLendoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(rola 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitLadoCelular
+
+```gm
+pose "deitLadoCelular" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  corpo(rola 90)
+  valor fThL -0.1
+```
+
+### deitLadoCelularOlhaLado
+
+```gm
+pose "deitLadoCelularOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(rola 90)
+  valor fThL -0.1
+```
+
+### deitLadoCelularTronco
+
+```gm
+pose "deitLadoCelularTronco" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(rola 90)
+  valor fThL -0.1
+```
+
+### deitLadoBracoOlhosOlhaLado
+
+```gm
+pose "deitLadoBracoOlhosOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(rola 90)
+```
+
+### deitLadoBracoOlhosTronco
+
+```gm
+pose "deitLadoBracoOlhosTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril.direito(frente 60)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 80)
+  joelho.esquerdo(dobra 60)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(rola 90)
+```
+
+### deitCostasJoelhosLendo
+
+```gm
+pose "deitCostasJoelhosLendo" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60)
+  joelho(dobra 100)
+  corpo(deita-costas 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitCostasJoelhosLendoOlhaLado
+
+```gm
+pose "deitCostasJoelhosLendoOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60)
+  joelho(dobra 100)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitCostasJoelhosLendoTronco
+
+```gm
+pose "deitCostasJoelhosLendoTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 80)
+  mao(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60)
+  joelho(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 90)
+  valor fThL -0.1 fThR -0.1
+```
+
+### deitCostasJoelhosCelular
+
+```gm
+pose "deitCostasJoelhosCelular" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60)
+  joelho(dobra 100)
+  corpo(deita-costas 90)
+  valor fThL -0.1
+```
+
+### deitCostasJoelhosCelularOlhaLado
+
+```gm
+pose "deitCostasJoelhosCelularOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60)
+  joelho(dobra 100)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 90)
+  valor fThL -0.1
+```
+
+### deitCostasJoelhosCelularTronco
+
+```gm
+pose "deitCostasJoelhosCelularTronco" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 100 cruza 15)
+  cotovelo.direito(dobra 60)
+  cotovelo.esquerdo(dobra 100)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 60)
+  joelho(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 90)
+  valor fThL -0.1
+```
+
+### deitCostasJoelhosBracoOlhos
+
+```gm
+pose "deitCostasJoelhosBracoOlhos" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril(frente 60)
+  joelho(dobra 100)
+  corpo(deita-costas 90)
+```
+
+### deitCostasJoelhosBracoOlhosOlhaLado
+
+```gm
+pose "deitCostasJoelhosBracoOlhosOlhaLado" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril(frente 60)
+  joelho(dobra 100)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 90)
+```
+
+### deitCostasJoelhosBracoOlhosTronco
+
+```gm
+pose "deitCostasJoelhosBracoOlhosTronco" de empe
+  ombro.direito(frente 20 abre 30)
+  ombro.esquerdo(frente 120 cruza 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 130)
+  quadril(frente 60)
+  joelho(dobra 100)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 90)
+```
+
+### comedPernaUmPeBracosHelice
+
+```gm
+pose "comedPernaUmPeBracosHelice" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+```
+
+### comedPernaUmPeBracosHeliceOlhaLado
+
+```gm
+pose "comedPernaUmPeBracosHeliceOlhaLado" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### comedPernaUmPeBracosHeliceTronco
+
+```gm
+pose "comedPernaUmPeBracosHeliceTronco" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 80)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### comedPernaUmPeMaosBoca
+
+```gm
+pose "comedPernaUmPeMaosBoca" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+```
+
+### comedPernaUmPeMaosBocaOlhaLado
+
+```gm
+pose "comedPernaUmPeMaosBocaOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### comedPernaUmPeMaosBocaTronco
+
+```gm
+pose "comedPernaUmPeMaosBocaTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### comedPernaUmPeDedoSilencio
+
+```gm
+pose "comedPernaUmPeDedoSilencio" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  valor fThL -0.25 fInL -1
+```
+
+### comedPernaUmPeDedoSilencioOlhaLado
+
+```gm
+pose "comedPernaUmPeDedoSilencioOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### comedPernaUmPeDedoSilencioTronco
+
+```gm
+pose "comedPernaUmPeDedoSilencioTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### comedPernaUmPeJoinhaDuplo
+
+```gm
+pose "comedPernaUmPeJoinhaDuplo" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  valor fThL -1 fThR -1
+```
+
+### comedPernaUmPeJoinhaDuploOlhaLado
+
+```gm
+pose "comedPernaUmPeJoinhaDuploOlhaLado" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -1 fThR -1
+```
+
+### comedPernaUmPeJoinhaDuploTronco
+
+```gm
+pose "comedPernaUmPeJoinhaDuploTronco" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(abre 0)
+  quadril.esquerdo(frente 60 abre 20)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -1 fThR -1
+```
+
+### comedEscorregandoBracosHelice
+
+```gm
+pose "comedEscorregandoBracosHelice" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-costas 30)
+```
+
+### comedEscorregandoBracosHeliceOlhaLado
+
+```gm
+pose "comedEscorregandoBracosHeliceOlhaLado" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 30)
+```
+
+### comedEscorregandoBracosHeliceTronco
+
+```gm
+pose "comedEscorregandoBracosHeliceTronco" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 80)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 30)
+```
+
+### comedEscorregandoMaosBoca
+
+```gm
+pose "comedEscorregandoMaosBoca" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-costas 30)
+```
+
+### comedEscorregandoMaosBocaOlhaLado
+
+```gm
+pose "comedEscorregandoMaosBocaOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 30)
+```
+
+### comedEscorregandoMaosBocaTronco
+
+```gm
+pose "comedEscorregandoMaosBocaTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 30)
+```
+
+### comedEscorregandoDedoSilencio
+
+```gm
+pose "comedEscorregandoDedoSilencio" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-costas 30)
+  valor fThL -0.25 fInL -1
+```
+
+### comedEscorregandoDedoSilencioOlhaLado
+
+```gm
+pose "comedEscorregandoDedoSilencioOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 30)
+  valor fThL -0.25 fInL -1
+```
+
+### comedEscorregandoDedoSilencioTronco
+
+```gm
+pose "comedEscorregandoDedoSilencioTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 30)
+  valor fThL -0.25 fInL -1
+```
+
+### comedEscorregandoJoinhaDuplo
+
+```gm
+pose "comedEscorregandoJoinhaDuplo" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  corpo(deita-costas 30)
+  valor fThL -1 fThR -1
+```
+
+### comedEscorregandoJoinhaDuploOlhaLado
+
+```gm
+pose "comedEscorregandoJoinhaDuploOlhaLado" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 30)
+  valor fThL -1 fThR -1
+```
+
+### comedEscorregandoJoinhaDuploTronco
+
+```gm
+pose "comedEscorregandoJoinhaDuploTronco" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(tras 20 abre 30)
+  quadril.esquerdo(frente 80 abre 10)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 20)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 30)
+  valor fThL -1 fThR -1
+```
+
+### comedNaPontaPesBracosHelice
+
+```gm
+pose "comedNaPontaPesBracosHelice" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20)
+```
+
+### comedNaPontaPesBracosHeliceOlhaLado
+
+```gm
+pose "comedNaPontaPesBracosHeliceOlhaLado" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### comedNaPontaPesBracosHeliceTronco
+
+```gm
+pose "comedNaPontaPesBracosHeliceTronco" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 80)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### comedNaPontaPesMaosBoca
+
+```gm
+pose "comedNaPontaPesMaosBoca" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20)
+```
+
+### comedNaPontaPesMaosBocaOlhaLado
+
+```gm
+pose "comedNaPontaPesMaosBocaOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### comedNaPontaPesMaosBocaTronco
+
+```gm
+pose "comedNaPontaPesMaosBocaTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### comedNaPontaPesDedoSilencio
+
+```gm
+pose "comedNaPontaPesDedoSilencio" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20)
+  valor fThL -0.25 fInL -1
+```
+
+### comedNaPontaPesDedoSilencioOlhaLado
+
+```gm
+pose "comedNaPontaPesDedoSilencioOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.25 fInL -1
+```
+
+### comedNaPontaPesDedoSilencioTronco
+
+```gm
+pose "comedNaPontaPesDedoSilencioTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.25 fInL -1
+```
+
+### comedNaPontaPesJoinhaDuplo
+
+```gm
+pose "comedNaPontaPesJoinhaDuplo" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20)
+  valor fThL -1 fThR -1
+```
+
+### comedNaPontaPesJoinhaDuploOlhaLado
+
+```gm
+pose "comedNaPontaPesJoinhaDuploOlhaLado" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -1 fThR -1
+```
+
+### comedNaPontaPesJoinhaDuploTronco
+
+```gm
+pose "comedNaPontaPesJoinhaDuploTronco" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 40)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 50)
+  tornozelo(aponta 40)
+  tronco(frente 20 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -1 fThR -1
+```
+
+### comedPulandoSustoBracosHelice
+
+```gm
+pose "comedPulandoSustoBracosHelice" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  corpo(sobe 22.8cm)
+```
+
+### comedPulandoSustoBracosHeliceOlhaLado
+
+```gm
+pose "comedPulandoSustoBracosHeliceOlhaLado" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 75)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### comedPulandoSustoBracosHeliceTronco
+
+```gm
+pose "comedPulandoSustoBracosHeliceTronco" de empe
+  ombro.direito(tras 20 abre 100)
+  ombro.esquerdo(frente 170 abre 80)
+  cotovelo(dobra 10)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### comedPulandoSustoMaosBoca
+
+```gm
+pose "comedPulandoSustoMaosBoca" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  corpo(sobe 22.8cm)
+```
+
+### comedPulandoSustoMaosBocaOlhaLado
+
+```gm
+pose "comedPulandoSustoMaosBocaOlhaLado" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### comedPulandoSustoMaosBocaTronco
+
+```gm
+pose "comedPulandoSustoMaosBocaTronco" de empe
+  ombro(frente 110 cruza 10)
+  cotovelo(dobra 150)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### comedPulandoSustoDedoSilencio
+
+```gm
+pose "comedPulandoSustoDedoSilencio" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  corpo(sobe 22.8cm)
+  valor fThL -0.25 fInL -1
+```
+
+### comedPulandoSustoDedoSilencioOlhaLado
+
+```gm
+pose "comedPulandoSustoDedoSilencioOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.25 fInL -1
+```
+
+### comedPulandoSustoDedoSilencioTronco
+
+```gm
+pose "comedPulandoSustoDedoSilencioTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 110 cruza 10)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 150)
+  mao.esquerdo(fecha 100% afasta 30% opoe 60%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.25 fInL -1
+```
+
+### comedPulandoSustoJoinhaDuplo
+
+```gm
+pose "comedPulandoSustoJoinhaDuplo" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  corpo(sobe 22.8cm)
+  valor fThL -1 fThR -1
+```
+
+### comedPulandoSustoJoinhaDuploOlhaLado
+
+```gm
+pose "comedPulandoSustoJoinhaDuploOlhaLado" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -1 fThR -1
+```
+
+### comedPulandoSustoJoinhaDuploTronco
+
+```gm
+pose "comedPulandoSustoJoinhaDuploTronco" de empe
+  ombro(frente 80 abre 20)
+  cotovelo(dobra 60)
+  mao(fecha 100% afasta 20%)
+  quadril(frente 50 abre 30)
+  joelho(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -1 fThR -1
+```
+
+### terrRecuandoBracosDefesa
+
+```gm
+pose "terrRecuandoBracosDefesa" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10)
+  corpo(deita-costas 10)
+```
+
+### terrRecuandoBracosDefesaOlhaLado
+
+```gm
+pose "terrRecuandoBracosDefesaOlhaLado" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 10)
+```
+
+### terrRecuandoBracosDefesaTronco
+
+```gm
+pose "terrRecuandoBracosDefesaTronco" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+```
+
+### terrRecuandoLanterna
+
+```gm
+pose "terrRecuandoLanterna" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10)
+  corpo(deita-costas 10)
+  valor fThL -0.1
+```
+
+### terrRecuandoLanternaOlhaLado
+
+```gm
+pose "terrRecuandoLanternaOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 10)
+  valor fThL -0.1
+```
+
+### terrRecuandoLanternaTronco
+
+```gm
+pose "terrRecuandoLanternaTronco" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+  valor fThL -0.1
+```
+
+### terrRecuandoMaoParede
+
+```gm
+pose "terrRecuandoMaoParede" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10)
+  corpo(deita-costas 10)
+```
+
+### terrRecuandoMaoParedeOlhaLado
+
+```gm
+pose "terrRecuandoMaoParedeOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 10)
+```
+
+### terrRecuandoMaoParedeTronco
+
+```gm
+pose "terrRecuandoMaoParedeTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 20)
+  quadril.esquerdo(tras 10)
+  joelho.direito(dobra 30)
+  joelho.esquerdo(dobra 10)
+  tronco(tras 10 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 10)
+```
+
+### terrEncurraladoBracosDefesa
+
+```gm
+pose "terrEncurraladoBracosDefesa" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5)
+```
+
+### terrEncurraladoBracosDefesaOlhaLado
+
+```gm
+pose "terrEncurraladoBracosDefesaOlhaLado" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### terrEncurraladoBracosDefesaTronco
+
+```gm
+pose "terrEncurraladoBracosDefesaTronco" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### terrEncurraladoLanterna
+
+```gm
+pose "terrEncurraladoLanterna" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5)
+  valor fThL -0.1
+```
+
+### terrEncurraladoLanternaOlhaLado
+
+```gm
+pose "terrEncurraladoLanternaOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### terrEncurraladoLanternaTronco
+
+```gm
+pose "terrEncurraladoLanternaTronco" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### terrEncurraladoMaoParede
+
+```gm
+pose "terrEncurraladoMaoParede" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5)
+```
+
+### terrEncurraladoMaoParedeOlhaLado
+
+```gm
+pose "terrEncurraladoMaoParedeOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### terrEncurraladoMaoParedeTronco
+
+```gm
+pose "terrEncurraladoMaoParedeTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 10 abre 10)
+  joelho(dobra 20)
+  tronco(tras 5 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### terrCaidoArrastandoBracosDefesa
+
+```gm
+pose "terrCaidoArrastandoBracosDefesa" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  corpo(deita-costas 60)
+```
+
+### terrCaidoArrastandoBracosDefesaOlhaLado
+
+```gm
+pose "terrCaidoArrastandoBracosDefesaOlhaLado" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 60)
+```
+
+### terrCaidoArrastandoBracosDefesaTronco
+
+```gm
+pose "terrCaidoArrastandoBracosDefesaTronco" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 60)
+```
+
+### terrCaidoArrastandoLanterna
+
+```gm
+pose "terrCaidoArrastandoLanterna" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  corpo(deita-costas 60)
+  valor fThL -0.1
+```
+
+### terrCaidoArrastandoLanternaOlhaLado
+
+```gm
+pose "terrCaidoArrastandoLanternaOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 60)
+  valor fThL -0.1
+```
+
+### terrCaidoArrastandoLanternaTronco
+
+```gm
+pose "terrCaidoArrastandoLanternaTronco" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 60)
+  valor fThL -0.1
+```
+
+### terrCaidoArrastandoMaoParede
+
+```gm
+pose "terrCaidoArrastandoMaoParede" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  corpo(deita-costas 60)
+```
+
+### terrCaidoArrastandoMaoParedeOlhaLado
+
+```gm
+pose "terrCaidoArrastandoMaoParedeOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-costas 60)
+```
+
+### terrCaidoArrastandoMaoParedeTronco
+
+```gm
+pose "terrCaidoArrastandoMaoParedeTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 90)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-costas 60)
+```
+
+### terrEspiandoBracosDefesa
+
+```gm
+pose "terrEspiandoBracosDefesa" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 20)
+  cabeca(gira-esquerda 30)
+```
+
+### terrEspiandoBracosDefesaOlhaLado
+
+```gm
+pose "terrEspiandoBracosDefesaOlhaLado" de empe
+  ombro(frente 100 abre 10)
+  cotovelo(dobra 100)
+  mao(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### terrEspiandoLanterna
+
+```gm
+pose "terrEspiandoLanterna" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 20)
+  cabeca(gira-esquerda 30)
+  valor fThL -0.1
+```
+
+### terrEspiandoLanternaOlhaLado
+
+```gm
+pose "terrEspiandoLanternaOlhaLado" de empe
+  ombro.direito(frente 30 abre 20)
+  ombro.esquerdo(frente 80 abre 0)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 20)
+  mao.direito(fecha 0% afasta 85%)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### terrEspiandoMaoParede
+
+```gm
+pose "terrEspiandoMaoParede" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 20)
+  cabeca(gira-esquerda 30)
+```
+
+### terrEspiandoMaoParedeOlhaLado
+
+```gm
+pose "terrEspiandoMaoParedeOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 80 abre 60)
+  cotovelo.direito(dobra 30)
+  cotovelo.esquerdo(dobra 20)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 10)
+  joelho.esquerdo(dobra 30)
+  tronco(direita 20 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### infPulandoAviao
+
+```gm
+pose "infPulandoAviao" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### infPulandoAviaoOlhaLado
+
+```gm
+pose "infPulandoAviaoOlhaLado" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+```
+
+### infPulandoAviaoTronco
+
+```gm
+pose "infPulandoAviaoTronco" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+```
+
+### infPulandoPegaPega
+
+```gm
+pose "infPulandoPegaPega" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  corpo(sobe 22.8cm)
+  valor fThR -0.1
+```
+
+### infPulandoPegaPegaOlhaLado
+
+```gm
+pose "infPulandoPegaPegaOlhaLado" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThR -0.1
+```
+
+### infPulandoPegaPegaTronco
+
+```gm
+pose "infPulandoPegaPegaTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThR -0.1
+```
+
+### infPulandoDinossauro
+
+```gm
+pose "infPulandoDinossauro" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  corpo(sobe 22.8cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infPulandoDinossauroOlhaLado
+
+```gm
+pose "infPulandoDinossauroOlhaLado" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infPulandoDinossauroTronco
+
+```gm
+pose "infPulandoDinossauroTronco" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infPulandoSuperHeroi
+
+```gm
+pose "infPulandoSuperHeroi" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infPulandoSuperHeroiOlhaLado
+
+```gm
+pose "infPulandoSuperHeroiOlhaLado" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infPulandoSuperHeroiTronco
+
+```gm
+pose "infPulandoSuperHeroiTronco" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 40)
+  joelho(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(sobe 22.8cm)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infAgachadoAviao
+
+```gm
+pose "infAgachadoAviao" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 direita 15)
+```
+
+### infAgachadoAviaoOlhaLado
+
+```gm
+pose "infAgachadoAviaoOlhaLado" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### infAgachadoAviaoTronco
+
+```gm
+pose "infAgachadoAviaoTronco" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### infAgachadoPegaPegaTronco
+
+```gm
+pose "infAgachadoPegaPegaTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### infAgachadoDinossauroOlhaLado
+
+```gm
+pose "infAgachadoDinossauroOlhaLado" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infAgachadoDinossauroTronco
+
+```gm
+pose "infAgachadoDinossauroTronco" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infAgachadoSuperHeroi
+
+```gm
+pose "infAgachadoSuperHeroi" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infAgachadoSuperHeroiOlhaLado
+
+```gm
+pose "infAgachadoSuperHeroiOlhaLado" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infAgachadoSuperHeroiTronco
+
+```gm
+pose "infAgachadoSuperHeroiTronco" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril(frente 110 abre 25)
+  joelho(dobra 140)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infCorrendoAviao
+
+```gm
+pose "infCorrendoAviao" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 15)
+  corpo(deita-brucos 10)
+```
+
+### infCorrendoAviaoOlhaLado
+
+```gm
+pose "infCorrendoAviaoOlhaLado" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 15 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+```
+
+### infCorrendoAviaoTronco
+
+```gm
+pose "infCorrendoAviaoTronco" de empe
+  ombro(frente 80 abre 90)
+  cotovelo(dobra 5)
+  mao(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+```
+
+### infCorrendoPegaPega
+
+```gm
+pose "infCorrendoPegaPega" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  corpo(deita-brucos 10)
+  valor fThR -0.1
+```
+
+### infCorrendoPegaPegaOlhaLado
+
+```gm
+pose "infCorrendoPegaPegaOlhaLado" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThR -0.1
+```
+
+### infCorrendoPegaPegaTronco
+
+```gm
+pose "infCorrendoPegaPegaTronco" de empe
+  ombro.direito(frente 30 abre 30)
+  ombro.esquerdo(frente 100 abre 10)
+  cotovelo.direito(dobra 90)
+  cotovelo.esquerdo(dobra 10)
+  mao.direito(fecha 100% afasta 20% opoe 75%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThR -0.1
+```
+
+### infCorrendoDinossauro
+
+```gm
+pose "infCorrendoDinossauro" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infCorrendoDinossauroOlhaLado
+
+```gm
+pose "infCorrendoDinossauroOlhaLado" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infCorrendoDinossauroTronco
+
+```gm
+pose "infCorrendoDinossauroTronco" de empe
+  ombro(frente 70 abre 10)
+  cotovelo(dobra 120)
+  mao(fecha 55% afasta 70% opoe 30%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.2 fThR -0.2
+```
+
+### infCorrendoSuperHeroi
+
+```gm
+pose "infCorrendoSuperHeroi" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infCorrendoSuperHeroiOlhaLado
+
+```gm
+pose "infCorrendoSuperHeroiOlhaLado" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### infCorrendoSuperHeroiTronco
+
+```gm
+pose "infCorrendoSuperHeroiTronco" de empe
+  ombro.direito(tras 10 abre 15)
+  ombro.esquerdo(frente 170 abre 10)
+  cotovelo.direito(dobra 90)
+  mao(fecha 100% afasta 20% opoe 75%)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 60)
+  joelho.direito(dobra 40)
+  joelho.esquerdo(dobra 80)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  corpo(deita-brucos 10)
+  valor fThL -0.1 fThR -0.1
+```
+
+### velhoBengalaMaoBengalaOlhaLado
+
+```gm
+pose "velhoBengalaMaoBengalaOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 10 gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### velhoBengalaMaoBengalaTronco
+
+```gm
+pose "velhoBengalaMaoBengalaTronco" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThL -0.1
+```
+
+### velhoBengalaMaoCostas
+
+```gm
+pose "velhoBengalaMaoCostas" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(tras 30 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25)
+  cabeca(sobe 10)
+  valor fThR -0.1
+```
+
+### velhoBengalaMaoCostasOlhaLado
+
+```gm
+pose "velhoBengalaMaoCostasOlhaLado" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(tras 30 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 10 gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### velhoBengalaMaoCostasTronco
+
+```gm
+pose "velhoBengalaMaoCostasTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(tras 30 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### velhoBengalaAcenando
+
+```gm
+pose "velhoBengalaAcenando" de empe
+  ombro.direito(frente 30 abre 10)
+  ombro.esquerdo(frente 130 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25)
+  cabeca(sobe 10)
+  valor fThR -0.1
+```
+
+### velhoBengalaAcenandoOlhaLado
+
+```gm
+pose "velhoBengalaAcenandoOlhaLado" de empe
+  ombro.direito(frente 30 abre 10)
+  ombro.esquerdo(frente 130 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(sobe 10 gira-esquerda 65 inclina-direita 15)
+  valor fThR -0.1
+```
+
+### velhoBengalaAcenandoTronco
+
+```gm
+pose "velhoBengalaAcenandoTronco" de empe
+  ombro.direito(frente 30 abre 10)
+  ombro.esquerdo(frente 130 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril.direito(frente 10)
+  quadril.esquerdo(frente 20)
+  joelho.direito(dobra 20)
+  joelho.esquerdo(dobra 25)
+  tronco(frente 25 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### velhoSentandoDevagarMaoBengala
+
+```gm
+pose "velhoSentandoDevagarMaoBengala" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 70)
+  joelho(dobra 70)
+  tronco(frente 30)
+  valor fThL -0.1
+```
+
+### velhoSentandoDevagarMaoBengalaOlhaLado
+
+```gm
+pose "velhoSentandoDevagarMaoBengalaOlhaLado" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 70)
+  joelho(dobra 70)
+  tronco(frente 30 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+  valor fThL -0.1
+```
+
+### velhoSentandoDevagarMaoCostas
+
+```gm
+pose "velhoSentandoDevagarMaoCostas" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(tras 30 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 70)
+  joelho(dobra 70)
+  tronco(frente 30)
+  valor fThR -0.1
+```
+
+### velhoSentandoDevagarMaoCostasTronco
+
+```gm
+pose "velhoSentandoDevagarMaoCostasTronco" de empe
+  ombro.direito(frente 40 abre 10)
+  ombro.esquerdo(tras 30 abre 20)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 110)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 0% afasta 85%)
+  quadril(frente 70)
+  joelho(dobra 70)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### velhoSentandoDevagarAcenando
+
+```gm
+pose "velhoSentandoDevagarAcenando" de empe
+  ombro.direito(frente 30 abre 10)
+  ombro.esquerdo(frente 130 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 70)
+  joelho(dobra 70)
+  tronco(frente 30)
+  valor fThR -0.1
+```
+
+### velhoSentandoDevagarAcenandoTronco
+
+```gm
+pose "velhoSentandoDevagarAcenandoTronco" de empe
+  ombro.direito(frente 30 abre 10)
+  ombro.esquerdo(frente 130 abre 30)
+  cotovelo.direito(dobra 20)
+  cotovelo.esquerdo(dobra 60)
+  mao.direito(fecha 60% afasta 25% opoe 80%)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 70)
+  joelho(dobra 70)
+  tronco(frente 30 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+  valor fThR -0.1
+```
+
+### velhoCurvadoMaoBengala
+
+```gm
+pose "velhoCurvadoMaoBengala" de empe
+  ombro.direito(frente 10 abre 10)
+  ombro.esquerdo(frente 40 abre 10)
+  cotovelo(dobra 20)
+  mao.esquerdo(fecha 60% afasta 25% opoe 80%)
+  quadril(frente 15)
+  joelho(dobra 20)
+  tronco(frente 40)
+  cabeca(sobe 20)
+  valor fThL -0.1
+```
+
+### cerimEmPeBracosCeuTronco
+
+```gm
+pose "cerimEmPeBracosCeuTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimEmPeMaoPeito
+
+```gm
+pose "cerimEmPeMaoPeito" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+```
+
+### cerimEmPeMaoPeitoOlhaLado
+
+```gm
+pose "cerimEmPeMaoPeitoOlhaLado" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### cerimEmPeMaoPeitoTronco
+
+```gm
+pose "cerimEmPeMaoPeitoTronco" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimEmPeOferendaOlhaLado
+
+```gm
+pose "cerimEmPeOferendaOlhaLado" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### cerimEmPeOferendaTronco
+
+```gm
+pose "cerimEmPeOferendaTronco" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimAjoelhadoBracosCeuTronco
+
+```gm
+pose "cerimAjoelhadoBracosCeuTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimAjoelhadoMaoPeito
+
+```gm
+pose "cerimAjoelhadoMaoPeito" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 5)
+  joelho(dobra 125)
+```
+
+### cerimAjoelhadoMaoPeitoOlhaLado
+
+```gm
+pose "cerimAjoelhadoMaoPeitoOlhaLado" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### cerimAjoelhadoMaoPeitoTronco
+
+```gm
+pose "cerimAjoelhadoMaoPeitoTronco" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimAjoelhadoOferenda
+
+```gm
+pose "cerimAjoelhadoOferenda" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+```
+
+### cerimAjoelhadoOferendaOlhaLado
+
+```gm
+pose "cerimAjoelhadoOferendaOlhaLado" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### cerimAjoelhadoOferendaTronco
+
+```gm
+pose "cerimAjoelhadoOferendaTronco" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 5)
+  joelho(dobra 125)
+  tronco(direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimReverenciaBracosCeuTronco
+
+```gm
+pose "cerimReverenciaBracosCeuTronco" de empe
+  ombro.direito(frente 160 abre 80)
+  ombro.esquerdo(frente 160 abre 30)
+  cotovelo(dobra 10)
+  mao(fecha 2% afasta 60%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimReverenciaMaoPeito
+
+```gm
+pose "cerimReverenciaMaoPeito" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50)
+```
+
+### cerimReverenciaMaoPeitoOlhaLado
+
+```gm
+pose "cerimReverenciaMaoPeitoOlhaLado" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### cerimReverenciaMaoPeitoTronco
+
+```gm
+pose "cerimReverenciaMaoPeitoTronco" de empe
+  ombro.direito(abre 10)
+  ombro.esquerdo(frente 30 cruza 20)
+  cotovelo.direito(dobra 10)
+  cotovelo.esquerdo(dobra 120)
+  mao.esquerdo(fecha 2% afasta 60%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
+```
+
+### cerimReverenciaOferenda
+
+```gm
+pose "cerimReverenciaOferenda" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50)
+```
+
+### cerimReverenciaOferendaOlhaLado
+
+```gm
+pose "cerimReverenciaOferendaOlhaLado" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50 gira-esquerda 25)
+  pelve(gira-esquerda 12)
+  cabeca(gira-esquerda 65 inclina-direita 15)
+```
+
+### cerimReverenciaOferendaTronco
+
+```gm
+pose "cerimReverenciaOferendaTronco" de empe
+  ombro(frente 70 abre 0)
+  cotovelo(dobra 60)
+  antebraco(palma-cima 90)
+  mao(fecha 0% afasta 85%)
+  quadril(frente 20)
+  joelho(dobra 5)
+  tronco(frente 50 direita 25 gira-direita 35)
+  cabeca(baixa 15 gira-direita 25)
 ```
 
 ## Animações
@@ -24757,8 +45628,8 @@ No filme: `0s Kai anima flutuarMeditando`
 ```gm
 # senta no ar e sobe meditando
 animacao "flutuarMeditando" duracao 2s mantem tags "Movimento/Flutuar/Meditação"
-  chave 0s ombro(frente 20 abre 18) cotovelo(dobra 30) mao(fecha 10% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%) quadril(frente 84 abre 30 gira-fora 45) joelho.direito(dobra 142) joelho.esquerdo(dobra 148) cabeca(baixa 5) valor pronL -90 pronR -90
-  chave 2s corpo(sobe 68.4cm)
+  chave 0s ombro.direito(tras 34 abre 30 gira-dentro 30) ombro.esquerdo(tras 37 abre 13 gira-dentro 5) cotovelo.direito(dobra 106) cotovelo.esquerdo(dobra 103) mao(fecha 25% afasta 55% polegar 50% indicador 60% minimo 10% opoe 100%) quadril.direito(frente 95 abre 38 gira-fora 45) quadril.esquerdo(frente 95 abre 43 gira-fora 45) joelho(dobra 150) tornozelo(aponta 10 sola-dentro 20) cabeca(baixa 5)
+  chave 2s ombro(frente 20 abre 18 gira-fora 0) cotovelo(dobra 30) mao(fecha 10%) quadril(frente 84 abre 30) joelho.direito(dobra 142) joelho.esquerdo(dobra 148) tornozelo(aponta 0 sola-dentro 0) corpo(sobe 68.4cm) valor pronL -90 pronR -90
 ```
 
 ### decolarHeroi — ação (acontece e segura), 0,90 s
