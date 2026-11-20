@@ -1050,11 +1050,11 @@ ${EXEMPLO_FILME}
   Cada ação de mouse escreve a linha equivalente no histórico da barra de comando (para aprender o texto fazendo).
 
 59. APRENDER (tutorial interativo) E O QUE CADA IA PODE FAZER
-  Site: botão Aprender (F1). 12 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
-    pacotes de cenas, prompt de imagem, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
+  Site: botão Aprender (F1). 13 capítulos (palco, comando, inspetor, planta e grupos, área aleatória, efeitos, veículos e sentar, Name e páginas,
+    pacotes de cenas, prompt de imagem, catálogo de poses e grupos, filme, nuvem e MCP). "Mostrar fazendo": um cursor vai até o lugar e faz de verdade; "automático" passa sozinho; alguns passos
     pedem para você repetir. Ao sair, dá para voltar à cena de antes.
   MCP (Claude, ChatGPT, Gemini) e linha de comando (node mcp/gm.mjs <ferramenta> …): linha_no_palco (qualquer linha deste manual, incluindo espalha,
-    grupo, apaga, duplica), celulas_* (pacotes), prompt_imagem / prompt_catalogo (cap. 60), miniaturas (folha de contato de poses por categoria, animações ou células), paginas_hq, webtoon,
+    grupo, apaga, duplica), celulas_* (pacotes), prompt_imagem / prompt_catalogo (cap. 60), catalogo_poses / grupo_pose (cap. 61), miniaturas (folha de contato de poses por categoria, animações ou células), paginas_hq, webtoon,
     gerar_name, filme, catalogo e as demais.
 
 60. PROMPT DE IMAGEM (Google Flow e outras IAs de imagem): CENA + CÂMERA → TEXTO, GRADE, CORES, ZIP
@@ -1084,7 +1084,46 @@ ${EXEMPLO_FILME}
   ZIP: prompt-en.txt, prompt-pt.txt, prompt.json (posições numéricas), referencias/ (cena e mapa de cada célula, grade-cenas, grade-mapas, planta),
     paleta, miniaturas/ (poses, objetos, plano, ângulo, lado, lente usados) em PNG e SVG, o texto da cena e LEIA-ME.
   Dica de uso: mande o prompt junto com referencias/grade-cenas.png (ou celula-01-cena.png) como imagem de referência de composição.
-  MCP: prompt_imagem {texto, zip?} (sem quadro usa a cena montada com linha_no_palco) e prompt_catalogo {miniaturas?, grupo?}.`;
+  MCP: prompt_imagem {texto, zip?} (sem quadro usa a cena montada com linha_no_palco) e prompt_catalogo {miniaturas?, grupo?}.
+  Com poses de grupo e toques (cap. 61) o prompt ganha "Group action: …" e "Physical contact: Kai and Mira — …".
+
+61. CATÁLOGO: MAIS DE 1.000 POSES NOVAS, DUPLAS, GRUPOS (2 A 12 PESSOAS) E A BUSCA COM FILTROS
+  Poses de uma pessoa (mais de 650 novas, nomes em português e descrição em inglês): Ação (invasão, assalto, infiltração, sniper,
+    perseguição, telhado, fuga, esconderijo, tático, resgate, parkour), Movimento (corrida, caminhada, escalada, salto, chão), Dança (balé,
+    hip hop, latina, salão e festa, contemporânea, folclore), Esporte (futebol, basquete, vôlei, tênis, natação, ginástica, radical, atletismo,
+    bola e taco, luta esportiva, lazer), Casa, Trabalho, Escola, Festa, Viagem, Lazer, Emoção, Romance, Terror, Suspense, Comédia, Luta
+    (briga de rua, armas brancas, defesa pessoal, artes marciais), Fantasia (magia, super-herói, anime), Gênero (faroeste, medieval, pirata,
+    ficção científica, sobrevivência), Social, Infância, Velhice, Cerimônia e fé, Campo, Militar, Hospital, Animais e natureza, Rua, Tecnologia.
+    Use pelo nome ("Kai pose infAgachadoAvancando") ou pelo apelido entre aspas ("Kai pose \"avançando agachado\"").
+  Duplas com toque (interacao): casal (mãos dadas, abraço por trás, testa com testa, beijo na ponta dos pés, no colo, dança lenta, giro,
+    tango, cabeça no ombro, briga, enxugar a lágrima, cavalinho), família, amizade, ajuda e resgate, briga, polícia e crime, esporte:
+    "Kai, Mira interacao casalDancaLenta".
+  POSE DE GRUPO: grupo-pose ID [com Kai, Mira, …] [em (x,z)] [gira G] [espelhado] [sem-poses] [nome Guarda]
+    Cada papel ganha lugar, giro, pose, para quem olha, os toques e os objetos de apoio (mesa, cadeira, porta, tapete…). Quem você não
+    nomear vira figurante (Figurante1…); o mesmo grupo em vários quadros usa os mesmos figurantes. Nomes do "com" que não estão no elenco
+    entram sozinhos. Vale no Name, na barra de comando do palco e no MCP (grupo_pose). Como todo personagem do Name, quem entrou num
+    quadro continua nos seguintes: para tirar, "Figurante1 sai" (ou use outro grupo-pose com os mesmos nomes). O id pode vir com o
+    prefixo do catálogo (grupo:grupo.festaDanca8) ou sem; os objetos de apoio ganham nome (Mesa, Cadeira 2, Porta…).
+    Ids: dupla.* (encontro, pedido de casamento, duelo, perseguição, interrogatório, tênis, xadrez, entrega…), trio.* (fofoca, dois contra um,
+    família, impasse mexicano, assalto ao banco, banda, casamento…) e grupo.*N com N = 3, 4, 5, 6, 8 ou 12 (equipe tática na porta,
+    invadindo a sala, infiltração em fila, patrulha em cunha, assalto ao cofre, fuga, multidão perseguindo, cerco, briga generalizada,
+    batalha, gangues, trincheira, desfile e tropa, zumbis, barricada, fogueira, pista de dança, roda, coreografia, balé, aniversário,
+    brinde, reunião, sala de aula, formatura, foto de turma, plateia, protesto, fila, ponto de ônibus, metrô, turistas, times, partidas,
+    maratona, yoga, academia, casamento, funeral, oração, coral, orquestra, cozinha, emergência, bombeiros, obra, colheita, piquenique,
+    praia, piscina, pracinha, trilha, neve, náufragos, nave, piratas, saloon, cavaleiros, heróis, magos, ninjas, detetives, coletiva…).
+  CATÁLOGO (site: botão Catálogo, tecla C; botão direito em alguém → "Catálogo para…"): busca em texto livre ("luta 2 pessoas",
+    "namoro", "festa 5 pessoas", "-arma" exclui; TODAS as palavras precisam aparecer; aceita raiz — cozinhar acha cozinhando —, palavras sem
+    acento e algumas em inglês: kiss, dance, fight, chase) e filtros em botões, com contagem (pessoas: 6 = de 6 a 8, 12 = 12 ou mais):
+    O quê (pose, dupla com toque, grupo, animação, cena+câmera) · Pessoas (1, 2, 3, 4, 5, 6–8, 12) · Gênero (ação, luta, romance, drama,
+    terror, suspense, comédia, fantasia, ficção científica, faroeste, medieval, esporte, cotidiano, musical, infantil, guerra) · Na história
+    (perseguição, fuga, luta, confronto, esconderijo, descanso, conversa, reunião, romance, emoção, comédia, investigação, revelação,
+    viagem, treino, refeição, trabalho, cotidiano, vitória, derrota, resgate, poder) · Corpo (de pé, sentado/agachado, ajoelhado,
+    deitado, no ar, de cabeça para baixo) · Intensidade (calma, média, explosiva) · Emoção · Lugar · com toque · com objeto · só as novas
+    · árvore de Categorias. Clique: miniatura grande, nomes pt/en, tags e a linha de texto; Aplicar no palco (duplo clique ou Enter),
+    Pôr no texto (Name), Usar no Prompt, Copiar. No palco, os nomes vêm das pessoas que já estão lá (a escolhida primeiro).
+  Autocompletar: depois de "grupo-pose " aparecem os grupos com miniatura; depois de "pose " as poses (as novas incluídas).
+  MCP: catalogo_poses {busca?, tipo?, pessoas?, genero?, funcao?, nivel?, intensidade?, emocao?, lugar?, categoria?, contato?, objeto?,
+    novos?, miniaturas?, facetas?, arvore?, nomes?} → itens com a linha pronta; grupo_pose {id, nomes?, x?, z?, giro?, espelhado?, so_ver?}.`;
 }
 
 /* ===================== CATÁLOGO DSL: todas as poses e animações em código (para mandar à IA de fora) ===================== */

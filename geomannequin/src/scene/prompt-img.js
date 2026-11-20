@@ -68,6 +68,10 @@ function piPose(nome) { if (!nome) return null; const info = POSES_EXTRA_INFO[no
   const pt = piHumano(nome); const en = pt.split(/\s+/).map(w => { const k = piNorm(w); return PI_PAL[k] !== undefined ? PI_PAL[k] : w; }).filter(Boolean).join(" ");
   let tag = null; try { const x = listaPosesExtras().find(p => p.nome === nome); tag = x ? x.tag : null; } catch (e) { } return { nome, pt, en: en || pt, tag }; }
 /* ações de grupo e toques que o texto pede (grupo-pose / interacao), para o prompt contar a AÇÃO e não só as posições */
+/* ações por quadro: o elenco + cada bloco "quadro"; quadros a mais (preenchidos por variar) repetem o último */
+function piAcoesPorQuadro(texto, n) { const ls = String(texto || "").split("\n"), pre = [], blocos = []; let cur = null;
+  for (const l of ls) { if (/^quadro\b/i.test(l)) { cur = [l]; blocos.push(cur); } else if (cur && (/^\s/.test(l) || !l.trim())) cur.push(l); else { cur = null; pre.push(l); } }
+  const out = []; for (let k = 0; k < n; k++) { const b = blocos[Math.min(k, blocos.length - 1)]; out.push(b ? piAcoes(pre.join("\n") + "\n" + b.join("\n")) : null); } return out; }
 function piAcoes(texto) { const grupos = [], toques = []; let t = String(texto || "");
   for (const m of t.matchAll(/^\s*grupo-pose\s+(\S+)/gim)) { const d = gpAchar(m[1]); if (d && !grupos.some(g => g.id === d.id)) grupos.push({ id: d.id, pt: d.nome, en: d.en, n: d.n }); }
   try { t = ltExpandirName(t).texto; } catch (e) { }
@@ -213,12 +217,12 @@ function piMontar(L, cel, lingua) {
   linhas.push(N > 1 ? (en ? "A single " + o.formato + " image laid out as a " + C + "×" + R + " grid sprite sheet (" + C + " columns × " + R + " rows, " + N + " equal panels separated by thin white gutters, no borders, no text, no panel numbers). The SAME characters, outfits, colors and place in every panel." : "Uma única imagem " + o.formato + " organizada como folha em grade " + C + "×" + R + " (" + C + " colunas × " + R + " linhas, " + N + " painéis iguais separados por faixas brancas finas, sem bordas, sem texto, sem números). Os MESMOS personagens, roupas, cores e lugar em todos os painéis.")
     : (en ? "Image, aspect ratio " + o.formato + "." : "Imagem, proporção " + o.formato + "."));
   if (o.situacao) linhas.push((en ? "Situation: " : "Situação: ") + tr(o.situacao) + ".");
-  { const A = piAcoes(L.textoOriginal || L.name); if (A.grupos.length) linhas.push((en ? "Group action: " : "Ação do grupo: ") + A.grupos.map(g => (en ? g.en : g.pt) + " (" + g.n + (en ? " people" : " pessoas") + ")").join("; ") + ".");
-    if (A.toques.length) linhas.push((en ? "Physical contact: " : "Contato físico: ") + A.toques.map(c => c.a + (en ? " and " : " e ") + c.b + " — " + (en ? (c.en || c.pt) : c.pt)).join("; ") + "."); }
+  const acoes = piAcoesPorQuadro(L.name, cel.length), acaoTxt = A => [A.grupos.length ? (en ? "Group action: " : "Ação do grupo: ") + A.grupos.map(g => (en ? g.en : g.pt) + " (" + g.n + (en ? " people" : " pessoas") + ")").join("; ") + "." : "", A.toques.length ? (en ? "Physical contact: " : "Contato físico: ") + A.toques.map(c => c.a + (en ? " and " : " e ") + c.b + " — " + (en ? (c.en || c.pt) : c.pt)).join("; ") + "." : ""].filter(Boolean).join(" ");
+  if (N <= 1 && acoes[0]) { const t = acaoTxt(acoes[0]); if (t) linhas.push(t); }
   const lugar = o.lugar || (cel[0] && cel[0].local); if (lugar) linhas.push((en ? "Place: " : "Lugar: ") + tr(lugar) + ".");
   const luz = [o.luz || (cel[0] && cel[0].luz), o.hora || (cel[0] && cel[0].hora), o.clima].filter(Boolean); if (luz.length) linhas.push((en ? "Light/time/weather: " : "Luz/hora/clima: ") + tr(luz.join(", ")) + ".");
   if (pessoas.size) linhas.push((en ? "Characters and key elements (keep identical everywhere): " : "Personagens e elementos (iguais em toda a imagem): ") + [...pessoas.values()].map(i => { const cor = i.cor ? piNomeCor(i.cor) : null; return i.nome + " = " + (i.descricao ? tr(i.descricao) : (i.tipo === "pessoa" ? (en ? "person" : "pessoa") : (en ? i.nomeObj.en : i.nomeObj.pt)) + (cor ? ", " + (en ? cor.en : cor.pt) + " (" + cor.hex + ")" : "")) + (i.tipo === "pessoa" && i.alturaM && !i.sentado && !i.noAr ? (en ? ", " + i.alturaM + " m tall" : ", " + i.alturaM + " m de altura") : ""); }).join("; ") + ".");
-  if (N > 1) cel.forEach((a, k) => { const r = Math.floor(k / C) + 1, c = k % C + 1, onde = en ? "Panel " + (k + 1) + " (row " + r + ", column " + c + ")" : "Painel " + (k + 1) + " (linha " + r + ", coluna " + c + ")"; linhas.push(onde + ": " + piCelulaTexto(a, L, lingua, a.titulo ? "“" + a.titulo + "”." : "")); });
+  if (N > 1) cel.forEach((a, k) => { const r = Math.floor(k / C) + 1, c = k % C + 1, onde = en ? "Panel " + (k + 1) + " (row " + r + ", column " + c + ")" : "Painel " + (k + 1) + " (linha " + r + ", coluna " + c + ")"; linhas.push(onde + ": " + piCelulaTexto(a, L, lingua, [a.titulo ? "“" + a.titulo + "”." : "", acoes[k] ? acaoTxt(acoes[k]) : ""].filter(Boolean).join(" "))); });
   else if (cel[0]) linhas.push(piCelulaTexto(cel[0], L, lingua, ""));
   const pal = piPaleta(L, cel); if (pal.length) linhas.push((en ? "Color palette (exact hex codes): " : "Paleta (códigos exatos): ") + pal.map(c => (en ? c.en : c.pt) + " " + c.hex + (c.usos.length ? " = " + c.usos.slice(0, 3).join("/") : "")).join(", ") + ".");
   if (o.detalhe) linhas.push(tr(o.detalhe) + ".");

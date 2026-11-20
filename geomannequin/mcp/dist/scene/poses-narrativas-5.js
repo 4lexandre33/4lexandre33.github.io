@@ -69,7 +69,7 @@ pn("faroesteSacandoRevolver", "sacando o revólver|tiro rápido", "fast draw, re
 pn("faroesteLacando", "girando o laço|caubói", "cowboy twirling a lasso overhead", "hf20,-10 kf20,10 fl160,30 ab20,30 el40,60 hp-30 m:segurar,segurar e:gritoDeAlegria");
 pn("faroesteEncostadoBalcao", "caubói no balcão do saloon|apoiado no cotovelo", "cowboy leaning an elbow on a saloon bar", "ss15 hf20,0 ha0,10 kf20,0 fl90,20 ab50,15 el110,40 hy-30 m:relaxada,segurar e:sombrio");
 pnC("Gênero/Medieval e pirata");
-pn("medievalJuramentoEspada", "juramento de cavaleiro|espada no peito", "knight kneeling with a sword held vertically before the face", "kf100,0 hf0,90 af40,0 sf-6 fl55,55 ab-10,-10 el120,120 hp20 m:segurar,segurar e:determinacao");
+pn("medievalJuramentoEspada", "juramento de cavaleiro|espada no peito", "knight kneeling with a sword held vertically before the face", "kf100,90 hf0,90 af40,0 sf-6 fl55,55 ab-10,-10 el120,120 hp20 m:segurar,segurar e:determinacao");
 pn("medievalReiTrono", "rei no trono|cetro e postura real", "king seated on a throne holding a scepter upright", "hf90,90 kf90,90 sf-10 fl40,30 ab20,30 el90,60 hp-10 m:segurar,relaxada e:arrogante");
 pn("medievalArautoTrombeta", "arauto com trombeta|anunciando", "herald blowing a long trumpet raised high", "sf-15 fl90,80 ab20,20 el110,90 hp-25 m:segurar,segurar e:esforco");
 pn("medievalFerreiroMartelo", "ferreiro na bigorna|martelando o ferro", "blacksmith hammering metal on an anvil", "sf30 hf30,-10 kf30,10 fl150,40 ab20,20 el60,80 hp40 m:segurar,segurar e:esforco");
@@ -203,4 +203,9 @@ pn("tecVideoChamada", "videochamada|celular na frente do rosto", "on a video cal
 pn("tecRealidadeVirtual", "óculos de realidade virtual|tateando no ar", "wearing a VR headset, reaching into the air", "sf-6 hf20,-6 kf20,10 fl100,70 ab20,40 el20,40 hp-10 m:aberta,apontar e:surpresa");
 pn("tecGravandoVideo", "gravando vídeo de si mesmo|influenciador", "influencer filming themselves, talking to the phone", "ss8 fl80,40 ab20,30 el40,80 pr0,-60 hp-6 m:segurar,aberta e:sorrisoConfiante");
 pn("tecNotebookColo", "notebook no colo|digitando no sofá", "typing on a laptop resting on the lap", "hf90,90 kf90,90 sf15 fl25,25 ab10,10 el70,70 pr-80,-80 hp35 m:aberta,aberta e:focoTotal");
+pnC("Social/À mesa");
+pn("sentadoBrindando", "brindando sentado|taça erguida à mesa", "seated at a table raising a glass in a toast", "hf90,90 kf90,90 sf5 fl90,10 ab10,10 el60,10 hp-6 m:segurar,relaxada e:riso");
+pn("sentadoComendo", "comendo à mesa|garfo e faca", "seated at a table eating with fork and knife", "hf90,90 kf80,100 hr0,15 sf25 st15 fl40,30 ab20,25 el100,75 hp25 hy-15 m:segurar,segurar e:fome");
+pn("sentadoConversandoMesa", "conversando sentado à mesa|gesticulando sentado", "seated at a table chatting and gesturing with both hands", "hf90,90 kf90,90 sf8 fl50,40 ab30,30 el70,90 pr-60,-30 hy20 m:aberta,aberta e:alegria");
+pn("sentadoRindoMesa", "rindo sentado|gargalhada à mesa", "seated and laughing, leaning back with hands on the belly", "hf90,90 kf90,90 sf-15 fl40,40 ab-10,-10 el100,100 hp-20 m:aberta,aberta e:riso");
 pnRegistrar();

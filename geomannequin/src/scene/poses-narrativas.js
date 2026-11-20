@@ -175,7 +175,7 @@ pn("chaoEncolhidoFetal", "posição fetal|encolhido no chão", "curled up in fet
 const PN_FEITAS = new Set();
 function pnRegistrar() { for (const [n, i] of Object.entries(POSES_NARRATIVAS_INFO)) { if (PN_FEITAS.has(n)) continue; PN_FEITAS.add(n);
     POSES_CORPO[n] = POSES_NARRATIVAS[n]; POSES_EXTRA[n] = POSES_NARRATIVAS[n]; POSES_EXTRA_INFO[n] = { tag: i.tag, apelidos: i.apelidos, desc: i.desc, en: i.en, expr: i.expr };
-    TAGS_POSES[n] = i.tag; for (const a of i.apelidos) { const k = a.toLowerCase(); if (!POSE_ALIAS[k]) POSE_ALIAS[k] = n; } const t = i.tag.split("/"), g = t[0] + ": " + (t[1] || t[0]); (POSE_GRUPOS["Narrativa — " + g] = POSE_GRUPOS["Narrativa — " + g] || []).push(n); } }
+    TAGS_POSES[n] = i.tag; for (const a of i.apelidos) { const k = a.toLowerCase(), k2 = k.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if (!POSE_ALIAS[k]) POSE_ALIAS[k] = n; if (!POSE_ALIAS[k2]) POSE_ALIAS[k2] = n; } const t = i.tag.split("/"), g = t[0] + ": " + (t[1] || t[0]); (POSE_GRUPOS["Narrativa — " + g] = POSE_GRUPOS["Narrativa — " + g] || []).push(n); } }
 pnRegistrar();
 function listaPosesNarrativas() { return Object.entries(POSES_NARRATIVAS_INFO).map(([nome, i]) => ({ nome, tag: i.tag, apelidos: i.apelidos, en: i.en, expressao: i.expr })); }
 export { POSES_NARRATIVAS, POSES_NARRATIVAS_INFO, pn, pnC, pnRegistrar, listaPosesNarrativas };

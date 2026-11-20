@@ -1101,7 +1101,9 @@ ${EXEMPLO_FILME}
   POSE DE GRUPO: grupo-pose ID [com Kai, Mira, …] [em (x,z)] [gira G] [espelhado] [sem-poses] [nome Guarda]
     Cada papel ganha lugar, giro, pose, para quem olha, os toques e os objetos de apoio (mesa, cadeira, porta, tapete…). Quem você não
     nomear vira figurante (Figurante1…); o mesmo grupo em vários quadros usa os mesmos figurantes. Nomes do "com" que não estão no elenco
-    entram sozinhos. Vale no Name, na barra de comando do palco e no MCP (grupo_pose).
+    entram sozinhos. Vale no Name, na barra de comando do palco e no MCP (grupo_pose). Como todo personagem do Name, quem entrou num
+    quadro continua nos seguintes: para tirar, "Figurante1 sai" (ou use outro grupo-pose com os mesmos nomes). O id pode vir com o
+    prefixo do catálogo (grupo:grupo.festaDanca8) ou sem; os objetos de apoio ganham nome (Mesa, Cadeira 2, Porta…).
     Ids: dupla.* (encontro, pedido de casamento, duelo, perseguição, interrogatório, tênis, xadrez, entrega…), trio.* (fofoca, dois contra um,
     família, impasse mexicano, assalto ao banco, banda, casamento…) e grupo.*N com N = 3, 4, 5, 6, 8 ou 12 (equipe tática na porta,
     invadindo a sala, infiltração em fila, patrulha em cunha, assalto ao cofre, fuga, multidão perseguindo, cerco, briga generalizada,
@@ -1110,7 +1112,8 @@ ${EXEMPLO_FILME}
     maratona, yoga, academia, casamento, funeral, oração, coral, orquestra, cozinha, emergência, bombeiros, obra, colheita, piquenique,
     praia, piscina, pracinha, trilha, neve, náufragos, nave, piratas, saloon, cavaleiros, heróis, magos, ninjas, detetives, coletiva…).
   CATÁLOGO (site: botão Catálogo, tecla C; botão direito em alguém → "Catálogo para…"): busca em texto livre ("luta 2 pessoas",
-    "namoro", "festa 5 pessoas", "-arma" exclui; aceita raiz: cozinhar acha cozinhando) e filtros em botões, com contagem:
+    "namoro", "festa 5 pessoas", "-arma" exclui; TODAS as palavras precisam aparecer; aceita raiz — cozinhar acha cozinhando —, palavras sem
+    acento e algumas em inglês: kiss, dance, fight, chase) e filtros em botões, com contagem (pessoas: 6 = de 6 a 8, 12 = 12 ou mais):
     O quê (pose, dupla com toque, grupo, animação, cena+câmera) · Pessoas (1, 2, 3, 4, 5, 6–8, 12) · Gênero (ação, luta, romance, drama,
     terror, suspense, comédia, fantasia, ficção científica, faroeste, medieval, esporte, cotidiano, musical, infantil, guerra) · Na história
     (perseguição, fuga, luta, confronto, esconderijo, descanso, conversa, reunião, romance, emoção, comédia, investigação, revelação,

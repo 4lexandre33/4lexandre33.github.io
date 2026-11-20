@@ -56,7 +56,7 @@ pn("petAfagandoGato", "fazendo carinho no gato|agachado acariciando", "crouching
 pnC("Trabalho/Escritório");
 pn("escrApresentando", "apresentando slides|apontando para a tela", "presenting to a meeting, pointing at a screen", "st20 hf10,-6 kf10,4 fl100,30 ab30,20 el10,80 hy40 m:apontar,aberta e:sorrisoConfiante");
 pn("escrAoTelefone", "falando ao telefone|celular no ouvido", "talking on the phone, other hand gesturing", "fl40,40 ab35,30 el135,80 pr0,-60 hp-4 hy10 m:segurar,aberta e:serio");
-pn("escrCarregandoPastas", "carregando pilha de papéis|pilha de pastas", "carrying a tall stack of files, peeking around it", "sf-10 fl40,40 ab15,15 el80,80 pr-80,-80 hy30 hp-10 m:segurar,segurar e:nervoso");
+pn("escrCarregandoPastas", "carregando pilha de papéis|pilha de pastas", "carrying a tall stack of files, peeking around it", "sf-10 fl35,35 ab15,15 el70,70 pr-80,-80 hy30 hp-10 m:segurar,segurar e:nervoso");
 pn("escrEstressado", "estressado na mesa|cabeça entre as mãos", "stressed at the desk, head in both hands", "hf90,90 kf90,90 sf35 fl40,40 ab25,25 el145,145 hp45 m:aberta,aberta e:frustrado");
 pn("escrEspreguicandoCadeira", "espreguiçando na cadeira|mãos atrás da cabeça", "leaning back in an office chair, hands behind the head", "hf80,80 kf80,80 sf-20 fl150,150 ab60,60 el140,140 hp-10 m:aberta,aberta e:alivio");
 pn("escrApertoMaoNegocio", "estendendo a mão para negócio|fechando acordo", "offering a firm handshake, slight bow", "hf20,-10 kf15,6 st-15 sf12 fl60,0 ab12,10 el20,10 hp10 m:aberta,relaxada e:sorrisoConfiante");
@@ -64,7 +64,7 @@ pn("escrQuadroBranco", "escrevendo no quadro branco|explicando na lousa", "writi
 pn("escrCafezinho", "pausa do café|encostado com café", "leaning against a counter with a coffee cup, relaxed", "ss10 hf10,-6 ha0,15 kf10,0 fl40,-10 ab20,30 el125,20 hp-4 m:segurar,espalmada e:calmo");
 pnC("Trabalho/Saúde");
 pn("medAuscultando", "médico com estetoscópio|auscultando", "doctor listening with a stethoscope, leaning in", "sf20 fl50,40 ab20,10 el80,120 hp20 m:segurar,pinca e:focoTotal");
-pn("medSeringa", "aplicando injeção|seringa", "nurse holding up a syringe and flicking it", "fl70,40 ab25,20 el110,110 hp-10 m:pinca,pinca e:focoTotal");
+pn("medSeringa", "aplicando injeção|seringa", "nurse holding up a syringe and flicking it", "fl55,35 ab25,20 el95,85 hp-10 m:pinca,pinca e:focoTotal");
 pn("medCirurgiao", "cirurgião operando|mãos na mesa de cirurgia", "surgeon bent over the operating table, hands raised in gloves", "sf25 hf20,20 kf20,20 ha15,15 fl40,40 ab20,20 el90,90 pr-60,-60 hp35 m:pinca,pinca e:focoTotal");
 pn("medEmpurrandoMaca", "empurrando a maca|corredor do hospital", "pushing a hospital gurney at a run", "bp20 hf60,-20 kf60,30 fl60,60 ab15,15 el30,30 hp-6 m:segurar,segurar e:nervoso");
 pn("medMaosLevantadasLuvas", "mãos para cima de luvas|cirurgião pronto", "surgeon holding scrubbed hands up in front of the chest", "fl25,25 ab15,15 el120,120 pr-60,-60 hp-4 m:aberta,aberta e:serio");
@@ -77,15 +77,15 @@ pn("bombeiroMachado", "bombeiro com machado|quebrando a porta", "firefighter swi
 pn("segurancaBracosCruzados", "segurança de braços cruzados|leão de chácara", "bouncer standing with arms crossed, legs apart", "bp-6 ha20,20 fl15,15 ab-10,-10 el60,60 ar30,30 hp-10 m:punho,punho e:olharFrio");
 pnC("Trabalho/Serviços");
 pn("garcomBandeja", "garçom com bandeja|bandeja no alto", "waiter carrying a tray high on one hand", "fl110,10 ab40,10 el110,90 wr-60,0 pr-80,0 hp-6 m:espalmada,relaxada e:sorrisoConfiante");
-pn("garcomAnotando", "anotando o pedido|garçom com bloquinho", "waiter writing an order on a notepad", "ss10 hf10,0 ha0,15 kf15,0 sf8 fl40,45 ab20,15 el110,100 pr-60,-30 hp30 m:segurar,pinca e:neutra");
+pn("garcomAnotando", "anotando o pedido|garçom com bloquinho", "waiter writing an order on a notepad", "ss10 hf10,0 ha0,15 kf15,0 sf8 fl30,35 ab20,15 el85,80 pr-60,-30 hp30 m:segurar,pinca e:neutra");
 pn("chefFlambando", "chef flambando|panela pegando fogo", "chef flambéing, flames rising from the pan", "sf-10 fl60,40 ab20,30 el40,90 hp-20 m:segurar,aberta e:sorrisoConfiante");
 pn("baristaServindo", "barista servindo café|vertendo leite", "barista pouring steamed milk into a cup", "sf20 fl50,40 ab20,15 el80,90 wr40,0 hp40 m:segurar,segurar e:focoTotal");
 pn("mecanicoDebaixoCarro", "mecânico debaixo do carro|deitado consertando", "mechanic lying under a car, arms raised to work", "bp-90 hf30,10 kf60,20 fl160,150 ab20,20 el60,60 hp-10 m:segurar,segurar e:focoTotal");
 pn("mecanicoCapo", "mecânico no motor|inclinado no capô", "mechanic leaning into an open hood", "sf60 hf20,10 kf10,10 fl70,60 ab30,20 el50,60 hp30 m:segurar,espalmada e:focoTotal");
-pn("pedreiroMartelando", "martelando|pregando", "hammering a nail at chest height", "fl110,40 ab20,20 el80,90 hp20 m:segurar,pinca e:focoTotal");
+pn("pedreiroMartelando", "martelando|pregando", "hammering a nail at chest height", "fl50,40 ab20,20 el100,80 hp20 m:segurar,pinca e:focoTotal");
 pn("pedreiroCarregandoTijolo", "carregando tijolos no ombro|carregando saco", "carrying a heavy sack on the shoulder", "ss15 sf10 hf20,-10 kf20,10 fl140,20 ab50,20 el130,20 hz15 m:segurar,relaxada e:esforco");
 pn("carteiroEntregando", "entregando encomenda|carteiro", "courier handing over a package with both hands", "sf10 fl60,60 ab20,20 el40,40 pr-80,-80 hp6 m:segurar,segurar e:alegria");
-pn("caixaSupermercado", "operador de caixa|passando compras", "cashier scanning items at the checkout", "hf90,90 kf90,90 st30 fl50,40 ab30,20 el80,90 hp30 m:segurar,aberta e:tedio");
+pn("caixaSupermercado", "operador de caixa|passando compras", "cashier scanning items at the checkout", "hf90,90 kf90,90 st30 fl35,30 ab30,20 el70,70 hp30 m:segurar,aberta e:tedio");
 pnC("Trabalho/Arte e mídia");
 pn("fotoTirandoFoto", "tirando foto|fotógrafo", "photographer shooting with a camera at the eye", "sf8 hf30,-6 kf30,10 fl60,60 ab35,20 el130,110 hp-4 m:segurar,segurar e:focoTotal");
 pn("fotoAgachadoFotografando", "fotógrafo agachado|foto de baixo", "photographer crouched low, aiming the camera upward", "hf110,30 kf130,100 af0,30 sf10 fl60,60 ab35,20 el130,110 hp-20 m:segurar,segurar e:focoTotal");

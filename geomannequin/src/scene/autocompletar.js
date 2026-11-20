@@ -67,7 +67,7 @@ function acTexto(m) {
     case "aanim": return "elenco\n  Trovao animal cavalo\nquadro 1 alvo Trovao\n  Trovao em (0,0) gira 90\n  Trovao anima " + m.v + "\n";
     case "preset": { const d = pcAchar(m.v); return d ? pcDemoTexto(d) : ""; }
     case "ramo": { const d = pcAchar(m.exemplo); return d ? pcDemoTexto(d) : ""; }
-    case "grupo": return GRUPOS_POSES[m.v] ? "quadro 1 conjunto lado 30\n  grupo-pose " + m.v + "\n" : "";
+    case "grupo": return GRUPOS_POSES[m.v] ? "quadro 1 conjunto lado " + (GRUPOS_POSES[m.v].n === 2 ? 70 : 30) + "\n  grupo-pose " + m.v + "\n" : "";
     case "pose": return AC_EL1 + "quadro 1 inteiro alvo Kai lado 3/4\n  Kai em (0,0) pose " + m.v + "\n";
     case "narrativa": return NR.has(m.v) ? nrDemoTexto(m.v) : "";
     case "nramo": return NR.has(m.exemplo) ? nrDemoTexto(m.exemplo) : "";

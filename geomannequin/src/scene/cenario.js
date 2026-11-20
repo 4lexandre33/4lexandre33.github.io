@@ -216,8 +216,10 @@ function isquios(it) {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 0.5, (a[2] + b[2]) / 2];
 }
 /* senta no objeto (ou cria um banco do tamanho certo, se nenhum for dado) */
-function sentar(it, ref) {
-  comP(it, () => doBodyPose("sentado"));
+function sentar(it, ref, poseSentada) {
+  /* pose sentada própria (ex.: brindando sentado): usa ela se dobra quadril e joelho; senão a "sentado" padrão */
+  let pz = "sentado"; if (poseSentada && poseSentada !== "sentado") { try { const v = {}; comP(it, () => { doBodyPose(poseSentada); Object.assign(v, it.params); }); if ((v.hipFlexL + v.hipFlexR) / 2 > 60 && (v.kneeFlexL + v.kneeFlexR) / 2 > 45) pz = poseSentada; } catch (e) { pz = "sentado"; } }
+  comP(it, () => doBodyPose(pz));
   let q = ref === undefined || ref === null ? null : acharObjeto(ref);
   if (ref !== undefined && ref !== null && !q) throw new Error("Objeto não encontrado: “" + ref + "”.");
   const g0 = chaoY(), T = q ? (TIPOS_OBJETO[q.tipo] || {}) : {};
