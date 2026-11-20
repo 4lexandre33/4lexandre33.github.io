@@ -41,7 +41,7 @@ function pcFolga(a, b, A) { const rr = [0.55, 0.36, 0.4, 0.28, 0.2, 0.3].map(r =
 /* busca por coordenadas: varia os ângulos das pernas "mexe" até os alvos baterem, sem atravessar (folga ≥ f0) */
 function pcResolver(Q, ch, A, mexe, alvos, o = {}) {
   const f0 = o.folga ?? 0.03, x0 = {}, lim = {};
-  for (const s of mexe) for (const c of PC_CH) { const k = c + pcLS(s); x0[k] = Q[k]; const [a, b] = PC_LIM[c]; lim[k] = ampliar(c + pcLS(s), a, b, Q.flex); }
+  for (const s of mexe) for (const c of PC_CH) { const k = c + pcLS(s); x0[k] = Q[k]; const [a, b] = PC_LIM[c]; lim[k] = ampliar(c + pcLS(s), a, b, Q.flex); if (c === "hipFlex" && o.maxFlex) lim[k] = [lim[k][0], Math.min(lim[k][1], o.maxFlex)]; }
   const ks = Object.keys(x0), q = Object.assign({}, Q);
   const custo = () => { const P = { 1: pcPontos(q, ch, A, 1), "-1": pcPontos(q, ch, A, -1) }; let e = 0;
     for (const t of alvos) { const al = typeof t.alvo === "function" ? t.alvo(P) : t.alvo, p = t.ponto === "joelho" ? P[t.s].lp.calf.T : t.ponto === "pe" ? P[t.s].pts[5] : P[t.s].lp.foot.T; e += t.w * pxDist(p, al) ** 2; }
@@ -76,6 +76,8 @@ function cruzarPernas(Q, modo = "perna", s = -1) {
     borboleta: () => { set("L", { hipFlex: 60, hipAbd: 45, hipRot: 45, kneeFlex: 135, ankleFlex: 5, ankleTilt: 35 }); set("R", { hipFlex: 60, hipAbd: 45, hipRot: 45, kneeFlex: 135, ankleFlex: 5, ankleTilt: 35 }); },
     lado: () => { set(Ls, { hipFlex: 55, hipAbd: 5, hipRot: -40, kneeFlex: 145, ankleFlex: 30, ankleTilt: 0 }); set(Lo, { hipFlex: 60, hipAbd: -8, hipRot: 40, kneeFlex: 145, ankleFlex: 30, ankleTilt: 10 }); } };
   pre[modo]();
+  /* no chão: o corpo assenta no chão (sem flutuar nem ficar numa cadeira invisível) */
+  if (/^(indio|lotus|borboleta|lado)$/.test(modo)) Object.assign(Q, { ground: 1, bodyLift: 0, bodyPitch: 0, bodyRoll: 0 });
   const S = shape(Q), ch = chainSetup(Q, S), A = legDims(Q), k = A.k, J = s2 => [s2 * Math.abs(pcPontos(Q, ch, A, s2).lp.thigh.T[0]), pcPontos(Q, ch, A, s2).lp.thigh.T[1], pcPontos(Q, ch, A, s2).lp.thigh.T[2]];
   const yChao = J(1)[1] - 0.75;
   let r;
@@ -98,22 +100,22 @@ function cruzarPernas(Q, modo = "perna", s = -1) {
       { s, ponto: "tornozelo", w: 1, alvo: P => [P[o].lp.calf.T[0] * 0.45, yA, P[o].lp.calf.T[2] - 0.2 * k] },
       { s: o, ponto: "tornozelo", w: 1, alvo: P => [P[s].lp.calf.T[0] * 0.45, yA, P[s].lp.calf.T[2] - 1.1 * k] },
       { s, ponto: "joelho", w: 0.7, alvo: P => [P[s].lp.calf.T[0], yK, P[s].lp.calf.T[2]] },
-      { s: o, ponto: "joelho", w: 0.7, alvo: P => [P[o].lp.calf.T[0], yK, P[o].lp.calf.T[2]] }], { folga: 0.01, chao: yChao });
+      { s: o, ponto: "joelho", w: 0.7, alvo: P => [P[o].lp.calf.T[0], yK, P[o].lp.calf.T[2]] }], { folga: 0.01, chao: yChao, maxFlex: 95 });
     if (modo === "lotus") r = pcResolver(Q, ch, A, [s, o], [
       { s: o, ponto: "tornozelo", w: 1, alvo: P => pxSoma(applyA(P[s].lp.thigh, [0, -0.7 * A.L1, 0]), [0, 0.7 * k, 0]) },
       { s, ponto: "tornozelo", w: 1, alvo: P => pxSoma(applyA(P[o].lp.thigh, [0, -0.7 * A.L1, 0]), [0, 0.7 * k + 0.3, 0]) },
       { s, ponto: "joelho", w: 0.4, alvo: P => [P[s].lp.calf.T[0], yK, P[s].lp.calf.T[2]] },
-      { s: o, ponto: "joelho", w: 0.4, alvo: P => [P[o].lp.calf.T[0], yK, P[o].lp.calf.T[2]] }], { folga: -0.06, chao: yChao }); }
+      { s: o, ponto: "joelho", w: 0.4, alvo: P => [P[o].lp.calf.T[0], yK, P[o].lp.calf.T[2]] }], { folga: -0.06, chao: yChao, maxFlex: 95 }); }
   else if (modo === "borboleta") { const Jl = J(1);
     r = pcResolver(Q, ch, A, [s, o], [
       { s: 1, ponto: "tornozelo", w: 1, alvo: [0.42 * k, yChao + 0.42, Jl[2] + 0.62 * A.L1] },
-      { s: -1, ponto: "tornozelo", w: 1, alvo: [-0.42 * k, yChao + 0.42, Jl[2] + 0.62 * A.L1] }], { folga: -0.02, chao: yChao }); }
+      { s: -1, ponto: "tornozelo", w: 1, alvo: [-0.42 * k, yChao + 0.42, Jl[2] + 0.62 * A.L1] }], { folga: -0.02, chao: yChao, maxFlex: 95 }); }
   else { const jx = Math.abs(J(1)[0]), jz = J(1)[2];
     r = pcResolver(Q, ch, A, [s, o], [
       { s, ponto: "tornozelo", w: 1, alvo: [s * (jx + 1.5 * k), yChao + 0.4, jz - 0.2 * k] },
       { s: o, ponto: "tornozelo", w: 1, alvo: [s * (jx + 0.3 * k), yChao + 0.4, jz + 0.75 * A.L1] },
       { s, ponto: "joelho", w: 0.5, alvo: [-s * 0.3 * k, yChao + 0.4 * k, jz + 0.85 * A.L1] },
-      { s: o, ponto: "joelho", w: 0.5, alvo: [-s * (jx + 1.2 * k), yChao + 0.4 * k, jz + 0.6 * A.L1] }], { folga: 0.01, chao: yChao }); }
+      { s: o, ponto: "joelho", w: 0.5, alvo: [-s * (jx + 1.2 * k), yChao + 0.4 * k, jz + 0.6 * A.L1] }], { folga: 0.01, chao: yChao, maxFlex: 95 }); }
   return { modo, folga: +r.folga.toFixed(3) };
 }
 export { PC_MODOS, cruzarPernas, pcPontos, pcFolga };

@@ -59,7 +59,7 @@ function vcEmbarcar(it, o, nome, manterBracos) {
   /* selim: pés nos pedais/pedaleiras, mãos no guidão; prancha: pés na prancha */
   if (S.pedais || S.pesEm) { const pts = S.pedais || S.pesEm; for (const [i, lado] of [[0, 1], [1, -1]]) { const q = pts[i], W = vcMundo(o, [q[0], q[1] + (S.pesEm ? 0.65 : 0.2), q[2]], g0); try { vcMembroEm(it, S.emPeVeiculo === "lado" ? (i ? 1 : -1) : lado, W, true); } catch (e) { } } }
   if (S.guidao && !manterBracos) { const [cx, cy, cz] = S.guidao.c, r = S.guidao.r || 2; for (const lado of [1, -1]) { try { vcMembroEm(it, lado, vcMundo(o, [cx + lado * r, cy + 0.2, cz - 0.3], g0), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.85, handCurlR: 0.85, pronL: 80, pronR: 80 }); }
-  if (S.abraca && !manterBracos) { for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.3, S.p[1] + 3.6, 3.6), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.4, handCurlR: 0.4 }); }
+  if (S.abraca && !manterBracos) { for (const lado of [1, -1]) { try { vcMembroEm(it, lado, lc(lado * 1.6, S.p[1] + 2.4, 2.6), false); } catch (e) { } } Object.assign(it.params, { handCurlL: 0.4, handCurlR: 0.4 }); }
   /* cabe sob o teto? reclina (até 32°) e abaixa a cabeça */
   if (!S.pe && S.teto !== undefined) { const teto = vcMundo(o, [S.p[0], S.teto, S.p[2]], g0)[1];
     for (let k = 0; k < 8; k++) { let topo; try { topo = Math.max(...vcCaps(it).filter(c => /cabe|pesco/.test(c.nome)).map(c => Math.max(c.a[1], c.b[1]) + (c.r || 0))); } catch (e) { break; }

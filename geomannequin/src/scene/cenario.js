@@ -231,8 +231,8 @@ function sentar(it, ref, poseSentada) {
   if (q) { const comprido = q.prof > 9 && q.prof > q.larg * 1.5, largo = q.larg > 9 && q.larg > q.prof * 1.5;
     if (AS && AS.z !== undefined) off = [0, AS.z];
     else if (AS && AS.lugares > 1 && AS.encosto) { /* vários lugares: o mais perto de onde a pessoa já está */ const r0 = -(q.giro || 0) * D, is = isquios(it), dx = is[0] - q.x, dz = is[2] - q.z, lx = dx * Math.cos(r0) + dz * Math.sin(r0), w = (q.larg - 2.8) / AS.lugares;
-      const k = Math.max(0, Math.min(AS.lugares - 1, Math.floor((lx + (q.larg - 2.8) / 2) / w))); off = [-(q.larg - 2.8) / 2 + w * (k + 0.5), -q.prof / 2 + 2.25]; it.params.bodyPitch = -7; it.params.spineFlex = 2; }
-    else if (T.encosto || (AS && AS.encosto) || /poltrona|sofa|trono/.test(q.tipo)) { off = [0, -q.prof / 2 + 1.35 + (AS && q.prof > 6 ? 0.9 : 0)]; it.params.bodyPitch = -7 - (AS && AS.reclina || 0); it.params.spineFlex = 2; }
+      const k = Math.max(0, Math.min(AS.lugares - 1, Math.floor((lx + (q.larg - 2.8) / 2) / w))); off = [-(q.larg - 2.8) / 2 + w * (k + 0.5), q.prof > 6 ? q.prof / 2 - 3.4 : -q.prof / 2 + 2.25]; it.params.bodyPitch = -7; it.params.spineFlex = 2; }
+    else if (T.encosto || (AS && AS.encosto) || /poltrona|sofa|trono/.test(q.tipo)) { off = [0, AS && q.prof > 6 ? q.prof / 2 - 3.4 : -q.prof / 2 + 1.35]; /* estofado fundo: os joelhos passam da beirada e as canelas ficam à frente do assento */ it.params.bodyPitch = -7 - (AS && AS.reclina || 0); it.params.spineFlex = 2; }
     else if (comprido) { giroP += 90; off = [q.larg / 2 - 1.6, 0]; }
     else if (largo) off = [0, q.prof / 2 - 1.6];
     else off = [0, q.prof * 0.08]; }

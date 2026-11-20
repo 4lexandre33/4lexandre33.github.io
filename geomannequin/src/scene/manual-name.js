@@ -1183,6 +1183,9 @@ ${EXEMPLO_FILME}
     · Kai cruza perna-esq sobre joelho-dir (tornozelo no joelho, a "figura 4") · Kai cruza tornozelos
     · Kai cruza pernas indio|lotus|borboleta|lado|empe [dir|esq] (no chão: cada pé sob o joelho oposto, lótus, solas juntas, de lado)
     · "cruza pernas" sozinho escolhe pelo corpo (sentado na cadeira → perna sobre perna; no chão → índio; em pé → em pé).
+    No chão (indio, lotus, borboleta, lado) o corpo já assenta no chão, de qualquer pose. Perna sobre perna, figura 4 e tornozelos são
+    sentados: ponha a pessoa no assento antes ("Kai senta-em Sofa" e depois "Kai cruza perna-dir sobre perna-esq", na mesma linha ou
+    na seguinte); sem assento, ela senta numa cadeira invisível. Em pé, "perna-X sobre perna-Y" cruza o pé na frente do outro.
     As poses de pernas cruzadas (sentadoPernasCruzadas, meditando, yogaLotus, lotusFlutuando, sereiaSentadaPedra…) já usam isto.
   MÃOS: Kai mao-dir no queixo · Kai mao-esq na cintura · Kai maos nos bolsos · Kai maos na nuca · Kai mao-dir no coracao.
     Lugares: queixo, boca, bochecha/rosto, testa, olhos, orelha/ouvido (telefone), nuca, cabeca, peito, coracao, cruzado (braços
@@ -1220,7 +1223,10 @@ ${EXEMPLO_FILME}
     · musica.piano|bateria|teclado|microfone|guitarra|violao.palco|contra|maos|lateral · objeto.sofa-deitado|sofa-pernas|cama-lendo|
     cozinha-fogao|escritorio-pc|aula-lousa|praca-banco.geral|medio|alto (o objeto e a ação vêm junto).
   CATÁLOGO: tipo "Objetos e veículos" (mais de 200, com a linha que cria e o uso: senta-em, deita-em, toca, embarca, segura).
-  MCP: ajustar_corpo {nome?, pose?, maos?: [{mao, lugar}], cruzar?, naturalizar?, usar?: {acao, objeto, jeito?}, efeitos?} ·
+  COMPUTADOR NA MESA: no LOCAL (local "Sala" / objeto escrivaninha "Mesa" em (0,0) / objeto computador "PC" sobre Mesa), e no quadro
+    "quadro 1 local "Sala"" com "Kai usa PC" ("sobre" usa o NOME do objeto de baixo e só vale no local).
+  MCP: ajustar_corpo {nome?, pose?, maos?: [{mao, lugar}], cruzar?, naturalizar?, usar?: {acao, objeto, jeito?}, efeitos?} — usar precisa do
+    objeto já na cena da conversa (crie com objetos; na linha de comando gm cada chamada é uma cena nova: use um texto Name inteiro) ·
     catalogo_poses tipo "objeto" e efeitos_sugeridos · objetos (todos os tipos novos).`;
 }
 
