@@ -11993,8 +11993,8 @@ pose "assaltoCofreOuvindo" de empe
 
 ```gm
 pose "assaltoMascaraPondo" de empe
-  ombro(frente 150 abre 40)
-  cotovelo(dobra 75)
+  ombro(frente 150 abre 25)
+  cotovelo(dobra 150)
   mao(fecha 60% afasta 25% opoe 80%)
   tronco(tras 4)
   cabeca(sobe 6)
@@ -12161,11 +12161,11 @@ pose "infPassandoLaser" de empe
 
 ```gm
 pose "infRastejandoDuto" de empe
-  ombro(frente 150 abre 40)
-  cotovelo(dobra 100)
+  ombro(frente 150 abre 30)
+  cotovelo(dobra 115)
   mao(fecha 0% afasta 85%)
-  quadril.direito(frente 40)
-  quadril.esquerdo(frente 20)
+  quadril.direito(frente 30)
+  quadril.esquerdo(frente 10)
   joelho.direito(dobra 70)
   joelho.esquerdo(dobra 30)
   cabeca(sobe 60)
@@ -12295,7 +12295,7 @@ pose "infEspiandoFechadura" de empe
 
 ```gm
 pose "infSniperDeitado" de empe
-  ombro.direito(frente 120 abre 30)
+  ombro.direito(frente 150 abre 30)
   ombro.esquerdo(frente 150 abre 20)
   cotovelo.direito(dobra 100)
   cotovelo.esquerdo(dobra 70)
@@ -12382,7 +12382,7 @@ pose "persEsticandoPegar" de empe
 
 ```gm
 pose "persSaltoMergulho" de empe
-  ombro(frente 160 abre 25)
+  ombro(frente 160 abre 15)
   cotovelo(dobra 20)
   mao(fecha 55% afasta 70% opoe 30%)
   quadril.direito(tras 10)
@@ -12596,8 +12596,8 @@ pose "fugaCaidaRecuando" de empe
 
 ```gm
 pose "fugaEscalandoMuro" de empe
-  ombro.direito(frente 140 abre 30)
-  ombro.esquerdo(frente 150 abre 30)
+  ombro.direito(frente 140 abre 20)
+  ombro.esquerdo(frente 150 abre 20)
   cotovelo.direito(dobra 70)
   cotovelo.esquerdo(dobra 60)
   mao(fecha 55% afasta 70% opoe 30%)
@@ -12767,7 +12767,7 @@ pose "escAtrasCarro" de empe
 
 ```gm
 pose "escNaArvore" de empe
-  ombro(frente 100 abre 60)
+  ombro(frente 80 abre 60)
   cotovelo(dobra 80)
   mao(fecha 55% afasta 70% opoe 30%)
   quadril.direito(frente 40 abre 30)
@@ -12788,12 +12788,12 @@ pose "escEmbaixoCama" de empe
   cotovelo.direito(dobra 105)
   cotovelo.esquerdo(dobra 90)
   mao(fecha 0% afasta 85%)
-  quadril.direito(frente 30)
-  quadril.esquerdo(frente 10)
+  quadril.direito(frente 10)
+  quadril.esquerdo(tras 10)
   joelho.direito(dobra 50)
   joelho.esquerdo(dobra 10)
   cabeca(sobe 60 gira-esquerda 20)
-  corpo(deita-brucos 90)
+  corpo(deita-brucos 75)
 ```
 
 ### escCobrindoBoca
@@ -13043,16 +13043,16 @@ pose "resCarregandoNoOmbro" de empe
 
 ```gm
 pose "resPuxandoDoBuraco" de empe
-  ombro.direito(frente 100 abre 40)
+  ombro.direito(frente 130 abre 40)
   ombro.esquerdo(frente 170 abre 20)
   cotovelo.direito(dobra 30)
   cotovelo.esquerdo(dobra 10)
   mao.direito(fecha 2% afasta 60%)
   mao.esquerdo(fecha 60% afasta 25% opoe 80%)
-  quadril(frente 10 abre 20)
+  quadril(abre 20)
   joelho(dobra 10)
   cabeca(sobe 20)
-  corpo(deita-brucos 85)
+  corpo(deita-brucos 80)
   valor fThL -0.1
 ```
 
@@ -13215,7 +13215,7 @@ pose "pkMortalFrente" de empe
 
 ```gm
 pose "pkMortalTras" de empe
-  ombro(frente 150 abre 30)
+  ombro(frente 150 abre 20)
   cotovelo(dobra 30)
   mao(fecha 0% afasta 85%)
   quadril(frente 110)
@@ -13391,7 +13391,7 @@ pose "corAtrasadoComCafe" de empe
 
 ```gm
 pose "corCorrendoChuva" de empe
-  ombro(frente 160 abre 75)
+  ombro(frente 160 abre 0)
   cotovelo(dobra 90)
   mao(fecha 60% afasta 25% opoe 80%)
   quadril.direito(tras 20)
@@ -13700,8 +13700,8 @@ pose "escaladaEscadaMao" de empe
 
 ```gm
 pose "escaladaArvore" de empe
-  ombro.direito(frente 110 abre 40)
-  ombro.esquerdo(frente 140 abre 40)
+  ombro.direito(frente 100 abre 35)
+  ombro.esquerdo(frente 130 abre 35)
   cotovelo.direito(dobra 90)
   cotovelo.esquerdo(dobra 60)
   mao(fecha 55% afasta 70% opoe 30%)
@@ -13778,7 +13778,7 @@ pose "saltoMergulhoAgua" de empe
 
 ```gm
 pose "saltoCaindoDoAlto" de empe
-  ombro(frente 120 abre 70)
+  ombro(frente 90 abre 70)
   cotovelo(dobra 30)
   mao(fecha 0% afasta 85%)
   quadril(tras 10 abre 30)
@@ -13811,12 +13811,12 @@ pose "chaoRastejandoSoldado" de empe
   cotovelo.esquerdo(dobra 95)
   mao(fecha 100% afasta 20% opoe 75%)
   quadril.direito(abre 10)
-  quadril.esquerdo(frente 50 abre 40)
+  quadril.esquerdo(frente 10 abre 40)
   joelho.direito(dobra 10)
   joelho.esquerdo(dobra 80)
   cabeca(sobe 60)
-  corpo(deita-brucos 88)
-  valor fThL -0.1 fThR -0.1
+  corpo(deita-brucos 68)
+  valor hipFlexR -40 fThL -0.1 fThR -0.1
 ```
 
 ### chaoEngatinhandoRapido
@@ -13893,7 +13893,7 @@ pose "chaoDeitadoBarriga" de empe
   joelho.direito(dobra 60)
   joelho.esquerdo(dobra 90)
   cabeca(sobe 60)
-  corpo(deita-brucos 88)
+  corpo(deita-brucos 78)
 ```
 
 ### chaoEstrelaNoChao
@@ -14199,7 +14199,7 @@ pose "tangoInclinado" de empe
 
 ```gm
 pose "flamencoPalmas" de empe
-  ombro(frente 160 abre 30)
+  ombro(frente 160 abre 20)
   cotovelo(dobra 60)
   mao(fecha 2% afasta 60%)
   quadril.direito(tras 10)
@@ -14603,7 +14603,7 @@ pose "sapateado" de empe
 
 ```gm
 pose "capoeiraAu" de empe
-  ombro(frente 170 abre 20)
+  ombro(frente 170 abre 15)
   mao(fecha 2% afasta 60%)
   quadril(frente 20)
   joelho(dobra 20)
@@ -14649,7 +14649,7 @@ pose "capoeiraNegativa" de empe
 
 ```gm
 pose "cheerleaderPom" de empe
-  ombro(frente 160 abre 65)
+  ombro(frente 140 cruza 30)
   mao(fecha 100% afasta 20% opoe 75%)
   quadril.direito(tras 4)
   quadril.esquerdo(frente 10)
@@ -15031,17 +15031,16 @@ pose "voleiLevantamento" de empe
 
 ```gm
 pose "voleiPeixinho" de empe
-  ombro.direito(frente 40 abre 40)
+  ombro.direito(frente 85 abre 40)
   ombro.esquerdo(frente 170 abre 10)
   cotovelo.direito(dobra 60)
   mao.direito(fecha 0% afasta 85%)
   mao.esquerdo(fecha 2% afasta 60%)
-  quadril.direito(frente 40)
-  quadril.esquerdo(frente 10)
+  quadril.esquerdo(tras 30)
   joelho.direito(dobra 70)
   joelho.esquerdo(dobra 20)
   cabeca(sobe 40)
-  corpo(deita-brucos 80)
+  corpo(deita-brucos 65)
 ```
 
 ### tenisSaque
@@ -15192,7 +15191,7 @@ pose "natCostas" de empe
 
 ```gm
 pose "natBorboleta" de empe
-  ombro(frente 120 abre 50)
+  ombro(frente 110 abre 50)
   cotovelo(dobra 10)
   mao(fecha 0% afasta 85%)
   quadril(frente 20)
@@ -15245,7 +15244,7 @@ pose "ginParadaDeMao" de empe
 
 ```gm
 pose "ginEspacate" de empe
-  ombro(frente 170 abre 30)
+  ombro(frente 170 cruza 20)
   mao(fecha 0% afasta 85%)
   quadril.esquerdo(frente 90)
   cabeca(sobe 10)
@@ -15256,7 +15255,7 @@ pose "ginEspacate" de empe
 
 ```gm
 pose "ginPonte" de empe
-  ombro(frente 175 abre 20)
+  ombro(frente 175 abre 15)
   mao(fecha 2% afasta 60%)
   quadril(tras 30)
   joelho(dobra 90)
@@ -15295,7 +15294,7 @@ pose "ginBarraFixa" de empe
 
 ```gm
 pose "ginFinalizacao" de empe
-  ombro(frente 160 abre 50)
+  ombro(frente 160 cruza 30)
   mao(fecha 0% afasta 85%)
   quadril(frente 10)
   joelho(dobra 20)
@@ -15568,7 +15567,7 @@ pose "atlBarreira" de empe
 
 ```gm
 pose "halterofilismo" de empe
-  ombro(frente 175 abre 75)
+  ombro(frente 175 cruza 20)
   mao(fecha 60% afasta 25% opoe 80%)
   quadril.direito(tras 30)
   quadril.esquerdo(frente 50)
@@ -15609,14 +15608,14 @@ pose "flexaoBraco" de empe
 
 ```gm
 pose "abdominal" de empe
-  ombro(frente 150 abre 85)
-  cotovelo(dobra 140)
+  ombro(frente 120 abre 60)
   mao(fecha 0% afasta 85%)
   quadril(frente 60)
   joelho(dobra 90)
   tronco(frente 40)
   cabeca(baixa 30)
   corpo(deita-costas 60)
+  valor elbowL 160 elbowR 160
 ```
 
 ### pranchaAbdominal
@@ -16443,8 +16442,8 @@ pose "banhoEscovandoDentes" de empe
 
 ```gm
 pose "banhoSecandoCabelo" de empe
-  ombro(frente 150 abre 85)
-  cotovelo(dobra 120)
+  ombro(frente 120 abre 40)
+  cotovelo(dobra 90)
   mao(fecha 2% afasta 60%)
   tronco(frente 20)
   cabeca(baixa 30)
@@ -16710,8 +16709,8 @@ pose "escrEstressado" de empe
 
 ```gm
 pose "escrEspreguicandoCadeira" de empe
-  ombro(frente 150 abre 60)
-  cotovelo(dobra 75)
+  ombro(frente 150 abre 20)
+  cotovelo(dobra 140)
   mao(fecha 0% afasta 85%)
   quadril(frente 80)
   joelho(dobra 80)
@@ -16868,7 +16867,7 @@ pose "polDistintivo" de empe
 
 ```gm
 pose "polRevistando" de empe
-  ombro(frente 140 abre 40)
+  ombro(frente 140 cruza 15)
   cotovelo(dobra 10)
   punho(levanta 60)
   mao(fecha 2% afasta 60%)
@@ -18105,8 +18104,8 @@ pose "emoCaixaDespedida" de empe
 
 ```gm
 pose "emoDeitadoChorando" de empe
-  ombro(frente 150 abre 40)
-  cotovelo(dobra 80)
+  ombro(frente 150 abre 25)
+  cotovelo(dobra 120)
   mao(fecha 55% afasta 70% opoe 30%)
   joelho.direito(dobra 40)
   joelho.esquerdo(dobra 20)
@@ -18175,8 +18174,8 @@ pose "emoJogandoObjeto" de empe
 
 ```gm
 pose "emoPuxandoCabelo" de empe
-  ombro(frente 140 abre 60)
-  cotovelo(dobra 60)
+  ombro(frente 140 abre 20)
+  cotovelo(dobra 140)
   mao(fecha 55% afasta 70% opoe 30%)
   tronco(frente 15)
   cabeca(baixa 25)
@@ -18589,7 +18588,8 @@ pose "romOlhandoCelularSorrindo" de empe
 
 ```gm
 pose "romAbracandoTravesseiro" de empe
-  ombro(frente 60 cruza 10 gira-fora 60)
+  ombro.direito(frente 60 cruza 10 gira-fora 60)
+  ombro.esquerdo(frente 60 cruza 10)
   cotovelo(dobra 130)
   mao(fecha 55% afasta 70% opoe 30%)
   quadril.direito(frente 40)
@@ -18790,16 +18790,17 @@ pose "terRecuandoParede" de empe
 
 ```gm
 pose "terCaidaRastejando" de empe
-  ombro.direito(frente 60 abre 40)
+  ombro.direito(frente 75 abre 40)
   ombro.esquerdo(frente 160 abre 40)
   cotovelo.direito(dobra 90)
   cotovelo.esquerdo(dobra 20)
   mao.direito(fecha 2% afasta 60%)
   mao.esquerdo(fecha 55% afasta 70% opoe 30%)
-  quadril.esquerdo(frente 40)
+  quadril.direito(tras 30)
+  quadril.esquerdo(frente 10)
   joelho.esquerdo(dobra 60)
   cabeca(sobe 60 gira-direita 30)
-  corpo(deita-brucos 85)
+  corpo(deita-brucos 75)
   valor fThL -0.2
 ```
 
@@ -18979,7 +18980,7 @@ pose "terMenininaCabeloRosto" de empe
 
 ```gm
 pose "terRastejandoAranha" de empe
-  ombro(frente 150 abre 30)
+  ombro(frente 150 abre 20)
   cotovelo(dobra 20)
   mao(fecha 55% afasta 70% opoe 30%)
   quadril(frente 90 abre 30)
@@ -19337,8 +19338,8 @@ pose "comTropecoCadarco" de empe
   ombro.esquerdo(frente 170 abre 20)
   cotovelo(dobra 10)
   mao(fecha 0% afasta 85%)
-  quadril.direito(frente 30)
-  quadril.esquerdo(tras 10)
+  quadril.direito(frente 10)
+  quadril.esquerdo(tras 30)
   joelho.direito(dobra 50)
   joelho.esquerdo(dobra 20)
   cabeca(sobe 40)
@@ -19909,7 +19910,7 @@ pose "heroiPousoTresApoios" de empe
 
 ```gm
 pose "heroiSegurandoCarro" de empe
-  ombro(frente 170 abre 30)
+  ombro(frente 170 cruza 15)
   cotovelo(dobra 10)
   mao(fecha 2% afasta 60%)
   quadril(frente 30 abre 20)
@@ -20142,7 +20143,7 @@ pose "sereiaSentadaPedra" de empe
 
 ```gm
 pose "fadaVoando" de empe
-  ombro(frente 120 abre 50)
+  ombro(frente 120 abre 25)
   cotovelo(dobra 60)
   mao(fecha 0% afasta 85%)
   quadril.direito(tras 30)
@@ -20508,17 +20509,18 @@ pose "sobrevBarraca" de empe
 
 ```gm
 pose "sobrevExaustoDeserto" de empe
-  ombro.direito(frente 30 abre 30)
+  ombro.direito(frente 75 abre 30)
   ombro.esquerdo(frente 170 abre 20)
   cotovelo.direito(dobra 90)
   cotovelo.esquerdo(dobra 10)
   mao.direito(fecha 2% afasta 60%)
   mao.esquerdo(fecha 55% afasta 70% opoe 30%)
-  quadril.esquerdo(frente 30)
+  quadril.direito(tras 20)
+  quadril.esquerdo(frente 10)
   joelho.direito(dobra 10)
   joelho.esquerdo(dobra 60)
   cabeca(sobe 50)
-  corpo(deita-brucos 85)
+  corpo(deita-brucos 75)
   valor fThL -0.2
 ```
 
@@ -20911,7 +20913,7 @@ pose "infanciaBalanco" de empe
 
 ```gm
 pose "infanciaEscorregador" de empe
-  ombro(frente 170 abre 30)
+  ombro(frente 170 cruza 15)
   cotovelo(dobra 10)
   mao(fecha 0% afasta 85%)
   quadril(frente 90)
@@ -21048,7 +21050,7 @@ pose "fePrecandoAjoelhado" de empe
 
 ```gm
 pose "fePrecandoBracosAbertos" de empe
-  ombro(frente 140 abre 50)
+  ombro(frente 140 cruza 40)
   cotovelo(dobra 20)
   antebraco(palma-baixo 80)
   mao(fecha 0% afasta 85%)
@@ -21112,7 +21114,7 @@ pose "cerimNoivaBuque" de empe
 
 ```gm
 pose "cerimJogandoBuque" de empe
-  ombro(frente 150 abre 40)
+  ombro(frente 150 abre 20)
   cotovelo(dobra 40)
   mao(fecha 0% afasta 85%)
   quadril.direito(tras 10)

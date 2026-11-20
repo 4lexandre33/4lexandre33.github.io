@@ -22,9 +22,10 @@ Data: 2026-11-20 · Manual: capítulo 61 · Tutorial: capítulo 11 ("Catálogo: 
 - **Também:** Social, Infância, Velhice, Cerimônia e fé, Campo, Militar, Hospital, Animais e natureza, Rua, Tecnologia.
 
 ## Não repetir
-Um teste automático (`testes/poses-narrativas.mjs`) verifica:
+Dois testes automáticos verificam isto. `testes/poses-narrativas.mjs` cobre as poses novas; `testes/poses-auditoria.mjs` cobre todas as poses do programa. Eles conferem:
 - cada pose nova difere de **todas** as outras (velhas e novas) em pelo menos 60°, somados os ângulos de 28 juntas;
-- nenhuma pose nova faz o corpo atravessar a si mesmo;
+- nenhuma pose faz o corpo atravessar a si mesmo. Isso inclui um braço passando pelo outro: no manequim, braço erguido com abertura positiva cruza acima da cabeça, e "braços abertos em V" usa abertura negativa (`ab-30,-30`);
+- nenhuma pose deitada flutua: o tronco fica a no máximo 2,2 R do chão. As exceções são as poses apoiadas nas mãos ou num galho (flexão, cachorro olhando para baixo, freeze, deitado na árvore);
 - nenhum grupo repete a mesma combinação de poses, posições e toques.
 
 ## Classificação (eixos)
@@ -83,3 +84,6 @@ A busca usa a raiz das palavras (cozinhar acha cozinhando) e "-palavra" exclui.
 - Nos grupos com apoio (mesa, tapete), o corpo pode encostar um pouco no objeto.
 - Na roda do time, os braços se cruzam de propósito: é um abraço.
 - Apelidos com espaço vão entre aspas: `Kai pose "samba no pé"`.
+- Os figurantes de um grupo continuam nos quadros seguintes. Para tirar um: `Figurante1 sai`.
+- A busca do catálogo junta as palavras com "E": "luta rua" acha só o que tem as duas.
+- Grupos "à mesa" trazem mesa e cadeiras, e cada pessoa senta com a própria pose sentada.
