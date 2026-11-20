@@ -52591,7 +52591,7 @@ Não desenhe as bordas nem os painéis azul/amarelo: eles só explicam o espaço
           mundo: [piF2(pos[0] * PI_M), piF2(pos[2] * PI_M)],
           giro: it2.params.wRot || 0,
           carta: carta(pos),
-          alturaM: piF2((Math.max(...L0.map((c) => Math.max(c.a[1], c.b[1]) + (c.r || 0))) - Math.min(...L0.map((c) => Math.min(c.a[1], c.b[1]) - (c.r || 0)))) * PI_M),
+          alturaM: piF2(((cab ? Math.max(cab.a[1], cab.b[1]) + (cab.r || 0) : Math.max(...L0.map((c) => Math.max(c.a[1], c.b[1]) + (c.r || 0)))) - Math.min(...L0.map((c) => Math.min(c.a[1], c.b[1]) - (c.r || 0)))) * PI_M),
           noAr: Math.min(...L0.map((c) => Math.min(c.a[1], c.b[1]) - (c.r || 0))) - g0 > 2.5,
           embarcado: it2.embarcadoEm ? it2.embarcadoEm : null,
           montado: it2.montadoEm || null,
