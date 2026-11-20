@@ -296,7 +296,7 @@ for (const n of w.todasPoses()) { try { it.poseRapida(n, { molejo: 0 }); } catch
       if (incl > 80 && alt > 2.0) ruim[n] = "flutua " + alt.toFixed(1); } } }
 const dist = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]); return s; };
 const base = Object.keys(vec).filter(n => !novos.has(n)), aceitos = [];
-for (const p of C) { if (ruim[p.nome] || !vec[p.nome]) continue; const v = vec[p.nome]; let m = 1e9; for (const o of base) m = Math.min(m, dist(v, vec[o])); for (const o of aceitos) m = Math.min(m, dist(v, vec[o.nome])); if (m >= 62) aceitos.push(p); }
+for (const p of C) { if (ruim[p.nome] || !vec[p.nome]) continue; const v = vec[p.nome]; let m = 1e9; for (const o of base) m = Math.min(m, dist(v, vec[o])); for (const o of aceitos) m = Math.min(m, dist(v, vec[o.nome])); if (m >= 66) aceitos.push(p); }
 console.log("ruins:", Object.keys(ruim).length, Object.entries(ruim).slice(0, 8).map(x => x.join(":")).join(" | "));
 console.log("aceitos:", aceitos.length, "de", C.length, JSON.stringify(aceitos.reduce((a, p) => (a[p.tag] = (a[p.tag] || 0) + 1, a), {})));
 escrever(aceitos);
