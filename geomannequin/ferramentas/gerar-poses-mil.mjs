@@ -288,7 +288,12 @@ const w = createWorld(), it = w.cena.ativo, P = () => w.SCN.list[w.SCN.active].p
 const K = ["spineFlex", "spineSide", "spineTwist", "pelvisTwist", "bodyPitch", "bodyRoll", "bodyLift", "headYaw", "headPitch", "headRoll"].concat(...["hipFlex", "hipAbd", "hipRot", "kneeFlex", "ankleFlex", "armAbd", "armFlex", "armRot", "elbow"].map(k => [k + "L", k + "R"]));
 const vec = {}, ruim = {};
 for (const n of w.todasPoses()) { try { it.poseRapida(n, { molejo: 0 }); } catch (e) { if (novos.has(n)) ruim[n] = "erro " + e.message; continue; } const p = P(); vec[n] = K.map(k => +(p[k] || 0) * (k === "bodyLift" ? 10 : 1));
-  if (novos.has(n)) { it.poseRapida(n); const v = it.validarPose(), pr = Math.max(0, ...v.atravessa.map(a => a.profundidade)); if (pr > 0.72) ruim[n] = "atravessa " + pr; else if (v.limites.length) ruim[n] = "limites"; } }
+  if (novos.has(n)) { it.poseRapida(n); const v = it.validarPose(), pr = Math.max(0, ...v.atravessa.map(a => a.profundidade)); if (pr > 0.72) ruim[n] = "atravessa " + pr; else if (v.limites.length) ruim[n] = "limites";
+    /* deitado flutuando (a mesma conta da auditoria) */
+    const p = P(); if (!ruim[n] && (p.bodyLift || 0) < 0.8) { const C = w.capsulas(Object.assign({}, p, { wx: 0, wz: 0, wRot: 0 })).caps; let g = 1e9; for (const c of C) g = Math.min(g, c.a[1] - c.r, c.b[1] - c.r);
+      const mid = k => { const c = C.find(x => x.nome === k); return c.a.map((q, i) => (q + c.b[i]) / 2); }, pe = mid("pelve"), pc = mid("pescoco"), vv = pc.map((q, i) => q - pe[i]);
+      const incl = Math.acos(Math.abs(vv[1]) / Math.hypot(...vv)) * 180 / Math.PI, tr = C.filter(c => /torax|abdomen|pelve/.test(c.nome)), alt = Math.min(...tr.map(c => Math.min(c.a[1], c.b[1]) - c.r)) - g;
+      if (incl > 80 && alt > 2.0) ruim[n] = "flutua " + alt.toFixed(1); } } }
 const dist = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]); return s; };
 const base = Object.keys(vec).filter(n => !novos.has(n)), aceitos = [];
 for (const p of C) { if (ruim[p.nome] || !vec[p.nome]) continue; const v = vec[p.nome]; let m = 1e9; for (const o of base) m = Math.min(m, dist(v, vec[o])); for (const o of aceitos) m = Math.min(m, dist(v, vec[o.nome])); if (m >= 62) aceitos.push(p); }

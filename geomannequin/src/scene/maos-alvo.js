@@ -35,7 +35,7 @@ const MARCOS = {
 /* poses cujo nome diz onde está a mão: { L: marco, R: marco } (L = mão esquerda do manequim) */
 const POSE_MAOS = {};
 const pm = (lista, maos) => lista.split(/\s+/).filter(Boolean).forEach(n => { POSE_MAOS[n] = maos; });
-pm("bracosCruzadosPeito cruzar viloesBracosCruzados rfViloaBracosCruzados hipHopBracosCruzados bracosCruzadosEmburrado bracosCruzadosOuvindo encostadoBracosCruzados segurancaBracosCruzados romCiumes", { L: "cruzadoCima", R: "cruzadoBaixo" });
+pm("bracosCruzadosPeito cruzar viloesBracosCruzados rfViloaBracosCruzados bracosCruzadosEmburrado bracosCruzadosOuvindo encostadoBracosCruzados romCiumes", { L: "cruzadoCima", R: "cruzadoBaixo" });
 pm("abracandoASiMesmo rfDespedidaAbracandoSi emoTremendoFrio", { L: "abraco", R: "abraco" });
 pm("maosNosBolsos camMaosNoBolso", { L: "bolso", R: "bolso" });
 pm("maoNoBolsoRelaxado", { R: "bolso" });
@@ -48,7 +48,7 @@ pm("cocandoACabeca", { R: "cabeca" });
 pm("maoNaTesta", { R: "testa" });
 pm("maoNoPeitoJuramento rfDespedidaMaoNoPeito gestoMaoNoPeitoSaudando cerimHinoMaoPeito rfProvedorMaoNoPeito", { R: "coracao" });
 pm("emoAgarradoAoPeito rfDorPeito", { L: "peito", R: "peito" });
-pm("rezando ajoelhadoRezando fePrecandoAjoelhado implorandoMaosJuntas maosEmPrece", { L: "prece", R: "prece" });
+pm("rezando ajoelhadoRezando implorandoMaosJuntas maosEmPrece", { L: "prece", R: "prece" });
 pm("hospSegurandoBarriga rfDorBarriga segurandoBarrigaRindo", { L: "barriga", R: "barriga" });
 pm("cochichandoMaoNaBoca escCobrindoBoca rfVergonhaCobrindoBoca", { R: "boca" });
 pm("dedoNosLabios infSinalSilencio", { R: "boca" });

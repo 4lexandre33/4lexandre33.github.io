@@ -13,7 +13,7 @@
 
 const ccU = v => { const l = Math.hypot(...v) || 1; return v.map(x => x / l); };
 const ccX = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-function ccRot(d) { const Y = ccU(d); let X = Math.abs(Y[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]; X = ccX(X, Y); const k = X[0] * Y[0] + X[1] * Y[1] + X[2] * Y[2]; X = ccU(X.map((v, i) => v - k * Y[i])); const Z = ccX(X, Y); return [X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2]]; }
+function ccRot(d) { const Y = ccU(d); let X = Math.abs(Y[1]) < 0.9 ? ccX([0, 1, 0], Y) : (Math.abs(Y[0]) < 0.9 ? [1, 0, 0] : [0, 0, 1]); /* quase vertical: a largura (x) continua em x */ const k = X[0] * Y[0] + X[1] * Y[1] + X[2] * Y[2]; X = ccU(X.map((v, i) => v - k * Y[i])); const Z = ccX(X, Y); return [X[0], Y[0], Z[0], X[1], Y[1], Z[1], X[2], Y[2], Z[2]]; }
 /* caixa pelo canto de baixo e pelo de cima: B([x0,y0,z0],[x1,y1,z1]) */
 const B = (a, b, ex) => Object.assign({ c: a.map((v, i) => (v + b[i]) / 2), h: a.map((v, i) => Math.max(0.02, Math.abs(b[i] - v) / 2)) }, ex || {});
 const C = (c, r, hh, ex) => Object.assign({ cil: true, c, r, hh }, ex || {});                         /* cilindro em pé */
@@ -318,10 +318,10 @@ const OBJ_CASA = {
       else if (md === "cacamba") out.push(B([-w, 7, z0], [w, 8, z1]), B([-w, 7, z0], [-w + 0.6, 18, z1]), B([w - 0.6, 7, z0], [w, 18, z1]), B([-w, 7, z0], [w, 18, z0 + 0.6]), B([-w, 7, z1 - 0.6], [w, 20, z1]), Object.assign(E([0, 16, (z0 + z1) / 2], [w - 1, 4, (z1 - z0) / 2 - 2], { facetas: 9, semente: 6 }), { cor: "#8a7a62" }));
       else if (md === "cegonha") out.push(B([-w, 7, z0], [w, 8, z1]), B([-w, 22, z0], [w, 23, z1 + 6]), ...[-1, 1].flatMap(s => [z0 + 1, (z0 + z1) / 2, z1 - 1].map(z => B([s * w - 0.4, 8, z - 0.4], [s * w + 0.4, 22, z + 0.4]))));
       else out.push(B([-w, 7, z0], [w, 8, z1]), ...[-1, 1].map(s => B([s * w - 0.4, 8, z0], [s * w + 0.4, 13, z1])), B([-w, 8, z0], [w, 13, z0 + 0.6]), B([-w, 8, z1 - 0.6], [w, 16, z1]));
-      out.push(...vcBancoCasa(w * 0.5, yc + 6.4, h - 9.5, 2.6, 7, yc + 1.4), ...vcBancoCasa(-w * 0.5, yc + 6.4, h - 9.5, 2.6, 7, yc + 1.4), A([w * 0.5, yc + 10.4, h - 4.6], 2.1, 0.25, ccU([0, 0.5, 1]))); return out; },
+      out.push(...vcBancoCasa(w * 0.5, yc + 6.4, h - 9.5, 2.6, 7, yc + 1.4), ...vcBancoCasa(-w * 0.5, yc + 6.4, h - 9.5, 2.6, 7, yc + 1.4), A([w * 0.5, yc + 10.4, h - 3.4], 2.1, 0.25, ccU([0, 0.5, 1]))); return out; },
     assentos: o => { const yc = 6, h = 40, w = 11.2, base = { olha: 1, dentro: true, chao: yc + 1.4, teto: yc + 21, pesFrente: 5.4, reclina: 6 };
-      const A0 = { motorista: Object.assign({ p: [w * 0.5, yc + 6.4, h - 9.5], dirige: true, volante: { c: [w * 0.5, yc + 10.4, h - 4.6], r: 2.1 } }, base), carona: Object.assign({ p: [-w * 0.5, yc + 6.4, h - 9.5] }, base) };
-      if ((o.modelo || "bau") !== "tanque") A0.carga = { p: [0, (o.modelo === "cacamba" ? 8 : o.modelo === "bau" ? 34 : 8), -10], olha: 1, pe: true }; return A0; } },
+      const A0 = { motorista: Object.assign({ p: [w * 0.5, yc + 6.4, h - 9.5], dirige: true, volante: { c: [w * 0.5, yc + 10.4, h - 3.4], r: 2.1 } }, base), carona: Object.assign({ p: [-w * 0.5, yc + 6.4, h - 9.5] }, base) };
+      if (o.modelo === "carroceria") A0.carga = { p: [0, 8, -10], olha: 1, pe: true }; return A0; } },
   van: { nome: "van / furgão (perua, ambulancia, escolar)", larg: 18, prof: 52, alt: 24, grupo: "veiculo", veiculo: "terra", corPadrao: "#e9e9e6",
     partes: o => { const h = 26, w = 9, out = [...cabine({ w, y0: 3.4, yp: 4.6, yb: 12, yt: 22.6, z0: -h, z1: h - 6, t: 0.45, jan: [[2, 18], [-20, -2]], portas: [{ lado: -1, za: -2, zb: 8 }] }), B([-w, 2, h - 6], [w, 11, h]), B([-w + 0.6, 11, h - 6.4], [w - 0.6, 15, h - 5], { R: ccRot([0, 1, 0.5]) })];
       for (const s of [-1, 1]) for (const z of [h - 9, -h + 8]) out.push(...roda(s * (w - 1), 3.6, z, 3.6, 1.8)); out.push(ocLuz(w, 7, h));
@@ -334,11 +334,11 @@ const OBJ_CASA = {
   trator: { nome: "trator (rodas grandes atrás, cabine aberta)", larg: 18, prof: 34, alt: 26, grupo: "veiculo", veiculo: "terra", corPadrao: "#3f8a3a",
     partes: () => { const out = [B([-4, 5, -2], [4, 12, 14]), B([-3.6, 12, 2], [3.6, 14, 14]), C([2, 18, 10], 0.5, 4), ...[-1, 1].flatMap(s => [...roda(s * 7.2, 7.6, -8, 7.6, 3.2), ...roda(s * 5.6, 4, 12, 4, 2), B([s * 7.2 - 1.8, 15.6, -13], [s * 7.2 + 1.8, 16, -3])]),
       B([-5, 6, -12], [5, 9, -2]), ...vcBancoCasa(0, 12.6, -6, 2.6, 5, 8.6), A([0, 16.4, -0.6], 1.6, 0.22, ccU([0, 1, 0.6])), ...[-1, 1].map(s => T([s * 4.6, 12, -10], [s * 4.6, 26, -10], 0.25)), B([-5.4, 26, -12], [5.4, 26.6, 0])]; return out; },
-    assentos: () => ({ motorista: { p: [0, 12.6, -6], olha: 1, chao: 8.6, pesFrente: 5, dirige: true, volante: { c: [0, 16.4, -0.6], r: 1.6 } } }) },
+    assentos: () => ({ motorista: { p: [0, 12.6, -6], olha: 1, chao: 9, pesFrente: 3.5, dirige: true, volante: { c: [0, 16.4, -0.6], r: 1.6 } } }) },
   carroCorrida: { nome: "carro de corrida (modelo formula, kart)", larg: 16, prof: 46, alt: 8, grupo: "veiculo", veiculo: "terra", corPadrao: "#d0302a",
     partes: o => { const kart = o.modelo === "kart", Lh = kart ? 9 : 22, out = [];
       if (kart) { out.push(B([-4.4, 1.2, -Lh], [4.4, 1.8, Lh]), B([-3, 1.8, Lh - 3], [3, 3.4, Lh]), B([-4.4, 1.4, -Lh - 1], [4.4, 3, -Lh + 1]), C([0, 3.4, -5.6], 0.6, 1.6)); for (const s of [-1, 1]) for (const z of [Lh - 2.4, -Lh + 2.4]) out.push(...roda(s * 5.4, 1.8, z, 1.8, 1.8)); out.push(...vcBancoCasa(0, 2.6, -3.4, 2, 3.4, 1.8), A([0, 5.6, 2.8], 1.2, 0.2, ccU([0, 0.6, 1]))); }
-      else { out.push(Object.assign(E([0, 3.2, 4], [3.2, 2.4, 20]), {}), B([-6.6, 1.4, -6], [6.6, 4.6, 4]), B([-8, 0.8, Lh - 1.4], [8, 1.4, Lh + 0.6]), B([-7, 6.4, -Lh], [7, 7.6, -Lh + 3]), ...[-1, 1].map(s => B([s * 6.6 - 0.2, 1.4, -Lh], [s * 6.6 + 0.2, 7.6, -Lh + 3])), ink(E([0, 5.2, -1.4], [2, 1.2, 3.4])), T([0, 6.8, -3.2], [0, 8, -4], 0.4));
+      else { out.push(B([-2.6, 4.3, 2.5], [2.6, 4.7, 20], { R: ccRot([0, 1, -0.06]) }), ...[-1, 1].map(sx => B([sx * 2.6 - 0.3, 0.8, 2.5], [sx * 2.6 + 0.3, 4.4, 20])), Object.assign(E([0, 2.6, 21.5], [2.4, 1.6, 2.2]), {}), Object.assign(E([0, 3.4, -11], [3.2, 2.6, 5]), {}), B([-3, 0.6, -6], [3, 1.2, 2]), B([-6.6, 1.4, -6], [-3.2, 4.6, 4]), B([3.2, 1.4, -6], [6.6, 4.6, 4]), B([-8, 0.8, Lh - 1.4], [8, 1.4, Lh + 0.6]), B([-7, 6.4, -Lh], [7, 7.6, -Lh + 3]), ...[-1, 1].map(s => B([s * 6.6 - 0.2, 1.4, -Lh], [s * 6.6 + 0.2, 7.6, -Lh + 3])), T([0, 6.8, -6.4], [0, 8, -7], 0.4));
         for (const s of [-1, 1]) for (const z of [Lh - 6, -Lh + 5]) out.push(...roda(s * 7.2, 3, z, 3, 3)); out.push(A([0, 5.8, 1.6], 1.0, 0.2, ccU([0, 0.5, 1]))); }
       return out; },
     assentos: o => o.modelo === "kart" ? { piloto: { p: [0, 2.6, -3.4], olha: 1, chao: 1.8, pesFrente: 9, reclina: 18, dirige: true, volante: { c: [0, 5.6, 2.8], r: 1.2 } } } : { piloto: { p: [0, 2.2, -2.6], olha: 1, chao: 1.6, pesFrente: 11, reclina: 34, dirige: true, volante: { c: [0, 5.8, 1.6], r: 1.0 } } } },
@@ -362,7 +362,7 @@ const BIKES = { urbana: { r: 3.0, eixo: 9.4, selim: 8.0, guidao: 9.2, gw: 2.2, i
 const MOTOS = { esportiva: { r: 2.8, eixo: 12.4, selim: 7.0, guidao: 7.2, tanque: 7.4, gw: 2.2, inclina: 32, pe: -0.8, carenagem: true }, custom: { r: 2.9, eixo: 14, selim: 5.6, guidao: 9.4, tanque: 6.8, gw: 3.0, inclina: -6, pe: 5.4 },
   scooter: { r: 2.0, eixo: 11.4, selim: 6.4, guidao: 8.4, tanque: 5, gw: 2.4, inclina: 4, pe: 0, scooter: true }, trilha: { r: 3.2, eixo: 13, selim: 7.8, guidao: 8.6, tanque: 7.4, gw: 2.8, inclina: 16, pe: 0.6, solo: true }, policia: { r: 2.9, eixo: 13.6, selim: 6.6, guidao: 8.6, tanque: 7.2, gw: 2.8, inclina: 4, pe: 2, carenagem: true, sirene: true } };
 /* banco com encosto (como o dos carros) e cabine oca */
-function vcBancoCasa(x, y, z, L, enc, y0) { return [B([x - L, y0, z - 2.6], [x + L, y, z + 2.6]), B([x - L, y, z - 2.9], [x + L, y + enc, z - 2.1], { R: ccRot([0, 1, -0.22]) })]; }
+function vcBancoCasa(x, y, z, L, enc, y0) { return [B([x - L, y0, z - 2.6], [x + L, y, z + 2.6]), B([x - L, y, z - 3.7], [x + L, y + enc, z - 2.9], { R: ccRot([0, 1, -0.22]) })]; }
 function cabine(sp) { const out = [], t = sp.t || 0.4, w = sp.w, zc = (sp.z0 + sp.z1) / 2, hz = (sp.z1 - sp.z0) / 2;
   out.push(B([-w, sp.y0, sp.z0], [w, sp.yp, sp.z1]), B([-w, sp.yt, sp.z0], [w, sp.yt + t, sp.z1]));
   for (const sx of [-1, 1]) { const vaos = (sp.portas || []).filter(p => p.lado === sx).map(p => [p.za, p.zb]); const jan = (sp.jan || [[sp.z0 + 1.5, sp.z1 - 1.5]]).concat(vaos);
