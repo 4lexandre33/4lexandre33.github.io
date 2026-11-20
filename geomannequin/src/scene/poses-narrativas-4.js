@@ -10,12 +10,12 @@ pn("emoSentadoCabisbaixo", "sentado cabisbaixo|derrotado no banco", "sitting slu
 pn("emoGritandoCeu", "gritando para o céu|por quê?!", "screaming at the sky on the knees, arms spread", "kf100,100 hf0,0 af40,40 sf-30 fl100,100 ab70,70 el20,20 hp-50 m:garra,garra e:gritoDeDor");
 pn("emoSegurandoFoto", "segurando uma foto|saudade", "holding an old photograph close, gazing at it", "sf15 fl40,40 ab15,15 el110,110 pr-80,-80 hp40 m:pinca,pinca e:sorrisoTriste");
 pn("emoCaixaDespedida", "saindo com a caixa|demitido", "walking out carrying a cardboard box of belongings", "sf20 hf30,-10 kf25,10 hy-30 fl40,40 ab20,20 el80,80 pr-80,-80 hp30 m:segurar,segurar e:tristeza");
-pn("emoDeitadoChorando", "chorando na cama|cara no travesseiro", "lying face down on a bed crying into the pillow", "bp88 hf0,0 kf20,40 fl150,150 ab40,40 el130,130 hp-20 m:garra,garra e:choro");
+pn("emoDeitadoChorando", "chorando na cama|cara no travesseiro", "lying face down on a bed crying into the pillow", "bp88 hf0,0 kf20,40 fl150,150 ab25,25 el130,130 hp-20 m:garra,garra e:choro");
 pnC("Emoção/Desespero e raiva");
 pn("emoSocandoParede", "socando a parede|raiva contida", "punching a wall in frustration, head down", "sf20 hf30,-10 kf30,10 fl90,20 ab20,20 el10,60 hp30 m:punho,punho e:frustrado");
 pn("emoChutandoLixeira", "chutando a lixeira|fúria", "kicking a trash can in a rage", "sf-6 hf70,-10 kf20,10 af30,0 fl30,40 ab40,40 el40,60 hp10 m:punho,punho e:furia");
 pn("emoJogandoObjeto", "jogando algo com raiva|arremessando", "hurling an object across the room in anger", "sf-15 st-40 hf30,-20 kf30,20 fl150,-20 ab40,40 el30,40 hp-10 m:aberta,punho e:furia");
-pn("emoPuxandoCabelo", "arrancando os cabelos|desesperado", "pulling at the hair with both hands in despair", "sf15 fl140,140 ab60,60 el140,140 hp25 m:garra,garra e:panico");
+pn("emoPuxandoCabelo", "arrancando os cabelos|desesperado", "pulling at the hair with both hands in despair", "sf15 fl140,140 ab20,20 el140,140 hp25 m:garra,garra e:panico");
 pn("emoGritandoPunhos", "gritando de punhos fechados|raiva", "screaming with fists clenched at the sides, body tense", "sf-10 ha10,10 fl10,10 ab25,25 el40,40 hp-25 m:punho,punho e:furia");
 pn("emoDerrubandoMesa", "virando a mesa|explosão de raiva", "flipping a table over in rage", "sf20 hf40,-10 kf40,15 fl100,100 ab30,30 el30,30 wr-60,-60 hp-10 m:espalmada,espalmada e:furia");
 pn("emoApontandoAcusando", "apontando e acusando|foi você!", "jabbing an accusing finger forward, leaning in", "bp10 sf6 hf30,-10 kf30,10 fl90,10 ab10,20 el5,40 hp-6 m:apontar,punho e:raiva");
@@ -49,7 +49,7 @@ pn("romEsperandoFlores", "esperando com flores|buquê nas costas", "waiting nerv
 pn("romSuspirandoCoracao", "suspirando apaixonado|mãos no peito", "sighing dreamily with both hands over the heart", "sf-6 ss6 fl40,40 ab-15,-15 el120,120 hp-15 hz15 m:aberta,aberta e:apaixonado");
 pn("romCartaDeAmor", "escrevendo carta de amor|apaixonado escrevendo", "writing a love letter at a desk, chin on a hand", "hf90,90 kf90,90 sf20 fl40,50 ab20,20 el140,90 hp20 hz15 m:aberta,pinca e:sonhador");
 pn("romOlhandoCelularSorrindo", "sorrindo para o celular|mensagem do crush", "smiling down at a phone message, foot kicked up", "hf0,-30 kf0,90 fl40,10 ab15,10 el110,10 pr-60,0 hp35 m:segurar,relaxada e:envergonhadoSorrindo");
-pn("romAbracandoTravesseiro", "abraçando o travesseiro|rolando na cama", "lying on the side hugging a pillow and grinning", "br-85 hf60,40 kf90,60 fl60,60 ab-10,-10 el130,130 ar60,60 hp10 m:garra,garra e:apaixonado");
+pn("romAbracandoTravesseiro", "abraçando o travesseiro|rolando na cama", "lying on the side hugging a pillow and grinning", "br-85 hf60,40 kf90,60 fl60,60 ab-10,-10 el130,130 ar0,60 hp10 m:garra,garra e:apaixonado");
 pn("romPedidoDeJoelho", "pedido de casamento|ajoelhado com o anel", "proposing on one knee, holding up a ring box", "sf-4 hf90,0 kf90,100 af0,40 fl70,10 ab10,10 el30,10 pr-80,0 hp-10 m:segurar,relaxada e:esperancoso");
 pn("romSerenata", "serenata|cantando sob a janela", "serenading under a window with a guitar, head tilted up", "sf-10 hf20,-10 kf20,10 fl40,50 ab30,20 el120,80 ar0,40 hp-30 m:garra,pinca e:apaixonado");
 pn("romJogandoBeijo", "mandando beijo|beijo no ar", "blowing a kiss from the palm", "ss6 hf10,-20 kf10,30 af0,-30 fl60,0 ab20,10 el110,10 pr-80,0 hz10 m:aberta,relaxada e:piscando");
@@ -65,7 +65,7 @@ pnC("Terror/Vítima");
 pn("terLanternaNoEscuro", "lanterna no escuro|andando com lanterna", "creeping through the dark holding a flashlight forward", "sf15 hf30,10 kf30,20 fl80,40 ab15,30 el20,100 hp4 m:segurar,garra e:medo");
 pn("terOlhandoParaTrasArrepio", "olhando para trás arrepiado|sentiu algo", "freezing and glancing over the shoulder in fear", "sf10 st-30 hf10,10 kf20,20 fl30,20 ab20,20 el90,60 hy-100 m:garra,garra e:susto");
 pn("terRecuandoParede", "recuando até a parede|sem saída", "backing into a wall with hands flat against it", "bp-10 sf-15 hf20,0 kf20,10 fl-20,-20 ab40,40 el10,10 wr-60,-60 hp-6 m:espalmada,espalmada e:horror");
-pn("terCaidaRastejando", "rastejando para fugir|arrastando-se ferido", "dragging oneself across the floor away from danger", "bp85 hf40,0 kf60,0 fl160,60 ab40,40 el20,90 hp-60 hy-30 m:garra,espalmada e:panico");
+pn("terCaidaRastejando", "rastejando para fugir|arrastando-se ferido", "dragging oneself across the floor away from danger", "bp75 hf10,-30 kf60,0 fl160,75 ab40,40 el20,90 hp-60 hy-30 m:garra,espalmada e:panico");
 pn("terGritandoMaosRosto", "grito de horror|mãos no rosto", "screaming in horror with hands on the cheeks", "sf-10 fl50,50 ab-10,-10 el130,130 hp-10 m:aberta,aberta e:horror");
 pn("terSegurandoFaca", "segurando faca com medo|faca tremendo", "holding a kitchen knife out with shaking hands", "sf10 hf20,10 kf20,20 fl60,60 ab-10,-10 el40,40 hp6 m:segurar,segurar e:panico");
 pn("terTrancandoPorta", "segurando a porta|não deixa entrar", "bracing the back against a door to keep it shut", "bp-15 sf-10 hf40,20 kf50,30 fl-20,-20 ab40,40 el30,30 hp-20 m:espalmada,espalmada e:panico");
@@ -79,7 +79,7 @@ pn("terLobisomemUivando", "lobisomem uivando|uivando para a lua", "werewolf howl
 pn("terMumiaAndando", "múmia andando|braços duros", "mummy walking stiffly with arms straight out", "hf15,-4 kf0,0 fl90,90 ab10,10 el0,0 hp10 m:relaxada,relaxada e:olharVazio");
 pn("terAssassinoMascarado", "assassino mascarado|faca erguida", "masked killer raising a knife overhead, standing still", "fl170,0 ab10,10 el30,0 hp10 m:segurar,relaxada e:olharFrio");
 pn("terMenininaCabeloRosto", "menina de cabelo no rosto|vulto do poço", "eerie figure with hair over the face, arms limp, head tilted", "sf10 hf6,6 kf6,6 fl6,6 ab4,4 el0,0 hp30 hz30 m:relaxada,relaxada e:olharVazio");
-pn("terRastejandoAranha", "rastejando como aranha|de costas no chão", "crawling backward like a spider, belly up", "bp-150 hf90,90 ha30,30 kf110,110 fl150,150 ab30,30 el20,20 wr-80,-80 hp-50 m:garra,garra e:sorrisoManiaco");
+pn("terRastejandoAranha", "rastejando como aranha|de costas no chão", "crawling backward like a spider, belly up", "bp-150 hf90,90 ha30,30 kf110,110 fl150,150 ab20,20 el20,20 wr-80,-80 hp-50 m:garra,garra e:sorrisoManiaco");
 pnC("Suspense/Investigação");
 pn("detLupa", "detetive com lupa|investigando", "detective examining a clue through a magnifying glass", "sf40 hf30,30 kf30,30 fl60,20 ab20,20 el100,40 hp30 m:segurar,relaxada e:curioso");
 pn("detAgachadoPista", "agachado examinando pista|cena do crime", "crouching at a crime scene, fingers near a clue", "hf110,100 kf130,120 sf30 fl60,20 ab10,30 el30,90 hp40 m:pinca,relaxada e:focoTotal");
@@ -107,5 +107,5 @@ pn("comDesmaioDramatico", "desmaio dramático|mão na testa", "fainting dramatic
 pn("comCongelado", "congelado de susto|duro como estátua", "frozen stiff in shock, arms out, one leg up", "hf30,0 kf60,0 fl60,60 ab50,50 el20,20 wr40,40 hp-6 m:aberta,aberta e:choqueComico");
 pn("comAndandoNaPontaRoubando", "ladrão de desenho na ponta dos pés|roubando biscoito", "cartoon sneak on tiptoe, knees high, hands held up like paws", "sf10 hf80,-10 kf110,10 af-40,-40 fl60,60 ab10,10 el110,110 wr60,60 hp-10 m:pinca,pinca e:malicia");
 pn("comAbracandoComida", "abraçando a comida|é tudo meu", "hugging a giant pile of food greedily", "sf20 fl50,50 ab50,50 el110,110 ar50,50 hp20 m:garra,garra e:olhosBrilhando");
-pn("comTropecoCadarco", "tropeçando no cadarço|caindo de cara", "falling flat on the face after tripping", "bp80 hf-10,30 kf20,50 fl170,160 ab20,20 el10,10 hp-40 m:aberta,aberta e:choqueComico");
+pn("comTropecoCadarco", "tropeçando no cadarço|caindo de cara", "falling flat on the face after tripping", "bp80 hf-30,10 kf20,50 fl170,160 ab20,20 el10,10 hp-40 m:aberta,aberta e:choqueComico");
 pnRegistrar();

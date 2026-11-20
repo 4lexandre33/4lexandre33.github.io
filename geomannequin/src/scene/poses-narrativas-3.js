@@ -35,7 +35,7 @@ pn("quartoDormindoLado", "dormindo de lado|encolhido na cama", "sleeping on the 
 pn("quartoDormindoCostas", "dormindo de costas|roncando", "sleeping on the back, one arm over the forehead", "bp-90 hf10,0 kf20,0 fl150,10 ab40,15 el130,10 hp0 m:relaxada,relaxada e:sono");
 pn("quartoArrumandoCama", "arrumando a cama|esticando o lençol", "making the bed, bent over smoothing the sheet", "sf60 hf30,30 kf20,20 fl70,70 ab40,40 el10,10 wr-60,-60 hp20 m:espalmada,espalmada e:neutra");
 pn("banhoEscovandoDentes", "escovando os dentes|escova na boca", "brushing teeth in front of the mirror", "sf8 fl45,10 ab25,10 el130,10 hp-4 m:segurar,relaxada e:neutra");
-pn("banhoSecandoCabelo", "secando o cabelo|toalha na cabeça", "drying hair with a towel, both hands on the head", "sf20 fl150,150 ab40,40 el120,120 hp30 m:espalmada,espalmada e:neutra");
+pn("banhoSecandoCabelo", "secando o cabelo|toalha na cabeça", "drying hair with a towel, both hands on the head", "sf20 fl120,120 ab40,40 el140,140 hp30 m:espalmada,espalmada e:neutra");
 pn("banhoMaquiagem", "passando maquiagem|batom", "applying lipstick, leaning toward a mirror", "sf10 fl60,30 ab20,10 el125,90 hp-4 m:pinca,segurar e:focoTotal");
 pn("banhoBarbeando", "fazendo a barba|lâmina no rosto", "shaving, razor at the jaw, chin lifted", "fl55,40 ab30,20 el125,120 hp-20 hy-10 m:segurar,espalmada e:focoTotal");
 pnC("Casa/Família e bebê");
@@ -58,7 +58,7 @@ pn("escrApresentando", "apresentando slides|apontando para a tela", "presenting 
 pn("escrAoTelefone", "falando ao telefone|celular no ouvido", "talking on the phone, other hand gesturing", "fl40,40 ab35,30 el135,80 pr0,-60 hp-4 hy10 m:segurar,aberta e:serio");
 pn("escrCarregandoPastas", "carregando pilha de papéis|pilha de pastas", "carrying a tall stack of files, peeking around it", "sf-10 fl35,35 ab15,15 el70,70 pr-80,-80 hy30 hp-10 m:segurar,segurar e:nervoso");
 pn("escrEstressado", "estressado na mesa|cabeça entre as mãos", "stressed at the desk, head in both hands", "hf90,90 kf90,90 sf35 fl40,40 ab25,25 el145,145 hp45 m:aberta,aberta e:frustrado");
-pn("escrEspreguicandoCadeira", "espreguiçando na cadeira|mãos atrás da cabeça", "leaning back in an office chair, hands behind the head", "hf80,80 kf80,80 sf-20 fl150,150 ab60,60 el140,140 hp-10 m:aberta,aberta e:alivio");
+pn("escrEspreguicandoCadeira", "espreguiçando na cadeira|mãos atrás da cabeça", "leaning back in an office chair, hands behind the head", "hf80,80 kf80,80 sf-20 fl150,150 ab20,20 el140,140 hp-10 m:aberta,aberta e:alivio");
 pn("escrApertoMaoNegocio", "estendendo a mão para negócio|fechando acordo", "offering a firm handshake, slight bow", "hf20,-10 kf15,6 st-15 sf12 fl60,0 ab12,10 el20,10 hp10 m:aberta,relaxada e:sorrisoConfiante");
 pn("escrQuadroBranco", "escrevendo no quadro branco|explicando na lousa", "writing on a whiteboard, half turned to the room", "st30 fl130,20 ab20,10 el40,60 hy-50 m:segurar,relaxada e:focoTotal");
 pn("escrCafezinho", "pausa do café|encostado com café", "leaning against a counter with a coffee cup, relaxed", "ss10 hf10,-6 ha0,15 kf10,0 fl40,-10 ab20,30 el125,20 hp-4 m:segurar,espalmada e:calmo");
@@ -71,7 +71,7 @@ pn("medMaosLevantadasLuvas", "mãos para cima de luvas|cirurgião pronto", "surg
 pnC("Trabalho/Segurança");
 pn("polApitoTransito", "guarda de trânsito|apitando", "traffic officer whistling and signaling stop", "fl90,10 ab60,10 el10,140 wr-60,0 hp-6 m:espalmada,pinca e:serio");
 pn("polDistintivo", "mostrando o distintivo|polícia!", "police officer showing a badge at arm's length", "fl90,20 ab10,20 el5,40 pr-80,0 hp-6 m:segurar,relaxada e:serio");
-pn("polRevistando", "revistando|mãos na parede", "suspect with hands against a wall, legs spread, being frisked", "bp20 ha25,25 hf10,10 kf6,6 fl140,140 ab40,40 el10,10 wr-60,-60 hp30 m:espalmada,espalmada e:nervoso");
+pn("polRevistando", "revistando|mãos na parede", "suspect with hands against a wall, legs spread, being frisked", "bp20 ha25,25 hf10,10 kf6,6 fl140,140 ab-15,-15 el10,10 wr-60,-60 hp30 m:espalmada,espalmada e:nervoso");
 pn("bombeiroMangueira", "bombeiro com mangueira|apagando o fogo", "firefighter bracing a fire hose", "bp10 sf10 hf50,-20 kf50,20 fl40,60 ab20,20 el60,30 hp-6 m:segurar,segurar e:determinacao");
 pn("bombeiroMachado", "bombeiro com machado|quebrando a porta", "firefighter swinging an axe overhead", "sf-10 st-20 hf30,-10 kf30,10 fl170,160 ab20,20 el40,40 hp-20 m:segurar,segurar e:gritoDeGuerra");
 pn("segurancaBracosCruzados", "segurança de braços cruzados|leão de chácara", "bouncer standing with arms crossed, legs apart", "bp-6 ha20,20 fl15,15 ab-10,-10 el60,60 ar30,30 hp-10 m:punho,punho e:olharFrio");

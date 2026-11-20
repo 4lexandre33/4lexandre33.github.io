@@ -44,7 +44,7 @@ pn("magoInvocacaoChao", "invocação no chão|mãos no círculo mágico", "kneel
 pnC("Fantasia/Super-herói");
 pn("heroiVooPunhoFrente", "voando de punho à frente|super-herói voando", "superhero flying with one fist forward", "bl10 bp85 hf0,-10 kf0,20 fl175,0 ab10,10 el0,0 hp-60 m:punho,punho e:determinacao");
 pn("heroiPousoTresApoios", "pouso de super-herói|aterrissagem com punho no chão", "superhero landing, one knee and one fist on the ground", "sf35 hf100,40 kf110,110 af0,40 fl80,10 ab10,50 el0,10 hp-20 m:punho,aberta e:determinacao");
-pn("heroiSegurandoCarro", "segurando o carro|força sobre-humana", "holding a car up overhead with both arms", "sf-10 hf30,30 ha20,20 kf40,40 fl170,170 ab30,30 el10,10 hp-20 m:espalmada,espalmada e:esforco");
+pn("heroiSegurandoCarro", "segurando o carro|força sobre-humana", "holding a car up overhead with both arms", "sf-10 hf30,30 ha20,20 kf40,40 fl170,170 ab-15,-15 el10,10 hp-20 m:espalmada,espalmada e:esforco");
 pn("heroiRaioDosOlhos", "raio dos olhos|olhar laser", "firing laser eyes, fists clenched at the sides", "sf-10 hf20,-10 kf20,10 fl10,10 ab25,25 el30,30 hp-10 m:punho,punho e:iraFocada");
 pn("heroiAbrindoCamisa", "abrindo a camisa|revelando o uniforme", "ripping open a shirt to reveal the costume underneath", "sf-10 fl50,50 ab-20,-20 el120,120 hp-10 m:garra,garra e:determinacao");
 pn("heroiTeiaLancando", "lançando teia|herói aranha", "shooting web from the wrist, fingers bent", "sf10 ss-10 hf50,-10 kf60,20 fl110,30 ab30,40 el0,100 wr-60,0 hp-6 m:chifres,punho e:focoTotal");
@@ -60,7 +60,7 @@ pn("animeSalvandoNoBraco", "segurando a espada nas costas|samurai de anime", "an
 pn("animeCorrendoTorrada", "correndo com torrada na boca|atrasada para a aula", "late anime student running with toast in the mouth", "bp15 hf70,-30 kf80,40 fl50,-40 ab20,20 el90,60 hp-6 m:segurar,aberta e:nervoso");
 pn("animePoseVitoriaV", "sinal de V com olho|pose fofa", "cute anime pose, V-sign by the eye, knee bent in", "ss10 hf20,0 hr-30,0 kf30,0 fl55,10 ab30,15 el130,10 hz15 m:paz,relaxada e:piscando");
 pn("sereiaSentadaPedra", "sereia na pedra|sentada de lado", "mermaid pose sitting sideways on a rock, legs together", "hf80,80 hr-40,-40 kf40,40 ha-10,-10 sf-6 fl-20,150 ab30,40 el0,60 wr-60,0 hp-10 hz15 m:espalmada,aberta e:sonhador");
-pn("fadaVoando", "fada voando|na ponta dos pés no ar", "fairy hovering on tiptoe, arms delicately raised", "bl6 hf10,-30 kf10,60 af-40,-40 fl120,120 ab50,50 el60,60 hp-10 m:aberta,aberta e:alegria");
+pn("fadaVoando", "fada voando|na ponta dos pés no ar", "fairy hovering on tiptoe, arms delicately raised", "bl6 hf10,-30 kf10,60 af-40,-40 fl120,120 ab25,25 el60,60 hp-10 m:aberta,aberta e:alegria");
 
 /* ===================================================== GÊNEROS ===================================================== */
 pnC("Gênero/Faroeste");
@@ -89,7 +89,7 @@ pn("sobrevBebendoRio", "bebendo água do rio|mãos em concha", "crouching at a r
 pn("sobrevMachadoLenha", "cortando lenha|machado na tora", "splitting firewood, axe raised high", "sf-10 hf30,30 ha15,15 kf30,30 fl175,175 ab0,0 el30,30 hp-15 m:segurar,segurar e:esforco");
 pn("sobrevArcoCacando", "caçando com arco|à espreita", "hunter crouched with a bow, arrow nocked", "hf90,40 kf110,80 sf20 fl70,40 ab10,60 el10,120 st-20 hy-30 m:segurar,pinca e:focoTotal");
 pn("sobrevBarraca", "montando a barraca|esticando a lona", "pulling a tent rope taut, leaning back", "bp-20 hf60,10 kf50,20 fl70,60 ab10,10 el20,30 hp10 m:segurar,segurar e:esforco");
-pn("sobrevExaustoDeserto", "exausto no deserto|rastejando de sede", "crawling exhausted across desert sand, arm reaching", "bp85 hf30,0 kf60,10 fl170,30 ab20,30 el10,90 hp-50 m:garra,espalmada e:exausto");
+pn("sobrevExaustoDeserto", "exausto no deserto|rastejando de sede", "crawling exhausted across desert sand, arm reaching", "bp75 hf10,-20 kf60,10 fl170,75 ab20,30 el10,90 hp-50 m:garra,espalmada e:exausto");
 
 /* ===================================================== SOCIAL E GESTOS ===================================================== */
 pnC("Social/Discurso e protesto");
@@ -125,7 +125,7 @@ pn("infanciaEscondeEsconde", "contando no esconde-esconde|olhos tapados", "count
 pn("infanciaAviaozinho", "brincando de avião|braços de asa", "child running with arms out like an airplane wings", "bp10 ss-15 br-10 hf50,-10 kf50,20 fl0,0 ab90,90 el5,5 hp-10 m:aberta,aberta e:gritoDeAlegria");
 pn("infanciaBirra", "fazendo birra|batendo o pé", "child throwing a tantrum, stamping and fists down", "sf-10 hf60,0 kf60,0 af-20,0 fl10,10 ab20,20 el10,10 hp-30 m:punho,punho e:choro");
 pn("infanciaBalanco", "no balanço|balançando", "swinging on a playground swing, legs forward", "hf70,70 kf10,10 sf-30 fl160,160 ab10,10 el20,20 hp-20 m:segurar,segurar e:gritoDeAlegria");
-pn("infanciaEscorregador", "descendo no escorregador|braços para cima", "sliding down a slide with arms up", "bp-40 hf90,90 kf10,10 fl170,170 ab30,30 el10,10 hp20 m:aberta,aberta e:gritoDeAlegria");
+pn("infanciaEscorregador", "descendo no escorregador|braços para cima", "sliding down a slide with arms up", "bp-40 hf90,90 kf10,10 fl170,170 ab-15,-15 el10,10 hp20 m:aberta,aberta e:gritoDeAlegria");
 pn("infanciaBolhaSabao", "fazendo bolha de sabão|soprando", "blowing soap bubbles from a wand", "fl70,30 ab20,20 el120,90 hp-10 m:pinca,segurar e:encantado");
 pn("infanciaPirataEspadinha", "brincando de pirata|espada de brinquedo", "child playing pirate with a toy sword raised", "hf40,-10 kf40,10 fl160,20 ab20,40 el20,100 ar0,-40 hp-20 m:segurar,punho e:gritoDeGuerra");
 pnC("Velhice");
@@ -138,12 +138,12 @@ pn("velhoBengalaBrava", "idoso brandindo a bengala|saia do meu gramado", "grumpy
 /* ===================================================== CERIMÔNIA E FÉ ===================================================== */
 pnC("Cerimônia e fé");
 pn("fePrecandoAjoelhado", "rezando ajoelhado|mãos postas", "kneeling in prayer with hands pressed together", "kf100,100 hf0,0 af40,40 sf10 fl50,50 ab-15,-15 el110,110 hp20 m:espalmada,espalmada e:calmo");
-pn("fePrecandoBracosAbertos", "orando de braços abertos|louvor", "praying with arms raised and palms up", "sf-15 fl140,140 ab50,50 el20,20 pr-80,-80 hp-35 m:aberta,aberta e:esperancoso");
+pn("fePrecandoBracosAbertos", "orando de braços abertos|louvor", "praying with arms raised and palms up", "sf-15 fl140,140 ab-40,-40 el20,20 pr-80,-80 hp-35 m:aberta,aberta e:esperancoso");
 pn("feAcendendoVela", "acendendo uma vela|homenagem", "lighting a candle with care", "sf20 fl50,40 ab15,15 el80,80 hp35 m:pinca,segurar e:calmo");
 pn("feMeditacaoEmPe", "meditação em pé|qi gong", "standing meditation, arms rounded as if holding a ball", "hf20,20 kf20,20 fl70,70 ab50,50 el60,60 ar-30,-30 hp4 m:aberta,aberta e:calmo");
 pn("cerimNoivoEsperandoAltar", "noivo no altar|mãos juntas na frente", "groom waiting at the altar, hands clasped in front", "fl20,20 ab-10,-10 el60,60 hp-4 hy-30 m:segurar,segurar e:nervoso");
 pn("cerimNoivaBuque", "noiva com buquê|entrando na igreja", "bride walking down the aisle holding a bouquet", "hf20,-6 kf10,4 fl30,30 ab-5,-5 el80,80 hp10 m:segurar,segurar e:encantado");
-pn("cerimJogandoBuque", "jogando o buquê|de costas", "bride tossing the bouquet backward over the head", "bp-10 sf-30 hf30,-10 kf40,10 af0,-30 fl150,150 ab40,40 el40,40 hp-50 m:aberta,aberta e:riso");
+pn("cerimJogandoBuque", "jogando o buquê|de costas", "bride tossing the bouquet backward over the head", "bp-10 sf-30 hf30,-10 kf40,10 af0,-30 fl150,150 ab20,20 el40,40 hp-50 m:aberta,aberta e:riso");
 pn("cerimHinoMaoPeito", "hino com a mão no peito|cerimônia", "standing for the anthem, hand on the heart", "fl45,0 ab-15,0 el120,0 hp-6 m:espalmada,relaxada e:serio");
 pn("cerimCarregandoCaixao", "carregando o caixão|cortejo", "pallbearer carrying a coffin on the shoulder", "fl130,0 ab30,10 el140,0 hp20 m:segurar,relaxada e:tristeza");
 
