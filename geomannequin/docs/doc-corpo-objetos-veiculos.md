@@ -142,3 +142,26 @@ O objeto e a ação vêm junto com a câmera.
 - As miniaturas do Catálogo ainda não mostram os objetos, só o nome.
 - Algumas poses geradas (por exemplo, "moto na curva" sem a moto) só fazem sentido junto do veículo.
 - Os efeitos sugeridos vêm de regras de texto e podem errar o tom; troque com `efeito X`.
+
+## Teste cego (agente só com o manual) e correções
+O agente usou só o capítulo 63 do manual. Problemas encontrados:
+- **Corrigido:**
+  - no sofá e na poltrona, as canelas sumiam dentro do assento (agora a pessoa senta mais na frente);
+  - lótus e outras poses de pernas cruzadas no chão flutuavam (agora o corpo assenta no chão de qualquer pose);
+  - a garupa segurava os ombros do piloto (agora os braços vão mais baixo, mas não conferi de novo na imagem se ela abraça);
+  - a legenda dizia "tocando" quando a pessoa só usava o fogão ou o computador (agora diz "usando").
+- **Documentado no manual:**
+  - para cruzar a perna, sente a pessoa antes;
+  - o computador vai sobre a mesa dentro de um `local`;
+  - na linha de comando (`gm`), cada chamada é uma cena nova.
+- **Ficou como limitação:**
+  - deitado de lado na cama, a pose fica estranha;
+  - no saxofone, o bocal fica no peito em vez da boca;
+  - o skatista fica rígido;
+  - nas câmeras prontas, a legenda mostra o nome interno ("pc-moto");
+  - na busca do Catálogo, "moto" mostra outros veículos antes da moto.
+
+## Publicação
+- Arquivo único: versão 65.
+- Módulos: versão 41.
+- Commits até f219f87.
